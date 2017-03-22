@@ -211,9 +211,6 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
                        base::SharedMemoryHandle shm_handle,
                        int shm_size,
                        base::ProcessId renderer_pid);
-  void OnReceivedInlinedDataChunk(int request_id,
-                                  const std::vector<char>& data,
-                                  int encoded_data_length);
   void OnReceivedData(int request_id,
                       int data_offset,
                       int data_length,

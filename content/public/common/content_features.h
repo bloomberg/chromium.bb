@@ -40,7 +40,6 @@ CONTENT_EXPORT extern const base::Feature kMediaDocumentDownloadButton;
 CONTENT_EXPORT extern const base::Feature kMemoryCoordinator;
 CONTENT_EXPORT extern const base::Feature kNotificationContentImage;
 CONTENT_EXPORT extern const base::Feature kMainThreadBusyScrollIntervention;
-CONTENT_EXPORT extern const base::Feature kOptimizeLoadingIPCForSmallResources;
 CONTENT_EXPORT extern const base::Feature kOriginTrials;
 CONTENT_EXPORT extern const base::Feature kParallelDownloading;
 CONTENT_EXPORT extern const base::Feature kPassiveDocumentEventListeners;

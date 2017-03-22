@@ -13,7 +13,6 @@
 #include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/debug/stack_trace.h"
-#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
@@ -36,7 +35,6 @@
 #include "content/public/child/fixed_received_data.h"
 #include "content/public/child/request_peer.h"
 #include "content/public/child/resource_dispatcher_delegate.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/resource_type.h"
 #include "net/base/net_errors.h"
@@ -235,38 +233,6 @@ void ResourceDispatcher::OnSetDataBuffer(int request_id,
   CHECK_GE(shm_size, 0);
   CHECK_LE(shm_size, 512 * 1024);
   request_info->buffer_size = shm_size;
-}
-
-void ResourceDispatcher::OnReceivedInlinedDataChunk(
-    int request_id,
-    const std::vector<char>& data,
-    int encoded_data_length) {
-  TRACE_EVENT0("loader", "ResourceDispatcher::OnReceivedInlinedDataChunk");
-  DCHECK(!data.empty());
-  DCHECK(base::FeatureList::IsEnabled(
-      features::kOptimizeLoadingIPCForSmallResources));
-
-  PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
-  if (!request_info || data.empty())
-    return;
-
-  // Check whether this response data is compliant with our cross-site
-  // document blocking policy. We only do this for the first chunk of data.
-  if (request_info->site_isolation_metadata.get()) {
-    SiteIsolationStatsGatherer::OnReceivedFirstChunk(
-        request_info->site_isolation_metadata, data.data(), data.size());
-    request_info->site_isolation_metadata.reset();
-  }
-
-  DCHECK(!request_info->buffer.get());
-
-  request_info->peer->OnReceivedData(
-      base::MakeUnique<content::FixedReceivedData>(data));
-
-  // Get the request info again as the client callback may modify the info.
-  request_info = GetPendingRequestInfo(request_id);
-  if (request_info && encoded_data_length > 0)
-    request_info->peer->OnTransferSizeUpdated(encoded_data_length);
 }
 
 void ResourceDispatcher::OnReceivedData(int request_id,
@@ -559,8 +525,6 @@ void ResourceDispatcher::DispatchMessage(const IPC::Message& message) {
                         OnReceivedCachedMetadata)
     IPC_MESSAGE_HANDLER(ResourceMsg_ReceivedRedirect, OnReceivedRedirect)
     IPC_MESSAGE_HANDLER(ResourceMsg_SetDataBuffer, OnSetDataBuffer)
-    IPC_MESSAGE_HANDLER(ResourceMsg_InlinedDataChunkReceived,
-                        OnReceivedInlinedDataChunk)
     IPC_MESSAGE_HANDLER(ResourceMsg_DataReceived, OnReceivedData)
     IPC_MESSAGE_HANDLER(ResourceMsg_DataDownloaded, OnDownloadedData)
     IPC_MESSAGE_HANDLER(ResourceMsg_RequestComplete, OnRequestComplete)
@@ -780,7 +744,6 @@ bool ResourceDispatcher::IsResourceDispatcherMessage(
     case ResourceMsg_ReceivedCachedMetadata::ID:
     case ResourceMsg_ReceivedRedirect::ID:
     case ResourceMsg_SetDataBuffer::ID:
-    case ResourceMsg_InlinedDataChunkReceived::ID:
     case ResourceMsg_DataReceived::ID:
     case ResourceMsg_DataDownloaded::ID:
     case ResourceMsg_RequestComplete::ID:

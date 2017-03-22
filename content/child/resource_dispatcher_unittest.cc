@@ -183,13 +183,6 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
         request_id, 0, data.length(), data.length())));
   }
 
-  void NotifyInlinedDataChunkReceived(int request_id,
-                                      const std::vector<char>& data) {
-    auto size = data.size();
-    EXPECT_TRUE(dispatcher_->OnMessageReceived(
-        ResourceMsg_InlinedDataChunkReceived(request_id, data, size)));
-  }
-
   void NotifyDataDownloaded(int request_id,
                             int decoded_length,
                             int encoded_data_length) {
@@ -275,34 +268,6 @@ TEST_F(ResourceDispatcherTest, RoundTrip) {
 
   NotifyDataReceived(id, kTestPageContents + kFirstReceiveSize);
   ConsumeDataReceived_ACK(id);
-  EXPECT_EQ(0u, queued_messages());
-
-  NotifyRequestComplete(id, strlen(kTestPageContents));
-  EXPECT_EQ(kTestPageContents, peer_context.data);
-  EXPECT_TRUE(peer_context.complete);
-  EXPECT_EQ(0u, queued_messages());
-}
-
-// A simple request with an inline data response.
-TEST_F(ResourceDispatcherTest, ResponseWithInlinedData) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kOptimizeLoadingIPCForSmallResources);
-
-  std::unique_ptr<ResourceRequest> request(CreateResourceRequest(false));
-  TestRequestPeer::Context peer_context;
-  StartAsync(std::move(request), NULL, &peer_context);
-
-  int id = ConsumeRequestResource();
-  EXPECT_EQ(0u, queued_messages());
-
-  NotifyReceivedResponse(id);
-  EXPECT_EQ(0u, queued_messages());
-  EXPECT_TRUE(peer_context.received_response);
-
-  std::vector<char> data(kTestPageContents,
-                         kTestPageContents + strlen(kTestPageContents));
-  NotifyInlinedDataChunkReceived(id, data);
   EXPECT_EQ(0u, queued_messages());
 
   NotifyRequestComplete(id, strlen(kTestPageContents));

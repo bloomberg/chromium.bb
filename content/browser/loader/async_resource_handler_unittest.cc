@@ -272,36 +272,6 @@ TEST_F(AsyncResourceHandlerTest, OneChunkLengths) {
   EXPECT_EQ(kDataSize, completion_status.encoded_body_length);
 }
 
-TEST_F(AsyncResourceHandlerTest, InlinedChunkLengths) {
-  // TODO(ricea): Remove this Feature-enabling code once the feature is on by
-  // default.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kOptimizeLoadingIPCForSmallResources);
-
-  // Smaller than kInlinedLeadingChunkSize.
-  constexpr auto kDataSize = 8;
-  StartRequestAndWaitWithResponseDataSize(kDataSize);
-  const auto& messages = filter_->messages();
-  ASSERT_EQ(3u, messages.size());
-  ASSERT_EQ(ResourceMsg_InlinedDataChunkReceived::ID, messages[1]->type());
-  ResourceMsg_InlinedDataChunkReceived::Param params;
-  ResourceMsg_InlinedDataChunkReceived::Read(messages[1].get(), &params);
-
-  int encoded_data_length = std::get<2>(params);
-  EXPECT_EQ(kDataSize, encoded_data_length);
-
-  ASSERT_EQ(ResourceMsg_RequestComplete::ID, messages[2]->type());
-  ResourceMsg_RequestComplete::Param completion_params;
-  ResourceMsg_RequestComplete::Read(messages[2].get(), &completion_params);
-  ResourceRequestCompletionStatus completion_status =
-      std::get<1>(completion_params);
-
-  EXPECT_EQ(TotalReceivedBytes(kDataSize),
-            completion_status.encoded_data_length);
-  EXPECT_EQ(kDataSize, completion_status.encoded_body_length);
-}
-
 TEST_F(AsyncResourceHandlerTest, TwoChunksLengths) {
   // Larger than kMaxAllocationSize.
   constexpr auto kDataSize = 64 * 1024;

@@ -61,8 +61,6 @@ class CONTENT_EXPORT AsyncResourceHandler : public ResourceHandler,
   void OnDataDownloaded(int bytes_downloaded) override;
 
  private:
-  class InliningHelper;
-
   // IPC message handlers:
   void OnFollowRedirect(int request_id);
   void OnDataReceivedACK(int request_id);
@@ -96,7 +94,6 @@ class CONTENT_EXPORT AsyncResourceHandler : public ResourceHandler,
   bool sent_received_response_msg_;
   bool sent_data_buffer_msg_;
 
-  std::unique_ptr<InliningHelper> inlining_helper_;
   base::TimeTicks response_started_ticks_;
 
   std::unique_ptr<UploadProgressTracker> upload_progress_tracker_;

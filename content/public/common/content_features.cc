@@ -124,12 +124,6 @@ const base::Feature kNotificationContentImage{"NotificationContentImage",
 const base::Feature kMainThreadBusyScrollIntervention{
     "MainThreadBusyScrollIntervention", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// An experiment to optimize resource loading IPC for small resources.
-// http://crbug.com/580928
-const base::Feature kOptimizeLoadingIPCForSmallResources{
-    "OptimizeLoadingIPCForSmallResources",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Origin Trials for controlling access to feature/API experiments.
 const base::Feature kOriginTrials{"OriginTrials",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
