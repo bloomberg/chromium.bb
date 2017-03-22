@@ -212,6 +212,64 @@ TEST_F(InputMethodControllerTest, SetCompositionAfterEmoji) {
   EXPECT_STREQ("\xF0\x9F\x8F\x86\x61\x62", div->innerText().utf8().data());
 }
 
+TEST_F(InputMethodControllerTest, SetCompositionWithGraphemeCluster) {
+  insertHTMLElement("<div id='sample' contenteditable></div>", "sample");
+
+  Vector<CompositionUnderline> underlines;
+  underlines.push_back(CompositionUnderline(6, 6, Color(255, 0, 0), false, 0));
+  document().updateStyleAndLayout();
+
+  // UTF16 = 0x0939 0x0947 0x0932 0x0932. Note that 0x0932 0x0932 is a grapheme
+  // cluster.
+  controller().setComposition(
+      String::fromUTF8("\xE0\xA4\xB9\xE0\xA5\x87\xE0\xA4\xB2\xE0\xA4\xB2"),
+      underlines, 4, 4);
+  EXPECT_EQ(4u, controller().getSelectionOffsets().start());
+  EXPECT_EQ(4u, controller().getSelectionOffsets().end());
+
+  // UTF16 = 0x0939 0x0947 0x0932 0x094D 0x0932 0x094B.
+  controller().setComposition(
+      String::fromUTF8("\xE0\xA4\xB9\xE0\xA5\x87\xE0\xA4\xB2\xE0\xA5\x8D\xE0"
+                       "\xA4\xB2\xE0\xA5\x8B"),
+      underlines, 6, 6);
+  EXPECT_EQ(6u, controller().getSelectionOffsets().start());
+  EXPECT_EQ(6u, controller().getSelectionOffsets().end());
+}
+
+TEST_F(InputMethodControllerTest,
+       SetCompositionWithGraphemeClusterAndMultipleNodes) {
+  Element* div =
+      insertHTMLElement("<div id='sample' contenteditable></div>", "sample");
+
+  Vector<CompositionUnderline> underlines;
+  underlines.push_back(
+      CompositionUnderline(12, 12, Color(255, 0, 0), false, 0));
+  document().updateStyleAndLayout();
+
+  // UTF16 = 0x0939 0x0947 0x0932 0x094D 0x0932 0x094B. 0x0939 0x0947 0x0932 is
+  // a grapheme cluster, so is the remainding 0x0932 0x094B.
+  controller().commitText(
+      String::fromUTF8("\xE0\xA4\xB9\xE0\xA5\x87\xE0\xA4\xB2\xE0\xA5\x8D\xE0"
+                       "\xA4\xB2\xE0\xA5\x8B"),
+      underlines, 1);
+  controller().commitText("\nab ", underlines, 1);
+  controller().setComposition(String("c"), underlines, 1, 1);
+  EXPECT_STREQ(
+      "\xE0\xA4\xB9\xE0\xA5\x87\xE0\xA4\xB2\xE0\xA5\x8D\xE0\xA4\xB2\xE0\xA5"
+      "\x8B\nab c",
+      div->innerText().utf8().data());
+  EXPECT_EQ(11u, controller().getSelectionOffsets().start());
+  EXPECT_EQ(11u, controller().getSelectionOffsets().end());
+
+  controller().setComposition(String("cd"), underlines, 2, 2);
+  EXPECT_STREQ(
+      "\xE0\xA4\xB9\xE0\xA5\x87\xE0\xA4\xB2\xE0\xA5\x8D\xE0\xA4\xB2\xE0\xA5"
+      "\x8B\nab cd",
+      div->innerText().utf8().data());
+  EXPECT_EQ(12u, controller().getSelectionOffsets().start());
+  EXPECT_EQ(12u, controller().getSelectionOffsets().end());
+}
+
 TEST_F(InputMethodControllerTest, SetCompositionKeepingStyle) {
   Element* div = insertHTMLElement(
       "<div id='sample' "

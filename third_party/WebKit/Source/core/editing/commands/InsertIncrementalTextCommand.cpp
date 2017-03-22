@@ -51,17 +51,18 @@ size_t computeDistanceToLeftGraphemeBoundary(const Position& position) {
                              adjustedPosition.computeOffsetInContainerNode());
 }
 
-size_t computeCommonGraphemeClusterPrefixLength(
-    const int selectionStart,
-    const String& oldText,
-    const String& newText,
-    const Element* rootEditableElement) {
+size_t computeCommonGraphemeClusterPrefixLength(const Position& selectionStart,
+                                                const String& oldText,
+                                                const String& newText) {
   const size_t commonPrefixLength = computeCommonPrefixLength(oldText, newText);
+  const int selectionOffset = selectionStart.computeOffsetInContainerNode();
+  const ContainerNode* selectionNode =
+      selectionStart.computeContainerNode()->parentNode();
 
   // For grapheme cluster, we should adjust it for grapheme boundary.
   const EphemeralRange& range =
-      PlainTextRange(0, selectionStart + commonPrefixLength)
-          .createRange(*rootEditableElement);
+      PlainTextRange(0, selectionOffset + commonPrefixLength)
+          .createRange(*selectionNode);
   if (range.isNull())
     return 0;
   const Position& position = range.endPosition();
@@ -83,22 +84,24 @@ size_t computeDistanceToRightGraphemeBoundary(const Position& position) {
                              position.computeOffsetInContainerNode());
 }
 
-size_t computeCommonGraphemeClusterSuffixLength(
-    const int selectionStart,
-    const String& oldText,
-    const String& newText,
-    const Element* rootEditableElement) {
+size_t computeCommonGraphemeClusterSuffixLength(const Position& selectionStart,
+                                                const String& oldText,
+                                                const String& newText) {
   const size_t commonSuffixLength = computeCommonSuffixLength(oldText, newText);
+  const int selectionOffset = selectionStart.computeOffsetInContainerNode();
+  const ContainerNode* selectionNode =
+      selectionStart.computeContainerNode()->parentNode();
 
   // For grapheme cluster, we should adjust it for grapheme boundary.
   const EphemeralRange& range =
-      PlainTextRange(0, selectionStart + oldText.length() - commonSuffixLength)
-          .createRange(*rootEditableElement);
+      PlainTextRange(0, selectionOffset + oldText.length() - commonSuffixLength)
+          .createRange(*selectionNode);
   if (range.isNull())
     return 0;
   const Position& position = range.endPosition();
   const size_t diff = computeDistanceToRightGraphemeBoundary(position);
-  DCHECK_GE(commonSuffixLength, diff);
+  if (diff > commonSuffixLength)
+    return 0;
   return commonSuffixLength - diff;
 }
 
@@ -153,16 +156,15 @@ void InsertIncrementalTextCommand::doApply(EditingState* editingState) {
   const String oldText = plainText(selectionRange);
   const String& newText = m_text;
 
-  const int selectionStart =
-      endingSelection().start().computeOffsetInContainerNode();
+  const Position& selectionStart = endingSelection().start();
   const size_t newTextLength = newText.length();
   const size_t oldTextLength = oldText.length();
   const size_t commonPrefixLength = computeCommonGraphemeClusterPrefixLength(
-      selectionStart, oldText, newText, element);
+      selectionStart, oldText, newText);
   // We should ignore common prefix when finding common suffix.
   const size_t commonSuffixLength = computeCommonGraphemeClusterSuffixLength(
       selectionStart, oldText.right(oldTextLength - commonPrefixLength),
-      newText.right(newTextLength - commonPrefixLength), element);
+      newText.right(newTextLength - commonPrefixLength));
   DCHECK_GE(oldTextLength, commonPrefixLength + commonSuffixLength);
 
   m_text =
