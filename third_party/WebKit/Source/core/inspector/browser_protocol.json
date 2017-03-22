@@ -544,7 +544,8 @@
                 "description": "Fired when frame has been attached to its parent.",
                 "parameters": [
                     { "name": "frameId", "$ref": "FrameId", "description": "Id of the frame that has been attached." },
-                    { "name": "parentFrameId", "$ref": "FrameId", "description": "Parent frame identifier." }
+                    { "name": "parentFrameId", "$ref": "FrameId", "description": "Parent frame identifier." },
+                    { "name": "stack", "$ref": "Runtime.StackTrace", "optional": true, "description": "JavaScript stack trace of when frame was attached, only set if frame initiated from script.", "experimental": true }
                 ]
             },
             {

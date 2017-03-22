@@ -670,7 +670,11 @@ void InspectorPageAgent::frameAttachedToParent(LocalFrame* frame) {
   Frame* parentFrame = frame->tree().parent();
   if (!parentFrame->isLocalFrame())
     parentFrame = 0;
-  frontend()->frameAttached(frameId(frame), frameId(toLocalFrame(parentFrame)));
+  std::unique_ptr<SourceLocation> location =
+      SourceLocation::captureWithFullStackTrace();
+  frontend()->frameAttached(
+      frameId(frame), frameId(toLocalFrame(parentFrame)),
+      location ? location->buildInspectorObject() : nullptr);
 }
 
 void InspectorPageAgent::frameDetachedFromParent(LocalFrame* frame) {
