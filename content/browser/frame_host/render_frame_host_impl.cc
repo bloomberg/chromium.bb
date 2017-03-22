@@ -2407,11 +2407,12 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   device::GeolocationServiceContext* geolocation_service_context =
       delegate_ ? delegate_->GetGeolocationServiceContext() : NULL;
 
-  // The default (no-op) implementation of InstalledAppProvider.
-  // TODO(mgiuca): Implement the "real" one for Android in Java, and do not add
-  // the default one on that platform.
+#if !defined(OS_ANDROID)
+  // The default (no-op) implementation of InstalledAppProvider. On Android, the
+  // real implementation is provided in Java.
   GetInterfaceRegistry()->AddInterface(
       base::Bind(&InstalledAppProviderImplDefault::Create));
+#endif  // !defined(OS_ANDROID)
 
   if (geolocation_service_context) {
     // TODO(creis): Bind process ID here so that GeolocationServiceImpl
