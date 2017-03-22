@@ -340,7 +340,6 @@ _VALID_OS_MACROS = (
 
 _ANDROID_SPECIFIC_PYDEPS_FILES = [
     'build/android/test_runner.pydeps',
-    'build/android/test_wrapper/logdog_wrapper.pydeps',
     'net/tools/testserver/testserver.pydeps',
 ]
 
