@@ -33,8 +33,7 @@ extern int dering_level_table[DERING_STRENGTHS];
 int sb_all_skip(const AV1_COMMON *const cm, int mi_row, int mi_col);
 int sb_compute_dering_list(const AV1_COMMON *const cm, int mi_row, int mi_col,
                            dering_list *dlist);
-void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm, MACROBLOCKD *xd,
-                    int clpf_strength_u, int clpf_strength_v);
+void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm, MACROBLOCKD *xd);
 
 void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
                      AV1_COMMON *cm, MACROBLOCKD *xd);

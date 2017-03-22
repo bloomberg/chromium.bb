@@ -19,7 +19,6 @@
 #if CONFIG_CDEF
 #include "av1/common/cdef.h"
 #include "av1/common/clpf.h"
-#include "av1/encoder/clpf_rdo.h"
 #endif  // CONFIG_CDEF
 #include "av1/common/filter.h"
 #include "av1/common/idct.h"
@@ -3522,7 +3521,6 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
   }
 #if CONFIG_CDEF
   if (is_lossless_requested(&cpi->oxcf)) {
-    cm->clpf_strength_u = cm->clpf_strength_v = 0;
     cm->cdef_bits = 0;
     cm->cdef_strengths[0] = 0;
     cm->nb_cdef_strengths = 1;
@@ -3531,12 +3529,7 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
     av1_cdef_search(cm->frame_to_show, cpi->Source, cm, xd);
 
     // Apply the filter
-    av1_cdef_frame(cm->frame_to_show, cm, xd, cm->clpf_strength_u,
-                   cm->clpf_strength_v);
-
-    // Pack the clpf chroma strengths into two bits each
-    cm->clpf_strength_u -= cm->clpf_strength_u == 4;
-    cm->clpf_strength_v -= cm->clpf_strength_v == 4;
+    av1_cdef_frame(cm->frame_to_show, cm, xd);
   }
 #endif
 #if CONFIG_LOOP_RESTORATION

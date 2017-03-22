@@ -143,8 +143,8 @@ static void copy_sb8_16(UNUSED AV1_COMMON *cm, uint16_t *dst, int dstride,
 #endif
 }
 
-void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm, MACROBLOCKD *xd,
-                    int clpf_strength_u, int clpf_strength_v) {
+void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
+                    MACROBLOCKD *xd) {
   int r, c;
   int sbr, sbc;
   int nhsb, nvsb;
@@ -162,11 +162,9 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm, MACROBLOCKD *xd,
   int dering_left;
   int coeff_shift = AOMMAX(cm->bit_depth - 8, 0);
   int nplanes = 3;
-  int *lev;
   int chroma_dering =
       xd->plane[1].subsampling_x == xd->plane[1].subsampling_y &&
       xd->plane[2].subsampling_x == xd->plane[2].subsampling_y;
-  lev = cm->cdef_strengths;
   nvsb = (cm->mi_rows + MAX_MIB_SIZE - 1) / MAX_MIB_SIZE;
   nhsb = (cm->mi_cols + MAX_MIB_SIZE - 1) / MAX_MIB_SIZE;
   av1_setup_dst_planes(xd->plane, frame, 0, 0);
@@ -193,6 +191,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm, MACROBLOCKD *xd,
     dering_left = 1;
     for (sbc = 0; sbc < nhsb; sbc++) {
       int level, clpf_strength;
+      int uv_level, uv_clpf_strength;
       int nhb, nvb;
       int cstart = 0;
 #if 0  // TODO(stemidts/jmvalin): Handle tile borders correctly
@@ -205,18 +204,34 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm, MACROBLOCKD *xd,
       nhb = AOMMIN(MAX_MIB_SIZE, cm->mi_cols - MAX_MIB_SIZE * sbc);
       nvb = AOMMIN(MAX_MIB_SIZE, cm->mi_rows - MAX_MIB_SIZE * sbr);
       level = dering_level_table
-          [lev[cm->mi_grid_visible[MAX_MIB_SIZE * sbr * cm->mi_stride +
-                                   MAX_MIB_SIZE * sbc]
-                   ->mbmi.cdef_strength] /
+          [cm->cdef_strengths[cm->mi_grid_visible[MAX_MIB_SIZE * sbr *
+                                                      cm->mi_stride +
+                                                  MAX_MIB_SIZE * sbc]
+                                  ->mbmi.cdef_strength] /
            CLPF_STRENGTHS];
       clpf_strength =
-          lev[cm->mi_grid_visible[MAX_MIB_SIZE * sbr * cm->mi_stride +
-                                  MAX_MIB_SIZE * sbc]
-                  ->mbmi.cdef_strength] %
+          cm->cdef_strengths[cm->mi_grid_visible[MAX_MIB_SIZE * sbr *
+                                                     cm->mi_stride +
+                                                 MAX_MIB_SIZE * sbc]
+                                 ->mbmi.cdef_strength] %
           CLPF_STRENGTHS;
       clpf_strength += clpf_strength == 3;
+      uv_level = dering_level_table
+          [cm->cdef_uv_strengths[cm->mi_grid_visible[MAX_MIB_SIZE * sbr *
+                                                         cm->mi_stride +
+                                                     MAX_MIB_SIZE * sbc]
+                                     ->mbmi.cdef_strength] /
+           CLPF_STRENGTHS];
+      uv_clpf_strength =
+          cm->cdef_uv_strengths[cm->mi_grid_visible[MAX_MIB_SIZE * sbr *
+                                                        cm->mi_stride +
+                                                    MAX_MIB_SIZE * sbc]
+                                    ->mbmi.cdef_strength] %
+          CLPF_STRENGTHS;
+      uv_clpf_strength += uv_clpf_strength == 3;
       curr_row_dering[sbc] = 0;
-      if ((level == 0 && clpf_strength == 0) ||
+      if ((level == 0 && clpf_strength == 0 && uv_level == 0 &&
+           uv_clpf_strength == 0) ||
           (dering_count = sb_compute_dering_list(
                cm, sbr * MAX_MIB_SIZE, sbc * MAX_MIB_SIZE, dlist)) == 0) {
         dering_left = 0;
@@ -232,9 +247,11 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm, MACROBLOCKD *xd,
         int clpf_damping = 3 - (pli != AOM_PLANE_Y) + (cm->base_qindex >> 6);
 
         if (pli) {
-          if (!chroma_dering) level = 0;
-          clpf_strength = pli == 1 ? clpf_strength_u : clpf_strength_v;
-          clpf_strength += clpf_strength == 3;
+          if (chroma_dering)
+            level = uv_level;
+          else
+            level = 0;
+          clpf_strength = uv_clpf_strength;
         }
         if (sbc == nhsb - 1)
           cend = (nhb << bsize[pli]);
@@ -359,12 +376,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm, MACROBLOCKD *xd,
                     coffset, xd->plane[pli].dst.stride, OD_FILT_VBORDER,
                     (nhb << bsize[pli]));
 
-        /* FIXME: This is a temporary hack that uses more conservative
-           deringing for chroma. */
-        if (pli)
-          threshold = (level * 5 + 4) >> 3 << coeff_shift;
-        else
-          threshold = level << coeff_shift;
+        threshold = level << coeff_shift;
         if (threshold == 0 && clpf_strength == 0) continue;
         od_dering(dst,
                   &src[OD_FILT_VBORDER * OD_FILT_BSTRIDE + OD_FILT_HBORDER],
