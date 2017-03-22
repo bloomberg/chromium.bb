@@ -106,7 +106,7 @@ suite('route', function() {
     return testNavigateBackUsesHistory(
         settings.Route.ADVANCED,
         settings.Route.PEOPLE,
-        settings.Route.ADVANCED);
+        settings.Route.BASIC);
   });
 
   test('navigate back to sibling route', function() {
@@ -142,6 +142,11 @@ suite('route', function() {
     settings.navigateTo(
         settings.Route.SEARCH_ENGINES, null, /* removeSearch */ true);
     assertEquals('', settings.getQueryParameters().toString());
+  });
+
+  test('navigateTo ADVANCED forwards to BASIC', function() {
+    settings.navigateTo(settings.Route.ADVANCED);
+    assertEquals(settings.Route.BASIC, settings.getCurrentRoute());
   });
 
   test('popstate flag works', function() {

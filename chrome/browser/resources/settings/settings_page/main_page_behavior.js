@@ -148,6 +148,7 @@ var MainPageBehaviorImpl = {
         // Need to exclude routes that correspond to 'non-sectioned' children of
         // ADVANCED, otherwise tryTransitionToSection_ will recurse endlessly.
         !currentRoute.isNavigableDialog) {
+      assert(currentRoute.section);
       promise = this.$$('#advancedPageTemplate').get();
     }
 

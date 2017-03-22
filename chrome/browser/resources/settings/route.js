@@ -369,6 +369,11 @@ cr.define('settings', function() {
    *     parameter during navigation. Defaults to false.
    */
   var navigateTo = function(route, opt_dynamicParameters, opt_removeSearch) {
+    // The ADVANCED route only serves as a parent of subpages, and should not
+    // be possible to navigate to it directly.
+    if (route == settings.Route.ADVANCED)
+      route = settings.Route.BASIC;
+
     var params = opt_dynamicParameters || new URLSearchParams();
     var removeSearch = !!opt_removeSearch;
 
