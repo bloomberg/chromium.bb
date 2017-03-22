@@ -229,12 +229,12 @@
           success = Should(message + ".value frame " + middle + "channel 0",
              data0.slice(suspendFrame))
             .beConstantValueOf(data0[suspendFrame]) && success;
-          success = Should(message + ".value frame " + middle + "channel 0",
+          success = Should(message + ".value frame " + middle + "channel 1",
              data1.slice(suspendFrame))
             .beConstantValueOf(data1[suspendFrame]) && success;
-          success = Should("Output at frame " + suspendFrame + " channel 0", data0[suspendFrame])
+          success = Should(message + ": Output at frame " + suspendFrame + " channel 0", data0[suspendFrame])
             .notBeEqualTo(data0[0]) && success;
-          success = Should("Output at frame " + suspendFrame + " channel 1", data1[suspendFrame])
+          success = Should(message + ": Output at frame " + suspendFrame + " channel 1", data1[suspendFrame])
             .notBeEqualTo(data1[0]) && success;
 
           var prefix = "Directly setting " + message + ".value";

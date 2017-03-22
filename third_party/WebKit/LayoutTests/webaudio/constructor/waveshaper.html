@@ -45,17 +45,17 @@
       audit.defineTask("valid default construction", function (taskDone) {
         var node;
 
-        success = Should("node = new WaveShaperNode(context)", function () {
+        success = Should("node0 = new WaveShaperNode(context)", function () {
           node = new WaveShaperNode(context);
         }).notThrow();
-        success = Should("node.curve", node.curve).beEqualTo(null) && success;
-        success = Should("node.oversample", node.oversample).beEqualTo("none") && success;
+        success = Should("node0.curve", node.curve).beEqualTo(null) && success;
+        success = Should("node0.oversample", node.oversample).beEqualTo("none") && success;
 
-        success = Should("node.channelCount", node.channelCount)
+        success = Should("node0.channelCount", node.channelCount)
           .beEqualTo(2) && success;
-        success = Should("node.channelCountMode", node.channelCountMode)
+        success = Should("node0.channelCountMode", node.channelCountMode)
           .beEqualTo("max") && success;
-        success = Should("node.channelInterpretation", node.channelInterpretation)
+        success = Should("node0.channelInterpretation", node.channelInterpretation)
           .beEqualTo("speakers") && success;
 
         Should("new WaveShaperNode(context)", success)
@@ -79,13 +79,13 @@
         };
         var node;
 
-        var message = "node = new WaveShaperNode(, " + JSON.stringify(options) + ")";
+        var message = "node1 = new WaveShaperNode(, " + JSON.stringify(options) + ")";
         success = Should(message, function () {
             node = new WaveShaperNode(context, options);
           }).notThrow();
-        success = Should("node.curve", node.curve)
+        success = Should("node1.curve", node.curve)
           .beEqualToArray(options.curve) && success;
-        success = Should("node.oversample", node.oversample)
+        success = Should("node1.oversample", node.oversample)
           .beEqualTo(options.oversample) && success;
 
         Should("new WaveShaper() with options", success)

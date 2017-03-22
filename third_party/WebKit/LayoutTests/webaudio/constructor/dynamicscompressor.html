@@ -48,31 +48,31 @@
         var node;
         var success = true;
 
-        success = Should("node = new DynamicsCompressorNode(context)", function () {
+        success = Should("node0 = new DynamicsCompressorNode(context)", function () {
           node = new DynamicsCompressorNode(context);
         }).notThrow();
-        success = Should("node instanceof DynamicsCompressorNode",
+        success = Should("node0 instanceof DynamicsCompressorNode",
             node instanceof DynamicsCompressorNode)
           .beEqualTo(true) && success;
 
-        success = Should("node.threshold.value", node.threshold.value)
+        success = Should("node0.threshold.value", node.threshold.value)
           .beEqualTo(-24) && success;
-        success = Should("node.knee.value", node.knee.value)
+        success = Should("node0.knee.value", node.knee.value)
           .beEqualTo(30) && success;
-        success = Should("node.ratio.value", node.ratio.value)
+        success = Should("node0.ratio.value", node.ratio.value)
           .beEqualTo(12) && success;
-        success = Should("node.reduction", node.reduction)
+        success = Should("node0.reduction", node.reduction)
           .beEqualTo(0) && success;
-        success = Should("node.attack.value", node.attack.value)
+        success = Should("node0.attack.value", node.attack.value)
           .beEqualTo(Math.fround(0.003)) && success;
-        success = Should("node.release.value", node.release.value)
+        success = Should("node0.release.value", node.release.value)
           .beEqualTo(0.25) && success;
 
-        success = Should("node.channelCount", node.channelCount)
+        success = Should("node0.channelCount", node.channelCount)
           .beEqualTo(2) && success;
-        success = Should("node.channelCountMode", node.channelCountMode)
+        success = Should("node0.channelCountMode", node.channelCountMode)
           .beEqualTo("max") && success;
-        success = Should("node.channelInterpretation", node.channelInterpretation)
+        success = Should("node0.channelInterpretation", node.channelInterpretation)
           .beEqualTo("speakers") && success;
 
         Should("new DynamicsCompressorNode(context)", success)
@@ -99,31 +99,31 @@
           release: 0.125
         };
 
-        success = Should("node = new DynamicsCompressorNode(c, " + JSON.stringify(options) +
+        success = Should("node1 = new DynamicsCompressorNode(c, " + JSON.stringify(options) +
           ")",
           function () {
             node = new DynamicsCompressorNode(context, options);
           }).notThrow();
-        success = Should("node instanceof DynamicsCompressorNode",
+        success = Should("node1 instanceof DynamicsCompressorNode",
             node instanceof DynamicsCompressorNode)
           .beEqualTo(true) && success;
 
-        success = Should("node.threshold.value", node.threshold.value)
+        success = Should("node1.threshold.value", node.threshold.value)
           .beEqualTo(options.threshold) && success;
-        success = Should("node.knee.value", node.knee.value)
+        success = Should("node1.knee.value", node.knee.value)
           .beEqualTo(options.knee) && success;
-        success = Should("node.ratio.value", node.ratio.value)
+        success = Should("node1.ratio.value", node.ratio.value)
           .beEqualTo(options.ratio) && success;
-        success = Should("node.attack.value", node.attack.value)
+        success = Should("node1.attack.value", node.attack.value)
           .beEqualTo(options.attack) && success;
-        success = Should("node.release.value", node.release.value)
+        success = Should("node1.release.value", node.release.value)
           .beEqualTo(options.release) && success;
 
-        success = Should("node.channelCount", node.channelCount)
+        success = Should("node1.channelCount", node.channelCount)
           .beEqualTo(2) && success;
-        success = Should("node.channelCountMode", node.channelCountMode)
+        success = Should("node1.channelCountMode", node.channelCountMode)
           .beEqualTo("max") && success;
-        success = Should("node.channelInterpretation", node.channelInterpretation)
+        success = Should("node1.channelInterpretation", node.channelInterpretation)
           .beEqualTo("speakers") && success;
 
         success = Should("DynamicsCompressorNode(context) constructed with correct values",

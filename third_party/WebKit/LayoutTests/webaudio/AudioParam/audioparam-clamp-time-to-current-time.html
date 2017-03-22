@@ -30,10 +30,10 @@
             var result = resultBuffer.getChannelData(0);
             var success = true;
 
-            success = Should("Output[0-" + (suspendFrame - 1) + "]",
+            success = Should("setValue: Output[0-" + (suspendFrame - 1) + "]",
                 result.slice(0, suspendFrame))
               .beConstantValueOf(0) && success;
-            success = Should("Output[" + suspendFrame + "-" + (
+            success = Should("setValue: Output[" + suspendFrame + "-" + (
                   renderFrames - 1) + "]",
                 result.slice(suspendFrame))
               .beConstantValueOf(1) && success;
@@ -60,10 +60,10 @@
             var result = resultBuffer.getChannelData(0);
             var success = true;
 
-            success = Should("Output[0-" + (suspendFrame - 1) + "]",
+            success = Should("linear: Output[0-" + (suspendFrame - 1) + "]",
                 result.slice(0, suspendFrame))
               .beConstantValueOf(1) && success;
-            success = Should("Output[" + suspendFrame + "-" + (
+            success = Should("linear: Output[" + suspendFrame + "-" + (
                   renderFrames - 1) + "]",
                 result.slice(suspendFrame))
               .beConstantValueOf(0.5) && success;
@@ -90,10 +90,10 @@
             var result = resultBuffer.getChannelData(0);
             var success = true;
 
-            success = Should("Output[0-" + (suspendFrame - 1) + "]",
+            success = Should("exponential: Output[0-" + (suspendFrame - 1) + "]",
                 result.slice(0, suspendFrame))
               .beConstantValueOf(1) && success;
-            success = Should("Output[" + suspendFrame + "-" + (
+            success = Should("exponential: Output[" + suspendFrame + "-" + (
                   renderFrames - 1) + "]",
                 result.slice(suspendFrame))
               .beConstantValueOf(0.5) && success;
@@ -122,12 +122,12 @@
             var result = resultBuffer.getChannelData(0);
             var success = true;
 
-            success = Should("Output[0-" + (suspendFrame - 1) + "]",
+            success = Should("setTarget: Output[0-" + (suspendFrame - 1) + "]",
                 result.slice(0, suspendFrame))
               .beConstantValueOf(1) && success;
             // For the samples past the suspend time, we only care that first
             // value is 1 and that the rest are not zero.
-            success = Should("Output[" + suspendFrame + "]",
+            success = Should("setTarget: Output[" + suspendFrame + "]",
               result[suspendFrame]).beEqualTo(1) && success;
 
             var positive = result.slice(suspendFrame + 1).every(x => x >
@@ -160,7 +160,7 @@
             var result = resultBuffer.getChannelData(0);
             var success = true;
 
-            success = Should("Output[0-" + (suspendFrame - 1) + "]",
+            success = Should("setValueCurve: Output[0-" + (suspendFrame - 1) + "]",
                 result.slice(0, suspendFrame))
               .beConstantValueOf(1) && success;
 
@@ -168,7 +168,7 @@
             // Just verify that all values are greater than or equal to 2.
             var biggerThan2 = result.slice(suspendFrame).every(x => x >=
               2);
-            success = Should("Output[" + suspendFrame + "-" + (
+            success = Should("setValueCurve: Output[" + suspendFrame + "-" + (
                   renderFrames - 1) + "]",
                 biggerThan2)
               .beEqualTo(true) && success;

@@ -47,22 +47,20 @@
         var node;
         var success = true;
 
-        success = Should("node = new DelayNode(context)", function () {
+        success = Should("node0 = new DelayNode(context)", function () {
           node = new DelayNode(context);
         }).notThrow();
-        success = Should("node instanceof DelayNode", node instanceof DelayNode)
+        success = Should("node0 instanceof DelayNode", node instanceof DelayNode)
           .beEqualTo(true) && success;
 
-        success = Should("node.delayTime.value", node.delayTime.value)
-          .beEqualTo(0) && success;
-        success = Should("node.delayTime.value", node.delayTime.value)
+        success = Should("node0.delayTime.value", node.delayTime.value)
           .beEqualTo(0) && success;
 
-        success = Should("node.channelCount", node.channelCount)
+        success = Should("node0.channelCount", node.channelCount)
           .beEqualTo(2) && success;
-        success = Should("node.channelCountMode", node.channelCountMode)
+        success = Should("node0.channelCountMode", node.channelCountMode)
           .beEqualTo("max") && success;
-        success = Should("node.channelInterpretation", node.channelInterpretation)
+        success = Should("node0.channelInterpretation", node.channelInterpretation)
           .beEqualTo("speakers") && success;
 
         success = Should("DelayNode(context) constructed with correct values", success)
@@ -89,14 +87,14 @@
           maxDelayTime: 1.5,
         };
 
-        success = Should("node = new DelayNode(c, " + JSON.stringify(options) + ")",
+        success = Should("node1 = new DelayNode(c, " + JSON.stringify(options) + ")",
           function () {
             node = new DelayNode(context, options);
           }).notThrow();
 
-        success = Should("node.delayTime.value", node.delayTime.value)
+        success = Should("node1.delayTime.value", node.delayTime.value)
           .beEqualTo(options.delayTime) && success;
-        success = Should("node.delayTime.maxValue", node.delayTime.maxValue)
+        success = Should("node1.delayTime.maxValue", node.delayTime.maxValue)
           .beEqualTo(options.maxDelayTime) && success;
 
         success = Should("DelayNode(context, options) correctly handled", success)

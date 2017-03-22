@@ -107,30 +107,30 @@
         AudioBuffer.prototype.copyFromChannel)
           .exist();
 
-        Should("buffer = context.createBuffer(" + numberOfChannels + ", " + bufferLength + ", context.sampleRate)",
+        Should("0: buffer = context.createBuffer(" + numberOfChannels + ", " + bufferLength + ", context.sampleRate)",
           function () {
             buffer = context.createBuffer(numberOfChannels, bufferLength, context.sampleRate);
           }).notThrow();
-        Should("buffer.copyFromChannel(null, 0)", function () {
+        Should("1: buffer.copyFromChannel(null, 0)", function () {
           buffer.copyFromChannel(null, 0);
         }).throw("TypeError");
-        Should("buffer.copyFromChannel(context, 0)", function () {
+        Should("2: buffer.copyFromChannel(context, 0)", function () {
           buffer.copyFromChannel(context, 0);
         }).throw("TypeError");
-        Should("buffer.copyFromChannel(x, -1)", function () {
+        Should("3: buffer.copyFromChannel(x, -1)", function () {
           buffer.copyFromChannel(x, -1);
         }).throw("IndexSizeError");
-        Should("buffer.copyFromChannel(x, " + numberOfChannels + ")", function () {
+        Should("4: buffer.copyFromChannel(x, " + numberOfChannels + ")", function () {
           buffer.copyFromChannel(x, numberOfChannels);
         }).throw("IndexSizeError");;
-        Should("buffer.copyFromChannel(x, 0, -1)", function () {
+        Should("5: buffer.copyFromChannel(x, 0, -1)", function () {
           buffer.copyFromChannel(x, 0, -1);
         }).throw("IndexSizeError");
-        Should("buffer.copyFromChannel(x, 0, " + bufferLength + ")", function () {
+        Should("6: buffer.copyFromChannel(x, 0, " + bufferLength + ")", function () {
           buffer.copyFromChannel(x, 0, bufferLength);
         }).throw("IndexSizeError");
 
-        Should("buffer.copyFromChannel(x, 3)", function () {
+        Should("7: buffer.copyFromChannel(x, 3)", function () {
           buffer.copyFromChannel(x, 3);
         }).throw("IndexSizeError");
 
@@ -142,26 +142,26 @@
         Should("AudioBuffer.prototype.copyToChannel",
         AudioBuffer.prototype.copyToChannel)
           .exist();
-        Should("buffer.copyToChannel(null, 0)", function () {
+        Should("0: buffer.copyToChannel(null, 0)", function () {
           buffer.copyToChannel(null, 0);
         }).throw("TypeError");
-        Should("buffer.copyToChannel(context, 0)", function () {
+        Should("1: buffer.copyToChannel(context, 0)", function () {
           buffer.copyToChannel(context, 0);
         }).throw("TypeError");
-        Should("buffer.copyToChannel(x, -1)", function () {
+        Should("2: buffer.copyToChannel(x, -1)", function () {
           buffer.copyToChannel(x, -1);
         }).throw("IndexSizeError");
-        Should("buffer.copyToChannel(x, " + numberOfChannels + ")", function () {
+        Should("3: buffer.copyToChannel(x, " + numberOfChannels + ")", function () {
           buffer.copyToChannel(x, numberOfChannels);
         }).throw("IndexSizeError");
-        Should("buffer.copyToChannel(x, 0, -1)", function () {
+        Should("4: buffer.copyToChannel(x, 0, -1)", function () {
           buffer.copyToChannel(x, 0, -1);
         }).throw("IndexSizeError");
-        Should("buffer.copyToChannel(x, 0, " + bufferLength + ")", function () {
+        Should("5: buffer.copyToChannel(x, 0, " + bufferLength + ")", function () {
           buffer.copyToChannel(x, 0, bufferLength);
         }).throw("IndexSizeError");
 
-        Should("buffer.copyToChannel(x, 3)", function () {
+        Should("6: buffer.copyToChannel(x, 3)", function () {
           buffer.copyToChannel(x, 3);
         }).throw("IndexSizeError");
 

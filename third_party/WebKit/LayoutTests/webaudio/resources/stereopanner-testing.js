@@ -54,6 +54,7 @@ var StereoPannerTest = (function () {
     this.success = true;
 
     this.context = null;
+    this.prefix = options.prefix;
     this.numberOfInputChannels = (options.numberOfInputChannels || 1);
     switch (this.numberOfInputChannels) {
       case 1:
@@ -176,16 +177,16 @@ var StereoPannerTest = (function () {
 
 
   Test.prototype.showResult = function () {
-    Should("Number of impulses found", this.impulseIndex)
+    Should(this.prefix + "Number of impulses found", this.impulseIndex)
       .beEqualTo(gNodesToCreate);
 
-    Should("Number of impulse at the wrong offset", this.errors.length)
+    Should(this.prefix + "Number of impulse at the wrong offset", this.errors.length)
       .beEqualTo(0);
 
-    Should("Left channel error magnitude", this.maxErrorL)
+    Should(this.prefix + "Left channel error magnitude", this.maxErrorL)
       .beLessThanOrEqualTo(this.maxAllowedError);
 
-    Should("Right channel error magnitude", this.maxErrorR)
+    Should(this.prefix + "Right channel error magnitude", this.maxErrorR)
       .beLessThanOrEqualTo(this.maxAllowedError);
   };
 

@@ -49,24 +49,24 @@
         var node;
         var success = true;
 
-        success = Should("node = new OscillatorNode(context)", function () {
+        success = Should("node0 = new OscillatorNode(context)", function () {
           node = new OscillatorNode(context);
         }).notThrow();
-        success = Should("node instanceof OscillatorNode", node instanceof OscillatorNode)
+        success = Should("node0 instanceof OscillatorNode", node instanceof OscillatorNode)
           .beEqualTo(true) && success;
 
-        success = Should("node.type", node.type)
+        success = Should("node0.type", node.type)
           .beEqualTo("sine") && success;
-        success = Should("node.detune.value", node.detune.value)
+        success = Should("node0.detune.value", node.detune.value)
           .beEqualTo(0) && success;
-        success = Should("node.frequency.value", node.frequency.value)
+        success = Should("node0.frequency.value", node.frequency.value)
           .beEqualTo(440) && success;
       
-        success = Should("node.channelCount", node.channelCount)
+        success = Should("node0.channelCount", node.channelCount)
           .beEqualTo(2) && success;
-        success = Should("node.channelCountMode", node.channelCountMode)
+        success = Should("node0.channelCountMode", node.channelCountMode)
           .beEqualTo("max") && success;
-        success = Should("node.channelInterpretation", node.channelInterpretation)
+        success = Should("node0.channelInterpretation", node.channelInterpretation)
           .beEqualTo("speakers") && success;
 
         Should("new OscillatorNode(context)", success)
@@ -91,23 +91,23 @@
           frequency: 918
         };
 
-        success = Should("node = new OscillatorNode(c, " + JSON.stringify(options) + ")",
+        success = Should("node1 = new OscillatorNode(c, " + JSON.stringify(options) + ")",
           function () {
             node = new OscillatorNode(context, options);
           }).notThrow();
 
-        success = Should("node.type", node.type)
+        success = Should("node1.type", node.type)
           .beEqualTo(options.type) && success;
-        success = Should("node.detune.value", node.detune.value)
+        success = Should("node1.detune.value", node.detune.value)
           .beEqualTo(options.detune) && success;
-        success = Should("node.frequency.value", node.frequency.value)
+        success = Should("node1.frequency.value", node.frequency.value)
           .beEqualTo(options.frequency) && success;
 
-        success = Should("node.channelCount", node.channelCount)
+        success = Should("node1.channelCount", node.channelCount)
           .beEqualTo(2) && success;
-        success = Should("node.channelCountMode", node.channelCountMode)
+        success = Should("node1.channelCountMode", node.channelCountMode)
           .beEqualTo("max") && success;
-        success = Should("node.channelInterpretation", node.channelInterpretation)
+        success = Should("node1.channelInterpretation", node.channelInterpretation)
           .beEqualTo("speakers") && success;
 
         // Test that type and periodicWave options work as described.

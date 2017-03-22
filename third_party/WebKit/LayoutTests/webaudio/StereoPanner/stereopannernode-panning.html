@@ -15,11 +15,11 @@
     var audit = Audit.createTaskRunner();
 
     audit.defineTask('mono-test', function (done) {
-      StereoPannerTest.create({ numberOfInputChannels: 1 }).run(done);
+      StereoPannerTest.create({ numberOfInputChannels: 1, prefix: "Mono: " }).run(done);
     });
 
     audit.defineTask('stereo-test', function (done) {
-      StereoPannerTest.create({ numberOfInputChannels: 2 }).run(done);
+      StereoPannerTest.create({ numberOfInputChannels: 2, prefix: "Stereo: " }).run(done);
     });
 
     audit.defineTask('finish-test', function (done) {

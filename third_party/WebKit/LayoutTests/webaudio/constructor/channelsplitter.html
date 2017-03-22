@@ -49,21 +49,21 @@
         var node;
         var success = true;
 
-        success = Should("node = new ChannelSplitterNode(context)", function () {
+        success = Should("node0 = new ChannelSplitterNode(context)", function () {
           node = new ChannelSplitterNode(context);
         }).notThrow();
-        success = Should("node instanceof ChannelSplitterNode", node instanceof ChannelSplitterNode)
+        success = Should("node0 instanceof ChannelSplitterNode", node instanceof ChannelSplitterNode)
           .beEqualTo(true) && success;
 
-        success = Should("node.numberOfInputs", node.numberOfInputs)
+        success = Should("node0.numberOfInputs", node.numberOfInputs)
           .beEqualTo(1) && success;
-        success = Should("node.numberOfOutputs", node.numberOfOutputs)
+        success = Should("node0.numberOfOutputs", node.numberOfOutputs)
           .beEqualTo(6) && success;
-        success = Should("node.channelCount", node.channelCount)
+        success = Should("node0.channelCount", node.channelCount)
           .beEqualTo(node.numberOfOutputs) && success;
-        success = Should("node.channelCountMode", node.channelCountMode)
+        success = Should("node0.channelCountMode", node.channelCountMode)
           .beEqualTo("explicit") && success;
-        success = Should("node.channelInterpretation", node.channelInterpretation)
+        success = Should("node0.channelInterpretation", node.channelInterpretation)
           .beEqualTo("speakers") && success;
 
         Should("new ChannelSplitterNode(context)", success)
@@ -98,15 +98,15 @@
           channelInterpretation: "discrete"
         };
 
-        success = Should("node = new ChannelSplitterNode(context, " + JSON.stringify(options) + ")", function () {
+        success = Should("node1 = new ChannelSplitterNode(context, " + JSON.stringify(options) + ")", function () {
           node = new ChannelSplitterNode(context, options);
         }).notThrow();
 
-        success = Should("node.numberOfInputs", node.numberOfInputs)
+        success = Should("node1.numberOfInputs", node.numberOfInputs)
           .beEqualTo(1) && success;
-        success = Should("node.numberOfOutputs", node.numberOfOutputs)
+        success = Should("node1.numberOfOutputs", node.numberOfOutputs)
           .beEqualTo(options.numberOfOutputs) && success;
-        success = Should("node.channelInterpretation", node.channelInterpretation)
+        success = Should("node1.channelInterpretation", node.channelInterpretation)
           .beEqualTo(options.channelInterpretation) && success;
 
         options = { numberOfOutputs: 99 };

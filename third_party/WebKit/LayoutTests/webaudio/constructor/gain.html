@@ -48,21 +48,21 @@
         var node;
         var success = true;
 
-        success = Should("node = new GainNode(context)", function () {
+        success = Should("node0 = new GainNode(context)", function () {
           node = new GainNode(context);
         }).notThrow();
-        success = Should("node instanceof GainNode",
+        success = Should("node0 instanceof GainNode",
             node instanceof GainNode)
           .beEqualTo(true) && success;
 
-        success = Should("node.gain.value", node.gain.value)
+        success = Should("node0.gain.value", node.gain.value)
           .beEqualTo(1) && success;
 
-        success = Should("node.channelCount", node.channelCount)
+        success = Should("node0.channelCount", node.channelCount)
           .beEqualTo(2) && success;
-        success = Should("node.channelCountMode", node.channelCountMode)
+        success = Should("node0.channelCountMode", node.channelCountMode)
           .beEqualTo("max") && success;
-        success = Should("node.channelInterpretation", node.channelInterpretation)
+        success = Should("node0.channelInterpretation", node.channelInterpretation)
           .beEqualTo("speakers") && success;
 
         Should("new GainNode(context)", success)
@@ -85,21 +85,21 @@
           gain: -2,
         };
 
-        success = Should("node = new GainNode(c, " + JSON.stringify(options) + ")", function () {
+        success = Should("node1 = new GainNode(c, " + JSON.stringify(options) + ")", function () {
           node = new GainNode(context, options);
         }).notThrow();
-        success = Should("node instanceof GainNode",
+        success = Should("node1 instanceof GainNode",
             node instanceof GainNode)
           .beEqualTo(true) && success;
 
-        success = Should("node.gain.value", node.gain.value)
+        success = Should("node1.gain.value", node.gain.value)
           .beEqualTo(options.gain) && success;
 
-        success = Should("node.channelCount", node.channelCount)
+        success = Should("node1.channelCount", node.channelCount)
           .beEqualTo(2) && success;
-        success = Should("node.channelCountMode", node.channelCountMode)
+        success = Should("node1.channelCountMode", node.channelCountMode)
           .beEqualTo("max") && success;
-        success = Should("node.channelInterpretation", node.channelInterpretation)
+        success = Should("node1.channelInterpretation", node.channelInterpretation)
           .beEqualTo("speakers") && success;
 
         Should("new GainNode() with options", success)

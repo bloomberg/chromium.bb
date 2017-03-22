@@ -56,7 +56,7 @@
         success = Should("node instanceof AudioBufferSourceNode",
           node instanceof AudioBufferSourceNode).beEqualTo(true) && success;
 
-        success = Should("node.buffer === null", node.buffer === null)
+        success = Should("node0.buffer === null", node.buffer === null)
           .beEqualTo(true) && success;
 
         // This node using the factory method is used as a reference for the
@@ -70,10 +70,10 @@
           var name = testAttributes[index];
 
           if (node[name] instanceof AudioParam) {
-            success = Should("node." + name + ".value", node[name].value)
+            success = Should("node0." + name + ".value", node[name].value)
               .beEqualTo(factoryNode[name].value) && success;
           } else {
-          success = Should("node." + name, node[name])
+          success = Should("node0." + name, node[name])
           .beEqualTo(factoryNode[name]) && success;
           }
         }
@@ -90,11 +90,11 @@
 
         var options = { buffer: null };
       
-        success = Should("node = new AudioBufferSourceNode(c, " + JSON.stringify(options), function () {
+        success = Should("node1 = new AudioBufferSourceNode(c, " + JSON.stringify(options), function () {
           node = new AudioBufferSourceNode(context, options);
         }).notThrow();
 
-        success = Should("node.buffer", node.buffer)
+        success = Should("node1.buffer", node.buffer)
           .beEqualTo(null);
 
         Should("Null buffer in constructor handled", success)
@@ -136,17 +136,17 @@
         factoryNode.loopStart = options.loopStart;
         factoryNode.playbackRate.value = options.playbackRate;
 
-        success = Should("node.buffer === buffer", node.buffer === buffer)
+        success = Should("node2.buffer === buffer", node.buffer === buffer)
           .beEqualTo(true) && success;
-        success = Should("node.detune.value", node.detune.value)
+        success = Should("node2.detune.value", node.detune.value)
           .beEqualTo(factoryNode.detune.value) && success;
-        success = Should("node.loop", node.loop)
+        success = Should("node2.loop", node.loop)
           .beEqualTo(factoryNode.loop) && success;
-        success = Should("node.loopEnd", node.loopEnd)
+        success = Should("node2.loopEnd", node.loopEnd)
           .beEqualTo(factoryNode.loopEnd) && success;
-        success = Should("node.loopStart", node.loopStart)
+        success = Should("node2.loopStart", node.loopStart)
           .beEqualTo(factoryNode.loopStart) && success;
-        success = Should("node.playbackRate.value", node.playbackRate.value)
+        success = Should("node2.playbackRate.value", node.playbackRate.value)
           .beEqualTo(factoryNode.playbackRate.value) && success;
 
         Should("AudioBufferSource with options cosntructed", success)

@@ -31,7 +31,7 @@
           var expected = new Float32Array(actual.length);
           expected.fill(node.offset.value);
 
-          Should("ConstantSourceNode({offset: 0.5})", actual)
+          Should("Basic: ConstantSourceNode({offset: 0.5})", actual)
             .beEqualToArray(expected);
         }).then(taskDone);
       });
@@ -61,18 +61,19 @@
             expected[k] = node.offset.value;
           }
 
-          var success = Should("ConstantSourceNode frames [0, " +
+          var prefix = "start/stop: ";
+          var success = Should(prefix + "ConstantSourceNode frames [0, " +
               startFrame + ")",
               actual.slice(0, startFrame))
             .beConstantValueOf(0);
 
-          success = Should("ConstantSourceNode frames [" + startFrame +
+          success = Should(prefix + "ConstantSourceNode frames [" + startFrame +
               ", " +
               stopFrame + ")",
               actual.slice(startFrame, stopFrame))
             .beConstantValueOf(1) && success;
 
-          success = Should("ConstantSourceNode frames [" + stopFrame + ", " +
+          success = Should(prefix + "ConstantSourceNode frames [" + stopFrame + ", " +
               renderFrames + ")",
               actual.slice(stopFrame))
             .beConstantValueOf(0) && success;
@@ -104,14 +105,16 @@
               context.sampleRate);
 
             var rampEndFrame = Math.ceil(rampEndTime * context.sampleRate);
-            var success = Should("ConstantSourceNode.linearRamp(1, 0.5)",
+            var prefix = "Automation: ";
+
+            var success = Should(prefix + "ConstantSourceNode.linearRamp(1, 0.5)",
                 actual.slice(0, rampEndFrame))
               .beCloseToArray(expected, {
                 // Experimentally determined threshold..
                 relativeThreshold: 7.1610e-7
               });
 
-            success = Should("ConstantSourceNode after ramp",
+            success = Should(prefix + "ConstantSourceNode after ramp",
                 actual.slice(rampEndFrame))
               .beConstantValueOf(1) && success;
 
@@ -153,16 +156,17 @@
             // is 1.
             expected = expected.map(x => 1 + x);
             var success = true;
+            var prefix = "Connected param: ";
 
             // The initial part of the output should be silent because the
             // source node hasn't started yet.
-            success = Should("ConstantSourceNode frames [0, " +
+            success = Should(prefix + "ConstantSourceNode frames [0, " +
                 sourceStartFrame + ")", actual.slice(0, sourceStartFrame)
               )
               .beConstantValueOf(0);
             // The rest of the output should be the same as the oscillator (in
             // channel 1)
-            success = Should("ConstantSourceNode frames [" +
+            success = Should(prefix + "ConstantSourceNode frames [" +
                 sourceStartFrame + ", " + renderFrames + ")",
                 actual.slice(sourceStartFrame))
               .beCloseToArray(expected.slice(sourceStartFrame), 0);

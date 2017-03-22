@@ -30,7 +30,7 @@
 
     // Extract a transitional region from the AudioBuffer. If no transition
     // found, fail this test.
-    function extractPanningTransition(input) {
+    function extractPanningTransition(input, prefix) {
       var chanL = input.getChannelData(0);
       var chanR = input.getChannelData(1);
       var start, end;
@@ -40,7 +40,7 @@
       // samples are identical, the transition has not started.
       while (chanL[index-1] === chanL[index] || chanR[index-1] === chanR[index]) {
         if (++index >= input.length) {
-          Should(false, 'Transition in the channel data')
+          Should(false, prefix + ': Transition in the channel data')
             .summarize('found', 'not found');
           return null;
         }
@@ -58,7 +58,7 @@
       }
       end = index;
 
-      Should('Transition found between sample #' + start + ' and #' + end,
+      Should(prefix + ': Transition found between sample #' + start + ' and #' + end,
         true)
         .summarize('correctly', 'incorrectly');
 
@@ -142,18 +142,18 @@
       });
 
       context.startRendering().then(function (buffer) {
-        var actual = extractPanningTransition(buffer);
+        var actual = extractPanningTransition(buffer, options.message);
         var expected = generateStereoEqualPanningResult(stereoBuffer,
           options.startPanValue, options.endPanValue, actual.length);
 
         // |notGlitch| tests are redundant if the actual and expected results
         // match and if the expected results themselves don't glitch.
-        Should('Channel #0', actual.left).notGlitch(GLITCH_THRESHOLD);
-        Should('Channel #1', actual.right).notGlitch(GLITCH_THRESHOLD);
+        Should(options.message + ': Channel #0', actual.left).notGlitch(GLITCH_THRESHOLD);
+        Should(options.message + ': Channel #1', actual.right).notGlitch(GLITCH_THRESHOLD);
 
-        Should('Channel #0', actual.left, SHOULD_OPTS)
+        Should(options.message + ': Channel #0', actual.left, SHOULD_OPTS)
           .beCloseToArray(expected.left, MAX_ERROR_ALLOWED);
-        Should('Channel #1', actual.right, SHOULD_OPTS)
+        Should(options.message + ': Channel #1', actual.right, SHOULD_OPTS)
           .beCloseToArray(expected.right, MAX_ERROR_ALLOWED);
       }).then(done);
     }
@@ -161,14 +161,14 @@
     // Task: move pan from negative (-0.1) to positive (0.1) value to check if
     // there is a glitch during the transition. See crbug.com/470559.
     audit.defineTask('negative-to-positive', function (done) {
-      panAndVerify({ startPanValue: -0.1, endPanValue: 0.1 }, done);
+      panAndVerify({ startPanValue: -0.1, endPanValue: 0.1, message: "L->R" }, done);
     });
 
 
     // Task: move pan from positive (0.1) to negative (-0.1) value to check if
     // there is a glitch during the transition.
     audit.defineTask('positive-to-negative', function (done) {
-      panAndVerify({ startPanValue: 0.1, endPanValue: -0.1 }, done);
+      panAndVerify({ startPanValue: 0.1, endPanValue: -0.1, message: "R->L" }, done);
     });
 
     audit.defineTask('finish-test', function (done) {

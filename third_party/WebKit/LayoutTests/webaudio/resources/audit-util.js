@@ -214,10 +214,10 @@ function compareBuffersWithConstraints(actual, expected, options) {
 
     Should("SNR", snr).beGreaterThanOrEqualTo(thresholdSNR);
 
-    Should('Maximum difference (in ulp units (' + bitDepth + '-bits))',
+    Should(options.prefix + ': Maximum difference (in ulp units (' + bitDepth + '-bits))',
       maxErrorULP).beLessThanOrEqualTo(thresholdDiffULP);
 
-    Should('Number of differences between results', diffCount)
+    Should(options.prefix + ': Number of differences between results', diffCount)
       .beLessThanOrEqualTo(thresholdDiffCount);
 }
 

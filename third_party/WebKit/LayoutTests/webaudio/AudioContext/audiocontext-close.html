@@ -28,9 +28,9 @@
       // Create a context and verify that the various states are correct and
       // that close() exists.
       should(() => context = new AudioContext(),
-          "context = new AudioContext()")
+          "context0 = new AudioContext()")
         .notThrow();
-      should(context.state, "context.state")
+      should(context.state, "context0.state")
         .beEqualTo("running");
 
       // Create gain and oscillator for testing later.
@@ -38,11 +38,11 @@
           "osc = context.createOscillator()")
         .notThrow();
       should(() => gain = context.createGain(),
-          "gain = context.createGain()")
+          "gain = context0.createGain()")
         .notThrow();
       destination = context.destination;
       should(() => gain.connect(context.destination),
-          "gain.connect(context.destination)")
+          "gain.connect(context0.destination)")
         .notThrow();
 
       // Close the context.  When the promise is resolved, continue the next
@@ -52,7 +52,7 @@
               "gain.disconnect(destination) after close")
             .notThrow();
         });
-      should(promise, "context.close()")
+      should(promise, "context0.close()")
         .beResolved()
         .then(task.done.bind(this));
     });
@@ -151,19 +151,19 @@
       // Create a context and verify that its sampleRate and baseLatency return
       // valid values whether it's open or closed.
       should(() => context = new AudioContext(),
-          "context = new AudioContext()")
+          "context1 = new AudioContext()")
         .notThrow();
-      should(context.sampleRate, "context.sampleRate")
+      should(context.sampleRate, "context1.sampleRate")
         .beGreaterThan("0");
-      should(context.sampleRate, "context.baseLatency")
+      should(context.sampleRate, "context1.baseLatency")
         .beGreaterThan("0");
 
-      should(context.close(), "context.close()")
+      should(context.close(), "context1.close()")
         .beResolved()
         .then(() => {
-          should(context.sampleRate, "context.sampleRate")
+          should(context.sampleRate, "After close, context1.sampleRate")
             .beGreaterThan("0");
-          should(context.sampleRate, "context.baseLatency")
+          should(context.sampleRate, "After close, context1.baseLatency")
             .beGreaterThan("0");
         })
       .then(task.done.bind(task));

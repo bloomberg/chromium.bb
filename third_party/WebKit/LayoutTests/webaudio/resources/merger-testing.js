@@ -16,8 +16,9 @@ function testMergerInput(config, done) {
   source.start();
 
   context.startRendering().then(function (buffer) {
+    let prefix = config.testBufferContent.length + '-channel source: ';
     for (var i = 0; i < config.numberOfChannels; i++)
-      Should('Channel #' + i, buffer.getChannelData(i))
+      Should(prefix + 'Channel #' + i, buffer.getChannelData(i))
         .beConstantValueOf(config.expected[i]);
     done();
   });

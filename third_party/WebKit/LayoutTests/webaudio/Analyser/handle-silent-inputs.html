@@ -19,14 +19,14 @@
         label: 'connected',
         description: 'Test handling of silent inputs'
       }, function (task, should) {
-        tester(should, false).then(task.done.bind(task));
+        tester(should, false, '0').then(task.done.bind(task));
       });
 
       audit.define({
         label: 'auto-pull',
         description: 'Test handling of silent inputs'
       }, function(task, should) {
-        tester(should, true).then(task.done.bind(task));
+        tester(should, true, '1').then(task.done.bind(task));
       });
 
       audit.define({
@@ -100,7 +100,7 @@
 
       audit.run();
 
-      function tester(should, isAutoPullTest) {
+      function tester(should, isAutoPullTest, prefix) {
         // Connect an oscillator to an analyser for testing the time data of the
         // analyser after the oscillator stops.
         let context = new OfflineAudioContext(1, renderFrames, sampleRate);
@@ -131,7 +131,7 @@
             .then(context.resume.bind(context));
 
         return context.startRendering().then(buffer => {
-          should(timeData, 'Analyser time data at time ' + dataTime)
+          should(timeData, prefix + ': Analyser time data at time ' + dataTime)
               .beConstantValueOf(0);
         });
       }

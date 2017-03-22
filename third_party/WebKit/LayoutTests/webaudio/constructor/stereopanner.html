@@ -49,13 +49,13 @@
         var node;
         var success = true;
 
-        success = Should("node = new StereoPannerNode(context)", function () {
+        success = Should("node0 = new StereoPannerNode(context)", function () {
           node = new StereoPannerNode(context);
         }).notThrow();
-        success = Should("node instanceof StereoPannerNode", node instanceof StereoPannerNode)
+        success = Should("node0 instanceof StereoPannerNode", node instanceof StereoPannerNode)
           .beEqualTo(true) && success;
 
-        success = Should("node.pan.value", node.pan.value)
+        success = Should("node0.pan.value", node.pan.value)
           .beEqualTo(0) && success;
 
         Should("new StereoPannerNode(context)", success)
@@ -200,14 +200,14 @@
           pan: 0.75,
         };
 
-        success = Should("node = new StereoPannerNode(, " + JSON.stringify(options) + ")",
+        success = Should("node1 = new StereoPannerNode(, " + JSON.stringify(options) + ")",
           function () {
             node = new StereoPannerNode(context, options);
           }).notThrow();
-        success = Should("node instanceof StereoPannerNode", node instanceof StereoPannerNode)
+        success = Should("node1 instanceof StereoPannerNode", node instanceof StereoPannerNode)
           .beEqualTo(true) && success;
 
-        success = Should("node.pan.value", node.pan.value)
+        success = Should("node1.pan.value", node.pan.value)
           .beEqualTo(options.pan) && success;
 
         Should("new StereoPannerNode() with options", success)

@@ -198,7 +198,7 @@
           var actual = resultBuffer.getChannelData(0);
           var expected = resultBuffer.getChannelData(1);
 
-          Should("Distance (" + xTest + ") is outside the range [" +
+          Should("Model: " + options.distanceModel + ": Distance (" + xTest + ") is outside the range [" +
           pannerRef.refDistance + ", " + pannerRef.maxDistance + "]",
             xTest < pannerRef.refDistance || xTest > pannerRef.maxDistance)
             .beEqualTo(true);

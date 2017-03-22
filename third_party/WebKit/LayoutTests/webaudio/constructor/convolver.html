@@ -47,19 +47,19 @@
         var node;
         var success = true;
 
-        success = Should("node = new ConvolverNode(context)", function () {
+        success = Should("node0 = new ConvolverNode(context)", function () {
           node = new ConvolverNode(context);
         }).notThrow();
-        success = Should("node instanceOf ConvolverNode", node instanceof ConvolverNode)
+        success = Should("node0 instanceOf ConvolverNode", node instanceof ConvolverNode)
           .beEqualTo(true) && success;
-        success = Should("node.normalize", node.normalize)
+        success = Should("node0.normalize", node.normalize)
           .beEqualTo(true) && success;
 
-        success = Should("node.channelCount", node.channelCount)
+        success = Should("node0.channelCount", node.channelCount)
           .beEqualTo(2) && success;
-        success = Should("node.channelCountMode", node.channelCountMode)
+        success = Should("node0.channelCountMode", node.channelCountMode)
           .beEqualTo("clamped-max") && success;
-        success = Should("node.channelInterpretation", node.channelInterpretation)
+        success = Should("node0.channelInterpretation", node.channelInterpretation)
           .beEqualTo("speakers") && success;
 
         success = Should("new AnalyserNode(context)", success)
@@ -81,11 +81,11 @@
 
         var options = { buffer: null };
       
-        success = Should("node = new ConvolverNode(c, " + JSON.stringify(options), function () {
+        success = Should("node1 = new ConvolverNode(c, " + JSON.stringify(options), function () {
           node = new ConvolverNode(context, options);
         }).notThrow();
 
-        success = Should("node.buffer", node.buffer)
+        success = Should("node1.buffer", node.buffer)
           .beEqualTo(null);
 
         Should("Null buffer in constructor handled", success)
@@ -110,34 +110,34 @@
           node = new ConvolverNode(context, options);
         }).notThrow();
 
-        success = Should("node instanceOf ConvolverNode", node instanceof ConvolverNode)
+        success = Should("node1 instanceOf ConvolverNode", node instanceof ConvolverNode)
           .beEqualTo(true) && success;
-        success = Should("node.buffer === <buf>", node.buffer ===
+        success = Should("node1.buffer === <buf>", node.buffer ===
         options.buffer)
           .beEqualTo(true) && success;
-        success = Should("node.normalize", node.normalize)
+        success = Should("node1.normalize", node.normalize)
           .beEqualTo(!options.disableNormalization) && success;
 
         options.buffer = null;
         options.disableNormalization = true;
 
-        message = "node = new ConvolverNode(, " + JSON.stringify(options) + ")";
+        message = "node2 = new ConvolverNode(, " + JSON.stringify(options) + ")";
 
         success = Should(message, function () {
           node = new ConvolverNode(context, options);
         }).notThrow() && success;
-        success = Should("node.buffer", node.buffer).beEqualTo(null) && success;
-        success = Should("node.normalize", node.normalize)
+        success = Should("node2.buffer", node.buffer).beEqualTo(null) && success;
+        success = Should("node2.normalize", node.normalize)
           .beEqualTo(!options.disableNormalization) && success;
 
         options.disableNormalization = false;
-        message = "node = new ConvolverNode(context, " + JSON.stringify(options) + ")";
+        message = "node3 = new ConvolverNode(context, " + JSON.stringify(options) + ")";
 
         success = Should(message, function () {
           node = new ConvolverNode(context, options);
         }).notThrow() && success;
-        success = Should("node.buffer", node.buffer).beEqualTo(null) && success;
-        success = Should("node.normalize", node.normalize)
+        success = Should("node3.buffer", node.buffer).beEqualTo(null) && success;
+        success = Should("node3.normalize", node.normalize)
           .beEqualTo(!options.disableNormalization) && success;
 
         Should("new ConvolverNode() with options", success)

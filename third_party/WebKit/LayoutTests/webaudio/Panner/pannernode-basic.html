@@ -114,7 +114,7 @@
 
         var success = true;
         for (var i = 0; i < panningModels.length; ++i) {
-          success = Should('panner.panningModel = "' + panningModels[i] + '"', function () {
+          success = Should('Set panner.panningModel = "' + panningModels[i] + '"', function () {
             panner.panningModel = panningModels[i];
           }).notThrow() && success;
 
@@ -126,7 +126,7 @@
           panner.panningModel = "invalid";
         }).notThrow() && success;
 
-        success = Should("panner.panningModel", panner.panningModel)
+        success = Should("panner.panningModel after invalid setter", panner.panningModel)
           .beEqualTo("HRTF") && success;
 
         // Check that numerical values are no longer supported.  We shouldn't throw and the value

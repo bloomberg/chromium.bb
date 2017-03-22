@@ -49,19 +49,19 @@
         var node;
         var success = true;
 
-        success = Should("node = new AnalyserNode(c)", function () {
+        success = Should("node1 = new AnalyserNode(c)", function () {
           node = new AnalyserNode(context);
         }).notThrow();
-        success = Should("node instanceof AnalyserNode", node instanceof AnalyserNode)
+        success = Should("node0 instanceof AnalyserNode", node instanceof AnalyserNode)
           .beEqualTo(true) && success;
-        success = Should("node.fftSize", node.fftSize).beEqualTo(2048) && success;
-        success = Should("node.frequencyBinCount",
+        success = Should("node0.fftSize", node.fftSize).beEqualTo(2048) && success;
+        success = Should("node0.frequencyBinCount",
           node.frequencyBinCount).beEqualTo(1024) && success;
-        success = Should("node.minDecibels", node.minDecibels).beEqualTo(-100) && success;
-        success = Should("node.maxDecibels", node.maxDecibels).beEqualTo(-30) && success;
+        success = Should("node0.minDecibels", node.minDecibels).beEqualTo(-100) && success;
+        success = Should("node0.maxDecibels", node.maxDecibels).beEqualTo(-30) && success;
         // All AudioParams are stored as single precision values.  Compare
         // against the single-precision float value.
-        success = Should("node.smoothingTimeConstant", node.smoothingTimeConstant)
+        success = Should("node0.smoothingTimeConstant", node.smoothingTimeConstant)
           .beEqualTo(Math.fround(0.8)) && success;
 
         Should("new AnalyserNode(c)", success)
@@ -89,19 +89,19 @@
 
         var node;
         var success = true;
-        success = Should("node = new AnalyserNode(c, " + JSON.stringify(options) + ")", function () {
+        success = Should("node1 = new AnalyserNode(c, " + JSON.stringify(options) + ")", function () {
           node = new AnalyserNode(context, options);
         }).notThrow();
 
-        success = Should("node instanceof AnalyserNode", node instanceof AnalyserNode)
+        success = Should("node1 instanceof AnalyserNode", node instanceof AnalyserNode)
           .beEqualTo(true) && success;
-        success = Should("node.fftSize", node.fftSize)
+        success = Should("node1.fftSize", node.fftSize)
           .beEqualTo(options.fftSize) && success;
-        success = Should("node.maxDecibels", node.maxDecibels)
+        success = Should("node1.maxDecibels", node.maxDecibels)
           .beEqualTo(options.maxDecibels) && success;
-        success = Should("node.minDecibels", node.minDecibels)
+        success = Should("node1.minDecibels", node.minDecibels)
           .beEqualTo(options.minDecibels) && success;
-        success = Should("node.smoothingTimeConstant", node.smoothingTimeConstant)
+        success = Should("node1.smoothingTimeConstant", node.smoothingTimeConstant)
           .beEqualTo(options.smoothingTimeConstant) && success;
 
         Should("new AnalyserNode() with options", success)

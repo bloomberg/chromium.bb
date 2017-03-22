@@ -111,7 +111,7 @@ function testAudioNodeOptions(context, nodeName, nodeOptions) {
                             channelCountMode: "clamped-max"
                         }));
             }).notThrow() && success;
-        success = Should("node.channelCountMode", node.channelCountMode)
+        success = Should("node.channelCountMode after invalid setter", node.channelCountMode)
             .beEqualTo("clamped-max") && success;
 
         success = Should("new " + nodeName + '(c, {channelCountMode: "explicit"}',
@@ -135,7 +135,7 @@ function testAudioNodeOptions(context, nodeName, nodeOptions) {
                             channelCountMode: "foobar"
                         }));
             }).throw("TypeError") && success;
-        success = Should("node.channelCountMode", node.channelCountMode)
+        success = Should("node.channelCountMode after invalid setter", node.channelCountMode)
             .beEqualTo("explicit") && success;
     }
 
@@ -173,7 +173,7 @@ function testAudioNodeOptions(context, nodeName, nodeOptions) {
                         channelInterpretation: "foobar"
                     }));
         }).throw("TypeError") && success;
-    success = Should("node.channelInterpretation", node.channelInterpretation)
+    success = Should("node.channelInterpretation after invalid setter", node.channelInterpretation)
         .beEqualTo("discrete") && success;
 
 

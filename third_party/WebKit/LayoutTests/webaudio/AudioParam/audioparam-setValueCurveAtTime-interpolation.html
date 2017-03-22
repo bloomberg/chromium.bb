@@ -205,14 +205,15 @@
         source.start();
 
         // Some consistency checks on the test parameters
-        Should("Check: Curve end time", config.curveStartTime + config.curveDuration, {
+        let prefix = "Length " + config.curveLength + ", duration " + config.curveDuration;
+        Should(prefix + ": Check: Curve end time", config.curveStartTime + config.curveDuration, {
             brief: true
           })
           .beLessThanOrEqualTo(testDurationSec);
-        Should("Check: Full gain start time", config.fullGainTime, {
+        Should(prefix + ": Check: Full gain start time", config.fullGainTime, {
           brief: true
         }).beLessThanOrEqualTo(testDurationSec);
-        Should("Check: Full gain start time", config.fullGainTime, {
+        Should(prefix + ": Check: Full gain start time", config.fullGainTime, {
           brief: true
         }).beGreaterThanOrEqualTo(config.curveStartTime + config.curveDuration);
 
@@ -241,11 +242,12 @@
             }
           }
 
-          success = success && Should("SNR", SNR, {
+          let prefix = "Curve length " + config.curveLength + ", duration " + config.curveDuration;
+          success = success && Should(prefix + ": SNR", SNR, {
             brief: true
           }).beGreaterThanOrEqualTo(config.snrThreshold);
 
-          success = Should("Max difference", maxDiff)
+          success = Should(prefix + ": Max difference", maxDiff)
             .beLessThanOrEqualTo(config.maxErrorThreshold) && success;
 
           var message = "Test: curve length = " + config.curveLength +

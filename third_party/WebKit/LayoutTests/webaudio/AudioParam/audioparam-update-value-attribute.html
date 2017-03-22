@@ -160,7 +160,7 @@
 
         return context.startRendering().then(function (resultBuffer) {
           // Just print a final pass (or fail) message.
-          Should("Gain .value attribute", success)
+          Should("Gain .value attribute for " + test.message, success)
             .summarize("correctly updated during automation",
                        "not correctly updated during automation; max error = " + maxError);
         });

@@ -68,10 +68,12 @@ function runTest(context, bufferList, should, testThresholds) {
   should(bufferList[1].numberOfChannels, 'Number of channels in mono source')
       .beEqualTo(1);
 
-  return context.startRendering().then(verifyResult);
+  return context.startRendering().then(audioBuffer => {
+      verifyResult(audioBuffer, context, bufferList, testThresholds, should);
+    });
 }
 
-function verifyResult(renderedBuffer) {
+function verifyResult(renderedBuffer, context, bufferList, testThresholds, should) {
   // Test only works if we have a stereo result.
   should(
       renderedBuffer.numberOfChannels, 'Number of channels in rendered output')

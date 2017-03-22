@@ -177,15 +177,16 @@
           var minValue = Math.min(...expected);
           var maxValue = Math.max(...expected);
 
-          basicTestsPassed = Should("Min FFT value", minValue, {
-              brief: true
-            })
+          basicTestsPassed = Should("Order: " + options.order +
+              ": Min FFT value", minValue, {
+                brief: true
+              })
             .beLessThanOrEqualTo(analyser.minDecibels) && basicTestsPassed;
-          basicTestsPassed = Should("Max FFT value", maxValue, {
-              brief: true
-            })
+          basicTestsPassed = Should("Order: " + options.order +
+              ": Max FFT value", maxValue, {
+                brief: true
+              })
             .beGreaterThanOrEqualTo(analyser.maxDecibels) && basicTestsPassed;
-
           // Test the byte frequency data.
           var byteFreqData = new Uint8Array(analyser.frequencyBinCount);
           var expectedByteData = new Float32Array(analyser.frequencyBinCount);

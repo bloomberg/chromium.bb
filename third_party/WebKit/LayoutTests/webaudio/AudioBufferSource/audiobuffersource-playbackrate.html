@@ -119,7 +119,11 @@
           let octaveExpected = expected.subarray(start, end);
 
           compareBuffersWithConstraints(octaveActual, octaveExpected,
-            testConstraints[i]);
+            {
+              prefix: i,
+              thresholdSNR: testConstraints[i].thresholdSNR,
+              thresholdDiffULP: testConstraints[i].thresholdDiffULP
+            });
         }
 
       })

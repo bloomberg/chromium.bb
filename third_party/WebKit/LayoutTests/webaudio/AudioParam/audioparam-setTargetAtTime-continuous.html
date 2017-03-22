@@ -207,7 +207,7 @@
                 length))
               .beCloseToArray(expected.setTargetPart, thresholdSetTarget) && success;
           } else {
-            Should("SetTarget part", !length)
+            Should(prefix + ": SetTarget part", !length)
               .summarize("was correctly replaced by the ramp",
                          "was incorrectly replaced by the ramp");
           }

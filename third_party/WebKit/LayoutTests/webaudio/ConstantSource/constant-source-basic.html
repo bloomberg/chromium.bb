@@ -17,15 +17,16 @@
       audit.defineTask("createConstantSource()", function (taskDone) {
         var node;
         var success = true;
+        var prefix = "Factory method: ";
 
-        success = Should("node = context.createConstantSource()", function () {
+        success = Should(prefix + "node = context.createConstantSource()", function () {
           node = context.createConstantSource();
         }).notThrow();
-        success = Should("node instance of ConstantSourceNode",
+        success = Should(prefix + "node instance of ConstantSourceNode",
           node instanceof ConstantSourceNode)
           .beEqualTo(true) && success;
       
-        success = verifyNodeDefaults(node) && success;
+        success = verifyNodeDefaults(node, prefix) && success;
 
         Should("createConstantSource()", success)
           .summarize(
@@ -38,16 +39,17 @@
       audit.defineTask("new ConstantSourceNode()", function (taskDone) {
         var node;
         var success = true;
+        var prefix = "Constructor: ";
 
-        success = Should("node = new ConstantSourceNode()", function () {
+        success = Should(prefix + "node = new ConstantSourceNode()", function () {
           node = new ConstantSourceNode(context);
         }).notThrow();
-        success = Should("node instance of ConstantSourceNode",
+        success = Should(prefix + "node instance of ConstantSourceNode",
           node instanceof ConstantSourceNode)
           .beEqualTo(true) && success;
 
       
-        success = verifyNodeDefaults(node) && success;
+        success = verifyNodeDefaults(node, prefix) && success;
 
         Should("new ConstantSourceNode(context)", success)
           .summarize(
@@ -57,27 +59,27 @@
         taskDone();
       });
 
-      function verifyNodeDefaults(node) {
+      function verifyNodeDefaults(node, prefix) {
         var success = true;
 
-        success = Should("node.numberOfInputs", node.numberOfInputs)
+        success = Should(prefix + "node.numberOfInputs", node.numberOfInputs)
           .beEqualTo(0);
-        success = Should("node.numberOfOutputs", node.numberOfOutputs)
+        success = Should(prefix + "node.numberOfOutputs", node.numberOfOutputs)
           .beEqualTo(1) && success;
-        success = Should("node.channelCount", node.channelCount)
+        success = Should(prefix + "node.channelCount", node.channelCount)
           .beEqualTo(2) && success;
-        success = Should("node.channelCountMode", node.channelCountMode)
+        success = Should(prefix + "node.channelCountMode", node.channelCountMode)
           .beEqualTo("max") && success;
-        success = Should("node.channelInterpretation", node.channelInterpretation)
+        success = Should(prefix + "node.channelInterpretation", node.channelInterpretation)
           .beEqualTo("speakers") && success;
 
-        success = Should("node.offset.value", node.offset.value)
+        success = Should(prefix + "node.offset.value", node.offset.value)
           .beEqualTo(1) && success;
-        success = Should("node.offset.defaultValue", node.offset.defaultValue)
+        success = Should(prefix + "node.offset.defaultValue", node.offset.defaultValue)
           .beEqualTo(1) && success;
-        success = Should("node.offset.minValue", node.offset.minValue)
+        success = Should(prefix + "node.offset.minValue", node.offset.minValue)
           .beEqualTo(Math.fround(-3.4028235e38)) && success;
-        success = Should("node.offset.maxValue", node.offset.maxValue)
+        success = Should(prefix + "node.offset.maxValue", node.offset.maxValue)
           .beEqualTo(Math.fround(3.4028235e38)) && success;
       
         return success;

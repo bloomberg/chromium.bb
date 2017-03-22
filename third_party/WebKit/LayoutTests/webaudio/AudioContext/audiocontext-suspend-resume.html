@@ -79,7 +79,7 @@
         .beTrue();
 
       // Resume doesn't actually resume an offline context
-      should(offlineContext.state, "offlineContext.state")
+      should(offlineContext.state, "After resume, offlineContext.state")
         .beEqualTo("suspended");
       should(p2, "p2")
         .beRejected()
@@ -101,7 +101,7 @@
         .notThrow();
 
       p3.then(() => {
-        should(offlineContext.state, "offlineContext.state")
+        should(offlineContext.state, "After close, offlineContext.state")
           .beEqualTo("closed");
 
         // suspend() should be rejected on a closed context.

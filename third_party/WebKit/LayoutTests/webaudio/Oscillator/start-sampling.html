@@ -104,12 +104,13 @@
             expected[k] = Math.sin(omega * (k - startFrame));
           }
 
-          should(actual, "Oscillator.start(" + startFrame + " frames)")
+          let prefix = "Oscillator.start(" + startFrame + " frames)";
+          should(actual, prefix)
             .beCloseToArray(expected, {
               absoluteThreshold: thresholds.error
             });
           let snr = 10 * Math.log10(computeSNR(actual, expected));
-          should(snr, "SNR (dB)")
+          should(snr, prefix + ": SNR (dB)")
             .beGreaterThanOrEqualTo(thresholds.snrThreshold);
         })
       }
@@ -169,11 +170,12 @@
           let oscGain = result.getChannelData(2);
           let snr = 10 * Math.log10(computeSNR(oscStart, oscGain));
 
-          should(oscStart, "Delayed cosine oscillator at sample rate " + sampleRate)
+          let prefix = "Sample rate " + sampleRate + ": Delayed cosine oscillator";
+          should(oscStart, prefix)
             .beCloseToArray(oscGain, {
               absoluteThreshold: thresholds.error
             });
-          should(snr, "SNR (dB)")
+          should(snr, prefix + ": SNR (dB)")
             .beGreaterThanOrEqualTo(thresholds.snrThreshold);
         });
       }

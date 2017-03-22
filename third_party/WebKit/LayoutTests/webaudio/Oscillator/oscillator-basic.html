@@ -46,7 +46,7 @@ function runTest()
     Should("osc.setPeriodicWave(wave)", function () {
       osc.setPeriodicWave(wave);
     }).notThrow();
-    Should("osc.type", osc.type).beEqualTo("custom");
+    Should("After setting periodicWave, osc.type", osc.type).beEqualTo("custom");
      
     // Check that numerical values are no longer supported
     var oldType = osc.type;
