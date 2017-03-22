@@ -584,8 +584,8 @@ bool MatchesBitmap(const SkBitmap& expected_bmp,
 
   DCHECK(gfx::SkIRectToRect(actual_bmp.bounds()).Contains(matching_mask));
 
-  for (int x = matching_mask.x(); x < matching_mask.width(); ++x) {
-    for (int y = matching_mask.y(); y < matching_mask.height(); ++y) {
+  for (int x = matching_mask.x(); x < matching_mask.right(); ++x) {
+    for (int y = matching_mask.y(); y < matching_mask.bottom(); ++y) {
       SkColor actual_color = actual_bmp.getColor(x, y);
       SkColor expected_color = expected_bmp.getColor(x, y);
       if (!ColorsMatchWithinLimit(actual_color, expected_color, error_limit)) {
@@ -613,10 +613,12 @@ class CaptureScreenshotTest : public DevToolsProtocolTest {
  protected:
   enum ScreenshotEncoding { ENCODING_PNG, ENCODING_JPEG };
   void CaptureScreenshotAndCompareTo(const SkBitmap& expected_bitmap,
-                                     ScreenshotEncoding encoding) {
+                                     ScreenshotEncoding encoding,
+                                     bool fromSurface) {
     std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
     params->SetString("format", encoding == ENCODING_PNG ? "png" : "jpeg");
     params->SetInteger("quality", 100);
+    params->SetBoolean("fromSurface", fromSurface);
     SendCommand("Page.captureScreenshot", std::move(params));
 
     std::string base64;
@@ -701,7 +703,7 @@ class CaptureScreenshotTest : public DevToolsProtocolTest {
     expected_bitmap.allocN32Pixels(scaled_box_size.width(),
                                    scaled_box_size.height());
     expected_bitmap.eraseColor(SkColorSetRGB(0x00, 0x00, 0xff));
-    CaptureScreenshotAndCompareTo(expected_bitmap, ENCODING_PNG);
+    CaptureScreenshotAndCompareTo(expected_bitmap, ENCODING_PNG, true);
 
     // Reset for next screenshot.
     SendCommand("Emulation.resetViewport", nullptr);
@@ -735,7 +737,7 @@ IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest, CaptureScreenshot) {
                             ->GetPhysicalBackingSize();
   expected_bitmap.allocN32Pixels(view_size.width(), view_size.height());
   expected_bitmap.eraseColor(SkColorSetRGB(0x12, 0x34, 0x56));
-  CaptureScreenshotAndCompareTo(expected_bitmap, ENCODING_PNG);
+  CaptureScreenshotAndCompareTo(expected_bitmap, ENCODING_PNG, false);
 }
 
 IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest, CaptureScreenshotJpeg) {
@@ -758,7 +760,7 @@ IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest, CaptureScreenshotJpeg) {
                             ->GetPhysicalBackingSize();
   expected_bitmap.allocN32Pixels(view_size.width(), view_size.height());
   expected_bitmap.eraseColor(SkColorSetRGB(0x12, 0x34, 0x56));
-  CaptureScreenshotAndCompareTo(expected_bitmap, ENCODING_JPEG);
+  CaptureScreenshotAndCompareTo(expected_bitmap, ENCODING_JPEG, false);
 }
 
 // Setting frame size (through RWHV) is not supported on Android.
