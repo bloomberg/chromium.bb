@@ -23,6 +23,7 @@ mojom("test_interfaces") {
     "test_native_types.mojom",
     "test_structs.mojom",
     "test_sync_methods.mojom",
+    "test_unions.mojom",
     "validation_test_interfaces.mojom",
   ]
   public_deps = [
@@ -145,13 +146,6 @@ mojom("test_struct_traits_interfaces") {
   testonly = true
   sources = [
     "struct_with_traits.mojom",
-  ]
-}
-
-mojom("test_interfaces_experimental") {
-  testonly = true
-  sources = [
-    "test_unions.mojom",
   ]
 }
 
