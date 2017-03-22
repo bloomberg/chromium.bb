@@ -725,6 +725,8 @@ void Node::markAncestorsWithChildNeedsReattachLayoutTree() {
 }
 
 void Node::setNeedsReattachLayoutTree() {
+  DCHECK(document().inStyleRecalc());
+  DCHECK(!document().childNeedsDistributionRecalc());
   setFlag(NeedsReattachLayoutTree);
   markAncestorsWithChildNeedsReattachLayoutTree();
 }
@@ -932,7 +934,6 @@ void Node::detachLayoutTree(const AttachContext& context) {
     layoutObject()->destroyAndCleanupAnonymousWrappers();
   setLayoutObject(nullptr);
   setStyleChange(NeedsReattachStyleChange);
-  setFlag(NeedsReattachLayoutTree);
   clearChildNeedsStyleInvalidation();
 }
 

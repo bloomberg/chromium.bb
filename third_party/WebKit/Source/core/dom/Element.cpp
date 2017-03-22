@@ -1881,8 +1881,13 @@ void Element::recalcStyle(StyleRecalcChange change) {
           elementAnimations->setAnimationStyleChange(false);
       }
     }
-    if (parentComputedStyle())
+    if (parentComputedStyle()) {
       change = recalcOwnStyle(change);
+    } else if (needsAttach()) {
+      setNeedsReattachLayoutTree();
+      change = Reattach;
+    }
+
     // Needed because the rebuildLayoutTree code needs to see what the
     // styleChangeType() was on reattach roots. See Node::reattachLayoutTree()
     // for an example.

@@ -788,7 +788,6 @@ void ContainerNode::detachLayoutTree(const AttachContext& context) {
     child->detachLayoutTree(childrenContext);
 
   setChildNeedsStyleRecalc();
-  setChildNeedsReattachLayoutTree();
   Node::detachLayoutTree(context);
 }
 
@@ -800,10 +799,6 @@ void ContainerNode::childrenChanged(const ChildrenChange& change) {
     if (!childNeedsStyleRecalc()) {
       setChildNeedsStyleRecalc();
       markAncestorsWithChildNeedsStyleRecalc();
-    }
-    if (!childNeedsReattachLayoutTree()) {
-      setChildNeedsReattachLayoutTree();
-      markAncestorsWithChildNeedsReattachLayoutTree();
     }
   }
 }

@@ -142,8 +142,11 @@ void ShadowRoot::recalcStyle(StyleRecalcChange change) {
 
   StyleSharingDepthScope sharingScope(*this);
 
-  if (getStyleChangeType() >= SubtreeStyleChange)
+  if (getStyleChangeType() >= SubtreeStyleChange) {
     change = Force;
+    if (needsAttach())
+      setNeedsReattachLayoutTree();
+  }
 
   // There's no style to update so just calling recalcStyle means we're updated.
   clearNeedsStyleRecalc();

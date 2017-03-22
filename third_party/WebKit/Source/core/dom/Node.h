@@ -822,9 +822,7 @@ class CORE_EXPORT Node : public EventTarget {
     NeedsReattachLayoutTree = 1 << 26,
     ChildNeedsReattachLayoutTree = 1 << 27,
 
-    DefaultNodeFlags = IsFinishedParsingChildrenFlag |
-                       NeedsReattachStyleChange |
-                       NeedsReattachLayoutTree
+    DefaultNodeFlags = IsFinishedParsingChildrenFlag | NeedsReattachStyleChange
   };
 
   // 4 bits remaining.
@@ -969,7 +967,6 @@ inline void Node::lazyReattachIfAttached() {
 
   detachLayoutTree(context);
   markAncestorsWithChildNeedsStyleRecalc();
-  markAncestorsWithChildNeedsReattachLayoutTree();
 }
 
 inline bool Node::shouldCallRecalcStyle(StyleRecalcChange change) {
