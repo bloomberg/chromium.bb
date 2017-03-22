@@ -192,7 +192,7 @@ std::set<std::string> GetAllSwitchesAndFeaturesForTesting() {
         result.insert(entry.disable_command_line_switch);
         break;
       case flags_ui::FeatureEntry::FEATURE_VALUE:
-      case flags_ui::FeatureEntry::FEATURE_WITH_VARIATIONS_VALUE:
+      case flags_ui::FeatureEntry::FEATURE_WITH_PARAMS_VALUE:
         result.insert(std::string(entry.feature->name) + ":enabled");
         result.insert(std::string(entry.feature->name) + ":disabled");
         break;

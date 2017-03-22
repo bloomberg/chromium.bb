@@ -59,14 +59,14 @@ struct FeatureEntry {
     FEATURE_VALUE,
 
     // Corresponds to a base::Feature and additional options [O_1, ..., O_n]
-    // that specify variation parameters. Each of the options can specify a set
-    // of variation parameters. The entry will have n+3 states: Default,
-    // Enabled, Enabled V_1, ..., Enabled: V_n, Disabled. When set to Default,
-    // the normal default values of the feature and of the parameters are used
-    // (possibly passed from the server in a trial config). When set to Enabled,
-    // the feature is overriden to be enabled and empty set of parameters is
-    // used boiling down to the default behavior in the code.
-    FEATURE_WITH_VARIATIONS_VALUE,
+    // that specify field trial params. Each of the options can specify a set
+    // of field trial params. The entry will have n+3 states: Default, Enabled,
+    // Enabled V_1, ..., Enabled: V_n, Disabled. When set to Default, the normal
+    // default values of the feature and of the parameters are used (possibly
+    // passed from the server in a trial config). When set to Enabled, the
+    // feature is overriden to be enabled and empty set of parameters is used
+    // boiling down to the default behavior in the code.
+    FEATURE_WITH_PARAMS_VALUE,
   };
 
   // Describes state of a feature.

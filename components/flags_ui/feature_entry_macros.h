@@ -32,10 +32,9 @@
 #define FEATURE_VALUE_TYPE(feature)                                          \
   flags_ui::FeatureEntry::FEATURE_VALUE, nullptr, nullptr, nullptr, nullptr, \
       &feature, 3, nullptr, nullptr, nullptr
-// TODO(jkrcal): Rename FEATURE_WITH_VARIATIONS* to FEATURE_WITH_PARAMS*.
-#define FEATURE_WITH_VARIATIONS_VALUE_TYPE(feature, feature_variations,       \
-                                           feature_trial)                     \
-  flags_ui::FeatureEntry::FEATURE_WITH_VARIATIONS_VALUE, nullptr, nullptr,    \
+#define FEATURE_WITH_PARAMS_VALUE_TYPE(feature, feature_variations,           \
+                                       feature_trial)                         \
+  flags_ui::FeatureEntry::FEATURE_WITH_PARAMS_VALUE, nullptr, nullptr,        \
       nullptr, nullptr, &feature, 3 + arraysize(feature_variations), nullptr, \
       feature_variations, feature_trial
 

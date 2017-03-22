@@ -132,15 +132,15 @@ static FeatureEntry kEntries[] = {
      &kTestFeature1, 3, nullptr, nullptr, nullptr},
     {kFlags8, kDummyNameId, kDummyDescriptionId,
      0,  // Ends up being mapped to the current platform.
-     FeatureEntry::FEATURE_WITH_VARIATIONS_VALUE, nullptr, nullptr, nullptr,
+     FeatureEntry::FEATURE_WITH_PARAMS_VALUE, nullptr, nullptr, nullptr,
      nullptr, &kTestFeature1, 4, nullptr, kTestVariations1, kTestTrial},
     {kFlags9, kDummyNameId, kDummyDescriptionId,
      0,  // Ends up being mapped to the current platform.
-     FeatureEntry::FEATURE_WITH_VARIATIONS_VALUE, nullptr, nullptr, nullptr,
+     FeatureEntry::FEATURE_WITH_PARAMS_VALUE, nullptr, nullptr, nullptr,
      nullptr, &kTestFeature1, 4, nullptr, kTestVariations1, kTestTrial},
     {kFlags10, kDummyNameId, kDummyDescriptionId,
      0,  // Ends up being mapped to the current platform.
-     FeatureEntry::FEATURE_WITH_VARIATIONS_VALUE, nullptr, nullptr, nullptr,
+     FeatureEntry::FEATURE_WITH_PARAMS_VALUE, nullptr, nullptr, nullptr,
      nullptr, &kTestFeature2, 4, nullptr, kTestVariations2, kTestTrial},
 };
 

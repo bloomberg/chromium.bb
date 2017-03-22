@@ -105,7 +105,7 @@ void AddInternalName(const FeatureEntry& e, std::set<std::string>* names) {
     case FeatureEntry::MULTI_VALUE:
     case FeatureEntry::ENABLE_DISABLE_VALUE:
     case FeatureEntry::FEATURE_VALUE:
-    case FeatureEntry::FEATURE_WITH_VARIATIONS_VALUE:
+    case FeatureEntry::FEATURE_WITH_PARAMS_VALUE:
       for (int i = 0; i < e.num_options; ++i)
         names->insert(e.NameForOption(i));
       break;
@@ -140,7 +140,7 @@ bool ValidateFeatureEntry(const FeatureEntry& e) {
       DCHECK(!e.choices);
       DCHECK(e.feature);
       return true;
-    case FeatureEntry::FEATURE_WITH_VARIATIONS_VALUE:
+    case FeatureEntry::FEATURE_WITH_PARAMS_VALUE:
       DCHECK_GT(e.num_options, 2);
       DCHECK(!e.choices);
       DCHECK(e.feature);
@@ -162,7 +162,7 @@ bool IsDefaultValue(const FeatureEntry& entry,
     case FeatureEntry::MULTI_VALUE:
     case FeatureEntry::ENABLE_DISABLE_VALUE:
     case FeatureEntry::FEATURE_VALUE:
-    case FeatureEntry::FEATURE_WITH_VARIATIONS_VALUE:
+    case FeatureEntry::FEATURE_WITH_PARAMS_VALUE:
       for (int i = 0; i < entry.num_options; ++i) {
         if (enabled_entries.count(entry.NameForOption(i)) > 0)
           return false;
@@ -179,7 +179,7 @@ base::Value* CreateOptionsData(const FeatureEntry& entry,
   DCHECK(entry.type == FeatureEntry::MULTI_VALUE ||
          entry.type == FeatureEntry::ENABLE_DISABLE_VALUE ||
          entry.type == FeatureEntry::FEATURE_VALUE ||
-         entry.type == FeatureEntry::FEATURE_WITH_VARIATIONS_VALUE);
+         entry.type == FeatureEntry::FEATURE_WITH_PARAMS_VALUE);
   base::ListValue* result = new base::ListValue;
   for (int i = 0; i < entry.num_options; ++i) {
     std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue);
@@ -440,7 +440,7 @@ std::vector<std::string> FlagsState::RegisterAllFeatureVariationParameters(
   // First collect all the data for each trial.
   for (size_t i = 0; i < num_feature_entries_; ++i) {
     const FeatureEntry& e = feature_entries_[i];
-    if (e.type == FeatureEntry::FEATURE_WITH_VARIATIONS_VALUE) {
+    if (e.type == FeatureEntry::FEATURE_WITH_PARAMS_VALUE) {
       for (int j = 0; j < e.num_options; ++j) {
         if (e.StateForOption(j) == FeatureEntry::FeatureState::ENABLED &&
             enabled_entries.count(e.NameForOption(j))) {
@@ -533,7 +533,7 @@ void FlagsState::GetFlagFeatureEntries(
       case FeatureEntry::MULTI_VALUE:
       case FeatureEntry::ENABLE_DISABLE_VALUE:
       case FeatureEntry::FEATURE_VALUE:
-      case FeatureEntry::FEATURE_WITH_VARIATIONS_VALUE:
+      case FeatureEntry::FEATURE_WITH_PARAMS_VALUE:
         data->Set("options", CreateOptionsData(entry, enabled_entries));
         break;
     }
@@ -783,7 +783,7 @@ void FlagsState::GenerateFlagsToSwitchesMapping(
                          e.disable_command_line_value, name_to_switch_map);
         break;
       case FeatureEntry::FEATURE_VALUE:
-      case FeatureEntry::FEATURE_WITH_VARIATIONS_VALUE:
+      case FeatureEntry::FEATURE_WITH_PARAMS_VALUE:
         for (int j = 0; j < e.num_options; ++j) {
           FeatureEntry::FeatureState state = e.StateForOption(j);
           if (state == FeatureEntry::FeatureState::DEFAULT) {

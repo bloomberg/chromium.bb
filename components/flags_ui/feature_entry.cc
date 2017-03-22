@@ -16,7 +16,7 @@ std::string FeatureEntry::NameForOption(int index) const {
   DCHECK(type == FeatureEntry::MULTI_VALUE ||
          type == FeatureEntry::ENABLE_DISABLE_VALUE ||
          type == FeatureEntry::FEATURE_VALUE ||
-         type == FeatureEntry::FEATURE_WITH_VARIATIONS_VALUE);
+         type == FeatureEntry::FEATURE_WITH_PARAMS_VALUE);
   DCHECK_LT(index, num_options);
   return std::string(internal_name) + testing::kMultiSeparator +
          base::IntToString(index);
@@ -26,7 +26,7 @@ base::string16 FeatureEntry::DescriptionForOption(int index) const {
   DCHECK(type == FeatureEntry::MULTI_VALUE ||
          type == FeatureEntry::ENABLE_DISABLE_VALUE ||
          type == FeatureEntry::FEATURE_VALUE ||
-         type == FeatureEntry::FEATURE_WITH_VARIATIONS_VALUE);
+         type == FeatureEntry::FEATURE_WITH_PARAMS_VALUE);
   DCHECK_LT(index, num_options);
   int description_id;
   if (type == FeatureEntry::ENABLE_DISABLE_VALUE ||
@@ -37,7 +37,7 @@ base::string16 FeatureEntry::DescriptionForOption(int index) const {
         IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
     };
     description_id = kEnableDisableDescriptionIds[index];
-  } else if (type == FeatureEntry::FEATURE_WITH_VARIATIONS_VALUE) {
+  } else if (type == FeatureEntry::FEATURE_WITH_PARAMS_VALUE) {
     if (index == 0) {
       description_id = IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT;
     } else if (index == 1) {
@@ -68,7 +68,7 @@ const FeatureEntry::Choice& FeatureEntry::ChoiceForOption(int index) const {
 
 FeatureEntry::FeatureState FeatureEntry::StateForOption(int index) const {
   DCHECK(type == FeatureEntry::FEATURE_VALUE ||
-         type == FeatureEntry::FEATURE_WITH_VARIATIONS_VALUE);
+         type == FeatureEntry::FEATURE_WITH_PARAMS_VALUE);
   DCHECK_LT(index, num_options);
 
   if (index == 0)
@@ -82,10 +82,10 @@ FeatureEntry::FeatureState FeatureEntry::StateForOption(int index) const {
 const FeatureEntry::FeatureVariation* FeatureEntry::VariationForOption(
     int index) const {
   DCHECK(type == FeatureEntry::FEATURE_VALUE ||
-         type == FeatureEntry::FEATURE_WITH_VARIATIONS_VALUE);
+         type == FeatureEntry::FEATURE_WITH_PARAMS_VALUE);
   DCHECK_LT(index, num_options);
 
-  if (type == FeatureEntry::FEATURE_WITH_VARIATIONS_VALUE && index > 1 &&
+  if (type == FeatureEntry::FEATURE_WITH_PARAMS_VALUE && index > 1 &&
       index < num_options - 1) {
     // We have no variations for FEATURE_VALUE type. Option at |index|
     // corresponds to variation at |index| - 2 as the list starts with "Default"

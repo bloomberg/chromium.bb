@@ -1911,14 +1911,14 @@ const FeatureEntry kFeatureEntries[] = {
     {"content-suggestions-category-order",
      IDS_FLAGS_CONTENT_SUGGESTIONS_CATEGORY_ORDER_NAME,
      IDS_FLAGS_CONTENT_SUGGESTIONS_CATEGORY_ORDER_DESCRIPTION, kOsAndroid,
-     FEATURE_WITH_VARIATIONS_VALUE_TYPE(
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
          ntp_snippets::kCategoryOrder,
          kContentSuggestionsCategoryOrderFeatureVariations,
          ntp_snippets::kStudyName)},
     {"content-suggestions-category-ranker",
      IDS_FLAGS_CONTENT_SUGGESTIONS_CATEGORY_RANKER_NAME,
      IDS_FLAGS_CONTENT_SUGGESTIONS_CATEGORY_RANKER_DESCRIPTION, kOsAndroid,
-     FEATURE_WITH_VARIATIONS_VALUE_TYPE(
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
          ntp_snippets::kCategoryRanker,
          kContentSuggestionsCategoryRankerFeatureVariations,
          ntp_snippets::kStudyName)},
@@ -1935,10 +1935,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-ntp-remote-suggestions",
      IDS_FLAGS_ENABLE_NTP_REMOTE_SUGGESTIONS_NAME,
      IDS_FLAGS_ENABLE_NTP_REMOTE_SUGGESTIONS_DESCRIPTION, kOsAndroid,
-     FEATURE_WITH_VARIATIONS_VALUE_TYPE(
-         ntp_snippets::kArticleSuggestionsFeature,
-         kRemoteSuggestionsFeatureVariations,
-         ntp_snippets::kStudyName)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(ntp_snippets::kArticleSuggestionsFeature,
+                                    kRemoteSuggestionsFeatureVariations,
+                                    ntp_snippets::kStudyName)},
     {"enable-ntp-recent-offline-tab-suggestions",
      IDS_FLAGS_ENABLE_NTP_RECENT_OFFLINE_TAB_SUGGESTIONS_NAME,
      IDS_FLAGS_ENABLE_NTP_RECENT_OFFLINE_TAB_SUGGESTIONS_DESCRIPTION,
@@ -1968,7 +1967,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-ntp-suggestions-notifications",
      IDS_FLAGS_ENABLE_NTP_SUGGESTIONS_NOTIFICATIONS_NAME,
      IDS_FLAGS_ENABLE_NTP_SUGGESTIONS_NOTIFICATIONS_DESCRIPTION, kOsAndroid,
-     FEATURE_WITH_VARIATIONS_VALUE_TYPE(
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
          params::ntp_snippets::kNotificationsFeature,
          kContentSuggestionsNotificationsFeatureVariations,
          ntp_snippets::kStudyName)},
@@ -1977,7 +1976,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kNTPCondensedLayoutFeature)},
     {"ntp-condensed-tile-layout", IDS_FLAGS_NTP_CONDENSED_TILE_LAYOUT_NAME,
      IDS_FLAGS_NTP_CONDENSED_TILE_LAYOUT_DESCRIPTION, kOsAndroid,
-     FEATURE_WITH_VARIATIONS_VALUE_TYPE(
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
          chrome::android::kNTPCondensedTileLayoutFeature,
          kNTPCondensedTileLayoutFeatureVariations,
          ntp_snippets::kStudyName)},
@@ -2238,9 +2237,9 @@ const FeatureEntry kFeatureEntries[] = {
 #endif
     {"enable-nostate-prefetch", IDS_FLAGS_NOSTATE_PREFETCH,
      IDS_FLAGS_NOSTATE_PREFETCH_DESCRIPTION, kOsAll,
-     FEATURE_WITH_VARIATIONS_VALUE_TYPE(prerender::kNoStatePrefetchFeature,
-                                        kNoStatePrefetchFeatureVariations,
-                                        "NoStatePrefetchValidation")},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(prerender::kNoStatePrefetchFeature,
+                                    kNoStatePrefetchFeatureVariations,
+                                    "NoStatePrefetchValidation")},
 #if defined(OS_CHROMEOS)
     {"cros-comp-updates", IDS_FLAGS_CROS_COMP_UPDATES_NAME,
      IDS_FLAGS_CROS_COMP_UPDATES_DESCRIPTION, kOsCrOS,
@@ -2262,7 +2261,7 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_EXPANDED_AUTOFILL_CREDIT_CARD_POPUP_LAYOUT,
      IDS_FLAGS_ENABLE_EXPANDED_AUTOFILL_CREDIT_CARD_POPUP_LAYOUT_DESCRIPTION,
      kOsAndroid,
-     FEATURE_WITH_VARIATIONS_VALUE_TYPE(
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
          autofill::kAutofillCreditCardPopupLayout,
          kAutofillCreditCardPopupLayoutFeatureVariations,
          "AutofillCreditCardPopupLayout")},
@@ -2274,7 +2273,7 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_AUTOFILL_CREDIT_CARD_LAST_USED_DATE_DISPLAY,
      IDS_FLAGS_ENABLE_AUTOFILL_CREDIT_CARD_LAST_USED_DATE_DISPLAY_DESCRIPTION,
      kOsAll,
-     FEATURE_WITH_VARIATIONS_VALUE_TYPE(
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
          autofill::kAutofillCreditCardLastUsedDateDisplay,
          kAutofillCreditCardLastUsedDateFeatureVariations,
          "AutofillCreditCardLastUsedDate")},
@@ -2374,7 +2373,7 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"enable-resource-prefetch", IDS_FLAGS_SPECULATIVE_PREFETCH_NAME,
      IDS_FLAGS_SPECULATIVE_PREFETCH_DESCRIPTION, kOsAll,
-     FEATURE_WITH_VARIATIONS_VALUE_TYPE(
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
          predictors::kSpeculativeResourcePrefetchingFeature,
          kSpeculativeResourcePrefetchingFeatureVariations,
          "SpeculativeResourcePrefetchingValidation")},
