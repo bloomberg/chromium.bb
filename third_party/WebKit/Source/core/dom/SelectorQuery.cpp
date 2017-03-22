@@ -104,32 +104,9 @@ class ClassElementList {
   Member<Element> m_currentElement;
 };
 
-void SelectorDataList::initialize(const CSSSelectorList& selectorList) {
-  DCHECK(m_selectors.isEmpty());
-
-  unsigned selectorCount = 0;
-  for (const CSSSelector* selector = selectorList.first(); selector;
-       selector = CSSSelectorList::next(*selector))
-    selectorCount++;
-
-  m_usesDeepCombinatorOrShadowPseudo = false;
-  m_needsUpdatedDistribution = false;
-  m_selectors.reserveInitialCapacity(selectorCount);
-  for (const CSSSelector* selector = selectorList.first(); selector;
-       selector = CSSSelectorList::next(*selector)) {
-    if (selector->matchesPseudoElement())
-      continue;
-    m_selectors.uncheckedAppend(selector);
-    m_usesDeepCombinatorOrShadowPseudo |=
-        selector->hasDeepCombinatorOrShadowPseudo();
-    m_needsUpdatedDistribution |= selector->needsUpdatedDistribution();
-  }
-}
-
-inline bool SelectorDataList::selectorMatches(
-    const CSSSelector& selector,
-    Element& element,
-    const ContainerNode& rootNode) const {
+inline bool selectorMatches(const CSSSelector& selector,
+                            Element& element,
+                            const ContainerNode& rootNode) {
   SelectorChecker::Init init;
   init.mode = SelectorChecker::QueryingRules;
   SelectorChecker checker(init);
@@ -140,7 +117,7 @@ inline bool SelectorDataList::selectorMatches(
   return checker.match(context);
 }
 
-bool SelectorDataList::matches(Element& targetElement) const {
+bool SelectorQuery::matches(Element& targetElement) const {
   if (m_needsUpdatedDistribution)
     targetElement.updateDistribution();
 
@@ -152,7 +129,7 @@ bool SelectorDataList::matches(Element& targetElement) const {
   return false;
 }
 
-Element* SelectorDataList::closest(Element& targetElement) const {
+Element* SelectorQuery::closest(Element& targetElement) const {
   if (m_selectors.size() == 0)
     return nullptr;
   if (m_needsUpdatedDistribution)
@@ -168,23 +145,23 @@ Element* SelectorDataList::closest(Element& targetElement) const {
   return nullptr;
 }
 
-StaticElementList* SelectorDataList::queryAll(ContainerNode& rootNode) const {
+StaticElementList* SelectorQuery::queryAll(ContainerNode& rootNode) const {
   HeapVector<Member<Element>> result;
   execute<AllElementsSelectorQueryTrait>(rootNode, result);
   return StaticElementList::adopt(result);
 }
 
-Element* SelectorDataList::queryFirst(ContainerNode& rootNode) const {
+Element* SelectorQuery::queryFirst(ContainerNode& rootNode) const {
   Element* matchedElement = nullptr;
   execute<SingleElementSelectorQueryTrait>(rootNode, matchedElement);
   return matchedElement;
 }
 
 template <typename SelectorQueryTrait>
-void SelectorDataList::collectElementsByClassName(
+static void collectElementsByClassName(
     ContainerNode& rootNode,
     const AtomicString& className,
-    typename SelectorQueryTrait::OutputType& output) const {
+    typename SelectorQueryTrait::OutputType& output) {
   for (Element& element : ElementTraversal::descendantsOf(rootNode)) {
     if (element.hasClass() && element.classNames().contains(className)) {
       SelectorQueryTrait::appendElement(output, element);
@@ -210,10 +187,10 @@ inline bool matchesTagName(const QualifiedName& tagName,
 }
 
 template <typename SelectorQueryTrait>
-void SelectorDataList::collectElementsByTagName(
+static void collectElementsByTagName(
     ContainerNode& rootNode,
     const QualifiedName& tagName,
-    typename SelectorQueryTrait::OutputType& output) const {
+    typename SelectorQueryTrait::OutputType& output) {
   DCHECK_EQ(tagName.namespaceURI(), starAtom);
   for (Element& element : ElementTraversal::descendantsOf(rootNode)) {
     if (matchesTagName(tagName, element)) {
@@ -224,7 +201,7 @@ void SelectorDataList::collectElementsByTagName(
   }
 }
 
-inline bool SelectorDataList::canUseFastQuery(
+inline bool SelectorQuery::canUseFastQuery(
     const ContainerNode& rootNode) const {
   if (m_usesDeepCombinatorOrShadowPseudo)
     return false;
@@ -260,7 +237,7 @@ inline bool ancestorHasClassName(ContainerNode& rootNode,
 // The travseralRoots may be empty, regardless of the returned bool value, if
 // this method finds that the selectors won't match any element.
 template <typename SelectorQueryTrait>
-void SelectorDataList::findTraverseRootsAndExecute(
+void SelectorQuery::findTraverseRootsAndExecute(
     ContainerNode& rootNode,
     typename SelectorQueryTrait::OutputType& output) const {
   // We need to return the matches in document order. To use id lookup while
@@ -343,7 +320,7 @@ void SelectorDataList::findTraverseRootsAndExecute(
 }
 
 template <typename SelectorQueryTrait>
-void SelectorDataList::executeForTraverseRoot(
+void SelectorQuery::executeForTraverseRoot(
     const CSSSelector& selector,
     ContainerNode* traverseRoot,
     MatchTraverseRootState matchTraverseRoot,
@@ -368,7 +345,7 @@ void SelectorDataList::executeForTraverseRoot(
 }
 
 template <typename SelectorQueryTrait, typename SimpleElementListType>
-void SelectorDataList::executeForTraverseRoots(
+void SelectorQuery::executeForTraverseRoots(
     const CSSSelector& selector,
     SimpleElementListType& traverseRoots,
     MatchTraverseRootState matchTraverseRoots,
@@ -402,7 +379,7 @@ void SelectorDataList::executeForTraverseRoots(
 }
 
 template <typename SelectorQueryTrait>
-bool SelectorDataList::selectorListMatches(
+bool SelectorQuery::selectorListMatches(
     ContainerNode& rootNode,
     Element& element,
     typename SelectorQueryTrait::OutputType& output) const {
@@ -416,7 +393,7 @@ bool SelectorDataList::selectorListMatches(
 }
 
 template <typename SelectorQueryTrait>
-void SelectorDataList::executeSlow(
+void SelectorQuery::executeSlow(
     ContainerNode& rootNode,
     typename SelectorQueryTrait::OutputType& output) const {
   for (Element& element : ElementTraversal::descendantsOf(rootNode)) {
@@ -480,7 +457,7 @@ static ContainerNode* nextTraversingShadowTree(const ContainerNode& node,
 }
 
 template <typename SelectorQueryTrait>
-void SelectorDataList::executeSlowTraversingShadowTree(
+void SelectorQuery::executeSlowTraversingShadowTree(
     ContainerNode& rootNode,
     typename SelectorQueryTrait::OutputType& output) const {
   for (ContainerNode* node = firstWithinTraversingShadowTree(rootNode); node;
@@ -513,7 +490,7 @@ static const CSSSelector* selectorForIdLookup(
 }
 
 template <typename SelectorQueryTrait>
-void SelectorDataList::execute(
+void SelectorQuery::execute(
     ContainerNode& rootNode,
     typename SelectorQueryTrait::OutputType& output) const {
   if (m_selectors.isEmpty())
@@ -596,23 +573,25 @@ std::unique_ptr<SelectorQuery> SelectorQuery::adopt(
 
 SelectorQuery::SelectorQuery(CSSSelectorList selectorList) {
   m_selectorList = std::move(selectorList);
-  m_selectors.initialize(m_selectorList);
-}
+  DCHECK(m_selectors.isEmpty());
 
-bool SelectorQuery::matches(Element& element) const {
-  return m_selectors.matches(element);
-}
+  unsigned selectorCount = 0;
+  for (const CSSSelector* selector = m_selectorList.first(); selector;
+       selector = CSSSelectorList::next(*selector))
+    selectorCount++;
 
-Element* SelectorQuery::closest(Element& element) const {
-  return m_selectors.closest(element);
-}
-
-StaticElementList* SelectorQuery::queryAll(ContainerNode& rootNode) const {
-  return m_selectors.queryAll(rootNode);
-}
-
-Element* SelectorQuery::queryFirst(ContainerNode& rootNode) const {
-  return m_selectors.queryFirst(rootNode);
+  m_usesDeepCombinatorOrShadowPseudo = false;
+  m_needsUpdatedDistribution = false;
+  m_selectors.reserveInitialCapacity(selectorCount);
+  for (const CSSSelector* selector = m_selectorList.first(); selector;
+       selector = CSSSelectorList::next(*selector)) {
+    if (selector->matchesPseudoElement())
+      continue;
+    m_selectors.uncheckedAppend(selector);
+    m_usesDeepCombinatorOrShadowPseudo |=
+        selector->hasDeepCombinatorOrShadowPseudo();
+    m_needsUpdatedDistribution |= selector->needsUpdatedDistribution();
+  }
 }
 
 SelectorQuery* SelectorQueryCache::add(const AtomicString& selectors,

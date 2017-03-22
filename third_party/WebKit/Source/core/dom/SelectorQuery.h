@@ -45,31 +45,29 @@ template <typename NodeType>
 class StaticNodeTypeList;
 using StaticElementList = StaticNodeTypeList<Element>;
 
-class SelectorDataList {
-  DISALLOW_NEW();
+class CORE_EXPORT SelectorQuery {
+  WTF_MAKE_NONCOPYABLE(SelectorQuery);
+  USING_FAST_MALLOC(SelectorQuery);
 
  public:
-  void initialize(const CSSSelectorList&);
+  static std::unique_ptr<SelectorQuery> adopt(CSSSelectorList);
+
+  // https://dom.spec.whatwg.org/#dom-element-matches
   bool matches(Element&) const;
+
+  // https://dom.spec.whatwg.org/#dom-element-closest
   Element* closest(Element&) const;
+
+  // https://dom.spec.whatwg.org/#dom-parentnode-queryselectorall
   StaticElementList* queryAll(ContainerNode& rootNode) const;
+
+  // https://dom.spec.whatwg.org/#dom-parentnode-queryselector
   Element* queryFirst(ContainerNode& rootNode) const;
 
  private:
-  bool canUseFastQuery(const ContainerNode& rootNode) const;
-  bool selectorMatches(const CSSSelector&,
-                       Element&,
-                       const ContainerNode&) const;
+  explicit SelectorQuery(CSSSelectorList);
 
-  template <typename SelectorQueryTrait>
-  void collectElementsByClassName(
-      ContainerNode& rootNode,
-      const AtomicString& className,
-      typename SelectorQueryTrait::OutputType&) const;
-  template <typename SelectorQueryTrait>
-  void collectElementsByTagName(ContainerNode& rootNode,
-                                const QualifiedName& tagName,
-                                typename SelectorQueryTrait::OutputType&) const;
+  bool canUseFastQuery(const ContainerNode& rootNode) const;
 
   template <typename SelectorQueryTrait>
   void findTraverseRootsAndExecute(
@@ -108,28 +106,10 @@ class SelectorDataList {
   void execute(ContainerNode& rootNode,
                typename SelectorQueryTrait::OutputType&) const;
 
+  CSSSelectorList m_selectorList;
   Vector<const CSSSelector*> m_selectors;
   bool m_usesDeepCombinatorOrShadowPseudo : 1;
   bool m_needsUpdatedDistribution : 1;
-};
-
-class CORE_EXPORT SelectorQuery {
-  WTF_MAKE_NONCOPYABLE(SelectorQuery);
-  USING_FAST_MALLOC(SelectorQuery);
-
- public:
-  static std::unique_ptr<SelectorQuery> adopt(CSSSelectorList);
-
-  bool matches(Element&) const;
-  Element* closest(Element&) const;
-  StaticElementList* queryAll(ContainerNode& rootNode) const;
-  Element* queryFirst(ContainerNode& rootNode) const;
-
- private:
-  explicit SelectorQuery(CSSSelectorList);
-
-  SelectorDataList m_selectors;
-  CSSSelectorList m_selectorList;
 };
 
 class SelectorQueryCache {
