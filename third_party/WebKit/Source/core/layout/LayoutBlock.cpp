@@ -941,41 +941,6 @@ LayoutUnit LayoutBlock::logicalRightSelectionOffset(
   return logicalRightOffsetForContent();
 }
 
-LayoutBlock* LayoutBlock::blockBeforeWithinSelectionRoot(
-    LayoutSize& offset) const {
-  if (isSelectionRoot())
-    return nullptr;
-
-  const LayoutObject* object = this;
-  LayoutObject* sibling;
-  do {
-    sibling = object->previousSibling();
-    while (sibling && (!sibling->isLayoutBlock() ||
-                       toLayoutBlock(sibling)->isSelectionRoot()))
-      sibling = sibling->previousSibling();
-
-    offset -= LayoutSize(toLayoutBlock(object)->logicalLeft(),
-                         toLayoutBlock(object)->logicalTop());
-    object = object->parent();
-  } while (!sibling && object && object->isLayoutBlock() &&
-           !toLayoutBlock(object)->isSelectionRoot());
-
-  if (!sibling)
-    return nullptr;
-
-  LayoutBlock* beforeBlock = toLayoutBlock(sibling);
-
-  offset += LayoutSize(beforeBlock->logicalLeft(), beforeBlock->logicalTop());
-
-  LayoutObject* child = beforeBlock->lastChild();
-  while (child && child->isLayoutBlock()) {
-    beforeBlock = toLayoutBlock(child);
-    offset += LayoutSize(beforeBlock->logicalLeft(), beforeBlock->logicalTop());
-    child = beforeBlock->lastChild();
-  }
-  return beforeBlock;
-}
-
 void LayoutBlock::setSelectionState(SelectionState state) {
   LayoutBox::setSelectionState(state);
 

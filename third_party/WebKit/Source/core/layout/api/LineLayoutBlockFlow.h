@@ -184,10 +184,6 @@ class LineLayoutBlockFlow : public LineLayoutBox {
 
   bool containsFloats() const { return toBlockFlow()->containsFloats(); }
 
-  LayoutBlock* blockBeforeWithinSelectionRoot(LayoutSize& offset) const {
-    return toBlockFlow()->blockBeforeWithinSelectionRoot(offset);
-  }
-
   InlineBox* createAndAppendRootInlineBox() {
     return toBlockFlow()->createAndAppendRootInlineBox();
   }
