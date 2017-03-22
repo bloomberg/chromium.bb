@@ -600,6 +600,11 @@ void VRDisplay::submitFrame() {
       m_vrFrameId, gpu::MailboxHolder(staticImage->mailbox(),
                                       staticImage->syncToken(), GL_TEXTURE_2D));
 
+  // If preserveDrawingBuffer is false, must clear now. Normally this
+  // happens as part of compositing, but that's not active while
+  // presenting, so run the responsible code directly.
+  m_renderingContext->markCompositedAndClearBackbufferIfNeeded();
+
   // If we're not deferring the wait for transferring the mailbox,
   // we need to wait for it now to prevent the image going out of
   // scope before its mailbox is retrieved.

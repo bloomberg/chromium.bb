@@ -1517,6 +1517,11 @@ WebGLRenderingContextBase::clearIfComposited(GLbitfield mask) {
   return combinedClear ? CombinedClear : JustClear;
 }
 
+void WebGLRenderingContextBase::markCompositedAndClearBackbufferIfNeeded() {
+  markLayerComposited();
+  clearIfComposited();
+}
+
 void WebGLRenderingContextBase::restoreScissorEnabled() {
   if (isContextLost())
     return;

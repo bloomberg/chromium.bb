@@ -582,6 +582,10 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   ScriptPromise commit(ScriptState*, ExceptionState&);
 
+  // For use by WebVR which doesn't use the normal compositing path.
+  // This clears the backbuffer if preserveDrawingBuffer is false.
+  void markCompositedAndClearBackbufferIfNeeded();
+
  protected:
   friend class EXTDisjointTimerQuery;
   friend class EXTDisjointTimerQueryWebGL2;
