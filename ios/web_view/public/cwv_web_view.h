@@ -20,9 +20,6 @@
 // Concrete instances can be created through CWV.
 @interface CWVWebView : UIView
 
-// The view used to display web content.
-@property(nonatomic, readonly) UIView* view;
-
 // This web view's navigation delegate.
 @property(nonatomic, weak) id<CWVNavigationDelegate> navigationDelegate;
 

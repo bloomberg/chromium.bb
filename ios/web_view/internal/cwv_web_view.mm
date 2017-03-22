@@ -101,10 +101,6 @@
   [self addSubview:subview];
 }
 
-- (UIView*)view {
-  return _webState->GetView();
-}
-
 - (BOOL)canGoBack {
   return _webState && _webState->GetNavigationManager()->CanGoBack();
 }
