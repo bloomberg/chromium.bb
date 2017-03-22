@@ -255,6 +255,13 @@ class GIT(object):
     return upstream_branch
 
   @staticmethod
+  def GetOldContents(cwd, filename, branch=None):
+    if not branch:
+      branch = GIT.GetUpstreamBranch(cwd)
+    command = ['show', '%s:%s' % (branch, filename)]
+    return GIT.Capture(command, cwd=cwd, strip_out=False)
+
+  @staticmethod
   def GenerateDiff(cwd, branch=None, branch_head='HEAD', full_move=False,
                    files=None):
     """Diffs against the upstream branch or optionally another branch.

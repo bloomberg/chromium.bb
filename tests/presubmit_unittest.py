@@ -1482,7 +1482,7 @@ class AffectedFileUnittest(PresubmitTestsBase):
     members = [
       'AbsoluteLocalPath', 'Action', 'ChangedContents', 'DIFF_CACHE',
       'GenerateScmDiff', 'IsTestableFile', 'IsTextFile', 'LocalPath',
-      'NewContents',
+      'NewContents', 'OldContents',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(

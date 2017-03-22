@@ -584,6 +584,10 @@ class _DiffCache(object):
     """Get the diff for a particular path."""
     raise NotImplementedError()
 
+  def GetOldContents(self, path, local_root):
+    """Get the old version for a particular path."""
+    raise NotImplementedError()
+
 
 class _GitDiffCache(_DiffCache):
   """DiffCache implementation for git; gets all file diffs at once."""
@@ -625,6 +629,9 @@ class _GitDiffCache(_DiffCache):
           'Unified diff did not contain entry for file %s' % path)
 
     return self._diffs_by_file[path]
+
+  def GetOldContents(self, path, local_root):
+    return scm.GIT.GetOldContents(local_root, path, branch=self._upstream)
 
 
 class AffectedFile(object):
@@ -669,6 +676,18 @@ class AffectedFile(object):
   def IsTextFile(self):
     """An alias to IsTestableFile for backwards compatibility."""
     return self.IsTestableFile()
+
+  def OldContents(self):
+    """Returns an iterator over the lines in the old version of file.
+
+    The new version is the file in the user's workspace, i.e. the "right hand
+    side".
+
+    Contents will be empty if the file is a directory or does not exist.
+    Note: The carriage returns (LF or CR) are stripped off.
+    """
+    return self._diff_cache.GetOldContents(self.LocalPath(),
+                                           self._local_root).splitlines()
 
   def NewContents(self):
     """Returns an iterator over the lines in the new version of file.

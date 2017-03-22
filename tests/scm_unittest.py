@@ -86,6 +86,7 @@ class GitWrapperTestCase(BaseSCMTestCase):
         'GetDifferentFiles',
         'GetEmail',
         'GetGitDir',
+        'GetOldContents',
         'GetPatchName',
         'GetUpstreamBranch',
         'IsDirectoryVersioned',
