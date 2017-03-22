@@ -145,7 +145,7 @@ public class AccountManagerHelper {
      * See http://crbug.com/517697 for details.
      */
     public List<String> getGoogleAccountNames() {
-        List<String> accountNames = new ArrayList<String>();
+        List<String> accountNames = new ArrayList<>();
         for (Account account : getGoogleAccounts()) {
             accountNames.add(account.name);
         }
@@ -159,7 +159,7 @@ public class AccountManagerHelper {
         getGoogleAccounts(new Callback<Account[]>() {
             @Override
             public void onResult(Account[] accounts) {
-                List<String> accountNames = new ArrayList<String>();
+                List<String> accountNames = new ArrayList<>();
                 for (Account account : accounts) {
                     accountNames.add(account.name);
                 }

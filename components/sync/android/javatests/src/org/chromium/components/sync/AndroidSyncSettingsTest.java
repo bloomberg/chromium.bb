@@ -121,7 +121,7 @@ public class AndroidSyncSettingsTest extends InstrumentationTestCase {
     private Account setupTestAccount(String accountName) {
         Account account = AccountManagerHelper.createAccountFromName(accountName);
         AccountHolder.Builder accountHolder =
-                AccountHolder.create().account(account).password("password").alwaysAccept(true);
+                AccountHolder.builder(account).password("password").alwaysAccept(true);
         mAccountManager.addAccountHolderExplicitly(accountHolder.build());
         return account;
     }

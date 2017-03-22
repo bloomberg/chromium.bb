@@ -55,7 +55,7 @@ public class AccountManagerHelperTest extends InstrumentationTestCase {
     private Account addTestAccount(String accountName, String password) {
         Account account = AccountManagerHelper.createAccountFromName(accountName);
         AccountHolder.Builder accountHolder =
-                AccountHolder.create().account(account).password(password).alwaysAccept(true);
+                AccountHolder.builder(account).password(password).alwaysAccept(true);
         mAccountManager.addAccountHolderExplicitly(accountHolder.build());
         return account;
     }

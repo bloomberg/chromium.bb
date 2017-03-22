@@ -6,6 +6,7 @@ package org.chromium.components.signin.test.util;
 
 import android.accounts.Account;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -145,8 +146,8 @@ public class AccountHolder {
                 && mAccount.equals(((AccountHolder) that).getAccount());
     }
 
-    public static Builder create() {
-        return new Builder();
+    public static Builder builder(@NonNull Account account) {
+        return new Builder(account);
     }
 
     public AccountHolder withPassword(String password) {
@@ -170,8 +171,7 @@ public class AccountHolder {
     }
 
     private Builder copy() {
-        return create()
-                .account(mAccount)
+        return builder(mAccount)
                 .password(mPassword)
                 .authTokens(mAuthTokens)
                 .hasBeenAcceptedMap(mHasBeenAccepted)
@@ -194,7 +194,11 @@ public class AccountHolder {
 
         private Set<String> mFeatures = new HashSet<>();
 
-        public Builder account(Account account) {
+        public Builder(@NonNull Account account) {
+            mTempAccount = account;
+        }
+
+        public Builder account(@NonNull Account account) {
             mTempAccount = account;
             return this;
         }

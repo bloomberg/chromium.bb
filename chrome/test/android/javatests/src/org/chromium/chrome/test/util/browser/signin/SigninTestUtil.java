@@ -99,8 +99,7 @@ public final class SigninTestUtil {
     private static Account createTestAccount(String accountName) {
         assert sContext != null;
         Account account = AccountManagerHelper.createAccountFromName(accountName);
-        AccountHolder.Builder accountHolder =
-                AccountHolder.create().account(account).alwaysAccept(true);
+        AccountHolder.Builder accountHolder = AccountHolder.builder(account).alwaysAccept(true);
         sAccountManager.addAccountHolderExplicitly(accountHolder.build());
         return account;
     }

@@ -62,7 +62,7 @@ public class PasswordViewingTypeTest extends NativeLibraryTestBase {
         AccountManagerHelper.overrideAccountManagerHelperForTests(context, mAccountManager);
         mAccount = AccountManagerHelper.createAccountFromName("account@example.com");
         AccountHolder.Builder accountHolder =
-                AccountHolder.create().account(mAccount).password("password").alwaysAccept(true);
+                AccountHolder.builder(mAccount).password("password").alwaysAccept(true);
         mAccountManager.addAccountHolderExplicitly(accountHolder.build());
     }
 

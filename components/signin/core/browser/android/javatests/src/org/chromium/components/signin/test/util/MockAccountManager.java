@@ -54,7 +54,7 @@ public class MockAccountManager implements AccountManagerDelegate {
         mGetAccountsTaskCounter = new ZeroCounter();
         if (accounts != null) {
             for (Account account : accounts) {
-                mAccounts.add(AccountHolder.create().account(account).alwaysAccept(true).build());
+                mAccounts.add(AccountHolder.builder(account).alwaysAccept(true).build());
             }
         }
     }

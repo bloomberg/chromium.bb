@@ -49,7 +49,7 @@ public class OAuth2TokenServiceTest extends InstrumentationTestCase {
     @DisabledTest(message = "crbug.com/527852")
     public void testGetAccountsOneAccountRegistered() {
         Account account1 = AccountManagerHelper.createAccountFromName("foo@gmail.com");
-        AccountHolder accountHolder1 = AccountHolder.create().account(account1).build();
+        AccountHolder accountHolder1 = AccountHolder.builder(account1).build();
         mAccountManager.addAccountHolderExplicitly(accountHolder1);
 
         String[] sysAccounts = OAuth2TokenService.getSystemAccountNames(mContext);
@@ -65,10 +65,10 @@ public class OAuth2TokenServiceTest extends InstrumentationTestCase {
     @DisabledTest(message = "crbug.com/527852")
     public void testGetAccountsTwoAccountsRegistered() {
         Account account1 = AccountManagerHelper.createAccountFromName("foo@gmail.com");
-        AccountHolder accountHolder1 = AccountHolder.create().account(account1).build();
+        AccountHolder accountHolder1 = AccountHolder.builder(account1).build();
         mAccountManager.addAccountHolderExplicitly(accountHolder1);
         Account account2 = AccountManagerHelper.createAccountFromName("bar@gmail.com");
-        AccountHolder accountHolder2 = AccountHolder.create().account(account2).build();
+        AccountHolder accountHolder2 = AccountHolder.builder(account2).build();
         mAccountManager.addAccountHolderExplicitly(accountHolder2);
 
         String[] sysAccounts = OAuth2TokenService.getSystemAccountNames(mContext);
@@ -106,11 +106,10 @@ public class OAuth2TokenServiceTest extends InstrumentationTestCase {
         String oauth2Scope = "oauth2:" + scope;
 
         // Add an account with given auth token for the given scope, already accepted auth popup.
-        AccountHolder accountHolder =
-                AccountHolder.create()
-                        .account(account)
-                        .hasBeenAccepted(oauth2Scope, true)
-                        .authToken(oauth2Scope, expectedToken).build();
+        AccountHolder accountHolder = AccountHolder.builder(account)
+                                              .hasBeenAccepted(oauth2Scope, true)
+                                              .authToken(oauth2Scope, expectedToken)
+                                              .build();
         mAccountManager.addAccountHolderExplicitly(accountHolder);
 
         String accessToken = OAuth2TokenService.getOAuth2AccessTokenWithTimeout(

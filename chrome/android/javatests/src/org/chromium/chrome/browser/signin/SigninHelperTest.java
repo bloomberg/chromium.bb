@@ -127,7 +127,7 @@ public class SigninHelperTest extends InstrumentationTestCase {
         mEventChecker.insertRenameEvent("C", "D");
         mEventChecker.insertRenameEvent("D", "A"); // Looped.
         Account account = AccountManagerHelper.createAccountFromName("D");
-        AccountHolder accountHolder = AccountHolder.create().account(account).build();
+        AccountHolder accountHolder = AccountHolder.builder(account).build();
         mAccountManager.addAccountHolderExplicitly(accountHolder);
         SigninHelper.updateAccountRenameData(mContext, mEventChecker);
         assertEquals("D", getNewSignedInAccountName());
