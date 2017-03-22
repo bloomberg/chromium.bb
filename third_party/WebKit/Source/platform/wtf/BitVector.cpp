@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "wtf/BitVector.h"
+#include "platform/wtf/BitVector.h"
 
-#include "wtf/LeakAnnotations.h"
-#include "wtf/PrintStream.h"
-#include "wtf/allocator/Partitions.h"
+#include "platform/wtf/LeakAnnotations.h"
+#include "platform/wtf/PrintStream.h"
+#include "platform/wtf/allocator/Partitions.h"
 #include <algorithm>
 #include <string.h>
 
