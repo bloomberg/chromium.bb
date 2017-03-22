@@ -886,34 +886,38 @@ class ReportStage(generic_stages.BuilderStage,
                                         builder_run.debug,
                                         upload_urls=upload_urls)
 
-  def IsSheriffOMaticImportantBuild(self):
-    """Determines if the current build is important for Sheriff-o-matic.
+  def IsSheriffOMaticDispatchBuild(self):
+    """Determine if Sheriff-o-Matic alerts should be dispatched.
 
     Returns:
-      True if the build is important
+      tree if the alerts should be dispatcher, None otherwise.
     """
     if self._run.debug:
-      return False
+      return None
     # active_waterfall can be wrong for things like try jobs.
-    for build in constants.SOM_IMPORTANT_BUILDS:
-      if (os.environ.get('BUILDBOT_MASTERNAME', '') == build[0] and
-          self._run.config.name == build[1]):
-        return True
-    return False
+    for tree in constants.SOM_BUILDS:
+      for build in constants.SOM_BUILDS[tree]:
+        if (os.environ.get('BUILDBOT_MASTERNAME', '') == build[0] and
+            self._run.config.name == build[1]):
+          return tree
+    return None
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
-  def RunAlertsDispatcher(self, db_credentials_dir):
+  def RunAlertsDispatcher(self, db_credentials_dir, tree):
     """Submit alerts summary to Sheriff-o-Matic.
 
     Args:
       db_credentials_dir: Path to CIDB database credentials.
     """
     dispatcher_cmd = [os.path.join(self._build_root, 'chromite', 'scripts',
-                                   'som_alerts_dispatcher')]
+                                   'som_alerts_dispatcher',
+                                   '--som_tree', tree)]
     if buildbucket_lib.GetServiceAccount(constants.CHROMEOS_SERVICE_ACCOUNT):
       # User the service account file if it exists.
       dispatcher_cmd.extend(['--service_acct_json',
                              constants.CHROMEOS_SERVICE_ACCOUNT])
+    if tree != constants.SOM_TREE:
+      dispatcher_cmd.append('--allow_experimental')
     dispatcher_cmd.append(db_credentials_dir)
 
     try:
@@ -1031,8 +1035,9 @@ class ReportStage(generic_stages.BuilderStage,
       # Dump report about things we retry.
       retry_stats.ReportStats(sys.stdout)
 
-      if self.IsSheriffOMaticImportantBuild():
-        self.RunAlertsDispatcher(db.db_credentials_dir)
+      tree = self.IsSheriffOMaticDispatchBuild()
+      if tree:
+        self.RunAlertsDispatcher(db.db_credentials_dir, tree)
 
   def _GetBuildDuration(self):
     """Fetches the duration of this build in seconds, from cidb.

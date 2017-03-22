@@ -44,10 +44,15 @@ def GetParser():
                       help='Sheriff-o-Matic host to post alerts to.')
   parser.add_argument('--som_insecure', action='store_true', default=False,
                       help='Use insecure Sheriff-o-Matic connection.')
+  parser.add_argument('--som_tree', type=str, action='store',
+                      default=constants.SOM_TREE,
+                      help='Sheriff-o-Matic tree to post alerts to.')
   parser.add_argument('--output_json', type=str, action='store',
                       help='Filename to write JSON to.')
   parser.add_argument('--json_file', type=str, action='store',
                       help='JSON file to send.')
+  parser.add_argument('--allow_experimental', action='store_true',
+                      help='Include experimental builds.')
   parser.add_argument('builds', type=str, nargs='*', action='store',
                       metavar='WATERFALL,TREE,SEVERITY|BUILD_ID,SEVERITY',
                       help='Builds to report on.  eg chromeos,elm-release,1000 '
@@ -132,9 +137,9 @@ def GenerateAlertStage(build, stage, exceptions, buildinfo, logdog_client):
   if buildinfo and stage['name'] in buildinfo['steps']:
     prefix = buildinfo['annotationStream']['prefix']
     annotation = buildinfo['steps'][stage['name']]
-    AddLogsLink(logdog_client, 'stdout', build['waterfall'],
+    AddLogsLink(logdog_client, 'stdout', buildinfo['project'],
                 prefix, annotation.get('stdoutStream'), logs_links)
-    AddLogsLink(logdog_client, 'stderr', build['waterfall'],
+    AddLogsLink(logdog_client, 'stderr', buildinfo['project'],
                 prefix, annotation.get('stderrStream'), logs_links)
 
     # Use the logs in an attempt to classify the failure.
@@ -142,7 +147,7 @@ def GenerateAlertStage(build, stage, exceptions, buildinfo, logdog_client):
         annotation['stdoutStream'].get('name')):
       path = '%s/+/%s' % (prefix, annotation['stdoutStream']['name'])
       try:
-        logs = logdog_client.GetLines(build['waterfall'], path)
+        logs = logdog_client.GetLines(buildinfo['project'], path)
         classification = classifier.ClassifyFailure(stage['name'], logs)
         for c in classification or []:
           notes.append('Classification: %s' % (c))
@@ -192,7 +197,7 @@ def GenerateAlertStage(build, stage, exceptions, buildinfo, logdog_client):
 
 
 def GenerateBuildAlert(build, slave_stages, exceptions, severity, now,
-                       logdog_client, milo_client):
+                       logdog_client, milo_client, allow_experimental=False):
   """Generate an alert for a single build.
 
   Args:
@@ -203,12 +208,14 @@ def GenerateBuildAlert(build, slave_stages, exceptions, severity, now,
     now: Current datettime.
     logdog_client: logdog.LogdogClient object.
     milo_client: milo.MiloClient object.
+    allow_experimental: Boolean if non-important builds should be included.
 
   Returns:
     som.Alert object if build requires alert.  None otherwise.
   """
   BUILD_IGNORE_STATUSES = frozenset([constants.BUILDER_STATUS_PASSED])
-  if not build['important'] or build['status'] in BUILD_IGNORE_STATUSES:
+  if ((not allow_experimental and not build['important']) or
+      build['status'] in BUILD_IGNORE_STATUSES):
     return None
 
   logging.info('  %s:%d (id %d) %s', build['builder_name'],
@@ -264,21 +271,23 @@ def GenerateBuildAlert(build, slave_stages, exceptions, severity, now,
 
 
 def GenerateAlertsSummary(db, builds=None,
-                          logdog_client=None, milo_client=None):
+                          logdog_client=None, milo_client=None,
+                          allow_experimental=False):
   """Generates the full set of alerts to send to Sheriff-o-Matic.
 
   Args:
     db: cidb.CIDBConnection object.
     builds: A list of (waterfall, builder_name, severity) tuples to summarize.
-      Defaults to SOM_IMPORTANT_BUILDS.
+      Defaults to SOM_BUILDS[SOM_TREE].
     logdog_client: logdog.LogdogClient object.
     milo_client: milo.MiloClient object.
+    allow_experimental: Boolean if non-important builds should be included.
 
   Returns:
     JSON-marshalled AlertsSummary object.
   """
   if not builds:
-    builds = constants.SOM_IMPORTANT_BUILDS
+    builds = constants.SOM_BUILDS[constants.SOM_TREE]
   if not logdog_client:
     logdog_client = logdog.LogdogClient()
   if not milo_client:
@@ -327,7 +336,8 @@ def GenerateAlertsSummary(db, builds=None,
     for build in sorted(statuses, key=lambda s: s['builder_name']):
       alert = GenerateBuildAlert(build, stages, exceptions,
                                  severity, now,
-                                 logdog_client, milo_client)
+                                 logdog_client, milo_client,
+                                 allow_experimental=allow_experimental)
       if alert:
         alerts.append(alert)
 
@@ -347,6 +357,8 @@ def main(argv):
   parser = GetParser()
   options = parser.parse_args(argv)
   builds = [tuple(x.split(',')) for x in options.builds]
+  if not builds:
+    builds = constants.SOM_BUILDS[options.som_tree]
 
   # Determine which hosts to connect to.
   db = cidb.CIDBConnection(options.cred_dir)
@@ -364,9 +376,9 @@ def main(argv):
                                         host=options.logdog_host)
     milo_client = milo.MiloClient(options.service_acct_json,
                                   host=options.milo_host)
-    summary_json = GenerateAlertsSummary(db, builds=builds,
-                                         logdog_client=logdog_client,
-                                         milo_client=milo_client)
+    summary_json = GenerateAlertsSummary(
+        db, builds=builds, logdog_client=logdog_client, milo_client=milo_client,
+        allow_experimental=options.allow_experimental)
     if options.output_json:
       with open(options.output_json, 'w') as f:
         logging.info('Writing JSON file %s', options.output_json)
@@ -376,4 +388,4 @@ def main(argv):
   som_client = som.SheriffOMaticClient(options.service_acct_json,
                                        insecure=options.som_insecure,
                                        host=options.som_host)
-  som_client.SendAlerts(summary_json)
+  som_client.SendAlerts(summary_json, tree=options.som_tree)

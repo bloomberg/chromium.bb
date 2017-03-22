@@ -148,11 +148,12 @@ class SheriffOMaticClient(object):
     return retry_util.GenericRetry(lambda e: isinstance(e, Exception), 3,
                                    try_method)
 
-  def SendAlerts(self, summary_json, dryrun=False):
+  def SendAlerts(self, summary_json, tree=constants.SOM_TREE, dryrun=False):
     """Upload alerts summary to Sheriff-o-matic.
 
     Args:
       summary_json: JSON version of AlertsSummary structure.
+      tree: Sheriff-o-Matic tree to send alerts to.
       dryrun: Whether a dryrun.
 
     Returns:
@@ -161,6 +162,6 @@ class SheriffOMaticClient(object):
     url = '%(scheme)s://%(hostname)s/api/v1/alerts/%(tree)s' % {
         'scheme': 'http' if self.insecure else 'https',
         'hostname': self.host,
-        'tree': constants.SOM_TREE,
+        'tree': tree,
     }
     return self.SendRequest(url, POST_METHOD, summary_json, dryrun=dryrun)
