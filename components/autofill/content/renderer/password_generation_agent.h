@@ -113,6 +113,9 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   // Hides a password generation popup if one exists.
   void HidePopup();
 
+  // Stops treating a password as generated.
+  void PasswordNoLongerGenerated();
+
   // Runs HTML parsing based classifier and saves its outcome to proto.
   // TODO(crbug.com/621442): Remove client-side form classifier when server-side
   // classifier is ready.

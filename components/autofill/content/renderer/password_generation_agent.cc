@@ -452,8 +452,12 @@ bool PasswordGenerationAgent::FocusedNodeHasChanged(
     return false;
 
   if (password_is_generated_) {
-    generation_element_.setShouldRevealPassword(true);
-    ShowEditingPopup();
+    if (generation_element_.value().isEmpty()) {
+      PasswordNoLongerGenerated();
+    } else {
+      generation_element_.setShouldRevealPassword(true);
+      ShowEditingPopup();
+    }
     return true;
   }
 
@@ -478,20 +482,8 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
   if (element.value().isEmpty()) {
     if (password_is_generated_) {
       // User generated a password and then deleted it.
-      password_generation::LogPasswordGenerationEvent(
-          password_generation::PASSWORD_DELETED);
-      CopyElementValueToOtherInputElements(&element,
-          &generation_form_data_->password_elements);
-      std::unique_ptr<PasswordForm> presaved_form(
-          CreatePasswordFormToPresave());
-      if (presaved_form) {
-        GetPasswordManagerDriver()->PasswordNoLongerGenerated(*presaved_form);
-      }
+      PasswordNoLongerGenerated();
     }
-
-    // Do not treat the password as generated, either here or in the browser.
-    password_is_generated_ = false;
-    generation_element_.setShouldRevealPassword(false);
 
     // Offer generation again.
     ShowGenerationPopup();
@@ -542,6 +534,22 @@ void PasswordGenerationAgent::ShowEditingPopup() {
 
 void PasswordGenerationAgent::HidePopup() {
   GetPasswordManagerClient()->HidePasswordGenerationPopup();
+}
+
+void PasswordGenerationAgent::PasswordNoLongerGenerated() {
+  // Do not treat the password as generated, either here or in the browser.
+  password_is_generated_ = false;
+  generation_element_.setShouldRevealPassword(false);
+  for (blink::WebInputElement& password :
+       generation_form_data_->password_elements)
+    password.setAutofilled(false);
+  password_generation::LogPasswordGenerationEvent(
+      password_generation::PASSWORD_DELETED);
+  CopyElementValueToOtherInputElements(
+      &generation_element_, &generation_form_data_->password_elements);
+  std::unique_ptr<PasswordForm> presaved_form(CreatePasswordFormToPresave());
+  if (presaved_form)
+    GetPasswordManagerDriver()->PasswordNoLongerGenerated(*presaved_form);
 }
 
 void PasswordGenerationAgent::UserTriggeredGeneratePassword() {

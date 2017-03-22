@@ -797,4 +797,20 @@ TEST_F(PasswordGenerationAgentTest, RevealPassword) {
   }
 }
 
+TEST_F(PasswordGenerationAgentTest, JavascriptClearedTheField) {
+  LoadHTMLWithUserGesture(kAccountCreationFormHTML);
+  SetNotBlacklistedMessage(password_generation_, kAccountCreationFormHTML);
+  SetAccountCreationFormsDetectedMessage(password_generation_,
+                                         GetMainFrame()->document(), 0, 1);
+
+  const char kGenerationElementId[] = "first_password";
+  ExpectGenerationAvailable(kGenerationElementId, true);
+  password_generation_->GeneratedPasswordAccepted(base::ASCIIToUTF16("pwd"));
+  ExecuteJavaScriptForTests(
+      "document.getElementById('first_password').value = '';");
+  FocusField(kGenerationElementId);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(fake_driver_.called_password_no_longer_generated());
+}
+
 }  // namespace autofill
