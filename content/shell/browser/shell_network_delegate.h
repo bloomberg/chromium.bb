@@ -17,6 +17,7 @@ class ShellNetworkDelegate : public net::NetworkDelegateImpl {
   ~ShellNetworkDelegate() override;
 
   static void SetBlockThirdPartyCookies(bool block);
+  static void SetCancelURLRequestWithPolicyViolatingReferrerHeader(bool cancel);
 
  private:
   // net::NetworkDelegate implementation.
@@ -55,6 +56,10 @@ class ShellNetworkDelegate : public net::NetworkDelegateImpl {
   bool OnCanAccessFile(const net::URLRequest& request,
                        const base::FilePath& path) const override;
   bool OnAreExperimentalCookieFeaturesEnabled() const override;
+  bool OnCancelURLRequestWithPolicyViolatingReferrerHeader(
+      const net::URLRequest& request,
+      const GURL& target_url,
+      const GURL& referrer_url) const override;
 
   DISALLOW_COPY_AND_ASSIGN(ShellNetworkDelegate);
 };

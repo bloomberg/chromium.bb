@@ -15,6 +15,7 @@ namespace content {
 
 namespace {
 bool g_block_third_party_cookies = false;
+bool g_cancel_requests_with_referrer_policy_violation = false;
 }
 
 ShellNetworkDelegate::ShellNetworkDelegate() {
@@ -25,6 +26,11 @@ ShellNetworkDelegate::~ShellNetworkDelegate() {
 
 void ShellNetworkDelegate::SetBlockThirdPartyCookies(bool block) {
   g_block_third_party_cookies = block;
+}
+
+void ShellNetworkDelegate::SetCancelURLRequestWithPolicyViolatingReferrerHeader(
+    bool cancel) {
+  g_cancel_requests_with_referrer_policy_violation = cancel;
 }
 
 int ShellNetworkDelegate::OnBeforeURLRequest(
@@ -111,6 +117,13 @@ bool ShellNetworkDelegate::OnCanAccessFile(const net::URLRequest& request,
 bool ShellNetworkDelegate::OnAreExperimentalCookieFeaturesEnabled() const {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableExperimentalWebPlatformFeatures);
+}
+
+bool ShellNetworkDelegate::OnCancelURLRequestWithPolicyViolatingReferrerHeader(
+    const net::URLRequest& request,
+    const GURL& target_url,
+    const GURL& referrer_url) const {
+  return g_cancel_requests_with_referrer_policy_violation;
 }
 
 }  // namespace content

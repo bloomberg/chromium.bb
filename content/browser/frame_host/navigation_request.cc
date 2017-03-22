@@ -313,6 +313,11 @@ NavigationRequest::NavigationRequest(
       associated_site_instance_type_(AssociatedSiteInstanceType::NONE),
       may_transfer_(may_transfer) {
   DCHECK(!browser_initiated || (entry != nullptr && frame_entry != nullptr));
+
+  // Sanitize the referrer.
+  common_params_.referrer =
+      Referrer::SanitizeForRequest(common_params_.url, common_params_.referrer);
+
   if (may_transfer) {
     FrameNavigationEntry* frame_entry = entry->GetFrameEntry(frame_tree_node);
     if (frame_entry) {
@@ -463,6 +468,8 @@ void NavigationRequest::OnRequestRedirected(
   common_params_.url = redirect_info.new_url;
   common_params_.method = redirect_info.new_method;
   common_params_.referrer.url = GURL(redirect_info.new_referrer);
+  common_params_.referrer =
+      Referrer::SanitizeForRequest(common_params_.url, common_params_.referrer);
 
   // For non browser initiated navigations we need to check if the source has
   // access to the URL. We always allow browser initiated requests.

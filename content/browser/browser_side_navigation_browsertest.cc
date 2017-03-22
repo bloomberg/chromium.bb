@@ -7,6 +7,8 @@
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/browser/frame_host/navigation_handle_impl.h"
+#include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/public/browser/notification_types.h"
@@ -18,6 +20,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
+#include "content/shell/browser/shell_network_delegate.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/url_request/url_request_failed_job.h"
@@ -282,6 +285,37 @@ IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest,
   shell()->LoadURL(GURL("chrome://resources/css/tabs.css"));
   shell()->web_contents()->DispatchBeforeUnload();
   close_observer.Wait();
+}
+
+// Ensure that the referrer of a navigation is properly sanitized.
+IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest, SanitizeReferrer) {
+  const GURL kInsecureUrl(embedded_test_server()->GetURL("/title1.html"));
+  const Referrer kSecureReferrer(
+      GURL("https://secure-url.com"),
+      blink::WebReferrerPolicyNoReferrerWhenDowngrade);
+  ShellNetworkDelegate::SetCancelURLRequestWithPolicyViolatingReferrerHeader(
+      true);
+
+  // Navigate to an insecure url with a secure referrer with a policy of no
+  // referrer on downgrades. The referrer url should be rewritten right away.
+  NavigationController::LoadURLParams load_params(kInsecureUrl);
+  load_params.referrer = kSecureReferrer;
+  TestNavigationManager manager(shell()->web_contents(), kInsecureUrl);
+  shell()->web_contents()->GetController().LoadURLWithParams(load_params);
+  EXPECT_TRUE(manager.WaitForRequestStart());
+
+  // The referrer should have been sanitized.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetMainFrame()
+                            ->frame_tree_node();
+  ASSERT_TRUE(root->navigation_request());
+  EXPECT_EQ(GURL(),
+            root->navigation_request()->navigation_handle()->GetReferrer().url);
+
+  // The navigation should commit without being blocked.
+  EXPECT_TRUE(manager.WaitForResponse());
+  manager.WaitForNavigationFinished();
+  EXPECT_EQ(kInsecureUrl, shell()->web_contents()->GetLastCommittedURL());
 }
 
 }  // namespace content
