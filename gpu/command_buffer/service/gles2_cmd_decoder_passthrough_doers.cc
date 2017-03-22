@@ -432,7 +432,10 @@ error::Error GLES2DecoderPassthroughImpl::DoClientWaitSync(GLuint sync,
                                                            GLbitfield flags,
                                                            GLuint64 timeout,
                                                            GLenum* result) {
-  NOTIMPLEMENTED();
+  // Force GL_SYNC_FLUSH_COMMANDS_BIT to avoid infinite wait.
+  GLbitfield modified_flags = flags | GL_SYNC_FLUSH_COMMANDS_BIT;
+  *result = glClientWaitSync(GetSyncServiceID(sync, resources_), modified_flags,
+                             timeout);
   return error::kNoError;
 }
 
@@ -759,7 +762,19 @@ error::Error GLES2DecoderPassthroughImpl::DoEnableVertexAttribArray(
 error::Error GLES2DecoderPassthroughImpl::DoFenceSync(GLenum condition,
                                                       GLbitfield flags,
                                                       GLuint client_id) {
-  NOTIMPLEMENTED();
+  if (resources_->sync_id_map.GetServiceID(client_id, nullptr)) {
+    return error::kInvalidArguments;
+  }
+
+  FlushErrors();
+  GLsync service_id = glFenceSync(condition, flags);
+  if (FlushErrors()) {
+    return error::kInvalidArguments;
+  }
+
+  resources_->sync_id_map.SetIDMapping(client_id,
+                                       reinterpret_cast<uintptr_t>(service_id));
+
   return error::kNoError;
 }
 
@@ -2218,7 +2233,7 @@ error::Error GLES2DecoderPassthroughImpl::DoViewport(GLint x,
 error::Error GLES2DecoderPassthroughImpl::DoWaitSync(GLuint sync,
                                                      GLbitfield flags,
                                                      GLuint64 timeout) {
-  NOTIMPLEMENTED();
+  glWaitSync(GetSyncServiceID(sync, resources_), flags, timeout);
   return error::kNoError;
 }
 
