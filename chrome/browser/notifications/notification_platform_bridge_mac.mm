@@ -474,12 +474,11 @@ bool NotificationPlatformBridgeMac::VerifyNotificationData(
     };
 
     xpcConnection_.get().invalidationHandler = ^{
+      // This means that the connection should be recreated if it needs
+      // to be used again.
       LOG(WARNING) << "AlertNotificationService: XPC connection invalidated.";
       RecordXPCEvent(INVALIDATED);
       setExceptionPort_ = NO;
-      // This means that the connection should be recreated if it needs
-      // to be used again. It should not really happen.
-      DCHECK(false) << "XPC Connection invalidated";
     };
 
     xpcConnection_.get().exportedInterface =
