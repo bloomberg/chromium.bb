@@ -13,6 +13,7 @@
 #include "av1/common/idct.h"
 #include "av1/common/txb_common.h"
 #include "av1/decoder/decodetxb.h"
+#include "av1/decoder/dsubexp.h"
 
 #define ACCT_STR __func__
 
@@ -234,4 +235,44 @@ uint8_t av1_read_coeffs_txb_facade(AV1_COMMON *cm, MACROBLOCKD *xd,
 #endif
   av1_set_contexts(xd, pd, plane, tx_size, cul_level, col, row);
   return cul_level;
+}
+
+static void read_txb_probs(FRAME_CONTEXT *fc, const TX_SIZE tx_size,
+                           aom_reader *r) {
+  int plane, ctx, level;
+
+  if (aom_read_bit(r, ACCT_STR) == 0) return;
+
+  for (ctx = 0; ctx < TXB_SKIP_CONTEXTS; ++ctx)
+    av1_diff_update_prob(r, &fc->txb_skip[tx_size][ctx], ACCT_STR);
+
+  for (plane = 0; plane < PLANE_TYPES; ++plane)
+    for (ctx = 0; ctx < SIG_COEF_CONTEXTS; ++ctx)
+      av1_diff_update_prob(r, &fc->nz_map[tx_size][plane][ctx], ACCT_STR);
+
+  for (plane = 0; plane < PLANE_TYPES; ++plane)
+    for (ctx = 0; ctx < EOB_COEF_CONTEXTS; ++ctx)
+      av1_diff_update_prob(r, &fc->eob_flag[tx_size][plane][ctx], ACCT_STR);
+
+  for (level = 0; level < NUM_BASE_LEVELS; ++level)
+    for (plane = 0; plane < PLANE_TYPES; ++plane)
+      for (ctx = 0; ctx < COEFF_BASE_CONTEXTS; ++ctx)
+        av1_diff_update_prob(r, &fc->coeff_base[tx_size][plane][level][ctx],
+                             ACCT_STR);
+
+  for (plane = 0; plane < PLANE_TYPES; ++plane)
+    for (ctx = 0; ctx < LEVEL_CONTEXTS; ++ctx)
+      av1_diff_update_prob(r, &fc->coeff_lps[tx_size][plane][ctx], ACCT_STR);
+}
+
+void av1_read_txb_probs(FRAME_CONTEXT *fc, TX_MODE tx_mode, aom_reader *r) {
+  const TX_SIZE max_tx_size = tx_mode_to_biggest_tx_size[tx_mode];
+  TX_SIZE tx_size;
+  int ctx, plane;
+  for (plane = 0; plane < PLANE_TYPES; ++plane)
+    for (ctx = 0; ctx < DC_SIGN_CONTEXTS; ++ctx)
+      av1_diff_update_prob(r, &fc->dc_sign[plane][ctx], ACCT_STR);
+
+  for (tx_size = TX_4X4; tx_size <= max_tx_size; ++tx_size)
+    read_txb_probs(fc, tx_size, r);
 }

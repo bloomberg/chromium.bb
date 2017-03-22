@@ -33,6 +33,7 @@ void av1_write_coeffs_mb(const AV1_COMMON *const cm, MACROBLOCK *x,
 void av1_update_txb_context(const AV1_COMP *cpi, ThreadData *td,
                             RUN_TYPE dry_run, BLOCK_SIZE bsize, int *rate,
                             const int mi_row, const int mi_col);
+void av1_write_txb_probs(AV1_COMP *cpi, aom_writer *w);
 #ifdef __cplusplus
 }
 #endif

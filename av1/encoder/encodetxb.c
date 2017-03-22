@@ -14,6 +14,7 @@
 #include "av1/common/pred_common.h"
 #include "av1/encoder/cost.h"
 #include "av1/encoder/encodetxb.h"
+#include "av1/encoder/subexp.h"
 #include "av1/encoder/tokenize.h"
 
 void av1_alloc_txb_buf(AV1_COMP *cpi) {
@@ -564,4 +565,134 @@ void av1_update_txb_context(const AV1_COMP *cpi, ThreadData *td,
     printf("DRY_RUN_COSTCOEFFS is not supported yet\n");
     assert(0);
   }
+}
+
+static void find_new_prob(unsigned int *branch_cnt, aom_prob *oldp,
+                          int *savings, int *update, aom_writer *const bc) {
+  const aom_prob upd = DIFF_UPDATE_PROB;
+  int u = 0;
+  aom_prob newp = get_binary_prob(branch_cnt[0], branch_cnt[1]);
+  int s = av1_prob_diff_update_savings_search(branch_cnt, *oldp, &newp, upd, 1);
+
+  if (s > 0 && newp != *oldp) u = 1;
+
+  if (u)
+    *savings += s - (int)(av1_cost_zero(upd));  // TODO(jingning): 1?
+  else
+    *savings -= (int)(av1_cost_zero(upd));
+
+  if (update) {
+    ++update[u];
+    return;
+  }
+
+  aom_write(bc, u, upd);
+  if (u) {
+    /* send/use new probability */
+    av1_write_prob_diff_update(bc, newp, *oldp);
+    *oldp = newp;
+  }
+}
+
+static void write_txb_probs(aom_writer *const bc, AV1_COMP *cpi,
+                            TX_SIZE tx_size) {
+  FRAME_CONTEXT *fc = cpi->common.fc;
+  FRAME_COUNTS *counts = cpi->td.counts;
+  int savings = 0;
+  int update[2] = { 0, 0 };
+  int plane, ctx, level;
+
+  for (ctx = 0; ctx < TXB_SKIP_CONTEXTS; ++ctx) {
+    find_new_prob(counts->txb_skip[tx_size][ctx], &fc->txb_skip[tx_size][ctx],
+                  &savings, update, bc);
+  }
+
+  for (plane = 0; plane < PLANE_TYPES; ++plane) {
+    for (ctx = 0; ctx < SIG_COEF_CONTEXTS; ++ctx) {
+      find_new_prob(counts->nz_map[tx_size][plane][ctx],
+                    &fc->nz_map[tx_size][plane][ctx], &savings, update, bc);
+    }
+  }
+
+  for (plane = 0; plane < PLANE_TYPES; ++plane) {
+    for (ctx = 0; ctx < EOB_COEF_CONTEXTS; ++ctx) {
+      find_new_prob(counts->eob_flag[tx_size][plane][ctx],
+                    &fc->eob_flag[tx_size][plane][ctx], &savings, update, bc);
+    }
+  }
+
+  for (level = 0; level < NUM_BASE_LEVELS; ++level) {
+    for (plane = 0; plane < PLANE_TYPES; ++plane) {
+      for (ctx = 0; ctx < COEFF_BASE_CONTEXTS; ++ctx) {
+        find_new_prob(counts->coeff_base[tx_size][plane][level][ctx],
+                      &fc->coeff_base[tx_size][plane][level][ctx], &savings,
+                      update, bc);
+      }
+    }
+  }
+
+  for (plane = 0; plane < PLANE_TYPES; ++plane) {
+    for (ctx = 0; ctx < LEVEL_CONTEXTS; ++ctx) {
+      find_new_prob(counts->coeff_lps[tx_size][plane][ctx],
+                    &fc->coeff_lps[tx_size][plane][ctx], &savings, update, bc);
+    }
+  }
+
+  // Decide if to update the model for this tx_size
+  if (update[1] == 0 || savings < 0) {
+    aom_write_bit(bc, 0);
+    return;
+  }
+  aom_write_bit(bc, 1);
+
+  for (ctx = 0; ctx < TXB_SKIP_CONTEXTS; ++ctx) {
+    find_new_prob(counts->txb_skip[tx_size][ctx], &fc->txb_skip[tx_size][ctx],
+                  &savings, NULL, bc);
+  }
+
+  for (plane = 0; plane < PLANE_TYPES; ++plane) {
+    for (ctx = 0; ctx < SIG_COEF_CONTEXTS; ++ctx) {
+      find_new_prob(counts->nz_map[tx_size][plane][ctx],
+                    &fc->nz_map[tx_size][plane][ctx], &savings, NULL, bc);
+    }
+  }
+
+  for (plane = 0; plane < PLANE_TYPES; ++plane) {
+    for (ctx = 0; ctx < EOB_COEF_CONTEXTS; ++ctx) {
+      find_new_prob(counts->eob_flag[tx_size][plane][ctx],
+                    &fc->eob_flag[tx_size][plane][ctx], &savings, NULL, bc);
+    }
+  }
+
+  for (level = 0; level < NUM_BASE_LEVELS; ++level) {
+    for (plane = 0; plane < PLANE_TYPES; ++plane) {
+      for (ctx = 0; ctx < COEFF_BASE_CONTEXTS; ++ctx) {
+        find_new_prob(counts->coeff_base[tx_size][plane][level][ctx],
+                      &fc->coeff_base[tx_size][plane][level][ctx], &savings,
+                      NULL, bc);
+      }
+    }
+  }
+
+  for (plane = 0; plane < PLANE_TYPES; ++plane) {
+    for (ctx = 0; ctx < LEVEL_CONTEXTS; ++ctx) {
+      find_new_prob(counts->coeff_lps[tx_size][plane][ctx],
+                    &fc->coeff_lps[tx_size][plane][ctx], &savings, NULL, bc);
+    }
+  }
+}
+
+void av1_write_txb_probs(AV1_COMP *cpi, aom_writer *w) {
+  const TX_MODE tx_mode = cpi->common.tx_mode;
+  const TX_SIZE max_tx_size = tx_mode_to_biggest_tx_size[tx_mode];
+  TX_SIZE tx_size;
+  int ctx, plane;
+
+  for (plane = 0; plane < PLANE_TYPES; ++plane)
+    for (ctx = 0; ctx < DC_SIGN_CONTEXTS; ++ctx)
+      av1_cond_prob_diff_update(w, &cpi->common.fc->dc_sign[plane][ctx],
+                                cpi->td.counts->dc_sign[plane][ctx], 1);
+
+  for (tx_size = TX_4X4; tx_size <= max_tx_size; ++tx_size)
+    write_txb_probs(w, cpi, tx_size);
 }

@@ -2849,6 +2849,7 @@ static void write_modes(AV1_COMP *const cpi, const TileInfo *const tile,
 #endif
 }
 
+#if !CONFIG_LV_MAP
 #if !CONFIG_PVQ && !(CONFIG_EC_ADAPT && CONFIG_NEW_TOKENSET)
 static void build_tree_distribution(AV1_COMP *cpi, TX_SIZE tx_size,
                                     av1_coeff_stats *coef_branch_ct,
@@ -3325,8 +3326,9 @@ static void update_coef_probs(AV1_COMP *cpi, aom_writer *w) {
   }
 #endif  // CONFIG_SUBFRAME_PROB_UPDATE
 }
-#endif
+#endif  // !(CONFIG_EC_ADAPT && CONFIG_NEW_TOKENSET)
 #endif  // !CONFIG_EC_ADAPT
+#endif  // !CONFIG_LV_MAP
 
 #if CONFIG_LOOP_RESTORATION
 static void encode_restoration_mode(AV1_COMMON *cm,
@@ -4601,11 +4603,16 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 #if !CONFIG_EC_ADAPT
   update_txfm_probs(cm, header_bc, counts);
 #endif
+#if CONFIG_LV_MAP
+  av1_write_txb_probs(cpi, header_bc);
+#else
 #if !CONFIG_PVQ
 #if !(CONFIG_EC_ADAPT && CONFIG_NEW_TOKENSET)
   update_coef_probs(cpi, header_bc);
 #endif  // !(CONFIG_EC_ADAPT && CONFIG_NEW_TOKENSET)
 #endif  // CONFIG_PVQ
+#endif  // CONFIG_LV_MAP
+
 #if CONFIG_VAR_TX
   update_txfm_partition_probs(cm, header_bc, counts, probwt);
 #endif
