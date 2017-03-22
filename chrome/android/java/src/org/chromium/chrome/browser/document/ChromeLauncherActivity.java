@@ -411,6 +411,8 @@ public class ChromeLauncherActivity extends Activity
         boolean handled = CustomTabActivity.handleInActiveContentIfNeeded(getIntent());
         if (handled) return;
 
+        maybePrefetchDnsInBackground();
+
         // Create and fire a launch intent.
         startActivity(createCustomTabActivityIntent(
                 this, getIntent(), !isCustomTabIntent(getIntent()) && mIsHerbIntent));
