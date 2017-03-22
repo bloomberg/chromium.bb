@@ -73,9 +73,9 @@ class CORE_EXPORT LayoutFlowThread : public LayoutBlockFlow {
 
   // Search mode when looking for an enclosing fragmentation context.
   enum AncestorSearchConstraint {
-    // No constraints. Sometimes we just want to find all enclosing
-    // fragmentation contexts, e.g. to calculate the accumulated visual
-    // translation.
+    // No constraints. When we're not laying out (but rather e.g. painting or
+    // hit-testing), we just want to find all enclosing fragmentation contexts,
+    // e.g. to calculate the accumulated visual translation.
     AnyAncestor,
 
     // Consider fragmentation contexts that are strictly unbreakable (seen from
@@ -88,7 +88,7 @@ class CORE_EXPORT LayoutFlowThread : public LayoutBlockFlow {
 
   static LayoutFlowThread* locateFlowThreadContainingBlockOf(
       const LayoutObject&,
-      AncestorSearchConstraint = IsolateUnbreakableContainers);
+      AncestorSearchConstraint);
 
   void layout() override;
 

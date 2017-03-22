@@ -687,12 +687,15 @@ LayoutFlowThread* LayoutObject::locateFlowThreadContainingBlock() const {
 
   // See if we have the thread cached because we're in the middle of layout.
   if (LayoutState* layoutState = view()->layoutState()) {
+    // TODO(mstensho): We should really just return whatever
+    // layoutState->flowThread() returns here, also if the value is nullptr.
     if (LayoutFlowThread* flowThread = layoutState->flowThread())
       return flowThread;
   }
 
   // Not in the middle of layout so have to find the thread the slow way.
-  return LayoutFlowThread::locateFlowThreadContainingBlockOf(*this);
+  return LayoutFlowThread::locateFlowThreadContainingBlockOf(
+      *this, LayoutFlowThread::AnyAncestor);
 }
 
 static inline bool objectIsRelayoutBoundary(const LayoutObject* object) {
