@@ -46,42 +46,34 @@ class Field(object):
     regular member variables, or more complex storage like vectors or hashmaps.
     Almost all properties will have at least one Field, often more than one.
 
-    Fields also fall into various roles, which determine the logic that is
-    used to generate them. The available field roles are:
-      - 'property', for fields that store CSS properties
-      - 'inherited_flag', for single-bit flags that store whether a property is
-                          inherited by this style or set explicitly
-      - 'nonproperty', for fields that are not CSS properties
+    Most attributes in this class correspond to parameters in CSSProperties.json5.
+    See that file for a more detailed explanation of each attribute.
+
+    Attributes:
+        field_role: The semantic role of the field. Can be:
+            - 'property': for fields that store CSS properties
+            - 'inherited_flag': for single-bit flags that store whether a property is
+                                inherited by this style or set explicitly
+            - 'nonproperty': for fields that are not CSS properties
+        name_for_methods: String used to form the names of getters and setters.
+            Should be in upper camel case.
+        property_name: Name of the property that the field is part of.
+        type_name: Name of the C++ type exposed by the generated interface (e.g. EClear, int).
+        field_template: Determines the interface generated for the field. Can be one of:
+           keyword, flag, or monotonic_flag.
+        size: Number of bits needed for storage.
+        default_value: Default value for this field when it is first initialized.
     """
 
-    # List of required attributes for a field which need to be passed in by
-    # keyword arguments. See CSSProperties.json5 for an explanation of each
-    # attribute.
-    REQUIRED_ATTRIBUTES = set([
-        # Name of field
-        'name',
-        # Name of property field is for
-        'property_name',
-        # Name of the type (e.g. EClear, int)
-        'type_name',
-        # Affects how the field is generated (keyword, flag, monotonic_flag)
-        'field_template',
-        # Bits needed for storage
-        'size',
-        # Default value for field
-        'default_value',
-        # Method names
-        'getter_method_name',
-        'setter_method_name',
-        'initial_method_name',
-        'resetter_method_name',
-    ])
-
-    def __init__(self, field_role, **kwargs):
-        # Values common to all fields
-        # Set attributes from the keyword arguments
-        for attrib in Field.REQUIRED_ATTRIBUTES:
-            setattr(self, attrib, kwargs.pop(attrib))
+    def __init__(self, field_role, name_for_methods, property_name, type_name,
+                 field_template, size, default_value, **kwargs):
+        """Creates a new field."""
+        self.name = class_member_name(name_for_methods)
+        self.property_name = property_name
+        self.type_name = type_name
+        self.field_template = field_template
+        self.size = size
+        self.default_value = default_value
 
         # Field role: one of these must be true
         self.is_property = field_role == 'property'
@@ -95,10 +87,14 @@ class Field(object):
             self.is_independent = kwargs.pop('independent')
             assert self.is_inherited or not self.is_independent, 'Only inherited fields can be independent'
 
-            self.is_inherited_method_name = kwargs.pop('is_inherited_method_name')
-        elif self.is_inherited_flag:
-            # Inherited flag-only fields
-            pass
+            self.is_inherited_method_name = method_name(name_for_methods + 'IsInherited')
+
+        # Method names
+        getter_prefix = 'Get' if name_for_methods == self.type_name else ''
+        self.getter_method_name = method_name(getter_prefix + name_for_methods)
+        self.setter_method_name = method_name('Set' + name_for_methods)
+        self.initial_method_name = method_name('Initial' + name_for_methods)
+        self.resetter_method_name = method_name('Reset' + name_for_methods)
 
         assert len(kwargs) == 0, 'Unexpected arguments provided to Field: ' + str(kwargs)
 
@@ -141,18 +137,8 @@ def _create_property_field(property_):
     """
     Create a property field from a CSS property and return the Field object.
     """
-    name_for_methods = property_['name_for_methods']
-
     bits_needed = math.log(len(property_['keywords']), 2)  # TODO: implement for non-enums
     type_name = property_['type_name']
-
-    # For now, the getter name should match the field name. Later, getter names
-    # will start with an uppercase letter, so if they conflict with the type name,
-    # add 'get' to the front.
-    if type_name != name_for_methods:
-        getter_method_name = method_name(name_for_methods)
-    else:
-        getter_method_name = method_name('get-' + name_for_methods)
 
     assert property_['initial_keyword'] is not None, \
         ('MakeComputedStyleBase requires an initial keyword for keyword fields, none specified '
@@ -161,7 +147,7 @@ def _create_property_field(property_):
 
     return Field(
         'property',
-        name=class_member_name(name_for_methods),
+        property_['name_for_methods'],
         property_name=property_['name'],
         inherited=property_['inherited'],
         independent=property_['independent'],
@@ -169,11 +155,6 @@ def _create_property_field(property_):
         field_template=property_['field_template'],
         size=int(math.ceil(bits_needed)),
         default_value=default_value,
-        getter_method_name=getter_method_name,
-        setter_method_name=method_name('set-' + name_for_methods),
-        initial_method_name=method_name('initial-' + name_for_methods),
-        resetter_method_name=method_name('reset-' + name_for_methods),
-        is_inherited_method_name=method_name(name_for_methods + '-IsInherited'),
     )
 
 
@@ -182,21 +163,14 @@ def _create_inherited_flag_field(property_):
     Create the field used for an inheritance fast path from an independent CSS property,
     and return the Field object.
     """
-    name_for_methods = property_['name_for_methods']
-    name_for_methods_suffixed = name_for_methods + 'IsInherited'
-
     return Field(
         'inherited_flag',
-        name=class_member_name(name_for_methods_suffixed),
+        property_['name_for_methods'] + 'IsInherited',
         property_name=property_['name'],
         type_name='bool',
         field_template='flag',
         size=1,
         default_value='true',
-        getter_method_name=method_name(name_for_methods_suffixed),
-        setter_method_name=method_name('set-' + name_for_methods_suffixed),
-        initial_method_name=method_name('initial-' + name_for_methods_suffixed),
-        resetter_method_name=method_name('reset-' + name_for_methods_suffixed),
     )
 
 
@@ -207,7 +181,6 @@ def _create_nonproperty_field(property_):
     # TODO(shend): Make this work for nonflags
     assert property_['field_template'] in ('flag', 'monotonic_flag', 'storage_only'), \
         "Nonproperties with arbitrary templates are not yet supported"
-    name_for_methods = property_['name_for_methods']
 
     if property_['field_template'] == 'storage_only':
         assert 'size' in property_, 'storage_only fields need to specify a size'
@@ -218,16 +191,12 @@ def _create_nonproperty_field(property_):
 
     return Field(
         'nonproperty',
-        name=class_member_name(name_for_methods),
-        property_name=name_for_methods,
+        property_['name_for_methods'],
+        property_name=property_['name'],
         type_name='bool',
         field_template=property_['field_template'],
         size=size,
         default_value='false',
-        getter_method_name=method_name(name_for_methods),
-        setter_method_name=method_name('set-' + name_for_methods),
-        initial_method_name=method_name('initial-' + name_for_methods),
-        resetter_method_name=method_name('reset-' + name_for_methods),
     )
 
 
