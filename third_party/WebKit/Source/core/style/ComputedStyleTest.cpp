@@ -92,4 +92,14 @@ TEST(ComputedStyleTest, LastPublicPseudoStyle) {
   EXPECT_TRUE(style->hasAnyPublicPseudoStyles());
 }
 
+TEST(ComputedStyleTest,
+     UpdatePropertySpecificDifferencesRespectsTransformAnimation) {
+  RefPtr<ComputedStyle> style = ComputedStyle::create();
+  RefPtr<ComputedStyle> other = ComputedStyle::clone(*style);
+  other->setHasCurrentTransformAnimation();
+  StyleDifference diff;
+  style->updatePropertySpecificDifferences(*other, diff);
+  EXPECT_TRUE(diff.transformChanged());
+}
+
 }  // namespace blink

@@ -831,4 +831,21 @@ TEST_P(PaintLayerTest, ColumnSpanLayerUnderExtraLayerScrolled) {
   EXPECT_EQ(LayoutPoint(-150, 50), spanner->visualOffsetFromAncestor(columns));
 }
 
+TEST_P(PaintLayerTest, PaintLayerTransformUpdatedOnStyleTransformAnimation) {
+  setBodyInnerHTML("<div id='target' style='will-change: transform'></div>");
+
+  LayoutObject* targetObject =
+      document().getElementById("target")->layoutObject();
+  PaintLayer* targetPaintLayer = toLayoutBoxModelObject(targetObject)->layer();
+  EXPECT_EQ(nullptr, targetPaintLayer->transform());
+
+  RefPtr<ComputedStyle> oldStyle =
+      ComputedStyle::clone(targetObject->styleRef());
+  ComputedStyle* newStyle = targetObject->mutableStyle();
+  newStyle->setHasCurrentTransformAnimation();
+  targetPaintLayer->updateTransform(oldStyle.get(), *newStyle);
+
+  EXPECT_NE(nullptr, targetPaintLayer->transform());
+}
+
 }  // namespace blink

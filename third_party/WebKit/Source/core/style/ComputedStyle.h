@@ -3283,6 +3283,11 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   ETransformStyle3D usedTransformStyle3D() const {
     return hasGroupingProperty() ? TransformStyle3DFlat : transformStyle3D();
   }
+  // Returns whether the transform operations for |otherStyle| differ from the
+  // operations for this style instance. Note that callers may want to also
+  // check hasTransform(), as it is possible for two styles to have matching
+  // transform operations but differ in other transform-impacting style
+  // respects.
   bool transformDataEquivalent(const ComputedStyle& otherStyle) const {
     return m_rareNonInheritedData->m_transform ==
            otherStyle.m_rareNonInheritedData->m_transform;
@@ -3696,6 +3701,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   StyleInheritedVariables& mutableInheritedVariables();
   StyleNonInheritedVariables& mutableNonInheritedVariables();
+
+  FRIEND_TEST_ALL_PREFIXES(
+      ComputedStyleTest,
+      UpdatePropertySpecificDifferencesRespectsTransformAnimation);
 };
 
 // FIXME: Reduce/remove the dependency on zoom adjusted int values.

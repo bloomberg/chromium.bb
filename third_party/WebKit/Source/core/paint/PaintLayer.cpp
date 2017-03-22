@@ -387,8 +387,13 @@ void PaintLayer::updateTransformationMatrix() {
 
 void PaintLayer::updateTransform(const ComputedStyle* oldStyle,
                                  const ComputedStyle& newStyle) {
-  if (oldStyle && newStyle.transformDataEquivalent(*oldStyle))
+  // It's possible for the old and new style transform data to be equivalent
+  // while hasTransform() differs, as it checks a number of conditions aside
+  // from just the matrix, including but not limited to animation state.
+  if (oldStyle && oldStyle->hasTransform() == newStyle.hasTransform() &&
+      newStyle.transformDataEquivalent(*oldStyle)) {
     return;
+  }
 
   // hasTransform() on the layoutObject is also true when there is
   // transform-style: preserve-3d or perspective set, so check style too.

@@ -1242,6 +1242,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   FRIEND_TEST_ALL_PREFIXES(PaintLayerTest,
                            DescendantDependentFlagsStopsAtThrottledFrames);
+  FRIEND_TEST_ALL_PREFIXES(PaintLayerTest,
+                           PaintLayerTransformUpdatedOnStyleTransformAnimation);
 };
 
 }  // namespace blink
