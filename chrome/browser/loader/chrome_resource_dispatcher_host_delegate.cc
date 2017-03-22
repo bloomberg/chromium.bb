@@ -562,14 +562,21 @@ void ChromeResourceDispatcherHostDelegate::DownloadStarting(
                                     content::RESOURCE_TYPE_MAIN_FRAME,
                                     throttles);
 #if defined(OS_ANDROID)
-    throttles->push_back(
-        base::MakeUnique<InterceptDownloadResourceThrottle>(
-            request, info->GetWebContentsGetterForRequest()));
     // On Android, forward text/html downloads to OfflinePages backend.
     throttles->push_back(
         base::MakeUnique<offline_pages::downloads::ResourceThrottle>(request));
 #endif
   }
+
+#if defined(OS_ANDROID)
+  // Add the InterceptDownloadResourceThrottle after calling
+  // AppendStandardResourceThrottles so the download will not bypass
+  // safebrowsing checks.
+  if (is_content_initiated) {
+    throttles->push_back(base::MakeUnique<InterceptDownloadResourceThrottle>(
+        request, info->GetWebContentsGetterForRequest()));
+  }
+#endif
 }
 
 ResourceDispatcherHostLoginDelegate*

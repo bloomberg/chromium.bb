@@ -6,13 +6,16 @@ package org.chromium.chrome.browser.download;
 
 import android.os.Environment;
 import android.support.test.filters.MediumTest;
+import android.util.Pair;
 import android.view.View;
 
 import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
@@ -23,10 +26,14 @@ import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.test.util.InfoBarUtil;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.net.test.util.TestWebServer;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 /**
@@ -52,6 +59,17 @@ public class DownloadTest extends DownloadTestBase {
         FILENAME_WALLPAPER, FILENAME_TEXT, FILENAME_TEXT_1, FILENAME_TEXT_2, FILENAME_SWF,
         FILENAME_GZIP
     };
+
+    static class DownloadManagerRequestInterceptorForTest
+            implements DownloadManagerService.DownloadManagerRequestInterceptor {
+        public DownloadItem mDownloadItem;
+
+        @Override
+        public void interceptDownloadRequest(DownloadItem item, boolean notifyComplete) {
+            mDownloadItem = item;
+            assertTrue(notifyComplete);
+        }
+    }
 
     @Override
     protected void setUp() throws Exception {
@@ -372,6 +390,43 @@ public class DownloadTest extends DownloadTestBase {
         singleClickView(currentView);
         assertTrue(waitForChromeDownloadToFinish(callCount));
         assertTrue(hasDownload(FILENAME_WALLPAPER, null));
+    }
+
+    @MediumTest
+    @Feature({"Navigation"})
+    public void testOMADownloadInterception() throws Exception {
+        TestWebServer webServer = TestWebServer.start();
+        try {
+            final DownloadManagerRequestInterceptorForTest interceptor =
+                    new DownloadManagerRequestInterceptorForTest();
+            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+                @Override
+                public void run() {
+                    DownloadManagerService
+                            .getDownloadManagerService(getInstrumentation().getContext())
+                            .setDownloadManagerRequestInterceptor(interceptor);
+                }
+            });
+            List<Pair<String, String>> headers = new ArrayList<Pair<String, String>>();
+            headers.add(Pair.create("Content-Type", "application/vnd.oma.drm.message"));
+            final String url = webServer.setResponse("/test.dm", "testdata", headers);
+            loadUrl(UrlUtils.encodeHtmlDataUri("<script>"
+                    + "  function download() {"
+                    + "    window.open( '" + url + "')"
+                    + "  }"
+                    + "</script>"
+                    + "<body id='body' onclick='download()'></body>"));
+            DOMUtils.clickNode(getActivity().getCurrentContentViewCore(), "body");
+            CriteriaHelper.pollUiThread(new Criteria() {
+                @Override
+                public boolean isSatisfied() {
+                    return interceptor.mDownloadItem != null
+                            && url.equals(interceptor.mDownloadItem.getDownloadInfo().getUrl());
+                }
+            });
+        } finally {
+            webServer.shutdown();
+        }
     }
 
     private void waitForFocus() {
