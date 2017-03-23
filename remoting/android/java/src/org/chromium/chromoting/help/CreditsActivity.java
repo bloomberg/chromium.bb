@@ -4,11 +4,14 @@
 
 package org.chromium.chromoting.help;
 
+import android.annotation.TargetApi;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -36,12 +39,23 @@ public class CreditsActivity extends AppCompatActivity {
 
         webView.getSettings().setJavaScriptEnabled(true);
         webView.setWebViewClient(new WebViewClient() {
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            private boolean shouldOverrideUrlLoading(final Uri uri) {
                 // There are no internal links in the Credits page, so open any links in a
                 // Web browser.
-                ChromotingUtil.openUrl(CreditsActivity.this, Uri.parse(url));
+                ChromotingUtil.openUrl(CreditsActivity.this, uri);
                 return true;
+            }
+
+            @TargetApi(Build.VERSION_CODES.N)
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                return shouldOverrideUrlLoading(request.getUrl());
+            }
+
+            @SuppressWarnings("deprecation")
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                return shouldOverrideUrlLoading(Uri.parse(url));
             }
         });
         webView.loadUrl(CREDITS_URL);
