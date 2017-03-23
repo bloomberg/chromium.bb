@@ -35,6 +35,8 @@ class VideoCaptureDeviceChromeOS : public VideoCaptureDeviceLinux {
   scoped_refptr<ScreenObserverDelegate> screen_observer_delegate_;
   const VideoFacingMode lens_facing_;
   const int camera_orientation_;
+  // Whether the incoming frames should rotate when the device rotates.
+  const bool rotates_with_device_;
   DISALLOW_IMPLICIT_CONSTRUCTORS(VideoCaptureDeviceChromeOS);
 };
 
