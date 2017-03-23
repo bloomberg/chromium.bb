@@ -80,6 +80,9 @@ class CHROMEOS_EXPORT NetworkConnect {
   // Requests a network connection and handles any errors and notifications.
   virtual void ConnectToNetworkId(const std::string& network_id) = 0;
 
+  // Requests a network disconnection. Ignores any errors and notifications.
+  virtual void DisconnectFromNetworkId(const std::string& network_id) = 0;
+
   // Maybe show the configuration UI after a connect failure based on the
   // network state and error name. Returns true if the UI is shown.
   virtual bool MaybeShowConfigureUI(const std::string& network_id,

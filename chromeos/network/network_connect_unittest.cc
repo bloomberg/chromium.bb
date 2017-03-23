@@ -16,6 +16,7 @@
 #include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -221,6 +222,21 @@ TEST_F(NetworkConnectTest,
 
   NetworkConnect::Get()->MaybeShowConfigureUI(
       kWiFi1Guid, NetworkConnectionHandler::kErrorCertificateRequired);
+}
+
+TEST_F(NetworkConnectTest, ConnectThenDisconnectWiFiNetwork) {
+  const NetworkState* network =
+      NetworkHandler::Get()->network_state_handler()->GetNetworkStateFromGuid(
+          kWiFi1Guid);
+
+  NetworkConnect::Get()->ConnectToNetworkId(kWiFi1Guid);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(network->IsConnectedState());
+
+  NetworkConnect::Get()->DisconnectFromNetworkId(kWiFi1Guid);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(network->IsConnectedState());
+  EXPECT_FALSE(network->IsConnectingState());
 }
 
 // ShowNetworkSettings only applies to cellular networks.

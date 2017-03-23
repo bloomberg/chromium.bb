@@ -31,7 +31,7 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chromeos/network/network_connection_handler.h"
+#include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_type_pattern.h"
@@ -58,9 +58,6 @@ namespace {
 bool UseMd() {
   return MaterialDesignController::IsSystemTrayMenuMaterial();
 }
-
-void IgnoreDisconnectError(const std::string& error_name,
-                           std::unique_ptr<base::DictionaryValue> error_data) {}
 
 // Indicates whether |network| belongs to this VPN provider.
 bool VpnProviderMatchesNetwork(const VPNProvider& provider,
@@ -206,17 +203,7 @@ void VPNListNetworkEntry::ButtonPressed(Button* sender,
     return;
   }
 
-  const chromeos::NetworkState* network = chromeos::NetworkHandler::Get()
-                                              ->network_state_handler()
-                                              ->GetNetworkStateFromGuid(guid_);
-  if (!network)
-    return;
-  WmShell::Get()->RecordUserMetricsAction(
-      UMA_STATUS_AREA_VPN_DISCONNECT_CLICKED);
-  chromeos::NetworkHandler::Get()
-      ->network_connection_handler()
-      ->DisconnectNetwork(network->path(), base::Bind(&base::DoNothing),
-                          base::Bind(&IgnoreDisconnectError));
+  chromeos::NetworkConnect::Get()->DisconnectFromNetworkId(guid_);
 }
 
 void VPNListNetworkEntry::UpdateFromNetworkState(

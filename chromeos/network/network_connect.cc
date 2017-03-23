@@ -26,6 +26,9 @@ namespace chromeos {
 
 namespace {
 
+void IgnoreDisconnectError(const std::string& error_name,
+                           std::unique_ptr<base::DictionaryValue> error_data) {}
+
 // Returns true for carriers that can be activated through Shill instead of
 // through a WebUI dialog.
 bool IsDirectActivatedCarrier(const std::string& carrier) {
@@ -48,6 +51,7 @@ class NetworkConnectImpl : public NetworkConnect {
 
   // NetworkConnect
   void ConnectToNetworkId(const std::string& network_id) override;
+  void DisconnectFromNetworkId(const std::string& network_id) override;
   bool MaybeShowConfigureUI(const std::string& network_id,
                             const std::string& connect_error) override;
   void SetTechnologyEnabled(const NetworkTypePattern& technology,
@@ -400,6 +404,17 @@ void NetworkConnectImpl::ConnectToNetworkId(const std::string& network_id) {
   }
   const bool check_error_state = true;
   CallConnectToNetwork(network_id, check_error_state);
+}
+
+void NetworkConnectImpl::DisconnectFromNetworkId(
+    const std::string& network_id) {
+  NET_LOG_USER("DisconnectFromNetwork", network_id);
+  const NetworkState* network = GetNetworkStateFromId(network_id);
+  if (!network)
+    return;
+  NetworkHandler::Get()->network_connection_handler()->DisconnectNetwork(
+      network->path(), base::Bind(&base::DoNothing),
+      base::Bind(&IgnoreDisconnectError));
 }
 
 bool NetworkConnectImpl::MaybeShowConfigureUI(
