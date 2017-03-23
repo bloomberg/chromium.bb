@@ -334,3 +334,6 @@ crbug.com/672605 external/wpt/encrypted-media [ WontFix ]
 
 # This W3C EME test fetches a file which is not allowed
 #external/wpt/encrypted-media/idlharness.html [ WontFix ]
+
+[ Win7 Debug ] virtual/disable-spinvalidation/compositing/perpendicular-layer-sorting.html [ WontFix ]
+
