@@ -63,7 +63,6 @@ NSDictionary* GetLegacyKeyConversion() {
     @"tabId" : @"TabID",
     @"openerId" : @"OpenerID",
     @"openerNavigationIndex" : @"OpenerNavigationIndex",
-    @"lastVisitedTimestamp" : @"LastVisitedTimestamp",
   }];
   return [legacy_key_conversion copy];
 }

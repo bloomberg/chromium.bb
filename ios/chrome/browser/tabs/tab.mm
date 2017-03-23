@@ -179,10 +179,6 @@ NSString* const kOpenerIDKey = @"OpenerID";
 // serializable user data.
 NSString* const kOpenerNavigationIndexKey = @"OpenerNavigationIndex";
 
-// The key under which the last visited timestamp is stored in the WebState's
-// serializable user data.
-NSString* const kLastVisitedTimestampKey = @"LastVisitedTimestamp";
-
 // Name of histogram for recording the state of the tab when the renderer is
 // terminated.
 const char kRendererTerminationStateHistogram[] =
@@ -232,6 +228,9 @@ enum class RendererTerminationTabState {
   // YES if the Tab needs to be reloaded after the app becomes active.
   BOOL requireReloadAfterBecomingActive_;
 
+  // Last visited timestamp.
+  double lastVisitedTimestamp_;
+
   base::mac::ObjCPropertyReleaser propertyReleaser_Tab_;
 
   id<TabDelegate> delegate_;  // weak
@@ -256,6 +255,8 @@ enum class RendererTerminationTabState {
       overscrollActionsController_;
   base::WeakNSProtocol<id<OverscrollActionsControllerDelegate>>
       overscrollActionsControllerDelegate_;
+
+  base::scoped_nsobject<NSString> tabId_;
 
   // Lightweight object dealing with various different UI behaviours when
   // opening a URL in an external application.
@@ -527,10 +528,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
     [self.webController setDelegate:self];
 
-    NSString* sessionID = self.tabId;
-    DCHECK(sessionID);
     snapshotManager_.reset([[SnapshotManager alloc] init]);
-
     webControllerSnapshotHelper_.reset([[WebControllerSnapshotHelper alloc]
         initWithSnapshotManager:snapshotManager_
                             tab:self]);
@@ -732,15 +730,22 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 }
 
 - (NSString*)tabId {
+  if (tabId_)
+    return tabId_.get();
+
   DCHECK(self.webState);
   web::SerializableUserDataManager* userDataManager =
       web::SerializableUserDataManager::FromWebState(self.webState);
-  id<NSCoding> tabID = userDataManager->GetValueForSerializationKey(kTabIDKey);
-  if (!tabID) {
-    tabID = [[NSUUID UUID] UUIDString];
-    userDataManager->AddSerializableData(tabID, kTabIDKey);
+  NSString* tabId = base::mac::ObjCCast<NSString>(
+      userDataManager->GetValueForSerializationKey(kTabIDKey));
+
+  if (!tabId || ![tabId length]) {
+    tabId = [[NSUUID UUID] UUIDString];
+    userDataManager->AddSerializableData(tabId, kTabIDKey);
   }
-  return base::mac::ObjCCastStrict<NSString>(tabID);
+
+  tabId_.reset([tabId copy]);
+  return tabId_.get();
 }
 
 - (NSString*)openerID {
@@ -910,9 +915,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
          initWithDelegate:fullScreenControllerDelegate
         navigationManager:self.navigationManager
                 sessionID:self.tabId]);
-    if (fullScreenController_) {
-      [self.webController addObserver:fullScreenController_];
-    }
+    [self.webController addObserver:fullScreenController_];
     // If the content of the page was loaded without knowledge of the
     // toolbar position it will be misplaced under the toolbar instead of
     // right below. This happens e.g. in the case of preloading. This is to make
@@ -1754,23 +1757,11 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 }
 
 - (double)lastVisitedTimestamp {
-  DCHECK(self.webState);
-  web::SerializableUserDataManager* userDataManager =
-      web::SerializableUserDataManager::FromWebState(self.webState);
-  id<NSCoding> lastVisitedTimestamp =
-      userDataManager->GetValueForSerializationKey(kLastVisitedTimestampKey);
-  return lastVisitedTimestamp
-             ? base::mac::ObjCCastStrict<NSNumber>(lastVisitedTimestamp)
-                   .doubleValue
-             : 0.;
+  return lastVisitedTimestamp_;
 }
 
 - (void)updateLastVisitedTimestamp {
-  DCHECK(self.webState);
-  web::SerializableUserDataManager* userDataManager =
-      web::SerializableUserDataManager::FromWebState(self.webState);
-  userDataManager->AddSerializableData(@([[NSDate date] timeIntervalSince1970]),
-                                       kLastVisitedTimestampKey);
+  lastVisitedTimestamp_ = [[NSDate date] timeIntervalSince1970];
 }
 
 - (infobars::InfoBarManager*)infoBarManager {
