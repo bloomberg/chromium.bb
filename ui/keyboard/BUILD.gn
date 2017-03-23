@@ -93,6 +93,20 @@ component("keyboard_with_content") {
   ]
 }
 
+static_library("test_support") {
+  testonly = true
+  sources = [
+    "keyboard_test_util.cc",
+    "keyboard_test_util.h",
+  ]
+  deps = [
+    ":keyboard",
+    "//base",
+    "//skia",
+    "//ui/aura",
+  ]
+}
+
 grit("resources_grit") {
   source = "keyboard_resources.grd"
   outputs = [

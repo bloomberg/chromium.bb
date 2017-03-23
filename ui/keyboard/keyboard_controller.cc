@@ -221,6 +221,10 @@ aura::Window* KeyboardController::GetContainerWindow() {
   return container_.get();
 }
 
+aura::Window* KeyboardController::GetContainerWindowWithoutCreationForTest() {
+  return container_.get();
+}
+
 void KeyboardController::NotifyKeyboardBoundsChanging(
     const gfx::Rect& new_bounds) {
   current_keyboard_bounds_ = new_bounds;

@@ -2106,6 +2106,7 @@ test("browser_tests") {
         "../browser/ui/ash/app_list/app_list_controller_ash_browsertest.cc",
         "../browser/ui/ash/chrome_new_window_client_browsertest.cc",
         "../browser/ui/ash/keyboard_controller_browsertest.cc",
+        "../browser/ui/ash/keyboard_end_to_end_browsertest.cc",
         "../browser/ui/ash/launcher/chrome_launcher_controller_impl_browsertest.cc",
         "../browser/ui/ash/launcher/launcher_favicon_loader_browsertest.cc",
         "../browser/ui/ash/multi_user/multi_user_window_manager_test.cc",
@@ -2120,6 +2121,7 @@ test("browser_tests") {
       deps += [
         "//ash/test:ash_with_aura_test_support",
         "//ash/test:test_support_with_content",
+        "//ui/keyboard:test_support",
       ]
 
       if (enable_app_list) {

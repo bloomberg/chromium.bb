@@ -64,8 +64,12 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   ~KeyboardController() override;
 
   // Returns the container for the keyboard, which is owned by
-  // KeyboardController.
+  // KeyboardController. Creates the container if it's not already created.
   aura::Window* GetContainerWindow();
+
+  // Same as GetContainerWindow except that this function doesn't create the
+  // window.
+  aura::Window* GetContainerWindowWithoutCreationForTest();
 
   // Whether the container window for the keyboard has been initialized.
   bool keyboard_container_initialized() const { return container_ != nullptr; }
