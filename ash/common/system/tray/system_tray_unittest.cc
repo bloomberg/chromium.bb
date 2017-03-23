@@ -22,6 +22,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/status_area_widget_test_helper.h"
 #include "ash/test/test_system_tray_item.h"
+#include "ash/wm/window_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
@@ -230,6 +231,42 @@ TEST_F(SystemTrayTest, Activation) {
   ASSERT_TRUE(tray->GetWidget());
   EXPECT_TRUE(tray->GetSystemBubble()->bubble_view()->GetWidget()->IsActive());
   EXPECT_FALSE(widget->IsActive());
+}
+
+// Makes sure that the system tray bubble closes when another window is
+// activated, and does not crash regardless of the initial activation state.
+// Regression test for crbug.com/704432 .
+TEST_F(SystemTrayTest, CloseOnActivation) {
+  SystemTray* tray = GetPrimarySystemTray();
+
+  // Show the system bubble.
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  EXPECT_FALSE(tray->GetSystemBubble()->bubble_view()->GetWidget()->IsActive());
+
+  // Test 1: no crash when there's no active window to begin with.
+  EXPECT_FALSE(wm::GetActiveWindow());
+
+  // Showing a new window and activating it will close the system bubble.
+  std::unique_ptr<views::Widget> widget(CreateTestWidget(
+      nullptr, kShellWindowId_DefaultContainer, gfx::Rect(0, 0, 100, 100)));
+  EXPECT_TRUE(widget->IsActive());
+  EXPECT_FALSE(tray->GetSystemBubble());
+
+  // Show a second widget.
+  std::unique_ptr<views::Widget> second_widget(CreateTestWidget(
+      nullptr, kShellWindowId_DefaultContainer, gfx::Rect(0, 0, 100, 100)));
+  EXPECT_TRUE(second_widget->IsActive());
+
+  // Re-show the system bubble.
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  EXPECT_FALSE(tray->GetSystemBubble()->bubble_view()->GetWidget()->IsActive());
+
+  // Test 2: also no crash when there is a previously active window.
+  EXPECT_TRUE(wm::GetActiveWindow());
+
+  // Re-activate the first widget. The system bubble should hide again.
+  widget->Activate();
+  EXPECT_FALSE(tray->GetSystemBubble());
 }
 
 // Opening and closing the bubble should change the coloring of the tray.

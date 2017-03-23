@@ -197,8 +197,8 @@ class SystemTray::ActivationObserver
     if (bubble_widget == wm_gained_active->GetInternalWidget() ||
         ::wm::HasTransientAncestor(gained_active,
                                    bubble_widget->GetNativeWindow()) ||
-        ::wm::HasTransientAncestor(lost_active,
-                                   bubble_widget->GetNativeWindow())) {
+        (lost_active && ::wm::HasTransientAncestor(
+                            lost_active, bubble_widget->GetNativeWindow()))) {
       return;
     }
 
