@@ -144,6 +144,8 @@ class TestBaselineSet(object):
 
     def __init__(self, host):
         self._host = host
+        self._port = self._host.port_factory.get()
+        self._builder_names = set()
         self._test_prefix_map = collections.defaultdict(list)
 
     def __iter__(self):
@@ -154,10 +156,9 @@ class TestBaselineSet(object):
 
     def _iter_combinations(self):
         """Iterates through (test, build) combinations."""
-        port = self._host.port_factory.get()
         for test_prefix, builds in self._test_prefix_map.iteritems():
-            for build in builds:
-                for test in port.tests([test_prefix]):
+            for test in self._port.tests([test_prefix]):
+                for build in builds:
                     yield (test, build)
 
     def __str__(self):
@@ -172,11 +173,12 @@ class TestBaselineSet(object):
             test_prefix: This can be a full test path, or directory of tests, or a path with globs.
             build: A Build object. This specifies where to fetch baselines from.
         """
+        self._builder_names.add(build.builder_name)
         self._test_prefix_map[test_prefix].append(build)
 
     def all_builders(self):
         """Returns all builder names in in this collection."""
-        return sorted({b.builder_name for _, b in self._iter_combinations()})
+        return self._builder_names
 
 
 class CopyExistingBaselinesInternal(AbstractRebaseliningCommand):
@@ -407,8 +409,9 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         rebaseline_commands = []
         lines_to_remove = {}
 
+        builders_to_fetch_from = self._builders_to_fetch_from(test_baseline_set.all_builders())
         for test, build in test_baseline_set:
-            if build.builder_name not in self._builders_to_fetch_from(test_baseline_set.all_builders()):
+            if build.builder_name not in builders_to_fetch_from:
                 continue
 
             suffixes = self._suffixes_for_actual_failures(test, build)
@@ -458,8 +461,8 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
     def _optimize_baselines(self, test_baseline_set, verbose=False):
         """Returns a list of commands to run in parallel to de-duplicate baselines."""
         tests_to_suffixes = collections.defaultdict(set)
+        builders_to_fetch_from = self._builders_to_fetch_from(test_baseline_set.all_builders())
         for test, build in test_baseline_set:
-            builders_to_fetch_from = self._builders_to_fetch_from(test_baseline_set.all_builders())
             if build.builder_name not in builders_to_fetch_from:
                 continue
             tests_to_suffixes[test].update(self._suffixes_for_actual_failures(test, build))
