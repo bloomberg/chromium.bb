@@ -29,11 +29,11 @@ const int kStreamCloseDelaySeconds = 5;
 
 // Default maximum number of output streams that can be open simultaneously
 // for all platforms.
-const int kDefaultMaxOutputStreams = 32;
+const int kDefaultMaxOutputStreams = 16;
 
 // Default maximum number of input streams that can be open simultaneously
 // for all platforms.
-const int kDefaultMaxInputStreams = 32;
+const int kDefaultMaxInputStreams = 16;
 
 const int kMaxInputChannels = 3;
 
