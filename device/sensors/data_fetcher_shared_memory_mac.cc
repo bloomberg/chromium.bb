@@ -43,13 +43,13 @@ void FetchMotion(SuddenMotionSensor* sensor,
     return;
 
   buffer->seqlock.WriteBegin();
-  buffer->data.accelerationIncludingGravityX = axis_value[0] * kMeanGravity;
-  buffer->data.hasAccelerationIncludingGravityX = true;
-  buffer->data.accelerationIncludingGravityY = axis_value[1] * kMeanGravity;
-  buffer->data.hasAccelerationIncludingGravityY = true;
-  buffer->data.accelerationIncludingGravityZ = axis_value[2] * kMeanGravity;
-  buffer->data.hasAccelerationIncludingGravityZ = true;
-  buffer->data.allAvailableSensorsAreActive = true;
+  buffer->data.acceleration_including_gravity_x = axis_value[0] * kMeanGravity;
+  buffer->data.has_acceleration_including_gravity_x = true;
+  buffer->data.acceleration_including_gravity_y = axis_value[1] * kMeanGravity;
+  buffer->data.has_acceleration_including_gravity_y = true;
+  buffer->data.acceleration_including_gravity_z = axis_value[2] * kMeanGravity;
+  buffer->data.has_acceleration_including_gravity_z = true;
+  buffer->data.all_available_sensors_are_active = true;
   buffer->seqlock.WriteEnd();
 }
 
@@ -103,10 +103,10 @@ void FetchOrientation(SuddenMotionSensor* sensor,
 
   buffer->seqlock.WriteBegin();
   buffer->data.beta = beta;
-  buffer->data.hasBeta = true;
+  buffer->data.has_beta = true;
   buffer->data.gamma = gamma;
-  buffer->data.hasGamma = true;
-  buffer->data.allAvailableSensorsAreActive = true;
+  buffer->data.has_gamma = true;
+  buffer->data.all_available_sensors_are_active = true;
   buffer->seqlock.WriteEnd();
 }
 
@@ -149,7 +149,7 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
       if (!sudden_motion_sensor_available) {
         // No motion sensor available, fire an all-null event.
         motion_buffer_->seqlock.WriteBegin();
-        motion_buffer_->data.allAvailableSensorsAreActive = true;
+        motion_buffer_->data.all_available_sensors_are_active = true;
         motion_buffer_->seqlock.WriteEnd();
       }
       return sudden_motion_sensor_available;
@@ -172,7 +172,7 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
       } else {
         // No motion sensor available, fire an all-null event.
         orientation_buffer_->seqlock.WriteBegin();
-        orientation_buffer_->data.allAvailableSensorsAreActive = true;
+        orientation_buffer_->data.all_available_sensors_are_active = true;
         orientation_buffer_->seqlock.WriteEnd();
       }
       return sudden_motion_sensor_available;
@@ -184,7 +184,8 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
       // implementation fire an all-null event to signal this to blink.
       orientation_absolute_buffer_->seqlock.WriteBegin();
       orientation_absolute_buffer_->data.absolute = true;
-      orientation_absolute_buffer_->data.allAvailableSensorsAreActive = true;
+      orientation_absolute_buffer_->data.all_available_sensors_are_active =
+          true;
       orientation_absolute_buffer_->seqlock.WriteEnd();
       return false;
     }
@@ -215,7 +216,7 @@ bool DataFetcherSharedMemory::Stop(ConsumerType consumer_type) {
     case CONSUMER_TYPE_MOTION:
       if (motion_buffer_) {
         motion_buffer_->seqlock.WriteBegin();
-        motion_buffer_->data.allAvailableSensorsAreActive = false;
+        motion_buffer_->data.all_available_sensors_are_active = false;
         motion_buffer_->seqlock.WriteEnd();
         motion_buffer_ = nullptr;
       }
@@ -223,7 +224,7 @@ bool DataFetcherSharedMemory::Stop(ConsumerType consumer_type) {
     case CONSUMER_TYPE_ORIENTATION:
       if (orientation_buffer_) {
         orientation_buffer_->seqlock.WriteBegin();
-        orientation_buffer_->data.allAvailableSensorsAreActive = false;
+        orientation_buffer_->data.all_available_sensors_are_active = false;
         orientation_buffer_->seqlock.WriteEnd();
         orientation_buffer_ = nullptr;
       }
@@ -231,7 +232,8 @@ bool DataFetcherSharedMemory::Stop(ConsumerType consumer_type) {
     case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
       if (orientation_absolute_buffer_) {
         orientation_absolute_buffer_->seqlock.WriteBegin();
-        orientation_absolute_buffer_->data.allAvailableSensorsAreActive = false;
+        orientation_absolute_buffer_->data.all_available_sensors_are_active =
+            false;
         orientation_absolute_buffer_->seqlock.WriteEnd();
         orientation_absolute_buffer_ = nullptr;
       }

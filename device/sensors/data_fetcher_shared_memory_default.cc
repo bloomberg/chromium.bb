@@ -13,7 +13,7 @@ bool SetMotionBuffer(device::DeviceMotionHardwareBuffer* buffer, bool enabled) {
   if (!buffer)
     return false;
   buffer->seqlock.WriteBegin();
-  buffer->data.allAvailableSensorsAreActive = enabled;
+  buffer->data.all_available_sensors_are_active = enabled;
   buffer->seqlock.WriteEnd();
   return true;
 }
@@ -23,7 +23,7 @@ bool SetOrientationBuffer(device::DeviceOrientationHardwareBuffer* buffer,
   if (!buffer)
     return false;
   buffer->seqlock.WriteBegin();
-  buffer->data.allAvailableSensorsAreActive = enabled;
+  buffer->data.all_available_sensors_are_active = enabled;
   buffer->seqlock.WriteEnd();
   return true;
 }

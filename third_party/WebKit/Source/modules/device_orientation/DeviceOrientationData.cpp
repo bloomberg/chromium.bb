@@ -61,11 +61,11 @@ DeviceOrientationData* DeviceOrientationData::create(
   Nullable<double> alpha;
   Nullable<double> beta;
   Nullable<double> gamma;
-  if (data.hasAlpha)
+  if (data.has_alpha)
     alpha = data.alpha;
-  if (data.hasBeta)
+  if (data.has_beta)
     beta = data.beta;
-  if (data.hasGamma)
+  if (data.has_gamma)
     gamma = data.gamma;
   return DeviceOrientationData::create(alpha, beta, gamma, data.absolute);
 }

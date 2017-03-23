@@ -32,11 +32,11 @@ void SetOrientation(device::DeviceOrientationHardwareBuffer* buffer,
                     double gamma) {
   buffer->seqlock.WriteBegin();
   buffer->data.alpha = alpha;
-  buffer->data.hasAlpha = true;
+  buffer->data.has_alpha = true;
   buffer->data.beta = beta;
-  buffer->data.hasBeta = true;
+  buffer->data.has_beta = true;
   buffer->data.gamma = gamma;
-  buffer->data.hasGamma = true;
+  buffer->data.has_gamma = true;
   buffer->seqlock.WriteEnd();
 }
 
@@ -45,7 +45,7 @@ void SetOrientationBufferStatus(device::DeviceOrientationHardwareBuffer* buffer,
                                 bool absolute) {
   buffer->seqlock.WriteBegin();
   buffer->data.absolute = absolute;
-  buffer->data.allAvailableSensorsAreActive = ready;
+  buffer->data.all_available_sensors_are_active = ready;
   buffer->seqlock.WriteEnd();
 }
 
@@ -132,12 +132,12 @@ void SensorManagerAndroid::GotAcceleration(JNIEnv*,
     return;
 
   device_motion_buffer_->seqlock.WriteBegin();
-  device_motion_buffer_->data.accelerationX = x;
-  device_motion_buffer_->data.hasAccelerationX = true;
-  device_motion_buffer_->data.accelerationY = y;
-  device_motion_buffer_->data.hasAccelerationY = true;
-  device_motion_buffer_->data.accelerationZ = z;
-  device_motion_buffer_->data.hasAccelerationZ = true;
+  device_motion_buffer_->data.acceleration_x = x;
+  device_motion_buffer_->data.has_acceleration_x = true;
+  device_motion_buffer_->data.acceleration_y = y;
+  device_motion_buffer_->data.has_acceleration_y = true;
+  device_motion_buffer_->data.acceleration_z = z;
+  device_motion_buffer_->data.has_acceleration_z = true;
   device_motion_buffer_->seqlock.WriteEnd();
 
   if (!motion_buffer_initialized_) {
@@ -158,12 +158,12 @@ void SensorManagerAndroid::GotAccelerationIncludingGravity(
     return;
 
   device_motion_buffer_->seqlock.WriteBegin();
-  device_motion_buffer_->data.accelerationIncludingGravityX = x;
-  device_motion_buffer_->data.hasAccelerationIncludingGravityX = true;
-  device_motion_buffer_->data.accelerationIncludingGravityY = y;
-  device_motion_buffer_->data.hasAccelerationIncludingGravityY = true;
-  device_motion_buffer_->data.accelerationIncludingGravityZ = z;
-  device_motion_buffer_->data.hasAccelerationIncludingGravityZ = true;
+  device_motion_buffer_->data.acceleration_including_gravity_x = x;
+  device_motion_buffer_->data.has_acceleration_including_gravity_x = true;
+  device_motion_buffer_->data.acceleration_including_gravity_y = y;
+  device_motion_buffer_->data.has_acceleration_including_gravity_y = true;
+  device_motion_buffer_->data.acceleration_including_gravity_z = z;
+  device_motion_buffer_->data.has_acceleration_including_gravity_z = true;
   device_motion_buffer_->seqlock.WriteEnd();
 
   if (!motion_buffer_initialized_) {
@@ -183,12 +183,12 @@ void SensorManagerAndroid::GotRotationRate(JNIEnv*,
     return;
 
   device_motion_buffer_->seqlock.WriteBegin();
-  device_motion_buffer_->data.rotationRateAlpha = alpha;
-  device_motion_buffer_->data.hasRotationRateAlpha = true;
-  device_motion_buffer_->data.rotationRateBeta = beta;
-  device_motion_buffer_->data.hasRotationRateBeta = true;
-  device_motion_buffer_->data.rotationRateGamma = gamma;
-  device_motion_buffer_->data.hasRotationRateGamma = true;
+  device_motion_buffer_->data.rotation_rate_alpha = alpha;
+  device_motion_buffer_->data.has_rotation_rate_alpha = true;
+  device_motion_buffer_->data.rotation_rate_beta = beta;
+  device_motion_buffer_->data.has_rotation_rate_beta = true;
+  device_motion_buffer_->data.rotation_rate_gamma = gamma;
+  device_motion_buffer_->data.has_rotation_rate_gamma = true;
   device_motion_buffer_->seqlock.WriteEnd();
 
   if (!motion_buffer_initialized_) {
@@ -355,7 +355,7 @@ void SensorManagerAndroid::CheckMotionBufferReadyToRead() {
 
 void SensorManagerAndroid::SetMotionBufferReadyStatus(bool ready) {
   device_motion_buffer_->seqlock.WriteBegin();
-  device_motion_buffer_->data.allAvailableSensorsAreActive = ready;
+  device_motion_buffer_->data.all_available_sensors_are_active = ready;
   device_motion_buffer_->seqlock.WriteEnd();
   motion_buffer_initialized_ = ready;
 }

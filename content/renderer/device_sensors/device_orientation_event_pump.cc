@@ -41,20 +41,20 @@ static bool IsSignificantlyDifferent(bool hasAngle1, double angle1,
 
 bool DeviceOrientationEventPumpBase::ShouldFireEvent(
     const device::OrientationData& data) const {
-  if (!data.allAvailableSensorsAreActive)
+  if (!data.all_available_sensors_are_active)
     return false;
 
-  if (!data.hasAlpha && !data.hasBeta && !data.hasGamma) {
+  if (!data.has_alpha && !data.has_beta && !data.has_gamma) {
     // no data can be provided, this is an all-null event.
     return true;
   }
 
-  return IsSignificantlyDifferent(
-             data_.hasAlpha, data_.alpha, data.hasAlpha, data.alpha) ||
-         IsSignificantlyDifferent(
-             data_.hasBeta, data_.beta, data.hasBeta, data.beta) ||
-         IsSignificantlyDifferent(
-             data_.hasGamma, data_.gamma, data.hasGamma, data.gamma);
+  return IsSignificantlyDifferent(data_.has_alpha, data_.alpha, data.has_alpha,
+                                  data.alpha) ||
+         IsSignificantlyDifferent(data_.has_beta, data_.beta, data.has_beta,
+                                  data.beta) ||
+         IsSignificantlyDifferent(data_.has_gamma, data_.gamma, data.has_gamma,
+                                  data.gamma);
 }
 
 bool DeviceOrientationEventPumpBase::InitializeReader(

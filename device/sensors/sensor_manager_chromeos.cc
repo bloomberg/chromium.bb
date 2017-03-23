@@ -48,7 +48,7 @@ bool SensorManagerChromeOS::StopFetchingDeviceMotionData() {
 
   // Make sure to indicate that the sensor data is no longer available.
   motion_buffer_->seqlock.WriteBegin();
-  motion_buffer_->data.allAvailableSensorsAreActive = false;
+  motion_buffer_->data.all_available_sensors_are_active = false;
   motion_buffer_->seqlock.WriteEnd();
 
   motion_buffer_ = nullptr;
@@ -79,7 +79,7 @@ bool SensorManagerChromeOS::StopFetchingDeviceOrientationData() {
     return false;
   // Make sure to indicate that the sensor data is no longer available.
   orientation_buffer_->seqlock.WriteBegin();
-  orientation_buffer_->data.allAvailableSensorsAreActive = false;
+  orientation_buffer_->data.all_available_sensors_are_active = false;
   orientation_buffer_->seqlock.WriteEnd();
   orientation_buffer_ = nullptr;
 
@@ -120,13 +120,13 @@ void SensorManagerChromeOS::GenerateMotionEvent(double x, double y, double z) {
     return;
 
   motion_buffer_->seqlock.WriteBegin();
-  motion_buffer_->data.accelerationIncludingGravityX = x;
-  motion_buffer_->data.hasAccelerationIncludingGravityX = true;
-  motion_buffer_->data.accelerationIncludingGravityY = y;
-  motion_buffer_->data.hasAccelerationIncludingGravityY = true;
-  motion_buffer_->data.accelerationIncludingGravityZ = z;
-  motion_buffer_->data.hasAccelerationIncludingGravityZ = true;
-  motion_buffer_->data.allAvailableSensorsAreActive = true;
+  motion_buffer_->data.acceleration_including_gravity_x = x;
+  motion_buffer_->data.has_acceleration_including_gravity_x = true;
+  motion_buffer_->data.acceleration_including_gravity_y = y;
+  motion_buffer_->data.has_acceleration_including_gravity_y = true;
+  motion_buffer_->data.acceleration_including_gravity_z = z;
+  motion_buffer_->data.has_acceleration_including_gravity_z = true;
+  motion_buffer_->data.all_available_sensors_are_active = true;
   motion_buffer_->seqlock.WriteEnd();
 }
 
@@ -156,10 +156,10 @@ void SensorManagerChromeOS::GenerateOrientationEvent(double x,
     gamma = -90.0f;
   orientation_buffer_->seqlock.WriteBegin();
   orientation_buffer_->data.beta = beta;
-  orientation_buffer_->data.hasBeta = true;
+  orientation_buffer_->data.has_beta = true;
   orientation_buffer_->data.gamma = gamma;
-  orientation_buffer_->data.hasGamma = true;
-  orientation_buffer_->data.allAvailableSensorsAreActive = true;
+  orientation_buffer_->data.has_gamma = true;
+  orientation_buffer_->data.all_available_sensors_are_active = true;
   orientation_buffer_->seqlock.WriteEnd();
 }
 

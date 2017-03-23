@@ -128,19 +128,19 @@ DeviceMotionData* DeviceMotionData::create(const DeviceMotionEventInit& init) {
 DeviceMotionData* DeviceMotionData::create(const device::MotionData& data) {
   return DeviceMotionData::create(
       DeviceMotionData::Acceleration::create(
-          data.hasAccelerationX, data.accelerationX, data.hasAccelerationY,
-          data.accelerationY, data.hasAccelerationZ, data.accelerationZ),
+          data.has_acceleration_x, data.acceleration_x, data.has_acceleration_y,
+          data.acceleration_y, data.has_acceleration_z, data.acceleration_z),
       DeviceMotionData::Acceleration::create(
-          data.hasAccelerationIncludingGravityX,
-          data.accelerationIncludingGravityX,
-          data.hasAccelerationIncludingGravityY,
-          data.accelerationIncludingGravityY,
-          data.hasAccelerationIncludingGravityZ,
-          data.accelerationIncludingGravityZ),
+          data.has_acceleration_including_gravity_x,
+          data.acceleration_including_gravity_x,
+          data.has_acceleration_including_gravity_y,
+          data.acceleration_including_gravity_y,
+          data.has_acceleration_including_gravity_z,
+          data.acceleration_including_gravity_z),
       DeviceMotionData::RotationRate::create(
-          data.hasRotationRateAlpha, data.rotationRateAlpha,
-          data.hasRotationRateBeta, data.rotationRateBeta,
-          data.hasRotationRateGamma, data.rotationRateGamma),
+          data.has_rotation_rate_alpha, data.rotation_rate_alpha,
+          data.has_rotation_rate_beta, data.rotation_rate_beta,
+          data.has_rotation_rate_gamma, data.rotation_rate_gamma),
       data.interval);
 }
 

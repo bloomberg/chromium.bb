@@ -18,13 +18,13 @@ class OrientationData {
   double beta;
   double gamma;
 
-  bool hasAlpha : 1;
-  bool hasBeta : 1;
-  bool hasGamma : 1;
+  bool has_alpha : 1;
+  bool has_beta : 1;
+  bool has_gamma : 1;
 
   bool absolute : 1;
 
-  bool allAvailableSensorsAreActive : 1;
+  bool all_available_sensors_are_active : 1;
 };
 
 static_assert(sizeof(OrientationData) ==

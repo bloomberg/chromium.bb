@@ -119,13 +119,13 @@ class DataFetcherSharedMemory::SensorEventSinkOrientation
     if (buffer_) {
       buffer_->seqlock.WriteBegin();
       buffer_->data.alpha = alpha;
-      buffer_->data.hasAlpha = has_alpha;
+      buffer_->data.has_alpha = has_alpha;
       buffer_->data.beta = beta;
-      buffer_->data.hasBeta = has_beta;
+      buffer_->data.has_beta = has_beta;
       buffer_->data.gamma = gamma;
-      buffer_->data.hasGamma = has_gamma;
+      buffer_->data.has_gamma = has_gamma;
       buffer_->data.absolute = has_alpha || has_beta || has_gamma;
-      buffer_->data.allAvailableSensorsAreActive = true;
+      buffer_->data.all_available_sensors_are_active = true;
       buffer_->seqlock.WriteEnd();
     }
 
@@ -172,21 +172,21 @@ class DataFetcherSharedMemory::SensorEventSinkMotion
 
       if (buffer_) {
         buffer_->seqlock.WriteBegin();
-        buffer_->data.accelerationIncludingGravityX =
+        buffer_->data.acceleration_including_gravity_x =
             -acceleration_including_gravity_x * kMeanGravity;
-        buffer_->data.hasAccelerationIncludingGravityX =
+        buffer_->data.has_acceleration_including_gravity_x =
             has_acceleration_including_gravity_x;
-        buffer_->data.accelerationIncludingGravityY =
+        buffer_->data.acceleration_including_gravity_y =
             -acceleration_including_gravity_y * kMeanGravity;
-        buffer_->data.hasAccelerationIncludingGravityY =
+        buffer_->data.has_acceleration_including_gravity_y =
             has_acceleration_including_gravity_y;
-        buffer_->data.accelerationIncludingGravityZ =
+        buffer_->data.acceleration_including_gravity_z =
             -acceleration_including_gravity_z * kMeanGravity;
-        buffer_->data.hasAccelerationIncludingGravityZ =
+        buffer_->data.has_acceleration_including_gravity_z =
             has_acceleration_including_gravity_z;
         // TODO(timvolodine): consider setting this after all
         // sensors have fired.
-        buffer_->data.allAvailableSensorsAreActive = true;
+        buffer_->data.all_available_sensors_are_active = true;
         buffer_->seqlock.WriteEnd();
       }
 
@@ -203,13 +203,13 @@ class DataFetcherSharedMemory::SensorEventSinkMotion
 
       if (buffer_) {
         buffer_->seqlock.WriteBegin();
-        buffer_->data.rotationRateAlpha = alpha;
-        buffer_->data.hasRotationRateAlpha = has_alpha;
-        buffer_->data.rotationRateBeta = beta;
-        buffer_->data.hasRotationRateBeta = has_beta;
-        buffer_->data.rotationRateGamma = gamma;
-        buffer_->data.hasRotationRateGamma = has_gamma;
-        buffer_->data.allAvailableSensorsAreActive = true;
+        buffer_->data.rotation_rate_alpha = alpha;
+        buffer_->data.has_rotation_rate_alpha = has_alpha;
+        buffer_->data.rotation_rate_beta = beta;
+        buffer_->data.has_rotation_rate_beta = has_beta;
+        buffer_->data.rotation_rate_gamma = gamma;
+        buffer_->data.has_rotation_rate_gamma = has_gamma;
+        buffer_->data.all_available_sensors_are_active = true;
         buffer_->seqlock.WriteEnd();
       }
     }
@@ -455,14 +455,14 @@ void DataFetcherSharedMemory::SetBufferAvailableState(
     case CONSUMER_TYPE_ORIENTATION:
       if (orientation_buffer_) {
         orientation_buffer_->seqlock.WriteBegin();
-        orientation_buffer_->data.allAvailableSensorsAreActive = enabled;
+        orientation_buffer_->data.all_available_sensors_are_active = enabled;
         orientation_buffer_->seqlock.WriteEnd();
       }
       break;
     case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
       if (orientation_absolute_buffer_) {
         orientation_absolute_buffer_->seqlock.WriteBegin();
-        orientation_absolute_buffer_->data.allAvailableSensorsAreActive =
+        orientation_absolute_buffer_->data.all_available_sensors_are_active =
             enabled;
         orientation_absolute_buffer_->seqlock.WriteEnd();
       }
@@ -470,7 +470,7 @@ void DataFetcherSharedMemory::SetBufferAvailableState(
     case CONSUMER_TYPE_MOTION:
       if (motion_buffer_) {
         motion_buffer_->seqlock.WriteBegin();
-        motion_buffer_->data.allAvailableSensorsAreActive = enabled;
+        motion_buffer_->data.all_available_sensors_are_active = enabled;
         motion_buffer_->seqlock.WriteEnd();
       }
       break;

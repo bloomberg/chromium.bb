@@ -2245,31 +2245,31 @@ void TestRunner::SetMockDeviceMotion(bool has_acceleration_x,
   device::MotionData motion;
 
   // acceleration
-  motion.hasAccelerationX = has_acceleration_x;
-  motion.accelerationX = acceleration_x;
-  motion.hasAccelerationY = has_acceleration_y;
-  motion.accelerationY = acceleration_y;
-  motion.hasAccelerationZ = has_acceleration_z;
-  motion.accelerationZ = acceleration_z;
+  motion.has_acceleration_x = has_acceleration_x;
+  motion.acceleration_x = acceleration_x;
+  motion.has_acceleration_y = has_acceleration_y;
+  motion.acceleration_y = acceleration_y;
+  motion.has_acceleration_z = has_acceleration_z;
+  motion.acceleration_z = acceleration_z;
 
   // accelerationIncludingGravity
-  motion.hasAccelerationIncludingGravityX =
+  motion.has_acceleration_including_gravity_x =
       has_acceleration_including_gravity_x;
-  motion.accelerationIncludingGravityX = acceleration_including_gravity_x;
-  motion.hasAccelerationIncludingGravityY =
+  motion.acceleration_including_gravity_x = acceleration_including_gravity_x;
+  motion.has_acceleration_including_gravity_y =
       has_acceleration_including_gravity_y;
-  motion.accelerationIncludingGravityY = acceleration_including_gravity_y;
-  motion.hasAccelerationIncludingGravityZ =
+  motion.acceleration_including_gravity_y = acceleration_including_gravity_y;
+  motion.has_acceleration_including_gravity_z =
       has_acceleration_including_gravity_z;
-  motion.accelerationIncludingGravityZ = acceleration_including_gravity_z;
+  motion.acceleration_including_gravity_z = acceleration_including_gravity_z;
 
   // rotationRate
-  motion.hasRotationRateAlpha = has_rotation_rate_alpha;
-  motion.rotationRateAlpha = rotation_rate_alpha;
-  motion.hasRotationRateBeta = has_rotation_rate_beta;
-  motion.rotationRateBeta = rotation_rate_beta;
-  motion.hasRotationRateGamma = has_rotation_rate_gamma;
-  motion.rotationRateGamma = rotation_rate_gamma;
+  motion.has_rotation_rate_alpha = has_rotation_rate_alpha;
+  motion.rotation_rate_alpha = rotation_rate_alpha;
+  motion.has_rotation_rate_beta = has_rotation_rate_beta;
+  motion.rotation_rate_beta = rotation_rate_beta;
+  motion.has_rotation_rate_gamma = has_rotation_rate_gamma;
+  motion.rotation_rate_gamma = rotation_rate_gamma;
 
   // interval
   motion.interval = interval;
@@ -2287,15 +2287,15 @@ void TestRunner::SetMockDeviceOrientation(bool has_alpha,
   device::OrientationData orientation;
 
   // alpha
-  orientation.hasAlpha = has_alpha;
+  orientation.has_alpha = has_alpha;
   orientation.alpha = alpha;
 
   // beta
-  orientation.hasBeta = has_beta;
+  orientation.has_beta = has_beta;
   orientation.beta = beta;
 
   // gamma
-  orientation.hasGamma = has_gamma;
+  orientation.has_gamma = has_gamma;
   orientation.gamma = gamma;
 
   // absolute

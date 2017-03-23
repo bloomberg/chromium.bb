@@ -88,17 +88,17 @@ class DeviceOrientationEventPumpTest : public testing::Test {
   void InitBuffer() {
     device::OrientationData& data = buffer()->data;
     data.alpha = 1;
-    data.hasAlpha = true;
+    data.has_alpha = true;
     data.beta = 2;
-    data.hasBeta = true;
+    data.has_beta = true;
     data.gamma = 3;
-    data.hasGamma = true;
-    data.allAvailableSensorsAreActive = true;
+    data.has_gamma = true;
+    data.all_available_sensors_are_active = true;
   }
 
   void InitBufferNoData() {
     device::OrientationData& data = buffer()->data;
-    data.allAvailableSensorsAreActive = true;
+    data.all_available_sensors_are_active = true;
   }
 
   MockDeviceOrientationListener* listener() { return listener_.get(); }
@@ -133,13 +133,13 @@ TEST_F(DeviceOrientationEventPumpTest, DidStartPolling) {
 
   const device::OrientationData& received_data = listener()->data();
   EXPECT_TRUE(listener()->did_change_device_orientation());
-  EXPECT_TRUE(received_data.allAvailableSensorsAreActive);
+  EXPECT_TRUE(received_data.all_available_sensors_are_active);
   EXPECT_EQ(1, static_cast<double>(received_data.alpha));
-  EXPECT_TRUE(received_data.hasAlpha);
+  EXPECT_TRUE(received_data.has_alpha);
   EXPECT_EQ(2, static_cast<double>(received_data.beta));
-  EXPECT_TRUE(received_data.hasBeta);
+  EXPECT_TRUE(received_data.has_beta);
   EXPECT_EQ(3, static_cast<double>(received_data.gamma));
-  EXPECT_TRUE(received_data.hasGamma);
+  EXPECT_TRUE(received_data.has_gamma);
 }
 
 TEST_F(DeviceOrientationEventPumpTest, FireAllNullEvent) {
@@ -151,10 +151,10 @@ TEST_F(DeviceOrientationEventPumpTest, FireAllNullEvent) {
 
   const device::OrientationData& received_data = listener()->data();
   EXPECT_TRUE(listener()->did_change_device_orientation());
-  EXPECT_TRUE(received_data.allAvailableSensorsAreActive);
-  EXPECT_FALSE(received_data.hasAlpha);
-  EXPECT_FALSE(received_data.hasBeta);
-  EXPECT_FALSE(received_data.hasGamma);
+  EXPECT_TRUE(received_data.all_available_sensors_are_active);
+  EXPECT_FALSE(received_data.has_alpha);
+  EXPECT_FALSE(received_data.has_beta);
+  EXPECT_FALSE(received_data.has_gamma);
 }
 
 TEST_F(DeviceOrientationEventPumpTest, UpdateRespectsOrientationThreshold) {
@@ -166,13 +166,13 @@ TEST_F(DeviceOrientationEventPumpTest, UpdateRespectsOrientationThreshold) {
 
   const device::OrientationData& received_data = listener()->data();
   EXPECT_TRUE(listener()->did_change_device_orientation());
-  EXPECT_TRUE(received_data.allAvailableSensorsAreActive);
+  EXPECT_TRUE(received_data.all_available_sensors_are_active);
   EXPECT_EQ(1, static_cast<double>(received_data.alpha));
-  EXPECT_TRUE(received_data.hasAlpha);
+  EXPECT_TRUE(received_data.has_alpha);
   EXPECT_EQ(2, static_cast<double>(received_data.beta));
-  EXPECT_TRUE(received_data.hasBeta);
+  EXPECT_TRUE(received_data.has_beta);
   EXPECT_EQ(3, static_cast<double>(received_data.gamma));
-  EXPECT_TRUE(received_data.hasGamma);
+  EXPECT_TRUE(received_data.has_gamma);
 
   buffer()->data.alpha =
       1 + DeviceOrientationEventPump::kOrientationThreshold / 2.0;
@@ -187,13 +187,13 @@ TEST_F(DeviceOrientationEventPumpTest, UpdateRespectsOrientationThreshold) {
   base::RunLoop().Run();
 
   EXPECT_FALSE(listener()->did_change_device_orientation());
-  EXPECT_TRUE(received_data.allAvailableSensorsAreActive);
+  EXPECT_TRUE(received_data.all_available_sensors_are_active);
   EXPECT_EQ(1, static_cast<double>(received_data.alpha));
-  EXPECT_TRUE(received_data.hasAlpha);
+  EXPECT_TRUE(received_data.has_alpha);
   EXPECT_EQ(2, static_cast<double>(received_data.beta));
-  EXPECT_TRUE(received_data.hasBeta);
+  EXPECT_TRUE(received_data.has_beta);
   EXPECT_EQ(3, static_cast<double>(received_data.gamma));
-  EXPECT_TRUE(received_data.hasGamma);
+  EXPECT_TRUE(received_data.has_gamma);
 
   buffer()->data.alpha =
       1 + DeviceOrientationEventPump::kOrientationThreshold;

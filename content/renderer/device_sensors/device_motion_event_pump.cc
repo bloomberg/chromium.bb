@@ -20,7 +20,7 @@ DeviceMotionEventPump::~DeviceMotionEventPump() {
 void DeviceMotionEventPump::FireEvent() {
   DCHECK(listener());
   device::MotionData data;
-  if (reader_->GetLatestData(&data) && data.allAvailableSensorsAreActive)
+  if (reader_->GetLatestData(&data) && data.all_available_sensors_are_active)
     listener()->didChangeDeviceMotion(data);
 }
 

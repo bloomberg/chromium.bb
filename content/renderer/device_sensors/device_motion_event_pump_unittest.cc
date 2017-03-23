@@ -102,13 +102,13 @@ class DeviceMotionEventPumpTest : public testing::Test {
 
   void InitBuffer(bool allAvailableSensorsActive) {
     device::MotionData& data = buffer()->data;
-    data.accelerationX = 1;
-    data.hasAccelerationX = true;
-    data.accelerationY = 2;
-    data.hasAccelerationY = true;
-    data.accelerationZ = 3;
-    data.hasAccelerationZ = true;
-    data.allAvailableSensorsAreActive = allAvailableSensorsActive;
+    data.acceleration_x = 1;
+    data.has_acceleration_x = true;
+    data.acceleration_y = 2;
+    data.has_acceleration_y = true;
+    data.acceleration_z = 3;
+    data.has_acceleration_z = true;
+    data.all_available_sensors_are_active = allAvailableSensorsActive;
   }
 
   MockDeviceMotionListener* listener() { return listener_.get(); }
@@ -142,19 +142,19 @@ TEST_F(DeviceMotionEventPumpTest, DidStartPolling) {
 
   const device::MotionData& received_data = listener()->data();
   EXPECT_TRUE(listener()->did_change_device_motion());
-  EXPECT_TRUE(received_data.hasAccelerationX);
-  EXPECT_EQ(1, static_cast<double>(received_data.accelerationX));
-  EXPECT_TRUE(received_data.hasAccelerationX);
-  EXPECT_EQ(2, static_cast<double>(received_data.accelerationY));
-  EXPECT_TRUE(received_data.hasAccelerationY);
-  EXPECT_EQ(3, static_cast<double>(received_data.accelerationZ));
-  EXPECT_TRUE(received_data.hasAccelerationZ);
-  EXPECT_FALSE(received_data.hasAccelerationIncludingGravityX);
-  EXPECT_FALSE(received_data.hasAccelerationIncludingGravityY);
-  EXPECT_FALSE(received_data.hasAccelerationIncludingGravityZ);
-  EXPECT_FALSE(received_data.hasRotationRateAlpha);
-  EXPECT_FALSE(received_data.hasRotationRateBeta);
-  EXPECT_FALSE(received_data.hasRotationRateGamma);
+  EXPECT_TRUE(received_data.has_acceleration_x);
+  EXPECT_EQ(1, static_cast<double>(received_data.acceleration_x));
+  EXPECT_TRUE(received_data.has_acceleration_x);
+  EXPECT_EQ(2, static_cast<double>(received_data.acceleration_y));
+  EXPECT_TRUE(received_data.has_acceleration_y);
+  EXPECT_EQ(3, static_cast<double>(received_data.acceleration_z));
+  EXPECT_TRUE(received_data.has_acceleration_z);
+  EXPECT_FALSE(received_data.has_acceleration_including_gravity_x);
+  EXPECT_FALSE(received_data.has_acceleration_including_gravity_y);
+  EXPECT_FALSE(received_data.has_acceleration_including_gravity_z);
+  EXPECT_FALSE(received_data.has_rotation_rate_alpha);
+  EXPECT_FALSE(received_data.has_rotation_rate_beta);
+  EXPECT_FALSE(received_data.has_rotation_rate_gamma);
 }
 
 TEST_F(DeviceMotionEventPumpTest, DidStartPollingNotAllSensorsActive) {
@@ -166,18 +166,19 @@ TEST_F(DeviceMotionEventPumpTest, DidStartPollingNotAllSensorsActive) {
   base::RunLoop().Run();
 
   const device::MotionData& received_data = listener()->data();
-  // No change in device motion because allAvailableSensorsAreActive is false.
+  // No change in device motion because all_available_sensors_are_active is
+  // false.
   EXPECT_FALSE(listener()->did_change_device_motion());
-  EXPECT_FALSE(received_data.hasAccelerationX);
-  EXPECT_FALSE(received_data.hasAccelerationX);
-  EXPECT_FALSE(received_data.hasAccelerationY);
-  EXPECT_FALSE(received_data.hasAccelerationZ);
-  EXPECT_FALSE(received_data.hasAccelerationIncludingGravityX);
-  EXPECT_FALSE(received_data.hasAccelerationIncludingGravityY);
-  EXPECT_FALSE(received_data.hasAccelerationIncludingGravityZ);
-  EXPECT_FALSE(received_data.hasRotationRateAlpha);
-  EXPECT_FALSE(received_data.hasRotationRateBeta);
-  EXPECT_FALSE(received_data.hasRotationRateGamma);
+  EXPECT_FALSE(received_data.has_acceleration_x);
+  EXPECT_FALSE(received_data.has_acceleration_x);
+  EXPECT_FALSE(received_data.has_acceleration_y);
+  EXPECT_FALSE(received_data.has_acceleration_z);
+  EXPECT_FALSE(received_data.has_acceleration_including_gravity_x);
+  EXPECT_FALSE(received_data.has_acceleration_including_gravity_y);
+  EXPECT_FALSE(received_data.has_acceleration_including_gravity_z);
+  EXPECT_FALSE(received_data.has_rotation_rate_alpha);
+  EXPECT_FALSE(received_data.has_rotation_rate_beta);
+  EXPECT_FALSE(received_data.has_rotation_rate_gamma);
 }
 
 // Confirm that the frequency of pumping events is not greater than 60Hz. A rate

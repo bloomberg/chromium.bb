@@ -15,33 +15,33 @@ class MotionData {
   MotionData(const MotionData& other);
   ~MotionData() {}
 
-  double accelerationX;
-  double accelerationY;
-  double accelerationZ;
+  double acceleration_x;
+  double acceleration_y;
+  double acceleration_z;
 
-  double accelerationIncludingGravityX;
-  double accelerationIncludingGravityY;
-  double accelerationIncludingGravityZ;
+  double acceleration_including_gravity_x;
+  double acceleration_including_gravity_y;
+  double acceleration_including_gravity_z;
 
-  double rotationRateAlpha;
-  double rotationRateBeta;
-  double rotationRateGamma;
+  double rotation_rate_alpha;
+  double rotation_rate_beta;
+  double rotation_rate_gamma;
 
   double interval;
 
-  bool hasAccelerationX : 1;
-  bool hasAccelerationY : 1;
-  bool hasAccelerationZ : 1;
+  bool has_acceleration_x : 1;
+  bool has_acceleration_y : 1;
+  bool has_acceleration_z : 1;
 
-  bool hasAccelerationIncludingGravityX : 1;
-  bool hasAccelerationIncludingGravityY : 1;
-  bool hasAccelerationIncludingGravityZ : 1;
+  bool has_acceleration_including_gravity_x : 1;
+  bool has_acceleration_including_gravity_y : 1;
+  bool has_acceleration_including_gravity_z : 1;
 
-  bool hasRotationRateAlpha : 1;
-  bool hasRotationRateBeta : 1;
-  bool hasRotationRateGamma : 1;
+  bool has_rotation_rate_alpha : 1;
+  bool has_rotation_rate_beta : 1;
+  bool has_rotation_rate_gamma : 1;
 
-  bool allAvailableSensorsAreActive : 1;
+  bool all_available_sensors_are_active : 1;
 };
 
 static_assert(sizeof(MotionData) == (10 * sizeof(double) + 2 * sizeof(char)),

@@ -87,50 +87,50 @@ class SensorManagerChromeOSTest : public testing::Test {
 TEST_F(SensorManagerChromeOSTest, MotionBuffer) {
   DeviceMotionHardwareBuffer* buffer = motion_buffer();
   EXPECT_FLOAT_EQ(100.0f, buffer->data.interval);
-  EXPECT_FALSE(buffer->data.hasAccelerationIncludingGravityX);
-  EXPECT_FALSE(buffer->data.hasAccelerationIncludingGravityY);
-  EXPECT_FALSE(buffer->data.hasAccelerationIncludingGravityZ);
-  EXPECT_FALSE(buffer->data.hasAccelerationX);
-  EXPECT_FALSE(buffer->data.hasAccelerationY);
-  EXPECT_FALSE(buffer->data.hasAccelerationZ);
-  EXPECT_FALSE(buffer->data.hasRotationRateAlpha);
-  EXPECT_FALSE(buffer->data.hasRotationRateBeta);
-  EXPECT_FALSE(buffer->data.hasRotationRateGamma);
+  EXPECT_FALSE(buffer->data.has_acceleration_including_gravity_x);
+  EXPECT_FALSE(buffer->data.has_acceleration_including_gravity_y);
+  EXPECT_FALSE(buffer->data.has_acceleration_including_gravity_z);
+  EXPECT_FALSE(buffer->data.has_acceleration_x);
+  EXPECT_FALSE(buffer->data.has_acceleration_y);
+  EXPECT_FALSE(buffer->data.has_acceleration_z);
+  EXPECT_FALSE(buffer->data.has_rotation_rate_alpha);
+  EXPECT_FALSE(buffer->data.has_rotation_rate_beta);
+  EXPECT_FALSE(buffer->data.has_rotation_rate_gamma);
 
   OnAccelerationIncludingGravity(0.0f, 0.0f, 1.0f);
-  EXPECT_TRUE(buffer->data.hasAccelerationIncludingGravityX);
-  EXPECT_TRUE(buffer->data.hasAccelerationIncludingGravityY);
-  EXPECT_TRUE(buffer->data.hasAccelerationIncludingGravityZ);
-  EXPECT_FALSE(buffer->data.hasAccelerationX);
-  EXPECT_FALSE(buffer->data.hasAccelerationY);
-  EXPECT_FALSE(buffer->data.hasAccelerationZ);
-  EXPECT_FALSE(buffer->data.hasRotationRateAlpha);
-  EXPECT_FALSE(buffer->data.hasRotationRateBeta);
-  EXPECT_FALSE(buffer->data.hasRotationRateGamma);
-  EXPECT_TRUE(buffer->data.allAvailableSensorsAreActive);
+  EXPECT_TRUE(buffer->data.has_acceleration_including_gravity_x);
+  EXPECT_TRUE(buffer->data.has_acceleration_including_gravity_y);
+  EXPECT_TRUE(buffer->data.has_acceleration_including_gravity_z);
+  EXPECT_FALSE(buffer->data.has_acceleration_x);
+  EXPECT_FALSE(buffer->data.has_acceleration_y);
+  EXPECT_FALSE(buffer->data.has_acceleration_z);
+  EXPECT_FALSE(buffer->data.has_rotation_rate_alpha);
+  EXPECT_FALSE(buffer->data.has_rotation_rate_beta);
+  EXPECT_FALSE(buffer->data.has_rotation_rate_gamma);
+  EXPECT_TRUE(buffer->data.all_available_sensors_are_active);
 
   sensor_manager()->StopFetchingDeviceMotionData();
-  EXPECT_FALSE(buffer->data.allAvailableSensorsAreActive);
+  EXPECT_FALSE(buffer->data.all_available_sensors_are_active);
 }
 
 // Tests that starting to process orientation data will update the associated
 // buffer.
 TEST_F(SensorManagerChromeOSTest, OrientationBuffer) {
   DeviceOrientationHardwareBuffer* buffer = orientation_buffer();
-  EXPECT_FALSE(buffer->data.hasAlpha);
-  EXPECT_FALSE(buffer->data.hasBeta);
-  EXPECT_FALSE(buffer->data.hasGamma);
-  EXPECT_FALSE(buffer->data.allAvailableSensorsAreActive);
+  EXPECT_FALSE(buffer->data.has_alpha);
+  EXPECT_FALSE(buffer->data.has_beta);
+  EXPECT_FALSE(buffer->data.has_gamma);
+  EXPECT_FALSE(buffer->data.all_available_sensors_are_active);
 
   OnAccelerationIncludingGravity(0.0f, 0.0f, 1.0f);
   EXPECT_FLOAT_EQ(0.0f, buffer->data.alpha);
-  EXPECT_FALSE(buffer->data.hasAlpha);
-  EXPECT_TRUE(buffer->data.hasBeta);
-  EXPECT_TRUE(buffer->data.hasGamma);
-  EXPECT_TRUE(buffer->data.allAvailableSensorsAreActive);
+  EXPECT_FALSE(buffer->data.has_alpha);
+  EXPECT_TRUE(buffer->data.has_beta);
+  EXPECT_TRUE(buffer->data.has_gamma);
+  EXPECT_TRUE(buffer->data.all_available_sensors_are_active);
 
   sensor_manager()->StopFetchingDeviceOrientationData();
-  EXPECT_FALSE(buffer->data.allAvailableSensorsAreActive);
+  EXPECT_FALSE(buffer->data.all_available_sensors_are_active);
 }
 
 // Tests a device resting flat.
@@ -138,9 +138,9 @@ TEST_F(SensorManagerChromeOSTest, NeutralOrientation) {
   OnAccelerationIncludingGravity(0.0f, 0.0f, -kMeanGravity);
 
   DeviceMotionHardwareBuffer* motion = motion_buffer();
-  EXPECT_FLOAT_EQ(0.0f, motion->data.accelerationIncludingGravityX);
-  EXPECT_FLOAT_EQ(0.0f, motion->data.accelerationIncludingGravityY);
-  EXPECT_FLOAT_EQ(-kMeanGravity, motion->data.accelerationIncludingGravityZ);
+  EXPECT_FLOAT_EQ(0.0f, motion->data.acceleration_including_gravity_x);
+  EXPECT_FLOAT_EQ(0.0f, motion->data.acceleration_including_gravity_y);
+  EXPECT_FLOAT_EQ(-kMeanGravity, motion->data.acceleration_including_gravity_z);
 
   DeviceOrientationHardwareBuffer* orientation = orientation_buffer();
   EXPECT_FLOAT_EQ(0.0f, orientation->data.beta);
@@ -153,9 +153,9 @@ TEST_F(SensorManagerChromeOSTest, UpsideDown) {
   OnAccelerationIncludingGravity(0.0f, 0.0f, kMeanGravity);
 
   DeviceMotionHardwareBuffer* motion = motion_buffer();
-  EXPECT_FLOAT_EQ(0.0f, motion->data.accelerationIncludingGravityX);
-  EXPECT_FLOAT_EQ(0.0f, motion->data.accelerationIncludingGravityY);
-  EXPECT_FLOAT_EQ(kMeanGravity, motion->data.accelerationIncludingGravityZ);
+  EXPECT_FLOAT_EQ(0.0f, motion->data.acceleration_including_gravity_x);
+  EXPECT_FLOAT_EQ(0.0f, motion->data.acceleration_including_gravity_y);
+  EXPECT_FLOAT_EQ(kMeanGravity, motion->data.acceleration_including_gravity_z);
 
   DeviceOrientationHardwareBuffer* orientation = orientation_buffer();
   EXPECT_FLOAT_EQ(-180.0f, orientation->data.beta);
@@ -168,11 +168,11 @@ TEST_F(SensorManagerChromeOSTest, BeforeUpsideDownBoundary) {
                                  kMeanGravity / 2.0f);
 
   DeviceMotionHardwareBuffer* motion = motion_buffer();
-  EXPECT_FLOAT_EQ(0.0f, motion->data.accelerationIncludingGravityX);
+  EXPECT_FLOAT_EQ(0.0f, motion->data.acceleration_including_gravity_x);
   EXPECT_FLOAT_EQ(-kMeanGravity / 2.0f,
-                  motion->data.accelerationIncludingGravityY);
+                  motion->data.acceleration_including_gravity_y);
   EXPECT_FLOAT_EQ(kMeanGravity / 2.0f,
-                  motion->data.accelerationIncludingGravityZ);
+                  motion->data.acceleration_including_gravity_z);
 
   DeviceOrientationHardwareBuffer* orientation = orientation_buffer();
   EXPECT_FLOAT_EQ(135.0f, orientation->data.beta);
@@ -184,9 +184,9 @@ TEST_F(SensorManagerChromeOSTest, LeftEdge) {
   OnAccelerationIncludingGravity(-kMeanGravity, 0.0f, 0.0f);
 
   DeviceMotionHardwareBuffer* motion = motion_buffer();
-  EXPECT_FLOAT_EQ(-kMeanGravity, motion->data.accelerationIncludingGravityX);
-  EXPECT_FLOAT_EQ(0.0f, motion->data.accelerationIncludingGravityY);
-  EXPECT_FLOAT_EQ(0.0f, motion->data.accelerationIncludingGravityZ);
+  EXPECT_FLOAT_EQ(-kMeanGravity, motion->data.acceleration_including_gravity_x);
+  EXPECT_FLOAT_EQ(0.0f, motion->data.acceleration_including_gravity_y);
+  EXPECT_FLOAT_EQ(0.0f, motion->data.acceleration_including_gravity_z);
 
   DeviceOrientationHardwareBuffer* orientation = orientation_buffer();
   EXPECT_FLOAT_EQ(0.0f, orientation->data.beta);
@@ -199,9 +199,9 @@ TEST_F(SensorManagerChromeOSTest, RightEdge) {
   OnAccelerationIncludingGravity(kMeanGravity, 0.0f, 0.0f);
 
   DeviceMotionHardwareBuffer* motion = motion_buffer();
-  EXPECT_FLOAT_EQ(kMeanGravity, motion->data.accelerationIncludingGravityX);
-  EXPECT_FLOAT_EQ(0.0f, motion->data.accelerationIncludingGravityY);
-  EXPECT_FLOAT_EQ(0.0f, motion->data.accelerationIncludingGravityZ);
+  EXPECT_FLOAT_EQ(kMeanGravity, motion->data.acceleration_including_gravity_x);
+  EXPECT_FLOAT_EQ(0.0f, motion->data.acceleration_including_gravity_y);
+  EXPECT_FLOAT_EQ(0.0f, motion->data.acceleration_including_gravity_z);
 
   DeviceOrientationHardwareBuffer* orientation = orientation_buffer();
   EXPECT_FLOAT_EQ(0.0f, orientation->data.beta);
@@ -216,10 +216,10 @@ TEST_F(SensorManagerChromeOSTest, BeforeRightEdgeBoundary) {
 
   DeviceMotionHardwareBuffer* motion = motion_buffer();
   EXPECT_FLOAT_EQ(kMeanGravity / 2.0f,
-                  motion->data.accelerationIncludingGravityX);
-  EXPECT_FLOAT_EQ(0.0f, motion->data.accelerationIncludingGravityY);
+                  motion->data.acceleration_including_gravity_x);
+  EXPECT_FLOAT_EQ(0.0f, motion->data.acceleration_including_gravity_y);
   EXPECT_FLOAT_EQ(-kMeanGravity / 2.0f,
-                  motion->data.accelerationIncludingGravityZ);
+                  motion->data.acceleration_including_gravity_z);
 
   DeviceOrientationHardwareBuffer* orientation = orientation_buffer();
   EXPECT_FLOAT_EQ(0.0f, orientation->data.beta);

@@ -152,54 +152,54 @@ class FakeDataFetcher : public device::DataFetcherSharedMemory {
 
   void SetMotionBufferReady(device::DeviceMotionHardwareBuffer* buffer) {
     buffer->seqlock.WriteBegin();
-    buffer->data.allAvailableSensorsAreActive = true;
+    buffer->data.all_available_sensors_are_active = true;
     buffer->seqlock.WriteEnd();
   }
 
   void SetOrientationBufferReady(
       device::DeviceOrientationHardwareBuffer* buffer) {
     buffer->seqlock.WriteBegin();
-    buffer->data.allAvailableSensorsAreActive = true;
+    buffer->data.all_available_sensors_are_active = true;
     buffer->seqlock.WriteEnd();
   }
 
   void UpdateMotion(device::DeviceMotionHardwareBuffer* buffer) {
     buffer->seqlock.WriteBegin();
-    buffer->data.accelerationX = 1;
-    buffer->data.hasAccelerationX = true;
-    buffer->data.accelerationY = 2;
-    buffer->data.hasAccelerationY = true;
-    buffer->data.accelerationZ = 3;
-    buffer->data.hasAccelerationZ = true;
+    buffer->data.acceleration_x = 1;
+    buffer->data.has_acceleration_x = true;
+    buffer->data.acceleration_y = 2;
+    buffer->data.has_acceleration_y = true;
+    buffer->data.acceleration_z = 3;
+    buffer->data.has_acceleration_z = true;
 
-    buffer->data.accelerationIncludingGravityX = 4;
-    buffer->data.hasAccelerationIncludingGravityX = true;
-    buffer->data.accelerationIncludingGravityY = 5;
-    buffer->data.hasAccelerationIncludingGravityY = true;
-    buffer->data.accelerationIncludingGravityZ = 6;
-    buffer->data.hasAccelerationIncludingGravityZ = true;
+    buffer->data.acceleration_including_gravity_x = 4;
+    buffer->data.has_acceleration_including_gravity_x = true;
+    buffer->data.acceleration_including_gravity_y = 5;
+    buffer->data.has_acceleration_including_gravity_y = true;
+    buffer->data.acceleration_including_gravity_z = 6;
+    buffer->data.has_acceleration_including_gravity_z = true;
 
-    buffer->data.rotationRateAlpha = 7;
-    buffer->data.hasRotationRateAlpha = true;
-    buffer->data.rotationRateBeta = 8;
-    buffer->data.hasRotationRateBeta = true;
-    buffer->data.rotationRateGamma = 9;
-    buffer->data.hasRotationRateGamma = true;
+    buffer->data.rotation_rate_alpha = 7;
+    buffer->data.has_rotation_rate_alpha = true;
+    buffer->data.rotation_rate_beta = 8;
+    buffer->data.has_rotation_rate_beta = true;
+    buffer->data.rotation_rate_gamma = 9;
+    buffer->data.has_rotation_rate_gamma = true;
 
     buffer->data.interval = 100;
-    buffer->data.allAvailableSensorsAreActive = true;
+    buffer->data.all_available_sensors_are_active = true;
     buffer->seqlock.WriteEnd();
   }
 
   void UpdateOrientation(device::DeviceOrientationHardwareBuffer* buffer) {
     buffer->seqlock.WriteBegin();
     buffer->data.alpha = 1;
-    buffer->data.hasAlpha = true;
+    buffer->data.has_alpha = true;
     buffer->data.beta = 2;
-    buffer->data.hasBeta = true;
+    buffer->data.has_beta = true;
     buffer->data.gamma = 3;
-    buffer->data.hasGamma = true;
-    buffer->data.allAvailableSensorsAreActive = true;
+    buffer->data.has_gamma = true;
+    buffer->data.all_available_sensors_are_active = true;
     buffer->seqlock.WriteEnd();
   }
 
@@ -207,13 +207,13 @@ class FakeDataFetcher : public device::DataFetcherSharedMemory {
       device::DeviceOrientationHardwareBuffer* buffer) {
     buffer->seqlock.WriteBegin();
     buffer->data.alpha = 4;
-    buffer->data.hasAlpha = true;
+    buffer->data.has_alpha = true;
     buffer->data.beta = 5;
-    buffer->data.hasBeta = true;
+    buffer->data.has_beta = true;
     buffer->data.gamma = 6;
-    buffer->data.hasGamma = true;
+    buffer->data.has_gamma = true;
     buffer->data.absolute = true;
-    buffer->data.allAvailableSensorsAreActive = true;
+    buffer->data.all_available_sensors_are_active = true;
     buffer->seqlock.WriteEnd();
   }
 
