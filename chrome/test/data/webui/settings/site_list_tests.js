@@ -388,7 +388,7 @@ cr.define('site_list', function() {
        */
       function openActionMenu(index) {
         var item = testElement.$.listContainer.children[index];
-        var dots = item.querySelector('paper-icon-button');
+        var dots = item.querySelector('#actionMenuButton');
         MockInteractions.tap(dots);
         Polymer.dom.flush();
       }
@@ -445,7 +445,8 @@ cr.define('site_list', function() {
             .then(function(contentType) {
               // Flush to be sure list container is populated.
               Polymer.dom.flush();
-              var dotsMenu = testElement.$.listContainer.querySelector('#dots');
+              var dotsMenu = testElement.$.listContainer.querySelector(
+                  '#actionMenuButton');
               assertFalse(dotsMenu.hidden);
               testElement.setAttribute('read-only-list', true);
               Polymer.dom.flush();
@@ -666,6 +667,48 @@ cr.define('site_list', function() {
             });
       });
 
+      test('reset button works for read-only content types', function() {
+        testElement.readOnlyList = true;
+        Polymer.dom.flush();
+
+        var contentType = settings.ContentSettingsTypes.GEOLOCATION;
+        var categorySubtype = settings.PermissionValues.ALLOW;
+        setUpCategory(contentType, categorySubtype, prefsOneEnabled);
+        return browserProxy.whenCalled('getExceptionList')
+            .then(function(actualContentType) {
+              assertEquals(contentType, actualContentType);
+              assertEquals(categorySubtype, testElement.categorySubtype);
+
+              assertEquals(1, testElement.sites.length);
+              assertEquals(
+                  prefsOneEnabled.exceptions.geolocation[0].origin,
+                  testElement.sites[0].origin);
+
+              Polymer.dom.flush();
+
+              var item = testElement.$.listContainer.children[0];
+
+              // Assert action button is hidden.
+              var dots = item.querySelector('#actionMenuButton');
+              assertTrue(!!dots);
+              assertTrue(dots.hidden);
+
+              // Assert reset button is visible.
+              var resetButton = item.querySelector('#resetSite');
+              assertTrue(!!resetButton);
+              assertFalse(resetButton.hidden);
+
+              MockInteractions.tap(resetButton);
+              return browserProxy.whenCalled(
+                  'resetCategoryPermissionForOrigin');
+            })
+            .then(function(args) {
+              assertEquals('https://foo-allow.com:443', args[0]);
+              assertEquals('https://foo-allow.com:443', args[1]);
+              assertEquals(contentType, args[2]);
+            });
+      });
+
       test('edit action menu opens edit exception dialog', function() {
         setUpCategory(
             settings.ContentSettingsTypes.COOKIES,
@@ -806,7 +849,7 @@ cr.define('site_list', function() {
               testElement.async(resolver.resolve);
               return resolver.promise.then(function() {
                 var item = testElement.$.listContainer.children[0];
-                var dots = item.querySelector('paper-icon-button');
+                var dots = item.querySelector('#actionMenuButton');
                 assertTrue(!!dots);
                 assertTrue(dots.hidden);
               });

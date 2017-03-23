@@ -81,7 +81,11 @@
               <iron-icon icon="[[computeIconControlledBy_(item)]]"></iron-icon>
             </template>
 
-            <paper-icon-button id="dots" icon="cr:more-vert"
+            <paper-icon-button id="resetSite" icon="cr:delete"
+                hidden="[[isResetButtonHidden_(item.source, readOnlyList)]]"
+                on-tap="onResetButtonTap_" alt="$i18n{siteSettingsActionReset}">
+            </paper-icon-button>
+            <paper-icon-button id="actionMenuButton" icon="cr:more-vert"
                 hidden="[[isActionMenuHidden_(item.source, readOnlyList)]]"
                 on-tap="onShowActionMenuTap_" title="$i18n{moreActions}">
             </paper-icon-button>

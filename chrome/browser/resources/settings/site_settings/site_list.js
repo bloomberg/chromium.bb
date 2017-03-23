@@ -62,7 +62,9 @@ Polymer({
      */
     sites: {
       type: Array,
-      value: function() { return []; },
+      value: function() {
+        return [];
+      },
     },
 
     /**
@@ -74,10 +76,10 @@ Polymer({
     },
 
     /**
-      * The type of category this widget is displaying data for. Normally
-      * either 'allow' or 'block', representing which sites are allowed or
-      * blocked respectively.
-      */
+     * The type of category this widget is displaying data for. Normally
+     * either 'allow' or 'block', representing which sites are allowed or
+     * blocked respectively.
+     */
     categorySubtype: {
       type: String,
       value: settings.INVALID_CATEGORY_SUBTYPE,
@@ -128,9 +130,7 @@ Polymer({
     },
   },
 
-  observers: [
-    'configureWidget_(category, categorySubtype)'
-  ],
+  observers: ['configureWidget_(category, categorySubtype)'],
 
   ready: function() {
     this.addWebUIListener('contentSettingSitePermissionChanged',
@@ -206,6 +206,17 @@ Polymer({
    */
   hasSites_: function() {
     return !!this.sites.length;
+  },
+
+  /**
+   * @param {string} source Where the setting came from.
+   * @param {boolean} readOnlyList Whether the site exception list is read-only.
+   * @return {boolean}
+   * @private
+   */
+  isResetButtonHidden_: function(source, readOnlyList) {
+    return this.isExceptionControlled_(source) || this.allSites ||
+        !readOnlyList;
   },
 
   /**
@@ -415,39 +426,42 @@ Polymer({
   },
 
   /**
-   * A handler for activating one of the menu action items.
-   * @param {string} action The permission to set (Allow, Block, SessionOnly,
-   *     etc).
+   * @param {?SiteException} site
    * @private
    */
-  onActionMenuActivate_: function(action) {
-    var origin = this.actionMenuSite_.origin;
-    var incognito = this.actionMenuSite_.incognito;
-    var embeddingOrigin = this.actionMenuSite_.embeddingOrigin;
-    if (action == settings.PermissionValues.DEFAULT) {
-      this.browserProxy.resetCategoryPermissionForOrigin(
-          origin, embeddingOrigin, this.category, incognito);
-    } else {
-      this.browserProxy.setCategoryPermissionForOrigin(
-          origin, embeddingOrigin, this.category, action, incognito);
-    }
+  resetPermissionForOrigin_: function(site) {
+    assert(site);
+    this.browserProxy.resetCategoryPermissionForOrigin(
+        site.origin, site.embeddingOrigin, this.category, site.incognito);
+  },
+
+  /**
+   * @param {string} permissionValue
+   * @private
+   */
+  setPermissionForActionMenuSite_: function(permissionValue) {
+    assert(this.actionMenuSite_);
+    this.browserProxy.setCategoryPermissionForOrigin(
+        this.actionMenuSite_.origin, this.actionMenuSite_.embeddingOrigin,
+        this.category, permissionValue, this.actionMenuSite_.incognito);
   },
 
   /** @private */
   onAllowTap_: function() {
-    this.onActionMenuActivate_(settings.PermissionValues.ALLOW);
+    this.setPermissionForActionMenuSite_(settings.PermissionValues.ALLOW);
     this.closeActionMenu_();
   },
 
   /** @private */
   onBlockTap_: function() {
-    this.onActionMenuActivate_(settings.PermissionValues.BLOCK);
+    this.setPermissionForActionMenuSite_(settings.PermissionValues.BLOCK);
     this.closeActionMenu_();
   },
 
   /** @private */
   onSessionOnlyTap_: function() {
-    this.onActionMenuActivate_(settings.PermissionValues.SESSION_ONLY);
+    this.setPermissionForActionMenuSite_(
+        settings.PermissionValues.SESSION_ONLY);
     this.closeActionMenu_();
   },
 
@@ -468,7 +482,7 @@ Polymer({
 
   /** @private */
   onResetTap_: function() {
-    this.onActionMenuActivate_(settings.PermissionValues.DEFAULT);
+    this.resetPermissionForOrigin_(this.actionMenuSite_);
     this.closeActionMenu_();
   },
 
@@ -488,6 +502,14 @@ Polymer({
     if (item.incognito)
       return loadTimeData.getString('incognitoSite');
     return item.embeddingDisplayName;
+  },
+
+  /**
+   * @param {!{model: !{item: !SiteException}}} e
+   * @private
+   */
+  onResetButtonTap_: function(e) {
+    this.resetPermissionForOrigin_(e.model.item);
   },
 
   /**
