@@ -50,6 +50,7 @@ public class BackgroundGcmScheduler extends BackgroundScheduler {
                                             ? Task.NETWORK_STATE_UNMETERED
                                             : Task.NETWORK_STATE_CONNECTED)
                             .setRequiresCharging(triggerConditions.requirePowerConnected())
+                            .setPersisted(true)
                             .setExtras(taskExtras)
                             .build();
 
