@@ -278,3 +278,14 @@ class ExceptInfoTest(cros_test_lib.TestCase):
     self.assertEqual(except_infos[0].type, ValueError)
     self.assertEqual(except_infos[0].str, message)
     self.assertEqual(except_infos[0].traceback, traceback)
+
+
+class FailureTypeListTests(cros_test_lib.TestCase):
+  """Tests for failure type lists."""
+
+  def testFailureTypeList(self):
+    """Test the current failure names are already added to the type lists."""
+    self.assertTrue(failures_lib.BuildScriptFailure.__name__ in
+                    failures_lib.BUILD_SCRIPT_FAILURE_TYPES)
+    self.assertTrue(failures_lib.PackageBuildFailure.__name__ in
+                    failures_lib.PACKAGE_BUILD_FAILURE_TYPES)

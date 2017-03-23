@@ -15,6 +15,20 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib
 
 
+# Currently, an exception is reported to CIDB failureTabe using the exception
+# class name as the exception_type. failure_message_lib.FailureMessageManager
+# uses the exception_type to decide which StageFailureMessage class to use
+# to rebuild the failure message. Whenever you need to change the names of these
+# classes, please add the new class names to their corresponding type lists,
+# and DO NOT remove the old class names from the type lists.
+# TODO (nxia): instead of using the class name as the exception type when
+# reporting an exception to CIDB, we need to have an attribute like
+# EXCEPTION_CATEGORY (say EXCEPTION_TYPE) and this type cannot be changed or
+# removed from EXCEPTION_TYPE_LIST. But we can add new types to the list.
+BUILD_SCRIPT_FAILURE_TYPES = ('BuildScriptFailure',)
+PACKAGE_BUILD_FAILURE_TYPES = ('PackageBuildFailure',)
+
+
 class StepFailure(Exception):
   """StepFailure exceptions indicate that a cbuildbot step failed.
 
