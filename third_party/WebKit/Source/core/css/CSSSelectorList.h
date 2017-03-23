@@ -81,8 +81,11 @@ class CORE_EXPORT CSSSelectorList {
 
   String selectorsText() const;
 
+  // Selector lists don't know their length, computing it is O(n) and should be
+  // avoided when possible. Instead iterate from first() and using next().
+  unsigned computeLength() const;
+
  private:
-  unsigned length() const;
 
   void deleteSelectorsIfNeeded() {
     if (m_selectorArray)

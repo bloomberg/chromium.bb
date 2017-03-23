@@ -44,7 +44,7 @@ namespace blink {
 CSSSelectorList CSSSelectorList::copy() const {
   CSSSelectorList list;
 
-  unsigned length = this->length();
+  unsigned length = this->computeLength();
   list.m_selectorArray =
       reinterpret_cast<CSSSelector*>(WTF::Partitions::fastMalloc(
           sizeof(CSSSelector) * length, kCSSSelectorTypeName));
@@ -94,7 +94,7 @@ CSSSelectorList CSSSelectorList::adoptSelectorVector(
   return list;
 }
 
-unsigned CSSSelectorList::length() const {
+unsigned CSSSelectorList::computeLength() const {
   if (!m_selectorArray)
     return 0;
   CSSSelector* current = m_selectorArray;

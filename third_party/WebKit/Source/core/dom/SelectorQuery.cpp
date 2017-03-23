@@ -131,7 +131,7 @@ bool SelectorQuery::matches(Element& targetElement) const {
 }
 
 Element* SelectorQuery::closest(Element& targetElement) const {
-  if (m_selectors.size() == 0)
+  if (m_selectors.isEmpty())
     return nullptr;
   if (m_needsUpdatedDistribution)
     targetElement.updateDistribution();
@@ -559,18 +559,11 @@ std::unique_ptr<SelectorQuery> SelectorQuery::adopt(
   return WTF::wrapUnique(new SelectorQuery(std::move(selectorList)));
 }
 
-SelectorQuery::SelectorQuery(CSSSelectorList selectorList) {
-  m_selectorList = std::move(selectorList);
-  DCHECK(m_selectors.isEmpty());
-
-  unsigned selectorCount = 0;
-  for (const CSSSelector* selector = m_selectorList.first(); selector;
-       selector = CSSSelectorList::next(*selector))
-    selectorCount++;
-
-  m_usesDeepCombinatorOrShadowPseudo = false;
-  m_needsUpdatedDistribution = false;
-  m_selectors.reserveInitialCapacity(selectorCount);
+SelectorQuery::SelectorQuery(CSSSelectorList selectorList)
+    : m_selectorList(std::move(selectorList)),
+      m_usesDeepCombinatorOrShadowPseudo(false),
+      m_needsUpdatedDistribution(false) {
+  m_selectors.reserveInitialCapacity(m_selectorList.computeLength());
   for (const CSSSelector* selector = m_selectorList.first(); selector;
        selector = CSSSelectorList::next(*selector)) {
     if (selector->matchesPseudoElement())

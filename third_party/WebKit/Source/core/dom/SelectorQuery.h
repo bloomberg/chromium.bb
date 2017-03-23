@@ -104,6 +104,10 @@ class CORE_EXPORT SelectorQuery {
                typename SelectorQueryTrait::OutputType&) const;
 
   CSSSelectorList m_selectorList;
+  // Contains the list of CSSSelector's to match, but without ones that could
+  // never match like pseudo elements, div::before. This can be empty, while
+  // m_selectorList will never be empty as SelectorQueryCache::add would have
+  // thrown an exception.
   Vector<const CSSSelector*> m_selectors;
   bool m_usesDeepCombinatorOrShadowPseudo : 1;
   bool m_needsUpdatedDistribution : 1;
