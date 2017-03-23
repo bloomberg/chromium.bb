@@ -37,8 +37,8 @@ UI_BASE_EXPORT TouchScreensAvailability GetTouchScreensAvailability();
 UI_BASE_EXPORT int MaxTouchPoints();
 
 // Bit field values indicating available pointer types. Identical to
-// blink::WebSettings::PointerType enums, enforced by compile-time assertions
-// in content/public/common/web_preferences.cc .
+// blink::PointerType enums, enforced by compile-time assertions in
+// content/public/common/web_preferences.cc .
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.ui.base
 // GENERATED_JAVA_PREFIX_TO_STRIP: POINTER_TYPE_
 enum PointerType {
@@ -50,15 +50,14 @@ enum PointerType {
 };
 
 // Bit field values indicating available hover types. Identical to
-// blink::WebSettings::HoverType enums, enforced by compile-time assertions
-// in content/public/common/web_preferences.cc .
+// blink::HoverType enums, enforced by compile-time assertions in
+// content/public/common/web_preferences.cc .
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.ui.base
 // GENERATED_JAVA_PREFIX_TO_STRIP: HOVER_TYPE_
 enum HoverType {
   HOVER_TYPE_NONE = 1 << 0,
   HOVER_TYPE_FIRST = HOVER_TYPE_NONE,
-  HOVER_TYPE_ON_DEMAND = 1 << 1,
-  HOVER_TYPE_HOVER = 1 << 2,
+  HOVER_TYPE_HOVER = 1 << 1,
   HOVER_TYPE_LAST = HOVER_TYPE_HOVER
 };
 

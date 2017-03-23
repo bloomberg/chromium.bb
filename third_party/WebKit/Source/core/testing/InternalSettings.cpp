@@ -457,8 +457,6 @@ void InternalSettings::setAvailableHoverTypes(const String& types,
 
     if (token == "none")
       hoverTypes |= HoverTypeNone;
-    else if (token == "on-demand")
-      hoverTypes |= HoverTypeOnDemand;
     else if (token == "hover")
       hoverTypes |= HoverTypeHover;
     else
@@ -477,8 +475,6 @@ void InternalSettings::setPrimaryHoverType(const String& type,
   HoverType hoverType = HoverTypeNone;
   if (token == "none")
     hoverType = HoverTypeNone;
-  else if (token == "on-demand")
-    hoverType = HoverTypeOnDemand;
   else if (token == "hover")
     hoverType = HoverTypeHover;
   else

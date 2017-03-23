@@ -284,8 +284,8 @@ void DevToolsEmulator::enableMobileEmulation() {
   m_webViewImpl->page()->settings().setPluginsEnabled(false);
   m_webViewImpl->page()->settings().setAvailablePointerTypes(PointerTypeCoarse);
   m_webViewImpl->page()->settings().setPrimaryPointerType(PointerTypeCoarse);
-  m_webViewImpl->page()->settings().setAvailableHoverTypes(HoverTypeOnDemand);
-  m_webViewImpl->page()->settings().setPrimaryHoverType(HoverTypeOnDemand);
+  m_webViewImpl->page()->settings().setAvailableHoverTypes(HoverTypeNone);
+  m_webViewImpl->page()->settings().setPrimaryHoverType(HoverTypeNone);
   m_webViewImpl->page()->settings().setMainFrameResizesAreOrientationChanges(
       true);
   m_webViewImpl->setZoomFactorOverride(1);

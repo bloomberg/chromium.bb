@@ -28,12 +28,9 @@ int GetAvailablePointerTypes() {
 
 // TODO(mustaq@chromium.org): Use mouse detection logic. crbug.com/495634
 int GetAvailableHoverTypes() {
-  // Assume a mouse is there
   int available_hover_types = HOVER_TYPE_HOVER;
   if (IsTouchDevicePresent())
-    available_hover_types |= HOVER_TYPE_ON_DEMAND;
-
-  DCHECK(available_hover_types);
+    available_hover_types |= HOVER_TYPE_NONE;
   return available_hover_types;
 }
 
@@ -75,8 +72,6 @@ PointerType GetPrimaryPointerType(int available_pointer_types) {
 HoverType GetPrimaryHoverType(int available_hover_types) {
   if (available_hover_types & HOVER_TYPE_HOVER)
     return HOVER_TYPE_HOVER;
-  if (available_hover_types & HOVER_TYPE_ON_DEMAND)
-    return HOVER_TYPE_ON_DEMAND;
   DCHECK_EQ(available_hover_types, HOVER_TYPE_NONE);
   return HOVER_TYPE_NONE;
 }

@@ -52,14 +52,15 @@ int GetAvailablePointerTypes() {
 // This method follows the same logic as above but with hover types.
 int GetAvailableHoverTypes() {
   if (base::win::IsTabletDevice(nullptr))
-    return HOVER_TYPE_ON_DEMAND;
-
-  if (GetSystemMetrics(SM_MOUSEPRESENT) == 0)
     return HOVER_TYPE_NONE;
 
-  int available_hover_types = HOVER_TYPE_HOVER;
-  if (IsTouchDevicePresent())
-    available_hover_types |= HOVER_TYPE_ON_DEMAND;
+  int available_hover_types;
+  if (GetSystemMetrics(SM_MOUSEPRESENT) != 0) {
+    available_hover_types = HOVER_TYPE_HOVER;
+    if (IsTouchDevicePresent())
+      available_hover_types |= HOVER_TYPE_NONE;
+  } else
+    available_hover_types = HOVER_TYPE_NONE;
 
   return available_hover_types;
 }
@@ -92,8 +93,6 @@ PointerType GetPrimaryPointerType(int available_pointer_types) {
 HoverType GetPrimaryHoverType(int available_hover_types) {
   if (available_hover_types & HOVER_TYPE_HOVER)
     return HOVER_TYPE_HOVER;
-  if (available_hover_types & HOVER_TYPE_ON_DEMAND)
-    return HOVER_TYPE_ON_DEMAND;
   DCHECK_EQ(available_hover_types, HOVER_TYPE_NONE);
   return HOVER_TYPE_NONE;
 }

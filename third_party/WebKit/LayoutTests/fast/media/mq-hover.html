@@ -20,7 +20,6 @@
             "(hover:none)",
             "(hover:NoNe)",
             "(hover:on-demand)",
-            "(hover:oN-dEmAnd)",
             "(hover:bogusvalue)",
             "(hover:hover)",
             "(hover:HoveR)",
@@ -29,7 +28,6 @@
             "(any-hover:none)",
             "(any-hover:NoNe)",
             "(any-hover:on-demand)",
-            "(any-hover:oN-dEmAnd)",
             "(any-hover:bogusvalue)",
             "(any-hover:hover)",
             "(any-hover:HoveR)"
@@ -45,29 +43,14 @@
         if (!window.internals)
             return;
 
-        log("------------- with 'on-demand' hover -------------");
-        internals.settings.setPrimaryHoverType('on-demand');
-        internals.settings.setAvailableHoverTypes('on-demand');
-        testQueries();
-
         log("------------- with 'hover' hover -------------");
         internals.settings.setPrimaryHoverType('hover');
         internals.settings.setAvailableHoverTypes('hover');
         testQueries();
 
-        log("------------- with 'on-demand' and 'hover' hover, 'hover' is primary -------------");
-        internals.settings.setPrimaryHoverType('hover');
-        internals.settings.setAvailableHoverTypes('on-demand,hover');
-        testQueries();
-
-        log("------------- with 'on-demand' and 'hover' hover, 'on-demand' is primary -------------");
-        internals.settings.setPrimaryHoverType('on-demand');
-        internals.settings.setAvailableHoverTypes('on-demand,hover');
-        testQueries();
-
-        log("------------- with 'none', 'on-demand' and 'hover' hover, 'none' is primary -------------");
+        log("------------- with 'none' and 'hover' hover, 'none' is primary -------------");
         internals.settings.setPrimaryHoverType('none');
-        internals.settings.setAvailableHoverTypes('none,on-demand,hover');
+        internals.settings.setAvailableHoverTypes('none,hover');
         testQueries();
 
         log("------------- with 'none' hover -------------");

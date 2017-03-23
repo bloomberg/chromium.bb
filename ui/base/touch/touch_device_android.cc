@@ -45,12 +45,10 @@ PointerType GetPrimaryPointerType(int available_pointer_types) {
 }
 
 HoverType GetPrimaryHoverType(int available_hover_types) {
-  if (available_hover_types & HOVER_TYPE_ON_DEMAND)
-    return HOVER_TYPE_ON_DEMAND;
-  if (available_hover_types & HOVER_TYPE_HOVER)
-    return HOVER_TYPE_HOVER;
-  DCHECK_EQ(available_hover_types, HOVER_TYPE_NONE);
-  return HOVER_TYPE_NONE;
+  if (available_hover_types & HOVER_TYPE_NONE)
+    return HOVER_TYPE_NONE;
+  DCHECK_EQ(available_hover_types, HOVER_TYPE_HOVER);
+  return HOVER_TYPE_HOVER;
 }
 
 }  // namespace ui

@@ -55,8 +55,7 @@ static inline bool featureWithValidIdent(const String& mediaFeature,
            ident == CSSValueFine;
 
   if (mediaFeature == hoverMediaFeature || mediaFeature == anyHoverMediaFeature)
-    return ident == CSSValueNone || ident == CSSValueOnDemand ||
-           ident == CSSValueHover;
+    return ident == CSSValueNone || ident == CSSValueHover;
 
   if (mediaFeature == scanMediaFeature)
     return ident == CSSValueInterlace || ident == CSSValueProgressive;
