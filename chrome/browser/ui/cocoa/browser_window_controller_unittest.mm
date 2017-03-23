@@ -747,6 +747,16 @@ TEST_F(BrowserWindowControllerTest, TabStripBackgroundViewRedrawTest) {
   [partial_mock verify];
 }
 
+// Test that the window uses Auto Layout. Since frame-based layout and Auto
+// Layout behave differently in subtle ways, we shouldn't start/stop using it
+// accidentally. If we don't want Auto Layout, this test should be changed to
+// expect that chromeContentView has no constraints.
+TEST_F(BrowserWindowControllerTest, UsesAutoLayout) {
+  // If Auto Layout is on, there will be synthesized constraints based on the
+  // view's frame and autoresizing mask.
+  EXPECT_NE(0u, [[[controller_ chromeContentView] constraints] count]);
+}
+
 @interface BrowserWindowControllerFakeFullscreen : BrowserWindowController {
  @private
   // We release the window ourselves, so we don't have to rely on the unittest

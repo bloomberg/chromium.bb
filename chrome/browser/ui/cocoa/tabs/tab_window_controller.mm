@@ -63,6 +63,24 @@
 
 @end
 
+// Subview of the window's contentView, contains everything but the tab strip.
+@interface ChromeContentView : NSView
+@end
+
+@implementation ChromeContentView
+
+// NSView overrides.
+
+// Since Auto Layout and frame-based layout behave differently in small but
+// important ways (e.g. Auto Layout can restrict window resizing, frame-based
+// layout doesn't log a warning when a view's autoresizing mask can't be
+// maintained), ensure that it's on instead of letting it depend on content.
++ (BOOL)requiresConstraintBasedLayout {
+  return YES;
+}
+
+@end
+
 @implementation TabWindowController
 
 - (id)initTabWindowControllerWithTabStrip:(BOOL)hasTabStrip
@@ -80,7 +98,7 @@
   if ((self = [super initWithWindow:window])) {
     [[self window] setDelegate:self];
 
-    chromeContentView_.reset([[NSView alloc]
+    chromeContentView_.reset([[ChromeContentView alloc]
         initWithFrame:NSMakeRect(0, 0, kDefaultWidth, kDefaultHeight)]);
     [chromeContentView_
         setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
