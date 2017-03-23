@@ -23,8 +23,8 @@
     },
     @{
       showcase::kClassForDisplayKey : @"ContentSuggestionsViewController",
-      showcase::kClassForInstantiationKey : @"SCSuggestionsCoordinator",
-      showcase::kUseCaseKey : @"New Suggestions UI",
+      showcase::kClassForInstantiationKey : @"SCContentSuggestionsCoordinator",
+      showcase::kUseCaseKey : @"Content Suggestions UI",
     },
     @{
       showcase::kClassForDisplayKey : @"MenuViewController",

@@ -11,10 +11,10 @@
 #endif
 
 // Tests for the suggestions view controller.
-@interface SCSuggestionsTestCase : ShowcaseTestCase
+@interface SCContentSuggestionsTestCase : ShowcaseTestCase
 @end
 
-@implementation SCSuggestionsTestCase
+@implementation SCContentSuggestionsTestCase
 
 // Tests launching ContentSuggestionsViewController.
 - (void)testLaunchAndTappingCell {

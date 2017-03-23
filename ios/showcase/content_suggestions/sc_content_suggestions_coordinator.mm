@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/showcase/suggestions/sc_suggestions_coordinator.h"
+#import "ios/showcase/content_suggestions/sc_content_suggestions_coordinator.h"
 
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
@@ -12,7 +12,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface SCSuggestionsCoordinator ()
+@interface SCContentSuggestionsCoordinator ()
 
 @property(nonatomic, strong)
     ContentSuggestionsViewController* suggestionViewController;
@@ -20,7 +20,7 @@
 
 @end
 
-@implementation SCSuggestionsCoordinator
+@implementation SCContentSuggestionsCoordinator
 
 @synthesize baseViewController;
 @synthesize suggestionViewController = _suggestionViewController;

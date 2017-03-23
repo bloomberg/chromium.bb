@@ -2,10 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("suggestions") {
+source_set("content_suggestions") {
   sources = [
-    "sc_suggestions_coordinator.h",
-    "sc_suggestions_coordinator.mm",
+    "sc_content_suggestions_coordinator.h",
+    "sc_content_suggestions_coordinator.mm",
   ]
   deps = [
     "//base",
@@ -19,7 +19,7 @@ source_set("suggestions") {
 source_set("eg_tests") {
   testonly = true
   sources = [
-    "sc_suggestions_egtest.mm",
+    "sc_content_suggestions_egtest.mm",
   ]
   deps = [
     "//ios/showcase/test",
