@@ -595,7 +595,7 @@ public class TabPersistentStore extends TabPersister {
             mTabCreatorManager.getTabCreator(isIncognito).createFrozenTab(
                     tabState, tabToRestore.id, restoredIndex);
         } else {
-            if (NewTabPage.isNTPUrl(tabToRestore.url) && !setAsActive) {
+            if (NewTabPage.isNTPUrl(tabToRestore.url) && !setAsActive && !tabToRestore.fromMerge) {
                 Log.i(TAG, "Skipping restore of non-selected NTP.");
                 return;
             }

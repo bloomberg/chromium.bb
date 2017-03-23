@@ -186,6 +186,31 @@ public class TabPersistentStoreUnitTest {
 
     @Test
     @Feature("TabPersistentStore")
+    public void testNtpFromMergeWithNoStateNotIgnoredDuringMerge() {
+        when(mTabModelSelector.isIncognitoSelected()).thenReturn(false);
+        when(mTabModelSelector.getCurrentModel()).thenReturn(mNormalTabModel);
+
+        mPersistentStore = new TabPersistentStore(
+                mPersistencePolicy, mTabModelSelector, mTabCreatorManager, mObserver);
+        mPersistentStore.initializeRestoreVars(false);
+
+        LoadUrlParamsUrlMatcher paramsMatcher = new LoadUrlParamsUrlMatcher(UrlConstants.NTP_URL);
+        Tab emptyNtp = mock(Tab.class);
+        when(mNormalTabCreator.createNewTab(
+                     argThat(paramsMatcher), eq(TabLaunchType.FROM_RESTORE), (Tab) isNull()))
+                .thenReturn(emptyNtp);
+
+        TabRestoreDetails emptyNtpDetails =
+                new TabRestoreDetails(1, 0, false, UrlConstants.NTP_URL, true);
+        mPersistentStore.restoreTab(emptyNtpDetails, null, false);
+
+        verify(mNormalTabCreator)
+                .createNewTab(argThat(new LoadUrlParamsUrlMatcher(UrlConstants.NTP_URL)),
+                        eq(TabLaunchType.FROM_RESTORE), (Tab) isNull());
+    }
+
+    @Test
+    @Feature("TabPersistentStore")
     public void testNtpWithStateNotIgnoredDuringRestore() {
         mPersistentStore = new TabPersistentStore(
                 mPersistencePolicy, mTabModelSelector, mTabCreatorManager, mObserver);
