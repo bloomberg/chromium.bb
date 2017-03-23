@@ -78,3 +78,4 @@ int avcodec_fill_audio_frame(AVFrame *frame, int nb_channels, enum AVSampleForma
 void *av_buffer_get_opaque(const AVBufferRef *buf);
 int av_get_cpu_flags(void);
 void av_max_alloc(size_t max);
+int av_strerror(int errnum, char *errbuf, size_t errbuf_size);
