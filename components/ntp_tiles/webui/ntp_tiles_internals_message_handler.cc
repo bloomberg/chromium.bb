@@ -34,11 +34,6 @@ std::string FormatJson(const base::Value& value) {
 
 }  // namespace
 
-NTPTilesInternalsMessageHandlerClient::NTPTilesInternalsMessageHandlerClient() =
-    default;
-NTPTilesInternalsMessageHandlerClient::
-    ~NTPTilesInternalsMessageHandlerClient() = default;
-
 NTPTilesInternalsMessageHandler::NTPTilesInternalsMessageHandler()
     : client_(nullptr), site_count_(8), weak_ptr_factory_(this) {}
 

@@ -33,6 +33,7 @@ static_library("ntp_tiles") {
     "switches.h",
     "webui/ntp_tiles_internals_message_handler.cc",
     "webui/ntp_tiles_internals_message_handler.h",
+    "webui/ntp_tiles_internals_message_handler_client.cc",
     "webui/ntp_tiles_internals_message_handler_client.h",
     "webui/popular_sites_internals_message_handler.cc",
     "webui/popular_sites_internals_message_handler.h",
