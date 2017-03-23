@@ -12,6 +12,7 @@ component("generic_sensor") {
   output_name = "generic_sensor"
   sources = [
     "generic_sensor_consts.h",
+    "generic_sensor_export.h",
     "linux/sensor_data_linux.cc",
     "linux/sensor_data_linux.h",
     "platform_sensor.cc",

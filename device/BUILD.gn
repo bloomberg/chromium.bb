@@ -64,6 +64,7 @@ test("device_unittests") {
     "bluetooth/test/test_bluetooth_adapter_observer.h",
     "bluetooth/test/test_bluetooth_local_gatt_service_delegate.cc",
     "bluetooth/test/test_bluetooth_local_gatt_service_delegate.h",
+    "bluetooth/uribeacon/uri_encoder_unittest.cc",
     "gamepad/gamepad_provider_unittest.cc",
     "gamepad/gamepad_service_unittest.cc",
     "gamepad/public/interfaces/gamepad_struct_traits_unittest.cc",
@@ -87,6 +88,7 @@ test("device_unittests") {
     "//device/bluetooth",
     "//device/bluetooth:mocks",
     "//device/bluetooth:mojo",
+    "//device/bluetooth/uribeacon",
     "//device/gamepad",
     "//device/gamepad:test_helpers",
     "//device/gamepad/public/interfaces",
@@ -153,6 +155,7 @@ test("device_unittests") {
     sources += [
       "test/test_device_client.cc",
       "test/test_device_client.h",
+      "test/usb_test_gadget.h",
       "test/usb_test_gadget_impl.cc",
       "usb/mojo/device_impl_unittest.cc",
       "usb/mojo/device_manager_impl_unittest.cc",
