@@ -1211,7 +1211,7 @@ void ContentSecurityPolicy::postViolationReport(
   cspReport->setInteger("status-code", violationData.statusCode());
 
   if (experimentalFeaturesEnabled())
-    cspReport->setString("sample", violationData.sample());
+    cspReport->setString("script-sample", violationData.sample());
 
   std::unique_ptr<JSONObject> reportObject = JSONObject::create();
   reportObject->setObject("csp-report", std::move(cspReport));
