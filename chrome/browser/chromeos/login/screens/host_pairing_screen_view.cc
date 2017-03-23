@@ -9,12 +9,13 @@ namespace chromeos {
 namespace host_pairing {
 
 // Keep these constants synced with corresponding constants defined in
-// oobe_screen_host_pairing.js.
+// host-pairing-screen.js.
 const char kContextKeyPage[] = "page";
 const char kContextKeyDeviceName[] = "deviceName";
 const char kContextKeyConfirmationCode[] = "code";
 const char kContextKeyEnrollmentDomain[] = "enrollmentDomain";
 const char kContextKeyUpdateProgress[] = "updateProgress";
+const char kContextKeyEnrollmentError[] = "enrollmentError";
 
 const char kPageWelcome[] = "welcome";
 const char kPageIntializationError[] = "initialization-error";

@@ -27,7 +27,8 @@ Polymer((function() {
       ['code',
        'deviceName',
        'enrollmentDomain',
-       'page'].forEach(this.registerBoundContextField, this);
+       'page',
+       'enrollmentError'].forEach(this.registerBoundContextField, this);
       this.send(CALLBACK_CONTEXT_READY);
     },
 

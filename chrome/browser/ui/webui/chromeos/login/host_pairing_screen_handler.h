@@ -34,6 +34,12 @@ class HostPairingScreenHandler : public HostPairingScreenView,
   void Hide() override;
   void SetDelegate(Delegate* delegate) override;
   void OnContextChanged(const base::DictionaryValue& diff) override;
+  std::string GetErrorStringFromAuthError(
+      const GoogleServiceAuthError& error) override;
+  std::string GetErrorStringFromEnrollmentError(
+      policy::EnrollmentStatus status) override;
+  std::string GetErrorStringFromOtherError(
+      EnterpriseEnrollmentHelper::OtherError error) override;
 
   HostPairingScreenView::Delegate* delegate_ = nullptr;
   bool show_on_init_ = false;

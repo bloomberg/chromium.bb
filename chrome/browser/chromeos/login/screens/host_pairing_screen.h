@@ -85,6 +85,7 @@ class HostPairingScreen
   pairing_chromeos::HostPairingController* remora_controller_ = nullptr;
 
   std::unique_ptr<EnterpriseEnrollmentHelper> enrollment_helper_;
+  std::string enrollment_error_string_;
 
   // Current stage of pairing process.
   Stage current_stage_ = pairing_chromeos::HostPairingController::STAGE_NONE;

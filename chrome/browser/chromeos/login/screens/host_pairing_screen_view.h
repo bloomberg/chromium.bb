@@ -6,10 +6,17 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_HOST_PAIRING_SCREEN_VIEW_H_
 
 #include "base/macros.h"
+#include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 
 namespace base {
 class DictionaryValue;
+}
+
+class GoogleServiceAuthError;
+
+namespace policy {
+class EnrollmentStatus;
 }
 
 namespace chromeos {
@@ -24,6 +31,7 @@ extern const char kContextKeyDeviceName[];
 extern const char kContextKeyConfirmationCode[];
 extern const char kContextKeyEnrollmentDomain[];
 extern const char kContextKeyUpdateProgress[];
+extern const char kContextKeyEnrollmentError[];
 
 // Pages names.
 extern const char kPageWelcome[];
@@ -57,6 +65,13 @@ class HostPairingScreenView {
   virtual void Hide() = 0;
   virtual void SetDelegate(Delegate* delegate) = 0;
   virtual void OnContextChanged(const base::DictionaryValue& diff) = 0;
+
+  virtual std::string GetErrorStringFromAuthError(
+      const GoogleServiceAuthError& error) = 0;
+  virtual std::string GetErrorStringFromEnrollmentError(
+      policy::EnrollmentStatus status) = 0;
+  virtual std::string GetErrorStringFromOtherError(
+      EnterpriseEnrollmentHelper::OtherError error) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HostPairingScreenView);

@@ -106,6 +106,7 @@ void HostPairingScreen::PairingStageChanged(Stage new_stage) {
       // TODO(xdai): Maybe return to the Network Setup page?
       remora_controller_->RemoveObserver(this);
       desired_page = kPageEnrollmentError;
+      context_.SetString(kContextKeyEnrollmentError, enrollment_error_string_);
       break;
     }
     default:
@@ -157,15 +158,18 @@ void HostPairingScreen::OnViewDestroyed(HostPairingScreenView* view) {
 }
 
 void HostPairingScreen::OnAuthError(const GoogleServiceAuthError& error) {
+  enrollment_error_string_ = view_->GetErrorStringFromAuthError(error);
   OnAnyEnrollmentError();
 }
 
 void HostPairingScreen::OnEnrollmentError(policy::EnrollmentStatus status) {
+  enrollment_error_string_ = view_->GetErrorStringFromEnrollmentError(status);
   OnAnyEnrollmentError();
 }
 
 void HostPairingScreen::OnOtherError(
     EnterpriseEnrollmentHelper::OtherError error) {
+  enrollment_error_string_ = view_->GetErrorStringFromOtherError(error);
   OnAnyEnrollmentError();
 }
 
