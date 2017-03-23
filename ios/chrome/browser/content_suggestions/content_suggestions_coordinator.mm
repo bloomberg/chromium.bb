@@ -125,11 +125,10 @@
 - (void)displayContextMenuForArticle:(ContentSuggestionsArticleItem*)articleItem
                              atPoint:(CGPoint)touchLocation
                          atIndexPath:(NSIndexPath*)indexPath {
-  NSString* urlString = base::SysUTF8ToNSString(articleItem.articleURL.spec());
   self.alertCoordinator = [[ActionSheetCoordinator alloc]
       initWithBaseViewController:self.navigationController
-                           title:articleItem.title
-                         message:urlString
+                           title:nil
+                         message:nil
                             rect:CGRectMake(touchLocation.x, touchLocation.y, 0,
                                             0)
                             view:self.suggestionsViewController.collectionView];
