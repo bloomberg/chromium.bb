@@ -25,19 +25,10 @@ async function test()
         InspectorTest.addResult(`${url} ${type} used: ${data.usedSize()} unused: ${data.unusedSize()} total: ${data.size()}`);
     }
 
-    await dumpDecorationsInFile("highlight-in-source.css");
-    await dumpDecorationsInFile("coverage.js");
+    await InspectorTest.dumpDecorations("highlight-in-source.css")
+    await InspectorTest.dumpDecorations("coverage.js")
 
     InspectorTest.completeTest();
-
-    async function dumpDecorationsInFile(file)
-    {
-        await InspectorTest.sourceDecorated(file);
-        var lines = Array.prototype.map.call(document.querySelectorAll(".text-editor-coverage-unused-marker"),
-                                             e => e.parentElement.previousSibling.textContent);
-        InspectorTest.addResult(`Unused lines in ${file}`);
-        InspectorTest.addResult(lines);
-    }
 }
 
 </script>

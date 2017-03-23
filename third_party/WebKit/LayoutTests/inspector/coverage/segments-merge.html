@@ -11,12 +11,12 @@ InspectorTest.preloadModule("coverage");
 function test()
 {
     testAndDump([], []);
-    testAndDump([{end: 10, count: 1, depth: 1}], []);
-    testAndDump([{end: 10, count: 1, depth: 1}], [{end: 10, count: 1, depth: 1}]);
-    testAndDump([{end: 10, count: 1, depth: 1}], [{end: 20, count: 1, depth: 1}]);
-    testAndDump([{end: 10, count: 1, depth: 1}, {end: 20, count: 1, depth: 1}], []);
-    testAndDump([{end: 30, count: 1, depth: 1}], [{end: 10, count: undefined, depth: 0}, {end: 20, count: 2, depth: 1}]);
-    testAndDump([{end: 30, count: undefined, depth: 0}], [{end: 10, count: undefined, depth: 0}, {end: 20, count: 2, depth: 1}]);
+    testAndDump([{end: 10, count: 1}], []);
+    testAndDump([{end: 10, count: 1}], [{end: 10, count: 1}]);
+    testAndDump([{end: 10, count: 1}], [{end: 20, count: 1}]);
+    testAndDump([{end: 10, count: 1}, {end: 20, count: 1}], []);
+    testAndDump([{end: 30, count: 1}], [{end: 10, count: undefined}, {end: 20, count: 2}]);
+    testAndDump([{end: 30, count: undefined}], [{end: 10, count: undefined}, {end: 20, count: 2}]);
 
     InspectorTest.completeTest();
 
@@ -46,8 +46,6 @@ function test()
             if (a[i].end !== b[i].end)
                 return false;
             if (a[i].count !== b[i].count)
-                return false;
-            if (a[i].depth !== b[i].depth)
                 return false;
         }
         return true;

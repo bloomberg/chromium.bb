@@ -12,11 +12,7 @@ async function test()
     InspectorTest.startCoverage();
     await InspectorTest.evaluateInPagePromise("performActions()");
     await InspectorTest.stopCoverage();
-    await InspectorTest.sourceDecorated("coverage.js");
-
-    var lines = Array.prototype.map.call(document.querySelectorAll(".text-editor-coverage-unused-marker"),
-                                         e => e.parentElement.previousSibling.textContent);
-    InspectorTest.addResult(lines);
+    await InspectorTest.dumpDecorations("coverage.js");
     InspectorTest.completeTest();
 }
 </script>

@@ -15,15 +15,12 @@ async function test()
     await InspectorTest.stopCoverage();
     await UI.inspectorView.showPanel("sources");
     var formatter = await inplaceFormatter();
-    await InspectorTest.sourceDecorated("decorations-after-inplace-formatter.css");
+    var sourceFrame = await InspectorTest.sourceDecorated("decorations-after-inplace-formatter.css");
     var decoratorPromise = InspectorTest.addSnifferPromise(Coverage.CoverageView.LineDecorator.prototype, "decorate");
     formatter._formatSourceInPlace();
     await decoratorPromise;
 
-    var lines = Array.prototype.map.call(document.querySelectorAll(".text-editor-coverage-unused-marker"),
-                                         e => e.parentElement.previousSibling.textContent);
-    InspectorTest.addResult("Formatted line numbers of rules that were not used:");
-    InspectorTest.addResult(lines);
+    InspectorTest.dumpDecorationsInSourceFrame(sourceFrame);
     InspectorTest.completeTest();
 
     async function inplaceFormatter()

@@ -25,11 +25,7 @@ async function test()
         }
     }
     await decoratorPromise;
-
-    var lines = Array.prototype.map.call(document.querySelectorAll(".text-editor-coverage-unused-marker"),
-                                         e => e.parentElement.previousSibling.textContent);
-    InspectorTest.addResult("Numbers of lines that were not used in the formatted script:");
-    InspectorTest.addResult(lines);
+    InspectorTest.dumpDecorationsInSourceFrame(UI.panels.sources.visibleView);
     InspectorTest.completeTest();
 }
 </script>

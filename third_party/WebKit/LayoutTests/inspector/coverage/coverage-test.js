@@ -19,8 +19,36 @@ InspectorTest.sourceDecorated = async function(source)
 {
     await UI.inspectorView.showPanel("sources");
     var decoratePromise = InspectorTest.addSnifferPromise(Coverage.CoverageView.LineDecorator.prototype, "decorate");
-    await new Promise(fulfill => InspectorTest.showScriptSource(source, fulfill));
+    var sourceFrame = await new Promise(fulfill => InspectorTest.showScriptSource(source, fulfill));
     await decoratePromise;
+    return sourceFrame;
 }
+
+InspectorTest.dumpDecorations = async function(source)
+{
+    var sourceFrame = await InspectorTest.sourceDecorated(source);
+    InspectorTest.dumpDecorationsInSourceFrame(sourceFrame);
+}
+
+InspectorTest.dumpDecorationsInSourceFrame = function(sourceFrame)
+{
+    var markerMap = new Map([['used', '+'], ['unused', '-'], ['mixed', '*']]);
+
+    var codeMirror = sourceFrame.textEditor.codeMirror();
+    for (var line = 0; line < codeMirror.lineCount(); ++line) {
+        var text = codeMirror.getLine(line);
+        var markerType = ' ';
+        var lineInfo = codeMirror.lineInfo(line);
+        if (!lineInfo)
+            continue;
+        var gutterElement = lineInfo.gutterMarkers && lineInfo.gutterMarkers['CodeMirror-gutter-coverage'];
+        if (gutterElement) {
+            var markerClass = /^text-editor-coverage-(\w*)-marker$/.exec(gutterElement.classList)[1];
+            markerType = markerMap.get(markerClass) || gutterElement.classList;
+        }
+        InspectorTest.addResult(`${line}: ${markerType} ${text}`);
+    }
+}
+
 
 }
