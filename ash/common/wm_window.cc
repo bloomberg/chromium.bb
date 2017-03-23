@@ -26,7 +26,6 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/window_parenting_client.h"
-#include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/mus/window_manager_delegate.h"
 #include "ui/aura/mus/window_mus.h"
@@ -580,7 +579,7 @@ void WmWindow::StackChildBelow(WmWindow* child, WmWindow* target) {
 }
 
 void WmWindow::SetPinned(bool trusted) {
-  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS) {
+  if (WmShell::Get()->IsRunningInMash()) {
     // TODO: fix, see http://crbug.com/622486. With aura-mus pinning may just
     // work.
     NOTIMPLEMENTED();
@@ -613,7 +612,7 @@ views::Widget* WmWindow::GetInternalWidget() {
 }
 
 void WmWindow::CloseWidget() {
-  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS &&
+  if (WmShell::Get()->IsRunningInMash() &&
       aura_window()->GetProperty(kWidgetCreationTypeKey) ==
           WidgetCreationType::FOR_CLIENT) {
     // NOTE: in the FOR_CLIENT case there is not necessarily a widget associated
@@ -675,7 +674,7 @@ WmWindow* WmWindow::GetChildByShellWindowId(int id) {
 }
 
 void WmWindow::ShowResizeShadow(int component) {
-  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS) {
+  if (WmShell::Get()->IsRunningInMash()) {
     // TODO: http://crbug.com/640773.
     return;
   }
@@ -686,7 +685,7 @@ void WmWindow::ShowResizeShadow(int component) {
 }
 
 void WmWindow::HideResizeShadow() {
-  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS) {
+  if (WmShell::Get()->IsRunningInMash()) {
     // TODO: http://crbug.com/640773.
     return;
   }
@@ -757,7 +756,7 @@ void WmWindow::RemoveTransientWindowObserver(
 
 void WmWindow::AddLimitedPreTargetHandler(ui::EventHandler* handler) {
   // In mus AddPreTargetHandler() only works for windows created by this client.
-  DCHECK(aura::Env::GetInstance()->mode() == aura::Env::Mode::LOCAL ||
+  DCHECK(!WmShell::Get()->IsRunningInMash() ||
          Shell::window_tree_client()->WasCreatedByThisClient(
              aura::WindowMus::Get(window_)));
   window_->AddPreTargetHandler(handler);

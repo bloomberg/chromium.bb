@@ -21,7 +21,6 @@
 #include "ash/shell.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "ui/aura/env.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -122,7 +121,7 @@ void WmShelf::CreateShelfWidget(WmWindow* root) {
 
   // TODO: ShelfBezelEventHandler needs to work with mus too.
   // http://crbug.com/636647
-  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::LOCAL)
+  if (!WmShell::Get()->IsRunningInMash())
     bezel_event_handler_ = base::MakeUnique<ShelfBezelEventHandler>(this);
 }
 
@@ -345,7 +344,7 @@ ShelfView* WmShelf::GetShelfViewForTesting() {
 }
 
 void WmShelf::WillDeleteShelfLayoutManager() {
-  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS) {
+  if (WmShell::Get()->IsRunningInMash()) {
     // TODO(sky): this should be removed once Shell is used everywhere.
     ShutdownShelfWidget();
   }
@@ -364,8 +363,7 @@ void WmShelf::WillChangeVisibilityState(ShelfVisibilityState new_state) {
     observer.WillChangeVisibilityState(new_state);
   if (new_state != SHELF_AUTO_HIDE) {
     auto_hide_event_handler_.reset();
-  } else if (!auto_hide_event_handler_ &&
-             aura::Env::GetInstance()->mode() == aura::Env::Mode::LOCAL) {
+  } else if (!auto_hide_event_handler_ && !WmShell::Get()->IsRunningInMash()) {
     auto_hide_event_handler_ =
         base::MakeUnique<AutoHideEventHandler>(shelf_layout_manager());
   }

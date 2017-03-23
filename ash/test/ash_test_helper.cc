@@ -57,6 +57,7 @@ namespace test {
 namespace {
 
 bool IsMash() {
+  // TODO(sky): this won't work correctly for detecting mus vs mash.
   return aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS;
 }
 

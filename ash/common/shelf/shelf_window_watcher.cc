@@ -20,7 +20,6 @@
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
@@ -34,7 +33,7 @@ namespace {
 // Returns the shelf item type, with special temporary behavior for Mash:
 // Mash provides a default shelf item type (TYPE_APP) for non-ignored windows.
 ShelfItemType GetShelfItemType(aura::Window* window) {
-  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::LOCAL ||
+  if (!WmShell::Get()->IsRunningInMash() ||
       window->GetProperty(kShelfItemTypeKey) != TYPE_UNDEFINED) {
     return static_cast<ShelfItemType>(window->GetProperty(kShelfItemTypeKey));
   }

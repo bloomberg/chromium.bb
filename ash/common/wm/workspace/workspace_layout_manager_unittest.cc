@@ -29,7 +29,6 @@
 #include "ash/wm/window_state_aura.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
-#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_types.h"
@@ -399,7 +398,7 @@ TEST_F(WorkspaceLayoutManagerTest, WindowShouldBeOnScreenWhenAdded) {
   // TODO: fix. This test verifies that when a window is added the bounds are
   // adjusted. CreateTestWindow() for mus adds, then sets the bounds (this comes
   // from NativeWidgetAura), which means this test now fails for aura-mus.
-  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS)
+  if (WmShell::Get()->IsRunningInMash())
     return;
 
   // Normal window bounds shouldn't be changed.
@@ -484,7 +483,7 @@ TEST_F(WorkspaceLayoutManagerTest, SizeToWorkArea) {
   // TODO: fix. This test verifies that when a window is added the bounds are
   // adjusted. CreateTestWindow() for mus adds, then sets the bounds (this comes
   // from NativeWidgetAura), which means this test now fails for aura-mus.
-  if (aura::Env::GetInstance()->mode() != aura::Env::Mode::MUS) {
+  if (!WmShell::Get()->IsRunningInMash()) {
     EXPECT_EQ(gfx::Rect(gfx::Point(100, 101), work_area).ToString(),
               window->GetBounds().ToString());
   }
