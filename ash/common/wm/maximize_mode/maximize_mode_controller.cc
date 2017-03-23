@@ -11,6 +11,7 @@
 #include "ash/common/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/default_tick_clock.h"
@@ -92,7 +93,8 @@ MaximizeModeController::MaximizeModeController()
       touchview_usage_interval_start_time_(base::Time::Now()),
       tick_clock_(new base::DefaultTickClock()),
       tablet_mode_switch_is_on_(false),
-      lid_is_closed_(false) {
+      lid_is_closed_(false),
+      weak_factory_(this) {
   Shell::GetInstance()->AddShellObserver(this);
   WmShell::Get()->RecordUserMetricsAction(UMA_MAXIMIZE_MODE_INITIALLY_DISABLED);
 
@@ -104,8 +106,11 @@ MaximizeModeController::MaximizeModeController()
     WmShell::Get()->AddDisplayObserver(this);
     chromeos::AccelerometerReader::GetInstance()->AddObserver(this);
   }
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
-      this);
+  chromeos::PowerManagerClient* power_manager_client =
+      chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+  power_manager_client->AddObserver(this);
+  power_manager_client->GetSwitchStates(base::Bind(
+      &MaximizeModeController::OnGetSwitchStates, weak_factory_.GetWeakPtr()));
 }
 
 MaximizeModeController::~MaximizeModeController() {
@@ -417,6 +422,13 @@ void MaximizeModeController::OnAppTerminating() {
           100 * total_touchview_time_.InSeconds() / total_runtime.InSeconds());
     }
   }
+}
+
+void MaximizeModeController::OnGetSwitchStates(
+    chromeos::PowerManagerClient::LidState lid_state,
+    chromeos::PowerManagerClient::TabletMode tablet_mode) {
+  LidEventReceived(lid_state, base::TimeTicks::Now());
+  TabletModeEventReceived(tablet_mode, base::TimeTicks::Now());
 }
 
 bool MaximizeModeController::WasLidOpenedRecently() const {

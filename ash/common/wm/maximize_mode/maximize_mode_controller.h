@@ -13,6 +13,7 @@
 #include "ash/public/interfaces/touch_view.mojom.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chromeos/accelerometer/accelerometer_reader.h"
 #include "chromeos/accelerometer/accelerometer_types.h"
@@ -120,6 +121,9 @@ class ASH_EXPORT MaximizeModeController :
   void HandleHingeRotation(
       scoped_refptr<const chromeos::AccelerometerUpdate> update);
 
+  void OnGetSwitchStates(chromeos::PowerManagerClient::LidState lid_state,
+                         chromeos::PowerManagerClient::TabletMode tablet_mode);
+
   // Returns true if the lid was recently opened.
   bool WasLidOpenedRecently() const;
 
@@ -188,6 +192,8 @@ class ASH_EXPORT MaximizeModeController :
 
   // The set of touchview observers to be notified about mode changes.
   mojo::InterfacePtrSet<mojom::TouchViewObserver> observers_;
+
+  base::WeakPtrFactory<MaximizeModeController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MaximizeModeController);
 };
