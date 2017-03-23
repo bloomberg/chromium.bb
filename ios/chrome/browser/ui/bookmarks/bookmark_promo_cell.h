@@ -23,7 +23,7 @@
 
 + (NSString*)reuseIdentifier;
 
-@property(nonatomic, assign) id<BookmarkPromoCellDelegate> delegate;
+@property(nonatomic, weak) id<BookmarkPromoCellDelegate> delegate;
 
 @end
 

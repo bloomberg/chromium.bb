@@ -22,8 +22,8 @@ class ChromeBrowserState;
 // This view consists of a table view that shows all the relevant menu items.
 @interface BookmarkMenuView : UIView
 
-@property(nonatomic, assign) id<BookmarkMenuViewDelegate> delegate;
-@property(nonatomic, readonly) BookmarkMenuItem* defaultMenuItem;
+@property(nonatomic, weak) id<BookmarkMenuViewDelegate> delegate;
+@property(nonatomic, weak, readonly) BookmarkMenuItem* defaultMenuItem;
 
 // Designated initializer.
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState

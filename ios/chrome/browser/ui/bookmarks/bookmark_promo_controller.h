@@ -26,7 +26,7 @@ class PrefRegistrySyncable;
 // and handles displaying the sign-in view controller.
 @interface BookmarkPromoController : NSObject
 
-@property(nonatomic, assign) id<BookmarkPromoControllerDelegate> delegate;
+@property(nonatomic, weak) id<BookmarkPromoControllerDelegate> delegate;
 
 // Holds the current state of the promo. When the promo state change, it will
 // call the promoStateChanged: selector on the delegate.

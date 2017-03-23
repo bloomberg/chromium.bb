@@ -4,16 +4,16 @@
 
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_waiting_view.h"
 
-#include "base/mac/objc_property_releaser.h"
-#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/material_components/activity_indicator.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/third_party/material_components_ios/src/components/ActivityIndicator/src/MaterialActivityIndicator.h"
 
-@interface BookmarkHomeWaitingView ()<MDCActivityIndicatorDelegate> {
-  base::mac::ObjCPropertyReleaser _propertyReleaser_BookmarkHomeWaitingView;
-}
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
+@interface BookmarkHomeWaitingView ()<MDCActivityIndicatorDelegate>
 @property(nonatomic, retain) MDCActivityIndicator* activityIndicator;
 @property(nonatomic, copy) ProceduralBlock animateOutCompletionBlock;
 @end
@@ -26,8 +26,6 @@
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
-    _propertyReleaser_BookmarkHomeWaitingView.Init(
-        self, [BookmarkHomeWaitingView class]);
     self.backgroundColor = bookmark_utils_ios::mainBackgroundColor();
     self.autoresizingMask =
         UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -39,8 +37,8 @@
   dispatch_time_t delayForIndicatorAppearance =
       dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC));
   dispatch_after(delayForIndicatorAppearance, dispatch_get_main_queue(), ^{
-    base::scoped_nsobject<MDCActivityIndicator> activityIndicator(
-        [[MDCActivityIndicator alloc] initWithFrame:CGRectMake(0, 0, 24, 24)]);
+    MDCActivityIndicator* activityIndicator =
+        [[MDCActivityIndicator alloc] initWithFrame:CGRectMake(0, 0, 24, 24)];
     self.activityIndicator = activityIndicator;
     self.activityIndicator.delegate = self;
     self.activityIndicator.autoresizingMask =

@@ -69,8 +69,8 @@ class BookmarkModelBridge : public BookmarkModelObserver {
   void BookmarkAllUserNodesRemoved(BookmarkModel* model,
                                    const std::set<GURL>& removed_urls) override;
 
-  id<BookmarkModelBridgeObserver> observer_;  // weak
-  BookmarkModel* model_;                      // weak
+  __weak id<BookmarkModelBridgeObserver> observer_;
+  BookmarkModel* model_;  // weak
 };
 }  // namespace bookmarks
 

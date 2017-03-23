@@ -42,12 +42,12 @@
 // programmatic animation.
 - (BOOL)userDrivenAnimationInProgress;
 
-@property(nonatomic, assign) id<BookmarkPanelViewDelegate> delegate;
+@property(nonatomic, weak) id<BookmarkPanelViewDelegate> delegate;
 
 // These views should not be modified directly. Instead, subviews should be
 // added to each to create the desired UI.
-@property(nonatomic, retain, readonly) UIView* contentView;
-@property(nonatomic, retain, readonly) UIView* menuView;
+@property(nonatomic, strong, readonly) UIView* contentView;
+@property(nonatomic, strong, readonly) UIView* menuView;
 
 // Whether the menu is being shown. If a user-driven animation is in progress,
 // this property reflects the state of the menu at the beginning of the

@@ -51,16 +51,16 @@ class ChromeBrowserState;
 
 #pragma mark - Properties Relevant To Presenters
 
-@property(nonatomic, assign) id<BookmarkHomeViewControllerDelegate> delegate;
+@property(nonatomic, weak) id<BookmarkHomeViewControllerDelegate> delegate;
 
 #pragma mark - Properties Relevant To Subclasses
 
 // Whether the view controller is in editing mode.
 @property(nonatomic, assign, readonly) BOOL editing;
 // The set of selected index paths for edition.
-@property(nonatomic, retain, readonly) NSMutableArray* editIndexPaths;
+@property(nonatomic, strong, readonly) NSMutableArray* editIndexPaths;
 @property(nonatomic, assign, readonly) bookmarks::BookmarkModel* bookmarks;
-@property(nonatomic, assign, readonly) id<UrlLoader> loader;
+@property(nonatomic, weak, readonly) id<UrlLoader> loader;
 @property(nonatomic, assign, readonly) ios::ChromeBrowserState* browserState;
 
 #pragma mark - Relevant Methods

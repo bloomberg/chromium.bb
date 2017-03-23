@@ -14,7 +14,7 @@
 @interface BookmarkMenuCell : UITableViewCell
 
 // The view used to display the ink effect.
-@property(nonatomic, retain) MDCInkView* inkView;
+@property(nonatomic, strong) MDCInkView* inkView;
 
 // Updates the UI of the cell to reflect the menu item.
 - (void)updateWithBookmarkMenuItem:(BookmarkMenuItem*)item

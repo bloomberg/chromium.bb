@@ -24,7 +24,7 @@ class UndoManagerBridge : public UndoManagerObserver {
 
  private:
   void OnUndoManagerStateChange() override;
-  id<UndoManagerBridgeObserver> observer_;
+  __weak id<UndoManagerBridgeObserver> observer_;
 };
 }  // namespace bookmarks
 

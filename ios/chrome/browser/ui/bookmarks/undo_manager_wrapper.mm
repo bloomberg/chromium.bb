@@ -12,6 +12,10 @@
 #include "ios/chrome/browser/ui/bookmarks/undo_manager_bridge_observer.h"
 #include "ios/chrome/browser/undo/bookmark_undo_service_factory.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface UndoManagerWrapper ()<UndoManagerBridgeObserver> {
   std::unique_ptr<bookmarks::UndoManagerBridge> _bridge;
 }
@@ -42,7 +46,6 @@
 
 - (void)dealloc {
   _undoManager->RemoveObserver(_bridge.get());
-  [super dealloc];
 }
 
 #pragma mark - Public Methods

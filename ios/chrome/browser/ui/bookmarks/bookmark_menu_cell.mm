@@ -4,8 +4,6 @@
 
 #import "ios/chrome/browser/ui/bookmarks/bookmark_menu_cell.h"
 
-#include "base/mac/objc_property_releaser.h"
-#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_menu_item.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
@@ -15,23 +13,25 @@
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 CGFloat kTrailingMargin = 16.0;
 }  // namespace
 
-@interface BookmarkMenuCell () {
-  base::mac::ObjCPropertyReleaser _propertyReleaser_BookmarkMenuCell;
-}
+@interface BookmarkMenuCell ()
 // Set to YES if the cell can be selected.
 @property(nonatomic, assign) BOOL isSelectable;
 // Set to YES if the cell should animate on selection.
 @property(nonatomic, assign) BOOL shouldAnimateHighlight;
 // Icon view.
-@property(nonatomic, assign) UIImageView* iconView;
+@property(nonatomic, weak) UIImageView* iconView;
 // Text label.
-@property(nonatomic, assign) UILabel* itemLabel;
+@property(nonatomic, weak) UILabel* itemLabel;
 // Separator view. Displayed at 1 pixel height on top for some cells.
-@property(nonatomic, assign) UIView* separatorView;
+@property(nonatomic, weak) UIView* separatorView;
 @end
 
 @implementation BookmarkMenuCell
@@ -46,22 +46,20 @@ CGFloat kTrailingMargin = 16.0;
               reuseIdentifier:(NSString*)reuseIdentifier {
   self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
   if (self) {
-    _propertyReleaser_BookmarkMenuCell.Init(self, [BookmarkMenuCell class]);
-
     // Create icon view.
-    base::scoped_nsobject<UIImageView> iconView([[UIImageView alloc] init]);
+    UIImageView* iconView = [[UIImageView alloc] init];
     _iconView = iconView;
 
     // Create item label.
-    base::scoped_nsobject<UILabel> itemLabel([[UILabel alloc] init]);
+    UILabel* itemLabel = [[UILabel alloc] init];
     _itemLabel = itemLabel;
 
     self.contentView.layoutMargins = UIEdgeInsetsMakeDirected(
         0, bookmark_utils_ios::menuMargin, 0, kTrailingMargin);
 
     // Create stack view.
-    UIStackView* contentStack = [[[UIStackView alloc]
-        initWithArrangedSubviews:@[ iconView, itemLabel ]] autorelease];
+    UIStackView* contentStack =
+        [[UIStackView alloc] initWithArrangedSubviews:@[ iconView, itemLabel ]];
     [self.contentView addSubview:contentStack];
 
     contentStack.spacing = bookmark_utils_ios::titleToIconDistance;
@@ -86,8 +84,7 @@ CGFloat kTrailingMargin = 16.0;
     [self addSubview:_inkView];
 
     // Add separator view.
-    base::scoped_nsobject<UIView> separatorView(
-        [[UIView alloc] initWithFrame:CGRectZero]);
+    UIView* separatorView = [[UIView alloc] initWithFrame:CGRectZero];
     [self.contentView addSubview:separatorView];
     _separatorView = separatorView;
 

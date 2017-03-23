@@ -7,8 +7,7 @@
 #import <QuartzCore/QuartzCore.h>
 
 #include "base/logging.h"
-#import "base/mac/objc_property_releaser.h"
-#import "base/mac/scoped_nsobject.h"
+
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
@@ -19,6 +18,10 @@
 #import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 const CGFloat kPadding = 16;
@@ -28,13 +31,13 @@ const CGFloat kSubtitleButtonsSpace = 8;
 const CGFloat kButtonsSpace = 8;
 
 void SetTextWithLineHeight(UILabel* label, NSString* text, CGFloat lineHeight) {
-  base::scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
-      [[NSMutableParagraphStyle alloc] init]);
+  NSMutableParagraphStyle* paragraphStyle =
+      [[NSMutableParagraphStyle alloc] init];
   [paragraphStyle setMinimumLineHeight:lineHeight];
   [paragraphStyle setMaximumLineHeight:lineHeight];
   NSDictionary* attributes = @{NSParagraphStyleAttributeName : paragraphStyle};
-  base::scoped_nsobject<NSAttributedString> attributedString(
-      [[NSAttributedString alloc] initWithString:text attributes:attributes]);
+  NSAttributedString* attributedString =
+      [[NSAttributedString alloc] initWithString:text attributes:attributes];
   label.attributedText = attributedString;
 }
 
@@ -45,10 +48,10 @@ void SetTextWithLineHeight(UILabel* label, NSString* text, CGFloat lineHeight) {
 // differently within the BookmarkPromoCell.
 @interface BookmarkPromoView : UIView
 
-@property(nonatomic, assign) UILabel* titleLabel;
-@property(nonatomic, assign) UILabel* subtitleLabel;
-@property(nonatomic, assign) MDCFlatButton* signInButton;
-@property(nonatomic, assign) MDCFlatButton* dismissButton;
+@property(nonatomic, weak) UILabel* titleLabel;
+@property(nonatomic, weak) UILabel* subtitleLabel;
+@property(nonatomic, weak) MDCFlatButton* signInButton;
+@property(nonatomic, weak) MDCFlatButton* dismissButton;
 
 @end
 
@@ -70,7 +73,8 @@ void SetTextWithLineHeight(UILabel* label, NSString* text, CGFloat lineHeight) {
     self.accessibilityIdentifier = @"promo_view";
 
     // The title.
-    _titleLabel = [[[UILabel alloc] init] autorelease];
+    UILabel* titleLabel = [[UILabel alloc] init];
+    _titleLabel = titleLabel;
     _titleLabel.textColor = bookmark_utils_ios::darkTextColor();
     _titleLabel.font =
         [[MDFRobotoFontLoader sharedInstance] mediumFontOfSize:16];
@@ -82,7 +86,8 @@ void SetTextWithLineHeight(UILabel* label, NSString* text, CGFloat lineHeight) {
     [self addSubview:_titleLabel];
 
     // The subtitle.
-    _subtitleLabel = [[[UILabel alloc] init] autorelease];
+    UILabel* subtitleLabel = [[UILabel alloc] init];
+    _subtitleLabel = subtitleLabel;
     _subtitleLabel.textColor = bookmark_utils_ios::darkTextColor();
     _subtitleLabel.font =
         [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:14];
@@ -94,7 +99,8 @@ void SetTextWithLineHeight(UILabel* label, NSString* text, CGFloat lineHeight) {
     [self addSubview:_subtitleLabel];
 
     // The sign-in button.
-    _signInButton = [[[MDCFlatButton alloc] init] autorelease];
+    MDCFlatButton* signInButton = [[MDCFlatButton alloc] init];
+    _signInButton = signInButton;
     [_signInButton setBackgroundColor:[[MDCPalette cr_bluePalette] tint500]
                              forState:UIControlStateNormal];
     _signInButton.customTitleColor = [UIColor whiteColor];
@@ -107,7 +113,8 @@ void SetTextWithLineHeight(UILabel* label, NSString* text, CGFloat lineHeight) {
     [self addSubview:_signInButton];
 
     // The dismiss button.
-    _dismissButton = [[[MDCFlatButton alloc] init] autorelease];
+    MDCFlatButton* dismissButton = [[MDCFlatButton alloc] init];
+    _dismissButton = dismissButton;
     [_dismissButton
         setTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_PROMO_DISMISS_BUTTON)
         forState:UIControlStateNormal];
@@ -152,11 +159,10 @@ void SetTextWithLineHeight(UILabel* label, NSString* text, CGFloat lineHeight) {
 @end
 
 @interface BookmarkPromoCell () {
-  base::mac::ObjCPropertyReleaser _propertyReleaser_BookmarkPromoCell;
 }
-@property(nonatomic, assign) BookmarkPromoView* promoView;
-@property(nonatomic, retain) NSArray* compactContentViewConstraints;
-@property(nonatomic, retain) NSArray* regularContentViewConstraints;
+@property(nonatomic, weak) BookmarkPromoView* promoView;
+@property(nonatomic, strong) NSArray* compactContentViewConstraints;
+@property(nonatomic, strong) NSArray* regularContentViewConstraints;
 @end
 
 @implementation BookmarkPromoCell
@@ -177,10 +183,11 @@ void SetTextWithLineHeight(UILabel* label, NSString* text, CGFloat lineHeight) {
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
-    _propertyReleaser_BookmarkPromoCell.Init(self, [BookmarkPromoCell class]);
     self.contentView.translatesAutoresizingMaskIntoConstraints = NO;
 
-    _promoView = [[[BookmarkPromoView alloc] initWithFrame:frame] autorelease];
+    BookmarkPromoView* promoView =
+        [[BookmarkPromoView alloc] initWithFrame:frame];
+    _promoView = promoView;
     [_promoView.signInButton addTarget:self
                                 action:@selector(signIn:)
                       forControlEvents:UIControlEventTouchUpInside];

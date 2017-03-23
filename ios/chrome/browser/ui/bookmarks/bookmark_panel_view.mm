@@ -5,31 +5,24 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_panel_view.h"
 
 #include "base/logging.h"
-#include "base/mac/objc_property_releaser.h"
-#include "base/mac/scoped_nsobject.h"
+
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 // The position of the MenuViewWrapper doesn't change, but its subview menuView
 // can slide horizontally. This UIView subclass decides whether to swallow
 // touches based on the transform of its subview, since its subview might lie
 // outsides the bounds of itself.
-@interface MenuViewWrapper : UIView {
-  base::mac::ObjCPropertyReleaser _propertyReleaser_MenuViewWrapper;
-}
-@property(nonatomic, retain) UIView* menuView;
+@interface MenuViewWrapper : UIView
+@property(nonatomic, strong) UIView* menuView;
 @end
 
 @implementation MenuViewWrapper
 @synthesize menuView = _menuView;
-
-- (id)initWithFrame:(CGRect)frame {
-  self = [super initWithFrame:frame];
-  if (self) {
-    _propertyReleaser_MenuViewWrapper.Init(self, [MenuViewWrapper class]);
-  }
-  return self;
-}
 
 - (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent*)event {
   return CGRectContainsPoint(self.menuView.frame, point);
@@ -38,26 +31,25 @@
 @end
 
 @interface BookmarkPanelView ()<UIGestureRecognizerDelegate> {
-  base::mac::ObjCPropertyReleaser _propertyReleaser_BookmarkPanelView;
 }
 // The content view always has the same size as this view.
 // Redefined to be read-write.
-@property(nonatomic, retain) UIView* contentView;
+@property(nonatomic, strong) UIView* contentView;
 // When the menu is showing, the cover partially obscures the content view.
-@property(nonatomic, retain) UIView* contentViewCover;
+@property(nonatomic, strong) UIView* contentViewCover;
 // The menu view's frame never changes. Sliding it left and right is performed
 // by changing its transform property.
 // Redefined to be read-write.
-@property(nonatomic, retain) UIView* menuView;
+@property(nonatomic, strong) UIView* menuView;
 // The menu view's layout is adjusted by changing its transform property.
 // Changing the transform property results in a layoutSubviews call to the
 // parentView. To prevent confusion to the origin of the layoutSubview call, the
 // menu is placed inside a wrapper. The wrapper is always placed offscreen to
 // the left. It requires a UIView subclass to correctly decide whether touches
 // should make it to the menuView.
-@property(nonatomic, retain) MenuViewWrapper* menuViewWrapper;
+@property(nonatomic, strong) MenuViewWrapper* menuViewWrapper;
 @property(nonatomic, assign) CGFloat menuWidth;
-@property(nonatomic, retain) UIPanGestureRecognizer* panRecognizer;
+@property(nonatomic, strong) UIPanGestureRecognizer* panRecognizer;
 
 // This property corresponds to whether startPoint is valid. It also reflects
 // whether this class is responding to a user-driven animation.
@@ -123,44 +115,38 @@
 - (id)initWithFrame:(CGRect)frame menuViewWidth:(CGFloat)width {
   self = [super initWithFrame:frame];
   if (self) {
-    _propertyReleaser_BookmarkPanelView.Init(self, [BookmarkPanelView class]);
-
     DCHECK(width);
     _menuWidth = width;
 
-    self.contentView = base::scoped_nsobject<UIView>([[UIView alloc] init]);
+    self.contentView = [[UIView alloc] init];
     self.contentView.autoresizingMask =
         UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     [self addSubview:self.contentView];
 
-    self.contentViewCover =
-        base::scoped_nsobject<UIView>([[UIView alloc] init]);
+    self.contentViewCover = [[UIView alloc] init];
     [self addSubview:self.contentViewCover];
     self.contentViewCover.backgroundColor =
         [UIColor colorWithWhite:0 alpha:0.8];
     self.contentViewCover.alpha = 0;
 
-    base::scoped_nsobject<UITapGestureRecognizer> tapRecognizer(
-        [[UITapGestureRecognizer alloc]
-            initWithTarget:self
-                    action:@selector(contentViewCoverTapped)]);
+    UITapGestureRecognizer* tapRecognizer = [[UITapGestureRecognizer alloc]
+        initWithTarget:self
+                action:@selector(contentViewCoverTapped)];
     [self.contentViewCover addGestureRecognizer:tapRecognizer];
     self.contentViewCover.autoresizingMask =
         UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
 
-    self.menuViewWrapper =
-        base::scoped_nsobject<MenuViewWrapper>([[MenuViewWrapper alloc] init]);
+    self.menuViewWrapper = [[MenuViewWrapper alloc] init];
     self.menuViewWrapper.backgroundColor = [UIColor clearColor];
     [self addSubview:self.menuViewWrapper];
 
-    self.menuView = base::scoped_nsobject<UIView>([[UIView alloc] init]);
+    self.menuView = [[UIView alloc] init];
     [self.menuViewWrapper addSubview:self.menuView];
     self.menuViewWrapper.menuView = self.menuView;
 
-    self.panRecognizer = base::scoped_nsobject<UIPanGestureRecognizer>(
-        [[UIPanGestureRecognizer alloc]
-            initWithTarget:self
-                    action:@selector(panRecognized:)]);
+    self.panRecognizer = [[UIPanGestureRecognizer alloc]
+        initWithTarget:self
+                action:@selector(panRecognized:)];
     [self addGestureRecognizer:self.panRecognizer];
 
     [self updateLayout];

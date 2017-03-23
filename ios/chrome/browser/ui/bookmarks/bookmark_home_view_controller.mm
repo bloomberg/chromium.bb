@@ -4,8 +4,6 @@
 
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_view_controller.h"
 
-#include "base/mac/objc_property_releaser.h"
-#include "base/mac/scoped_nsobject.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -13,14 +11,16 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_collection_view.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 using bookmarks::BookmarkNode;
 
-@interface BookmarkHomeViewController () {
-  base::mac::ObjCPropertyReleaser _propertyReleaser_BookmarkHomeViewController;
-}
+@interface BookmarkHomeViewController ()
 
 // Redefined to be readwrite.
-@property(nonatomic, retain, readwrite) NSMutableArray* editIndexPaths;
+@property(nonatomic, strong, readwrite) NSMutableArray* editIndexPaths;
 
 // Returns the parent, if all the bookmarks are siblings.
 // Otherwise returns the mobile_node.
@@ -42,9 +42,6 @@ defaultMoveFolderFromBookmarks:(const std::set<const BookmarkNode*>&)bookmarks
   DCHECK(browserState);
   self = [super initWithNibName:nil bundle:nil];
   if (self) {
-    _propertyReleaser_BookmarkHomeViewController.Init(
-        self, [BookmarkHomeViewController class]);
-
     _browserState = browserState->GetOriginalChromeBrowserState();
     _loader = loader;
 
@@ -58,8 +55,7 @@ defaultMoveFolderFromBookmarks:(const std::set<const BookmarkNode*>&)bookmarks
 
 - (void)loadView {
   CGRect frame = [[UIScreen mainScreen] bounds];
-  self.view =
-      base::scoped_nsobject<UIView>([[UIView alloc] initWithFrame:frame]);
+  self.view = [[UIView alloc] initWithFrame:frame];
 }
 
 - (void)resetEditNodes {
