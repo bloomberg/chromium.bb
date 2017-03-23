@@ -2690,6 +2690,7 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
     int skip;
     const int bsw = mi_size_wide[bsize];
     const int bsh = mi_size_high[bsize];
+
     xd->mi = cm->mi_grid_visible + mi_offset;
     supertx_size = mbmi->tx_size;
 #if CONFIG_DEPENDENT_HORZTILES
@@ -2711,6 +2712,11 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
           get_ext_tx_set(supertx_size, bsize, 1, cm->reduced_tx_set_used);
       if (eset > 0) {
 #if CONFIG_EC_MULTISYMBOL
+#if CONFIG_EC_ADAPT
+        FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
+#else
+        FRAME_CONTEXT *ec_ctx = cm->fc;
+#endif
         aom_write_symbol(w, av1_ext_tx_inter_ind[eset][mbmi->tx_type],
                          ec_ctx->inter_ext_tx_cdf[eset][supertx_size],
                          ext_tx_cnt_inter[eset]);

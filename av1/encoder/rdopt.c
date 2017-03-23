@@ -10819,19 +10819,20 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         *returnrate_nocoef -= av1_cost_bit(av1_get_intra_inter_prob(cm, xd),
                                            mbmi->ref_frame[0] != INTRA_FRAME);
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
+#if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
+        MODE_INFO *const mi = xd->mi[0];
         const MOTION_MODE motion_allowed = motion_mode_allowed(
 #if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
             0, xd->global_motion,
 #endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
             mi);
-#if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
         if (motion_allowed == WARPED_CAUSAL)
-#endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
           *returnrate_nocoef -= cpi->motion_mode_cost[bsize][mbmi->motion_mode];
-#if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
         else if (motion_allowed == OBMC_CAUSAL)
           *returnrate_nocoef -=
               cpi->motion_mode_cost1[bsize][mbmi->motion_mode];
+#else
+        *returnrate_nocoef -= cpi->motion_mode_cost[bsize][mbmi->motion_mode];
 #endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 #endif  // CONFIG_SUPERTX
