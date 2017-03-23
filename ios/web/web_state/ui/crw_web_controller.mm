@@ -3006,14 +3006,14 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   BOOL isNavigationTypeLinkActivated =
       action.navigationType == WKNavigationTypeLinkActivated;
 
-  // Check if the link navigation leads to a launch of an external app.
+  // Checks if the link navigation leads to a launch of an external app.
+  // TODO(crbug.com/704417): External apps will not be launched from clicking
+  // a Bookmarked URL or a Recently Closed URL.
   // TODO(crbug.com/607780): Revise the logic of allowing external app launch
   // and move it to externalAppLauncher.
   BOOL isOpenInNewTabNavigation = !(self.navigationManagerImpl->GetItemCount());
   BOOL isPossibleLinkClick = [self isLinkNavigation:action.navigationType];
-  if (isPossibleLinkClick || isOpenInNewTabNavigation ||
-      PageTransitionCoreTypeIs(self.currentTransition,
-                               ui::PAGE_TRANSITION_AUTO_BOOKMARK)) {
+  if (isPossibleLinkClick || isOpenInNewTabNavigation) {
     web::NavigationItem* item = self.currentNavItem;
     const GURL currentNavigationURL =
         item ? item->GetVirtualURL() : GURL::EmptyGURL();
@@ -3382,6 +3382,13 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (BOOL)userClickedRecently {
+  // Scrolling generates a pair of touch on/off event which causes
+  // _lastUserInteraction to register that there was user interaction.
+  // Checks for scrolling first to override time-based click heuristics.
+  BOOL scrolling = [[self webScrollView] isDragging] ||
+                   [[self webScrollView] isDecelerating];
+  if (scrolling)
+    return NO;
   if (!_lastUserInteraction)
     return NO;
   return _clickInProgress ||
