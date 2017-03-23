@@ -89,6 +89,10 @@ struct LatencyComponent {
   mojo.common.mojom.TimeTicks event_time;
   // Count of events that happened in this component
   uint32 event_count;
+  // Time of the oldest event that happened in this component.
+  mojo.common.mojom.TimeTicks first_event_time;
+  // Time of the most recent event that happened in this component.
+  mojo.common.mojom.TimeTicks last_event_time;
 };
 
 struct LatencyComponentPair {

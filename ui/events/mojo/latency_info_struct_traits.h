@@ -46,6 +46,10 @@ struct StructTraits<ui::mojom::LatencyComponentDataView,
       const ui::LatencyInfo::LatencyComponent& component);
   static uint32_t event_count(
       const ui::LatencyInfo::LatencyComponent& component);
+  static base::TimeTicks first_event_time(
+      const ui::LatencyInfo::LatencyComponent& component);
+  static base::TimeTicks last_event_time(
+      const ui::LatencyInfo::LatencyComponent& component);
   static bool Read(ui::mojom::LatencyComponentDataView data,
                    ui::LatencyInfo::LatencyComponent* out);
 };

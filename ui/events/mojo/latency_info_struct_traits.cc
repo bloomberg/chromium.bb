@@ -176,11 +176,29 @@ uint32_t StructTraits<ui::mojom::LatencyComponentDataView,
 }
 
 // static
+base::TimeTicks StructTraits<ui::mojom::LatencyComponentDataView,
+                             ui::LatencyInfo::LatencyComponent>::
+    first_event_time(const ui::LatencyInfo::LatencyComponent& component) {
+  return component.first_event_time;
+}
+
+// static
+base::TimeTicks StructTraits<ui::mojom::LatencyComponentDataView,
+                             ui::LatencyInfo::LatencyComponent>::
+    last_event_time(const ui::LatencyInfo::LatencyComponent& component) {
+  return component.last_event_time;
+}
+
+// static
 bool StructTraits<ui::mojom::LatencyComponentDataView,
                   ui::LatencyInfo::LatencyComponent>::
     Read(ui::mojom::LatencyComponentDataView data,
          ui::LatencyInfo::LatencyComponent* out) {
   if (!data.ReadEventTime(&out->event_time))
+    return false;
+  if (!data.ReadFirstEventTime(&out->first_event_time))
+    return false;
+  if (!data.ReadLastEventTime(&out->last_event_time))
     return false;
   out->sequence_number = data.sequence_number();
   out->event_count = data.event_count();
