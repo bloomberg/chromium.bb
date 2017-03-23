@@ -55,8 +55,7 @@ void ReportForegroundRendererTaskLoad(base::TimeTicks time, double load) {
     return;
 
   int load_percentage = static_cast<int>(load * 100);
-  // TODO(altimin): Revert back to DCHECK.
-  CHECK_LE(load_percentage, 100);
+  DCHECK_LE(load_percentage, 100);
 
   UMA_HISTOGRAM_PERCENTAGE("RendererScheduler.ForegroundRendererMainThreadLoad",
                            load_percentage);
@@ -69,8 +68,7 @@ void ReportBackgroundRendererTaskLoad(base::TimeTicks time, double load) {
     return;
 
   int load_percentage = static_cast<int>(load * 100);
-  // TODO(altimin): Revert back to DCHECK.
-  CHECK_LE(load_percentage, 100);
+  DCHECK_LE(load_percentage, 100);
 
   UMA_HISTOGRAM_PERCENTAGE("RendererScheduler.BackgroundRendererMainThreadLoad",
                            load_percentage);
