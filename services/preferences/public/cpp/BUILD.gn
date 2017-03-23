@@ -18,19 +18,29 @@ source_set("cpp") {
     "pref_store_client_mixin.h",
     "pref_store_impl.cc",
     "pref_store_impl.h",
-    "pref_store_manager_impl.cc",
-    "pref_store_manager_impl.h",
   ]
 
   public_deps = [
     "//base",
-    "//components/prefs:prefs",
+    "//components/prefs",
     "//services/preferences/public/interfaces",
     "//services/service_manager/public/cpp",
   ]
 
   deps = [
-    "//mojo/public/cpp/bindings:bindings",
+    "//mojo/public/cpp/bindings",
+  ]
+}
+
+source_set("service_main") {
+  deps = [
+    "//base",
+    "//components/prefs",
     "//services/preferences",
+    "//services/service_manager/public/cpp",
+  ]
+  sources = [
+    "pref_service_main.cc",
+    "pref_service_main.h",
   ]
 }

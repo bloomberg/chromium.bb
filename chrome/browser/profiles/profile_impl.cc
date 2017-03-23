@@ -118,9 +118,10 @@
 #include "extensions/features/features.h"
 #include "ppapi/features/features.h"
 #include "printing/features/features.h"
-#include "services/preferences/public/cpp/pref_store_manager_impl.h"
+#include "services/preferences/public/cpp/pref_service_main.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 #include "services/preferences/public/interfaces/tracked_preference_validation_delegate.mojom.h"
+#include "services/service_manager/public/cpp/service.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
@@ -1067,12 +1068,11 @@ ProfileImpl::CreateMediaRequestContextForStoragePartition(
 void ProfileImpl::RegisterInProcessServices(StaticServiceMap* services) {
   if (base::FeatureList::IsEnabled(features::kPrefService)) {
     content::ServiceInfo info;
-    info.factory =
-        base::Bind([]() -> std::unique_ptr<service_manager::Service> {
-          return base::MakeUnique<prefs::PrefStoreManagerImpl>(
-              prefs::PrefStoreManagerImpl::PrefStoreTypes(),
-              content::BrowserThread::GetBlockingPool());
-        });
+    info.factory = base::Bind(
+        &prefs::CreatePrefService, std::set<PrefValueStore::PrefStoreType>(),
+        make_scoped_refptr(content::BrowserThread::GetBlockingPool()));
+    info.task_runner = content::BrowserThread::GetTaskRunnerForThread(
+        content::BrowserThread::IO);
     services->insert(std::make_pair(prefs::mojom::kPrefStoreServiceName, info));
   }
 }

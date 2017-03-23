@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_PREFERENCES_PUBLIC_CPP_PREF_STORE_MANAGER_IMPL_H_
-#define SERVICES_PREFERENCES_PUBLIC_CPP_PREF_STORE_MANAGER_IMPL_H_
+#ifndef SERVICES_PREFERENCES_PREF_STORE_MANAGER_IMPL_H_
+#define SERVICES_PREFERENCES_PREF_STORE_MANAGER_IMPL_H_
 
 #include <memory>
 #include <set>
@@ -41,12 +41,11 @@ class PrefStoreManagerImpl
       public service_manager::InterfaceFactory<mojom::PrefServiceControl>,
       public service_manager::Service {
  public:
-  using PrefStoreTypes = std::set<PrefValueStore::PrefStoreType>;
-
   // Only replies to Connect calls when all |expected_pref_stores| have
   // registered.
-  PrefStoreManagerImpl(PrefStoreTypes expected_pref_stores,
-                       scoped_refptr<base::SequencedWorkerPool> worker_pool);
+  PrefStoreManagerImpl(
+      std::set<PrefValueStore::PrefStoreType> expected_pref_stores,
+      scoped_refptr<base::SequencedWorkerPool> worker_pool);
   ~PrefStoreManagerImpl() override;
 
  private:
@@ -92,7 +91,7 @@ class PrefStoreManagerImpl
   bool AllConnected() const;
 
   // PrefStores that need to register before replying to any Connect calls.
-  PrefStoreTypes expected_pref_stores_;
+  std::set<PrefValueStore::PrefStoreType> expected_pref_stores_;
 
   // Registered pref stores.
   PrefStorePtrs pref_store_ptrs_;
@@ -120,4 +119,4 @@ class PrefStoreManagerImpl
 
 }  // namespace prefs
 
-#endif  // SERVICES_PREFERENCES_PUBLIC_CPP_PREF_STORE_MANAGER_IMPL_H_
+#endif  // SERVICES_PREFERENCES_PREF_STORE_MANAGER_IMPL_H_

@@ -12,7 +12,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/preferences/public/cpp/pref_store_manager_impl.h"
+#include "services/preferences/public/cpp/pref_service_main.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
@@ -44,8 +44,8 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
                      const std::string& name) override {
     if (name == prefs::mojom::kPrefStoreServiceName) {
       pref_service_context_.reset(new service_manager::ServiceContext(
-          base::MakeUnique<prefs::PrefStoreManagerImpl>(
-              prefs::PrefStoreManagerImpl::PrefStoreTypes(), worker_pool_),
+          CreatePrefService(std::set<PrefValueStore::PrefStoreType>(),
+                            worker_pool_),
           std::move(request)));
     }
   }

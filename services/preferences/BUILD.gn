@@ -12,17 +12,22 @@ service_manifest("manifest") {
 }
 
 source_set("preferences") {
-  public_deps = [
-    "//services/preferences/public/interfaces",
+  visibility = [
+    ":*",
+    "//services/preferences/public/cpp:service_main",
   ]
   deps = [
     "//components/prefs",
+    "//services/preferences/public/interfaces",
+    "//services/service_manager/public/cpp",
   ]
   sources = [
     "persistent_pref_store_factory.cc",
     "persistent_pref_store_factory.h",
     "persistent_pref_store_impl.cc",
     "persistent_pref_store_impl.h",
+    "pref_store_manager_impl.cc",
+    "pref_store_manager_impl.h",
   ]
 }
 
@@ -35,6 +40,7 @@ source_set("tests") {
     "//components/prefs:test_support",
     "//mojo/public/cpp/bindings:bindings",
     "//services/preferences/public/cpp",
+    "//services/preferences/public/cpp:service_main",
     "//services/preferences/public/cpp/tests",
     "//services/preferences/public/interfaces",
     "//services/service_manager/public/cpp",

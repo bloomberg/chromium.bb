@@ -1,4 +1,11 @@
 include_rules = [
   "+components/prefs",
   "+components/user_prefs/tracked",
+  "-services/preferences",
+  "+services/preferences/public",
 ]
+specific_include_rules = {
+  "pref_service_main\.cc": [
+    "+services/preferences",
+  ],
+}

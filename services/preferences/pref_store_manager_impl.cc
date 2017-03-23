@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/preferences/public/cpp/pref_store_manager_impl.h"
+#include "services/preferences/pref_store_manager_impl.h"
 
 #include <utility>
 
@@ -88,7 +88,7 @@ void ConnectionBarrier::OnConnect(
 }  // namespace
 
 PrefStoreManagerImpl::PrefStoreManagerImpl(
-    PrefStoreTypes expected_pref_stores,
+    std::set<PrefValueStore::PrefStoreType> expected_pref_stores,
     scoped_refptr<base::SequencedWorkerPool> worker_pool)
     : expected_pref_stores_(std::move(expected_pref_stores)),
       init_binding_(this),
