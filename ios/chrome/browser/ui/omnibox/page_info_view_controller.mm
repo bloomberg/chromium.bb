@@ -8,8 +8,6 @@
 #include "base/location.h"
 #include "base/mac/bundle_locations.h"
 #import "base/mac/foundation_util.h"
-#include "base/mac/objc_property_releaser.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
@@ -32,6 +30,10 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 #import "ui/gfx/ios/NSString+CrStringDrawing.h"
 #import "ui/gfx/ios/uikit_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 using ios::material::TimingFunction;
 
@@ -126,13 +128,21 @@ void PageInfoModelBubbleBridge::OnPageInfoModelChanged() {
       base::TimeDelta::FromMilliseconds(1000 /* milliseconds */));
 }
 
+void PageInfoModelBubbleBridge::PerformLayout() {
+  // If the window is animating closed when this is called, the
+  // animation could be holding the last reference to |controller_|
+  // (and thus |this|).  Pin it until the task is completed.
+  base::scoped_nsobject<PageInfoViewController> keep_alive(controller_);
+  [controller_ performLayout];
+}
+
 @interface PageInfoViewController ()<UIGestureRecognizerDelegate> {
   // Scroll View inside the PageInfoView used to display content that exceeds
   // the available space.
-  base::scoped_nsobject<UIScrollView> scrollView_;
+  UIScrollView* scrollView_;
   // Container View added inside the Scroll View. All content is added to this
   // view instead of PopupMenuController.containerView_.
-  base::scoped_nsobject<BidiContainerView> innerContainerView_;
+  BidiContainerView* innerContainerView_;
 
   // Origin of the arrow at the top of the popup window.
   CGPoint origin_;
@@ -151,8 +161,6 @@ void PageInfoModelBubbleBridge::OnPageInfoModelChanged() {
 
   // YES when the popup has finished animating in. NO otherwise.
   BOOL animateInCompleted_;
-
-  base::mac::ObjCPropertyReleaser propertyReleaser_PageInfoViewController_;
 }
 
 // Adds the state image at a pre-determined x position and the given y. This
@@ -186,8 +194,8 @@ void PageInfoModelBubbleBridge::OnPageInfoModelChanged() {
 // Sends the IDC_HIDE_PAGE_INFO command to hide the current popup.
 - (void)close;
 
-@property(nonatomic, retain) UIView* containerView;
-@property(nonatomic, retain) UIView* popupContainer;
+@property(nonatomic, strong) UIView* containerView;
+@property(nonatomic, strong) UIView* popupContainer;
 @end
 
 @implementation PageInfoViewController
@@ -202,11 +210,8 @@ void PageInfoModelBubbleBridge::OnPageInfoModelChanged() {
   DCHECK(parent);
   self = [super init];
   if (self) {
-    propertyReleaser_PageInfoViewController_.Init(
-        self, [PageInfoViewController class]);
-
-    scrollView_.reset(
-        [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, 240, 128)]);
+    scrollView_ =
+        [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, 240, 128)];
     [scrollView_ setMultipleTouchEnabled:YES];
     [scrollView_ setClipsToBounds:YES];
     [scrollView_ setShowsHorizontalScrollIndicator:NO];
@@ -215,8 +220,8 @@ void PageInfoModelBubbleBridge::OnPageInfoModelChanged() {
         setAutoresizingMask:(UIViewAutoresizingFlexibleTrailingMargin() |
                              UIViewAutoresizingFlexibleTopMargin)];
 
-    innerContainerView_.reset(
-        [[BidiContainerView alloc] initWithFrame:CGRectMake(0, 0, 194, 327)]);
+    innerContainerView_ =
+        [[BidiContainerView alloc] initWithFrame:CGRectMake(0, 0, 194, 327)];
     [innerContainerView_ setBackgroundColor:[UIColor clearColor]];
     [innerContainerView_
         setAccessibilityLabel:@"Page Security Info Scroll Container"];
@@ -238,10 +243,10 @@ void PageInfoModelBubbleBridge::OnPageInfoModelChanged() {
     textWidth_ = viewWidth_ - (kImageSize + kImageSpacing + kFramePadding * 2 +
                                kScrollViewInset * 2);
 
-    base::scoped_nsobject<UILongPressGestureRecognizer> touchDownRecognizer(
+    UILongPressGestureRecognizer* touchDownRecognizer =
         [[UILongPressGestureRecognizer alloc]
             initWithTarget:self
-                    action:@selector(rootViewTapped:)]);
+                    action:@selector(rootViewTapped:)];
     // Setting the duration to .001 makes this similar to a control event
     // UIControlEventTouchDown.
     [touchDownRecognizer setMinimumPressDuration:.001];
@@ -398,7 +403,7 @@ void PageInfoModelBubbleBridge::OnPageInfoModelChanged() {
     [innerContainerView_ setSubviewNeedsAdjustmentForRTL:view];
   }
 
-  [scrollView_ setContentSize:innerContainerView_.get().frame.size];
+  [scrollView_ setContentSize:innerContainerView_.frame.size];
 }
 
 - (void)close {
@@ -417,17 +422,16 @@ void PageInfoModelBubbleBridge::OnPageInfoModelChanged() {
                  toSubviews:(NSMutableArray*)subviews
                    atOffset:(CGFloat)offset {
   CGRect frame = CGRectMake(kFramePadding, offset, kImageSize, kImageSize);
-  base::scoped_nsobject<UIImageView> imageView(
-      [[UIImageView alloc] initWithFrame:frame]);
+  UIImageView* imageView = [[UIImageView alloc] initWithFrame:frame];
   [imageView setImage:model_->GetIconImage(info.icon_id)->ToUIImage()];
-  [subviews addObject:imageView.get()];
+  [subviews addObject:imageView];
 }
 
 - (CGFloat)addHeadlineViewForInfo:(const PageInfoModel::SectionInfo&)info
                        toSubviews:(NSMutableArray*)subviews
                           atPoint:(CGPoint)point {
   CGRect frame = CGRectMake(point.x, point.y, textWidth_, kHeadlineHeight);
-  base::scoped_nsobject<UILabel> label([[UILabel alloc] initWithFrame:frame]);
+  UILabel* label = [[UILabel alloc] initWithFrame:frame];
   [label setTextAlignment:NSTextAlignmentNatural];
   [label setText:base::SysUTF16ToNSString(info.headline)];
   [label setTextColor:PageInfoTextColor()];
@@ -435,7 +439,7 @@ void PageInfoModelBubbleBridge::OnPageInfoModelChanged() {
   [label setBackgroundColor:[UIColor clearColor]];
   [label setFrame:frame];
   [label setLineBreakMode:NSLineBreakByTruncatingHead];
-  [subviews addObject:label.get()];
+  [subviews addObject:label];
   return CGRectGetHeight(frame);
 }
 
@@ -443,7 +447,7 @@ void PageInfoModelBubbleBridge::OnPageInfoModelChanged() {
                           toSubviews:(NSMutableArray*)subviews
                              atPoint:(CGPoint)point {
   CGRect frame = CGRectMake(point.x, point.y, textWidth_, kImageSize);
-  base::scoped_nsobject<UILabel> label([[UILabel alloc] initWithFrame:frame]);
+  UILabel* label = [[UILabel alloc] initWithFrame:frame];
   [label setTextAlignment:NSTextAlignmentNatural];
   NSString* description = base::SysUTF16ToNSString(info.description);
   UIFont* font = [MDCTypography captionFont];
@@ -459,7 +463,7 @@ void PageInfoModelBubbleBridge::OnPageInfoModelChanged() {
       [description cr_boundingSizeWithSize:constraintSize font:font];
   frame.size.height = sizeToFit.height;
   [label setFrame:frame];
-  [subviews addObject:label.get()];
+  [subviews addObject:label];
   return CGRectGetHeight(frame);
 }
 
@@ -467,7 +471,7 @@ void PageInfoModelBubbleBridge::OnPageInfoModelChanged() {
   if (buttonAction == PageInfoModel::BUTTON_NONE) {
     return nil;
   }
-  UIButton* button = [[[UIButton alloc] initWithFrame:CGRectZero] autorelease];
+  UIButton* button = [[UIButton alloc] initWithFrame:CGRectZero];
   int messageId = IDS_IOS_PAGE_INFO_RELOAD;
   NSInteger tag = IDC_RELOAD;
   NSString* accessibilityID = @"Reload button";

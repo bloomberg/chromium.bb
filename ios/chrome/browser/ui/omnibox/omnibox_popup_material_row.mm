@@ -5,12 +5,16 @@
 #import "ios/chrome/browser/ui/omnibox/omnibox_popup_material_row.h"
 
 #include "base/logging.h"
-#include "base/mac/objc_property_releaser.h"
+
 #import "ios/chrome/browser/ui/omnibox/truncating_attributed_label.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 const CGFloat kImageDimensionLength = 19.0;
@@ -22,7 +26,6 @@ const CGFloat kAppendButtonSize = 48.0;
 
 @interface OmniboxPopupMaterialRow () {
   BOOL _incognito;
-  base::mac::ObjCPropertyReleaser _propertyReleaser_OmniboxPopupMaterialRow;
 }
 
 // Set the append button normal and highlighted images.
@@ -52,8 +55,6 @@ const CGFloat kAppendButtonSize = 48.0;
     self.isAccessibilityElement = YES;
     self.backgroundColor = [UIColor clearColor];
     _incognito = incognito;
-    _propertyReleaser_OmniboxPopupMaterialRow.Init(
-        self, [OmniboxPopupMaterialRow class]);
 
     _textTruncatingLabel =
         [[OmniboxPopupTruncatingLabel alloc] initWithFrame:CGRectZero];
@@ -75,7 +76,7 @@ const CGFloat kAppendButtonSize = 48.0;
     _detailAnswerLabel.lineBreakMode = NSLineBreakByTruncatingTail;
     [self addSubview:_detailAnswerLabel];
 
-    _appendButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
+    _appendButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [_appendButton setContentMode:UIViewContentModeRight];
     [self updateAppendButtonImages];
     // TODO(justincohen): Consider using the UITableViewCell's accessory view.

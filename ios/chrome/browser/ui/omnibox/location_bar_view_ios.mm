@@ -31,6 +31,10 @@
 #include "ios/web/public/web_state/web_state.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 const CGFloat kClearTextButtonWidth = 28;
 const CGFloat kClearTextButtonHeight = 28;
@@ -306,7 +310,7 @@ void LocationBarViewIOS::CreateClearTextIcon(bool is_incognito) {
   [button addTarget:clear_button_bridge_
                 action:@selector(clearText)
       forControlEvents:UIControlEventTouchUpInside];
-  clear_text_button_.reset([button retain]);
+  clear_text_button_.reset(button);
 
   SetA11yLabelAndUiAutomationName(clear_text_button_,
                                   IDS_IOS_ACCNAME_CLEAR_TEXT, @"Clear Text");

@@ -30,6 +30,10 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/gfx/geometry/rect.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 const CGFloat kExpandAnimationDuration = 0.1;
 const CGFloat kCollapseAnimationDuration = 0.05;
@@ -73,8 +77,8 @@ OmniboxPopupViewIOS::OmniboxPopupViewIOS(OmniboxViewIOS* edit_view,
   [popupView_ addSubview:popupControllerView];
   if (IsIPadIdiom()) {
     [popupView_ setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
-    base::scoped_nsobject<UIImageView> shadowView([[UIImageView alloc]
-        initWithImage:NativeImage(IDR_IOS_TOOLBAR_SHADOW_FULL_BLEED)]);
+    UIImageView* shadowView = [[UIImageView alloc]
+        initWithImage:NativeImage(IDR_IOS_TOOLBAR_SHADOW_FULL_BLEED)];
     [shadowView setUserInteractionEnabled:NO];
     [shadowView setTranslatesAutoresizingMaskIntoConstraints:NO];
     [popupView_ addSubview:shadowView];
@@ -99,8 +103,7 @@ OmniboxPopupViewIOS::OmniboxPopupViewIOS(OmniboxViewIOS* edit_view,
   } else {
     // Add a white background to prevent seing the logo scroll through the
     // omnibox.
-    base::scoped_nsobject<UIView> whiteBackground(
-        [[UIView alloc] initWithFrame:CGRectZero]);
+    UIView* whiteBackground = [[UIView alloc] initWithFrame:CGRectZero];
     [popupView_ addSubview:whiteBackground];
     [whiteBackground setBackgroundColor:[UIColor whiteColor]];
 

@@ -8,7 +8,6 @@
 
 #include "base/ios/ios_util.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "components/image_fetcher/ios/ios_image_data_fetcher_wrapper.h"
@@ -28,6 +27,10 @@
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
 #include "net/base/escape.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 const int kRowCount = 6;
@@ -86,7 +89,7 @@ UIColor* BackgroundColorIncognito() {
   AutocompleteResult _currentResult;
 
   // Array containing the OmniboxPopupMaterialRow objects displayed in the view.
-  base::scoped_nsobject<NSArray> _rows;
+  NSArray* _rows;
 
   // The height of the keyboard. Used to determine the content inset for the
   // scroll view.
@@ -128,7 +131,6 @@ initWithPopupView:(OmniboxPopupViewIOS*)view
 - (void)dealloc {
   self.tableView.delegate = nil;
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [super dealloc];
 }
 
 - (UIScrollView*)scrollView {
@@ -150,10 +152,10 @@ initWithPopupView:(OmniboxPopupViewIOS*)view
                                   UIViewAutoresizingFlexibleHeight)];
 
   // Cache fonts needed for omnibox attributed string.
-  NSMutableArray* rowsBuilder = [[[NSMutableArray alloc] init] autorelease];
+  NSMutableArray* rowsBuilder = [[NSMutableArray alloc] init];
   for (int i = 0; i < kRowCount; i++) {
-    OmniboxPopupMaterialRow* row = [[[OmniboxPopupMaterialRow alloc]
-        initWithIncognito:_incognito] autorelease];
+    OmniboxPopupMaterialRow* row =
+        [[OmniboxPopupMaterialRow alloc] initWithIncognito:_incognito];
     row.accessibilityIdentifier =
         [NSString stringWithFormat:@"omnibox suggestion %i", i];
     row.autoresizingMask = UIViewAutoresizingFlexibleWidth;
@@ -164,7 +166,7 @@ initWithPopupView:(OmniboxPopupViewIOS*)view
     [row.appendButton setTag:i];
     row.rowHeight = kRowHeight;
   }
-  _rows.reset([rowsBuilder copy]);
+  _rows = [rowsBuilder copy];
 
   // Table configuration.
   self.tableView.allowsMultipleSelectionDuringEditing = NO;
@@ -181,7 +183,7 @@ initWithPopupView:(OmniboxPopupViewIOS*)view
 - (void)didReceiveMemoryWarning {
   [super didReceiveMemoryWarning];
   if (![self isViewLoaded]) {
-    _rows.reset();
+    _rows = nil;
   }
 }
 
@@ -423,7 +425,7 @@ initWithPopupView:(OmniboxPopupViewIOS*)view
 - (NSMutableAttributedString*)attributedStringWithAnswerLine:
     (const SuggestionAnswer::ImageLine&)line {
   NSMutableAttributedString* result =
-      [[[NSMutableAttributedString alloc] initWithString:@""] autorelease];
+      [[NSMutableAttributedString alloc] initWithString:@""];
 
   for (size_t i = 0; i < line.text_fields().size(); i++) {
     const SuggestionAnswer::TextField& field = line.text_fields()[i];
@@ -432,8 +434,8 @@ initWithPopupView:(OmniboxPopupViewIOS*)view
                                                            type:field.type()]];
   }
 
-  base::scoped_nsobject<NSAttributedString> spacer(
-      [[NSAttributedString alloc] initWithString:@"  "]);
+  NSAttributedString* spacer =
+      [[NSAttributedString alloc] initWithString:@"  "];
   if (line.additional_text() != nil) {
     const SuggestionAnswer::TextField* field = line.additional_text();
     [result appendAttributedString:spacer];
@@ -533,8 +535,8 @@ initWithPopupView:(OmniboxPopupViewIOS*)view
       [unescapedString stringByReplacingOccurrencesOfString:@"</b>"
                                                  withString:@""];
 
-  return [[[NSAttributedString alloc] initWithString:unescapedString
-                                          attributes:attributes] autorelease];
+  return [[NSAttributedString alloc] initWithString:unescapedString
+                                         attributes:attributes];
 }
 
 - (void)updateMatches:(const AutocompleteResult&)result
@@ -655,7 +657,7 @@ initWithPopupView:(OmniboxPopupViewIOS*)view
     return;
 
   _popupView->DidScroll();
-  for (OmniboxPopupMaterialRow* row in _rows.get()) {
+  for (OmniboxPopupMaterialRow* row in _rows) {
     row.highlighted = NO;
   }
 }
@@ -687,7 +689,7 @@ attributedStringWithString:(NSString*)text
       smallFont ? [MDCTypography body1Font] : [MDCTypography subheadFont];
 
   NSMutableAttributedString* as =
-      [[[NSMutableAttributedString alloc] initWithString:text] autorelease];
+      [[NSMutableAttributedString alloc] initWithString:text];
 
   // Set the base attributes to the default font and color.
   NSDictionary* dict = @{

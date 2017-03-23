@@ -47,8 +47,8 @@ class OmniboxPopupViewIOS : public OmniboxPopupView {
 
  private:
   std::unique_ptr<OmniboxPopupModel> model_;
-  OmniboxViewIOS* edit_view_;              // weak, owns this instance
-  id<OmniboxPopupPositioner> positioner_;  // weak
+  OmniboxViewIOS* edit_view_;  // weak, owns this instance
+  __weak id<OmniboxPopupPositioner> positioner_;
   // View that contains the omnibox popup table view and shadow.
   base::scoped_nsobject<UIView> popupView_;
   base::scoped_nsobject<OmniboxPopupMaterialViewController> popup_controller_;

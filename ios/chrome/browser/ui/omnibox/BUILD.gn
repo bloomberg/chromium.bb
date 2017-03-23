@@ -32,6 +32,7 @@ bundle_data("resources") {
 }
 
 source_set("omnibox_internal") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "chrome_omnibox_client_ios.h",
     "chrome_omnibox_client_ios.mm",

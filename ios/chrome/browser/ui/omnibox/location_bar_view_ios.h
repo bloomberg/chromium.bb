@@ -109,8 +109,10 @@ class LocationBarViewIOS : public WebOmniboxEditController {
   base::scoped_nsobject<UIButton> clear_text_button_;
   std::unique_ptr<OmniboxViewIOS> edit_view_;
   base::scoped_nsobject<OmniboxClearButtonBridge> clear_button_bridge_;
-  OmniboxTextFieldIOS* field_;
-  id<LocationBarDelegate> delegate_;
+  // |field_| should be __weak but is included from non-ARC code.
+  __unsafe_unretained OmniboxTextFieldIOS* field_;
+  // |delegate_| should be __weak but is included from non-ARC code.
+  __unsafe_unretained id<LocationBarDelegate> delegate_;
   bool is_showing_placeholder_while_collapsed_;
 };
 

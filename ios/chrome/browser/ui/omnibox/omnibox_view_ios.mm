@@ -38,6 +38,10 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 using base::UserMetricsAction;
 
 namespace {
@@ -171,7 +175,7 @@ OmniboxViewIOS::OmniboxViewIOS(OmniboxTextFieldIOS* field,
           controller,
           base::MakeUnique<ChromeOmniboxClientIOS>(controller, browser_state)),
       browser_state_(browser_state),
-      field_([field retain]),
+      field_(field),
       controller_(controller),
       preloader_(preloader),
       ignore_popup_updates_(false),
@@ -684,8 +688,8 @@ void OmniboxViewIOS::UpdateSchemeStyle(const gfx::Range& range) {
 
 NSAttributedString* OmniboxViewIOS::ApplyTextAttributes(
     const base::string16& text) {
-  NSMutableAttributedString* as = [[[NSMutableAttributedString alloc]
-      initWithString:base::SysUTF16ToNSString(text)] autorelease];
+  NSMutableAttributedString* as = [[NSMutableAttributedString alloc]
+      initWithString:base::SysUTF16ToNSString(text)];
   // Cache a pointer to the attributed string to allow the superclass'
   // virtual method invocations to add attributes.
   DCHECK(attributing_display_string_ == nil);

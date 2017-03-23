@@ -142,12 +142,12 @@ typedef enum {
 
 // Redeclare the delegate property to be the more specific
 // OmniboxTextFieldDelegate.
-@property(nonatomic, assign) id<OmniboxTextFieldDelegate> delegate;
+@property(nonatomic, weak) id<OmniboxTextFieldDelegate> delegate;
 
-@property(nonatomic, retain) NSString* preEditText;
+@property(nonatomic, strong) NSString* preEditText;
 @property(nonatomic) BOOL clearingPreEditText;
-@property(nonatomic, retain) UIColor* selectedTextBackgroundColor;
-@property(nonatomic, retain) UIColor* placeholderTextColor;
+@property(nonatomic, strong) UIColor* selectedTextBackgroundColor;
+@property(nonatomic, strong) UIColor* placeholderTextColor;
 @property(nonatomic, assign) BOOL incognito;
 
 @end
