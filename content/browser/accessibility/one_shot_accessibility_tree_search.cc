@@ -49,8 +49,8 @@ void OneShotAccessibilityTreeSearch::SetStartNode(
   DCHECK(!did_search_);
   CHECK(start_node);
 
-  if (!scope_node_->GetParent() ||
-      start_node->IsDescendantOf(scope_node_->GetParent())) {
+  if (!scope_node_->PlatformGetParent() ||
+      start_node->IsDescendantOf(scope_node_->PlatformGetParent())) {
     start_node_ = start_node;
   }
 }
@@ -124,8 +124,8 @@ void OneShotAccessibilityTreeSearch::SearchByIteratingOverChildren() {
   // We only care about immediate children of scope_node_, so walk up
   // start_node_ until we get to an immediate child. If it isn't a child,
   // we ignore start_node_.
-  while (start_node_ && start_node_->GetParent() != scope_node_)
-    start_node_ = start_node_->GetParent();
+  while (start_node_ && start_node_->PlatformGetParent() != scope_node_)
+    start_node_ = start_node_->PlatformGetParent();
 
   uint32_t index = (direction_ == FORWARDS ? 0 : count - 1);
   if (start_node_) {
@@ -160,7 +160,7 @@ void OneShotAccessibilityTreeSearch::SearchByWalkingTree() {
       node = tree_->PreviousInTreeOrder(start_node_);
   }
 
-  BrowserAccessibility* stop_node = scope_node_->GetParent();
+  BrowserAccessibility* stop_node = scope_node_->PlatformGetParent();
   while (node &&
          node != stop_node &&
          (result_limit_ == UNLIMITED_RESULTS ||
@@ -336,7 +336,7 @@ bool AccessibilityFramePredicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
   if (node->IsWebAreaForPresentationalIframe())
     return false;
-  if (!node->GetParent())
+  if (!node->PlatformGetParent())
     return false;
   return (node->GetRole() == ui::AX_ROLE_WEB_AREA ||
           node->GetRole() == ui::AX_ROLE_ROOT_WEB_AREA);

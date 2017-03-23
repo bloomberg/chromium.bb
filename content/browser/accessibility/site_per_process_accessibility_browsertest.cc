@@ -132,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_SitePerProcessAccessibilityBrowserTest,
   ASSERT_EQ(0U, ax_child_frame_static_text->PlatformChildCount());
 
   // Last, check that the parent of the child frame root is correct.
-  EXPECT_EQ(ax_child_frame_root->GetParent(), ax_iframe);
+  EXPECT_EQ(ax_child_frame_root->PlatformGetParent(), ax_iframe);
 }
 
 IN_PROC_BROWSER_TEST_F(MAYBE_SitePerProcessAccessibilityBrowserTest,

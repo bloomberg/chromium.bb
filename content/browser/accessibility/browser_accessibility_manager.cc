@@ -754,7 +754,7 @@ BrowserAccessibility* BrowserAccessibilityManager::NextInTreeOrder(
     if (sibling)
       return sibling;
 
-    object = object->GetParent();
+    object = object->PlatformGetParent();
   }
 
   return nullptr;
@@ -769,7 +769,7 @@ BrowserAccessibility* BrowserAccessibilityManager::PreviousInTreeOrder(
 
   BrowserAccessibility* sibling = object->GetPreviousSibling();
   if (!sibling)
-    return object->GetParent();
+    return object->PlatformGetParent();
 
   if (sibling->PlatformChildCount())
     return sibling->PlatformDeepestLastChild();
@@ -809,7 +809,7 @@ bool BrowserAccessibilityManager::FindIndicesInCommonParent(
   auto* ancestor2 = const_cast<BrowserAccessibility*>(&object2);
   do {
     *child_index1 = ancestor1->GetIndexInParent();
-    ancestor1 = ancestor1->GetParent();
+    ancestor1 = ancestor1->PlatformGetParent();
   } while (
       ancestor1 &&
       // |BrowserAccessibility::IsAncestorOf| returns true if objects are equal.
@@ -824,7 +824,7 @@ bool BrowserAccessibilityManager::FindIndicesInCommonParent(
 
   do {
     *child_index2 = ancestor2->GetIndexInParent();
-    ancestor2 = ancestor2->GetParent();
+    ancestor2 = ancestor2->PlatformGetParent();
   } while (ancestor1 != ancestor2);
 
   *common_parent = ancestor1;
@@ -1252,11 +1252,11 @@ void BrowserAccessibilityManager::CacheHitTestResult(
     BrowserAccessibility* hit_test_result) {
   // Walk up to the highest ancestor that's a leaf node; we don't want to
   // return a node that's hidden from the tree.
-  BrowserAccessibility* parent = hit_test_result->GetParent();
+  BrowserAccessibility* parent = hit_test_result->PlatformGetParent();
   while (parent) {
     if (parent->PlatformChildCount() == 0)
       hit_test_result = parent;
-    parent = parent->GetParent();
+    parent = parent->PlatformGetParent();
   }
 
   last_hover_ax_tree_id_ = hit_test_result->manager()->ax_tree_id();

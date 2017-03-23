@@ -404,9 +404,9 @@ jboolean BrowserAccessibilityManagerAndroid::PopulateAccessibilityNodeInfo(
   if (!node)
     return false;
 
-  if (node->GetParent()) {
+  if (node->PlatformGetParent()) {
     Java_BrowserAccessibilityManager_setAccessibilityNodeInfoParent(
-        env, obj, info, node->GetParent()->unique_id());
+        env, obj, info, node->PlatformGetParent()->unique_id());
   }
   for (unsigned i = 0; i < node->PlatformChildCount(); ++i) {
     Java_BrowserAccessibilityManager_addAccessibilityNodeInfoChild(
@@ -458,11 +458,11 @@ jboolean BrowserAccessibilityManagerAndroid::PopulateAccessibilityNodeInfo(
 
   gfx::Rect absolute_rect = node->GetPageBoundsRect();
   gfx::Rect parent_relative_rect = absolute_rect;
-  if (node->GetParent()) {
-    gfx::Rect parent_rect = node->GetParent()->GetPageBoundsRect();
+  if (node->PlatformGetParent()) {
+    gfx::Rect parent_rect = node->PlatformGetParent()->GetPageBoundsRect();
     parent_relative_rect.Offset(-parent_rect.OffsetFromOrigin());
   }
-  bool is_root = node->GetParent() == NULL;
+  bool is_root = node->PlatformGetParent() == NULL;
   Java_BrowserAccessibilityManager_setAccessibilityNodeInfoLocation(
       env, obj, info,
       id,
@@ -728,7 +728,7 @@ void BrowserAccessibilityManagerAndroid::HandleHoverEvent(
   // find an interesting parent.
   while (android_node && !android_node->IsInterestingOnAndroid()) {
     android_node = static_cast<BrowserAccessibilityAndroid*>(
-        android_node->GetParent());
+        android_node->PlatformGetParent());
   }
 
   if (android_node) {

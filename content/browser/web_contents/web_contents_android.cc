@@ -131,7 +131,7 @@ ScopedJavaLocalRef<jobject> WalkAXTreeDepthFirst(
 
   const gfx::Rect& absolute_rect = node->GetPageBoundsRect();
   gfx::Rect parent_relative_rect = absolute_rect;
-  bool is_root = node->GetParent() == nullptr;
+  bool is_root = node->PlatformGetParent() == nullptr;
   if (!is_root) {
     parent_relative_rect.Offset(-parent_rect.OffsetFromOrigin());
   }

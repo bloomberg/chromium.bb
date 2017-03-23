@@ -232,7 +232,7 @@ class CONTENT_EXPORT BrowserAccessibility {
   BrowserAccessibility* InternalGetChild(uint32_t child_index) const;
   BrowserAccessibility* InternalGetParent() const;
 
-  BrowserAccessibility* GetParent() const;
+  BrowserAccessibility* PlatformGetParent() const;
   int32_t GetIndexInParent() const;
 
   int32_t GetId() const;

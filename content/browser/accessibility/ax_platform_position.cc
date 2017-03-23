@@ -69,13 +69,13 @@ void AXPlatformPosition::AnchorParent(AXTreeID* tree_id,
   DCHECK(tree_id);
   DCHECK(parent_id);
 
-  if (!GetAnchor() || !GetAnchor()->GetParent()) {
+  if (!GetAnchor() || !GetAnchor()->PlatformGetParent()) {
     *tree_id = AXPosition::INVALID_TREE_ID;
     *parent_id = AXPosition::INVALID_ANCHOR_ID;
     return;
   }
 
-  BrowserAccessibility* parent = GetAnchor()->GetParent();
+  BrowserAccessibility* parent = GetAnchor()->PlatformGetParent();
   *tree_id = parent->manager()->ax_tree_id();
   *parent_id = parent->GetId();
 }

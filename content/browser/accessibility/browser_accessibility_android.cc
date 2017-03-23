@@ -214,7 +214,8 @@ bool BrowserAccessibilityAndroid::IsFocusable() const {
   // only mark it as focusable if the element has an explicit name.
   // Otherwise mark it as not focusable to avoid the user landing on
   // empty container elements in the tree.
-  if (IsIframe() || (GetRole() == ui::AX_ROLE_ROOT_WEB_AREA && GetParent()))
+  if (IsIframe() ||
+      (GetRole() == ui::AX_ROLE_ROOT_WEB_AREA && PlatformGetParent()))
     return HasStringAttribute(ui::AX_ATTR_NAME);
 
   return HasState(ui::AX_STATE_FOCUSABLE);
@@ -226,7 +227,7 @@ bool BrowserAccessibilityAndroid::IsFocused() const {
 
 bool BrowserAccessibilityAndroid::IsHeading() const {
   BrowserAccessibilityAndroid* parent =
-      static_cast<BrowserAccessibilityAndroid*>(GetParent());
+      static_cast<BrowserAccessibilityAndroid*>(PlatformGetParent());
   if (parent && parent->IsHeading())
     return true;
 
@@ -382,7 +383,7 @@ const char* BrowserAccessibilityAndroid::GetClassName() const {
       class_name = ui::kAXDialogClassname;
       break;
     case ui::AX_ROLE_ROOT_WEB_AREA:
-      if (GetParent() == nullptr)
+      if (PlatformGetParent() == nullptr)
         class_name = ui::kAXWebViewClassname;
       else
         class_name = ui::kAXViewClassname;
@@ -1045,19 +1046,19 @@ bool BrowserAccessibilityAndroid::Scroll(int direction) const {
   // Figure out the bounding box of the visible portion of this scrollable
   // view so we know how much to scroll by.
   gfx::Rect bounds;
-  if (GetRole() == ui::AX_ROLE_ROOT_WEB_AREA && !GetParent()) {
+  if (GetRole() == ui::AX_ROLE_ROOT_WEB_AREA && !PlatformGetParent()) {
     // If this is the root web area, use the bounds of the view to determine
     // how big one page is.
     if (!manager()->delegate())
       return false;
     bounds = manager()->delegate()->AccessibilityGetViewBounds();
-  } else if (GetRole() == ui::AX_ROLE_ROOT_WEB_AREA && GetParent()) {
+  } else if (GetRole() == ui::AX_ROLE_ROOT_WEB_AREA && PlatformGetParent()) {
     // If this is a web area inside of an iframe, try to use the bounds of
     // the containing element.
-    BrowserAccessibility* parent = GetParent();
+    BrowserAccessibility* parent = PlatformGetParent();
     while (parent && (parent->GetPageBoundsRect().width() == 0 ||
                       parent->GetPageBoundsRect().height() == 0)) {
-      parent = parent->GetParent();
+      parent = parent->PlatformGetParent();
     }
     if (parent)
       bounds = parent->GetPageBoundsRect();

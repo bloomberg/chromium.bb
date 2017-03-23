@@ -690,7 +690,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accName(VARIANT var_id, BSTR* name) {
 
   base::string16 name_str = target->name();
   if (name_str.empty()) {
-    if (target->ia2_role() == ROLE_SYSTEM_DOCUMENT && GetParent()) {
+    if (target->ia2_role() == ROLE_SYSTEM_DOCUMENT && PlatformGetParent()) {
       // Hack: Some versions of JAWS crash if they get an empty name on
       // a document that's the child of an iframe, so always return a
       // nonempty string for this role.  https://crbug.com/583057
@@ -714,7 +714,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accParent(IDispatch** disp_parent) {
   if (!disp_parent)
     return E_INVALIDARG;
 
-  IAccessible* parent_obj = ToBrowserAccessibilityWin(GetParent());
+  IAccessible* parent_obj = ToBrowserAccessibilityWin(PlatformGetParent());
   if (parent_obj == NULL) {
     // This happens if we're the root of the tree;
     // return the IAccessible for the window.
@@ -1105,8 +1105,8 @@ STDMETHODIMP BrowserAccessibilityWin::scrollToPoint(
   if (coordinate_type == IA2_COORDTYPE_SCREEN_RELATIVE) {
     scroll_to -= manager_->GetViewBounds().OffsetFromOrigin();
   } else if (coordinate_type == IA2_COORDTYPE_PARENT_RELATIVE) {
-    if (GetParent())
-      scroll_to += GetParent()->GetFrameBoundsRect().OffsetFromOrigin();
+    if (PlatformGetParent())
+      scroll_to += PlatformGetParent()->GetFrameBoundsRect().OffsetFromOrigin();
   } else {
     return E_INVALIDARG;
   }
@@ -1307,8 +1307,9 @@ STDMETHODIMP BrowserAccessibilityWin::get_imagePosition(
     *y = bounds.y();
   } else if (coordinate_type == IA2_COORDTYPE_PARENT_RELATIVE) {
     gfx::Rect bounds = GetPageBoundsRect();
-    gfx::Rect parent_bounds =
-        GetParent() ? GetParent()->GetPageBoundsRect() : gfx::Rect();
+    gfx::Rect parent_bounds = PlatformGetParent()
+                                  ? PlatformGetParent()->GetPageBoundsRect()
+                                  : gfx::Rect();
     *x = bounds.x() - parent_bounds.x();
     *y = bounds.y() - parent_bounds.y();
   } else {
@@ -2048,9 +2049,9 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnHeaderCells(
     return S_FALSE;
   }
 
-  BrowserAccessibility* table = GetParent();
+  BrowserAccessibility* table = PlatformGetParent();
   while (table && table->GetRole() != ui::AX_ROLE_TABLE)
-    table = table->GetParent();
+    table = table->PlatformGetParent();
   if (!table) {
     NOTREACHED();
     return S_FALSE;
@@ -2151,9 +2152,9 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowHeaderCells(
     return S_FALSE;
   }
 
-  BrowserAccessibility* table = GetParent();
+  BrowserAccessibility* table = PlatformGetParent();
   while (table && table->GetRole() != ui::AX_ROLE_TABLE)
-    table = table->GetParent();
+    table = table->PlatformGetParent();
   if (!table) {
     NOTREACHED();
     return S_FALSE;
@@ -2282,9 +2283,9 @@ STDMETHODIMP BrowserAccessibilityWin::get_table(IUnknown** table) {
   GetIntAttribute(ui::AX_ATTR_TABLE_CELL_ROW_INDEX, &row);
   GetIntAttribute(ui::AX_ATTR_TABLE_CELL_COLUMN_INDEX, &column);
 
-  BrowserAccessibility* find_table = GetParent();
+  BrowserAccessibility* find_table = PlatformGetParent();
   while (find_table && find_table->GetRole() != ui::AX_ROLE_TABLE)
-    find_table = find_table->GetParent();
+    find_table = find_table->PlatformGetParent();
   if (!find_table) {
     NOTREACHED();
     return S_FALSE;
@@ -2362,8 +2363,9 @@ STDMETHODIMP BrowserAccessibilityWin::get_characterExtents(
     character_bounds = GetScreenBoundsForRange(offset, 1);
   } else if (coordinate_type == IA2_COORDTYPE_PARENT_RELATIVE) {
     character_bounds = GetPageBoundsForRange(offset, 1);
-    if (GetParent())
-      character_bounds -= GetParent()->GetPageBoundsRect().OffsetFromOrigin();
+    if (PlatformGetParent())
+      character_bounds -=
+          PlatformGetParent()->GetPageBoundsRect().OffsetFromOrigin();
   } else {
     return E_INVALIDARG;
   }
@@ -2916,7 +2918,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_startIndex(long* index) {
     return E_INVALIDARG;
 
   int32_t hypertext_offset = 0;
-  auto* parent = GetParent();
+  auto* parent = PlatformGetParent();
   if (parent) {
     hypertext_offset =
         ToBrowserAccessibilityWin(parent)->GetHypertextOffsetFromChild(*this);
@@ -3397,7 +3399,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_parentNode(ISimpleDOMNode** node) {
   if (!node)
     return E_INVALIDARG;
 
-  *node = ToBrowserAccessibilityWin(GetParent())->NewReference();
+  *node = ToBrowserAccessibilityWin(PlatformGetParent())->NewReference();
   return S_OK;
 }
 
@@ -3445,13 +3447,14 @@ STDMETHODIMP BrowserAccessibilityWin::get_previousSibling(
   if (!node)
     return E_INVALIDARG;
 
-  if (!GetParent() || GetIndexInParent() <= 0) {
+  if (!PlatformGetParent() || GetIndexInParent() <= 0) {
     *node = NULL;
     return S_FALSE;
   }
 
   *node = ToBrowserAccessibilityWin(
-      GetParent()->InternalGetChild(GetIndexInParent() - 1))->NewReference();
+              PlatformGetParent()->InternalGetChild(GetIndexInParent() - 1))
+              ->NewReference();
   return S_OK;
 }
 
@@ -3463,16 +3466,16 @@ STDMETHODIMP BrowserAccessibilityWin::get_nextSibling(ISimpleDOMNode** node) {
   if (!node)
     return E_INVALIDARG;
 
-  if (!GetParent() ||
-      GetIndexInParent() < 0 ||
-      GetIndexInParent() >= static_cast<int>(
-          GetParent()->InternalChildCount()) - 1) {
+  if (!PlatformGetParent() || GetIndexInParent() < 0 ||
+      GetIndexInParent() >=
+          static_cast<int>(PlatformGetParent()->InternalChildCount()) - 1) {
     *node = NULL;
     return S_FALSE;
   }
 
   *node = ToBrowserAccessibilityWin(
-      GetParent()->InternalGetChild(GetIndexInParent() + 1))->NewReference();
+              PlatformGetParent()->InternalGetChild(GetIndexInParent() + 1))
+              ->NewReference();
   return S_OK;
 }
 
@@ -3661,8 +3664,8 @@ STDMETHODIMP BrowserAccessibilityWin::QueryService(REFGUID guid_service,
     // Screen readers use this to distinguish between a document loaded event
     // on the root document vs on an iframe.
     BrowserAccessibility* node = this;
-    while (node->GetParent())
-      node = node->GetParent()->manager()->GetRoot();
+    while (node->PlatformGetParent())
+      node = node->PlatformGetParent()->manager()->GetRoot();
     return ToBrowserAccessibilityWin(node)->QueryInterface(
         IID_IAccessible2, object);
   }
@@ -4021,9 +4024,9 @@ void BrowserAccessibilityWin::UpdateStep1ComputeWinAttributes() {
 
   // Expose table cell index.
   if (IsCellOrTableHeaderRole()) {
-    BrowserAccessibility* table = GetParent();
+    BrowserAccessibility* table = PlatformGetParent();
     while (table && table->GetRole() != ui::AX_ROLE_TABLE)
-      table = table->GetParent();
+      table = table->PlatformGetParent();
     if (table) {
       const std::vector<int32_t>& unique_cell_ids =
           table->GetIntListAttribute(ui::AX_ATTR_UNIQUE_CELL_IDS);
@@ -4190,7 +4193,8 @@ void BrowserAccessibilityWin::UpdateStep3FireEvents(bool is_subtree_creation) {
         (old_win_attributes_->ia_state & STATE_SYSTEM_SELECTED) != 0;
     if (is_selected_now || was_selected_before) {
       bool multiselect = false;
-      if (GetParent() && GetParent()->HasState(ui::AX_STATE_MULTISELECTABLE))
+      if (PlatformGetParent() &&
+          PlatformGetParent()->HasState(ui::AX_STATE_MULTISELECTABLE))
         multiselect = true;
 
       if (multiselect) {
@@ -4233,7 +4237,8 @@ void BrowserAccessibilityWin::UpdateStep3FireEvents(bool is_subtree_creation) {
 
     // Changing a static text node can affect the IAccessibleText hypertext
     // of the parent node, so force an update on the parent.
-    BrowserAccessibilityWin* parent = ToBrowserAccessibilityWin(GetParent());
+    BrowserAccessibilityWin* parent =
+        ToBrowserAccessibilityWin(PlatformGetParent());
     if (parent && IsTextOnlyObject() &&
         name() != old_win_attributes_->name) {
       parent->UpdatePlatformAttributes();
@@ -4614,7 +4619,7 @@ void BrowserAccessibilityWin::IntAttributeToIA2(
 
 bool BrowserAccessibilityWin::IsHyperlink() const {
   int32_t hyperlink_index = -1;
-  auto* parent = GetParent();
+  auto* parent = PlatformGetParent();
   if (parent) {
     hyperlink_index =
         ToBrowserAccessibilityWin(parent)->GetHyperlinkIndexFromChild(*this);
@@ -4668,7 +4673,7 @@ int32_t BrowserAccessibilityWin::GetHypertextOffsetFromHyperlinkIndex(
 
 int32_t BrowserAccessibilityWin::GetHypertextOffsetFromChild(
     const BrowserAccessibilityWin& child) const {
-  DCHECK(child.GetParent() == this);
+  DCHECK(child.PlatformGetParent() == this);
 
   // Handle the case when we are dealing with a direct text-only child.
   // (Note that this object might be a platform leaf, e.g. an ARIA searchbox,
@@ -4701,11 +4706,13 @@ int32_t BrowserAccessibilityWin::GetHypertextOffsetFromChild(
 
 int32_t BrowserAccessibilityWin::GetHypertextOffsetFromDescendant(
     const BrowserAccessibilityWin& descendant) const {
-  auto* parent_object = ToBrowserAccessibilityWin(descendant.GetParent());
+  auto* parent_object =
+      ToBrowserAccessibilityWin(descendant.PlatformGetParent());
   auto* current_object = const_cast<BrowserAccessibilityWin*>(&descendant);
   while (parent_object && parent_object != this) {
     current_object = parent_object;
-    parent_object = ToBrowserAccessibilityWin(current_object->GetParent());
+    parent_object =
+        ToBrowserAccessibilityWin(current_object->PlatformGetParent());
   }
   if (!parent_object)
     return -1;
@@ -4736,7 +4743,7 @@ int BrowserAccessibilityWin::GetHypertextOffsetFromEndpoint(
   int32_t index_in_common_parent = GetIndexInParent();
   while (common_parent && !endpoint_object.IsDescendantOf(common_parent)) {
     index_in_common_parent = common_parent->GetIndexInParent();
-    common_parent = common_parent->GetParent();
+    common_parent = common_parent->PlatformGetParent();
   }
   if (!common_parent)
     return -1;
@@ -4752,7 +4759,7 @@ int BrowserAccessibilityWin::GetHypertextOffsetFromEndpoint(
   if (common_parent == this) {
     int32_t hypertext_offset =
         GetHypertextOffsetFromDescendant(endpoint_object);
-    if (endpoint_object.GetParent() == this &&
+    if (endpoint_object.PlatformGetParent() == this &&
         endpoint_object.IsTextOnlyObject()) {
       hypertext_offset += endpoint_offset;
     }
@@ -5028,11 +5035,11 @@ BrowserAccessibilityWin* BrowserAccessibilityWin::GetFromID(int32_t id) const {
 }
 
 bool BrowserAccessibilityWin::IsListBoxOptionOrMenuListOption() {
-  if (!GetParent())
+  if (!PlatformGetParent())
     return false;
 
   int32_t role = GetRole();
-  int32_t parent_role = GetParent()->GetRole();
+  int32_t parent_role = PlatformGetParent()->GetRole();
 
   if (role == ui::AX_ROLE_LIST_BOX_OPTION &&
       parent_role == ui::AX_ROLE_LIST_BOX) {

@@ -489,8 +489,9 @@ static AtkObject* browser_accessibility_get_parent(AtkObject* atk_object) {
       ToBrowserAccessibilityAuraLinux(atk_object);
   if (!obj)
     return NULL;
-  if (obj->GetParent())
-    return ToBrowserAccessibilityAuraLinux(obj->GetParent())->GetAtkObject();
+  if (obj->PlatformGetParent())
+    return ToBrowserAccessibilityAuraLinux(obj->PlatformGetParent())
+        ->GetAtkObject();
 
   BrowserAccessibilityManagerAuraLinux* manager =
       static_cast<BrowserAccessibilityManagerAuraLinux*>(obj->manager());
@@ -784,10 +785,10 @@ void BrowserAccessibilityAuraLinux::OnDataChanged() {
   if (!atk_object_) {
     interface_mask_ = GetInterfaceMaskFromObject(this);
     atk_object_ = ATK_OBJECT(browser_accessibility_new(this));
-    if (this->GetParent()) {
-      atk_object_set_parent(
-          atk_object_,
-          ToBrowserAccessibilityAuraLinux(this->GetParent())->GetAtkObject());
+    if (this->PlatformGetParent()) {
+      atk_object_set_parent(atk_object_, ToBrowserAccessibilityAuraLinux(
+                                             this->PlatformGetParent())
+                                             ->GetAtkObject());
     }
   }
 }

@@ -454,7 +454,7 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects2) {
   EXPECT_FALSE(child3_accessible->instance_active());
 
   // Ensure that we retain the parent of the detached subtree.
-  EXPECT_EQ(root_accessible, container_accessible->GetParent());
+  EXPECT_EQ(root_accessible, container_accessible->PlatformGetParent());
   EXPECT_EQ(0, container_accessible->GetIndexInParent());
 
   // Check that the index in parent has been updated.

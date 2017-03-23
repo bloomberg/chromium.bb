@@ -770,8 +770,8 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
   if (![self isIgnored]) {
     children_.reset();
   } else {
-    [ToBrowserAccessibilityCocoa(browserAccessibility_->GetParent())
-         childrenChanged];
+    [ToBrowserAccessibilityCocoa(browserAccessibility_->PlatformGetParent())
+        childrenChanged];
   }
 }
 
@@ -1243,9 +1243,9 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
   if (![self instanceActive])
     return nil;
   // A nil parent means we're the root.
-  if (browserAccessibility_->GetParent()) {
-    return NSAccessibilityUnignoredAncestor(
-        ToBrowserAccessibilityCocoa(browserAccessibility_->GetParent()));
+  if (browserAccessibility_->PlatformGetParent()) {
+    return NSAccessibilityUnignoredAncestor(ToBrowserAccessibilityCocoa(
+        browserAccessibility_->PlatformGetParent()));
   } else {
     // Hook back up to RenderWidgetHostViewCocoa.
     BrowserAccessibilityManagerMac* manager =
@@ -2417,7 +2417,7 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
     if (!child)
       return nil;
 
-    if (child->GetParent() != browserAccessibility_)
+    if (child->PlatformGetParent() != browserAccessibility_)
       return nil;
 
     return @(child->GetIndexInParent());
@@ -2648,10 +2648,10 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
       NSAccessibilityDisclosedRowsAttribute
     ]];
   } else if ([role isEqualToString:NSAccessibilityRowRole]) {
-    if (browserAccessibility_->GetParent()) {
+    if (browserAccessibility_->PlatformGetParent()) {
       base::string16 parentRole;
-      browserAccessibility_->GetParent()->GetHtmlAttribute(
-          "role", &parentRole);
+      browserAccessibility_->PlatformGetParent()->GetHtmlAttribute("role",
+                                                                   &parentRole);
       const base::string16 treegridRole(base::ASCIIToUTF16("treegrid"));
       if (parentRole == treegridRole) {
         [ret addObjectsFromArray:@[
