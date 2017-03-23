@@ -144,8 +144,8 @@ void RecentTabHelper::ObserveAndDownloadCurrentPage(
   // If the page is not yet ready for a snapshot return now as it will be
   // started later, once page loading advances.
   if (PageQuality::POOR == snapshot_controller_->current_page_quality()) {
-    DVLOG(1) << "Waiting for loading page to serve download request for: "
-             << web_contents()->GetLastCommittedURL().spec();
+    DVLOG(1) << "Waiting for the page to load before fulfilling download "
+             << "request for: " << web_contents()->GetLastCommittedURL().spec();
     downloads_snapshot_on_hold_ = true;
     return;
   }
@@ -213,6 +213,8 @@ void RecentTabHelper::DidFinishNavigation(
   }
 
   // Cancel any and all in flight snapshot tasks from the previous page.
+  DVLOG_IF(1, last_n_ongoing_snapshot_info_)
+      << " - Canceling ongoing last_n snapshot";
   CancelInFlightSnapshots();
   downloads_snapshot_on_hold_ = false;
 
@@ -225,7 +227,7 @@ void RecentTabHelper::DidFinishNavigation(
       OfflinePageModel::CanSaveURL(web_contents()->GetLastCommittedURL()) &&
       OfflinePageUtils::GetOfflinePageFromWebContents(web_contents()) ==
           nullptr;
-  DVLOG_IF(1, !can_save) << " - Page can not be saved";
+  DVLOG_IF(1, !can_save) << " - Page can not be saved for offline usage";
 
   UMA_HISTOGRAM_BOOLEAN("OfflinePages.CanSaveRecentPage", can_save);
 
@@ -233,7 +235,8 @@ void RecentTabHelper::DidFinishNavigation(
     snapshot_controller_->Stop();
   last_n_listen_to_tab_hidden_ = can_save && !delegate_->IsLowEndDevice() &&
                                  IsOffliningRecentPagesEnabled();
-  DVLOG_IF(1, !last_n_listen_to_tab_hidden_) << " - Last_n is disabled";
+  DVLOG_IF(1, can_save && !last_n_listen_to_tab_hidden_)
+      << " - Page can not be saved by last_n";
 }
 
 void RecentTabHelper::DocumentAvailableInMainFrame() {
