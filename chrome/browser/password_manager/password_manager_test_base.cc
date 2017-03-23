@@ -400,20 +400,20 @@ void PasswordManagerBrowserTestBase::CheckElementValue(
     const std::string& iframe_id,
     const std::string& element_id,
     const std::string& expected_value) {
-  const std::string value_check_script = base::StringPrintf(
+  const std::string value_get_script = base::StringPrintf(
       "if (%s)"
       "  var element = document.getElementById("
       "      '%s').contentDocument.getElementById('%s');"
       "else "
       "  var element = document.getElementById('%s');"
-      "window.domAutomationController.send(element && element.value == '%s');",
+      "var value = element ? element.value : 'element not found';"
+      "window.domAutomationController.send(value);",
       iframe_id.c_str(), iframe_id.c_str(), element_id.c_str(),
-      element_id.c_str(), expected_value.c_str());
-  bool return_value = false;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      RenderViewHost(), value_check_script, &return_value));
-  EXPECT_TRUE(return_value) << "element_id = " << element_id
-                            << ", expected_value = " << expected_value;
+      element_id.c_str());
+  std::string return_value;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      RenderViewHost(), value_get_script, &return_value));
+  EXPECT_EQ(expected_value, return_value) << "element_id = " << element_id;
 }
 
 void PasswordManagerBrowserTestBase::AddHSTSHost(const std::string& host) {

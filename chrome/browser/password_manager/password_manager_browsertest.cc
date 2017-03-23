@@ -2083,14 +2083,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 
 // Check that a password form in an iframe of same origin will not be
 // filled in until user interact with the iframe.
-// TODO(crbug.com/683209): Flaky on Win7 dbg.
-#if defined(OS_WIN)
-#define MAYBE_SameOriginIframeAutoFillTest DISABLED_SameOriginIframeAutoFillTest
-#else
-#define MAYBE_SameOriginIframeAutoFillTest SameOriginIframeAutoFillTest
-#endif
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
-                       MAYBE_SameOriginIframeAutoFillTest) {
+                       SameOriginIframeAutoFillTest) {
   // Visit the sign-up form to store a password for autofill later
   NavigateToFile("/password/password_form_in_same_origin_iframe.html");
   NavigationObserver observer(WebContents());
