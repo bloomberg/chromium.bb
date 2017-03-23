@@ -115,9 +115,10 @@ static void fd_device_del_impl(struct fd_device *dev)
 	fd_bo_cache_cleanup(&dev->bo_cache, 0);
 	drmHashDestroy(dev->handle_table);
 	drmHashDestroy(dev->name_table);
+	dev->funcs->destroy(dev);
 	if (dev->closefd)
 		close(dev->fd);
-	dev->funcs->destroy(dev);
+	free(dev);
 }
 
 drm_private void fd_device_del_locked(struct fd_device *dev)
