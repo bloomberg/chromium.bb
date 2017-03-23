@@ -181,8 +181,6 @@ component("net") {
     "cert/internal/cert_error_id.h",
     "cert/internal/cert_error_params.cc",
     "cert/internal/cert_error_params.h",
-    "cert/internal/cert_error_scoper.cc",
-    "cert/internal/cert_error_scoper.h",
     "cert/internal/cert_errors.cc",
     "cert/internal/cert_errors.h",
     "cert/internal/cert_issuer_source.h",
