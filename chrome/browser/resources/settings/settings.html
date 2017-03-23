@@ -6,19 +6,28 @@
 <if expr="not use_vulcanize">
   <base href="chrome://$i18n{hostname}">
 </if>
-  <link rel="import" href="chrome://resources/html/polymer.html">
-  <link rel="import" href="settings_ui/settings_ui.html">
-  <link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
-  <!-- Do not add any <link rel="..."> elements below here. Imports outside of
-       <head> are disallowed by HTML5 and cause undefined behavior that
-       confuses Polymer's lifecycle methods: crbug.com/638074. -->
+  <link rel="stylesheet" href="chrome://resources/css/md_colors.css">
   <style>
     html {
       overflow: hidden;
+    }
+
+    settings-ui:unresolved {
+      background-color: var(--md-background-color);
+      border-top: 56px solid var(--md-toolbar-color);
+      bottom: 0;
+      display: block;
+      left: 0;
+      position: fixed;
+      right: 0;
+      top: 0;
     }
   </style>
 </head>
 <body>
   <settings-ui></settings-ui>
+  <link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
+  <link rel="import" href="chrome://resources/html/polymer.html">
+  <link rel="import" href="settings_ui/settings_ui.html">
 </body>
 </html>
