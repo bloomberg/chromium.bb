@@ -838,19 +838,6 @@ class Settings(object):
       self.viewvc_url = self._GetRietveldConfig('viewvc-url', error_ok=True)
     return self.viewvc_url
 
-  def GetBugLineFormat(self):
-    # rietveld.bug-line-format should have a %s where the list of bugs should
-    # go. This is a bit of a quirk, because normal people will always want the
-    # bug list to go right after a prefix like BUG= or Bug:. The %s format
-    # approach is used strictly because there isn't a great way to carry the
-    # desired space after Bug: all the way from codereview.settings to here
-    # without treating : specially or inventing a quoting scheme.
-    bug_line_format = self._GetRietveldConfig('bug-line-format', error_ok=True)
-    if not bug_line_format:
-      # TODO(tandrii): change this to 'Bug: %s' to be a proper Gerrit footer.
-      bug_line_format = 'BUG=%s'
-    return bug_line_format
-
   def GetBugPrefix(self):
     return self._GetRietveldConfig('bug-prefix', error_ok=True)
 
@@ -2182,7 +2169,7 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
                                      options.tbr_owners,
                                      change)
       if not options.force:
-        change_desc.prompt(bug=options.bug)
+        change_desc.prompt(bug=options.bug, git_footer=False)
 
       if not change_desc.description:
         print('Description is empty; aborting.')
@@ -3133,7 +3120,7 @@ class ChangeDescription(object):
   """Contains a parsed form of the change description."""
   R_LINE = r'^[ \t]*(TBR|R)[ \t]*=[ \t]*(.*?)[ \t]*$'
   CC_LINE = r'^[ \t]*(CC)[ \t]*=[ \t]*(.*?)[ \t]*$'
-  BUG_LINE = r'^[ \t]*(BUGS?|Bugs?)[ \t]*[:=][ \t]*(.*?)[ \t]*$'
+  BUG_LINE = r'^[ \t]*(?:(BUG)[ \t]*=|Bug:)[ \t]*(.*?)[ \t]*$'
   CHERRY_PICK_LINE = r'^\(cherry picked from commit [a-fA-F0-9]{40}\)$'
 
   def __init__(self, description):
@@ -3206,7 +3193,7 @@ class ChangeDescription(object):
       if new_tbr_line:
         self.append_footer(new_tbr_line)
 
-  def prompt(self, bug=None):
+  def prompt(self, bug=None, git_footer=True):
     """Asks the user to update the description."""
     self.set_description([
       '# Enter a description of the change.',
@@ -3220,9 +3207,11 @@ class ChangeDescription(object):
     if not any((regexp.match(line) for line in self._description_lines)):
       prefix = settings.GetBugPrefix()
       values = list(_get_bug_line_values(prefix, bug or '')) or [prefix]
-      bug_line_format = settings.GetBugLineFormat()
-      for value in values:
-        self.append_footer(bug_line_format % value)
+      if git_footer:
+        self.append_footer('Bug: %s' % ', '.join(values))
+      else:
+        for value in values:
+          self.append_footer('BUG=%s' % value)
 
     content = gclient_utils.RunEditor(self.description, True,
                                       git_editor=settings.GetGitEditor())
@@ -3394,7 +3383,6 @@ def LoadCodereviewSettingsFromFile(fileobj):
   SetProperty('private', 'PRIVATE', unset_error_ok=True)
   SetProperty('tree-status-url', 'STATUS', unset_error_ok=True)
   SetProperty('viewvc-url', 'VIEW_VC', unset_error_ok=True)
-  SetProperty('bug-line-format', 'BUG_LINE_FORMAT', unset_error_ok=True)
   SetProperty('bug-prefix', 'BUG_PREFIX', unset_error_ok=True)
   SetProperty('cpplint-regex', 'LINT_REGEX', unset_error_ok=True)
   SetProperty('cpplint-ignore-regex', 'LINT_IGNORE_REGEX', unset_error_ok=True)
@@ -4372,7 +4360,7 @@ def CMDdescription(parser, args):
 
     description.set_description(text)
   else:
-    description.prompt()
+    description.prompt(git_footer=cl.IsGerrit())
 
   if cl.GetDescription().strip() != description.description:
     cl.UpdateDescription(description.description, force=options.force)

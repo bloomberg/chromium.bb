@@ -568,14 +568,14 @@ class TestGitCl(TestCase):
           '\nIF YOU SEE THIS, READ BELOW, IT WILL SAVE YOUR TIME!\n'
           'There are un-consumed self.calls after this test has finished.\n'
           'If you don\'t know which test this is, run:\n'
-          '   tests/git_cl_test.py -v\n'
+          '   tests/git_cl_tests.py -v\n'
           '\n'
           'If you are already running just this single test, then **first** '
           'fix the problem whose exception is emitted below by unittest '
           'runner.\n'
           '\n'
           'Else, to be sure what\'s going on, run this test **alone** with \n'
-          '    tests/git_cl_test.py TestGitCl.<name>\n'
+          '    tests/git_cl_tests.py TestGitCl.<name>\n'
           'and follow instructions above.\n' +
           '=' * 80)
     finally:
@@ -638,7 +638,6 @@ class TestGitCl(TestCase):
       ((['git', 'config', '--unset-all', 'rietveld.private'],), CERR1),
       ((['git', 'config', '--unset-all', 'rietveld.tree-status-url'],), CERR1),
       ((['git', 'config', '--unset-all', 'rietveld.viewvc-url'],), CERR1),
-      ((['git', 'config', '--unset-all', 'rietveld.bug-line-format'],), CERR1),
       ((['git', 'config', '--unset-all', 'rietveld.bug-prefix'],), CERR1),
       ((['git', 'config', '--unset-all', 'rietveld.cpplint-regex'],), CERR1),
       ((['git', 'config', '--unset-all', 'rietveld.cpplint-ignore-regex'],),
@@ -722,8 +721,7 @@ class TestGitCl(TestCase):
       ((['git', 'log', '--pretty=format:%s\n\n%b',
          'fake_ancestor_sha..HEAD'],),
        'desc\n'),
-      ((['git', 'config', 'rietveld.bug-prefix'],), CERR1),
-      ((['git', 'config', 'rietveld.bug-line-format'],), CERR1),
+      ((['git', 'config', 'rietveld.bug-prefix'],), ''),
     ]
 
   @classmethod
@@ -2250,13 +2248,13 @@ class TestGitCl(TestCase):
           '# The first line will also be used as the subject of the review.\n'
           '#--------------------This line is 72 characters long'
           '--------------------\n'
-          'Some.\n\nBUG=\n\nChange-Id: xxx',
+          'Some.\n\nChange-Id: xxx\nBug: ',
           desc)
       # Simulate user changing something.
-      return 'Some.\n\nBUG=123\n\nChange-Id: xxx'
+      return 'Some.\n\nChange-Id: xxx\nBug: 123'
 
     def UpdateDescriptionRemote(_, desc, force=False):
-      self.assertEquals(desc, 'Some.\n\nBUG=123\n\nChange-Id: xxx')
+      self.assertEquals(desc, 'Some.\n\nChange-Id: xxx\nBug: 123')
 
     self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
     self.mock(git_cl.Changelist, 'GetDescription',
@@ -2270,7 +2268,6 @@ class TestGitCl(TestCase):
         ((['git', 'config', 'branch.feature.gerritissue'],), '123'),
         ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
         ((['git', 'config', 'rietveld.bug-prefix'],), CERR1),
-        ((['git', 'config', 'rietveld.bug-line-format'],), CERR1),
         ((['git', 'config', 'core.editor'],), 'vi'),
     ]
     self.assertEqual(0, git_cl.main(['description', '--gerrit']))
