@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "extensions/browser/api/networking_private/networking_cast_private_delegate.h"
-#include "extensions/browser/api/networking_private/networking_private_delegate.h"
 
 namespace extensions {
 
@@ -28,36 +27,23 @@ class ChromeNetworkingCastPrivateDelegate
   ~ChromeNetworkingCastPrivateDelegate() override;
 
   // NetworkingCastPrivateDelegate overrides:
-  void VerifyDestination(
-      const api::networking_private::VerificationProperties& properties,
-      const VerifiedCallback& success_callback,
-      const FailureCallback& failure_callback) override;
+  void VerifyDestination(std::unique_ptr<Credentials> credentials,
+                         const VerifiedCallback& success_callback,
+                         const FailureCallback& failure_callback) override;
   void VerifyAndEncryptCredentials(
       const std::string& guid,
-      const api::networking_private::VerificationProperties& properties,
+      std::unique_ptr<Credentials> credentials,
       const DataCallback& success_callback,
       const FailureCallback& failure_callback) override;
-  void VerifyAndEncryptData(
-      const std::string& data,
-      const api::networking_private::VerificationProperties& properties,
-      const DataCallback& success_callback,
-      const FailureCallback& failure_callback) override;
+  void VerifyAndEncryptData(const std::string& data,
+                            std::unique_ptr<Credentials> credentials,
+                            const DataCallback& success_callback,
+                            const FailureCallback& failure_callback) override;
+
+ protected:
+  ChromeNetworkingCastPrivateDelegate();
 
  private:
-  // Friend the test so it can inject stub VerifyDelegate implementation.
-  // TODO(tbarzic): Remove this when NetworkingCastPrivateDelegate stops
-  // depending on
-  //     NetworkingPrivateDelegate::VerifyDelegate.
-  friend class NetworkingCastPrivateApiTest;
-
-  explicit ChromeNetworkingCastPrivateDelegate(
-      std::unique_ptr<NetworkingPrivateDelegate::VerifyDelegate>
-          verify_delegate);
-
-  // NetworkingPrivates API's crypto utility to which verification requests
-  // will be routed.
-  std::unique_ptr<NetworkingPrivateDelegate::VerifyDelegate> crypto_verify_;
-
   DISALLOW_COPY_AND_ASSIGN(ChromeNetworkingCastPrivateDelegate);
 };
 

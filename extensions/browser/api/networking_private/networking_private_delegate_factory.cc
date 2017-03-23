@@ -22,14 +22,6 @@ namespace extensions {
 
 using content::BrowserContext;
 
-NetworkingPrivateDelegateFactory::VerifyDelegateFactory::
-    VerifyDelegateFactory() {
-}
-
-NetworkingPrivateDelegateFactory::VerifyDelegateFactory::
-    ~VerifyDelegateFactory() {
-}
-
 NetworkingPrivateDelegateFactory::UIDelegateFactory::UIDelegateFactory() {}
 
 NetworkingPrivateDelegateFactory::UIDelegateFactory::~UIDelegateFactory() {}
@@ -57,11 +49,6 @@ NetworkingPrivateDelegateFactory::NetworkingPrivateDelegateFactory()
 NetworkingPrivateDelegateFactory::~NetworkingPrivateDelegateFactory() {
 }
 
-void NetworkingPrivateDelegateFactory::SetVerifyDelegateFactory(
-    std::unique_ptr<VerifyDelegateFactory> factory) {
-  verify_factory_ = std::move(factory);
-}
-
 void NetworkingPrivateDelegateFactory::SetUIDelegateFactory(
     std::unique_ptr<UIDelegateFactory> factory) {
   ui_factory_ = std::move(factory);
@@ -70,20 +57,15 @@ void NetworkingPrivateDelegateFactory::SetUIDelegateFactory(
 KeyedService* NetworkingPrivateDelegateFactory::BuildServiceInstanceFor(
     BrowserContext* browser_context) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  std::unique_ptr<NetworkingPrivateDelegate::VerifyDelegate> verify_delegate;
-  if (verify_factory_)
-    verify_delegate = verify_factory_->CreateDelegate();
 
   NetworkingPrivateDelegate* delegate;
 #if defined(OS_CHROMEOS)
-  delegate = new NetworkingPrivateChromeOS(browser_context,
-                                           std::move(verify_delegate));
+  delegate = new NetworkingPrivateChromeOS(browser_context);
 #elif defined(OS_LINUX)
-  delegate = new NetworkingPrivateLinux(std::move(verify_delegate));
+  delegate = new NetworkingPrivateLinux();
 #elif defined(OS_WIN) || defined(OS_MACOSX)
   std::unique_ptr<wifi::WiFiService> wifi_service(wifi::WiFiService::Create());
-  delegate = new NetworkingPrivateServiceClient(std::move(wifi_service),
-                                                std::move(verify_delegate));
+  delegate = new NetworkingPrivateServiceClient(std::move(wifi_service));
 #else
   NOTREACHED();
   delegate = nullptr;

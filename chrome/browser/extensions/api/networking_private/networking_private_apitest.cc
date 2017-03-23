@@ -9,11 +9,14 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
+#include "chrome/browser/extensions/api/networking_cast_private/chrome_networking_cast_private_delegate.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/onc/onc_constants.h"
@@ -38,12 +41,12 @@ const char kFailure[] = "Failure";
 const char kSuccess[] = "Success";
 const char kGuid[] = "SOME_GUID";
 
-class TestDelegate : public NetworkingPrivateDelegate {
+class TestNetworkingPrivateDelegate : public NetworkingPrivateDelegate {
  public:
-  explicit TestDelegate(std::unique_ptr<VerifyDelegate> verify_delegate)
-      : NetworkingPrivateDelegate(std::move(verify_delegate)), fail_(false) {}
+  explicit TestNetworkingPrivateDelegate(bool test_failure)
+      : fail_(test_failure) {}
 
-  ~TestDelegate() override {}
+  ~TestNetworkingPrivateDelegate() override {}
 
   // Asynchronous methods
   void GetProperties(const std::string& guid,
@@ -255,60 +258,83 @@ class TestDelegate : public NetworkingPrivateDelegate {
   std::map<std::string, bool> disabled_;
   std::vector<bool> scan_requested_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestDelegate);
+  DISALLOW_COPY_AND_ASSIGN(TestNetworkingPrivateDelegate);
 };
 
-class TestVerifyDelegate : public NetworkingPrivateDelegate::VerifyDelegate {
+class TestNetworkingCastPrivateDelegate
+    : public ChromeNetworkingCastPrivateDelegate {
  public:
-  TestVerifyDelegate() : owner_(NULL) {}
+  explicit TestNetworkingCastPrivateDelegate(bool test_failure)
+      : fail_(test_failure) {}
 
-  ~TestVerifyDelegate() override {}
+  ~TestNetworkingCastPrivateDelegate() override {}
 
-  void VerifyDestination(
-      const VerificationProperties& verification_properties,
-      const BoolCallback& success_callback,
-      const FailureCallback& failure_callback) override {
-    owner_->BoolResult(success_callback, failure_callback);
+  void VerifyDestination(std::unique_ptr<Credentials> credentials,
+                         const VerifiedCallback& success_callback,
+                         const FailureCallback& failure_callback) override {
+    if (fail_) {
+      failure_callback.Run(kFailure);
+    } else {
+      success_callback.Run(true);
+    }
   }
+
   void VerifyAndEncryptCredentials(
       const std::string& guid,
-      const VerificationProperties& verification_properties,
-      const StringCallback& success_callback,
+      std::unique_ptr<Credentials> credentials,
+      const DataCallback& success_callback,
       const FailureCallback& failure_callback) override {
-    owner_->StringResult(success_callback, failure_callback);
+    if (fail_) {
+      failure_callback.Run(kFailure);
+    } else {
+      success_callback.Run("encrypted_credentials");
+    }
   }
-  void VerifyAndEncryptData(
-      const VerificationProperties& verification_properties,
-      const std::string& data,
-      const StringCallback& success_callback,
-      const FailureCallback& failure_callback) override {
-    owner_->StringResult(success_callback, failure_callback);
+  void VerifyAndEncryptData(const std::string& data,
+                            std::unique_ptr<Credentials> credentials,
+                            const DataCallback& success_callback,
+                            const FailureCallback& failure_callback) override {
+    if (fail_) {
+      failure_callback.Run(kFailure);
+    } else {
+      success_callback.Run("encrypted_data");
+    }
   }
-
-  void set_owner(TestDelegate* owner) { owner_ = owner; }
 
  private:
-  TestDelegate* owner_;
+  bool fail_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestVerifyDelegate);
+  DISALLOW_COPY_AND_ASSIGN(TestNetworkingCastPrivateDelegate);
 };
 
 class NetworkingPrivateApiTest : public ExtensionApiTest {
  public:
-  NetworkingPrivateApiTest() {
-    if (!s_test_delegate_) {
-      TestVerifyDelegate* verify_delegate = new TestVerifyDelegate;
-      std::unique_ptr<NetworkingPrivateDelegate::VerifyDelegate>
-          verify_delegate_ptr(verify_delegate);
-      s_test_delegate_ = new TestDelegate(std::move(verify_delegate_ptr));
-      verify_delegate->set_owner(s_test_delegate_);
-    }
-  }
+  using TestNetworkingPrivateDelegateFactory =
+      base::Callback<std::unique_ptr<KeyedService>()>;
 
   static std::unique_ptr<KeyedService> GetNetworkingPrivateDelegate(
       content::BrowserContext* profile) {
-    CHECK(s_test_delegate_);
-    return base::WrapUnique(s_test_delegate_);
+    CHECK(s_networking_private_delegate_factory_ptr);
+    return s_networking_private_delegate_factory_ptr->Run();
+  }
+
+  NetworkingPrivateApiTest() = default;
+  ~NetworkingPrivateApiTest() override = default;
+
+  void SetUp() override {
+    networking_cast_delegate_factory_ = base::Bind(
+        &NetworkingPrivateApiTest::CreateTestNetworkingCastPrivateDelegate,
+        base::Unretained(this), test_failure_);
+    ChromeNetworkingCastPrivateDelegate::SetFactoryCallbackForTest(
+        &networking_cast_delegate_factory_);
+
+    networking_private_delegate_factory_ = base::Bind(
+        &NetworkingPrivateApiTest::CreateTestNetworkingPrivateDelegate,
+        base::Unretained(this), test_failure_);
+    s_networking_private_delegate_factory_ptr =
+        &networking_private_delegate_factory_;
+
+    ExtensionApiTest::SetUp();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -323,19 +349,27 @@ class NetworkingPrivateApiTest : public ExtensionApiTest {
     ExtensionApiTest::SetUpOnMainThread();
     NetworkingPrivateDelegateFactory::GetInstance()->SetTestingFactory(
         profile(), &NetworkingPrivateApiTest::GetNetworkingPrivateDelegate);
-    content::RunAllPendingInMessageLoop();
+  }
+
+  void TearDown() override {
+    ExtensionApiTest::TearDown();
+
+    s_networking_private_delegate_factory_ptr = nullptr;
+    ChromeNetworkingCastPrivateDelegate::SetFactoryCallbackForTest(nullptr);
+
+    networking_private_delegate_ = nullptr;
   }
 
   bool GetEnabled(const std::string& type) {
-    return s_test_delegate_->GetEnabled(type);
+    return networking_private_delegate_->GetEnabled(type);
   }
 
   bool GetDisabled(const std::string& type) {
-    return s_test_delegate_->GetDisabled(type);
+    return networking_private_delegate_->GetDisabled(type);
   }
 
   size_t GetScanRequested() {
-    return s_test_delegate_->GetScanRequested();
+    return networking_private_delegate_->GetScanRequested();
   }
 
  protected:
@@ -345,15 +379,44 @@ class NetworkingPrivateApiTest : public ExtensionApiTest {
                                kFlagEnableFileAccess | kFlagLoadAsComponent);
   }
 
-  // Static pointer to the TestDelegate so that it can be accessed in
-  // GetNetworkingPrivateDelegate() passed to SetTestingFactory().
-  static TestDelegate* s_test_delegate_;
+ private:
+  std::unique_ptr<ChromeNetworkingCastPrivateDelegate>
+  CreateTestNetworkingCastPrivateDelegate(bool test_failure) {
+    return base::MakeUnique<TestNetworkingCastPrivateDelegate>(test_failure);
+  }
+
+  std::unique_ptr<KeyedService> CreateTestNetworkingPrivateDelegate(
+      bool test_failure) {
+    CHECK(!networking_private_delegate_);
+    auto delegate =
+        base::MakeUnique<TestNetworkingPrivateDelegate>(test_failure);
+    networking_private_delegate_ = delegate.get();
+    return delegate;
+  }
+
+ protected:
+  bool test_failure_ = false;
+
+ private:
+  // Pointer to a networking private delegate created by the test factory
+  // callback.
+  TestNetworkingPrivateDelegate* networking_private_delegate_ = nullptr;
+
+  TestNetworkingPrivateDelegateFactory networking_private_delegate_factory_;
+  // Static pointer to |test_delegate_factory_|, so it can be used from
+  // |CreateNetwokringPrivateDelegate|.
+  static TestNetworkingPrivateDelegateFactory*
+      s_networking_private_delegate_factory_ptr;
+
+  ChromeNetworkingCastPrivateDelegate::FactoryCallback
+      networking_cast_delegate_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateApiTest);
 };
 
-// static
-TestDelegate* NetworkingPrivateApiTest::s_test_delegate_ = NULL;
+NetworkingPrivateApiTest::TestNetworkingPrivateDelegateFactory*
+    NetworkingPrivateApiTest::s_networking_private_delegate_factory_ptr =
+        nullptr;
 
 }  // namespace
 
@@ -475,7 +538,9 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTest, GetGlobalPolicy) {
 
 class NetworkingPrivateApiTestFail : public NetworkingPrivateApiTest {
  public:
-  NetworkingPrivateApiTestFail() { s_test_delegate_->set_fail(true); }
+  NetworkingPrivateApiTestFail() { test_failure_ = true; }
+
+  ~NetworkingPrivateApiTestFail() override = default;
 
  protected:
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateApiTestFail);

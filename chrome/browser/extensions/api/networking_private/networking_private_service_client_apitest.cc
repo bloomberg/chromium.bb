@@ -9,7 +9,9 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/api/networking_cast_private/chrome_networking_cast_private_delegate.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_credentials_getter.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "components/user_manager/user.h"
@@ -33,6 +35,7 @@
 using testing::Return;
 using testing::_;
 
+using extensions::ChromeNetworkingCastPrivateDelegate;
 using extensions::NetworkingPrivateDelegate;
 using extensions::NetworkingPrivateDelegateFactory;
 using extensions::NetworkingPrivateEventRouter;
@@ -43,29 +46,50 @@ namespace {
 
 // Stub Verify* methods implementation to satisfy expectations of
 // networking_private_apitest.
-class CryptoVerifyStub : public NetworkingPrivateDelegate::VerifyDelegate {
-  void VerifyDestination(
-      const VerificationProperties& verification_properties,
-      const BoolCallback& success_callback,
-      const FailureCallback& failure_callback) override {
+class TestNetworkingCastPrivateDelegate
+    : public ChromeNetworkingCastPrivateDelegate {
+ public:
+  TestNetworkingCastPrivateDelegate() = default;
+  ~TestNetworkingCastPrivateDelegate() override = default;
+
+  void VerifyDestination(std::unique_ptr<Credentials> credentials,
+                         const VerifiedCallback& success_callback,
+                         const FailureCallback& failure_callback) override {
+    AssertCredentials(*credentials);
     success_callback.Run(true);
   }
 
   void VerifyAndEncryptCredentials(
       const std::string& guid,
-      const VerificationProperties& verification_properties,
-      const StringCallback& success_callback,
+      std::unique_ptr<Credentials> credentials,
+      const DataCallback& success_callback,
       const FailureCallback& failure_callback) override {
+    AssertCredentials(*credentials);
     success_callback.Run("encrypted_credentials");
   }
 
-  void VerifyAndEncryptData(
-      const VerificationProperties& verification_properties,
-      const std::string& data,
-      const StringCallback& success_callback,
-      const FailureCallback& failure_callback) override {
+  void VerifyAndEncryptData(const std::string& data,
+                            std::unique_ptr<Credentials> credentials,
+                            const DataCallback& success_callback,
+                            const FailureCallback& failure_callback) override {
+    AssertCredentials(*credentials);
     success_callback.Run("encrypted_data");
   }
+
+ private:
+  void AssertCredentials(const Credentials& credentials) {
+    ASSERT_EQ("certificate", credentials.certificate());
+    ASSERT_EQ("ica1,ica2,ica3",
+              base::JoinString(credentials.intermediate_certificates(), ","));
+    ASSERT_EQ("cHVibGljX2tleQ==", credentials.public_key());
+    ASSERT_EQ("00:01:02:03:04:05", credentials.device_bssid());
+    ASSERT_EQ("c2lnbmVkX2RhdGE=", credentials.signed_data());
+    ASSERT_EQ(
+        "Device 0123,device_serial,00:01:02:03:04:05,cHVibGljX2tleQ==,nonce",
+        credentials.unsigned_data());
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(TestNetworkingCastPrivateDelegate);
 };
 
 class NetworkingPrivateServiceClientApiTest : public ExtensionApiTest {
@@ -90,9 +114,18 @@ class NetworkingPrivateServiceClientApiTest : public ExtensionApiTest {
       content::BrowserContext* context) {
     std::unique_ptr<wifi::FakeWiFiService> wifi_service(
         new wifi::FakeWiFiService());
-    std::unique_ptr<CryptoVerifyStub> crypto_verify(new CryptoVerifyStub);
-    return std::unique_ptr<KeyedService>(new NetworkingPrivateServiceClient(
-        std::move(wifi_service), std::move(crypto_verify)));
+    return std::unique_ptr<KeyedService>(
+        new NetworkingPrivateServiceClient(std::move(wifi_service)));
+  }
+
+  void SetUp() override {
+    networking_cast_delegate_factory_ =
+        base::Bind(&NetworkingPrivateServiceClientApiTest::
+                       CreateNetworkingCastPrivateDelegate,
+                   base::Unretained(this));
+    ChromeNetworkingCastPrivateDelegate::SetFactoryCallbackForTest(
+        &networking_cast_delegate_factory_);
+    ExtensionApiTest::SetUp();
   }
 
   void SetUpOnMainThread() override {
@@ -107,7 +140,20 @@ class NetworkingPrivateServiceClientApiTest : public ExtensionApiTest {
     ExtensionApiTest::TearDownOnMainThread();
   }
 
- protected:
+  void TearDown() override {
+    ExtensionApiTest::TearDown();
+    ChromeNetworkingCastPrivateDelegate::SetFactoryCallbackForTest(nullptr);
+  }
+
+ private:
+  std::unique_ptr<ChromeNetworkingCastPrivateDelegate>
+  CreateNetworkingCastPrivateDelegate() {
+    return base::MakeUnique<TestNetworkingCastPrivateDelegate>();
+  }
+
+  ChromeNetworkingCastPrivateDelegate::FactoryCallback
+      networking_cast_delegate_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateServiceClientApiTest);
 };
 

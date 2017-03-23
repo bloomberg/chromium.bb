@@ -33,8 +33,7 @@ class NetworkingPrivateLinux : public NetworkingPrivateDelegate {
 
   typedef std::vector<std::string> GuidList;
 
-  explicit NetworkingPrivateLinux(
-      std::unique_ptr<VerifyDelegate> verify_delegate);
+  NetworkingPrivateLinux();
 
   // NetworkingPrivateDelegate
   void GetProperties(const std::string& guid,

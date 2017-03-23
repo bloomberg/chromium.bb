@@ -41,11 +41,8 @@ NetworkingPrivateServiceClient::ServiceCallbacks::~ServiceCallbacks() {
 }
 
 NetworkingPrivateServiceClient::NetworkingPrivateServiceClient(
-    std::unique_ptr<WiFiService> wifi_service,
-    std::unique_ptr<VerifyDelegate> verify_delegate)
-    : NetworkingPrivateDelegate(std::move(verify_delegate)),
-      wifi_service_(std::move(wifi_service)),
-      weak_factory_(this) {
+    std::unique_ptr<WiFiService> wifi_service)
+    : wifi_service_(std::move(wifi_service)), weak_factory_(this) {
   sequence_token_ = BrowserThread::GetBlockingPool()->GetNamedSequenceToken(
       kNetworkingPrivateSequenceTokenName);
   task_runner_ =

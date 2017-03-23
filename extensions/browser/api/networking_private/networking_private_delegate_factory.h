@@ -28,18 +28,6 @@ class NetworkingPrivateDelegateFactory
   // already a singleton, it provides a good place to hold these delegate
   // factories. See NetworkingPrivateDelegate for the delegate declarations.
 
-  class VerifyDelegateFactory {
-   public:
-    VerifyDelegateFactory();
-    virtual ~VerifyDelegateFactory();
-
-    virtual std::unique_ptr<NetworkingPrivateDelegate::VerifyDelegate>
-    CreateDelegate() = 0;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(VerifyDelegateFactory);
-  };
-
   class UIDelegateFactory {
    public:
     UIDelegateFactory();
@@ -53,7 +41,6 @@ class NetworkingPrivateDelegateFactory
   };
 
   // Provide optional factories for creating delegate instances.
-  void SetVerifyDelegateFactory(std::unique_ptr<VerifyDelegateFactory> factory);
   void SetUIDelegateFactory(std::unique_ptr<UIDelegateFactory> factory);
 
   static NetworkingPrivateDelegate* GetForBrowserContext(
@@ -74,7 +61,6 @@ class NetworkingPrivateDelegateFactory
   bool ServiceIsCreatedWithBrowserContext() const override;
   bool ServiceIsNULLWhileTesting() const override;
 
-  std::unique_ptr<VerifyDelegateFactory> verify_factory_;
   std::unique_ptr<UIDelegateFactory> ui_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateDelegateFactory);

@@ -27,8 +27,7 @@ namespace extensions {
 class NetworkingPrivateChromeOS : public NetworkingPrivateDelegate {
  public:
   // |verify_delegate| is passed to NetworkingPrivateDelegate and may be NULL.
-  NetworkingPrivateChromeOS(content::BrowserContext* browser_context,
-                            std::unique_ptr<VerifyDelegate> verify_delegate);
+  explicit NetworkingPrivateChromeOS(content::BrowserContext* browser_context);
   ~NetworkingPrivateChromeOS() override;
 
   // NetworkingPrivateApi

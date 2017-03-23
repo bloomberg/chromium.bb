@@ -5,9 +5,12 @@
 #ifndef EXTENSIONS_BROWSER_API_NETWORKING_PRIVATE_NETWORKING_CAST_PRIVATE_DELEGATE_H_
 #define EXTENSIONS_BROWSER_API_NETWORKING_PRIVATE_NETWORKING_CAST_PRIVATE_DELEGATE_H_
 
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "extensions/common/api/networking_private.h"
 
 namespace extensions {
@@ -28,28 +31,61 @@ class NetworkingCastPrivateDelegate {
   using VerifiedCallback = base::Callback<void(bool is_valid)>;
   using DataCallback = base::Callback<void(const std::string& encrypted_data)>;
 
-  // Verifies that data provided in |properties| authenticates a cast device.
-  virtual void VerifyDestination(
-      const api::networking_private::VerificationProperties& properties,
-      const VerifiedCallback& success_callback,
-      const FailureCallback& failure_callback) = 0;
+  // API independent wrapper around cast device verification properties.
+  class Credentials {
+   public:
+    Credentials(const std::string& certificate,
+                const std::vector<std::string>& intermediate_certificates,
+                const std::string& signed_data,
+                const std::string& device_ssid,
+                const std::string& device_serial,
+                const std::string& device_bssid,
+                const std::string& public_key,
+                const std::string& nonce);
+    ~Credentials();
 
-  // Verifies that data provided in |properties| authenticates a cast device.
+    const std::string& certificate() const { return certificate_; }
+    const std::vector<std::string>& intermediate_certificates() const {
+      return intermediate_certificates_;
+    }
+    const std::string& signed_data() const { return signed_data_; }
+    const std::string& unsigned_data() const { return unsigned_data_; }
+    const std::string& device_bssid() const { return device_bssid_; }
+    const std::string& public_key() const { return public_key_; }
+
+   private:
+    std::string certificate_;
+    std::vector<std::string> intermediate_certificates_;
+    std::string signed_data_;
+    std::string unsigned_data_;
+    std::string device_bssid_;
+    std::string public_key_;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Credentials);
+  };
+
+  // Verifies that data provided in |credentials| authenticates a cast device.
+  virtual void VerifyDestination(std::unique_ptr<Credentials> credentials,
+                                 const VerifiedCallback& success_callback,
+                                 const FailureCallback& failure_callback) = 0;
+
+  // Verifies that data provided in |credentials| authenticates a cast device.
   // If the device is verified as a cast device, it fetches credentials of the
   // network identified with |network_guid| and returns the network credentials
-  // encrypted with a public key derived from |properties|.
+  // encrypted with a public key derived from |credentials|.
   virtual void VerifyAndEncryptCredentials(
       const std::string& network_guid,
-      const api::networking_private::VerificationProperties& properties,
+      std::unique_ptr<Credentials> credentials,
       const DataCallback& encrypted_credetials_callback,
       const FailureCallback& failure_callback) = 0;
 
-  // Verifies that data provided in |properties| authenticates a cast device.
+  // Verifies that data provided in |credentials| authenticates a cast device.
   // If the device is verified as a cast device, it returns |data| encrypted
-  // with a public key derived from |properties|.
+  // with a public key derived from |credentials|.
   virtual void VerifyAndEncryptData(
       const std::string& data,
-      const api::networking_private::VerificationProperties& properties,
+      std::unique_ptr<Credentials> credentials,
       const DataCallback& enrypted_data_callback,
       const FailureCallback& failure_callback) = 0;
 };

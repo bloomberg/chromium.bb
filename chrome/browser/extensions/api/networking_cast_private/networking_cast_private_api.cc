@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/common/extensions/api/networking_cast_private.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/networking_private/networking_cast_private_delegate.h"
@@ -44,13 +45,15 @@ cast_api::TDLSStatus ParseTDLSStatus(const std::string& status) {
 }
 #endif
 
-std::unique_ptr<private_api::VerificationProperties>
-AsPrivateApiVerificaitonProperties(
-    const cast_api::VerificationProperties& properties) {
-  std::unique_ptr<base::DictionaryValue> cast_properties_dict =
-      properties.ToValue();
-  CHECK(cast_properties_dict);
-  return private_api::VerificationProperties::FromValue(*cast_properties_dict);
+std::unique_ptr<NetworkingCastPrivateDelegate::Credentials> AsCastCredentials(
+    api::networking_cast_private::VerificationProperties& properties) {
+  return base::MakeUnique<NetworkingCastPrivateDelegate::Credentials>(
+      properties.certificate,
+      properties.intermediate_certificates
+          ? *properties.intermediate_certificates
+          : std::vector<std::string>(),
+      properties.signed_data, properties.device_ssid, properties.device_serial,
+      properties.device_bssid, properties.public_key, properties.nonce);
 }
 
 }  // namespace
@@ -66,10 +69,8 @@ NetworkingCastPrivateVerifyDestinationFunction::Run() {
 
   NetworkingCastPrivateDelegate* delegate =
       ExtensionsAPIClient::Get()->GetNetworkingCastPrivateDelegate();
-  std::unique_ptr<private_api::VerificationProperties> private_api_properties =
-      AsPrivateApiVerificaitonProperties(params->properties);
   delegate->VerifyDestination(
-      *private_api_properties,
+      AsCastCredentials(params->properties),
       base::Bind(&NetworkingCastPrivateVerifyDestinationFunction::Success,
                  this),
       base::Bind(&NetworkingCastPrivateVerifyDestinationFunction::Failure,
@@ -99,10 +100,8 @@ NetworkingCastPrivateVerifyAndEncryptCredentialsFunction::Run() {
 
   NetworkingCastPrivateDelegate* delegate =
       ExtensionsAPIClient::Get()->GetNetworkingCastPrivateDelegate();
-  std::unique_ptr<private_api::VerificationProperties> private_api_properties =
-      AsPrivateApiVerificaitonProperties(params->properties);
   delegate->VerifyAndEncryptCredentials(
-      params->network_guid, *private_api_properties,
+      params->network_guid, AsCastCredentials(params->properties),
       base::Bind(
           &NetworkingCastPrivateVerifyAndEncryptCredentialsFunction::Success,
           this),
@@ -136,10 +135,8 @@ NetworkingCastPrivateVerifyAndEncryptDataFunction::Run() {
 
   NetworkingCastPrivateDelegate* delegate =
       ExtensionsAPIClient::Get()->GetNetworkingCastPrivateDelegate();
-  std::unique_ptr<private_api::VerificationProperties> private_api_properties =
-      AsPrivateApiVerificaitonProperties(params->properties);
   delegate->VerifyAndEncryptData(
-      params->data, *private_api_properties,
+      params->data, AsCastCredentials(params->properties),
       base::Bind(&NetworkingCastPrivateVerifyAndEncryptDataFunction::Success,
                  this),
       base::Bind(&NetworkingCastPrivateVerifyAndEncryptDataFunction::Failure,

@@ -9,7 +9,10 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/memory/ptr_util.h"
 #include "components/onc/onc_constants.h"
+#include "extensions/browser/api/extensions_api_client.h"
+#include "extensions/browser/api/networking_private/networking_cast_private_delegate.h"
 #include "extensions/browser/api/networking_private/networking_private_delegate.h"
 #include "extensions/browser/api/networking_private/networking_private_delegate_factory.h"
 #include "extensions/browser/extension_function_registry.h"
@@ -49,6 +52,17 @@ bool CanChangeSharedConfig(const Extension* extension,
 #endif
 }
 
+std::unique_ptr<NetworkingCastPrivateDelegate::Credentials> AsCastCredentials(
+    api::networking_private::VerificationProperties& properties) {
+  return base::MakeUnique<NetworkingCastPrivateDelegate::Credentials>(
+      properties.certificate,
+      properties.intermediate_certificates
+          ? *properties.intermediate_certificates
+          : std::vector<std::string>(),
+      properties.signed_data, properties.device_ssid, properties.device_serial,
+      properties.device_bssid, properties.public_key, properties.nonce);
+}
+
 }  // namespace
 
 namespace private_api = api::networking_private;
@@ -60,7 +74,6 @@ const char kErrorAccessToSharedConfig[] = "Error.CannotChangeSharedConfig";
 const char kErrorInvalidNetworkGuid[] = "Error.InvalidNetworkGuid";
 const char kErrorInvalidNetworkOperation[] = "Error.InvalidNetworkOperation";
 const char kErrorNetworkUnavailable[] = "Error.NetworkUnavailable";
-const char kErrorEncryptionError[] = "Error.EncryptionError";
 const char kErrorNotReady[] = "Error.NotReady";
 const char kErrorNotSupported[] = "Error.NotSupported";
 const char kErrorPolicyControlled[] = "Error.PolicyControlled";
@@ -599,13 +612,15 @@ NetworkingPrivateVerifyDestinationFunction::Run() {
       private_api::VerifyDestination::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  GetDelegate(browser_context())
-      ->VerifyDestination(
-          params->properties,
-          base::Bind(&NetworkingPrivateVerifyDestinationFunction::Success,
-                     this),
-          base::Bind(&NetworkingPrivateVerifyDestinationFunction::Failure,
-                     this));
+  NetworkingCastPrivateDelegate* delegate =
+      ExtensionsAPIClient::Get()->GetNetworkingCastPrivateDelegate();
+  if (!delegate)
+    return RespondNow(Error("Not supported."));
+
+  delegate->VerifyDestination(
+      AsCastCredentials(params->properties),
+      base::Bind(&NetworkingPrivateVerifyDestinationFunction::Success, this),
+      base::Bind(&NetworkingPrivateVerifyDestinationFunction::Failure, this));
   // Success() or Failure() might have been called synchronously at this point.
   // In that case this function has already called Respond(). Return
   // AlreadyResponded() in that case.
@@ -643,15 +658,17 @@ NetworkingPrivateVerifyAndEncryptCredentialsFunction::Run() {
       private_api::VerifyAndEncryptCredentials::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  GetDelegate(browser_context())
-      ->VerifyAndEncryptCredentials(
-          params->network_guid, params->properties,
-          base::Bind(
-              &NetworkingPrivateVerifyAndEncryptCredentialsFunction::Success,
-              this),
-          base::Bind(
-              &NetworkingPrivateVerifyAndEncryptCredentialsFunction::Failure,
-              this));
+  NetworkingCastPrivateDelegate* delegate =
+      ExtensionsAPIClient::Get()->GetNetworkingCastPrivateDelegate();
+  if (!delegate)
+    return RespondNow(Error("Not supported."));
+
+  delegate->VerifyAndEncryptCredentials(
+      params->network_guid, AsCastCredentials(params->properties),
+      base::Bind(&NetworkingPrivateVerifyAndEncryptCredentialsFunction::Success,
+                 this),
+      base::Bind(&NetworkingPrivateVerifyAndEncryptCredentialsFunction::Failure,
+                 this));
   // Success() or Failure() might have been called synchronously at this point.
   // In that case this function has already called Respond(). Return
   // AlreadyResponded() in that case.
@@ -690,13 +707,16 @@ NetworkingPrivateVerifyAndEncryptDataFunction::Run() {
       private_api::VerifyAndEncryptData::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  GetDelegate(browser_context())
-      ->VerifyAndEncryptData(
-          params->properties, params->data,
-          base::Bind(&NetworkingPrivateVerifyAndEncryptDataFunction::Success,
-                     this),
-          base::Bind(&NetworkingPrivateVerifyAndEncryptDataFunction::Failure,
-                     this));
+  NetworkingCastPrivateDelegate* delegate =
+      ExtensionsAPIClient::Get()->GetNetworkingCastPrivateDelegate();
+  if (!delegate)
+    return RespondNow(Error("Not supported."));
+
+  delegate->VerifyAndEncryptData(
+      params->data, AsCastCredentials(params->properties),
+      base::Bind(&NetworkingPrivateVerifyAndEncryptDataFunction::Success, this),
+      base::Bind(&NetworkingPrivateVerifyAndEncryptDataFunction::Failure,
+                 this));
   // Success() or Failure() might have been called synchronously at this point.
   // In that case this function has already called Respond(). Return
   // AlreadyResponded() in that case.

@@ -42,10 +42,8 @@ class NetworkingPrivateServiceClient
  public:
   // Takes ownership of |wifi_service| which is accessed and deleted on the
   // worker thread. The deletion task is posted from the destructor.
-  // |verify_delegate| is passed to NetworkingPrivateDelegate and may be NULL.
-  NetworkingPrivateServiceClient(
-      std::unique_ptr<wifi::WiFiService> wifi_service,
-      std::unique_ptr<VerifyDelegate> verify_delegate);
+  explicit NetworkingPrivateServiceClient(
+      std::unique_ptr<wifi::WiFiService> wifi_service);
 
   // KeyedService
   void Shutdown() override;

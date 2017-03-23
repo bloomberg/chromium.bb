@@ -14,6 +14,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
+#include "chrome/browser/extensions/api/networking_cast_private/chrome_networking_cast_private_delegate.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_credentials_getter.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_ui_delegate_chromeos.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -73,6 +74,7 @@ using chromeos::ShillManagerClient;
 using chromeos::ShillProfileClient;
 using chromeos::ShillServiceClient;
 
+using extensions::ChromeNetworkingCastPrivateDelegate;
 using extensions::NetworkingPrivateDelegate;
 using extensions::NetworkingPrivateDelegateFactory;
 using extensions::NetworkingPrivateChromeOS;
@@ -91,30 +93,51 @@ const char kCellular1ServicePath[] = "stub_cellular1";
 
 // Stub Verify* methods implementation to satisfy expectations of
 // networking_private_apitest.
-class CryptoVerifyStub : public NetworkingPrivateDelegate::VerifyDelegate {
- private:
+class TestNetworkingCastPrivateDelegate
+    : public ChromeNetworkingCastPrivateDelegate {
+ public:
+  TestNetworkingCastPrivateDelegate() = default;
+  ~TestNetworkingCastPrivateDelegate() override = default;
+
   // VerifyDelegate
-  void VerifyDestination(const VerificationProperties& verification_properties,
-                         const BoolCallback& success_callback,
+  void VerifyDestination(std::unique_ptr<Credentials> credentials,
+                         const VerifiedCallback& success_callback,
                          const FailureCallback& failure_callback) override {
+    AssertCredentials(*credentials);
     success_callback.Run(true);
   }
 
   void VerifyAndEncryptCredentials(
       const std::string& guid,
-      const VerificationProperties& verification_properties,
-      const StringCallback& success_callback,
+      std::unique_ptr<Credentials> credentials,
+      const DataCallback& success_callback,
       const FailureCallback& failure_callback) override {
+    AssertCredentials(*credentials);
     success_callback.Run("encrypted_credentials");
   }
 
-  void VerifyAndEncryptData(
-      const VerificationProperties& verification_properties,
-      const std::string& data,
-      const StringCallback& success_callback,
-      const FailureCallback& failure_callback) override {
+  void VerifyAndEncryptData(const std::string& data,
+                            std::unique_ptr<Credentials> credentials,
+                            const DataCallback& success_callback,
+                            const FailureCallback& failure_callback) override {
+    AssertCredentials(*credentials);
     success_callback.Run("encrypted_data");
   }
+
+ private:
+  void AssertCredentials(const Credentials& credentials) {
+    ASSERT_EQ("certificate", credentials.certificate());
+    ASSERT_EQ("ica1,ica2,ica3",
+              base::JoinString(credentials.intermediate_certificates(), ","));
+    ASSERT_EQ("cHVibGljX2tleQ==", credentials.public_key());
+    ASSERT_EQ("00:01:02:03:04:05", credentials.device_bssid());
+    ASSERT_EQ("c2lnbmVkX2RhdGE=", credentials.signed_data());
+    ASSERT_EQ(
+        "Device 0123,device_serial,00:01:02:03:04:05,cHVibGljX2tleQ==,nonce",
+        credentials.unsigned_data());
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(TestNetworkingCastPrivateDelegate);
 };
 
 class UIDelegateStub : public NetworkingPrivateDelegate::UIDelegate {
@@ -272,13 +295,22 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
 
   static std::unique_ptr<KeyedService> CreateNetworkingPrivateServiceClient(
       content::BrowserContext* context) {
-    std::unique_ptr<CryptoVerifyStub> crypto_verify(new CryptoVerifyStub);
     std::unique_ptr<NetworkingPrivateDelegate> result(
-        new NetworkingPrivateChromeOS(context, std::move(crypto_verify)));
+        new NetworkingPrivateChromeOS(context));
     std::unique_ptr<NetworkingPrivateDelegate::UIDelegate> ui_delegate(
         new UIDelegateStub);
     result->set_ui_delegate(std::move(ui_delegate));
-    return std::move(result);
+    return result;
+  }
+
+  void SetUp() override {
+    networking_cast_delegate_factory_ = base::Bind(
+        &NetworkingPrivateChromeOSApiTest::CreateNetworkingCastPrivateDelegate,
+        base::Unretained(this));
+    ChromeNetworkingCastPrivateDelegate::SetFactoryCallbackForTest(
+        &networking_cast_delegate_factory_);
+
+    ExtensionApiTest::SetUp();
   }
 
   void SetUpOnMainThread() override {
@@ -419,6 +451,17 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
     content::RunAllPendingInMessageLoop();
   }
 
+  void TearDown() override {
+    ExtensionApiTest::TearDown();
+    ChromeNetworkingCastPrivateDelegate::SetFactoryCallbackForTest(nullptr);
+  }
+
+ private:
+  std::unique_ptr<ChromeNetworkingCastPrivateDelegate>
+  CreateNetworkingCastPrivateDelegate() {
+    return base::MakeUnique<TestNetworkingCastPrivateDelegate>();
+  }
+
  protected:
   NetworkPortalDetectorTestImpl* detector() { return detector_; }
 
@@ -429,6 +472,12 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
   ShillDeviceClient::TestInterface* device_test_;
   policy::MockConfigurationPolicyProvider provider_;
   std::string userhash_;
+
+ private:
+  ChromeNetworkingCastPrivateDelegate::FactoryCallback
+      networking_cast_delegate_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateChromeOSApiTest);
 };
 
 // Place each subtest into a separate browser test so that the stub networking

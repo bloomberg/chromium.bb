@@ -306,11 +306,8 @@ void SetManualProxy(base::DictionaryValue* manual,
 namespace extensions {
 
 NetworkingPrivateChromeOS::NetworkingPrivateChromeOS(
-    content::BrowserContext* browser_context,
-    std::unique_ptr<VerifyDelegate> verify_delegate)
-    : NetworkingPrivateDelegate(std::move(verify_delegate)),
-      browser_context_(browser_context),
-      weak_ptr_factory_(this) {}
+    content::BrowserContext* browser_context)
+    : browser_context_(browser_context), weak_ptr_factory_(this) {}
 
 NetworkingPrivateChromeOS::~NetworkingPrivateChromeOS() {}
 

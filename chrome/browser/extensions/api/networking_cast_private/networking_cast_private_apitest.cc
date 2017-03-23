@@ -11,12 +11,12 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/networking_cast_private/chrome_networking_cast_private_delegate.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "extensions/browser/api/networking_private/networking_private_delegate.h"
-#include "extensions/common/api/networking_private.h"
+#include "extensions/browser/api/networking_private/networking_cast_private_delegate.h"
 #include "extensions/common/switches.h"
 
 #if defined(OS_CHROMEOS)
@@ -30,34 +30,50 @@ namespace extensions {
 
 namespace {
 
-class TestVerifyDelegate : public NetworkingPrivateDelegate::VerifyDelegate {
+class TestNetworkingCastPrivateDelegate
+    : public ChromeNetworkingCastPrivateDelegate {
  public:
-  TestVerifyDelegate() = default;
-  ~TestVerifyDelegate() override = default;
+  TestNetworkingCastPrivateDelegate() {}
+  ~TestNetworkingCastPrivateDelegate() override {}
 
-  void VerifyDestination(const VerificationProperties& properties,
-                         const BoolCallback& success_callback,
+  void VerifyDestination(std::unique_ptr<Credentials> credentials,
+                         const VerifiedCallback& success_callback,
                          const FailureCallback& failure_callback) override {
+    AssertCredentials(*credentials);
     success_callback.Run(true);
   }
 
   void VerifyAndEncryptCredentials(
       const std::string& guid,
-      const VerificationProperties& properties,
-      const StringCallback& success_callback,
+      std::unique_ptr<Credentials> credentials,
+      const DataCallback& success_callback,
       const FailureCallback& failure_callback) override {
+    AssertCredentials(*credentials);
     success_callback.Run("encrypted_credentials");
   }
 
-  void VerifyAndEncryptData(const VerificationProperties& properties,
-                            const std::string& data,
-                            const StringCallback& success_callback,
+  void VerifyAndEncryptData(const std::string& data,
+                            std::unique_ptr<Credentials> credentials,
+                            const DataCallback& success_callback,
                             const FailureCallback& failure_callback) override {
+    AssertCredentials(*credentials);
     success_callback.Run("encrypted_data");
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TestVerifyDelegate);
+  void AssertCredentials(const Credentials& credentials) {
+    ASSERT_EQ("certificate", credentials.certificate());
+    ASSERT_EQ("ica1,ica2,ica3",
+              base::JoinString(credentials.intermediate_certificates(), ","));
+    ASSERT_EQ("cHVibGljX2tleQ==", credentials.public_key());
+    ASSERT_EQ("00:01:02:03:04:05", credentials.device_bssid());
+    ASSERT_EQ("c2lnbmVkX2RhdGE=", credentials.signed_data());
+    ASSERT_EQ(
+        "Device 0123,device_serial,00:01:02:03:04:05,cHVibGljX2tleQ==,nonce",
+        credentials.unsigned_data());
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(TestNetworkingCastPrivateDelegate);
 };
 
 }  // namespace
@@ -123,9 +139,7 @@ class NetworkingCastPrivateApiTest : public ExtensionApiTest {
  private:
   std::unique_ptr<ChromeNetworkingCastPrivateDelegate>
   CreateNetworkingCastPrivateDelegate() {
-    return std::unique_ptr<ChromeNetworkingCastPrivateDelegate>(
-        new ChromeNetworkingCastPrivateDelegate(
-            base::MakeUnique<TestVerifyDelegate>()));
+    return base::MakeUnique<TestNetworkingCastPrivateDelegate>();
   }
 
   ChromeNetworkingCastPrivateDelegate::FactoryCallback

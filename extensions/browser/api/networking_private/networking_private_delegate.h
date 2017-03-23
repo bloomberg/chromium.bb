@@ -34,41 +34,6 @@ class NetworkingPrivateDelegate : public KeyedService {
   using FailureCallback = base::Callback<void(const std::string&)>;
   using DeviceStateList = std::vector<
       std::unique_ptr<api::networking_private::DeviceStateProperties>>;
-  using VerificationProperties =
-      api::networking_private::VerificationProperties;
-
-  // The Verify* methods will be forwarded to a delegate implementation if
-  // provided, otherwise they will fail. A separate delegate it used so that the
-  // current Verify* implementations are not exposed outside of src/chrome.
-  class VerifyDelegate {
-   public:
-    typedef NetworkingPrivateDelegate::VerificationProperties
-        VerificationProperties;
-    typedef NetworkingPrivateDelegate::BoolCallback BoolCallback;
-    typedef NetworkingPrivateDelegate::StringCallback StringCallback;
-    typedef NetworkingPrivateDelegate::FailureCallback FailureCallback;
-
-    VerifyDelegate();
-    virtual ~VerifyDelegate();
-
-    virtual void VerifyDestination(
-        const VerificationProperties& verification_properties,
-        const BoolCallback& success_callback,
-        const FailureCallback& failure_callback) = 0;
-    virtual void VerifyAndEncryptCredentials(
-        const std::string& guid,
-        const VerificationProperties& verification_properties,
-        const StringCallback& success_callback,
-        const FailureCallback& failure_callback) = 0;
-    virtual void VerifyAndEncryptData(
-        const VerificationProperties& verification_properties,
-        const std::string& data,
-        const StringCallback& success_callback,
-        const FailureCallback& failure_callback) = 0;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(VerifyDelegate);
-  };
 
   // Delegate for forwarding UI requests, e.g. for showing the account UI.
   class UIDelegate {
@@ -89,10 +54,7 @@ class NetworkingPrivateDelegate : public KeyedService {
     DISALLOW_COPY_AND_ASSIGN(UIDelegate);
   };
 
-  // If |verify_delegate| is not NULL, the Verify* methods will be forwarded
-  // to the delegate. Otherwise they will fail with a NotSupported error.
-  explicit NetworkingPrivateDelegate(
-      std::unique_ptr<VerifyDelegate> verify_delegate);
+  NetworkingPrivateDelegate();
   ~NetworkingPrivateDelegate() override;
 
   void set_ui_delegate(std::unique_ptr<UIDelegate> ui_delegate) {
@@ -193,25 +155,7 @@ class NetworkingPrivateDelegate : public KeyedService {
   virtual void AddObserver(NetworkingPrivateDelegateObserver* observer);
   virtual void RemoveObserver(NetworkingPrivateDelegateObserver* observer);
 
-  // Verify* methods are forwarded to |verify_delegate_| if not NULL.
-  void VerifyDestination(const VerificationProperties& verification_properties,
-                         const BoolCallback& success_callback,
-                         const FailureCallback& failure_callback);
-  void VerifyAndEncryptCredentials(
-      const std::string& guid,
-      const VerificationProperties& verification_properties,
-      const StringCallback& success_callback,
-      const FailureCallback& failure_callback);
-  void VerifyAndEncryptData(
-      const VerificationProperties& verification_properties,
-      const std::string& data,
-      const StringCallback& success_callback,
-      const FailureCallback& failure_callback);
-
  private:
-  // Interface for Verify* methods. May be null.
-  std::unique_ptr<VerifyDelegate> verify_delegate_;
-
   // Interface for UI methods. May be null.
   std::unique_ptr<UIDelegate> ui_delegate_;
 
