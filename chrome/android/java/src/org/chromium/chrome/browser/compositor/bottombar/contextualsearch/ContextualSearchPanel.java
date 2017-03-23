@@ -462,15 +462,6 @@ public class ContextualSearchPanel extends OverlayPanel {
     }
 
     /**
-     * Called when the SERP finishes loading, this records the duration of loading the SERP from
-     * the time the panel was opened until the present.
-     * @param wasPrefetch Whether the request was prefetch-enabled.
-     */
-    public void onSearchResultsLoaded(boolean wasPrefetch) {
-        mPanelMetrics.onSearchResultsLoaded(wasPrefetch);
-    }
-
-    /**
      * Called after the panel has navigated to prefetched Search Results.
      * If the user has the panel open then they will see the prefetched result starting to load.
      * Currently this just logs the time between the start of the search until the results start to

@@ -727,30 +727,6 @@ public class ContextualSearchUma {
     }
 
     /**
-     * Log the duration of finishing loading the SERP after the panel is opened.
-     * @param wasPrefetch Whether the request was prefetch-enabled or not.
-     * @param durationMs The duration of loading the SERP till completely loaded, in milliseconds.
-     *        Note that this value will be 0 when the SERP is prefetched and the user waits a
-     *        while before opening the panel.
-     */
-    public static void logSearchPanelLoadDuration(boolean wasPrefetch, long durationMs) {
-        if (wasPrefetch) {
-            RecordHistogram.recordMediumTimesHistogram("Search.ContextualSearchDurationPrefetched",
-                    durationMs, TimeUnit.MILLISECONDS);
-        } else {
-            RecordHistogram.recordMediumTimesHistogram(
-                    "Search.ContextualSearchDurationNonPrefetched", durationMs,
-                    TimeUnit.MILLISECONDS);
-        }
-
-       // Also record a summary histogram with counts for each possibility.
-        int code = !wasPrefetch ? NOT_PREFETCHED
-                : (durationMs == 0 ? PREFETCHED_FULLY_LOADED : PREFETCHED_PARIALLY_LOADED);
-        RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchPrefetchSummary",
-                code, PREFETCH_BOUNDARY);
-    }
-
-    /**
      * Logs the duration from starting a search until the Search Term is resolved.
      * @param durationMs The duration to record.
      */
@@ -1028,15 +1004,6 @@ public class ContextualSearchUma {
         RecordHistogram.recordEnumeratedHistogram(
                 "Search.ContextualSearchFallbackSearchRequestStatus",
                 isFailure ? REQUEST_FAILED : REQUEST_NOT_FAILED, REQUEST_BOUNDARY);
-    }
-
-    /**
-     * Logs whether the SERP was fully loaded when an opened panel was closed.
-     * @param fullyLoaded Whether the SERP had finished loading before the panel was closed.
-     */
-    public static void logSerpLoadedOnClose(boolean fullyLoaded) {
-        RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchSerpLoadedOnClose",
-                fullyLoaded ? FULLY_LOADED : PARTIALLY_LOADED, LOADED_BOUNDARY);
     }
 
     /**
