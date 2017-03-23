@@ -64,12 +64,12 @@ SIMD_INLINE void u32_store_aligned(void *p, uint32_t a) {
 }
 
 SIMD_INLINE void u32_store_unaligned(void *p, uint32_t a) {
-#if __clang__
+#if defined(__clang__)
   vst1_lane_u32((uint32_t *)p, vreinterpret_u32_s64((uint64x1_t)(uint64_t)a),
                 0);
-#elif __CC_ARM
+#elif defined(__CC_ARM)
   *(__packed uint32_t *)p) = a;
-#elif __GNUC__
+#elif defined(__GNUC__)
   *((__attribute((packed)) uint32_t *)p) = a;
 #else
   vst1_lane_u32((uint32_t *)p, vreinterpret_u32_s64((uint64x1_t)(uint64_t)a),
@@ -96,7 +96,7 @@ SIMD_INLINE void v64_store_unaligned(void *p, v64 r) {
 // The following function requires an immediate.
 // Some compilers will check this if it's optimising, others wont.
 SIMD_INLINE v64 v64_align(v64 a, v64 b, const unsigned int c) {
-#if __OPTIMIZE__ && !__clang__
+#if defined(__OPTIMIZE__) && __OPTIMIZE__ && !defined(__clang__)
   return c ? vreinterpret_s64_s8(
                  vext_s8(vreinterpret_s8_s64(b), vreinterpret_s8_s64(a), c))
            : b;
@@ -479,7 +479,7 @@ SIMD_INLINE v64 v64_shr_s32(v64 a, unsigned int c) {
 
 // The following functions require an immediate.
 // Some compilers will check this during optimisation, others wont.
-#if __OPTIMIZE__ && !__clang__
+#if defined(__OPTIMIZE__) && __OPTIMIZE__ && !defined(__clang__)
 
 SIMD_INLINE v64 v64_shl_n_byte(v64 a, const unsigned int c) {
   return vshl_n_s64(a, c * 8);

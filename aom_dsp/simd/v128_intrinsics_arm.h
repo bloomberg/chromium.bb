@@ -54,7 +54,7 @@ SIMD_INLINE void v128_store_unaligned(void *p, v128 r) {
 SIMD_INLINE v128 v128_align(v128 a, v128 b, const unsigned int c) {
 // The following functions require an immediate.
 // Some compilers will check this during optimisation, others wont.
-#if __OPTIMIZE__ && !__clang__
+#if defined(__OPTIMIZE__) && __OPTIMIZE__ && !defined(__clang__)
   return c ? vreinterpretq_s64_s8(
                  vextq_s8(vreinterpretq_s8_s64(b), vreinterpretq_s8_s64(a), c))
            : b;
@@ -518,7 +518,7 @@ SIMD_INLINE v128 v128_shr_s32(v128 a, unsigned int c) {
                         vshlq_s32(vreinterpretq_s32_s64(a), vdupq_n_s32(-c)));
 }
 
-#if __OPTIMIZE__ && !__clang__
+#if defined(__OPTIMIZE__) && __OPTIMIZE__ && !defined(__clang__)
 
 SIMD_INLINE v128 v128_shl_n_byte(v128 a, const unsigned int n) {
   return n < 8

@@ -20,8 +20,8 @@
 
 // The _m256i type seems to cause problems for g++'s mangling prior to
 // version 5, but adding -fabi-version=0 fixes this.
-#if !defined(__clang__) && __GNUC__ < 5 && defined(__AVX2__) && \
-    defined(__cplusplus)
+#if !defined(__clang__) && defined(__GNUC__) && __GNUC__ < 5 && \
+    defined(__AVX2__) && defined(__cplusplus)
 #pragma GCC optimize "-fabi-version=0"
 #endif
 

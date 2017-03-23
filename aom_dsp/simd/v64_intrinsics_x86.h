@@ -91,7 +91,7 @@ SIMD_INLINE void v64_store_unaligned(void *p, v64 a) {
 }
 
 // The following function requires an immediate.
-#if __OPTIMIZE__
+#if defined(__OPTIMIZE__) && __OPTIMIZE__
 #define v64_align(a, b, c) \
   ((c) ? _mm_srli_si128(_mm_unpacklo_epi64(b, a), (c)) : b)
 #else
