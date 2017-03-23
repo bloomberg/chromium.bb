@@ -245,6 +245,8 @@ void BackgroundLoaderOffliner::WebContentsDestroyed() {
 
 void BackgroundLoaderOffliner::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame())
+    return;
   // If there was an error of any kind (certificate, client, DNS, etc),
   // Mark as error page. Resetting here causes RecordNavigationMetrics to crash.
   if (navigation_handle->IsErrorPage()) {
@@ -285,7 +287,7 @@ void BackgroundLoaderOffliner::DidFinishNavigation(
     }
   }
 
-  // If the document is not the same, invalidate any pending save tasks.
+  // If the document is not the same invalidate any pending save tasks.
   //
   // Downloads or 204/205 response codes do not commit (no new navigation)
   // Same-Document (committed) navigations are:
