@@ -18,6 +18,16 @@ group("config") {
   }
 }
 
+# This needs to be a small target, because it links into both chrome.exe and
+# chrome.dll targets. If this target grows, that will lead to a size regression.
+# See https://crbug.com/703622
+source_set("crash_keys") {
+  sources = [
+    "gpu_crash_keys.cc",
+    "gpu_crash_keys.h",
+  ]
+}
+
 source_set("config_sources") {
   # External code should depend on this via //gpu/config above rather than
   # depending on this directly or the component build will break.
@@ -69,6 +79,7 @@ source_set("config_sources") {
   ]
 
   deps = [
+    ":crash_keys",
     "//base",
     "//third_party/re2",
     "//ui/gl",

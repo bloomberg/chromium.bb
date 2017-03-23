@@ -43,6 +43,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/features/features.h"
 #include "gpu/config/gpu_info.h"
+#include "gpu/config/gpu_util.h"
 #include "media/media_features.h"
 #include "net/http/http_util.h"
 #include "pdf/features.h"
@@ -449,24 +450,7 @@ void ChromeContentClient::SetActiveURL(const GURL& url) {
 }
 
 void ChromeContentClient::SetGpuInfo(const gpu::GPUInfo& gpu_info) {
-#if !defined(OS_ANDROID)
-  base::debug::SetCrashKeyValue(crash_keys::kGPUVendorID,
-      base::StringPrintf("0x%04x", gpu_info.gpu.vendor_id));
-  base::debug::SetCrashKeyValue(crash_keys::kGPUDeviceID,
-      base::StringPrintf("0x%04x", gpu_info.gpu.device_id));
-#endif
-  base::debug::SetCrashKeyValue(crash_keys::kGPUDriverVersion,
-      gpu_info.driver_version);
-  base::debug::SetCrashKeyValue(crash_keys::kGPUPixelShaderVersion,
-      gpu_info.pixel_shader_version);
-  base::debug::SetCrashKeyValue(crash_keys::kGPUVertexShaderVersion,
-      gpu_info.vertex_shader_version);
-#if defined(OS_MACOSX)
-  base::debug::SetCrashKeyValue(crash_keys::kGPUGLVersion, gpu_info.gl_version);
-#elif defined(OS_POSIX)
-  base::debug::SetCrashKeyValue(crash_keys::kGPUVendor, gpu_info.gl_vendor);
-  base::debug::SetCrashKeyValue(crash_keys::kGPURenderer, gpu_info.gl_renderer);
-#endif
+  gpu::SetKeysForCrashLogging(gpu_info);
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)

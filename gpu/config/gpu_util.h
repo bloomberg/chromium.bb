@@ -47,6 +47,8 @@ GPU_EXPORT GpuFeatureInfo
 GetGpuFeatureInfo(const GPUInfo& gpu_info,
                   const base::CommandLine& command_line);
 
+GPU_EXPORT void SetKeysForCrashLogging(const GPUInfo& gpu_info);
+
 }  // namespace gpu
 
 #endif  // GPU_CONFIG_GPU_UTIL_H_
