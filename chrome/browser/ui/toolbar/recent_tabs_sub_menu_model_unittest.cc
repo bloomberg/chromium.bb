@@ -128,14 +128,17 @@ class RecentTabsSubMenuModelTest
             "Chromium 10k",
             "Chrome 10k",
             sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-            "device_id")) {
-    sync_prefs_.reset(new syncer::SyncPrefs(testing_profile_.GetPrefs()));
-    manager_.reset(new sync_sessions::SessionsSyncManager(
-        sync_service_.GetSyncClient()->GetSyncSessionsClient(),
-        sync_prefs_.get(), local_device_.get(),
-        std::unique_ptr<sync_sessions::LocalSessionEventRouter>(
-            new DummyRouter()),
-        base::Closure(), base::Closure()));
+            "device_id")),
+        dummy_router_(base::MakeUnique<DummyRouter>()),
+        sync_prefs_(
+            base::MakeUnique<syncer::SyncPrefs>(testing_profile_.GetPrefs())),
+        manager_(base::MakeUnique<sync_sessions::SessionsSyncManager>(
+            sync_service_.GetSyncClient()->GetSyncSessionsClient(),
+            sync_prefs_.get(),
+            local_device_.get(),
+            dummy_router_.get(),
+            base::Closure(),
+            base::Closure())) {
     manager_->MergeDataAndStartSyncing(
         syncer::SESSIONS, syncer::SyncDataList(),
         std::unique_ptr<syncer::SyncChangeProcessor>(
@@ -167,9 +170,10 @@ class RecentTabsSubMenuModelTest
  private:
   TestingProfile testing_profile_;
   browser_sync::ProfileSyncServiceMock sync_service_;
+  std::unique_ptr<syncer::LocalDeviceInfoProviderMock> local_device_;
+  std::unique_ptr<DummyRouter> dummy_router_;
   std::unique_ptr<syncer::SyncPrefs> sync_prefs_;
   std::unique_ptr<sync_sessions::SessionsSyncManager> manager_;
-  std::unique_ptr<syncer::LocalDeviceInfoProviderMock> local_device_;
 };
 
 // Test disabled "Recently closed" header with no foreign tabs.

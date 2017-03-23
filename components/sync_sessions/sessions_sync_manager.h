@@ -62,7 +62,7 @@ class SessionsSyncManager : public syncer::SyncableService,
   SessionsSyncManager(SyncSessionsClient* sessions_client,
                       syncer::SyncPrefs* sync_prefs,
                       syncer::LocalDeviceInfoProvider* local_device,
-                      std::unique_ptr<LocalSessionEventRouter> router,
+                      LocalSessionEventRouter* router,
                       const base::Closure& sessions_updated_callback,
                       const base::Closure& datatype_refresh_callback);
   ~SessionsSyncManager() override;
@@ -309,7 +309,7 @@ class SessionsSyncManager : public syncer::SyncableService,
   // stale and a candidate for garbage collection.
   int stale_session_threshold_days_;
 
-  std::unique_ptr<LocalSessionEventRouter> local_event_router_;
+  LocalSessionEventRouter* local_event_router_;
 
   // Owns revisiting instrumentation logic for page visit events.
   PageRevisitBroadcaster page_revisit_broadcaster_;

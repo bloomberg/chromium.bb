@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
 #include "components/sync_sessions/fake_sync_sessions_client.h"
+#include "components/sync_sessions/synced_tab_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sync_sessions {
@@ -124,8 +125,7 @@ TEST_F(SyncedSessionTrackerTest, LookupSessionWindows) {
 
 TEST_F(SyncedSessionTrackerTest, LookupSessionTab) {
   const sessions::SessionTab* tab;
-  ASSERT_FALSE(
-      GetTracker()->LookupSessionTab(kTag, TabNodePool::kInvalidTabID, &tab));
+  ASSERT_FALSE(GetTracker()->LookupSessionTab(kTag, kInvalidTabID, &tab));
   ASSERT_FALSE(GetTracker()->LookupSessionTab(kTag, 5, &tab));
   GetTracker()->GetSession(kTag);
   GetTracker()->PutWindowInSession(kTag, 0);

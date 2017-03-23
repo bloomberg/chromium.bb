@@ -36,6 +36,10 @@ bool SyncedTabDelegateAndroid::IsBeingDestroyed() const {
   return tab_contents_delegate_->IsBeingDestroyed();
 }
 
+SessionID::id_type SyncedTabDelegateAndroid::GetSourceTabID() const {
+  return tab_contents_delegate_->GetSourceTabID();
+}
+
 std::string SyncedTabDelegateAndroid::GetExtensionAppId() const {
   return tab_contents_delegate_->GetExtensionAppId();
 }

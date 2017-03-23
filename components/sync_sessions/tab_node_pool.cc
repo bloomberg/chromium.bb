@@ -10,6 +10,7 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/protocol/session_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
+#include "components/sync_sessions/synced_tab_delegate.h"
 
 namespace sync_sessions {
 

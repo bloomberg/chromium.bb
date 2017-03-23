@@ -52,8 +52,7 @@ class SyncSessionsClient {
 
   // Returns a LocalSessionEventRouter instance that is customized for the
   // embedder's context.
-  virtual std::unique_ptr<LocalSessionEventRouter>
-  GetLocalSessionEventRouter() = 0;
+  virtual LocalSessionEventRouter* GetLocalSessionEventRouter() = 0;
 
   // TODO(zea): add getters for the history and favicon services for the favicon
   // cache to consume once it's componentized.

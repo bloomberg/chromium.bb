@@ -6,12 +6,16 @@
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/sessions/session_service.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/browser/sync/sessions/sync_sessions_router_tab_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/session_hierarchy_match_checker.h"
 #include "chrome/browser/sync/test/integration/sessions_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/typed_urls_helper.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/history/core/browser/history_types.h"
@@ -19,6 +23,7 @@
 #include "components/sync/base/time.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/test/fake_server/sessions_hierarchy.h"
+#include "ui/base/mojo/window_open_disposition.mojom.h"
 
 using base::HistogramBase;
 using base::HistogramSamples;
@@ -27,17 +32,17 @@ using fake_server::SessionsHierarchy;
 using sessions_helper::CheckInitialState;
 using sessions_helper::GetLocalWindows;
 using sessions_helper::GetSessionData;
-using sessions_helper::ModelAssociatorHasTabWithUrl;
+using sessions_helper::SessionsSyncManagerHasTabWithURL;
 using sessions_helper::MoveTab;
 using sessions_helper::NavigateTab;
 using sessions_helper::NavigateTabBack;
 using sessions_helper::NavigateTabForward;
 using sessions_helper::OpenTab;
 using sessions_helper::OpenTabAtIndex;
+using sessions_helper::OpenTabFromSourceIndex;
 using sessions_helper::ScopedWindowMap;
 using sessions_helper::SessionWindowMap;
 using sessions_helper::SyncedSessionVector;
-using sessions_helper::WaitForTabsToLoad;
 using sessions_helper::WindowsMatch;
 using typed_urls_helper::GetUrlFromClient;
 
@@ -322,6 +327,34 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, TabMovedToOtherWindow) {
 
   WaitForHierarchyOnServer(SessionsHierarchy(
       {{base_url.spec()}, {new_window_url.spec(), moved_tab_url.spec()}}));
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, SourceTabIDSet) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(CheckInitialState(0));
+
+  GURL base_url = GURL(kURL1);
+  ASSERT_TRUE(OpenTab(0, base_url));
+
+  WaitForURLOnServer(base_url);
+
+  GURL new_tab_url = GURL(kURL2);
+  ASSERT_TRUE(OpenTabFromSourceIndex(
+      0, 0, new_tab_url, WindowOpenDisposition::NEW_FOREGROUND_TAB));
+  WaitForHierarchyOnServer(
+      SessionsHierarchy({{base_url.spec(), new_tab_url.spec()}}));
+
+  content::WebContents* original_tab_contents =
+      GetBrowser(0)->tab_strip_model()->GetWebContentsAt(0);
+  content::WebContents* new_tab_contents =
+      GetBrowser(0)->tab_strip_model()->GetWebContentsAt(1);
+
+  SessionID::id_type source_tab_id =
+      SessionTabHelper::IdForTab(original_tab_contents);
+  sync_sessions::SyncSessionsRouterTabHelper* new_tab_helper =
+      sync_sessions::SyncSessionsRouterTabHelper::FromWebContents(
+          new_tab_contents);
+  EXPECT_EQ(new_tab_helper->source_tab_id(), source_tab_id);
 }
 
 // crbug.com/689662

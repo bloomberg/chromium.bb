@@ -46,6 +46,7 @@ class TabContentsSyncedTabDelegate
   int GetSyncId() const override;
   void SetSyncId(int sync_id) override;
   bool ShouldSync(sync_sessions::SyncSessionsClient* sessions_client) override;
+  SessionID::id_type GetSourceTabID() const override;
 
  private:
   explicit TabContentsSyncedTabDelegate(content::WebContents* web_contents);

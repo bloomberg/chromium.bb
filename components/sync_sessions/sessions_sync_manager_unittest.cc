@@ -211,6 +211,8 @@ class TestSyncedTabDelegate : public SyncedTabDelegate {
     return http_count > 0;
   }
 
+  SessionID::id_type GetSourceTabID() const override { return kInvalidTabID; }
+
   void AppendEntry(std::unique_ptr<sessions::SerializedNavigationEntry> entry) {
     entries_.push_back(std::move(entry));
   }
@@ -322,6 +324,8 @@ class PlaceholderTabDelegate : public SyncedTabDelegate {
     return false;
   }
 
+  SessionID::id_type GetSourceTabID() const override { return kInvalidTabID; }
+
  private:
   SessionID::id_type session_id_;
   int sync_id_;
@@ -370,7 +374,7 @@ class TestSyncedWindowDelegate : public SyncedWindowDelegate {
   SessionID::id_type GetTabIdAt(int index) const override {
     SyncedTabDelegate* delegate = GetTabAt(index);
     if (!delegate)
-      return TabNodePool::kInvalidTabID;
+      return kInvalidTabID;
     return delegate->GetSessionId();
   }
 
@@ -512,9 +516,10 @@ class SessionsSyncManagerTest : public testing::Test {
         base::MakeUnique<SyncSessionsClientShim>(&window_getter_);
     sync_prefs_ =
         base::MakeUnique<syncer::SyncPrefs>(sync_client_->GetPrefService());
+    router_ = base::MakeUnique<DummyRouter>();
     manager_ = base::MakeUnique<SessionsSyncManager>(
         sessions_client_shim(), sync_prefs_.get(), local_device_.get(),
-        std::unique_ptr<LocalSessionEventRouter>(NewDummyRouter()),
+        router_.get(),
         base::Bind(&SessionNotificationObserver::NotifyOfUpdate,
                    base::Unretained(&observer_)),
         base::Bind(&SessionNotificationObserver::NotifyOfRefresh,
@@ -545,12 +550,6 @@ class SessionsSyncManagerTest : public testing::Test {
     return sessions_client_shim_.get();
   }
   SyncedWindowDelegatesGetter* window_getter() { return &window_getter_; }
-
-  std::unique_ptr<LocalSessionEventRouter> NewDummyRouter() {
-    std::unique_ptr<DummyRouter> router(new DummyRouter());
-    router_ = router.get();
-    return std::unique_ptr<LocalSessionEventRouter>(std::move(router));
-  }
 
   void InitWithSyncDataTakeOutput(const SyncDataList& initial_data,
                                   SyncChangeList* output) {
@@ -728,7 +727,7 @@ class SessionsSyncManagerTest : public testing::Test {
   std::unique_ptr<SyncSessionsClientShim> sessions_client_shim_;
   std::unique_ptr<syncer::SyncPrefs> sync_prefs_;
   SessionNotificationObserver observer_;
-  DummyRouter* router_ = nullptr;
+  std::unique_ptr<DummyRouter> router_;
   std::unique_ptr<SessionsSyncManager> manager_;
   SessionSyncTestHelper helper_;
   TestSyncChangeProcessor* test_processor_ = nullptr;

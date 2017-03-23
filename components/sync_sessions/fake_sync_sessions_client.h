@@ -24,8 +24,7 @@ class FakeSyncSessionsClient : public SyncSessionsClient {
   history::HistoryService* GetHistoryService() override;
   bool ShouldSyncURL(const GURL& url) const override;
   SyncedWindowDelegatesGetter* GetSyncedWindowDelegatesGetter() override;
-  std::unique_ptr<LocalSessionEventRouter> GetLocalSessionEventRouter()
-      override;
+  LocalSessionEventRouter* GetLocalSessionEventRouter() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeSyncSessionsClient);

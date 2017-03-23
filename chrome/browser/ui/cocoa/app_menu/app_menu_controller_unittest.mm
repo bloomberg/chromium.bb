@@ -76,13 +76,12 @@ class AppMenuControllerTest : public CocoaProfileTest {
     fake_model_.reset(new MockAppMenuModel);
 
     sync_prefs_.reset(new syncer::SyncPrefs(profile()->GetPrefs()));
+    dummy_router_.reset(new DummyRouter());
     manager_.reset(new sync_sessions::SessionsSyncManager(
         ProfileSyncServiceFactory::GetForProfile(profile())
             ->GetSyncClient()
             ->GetSyncSessionsClient(),
-        sync_prefs_.get(), local_device_.get(),
-        std::unique_ptr<sync_sessions::LocalSessionEventRouter>(
-            new DummyRouter()),
+        sync_prefs_.get(), local_device_.get(), dummy_router_.get(),
         base::Closure(), base::Closure()));
     manager_->MergeDataAndStartSyncing(
         syncer::SESSIONS, syncer::SyncDataList(),
@@ -117,6 +116,7 @@ class AppMenuControllerTest : public CocoaProfileTest {
 
  private:
   std::unique_ptr<syncer::SyncPrefs> sync_prefs_;
+  std::unique_ptr<DummyRouter> dummy_router_;
   std::unique_ptr<sync_sessions::SessionsSyncManager> manager_;
   std::unique_ptr<syncer::LocalDeviceInfoProviderMock> local_device_;
 };

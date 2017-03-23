@@ -35,6 +35,7 @@ class SyncedTabDelegateAndroid : public sync_sessions::SyncedTabDelegate {
   SessionID::id_type GetWindowId() const override;
   SessionID::id_type GetSessionId() const override;
   bool IsBeingDestroyed() const override;
+  SessionID::id_type GetSourceTabID() const override;
   std::string GetExtensionAppId() const override;
   bool IsInitialBlankNavigation() const override;
   int GetCurrentEntryIndex() const override;

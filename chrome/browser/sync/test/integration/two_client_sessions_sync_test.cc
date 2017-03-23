@@ -212,7 +212,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, MultipleWindowsMultipleTabs) {
   // Add a second browser for profile 0. This browser ends up in index 2.
   AddBrowser(0);
   EXPECT_TRUE(OpenTab(2, GURL(kURL3)));
-  EXPECT_TRUE(OpenTabAtIndex(2, 2, GURL(kURL4)));
+  EXPECT_TRUE(OpenTabAtIndex(2, 1, GURL(kURL4)));
 
   WaitForForeignSessionsToSync(0, 1);
 }

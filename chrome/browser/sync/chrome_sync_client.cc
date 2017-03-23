@@ -28,7 +28,8 @@
 #include "chrome/browser/sync/glue/sync_start_util.h"
 #include "chrome/browser/sync/glue/theme_data_type_controller.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/sessions/notification_service_sessions_router.h"
+#include "chrome/browser/sync/sessions/sync_sessions_web_contents_router.h"
+#include "chrome/browser/sync/sessions/sync_sessions_web_contents_router_factory.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/themes/theme_syncable_service.h"
@@ -67,6 +68,7 @@
 #include "components/sync/engine/passive_model_worker.h"
 #include "components/sync/engine/ui_model_worker.h"
 #include "components/sync_preferences/pref_service_syncable.h"
+#include "components/sync_sessions/favicon_cache.h"
 #include "components/sync_sessions/sync_sessions_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/features/features.h"
@@ -182,12 +184,15 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
     return window_delegates_getter_.get();
   }
 
-  std::unique_ptr<sync_sessions::LocalSessionEventRouter>
-  GetLocalSessionEventRouter() override {
+  sync_sessions::LocalSessionEventRouter* GetLocalSessionEventRouter()
+      override {
     syncer::SyncableService::StartSyncFlare flare(
         sync_start_util::GetFlareForSyncableService(profile_->GetPath()));
-    return base::MakeUnique<sync_sessions::NotificationServiceSessionsRouter>(
-        profile_, this, flare);
+    sync_sessions::SyncSessionsWebContentsRouter* router =
+        sync_sessions::SyncSessionsWebContentsRouterFactory::GetForProfile(
+            profile_);
+    router->InjectStartSyncFlare(flare);
+    return router;
   }
 
  private:

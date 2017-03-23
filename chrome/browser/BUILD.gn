@@ -1279,8 +1279,12 @@ split_static_library("browser") {
     "sync/glue/sync_start_util.h",
     "sync/profile_sync_service_factory.cc",
     "sync/profile_sync_service_factory.h",
-    "sync/sessions/notification_service_sessions_router.cc",
-    "sync/sessions/notification_service_sessions_router.h",
+    "sync/sessions/sync_sessions_router_tab_helper.cc",
+    "sync/sessions/sync_sessions_router_tab_helper.h",
+    "sync/sessions/sync_sessions_web_contents_router.cc",
+    "sync/sessions/sync_sessions_web_contents_router.h",
+    "sync/sessions/sync_sessions_web_contents_router_factory.cc",
+    "sync/sessions/sync_sessions_web_contents_router_factory.h",
     "sync/supervised_user_signin_manager_wrapper.cc",
     "sync/supervised_user_signin_manager_wrapper.h",
     "sync/sync_startup_tracker.cc",
@@ -1639,6 +1643,10 @@ split_static_library("browser") {
       "//chrome/browser/resources:component_extension_resources",
       "//net:net",
       "//ui/vector_icons",
+    ]
+    sources += [
+      "sync/sessions/browser_list_router_helper.cc",
+      "sync/sessions/browser_list_router_helper.h",
     ]
   }
 

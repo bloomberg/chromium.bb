@@ -106,7 +106,7 @@ void AppendDeletionsForTabNodes(const std::set<int>& tab_node_ids,
 
 // Ensure that the tab id is not invalid.
 bool ShouldSyncTabId(SessionID::id_type tab_id) {
-  if (tab_id == TabNodePool::kInvalidTabID)
+  if (tab_id == kInvalidTabID)
     return false;
   return true;
 }
@@ -119,7 +119,7 @@ SessionsSyncManager::SessionsSyncManager(
     sync_sessions::SyncSessionsClient* sessions_client,
     syncer::SyncPrefs* sync_prefs,
     LocalDeviceInfoProvider* local_device,
-    std::unique_ptr<LocalSessionEventRouter> router,
+    LocalSessionEventRouter* router,
     const base::Closure& sessions_updated_callback,
     const base::Closure& datatype_refresh_callback)
     : sessions_client_(sessions_client),
@@ -681,7 +681,7 @@ bool SessionsSyncManager::InitFromSyncModel(
           syncer::SyncChange tombstone(TombstoneTab(specifics));
           if (tombstone.IsValid())
             new_changes->push_back(tombstone);
-        } else if (specifics.tab().tab_id() == TabNodePool::kInvalidTabID) {
+        } else if (specifics.tab().tab_id() == kInvalidTabID) {
           LOG(WARNING) << "Found tab node with invalid tab id.";
           syncer::SyncChange tombstone(TombstoneTab(specifics));
           if (tombstone.IsValid())

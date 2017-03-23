@@ -40,7 +40,7 @@ int GetNumWindows(int index);
 // Returns number of foreign sessions for a profile.
 int GetNumForeignSessions(int index);
 
-// Fills the sessions vector with the model associator's foreign session data.
+// Fills the sessions vector with the SyncableService's foreign session data.
 // Caller owns |sessions|, but not SyncedSessions objects within.
 // Returns true if foreign sessions were found, false otherwise.
 bool GetSessionData(int index, SyncedSessionVector* sessions);
@@ -77,7 +77,7 @@ bool CheckForeignSessionsAgainst(int index,
                                  const std::vector<ScopedWindowMap>& windows);
 
 // Open a single tab  in the browser at |index| and block until the
-// session model associator is aware of it. Returns true upon success, false
+// session SyncableService is aware of it. Returns true upon success, false
 // otherwise.
 bool OpenTab(int index, const GURL& url);
 
@@ -87,12 +87,23 @@ bool OpenTab(int index, const GURL& url);
 // size 1, the new tab will be in position 1.
 bool OpenTabAtIndex(int index, int tab_index, const GURL& url);
 
+// Like OpenTab, but opens |url| from the tab at |index_of_source_tab| using
+// |disposition|.
+bool OpenTabFromSourceIndex(int index,
+                            int index_of_source_tab,
+                            const GURL& url,
+                            WindowOpenDisposition disposition);
+
+// Open multiple tabs and block until the session SyncableService is aware
+// of all of them.  Returns true on success, false on failure.
+bool OpenMultipleTabs(int index, const std::vector<GURL>& urls);
+
 // Moves the tab in position |tab_index| in the TabStrip for browser at
 // |from_index| to the TabStrip for browser at |to_index|.
 void MoveTab(int from_index, int to_index, int tab_index);
 
 // Navigate the active tab for browser in position |index| to the given
-// url, and blocks until the session model associator is aware of it.
+// url, and blocks until the session SyncableService is aware of it.
 // WARNING: it's dangerous to assume this will return for any arbitrary URL.
 // For URLs that don't resolve to a valid server response, this can block
 // indefinitely. Use a data uri or the embedded_test_server to ensure that this
@@ -107,17 +118,20 @@ void NavigateTabBack(int index);
 // one; if this isn't possible, does nothing
 void NavigateTabForward(int index);
 
-// Open multiple tabs and block until the session model associator is aware
-// of all of them.  Returns true on success, false on failure.
-bool OpenMultipleTabs(int index, const std::vector<GURL>& urls);
+// Wait for a session change to |web_contents| to propagate to the model
+// associator. Will return true once |url| has been found, or false if it times
+// out while waiting.
+bool WaitForTabToLoad(int index,
+                      const GURL& url,
+                      content::WebContents* web_contents);
 
-// Wait for a session change to propagate to the model associator.  Will not
-// return until each url in |urls| has been found.
+// Wait for each url in |urls| to load. The ordering of |urls| is assumed to
+// match the ordering of the corresponding tabs.
 bool WaitForTabsToLoad(int index, const std::vector<GURL>& urls);
 
-// Check if the session model associator's knows that the current open tab
+// Check if the session SyncableService knows that the current open tab
 // has this url.
-bool ModelAssociatorHasTabWithUrl(int index, const GURL& url);
+bool SessionsSyncManagerHasTabWithURL(int index, const GURL& url);
 
 // Stores a pointer to the local session for a given profile in |session|.
 // Returns true on success, false on failure.

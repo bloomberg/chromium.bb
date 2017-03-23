@@ -79,7 +79,13 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
   explicit SyncSessionsClientImpl(ios::ChromeBrowserState* browser_state)
       : browser_state_(browser_state),
         window_delegates_getter_(
-            base::MakeUnique<TabModelSyncedWindowDelegatesGetter>()) {}
+            base::MakeUnique<TabModelSyncedWindowDelegatesGetter>()),
+        local_session_event_router_(
+            base::MakeUnique<IOSChromeLocalSessionEventRouter>(
+                browser_state_,
+                this,
+                ios::sync_start_util::GetFlareForSyncableService(
+                    browser_state_->GetStatePath()))) {}
 
   ~SyncSessionsClientImpl() override {}
 
@@ -116,19 +122,17 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
     return window_delegates_getter_.get();
   }
 
-  std::unique_ptr<sync_sessions::LocalSessionEventRouter>
-  GetLocalSessionEventRouter() override {
-    syncer::SyncableService::StartSyncFlare flare(
-        ios::sync_start_util::GetFlareForSyncableService(
-            browser_state_->GetStatePath()));
-    return base::MakeUnique<IOSChromeLocalSessionEventRouter>(browser_state_,
-                                                              this, flare);
+  sync_sessions::LocalSessionEventRouter* GetLocalSessionEventRouter()
+      override {
+    return local_session_event_router_.get();
   }
 
  private:
   ios::ChromeBrowserState* const browser_state_;
   const std::unique_ptr<sync_sessions::SyncedWindowDelegatesGetter>
       window_delegates_getter_;
+  const std::unique_ptr<IOSChromeLocalSessionEventRouter>
+      local_session_event_router_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSessionsClientImpl);
 };

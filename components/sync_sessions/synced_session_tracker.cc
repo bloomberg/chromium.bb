@@ -10,7 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/sync_sessions/sync_sessions_client.h"
-
+#include "components/sync_sessions/synced_tab_delegate.h"
 namespace sync_sessions {
 
 namespace {
@@ -92,7 +92,7 @@ bool SyncedSessionTracker::LookupSessionTab(
     const std::string& tag,
     SessionID::id_type tab_id,
     const sessions::SessionTab** tab) const {
-  if (tab_id == TabNodePool::kInvalidTabID)
+  if (tab_id == kInvalidTabID)
     return false;
 
   DCHECK(tab);
@@ -382,15 +382,14 @@ bool SyncedSessionTracker::GetTabNodeFromLocalTabId(SessionID::id_type tab_id,
 bool SyncedSessionTracker::IsLocalTabNodeAssociated(int tab_node_id) {
   if (tab_node_id == TabNodePool::kInvalidTabNodeID)
     return false;
-  return local_tab_pool_.GetTabIdFromTabNodeId(tab_node_id) !=
-         TabNodePool::kInvalidTabID;
+  return local_tab_pool_.GetTabIdFromTabNodeId(tab_node_id) != kInvalidTabID;
 }
 
 void SyncedSessionTracker::ReassociateLocalTab(int tab_node_id,
                                                SessionID::id_type new_tab_id) {
   DCHECK(!local_session_tag_.empty());
   DCHECK_NE(TabNodePool::kInvalidTabNodeID, tab_node_id);
-  DCHECK_NE(TabNodePool::kInvalidTabID, new_tab_id);
+  DCHECK_NE(kInvalidTabID, new_tab_id);
 
   SessionID::id_type old_tab_id =
       local_tab_pool_.GetTabIdFromTabNodeId(tab_node_id);
@@ -399,7 +398,7 @@ void SyncedSessionTracker::ReassociateLocalTab(int tab_node_id,
   sessions::SessionTab* tab_ptr = nullptr;
 
   auto old_tab_iter = synced_tab_map_[local_session_tag_].find(old_tab_id);
-  if (old_tab_id != TabNodePool::kInvalidTabID &&
+  if (old_tab_id != kInvalidTabID &&
       old_tab_iter != synced_tab_map_[local_session_tag_].end()) {
     tab_ptr = old_tab_iter->second;
     // Remove the tab from the synced tab map under the old id.
@@ -412,7 +411,7 @@ void SyncedSessionTracker::ReassociateLocalTab(int tab_node_id,
 
   // If the old tab is unmapped, update the tab id under which it is indexed.
   auto unmapped_tabs_iter = unmapped_tabs_[local_session_tag_].find(old_tab_id);
-  if (old_tab_id != TabNodePool::kInvalidTabID &&
+  if (old_tab_id != kInvalidTabID &&
       unmapped_tabs_iter != unmapped_tabs_[local_session_tag_].end()) {
     std::unique_ptr<sessions::SessionTab> tab =
         std::move(unmapped_tabs_iter->second);
@@ -422,7 +421,7 @@ void SyncedSessionTracker::ReassociateLocalTab(int tab_node_id,
   }
 
   // Update the tab id.
-  if (old_tab_id != TabNodePool::kInvalidTabID) {
+  if (old_tab_id != kInvalidTabID) {
     DVLOG(1) << "Remapped tab " << old_tab_id << " with node " << tab_node_id
              << " to tab " << new_tab_id;
   } else {

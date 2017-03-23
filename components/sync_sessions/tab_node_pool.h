@@ -32,7 +32,6 @@ class TabNodePool {
  public:
   TabNodePool();
   ~TabNodePool();
-  enum InvalidTab { kInvalidTabID = -1 };
 
   // If free nodes > kFreeNodesHighWatermark, delete all free nodes until
   // free nodes <= kFreeNodesLowWatermark.

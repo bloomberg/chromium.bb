@@ -33,8 +33,7 @@ FakeSyncSessionsClient::GetSyncedWindowDelegatesGetter() {
   return nullptr;
 }
 
-std::unique_ptr<LocalSessionEventRouter>
-FakeSyncSessionsClient::GetLocalSessionEventRouter() {
+LocalSessionEventRouter* FakeSyncSessionsClient::GetLocalSessionEventRouter() {
   return nullptr;
 }
 
