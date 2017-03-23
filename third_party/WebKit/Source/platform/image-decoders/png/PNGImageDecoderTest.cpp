@@ -1043,4 +1043,11 @@ TEST(PNGTests, VerifyFrameCompleteBehavior) {
   }
 }
 
+TEST(PNGTests, sizeMayOverflow) {
+  auto decoder =
+      createDecoderWithPngData("/LayoutTests/images/resources/crbug702934.png");
+  EXPECT_FALSE(decoder->isSizeAvailable());
+  EXPECT_TRUE(decoder->failed());
+}
+
 };  // namespace blink

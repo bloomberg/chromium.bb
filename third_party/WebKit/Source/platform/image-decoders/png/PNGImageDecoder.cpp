@@ -194,7 +194,32 @@ inline sk_sp<SkColorSpace> readColorSpace(png_structp png, png_infop info) {
   return SkColorSpace::MakeRGB(fn, toXYZD50);
 }
 
+void PNGImageDecoder::setColorSpace() {
+  if (ignoresColorSpace())
+    return;
+  png_structp png = m_reader->pngPtr();
+  png_infop info = m_reader->infoPtr();
+  const int colorType = png_get_color_type(png, info);
+  if (!(colorType & PNG_COLOR_MASK_COLOR))
+    return;
+  // We only support color profiles for color PALETTE and RGB[A] PNG.
+  // TODO(msarett): Add GRAY profile support, block CYMK?
+  sk_sp<SkColorSpace> colorSpace = readColorSpace(png, info);
+  if (colorSpace)
+    setEmbeddedColorSpace(colorSpace);
+}
+
+bool PNGImageDecoder::setSize(unsigned width, unsigned height) {
+  DCHECK(!isDecodedSizeAvailable());
+  // Protect against large PNGs. See http://bugzil.la/251381 for more details.
+  const unsigned long maxPNGSize = 1000000UL;
+  return (width <= maxPNGSize) && (height <= maxPNGSize) &&
+         ImageDecoder::setSize(width, height);
+}
+
 void PNGImageDecoder::headerAvailable() {
+  DCHECK(isDecodedSizeAvailable());
+
   png_structp png = m_reader->pngPtr();
   png_infop info = m_reader->infoPtr();
 
@@ -220,31 +245,6 @@ void PNGImageDecoder::headerAvailable() {
       colorType == PNG_COLOR_TYPE_GRAY_ALPHA)
     png_set_gray_to_rgb(png);
 
-  // Only set the size and the color space of the image once since non-first
-  // frames also use this method: there is no per-frame color space, and the
-  // image size is determined from the header width and height.
-  if (!isDecodedSizeAvailable()) {
-    // Protect against large PNGs. See http://bugzil.la/251381 for more details.
-    const unsigned long maxPNGSize = 1000000UL;
-    if (width > maxPNGSize || height > maxPNGSize) {
-      longjmp(JMPBUF(png), 1);
-      return;
-    }
-
-    // Set the image size now that the image header is available.
-    if (!setSize(width, height)) {
-      longjmp(JMPBUF(png), 1);
-      return;
-    }
-
-    if ((colorType & PNG_COLOR_MASK_COLOR) && !ignoresColorSpace()) {
-      // We only support color profiles for color PALETTE and RGB[A] PNG.
-      // TODO(msarret): Add GRAY profile support, block CYMK?
-      if (sk_sp<SkColorSpace> colorSpace = readColorSpace(png, info))
-        setEmbeddedColorSpace(colorSpace);
-    }
-  }
-
   if (!hasEmbeddedColorSpace()) {
     const double inverseGamma = 0.45455;
     const double defaultGamma = 2.2;
@@ -260,8 +260,6 @@ void PNGImageDecoder::headerAvailable() {
       png_set_gamma(png, defaultGamma, inverseGamma);
     }
   }
-
-  DCHECK(isDecodedSizeAvailable());
 
   // Tell libpng to send us rows for interlaced pngs.
   if (interlaceType == PNG_INTERLACE_ADAM7)

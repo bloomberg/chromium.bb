@@ -44,6 +44,7 @@ class PLATFORM_EXPORT PNGImageDecoder final : public ImageDecoder {
 
   // ImageDecoder:
   String filenameExtension() const override { return "png"; }
+  bool setSize(unsigned, unsigned) override;
   int repetitionCount() const override;
   bool frameIsCompleteAtIndex(size_t) const override;
   float frameDurationAtIndex(size_t) const override;
@@ -54,6 +55,7 @@ class PLATFORM_EXPORT PNGImageDecoder final : public ImageDecoder {
   void rowAvailable(unsigned char* row, unsigned rowIndex, int);
   void frameComplete();
 
+  void setColorSpace();
   void setRepetitionCount(int);
 
  private:
