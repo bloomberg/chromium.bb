@@ -159,6 +159,7 @@ source_set("gin_test") {
 
 test("gin_unittests") {
   sources = [
+    "arguments_unittest.cc",
     "converter_unittest.cc",
     "interceptor_unittest.cc",
     "modules/module_registry_unittest.cc",

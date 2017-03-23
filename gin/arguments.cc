@@ -32,6 +32,10 @@ v8::Local<v8::Value> Arguments::PeekNext() const {
   return (*info_)[next_];
 }
 
+v8::Local<v8::Context> Arguments::GetHolderCreationContext() {
+  return info_->Holder()->CreationContext();
+}
+
 std::string V8TypeAsString(v8::Local<v8::Value> value) {
   if (value.IsEmpty())
     return "<empty handle>";
