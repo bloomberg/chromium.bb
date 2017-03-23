@@ -51,6 +51,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLError.h"
+#include "public/platform/WebURLRequest.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/WebVector.h"
 
@@ -72,14 +73,25 @@ ApplicationCacheHost::~ApplicationCacheHost() {
   DCHECK(!m_host);
 }
 
+void ApplicationCacheHost::willStartLoading(ResourceRequest& request) {
+  if (!isApplicationCacheEnabled())
+    return;
+
+  if (request.frameType() == WebURLRequest::FrameTypeTopLevel ||
+      request.frameType() == WebURLRequest::FrameTypeNested) {
+    willStartLoadingMainResource(request);
+  } else {
+    willStartLoadingResource(request);
+  }
+}
+
 void ApplicationCacheHost::willStartLoadingMainResource(
     ResourceRequest& request) {
   // We defer creating the outer host object to avoid spurious
   // creation/destruction around creating empty documents. At this point, we're
   // initiating a main resource load for the document, so its for real.
 
-  if (!isApplicationCacheEnabled())
-    return;
+  DCHECK(isApplicationCacheEnabled());
 
   DCHECK(m_documentLoader->frame());
   LocalFrame& frame = *m_documentLoader->frame();

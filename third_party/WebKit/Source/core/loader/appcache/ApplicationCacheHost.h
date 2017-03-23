@@ -124,13 +124,15 @@ class ApplicationCacheHost final
   void selectCacheWithoutManifest();
   void selectCacheWithManifest(const KURL& manifestURL);
 
-  void willStartLoadingMainResource(ResourceRequest&);
+  // Annotate request for ApplicationCache. This internally calls
+  // willStartLoadingMainResource if it's for frame resource or
+  // willStartLoadingResource for subresource requests.
+  void willStartLoading(ResourceRequest&);
+
   void didReceiveResponseForMainResource(const ResourceResponse&);
   void mainResourceDataReceived(const char* data, size_t length);
   void finishedLoadingMainResource();
   void failedLoadingMainResource();
-
-  void willStartLoadingResource(ResourceRequest&);
 
   Status getStatus() const;
   bool update();
@@ -156,6 +158,9 @@ class ApplicationCacheHost final
 
  private:
   explicit ApplicationCacheHost(DocumentLoader*);
+
+  void willStartLoadingMainResource(ResourceRequest&);
+  void willStartLoadingResource(ResourceRequest&);
 
   // WebApplicationCacheHostClient implementation
   void didChangeCacheAssociation() final;

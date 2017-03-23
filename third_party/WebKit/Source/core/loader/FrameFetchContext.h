@@ -81,6 +81,7 @@ class CORE_EXPORT FrameFetchContext final : public FetchContext {
   void dispatchDidChangeResourcePriority(unsigned long identifier,
                                          ResourceLoadPriority,
                                          int intraPriorityValue) override;
+  void prepareRequest(ResourceRequest&, RedirectType) override;
   void dispatchWillSendRequest(
       unsigned long identifier,
       ResourceRequest&,
@@ -114,11 +115,10 @@ class CORE_EXPORT FrameFetchContext final : public FetchContext {
                        bool isInternalRequest) override;
 
   bool shouldLoadNewResource(Resource::Type) const override;
-  void willStartLoadingResource(unsigned long identifier,
-                                ResourceRequest&,
-                                Resource::Type,
-                                const AtomicString& fetchInitiatorName,
-                                V8ActivityLoggingPolicy) override;
+  void recordLoadingActivity(unsigned long identifier,
+                             const ResourceRequest&,
+                             Resource::Type,
+                             const AtomicString& fetchInitiatorName) override;
   void didLoadResource(Resource*) override;
 
   void addResourceTiming(const ResourceTimingInfo&) override;
@@ -193,8 +193,6 @@ class CORE_EXPORT FrameFetchContext final : public FetchContext {
       SecurityViolationReportingPolicy,
       FetchRequest::OriginRestriction,
       ResourceRequest::RedirectStatus) const;
-
-  void prepareRequest(ResourceRequest&);
 
   void dispatchDidReceiveResponseInternal(unsigned long identifier,
                                           const ResourceResponse&,

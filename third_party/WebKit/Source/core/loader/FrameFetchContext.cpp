@@ -445,14 +445,23 @@ void FrameFetchContext::dispatchDidChangeResourcePriority(
   probe::didChangeResourcePriority(frame(), identifier, loadPriority);
 }
 
-void FrameFetchContext::prepareRequest(ResourceRequest& request) {
+void FrameFetchContext::prepareRequest(ResourceRequest& request,
+                                       RedirectType redirectType) {
   frame()->loader().applyUserAgent(request);
   localFrameClient()->dispatchWillSendRequest(request);
 
+  // ServiceWorker hook ups.
   if (masterDocumentLoader()->getServiceWorkerNetworkProvider()) {
     WrappedResourceRequest webreq(request);
     masterDocumentLoader()->getServiceWorkerNetworkProvider()->willSendRequest(
         webreq);
+  }
+
+  // If it's not for redirect, hook up ApplicationCache here too.
+  if (redirectType == FetchContext::RedirectType::kNotForRedirect &&
+      m_documentLoader && !m_documentLoader->fetcher()->archive() &&
+      request.url().isValid()) {
+    m_documentLoader->applicationCacheHost()->willStartLoading(request);
   }
 }
 
@@ -461,12 +470,9 @@ void FrameFetchContext::dispatchWillSendRequest(
     ResourceRequest& request,
     const ResourceResponse& redirectResponse,
     const FetchInitiatorInfo& initiatorInfo) {
-  // For initial requests, prepareRequest() is called in
-  // willStartLoadingResource(), before revalidation policy is determined. That
-  // call doesn't exist for redirects, so call preareRequest() here.
-  if (!redirectResponse.isNull()) {
-    prepareRequest(request);
-  } else {
+  if (redirectResponse.isNull()) {
+    // Progress doesn't care about redirects, only notify it when an
+    // initial request is sent.
     frame()->loader().progress().willStartLoading(identifier,
                                                   request.priority());
   }
@@ -579,42 +585,30 @@ loadResourceTraceData(unsigned long identifier, const KURL& url, int priority) {
   return value;
 }
 
-void FrameFetchContext::willStartLoadingResource(
+void FrameFetchContext::recordLoadingActivity(
     unsigned long identifier,
-    ResourceRequest& request,
+    const ResourceRequest& request,
     Resource::Type type,
-    const AtomicString& fetchInitiatorName,
-    V8ActivityLoggingPolicy loggingPolicy) {
+    const AtomicString& fetchInitiatorName) {
   TRACE_EVENT_ASYNC_BEGIN1(
       "blink.net", "Resource", identifier, "data",
       loadResourceTraceData(identifier, request.url(), request.priority()));
-  prepareRequest(request);
-
   if (!m_documentLoader || m_documentLoader->fetcher()->archive() ||
       !request.url().isValid())
     return;
-  if (type == Resource::MainResource) {
-    m_documentLoader->applicationCacheHost()->willStartLoadingMainResource(
-        request);
+  V8DOMActivityLogger* activityLogger = nullptr;
+  if (fetchInitiatorName == FetchInitiatorTypeNames::xmlhttprequest) {
+    activityLogger = V8DOMActivityLogger::currentActivityLogger();
   } else {
-    m_documentLoader->applicationCacheHost()->willStartLoadingResource(request);
+    activityLogger =
+        V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
   }
-  if (loggingPolicy == V8ActivityLoggingPolicy::Log) {
-    V8DOMActivityLogger* activityLogger = nullptr;
-    if (fetchInitiatorName == FetchInitiatorTypeNames::xmlhttprequest) {
-      activityLogger = V8DOMActivityLogger::currentActivityLogger();
-    } else {
-      activityLogger =
-          V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
-    }
 
-    if (activityLogger) {
-      Vector<String> argv;
-      argv.push_back(Resource::resourceTypeToString(type, fetchInitiatorName));
-      argv.push_back(request.url());
-      activityLogger->logEvent("blinkRequestResource", argv.size(),
-                               argv.data());
-    }
+  if (activityLogger) {
+    Vector<String> argv;
+    argv.push_back(Resource::resourceTypeToString(type, fetchInitiatorName));
+    argv.push_back(request.url());
+    activityLogger->logEvent("blinkRequestResource", argv.size(), argv.data());
   }
 }
 

@@ -253,9 +253,10 @@ PingLoaderImpl::PingLoaderImpl(LocalFrame* frame,
 
   FetchContext& fetchContext = frame->document()->fetcher()->context();
 
-  fetchContext.willStartLoadingResource(
-      m_identifier, request, Resource::Image, initiator,
-      FetchContext::V8ActivityLoggingPolicy::Log);
+  fetchContext.prepareRequest(request,
+                              FetchContext::RedirectType::kNotForRedirect);
+  fetchContext.recordLoadingActivity(m_identifier, request, Resource::Image,
+                                     initiator);
 
   FetchInitiatorInfo initiatorInfo;
   initiatorInfo.name = initiator;
@@ -332,6 +333,8 @@ bool PingLoaderImpl::willFollowRedirect(
     FetchInitiatorInfo initiatorInfo;
     initiatorInfo.name = m_initiator;
     FetchContext& fetchContext = frame()->document()->fetcher()->context();
+    fetchContext.prepareRequest(passedNewRequest.toMutableResourceRequest(),
+                                FetchContext::RedirectType::kForRedirect);
     fetchContext.dispatchWillSendRequest(
         m_identifier, passedNewRequest.toMutableResourceRequest(),
         passedRedirectResponse.toResourceResponse(), initiatorInfo);

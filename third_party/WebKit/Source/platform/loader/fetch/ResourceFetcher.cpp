@@ -506,12 +506,11 @@ ResourceFetcher::PrepareRequestResult ResourceFetcher::prepareRequest(
     return Block;
   }
 
-  context().willStartLoadingResource(
-      identifier, resourceRequest, factory.type(),
-      request.options().initiatorInfo.name,
-      (request.isSpeculativePreload()
-           ? FetchContext::V8ActivityLoggingPolicy::SuppressLogging
-           : FetchContext::V8ActivityLoggingPolicy::Log));
+  // For initial requests, call prepareRequest() here before revalidation
+  // policy is determined.
+  context().prepareRequest(resourceRequest,
+                           FetchContext::RedirectType::kNotForRedirect);
+
   if (!request.url().isValid())
     return Abort;
 
@@ -543,6 +542,12 @@ Resource* ResourceFetcher::requestResource(
     return nullptr;
   if (result == Block)
     return resourceForBlockedRequest(request, factory, blockedReason);
+
+  if (!request.isSpeculativePreload()) {
+    // Only log if it's not for speculative preload.
+    context().recordLoadingActivity(identifier, resourceRequest, factory.type(),
+                                    request.options().initiatorInfo.name);
+  }
 
   bool isDataUrl = resourceRequest.url().protocolIsData();
   bool isStaticData = isDataUrl || substituteData.isValid() || m_archive;

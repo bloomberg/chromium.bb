@@ -53,6 +53,8 @@ WebCachePolicy FetchContext::resourceRequestCachePolicy(
   return WebCachePolicy::UseProtocolCachePolicy;
 }
 
+void FetchContext::prepareRequest(ResourceRequest&, RedirectType) {}
+
 void FetchContext::dispatchWillSendRequest(unsigned long,
                                            ResourceRequest&,
                                            const ResourceResponse&,
@@ -86,12 +88,11 @@ void FetchContext::dispatchDidFail(unsigned long,
                                    int64_t,
                                    bool) {}
 
-void FetchContext::willStartLoadingResource(
+void FetchContext::recordLoadingActivity(
     unsigned long,
-    ResourceRequest&,
+    const ResourceRequest&,
     Resource::Type,
-    const AtomicString& fetchInitiatorName,
-    V8ActivityLoggingPolicy) {}
+    const AtomicString& fetchInitiatorName) {}
 
 void FetchContext::didLoadResource(Resource*) {}
 

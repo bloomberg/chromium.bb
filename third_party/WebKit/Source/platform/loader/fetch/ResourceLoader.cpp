@@ -219,7 +219,8 @@ bool ResourceLoader::willFollowRedirect(
 
   newRequest.setAllowStoredCredentials(m_resource->options().allowCredentials ==
                                        AllowStoredCredentials);
-
+  context().prepareRequest(newRequest,
+                           FetchContext::RedirectType::kForRedirect);
   context().dispatchWillSendRequest(m_resource->identifier(), newRequest,
                                     redirectResponse,
                                     m_resource->options().initiatorInfo);
