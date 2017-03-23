@@ -11,9 +11,7 @@ TEST(GLSurfaceFormatTest, BasicTest) {
   {
     // Check default format properties.
     GLSurfaceFormat format = GLSurfaceFormat();
-    EXPECT_TRUE(format.IsDefault());
     EXPECT_EQ(32, format.GetBufferSize());
-    EXPECT_FALSE(format.IsSurfaceless());
     EXPECT_EQ(GLSurfaceFormat::PIXEL_LAYOUT_DONT_CARE,
               format.GetPixelLayout());
   }
@@ -22,23 +20,13 @@ TEST(GLSurfaceFormatTest, BasicTest) {
     // Check rgb565 format as used for low-end Android devices.
     GLSurfaceFormat format = GLSurfaceFormat();
     format.SetRGB565();
-    EXPECT_FALSE(format.IsDefault());
     EXPECT_EQ(16, format.GetBufferSize());
-  }
-
-  {
-    // Check surfaceless format.
-    GLSurfaceFormat format = GLSurfaceFormat();
-    format.SetIsSurfaceless();
-    EXPECT_FALSE(format.IsDefault());
-    EXPECT_TRUE(format.IsSurfaceless());
   }
 
   {
     // Check custom pixel layout.
     GLSurfaceFormat format = GLSurfaceFormat(
         GLSurfaceFormat::PIXEL_LAYOUT_RGBA);
-    EXPECT_FALSE(format.IsDefault());
     EXPECT_EQ(GLSurfaceFormat::PIXEL_LAYOUT_RGBA,
               format.GetPixelLayout());
 

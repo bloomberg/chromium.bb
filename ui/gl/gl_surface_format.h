@@ -35,18 +35,6 @@ class GL_EXPORT GLSurfaceFormat {
 
   ~GLSurfaceFormat();
 
-  // Helper method to determine if the format is unchanged from the
-  // default at creation time. TODO(klausw): can this be removed?
-  bool IsDefault();
-
-  // Surfaceless appears as a format property for backwards
-  // compatibility with the previous enum-based implementation.
-  // TODO(klausw): consider removing it and/or merging it into the
-  // pre-existing IsSurfaceless() predicate for the various Surface
-  // subclasses?
-  void SetIsSurfaceless();
-  bool IsSurfaceless();
-
   // A given pair of surfaces is considered compatible if glSetSurface
   // can be used to switch between them without generating BAD_MATCH
   // errors, visual errors, or gross inefficiency, and incompatible
@@ -80,9 +68,7 @@ class GL_EXPORT GLSurfaceFormat {
   int GetBufferSize();
 
  private:
-  bool is_default_ = true;
   SurfacePixelLayout pixel_layout_ = PIXEL_LAYOUT_DONT_CARE;
-  bool is_surfaceless_ = false;
   int red_bits_ = -1;
   int green_bits_ = -1;
   int blue_bits_ = -1;

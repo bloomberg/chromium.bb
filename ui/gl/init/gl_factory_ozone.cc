@@ -85,7 +85,7 @@ scoped_refptr<GLSurface> CreateOffscreenGLSurfaceWithFormat(
     const gfx::Size& size, GLSurfaceFormat format) {
   TRACE_EVENT0("gpu", "gl::init::CreateOffscreenGLSurface");
 
-  if (!format.IsDefault()) {
+  if (!format.IsCompatible(GLSurfaceFormat())) {
     NOTREACHED() << "FATAL: Ozone only supports default-format surfaces.";
     return nullptr;
   }
