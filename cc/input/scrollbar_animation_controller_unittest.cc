@@ -1073,7 +1073,7 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest,
 // Scrollbars should cancel delay show when mouse hover hidden scrollbar then
 // move out of window.
 TEST_F(ScrollbarAnimationControllerAuraOverlayTest,
-       MouseHoverThenLeaveShouldCancelShow) {
+       MouseHoverThenLeaveShouldCancelShowThenEnterShouldShow) {
   base::TimeTicks time;
   time += base::TimeDelta::FromSeconds(1);
 
@@ -1089,6 +1089,19 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest,
   scrollbar_controller_->DidMouseLeave();
   EXPECT_TRUE(client_.start_fade().is_null() ||
               client_.start_fade().IsCancelled());
+
+  // Move mouse over scrollbar.
+  scrollbar_controller_->DidMouseMoveNear(VERTICAL, 0);
+
+  // An show animation should have been enqueued.
+  EXPECT_FALSE(client_.start_fade().is_null());
+  EXPECT_FALSE(client_.start_fade().IsCancelled());
+  EXPECT_EQ(kShowDelay, client_.delay());
+
+  // Play the delay animation.
+  client_.start_fade().Run();
+  EXPECT_TRUE(client_.start_fade().IsCancelled());
+  EXPECT_FALSE(scrollbar_controller_->ScrollbarsHidden());
 }
 
 class ScrollbarAnimationControllerAndroidTest

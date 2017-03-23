@@ -265,6 +265,7 @@ void ScrollbarAnimationController::DidMouseLeave() {
   horizontal_controller_->DidMouseLeave();
 
   delayed_scrollbar_show_.Cancel();
+  need_trigger_scrollbar_show_ = false;
 
   if (ScrollbarsHidden() || Captured())
     return;
