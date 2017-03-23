@@ -83,8 +83,6 @@ void StoragePartitionHttpCacheDataRemover::ClearHttpCacheOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   next_cache_state_ = CacheState::NONE;
   DCHECK_EQ(CacheState::NONE, next_cache_state_);
-  DCHECK(main_context_getter_.get());
-  DCHECK(media_context_getter_.get());
 
   next_cache_state_ = CacheState::CREATE_MAIN;
   DoClearCache(net::OK);
@@ -97,8 +95,8 @@ void StoragePartitionHttpCacheDataRemover::ClearedHttpCache() {
 }
 
 // The expected state sequence is CacheState::NONE --> CacheState::CREATE_MAIN
-// --> CacheState::PROCESS_MAIN --> CacheState::CREATE_MEDIA -->
-// CacheState::PROCESS_MEDIA --> CacheState::DONE, and any errors are ignored.
+// --> CacheState::DELETE_MAIN --> CacheState::CREATE_MEDIA -->
+// CacheState::DELETE_MEDIA --> CacheState::DONE, and any errors are ignored.
 void StoragePartitionHttpCacheDataRemover::DoClearCache(int rv) {
   DCHECK_NE(CacheState::NONE, next_cache_state_);
 
@@ -111,6 +109,15 @@ void StoragePartitionHttpCacheDataRemover::DoClearCache(int rv) {
             (next_cache_state_ == CacheState::CREATE_MAIN)
                 ? main_context_getter_.get()
                 : media_context_getter_.get();
+
+        // Caches might not exist in tests.
+        if (!getter) {
+          next_cache_state_ = (next_cache_state_ == CacheState::CREATE_MAIN)
+                                  ? CacheState::CREATE_MEDIA
+                                  : CacheState::DONE;
+          break;
+        }
+
         net::HttpCache* http_cache = getter->GetURLRequestContext()
                                          ->http_transaction_factory()
                                          ->GetCache();

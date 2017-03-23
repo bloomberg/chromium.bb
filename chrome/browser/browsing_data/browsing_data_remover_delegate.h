@@ -5,7 +5,13 @@
 #ifndef CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_REMOVER_DELEGATE_H_
 #define CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_REMOVER_DELEGATE_H_
 
+#include "base/callback_forward.h"
+
 class GURL;
+
+namespace base {
+class Time;
+}
 
 namespace content {
 class BrowsingDataFilterBuilder;
