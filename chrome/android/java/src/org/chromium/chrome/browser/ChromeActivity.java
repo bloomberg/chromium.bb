@@ -877,6 +877,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     @Override
     public void onNewIntentWithNative(Intent intent) {
+        VideoPersister.getInstance().cleanup(this);
+
         super.onNewIntentWithNative(intent);
         if (mIntentHandler.shouldIgnoreIntent(intent)) return;
 
