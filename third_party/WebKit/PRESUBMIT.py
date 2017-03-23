@@ -36,28 +36,6 @@ def _CheckForNonBlinkVariantMojomIncludes(input_api, output_api):
     return results
 
 
-def _CheckForVersionControlConflictsInFile(input_api, f):
-    pattern = input_api.re.compile('^(?:<<<<<<<|>>>>>>>) |^=======$')
-    errors = []
-    for line_num, line in f.ChangedContents():
-        if pattern.match(line):
-            errors.append('    %s:%d %s' % (f.LocalPath(), line_num, line))
-    return errors
-
-
-def _CheckForVersionControlConflicts(input_api, output_api):
-    """Usually this is not intentional and will cause a compile failure."""
-    errors = []
-    for f in input_api.AffectedFiles():
-        errors.extend(_CheckForVersionControlConflictsInFile(input_api, f))
-
-    results = []
-    if errors:
-        results.append(output_api.PresubmitError(
-            'Version control conflict markers found, please resolve.', errors))
-    return results
-
-
 def _CheckWatchlist(input_api, output_api):
     """Check that the WATCHLIST file parses correctly."""
     errors = []
@@ -98,23 +76,10 @@ def _CommonChecks(input_api, output_api):
         input_api, output_api, excluded_paths=_EXCLUDED_PATHS,
         maxlen=800, license_header=license_header))
     results.extend(_CheckForNonBlinkVariantMojomIncludes(input_api, output_api))
-    results.extend(_CheckForVersionControlConflicts(input_api, output_api))
-    results.extend(_CheckPatchFiles(input_api, output_api))
     results.extend(_CheckTestExpectations(input_api, output_api))
     results.extend(_CheckChromiumPlatformMacros(input_api, output_api))
     results.extend(_CheckWatchlist(input_api, output_api))
-    results.extend(_CheckFilePermissions(input_api, output_api))
     return results
-
-
-def _CheckPatchFiles(input_api, output_api):
-  problems = [f.LocalPath() for f in input_api.AffectedFiles()
-      if f.LocalPath().endswith(('.orig', '.rej'))]
-  if problems:
-    return [output_api.PresubmitError(
-        "Don't commit .rej and .orig files.", problems)]
-  else:
-    return []
 
 
 def _CheckTestExpectations(input_api, output_api):
@@ -226,26 +191,6 @@ def _CheckForFailInFile(input_api, f):
         if pattern.match(line):
             errors.append('    %s:%d %s' % (f.LocalPath(), line_num, line))
     return errors
-
-
-def _CheckFilePermissions(input_api, output_api):
-    """Check that all files have their permissions properly set."""
-    if input_api.platform == 'win32':
-        return []
-    args = [input_api.python_executable,
-            input_api.os_path.join(
-                input_api.change.RepositoryRoot(),
-                'tools/checkperms/checkperms.py'),
-            '--root', input_api.change.RepositoryRoot()]
-    for f in input_api.AffectedFiles():
-        args += ['--file', f.LocalPath()]
-    try:
-        input_api.subprocess.check_output(args)
-        return []
-    except input_api.subprocess.CalledProcessError as error:
-        return [output_api.PresubmitError(
-            'checkperms.py failed:',
-            long_text=error.output)]
 
 
 def _CheckForInvalidPreferenceError(input_api, output_api):
