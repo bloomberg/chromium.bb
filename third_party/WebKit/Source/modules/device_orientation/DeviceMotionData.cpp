@@ -105,10 +105,9 @@ DeviceMotionData* DeviceMotionData::create(
     Acceleration* acceleration,
     Acceleration* accelerationIncludingGravity,
     RotationRate* rotationRate,
-    bool canProvideInterval,
     double interval) {
   return new DeviceMotionData(acceleration, accelerationIncludingGravity,
-                              rotationRate, canProvideInterval, interval);
+                              rotationRate, interval);
 }
 
 DeviceMotionData* DeviceMotionData::create(const DeviceMotionEventInit& init) {
@@ -123,7 +122,7 @@ DeviceMotionData* DeviceMotionData::create(const DeviceMotionEventInit& init) {
       init.hasRotationRate()
           ? DeviceMotionData::RotationRate::create(init.rotationRate())
           : nullptr,
-      init.hasInterval(), init.hasInterval() ? init.interval() : 0);
+      init.hasInterval() ? init.interval() : 0);
 }
 
 DeviceMotionData* DeviceMotionData::create(const device::MotionData& data) {
@@ -142,21 +141,18 @@ DeviceMotionData* DeviceMotionData::create(const device::MotionData& data) {
           data.hasRotationRateAlpha, data.rotationRateAlpha,
           data.hasRotationRateBeta, data.rotationRateBeta,
           data.hasRotationRateGamma, data.rotationRateGamma),
-      true, data.interval);
+      data.interval);
 }
 
-DeviceMotionData::DeviceMotionData()
-    : m_canProvideInterval(false), m_interval(0) {}
+DeviceMotionData::DeviceMotionData() : m_interval(0) {}
 
 DeviceMotionData::DeviceMotionData(Acceleration* acceleration,
                                    Acceleration* accelerationIncludingGravity,
                                    RotationRate* rotationRate,
-                                   bool canProvideInterval,
                                    double interval)
     : m_acceleration(acceleration),
       m_accelerationIncludingGravity(accelerationIncludingGravity),
       m_rotationRate(rotationRate),
-      m_canProvideInterval(canProvideInterval),
       m_interval(interval) {}
 
 DEFINE_TRACE(DeviceMotionData) {

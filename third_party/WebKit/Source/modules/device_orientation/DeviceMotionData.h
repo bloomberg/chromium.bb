@@ -118,7 +118,6 @@ class DeviceMotionData final : public GarbageCollected<DeviceMotionData> {
   static DeviceMotionData* create(Acceleration*,
                                   Acceleration* accelerationIncludingGravity,
                                   RotationRate*,
-                                  bool canProvideInterval,
                                   double interval);
   static DeviceMotionData* create(const DeviceMotionEventInit&);
   static DeviceMotionData* create(const device::MotionData&);
@@ -130,7 +129,6 @@ class DeviceMotionData final : public GarbageCollected<DeviceMotionData> {
   }
   RotationRate* getRotationRate() const { return m_rotationRate.get(); }
 
-  bool canProvideInterval() const { return m_canProvideInterval; }
   double interval() const { return m_interval; }
 
   bool canProvideEventData() const;
@@ -140,13 +138,11 @@ class DeviceMotionData final : public GarbageCollected<DeviceMotionData> {
   DeviceMotionData(Acceleration*,
                    Acceleration* accelerationIncludingGravity,
                    RotationRate*,
-                   bool canProvideInterval,
                    double interval);
 
   Member<Acceleration> m_acceleration;
   Member<Acceleration> m_accelerationIncludingGravity;
   Member<RotationRate> m_rotationRate;
-  bool m_canProvideInterval;
   double m_interval;
 };
 
