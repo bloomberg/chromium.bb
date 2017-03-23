@@ -38,6 +38,7 @@ import org.chromium.blink.mojom.MediaSessionAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
+import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.content_public.common.MediaMetadata;
 
@@ -752,7 +753,7 @@ public class MediaNotificationManager {
     }
 
     private void updateNotificationBuilder() {
-        mNotificationBuilder = AppHooks.get().createChromeNotificationBuilder(
+        mNotificationBuilder = NotificationBuilderFactory.createChromeNotificationBuilder(
                 true /* preferCompat */, NotificationConstants.CATEGORY_ID_BROWSER,
                 mContext.getString(org.chromium.chrome.R.string.notification_category_browser),
                 NotificationConstants.CATEGORY_GROUP_ID_GENERAL,

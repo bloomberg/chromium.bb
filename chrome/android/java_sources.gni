@@ -562,6 +562,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/notifications/CustomNotificationBuilder.java",
   "java/src/org/chromium/chrome/browser/notifications/NotificationBuilder.java",
   "java/src/org/chromium/chrome/browser/notifications/NotificationBuilderBase.java",
+  "java/src/org/chromium/chrome/browser/notifications/NotificationBuilderFactory.java",
+  "java/src/org/chromium/chrome/browser/notifications/NotificationBuilderForO.java",
   "java/src/org/chromium/chrome/browser/notifications/NotificationCompatBuilder.java",
   "java/src/org/chromium/chrome/browser/notifications/NotificationConstants.java",
   "java/src/org/chromium/chrome/browser/notifications/NotificationManagerProxy.java",

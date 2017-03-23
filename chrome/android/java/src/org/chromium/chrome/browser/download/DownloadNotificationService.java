@@ -44,6 +44,7 @@ import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
+import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
@@ -316,7 +317,7 @@ public class DownloadNotificationService extends Service {
      */
     private static Notification buildSummaryNotificationWithIcon(Context context, int iconId) {
         ChromeNotificationBuilder builder =
-                AppHooks.get()
+                NotificationBuilderFactory
                         .createChromeNotificationBuilder(true /* preferCompat */,
                                 NotificationConstants.CATEGORY_ID_BROWSER,
                                 context.getString(R.string.notification_category_browser),
@@ -1007,7 +1008,7 @@ public class DownloadNotificationService extends Service {
         extras.putInt(EXTRA_NOTIFICATION_BUNDLE_ICON_ID, iconId);
 
         ChromeNotificationBuilder builder =
-                AppHooks.get()
+                NotificationBuilderFactory
                         .createChromeNotificationBuilder(true /* preferCompat */,
                                 NotificationConstants.CATEGORY_ID_BROWSER,
                                 mContext.getString(R.string.notification_category_browser),

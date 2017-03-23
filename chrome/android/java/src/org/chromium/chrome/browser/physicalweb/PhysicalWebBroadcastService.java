@@ -20,8 +20,8 @@ import android.os.IBinder;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
+import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
@@ -149,7 +149,7 @@ public class PhysicalWebBroadcastService extends Service {
         NotificationManagerProxy notificationManager = new NotificationManagerProxyImpl(
                 (NotificationManager) getSystemService(NOTIFICATION_SERVICE));
         ChromeNotificationBuilder notificationBuilder =
-                AppHooks.get()
+                NotificationBuilderFactory
                         .createChromeNotificationBuilder(true /* preferCompat */,
                                 NotificationConstants.CATEGORY_ID_BROWSER,
                                 context.getString(R.string.notification_category_browser),

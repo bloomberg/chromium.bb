@@ -21,11 +21,11 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
+import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsNotificationAction;
@@ -151,7 +151,7 @@ public class ContentSuggestionsNotificationHelper {
                         .putExtra(NOTIFICATION_CATEGORY_EXTRA, category)
                         .putExtra(NOTIFICATION_ID_WITHIN_CATEGORY_EXTRA, idWithinCategory);
         ChromeNotificationBuilder builder =
-                AppHooks.get()
+                NotificationBuilderFactory
                         .createChromeNotificationBuilder(true /* preferCompat */,
                                 NotificationConstants.CATEGORY_ID_BROWSER,
                                 context.getString(R.string.notification_category_browser),
