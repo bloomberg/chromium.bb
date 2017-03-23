@@ -884,32 +884,6 @@ void LayoutBlock::paintObject(const PaintInfo& paintInfo,
   BlockPainter(*this).paintObject(paintInfo, paintOffset);
 }
 
-bool LayoutBlock::isSelectionRoot() const {
-  if (isPseudoElement())
-    return false;
-  ASSERT(node() || isAnonymous());
-
-  // FIXME: Eventually tables should have to learn how to fill gaps between
-  // cells, at least in simple non-spanning cases.
-  if (isTable())
-    return false;
-
-  if (isBody() || isDocumentElement() || hasOverflowClip() || isPositioned() ||
-      isFloating() || isTableCell() || isInlineBlockOrInlineTable() ||
-      hasTransformRelatedProperty() || hasReflection() || hasMask() ||
-      isWritingModeRoot() || isLayoutFlowThread() ||
-      isFlexItemIncludingDeprecated())
-    return true;
-
-  if (view() && view()->selectionStart()) {
-    Node* startElement = view()->selectionStart()->node();
-    if (startElement && rootEditableElement(*startElement) == node())
-      return true;
-  }
-
-  return false;
-}
-
 LayoutUnit LayoutBlock::blockDirectionOffset(
     const LayoutSize& offsetFromBlock) const {
   return isHorizontalWritingMode() ? offsetFromBlock.height()

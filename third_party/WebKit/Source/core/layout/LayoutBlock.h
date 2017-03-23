@@ -481,8 +481,6 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   void computeBlockPreferredLogicalWidths(LayoutUnit& minLogicalWidth,
                                           LayoutUnit& maxLogicalWidth) const;
 
-  bool isSelectionRoot() const;
-
  public:
   bool shouldPaintCursorCaret() const;
   bool shouldPaintDragCaret() const;
