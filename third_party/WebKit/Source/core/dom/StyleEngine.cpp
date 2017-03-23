@@ -345,6 +345,7 @@ void StyleEngine::updateActiveStyleSheets() {
   m_dirtyTreeScopes.clear();
   m_documentScopeDirty = false;
   m_allTreeScopesDirty = false;
+  m_treeScopesRemoved = false;
 }
 
 void StyleEngine::updateViewport() {
@@ -391,6 +392,7 @@ void StyleEngine::shadowRootRemovedFromDocument(ShadowRoot* shadowRoot) {
   m_styleSheetCollectionMap.erase(shadowRoot);
   m_activeTreeScopes.erase(shadowRoot);
   m_dirtyTreeScopes.erase(shadowRoot);
+  m_treeScopesRemoved = true;
   resetAuthorStyle(*shadowRoot);
 }
 

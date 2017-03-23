@@ -267,8 +267,8 @@ class CORE_EXPORT StyleEngine final
  private:
   StyleEngine(Document&);
   bool needsActiveStyleSheetUpdate() const {
-    return m_allTreeScopesDirty || m_documentScopeDirty ||
-           m_dirtyTreeScopes.size();
+    return m_allTreeScopesDirty || m_treeScopesRemoved ||
+           m_documentScopeDirty || m_dirtyTreeScopes.size();
   }
 
   TreeScopeStyleSheetCollection* ensureStyleSheetCollectionFor(TreeScope&);
@@ -353,6 +353,7 @@ class CORE_EXPORT StyleEngine final
 
   bool m_documentScopeDirty = true;
   bool m_allTreeScopesDirty = false;
+  bool m_treeScopesRemoved = false;
   UnorderedTreeScopeSet m_dirtyTreeScopes;
   UnorderedTreeScopeSet m_activeTreeScopes;
   DocumentOrderedList m_treeBoundaryCrossingScopes;
