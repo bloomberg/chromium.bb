@@ -9,7 +9,6 @@
 #import "base/ios/weak_nsobject.h"
 #import "base/mac/bind_objc_block.h"
 #include "components/bookmarks/browser/startup_task_runner_service.h"
-#include "components/reading_list/core/reading_list_switches.h"
 #import "ios/chrome/app/deferred_initialization_runner.h"
 #include "ios/chrome/app/tests_hook.h"
 #include "ios/chrome/browser/application_context.h"
@@ -84,10 +83,8 @@ NSString* const kStartProfileStartupTaskRunners =
     (ios::ChromeBrowserState*)browserState {
   ios::StartupTaskRunnerServiceFactory::GetForBrowserState(browserState)
       ->StartDeferredTaskRunners();
-  if (reading_list::switches::IsReadingListEnabled()) {
-    ReadingListDownloadServiceFactory::GetForBrowserState(browserState)
-        ->Initialize();
-  }
+  ReadingListDownloadServiceFactory::GetForBrowserState(browserState)
+      ->Initialize();
 }
 
 - (void)applicationWillResignActiveNotification:(NSNotification*)notification {

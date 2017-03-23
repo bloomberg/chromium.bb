@@ -7,7 +7,6 @@
 #import <MobileCoreServices/MobileCoreServices.h>
 
 #import "base/test/ios/wait_util.h"
-#include "components/reading_list/core/reading_list_switches.h"
 #import "ios/chrome/browser/ui/activity_services/activity_type_util.h"
 #import "ios/chrome/browser/ui/activity_services/appex_constants.h"
 #import "ios/chrome/browser/ui/activity_services/chrome_activity_item_source.h"
@@ -442,9 +441,7 @@ TEST_F(ActivityServiceControllerTest, ApplicationActivitiesForData) {
 
   NSArray* items =
       [activityController applicationActivitiesForData:data controller:nil];
-  NSUInteger expected_items_count =
-      reading_list::switches::IsReadingListEnabled() ? 2U : 1U;
-  ASSERT_EQ(expected_items_count, [items count]);
+  ASSERT_EQ(2U, [items count]);
   EXPECT_EQ([PrintActivity class], [[items objectAtIndex:0] class]);
 
   // Verify non-printable data.
@@ -455,7 +452,7 @@ TEST_F(ActivityServiceControllerTest, ApplicationActivitiesForData) {
                        isPagePrintable:NO
                     thumbnailGenerator:DummyThumbnailGeneratorBlock()];
   items = [activityController applicationActivitiesForData:data controller:nil];
-  EXPECT_EQ(expected_items_count - 1, [items count]);
+  EXPECT_EQ(1U, [items count]);
 }
 
 TEST_F(ActivityServiceControllerTest, FindLoginActionTypeConformsToPublicURL) {

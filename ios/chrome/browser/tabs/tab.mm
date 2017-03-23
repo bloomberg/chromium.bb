@@ -41,7 +41,6 @@
 #include "components/navigation_metrics/origins_seen_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/reading_list/core/reading_list_model.h"
-#include "components/reading_list/core/reading_list_switches.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sessions/core/session_types.h"
 #include "components/sessions/ios/ios_serialized_navigation_builder.h"

@@ -33,7 +33,6 @@ source_set("side_swipe") {
     ":resources",
     "//base",
     "//components/reading_list/core",
-    "//components/reading_list/core:flags",
     "//ios/chrome/app/theme",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",

@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#include "components/reading_list/core/reading_list_switches.h"
 #import "ios/chrome/browser/ui/activity_services/activity_type_util.h"
 #import "ios/chrome/browser/ui/activity_services/appex_constants.h"
 #import "ios/chrome/browser/ui/activity_services/chrome_activity_item_source.h"
@@ -218,8 +217,7 @@
     [printActivity setResponder:controller];
     [applicationActivities addObject:printActivity];
   }
-  if (reading_list::switches::IsReadingListEnabled() &&
-      data.url.SchemeIsHTTPOrHTTPS()) {
+  if (data.url.SchemeIsHTTPOrHTTPS()) {
     ReadingListActivity* readingListActivity =
         [[ReadingListActivity alloc] initWithURL:data.url
                                            title:data.title

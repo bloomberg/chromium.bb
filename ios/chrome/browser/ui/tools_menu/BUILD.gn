@@ -24,7 +24,6 @@ source_set("tools_menu") {
   deps = [
     "//base",
     "//base:i18n",
-    "//components/reading_list/core:flags",
     "//components/strings",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",

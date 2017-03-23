@@ -12,7 +12,6 @@
 #include "components/history/core/browser/top_sites.h"
 #import "components/history/ios/browser/web_state_top_sites_observer.h"
 #include "components/keyed_service/core/service_access_type.h"
-#include "components/reading_list/core/reading_list_switches.h"
 #import "components/signin/ios/browser/account_consistency_service.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -56,11 +55,9 @@ void AttachTabHelpers(web::WebState* web_state) {
   FindTabHelper::CreateForWebState(web_state, tab.findInPageControllerDelegate);
   StoreKitTabHelper::CreateForWebState(web_state);
 
-  if (reading_list::switches::IsReadingListEnabled()) {
-    ReadingListModel* model =
-        ReadingListModelFactory::GetForBrowserState(browser_state);
-    ReadingListWebStateObserver::FromWebState(web_state, model);
-  }
+  ReadingListModel* model =
+      ReadingListModelFactory::GetForBrowserState(browser_state);
+  ReadingListWebStateObserver::FromWebState(web_state, model);
 
   if (AccountConsistencyService* account_consistency_service =
           ios::AccountConsistencyServiceFactory::GetForBrowserState(

@@ -11,7 +11,6 @@
 #include "base/command_line.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/browser_sync/profile_sync_service.h"
-#include "components/reading_list/core/reading_list_switches.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/data_type_controller.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
@@ -45,9 +44,7 @@ class IOSChromeProfileSyncServiceFactoryTest : public testing::Test {
     datatypes.push_back(syncer::PASSWORDS);
     datatypes.push_back(syncer::PREFERENCES);
     datatypes.push_back(syncer::PRIORITY_PREFERENCES);
-    if (reading_list::switches::IsReadingListEnabled()) {
-      datatypes.push_back(syncer::READING_LIST);
-    }
+    datatypes.push_back(syncer::READING_LIST);
     datatypes.push_back(syncer::SESSIONS);
     datatypes.push_back(syncer::PROXY_TABS);
     datatypes.push_back(syncer::TYPED_URLS);

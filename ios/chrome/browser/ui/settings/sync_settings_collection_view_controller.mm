@@ -305,11 +305,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   for (int i = 0; i < SyncSetupService::kNumberOfSyncableDatatypes; ++i) {
     SyncSetupService::SyncableDatatype dataType =
         static_cast<SyncSetupService::SyncableDatatype>(i);
-    if (!experimental_flags::IsReadingListEnabled() &&
-        dataType == SyncSetupService::kSyncReadingList) {
-      // Display Reading List only if it is enabled.
-      continue;
-    }
     [model addItem:[self switchItemForDataType:dataType]
         toSectionWithIdentifier:SectionIdentifierSyncServices];
   }

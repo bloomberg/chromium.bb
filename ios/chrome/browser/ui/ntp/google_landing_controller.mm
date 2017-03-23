@@ -22,7 +22,6 @@
 #include "components/ntp_tiles/most_visited_sites.h"
 #include "components/ntp_tiles/ntp_tile.h"
 #include "components/rappor/rappor_service_impl.h"
-#include "components/reading_list/core/reading_list_switches.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_observer.h"
 #include "components/strings/grit/components_strings.h"
@@ -1240,11 +1239,8 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
       [_headerView addViewsToSearchField:_searchTapTarget];
 
       if (!IsIPadIdiom()) {
-        ReadingListModel* readingListModel = nullptr;
-        if (reading_list::switches::IsReadingListEnabled()) {
-          readingListModel =
-              ReadingListModelFactory::GetForBrowserState(_browserState);
-        }
+        ReadingListModel* readingListModel =
+            ReadingListModelFactory::GetForBrowserState(_browserState);
         // iPhone header also contains a toolbar since the normal toolbar is
         // hidden.
         [_headerView addToolbarWithDelegate:_webToolbarDelegate

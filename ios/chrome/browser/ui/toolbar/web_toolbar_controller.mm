@@ -23,7 +23,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
-#include "components/reading_list/core/reading_list_switches.h"
 #include "components/search_engines/util.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/toolbar/toolbar_model.h"
@@ -386,10 +385,8 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   if (!self)
     return nil;
 
-  if (reading_list::switches::IsReadingListEnabled()) {
-    self.readingListModel =
-        ReadingListModelFactory::GetForBrowserState(browserState);
-  }
+  self.readingListModel =
+      ReadingListModelFactory::GetForBrowserState(browserState);
 
   InterfaceIdiom idiom = IsIPadIdiom() ? IPAD_IDIOM : IPHONE_IDIOM;
   // Note that |_webToolbar| gets its frame set to -specificControlArea later in

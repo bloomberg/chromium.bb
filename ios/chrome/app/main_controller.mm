@@ -29,7 +29,6 @@
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "components/reading_list/core/reading_list_switches.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/web_resource/web_resource_pref_names.h"
@@ -700,11 +699,9 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   _spotlightManager.reset([[SpotlightManager
       spotlightManagerWithBrowserState:_mainBrowserState] retain]);
 
-  if (reading_list::switches::IsReadingListEnabled()) {
-    ShareExtensionService* service =
-        ShareExtensionServiceFactory::GetForBrowserState(_mainBrowserState);
-    service->Initialize();
-  }
+  ShareExtensionService* service =
+      ShareExtensionServiceFactory::GetForBrowserState(_mainBrowserState);
+  service->Initialize();
 
   // Before bringing up the UI, make sure the launch mode is correct, and
   // check for previous crashes.

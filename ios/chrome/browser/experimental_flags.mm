@@ -17,7 +17,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/common/autofill_switches.h"
-#include "components/reading_list/core/reading_list_switches.h"
 #include "components/variations/variations_associated_data.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/web/public/web_view_creation_util.h"
@@ -217,10 +216,6 @@ bool IsPhysicalWebEnabled() {
 bool IsReaderModeEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableReaderModeToolbarIcon);
-}
-
-bool IsReadingListEnabled() {
-  return reading_list::switches::IsReadingListEnabled();
 }
 
 bool IsSafariVCSignInEnabled() {

@@ -59,7 +59,6 @@ source_set("reading_list") {
     "//base",
     "//components/prefs",
     "//components/reading_list/core",
-    "//components/reading_list/core:flags",
     "//components/reading_list/ios",
     "//components/strings",
     "//components/url_formatter",

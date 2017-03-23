@@ -12,7 +12,6 @@
 #include "base/mac/objc_property_releaser.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/metrics/field_trial.h"
-#include "components/reading_list/core/reading_list_switches.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/animation_util.h"

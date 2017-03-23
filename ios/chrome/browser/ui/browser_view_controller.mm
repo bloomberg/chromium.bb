@@ -42,7 +42,6 @@
 #include "components/infobars/core/infobar_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/reading_list/core/reading_list_model.h"
-#include "components/reading_list/core/reading_list_switches.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sessions/core/tab_restore_service_helper.h"
@@ -2537,8 +2536,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
         [_contextMenuCoordinator addItemWithTitle:title action:action];
       }
     }
-    if (link.SchemeIsHTTPOrHTTPS() &&
-        reading_list::switches::IsReadingListEnabled()) {
+    if (link.SchemeIsHTTPOrHTTPS()) {
       NSString* innerText = params.link_text;
       if ([innerText length] > 0) {
         // Add to reading list.
@@ -3356,14 +3354,12 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   if (_isOffTheRecord)
     [configuration setInIncognito:YES];
 
-  if (reading_list::switches::IsReadingListEnabled()) {
-    if (!_readingListMenuNotifier) {
-      _readingListMenuNotifier.reset([[ReadingListMenuNotifier alloc]
-          initWithReadingList:ReadingListModelFactory::GetForBrowserState(
-                                  _browserState)]);
-    }
-    [configuration setReadingListMenuNotifier:_readingListMenuNotifier];
+  if (!_readingListMenuNotifier) {
+    _readingListMenuNotifier.reset([[ReadingListMenuNotifier alloc]
+        initWithReadingList:ReadingListModelFactory::GetForBrowserState(
+                                _browserState)]);
   }
+  [configuration setReadingListMenuNotifier:_readingListMenuNotifier];
 
   [configuration setUserAgentType:self.userAgentType];
 
@@ -3504,9 +3500,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 }
 
 - (void)addToReadingListURL:(const GURL&)URL title:(NSString*)title {
-  if (!reading_list::switches::IsReadingListEnabled()) {
-    return;
-  }
   base::RecordAction(UserMetricsAction("MobileReadingListAdd"));
 
   ReadingListModel* readingModel =
@@ -4073,7 +4066,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
       [self print];
       break;
     case IDC_ADD_READING_LIST: {
-      DCHECK(reading_list::switches::IsReadingListEnabled());
       ReadingListAddCommand* command =
           base::mac::ObjCCastStrict<ReadingListAddCommand>(sender);
       [self addToReadingListURL:[command URL] title:[command title]];
@@ -4083,7 +4075,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
       [self showRateThisAppDialog];
       break;
     case IDC_SHOW_READING_LIST:
-      DCHECK(reading_list::switches::IsReadingListEnabled());
       [self showReadingList];
       break;
     case IDC_VOICE_SEARCH:
@@ -4336,7 +4327,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 }
 
 - (void)showReadingList {
-  DCHECK(reading_list::switches::IsReadingListEnabled());
   _readingListCoordinator.reset([[ReadingListCoordinator alloc]
       initWithBaseViewController:self
                     browserState:self.browserState

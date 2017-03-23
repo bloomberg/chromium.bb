@@ -4,7 +4,6 @@
 
 #include "ios/chrome/browser/ui/tools_menu/tools_menu_model.h"
 
-#include "components/reading_list/core/reading_list_switches.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
@@ -94,8 +93,6 @@ bool ToolsMenuItemShouldBeVisible(const MenuItemInfo& item,
       return IsIPadIdiom();
     case IDS_IOS_TOOLS_MENU_READER_MODE:
       return experimental_flags::IsReaderModeEnabled();
-    case IDS_IOS_TOOLS_MENU_READING_LIST:
-      return reading_list::switches::IsReadingListEnabled();
     case IDS_IOS_TOOLS_MENU_SUGGESTIONS:
       return experimental_flags::IsSuggestionsUIEnabled();
     case IDS_IOS_OPTIONS_REPORT_AN_ISSUE:

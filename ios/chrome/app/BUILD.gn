@@ -149,7 +149,6 @@ source_set("app_internal") {
     "//components/metrics",
     "//components/prefs",
     "//components/proxy_config",
-    "//components/reading_list/core:flags",
     "//components/signin/core/browser",
     "//components/suggestions",
     "//components/sync",

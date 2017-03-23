@@ -6,7 +6,6 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "components/reading_list/core/reading_list_switches.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/reading_list/offline_url_utils.h"
 #include "ios/chrome/browser/reading_list/reading_list_download_service.h"
@@ -50,7 +49,6 @@
   DCHECK(browserState);
   DCHECK(URL.is_valid());
 
-  DCHECK(reading_list::switches::IsReadingListEnabled());
   base::FilePath offline_root =
       ReadingListDownloadServiceFactory::GetForBrowserState(
           ios::ChromeBrowserState::FromBrowserState(browserState))

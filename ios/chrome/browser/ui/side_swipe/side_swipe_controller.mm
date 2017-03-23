@@ -8,7 +8,6 @@
 
 #import "base/ios/weak_nsobject.h"
 #include "components/reading_list/core/reading_list_model.h"
-#include "components/reading_list/core/reading_list_switches.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/infobars/infobar_container_view.h"
 #import "ios/chrome/browser/reading_list/reading_list_model_factory.h"
@@ -123,11 +122,9 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
     historySideSwipeProvider_.reset(
         [[HistorySideSwipeProvider alloc] initWithTabModel:model_]);
 
-    if (reading_list::switches::IsReadingListEnabled()) {
-      readingListSideSwipeProvider_.reset([[ReadingListSideSwipeProvider alloc]
-          initWithReadingList:ReadingListModelFactory::GetForBrowserState(
-                                  browserState)]);
-    }
+    readingListSideSwipeProvider_.reset([[ReadingListSideSwipeProvider alloc]
+        initWithReadingList:ReadingListModelFactory::GetForBrowserState(
+                                browserState)]);
   }
   return self;
 }

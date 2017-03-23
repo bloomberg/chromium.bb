@@ -28,7 +28,6 @@
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/sync/browser/password_model_worker.h"
 #include "components/reading_list/core/reading_list_model.h"
-#include "components/reading_list/core/reading_list_switches.h"
 #include "components/search_engines/search_engine_data_type_controller.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/sync/base/report_unrecoverable_error.h"
@@ -352,7 +351,6 @@ IOSChromeSyncClient::GetSyncBridgeForModelType(syncer::ModelType type) {
           ->GetDeviceInfoSyncBridge()
           ->AsWeakPtr();
     case syncer::READING_LIST: {
-      DCHECK(reading_list::switches::IsReadingListEnabled());
       ReadingListModel* reading_list_model =
           ReadingListModelFactory::GetForBrowserState(browser_state_);
       return reading_list_model->GetModelTypeSyncBridge()->AsWeakPtr();
