@@ -1581,8 +1581,8 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
 #else
   this_rd_stats.rate = x->rate;
 #endif  // !CONFIG_PVQ
-  av1_set_txb_context(x, plane, block, plane_bsize, tx_size,
-                      args->t_above + blk_col, args->t_left + blk_row);
+  av1_set_txb_context(x, plane, block, tx_size, args->t_above + blk_col,
+                      args->t_left + blk_row);
 
   rd1 = RDCOST(x->rdmult, x->rddiv, this_rd_stats.rate, this_rd_stats.dist);
   rd2 = RDCOST(x->rdmult, x->rddiv, 0, this_rd_stats.sse);

@@ -735,26 +735,18 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   }
 #endif
 #if !CONFIG_PVQ
-  if (p->eobs[block] && !xd->lossless[xd->mi[0]->mbmi.segment_id]) {
-    *a = *l = av1_optimize_b(cm, x, plane, block, tx_size, ctx) > 0;
-  } else {
-    *a = *l = p->eobs[block] > 0;
-  }
-
-#if CONFIG_VAR_TX
-  int i;
-  for (i = 0; i < tx_size_wide_unit[tx_size]; ++i) a[i] = a[0];
-
-  for (i = 0; i < tx_size_high_unit[tx_size]; ++i) l[i] = l[0];
+  if (p->eobs[block] && !xd->lossless[xd->mi[0]->mbmi.segment_id])
+    av1_optimize_b(cm, x, plane, block, tx_size, ctx);
 #endif
 
+  av1_set_txb_context(x, plane, block, tx_size, a, l);
+
+#if !CONFIG_PVQ
   if (p->eobs[block]) *(args->skip) = 0;
 
   if (p->eobs[block] == 0) return;
 #else
   (void)ctx;
-  *a = *l = !x->pvq_skip[plane];
-
   if (!x->pvq_skip[plane]) *(args->skip) = 0;
 
   if (x->pvq_skip[plane]) return;
@@ -1010,10 +1002,8 @@ void av1_encode_sb_supertx(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize) {
 }
 #endif  // CONFIG_SUPERTX
 
-void av1_set_txb_context(MACROBLOCK *x, int plane, int block,
-                         BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
+void av1_set_txb_context(MACROBLOCK *x, int plane, int block, TX_SIZE tx_size,
                          ENTROPY_CONTEXT *a, ENTROPY_CONTEXT *l) {
-  (void)plane_bsize;
   (void)tx_size;
 #if !CONFIG_PVQ
   struct macroblock_plane *p = &x->plane[plane];
@@ -1022,6 +1012,13 @@ void av1_set_txb_context(MACROBLOCK *x, int plane, int block,
   (void)block;
   *a = *l = !x->pvq_skip[plane];
 #endif  // !CONFIG_PVQ
+
+#if CONFIG_VAR_TX || CONFIG_LV_MAP
+  int i;
+  for (i = 0; i < tx_size_wide_unit[tx_size]; ++i) a[i] = a[0];
+
+  for (i = 0; i < tx_size_high_unit[tx_size]; ++i) l[i] = l[0];
+#endif
 }
 
 static void encode_block_intra_and_set_context(int plane, int block,
@@ -1035,7 +1032,7 @@ static void encode_block_intra_and_set_context(int plane, int block,
   MACROBLOCK *x = args->x;
   ENTROPY_CONTEXT *a = &args->ta[blk_col];
   ENTROPY_CONTEXT *l = &args->tl[blk_row];
-  av1_set_txb_context(x, plane, block, plane_bsize, tx_size, a, l);
+  av1_set_txb_context(x, plane, block, tx_size, a, l);
 }
 
 void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,

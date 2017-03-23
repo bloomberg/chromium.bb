@@ -63,8 +63,7 @@ int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
 
 void av1_subtract_plane(MACROBLOCK *x, BLOCK_SIZE bsize, int plane);
 
-void av1_set_txb_context(MACROBLOCK *x, int plane, int block,
-                         BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
+void av1_set_txb_context(MACROBLOCK *x, int plane, int block, TX_SIZE tx_size,
                          ENTROPY_CONTEXT *a, ENTROPY_CONTEXT *l);
 
 void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
