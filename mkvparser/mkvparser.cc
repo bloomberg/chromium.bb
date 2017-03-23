@@ -4992,13 +4992,13 @@ bool PrimaryChromaticity::Parse(IMkvReader* reader, long long read_pos,
   const long long parse_status =
       UnserializeFloat(reader, read_pos, value_size, parser_value);
 
-  if (parse_status < 0 || parser_value < FLT_MIN || parser_value > FLT_MAX)
+  // Valid range is [0, 1]. Make sure the double is representable as a float
+  // before casting.
+  if (parse_status < 0 || parser_value < 0.0 || parser_value > 1.0 ||
+      (parser_value > 0.0 && parser_value < FLT_MIN))
     return false;
 
   *value = static_cast<float>(parser_value);
-
-  if (*value < 0.0 || *value > 1.0)
-    return false;
 
   return true;
 }
@@ -5230,7 +5230,9 @@ bool Projection::Parse(IMkvReader* reader, long long start, long long size,
       double value = 0;
       const long long value_parse_status =
           UnserializeFloat(reader, read_pos, child_size, value);
-      if (value_parse_status < 0 || value < FLT_MIN || value > FLT_MAX) {
+      // Make sure value is representable as a float before casting.
+      if (value_parse_status < 0 || value < -FLT_MAX || value > FLT_MAX ||
+          (value > 0.0 && value < FLT_MIN)) {
         return false;
       }
 
