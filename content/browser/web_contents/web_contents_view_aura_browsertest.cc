@@ -44,7 +44,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/base_event_utils.h"
-#include "ui/events/event_processor.h"
+#include "ui/events/event_sink.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
 
@@ -460,7 +460,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   EXPECT_EQ(1, GetCurrentIndex());
 
   aura::Window* content = web_contents->GetContentNativeView();
-  ui::EventProcessor* dispatcher = content->GetHost()->event_processor();
+  ui::EventSink* sink = content->GetHost()->event_sink();
   gfx::Rect bounds = content->GetBoundsInRootWindow();
 
   base::TimeTicks timestamp = ui::EventTimeForNow();
@@ -468,7 +468,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
       ui::ET_TOUCH_PRESSED,
       gfx::Point(bounds.x() + bounds.width() / 2, bounds.y() + 5), timestamp,
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
-  ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&press);
+  ui::EventDispatchDetails details = sink->OnEventFromSource(&press);
   ASSERT_FALSE(details.dispatcher_destroyed);
   EXPECT_EQ(1, GetCurrentIndex());
 
@@ -477,7 +477,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
       ui::ET_TOUCH_MOVED, gfx::Point(bounds.right() - 10, bounds.y() + 5),
       timestamp,
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
-  details = dispatcher->OnEventFromSource(&move1);
+  details = sink->OnEventFromSource(&move1);
   ASSERT_FALSE(details.dispatcher_destroyed);
   EXPECT_EQ(1, GetCurrentIndex());
 
@@ -489,7 +489,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
     ui::TouchEvent inc(
         ui::ET_TOUCH_MOVED, gfx::Point(x, bounds.y() + 5), timestamp,
         ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
-    details = dispatcher->OnEventFromSource(&inc);
+    details = sink->OnEventFromSource(&inc);
     ASSERT_FALSE(details.dispatcher_destroyed);
     EXPECT_EQ(1, GetCurrentIndex());
   }
@@ -499,7 +499,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
     ui::TouchEvent inc(
         ui::ET_TOUCH_MOVED, gfx::Point(x, bounds.y() + 5), timestamp,
         ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
-    details = dispatcher->OnEventFromSource(&inc);
+    details = sink->OnEventFromSource(&inc);
     ASSERT_FALSE(details.dispatcher_destroyed);
     EXPECT_EQ(1, GetCurrentIndex());
   }
@@ -509,7 +509,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
     ui::TouchEvent inc(
         ui::ET_TOUCH_MOVED, gfx::Point(x, bounds.y() + 5), timestamp,
         ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
-    details = dispatcher->OnEventFromSource(&inc);
+    details = sink->OnEventFromSource(&inc);
     ASSERT_FALSE(details.dispatcher_destroyed);
     EXPECT_EQ(1, GetCurrentIndex());
   }
@@ -997,7 +997,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, MAYBE_VerticalOverscroll) {
       ui::ScopedAnimationDurationScaleMode::FAST_DURATION);
 
   aura::Window* content = web_contents->GetContentNativeView();
-  ui::EventProcessor* dispatcher = content->GetHost()->event_processor();
+  ui::EventSink* sink = content->GetHost()->event_sink();
   gfx::Rect bounds = content->GetBoundsInRootWindow();
 
   // Overscroll horizontally.
@@ -1008,7 +1008,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, MAYBE_VerticalOverscroll) {
     ui::TouchEvent press(
         ui::ET_TOUCH_PRESSED, location, timestamp,
         ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
-    ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&press);
+    ui::EventDispatchDetails details = sink->OnEventFromSource(&press);
     ASSERT_FALSE(details.dispatcher_destroyed);
     WaitAFrame();
     location -= gfx::Vector2d(kXStep, 0);
@@ -1018,7 +1018,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, MAYBE_VerticalOverscroll) {
       ui::TouchEvent inc(
           ui::ET_TOUCH_MOVED, location, timestamp,
           ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
-      details = dispatcher->OnEventFromSource(&inc);
+      details = sink->OnEventFromSource(&inc);
       ASSERT_FALSE(details.dispatcher_destroyed);
       WaitAFrame();
       location -= gfx::Vector2d(10, 0);
@@ -1028,7 +1028,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, MAYBE_VerticalOverscroll) {
     ui::TouchEvent release(
         ui::ET_TOUCH_RELEASED, location, timestamp,
         ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
-    details = dispatcher->OnEventFromSource(&release);
+    details = sink->OnEventFromSource(&release);
     ASSERT_FALSE(details.dispatcher_destroyed);
     WaitAFrame();
 
@@ -1046,7 +1046,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, MAYBE_VerticalOverscroll) {
     ui::TouchEvent press(
         ui::ET_TOUCH_PRESSED, location, timestamp,
         ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
-    ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&press);
+    ui::EventDispatchDetails details = sink->OnEventFromSource(&press);
     ASSERT_FALSE(details.dispatcher_destroyed);
     WaitAFrame();
     location += gfx::Vector2d(0, kYStep);
@@ -1056,7 +1056,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, MAYBE_VerticalOverscroll) {
       ui::TouchEvent inc(
           ui::ET_TOUCH_MOVED, location, timestamp,
           ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
-      details = dispatcher->OnEventFromSource(&inc);
+      details = sink->OnEventFromSource(&inc);
       ASSERT_FALSE(details.dispatcher_destroyed);
       WaitAFrame();
       location += gfx::Vector2d(0, kYStep);
@@ -1066,7 +1066,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, MAYBE_VerticalOverscroll) {
     ui::TouchEvent release(
         ui::ET_TOUCH_RELEASED, location, timestamp,
         ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
-    details = dispatcher->OnEventFromSource(&release);
+    details = sink->OnEventFromSource(&release);
     ASSERT_FALSE(details.dispatcher_destroyed);
     WaitAFrame();
 
@@ -1086,7 +1086,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, MAYBE_VerticalOverscroll) {
     ui::TouchEvent press(
         ui::ET_TOUCH_PRESSED, location, timestamp,
         ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
-    ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&press);
+    ui::EventDispatchDetails details = sink->OnEventFromSource(&press);
     ASSERT_FALSE(details.dispatcher_destroyed);
     WaitAFrame();
     location += gfx::Vector2d(0, kYStep);
@@ -1096,7 +1096,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, MAYBE_VerticalOverscroll) {
       ui::TouchEvent inc(
           ui::ET_TOUCH_MOVED, location, timestamp,
           ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
-      details = dispatcher->OnEventFromSource(&inc);
+      details = sink->OnEventFromSource(&inc);
       ASSERT_FALSE(details.dispatcher_destroyed);
       WaitAFrame();
       location += gfx::Vector2d(0, kYStep);
@@ -1107,7 +1107,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, MAYBE_VerticalOverscroll) {
       ui::TouchEvent inc(
           ui::ET_TOUCH_MOVED, location, timestamp,
           ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
-      details = dispatcher->OnEventFromSource(&inc);
+      details = sink->OnEventFromSource(&inc);
       ASSERT_FALSE(details.dispatcher_destroyed);
       WaitAFrame();
       location += gfx::Vector2d(kXStep, 0);
@@ -1117,7 +1117,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, MAYBE_VerticalOverscroll) {
     ui::TouchEvent release(
         ui::ET_TOUCH_RELEASED, location, timestamp,
         ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
-    details = dispatcher->OnEventFromSource(&release);
+    details = sink->OnEventFromSource(&release);
     ASSERT_FALSE(details.dispatcher_destroyed);
     WaitAFrame();
 

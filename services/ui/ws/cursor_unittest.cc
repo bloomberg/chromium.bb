@@ -90,8 +90,11 @@ class CursorTest : public testing::Test {
     WindowManagerDisplayRoot* active_display_root =
         display->GetActiveWindowManagerDisplayRoot();
     ASSERT_TRUE(active_display_root);
-    static_cast<PlatformDisplayDelegate*>(display)->OnEvent(PointerEvent(
-        MouseEvent(ET_MOUSE_MOVED, p, p, base::TimeTicks(), 0, 0)));
+    PointerEvent event(
+        MouseEvent(ET_MOUSE_MOVED, p, p, base::TimeTicks(), 0, 0));
+    ignore_result(static_cast<PlatformDisplayDelegate*>(display)
+                      ->GetEventSink()
+                      ->OnEventFromSource(&event));
     WindowManagerState* wms = active_display_root->window_manager_state();
     wms->OnEventAck(wms->window_tree(), mojom::EventResult::HANDLED);
   }

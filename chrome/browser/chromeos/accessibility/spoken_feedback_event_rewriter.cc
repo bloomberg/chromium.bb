@@ -17,7 +17,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/content_accelerators/accelerator_util.h"
 #include "ui/events/event.h"
-#include "ui/events/event_processor.h"
+#include "ui/events/event_sink.h"
 
 SpokenFeedbackEventRewriterDelegate::SpokenFeedbackEventRewriterDelegate() {}
 
@@ -70,10 +70,10 @@ void SpokenFeedbackEventRewriterDelegate::HandleKeyboardEvent(
       (key_event.key_code() <= ui::VKEY_F12))
     return;
 
-  ui::EventProcessor* processor =
-      ash::Shell::GetPrimaryRootWindow()->GetHost()->event_processor();
+  ui::EventSink* sink =
+      ash::Shell::GetPrimaryRootWindow()->GetHost()->event_sink();
 
-  if (processor->OnEventFromSource(&key_event).dispatcher_destroyed) {
+  if (sink->OnEventFromSource(&key_event).dispatcher_destroyed) {
     VLOG(0) << "Undispatched key " << key_event.key_code()
             << " due to destroyed dispatcher.";
   }

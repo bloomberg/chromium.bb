@@ -210,14 +210,13 @@ bool AshWindowTreeHostX11::CanDispatchEvent(const ui::PlatformEvent& event) {
 void AshWindowTreeHostX11::TranslateAndDispatchLocatedEvent(
     ui::LocatedEvent* event) {
   TranslateLocatedEvent(event);
-  SendEventToProcessor(event);
+  SendEventToSink(event);
 }
 
 ui::EventDispatchDetails AshWindowTreeHostX11::DispatchKeyEventPostIME(
     ui::KeyEvent* event) {
   input_method_handler()->SetPostIME(true);
-  ui::EventDispatchDetails details =
-      event_processor()->OnEventFromSource(event);
+  ui::EventDispatchDetails details = event_sink()->OnEventFromSource(event);
   if (!details.dispatcher_destroyed)
     input_method_handler()->SetPostIME(false);
   return details;

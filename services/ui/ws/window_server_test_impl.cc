@@ -68,7 +68,9 @@ void WindowServerTestImpl::DispatchEvent(int64_t display_id,
     return;
   }
 
-  static_cast<PlatformDisplayDelegate*>(display)->OnEvent(*event.get());
+  ignore_result(static_cast<PlatformDisplayDelegate*>(display)
+                    ->GetEventSink()
+                    ->OnEventFromSource(event.get()));
   cb.Run(true);
 }
 

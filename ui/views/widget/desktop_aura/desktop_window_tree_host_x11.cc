@@ -1789,12 +1789,12 @@ void DesktopWindowTreeHostX11::DispatchMouseEvent(ui::MouseEvent* event) {
     FlashFrame(false);
 
   if (!g_current_capture || g_current_capture == this) {
-    SendEventToProcessor(event);
+    SendEventToSink(event);
   } else {
     // Another DesktopWindowTreeHostX11 has installed itself as
     // capture. Translate the event's location and dispatch to the other.
     ConvertEventToDifferentHost(event, g_current_capture);
-    g_current_capture->SendEventToProcessor(event);
+    g_current_capture->SendEventToSink(event);
   }
 }
 
@@ -1802,9 +1802,9 @@ void DesktopWindowTreeHostX11::DispatchTouchEvent(ui::TouchEvent* event) {
   if (g_current_capture && g_current_capture != this &&
       event->type() == ui::ET_TOUCH_PRESSED) {
     ConvertEventToDifferentHost(event, g_current_capture);
-    g_current_capture->SendEventToProcessor(event);
+    g_current_capture->SendEventToSink(event);
   } else {
-    SendEventToProcessor(event);
+    SendEventToSink(event);
   }
 }
 
@@ -2140,7 +2140,7 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
         case ui::ET_SCROLL_FLING_CANCEL:
         case ui::ET_SCROLL: {
           ui::ScrollEvent scrollev(xev);
-          SendEventToProcessor(&scrollev);
+          SendEventToSink(&scrollev);
           break;
         }
         case ui::ET_KEY_PRESSED:

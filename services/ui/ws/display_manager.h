@@ -17,6 +17,7 @@
 #include "ui/display/display.h"
 
 namespace ui {
+class EventRewriter;
 namespace ws {
 
 class CursorLocationManager;
@@ -99,6 +100,9 @@ class DisplayManager : public UserIdTrackerObserver,
 
   WindowServer* window_server_;
   UserIdTracker* user_id_tracker_;
+
+  // For rewriting ChromeOS function keys.
+  std::unique_ptr<ui::EventRewriter> event_rewriter_;
 
   // Displays are initially added to |pending_displays_|. When the display is
   // initialized it is moved to |displays_|. WindowServer owns the Displays.

@@ -17,6 +17,7 @@
 
 namespace ui {
 
+class EventSink;
 class ImageCursors;
 class LocatedEvent;
 class PlatformWindow;
@@ -31,6 +32,9 @@ class PlatformDisplayDefault : public PlatformDisplay,
   PlatformDisplayDefault(ServerWindow* root_window,
                          const display::ViewportMetrics& metrics);
   ~PlatformDisplayDefault() override;
+
+  // EventSource::
+  EventSink* GetEventSink() override;
 
   // PlatformDisplay:
   void Init(PlatformDisplayDelegate* delegate) override;

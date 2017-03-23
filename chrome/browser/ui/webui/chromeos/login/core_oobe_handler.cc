@@ -42,6 +42,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/events/event_sink.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/keyboard/keyboard_controller.h"
 
@@ -414,8 +415,8 @@ void CoreOobeHandler::OnEnterpriseInfoUpdated(
   CallJSOrDefer("setEnterpriseInfo", message_text, asset_id);
 }
 
-ui::EventProcessor* CoreOobeHandler::GetEventProcessor() {
-  return ash::Shell::GetPrimaryRootWindow()->GetHost()->event_processor();
+ui::EventSink* CoreOobeHandler::GetEventSink() {
+  return ash::Shell::GetPrimaryRootWindow()->GetHost()->event_sink();
 }
 
 void CoreOobeHandler::UpdateLabel(const std::string& id,
@@ -477,7 +478,7 @@ void CoreOobeHandler::HandleRaiseTabKeyEvent(bool reverse) {
   ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_TAB, ui::EF_NONE);
   if (reverse)
     event.set_flags(ui::EF_SHIFT_DOWN);
-  SendEventToProcessor(&event);
+  SendEventToSink(&event);
 }
 
 void CoreOobeHandler::HandleSetOobeBootstrappingSlave() {

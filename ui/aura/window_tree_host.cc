@@ -71,8 +71,8 @@ void WindowTreeHost::RemoveObserver(WindowTreeHostObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-ui::EventProcessor* WindowTreeHost::event_processor() {
-  return dispatcher();
+ui::EventSink* WindowTreeHost::event_sink() {
+  return dispatcher_.get();
 }
 
 gfx::Transform WindowTreeHost::GetRootTransform() const {
@@ -194,7 +194,7 @@ void WindowTreeHost::SetSharedInputMethod(ui::InputMethod* input_method) {
 
 ui::EventDispatchDetails WindowTreeHost::DispatchKeyEventPostIME(
     ui::KeyEvent* event) {
-  return SendEventToProcessor(event);
+  return SendEventToSink(event);
 }
 
 void WindowTreeHost::Show() {
@@ -329,8 +329,8 @@ gfx::ICCProfile WindowTreeHost::GetICCProfileForCurrentDisplay() {
   return gfx::ICCProfile::FromBestMonitor();
 }
 
-ui::EventProcessor* WindowTreeHost::GetEventProcessor() {
-  return event_processor();
+ui::EventSink* WindowTreeHost::GetEventSink() {
+  return dispatcher_.get();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -17,7 +17,7 @@
 #include "ui/base/ime/input_method_base.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_flags.h"
-#include "ui/events/event_processor.h"
+#include "ui/events/event_sink.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/dom_key.h"
@@ -39,7 +39,7 @@ void SendProcessKeyEvent(ui::EventType type,
                      ui::EF_IS_SYNTHESIZED, ui::DomKey::PROCESS,
                      ui::EventTimeForNow());
   ui::EventDispatchDetails details =
-      host->event_processor()->OnEventFromSource(&event);
+      host->event_sink()->OnEventFromSource(&event);
   CHECK(!details.dispatcher_destroyed);
 }
 
@@ -267,12 +267,12 @@ bool MoveCursor(int swipe_direction,
                              modifier_flags, domkeyx,
                              ui::EventTimeForNow());
     ui::EventDispatchDetails details =
-        host->event_processor()->OnEventFromSource(&press_event);
+        host->event_sink()->OnEventFromSource(&press_event);
     CHECK(!details.dispatcher_destroyed);
     ui::KeyEvent release_event(ui::ET_KEY_RELEASED, codex, domcodex,
                                modifier_flags, domkeyx,
                                ui::EventTimeForNow());
-    details = host->event_processor()->OnEventFromSource(&release_event);
+    details = host->event_sink()->OnEventFromSource(&release_event);
     CHECK(!details.dispatcher_destroyed);
   }
 
@@ -286,12 +286,12 @@ bool MoveCursor(int swipe_direction,
                              modifier_flags, domkeyy,
                              ui::EventTimeForNow());
     ui::EventDispatchDetails details =
-        host->event_processor()->OnEventFromSource(&press_event);
+        host->event_sink()->OnEventFromSource(&press_event);
     CHECK(!details.dispatcher_destroyed);
     ui::KeyEvent release_event(ui::ET_KEY_RELEASED, codey, domcodey,
                                modifier_flags, domkeyy,
                                ui::EventTimeForNow());
-    details = host->event_processor()->OnEventFromSource(&release_event);
+    details = host->event_sink()->OnEventFromSource(&release_event);
     CHECK(!details.dispatcher_destroyed);
   }
   return true;
@@ -358,7 +358,7 @@ bool SendKeyEvent(const std::string type,
       input_method->DispatchKeyEvent(&event);
     } else {
       ui::EventDispatchDetails details =
-          host->event_processor()->OnEventFromSource(&event);
+          host->event_sink()->OnEventFromSource(&event);
       CHECK(!details.dispatcher_destroyed);
     }
   }

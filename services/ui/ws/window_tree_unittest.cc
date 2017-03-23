@@ -147,7 +147,8 @@ class WindowTreeTest : public testing::Test {
   }
 
   void DispatchEventWithoutAck(const ui::Event& event) {
-    DisplayTestApi(display()).OnEvent(event);
+    std::unique_ptr<Event> tmp = ui::Event::Clone(event);
+    DisplayTestApi(display()).OnEvent(tmp.get());
   }
 
   void set_window_manager_internal(WindowTree* tree,

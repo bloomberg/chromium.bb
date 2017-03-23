@@ -16,30 +16,30 @@ class Event;
 // Return status of EventRewriter operations; see that class below.
 enum EventRewriteStatus {
   // Nothing was done; no rewritten event returned. Pass the original
-  // event to later rewriters, or send it to the EventProcessor if this
+  // event to later rewriters, or send it to the EventSink if this
   // was the final rewriter.
   EVENT_REWRITE_CONTINUE,
 
   // The event has been rewritten. Send the rewritten event to the
-  // EventProcessor instead of the original event (without sending
+  // EventSink instead of the original event (without sending
   // either to any later rewriters).
   EVENT_REWRITE_REWRITTEN,
 
   // The event should be discarded, neither passing it to any later
-  // rewriters nor sending it to the EventProcessor.
+  // rewriters nor sending it to the EventSink.
   EVENT_REWRITE_DISCARD,
 
   // The event has been rewritten. As for EVENT_REWRITE_REWRITTEN,
-  // send the rewritten event to the EventProcessor instead of the
-  // original event (without sending either to any later rewriters).
+  // send the rewritten event to the EventSink instead of the original
+  // event (without sending either to any later rewriters).
   // In addition the rewriter has one or more additional new events
   // to be retrieved using |NextDispatchEvent()| and sent to the
-  // EventProcessor.
+  // EventSink.
   EVENT_REWRITE_DISPATCH_ANOTHER,
 };
 
 // EventRewriter provides a mechanism for Events to be rewritten
-// before being dispatched from EventSource to EventProcessor.
+// before being dispatched from EventSource to EventSink.
 class EVENTS_EXPORT EventRewriter {
  public:
   virtual ~EventRewriter() {}

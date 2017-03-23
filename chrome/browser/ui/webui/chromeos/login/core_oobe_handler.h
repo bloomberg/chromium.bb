@@ -25,7 +25,7 @@ class ListValue;
 }
 
 namespace ui {
-class EventProcessor;
+class EventSink;
 }
 
 namespace chromeos {
@@ -58,7 +58,7 @@ class CoreOobeHandler : public BaseWebUIHandler,
                                const std::string& asset_id) override;
 
   // ui::EventSource implementation:
-  ui::EventProcessor* GetEventProcessor() override;
+  ui::EventSink* GetEventSink() override;
 
   // Show or hide OOBE UI.
   void ShowOobeUI(bool show);

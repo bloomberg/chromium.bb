@@ -52,6 +52,10 @@ PlatformDisplayDefault::~PlatformDisplayDefault() {
   platform_window_.reset();
 }
 
+EventSink* PlatformDisplayDefault::GetEventSink() {
+  return delegate_->GetEventSink();
+}
+
 void PlatformDisplayDefault::Init(PlatformDisplayDelegate* delegate) {
   delegate_ = delegate;
 
@@ -176,14 +180,18 @@ void PlatformDisplayDefault::DispatchEvent(ui::Event* event) {
   if (event->IsScrollEvent()) {
     // TODO(moshayedi): crbug.com/602859. Dispatch scroll events as
     // they are once we have proper support for scroll events.
-    delegate_->OnEvent(
-        ui::PointerEvent(ui::MouseWheelEvent(*event->AsScrollEvent())));
+
+    ui::PointerEvent pointer_event(
+        ui::MouseWheelEvent(*event->AsScrollEvent()));
+    SendEventToSink(&pointer_event);
   } else if (event->IsMouseEvent()) {
-    delegate_->OnEvent(ui::PointerEvent(*event->AsMouseEvent()));
+    ui::PointerEvent pointer_event(*event->AsMouseEvent());
+    SendEventToSink(&pointer_event);
   } else if (event->IsTouchEvent()) {
-    delegate_->OnEvent(ui::PointerEvent(*event->AsTouchEvent()));
+    ui::PointerEvent pointer_event(*event->AsTouchEvent());
+    SendEventToSink(&pointer_event);
   } else {
-    delegate_->OnEvent(*event);
+    SendEventToSink(event);
   }
 
 #if defined(USE_X11) || defined(USE_OZONE)
@@ -208,7 +216,7 @@ void PlatformDisplayDefault::DispatchEvent(ui::Event* event) {
     // example, from 'M' to '^M'.
     DCHECK_EQ(key_press_event->key_code(), char_event.key_code());
     DCHECK_EQ(key_press_event->flags(), char_event.flags());
-    delegate_->OnEvent(char_event);
+    SendEventToSink(&char_event);
   }
 #endif
 }

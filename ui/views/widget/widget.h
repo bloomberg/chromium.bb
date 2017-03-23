@@ -829,7 +829,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
       const gfx::Point& location) override;
 
   // Overridden from ui::EventSource:
-  ui::EventProcessor* GetEventProcessor() override;
+  ui::EventSink* GetEventSink() override;
 
   // Overridden from FocusTraversable:
   FocusSearch* GetFocusSearch() override;

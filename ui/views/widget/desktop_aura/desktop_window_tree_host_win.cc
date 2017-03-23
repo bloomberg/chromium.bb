@@ -832,7 +832,7 @@ void DesktopWindowTreeHostWin::HandleNativeBlur(HWND focused_window) {
 }
 
 bool DesktopWindowTreeHostWin::HandleMouseEvent(const ui::MouseEvent& event) {
-  SendEventToProcessor(const_cast<ui::MouseEvent*>(&event));
+  SendEventToSink(const_cast<ui::MouseEvent*>(&event));
   return event.handled();
 }
 
@@ -862,11 +862,11 @@ void DesktopWindowTreeHostWin::HandleTouchEvent(
                                   static_cast<View*>(NULL));
       target_event.set_location(gfx::Point(target_location));
       target_event.set_root_location(target_event.location());
-      target->SendEventToProcessor(&target_event);
+      target->SendEventToSink(&target_event);
       return;
     }
   }
-  SendEventToProcessor(const_cast<ui::TouchEvent*>(&event));
+  SendEventToSink(const_cast<ui::TouchEvent*>(&event));
 }
 
 bool DesktopWindowTreeHostWin::HandleIMEMessage(UINT message,
@@ -922,7 +922,7 @@ void DesktopWindowTreeHostWin::PostHandleMSG(UINT message,
 
 bool DesktopWindowTreeHostWin::HandleScrollEvent(
     const ui::ScrollEvent& event) {
-  SendEventToProcessor(const_cast<ui::ScrollEvent*>(&event));
+  SendEventToSink(const_cast<ui::ScrollEvent*>(&event));
   return event.handled();
 }
 

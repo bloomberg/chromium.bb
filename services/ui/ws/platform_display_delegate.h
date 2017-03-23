@@ -11,7 +11,7 @@ class Display;
 
 namespace ui {
 
-class Event;
+class EventSink;
 
 namespace ws {
 
@@ -28,11 +28,11 @@ class PlatformDisplayDelegate {
   // Returns the root window of this display.
   virtual ServerWindow* GetRootWindow() = 0;
 
+  // Returns the event sink of this display;
+  virtual EventSink* GetEventSink() = 0;
+
   // Called once when the AcceleratedWidget is available for drawing.
   virtual void OnAcceleratedWidgetAvailable() = 0;
-
-  // Called when an event arrives.
-  virtual void OnEvent(const ui::Event& event) = 0;
 
   // Called when the Display loses capture.
   virtual void OnNativeCaptureLost() = 0;

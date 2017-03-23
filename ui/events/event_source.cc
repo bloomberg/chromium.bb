@@ -6,8 +6,8 @@
 
 #include <algorithm>
 
-#include "ui/events/event_processor.h"
 #include "ui/events/event_rewriter.h"
+#include "ui/events/event_sink.h"
 
 namespace ui {
 
@@ -29,7 +29,7 @@ void EventSource::RemoveEventRewriter(EventRewriter* rewriter) {
     rewriter_list_.erase(find);
 }
 
-EventDispatchDetails EventSource::SendEventToProcessor(Event* event) {
+EventDispatchDetails EventSource::SendEventToSink(Event* event) {
   std::unique_ptr<Event> rewritten_event;
   EventRewriteStatus status = EVENT_REWRITE_CONTINUE;
   EventRewriterList::const_iterator it = rewriter_list_.begin(),
@@ -48,7 +48,7 @@ EventDispatchDetails EventSource::SendEventToProcessor(Event* event) {
   }
   CHECK((it == end && !rewritten_event) || rewritten_event);
   EventDispatchDetails details =
-      DeliverEventToProcessor(rewritten_event ? rewritten_event.get() : event);
+      DeliverEventToSink(rewritten_event ? rewritten_event.get() : event);
   if (details.dispatcher_destroyed)
     return details;
 
@@ -59,7 +59,7 @@ EventDispatchDetails EventSource::SendEventToProcessor(Event* event) {
       return EventDispatchDetails();
     CHECK_NE(EVENT_REWRITE_CONTINUE, status);
     CHECK(new_event);
-    details = DeliverEventToProcessor(new_event.get());
+    details = DeliverEventToSink(new_event.get());
     if (details.dispatcher_destroyed)
       return details;
     rewritten_event = std::move(new_event);
@@ -67,10 +67,10 @@ EventDispatchDetails EventSource::SendEventToProcessor(Event* event) {
   return EventDispatchDetails();
 }
 
-EventDispatchDetails EventSource::DeliverEventToProcessor(Event* event) {
-  EventProcessor* processor = GetEventProcessor();
-  CHECK(processor);
-  return processor->OnEventFromSource(event);
+EventDispatchDetails EventSource::DeliverEventToSink(Event* event) {
+  EventSink* sink = GetEventSink();
+  CHECK(sink);
+  return sink->OnEventFromSource(event);
 }
 
 }  // namespace ui

@@ -12,7 +12,7 @@
 #include "base/trace_event/trace_event.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host_platform.h"
-#include "ui/events/event_processor.h"
+#include "ui/events/event_sink.h"
 #include "ui/events/null_event_targeter.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/transform.h"
@@ -112,14 +112,13 @@ void AshWindowTreeHostPlatform::DispatchEvent(ui::Event* event) {
   TRACE_EVENT0("input", "AshWindowTreeHostPlatform::DispatchEvent");
   if (event->IsLocatedEvent())
     TranslateLocatedEvent(static_cast<ui::LocatedEvent*>(event));
-  SendEventToProcessor(event);
+  SendEventToSink(event);
 }
 
 ui::EventDispatchDetails AshWindowTreeHostPlatform::DispatchKeyEventPostIME(
     ui::KeyEvent* event) {
   input_method_handler()->SetPostIME(true);
-  ui::EventDispatchDetails details =
-      event_processor()->OnEventFromSource(event);
+  ui::EventDispatchDetails details = event_sink()->OnEventFromSource(event);
   if (!details.dispatcher_destroyed)
     input_method_handler()->SetPostIME(false);
   return details;

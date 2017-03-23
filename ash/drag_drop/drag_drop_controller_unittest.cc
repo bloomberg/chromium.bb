@@ -262,7 +262,7 @@ void DispatchGesture(ui::EventType gesture_type, gfx::Point location) {
       Shell::GetPrimaryRootWindow()->GetHost()->GetEventSource();
   ui::EventSourceTestApi event_source_test(event_source);
   ui::EventDispatchDetails details =
-      event_source_test.SendEventToProcessor(&gesture_event);
+      event_source_test.SendEventToSink(&gesture_event);
   CHECK(!details.dispatcher_destroyed);
 }
 
@@ -691,7 +691,7 @@ TEST_F(DragDropControllerTest, SyntheticEventsDuringDragDrop) {
                               mouse_move_location, ui::EventTimeForNow(), 0, 0);
     ui::EventDispatchDetails details = Shell::GetPrimaryRootWindow()
                                            ->GetHost()
-                                           ->event_processor()
+                                           ->event_sink()
                                            ->OnEventFromSource(&mouse_move);
     ASSERT_FALSE(details.dispatcher_destroyed);
   }

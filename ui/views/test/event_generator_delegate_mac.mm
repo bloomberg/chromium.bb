@@ -262,7 +262,7 @@ class EventGeneratorDelegateMac : public ui::EventTarget,
   void OnScrollEvent(ui::ScrollEvent* event) override;
 
   // Overridden from ui::EventSource:
-  ui::EventProcessor* GetEventProcessor() override { return this; }
+  ui::EventSink* GetEventSink() override { return this; }
 
   // Overridden from ui::EventProcessor:
   ui::EventTarget* GetRootForEvent(ui::Event* event) override { return this; }

@@ -1883,7 +1883,7 @@ class EventBuffer : public ui::test::TestEventProcessor {
   }
 
  private:
-  // ui::EventProcessor overrides:
+  // ui::EventSink overrides:
   ui::EventDispatchDetails OnEventFromSource(ui::Event* event) override {
     events_.push_back(ui::Event::Clone(*event));
     return ui::EventDispatchDetails();
@@ -1899,9 +1899,9 @@ class TestEventSource : public ui::EventSource {
  public:
   explicit TestEventSource(ui::EventProcessor* processor)
       : processor_(processor) {}
-  ui::EventProcessor* GetEventProcessor() override { return processor_; }
+  ui::EventSink* GetEventSink() override { return processor_; }
   ui::EventDispatchDetails Send(ui::Event* event) {
-    return SendEventToProcessor(event);
+    return SendEventToSink(event);
   }
 
  private:

@@ -55,6 +55,7 @@ class TestPlatformDisplay : public PlatformDisplay {
     return gfx::kNullAcceleratedWidget;
   }
   FrameGenerator* GetFrameGenerator() override { return nullptr; }
+  EventSink* GetEventSink() override { return nullptr; }
 
  private:
   display::ViewportMetrics metrics_;

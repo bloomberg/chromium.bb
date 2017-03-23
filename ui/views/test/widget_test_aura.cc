@@ -146,8 +146,8 @@ gfx::Size WidgetTest::GetNativeWidgetMinimumContentSize(Widget* widget) {
 }
 
 // static
-ui::EventProcessor* WidgetTest::GetEventProcessor(Widget* widget) {
-  return widget->GetNativeWindow()->GetHost()->event_processor();
+ui::EventSink* WidgetTest::GetEventSink(Widget* widget) {
+  return widget->GetNativeWindow()->GetHost()->event_sink();
 }
 
 // static

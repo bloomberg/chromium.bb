@@ -13,6 +13,7 @@
 #include "base/strings/string16.h"
 #include "services/ui/display/viewport_metrics.h"
 #include "services/ui/public/interfaces/cursor.mojom.h"
+#include "ui/events/event_source.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace ui {
@@ -27,9 +28,9 @@ class PlatformDisplayFactory;
 class ServerWindow;
 
 // PlatformDisplay is used to connect the root ServerWindow to a display.
-class PlatformDisplay {
+class PlatformDisplay : public ui::EventSource {
  public:
-  virtual ~PlatformDisplay() {}
+  ~PlatformDisplay() override {}
 
   static std::unique_ptr<PlatformDisplay> Create(
       ServerWindow* root_window,

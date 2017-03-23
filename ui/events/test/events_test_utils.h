@@ -92,7 +92,7 @@ class EventSourceTestApi {
  public:
   explicit EventSourceTestApi(EventSource* event_source);
 
-  EventDispatchDetails SendEventToProcessor(Event* event) WARN_UNUSED_RESULT;
+  EventDispatchDetails SendEventToSink(Event* event) WARN_UNUSED_RESULT;
 
  private:
   EventSourceTestApi();

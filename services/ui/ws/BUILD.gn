@@ -151,6 +151,18 @@ static_library("lib") {
   if (use_ozone) {
     public_deps += [ "//ui/ozone:ozone" ]
   }
+  if (is_chromeos) {
+    public_deps += [ "//ui/chromeos/events" ]
+  }
+
+  # ui service should not depend on below components.
+  assert_no_deps = [
+    "//ash",
+    "//content/public/browser",
+    "//content/public/common",
+    "//ui/aura",
+    "//ui/views",
+  ]
 }
 
 static_library("test_interface") {

@@ -28,6 +28,7 @@
 #include "services/ui/ws/user_id_tracker_observer.h"
 #include "services/ui/ws/window_manager_window_tree_factory_set_observer.h"
 #include "ui/display/display.h"
+#include "ui/events/event_sink.h"
 
 namespace display {
 struct ViewportMetrics;
@@ -61,7 +62,8 @@ class Display : public PlatformDisplayDelegate,
                 public FocusControllerObserver,
                 public FocusControllerDelegate,
                 public UserIdTrackerObserver,
-                public WindowManagerWindowTreeFactorySetObserver {
+                public WindowManagerWindowTreeFactorySetObserver,
+                public EventSink {
  public:
   explicit Display(WindowServer* window_server);
   ~Display() override;
@@ -178,8 +180,8 @@ class Display : public PlatformDisplayDelegate,
 
   // PlatformDisplayDelegate:
   ServerWindow* GetRootWindow() override;
+  EventSink* GetEventSink() override;
   void OnAcceleratedWidgetAvailable() override;
-  void OnEvent(const ui::Event& event) override;
   void OnNativeCaptureLost() override;
 
   // FocusControllerDelegate:
@@ -198,6 +200,9 @@ class Display : public PlatformDisplayDelegate,
   // WindowManagerWindowTreeFactorySetObserver:
   void OnWindowManagerWindowTreeFactoryReady(
       WindowManagerWindowTreeFactory* factory) override;
+
+  // EventSink:
+  EventDispatchDetails OnEventFromSource(Event* event) override;
 
   std::unique_ptr<DisplayBinding> binding_;
   WindowServer* const window_server_;

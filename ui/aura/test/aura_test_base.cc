@@ -15,7 +15,7 @@
 #include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/events/event_dispatcher.h"
-#include "ui/events/event_processor.h"
+#include "ui/events/event_sink.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 
 namespace aura {
@@ -134,8 +134,7 @@ void AuraTestBase::ParentWindow(Window* window) {
 }
 
 bool AuraTestBase::DispatchEventUsingWindowDispatcher(ui::Event* event) {
-  ui::EventDispatchDetails details =
-      event_processor()->OnEventFromSource(event);
+  ui::EventDispatchDetails details = event_sink()->OnEventFromSource(event);
   CHECK(!details.dispatcher_destroyed);
   return event->handled();
 }

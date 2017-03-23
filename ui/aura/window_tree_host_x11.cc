@@ -246,7 +246,7 @@ uint32_t WindowTreeHostX11::DispatchEvent(const ui::PlatformEvent& event) {
       case ui::ET_KEY_PRESSED:
       case ui::ET_KEY_RELEASED: {
         ui::KeyEvent keydown_event(xev);
-        SendEventToProcessor(&keydown_event);
+        SendEventToSink(&keydown_event);
         break;
       }
       case ui::ET_MOUSE_MOVED:
@@ -535,13 +535,13 @@ void WindowTreeHostX11::DispatchXI2Event(const base::NativeEvent& event) {
     case ui::ET_SCROLL_FLING_CANCEL:
     case ui::ET_SCROLL: {
       ui::ScrollEvent scrollev(xev);
-      SendEventToProcessor(&scrollev);
+      SendEventToSink(&scrollev);
       break;
     }
     case ui::ET_KEY_PRESSED:
     case ui::ET_KEY_RELEASED: {
       ui::KeyEvent key_event(xev);
-      SendEventToProcessor(&key_event);
+      SendEventToSink(&key_event);
       break;
     }
     case ui::ET_UMA_DATA:
@@ -565,7 +565,7 @@ void WindowTreeHostX11::OnConfigureNotify() {}
 
 void WindowTreeHostX11::TranslateAndDispatchLocatedEvent(
     ui::LocatedEvent* event) {
-  SendEventToProcessor(event);
+  SendEventToSink(event);
 }
 
 // static

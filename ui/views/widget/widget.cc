@@ -1165,7 +1165,7 @@ int Widget::GetNonClientComponent(const gfx::Point& point) {
 }
 
 void Widget::OnKeyEvent(ui::KeyEvent* event) {
-  SendEventToProcessor(event);
+  SendEventToSink(event);
   if (!event->handled() && GetFocusManager() &&
       !GetFocusManager()->OnKeyEvent(*event)) {
     event->StopPropagation();
@@ -1174,7 +1174,7 @@ void Widget::OnKeyEvent(ui::KeyEvent* event) {
 
 // TODO(tdanderson): We should not be calling the OnMouse*() functions on
 //                   RootView from anywhere in Widget. Use
-//                   SendEventToProcessor() instead. See crbug.com/348087.
+//                   SendEventToSink() instead. See crbug.com/348087.
 void Widget::OnMouseEvent(ui::MouseEvent* event) {
   View* root_view = GetRootView();
   switch (event->type()) {
@@ -1275,7 +1275,7 @@ void Widget::OnMouseCaptureLost() {
 
 void Widget::OnScrollEvent(ui::ScrollEvent* event) {
   ui::ScrollEvent event_copy(*event);
-  SendEventToProcessor(&event_copy);
+  SendEventToSink(&event_copy);
 
   // Convert unhandled ui::ET_SCROLL events into ui::ET_MOUSEWHEEL events.
   if (!event_copy.handled() && event_copy.type() == ui::ET_SCROLL) {
@@ -1288,7 +1288,7 @@ void Widget::OnGestureEvent(ui::GestureEvent* event) {
   // We explicitly do not capture here. Not capturing enables multiple widgets
   // to get tap events at the same time. Views (such as tab dragging) may
   // explicitly capture.
-  SendEventToProcessor(event);
+  SendEventToSink(event);
 }
 
 bool Widget::ExecuteCommand(int command_id) {
@@ -1387,7 +1387,7 @@ bool Widget::ShouldDescendIntoChildForEventHandling(
 
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, ui::EventSource implementation:
-ui::EventProcessor* Widget::GetEventProcessor() {
+ui::EventSink* Widget::GetEventSink() {
   return root_view_.get();
 }
 

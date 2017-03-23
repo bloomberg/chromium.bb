@@ -30,7 +30,7 @@ class Transform;
 
 namespace ui {
 class Compositor;
-class EventProcessor;
+class EventSink;
 class InputMethod;
 class ViewProp;
 }
@@ -67,7 +67,7 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   Window* window() { return window_; }
   const Window* window() const { return window_; }
 
-  ui::EventProcessor* event_processor();
+  ui::EventSink* event_sink();
 
   WindowEventDispatcher* dispatcher() {
     return const_cast<WindowEventDispatcher*>(
@@ -228,7 +228,7 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   virtual gfx::ICCProfile GetICCProfileForCurrentDisplay();
 
   // Overridden from ui::EventSource:
-  ui::EventProcessor* GetEventProcessor() override;
+  ui::EventSink* GetEventSink() override;
 
  private:
   friend class test::WindowTreeHostTestApi;

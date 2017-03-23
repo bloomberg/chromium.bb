@@ -22,6 +22,11 @@
 #include "services/ui/ws/window_manager_window_tree_factory.h"
 #include "services/ui/ws/window_server_delegate.h"
 #include "services/ui/ws/window_tree.h"
+#include "ui/events/event_rewriter.h"
+
+#if defined(OS_CHROMEOS)
+#include "ui/chromeos/events/event_rewriter_chromeos.h"
+#endif
 
 namespace ui {
 namespace ws {
@@ -34,6 +39,13 @@ DisplayManager::DisplayManager(WindowServer* window_server,
     : window_server_(window_server),
       user_id_tracker_(user_id_tracker),
       next_root_id_(0) {
+#if defined(OS_CHROMEOS)
+  // TODO: http://crbug.com/701468 fix function key preferences and sticky keys.
+  ui::EventRewriterChromeOS::Delegate* delegate = nullptr;
+  ui::EventRewriter* sticky_keys_controller = nullptr;
+  event_rewriter_ = base::MakeUnique<ui::EventRewriterChromeOS>(
+      delegate, sticky_keys_controller);
+#endif
   user_id_tracker_->AddObserver(this);
 }
 
@@ -162,6 +174,8 @@ void DisplayManager::OnDisplayAcceleratedWidgetAvailable(Display* display) {
   const bool is_first_display = displays_.empty();
   displays_.insert(display);
   pending_displays_.erase(display);
+  if (event_rewriter_)
+    display->platform_display()->AddEventRewriter(event_rewriter_.get());
   window_server_->OnDisplayReady(display, is_first_display);
 }
 

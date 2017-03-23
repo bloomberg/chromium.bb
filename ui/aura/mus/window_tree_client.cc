@@ -161,11 +161,11 @@ void ConvertEventLocationToDip(int64_t display_id, ui::LocatedEvent* event) {
 }
 
 // Set the |target| to be the target window of this |event| and send it to
-// the EventProcessor.
+// the EventSink.
 void DispatchEventToTarget(ui::Event* event, WindowMus* target) {
   ui::Event::DispatcherApi dispatch_helper(event);
   dispatch_helper.set_target(target->GetWindow());
-  GetWindowTreeHostMus(target)->SendEventToProcessor(event);
+  GetWindowTreeHostMus(target)->SendEventToSink(event);
 }
 
 }  // namespace

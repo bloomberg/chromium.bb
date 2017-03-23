@@ -70,7 +70,7 @@ gfx::Size WidgetTest::GetNativeWidgetMinimumContentSize(Widget* widget) {
 }
 
 // static
-ui::EventProcessor* WidgetTest::GetEventProcessor(Widget* widget) {
+ui::EventSink* WidgetTest::GetEventSink(Widget* widget) {
   return static_cast<internal::RootView*>(widget->GetRootView());
 }
 

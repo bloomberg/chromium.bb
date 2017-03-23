@@ -63,10 +63,10 @@ class TestEventRewriteSource : public EventSource {
  public:
   explicit TestEventRewriteSource(EventProcessor* processor)
       : processor_(processor) {}
-  EventProcessor* GetEventProcessor() override { return processor_; }
+  EventProcessor* GetEventSink() override { return processor_; }
   void Send(EventType type) {
     std::unique_ptr<Event> event(new TestEvent(type));
-    (void)SendEventToProcessor(event.get());
+    SendEventToSink(event.get());
   }
 
  private:

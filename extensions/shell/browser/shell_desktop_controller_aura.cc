@@ -32,7 +32,7 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/display/screen.h"
-#include "ui/events/event_processor.h"
+#include "ui/events/event_sink.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/wm/core/base_focus_rules.h"
@@ -280,7 +280,7 @@ ui::EventDispatchDetails ShellDesktopControllerAura::DispatchKeyEventPostIME(
 
   // Send the event on to the host.
   ui::EventDispatchDetails details =
-      host_->event_processor()->OnEventFromSource(key_event);
+      host_->event_sink()->OnEventFromSource(key_event);
 
   // Clear the handler's PostIME flag for the next event.
   if (!details.dispatcher_destroyed)

@@ -716,7 +716,7 @@ void EventGenerator::DoDispatchEvent(ui::Event* event, bool async) {
           delegate()->GetEventSource(current_target_);
       ui::EventSourceTestApi event_source_test(event_source);
       ui::EventDispatchDetails details =
-          event_source_test.SendEventToProcessor(event);
+          event_source_test.SendEventToSink(event);
       CHECK(!details.dispatcher_destroyed);
     }
   }

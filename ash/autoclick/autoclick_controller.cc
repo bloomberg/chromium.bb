@@ -15,7 +15,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event.h"
 #include "ui/events/event_handler.h"
-#include "ui/events/event_processor.h"
+#include "ui/events/event_sink.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -192,9 +192,9 @@ void AutoclickControllerImpl::DoAutoclick(const gfx::Point& event_location,
                                ui::EF_LEFT_MOUSE_BUTTON);
 
   ui::EventDispatchDetails details =
-      host->event_processor()->OnEventFromSource(&press_event);
+      host->event_sink()->OnEventFromSource(&press_event);
   if (!details.dispatcher_destroyed)
-    details = host->event_processor()->OnEventFromSource(&release_event);
+    details = host->event_sink()->OnEventFromSource(&release_event);
   if (details.dispatcher_destroyed)
     return;
 }

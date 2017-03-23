@@ -180,10 +180,9 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
   }
 
  private:
-  void SendEventToProcessor(ui::Event* event) {
+  void SendEventToSink(ui::Event* event) {
     ui::EventSourceTestApi event_source_test(host_->GetEventSource());
-    ui::EventDispatchDetails details =
-        event_source_test.SendEventToProcessor(event);
+    ui::EventDispatchDetails details = event_source_test.SendEventToSink(event);
     if (details.dispatcher_destroyed)
       return;
   }
@@ -201,7 +200,7 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
     flags |= ui::EF_FINAL;
 
     ui::KeyEvent key_event(type, key_code, flags);
-    SendEventToProcessor(&key_event);
+    SendEventToSink(&key_event);
   }
 
   void PostMouseEvent(ui::EventType type,
@@ -225,7 +224,7 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
     // This hack is necessary to set the repeat count for clicks.
     ui::MouseEvent mouse_event2(&mouse_event);
 
-    SendEventToProcessor(&mouse_event2);
+    SendEventToSink(&mouse_event2);
   }
 
   WindowTreeHost* host_;

@@ -78,7 +78,7 @@ class AuraTestBase : public testing::Test,
 
   Window* root_window() { return helper_->root_window(); }
   WindowTreeHost* host() { return helper_->host(); }
-  ui::EventProcessor* event_processor() { return helper_->event_processor(); }
+  ui::EventSink* event_sink() { return helper_->event_sink(); }
   TestScreen* test_screen() { return helper_->test_screen(); }
 
   TestWindowTree* window_tree() { return helper_->window_tree(); }

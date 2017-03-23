@@ -45,7 +45,7 @@
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
-#include "ui/events/event_processor.h"
+#include "ui/events/event_sink.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/widget/widget.h"
@@ -641,22 +641,21 @@ TEST_F(AcceleratorControllerTest, ProcessOnce) {
   GetController()->Register({accelerator_a}, &target);
 
   // The accelerator is processed only once.
-  ui::EventProcessor* dispatcher =
-      Shell::GetPrimaryRootWindow()->GetHost()->event_processor();
+  ui::EventSink* sink = Shell::GetPrimaryRootWindow()->GetHost()->event_sink();
 
   ui::ScopedXI2Event key_event;
   key_event.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_A, 0);
   ui::KeyEvent key_event1(key_event);
-  ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&key_event1);
+  ui::EventDispatchDetails details = sink->OnEventFromSource(&key_event1);
   EXPECT_TRUE(key_event1.handled() || details.dispatcher_destroyed);
 
   ui::KeyEvent key_event2('A', ui::VKEY_A, ui::EF_NONE);
-  details = dispatcher->OnEventFromSource(&key_event2);
+  details = sink->OnEventFromSource(&key_event2);
   EXPECT_FALSE(key_event2.handled() || details.dispatcher_destroyed);
 
   key_event.InitKeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_A, 0);
   ui::KeyEvent key_event3(key_event);
-  details = dispatcher->OnEventFromSource(&key_event3);
+  details = sink->OnEventFromSource(&key_event3);
   EXPECT_FALSE(key_event3.handled() || details.dispatcher_destroyed);
   EXPECT_EQ(1, target.accelerator_pressed_count());
 }

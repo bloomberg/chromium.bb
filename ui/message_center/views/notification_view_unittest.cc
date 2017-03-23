@@ -497,8 +497,7 @@ TEST_F(NotificationViewTest, UpdateButtonCountTest) {
   ui::MouseEvent move(ui::ET_MOUSE_MOVED, cursor_location, cursor_location,
                       ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   ui::EventDispatchDetails details =
-      views::test::WidgetTest::GetEventProcessor(widget())->
-          OnEventFromSource(&move);
+      views::test::WidgetTest::GetEventSink(widget())->OnEventFromSource(&move);
   EXPECT_FALSE(details.dispatcher_destroyed);
 
   EXPECT_EQ(views::CustomButton::STATE_HOVERED,
@@ -551,8 +550,7 @@ TEST_F(NotificationViewTest, SettingsButtonTest) {
                       ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   widget()->OnMouseEvent(&move);
   ui::EventDispatchDetails details =
-      views::test::WidgetTest::GetEventProcessor(widget())
-          ->OnEventFromSource(&move);
+      views::test::WidgetTest::GetEventSink(widget())->OnEventFromSource(&move);
   EXPECT_FALSE(details.dispatcher_destroyed);
 
   EXPECT_EQ(views::CustomButton::STATE_HOVERED,

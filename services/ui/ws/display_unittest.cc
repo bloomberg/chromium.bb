@@ -266,10 +266,12 @@ TEST_F(DisplayTest, EventStateResetOnUserSwitch) {
   ASSERT_TRUE(active_wms);
   EXPECT_EQ(kTestId1, active_wms->user_id());
 
-  static_cast<PlatformDisplayDelegate*>(display)->OnEvent(ui::PointerEvent(
-      ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(20, 25),
-                     gfx::Point(20, 25), base::TimeTicks(),
-                     ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON)));
+  ui::PointerEvent pointer_event(ui::MouseEvent(
+      ui::ET_MOUSE_PRESSED, gfx::Point(20, 25), gfx::Point(20, 25),
+      base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+  ignore_result(static_cast<PlatformDisplayDelegate*>(display)
+                    ->GetEventSink()
+                    ->OnEventFromSource(&pointer_event));
 
   EXPECT_TRUE(EventDispatcherTestApi(active_wms->event_dispatcher())
                   .AreAnyPointersDown());

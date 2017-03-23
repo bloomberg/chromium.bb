@@ -14,7 +14,7 @@
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/events/event_processor.h"
+#include "ui/events/event_sink.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 
@@ -58,7 +58,7 @@ void SyntheticGestureTargetAura::DispatchWebTouchEventToPlatform(
     event->set_location_f(device_location);
     event->set_root_location_f(device_root_location);
     ui::EventDispatchDetails details =
-        host->event_processor()->OnEventFromSource(event.get());
+        host->event_sink()->OnEventFromSource(event.get());
     if (details.dispatcher_destroyed)
       break;
   }
@@ -78,7 +78,7 @@ void SyntheticGestureTargetAura::DispatchWebMouseWheelEventToPlatform(
   aura::Window* window = GetWindow();
   wheel_event.ConvertLocationToTarget(window, window->GetRootWindow());
   ui::EventDispatchDetails details =
-      window->GetHost()->event_processor()->OnEventFromSource(&wheel_event);
+      window->GetHost()->event_sink()->OnEventFromSource(&wheel_event);
   if (details.dispatcher_destroyed)
     return;
 }
@@ -159,7 +159,7 @@ void SyntheticGestureTargetAura::DispatchWebMouseEventToPlatform(
   aura::Window* window = GetWindow();
   mouse_event.ConvertLocationToTarget(window, window->GetRootWindow());
   ui::EventDispatchDetails details =
-      window->GetHost()->event_processor()->OnEventFromSource(&mouse_event);
+      window->GetHost()->event_sink()->OnEventFromSource(&mouse_event);
   if (details.dispatcher_destroyed)
     return;
 }

@@ -17,7 +17,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event.h"
-#include "ui/events/event_processor.h"
+#include "ui/events/event_sink.h"
 #include "ui/events/event_utils.h"
 
 namespace content {
@@ -43,14 +43,14 @@ class TouchAccessibilityBrowserTest : public ContentBrowserTest {
 
   void SendTouchExplorationEvent(int x, int y) {
     aura::Window* window = shell()->web_contents()->GetContentNativeView();
-    ui::EventProcessor* dispatcher = window->GetHost()->event_processor();
+    ui::EventSink* sink = window->GetHost()->event_sink();
     gfx::Rect bounds = window->GetBoundsInRootWindow();
     gfx::Point location(bounds.x() + x,  bounds.y() + y);
     int flags = ui::EF_TOUCH_ACCESSIBILITY;
     std::unique_ptr<ui::Event> mouse_move_event(
         new ui::MouseEvent(ui::ET_MOUSE_MOVED, location, location,
                            ui::EventTimeForNow(), flags, 0));
-    ignore_result(dispatcher->OnEventFromSource(mouse_move_event.get()));
+    ignore_result(sink->OnEventFromSource(mouse_move_event.get()));
   }
 
   DISALLOW_COPY_AND_ASSIGN(TouchAccessibilityBrowserTest);

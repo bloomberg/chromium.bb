@@ -31,7 +31,7 @@
 #include "ui/chromeos/ime/input_method_menu_item.h"
 #include "ui/chromeos/ime/input_method_menu_manager.h"
 #include "ui/events/event.h"
-#include "ui/events/event_processor.h"
+#include "ui/events/event_sink.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
@@ -331,9 +331,9 @@ bool InputMethodEngine::SendKeyEvent(ui::KeyEvent* event,
   if (event->key_code() == ui::VKEY_UNKNOWN)
     event->set_key_code(ui::DomKeycodeToKeyboardCode(code));
 
-  ui::EventProcessor* dispatcher =
-      ash::Shell::GetPrimaryRootWindow()->GetHost()->event_processor();
-  ui::EventDispatchDetails details = dispatcher->OnEventFromSource(event);
+  ui::EventSink* sink =
+      ash::Shell::GetPrimaryRootWindow()->GetHost()->event_sink();
+  ui::EventDispatchDetails details = sink->OnEventFromSource(event);
   return !details.dispatcher_destroyed;
 }
 

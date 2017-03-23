@@ -29,8 +29,8 @@ EventSourceTestApi::EventSourceTestApi(EventSource* event_source)
   DCHECK(event_source);
 }
 
-EventDispatchDetails EventSourceTestApi::SendEventToProcessor(Event* event) {
-  return event_source_->SendEventToProcessor(event);
+EventDispatchDetails EventSourceTestApi::SendEventToSink(Event* event) {
+  return event_source_->SendEventToSink(event);
 }
 
 }  // namespace ui
