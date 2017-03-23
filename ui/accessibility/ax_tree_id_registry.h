@@ -34,7 +34,7 @@ class AX_EXPORT AXTreeIDRegistry {
 
   using AXTreeID = int;
 
-  static const AXTreeID kNoAXTreeID;
+  static constexpr AXTreeID kNoAXTreeID = -1;
 
   // Get the single instance of this class.
   static AXTreeIDRegistry* GetInstance();

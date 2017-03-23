@@ -10,9 +10,6 @@
 namespace ui {
 
 // static
-const AXTreeIDRegistry::AXTreeID AXTreeIDRegistry::kNoAXTreeID = -1;
-
-// static
 AXTreeIDRegistry* AXTreeIDRegistry::GetInstance() {
   return base::Singleton<AXTreeIDRegistry>::get();
 }

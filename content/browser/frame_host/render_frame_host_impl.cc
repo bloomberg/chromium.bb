@@ -2101,6 +2101,9 @@ void RenderFrameHostImpl::OnAccessibilityEvents(
 
   RenderWidgetHostViewBase* view = GetViewForAccessibility();
 
+  if (frame_tree_node_->IsMainFrame() && view)
+    view->SetMainFrameAXTreeID(GetAXTreeID());
+
   AccessibilityMode accessibility_mode = delegate_->GetAccessibilityMode();
   if (!accessibility_mode.is_mode_off() && view && is_active()) {
     if (accessibility_mode.has_mode(AccessibilityMode::kNativeAPIs))
