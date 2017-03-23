@@ -11,6 +11,7 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/time/clock.h"
+#include "base/time/tick_clock.h"
 #include "base/timer/timer.h"
 #include "components/doodle/doodle_fetcher.h"
 #include "components/doodle/doodle_types.h"
@@ -38,7 +39,8 @@ class DoodleService : public KeyedService {
   DoodleService(PrefService* pref_service,
                 std::unique_ptr<DoodleFetcher> fetcher,
                 std::unique_ptr<base::OneShotTimer> expiry_timer,
-                std::unique_ptr<base::Clock> clock);
+                std::unique_ptr<base::Clock> clock,
+                std::unique_ptr<base::TickClock> tick_clock);
   ~DoodleService() override;
 
   // KeyedService implementation.
@@ -61,13 +63,43 @@ class DoodleService : public KeyedService {
   void Refresh();
 
  private:
+  // Note: Keep in sync with the corresponding enum in histograms.xml. Never
+  // remove values, and only insert new values at the end.
+  enum DownloadOutcome {
+    OUTCOME_NEW_DOODLE = 0,
+    OUTCOME_REVALIDATED_DOODLE = 1,
+    OUTCOME_CHANGED_DOODLE = 2,
+    OUTCOME_NO_DOODLE = 3,
+    OUTCOME_EXPIRED = 4,
+    OUTCOME_DOWNLOAD_ERROR = 5,
+    OUTCOME_PARSING_ERROR = 6,
+    // Insert new values here!
+    OUTCOME_COUNT = 7
+  };
+
+  static bool DownloadOutcomeIsSuccess(DownloadOutcome outcome);
+  static void RecordDownloadMetrics(DownloadOutcome outcome,
+                                    base::TimeDelta download_time);
+
+  static DownloadOutcome DetermineDownloadOutcome(
+      const base::Optional<DoodleConfig>& old_config,
+      const base::Optional<DoodleConfig>& new_config,
+      DoodleState state,
+      bool expired);
+
   // Callback for the fetcher.
-  void DoodleFetched(DoodleState state,
+  void DoodleFetched(base::TimeTicks start_time,
+                     DoodleState state,
                      base::TimeDelta time_to_live,
                      const base::Optional<DoodleConfig>& doodle_config);
 
+  DownloadOutcome HandleNewConfig(
+      DoodleState state,
+      base::TimeDelta time_to_live,
+      const base::Optional<DoodleConfig>& doodle_config);
+
   void UpdateCachedConfig(base::TimeDelta time_to_live,
-                          const base::Optional<DoodleConfig>& doodle_config);
+                          const base::Optional<DoodleConfig>& new_config);
 
   // Callback for the expiry timer.
   void DoodleExpired();
@@ -79,6 +111,7 @@ class DoodleService : public KeyedService {
 
   std::unique_ptr<base::OneShotTimer> expiry_timer_;
   std::unique_ptr<base::Clock> clock_;
+  std::unique_ptr<base::TickClock> tick_clock_;
 
   // The result of the last network fetch.
   base::Optional<DoodleConfig> cached_config_;

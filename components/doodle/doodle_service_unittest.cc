@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -89,7 +90,7 @@ class DoodleServiceTest : public testing::Test {
 
     service_ = base::MakeUnique<DoodleService>(
         &pref_service_, std::move(fetcher), std::move(expiry_timer),
-        task_runner_->GetMockClock());
+        task_runner_->GetMockClock(), task_runner_->GetMockTickClock());
   }
 
   DoodleService* service() { return service_.get(); }
@@ -354,6 +355,108 @@ TEST_F(DoodleServiceTest, DisregardsAlreadyExpiredConfigs) {
 
   // Remove the observer before the service gets destroyed.
   service()->RemoveObserver(&observer);
+}
+
+TEST_F(DoodleServiceTest, RecordsMetricsForSuccessfulDownload) {
+  base::HistogramTester histograms;
+
+  // Load a doodle config as usual, but let it take some time.
+  service()->Refresh();
+  task_runner()->FastForwardBy(base::TimeDelta::FromSeconds(5));
+  DoodleConfig config = CreateConfig(DoodleType::SIMPLE);
+  fetcher()->ServeAllCallbacks(DoodleState::AVAILABLE,
+                               base::TimeDelta::FromHours(1), config);
+  ASSERT_THAT(service()->config(), Eq(config));
+
+  // Metrics should have been recorded.
+  histograms.ExpectUniqueSample("Doodle.ConfigDownloadOutcome",
+                                0,  // OUTCOME_NEW_DOODLE
+                                1);
+  histograms.ExpectTotalCount("Doodle.ConfigDownloadTime", 1);
+  histograms.ExpectTimeBucketCount("Doodle.ConfigDownloadTime",
+                                   base::TimeDelta::FromSeconds(5), 1);
+}
+
+TEST_F(DoodleServiceTest, RecordsMetricsForEmptyDownload) {
+  base::HistogramTester histograms;
+
+  // Send a "no doodle" response after some time.
+  service()->Refresh();
+  task_runner()->FastForwardBy(base::TimeDelta::FromSeconds(5));
+  fetcher()->ServeAllCallbacks(DoodleState::NO_DOODLE, base::TimeDelta(),
+                               base::nullopt);
+  ASSERT_THAT(service()->config(), Eq(base::nullopt));
+
+  // Metrics should have been recorded.
+  histograms.ExpectUniqueSample("Doodle.ConfigDownloadOutcome",
+                                3,  // OUTCOME_NO_DOODLE
+                                1);
+  histograms.ExpectTotalCount("Doodle.ConfigDownloadTime", 1);
+  histograms.ExpectTimeBucketCount("Doodle.ConfigDownloadTime",
+                                   base::TimeDelta::FromSeconds(5), 1);
+}
+
+TEST_F(DoodleServiceTest, RecordsMetricsForFailedDownload) {
+  base::HistogramTester histograms;
+
+  // Let the download fail after some time.
+  service()->Refresh();
+  task_runner()->FastForwardBy(base::TimeDelta::FromSeconds(5));
+  fetcher()->ServeAllCallbacks(DoodleState::DOWNLOAD_ERROR, base::TimeDelta(),
+                               base::nullopt);
+  ASSERT_THAT(service()->config(), Eq(base::nullopt));
+
+  // The outcome should have been recorded, but not the time - we only record
+  // that for successful downloads.
+  histograms.ExpectUniqueSample("Doodle.ConfigDownloadOutcome",
+                                5,  // OUTCOME_DOWNLOAD_ERROR
+                                1);
+  histograms.ExpectTotalCount("Doodle.ConfigDownloadTime", 0);
+}
+
+TEST_F(DoodleServiceTest, DoesNotRecordMetricsAtStartup) {
+  // Creating the service should not emit any histogram samples.
+  base::HistogramTester histograms;
+  RecreateService();
+  ASSERT_THAT(service()->config(), Eq(base::nullopt));
+  histograms.ExpectTotalCount("Doodle.ConfigDownloadOutcome", 0);
+  histograms.ExpectTotalCount("Doodle.ConfigDownloadTime", 0);
+}
+
+TEST_F(DoodleServiceTest, DoesNotRecordMetricsAtStartupWithConfig) {
+  // Load a doodle config as usual.
+  service()->Refresh();
+  DoodleConfig config = CreateConfig(DoodleType::SIMPLE);
+  fetcher()->ServeAllCallbacks(DoodleState::AVAILABLE,
+                               base::TimeDelta::FromHours(1), config);
+  ASSERT_THAT(service()->config(), Eq(config));
+
+  // Recreating the service should not emit any histogram samples, even though
+  // a config gets loaded.
+  base::HistogramTester histograms;
+  RecreateService();
+  ASSERT_THAT(service()->config(), Eq(config));
+  histograms.ExpectTotalCount("Doodle.ConfigDownloadOutcome", 0);
+  histograms.ExpectTotalCount("Doodle.ConfigDownloadTime", 0);
+}
+
+TEST_F(DoodleServiceTest, DoesNotRecordMetricsWhenConfigExpires) {
+  // Load some doodle config.
+  service()->Refresh();
+  DoodleConfig config = CreateConfig(DoodleType::SIMPLE);
+  fetcher()->ServeAllCallbacks(DoodleState::AVAILABLE,
+                               base::TimeDelta::FromHours(1), config);
+  ASSERT_THAT(service()->config(), Eq(config));
+
+  base::HistogramTester histograms;
+
+  // Fast-forward time so that the config expires.
+  task_runner()->FastForwardBy(base::TimeDelta::FromHours(1));
+  ASSERT_THAT(service()->config(), Eq(base::nullopt));
+
+  // This should not have resulted in any metrics being emitted.
+  histograms.ExpectTotalCount("Doodle.ConfigDownloadOutcome", 0);
+  histograms.ExpectTotalCount("Doodle.ConfigDownloadTime", 0);
 }
 
 }  // namespace doodle

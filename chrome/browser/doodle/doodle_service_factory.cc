@@ -9,6 +9,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/time/default_clock.h"
+#include "base/time/default_tick_clock.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -51,5 +52,6 @@ KeyedService* DoodleServiceFactory::BuildServiceInstanceFor(
       base::Bind(&safe_json::SafeJsonParser::Parse));
   return new doodle::DoodleService(profile->GetPrefs(), std::move(fetcher),
                                    base::MakeUnique<base::OneShotTimer>(),
-                                   base::MakeUnique<base::DefaultClock>());
+                                   base::MakeUnique<base::DefaultClock>(),
+                                   base::MakeUnique<base::DefaultTickClock>());
 }
