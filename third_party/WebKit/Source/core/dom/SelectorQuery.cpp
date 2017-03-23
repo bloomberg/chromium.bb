@@ -230,15 +230,6 @@ inline bool ancestorHasClassName(ContainerNode& rootNode,
   return false;
 }
 
-// If returns true, traversalRoots has the elements that may match the selector
-// query.
-//
-// If returns false, traversalRoots has the rootNode parameter or descendants of
-// rootNode representing the subtree for which we can limit the querySelector
-// traversal.
-//
-// The travseralRoots may be empty, regardless of the returned bool value, if
-// this method finds that the selectors won't match any element.
 template <typename SelectorQueryTrait>
 void SelectorQuery::findTraverseRootsAndExecute(
     ContainerNode& rootNode,
@@ -265,18 +256,19 @@ void SelectorQuery::findTraverseRootsAndExecute(
       else if (!element || isRightmostSelector)
         adjustedNode = nullptr;
       if (isRightmostSelector) {
-        executeForTraverseRoot<SelectorQueryTrait>(
-            *m_selectors[0], adjustedNode, MatchesTraverseRoots, rootNode,
-            output);
+        if (!adjustedNode)
+          return;
+        element = toElement(adjustedNode);
+        if (selectorMatches(*m_selectors[0], *element, rootNode))
+          SelectorQueryTrait::appendElement(output, *element);
         return;
       }
 
       if (startFromParent && adjustedNode)
         adjustedNode = adjustedNode->parentNode();
 
-      executeForTraverseRoot<SelectorQueryTrait>(*m_selectors[0], adjustedNode,
-                                                 DoesNotMatchTraverseRoots,
-                                                 rootNode, output);
+      executeForTraverseRoot<SelectorQueryTrait>(adjustedNode, rootNode,
+                                                 output);
       return;
     }
 
@@ -288,23 +280,19 @@ void SelectorQuery::findTraverseRootsAndExecute(
         ClassElementList<AllElements> traverseRoots(rootNode,
                                                     selector->value());
         executeForTraverseRoots<SelectorQueryTrait>(
-            *m_selectors[0], traverseRoots, MatchesTraverseRoots, rootNode,
-            output);
+            traverseRoots, MatchesTraverseRoots, rootNode, output);
         return;
       }
       // Since there exists some ancestor element which has the class name, we
       // need to see all children of rootNode.
       if (ancestorHasClassName(rootNode, selector->value())) {
-        executeForTraverseRoot<SelectorQueryTrait>(*m_selectors[0], &rootNode,
-                                                   DoesNotMatchTraverseRoots,
-                                                   rootNode, output);
+        executeForTraverseRoot<SelectorQueryTrait>(&rootNode, rootNode, output);
         return;
       }
 
       ClassElementList<OnlyRoots> traverseRoots(rootNode, selector->value());
       executeForTraverseRoots<SelectorQueryTrait>(
-          *m_selectors[0], traverseRoots, DoesNotMatchTraverseRoots, rootNode,
-          output);
+          traverseRoots, DoesNotMatchTraverseRoots, rootNode, output);
       return;
     }
 
@@ -318,25 +306,19 @@ void SelectorQuery::findTraverseRootsAndExecute(
       startFromParent = false;
   }
 
-  executeForTraverseRoot<SelectorQueryTrait>(
-      *m_selectors[0], &rootNode, DoesNotMatchTraverseRoots, rootNode, output);
+  executeForTraverseRoot<SelectorQueryTrait>(&rootNode, rootNode, output);
 }
 
 template <typename SelectorQueryTrait>
 void SelectorQuery::executeForTraverseRoot(
-    const CSSSelector& selector,
     ContainerNode* traverseRoot,
-    MatchTraverseRootState matchTraverseRoot,
     ContainerNode& rootNode,
     typename SelectorQueryTrait::OutputType& output) const {
+  DCHECK_EQ(m_selectors.size(), 1u);
+
   if (!traverseRoot)
     return;
-
-  if (matchTraverseRoot) {
-    if (selectorMatches(selector, toElement(*traverseRoot), rootNode))
-      SelectorQueryTrait::appendElement(output, toElement(*traverseRoot));
-    return;
-  }
+  const CSSSelector& selector = *m_selectors[0];
 
   for (Element& element : ElementTraversal::descendantsOf(*traverseRoot)) {
     if (selectorMatches(selector, element, rootNode)) {
@@ -349,13 +331,16 @@ void SelectorQuery::executeForTraverseRoot(
 
 template <typename SelectorQueryTrait, typename SimpleElementListType>
 void SelectorQuery::executeForTraverseRoots(
-    const CSSSelector& selector,
     SimpleElementListType& traverseRoots,
     MatchTraverseRootState matchTraverseRoots,
     ContainerNode& rootNode,
     typename SelectorQueryTrait::OutputType& output) const {
+  DCHECK_EQ(m_selectors.size(), 1u);
+
   if (traverseRoots.isEmpty())
     return;
+
+  const CSSSelector& selector = *m_selectors[0];
 
   if (matchTraverseRoots) {
     while (!traverseRoots.isEmpty()) {

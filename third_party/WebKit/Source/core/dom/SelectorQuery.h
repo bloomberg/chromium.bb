@@ -79,14 +79,11 @@ class CORE_EXPORT SelectorQuery {
     MatchesTraverseRoots
   };
   template <typename SelectorQueryTrait>
-  void executeForTraverseRoot(const CSSSelector&,
-                              ContainerNode* traverseRoot,
-                              MatchTraverseRootState,
+  void executeForTraverseRoot(ContainerNode* traverseRoot,
                               ContainerNode& rootNode,
                               typename SelectorQueryTrait::OutputType&) const;
   template <typename SelectorQueryTrait, typename SimpleElementListType>
-  void executeForTraverseRoots(const CSSSelector&,
-                               SimpleElementListType& traverseRoots,
+  void executeForTraverseRoots(SimpleElementListType& traverseRoots,
                                MatchTraverseRootState,
                                ContainerNode& rootNode,
                                typename SelectorQueryTrait::OutputType&) const;
