@@ -9,8 +9,8 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 
 import org.chromium.base.ContextUtils;
@@ -28,7 +28,6 @@ import org.chromium.components.location.LocationUtils;
 public class PhysicalWeb {
     public static final int OPTIN_NOTIFY_MAX_TRIES = 1;
     private static final String PHYSICAL_WEB_SHARING_PREFERENCE = "physical_web_sharing";
-    private static final String PREF_PHYSICAL_WEB_NOTIFY_COUNT = "physical_web_notify_count";
     private static final String FEATURE_NAME = "PhysicalWeb";
     private static final String PHYSICAL_WEB_SHARING_FEATURE_NAME = "PhysicalWebSharing";
     private static final int MIN_ANDROID_VERSION = 18;
@@ -67,8 +66,8 @@ public class PhysicalWeb {
      * @return boolean {@code true} if the feature is enabled
      */
     public static boolean sharingIsOptedIn() {
-        SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
-        return sharedPrefs.getBoolean(PHYSICAL_WEB_SHARING_PREFERENCE, false);
+        return ContextUtils.getAppSharedPreferences()
+            .getBoolean(PHYSICAL_WEB_SHARING_PREFERENCE, false);
     }
 
     /**
@@ -92,26 +91,6 @@ public class PhysicalWeb {
     }
 
     /**
-     * Increments a value tracking how many times we've shown the Physical Web
-     * opt-in notification.
-     */
-    public static void recordOptInNotification() {
-        SharedPreferences sharedPreferences = ContextUtils.getAppSharedPreferences();
-        int value = sharedPreferences.getInt(PREF_PHYSICAL_WEB_NOTIFY_COUNT, 0);
-        sharedPreferences.edit().putInt(PREF_PHYSICAL_WEB_NOTIFY_COUNT, value + 1).apply();
-    }
-
-    /**
-     * Gets the current count of how many times a high-priority opt-in notification
-     * has been shown.
-     * @return an integer representing the high-priority notifification display count.
-     */
-    public static int getOptInNotifyCount() {
-        SharedPreferences sharedPreferences = ContextUtils.getAppSharedPreferences();
-        return sharedPreferences.getInt(PREF_PHYSICAL_WEB_NOTIFY_COUNT, 0);
-    }
-
-    /**
      * Performs various Physical Web operations that should happen on startup.
      */
     public static void onChromeStart() {
@@ -131,6 +110,17 @@ public class PhysicalWeb {
         // The PhysicalWebUma call in this method should be called only when the native library
         // is loaded.  This is always the case on chrome startup.
         PhysicalWebUma.uploadDeferredMetrics();
+
+        // We can remove this block after M60.
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                ContextUtils.getAppSharedPreferences().edit()
+                        .remove("physical_web_notify_count")
+                        .apply();
+                return null;
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**
