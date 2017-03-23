@@ -129,8 +129,8 @@ static INLINE void av1_merge_rd_stats(RD_STATS *rd_stats_dst,
 }
 #if !CONFIG_PVQ || CONFIG_VAR_TX
 int av1_cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
-                    int block, int coeff_ctx, TX_SIZE tx_size,
-                    const int16_t *scan, const int16_t *nb,
+                    int block, TX_SIZE tx_size, const SCAN_ORDER *scan_order,
+                    const ENTROPY_CONTEXT *a, const ENTROPY_CONTEXT *l,
                     int use_fast_coef_costing);
 #endif
 void av1_rd_pick_intra_mode_sb(const struct AV1_COMP *cpi, struct macroblock *x,

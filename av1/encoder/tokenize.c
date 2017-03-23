@@ -274,10 +274,9 @@ static void cost_coeffs_b(int plane, int block, int blk_row, int blk_col,
   const int block_raster_idx = av1_block_index_to_raster_order(tx_size, block);
   const TX_TYPE tx_type = get_tx_type(type, xd, block_raster_idx, tx_size);
   const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, ref);
-  int pt = get_entropy_context(tx_size, pd->above_context + blk_col,
-                               pd->left_context + blk_row);
-  int rate = av1_cost_coeffs(cm, x, plane, block, pt, tx_size, scan_order->scan,
-                             scan_order->neighbors, 0);
+  int rate = av1_cost_coeffs(cm, x, plane, block, tx_size, scan_order,
+                             pd->above_context + blk_col,
+                             pd->left_context + blk_row, 0);
   args->this_rate += rate;
   (void)plane_bsize;
   av1_set_contexts(xd, pd, plane, tx_size, p->eobs[block] > 0, blk_col,

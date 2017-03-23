@@ -1119,8 +1119,8 @@ static int64_t av1_block_error2_c(const tran_low_t *coeff,
  * 16th coefficient in a 4x4 block or the 64th coefficient in a 8x8 block,
  * were non-zero). */
 int av1_cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
-                    int block, int coeff_ctx, TX_SIZE tx_size,
-                    const int16_t *scan, const int16_t *nb,
+                    int block, TX_SIZE tx_size, const SCAN_ORDER *scan_order,
+                    const ENTROPY_CONTEXT *a, const ENTROPY_CONTEXT *l,
                     int use_fast_coef_costing) {
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
@@ -1134,8 +1134,10 @@ int av1_cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
   unsigned int(*token_costs)[2][COEFF_CONTEXTS][ENTROPY_TOKENS] =
       x->token_costs[tx_size_ctx][type][is_inter_block(mbmi)];
   uint8_t token_cache[MAX_TX_SQUARE];
-  int pt = coeff_ctx;
+  int pt = combine_entropy_contexts(*a, *l);
   int c, cost;
+  const int16_t *scan = scan_order->scan;
+  const int16_t *nb = scan_order->neighbors;
 #if CONFIG_NEW_TOKENSET
   const int ref = is_inter_block(mbmi);
   aom_prob *blockz_probs =
@@ -1396,12 +1398,11 @@ static void dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane, int block,
 }
 
 #if !CONFIG_PVQ
-static int rate_block(int plane, int block, int coeff_ctx, TX_SIZE tx_size,
+static int rate_block(int plane, int block, const ENTROPY_CONTEXT *a,
+                      const ENTROPY_CONTEXT *l, TX_SIZE tx_size,
                       struct rdcost_block_args *args) {
-  return av1_cost_coeffs(&args->cpi->common, args->x, plane, block, coeff_ctx,
-                         tx_size, args->scan_order->scan,
-                         args->scan_order->neighbors,
-                         args->use_fast_coef_costing);
+  return av1_cost_coeffs(&args->cpi->common, args->x, plane, block, tx_size,
+                         args->scan_order, a, l, args->use_fast_coef_costing);
 }
 #endif  // !CONFIG_PVQ
 
@@ -1464,6 +1465,8 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   use_activity_masking = x->daala_enc.use_activity_masking;
 #endif  // CONFIG_PVQ
 #endif  // CONFIG_DAALA_DIST
+  ENTROPY_CONTEXT *a = args->t_above + blk_col;
+  ENTROPY_CONTEXT *l = args->t_left + blk_row;
 
   av1_init_rd_stats(&this_rd_stats);
 
@@ -1572,7 +1575,7 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
     return;
   }
 #if !CONFIG_PVQ
-  this_rd_stats.rate = rate_block(plane, block, coeff_ctx, tx_size, args);
+  this_rd_stats.rate = rate_block(plane, block, a, l, tx_size, args);
 #if CONFIG_RD_DEBUG
   av1_update_txb_coeff_cost(&this_rd_stats, plane, tx_size, blk_row, blk_col,
                             this_rd_stats.rate);
@@ -1581,8 +1584,7 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
 #else
   this_rd_stats.rate = x->rate;
 #endif  // !CONFIG_PVQ
-  av1_set_txb_context(x, plane, block, tx_size, args->t_above + blk_col,
-                      args->t_left + blk_row);
+  av1_set_txb_context(x, plane, block, tx_size, a, l);
 
   rd1 = RDCOST(x->rdmult, x->rddiv, this_rd_stats.rate, this_rd_stats.dist);
   rd2 = RDCOST(x->rdmult, x->rddiv, 0, this_rd_stats.sse);
@@ -2726,8 +2728,8 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
             av1_xform_quant(cm, x, 0, block, row + idy, col + idx, BLOCK_8X8,
                             tx_size, coeff_ctx, AV1_XFORM_QUANT_FP);
 #endif  // CONFIG_NEW_QUANT
-            ratey += av1_cost_coeffs(cm, x, 0, block, coeff_ctx, tx_size,
-                                     scan_order->scan, scan_order->neighbors,
+            ratey += av1_cost_coeffs(cm, x, 0, block, tx_size, scan_order,
+                                     tempa + idx, templ + idy,
                                      cpi->sf.use_fast_coef_costing);
             skip = (p->eobs[block] == 0);
             can_skip &= skip;
@@ -2788,8 +2790,8 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
                             tx_size, coeff_ctx, AV1_XFORM_QUANT_FP);
 #endif  // CONFIG_NEW_QUANT
             av1_optimize_b(cm, x, 0, block, tx_size, coeff_ctx);
-            ratey += av1_cost_coeffs(cm, x, 0, block, coeff_ctx, tx_size,
-                                     scan_order->scan, scan_order->neighbors,
+            ratey += av1_cost_coeffs(cm, x, 0, block, tx_size, scan_order,
+                                     tempa + idx, templ + idy,
                                      cpi->sf.use_fast_coef_costing);
             skip = (p->eobs[block] == 0);
             can_skip &= skip;
@@ -2964,9 +2966,9 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
 #endif  // CONFIG_CB4X4
                           BLOCK_8X8, tx_size, coeff_ctx, AV1_XFORM_QUANT_B);
 #endif  // CONFIG_NEW_QUANT
-          ratey += av1_cost_coeffs(cm, x, 0, block, coeff_ctx, tx_size,
-                                   scan_order->scan, scan_order->neighbors,
-                                   cpi->sf.use_fast_coef_costing);
+          ratey +=
+              av1_cost_coeffs(cm, x, 0, block, tx_size, scan_order, tempa + idx,
+                              templ + idy, cpi->sf.use_fast_coef_costing);
           skip = (p->eobs[block] == 0);
           can_skip &= skip;
           tempa[idx] = !skip;
@@ -3032,9 +3034,9 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
                           BLOCK_8X8, tx_size, coeff_ctx, AV1_XFORM_QUANT_FP);
 #endif  // CONFIG_NEW_QUANT
           av1_optimize_b(cm, x, 0, block, tx_size, coeff_ctx);
-          ratey += av1_cost_coeffs(cm, x, 0, block, coeff_ctx, tx_size,
-                                   scan_order->scan, scan_order->neighbors,
-                                   cpi->sf.use_fast_coef_costing);
+          ratey +=
+              av1_cost_coeffs(cm, x, 0, block, tx_size, scan_order, tempa + idx,
+                              templ + idy, cpi->sf.use_fast_coef_costing);
           skip = (p->eobs[block] == 0);
           can_skip &= skip;
           tempa[idx] = !skip;
@@ -3888,7 +3890,8 @@ static int super_block_uvrd(const AV1_COMP *const cpi, MACROBLOCK *x,
 #if CONFIG_VAR_TX
 void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
                        int blk_row, int blk_col, int plane, int block,
-                       int plane_bsize, int coeff_ctx, RD_STATS *rd_stats) {
+                       int plane_bsize, const ENTROPY_CONTEXT *a,
+                       const ENTROPY_CONTEXT *l, RD_STATS *rd_stats) {
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *xd = &x->e_mbd;
   const struct macroblock_plane *const p = &x->plane[plane];
@@ -3933,6 +3936,8 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
 
   max_blocks_high >>= tx_size_wide_log2[0];
   max_blocks_wide >>= tx_size_wide_log2[0];
+
+  int coeff_ctx = get_entropy_context(tx_size, a, l);
 
 #if CONFIG_NEW_QUANT
   av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
@@ -4027,8 +4032,8 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
     }
   }
   rd_stats->dist += tmp * 16;
-  txb_coeff_cost = av1_cost_coeffs(cm, x, plane, block, coeff_ctx, tx_size,
-                                   scan_order->scan, scan_order->neighbors, 0);
+  txb_coeff_cost =
+      av1_cost_coeffs(cm, x, plane, block, tx_size, scan_order, a, l, 0);
   rd_stats->rate += txb_coeff_cost;
   rd_stats->skip &= (p->eobs[block] == 0);
 
@@ -4098,7 +4103,7 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
       x->blk_skip[plane][blk_row * bw + blk_col] = rd_stats->skip;
     } else {
       av1_tx_block_rd_b(cpi, x, tx_size, blk_row, blk_col, plane, block,
-                        plane_bsize, coeff_ctx, rd_stats);
+                        plane_bsize, pta, ptl, rd_stats);
       if (tx_size == TX_32X32) {
         rd_stats_stack[block32] = *rd_stats;
       }
@@ -4427,12 +4432,11 @@ static void tx_block_rd(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
             : mbmi->inter_tx_size[tx_row][tx_col];
 
   if (tx_size == plane_tx_size) {
-    int coeff_ctx, i;
+    int i;
     ENTROPY_CONTEXT *ta = above_ctx + blk_col;
     ENTROPY_CONTEXT *tl = left_ctx + blk_row;
-    coeff_ctx = get_entropy_context(tx_size, ta, tl);
     av1_tx_block_rd_b(cpi, x, tx_size, blk_row, blk_col, plane, block,
-                      plane_bsize, coeff_ctx, rd_stats);
+                      plane_bsize, ta, tl, rd_stats);
 
     for (i = 0; i < tx_size_wide_unit[tx_size]; ++i)
       ta[i] = !(p->eobs[block] == 0);
@@ -5378,8 +5382,8 @@ static int64_t encode_inter_mb_segment_sub8x8(
       thissse += ssz;
 #if !CONFIG_PVQ
       thisrate +=
-          av1_cost_coeffs(cm, x, 0, block, coeff_ctx, tx_size, scan_order->scan,
-                          scan_order->neighbors, cpi->sf.use_fast_coef_costing);
+          av1_cost_coeffs(cm, x, 0, block, tx_size, scan_order, (ta + (k & 1)),
+                          (tl + (k >> 1)), cpi->sf.use_fast_coef_costing);
       *(ta + (k & 1)) = !(p->eobs[block] == 0);
       *(tl + (k >> 1)) = !(p->eobs[block] == 0);
 #else
