@@ -18,6 +18,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/test_file_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/webrtc/webrtc_browsertest_audio.h"
 #include "chrome/browser/media/webrtc/webrtc_browsertest_base.h"
@@ -28,7 +29,9 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/audio_parameters.h"
@@ -49,6 +52,15 @@ static const char kReferenceFileRelativeUrl[] =
 
 static const char kWebRtcAudioTestHtmlPage[] =
     "/webrtc/webrtc_audio_quality_test.html";
+
+// How long to record the audio in the receiving peerConnection.
+static const int kCaptureDurationInSeconds = 25;
+
+// The name where the recorded WebM audio file will be saved.
+static const char kWebmRecordingFilename[] = "recording.webm";
+
+// How often to ask the test page whether the audio recording is completed.
+const int kPollingIntervalInMs = 1000;
 
 // For the AGC test, there are 6 speech segments split on silence. If one
 // segment is significantly different in length compared to the same segment in
@@ -76,23 +88,8 @@ const int kMaxAgcSegmentDiffMs =
 // pesq binary for your platform (and sox.exe on windows). Read more on how
 // resources are managed in chrome/test/data/webrtc/resources/README.
 //
-// This test will only work on machines that have been configured to record
-// their own input.
-//
 // On Linux:
-// 1. # sudo apt-get install pavucontrol sox
-// 2. For the user who will run the test: # pavucontrol
-// 3. In a separate terminal, # arecord dummy
-// 4. In pavucontrol, go to the recording tab.
-// 5. For the ALSA plugin [aplay]: ALSA Capture from, change from <x> to
-//    <Monitor of x>, where x is whatever your primary sound device is called.
-// 6. Try launching chrome as the target user on the target machine, try
-//    playing, say, a YouTube video, and record with # arecord -f dat tmp.dat.
-//    Verify the recording with aplay (should have recorded what you played
-//    from chrome).
-//
-// Note: the volume for ALL your input devices will be forced to 100% by
-//       running this test on Linux.
+// 1. # sudo apt-get install sox
 //
 // On Mac:
 // TODO(phoglund): download sox from gs instead.
@@ -100,40 +97,27 @@ const int kMaxAgcSegmentDiffMs =
 // 2. Install it + reboot.
 // 3. Install MacPorts (http://www.macports.org/).
 // 4. Install sox: sudo port install sox.
-// 5. (For Chrome bots) Ensure sox and rec are reachable from the env the test
-//    executes in (sox and rec tends to install in /opt/, which generally isn't
-//    in the Chrome bots' env). For instance, run
-//    sudo ln -s /opt/local/bin/rec /usr/local/bin/rec
+// 5. (For Chrome bots) Ensure sox is reachable from the env the test
+//    executes in (sox tends to install in /opt/, which generally isn't in the
+//    Chrome bots' env). For instance, run
 //    sudo ln -s /opt/local/bin/sox /usr/local/bin/sox
-// 6. In Sound Preferences, set both input and output to Soundflower (2ch).
-//    Note: You will no longer hear audio on this machine, and it will no
-//    longer use any built-in mics.
-// 7. Try launching chrome as the target user on the target machine, try
-//    playing, say, a YouTube video, and record with 'rec test.wav trim 0 5'.
-//    Stop the video in chrome and try playing back the file; you should hear
-//    a recording of the video (note; if you play back on the target machine
-//    you must revert the changes in step 3 first).
-//
-// On Windows 7:
-// 1. Control panel > Sound > Manage audio devices.
-// 2. In the recording tab, right-click in an empty space in the pane with the
-//    devices. Tick 'show disabled devices'.
-// 3. You should see a 'stereo mix' device - this is what your speakers output.
-//    If you don't have one, your driver doesn't support stereo mix devices.
-//    Some drivers use different names for the mix device though (like "Wave").
-//    Right click > Properties.
-// 4. Ensure "listen to this device" is unchecked, otherwise you get echo.
-// 5. Ensure the mix device is the default recording device.
-// 6. Launch chrome and try playing a video with sound. You should see
-//    in the volume meter for the mix device. Configure the mix device to have
-//    50 / 100 in level. Also go into the playback tab, right-click Speakers,
-//    and set that level to 50 / 100. Otherwise you will get distortion in
-//    the recording.
 class MAYBE_WebRtcAudioQualityBrowserTest : public WebRtcTestBase {
  public:
   MAYBE_WebRtcAudioQualityBrowserTest() {}
   void SetUpInProcessBrowserTestFixture() override {
     DetectErrorsInJavaScript();  // Look for errors in our rather complex js.
+  }
+
+  void SetUpOnMainThread() override {
+    base::FilePath tmp_dir;
+    EXPECT_TRUE(base::GetTempDir(&tmp_dir));
+    webm_recorded_output_filename_ =
+        tmp_dir.Append(FILE_PATH_LITERAL("recording.webm"));
+
+    browser()->profile()->GetPrefs()->SetFilePath(
+        prefs::kDownloadDefaultDirectory, tmp_dir);
+    browser()->profile()->GetPrefs()->SetBoolean(prefs::kPromptForDownload,
+                                                 false);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -191,141 +175,15 @@ class MAYBE_WebRtcAudioQualityBrowserTest : public WebRtcTestBase {
                            const std::string& constraints,
                            const std::string& perf_modifier);
   void SetupAndRecordAudioCall(const base::FilePath& reference_file,
-                               const base::FilePath& recording,
-                               const std::string& constraints,
-                               const base::TimeDelta recording_time);
+                               const base::FilePath& recorded_output_path,
+                               const std::string& constraints);
   void TestWithFakeDeviceGetUserMedia(const std::string& constraints,
                                       const std::string& perf_modifier);
+
+  base::FilePath webm_recorded_output_filename_;
 };
 
 namespace {
-
-class AudioRecorder {
- public:
-  AudioRecorder() {}
-  ~AudioRecorder() {}
-
-  // Starts the recording program for the specified duration. Returns true
-  // on success. We record in 16-bit 44.1 kHz Stereo (mostly because that's
-  // what SoundRecorder.exe will give us and we can't change that).
-  bool StartRecording(base::TimeDelta recording_time,
-                      const base::FilePath& output_file) {
-    EXPECT_FALSE(recording_application_.IsValid())
-        << "Tried to record, but is already recording.";
-
-    int duration_sec = static_cast<int>(recording_time.InSeconds());
-    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-
-#if defined(OS_WIN)
-    // This disable is required to run SoundRecorder.exe on 64-bit Windows
-    // from a 32-bit binary. We need to load the wow64 disable function from
-    // the DLL since it doesn't exist on Windows XP.
-    base::ScopedNativeLibrary kernel32_lib(base::FilePath(L"kernel32"));
-    if (kernel32_lib.is_valid()) {
-      typedef BOOL (WINAPI* Wow64DisableWow64FSRedirection)(PVOID*);
-      Wow64DisableWow64FSRedirection wow_64_disable_wow_64_fs_redirection;
-      wow_64_disable_wow_64_fs_redirection =
-          reinterpret_cast<Wow64DisableWow64FSRedirection>(
-              kernel32_lib.GetFunctionPointer(
-                  "Wow64DisableWow64FsRedirection"));
-      if (wow_64_disable_wow_64_fs_redirection != NULL) {
-        PVOID* ignored = NULL;
-        wow_64_disable_wow_64_fs_redirection(ignored);
-      }
-    }
-
-    char duration_in_hms[128] = {0};
-    struct tm duration_tm = {0};
-    duration_tm.tm_sec = duration_sec;
-    EXPECT_NE(0u, strftime(duration_in_hms, arraysize(duration_in_hms),
-                           "%H:%M:%S", &duration_tm));
-
-    command_line.SetProgram(
-        base::FilePath(FILE_PATH_LITERAL("SoundRecorder.exe")));
-    command_line.AppendArg("/FILE");
-    command_line.AppendArgPath(output_file);
-    command_line.AppendArg("/DURATION");
-    command_line.AppendArg(duration_in_hms);
-#elif defined(OS_MACOSX)
-    command_line.SetProgram(base::FilePath("rec"));
-    command_line.AppendArg("-b");
-    command_line.AppendArg("16");
-    command_line.AppendArg("-q");
-    command_line.AppendArgPath(output_file);
-    command_line.AppendArg("trim");
-    command_line.AppendArg("0");
-    command_line.AppendArg(base::IntToString(duration_sec));
-#else
-    command_line.SetProgram(base::FilePath("arecord"));
-    command_line.AppendArg("-d");
-    command_line.AppendArg(base::IntToString(duration_sec));
-    command_line.AppendArg("-f");
-    command_line.AppendArg("cd");
-    command_line.AppendArg("-c");
-    command_line.AppendArg("2");
-    command_line.AppendArgPath(output_file);
-#endif
-
-    DVLOG(0) << "Running " << command_line.GetCommandLineString();
-    recording_application_ =
-        base::LaunchProcess(command_line, base::LaunchOptions());
-    return recording_application_.IsValid();
-  }
-
-  // Joins the recording program. Returns true on success.
-  bool WaitForRecordingToEnd() {
-    int exit_code = -1;
-    recording_application_.WaitForExit(&exit_code);
-    return exit_code == 0;
-  }
- private:
-  base::Process recording_application_;
-};
-
-bool ForceMicrophoneVolumeTo100Percent() {
-#if defined(OS_WIN)
-  // Note: the force binary isn't in tools since it's one of our own.
-  base::CommandLine command_line(test::GetReferenceFilesDir().Append(
-      FILE_PATH_LITERAL("force_mic_volume_max.exe")));
-  DVLOG(0) << "Running " << command_line.GetCommandLineString();
-  std::string result;
-  if (!base::GetAppOutput(command_line, &result)) {
-    LOG(ERROR) << "Failed to set source volume: output was " << result;
-    return false;
-  }
-#elif defined(OS_MACOSX)
-  base::CommandLine command_line(
-      base::FilePath(FILE_PATH_LITERAL("osascript")));
-  command_line.AppendArg("-e");
-  command_line.AppendArg("set volume input volume 100");
-  command_line.AppendArg("-e");
-  command_line.AppendArg("set volume output volume 85");
-
-  std::string result;
-  if (!base::GetAppOutput(command_line, &result)) {
-    LOG(ERROR) << "Failed to set source volume: output was " << result;
-    return false;
-  }
-#else
-  // Just force the volume of, say the first 5 devices. A machine will rarely
-  // have more input sources than that. This is way easier than finding the
-  // input device we happen to be using.
-  for (int device_index = 0; device_index < 5; ++device_index) {
-    std::string result;
-    const std::string kHundredPercentVolume = "65536";
-    base::CommandLine command_line(base::FilePath(FILE_PATH_LITERAL("pacmd")));
-    command_line.AppendArg("set-source-volume");
-    command_line.AppendArg(base::IntToString(device_index));
-    command_line.AppendArg(kHundredPercentVolume);
-    DVLOG(0) << "Running " << command_line.GetCommandLineString();
-    if (!base::GetAppOutput(command_line, &result)) {
-      LOG(ERROR) << "Failed to set source volume: output was " << result;
-      return false;
-    }
-  }
-#endif
-  return true;
-}
 
 // Sox is the "Swiss army knife" of audio processing. We mainly use it for
 // silence trimming. See http://sox.sourceforge.net.
@@ -383,6 +241,34 @@ bool RemoveSilence(const base::FilePath& input_file,
   DVLOG(0) << "Running " << command_line.GetCommandLineString();
   std::string result;
   bool ok = base::GetAppOutput(command_line, &result);
+  DVLOG(0) << "Output was:\n\n" << result;
+  return ok;
+}
+
+// Runs ffmpeg on the captured webm video and writes it to a .wav file.
+bool RunWebmToWavConverter(const base::FilePath& webm_recorded_output_path,
+                           const base::FilePath& wav_recorded_output_path) {
+  const base::FilePath path_to_ffmpeg = test::GetToolForPlatform("ffmpeg");
+  if (!base::PathExists(path_to_ffmpeg)) {
+    LOG(ERROR) << "Missing ffmpeg: should be in " << path_to_ffmpeg.value();
+    return false;
+  }
+
+  // Set up ffmpeg to output at a certain bitrate (-ab). This is hopefully set
+  // high enough to avoid degrading audio quality too much.
+  base::CommandLine ffmpeg_command(path_to_ffmpeg);
+  ffmpeg_command.AppendArg("-i");
+  ffmpeg_command.AppendArgPath(webm_recorded_output_path);
+  ffmpeg_command.AppendArg("-ab");
+  ffmpeg_command.AppendArg("300k");
+  ffmpeg_command.AppendArg("-y");
+  ffmpeg_command.AppendArgPath(wav_recorded_output_path);
+
+  // We produce an output file that will later be used as an input to the
+  // barcode decoder and frame analyzer tools.
+  DVLOG(0) << "Running " << ffmpeg_command.GetCommandLineString();
+  std::string result;
+  bool ok = base::GetAppOutputAndError(ffmpeg_command, &result);
   DVLOG(0) << "Output was:\n\n" << result;
   return ok;
 }
@@ -587,13 +473,13 @@ void AnalyzeSegmentsAndPrintResult(
 }
 
 void ComputeAndPrintPesqResults(const base::FilePath& reference_file,
-                                const base::FilePath& recording,
+                                const base::FilePath& recorded_output_path,
                                 const std::string& perf_modifier) {
   base::FilePath trimmed_reference = CreateTemporaryWaveFile();
   base::FilePath trimmed_recording = CreateTemporaryWaveFile();
 
   ASSERT_TRUE(RemoveSilence(reference_file, trimmed_reference));
-  ASSERT_TRUE(RemoveSilence(recording, trimmed_recording));
+  ASSERT_TRUE(RemoveSilence(recorded_output_path, trimmed_recording));
 
   std::string raw_mos;
   std::string mos_lqo;
@@ -613,8 +499,8 @@ void ComputeAndPrintPesqResults(const base::FilePath& reference_file,
 
 }  // namespace
 
-// Sets up a two-way WebRTC call and records its output to |recording|, using
-// getUserMedia.
+// Sets up a two-way WebRTC call and records its output to
+// |recorded_output_path|, using getUserMedia.
 //
 // |reference_file| should have at least five seconds of silence in the
 // beginning: otherwise all the reference audio will not be picked up by the
@@ -626,12 +512,10 @@ void ComputeAndPrintPesqResults(const base::FilePath& reference_file,
 // file, you should end up with two time-synchronized files.
 void MAYBE_WebRtcAudioQualityBrowserTest::SetupAndRecordAudioCall(
     const base::FilePath& reference_file,
-    const base::FilePath& recording,
-    const std::string& constraints,
-    const base::TimeDelta recording_time) {
+    const base::FilePath& recorded_output_path,
+    const std::string& constraints) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(test::HasReferenceFilesInCheckout());
-  ASSERT_TRUE(ForceMicrophoneVolumeTo100Percent());
 
   ConfigureFakeDeviceToPlayFile(reference_file);
 
@@ -647,15 +531,24 @@ void MAYBE_WebRtcAudioQualityBrowserTest::SetupAndRecordAudioCall(
       OpenPageAndGetUserMediaInNewTabWithConstraints(test_page, constraints);
   SetupPeerconnectionWithLocalStream(right_tab);
 
-  AudioRecorder recorder;
-  ASSERT_TRUE(recorder.StartRecording(recording_time, recording));
-
   NegotiateCall(left_tab, right_tab);
 
-  ASSERT_TRUE(recorder.WaitForRecordingToEnd());
-  DVLOG(0) << "Done recording to " << recording.value() << std::endl;
+  EXPECT_EQ(
+      "ok-capturing",
+      ExecuteJavascript(
+          base::StringPrintf("startAudioCapture(%d, \"%s\");",
+                             kCaptureDurationInSeconds, kWebmRecordingFilename),
+          right_tab));
+
+  EXPECT_TRUE(test::PollingWaitUntil("testIsDoneCapturing();", "true",
+                                     right_tab, kPollingIntervalInMs));
 
   HangUp(left_tab);
+
+  RunWebmToWavConverter(webm_recorded_output_filename_, recorded_output_path);
+  EXPECT_TRUE(base::DieFileDie(webm_recorded_output_filename_, false));
+
+  DVLOG(0) << "Done recording to " << recorded_output_path.MaybeAsASCII();
 }
 
 void MAYBE_WebRtcAudioQualityBrowserTest::TestWithFakeDeviceGetUserMedia(
@@ -669,14 +562,14 @@ void MAYBE_WebRtcAudioQualityBrowserTest::TestWithFakeDeviceGetUserMedia(
 
   base::FilePath reference_file =
       test::GetReferenceFilesDir().Append(kReferenceFile);
-  base::FilePath recording = CreateTemporaryWaveFile();
+  base::FilePath recorded_output_path = CreateTemporaryWaveFile();
 
   ASSERT_NO_FATAL_FAILURE(SetupAndRecordAudioCall(
-      reference_file, recording, constraints,
-      base::TimeDelta::FromSeconds(30)));
+      reference_file, recorded_output_path, constraints));
 
-  ComputeAndPrintPesqResults(reference_file, recording, perf_modifier);
-  DeleteFileUnlessTestFailed(recording, false);
+  ComputeAndPrintPesqResults(reference_file, recorded_output_path,
+                             perf_modifier);
+  DeleteFileUnlessTestFailed(recorded_output_path, false);
 }
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
@@ -694,8 +587,6 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
   ASSERT_TRUE(test::HasReferenceFilesInCheckout());
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  ASSERT_TRUE(ForceMicrophoneVolumeTo100Percent());
-
   content::WebContents* left_tab =
       OpenPageWithoutGetUserMedia(kWebRtcAudioTestHtmlPage);
   content::WebContents* right_tab =
@@ -705,26 +596,32 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
 
   NegotiateCall(left_tab, right_tab);
 
-  base::FilePath recording = CreateTemporaryWaveFile();
-
-  // Note: the sound clip is 21.6 seconds: record for 25 seconds to get some
-  // safety margins on each side.
-  AudioRecorder recorder;
-  ASSERT_TRUE(recorder.StartRecording(base::TimeDelta::FromSeconds(25),
-                                      recording));
+  const base::FilePath recorded_output_path = CreateTemporaryWaveFile();
 
   PlayAudioFileThroughWebAudio(left_tab);
 
-  ASSERT_TRUE(recorder.WaitForRecordingToEnd());
-  DVLOG(0) << "Done recording to " << recording.value() << std::endl;
+  EXPECT_EQ(
+      "ok-capturing",
+      ExecuteJavascript(
+          base::StringPrintf("startAudioCapture(%d, \"%s\");",
+                             kCaptureDurationInSeconds, kWebmRecordingFilename),
+          right_tab));
+
+  EXPECT_TRUE(test::PollingWaitUntil("testIsDoneCapturing();", "true",
+                                     right_tab, kPollingIntervalInMs));
 
   HangUp(left_tab);
+
+  RunWebmToWavConverter(webm_recorded_output_filename_, recorded_output_path);
+  EXPECT_TRUE(base::DieFileDie(webm_recorded_output_filename_, false));
+
+  DVLOG(0) << "Done recording to " << recorded_output_path.MaybeAsASCII();
 
   // Compare with the reference file on disk (this is the same file we played
   // through WebAudio earlier).
   base::FilePath reference_file =
       test::GetReferenceFilesDir().Append(kReferenceFile);
-  ComputeAndPrintPesqResults(reference_file, recording, "_webaudio");
+  ComputeAndPrintPesqResults(reference_file, recorded_output_path, "_webaudio");
 }
 
 /**
@@ -768,11 +665,10 @@ void MAYBE_WebRtcAudioQualityBrowserTest::TestAutoGainControl(
   }
   base::FilePath reference_file =
       test::GetReferenceFilesDir().Append(reference_filename);
-  base::FilePath recording = CreateTemporaryWaveFile();
+  base::FilePath recorded_output_path = CreateTemporaryWaveFile();
 
   ASSERT_NO_FATAL_FAILURE(SetupAndRecordAudioCall(
-      reference_file, recording, constraints,
-      base::TimeDelta::FromSeconds(30)));
+      reference_file, recorded_output_path, constraints));
 
   base::ScopedTempDir split_ref_files;
   ASSERT_TRUE(split_ref_files.CreateUniqueTempDir());
@@ -783,8 +679,8 @@ void MAYBE_WebRtcAudioQualityBrowserTest::TestAutoGainControl(
 
   base::ScopedTempDir split_actual_files;
   ASSERT_TRUE(split_actual_files.CreateUniqueTempDir());
-  ASSERT_NO_FATAL_FAILURE(
-      SplitFileOnSilenceIntoDir(recording, split_actual_files.GetPath()));
+  ASSERT_NO_FATAL_FAILURE(SplitFileOnSilenceIntoDir(
+      recorded_output_path, split_actual_files.GetPath()));
 
   // Keep the recording and split files if the analysis fails.
   base::FilePath actual_files_dir = split_actual_files.Take();
@@ -794,7 +690,7 @@ void MAYBE_WebRtcAudioQualityBrowserTest::TestAutoGainControl(
   AnalyzeSegmentsAndPrintResult(
       ref_segments, actual_segments, reference_file, perf_modifier);
 
-  DeleteFileUnlessTestFailed(recording, false);
+  DeleteFileUnlessTestFailed(recorded_output_path, false);
   DeleteFileUnlessTestFailed(actual_files_dir, true);
 }
 
