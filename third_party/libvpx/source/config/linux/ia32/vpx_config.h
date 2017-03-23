@@ -14,6 +14,7 @@
 #define ARCH_MIPS 0
 #define ARCH_X86 1
 #define ARCH_X86_64 0
+#define ARCH_PPC 0
 #define HAVE_NEON 0
 #define HAVE_NEON_ASM 0
 #define HAVE_MIPS32 0
@@ -28,6 +29,7 @@
 #define HAVE_SSE4_1 1
 #define HAVE_AVX 1
 #define HAVE_AVX2 1
+#define HAVE_VSX 0
 #define HAVE_VPX_PORTS 1
 #define HAVE_PTHREAD_H 1
 #define HAVE_UNISTD_H 0

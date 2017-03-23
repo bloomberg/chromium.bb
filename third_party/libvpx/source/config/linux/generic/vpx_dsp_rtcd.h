@@ -916,6 +916,9 @@ void vpx_highbd_idct16x16_38_add_c(const tran_low_t *input, uint8_t *dest, int s
 void vpx_highbd_idct32x32_1024_add_c(const tran_low_t *input, uint8_t *dest, int stride, int bd);
 #define vpx_highbd_idct32x32_1024_add vpx_highbd_idct32x32_1024_add_c
 
+void vpx_highbd_idct32x32_135_add_c(const tran_low_t *input, uint8_t *dest, int stride, int bd);
+#define vpx_highbd_idct32x32_135_add vpx_highbd_idct32x32_135_add_c
+
 void vpx_highbd_idct32x32_1_add_c(const tran_low_t *input, uint8_t *dest, int stride, int bd);
 #define vpx_highbd_idct32x32_1_add vpx_highbd_idct32x32_1_add_c
 
