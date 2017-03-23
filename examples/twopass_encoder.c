@@ -206,15 +206,15 @@ int main(int argc, char **argv) {
 
   if (argc < 6) die("Invalid number of arguments");
 
-  if (argc > 6) limit = strtol(argv[6], NULL, 0);
+  if (argc > 6) limit = (int)strtol(argv[6], NULL, 0);
 
   if (limit == 0) limit = 100;
 
   encoder = get_aom_encoder_by_name(codec_arg);
   if (!encoder) die("Unsupported codec.");
 
-  w = strtol(width_arg, NULL, 0);
-  h = strtol(height_arg, NULL, 0);
+  w = (int)strtol(width_arg, NULL, 0);
+  h = (int)strtol(height_arg, NULL, 0);
 
   if (w <= 0 || h <= 0 || (w % 2) != 0 || (h % 2) != 0)
     die("Invalid frame size: %dx%d", w, h);
