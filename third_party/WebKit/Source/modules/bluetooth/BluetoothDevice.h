@@ -32,7 +32,6 @@ class ScriptPromiseResolver;
 // CallbackPromiseAdapter class comments.
 class BluetoothDevice final : public EventTargetWithInlineData,
                               public ContextLifecycleObserver {
-  USING_PRE_FINALIZER(BluetoothDevice, Dispose);
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(BluetoothDevice);
 
@@ -72,28 +71,13 @@ class BluetoothDevice final : public EventTargetWithInlineData,
   // events on navigator.bluetooth and still remain connected even if the
   // BluetoothDevice object is garbage collected.
 
-  // USING_PRE_FINALIZER interface.
-  // Called before the object gets garbage collected.
-  void Dispose();
-
-  // ContextLifecycleObserver interface.
-  void contextDestroyed(ExecutionContext*) override;
-
-  // If gatt is connected then sets gatt.connected to false and disconnects.
-  // This function only performs the necessary steps to ensure a device
-  // disconnects therefore it should only be used when the object is being
-  // garbage collected or the context is being destroyed.
-  void DisconnectGATTIfConnected();
-
   // Performs necessary cleanup when a device disconnects and fires
   // gattserverdisconnected event.
-  void CleanupDisconnectedDeviceAndFireEvent();
+  void ClearAttributeInstanceMapAndFireEvent();
 
   // EventTarget methods:
   const AtomicString& interfaceName() const override;
   ExecutionContext* getExecutionContext() const override;
-
-  void DispatchGattServerDisconnected();
 
   Bluetooth* bluetooth() { return m_bluetooth; }
 

@@ -24,7 +24,7 @@ BluetoothDevice::BluetoothDevice(ExecutionContext* context,
     : ContextLifecycleObserver(context),
       m_attributeInstanceMap(new BluetoothAttributeInstanceMap(this)),
       m_device(std::move(device)),
-      m_gatt(BluetoothRemoteGATTServer::Create(this)),
+      m_gatt(BluetoothRemoteGATTServer::Create(context, this)),
       m_bluetooth(bluetooth) {}
 
 // static
@@ -75,28 +75,7 @@ bool BluetoothDevice::IsValidDescriptor(const String& descriptorInstanceId) {
   return m_attributeInstanceMap->ContainsDescriptor(descriptorInstanceId);
 }
 
-void BluetoothDevice::Dispose() {
-  DisconnectGATTIfConnected();
-}
-
-void BluetoothDevice::contextDestroyed(ExecutionContext*) {
-  DisconnectGATTIfConnected();
-}
-
-void BluetoothDevice::DisconnectGATTIfConnected() {
-  if (m_gatt->connected()) {
-    m_gatt->SetConnected(false);
-    m_gatt->ClearActiveAlgorithms();
-    m_bluetooth->RemoveFromConnectedDevicesMap(id());
-    mojom::blink::WebBluetoothService* service = m_bluetooth->Service();
-    service->RemoteServerDisconnect(id());
-  }
-}
-
-void BluetoothDevice::CleanupDisconnectedDeviceAndFireEvent() {
-  DCHECK(m_gatt->connected());
-  m_gatt->SetConnected(false);
-  m_gatt->ClearActiveAlgorithms();
+void BluetoothDevice::ClearAttributeInstanceMapAndFireEvent() {
   m_attributeInstanceMap->Clear();
   dispatchEvent(Event::createBubble(EventTypeNames::gattserverdisconnected));
 }
@@ -107,13 +86,6 @@ const WTF::AtomicString& BluetoothDevice::interfaceName() const {
 
 ExecutionContext* BluetoothDevice::getExecutionContext() const {
   return ContextLifecycleObserver::getExecutionContext();
-}
-
-void BluetoothDevice::DispatchGattServerDisconnected() {
-  if (!m_gatt->connected()) {
-    return;
-  }
-  CleanupDisconnectedDeviceAndFireEvent();
 }
 
 DEFINE_TRACE(BluetoothDevice) {

@@ -17,6 +17,7 @@
 #include "modules/bluetooth/BluetoothRemoteGATTService.h"
 #include "modules/bluetooth/BluetoothRemoteGATTUtils.h"
 #include "modules/bluetooth/BluetoothUUID.h"
+#include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 
 #include <memory>
 #include <utility>
@@ -31,7 +32,6 @@ BluetoothRemoteGATTCharacteristic::BluetoothRemoteGATTCharacteristic(
     : ContextLifecycleObserver(context),
       m_characteristic(std::move(characteristic)),
       m_service(service),
-      m_stopped(false),
       m_device(device) {
   m_properties =
       BluetoothCharacteristicProperties::Create(m_characteristic->properties);
@@ -50,7 +50,7 @@ void BluetoothRemoteGATTCharacteristic::SetValue(DOMDataView* domDataView) {
   m_value = domDataView;
 }
 
-void BluetoothRemoteGATTCharacteristic::DispatchCharacteristicValueChanged(
+void BluetoothRemoteGATTCharacteristic::RemoteCharacteristicValueChanged(
     const Vector<uint8_t>& value) {
   if (!GetGatt()->connected())
     return;
@@ -59,19 +59,11 @@ void BluetoothRemoteGATTCharacteristic::DispatchCharacteristicValueChanged(
 }
 
 void BluetoothRemoteGATTCharacteristic::contextDestroyed(ExecutionContext*) {
-  NotifyCharacteristicObjectRemoved();
+  Dispose();
 }
 
 void BluetoothRemoteGATTCharacteristic::Dispose() {
-  NotifyCharacteristicObjectRemoved();
-}
-
-void BluetoothRemoteGATTCharacteristic::NotifyCharacteristicObjectRemoved() {
-  if (!m_stopped) {
-    m_stopped = true;
-    m_device->bluetooth()->CharacteristicObjectRemoved(
-        m_characteristic->instance_id);
-  }
+  m_clientBindings.CloseAllBindings();
 }
 
 const WTF::AtomicString& BluetoothRemoteGATTCharacteristic::interfaceName()
@@ -88,12 +80,6 @@ void BluetoothRemoteGATTCharacteristic::addedEventListener(
     const AtomicString& eventType,
     RegisteredEventListener& registeredListener) {
   EventTargetWithInlineData::addedEventListener(eventType, registeredListener);
-  // We will also need to unregister a characteristic once all the event
-  // listeners have been removed. See http://crbug.com/541390
-  if (eventType == EventTypeNames::characteristicvaluechanged) {
-    m_device->bluetooth()->RegisterCharacteristicObject(
-        m_characteristic->instance_id, this);
-  }
 }
 
 void BluetoothRemoteGATTCharacteristic::ReadValueCallback(
@@ -116,6 +102,7 @@ void BluetoothRemoteGATTCharacteristic::ReadValueCallback(
     DOMDataView* domDataView =
         BluetoothRemoteGATTUtils::ConvertWTFVectorToDataView(value.value());
     SetValue(domDataView);
+    dispatchEvent(Event::create(EventTypeNames::characteristicvaluechanged));
     resolver->resolve(domDataView);
   } else {
     resolver->reject(BluetoothError::CreateDOMException(result));
@@ -257,8 +244,12 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::startNotifications(
   GetGatt()->AddToActiveAlgorithms(resolver);
 
   mojom::blink::WebBluetoothService* service = m_device->bluetooth()->Service();
+  mojom::blink::WebBluetoothCharacteristicClientAssociatedPtrInfo ptrInfo;
+  auto request = mojo::MakeRequest(&ptrInfo);
+  m_clientBindings.AddBinding(this, std::move(request));
+
   service->RemoteCharacteristicStartNotifications(
-      m_characteristic->instance_id,
+      m_characteristic->instance_id, std::move(ptrInfo),
       convertToBaseCallback(
           WTF::bind(&BluetoothRemoteGATTCharacteristic::NotificationsCallback,
                     wrapPersistent(this), wrapPersistent(resolver))));

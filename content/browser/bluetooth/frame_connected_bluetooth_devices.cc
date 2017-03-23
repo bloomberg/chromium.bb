@@ -4,6 +4,7 @@
 
 #include "content/browser/bluetooth/frame_connected_bluetooth_devices.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -11,6 +12,17 @@
 #include "device/bluetooth/bluetooth_gatt_connection.h"
 
 namespace content {
+
+struct GATTConnectionAndServerClient {
+  GATTConnectionAndServerClient(
+      std::unique_ptr<device::BluetoothGattConnection> connection,
+      blink::mojom::WebBluetoothServerClientAssociatedPtr client)
+      : gatt_connection(std::move(connection)),
+        server_client(std::move(client)) {}
+
+  std::unique_ptr<device::BluetoothGattConnection> gatt_connection;
+  blink::mojom::WebBluetoothServerClientAssociatedPtr server_client;
+};
 
 FrameConnectedBluetoothDevices::FrameConnectedBluetoothDevices(
     RenderFrameHost* rfh)
@@ -29,13 +41,14 @@ bool FrameConnectedBluetoothDevices::IsConnectedToDeviceWithId(
   if (connection_iter == device_id_to_connection_map_.end()) {
     return false;
   }
-  DCHECK(connection_iter->second->IsConnected());
+  DCHECK(connection_iter->second->gatt_connection->IsConnected());
   return true;
 }
 
 void FrameConnectedBluetoothDevices::Insert(
     const WebBluetoothDeviceId& device_id,
-    std::unique_ptr<device::BluetoothGattConnection> connection) {
+    std::unique_ptr<device::BluetoothGattConnection> connection,
+    blink::mojom::WebBluetoothServerClientAssociatedPtr client) {
   if (device_id_to_connection_map_.find(device_id) !=
       device_id_to_connection_map_.end()) {
     // It's possible for WebBluetoothServiceImpl to issue two successive
@@ -50,7 +63,11 @@ void FrameConnectedBluetoothDevices::Insert(
     return;
   }
   device_address_to_id_map_[connection->GetDeviceAddress()] = device_id;
-  device_id_to_connection_map_[device_id] = std::move(connection);
+  auto gatt_connection_and_client =
+      base::MakeUnique<GATTConnectionAndServerClient>(std::move(connection),
+                                                      std::move(client));
+  device_id_to_connection_map_[device_id] =
+      std::move(gatt_connection_and_client);
   IncrementDevicesConnectedCount();
 }
 
@@ -61,7 +78,7 @@ void FrameConnectedBluetoothDevices::CloseConnectionToDeviceWithId(
     return;
   }
   CHECK(device_address_to_id_map_.erase(
-      connection_iter->second->GetDeviceAddress()));
+      connection_iter->second->gatt_connection->GetDeviceAddress()));
   device_id_to_connection_map_.erase(connection_iter);
   DecrementDevicesConnectedCount();
 }
@@ -74,8 +91,11 @@ FrameConnectedBluetoothDevices::CloseConnectionToDeviceWithAddress(
     return base::nullopt;
   }
   WebBluetoothDeviceId device_id = device_address_iter->second;
+  auto device_id_iter = device_id_to_connection_map_.find(device_id);
+  CHECK(device_id_iter != device_id_to_connection_map_.end());
+  device_id_iter->second->server_client->GATTServerDisconnected();
   CHECK(device_address_to_id_map_.erase(device_address));
-  CHECK(device_id_to_connection_map_.erase(device_id));
+  device_id_to_connection_map_.erase(device_id);
   DecrementDevicesConnectedCount();
   return base::make_optional(device_id);
 }

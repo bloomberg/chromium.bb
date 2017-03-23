@@ -11,10 +11,10 @@
 #include "core/dom/DOMDataView.h"
 #include "modules/EventTargetModules.h"
 #include "modules/bluetooth/BluetoothRemoteGATTService.h"
+#include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/bluetooth/web_bluetooth.mojom-blink.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 
@@ -34,7 +34,8 @@ class ScriptState;
 // CallbackPromiseAdapter class comments.
 class BluetoothRemoteGATTCharacteristic final
     : public EventTargetWithInlineData,
-      public ContextLifecycleObserver {
+      public ContextLifecycleObserver,
+      public mojom::blink::WebBluetoothCharacteristicClient {
   USING_PRE_FINALIZER(BluetoothRemoteGATTCharacteristic, Dispose);
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(BluetoothRemoteGATTCharacteristic);
@@ -55,7 +56,9 @@ class BluetoothRemoteGATTCharacteristic final
   // Save value.
   void SetValue(DOMDataView*);
 
-  void DispatchCharacteristicValueChanged(const Vector<uint8_t>& value);
+  // mojom::blink::WebBluetoothCharacteristicClient:
+  void RemoteCharacteristicValueChanged(
+      const WTF::Vector<uint8_t>& value) override;
 
   // ContextLifecycleObserver interface.
   void contextDestroyed(ExecutionContext*) override;
@@ -63,10 +66,6 @@ class BluetoothRemoteGATTCharacteristic final
   // USING_PRE_FINALIZER interface.
   // Called before the object gets garbage collected.
   void Dispose();
-
-  // Notify our embedder that we should stop any notifications.
-  // The function only notifies the embedder once.
-  void NotifyCharacteristicObjectRemoved();
 
   // EventTarget methods:
   const AtomicString& interfaceName() const override;
@@ -130,10 +129,11 @@ class BluetoothRemoteGATTCharacteristic final
 
   mojom::blink::WebBluetoothRemoteGATTCharacteristicPtr m_characteristic;
   Member<BluetoothRemoteGATTService> m_service;
-  bool m_stopped;
   Member<BluetoothCharacteristicProperties> m_properties;
   Member<DOMDataView> m_value;
   Member<BluetoothDevice> m_device;
+  mojo::AssociatedBindingSet<mojom::blink::WebBluetoothCharacteristicClient>
+      m_clientBindings;
 };
 
 }  // namespace blink

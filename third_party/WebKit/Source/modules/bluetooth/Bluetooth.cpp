@@ -130,13 +130,6 @@ static void ConvertRequestDeviceOptions(
   }
 }
 
-void Bluetooth::Dispose() {
-  // The pipe to this object must be closed when is marked unreachable to
-  // prevent messages from being dispatched before lazy sweeping.
-  if (m_clientBinding.is_bound())
-    m_clientBinding.Close();
-}
-
 void Bluetooth::RequestDeviceCallback(
     ScriptPromiseResolver* resolver,
     mojom::blink::WebBluetoothResult result,
@@ -188,15 +181,6 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* scriptState,
 
     if (interfaceProvider)
       interfaceProvider->getInterface(mojo::MakeRequest(&m_service));
-
-    if (m_service) {
-      // Create an associated interface ptr and pass it to the
-      // WebBluetoothService so that it can send us events without us
-      // prompting.
-      mojom::blink::WebBluetoothServiceClientAssociatedPtrInfo ptrInfo;
-      m_clientBinding.Bind(&ptrInfo);
-      m_service->SetClient(std::move(ptrInfo));
-    }
   }
 
   if (!m_service) {
@@ -229,53 +213,11 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* scriptState,
   return promise;
 }
 
-void Bluetooth::AddToConnectedDevicesMap(const String& deviceId,
-                                         BluetoothDevice* device) {
-  m_connectedDevices.insert(deviceId, device);
-}
-
-void Bluetooth::RemoveFromConnectedDevicesMap(const String& deviceId) {
-  m_connectedDevices.erase(deviceId);
-}
-
-void Bluetooth::RegisterCharacteristicObject(
-    const String& characteristicInstanceId,
-    BluetoothRemoteGATTCharacteristic* characteristic) {
-  m_activeCharacteristics.insert(characteristicInstanceId, characteristic);
-}
-
-void Bluetooth::CharacteristicObjectRemoved(
-    const String& characteristicInstanceId) {
-  m_activeCharacteristics.erase(characteristicInstanceId);
-}
-
 DEFINE_TRACE(Bluetooth) {
   visitor->trace(m_deviceInstanceMap);
-  visitor->trace(m_activeCharacteristics);
-  visitor->trace(m_connectedDevices);
 }
 
-Bluetooth::Bluetooth() : m_clientBinding(this) {}
-
-void Bluetooth::RemoteCharacteristicValueChanged(
-    const WTF::String& characteristicInstanceId,
-    const WTF::Vector<uint8_t>& value) {
-  BluetoothRemoteGATTCharacteristic* characteristic =
-      m_activeCharacteristics.at(characteristicInstanceId);
-  if (characteristic)
-    characteristic->DispatchCharacteristicValueChanged(value);
-}
-
-void Bluetooth::GattServerDisconnected(const WTF::String& deviceId) {
-  BluetoothDevice* device = m_connectedDevices.at(deviceId);
-  if (device) {
-    // Remove device from the map before calling dispatchGattServerDisconnected
-    // to avoid removing a device the gattserverdisconnected event handler might
-    // have re-connected.
-    m_connectedDevices.erase(deviceId);
-    device->DispatchGattServerDisconnected();
-  }
-}
+Bluetooth::Bluetooth() {}
 
 BluetoothDevice* Bluetooth::GetBluetoothDeviceRepresentingDevice(
     mojom::blink::WebBluetoothDevicePtr devicePtr,

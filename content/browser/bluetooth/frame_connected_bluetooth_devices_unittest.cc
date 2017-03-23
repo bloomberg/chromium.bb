@@ -13,6 +13,7 @@
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/bluetooth/test/mock_bluetooth_device.h"
 #include "device/bluetooth/test/mock_bluetooth_gatt_connection.h"
+#include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,6 +38,12 @@ constexpr char kDeviceName0[] = "Device0";
 const WebBluetoothDeviceId kDeviceId1("111111111111111111111A==");
 constexpr char kDeviceAddress1[] = "1";
 constexpr char kDeviceName1[] = "Device1";
+
+blink::mojom::WebBluetoothServerClientAssociatedPtr CreateServerClient() {
+  blink::mojom::WebBluetoothServerClientAssociatedPtr client;
+  mojo::MakeIsolatedRequest(&client);
+  return client;
+}
 
 }  // namespace
 
@@ -122,23 +129,28 @@ class FrameConnectedBluetoothDevicesTest
 };
 
 TEST_F(FrameConnectedBluetoothDevicesTest, Insert_Once) {
-  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0));
+  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0),
+                CreateServerClient());
 
   EXPECT_TRUE(contents()->IsConnectedToBluetoothDevice());
   EXPECT_TRUE(map0_->IsConnectedToDeviceWithId(kDeviceId0));
 }
 
 TEST_F(FrameConnectedBluetoothDevicesTest, Insert_Twice) {
-  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0));
-  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0));
+  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0),
+                CreateServerClient());
+  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0),
+                CreateServerClient());
 
   EXPECT_TRUE(contents()->IsConnectedToBluetoothDevice());
   EXPECT_TRUE(map0_->IsConnectedToDeviceWithId(kDeviceId0));
 }
 
 TEST_F(FrameConnectedBluetoothDevicesTest, Insert_TwoDevices) {
-  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0));
-  map0_->Insert(kDeviceId1, GetConnection(kDeviceAddress1));
+  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0),
+                CreateServerClient());
+  map0_->Insert(kDeviceId1, GetConnection(kDeviceAddress1),
+                CreateServerClient());
 
   EXPECT_TRUE(contents()->IsConnectedToBluetoothDevice());
   EXPECT_TRUE(map0_->IsConnectedToDeviceWithId(kDeviceId0));
@@ -146,8 +158,10 @@ TEST_F(FrameConnectedBluetoothDevicesTest, Insert_TwoDevices) {
 }
 
 TEST_F(FrameConnectedBluetoothDevicesTest, Insert_TwoMaps) {
-  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0));
-  map1_->Insert(kDeviceId1, GetConnection(kDeviceAddress1));
+  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0),
+                CreateServerClient());
+  map1_->Insert(kDeviceId1, GetConnection(kDeviceAddress1),
+                CreateServerClient());
 
   EXPECT_TRUE(contents()->IsConnectedToBluetoothDevice());
   EXPECT_TRUE(map0_->IsConnectedToDeviceWithId(kDeviceId0));
@@ -156,7 +170,8 @@ TEST_F(FrameConnectedBluetoothDevicesTest, Insert_TwoMaps) {
 
 TEST_F(FrameConnectedBluetoothDevicesTest,
        CloseConnectionId_OneDevice_AddOnce_RemoveOnce) {
-  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0));
+  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0),
+                CreateServerClient());
 
   EXPECT_TRUE(contents()->IsConnectedToBluetoothDevice());
   EXPECT_TRUE(map0_->IsConnectedToDeviceWithId(kDeviceId0));
@@ -169,7 +184,8 @@ TEST_F(FrameConnectedBluetoothDevicesTest,
 
 TEST_F(FrameConnectedBluetoothDevicesTest,
        CloseConnectionId_OneDevice_AddOnce_RemoveTwice) {
-  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0));
+  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0),
+                CreateServerClient());
 
   EXPECT_TRUE(contents()->IsConnectedToBluetoothDevice());
   EXPECT_TRUE(map0_->IsConnectedToDeviceWithId(kDeviceId0));
@@ -183,8 +199,10 @@ TEST_F(FrameConnectedBluetoothDevicesTest,
 
 TEST_F(FrameConnectedBluetoothDevicesTest,
        CloseConnectionId_OneDevice_AddTwice_RemoveOnce) {
-  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0));
-  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0));
+  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0),
+                CreateServerClient());
+  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0),
+                CreateServerClient());
 
   EXPECT_TRUE(contents()->IsConnectedToBluetoothDevice());
   EXPECT_TRUE(map0_->IsConnectedToDeviceWithId(kDeviceId0));
@@ -197,8 +215,10 @@ TEST_F(FrameConnectedBluetoothDevicesTest,
 
 TEST_F(FrameConnectedBluetoothDevicesTest,
        CloseConnectionId_OneDevice_AddTwice_RemoveTwice) {
-  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0));
-  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0));
+  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0),
+                CreateServerClient());
+  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0),
+                CreateServerClient());
 
   EXPECT_TRUE(contents()->IsConnectedToBluetoothDevice());
   EXPECT_TRUE(map0_->IsConnectedToDeviceWithId(kDeviceId0));
@@ -211,8 +231,10 @@ TEST_F(FrameConnectedBluetoothDevicesTest,
 }
 
 TEST_F(FrameConnectedBluetoothDevicesTest, CloseConnectionId_TwoDevices) {
-  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0));
-  map0_->Insert(kDeviceId1, GetConnection(kDeviceAddress1));
+  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0),
+                CreateServerClient());
+  map0_->Insert(kDeviceId1, GetConnection(kDeviceAddress1),
+                CreateServerClient());
 
   EXPECT_TRUE(contents()->IsConnectedToBluetoothDevice());
   EXPECT_TRUE(map0_->IsConnectedToDeviceWithId(kDeviceId0));
@@ -230,8 +252,10 @@ TEST_F(FrameConnectedBluetoothDevicesTest, CloseConnectionId_TwoDevices) {
 }
 
 TEST_F(FrameConnectedBluetoothDevicesTest, CloseConnectionId_TwoMaps) {
-  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0));
-  map1_->Insert(kDeviceId1, GetConnection(kDeviceAddress1));
+  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0),
+                CreateServerClient());
+  map1_->Insert(kDeviceId1, GetConnection(kDeviceAddress1),
+                CreateServerClient());
 
   EXPECT_TRUE(contents()->IsConnectedToBluetoothDevice());
   EXPECT_TRUE(map0_->IsConnectedToDeviceWithId(kDeviceId0));
@@ -250,7 +274,8 @@ TEST_F(FrameConnectedBluetoothDevicesTest, CloseConnectionId_TwoMaps) {
 
 TEST_F(FrameConnectedBluetoothDevicesTest,
        CloseConnectionAddress_OneDevice_AddOnce_RemoveOnce) {
-  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0));
+  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0),
+                CreateServerClient());
 
   EXPECT_TRUE(contents()->IsConnectedToBluetoothDevice());
   EXPECT_TRUE(map0_->IsConnectedToDeviceWithId(kDeviceId0));
@@ -264,7 +289,8 @@ TEST_F(FrameConnectedBluetoothDevicesTest,
 
 TEST_F(FrameConnectedBluetoothDevicesTest,
        CloseConnectionAddress_OneDevice_AddOnce_RemoveTwice) {
-  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0));
+  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0),
+                CreateServerClient());
 
   EXPECT_TRUE(contents()->IsConnectedToBluetoothDevice());
   EXPECT_TRUE(map0_->IsConnectedToDeviceWithId(kDeviceId0));
@@ -279,8 +305,10 @@ TEST_F(FrameConnectedBluetoothDevicesTest,
 
 TEST_F(FrameConnectedBluetoothDevicesTest,
        CloseConnectionAddress_OneDevice_AddTwice_RemoveOnce) {
-  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0));
-  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0));
+  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0),
+                CreateServerClient());
+  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0),
+                CreateServerClient());
 
   EXPECT_TRUE(contents()->IsConnectedToBluetoothDevice());
   EXPECT_TRUE(map0_->IsConnectedToDeviceWithId(kDeviceId0));
@@ -294,8 +322,10 @@ TEST_F(FrameConnectedBluetoothDevicesTest,
 
 TEST_F(FrameConnectedBluetoothDevicesTest,
        CloseConnectionAddress_OneDevice_AddTwice_RemoveTwice) {
-  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0));
-  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0));
+  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0),
+                CreateServerClient());
+  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0),
+                CreateServerClient());
 
   EXPECT_TRUE(contents()->IsConnectedToBluetoothDevice());
   EXPECT_TRUE(map0_->IsConnectedToDeviceWithId(kDeviceId0));
@@ -309,8 +339,10 @@ TEST_F(FrameConnectedBluetoothDevicesTest,
 }
 
 TEST_F(FrameConnectedBluetoothDevicesTest, CloseConnectionAddress_TwoDevices) {
-  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0));
-  map0_->Insert(kDeviceId1, GetConnection(kDeviceAddress1));
+  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0),
+                CreateServerClient());
+  map0_->Insert(kDeviceId1, GetConnection(kDeviceAddress1),
+                CreateServerClient());
 
   EXPECT_TRUE(contents()->IsConnectedToBluetoothDevice());
   EXPECT_TRUE(map0_->IsConnectedToDeviceWithId(kDeviceId0));
@@ -331,8 +363,10 @@ TEST_F(FrameConnectedBluetoothDevicesTest, CloseConnectionAddress_TwoDevices) {
 }
 
 TEST_F(FrameConnectedBluetoothDevicesTest, CloseConnectionAddress_TwoMaps) {
-  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0));
-  map1_->Insert(kDeviceId1, GetConnection(kDeviceAddress1));
+  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0),
+                CreateServerClient());
+  map1_->Insert(kDeviceId1, GetConnection(kDeviceAddress1),
+                CreateServerClient());
 
   EXPECT_TRUE(contents()->IsConnectedToBluetoothDevice());
   EXPECT_TRUE(map0_->IsConnectedToDeviceWithId(kDeviceId0));
@@ -353,8 +387,10 @@ TEST_F(FrameConnectedBluetoothDevicesTest, CloseConnectionAddress_TwoMaps) {
 }
 
 TEST_F(FrameConnectedBluetoothDevicesTest, Destruction_MultipleDevices) {
-  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0));
-  map0_->Insert(kDeviceId1, GetConnection(kDeviceAddress1));
+  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0),
+                CreateServerClient());
+  map0_->Insert(kDeviceId1, GetConnection(kDeviceAddress1),
+                CreateServerClient());
 
   EXPECT_TRUE(contents()->IsConnectedToBluetoothDevice());
 
@@ -364,11 +400,15 @@ TEST_F(FrameConnectedBluetoothDevicesTest, Destruction_MultipleDevices) {
 }
 
 TEST_F(FrameConnectedBluetoothDevicesTest, Destruction_MultipleMaps) {
-  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0));
-  map0_->Insert(kDeviceId1, GetConnection(kDeviceAddress1));
+  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0),
+                CreateServerClient());
+  map0_->Insert(kDeviceId1, GetConnection(kDeviceAddress1),
+                CreateServerClient());
 
-  map1_->Insert(kDeviceId0, GetConnection(kDeviceAddress0));
-  map1_->Insert(kDeviceId1, GetConnection(kDeviceAddress1));
+  map1_->Insert(kDeviceId0, GetConnection(kDeviceAddress0),
+                CreateServerClient());
+  map1_->Insert(kDeviceId1, GetConnection(kDeviceAddress1),
+                CreateServerClient());
 
   EXPECT_TRUE(contents()->IsConnectedToBluetoothDevice());
 
@@ -387,7 +427,8 @@ TEST_F(FrameConnectedBluetoothDevicesTest,
   // Tests that we don't crash when FrameConnectedBluetoothDevices contains
   // at least one device, and it is destroyed while WebContentsImpl is being
   // destroyed.
-  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0));
+  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0),
+                CreateServerClient());
   DeleteContents();
 }
 

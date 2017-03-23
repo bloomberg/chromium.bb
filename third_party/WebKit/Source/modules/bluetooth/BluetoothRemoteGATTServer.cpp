@@ -15,16 +15,27 @@
 #include "modules/bluetooth/BluetoothError.h"
 #include "modules/bluetooth/BluetoothRemoteGATTService.h"
 #include "modules/bluetooth/BluetoothUUID.h"
+#include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include <utility>
 
 namespace blink {
 
-BluetoothRemoteGATTServer::BluetoothRemoteGATTServer(BluetoothDevice* device)
-    : m_device(device), m_connected(false) {}
+BluetoothRemoteGATTServer::BluetoothRemoteGATTServer(ExecutionContext* context,
+                                                     BluetoothDevice* device)
+    : ContextLifecycleObserver(context), m_device(device), m_connected(false) {}
 
 BluetoothRemoteGATTServer* BluetoothRemoteGATTServer::Create(
+    ExecutionContext* context,
     BluetoothDevice* device) {
-  return new BluetoothRemoteGATTServer(device);
+  return new BluetoothRemoteGATTServer(context, device);
+}
+
+void BluetoothRemoteGATTServer::contextDestroyed(ExecutionContext*) {
+  Dispose();
+}
+
+void BluetoothRemoteGATTServer::GATTServerDisconnected() {
+  DispatchDisconnected();
 }
 
 void BluetoothRemoteGATTServer::AddToActiveAlgorithms(
@@ -42,9 +53,41 @@ bool BluetoothRemoteGATTServer::RemoveFromActiveAlgorithms(
   return true;
 }
 
+void BluetoothRemoteGATTServer::DisconnectIfConnected() {
+  if (m_connected) {
+    SetConnected(false);
+    ClearActiveAlgorithms();
+    mojom::blink::WebBluetoothService* service =
+        m_device->bluetooth()->Service();
+    service->RemoteServerDisconnect(m_device->id());
+  }
+}
+
+void BluetoothRemoteGATTServer::CleanupDisconnectedDeviceAndFireEvent() {
+  DCHECK(m_connected);
+  SetConnected(false);
+  ClearActiveAlgorithms();
+  m_device->ClearAttributeInstanceMapAndFireEvent();
+}
+
+void BluetoothRemoteGATTServer::DispatchDisconnected() {
+  if (!m_connected) {
+    return;
+  }
+  CleanupDisconnectedDeviceAndFireEvent();
+}
+
+void BluetoothRemoteGATTServer::Dispose() {
+  DisconnectIfConnected();
+  // The pipe to this object must be closed when is marked unreachable to
+  // prevent messages from being dispatched before lazy sweeping.
+  m_clientBindings.CloseAllBindings();
+}
+
 DEFINE_TRACE(BluetoothRemoteGATTServer) {
   visitor->trace(m_activeAlgorithms);
   visitor->trace(m_device);
+  ContextLifecycleObserver::trace(visitor);
 }
 
 void BluetoothRemoteGATTServer::ConnectCallback(
@@ -55,7 +98,6 @@ void BluetoothRemoteGATTServer::ConnectCallback(
     return;
 
   if (result == mojom::blink::WebBluetoothResult::SUCCESS) {
-    m_device->bluetooth()->AddToConnectedDevicesMap(m_device->id(), m_device);
     SetConnected(true);
     resolver->resolve(this);
   } else {
@@ -68,10 +110,15 @@ ScriptPromise BluetoothRemoteGATTServer::connect(ScriptState* scriptState) {
   ScriptPromise promise = resolver->promise();
 
   mojom::blink::WebBluetoothService* service = m_device->bluetooth()->Service();
+  mojom::blink::WebBluetoothServerClientAssociatedPtrInfo ptrInfo;
+  auto request = mojo::MakeRequest(&ptrInfo);
+  m_clientBindings.AddBinding(this, std::move(request));
+
   service->RemoteServerConnect(
-      m_device->id(), convertToBaseCallback(WTF::bind(
-                          &BluetoothRemoteGATTServer::ConnectCallback,
-                          wrapPersistent(this), wrapPersistent(resolver))));
+      m_device->id(), std::move(ptrInfo),
+      convertToBaseCallback(
+          WTF::bind(&BluetoothRemoteGATTServer::ConnectCallback,
+                    wrapPersistent(this), wrapPersistent(resolver))));
 
   return promise;
 }
@@ -79,8 +126,8 @@ ScriptPromise BluetoothRemoteGATTServer::connect(ScriptState* scriptState) {
 void BluetoothRemoteGATTServer::disconnect(ScriptState* scriptState) {
   if (!m_connected)
     return;
-  m_device->CleanupDisconnectedDeviceAndFireEvent();
-  m_device->bluetooth()->RemoveFromConnectedDevicesMap(m_device->id());
+  CleanupDisconnectedDeviceAndFireEvent();
+  m_clientBindings.CloseAllBindings();
   mojom::blink::WebBluetoothService* service = m_device->bluetooth()->Service();
   service->RemoteServerDisconnect(m_device->id());
 }
