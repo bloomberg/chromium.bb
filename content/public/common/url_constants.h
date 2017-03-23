@@ -23,9 +23,6 @@ CONTENT_EXPORT extern const char kViewSourceScheme[];
 #if defined(OS_CHROMEOS)
 CONTENT_EXPORT extern const char kExternalFileScheme[];
 #endif
-#if defined(OS_ANDROID)
-CONTENT_EXPORT extern const char kChromeNativeUIScheme[];
-#endif
 
 // Hosts for about URLs.
 CONTENT_EXPORT extern const char kAboutSrcDocURL[];
@@ -37,10 +34,6 @@ CONTENT_EXPORT extern const char kChromeUIBrowserCrashHost[];
 CONTENT_EXPORT extern const char kChromeUIDinoHost[];
 CONTENT_EXPORT extern const char kChromeUIGpuHost[];
 CONTENT_EXPORT extern const char kChromeUIHistogramHost[];
-CONTENT_EXPORT extern const char kChromeUIHistoryHost[];
-#if defined(OS_ANDROID)
-CONTENT_EXPORT extern const char kChromeUIHistoryFrameHost[];
-#endif
 CONTENT_EXPORT extern const char kChromeUIIndexedDBInternalsHost[];
 CONTENT_EXPORT extern const char kChromeUIMediaInternalsHost[];
 CONTENT_EXPORT extern const char kChromeUIMemoryExhaustHost[];
@@ -50,7 +43,6 @@ CONTENT_EXPORT extern const char kChromeUINetworkViewCacheHost[];
 CONTENT_EXPORT extern const char kChromeUIResourcesHost[];
 CONTENT_EXPORT extern const char kChromeUIServiceWorkerInternalsHost[];
 CONTENT_EXPORT extern const char kChromeUITracingHost[];
-CONTENT_EXPORT extern const char kChromeUIUberHost[];
 CONTENT_EXPORT extern const char kChromeUIWebRTCInternalsHost[];
 
 // Full about URLs (including schemes).
@@ -82,10 +74,6 @@ CONTENT_EXPORT extern const char kUnreachableWebDataURL[];
 CONTENT_EXPORT extern const char kChromeUINetworkViewCacheURL[];
 CONTENT_EXPORT extern const char kChromeUIResourcesURL[];
 CONTENT_EXPORT extern const char kChromeUIShorthangURL[];
-#if defined(OS_ANDROID)
-CONTENT_EXPORT extern const char kChromeUIHistoryURL[];
-CONTENT_EXPORT extern const char kChromeUINativeHistoryURL[];
-#endif
 
 }  // namespace content
 

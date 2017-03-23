@@ -22,6 +22,7 @@ void AppendNavigations(sessions::SessionTab* tab,
 }
 
 }  // namespace
+
 class SessionCommonUtilTest : public ::testing::Test {};
 
 TEST_F(SessionCommonUtilTest, GetSelectedIndex) {

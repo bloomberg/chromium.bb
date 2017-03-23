@@ -102,6 +102,7 @@ extern const char kChromeUINativeNewTabURL[];
 extern const char kChromeUINativeBookmarksURL[];
 extern const char kChromeUINativePhysicalWebDiagnosticsURL[];
 extern const char kChromeUINativeRecentTabsURL[];
+extern const char kChromeUINativeHistoryURL[];
 extern const char kChromeUIWebApksURL[];
 #endif  // defined(OS_ANDROID)
 
@@ -194,6 +195,7 @@ extern const char kChromeUIHelpFrameHost[];
 extern const char kChromeUIHelpHost[];
 extern const char kChromeUIHangHost[];
 extern const char kChromeUIHangUIHost[];
+extern const char kChromeUIHistoryHost[];
 extern const char kChromeUIHistoryFrameHost[];
 extern const char kChromeUIIdentityInternalsHost[];
 extern const char kChromeUIInspectHost[];

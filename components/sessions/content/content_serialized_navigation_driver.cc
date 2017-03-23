@@ -4,27 +4,23 @@
 
 #include "components/sessions/content/content_serialized_navigation_driver.h"
 
+#include <utility>
+
 #include "base/memory/singleton.h"
-#include "build/build_config.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/page_state.h"
-#include "content/public/common/referrer.h"
-#include "content/public/common/url_constants.h"
+#include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 
 namespace sessions {
 
 namespace {
+
 const int kObsoleteReferrerPolicyAlways = 0;
 const int kObsoleteReferrerPolicyDefault = 1;
 const int kObsoleteReferrerPolicyNever = 2;
 const int kObsoleteReferrerPolicyOrigin = 3;
 
-bool IsUberOrUberReplacementURL(const GURL& url) {
-  return url.SchemeIs(content::kChromeUIScheme) &&
-         (url.host_piece() == content::kChromeUIHistoryHost ||
-          url.host_piece() == content::kChromeUIUberHost);
-}
+ContentSerializedNavigationDriver* g_instance = nullptr;
 
 }  // namespace
 
@@ -36,9 +32,21 @@ SerializedNavigationDriver* SerializedNavigationDriver::Get() {
 // static
 ContentSerializedNavigationDriver*
 ContentSerializedNavigationDriver::GetInstance() {
-  return base::Singleton<
+  if (g_instance)
+    return g_instance;
+
+  auto* instance = base::Singleton<
       ContentSerializedNavigationDriver,
       base::LeakySingletonTraits<ContentSerializedNavigationDriver>>::get();
+  g_instance = instance;
+  return instance;
+}
+
+// static
+void ContentSerializedNavigationDriver::SetInstance(
+    ContentSerializedNavigationDriver* instance) {
+  DCHECK(!g_instance || !instance);
+  g_instance = instance;
 }
 
 ContentSerializedNavigationDriver::ContentSerializedNavigationDriver() {
@@ -93,74 +101,16 @@ bool ContentSerializedNavigationDriver::MapReferrerPolicyToNewValues(
 std::string
 ContentSerializedNavigationDriver::GetSanitizedPageStateForPickle(
     const SerializedNavigationEntry* navigation) const {
-  if (!navigation->has_post_data_) {
-    return navigation->encoded_page_state_;
-  }
-  content::PageState page_state =
-      content::PageState::CreateFromEncodedData(
-          navigation->encoded_page_state_);
+  if (!navigation->has_post_data())
+    return navigation->encoded_page_state();
+
+  content::PageState page_state = content::PageState::CreateFromEncodedData(
+      navigation->encoded_page_state());
   return page_state.RemovePasswordData().ToEncodedData();
 }
 
 void ContentSerializedNavigationDriver::Sanitize(
     SerializedNavigationEntry* navigation) const {
-  content::Referrer old_referrer(
-      navigation->referrer_url_,
-      static_cast<blink::WebReferrerPolicy>(navigation->referrer_policy_));
-  content::Referrer new_referrer =
-      content::Referrer::SanitizeForRequest(navigation->virtual_url_,
-                                            old_referrer);
-
-  // Clear any Uber UI page state so that these pages are reloaded rather than
-  // restored from page state. This fixes session restore when WebUI URLs
-  // change.
-  if (IsUberOrUberReplacementURL(navigation->virtual_url_) &&
-      IsUberOrUberReplacementURL(navigation->original_request_url_)) {
-    navigation->encoded_page_state_.clear();
-  }
-
-  // No need to compare the policy, as it doesn't change during
-  // sanitization. If there has been a change, the referrer needs to be
-  // stripped from the page state as well.
-  if (navigation->referrer_url_ != new_referrer.url) {
-    navigation->referrer_url_ = GURL();
-    navigation->referrer_policy_ = GetDefaultReferrerPolicy();
-    navigation->encoded_page_state_ =
-        StripReferrerFromPageState(navigation->encoded_page_state_);
-  }
-
-#if defined(OS_ANDROID)
-  // Rewrite the old new tab and welcome page URLs to the new NTP URL.
-  if (navigation->virtual_url_.SchemeIs(content::kChromeUIScheme) &&
-      (navigation->virtual_url_.host_piece() == "welcome" ||
-       navigation->virtual_url_.host_piece() == "newtab")) {
-    navigation->virtual_url_ = GURL("chrome-native://newtab/");
-    navigation->original_request_url_ = navigation->virtual_url_;
-    navigation->encoded_page_state_ = content::PageState::CreateFromURL(
-        navigation->virtual_url_).ToEncodedData();
-  }
-
-  if (base::FeatureList::IsEnabled(features::kNativeAndroidHistoryManager) &&
-      navigation->virtual_url_.SchemeIs(content::kChromeUIScheme) &&
-      (navigation->virtual_url_.host_piece() == content::kChromeUIHistoryHost ||
-       navigation->virtual_url_.host_piece() ==
-           content::kChromeUIHistoryFrameHost)) {
-    // Rewrite the old history Web UI to the new android native history.
-    navigation->virtual_url_ = GURL(content::kChromeUINativeHistoryURL);
-    navigation->original_request_url_ = navigation->virtual_url_;
-    navigation->encoded_page_state_ = content::PageState::CreateFromURL(
-        navigation->virtual_url_).ToEncodedData();
-  } else if (
-      !base::FeatureList::IsEnabled(features::kNativeAndroidHistoryManager) &&
-      navigation->virtual_url_.SchemeIs(content::kChromeNativeUIScheme) &&
-      navigation->virtual_url_.host_piece() == content::kChromeUIHistoryHost) {
-    // If the android native history UI has been disabled, redirect
-    // chrome-native://history to the old web UI.
-    navigation->virtual_url_ = GURL(content::kChromeUIHistoryURL);
-    navigation->original_request_url_ = navigation->virtual_url_;
-    navigation->encoded_page_state_.clear();
-  }
-#endif  // defined(OS_ANDROID)
 }
 
 std::string ContentSerializedNavigationDriver::StripReferrerFromPageState(

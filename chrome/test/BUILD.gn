@@ -3345,6 +3345,7 @@ test("unit_tests") {
     "../browser/search_engines/template_url_service_sync_unittest.cc",
     "../browser/search_engines/template_url_service_unittest.cc",
     "../browser/service_process/service_process_control_mac_unittest.mm",
+    "../browser/sessions/chrome_serialized_navigation_driver_unittest.cc",
     "../browser/sessions/restore_on_startup_policy_handler_unittest.cc",
     "../browser/sessions/session_common_utils_unittest.cc",
     "../browser/shell_integration_win_unittest.cc",

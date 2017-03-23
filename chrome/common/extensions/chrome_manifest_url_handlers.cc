@@ -15,7 +15,6 @@
 #include "build/build_config.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/common/url_constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest.h"
@@ -109,7 +108,7 @@ bool URLOverridesHandler::Parse(Extension* extension, base::string16* error) {
     // Restrict override pages to a list of supported URLs.
     bool is_allowed_host = page == chrome::kChromeUINewTabHost ||
                            page == chrome::kChromeUIBookmarksHost ||
-                           page == content::kChromeUIHistoryHost;
+                           page == chrome::kChromeUIHistoryHost;
 #if defined(OS_CHROMEOS)
     is_allowed_host = is_allowed_host ||
                       page == chrome::kChromeUIActivationMessageHost ||

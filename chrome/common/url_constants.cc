@@ -111,6 +111,7 @@ const char kChromeUINativeBookmarksURL[] = "chrome-native://bookmarks/";
 const char kChromeUINativePhysicalWebDiagnosticsURL[] =
     "chrome-native://physical-web-diagnostics/";
 const char kChromeUINativeRecentTabsURL[] = "chrome-native://recent-tabs/";
+const char kChromeUINativeHistoryURL[] = "chrome-native://history/";
 const char kChromeUIWebApksURL[] = "chrome://webapks/";
 #endif
 
@@ -209,6 +210,7 @@ const char kChromeUIHangHost[] = "hang";
 const char kChromeUIHangUIHost[] = "uithreadhang";
 const char kChromeUIHelpFrameHost[] = "help-frame";
 const char kChromeUIHelpHost[] = "help";
+const char kChromeUIHistoryHost[] = "history";
 const char kChromeUIHistoryFrameHost[] = "history-frame";
 const char kChromeUIIdentityInternalsHost[] = "identity-internals";
 const char kChromeUIInspectHost[] = "inspect";
@@ -644,6 +646,7 @@ const char* const kChromeHostURLs[] = {
     kChromeUIDeviceLogHost,
     kChromeUIFlagsHost,
     kChromeUIGCMInternalsHost,
+    kChromeUIHistoryHost,
     kChromeUIInvalidationsHost,
     kChromeUILocalStateHost,
     kChromeUINetExportHost,
@@ -674,7 +677,6 @@ const char* const kChromeHostURLs[] = {
     content::kChromeUIDinoHost,
     content::kChromeUIGpuHost,
     content::kChromeUIHistogramHost,
-    content::kChromeUIHistoryHost,
     content::kChromeUIIndexedDBInternalsHost,
     content::kChromeUIMediaInternalsHost,
     content::kChromeUINetworkErrorHost,

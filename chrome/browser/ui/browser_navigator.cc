@@ -36,7 +36,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/url_constants.h"
 #include "extensions/features/features.h"
 
 #if defined(USE_ASH)
@@ -644,7 +643,7 @@ bool IsURLAllowedInIncognito(const GURL& url,
        url.host_piece() == chrome::kChromeUIMdSettingsHost ||
        url.host_piece() == chrome::kChromeUISettingsFrameHost ||
        url.host_piece() == chrome::kChromeUIHelpHost ||
-       url.host_piece() == content::kChromeUIHistoryHost ||
+       url.host_piece() == chrome::kChromeUIHistoryHost ||
        url.host_piece() == chrome::kChromeUIExtensionsHost ||
        url.host_piece() == chrome::kChromeUIBookmarksHost ||
 #if !defined(OS_CHROMEOS)

@@ -85,6 +85,7 @@
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/sessions/chrome_serialized_navigation_driver.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/tracing/navigation_tracing.h"
 #include "chrome/browser/translate/translate_service.h"
@@ -1789,6 +1790,13 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       metrics::ExecutionPhase::THREAD_WATCHER_START,
       g_browser_process->local_state());
   ThreadWatcherList::StartWatchingAll(parsed_command_line());
+
+  // This has to come before the first GetInstance() call. PreBrowserStart()
+  // seems like a reasonable place to put this, except on Android,
+  // OfflinePageInfoHandler::Register() below calls GetInstance().
+  // TODO(thestig): See if the Android code below can be moved to later.
+  sessions::ContentSerializedNavigationDriver::SetInstance(
+      ChromeSerializedNavigationDriver::GetInstance());
 
 #if defined(OS_ANDROID)
   ThreadWatcherAndroid::RegisterApplicationStatusListener();

@@ -18,8 +18,6 @@ class SerializedNavigationEntry;
 // must be provided by the driver on each platform.
 class SESSIONS_EXPORT SerializedNavigationDriver {
  public:
-  virtual ~SerializedNavigationDriver() {}
-
   // Returns the singleton SerializedNavigationDriver.
   static SerializedNavigationDriver* Get();
 
@@ -50,6 +48,9 @@ class SESSIONS_EXPORT SerializedNavigationDriver {
   // Removes the referrer from the encoded page state.
   virtual std::string StripReferrerFromPageState(
       const std::string& page_state) const = 0;
+
+ protected:
+  virtual ~SerializedNavigationDriver() {}
 };
 
 }  // namespace sessions

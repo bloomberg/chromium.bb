@@ -5,14 +5,13 @@
 #ifndef COMPONENTS_SESSIONS_CONTENT_CONTENT_SERIALIZED_NAVIGATION_DRIVER_H_
 #define COMPONENTS_SESSIONS_CONTENT_CONTENT_SERIALIZED_NAVIGATION_DRIVER_H_
 
-#include "components/sessions/core/serialized_navigation_driver.h"
-
 #include <map>
 #include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "components/sessions/content/extended_info_handler.h"
+#include "components/sessions/core/serialized_navigation_driver.h"
 #include "components/sessions/core/sessions_export.h"
 
 namespace base {
@@ -31,6 +30,9 @@ class SESSIONS_EXPORT ContentSerializedNavigationDriver
   // Returns the singleton ContentSerializedNavigationDriver.  Almost all
   // callers should use SerializedNavigationDriver::Get() instead.
   static ContentSerializedNavigationDriver* GetInstance();
+
+  // Allows an embedder to override the instance returned by GetInstance().
+  static void SetInstance(ContentSerializedNavigationDriver* instance);
 
   // SerializedNavigationDriver implementation.
   int GetDefaultReferrerPolicy() const override;
@@ -58,11 +60,12 @@ class SESSIONS_EXPORT ContentSerializedNavigationDriver
   // Returns all the registered handlers to deal with the extended info.
   const ExtendedInfoHandlerMap& GetAllExtendedInfoHandlers() const;
 
+ protected:
+  ContentSerializedNavigationDriver();
+
  private:
   friend struct base::DefaultSingletonTraits<ContentSerializedNavigationDriver>;
   friend class ContentSerializedNavigationBuilderTest;
-
-  ContentSerializedNavigationDriver();
 
   ExtendedInfoHandlerMap extended_info_handler_map_;
 

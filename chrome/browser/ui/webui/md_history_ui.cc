@@ -30,7 +30,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "content/public/common/url_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -52,7 +51,7 @@ bool MenuPromoShown(Profile* profile) {
 content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile,
                                                       bool use_test_title) {
   content::WebUIDataSource* source =
-      content::WebUIDataSource::Create(content::kChromeUIHistoryHost);
+      content::WebUIDataSource::Create(chrome::kChromeUIHistoryHost);
 
   // Localized strings (alphabetical order).
   source->AddLocalizedString("bookmarked", IDS_HISTORY_ENTRY_BOOKMARKED);
@@ -250,7 +249,7 @@ void MdHistoryUI::UpdateDataSource() {
   update->SetBoolean(kIsUserSignedInKey, IsUserSignedIn(profile));
   update->SetBoolean(kShowMenuPromoKey, !MenuPromoShown(profile));
 
-  content::WebUIDataSource::Update(profile, content::kChromeUIHistoryHost,
+  content::WebUIDataSource::Update(profile, chrome::kChromeUIHistoryHost,
                                    std::move(update));
 }
 
