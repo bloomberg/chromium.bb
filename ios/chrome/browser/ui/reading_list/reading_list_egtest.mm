@@ -349,8 +349,7 @@ id<GREYMatcher> EmptyBackground() {
 
 // Tests that only the "Cancel", "Delete All Read" and "Mark All…" buttons are
 // showing when not editing.
-// TODO(crbug.com/704401): Re-enable this test.
-- (void)DISABLED_testVisibleButtonsEditingModeEmptySelection {
+- (void)testVisibleButtonsEditingModeEmptySelection {
   AddEntriesAndEnterEdit();
 
   AssertButtonNotVisibleWithID(IDS_IOS_READING_LIST_DELETE_BUTTON);
@@ -365,8 +364,7 @@ id<GREYMatcher> EmptyBackground() {
 
 // Tests that only the "Cancel", "Delete" and "Mark Unread" buttons are showing
 // when not editing.
-// TODO(crbug.com/704401): Re-enable this test.
-- (void)DISABLED_testVisibleButtonsOnlyReadEntrySelected {
+- (void)testVisibleButtonsOnlyReadEntrySelected {
   AddEntriesAndEnterEdit();
   TapEntry(kReadTitle);
 
@@ -382,8 +380,7 @@ id<GREYMatcher> EmptyBackground() {
 
 // Tests that only the "Cancel", "Delete" and "Mark Read" buttons are showing
 // when not editing.
-// TODO(crbug.com/704401): Re-enable this test.
-- (void)DISABLED_testVisibleButtonsOnlyUnreadEntrySelected {
+- (void)testVisibleButtonsOnlyUnreadEntrySelected {
   AddEntriesAndEnterEdit();
   TapEntry(kUnreadTitle);
 
@@ -399,8 +396,7 @@ id<GREYMatcher> EmptyBackground() {
 
 // Tests that only the "Cancel", "Delete" and "Mark…" buttons are showing when
 // not editing.
-// TODO(crbug.com/704401): Re-enable this test.
-- (void)DISABLED_testVisibleButtonsMixedEntriesSelected {
+- (void)testVisibleButtonsMixedEntriesSelected {
   AddEntriesAndEnterEdit();
   TapEntry(kReadTitle);
   TapEntry(kUnreadTitle);

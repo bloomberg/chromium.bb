@@ -238,15 +238,13 @@ void MockSignIn() {
 #pragma mark Tests
 
 // Tests that no history is shown if there has been no navigation.
-// TODO(crbug.com/704403): Re-enable this test.
-- (void)DISABLED_testDisplayNoHistory {
+- (void)testDisplayNoHistory {
   [self openHistoryPanel];
   [self assertNoHistoryShown];
 }
 
 // Tests that the history panel displays navigation history.
-// TODO(crbug.com/704403): Re-enable this test.
-- (void)DISABLED_testDisplayHistory {
+- (void)testDisplayHistory {
   [self loadTestURLs];
   [self openHistoryPanel];
 
@@ -266,8 +264,7 @@ void MockSignIn() {
 }
 
 // Tests that history is not changed after performing back navigation.
-// TODO(crbug.com/704403): Re-enable this test.
-- (void)DISABLED_testHistoryUpdateAfterBackNavigation {
+- (void)testHistoryUpdateAfterBackNavigation {
   [ChromeEarlGrey loadURL:_URL1];
   [ChromeEarlGrey loadURL:_URL2];
 
@@ -287,8 +284,7 @@ void MockSignIn() {
 // Test that history displays a message about entries only if the user is logged
 // in, and that tapping on the link in the message opens a new tab with the sync
 // help page.
-// TODO(crbug.com/704403): Re-enable this test.
-- (void)DISABLED_testHistoryEntriesStatusCell {
+- (void)testHistoryEntriesStatusCell {
   [self loadTestURLs];
   [self openHistoryPanel];
   // Assert that no message is shown when the user is not signed in.
@@ -321,8 +317,7 @@ void MockSignIn() {
 }
 
 // Tests that searching history displays only entries matching the search term.
-// TODO(crbug.com/704403): Re-enable this test.
-- (void)DISABLED_testSearchHistory {
+- (void)testSearchHistory {
   [self loadTestURLs];
   [self openHistoryPanel];
   [[EarlGrey selectElementWithMatcher:SearchIconButton()]
@@ -341,8 +336,7 @@ void MockSignIn() {
 }
 
 // Tests deletion of history entries.
-// TODO(crbug.com/704403): Re-enable this test.
-- (void)DISABLED_testDeleteHistory {
+- (void)testDeleteHistory {
   [self loadTestURLs];
   [self openHistoryPanel];
 
