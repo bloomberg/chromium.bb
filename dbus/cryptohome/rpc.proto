@@ -131,6 +131,8 @@ message CreateRequest {
   // Setting this value means that the KeyData is filled as it
   // would be with a Key above or in an AddKeyRequest.
   optional bool copy_authorization_key = 2 [default=false];
+  // If set to true, always use eCryptfs as the encryption method.
+  optional bool force_ecryptfs = 3 [default=false];
   // In the future, this will contain account-wide data like
   // the deletion priority or the IdP's origin.
 }
