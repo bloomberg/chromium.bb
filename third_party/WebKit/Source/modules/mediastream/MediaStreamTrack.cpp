@@ -179,6 +179,10 @@ void MediaStreamTrack::setContentHint(const String& hint) {
   m_component->setContentHint(translatedHint);
 }
 
+bool MediaStreamTrack::remote() const {
+  return m_component->source()->remote();
+}
+
 String MediaStreamTrack::readyState() const {
   if (ended())
     return "ended";

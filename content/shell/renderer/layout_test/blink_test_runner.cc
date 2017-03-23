@@ -761,6 +761,8 @@ bool BlinkTestRunner::AddMediaStreamVideoSourceAndTrack(
   DCHECK(stream);
 #if BUILDFLAG(ENABLE_WEBRTC)
   return AddVideoTrackToMediaStream(base::MakeUnique<MockVideoCapturerSource>(),
+                                    false,  // is_remote
+                                    false,  // is_readonly
                                     stream);
 #else
   return false;
@@ -775,7 +777,9 @@ bool BlinkTestRunner::AddMediaStreamAudioSourceAndTrack(
       make_scoped_refptr(new MockAudioCapturerSource()),
       48000,  // sample rate
       media::CHANNEL_LAYOUT_STEREO,
-      480,  // sample frames per buffer
+      480,    // sample frames per buffer
+      false,  // is_remote
+      false,  // is_readonly
       stream);
 #else
   return false;

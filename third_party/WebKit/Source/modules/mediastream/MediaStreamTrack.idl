@@ -54,4 +54,7 @@ enum MediaStreamTrackState {
     MediaTrackConstraints getConstraints();
     MediaTrackSettings getSettings();
     [RuntimeEnabled=MediaTrackApplyConstraints, CallWith=ScriptState] Promise<void> applyConstraints(optional MediaTrackConstraints constraints);
+
+    // Non-standard APIs
+    [MeasureAs=MediaStreamTrackRemote] readonly attribute boolean remote;
 };

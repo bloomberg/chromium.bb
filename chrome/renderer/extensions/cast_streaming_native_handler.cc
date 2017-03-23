@@ -988,10 +988,14 @@ void CastStreamingNativeHandler::AddTracksToMediaStream(
   }
   if (!content::AddAudioTrackToMediaStream(
           audio, params.sample_rate(), params.channel_layout(),
-          params.frames_per_buffer(), &web_stream)) {
+          params.frames_per_buffer(), true,  // is_remote
+          true,                              // is_readonly
+          &web_stream)) {
     LOG(ERROR) << "Failed to add Cast audio track to media stream.";
   }
-  if (!content::AddVideoTrackToMediaStream(std::move(video), &web_stream)) {
+  if (!content::AddVideoTrackToMediaStream(std::move(video), true,  // is_remote
+                                           true,  // is_readonly
+                                           &web_stream)) {
     LOG(ERROR) << "Failed to add Cast video track to media stream.";
   }
 }

@@ -405,7 +405,7 @@ void MockWebRTCPeerConnectionHandler::UpdateRemoteStreams() {
       blink::WebMediaStreamSource webkit_source;
       webkit_source.initialize(local_audio_tracks[i].id(),
                                blink::WebMediaStreamSource::TypeAudio,
-                               local_audio_tracks[i].id());
+                               local_audio_tracks[i].id(), true /* remote */);
       remote_audio_tracks[i].initialize(webkit_source);
     }
 
@@ -417,7 +417,7 @@ void MockWebRTCPeerConnectionHandler::UpdateRemoteStreams() {
       blink::WebMediaStreamSource webkit_source;
       webkit_source.initialize(local_video_tracks[i].id(),
                                blink::WebMediaStreamSource::TypeVideo,
-                               local_video_tracks[i].id());
+                               local_video_tracks[i].id(), true /* remote */);
       remote_video_tracks[i].initialize(webkit_source);
     }
 

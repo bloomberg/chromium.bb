@@ -27,8 +27,13 @@ namespace content {
 // provided audio or video capturer source. A new WebMediaStreamTrack +
 // MediaStreamTrack pair is created, connected to the source and is plugged into
 // the WebMediaStream (|web_media_stream|).
+// |is_remote| should be true if the source of the data is not a local device.
+// |is_readonly| should be true if the format of the data cannot be changed by
+//     MediaTrackConstraints.
 CONTENT_EXPORT bool AddVideoTrackToMediaStream(
     std::unique_ptr<media::VideoCapturerSource> video_source,
+    bool is_remote,
+    bool is_readonly,
     blink::WebMediaStream* web_media_stream);
 
 // |sample_rate|, |channel_layout|, and |frames_per_buffer| specify the audio
@@ -40,6 +45,8 @@ CONTENT_EXPORT bool AddAudioTrackToMediaStream(
     int sample_rate,
     media::ChannelLayout channel_layout,
     int frames_per_buffer,
+    bool is_remote,
+    bool is_readonly,
     blink::WebMediaStream* web_media_stream);
 
 // On success returns pointer to the current format of the given video track;

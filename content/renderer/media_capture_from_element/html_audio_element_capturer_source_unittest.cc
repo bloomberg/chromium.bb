@@ -80,7 +80,8 @@ class HTMLAudioElementCapturerSourceTest : public testing::Test {
 
     blink_audio_source_.initialize(blink::WebString::fromUTF8("audio_id"),
                                    blink::WebMediaStreamSource::TypeAudio,
-                                   blink::WebString::fromUTF8("audio_track"));
+                                   blink::WebString::fromUTF8("audio_track"),
+                                   false /* remote */);
     blink_audio_track_.initialize(blink_audio_source_.id(),
                                   blink_audio_source_);
 

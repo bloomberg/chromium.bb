@@ -145,9 +145,11 @@ WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
   if (!web_stream.isNull())
     web_stream.videoTracks(video_tracks);
 
-  if (video_tracks.size() > 0 &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableRTCSmoothnessAlgorithm)) {
+  const bool remote_video =
+      video_tracks.size() && video_tracks[0].source().remote();
+
+  if (remote_video && !base::CommandLine::ForCurrentProcess()->HasSwitch(
+                          switches::kDisableRTCSmoothnessAlgorithm)) {
     base::AutoLock auto_lock(current_frame_lock_);
     rendering_frame_buffer_.reset(new media::VideoRendererAlgorithm(
         base::Bind(&WebMediaPlayerMSCompositor::MapTimestampsToRenderTimeTicks,
@@ -157,7 +159,8 @@ WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
   // Just for logging purpose.
   std::string stream_id =
       web_stream.isNull() ? std::string() : web_stream.id().utf8();
-  serial_ = base::Hash(stream_id);;
+  const uint32_t hash_value = base::Hash(stream_id);
+  serial_ = (hash_value << 1) | (remote_video ? 1 : 0);
 }
 
 WebMediaPlayerMSCompositor::~WebMediaPlayerMSCompositor() {

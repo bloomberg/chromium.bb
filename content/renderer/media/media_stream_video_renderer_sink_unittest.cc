@@ -38,7 +38,8 @@ class MediaStreamVideoRendererSinkTest : public testing::Test {
         mock_source_(new MockMediaStreamVideoSource(false)) {
     blink_source_.initialize(blink::WebString::fromASCII("dummy_source_id"),
                              blink::WebMediaStreamSource::TypeVideo,
-                             blink::WebString::fromASCII("dummy_source_name"));
+                             blink::WebString::fromASCII("dummy_source_name"),
+                             false /* remote */);
     blink_source_.setExtraData(mock_source_);
     blink::WebMediaConstraints constraints;
     constraints.initialize();

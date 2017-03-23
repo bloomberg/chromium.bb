@@ -88,13 +88,18 @@ class WebMediaStreamSource {
 
   BLINK_PLATFORM_EXPORT void initialize(const WebString& id,
                                         Type,
-                                        const WebString& name);
+                                        const WebString& name);  // DEPRECATED
+  BLINK_PLATFORM_EXPORT void initialize(const WebString& id,
+                                        Type,
+                                        const WebString& name,
+                                        bool remote);
   BLINK_PLATFORM_EXPORT void reset();
   bool isNull() const { return m_private.isNull(); }
 
   BLINK_PLATFORM_EXPORT WebString id() const;
   BLINK_PLATFORM_EXPORT Type getType() const;
   BLINK_PLATFORM_EXPORT WebString name() const;
+  BLINK_PLATFORM_EXPORT bool remote() const;
 
   BLINK_PLATFORM_EXPORT void setReadyState(ReadyState);
   BLINK_PLATFORM_EXPORT ReadyState getReadyState() const;

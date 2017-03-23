@@ -25,6 +25,8 @@ namespace content {
 
 bool AddVideoTrackToMediaStream(
     std::unique_ptr<media::VideoCapturerSource> video_source,
+    bool is_remote,
+    bool is_readonly,
     blink::WebMediaStream* web_media_stream) {
   DCHECK(video_source.get());
   if (!web_media_stream || web_media_stream->isNull()) {
@@ -39,7 +41,7 @@ bool AddVideoTrackToMediaStream(
   const blink::WebString track_id =
       blink::WebString::fromUTF8(base::GenerateGUID());
   web_media_stream_source.initialize(
-      track_id, blink::WebMediaStreamSource::TypeVideo, track_id);
+      track_id, blink::WebMediaStreamSource::TypeVideo, track_id, is_remote);
   // Takes ownership of |media_stream_source|.
   web_media_stream_source.setExtraData(media_stream_source);
 
@@ -56,6 +58,8 @@ bool AddAudioTrackToMediaStream(
     int sample_rate,
     media::ChannelLayout channel_layout,
     int frames_per_buffer,
+    bool is_remote,
+    bool is_readonly,
     blink::WebMediaStream* web_media_stream) {
   DCHECK(audio_source.get());
   if (!web_media_stream || web_media_stream->isNull()) {
@@ -75,10 +79,11 @@ bool AddAudioTrackToMediaStream(
   const blink::WebString track_id =
       blink::WebString::fromUTF8(base::GenerateGUID());
   web_media_stream_source.initialize(
-      track_id, blink::WebMediaStreamSource::TypeAudio, track_id);
+      track_id, blink::WebMediaStreamSource::TypeAudio, track_id, is_remote);
   MediaStreamAudioSource* const media_stream_source =
       new ExternalMediaStreamAudioSource(std::move(audio_source), sample_rate,
-                                         channel_layout, frames_per_buffer);
+                                         channel_layout, frames_per_buffer,
+                                         is_remote);
   // Takes ownership of |media_stream_source|.
   web_media_stream_source.setExtraData(media_stream_source);
 

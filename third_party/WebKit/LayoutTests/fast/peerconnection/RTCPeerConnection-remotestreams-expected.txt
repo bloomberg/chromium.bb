@@ -1,0 +1,27 @@
+Tests that an RTCPeerConnection can signal that remote streams are added and removed.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS local_stream.getAudioTracks()[0].remote is false
+PASS local_stream.getVideoTracks()[0].remote is false
+PASS pc.setRemoteDescription(sessionDescription, requestSucceeded1, requestFailedUnexpectedly); did not throw exception.
+PASS remote stream was added
+PASS event.stream.getVideoTracks().length is 1
+PASS event.stream.getAudioTracks().length is 1
+PASS event.stream.active is true
+PASS event.stream.getAudioTracks()[0].remote is true
+PASS event.stream.getVideoTracks()[0].remote is true
+PASS requestSucceeded was called.
+PASS pc.getRemoteStreams().length is 1
+PASS pc.setRemoteDescription(sessionDescription, requestSucceeded2, requestFailedUnexpectedly); did not throw exception.
+PASS remote stream was removed
+PASS event.stream.getVideoTracks().length is 0
+PASS event.stream.getAudioTracks().length is 0
+PASS event.stream.active is false
+PASS requestSucceeded was called.
+PASS pc.getRemoteStreams().length is 0
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
