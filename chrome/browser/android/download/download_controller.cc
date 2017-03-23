@@ -198,8 +198,12 @@ void DownloadController::AcquireFileAccessPermission(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(web_contents);
 
-  ui::ViewAndroid* view_android =
-      ViewAndroidHelper::FromWebContents(web_contents)->GetViewAndroid();
+  ViewAndroidHelper* view_helper =
+      ViewAndroidHelper::FromWebContents(web_contents);
+  if (!view_helper)
+    return;
+
+  ui::ViewAndroid* view_android = view_helper->GetViewAndroid();
   if (!view_android) {
     // ViewAndroid may have been gone away.
     BrowserThread::PostTask(
