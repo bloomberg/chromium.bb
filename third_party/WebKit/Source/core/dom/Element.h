@@ -182,7 +182,7 @@ class CORE_EXPORT Element : public ContainerNode {
 
   void setAttribute(const AtomicString& name,
                     const AtomicString& value,
-                    ExceptionState&);
+                    ExceptionState& = ASSERT_NO_EXCEPTION);
   static bool parseAttributeName(QualifiedName&,
                                  const AtomicString& namespaceURI,
                                  const AtomicString& qualifiedName,
@@ -431,7 +431,12 @@ class CORE_EXPORT Element : public ContainerNode {
   // creation of multiple shadow roots is prohibited in any combination and
   // throws an exception.  Multiple shadow roots are allowed only when
   // createShadowRoot() is used without any parameters from JavaScript.
-  ShadowRoot* createShadowRoot(const ScriptState*, ExceptionState&);
+  //
+  // TODO(esprehn): These take a ScriptState only for calling
+  // HostsUsingFeatures::countMainWorldOnly, which should be handled in the
+  // bindings instead so adding a ShadowRoot from C++ doesn't need one.
+  ShadowRoot* createShadowRoot(const ScriptState* = nullptr,
+                               ExceptionState& = ASSERT_NO_EXCEPTION);
   ShadowRoot* attachShadow(const ScriptState*,
                            const ShadowRootInit&,
                            ExceptionState&);

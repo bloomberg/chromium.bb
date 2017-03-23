@@ -56,9 +56,6 @@
     [RaisesException] boolean isValidContentSelect(Element contentElement);
     Node treeScopeRootNode(Node node);
     Node parentTreeScope(Node node);
-    [RaisesException] boolean hasSelectorForIdInShadow(Element host, DOMString id);
-    [RaisesException] boolean hasSelectorForClassInShadow(Element host, DOMString className);
-    [RaisesException] boolean hasSelectorForAttributeInShadow(Element host, DOMString attributeName);
     [RaisesException] unsigned short compareTreeScopePosition(Node treeScope1, Node treeScope2);
     [RaisesException] unsigned long updateStyleAndReturnAffectedElementCount();
     [RaisesException] unsigned long needsLayoutCount();

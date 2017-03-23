@@ -480,49 +480,6 @@ Node* Internals::parentTreeScope(Node* node) {
   return parentTreeScope ? &parentTreeScope->rootNode() : 0;
 }
 
-bool Internals::hasSelectorForIdInShadow(Element* host,
-                                         const AtomicString& idValue,
-                                         ExceptionState& exceptionState) {
-  DCHECK(host);
-  if (!host->shadow() || host->shadow()->isV1()) {
-    exceptionState.throwDOMException(
-        InvalidAccessError, "The host element does not have a v0 shadow.");
-    return false;
-  }
-
-  return host->shadow()->v0().ensureSelectFeatureSet().hasSelectorForId(
-      idValue);
-}
-
-bool Internals::hasSelectorForClassInShadow(Element* host,
-                                            const AtomicString& className,
-                                            ExceptionState& exceptionState) {
-  DCHECK(host);
-  if (!host->shadow() || host->shadow()->isV1()) {
-    exceptionState.throwDOMException(
-        InvalidAccessError, "The host element does not have a v0 shadow.");
-    return false;
-  }
-
-  return host->shadow()->v0().ensureSelectFeatureSet().hasSelectorForClass(
-      className);
-}
-
-bool Internals::hasSelectorForAttributeInShadow(
-    Element* host,
-    const AtomicString& attributeName,
-    ExceptionState& exceptionState) {
-  DCHECK(host);
-  if (!host->shadow() || host->shadow()->isV1()) {
-    exceptionState.throwDOMException(
-        InvalidAccessError, "The host element does not have a v0 shadow.");
-    return false;
-  }
-
-  return host->shadow()->v0().ensureSelectFeatureSet().hasSelectorForAttribute(
-      attributeName);
-}
-
 unsigned short Internals::compareTreeScopePosition(
     const Node* node1,
     const Node* node2,

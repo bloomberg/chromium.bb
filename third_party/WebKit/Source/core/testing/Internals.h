@@ -136,15 +136,6 @@ class Internals final : public GarbageCollected<Internals>,
   bool isValidContentSelect(Element* insertionPoint, ExceptionState&);
   Node* treeScopeRootNode(Node*);
   Node* parentTreeScope(Node*);
-  bool hasSelectorForIdInShadow(Element* host,
-                                const AtomicString& idValue,
-                                ExceptionState&);
-  bool hasSelectorForClassInShadow(Element* host,
-                                   const AtomicString& className,
-                                   ExceptionState&);
-  bool hasSelectorForAttributeInShadow(Element* host,
-                                       const AtomicString& attributeName,
-                                       ExceptionState&);
   unsigned short compareTreeScopePosition(const Node*,
                                           const Node*,
                                           ExceptionState&) const;
