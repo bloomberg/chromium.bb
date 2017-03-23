@@ -41,8 +41,6 @@ ScopedSubresourceFilterFeatureToggle::ScopedSubresourceFilterFeatureToggle(
 ScopedSubresourceFilterFeatureToggle::ScopedSubresourceFilterFeatureToggle(
     base::FeatureList::OverrideState feature_state,
     std::map<std::string, std::string> variation_params) {
-  variations::testing::ClearAllVariationParams();
-
   EXPECT_TRUE(variations::AssociateVariationParams(
       kTestFieldTrialName, kTestExperimentGroupName, variation_params));
 

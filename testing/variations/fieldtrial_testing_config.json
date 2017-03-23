@@ -2355,6 +2355,31 @@
             ]
         }
     ],
+    "SafeBrowsingThreatDomDetailsTagAttributes": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "tag_attribute_csv": "div,id,iframe,id"
+                    },
+                    "enable_features": [
+                        "ThreatDomDetailsTagAttributes"
+                    ]
+                },
+                {
+                    "name": "Default"
+                }
+            ]
+        }
+    ],
     "SafeBrowsingUseLocalBlacklist": [
         {
             "platforms": [
