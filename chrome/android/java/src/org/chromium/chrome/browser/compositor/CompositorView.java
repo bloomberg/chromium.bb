@@ -150,7 +150,7 @@ public class CompositorView extends FrameLayout implements SurfaceHolder.Callbac
      * Should be called for cleanup when the CompositorView instance is no longer used.
      */
     public void shutDown() {
-        mCompositorSurfaceManager.shutDown();
+        if (mCompositorSurfaceManager != null) mCompositorSurfaceManager.shutDown();
         if (mNativeCompositorView != 0) nativeDestroy(mNativeCompositorView);
         mNativeCompositorView = 0;
     }
