@@ -178,7 +178,9 @@ os_create_anonymous_file(off_t size)
 		return -1;
 
 #ifdef HAVE_POSIX_FALLOCATE
-	ret = posix_fallocate(fd, 0, size);
+	do {
+		ret = posix_fallocate(fd, 0, size);
+	} while (ret == EINTR);
 	if (ret != 0) {
 		close(fd);
 		errno = ret;
