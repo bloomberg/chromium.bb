@@ -36,17 +36,9 @@ bool IsExtensionsMultiAccount() {
          IsEnableAccountConsistency();
 }
 
-bool IsNewProfileManagement() {
-  return true;
-}
-
 bool UsePasswordSeparatedSigninFlow() {
   return base::FeatureList::IsEnabled(
       switches::kUsePasswordSeparatedSigninFlow);
-}
-
-void EnableNewProfileManagementForTesting(base::CommandLine* command_line) {
-  // No-op as new profile management is always enabled.
 }
 
 void EnableAccountConsistencyForTesting(base::CommandLine* command_line) {

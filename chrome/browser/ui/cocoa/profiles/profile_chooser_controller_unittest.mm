@@ -418,9 +418,6 @@ TEST_F(ProfileChooserControllerTest, AccountManagementLayout) {
 }
 
 TEST_F(ProfileChooserControllerTest, SignedInProfileLockDisabled) {
-  switches::EnableNewProfileManagementForTesting(
-      base::CommandLine::ForCurrentProcess());
-
   SignInFirstProfile();
 
   // The preference, not the email, determines whether the profile can lock.
@@ -444,9 +441,6 @@ TEST_F(ProfileChooserControllerTest, SignedInProfileLockDisabled) {
 }
 
 TEST_F(ProfileChooserControllerTest, SignedInProfileLockEnabled) {
-  switches::EnableNewProfileManagementForTesting(
-      base::CommandLine::ForCurrentProcess());
-
   SignInFirstProfile();
 
   // The preference, not the email, determines whether the profile can lock.

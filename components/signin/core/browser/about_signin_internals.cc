@@ -537,8 +537,6 @@ AboutSigninInternals::SigninStatus::ToValue(
   // A summary of signin related info first.
   base::ListValue* basic_info = AddSection(signin_info, "Basic Information");
   AddSectionEntry(basic_info, "Chrome Version", product_version);
-  AddSectionEntry(basic_info, "New Profile Management?",
-      switches::IsNewProfileManagement() == true ? "On" : "Off");
   AddSectionEntry(basic_info, "Account Consistency?",
       switches::IsEnableAccountConsistency() == true ? "On" : "Off");
   AddSectionEntry(basic_info, "Signin Status",

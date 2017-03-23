@@ -121,12 +121,10 @@ class ProfileChooserViewExtensionsTest : public ExtensionBrowserTest {
  protected:
   void SetUp() override {
     ExtensionBrowserTest::SetUp();
-    DCHECK(switches::IsNewProfileManagement());
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
-    switches::EnableNewProfileManagementForTesting(command_line);
   }
 
   void OpenProfileChooserView(Browser* browser) {

@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/user_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
-#include "components/signin/core/common/profile_management_switches.h"
 #include "ui/base/page_transition_types.h"
 #endif
 
@@ -81,10 +80,6 @@ class AppListServiceDisabled : public AppListService {
 
 #if defined(TOOLKIT_VIEWS)
 bool IsProfileSignedOut(Profile* profile) {
-  // The signed out status only makes sense at the moment in the context of the
-  // --new-profile-management flag.
-  if (!switches::IsNewProfileManagement())
-    return false;
   ProfileAttributesEntry* entry;
   bool has_entry =
       g_browser_process->profile_manager()

@@ -81,7 +81,6 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "components/signin/core/common/profile_management_switches.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "components/sync/base/stop_source.h"
 #include "content/public/browser/browser_thread.h"
@@ -1245,8 +1244,7 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
   // If the lock enabled algorithm changed, update this profile's lock status.
   // This depends on services which shouldn't be initialized until
   // DoFinalInitForServices.
-  if (switches::IsNewProfileManagement())
-    profiles::UpdateIsProfileLockEnabledIfNeeded(profile);
+  profiles::UpdateIsProfileLockEnabledIfNeeded(profile);
 #endif
   // Start the deferred task runners once the profile is loaded.
   StartupTaskRunnerServiceFactory::GetForProfile(profile)->

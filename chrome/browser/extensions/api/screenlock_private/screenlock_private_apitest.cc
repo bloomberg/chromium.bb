@@ -18,7 +18,6 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/api/test/test_api.h"
 #include "extensions/browser/notification_types.h"
@@ -48,10 +47,6 @@ class ScreenlockPrivateApiTest : public ExtensionApiTest,
     command_line->AppendSwitchASCII(
         extensions::switches::kWhitelistedExtensionID, kTestExtensionId);
 
-#if !defined(OS_CHROMEOS)
-    // New profile management needs to be on for non-ChromeOS lock.
-    ::switches::EnableNewProfileManagementForTesting(command_line);
-#endif
   }
 
   void SetUpOnMainThread() override {

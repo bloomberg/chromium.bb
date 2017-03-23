@@ -234,8 +234,7 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
   if (gaia::AreEmailsSame(email_, primary_email) &&
       (reason == signin_metrics::Reason::REASON_REAUTHENTICATION ||
        reason == signin_metrics::Reason::REASON_UNLOCK) &&
-      switches::IsNewProfileManagement() && !password_.empty() &&
-      profiles::IsLockAvailable(profile_)) {
+      !password_.empty() && profiles::IsLockAvailable(profile_)) {
     LocalAuth::SetLocalAuthCredentials(profile_, password_);
   }
 

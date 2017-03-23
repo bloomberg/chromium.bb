@@ -43,7 +43,6 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -232,10 +231,6 @@ class AppControllerNewProfileManagementBrowserTest
  protected:
   AppControllerNewProfileManagementBrowserTest()
       : active_browser_list_(BrowserList::GetInstance()) {}
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    switches::EnableNewProfileManagementForTesting(command_line);
-  }
 
   const BrowserList* active_browser_list_;
 };

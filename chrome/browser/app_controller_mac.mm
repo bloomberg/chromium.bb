@@ -89,7 +89,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"
@@ -183,10 +182,6 @@ void RecordLastRunAppBundlePath() {
 }
 
 bool IsProfileSignedOut(Profile* profile) {
-  // The signed out status only makes sense at the moment in the context of the
-  // --new-profile-management flag.
-  if (!switches::IsNewProfileManagement())
-    return false;
   ProfileAttributesEntry* entry;
   bool has_entry =
       g_browser_process->profile_manager()->GetProfileAttributesStorage().

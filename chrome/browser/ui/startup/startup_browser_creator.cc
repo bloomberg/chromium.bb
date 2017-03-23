@@ -71,7 +71,6 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/util.h"
-#include "components/signin/core/common/profile_management_switches.h"
 #include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -964,8 +963,7 @@ Profile* GetStartupProfile(const base::FilePath& user_data_dir,
   auto* storage = &profile_manager->GetProfileAttributesStorage();
   ProfileAttributesEntry* entry;
   bool has_entry = storage->GetProfileAttributesWithPath(profile_path, &entry);
-  if (has_entry && (!switches::IsNewProfileManagement() ||
-                    !entry->IsSigninRequired() || !profile)) {
+  if (has_entry && (!entry->IsSigninRequired() || !profile)) {
     return profile;
   }
 

@@ -29,7 +29,6 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/common/profile_management_switches.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -180,8 +179,6 @@ bool IsProfileLocked(const base::FilePath& profile_path) {
 }
 
 void UpdateIsProfileLockEnabledIfNeeded(Profile* profile) {
-  DCHECK(switches::IsNewProfileManagement());
-
   if (!profile->GetPrefs()->GetString(prefs::kGoogleServicesHostedDomain).
       empty())
     return;

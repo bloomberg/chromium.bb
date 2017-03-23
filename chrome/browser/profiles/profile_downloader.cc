@@ -31,7 +31,6 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "net/base/load_flags.h"
@@ -194,9 +193,8 @@ void ProfileDownloader::StartFetchingOAuth2AccessToken() {
   Profile* profile = delegate_->GetBrowserProfile();
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert(GaiaConstants::kGoogleUserInfoProfile);
-  // Increase scope to get hd attribute to determine if lock should be enabled.
-  if (switches::IsNewProfileManagement())
-    scopes.insert(GaiaConstants::kGoogleUserInfoEmail);
+  // Required to determine if lock should be enabled.
+  scopes.insert(GaiaConstants::kGoogleUserInfoEmail);
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
   oauth2_access_token_request_ = token_service->StartRequest(
