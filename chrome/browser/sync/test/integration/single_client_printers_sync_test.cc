@@ -60,7 +60,13 @@ IN_PROC_BROWSER_TEST_F(SingleClientPrintersSyncTest, SingleNewPrinter) {
 }
 
 // Verify editing a printer doesn't add it.
-IN_PROC_BROWSER_TEST_F(SingleClientPrintersSyncTest, EditPrinter) {
+// Flaky on ChromeOS. http://crbug.com/701999
+#if defined(OS_CHROMEOS)
+#define MAYBE_EditPrinter DISABLED_EditPrinter
+#else
+#define MAYBE_EditPrinter EditPrinter
+#endif
+IN_PROC_BROWSER_TEST_F(SingleClientPrintersSyncTest, MAYBE_EditPrinter) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddPrinter(GetPrinterStore(0), printers_helper::CreateTestPrinter(0));
