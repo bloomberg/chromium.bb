@@ -7,10 +7,6 @@
 
 #include "base/macros.h"
 
-namespace cryptauth {
-class CryptAuthService;
-}
-
 namespace chromeos {
 
 namespace tether {
@@ -19,15 +15,11 @@ namespace tether {
 // TODO(khorimoto): Implement.
 class Initializer {
  public:
-  static void Initialize(cryptauth::CryptAuthService* cryptauth_service);
+  static void Initialize();
 
  private:
-  static Initializer* instance_;
-
-  explicit Initializer(cryptauth::CryptAuthService* cryptauth_service);
+  Initializer();
   ~Initializer();
-
-  cryptauth::CryptAuthService* cryptauth_service_;
 
   DISALLOW_COPY_AND_ASSIGN(Initializer);
 };
