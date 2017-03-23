@@ -23,6 +23,9 @@
 
 #include "core/html/forms/EmailInputType.h"
 
+#include <unicode/idna.h>
+#include <unicode/unistr.h>
+#include <unicode/uvernum.h>
 #include "bindings/core/v8/ScriptRegexp.h"
 #include "core/InputTypeNames.h"
 #include "core/html/HTMLInputElement.h"
@@ -31,8 +34,10 @@
 #include "platform/text/PlatformLocale.h"
 #include "public/platform/Platform.h"
 #include "wtf/text/StringBuilder.h"
-#include <unicode/idna.h>
-#include <unicode/unistr.h>
+
+#if U_ICU_VERSION_MAJOR_NUM >= 59
+#include <unicode/char16ptr.h>
+#endif
 
 namespace blink {
 
@@ -87,7 +92,11 @@ String EmailInputType::convertEmailAddressToASCII(const ScriptRegexp& regexp,
 
   StringBuilder builder;
   builder.append(address, 0, atPosition + 1);
+#if U_ICU_VERSION_MAJOR_NUM >= 59
+  builder.append(icu::toUCharPtr(domainName.getBuffer()), domainName.length());
+#else
   builder.append(domainName.getBuffer(), domainName.length());
+#endif
   String asciiEmail = builder.toString();
   return isValidEmailAddress(regexp, asciiEmail) ? asciiEmail : address;
 }

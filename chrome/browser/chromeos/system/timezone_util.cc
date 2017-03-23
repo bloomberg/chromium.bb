@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/i18n/rtl.h"
+#include "base/i18n/unicodestring.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
@@ -77,7 +78,7 @@ base::string16 GetExemplarCity(const icu::TimeZone& zone) {
   if (!U_FAILURE(status)) {
     city = icu::ures_getUnicodeStringByKey(zone_item.get(), "ec", &status);
     if (U_SUCCESS(status))
-      return base::string16(city.getBuffer(), city.length());
+      return base::i18n::UnicodeStringToString16(city);
   }
 
   // Fallback case in case of failure.
@@ -135,8 +136,7 @@ base::string16 GetTimezoneName(const icu::TimeZone& timezone) {
   }
   base::string16 result(l10n_util::GetStringFUTF16(
       IDS_OPTIONS_SETTINGS_TIMEZONE_DISPLAY_TEMPLATE,
-      base::ASCIIToUTF16(offset_str),
-      base::string16(name.getBuffer(), name.length()),
+      base::ASCIIToUTF16(offset_str), base::i18n::UnicodeStringToString16(name),
       GetExemplarCity(timezone)));
   base::i18n::AdjustStringForLocaleDirection(&result);
   return result;

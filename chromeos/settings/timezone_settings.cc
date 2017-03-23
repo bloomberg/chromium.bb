@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/i18n/unicodestring.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -483,8 +484,7 @@ TimezoneSettings* TimezoneSettings::GetInstance() {
 // static
 base::string16 TimezoneSettings::GetTimezoneID(const icu::TimeZone& timezone) {
   icu::UnicodeString id;
-  timezone.getID(id);
-  return base::string16(id.getBuffer(), id.length());
+  return base::i18n::UnicodeStringToString16(timezone.getID(id));
 }
 
 }  // namespace system

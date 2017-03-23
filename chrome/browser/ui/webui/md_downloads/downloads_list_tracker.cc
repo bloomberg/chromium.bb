@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/i18n/rtl.h"
+#include "base/i18n/unicodestring.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
@@ -74,8 +75,7 @@ base::string16 TimeFormatLongDate(const base::Time& time) {
       icu::DateFormat::createDateInstance(icu::DateFormat::kLong));
   icu::UnicodeString date_string;
   formatter->format(static_cast<UDate>(time.ToDoubleT() * 1000), date_string);
-  return base::string16(date_string.getBuffer(),
-                        static_cast<size_t>(date_string.length()));
+  return base::i18n::UnicodeStringToString16(date_string);
 }
 
 }  // namespace

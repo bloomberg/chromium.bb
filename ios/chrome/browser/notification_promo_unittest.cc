@@ -34,18 +34,14 @@ bool YearFromNow(double* date_epoch, std::string* date_string) {
   UErrorCode status = U_ZERO_ERROR;
   icu::SimpleDateFormat simple_formatter(icu::UnicodeString(kDateFormat),
                                          icu::Locale("en_US"), status);
-  if (!U_SUCCESS(status))
-    return false;
-
   icu::UnicodeString date_unicode_string;
   simple_formatter.format(static_cast<UDate>(*date_epoch * 1000),
                           date_unicode_string, status);
-  if (!U_SUCCESS(status))
+  if (U_FAILURE(status))
     return false;
 
-  return base::UTF16ToUTF8(date_unicode_string.getBuffer(),
-                           static_cast<size_t>(date_unicode_string.length()),
-                           date_string);
+  date_unicode_string.toUTF8String(*date_string);
+  return true;
 }
 
 }  // namespace

@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/i18n/case_conversion.h"
+#include "base/i18n/unicodestring.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_offset_string_conversions.h"
@@ -42,8 +43,7 @@ base::string16 Normalize(const base::string16& text) {
     LOG(ERROR) << "normalization failed: " << u_errorName(status);
     return text;
   }
-  return base::string16(unicode_normalized_text.getBuffer(),
-                        unicode_normalized_text.length());
+  return base::i18n::UnicodeStringToString16(unicode_normalized_text);
 }
 
 }  // namespace

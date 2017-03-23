@@ -9,6 +9,7 @@
 
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/char_iterator.h"
+#include "base/i18n/unicodestring.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -128,7 +129,7 @@ base::string16 AutofillProfileComparator::NormalizeForComparison(
 
   icu::UnicodeString value = icu::UnicodeString(result.data(), result.length());
   transliterator_->transliterate(value);
-  return base::string16(value.getBuffer(), value.length());
+  return base::i18n::UnicodeStringToString16(value);
 }
 
 bool AutofillProfileComparator::AreMergeable(const AutofillProfile& p1,

@@ -57,43 +57,19 @@ bool UseMd() {
   return MaterialDesignController::IsSystemTrayMenuMaterial();
 }
 
-base::string16 FormatDateWithPattern(const base::Time& time,
-                                     const char* pattern) {
-  UErrorCode status = U_ZERO_ERROR;
-  std::unique_ptr<icu::DateTimePatternGenerator> generator(
-      icu::DateTimePatternGenerator::createInstance(status));
-  DCHECK(U_SUCCESS(status));
-  icu::UnicodeString generated_pattern =
-      generator->getBestPattern(icu::UnicodeString(pattern), status);
-  DCHECK(U_SUCCESS(status));
-  icu::SimpleDateFormat simple_formatter(generated_pattern, status);
-  DCHECK(U_SUCCESS(status));
-  icu::UnicodeString date_string;
-  simple_formatter.format(static_cast<UDate>(time.ToDoubleT() * 1000),
-                          date_string, status);
-  DCHECK(U_SUCCESS(status));
-  return base::string16(date_string.getBuffer(),
-                        static_cast<size_t>(date_string.length()));
-}
-
 base::string16 FormatDate(const base::Time& time) {
   if (UseMd()) {
     // Use 'short' month format (e.g., "Oct") followed by non-padded day of
     // month (e.g., "2", "10").
-    return FormatDateWithPattern(time, "LLLd");
+    return base::TimeFormatWithPattern(time, "LLLd");
   } else {
-    icu::UnicodeString date_string;
-    std::unique_ptr<icu::DateFormat> formatter(
-        icu::DateFormat::createDateInstance(icu::DateFormat::kMedium));
-    formatter->format(static_cast<UDate>(time.ToDoubleT() * 1000), date_string);
-    return base::string16(date_string.getBuffer(),
-                          static_cast<size_t>(date_string.length()));
+    return base::TimeFormatShortDate(time);
   }
 }
 
 base::string16 FormatDayOfWeek(const base::Time& time) {
   // Use 'short' day of week format (e.g., "Wed").
-  return FormatDateWithPattern(time, "EEE");
+  return base::TimeFormatWithPattern(time, "EEE");
 }
 
 }  // namespace

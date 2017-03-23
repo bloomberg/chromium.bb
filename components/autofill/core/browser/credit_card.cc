@@ -13,6 +13,7 @@
 
 #include "base/guid.h"
 #include "base/i18n/time_formatting.h"
+#include "base/i18n/unicodestring.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
@@ -870,7 +871,8 @@ bool CreditCard::ConvertMonth(const base::string16& month,
   int32_t num_months;
   const icu::UnicodeString* months = date_format_symbols.getMonths(num_months);
   for (int32_t i = 0; i < num_months; ++i) {
-    const base::string16 icu_month(months[i].getBuffer(), months[i].length());
+    const base::string16 icu_month(
+        base::i18n::UnicodeStringToString16(months[i]));
     if (compare.StringsEqual(icu_month, month)) {
       *num = i + 1;  // Adjust from 0-indexed to 1-indexed.
       return true;
@@ -883,7 +885,7 @@ bool CreditCard::ConvertMonth(const base::string16& month,
   base::string16 trimmed_month;
   base::TrimString(month, ASCIIToUTF16("."), &trimmed_month);
   for (int32_t i = 0; i < num_months; ++i) {
-    base::string16 icu_month(months[i].getBuffer(), months[i].length());
+    base::string16 icu_month(base::i18n::UnicodeStringToString16(months[i]));
     base::TrimString(icu_month, ASCIIToUTF16("."), &icu_month);
     if (compare.StringsEqual(icu_month, trimmed_month)) {
       *num = i + 1;  // Adjust from 0-indexed to 1-indexed.
