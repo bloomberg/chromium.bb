@@ -55,7 +55,7 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
 
   // The page is n-quiet if there are no more than n active network requests for
   // this duration of time.
-  static constexpr double kNetwork2QuietWindowSeconds = 3;
+  static constexpr double kNetwork2QuietWindowSeconds = 0.5;
   static constexpr double kNetwork0QuietWindowSeconds = 0.5;
 
   Document* document();
