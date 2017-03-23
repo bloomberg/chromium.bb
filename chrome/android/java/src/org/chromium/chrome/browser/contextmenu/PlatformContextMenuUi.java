@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.contextmenu;
 
 import android.app.Activity;
 import android.content.Context;
+import android.text.TextUtils;
 import android.util.Pair;
 import android.view.ContextMenu;
 import android.view.MenuItem;
@@ -29,7 +30,11 @@ public class PlatformContextMenuUi implements ContextMenuUi {
     public void displayMenu(Activity activity, ContextMenuParams params,
             List<Pair<Integer, List<ContextMenuItem>>> itemGroups,
             final Callback<Integer> listener) {
-        setHeaderText(activity, mMenu, ChromeContextMenuPopulator.createHeaderText(params));
+
+        String headerText = ChromeContextMenuPopulator.createHeaderText(params);
+        if (TextUtils.isEmpty(headerText)) {
+            setHeaderText(activity, mMenu, headerText);
+        }
 
         MenuItem.OnMenuItemClickListener menuListener = new MenuItem.OnMenuItemClickListener() {
             @Override
