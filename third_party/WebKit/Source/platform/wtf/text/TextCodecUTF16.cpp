@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "wtf/text/TextCodecUTF16.h"
+#include "platform/wtf/text/TextCodecUTF16.h"
 
-#include "wtf/PtrUtil.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/CharacterNames.h"
-#include "wtf/text/StringBuffer.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/CharacterNames.h"
+#include "platform/wtf/text/StringBuffer.h"
+#include "platform/wtf/text/WTFString.h"
 #include <memory>
 
 using namespace std;

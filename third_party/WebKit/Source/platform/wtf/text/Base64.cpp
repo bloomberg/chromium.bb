@@ -22,9 +22,9 @@
    package by Ronald Tschalaer Copyright (C) 1996-1999.
 */
 
-#include "wtf/text/Base64.h"
+#include "platform/wtf/text/Base64.h"
 
-#include "wtf/StringExtras.h"
+#include "platform/wtf/StringExtras.h"
 #include <limits.h>
 
 namespace WTF {

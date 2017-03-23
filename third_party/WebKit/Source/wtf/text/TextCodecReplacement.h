@@ -1,32 +1,9 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TextCodecReplacement_h
-#define TextCodecReplacement_h
+#include "platform/wtf/text/TextCodecReplacement.h"
 
-#include "wtf/text/TextCodec.h"
-#include "wtf/text/TextCodecUTF8.h"
-
-namespace WTF {
-
-class TextCodecReplacement final : public TextCodecUTF8 {
- public:
-  TextCodecReplacement();
-
-  static void registerEncodingNames(EncodingNameRegistrar);
-  static void registerCodecs(TextCodecRegistrar);
-
- private:
-  String decode(const char*,
-                size_t length,
-                FlushBehavior,
-                bool stopOnError,
-                bool& sawError) override;
-
-  bool m_replacementErrorReturned;
-};
-
-}  // namespace WTF
-
-#endif  // TextCodecReplacement_h
+// The contents of this header was moved to platform/wtf as part of
+// WTF migration project. See the following post for details:
+// https://groups.google.com/a/chromium.org/d/msg/blink-dev/tLdAZCTlcAA/bYXVT8gYCAAJ

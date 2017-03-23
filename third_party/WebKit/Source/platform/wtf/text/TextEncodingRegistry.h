@@ -1,6 +1,5 @@
 /*
- * Copyright (C) 2004, 2006 Apple Computer, Inc.  All rights reserved.
- * Copyright (C) 2006 Alexey Proskuryakov <ap@nypop.com>
+ * Copyright (C) 2006, 2007 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -24,40 +23,43 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "wtf/text/TextCodec.h"
+#ifndef TextEncodingRegistry_h
+#define TextEncodingRegistry_h
 
-#include "wtf/StringExtras.h"
+#include "platform/wtf/WTFExport.h"
+#include "platform/wtf/text/Unicode.h"
+#include "platform/wtf/text/WTFString.h"
+#include <memory>
 
 namespace WTF {
 
-TextCodec::~TextCodec() {}
+class TextCodec;
+class TextEncoding;
 
-int TextCodec::getUnencodableReplacement(
-    unsigned codePoint,
-    UnencodableHandling handling,
-    UnencodableReplacementArray replacement) {
-  switch (handling) {
-    case QuestionMarksForUnencodables:
-      replacement[0] = '?';
-      replacement[1] = 0;
-      return 1;
-    case EntitiesForUnencodables:
-      snprintf(replacement, sizeof(UnencodableReplacementArray), "&#%u;",
-               codePoint);
-      return static_cast<int>(strlen(replacement));
-    case URLEncodedEntitiesForUnencodables:
-      snprintf(replacement, sizeof(UnencodableReplacementArray),
-               "%%26%%23%u%%3B", codePoint);
-      return static_cast<int>(strlen(replacement));
+// Use TextResourceDecoder::decode to decode resources, since it handles BOMs.
+// Use TextEncoding::encode to encode, since it takes care of normalization.
+WTF_EXPORT std::unique_ptr<TextCodec> newTextCodec(const TextEncoding&);
 
-    case CSSEncodedEntitiesForUnencodables:
-      snprintf(replacement, sizeof(UnencodableReplacementArray), "\\%x ",
-               codePoint);
-      return static_cast<int>(strlen(replacement));
-  }
-  NOTREACHED();
-  replacement[0] = 0;
-  return 0;
-}
+// Only TextEncoding should use the following functions directly.
+const char* atomicCanonicalTextEncodingName(const char* alias);
+template <typename CharacterType>
+const char* atomicCanonicalTextEncodingName(const CharacterType*, size_t);
+const char* atomicCanonicalTextEncodingName(const String&);
+bool noExtendedTextEncodingNameUsed();
+bool isReplacementEncoding(const char* alias);
+bool isReplacementEncoding(const String& alias);
+
+#ifndef NDEBUG
+void dumpTextEncodingNameMap();
+#endif
 
 }  // namespace WTF
+
+using WTF::newTextCodec;
+using WTF::atomicCanonicalTextEncodingName;
+using WTF::noExtendedTextEncodingNameUsed;
+#ifndef NDEBUG
+using WTF::dumpTextEncodingNameMap;
+#endif
+
+#endif  // TextEncodingRegistry_h

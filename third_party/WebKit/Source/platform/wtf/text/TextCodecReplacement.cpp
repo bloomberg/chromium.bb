@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "wtf/text/TextCodecReplacement.h"
+#include "platform/wtf/text/TextCodecReplacement.h"
 
-#include "wtf/PtrUtil.h"
-#include "wtf/text/CharacterNames.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/CharacterNames.h"
+#include "platform/wtf/text/WTFString.h"
 #include <memory>
 
 namespace WTF {

@@ -24,24 +24,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "wtf/text/TextEncodingRegistry.h"
+#include "platform/wtf/text/TextEncodingRegistry.h"
 
-#include "wtf/ASCIICType.h"
-#include "wtf/Atomics.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/HashMap.h"
-#include "wtf/HashSet.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/StringExtras.h"
-#include "wtf/ThreadingPrimitives.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/TextCodecICU.h"
-#include "wtf/text/TextCodecLatin1.h"
-#include "wtf/text/TextCodecReplacement.h"
-#include "wtf/text/TextCodecUTF16.h"
-#include "wtf/text/TextCodecUTF8.h"
-#include "wtf/text/TextCodecUserDefined.h"
-#include "wtf/text/TextEncoding.h"
+#include "platform/wtf/ASCIICType.h"
+#include "platform/wtf/Atomics.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/StringExtras.h"
+#include "platform/wtf/ThreadingPrimitives.h"
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/TextCodecICU.h"
+#include "platform/wtf/text/TextCodecLatin1.h"
+#include "platform/wtf/text/TextCodecReplacement.h"
+#include "platform/wtf/text/TextCodecUTF16.h"
+#include "platform/wtf/text/TextCodecUTF8.h"
+#include "platform/wtf/text/TextCodecUserDefined.h"
+#include "platform/wtf/text/TextEncoding.h"
 #include <memory>
 
 namespace WTF {

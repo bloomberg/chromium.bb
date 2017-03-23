@@ -23,10 +23,10 @@
  * DAMAGE.
  */
 
-#include "wtf/text/TextPosition.h"
+#include "platform/wtf/text/TextPosition.h"
 
-#include "wtf/PtrUtil.h"
-#include "wtf/StdLibExtras.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/StdLibExtras.h"
 #include <algorithm>
 #include <memory>
 

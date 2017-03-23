@@ -25,13 +25,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "wtf/text/TextEncoding.h"
+#include "platform/wtf/text/TextEncoding.h"
 
-#include "wtf/StdLibExtras.h"
-#include "wtf/Threading.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/TextEncodingRegistry.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/Threading.h"
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/TextEncodingRegistry.h"
+#include "platform/wtf/text/WTFString.h"
 #include <memory>
 
 namespace WTF {

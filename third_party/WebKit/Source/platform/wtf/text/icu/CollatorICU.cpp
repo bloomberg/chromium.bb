@@ -26,14 +26,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "wtf/text/Collator.h"
+#include "platform/wtf/text/Collator.h"
 
-#include "wtf/Assertions.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/StringExtras.h"
-#include "wtf/Threading.h"
-#include "wtf/ThreadingPrimitives.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/StringExtras.h"
+#include "platform/wtf/Threading.h"
+#include "platform/wtf/ThreadingPrimitives.h"
 #include <memory>
 #include <stdlib.h>
 #include <string.h>

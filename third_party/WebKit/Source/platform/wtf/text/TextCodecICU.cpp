@@ -24,16 +24,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "wtf/text/TextCodecICU.h"
+#include "platform/wtf/text/TextCodecICU.h"
 
-#include "wtf/Assertions.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/StringExtras.h"
-#include "wtf/Threading.h"
-#include "wtf/WTFThreadData.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/CharacterNames.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/StringExtras.h"
+#include "platform/wtf/Threading.h"
+#include "platform/wtf/WTFThreadData.h"
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/CharacterNames.h"
+#include "platform/wtf/text/StringBuilder.h"
 #include <memory>
 #include <unicode/ucnv.h>
 #include <unicode/ucnv_cb.h>
