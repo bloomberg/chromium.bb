@@ -40,7 +40,7 @@ class SliderContainerElement;
 
 // FIXME: Find a way to cascade appearance and adjust heights, and get rid of
 // this class. See http://webkit.org/b/62535
-class LayoutSliderContainer : public LayoutFlexibleBox {
+class LayoutSliderContainer final : public LayoutFlexibleBox {
  public:
   LayoutSliderContainer(SliderContainerElement*);
   void computeLogicalHeight(LayoutUnit logicalHeight,

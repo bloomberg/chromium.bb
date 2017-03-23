@@ -30,7 +30,7 @@ namespace blink {
 
 // LayoutObject for embeds and objects, often, but not always, rendered via
 // plugins. For example, <embed src="foo.html"> does not invoke a plugin.
-class LayoutEmbeddedObject : public LayoutPart {
+class LayoutEmbeddedObject final : public LayoutPart {
  public:
   LayoutEmbeddedObject(Element*);
   ~LayoutEmbeddedObject() override;
