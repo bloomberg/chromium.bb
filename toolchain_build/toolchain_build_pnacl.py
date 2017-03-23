@@ -96,6 +96,8 @@ CHROME_CLANG_DIR = os.path.join(os.path.dirname(NACL_DIR), 'third_party',
                                 'llvm-build', 'Release+Asserts', 'bin')
 CHROME_CLANG = os.path.join(CHROME_CLANG_DIR, 'clang')
 CHROME_CLANGXX = os.path.join(CHROME_CLANG_DIR, 'clang++')
+CHROME_SYSROOT_DIR = os.path.join(os.path.dirname(NACL_DIR), 'build',
+                                  'linux', 'debian_wheezy_amd64-sysroot')
 
 try:
   # goma documentation recommends using (10 * cpu count)
@@ -376,6 +378,11 @@ def ConfigureHostArchFlags(host, extra_cflags, options, extra_configure=None,
     if TripleIsMac(host):
       cc_list += MAC_SDK_FLAGS
       cxx_list += MAC_SDK_FLAGS
+    elif TripleIsLinux(host):
+      # Unfortunately these cannot go in HostArchToolFlags because configure
+      # does not pass CFLAGS to its compile tests
+      cc_list += ['--sysroot=%s' % CHROME_SYSROOT_DIR]
+      cxx_list += ['--sysroot=%s' % CHROME_SYSROOT_DIR]
 
     configure_args.append('CC=' + ' '.join(cc_list + extra_cc_args))
     configure_args.append('CXX=' + ' '.join(cxx_list + extra_cxx_args))
@@ -406,10 +413,13 @@ def LibCxxHostArchFlags(host, options):
     cc, cxx = GomaCompilers(host, options)
   cmake_flags = []
   cmake_flags.extend(['-DCMAKE_C_COMPILER='+cc, '-DCMAKE_CXX_COMPILER='+cxx])
-  if TripleIsLinux(host) and not TripleIsX8664(host):
-    # Chrome clang defaults to 64-bit builds, even when run on 32-bit Linux
-    cmake_flags.extend(['-DCMAKE_C_FLAGS=-m32',
-                        '-DCMAKE_CXX_FLAGS=-m32'])
+  if TripleIsLinux(host):
+    cflags = ['--sysroot=%s' % CHROME_SYSROOT_DIR]
+    if not TripleIsX8664(host):
+      # Chrome clang defaults to 64-bit builds, even when run on 32-bit Linux
+      cflags.extend(['-m32'])
+    cmake_flags.extend(['-DCMAKE_C_FLAGS=%s' % ' '.join(cflags),
+                        '-DCMAKE_CXX_FLAGS=%s' % ' '.join(cflags)])
   elif TripleIsMac(host):
     sdk_flags = ' '.join(MAC_SDK_FLAGS)
     cmake_flags.extend(['-DCMAKE_C_FLAGS=' + sdk_flags,
@@ -443,8 +453,8 @@ def CmakeHostArchFlags(host, options):
   # undefined.
   cmake_flags.append('-DHAVE_SANITIZER_MSAN_INTERFACE_H=FALSE')
   tool_flags, tool_deps = HostArchToolFlags(host, [], options)
-  cflags = tool_flags['CFLAGS']
-  cxxflags = tool_flags['CXXFLAGS']
+  cflags = tool_flags['CFLAGS'] + ['--sysroot=%s' % CHROME_SYSROOT_DIR]
+  cxxflags = tool_flags['CXXFLAGS'] + ['--sysroot=%s' % CHROME_SYSROOT_DIR]
   if TripleIsMac(host):
     cflags = MAC_SDK_FLAGS + cflags
     cxxflags = MAC_SDK_FLAGS + cxxflags
@@ -894,6 +904,7 @@ def HostTools(host, options):
                   '-DLLVM_EXTERNAL_CLANG_SOURCE_DIR=%(clang_src)s',
                   '-DLLVM_EXTERNAL_SUBZERO_SOURCE_DIR=%(subzero_src)s',
                   '-DLLVM_INSTALL_UTILS=ON',
+                  '-DCLANG_ENABLE_LIBXML=OFF',
                   '-DLLVM_TARGETS_TO_BUILD=X86;ARM;Mips',
                   '-DSUBZERO_TARGETS_TO_BUILD=ARM32;MIPS32;X8632;X8664',
                   '%(llvm_src)s'],
