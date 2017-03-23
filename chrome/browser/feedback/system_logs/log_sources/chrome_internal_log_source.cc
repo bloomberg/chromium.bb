@@ -18,7 +18,9 @@
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/about_sync_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/api/power/power_api.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/common/api/power.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 
@@ -38,6 +40,7 @@ namespace {
 
 constexpr char kSyncDataKey[] = "about_sync_data";
 constexpr char kExtensionsListKey[] = "extensions";
+constexpr char kPowerApiListKey[] = "chrome.power extensions";
 constexpr char kDataReductionProxyKey[] = "data_reduction_proxy";
 constexpr char kChromeVersionTag[] = "CHROME VERSION";
 #if defined(OS_CHROMEOS)
@@ -120,6 +123,7 @@ void ChromeInternalLogSource::Fetch(const SysLogsSourceCallback& callback) {
 
   PopulateSyncLogs(response.get());
   PopulateExtensionInfoLogs(response.get());
+  PopulatePowerApiLogs(response.get());
   PopulateDataReductionProxyLogs(response.get());
 #if defined(OS_WIN)
   PopulateUsbKeyboardDetected(response.get());
@@ -209,6 +213,23 @@ void ChromeInternalLogSource::PopulateExtensionInfoLogs(
 
   if (!extensions_list.empty())
     (*response)[kExtensionsListKey] = extensions_list;
+}
+
+void ChromeInternalLogSource::PopulatePowerApiLogs(
+    SystemLogsResponse* response) {
+  std::string info;
+  for (auto* profile :
+       g_browser_process->profile_manager()->GetLoadedProfiles()) {
+    for (const auto& it :
+         extensions::PowerAPI::Get(profile)->extension_levels()) {
+      if (!info.empty())
+        info += ",\n";
+      info += it.first + ": " + extensions::api::power::ToString(it.second);
+    }
+  }
+
+  if (!info.empty())
+    (*response)[kPowerApiListKey] = info;
 }
 
 void ChromeInternalLogSource::PopulateDataReductionProxyLogs(

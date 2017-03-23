@@ -23,6 +23,7 @@ class ChromeInternalLogSource : public SystemLogsSource {
  private:
   void PopulateSyncLogs(SystemLogsResponse* response);
   void PopulateExtensionInfoLogs(SystemLogsResponse* response);
+  void PopulatePowerApiLogs(SystemLogsResponse* response);
   void PopulateDataReductionProxyLogs(SystemLogsResponse* response);
 
 #if defined(OS_CHROMEOS)
