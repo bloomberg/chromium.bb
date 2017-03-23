@@ -28,14 +28,6 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_PHANTOM_WINDOW_TOP" file="common/phantom_window_top.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_PHANTOM_WINDOW_TOP_LEFT" file="common/phantom_window_top_left.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_PHANTOM_WINDOW_TOP_RIGHT" file="common/phantom_window_top_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_RESIZE_SHADOW_BOTTOM" file="common/resize_shadow_bottom.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_RESIZE_SHADOW_BOTTOM_LEFT" file="common/resize_shadow_bottom_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_RESIZE_SHADOW_BOTTOM_RIGHT" file="common/resize_shadow_bottom_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_RESIZE_SHADOW_LEFT" file="common/resize_shadow_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_RESIZE_SHADOW_RIGHT" file="common/resize_shadow_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_RESIZE_SHADOW_TOP" file="common/resize_shadow_top.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_RESIZE_SHADOW_TOP_LEFT" file="common/resize_shadow_top_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_RESIZE_SHADOW_TOP_RIGHT" file="common/resize_shadow_top_right.png" />
 
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_ACCESSIBILITY_DARK" file="cros/status/status_accessibility_dark.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_HELP" file="cros/status/status_help.png" />

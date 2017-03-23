@@ -37,26 +37,12 @@ ResizeShadow* ResizeShadowController::GetShadowForWindowForTest(
   return GetShadowForWindow(window);
 }
 
-void ResizeShadowController::OnWindowBoundsChanged(
-    aura::Window* window,
-    const gfx::Rect& old_bounds,
-    const gfx::Rect& new_bounds) {
-  ResizeShadow* shadow = GetShadowForWindow(window);
-  if (shadow)
-    shadow->Layout(new_bounds);
-}
-
-void ResizeShadowController::OnWindowDestroyed(aura::Window* window) {
+void ResizeShadowController::OnWindowDestroying(aura::Window* window) {
   window_shadows_.erase(window);
 }
 
 ResizeShadow* ResizeShadowController::CreateShadow(aura::Window* window) {
-  auto shadow = base::MakeUnique<ResizeShadow>();
-  // Attach the layers to this window.
-  shadow->Init(window);
-  // Ensure initial bounds are correct.
-  shadow->Layout(window->bounds());
-  // Watch for bounds changes.
+  auto shadow = base::MakeUnique<ResizeShadow>(window);
   window->AddObserver(this);
 
   ResizeShadow* raw_shadow = shadow.get();

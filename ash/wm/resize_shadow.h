@@ -8,15 +8,13 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "ui/aura/window_observer.h"
 
 namespace aura {
 class Window;
 }
-namespace gfx {
-class Rect;
-}
-namespace wm {
-class ImageGrid;
+namespace ui {
+class Layer;
 }
 
 namespace ash {
@@ -24,13 +22,16 @@ namespace ash {
 // A class to render the resize edge effect when the user moves their mouse
 // over a sizing edge.  This is just a visual effect; the actual resize is
 // handled by the EventFilter.
-class ResizeShadow {
+class ResizeShadow : public aura::WindowObserver {
  public:
-  ResizeShadow();
-  ~ResizeShadow();
+  explicit ResizeShadow(aura::Window* window);
+  ~ResizeShadow() override;
 
-  // Initializes the resize effect layers for a given |window|.
-  void Init(aura::Window* window);
+  // aura::WindowObserver:
+  void OnWindowBoundsChanged(aura::Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds) override;
+  void OnWindowHierarchyChanged(const HierarchyChangeParams& params) override;
 
   // Shows resize effects for one or more edges based on a |hit_test| code, such
   // as HTRIGHT or HTBOTTOMRIGHT.
@@ -39,14 +40,21 @@ class ResizeShadow {
   // Hides all resize effects.
   void Hide();
 
-  // Updates the effect positions based on the |bounds| of the window.
-  void Layout(const gfx::Rect& bounds);
-
   int GetLastHitTestForTest() const { return last_hit_test_; }
+  const ui::Layer* GetLayerForTest() const { return layer_.get(); }
 
  private:
-  // Images for the shadow effect.
-  std::unique_ptr<::wm::ImageGrid> image_grid_;
+  // Reparents |layer_| so that it's behind the layer of |window_|.
+  void ReparentLayer();
+
+  // Updates bounds and visibility of |layer_|.
+  void UpdateBoundsAndVisibility();
+
+  aura::Window* window_;
+
+  // The layer to which the shadow is drawn. The layer is stacked beneath the
+  // layer of |window_|.
+  std::unique_ptr<ui::Layer> layer_;
 
   // Hit test value from last call to ShowForHitTest().  Used to prevent
   // repeatedly triggering the same animations for the same hit.

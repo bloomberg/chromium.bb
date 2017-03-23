@@ -4,72 +4,94 @@
 
 #include "ash/wm/resize_shadow.h"
 
-#include "ash/resources/grit/ash_resources.h"
+#include "base/lazy_instance.h"
 #include "base/time/time.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
-#include "ui/wm/core/image_grid.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/image/canvas_image_source.h"
 
 namespace {
 
-// Final opacity for resize effect.
-const float kShadowTargetOpacity = 0.25f;
-// Animation time for resize effect in milliseconds.
-const int kShadowAnimationDurationMs = 100;
+// The width of the resize shadow that appears on the hovered edge of the
+// window.
+constexpr int kVisualThickness = 8;
 
-// Sets up a layer as invisible and fully transparent, without animating.
-void InitLayer(ui::Layer* layer) {
-  layer->SetVisible(false);
-  layer->SetOpacity(0.f);
-}
+// This class simply draws a roundrect. The layout and tiling is handled by
+// ResizeShadow and NinePatchLayer.
+class ResizeShadowImageSource : public gfx::CanvasImageSource {
+ public:
+  ResizeShadowImageSource()
+      : gfx::CanvasImageSource(gfx::Size(kImageSide, kImageSide),
+                               false /* is opaque */) {}
 
-// Triggers an opacity animation that will make |layer| become |visible|.
-void ShowLayer(ui::Layer* layer, bool visible) {
-  ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
-  settings.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kShadowAnimationDurationMs));
-  layer->SetOpacity(visible ? kShadowTargetOpacity : 0.f);
-  // Sets the layer visibility after a delay, which will be identical to the
-  // opacity animation duration.
-  layer->SetVisible(visible);
-}
+  ~ResizeShadowImageSource() override {}
+
+  // gfx::CanvasImageSource:
+  void Draw(gfx::Canvas* canvas) override {
+    cc::PaintFlags paint;
+    paint.setAntiAlias(true);
+    paint.setColor(SK_ColorBLACK);
+    canvas->DrawRoundRect(gfx::RectF(gfx::SizeF(size())), kCornerRadius, paint);
+  }
+
+ private:
+  static constexpr int kCornerRadius = 2;
+  static constexpr int kImageSide = 2 * kVisualThickness + 1;
+
+  DISALLOW_COPY_AND_ASSIGN(ResizeShadowImageSource);
+};
+
+base::LazyInstance<std::unique_ptr<gfx::ImageSkia>>::Leaky g_shadow_image =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
 namespace ash {
 
-ResizeShadow::ResizeShadow() : last_hit_test_(HTNOWHERE) {}
+ResizeShadow::ResizeShadow(aura::Window* window)
+    : window_(window), last_hit_test_(HTNOWHERE) {
+  window_->AddObserver(this);
 
-ResizeShadow::~ResizeShadow() {}
+  // Use a NinePatchLayer to tile the shadow image (which is simply a
+  // roundrect).
+  layer_.reset(new ui::Layer(ui::LAYER_NINE_PATCH));
+  layer_->set_name("WindowResizeShadow");
+  layer_->SetFillsBoundsOpaquely(false);
+  layer_->SetOpacity(0.f);
+  layer_->SetVisible(false);
 
-void ResizeShadow::Init(aura::Window* window) {
-  // Set up our image grid and images.
-  ResourceBundle& res = ResourceBundle::GetSharedInstance();
-  image_grid_.reset(new ::wm::ImageGrid);
-  image_grid_->SetImages(
-      &res.GetImageNamed(IDR_AURA_RESIZE_SHADOW_TOP_LEFT),
-      &res.GetImageNamed(IDR_AURA_RESIZE_SHADOW_TOP),
-      &res.GetImageNamed(IDR_AURA_RESIZE_SHADOW_TOP_RIGHT),
-      &res.GetImageNamed(IDR_AURA_RESIZE_SHADOW_LEFT), NULL,
-      &res.GetImageNamed(IDR_AURA_RESIZE_SHADOW_RIGHT),
-      &res.GetImageNamed(IDR_AURA_RESIZE_SHADOW_BOTTOM_LEFT),
-      &res.GetImageNamed(IDR_AURA_RESIZE_SHADOW_BOTTOM),
-      &res.GetImageNamed(IDR_AURA_RESIZE_SHADOW_BOTTOM_RIGHT));
-  // Initialize all layers to invisible/transparent.
-  InitLayer(image_grid_->top_left_layer());
-  InitLayer(image_grid_->top_layer());
-  InitLayer(image_grid_->top_right_layer());
-  InitLayer(image_grid_->left_layer());
-  InitLayer(image_grid_->right_layer());
-  InitLayer(image_grid_->bottom_left_layer());
-  InitLayer(image_grid_->bottom_layer());
-  InitLayer(image_grid_->bottom_right_layer());
-  // Add image grid as a child of the window's layer so it follows the window
-  // as it moves.
-  window->layer()->Add(image_grid_->layer());
+  if (!g_shadow_image.Get()) {
+    auto* source = new ResizeShadowImageSource();
+    g_shadow_image.Get().reset(new gfx::ImageSkia(source, source->size()));
+  }
+  layer_->UpdateNinePatchLayerImage(*g_shadow_image.Get());
+  gfx::Rect aperture(g_shadow_image.Get()->size());
+  constexpr gfx::Insets kApertureInsets(kVisualThickness);
+  aperture.Inset(kApertureInsets);
+  layer_->UpdateNinePatchLayerAperture(aperture);
+  layer_->UpdateNinePatchLayerBorder(
+      gfx::Rect(kApertureInsets.left(), kApertureInsets.top(),
+                kApertureInsets.width(), kApertureInsets.height()));
+
+  ReparentLayer();
+}
+
+ResizeShadow::~ResizeShadow() {
+  window_->RemoveObserver(this);
+}
+
+void ResizeShadow::OnWindowBoundsChanged(aura::Window* window,
+                                         const gfx::Rect& old_bounds,
+                                         const gfx::Rect& new_bounds) {
+  UpdateBoundsAndVisibility();
+}
+
+void ResizeShadow::OnWindowHierarchyChanged(
+    const aura::WindowObserver::HierarchyChangeParams& params) {
+  ReparentLayer();
 }
 
 void ResizeShadow::ShowForHitTest(int hit) {
@@ -78,30 +100,54 @@ void ResizeShadow::ShowForHitTest(int hit) {
     return;
   last_hit_test_ = hit;
 
-  // Show affected corners.
-  ShowLayer(image_grid_->top_left_layer(), hit == HTTOPLEFT);
-  ShowLayer(image_grid_->top_right_layer(), hit == HTTOPRIGHT);
-  ShowLayer(image_grid_->bottom_left_layer(), hit == HTBOTTOMLEFT);
-  ShowLayer(image_grid_->bottom_right_layer(), hit == HTBOTTOMRIGHT);
-
-  // Show affected edges.
-  ShowLayer(image_grid_->top_layer(),
-            hit == HTTOPLEFT || hit == HTTOP || hit == HTTOPRIGHT);
-  ShowLayer(image_grid_->left_layer(),
-            hit == HTTOPLEFT || hit == HTLEFT || hit == HTBOTTOMLEFT);
-  ShowLayer(image_grid_->right_layer(),
-            hit == HTTOPRIGHT || hit == HTRIGHT || hit == HTBOTTOMRIGHT);
-  ShowLayer(image_grid_->bottom_layer(),
-            hit == HTBOTTOMLEFT || hit == HTBOTTOM || hit == HTBOTTOMRIGHT);
+  UpdateBoundsAndVisibility();
 }
 
 void ResizeShadow::Hide() {
   ShowForHitTest(HTNOWHERE);
 }
 
-void ResizeShadow::Layout(const gfx::Rect& content_bounds) {
-  gfx::Rect local_bounds(content_bounds.size());
-  image_grid_->SetContentBounds(local_bounds);
+void ResizeShadow::ReparentLayer() {
+  DCHECK(window_->layer()->parent());
+  if (layer_->parent() != window_->layer()->parent())
+    window_->layer()->parent()->Add(layer_.get());
+  layer_->parent()->StackBelow(layer_.get(), window_->layer());
+}
+
+void ResizeShadow::UpdateBoundsAndVisibility() {
+  // The shadow layer is positioned such that one or two edges will stick out
+  // from underneath |window_|. Thus |window_| occludes the rest of the
+  // roundrect.
+  const int hit = last_hit_test_;
+  bool show_top = hit == HTTOPLEFT || hit == HTTOP || hit == HTTOPRIGHT;
+  bool show_left = hit == HTTOPLEFT || hit == HTLEFT || hit == HTBOTTOMLEFT;
+  bool show_bottom =
+      hit == HTBOTTOMLEFT || hit == HTBOTTOM || hit == HTBOTTOMRIGHT;
+  bool show_right = hit == HTTOPRIGHT || hit == HTRIGHT || hit == HTBOTTOMRIGHT;
+
+  const int outset = -kVisualThickness;
+  gfx::Insets outsets(show_top ? outset : 0, show_left ? outset : 0,
+                      show_bottom ? outset : 0, show_right ? outset : 0);
+  bool visible = !outsets.IsEmpty();
+  if (!visible && !layer_->GetTargetVisibility())
+    return;
+
+  if (visible) {
+    gfx::Rect bounds = window_->bounds();
+    bounds.Inset(outsets);
+    layer_->SetBounds(bounds);
+  }
+
+  // The resize shadow snaps in but fades out.
+  ui::ScopedLayerAnimationSettings settings(layer_->GetAnimator());
+  if (!visible) {
+    constexpr int kShadowFadeOutDurationMs = 100;
+    settings.SetTransitionDuration(
+        base::TimeDelta::FromMilliseconds(kShadowFadeOutDurationMs));
+  }
+  constexpr float kShadowTargetOpacity = 0.5f;
+  layer_->SetOpacity(visible ? kShadowTargetOpacity : 0.f);
+  layer_->SetVisible(visible);
 }
 
 }  // namespace ash
