@@ -20,7 +20,9 @@ namespace {
 bool IsUberOrUberReplacementURL(const GURL& url) {
   return url.SchemeIs(content::kChromeUIScheme) &&
          (url.host_piece() == chrome::kChromeUIHistoryHost ||
-          url.host_piece() == chrome::kChromeUIUberHost);
+          url.host_piece() == chrome::kChromeUIUberHost ||
+          url.host_piece() == chrome::kChromeUISettingsHost ||
+          url.host_piece() == chrome::kChromeUIHelpHost);
 }
 
 }  // namespace
