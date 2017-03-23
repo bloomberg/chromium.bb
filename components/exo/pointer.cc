@@ -140,9 +140,6 @@ gfx::NativeCursor Pointer::GetCursor() {
 void Pointer::OnMouseEvent(ui::MouseEvent* event) {
   Surface* target = GetEffectiveTargetForEvent(event);
 
-  if (event->flags() & ui::EF_TOUCH_ACCESSIBILITY)
-    return;
-
   // If target is different than the current pointer focus then we need to
   // generate enter and leave events.
   if (target != focus_) {

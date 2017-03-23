@@ -76,6 +76,7 @@ class ASH_EXPORT AshTouchExplorationManager
   std::unique_ptr<ui::TouchAccessibilityEnabler> touch_accessibility_enabler_;
   RootWindowController* root_window_controller_;
   chromeos::CrasAudioHandler* audio_handler_;
+  const bool enable_chromevox_arc_support_;
 
   DISALLOW_COPY_AND_ASSIGN(AshTouchExplorationManager);
 };
