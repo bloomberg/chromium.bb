@@ -23,6 +23,8 @@
 #include "printing/units.h"
 #include "url/gurl.h"
 
+using base::EqualsCaseInsensitiveASCII;
+
 namespace printing {
 
 // This section contains helper code for PPD parsing for semantic capabilities.
@@ -45,6 +47,10 @@ constexpr char kPageSize[] = "PageSize";
 constexpr char kBrotherDuplex[] = "BRDuplex";
 constexpr char kBrotherMonoColor[] = "BRMonoColor";
 constexpr char kBrotherPrintQuality[] = "BRPrintQuality";
+
+// Samsung printer specific options.
+constexpr char kSamsungColorTrue[] = "True";
+constexpr char kSamsungColorFalse[] = "False";
 
 const double kMicronsPerPoint = 10.0f * kHundrethsMMPerInch / kPointsPerInch;
 
@@ -88,7 +94,7 @@ void ParseLpOptions(const base::FilePath& filepath,
     if (name.empty())
       continue;
 
-    if (!base::EqualsCaseInsensitiveASCII(printer_name, name))
+    if (!EqualsCaseInsensitiveASCII(printer_name, name))
       continue;  // This is not the required printer.
 
     line = line.substr(space_found + 1);
@@ -146,9 +152,9 @@ void GetDuplexSettings(ppd_file_t* ppd,
 
   *duplex_capable = true;
   const char* choice = duplex_choice->choice;
-  if (base::EqualsCaseInsensitiveASCII(choice, kDuplexNone)) {
+  if (EqualsCaseInsensitiveASCII(choice, kDuplexNone)) {
     *duplex_default = SIMPLEX;
-  } else if (base::EqualsCaseInsensitiveASCII(choice, kDuplexTumble)) {
+  } else if (EqualsCaseInsensitiveASCII(choice, kDuplexTumble)) {
     *duplex_default = SHORT_EDGE;
   } else {
     *duplex_default = LONG_EDGE;
@@ -193,9 +199,9 @@ bool GetBasicColorModelSettings(ppd_file_t* ppd,
 
   if (marked_choice) {
     *color_is_default =
-        !base::EqualsCaseInsensitiveASCII(marked_choice->choice, kBlack) &&
-        !base::EqualsCaseInsensitiveASCII(marked_choice->choice, kGray) &&
-        !base::EqualsCaseInsensitiveASCII(marked_choice->choice, kGrayscale);
+        !EqualsCaseInsensitiveASCII(marked_choice->choice, kBlack) &&
+        !EqualsCaseInsensitiveASCII(marked_choice->choice, kGray) &&
+        !EqualsCaseInsensitiveASCII(marked_choice->choice, kGrayscale);
   }
   return true;
 }
@@ -226,12 +232,9 @@ bool GetPrintOutModeColorSettings(ppd_file_t* ppd,
                                            printout_mode->defchoice);
   }
   if (printout_mode_choice) {
-    if (base::EqualsCaseInsensitiveASCII(printout_mode_choice->choice,
-                                         kNormalGray) ||
-        base::EqualsCaseInsensitiveASCII(printout_mode_choice->choice,
-                                         kHighGray) ||
-        base::EqualsCaseInsensitiveASCII(printout_mode_choice->choice,
-                                         kDraftGray)) {
+    if (EqualsCaseInsensitiveASCII(printout_mode_choice->choice, kNormalGray) ||
+        EqualsCaseInsensitiveASCII(printout_mode_choice->choice, kHighGray) ||
+        EqualsCaseInsensitiveASCII(printout_mode_choice->choice, kDraftGray)) {
       *color_model_for_black = PRINTOUTMODE_NORMAL_GRAY;
       *color_is_default = false;
     }
@@ -248,11 +251,15 @@ bool GetColorModeSettings(ppd_file_t* ppd,
   if (!color_mode_option)
     return false;
 
-  if (ppdFindChoice(color_mode_option, kColor))
+  if (ppdFindChoice(color_mode_option, kColor) ||
+      ppdFindChoice(color_mode_option, kSamsungColorTrue)) {
     *color_model_for_color = COLORMODE_COLOR;
+  }
 
-  if (ppdFindChoice(color_mode_option, kMonochrome))
+  if (ppdFindChoice(color_mode_option, kMonochrome) ||
+      ppdFindChoice(color_mode_option, kSamsungColorFalse)) {
     *color_model_for_black = COLORMODE_MONOCHROME;
+  }
 
   ppd_choice_t* mode_choice = ppdFindMarkedChoice(ppd, kColorMode);
   if (!mode_choice) {
@@ -262,7 +269,8 @@ bool GetColorModeSettings(ppd_file_t* ppd,
 
   if (mode_choice) {
     *color_is_default =
-        base::EqualsCaseInsensitiveASCII(mode_choice->choice, kColor);
+        EqualsCaseInsensitiveASCII(mode_choice->choice, kColor) ||
+        EqualsCaseInsensitiveASCII(mode_choice->choice, kSamsungColorTrue);
   }
   return true;
 }
@@ -296,8 +304,8 @@ bool GetBrotherColorSettings(ppd_file_t* ppd,
   }
   if (marked_choice) {
     *color_is_default =
-        !base::EqualsCaseInsensitiveASCII(marked_choice->choice, kBlack) &&
-        !base::EqualsCaseInsensitiveASCII(marked_choice->choice, kMono);
+        !EqualsCaseInsensitiveASCII(marked_choice->choice, kBlack) &&
+        !EqualsCaseInsensitiveASCII(marked_choice->choice, kMono);
   }
   return true;
 }
@@ -322,8 +330,7 @@ bool GetHPColorSettings(ppd_file_t* ppd,
                                 color_mode_option->defchoice);
   }
   if (mode_choice) {
-    *color_is_default =
-        base::EqualsCaseInsensitiveASCII(mode_choice->choice, kColor);
+    *color_is_default = EqualsCaseInsensitiveASCII(mode_choice->choice, kColor);
   }
   return true;
 }
@@ -353,7 +360,7 @@ bool GetProcessColorModelSettings(ppd_file_t* ppd,
 
   if (mode_choice) {
     *color_is_default =
-        !base::EqualsCaseInsensitiveASCII(mode_choice->choice, kGreyscale);
+        !EqualsCaseInsensitiveASCII(mode_choice->choice, kGreyscale);
   }
   return true;
 }

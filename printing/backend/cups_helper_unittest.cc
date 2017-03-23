@@ -172,7 +172,6 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingPageSize) {
   const char kTestPpdData[] =
       "*PPD-Adobe: \"4.3\"\n\n"
       "*OpenUI *PageSize: PickOne\n"
-      "*OrderDependency: 30 AnySetup *PageSize\n"
       "*DefaultPageSize: Letter\n"
       "*PageSize Letter/US Letter: \""
       "  <</DeferredMediaSelection true /PageSize [612 792] "
@@ -242,7 +241,6 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingBrotherPrinters) {
         "*PPD-Adobe: \"4.3\"\n\n"
         "*ColorDevice: True\n"
         "*OpenUI *BRDuplex/Two-Sided Printing: PickOne\n"
-        "*OrderDependency: 25 AnySetup *BRDuplex\n"
         "*DefaultBRDuplex: DuplexTumble\n"
         "*BRDuplex DuplexTumble/Short-Edge Binding: \"\"\n"
         "*BRDuplex DuplexNoTumble/Long-Edge Binding: \"\"\n"
@@ -253,5 +251,25 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingBrotherPrinters) {
     EXPECT_TRUE(printing::ParsePpdCapabilities("test", kTestPpdData, &caps));
     EXPECT_TRUE(caps.duplex_capable);
     EXPECT_EQ(printing::SHORT_EDGE, caps.duplex_default);
+  }
+}
+
+TEST(PrintBackendCupsHelperTest, TestPpdParsingSamsungPrinters) {
+  {
+    const char kTestPpdData[] =
+        "*PPD-Adobe: \"4.3\"\n\n"
+        "*ColorDevice: True\n"
+        "*OpenUI *ColorMode/Color Mode:  Boolean\n"
+        "*DefaultColorMode: True\n"
+        "*ColorMode False/Grayscale: \"\"\n"
+        "*ColorMode True/Color: \"\"\n"
+        "*CloseUI: *ColorMode\n\n";
+
+    printing::PrinterSemanticCapsAndDefaults caps;
+    EXPECT_TRUE(printing::ParsePpdCapabilities("test", kTestPpdData, &caps));
+    EXPECT_TRUE(caps.color_changeable);
+    EXPECT_TRUE(caps.color_default);
+    EXPECT_EQ(printing::COLORMODE_COLOR, caps.color_model);
+    EXPECT_EQ(printing::COLORMODE_MONOCHROME, caps.bw_model);
   }
 }
