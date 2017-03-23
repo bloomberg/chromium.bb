@@ -20,7 +20,6 @@ function Runner(outerContainerId, opt_config) {
   this.outerContainerEl = document.querySelector(outerContainerId);
   this.containerEl = null;
   this.snackbarEl = null;
-  this.detailsButton = this.outerContainerEl.querySelector('#details-button');
 
   this.config = opt_config || Runner.config;
 
@@ -661,9 +660,11 @@ Runner.prototype = {
       e.preventDefault();
     }
 
-    if (e.target != this.detailsButton) {
-      if (!this.crashed && (Runner.keycodes.JUMP[e.keyCode] ||
-           e.type == Runner.events.TOUCHSTART)) {
+    if (!this.crashed && !this.paused) {
+      if (Runner.keycodes.JUMP[e.keyCode] ||
+          e.type == Runner.events.TOUCHSTART) {
+        e.preventDefault();
+        // Starting the game for the first time.
         if (!this.playing) {
           this.loadSounds();
           this.playing = true;
@@ -672,28 +673,24 @@ Runner.prototype = {
             errorPageController.trackEasterEgg();
           }
         }
-        //  Play sound effect and jump on starting the game for the first time.
+        // Start jump.
         if (!this.tRex.jumping && !this.tRex.ducking) {
           this.playSound(this.soundFx.BUTTON_PRESS);
           this.tRex.startJump(this.currentSpeed);
         }
+      } else if (this.playing && Runner.keycodes.DUCK[e.keyCode]) {
+        e.preventDefault();
+        if (this.tRex.jumping) {
+          // Speed drop, activated only when jump key is not pressed.
+          this.tRex.setSpeedDrop();
+        } else if (!this.tRex.jumping && !this.tRex.ducking) {
+          // Duck.
+          this.tRex.setDuck(true);
+        }
       }
-
-      if (this.crashed && e.type == Runner.events.TOUCHSTART &&
-          e.currentTarget == this.containerEl) {
-        this.restart();
-      }
-    }
-
-    if (this.playing && !this.crashed && Runner.keycodes.DUCK[e.keyCode]) {
-      e.preventDefault();
-      if (this.tRex.jumping) {
-        // Speed drop, activated only when jump key is not pressed.
-        this.tRex.setSpeedDrop();
-      } else if (!this.tRex.jumping && !this.tRex.ducking) {
-        // Duck.
-        this.tRex.setDuck(true);
-      }
+    } else if (this.crashed && e.type == Runner.events.TOUCHSTART &&
+        e.currentTarget == this.containerEl) {
+      this.restart();
     }
   },
 
@@ -812,6 +809,7 @@ Runner.prototype = {
       this.playCount++;
       this.runningTime = 0;
       this.playing = true;
+      this.paused = false;
       this.crashed = false;
       this.distanceRan = 0;
       this.setSpeed(this.config.SPEED);
