@@ -96,7 +96,7 @@ void MemoryDumpScheduler::NotifyPollingSupported() {
 
 void MemoryDumpScheduler::NotifyDumpTriggered() {
   if (polling_state_.polling_task_runner &&
-      polling_state_.polling_task_runner->RunsTasksOnCurrentThread()) {
+      !polling_state_.polling_task_runner->RunsTasksOnCurrentThread()) {
     polling_state_.polling_task_runner->PostTask(
         FROM_HERE,
         Bind(&MemoryDumpScheduler::NotifyDumpTriggered, Unretained(this)));
@@ -115,7 +115,7 @@ void MemoryDumpScheduler::DisableAllTriggers() {
 }
 
 void MemoryDumpScheduler::DisablePolling() {
-  if (polling_state_.polling_task_runner->RunsTasksOnCurrentThread()) {
+  if (!polling_state_.polling_task_runner->RunsTasksOnCurrentThread()) {
     if (polling_state_.polling_task_runner->PostTask(
             FROM_HERE,
             Bind(&MemoryDumpScheduler::DisablePolling, Unretained(this))))
