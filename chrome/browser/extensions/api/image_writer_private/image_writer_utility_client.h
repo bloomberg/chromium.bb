@@ -15,7 +15,8 @@
 #include "chrome/common/extensions/removable_storage_writer.mojom.h"
 #include "content/public/browser/utility_process_mojo_client.h"
 
-// Writes a disk image to a device inside the utility process.
+// Writes a disk image to a device inside the utility process. This
+// class lives on the FILE thread.
 class ImageWriterUtilityClient
     : public base::RefCountedThreadSafe<ImageWriterUtilityClient> {
  public:
@@ -52,6 +53,7 @@ class ImageWriterUtilityClient
 
   // Cancels any pending write or verify operation.
   // |cancel_callback|: Called when the cancel has actually occurred.
+  // TODO(crbug.com/703514): Consider removing this API.
   virtual void Cancel(const CancelCallback& cancel_callback);
 
   // Shuts down the utility process that may have been created.
@@ -77,8 +79,6 @@ class ImageWriterUtilityClient
   ProgressCallback progress_callback_;
   SuccessCallback success_callback_;
   ErrorCallback error_callback_;
-
-  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   std::unique_ptr<content::UtilityProcessMojoClient<
       extensions::mojom::RemovableStorageWriter>>

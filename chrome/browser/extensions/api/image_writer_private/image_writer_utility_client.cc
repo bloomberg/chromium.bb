@@ -25,7 +25,7 @@ class ImageWriterUtilityClient::RemovableStorageWriterClientImpl
       ImageWriterUtilityClient* owner,
       extensions::mojom::RemovableStorageWriterClientPtr* interface)
       : binding_(this, interface), image_writer_utility_client_(owner) {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
 
     binding_.set_connection_error_handler(
         base::Bind(&ImageWriterUtilityClient::UtilityProcessError,
@@ -54,9 +54,7 @@ class ImageWriterUtilityClient::RemovableStorageWriterClientImpl
   DISALLOW_COPY_AND_ASSIGN(RemovableStorageWriterClientImpl);
 };
 
-ImageWriterUtilityClient::ImageWriterUtilityClient()
-    : task_runner_(base::ThreadTaskRunnerHandle::Get()) {
-}
+ImageWriterUtilityClient::ImageWriterUtilityClient() = default;
 
 ImageWriterUtilityClient::~ImageWriterUtilityClient() = default;
 
@@ -65,7 +63,7 @@ void ImageWriterUtilityClient::Write(const ProgressCallback& progress_callback,
                                      const ErrorCallback& error_callback,
                                      const base::FilePath& source,
                                      const base::FilePath& target) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
   DCHECK(!removable_storage_writer_client_);
 
   progress_callback_ = progress_callback;
@@ -87,7 +85,7 @@ void ImageWriterUtilityClient::Verify(const ProgressCallback& progress_callback,
                                       const ErrorCallback& error_callback,
                                       const base::FilePath& source,
                                       const base::FilePath& target) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
   DCHECK(!removable_storage_writer_client_);
 
   progress_callback_ = progress_callback;
@@ -105,21 +103,22 @@ void ImageWriterUtilityClient::Verify(const ProgressCallback& progress_callback,
 }
 
 void ImageWriterUtilityClient::Cancel(const CancelCallback& cancel_callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+  DCHECK(cancel_callback);
 
   ResetRequest();
-  task_runner_->PostTask(FROM_HERE, cancel_callback);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, cancel_callback);
 }
 
 void ImageWriterUtilityClient::Shutdown() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
 
   ResetRequest();
   utility_process_mojo_client_.reset();
 }
 
 void ImageWriterUtilityClient::StartUtilityProcessIfNeeded() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
 
   if (utility_process_mojo_client_)
     return;
@@ -140,7 +139,7 @@ void ImageWriterUtilityClient::StartUtilityProcessIfNeeded() {
 }
 
 void ImageWriterUtilityClient::UtilityProcessError() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
 
   OperationFailed("Utility process crashed or failed.");
   utility_process_mojo_client_.reset();
@@ -148,21 +147,21 @@ void ImageWriterUtilityClient::UtilityProcessError() {
 
 void ImageWriterUtilityClient::OperationProgress(int64_t progress) {
   if (progress_callback_)
-    task_runner_->PostTask(FROM_HERE, base::Bind(progress_callback_, progress));
+    progress_callback_.Run(progress);
 }
 
 void ImageWriterUtilityClient::OperationSucceeded() {
   SuccessCallback success_callback = success_callback_;
   ResetRequest();
   if (success_callback)
-    task_runner_->PostTask(FROM_HERE, success_callback);
+    success_callback.Run();
 }
 
 void ImageWriterUtilityClient::OperationFailed(const std::string& error) {
   ErrorCallback error_callback = error_callback_;
   ResetRequest();
   if (error_callback)
-    task_runner_->PostTask(FROM_HERE, base::Bind(error_callback, error));
+    error_callback.Run(error);
 }
 
 void ImageWriterUtilityClient::ResetRequest() {

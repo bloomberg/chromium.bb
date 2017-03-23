@@ -32,17 +32,10 @@ void Operation::Write(const base::Closure& continuation) {
     return;
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(
-          &ImageWriterUtilityClient::Write,
-          image_writer_client_,
-          base::Bind(&Operation::WriteImageProgress, this, file_size),
-          base::Bind(&Operation::CompleteAndContinue, this, continuation),
-          base::Bind(&Operation::Error, this),
-          image_path_,
-          device_path_));
+  image_writer_client_->Write(
+      base::Bind(&Operation::WriteImageProgress, this, file_size),
+      base::Bind(&Operation::CompleteAndContinue, this, continuation),
+      base::Bind(&Operation::Error, this), image_path_, device_path_);
 }
 
 void Operation::VerifyWrite(const base::Closure& continuation) {
@@ -61,17 +54,10 @@ void Operation::VerifyWrite(const base::Closure& continuation) {
     return;
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(
-          &ImageWriterUtilityClient::Verify,
-          image_writer_client_,
-          base::Bind(&Operation::WriteImageProgress, this, file_size),
-          base::Bind(&Operation::CompleteAndContinue, this, continuation),
-          base::Bind(&Operation::Error, this),
-          image_path_,
-          device_path_));
+  image_writer_client_->Verify(
+      base::Bind(&Operation::WriteImageProgress, this, file_size),
+      base::Bind(&Operation::CompleteAndContinue, this, continuation),
+      base::Bind(&Operation::Error, this), image_path_, device_path_);
 }
 
 }  // namespace image_writer

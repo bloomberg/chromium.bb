@@ -263,10 +263,7 @@ void Operation::StartUtilityClient() {
 
 void Operation::StopUtilityClient() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&ImageWriterUtilityClient::Shutdown, image_writer_client_));
+  image_writer_client_->Shutdown();
 }
 
 void Operation::WriteImageProgress(int64_t total_bytes, int64_t curr_bytes) {
