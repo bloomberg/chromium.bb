@@ -466,6 +466,8 @@ int av1_decode_block_tokens(AV1_COMMON *cm, MACROBLOCKD *const xd, int plane,
   if (xd->counts)
     av1_update_scan_count_facade(cm, xd->counts, tx_size, tx_type, pd->dqcoeff,
                                  eob);
+#else
+  (void)cm;
 #endif
   return eob;
 }
