@@ -195,6 +195,12 @@ void InputMethodMus::AckPendingCallbacksUnhandled() {
 void InputMethodMus::ProcessKeyEventCallback(
     const ui::KeyEvent& event,
     bool handled) {
+  // Remove the callback as DispatchKeyEventPostIME() may lead to calling
+  // AckPendingCallbacksUnhandled(), which mutates |pending_callbacks_|.
+  DCHECK(!pending_callbacks_.empty());
+  std::unique_ptr<EventResultCallback> ack_callback =
+      std::move(pending_callbacks_.front());
+  pending_callbacks_.pop_front();
   EventResult event_result;
   if (!handled) {
     // If not handled by IME, try dispatching the event to delegate to see if
@@ -207,10 +213,6 @@ void InputMethodMus::ProcessKeyEventCallback(
   } else {
     event_result = EventResult::HANDLED;
   }
-  DCHECK(!pending_callbacks_.empty());
-  std::unique_ptr<EventResultCallback> ack_callback =
-      std::move(pending_callbacks_.front());
-  pending_callbacks_.pop_front();
   // |ack_callback| can be null if the standard form of DispatchKeyEvent() is
   // called instead of the version which provides a callback. In mus+ash we
   // use the version with callback, but some unittests use the standard form.

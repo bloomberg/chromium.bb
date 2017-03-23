@@ -130,4 +130,67 @@ TEST_F(InputMethodMusTest, PendingCallbackRunFromOnDidChangeFocusedClient) {
   EXPECT_TRUE(was_event_result_callback_run);
 }
 
+// See description of ChangeTextInputTypeWhileProcessingCallback for details.
+class TestInputMethodDelegate2 : public ui::internal::InputMethodDelegate {
+ public:
+  TestInputMethodDelegate2() {}
+  ~TestInputMethodDelegate2() override {}
+
+  void SetInputMethodAndClient(InputMethodMus* input_method_mus,
+                               ui::TextInputClient* text_input_client) {
+    input_method_mus_ = input_method_mus;
+    text_input_client_ = text_input_client;
+  }
+
+  bool was_dispatch_key_event_post_ime_called() const {
+    return was_dispatch_key_event_post_ime_called_;
+  }
+
+  // ui::internal::InputMethodDelegate:
+  ui::EventDispatchDetails DispatchKeyEventPostIME(ui::KeyEvent* key) override {
+    was_dispatch_key_event_post_ime_called_ = true;
+    input_method_mus_->SetFocusedTextInputClient(text_input_client_);
+    return ui::EventDispatchDetails();
+  }
+
+ private:
+  InputMethodMus* input_method_mus_ = nullptr;
+  ui::TextInputClient* text_input_client_ = nullptr;
+  bool was_dispatch_key_event_post_ime_called_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(TestInputMethodDelegate2);
+};
+
+// This test setups the scenario where during processing an unhandled event
+// SetFocusedTextInputClient() is called. This verifies we don't crash in this
+// scenario and the callback is correctly called.
+TEST_F(InputMethodMusTest, ChangeTextInputTypeWhileProcessingCallback) {
+  aura::Window window(nullptr);
+  window.Init(ui::LAYER_NOT_DRAWN);
+  bool was_event_result_callback_run = false;
+  ui::DummyTextInputClient test_input_client;
+  // Create an InputMethodMus and foward an event to it.
+  TestInputMethodDelegate2 input_method_delegate;
+  InputMethodMus input_method_mus(&input_method_delegate, &window);
+  input_method_delegate.SetInputMethodAndClient(&input_method_mus,
+                                                &test_input_client);
+  TestInputMethod test_input_method;
+  InputMethodMusTestApi::SetInputMethod(&input_method_mus, &test_input_method);
+  std::unique_ptr<EventResultCallback> callback =
+      base::MakeUnique<EventResultCallback>(base::Bind(
+          &RunFunctionWithEventResult, &was_event_result_callback_run));
+  const ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, 0);
+  InputMethodMusTestApi::CallSendKeyEventToInputMethod(
+      &input_method_mus, key_event, std::move(callback));
+  // The event should have been queued.
+  ASSERT_EQ(1u, test_input_method.process_key_event_callbacks()->size());
+  // Callback should not have been run yet.
+  EXPECT_FALSE(was_event_result_callback_run);
+  (*test_input_method.process_key_event_callbacks())[0].Run(false);
+
+  // Callback should have been run.
+  EXPECT_TRUE(was_event_result_callback_run);
+  EXPECT_TRUE(input_method_delegate.was_dispatch_key_event_post_ime_called());
+}
+
 }  // namespace aura
