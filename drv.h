@@ -162,11 +162,11 @@ drv_bo_get_format(struct bo *bo);
 uint32_t
 drv_resolve_format(struct driver *drv, uint32_t format);
 
-int
-drv_stride_from_format(uint32_t format, uint32_t width, size_t plane);
-
 size_t
 drv_num_planes_from_format(uint32_t format);
+
+uint32_t
+drv_bytes_per_pixel(uint32_t format, size_t plane);
 
 uint32_t
 drv_size_from_format(uint32_t format, uint32_t stride, uint32_t height,

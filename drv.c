@@ -501,39 +501,6 @@ uint32_t drv_resolve_format(struct driver *drv, uint32_t format)
 	return format;
 }
 
-/*
- * This function returns the stride for a given format, width and plane.
- */
-int drv_stride_from_format(uint32_t format, uint32_t width, size_t plane)
-{
-	int stride = DIV_ROUND_UP(width * drv_bpp_from_format(format, plane),
-				  8);
-
-	/*
-	 * Only downsample for certain multiplanar formats which have horizontal
-	 * subsampling for chroma planes.  Only formats supported by our drivers
-	 * are listed here -- add more as needed.
-	 */
-	if (plane != 0) {
-		switch (format) {
-		case DRM_FORMAT_NV12:
-		case DRM_FORMAT_YVU420:
-		case DRM_FORMAT_YVU420_ANDROID:
-			stride = DIV_ROUND_UP(stride, 2);
-			break;
-		}
-	}
-
-	/*
-	 * The stride of Android YV12 buffers is required to be aligned to 16 bytes
-	 * (see <system/graphics.h>).
-	 */
-	if (format == DRM_FORMAT_YVU420_ANDROID)
-		stride = ALIGN(stride, 16);
-
-	return stride;
-}
-
 size_t drv_num_planes_from_format(uint32_t format)
 {
 	switch (format) {
@@ -594,6 +561,12 @@ size_t drv_num_planes_from_format(uint32_t format)
 
 	fprintf(stderr, "drv: UNKNOWN FORMAT %d\n", format);
 	return 0;
+}
+
+uint32_t
+drv_bytes_per_pixel(uint32_t format, size_t plane)
+{
+	return DIV_ROUND_UP(drv_bpp_from_format(format, plane), 8);
 }
 
 uint32_t drv_size_from_format(uint32_t format, uint32_t stride,
