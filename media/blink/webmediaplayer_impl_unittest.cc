@@ -467,6 +467,18 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_Playing) {
   EXPECT_TRUE(state.is_memory_reporting_enabled);
 }
 
+TEST_F(WebMediaPlayerImplTest, ComputePlayState_PlayingVideoOnly) {
+  InitializeWebMediaPlayerImpl(true);
+  SetMetadata(false, true);
+  SetReadyState(blink::WebMediaPlayer::ReadyStateHaveFutureData);
+  SetPaused(false);
+  WebMediaPlayerImpl::PlayState state = ComputePlayState();
+  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PLAYING, state.delegate_state);
+  EXPECT_FALSE(state.is_idle);
+  EXPECT_FALSE(state.is_suspended);
+  EXPECT_TRUE(state.is_memory_reporting_enabled);
+}
+
 TEST_F(WebMediaPlayerImplTest, ComputePlayState_Underflow) {
   InitializeWebMediaPlayerImpl(true);
   SetMetadata(true, true);
@@ -516,12 +528,18 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_FrameHiddenSuspendNoResume) {
   SetMetadata(true, true);
   SetReadyState(blink::WebMediaPlayer::ReadyStateHaveFutureData);
   SetPaused(false);
-
   WebMediaPlayerImpl::PlayState state = ComputePlayState_FrameHidden();
-  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::GONE, state.delegate_state);
-  EXPECT_TRUE(state.is_idle);
+  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PLAYING, state.delegate_state);
+  EXPECT_FALSE(state.is_idle);
   EXPECT_FALSE(state.is_suspended);
   EXPECT_TRUE(state.is_memory_reporting_enabled);
+
+  SetPaused(true);
+  state = ComputePlayState_FrameHidden();
+  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::GONE, state.delegate_state);
+  EXPECT_TRUE(state.is_idle);
+  EXPECT_TRUE(state.is_suspended);
+  EXPECT_FALSE(state.is_memory_reporting_enabled);
 }
 
 TEST_F(WebMediaPlayerImplTest, ComputePlayState_FrameHiddenSuspendWithResume) {

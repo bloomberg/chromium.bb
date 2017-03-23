@@ -2008,14 +2008,20 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
   // |has_remote_controls| indicates if the player can be controlled outside the
   // page (e.g. via the notification controls or by audio focus events). Idle
   // suspension does not destroy the media session, because we expect that the
-  // notification controls (and audio focus) remain. The following must be true
-  // for the player to have remote controls:
+  // notification controls (and audio focus) remain. With some exceptions for
+  // background videos, the player only needs to have audio to have controls
+  // (requires |have_future_data|).
+  //
+  // |alive| indicates if the player should be present (not |GONE|) to the
+  // delegate, either paused or playing. The following must be true for the
+  // player:
   //   - |have_future_data|, since we need to know whether we are paused to
   //     correctly configure the session and also because the tracks and
-  //     duration are passed to DidPlay()
-  //   - |is_remote| is false as remote players have their own controls
-  //   - |has_error| is false player should have no errors
-  //   - hasAudio() (requires |have_future_data|)
+  //     duration are passed to DidPlay(),
+  //   - |is_remote| is false as remote playback is not handled by the delegate,
+  //   - |has_error| is false as player should have no errors,
+  //   - |background_suspended| is false, otherwise |has_remote_controls| must
+  //     be true.
   //
   // TODO(sandersd): If Blink told us the paused state sooner, we could detect
   // if the remote controls are available sooner.
@@ -2027,10 +2033,11 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
       IsBackgroundedSuspendEnabled() && !IsResumeBackgroundVideosEnabled() &&
       is_backgrounded && hasVideo();
   bool can_play = !has_error && !is_remote && have_future_data;
-  bool has_remote_controls = can_play && !must_suspend && hasAudio() &&
-                             !backgrounded_video_has_no_remote_controls;
-
-  if (!has_remote_controls) {
+  bool has_remote_controls =
+      hasAudio() && !backgrounded_video_has_no_remote_controls;
+  bool alive = can_play && !must_suspend &&
+               (!background_suspended || has_remote_controls);
+  if (!alive) {
     result.delegate_state = DelegateState::GONE;
     result.is_idle = delegate_->IsIdle(delegate_id_);
   } else if (paused_) {
