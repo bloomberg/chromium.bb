@@ -5723,9 +5723,9 @@
         "latest_toolchain": true,
         "manifest": "official.xml",
         "useflags": [
+            "-debug_fission",
             "-transparent_hugepage",
-            "chrome_internal",
-            "clang"
+            "chrome_internal"
         ],
         "vm_tests": []
     },
@@ -20641,6 +20641,7 @@
         "master": true,
         "push_overlays": "both",
         "useflags": [
+            "-debug_fission",
             "-transparent_hugepage",
             "chrome_internal"
         ],

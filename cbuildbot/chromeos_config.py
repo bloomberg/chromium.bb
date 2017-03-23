@@ -3316,7 +3316,9 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           'afdo_generate': True,
           'latest_toolchain': True,
           # Disable hugepages before collecting AFDO profile.
-          'useflags': append_useflags(['-transparent_hugepage', 'clang']),
+          # Disable debug fission before collecting AFDO profile.
+          'useflags': append_useflags(['-transparent_hugepage',
+                                       '-debug_fission']),
           'hw_tests': [hw_test_list.AFDORecordTest()]
       },
 
@@ -3470,7 +3472,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       afdo_update_ebuild=True,
       vm_tests=[],
       hw_tests=[hw_test_list.AFDORecordTest()],
-      useflags=append_useflags(['-transparent_hugepage']),
+      useflags=append_useflags(['-transparent_hugepage', '-debug_fission']),
   )
 
   # This is an example factory branch configuration.
