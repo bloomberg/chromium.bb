@@ -51,6 +51,11 @@
       showcase::kClassForInstantiationKey : @"SCToolbarCoordinator",
       showcase::kUseCaseKey : @"Toolbar",
     },
+    @{
+      showcase::kClassForDisplayKey : @"PaymentRequestEditViewController",
+      showcase::kClassForInstantiationKey : @"SCPaymentsEditorCoordinator",
+      showcase::kUseCaseKey : @"Generic payment request editor",
+    },
   ];
 }
 

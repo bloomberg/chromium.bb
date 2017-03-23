@@ -291,6 +291,9 @@
       <message name="IDS_ACCNAME_CANCEL" desc="The accessible name for the Cancel button.">
         Cancel
       </message>
+      <message name="IDS_ACCNAME_DONE" desc="The accessible name for the DONE button.">
+        Done
+      </message>
       <message name="IDS_ACCNAME_CLOSE" desc="The accessible name for the Close button.">
         Close
       </message>

@@ -27,6 +27,7 @@ group("features") {
   deps = [
     "//ios/clean/chrome/browser/ui/tools:tools_ui",
     "//ios/showcase/content_suggestions",
+    "//ios/showcase/payments",
     "//ios/showcase/settings",
     "//ios/showcase/tab_grid",
     "//ios/showcase/tab_strip",

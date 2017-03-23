@@ -31,6 +31,7 @@ const CGFloat kLabelAndFieldGap = 5;
 @synthesize cardTypeIcon = _cardTypeIcon;
 @synthesize textFieldEnabled = _textFieldEnabled;
 @synthesize autofillType = _autofillType;
+@synthesize required = _required;
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
@@ -44,7 +45,9 @@ const CGFloat kLabelAndFieldGap = 5;
 
 - (void)configureCell:(AutofillEditCell*)cell {
   [super configureCell:cell];
-  cell.textLabel.text = self.textFieldName;
+  NSString* textLabelFormat = self.required ? @"%@*" : @"%@";
+  cell.textLabel.text =
+      [NSString stringWithFormat:textLabelFormat, self.textFieldName];
   cell.textField.text = self.textFieldValue;
   if (self.textFieldName.length) {
     cell.textField.accessibilityIdentifier =

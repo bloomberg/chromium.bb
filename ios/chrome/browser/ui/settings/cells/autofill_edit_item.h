@@ -25,7 +25,13 @@
 @property(nonatomic, copy) UIImage* cardTypeIcon;
 
 // The field type this item is describing.
+// TODO(crbug.com/702252): Get rid of the dependency on the model type.
 @property(nonatomic, assign) autofill::ServerFieldType autofillType;
+
+// Whether this field is required. If YES, an "*" is appended to the name of the
+// text field to indicate that the field is required. It is also used for
+// validation purposes.
+@property(nonatomic, getter=isRequired) BOOL required;
 
 // Whether the text field is enabled for editing.
 @property(nonatomic, getter=isTextFieldEnabled) BOOL textFieldEnabled;

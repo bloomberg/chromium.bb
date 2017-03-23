@@ -577,16 +577,17 @@ const CGFloat kHorizontalImageFixedSize = 40;
 - (CollectionViewItem*)autofillEditItem {
   AutofillEditItem* item = [[[AutofillEditItem alloc]
       initWithType:ItemTypeAutofillDynamicHeight] autorelease];
-  item.textFieldName = @"Credit Number";
+  item.textFieldName = @"Required Card Number";
   item.textFieldValue = @"4111111111111111";
   item.textFieldEnabled = YES;
+  item.required = YES;
   return item;
 }
 
 - (CollectionViewItem*)autofillEditItemWithIcon {
   AutofillEditItem* item = [[[AutofillEditItem alloc]
       initWithType:ItemTypeAutofillDynamicHeight] autorelease];
-  item.textFieldName = @"Credit Number";
+  item.textFieldName = @"Card Number";
   item.textFieldValue = @"4111111111111111";
   item.textFieldEnabled = YES;
   int resourceID =
