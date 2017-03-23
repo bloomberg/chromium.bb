@@ -31,17 +31,18 @@
     audit.define('preload-arraybuffer', (task, should) => {
       Promise
           .all([
-            Audit.loadFileFromUrl(validAudioFileUrl),
-            Audit.loadFileFromUrl(invalidAudioFileUrl)
+            should(Audit.loadFileFromUrl(validAudioFileUrl),
+              "Loading valid audio file")
+              .beResolved(),
+            should(Audit.loadFileFromUrl(invalidAudioFileUrl),
+              "loading invalid audio file")
+              .beResolved()
           ])
           .then((arrayBuffers) => {
             validArrayBuffer = arrayBuffers[0];
             invalidArrayBuffer = arrayBuffers[1];
-            context.decodeAudioData(validArrayBuffer).then((audioBuffer) => {
-              referenceDecodedAudioBuffer = audioBuffer;
-              task.done();
-            })
-          });
+          })
+          .then(() => task.done());
     });
 
     // Decode a valid encoded file and verify that the promise succeeds
@@ -51,12 +52,14 @@
       // we do not care about it in this test.
       Promise
           .all([
-            should(context.decodeAudioData(validArrayBuffer),
+            // Do not use the original arrayBuffers for decoding; decode a copy
+            // because decodeAudioData will detach the buffers.
+            should(context.decodeAudioData(validArrayBuffer.slice(0)),
                    'Decoding a valid audio file')
                 .beResolved(),
-            should(context.decodeAudioData(invalidArrayBuffer),
+            should(context.decodeAudioData(invalidArrayBuffer.slice(0)),
                    'Decoding an invalid audio file')
-                .beRejected('EncodingError'),
+                .beRejectedWith('EncodingError'),
             should(context.decodeAudioData(null), 'Decoding null AudioBuffer')
                 .beRejected()
           ])
@@ -81,7 +84,7 @@
       };
 
       // Step 1: Decode a file with callback functions.
-      let step1 = context.decodeAudioData(validArrayBuffer,
+      let step1 = context.decodeAudioData(validArrayBuffer.slice(),
                                           successOrErrorCallback,
                                           successOrErrorCallback);
 
@@ -112,7 +115,7 @@
       };
 
       let decodeAudioDataPromise = context.decodeAudioData(
-          invalidArrayBuffer, successOrErrorCallback, successOrErrorCallback);
+          invalidArrayBuffer.slice(), successOrErrorCallback, successOrErrorCallback);
 
       should(decodeAudioDataPromise, 'decodeAudioData promise')
           .beRejected('EncodingError')

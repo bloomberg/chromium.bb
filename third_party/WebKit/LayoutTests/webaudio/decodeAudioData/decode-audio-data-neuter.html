@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script src="../resources/audit.js"></script>
+    <title>Test Neutering by decodeAudioData </title>
+  </head>
+
+  <body>
+    <script>
+      // Any valid rate will do. Just need something to create an offline
+      // context.
+      let sampleRate = 44100;
+
+      let audit = Audit.createTaskRunner();
+
+      // Context to use for decodeAudioData
+      let context;
+      // The encoded audio file that we want to decode.
+      let encodedAudio;
+
+      audit.define('initialize', (task, should) => {
+        // Create the context and load up any valid encoded audio file.
+        should(() => {
+          context = new OfflineAudioContext(1, 1, sampleRate);
+        }, 'Context creation').notThrow();
+
+        Audit.loadFileFromUrl(
+                '../resources/hyper-reality/laughter.wav')
+            .then(response => {
+                encodedAudio = response;
+                should(true, 'Loading of encoded audio file')
+                    .message('succeeded', 'failed');
+            })
+            .then(() => task.done());
+      });
+
+      audit.define('decode-audio-neuters', (task, should) => {
+        // Decode the audio file and verify that it neuters the array, so that
+        // it can't be transfered somewhere else.
+        p = context.decodeAudioData(encodedAudio);
+        should(() => {
+          postMessage('', '*', [encodedAudio]);
+        }, 'Transfer of audio buffer').throw('DataCloneError');
+        should(p, 'Decoding of audio').beResolved().then(() => task.done());
+      });
+
+      audit.define('neutered buffer', (task, should) => {
+        // Any non-empy ArrayBuffer will work.  We're going to transfer that
+        // array before calling decodeAudioData.
+        let buffer = new ArrayBuffer(1000);
+
+        should(() => {
+          postMessage('', '*', [buffer]);
+        }, 'Transfer buffer via postMessage').notThrow();
+
+        should(
+            context.decodeAudioData(buffer),
+            'decodeAudioData on neutered buffer')
+            .beRejected('TypeError')
+            .then(() => task.done());
+      });
+
+      audit.run();
+    </script>
+  </body>
+</html>
