@@ -661,4 +661,16 @@ TEST_F(ResourceFetcherTest, LinkPreloadResourceMultipleFetchersAndMove) {
   Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
 }
 
+TEST_F(ResourceFetcherTest, ContentTypeDataURL) {
+  ResourceFetcher* fetcher = ResourceFetcher::create(context());
+  FetchRequest fetchRequest =
+      FetchRequest(KURL(ParsedURLString, "data:text/testmimetype,foo"),
+                   FetchInitiatorInfo());
+  Resource* resource = MockResource::fetch(fetchRequest, fetcher);
+  ASSERT_TRUE(resource);
+  EXPECT_EQ(ResourceStatus::Cached, resource->getStatus());
+  EXPECT_EQ("text/testmimetype", resource->response().mimeType());
+  EXPECT_EQ("text/testmimetype", resource->response().httpContentType());
+}
+
 }  // namespace blink

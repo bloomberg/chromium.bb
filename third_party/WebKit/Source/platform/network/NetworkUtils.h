@@ -12,6 +12,7 @@ namespace blink {
 
 class KURL;
 class SharedBuffer;
+class ResourceResponse;
 
 namespace NetworkUtils {
 
@@ -27,11 +28,11 @@ PLATFORM_EXPORT bool isLocalHostname(const String& host, bool* isLocal6);
 PLATFORM_EXPORT String getDomainAndRegistry(const String& host,
                                             PrivateRegistryFilter);
 
-// Returns the decoded data url if url had a supported mimetype and parsing was
-// successful.
-PLATFORM_EXPORT PassRefPtr<SharedBuffer> parseDataURL(const KURL&,
-                                                      AtomicString& mimetype,
-                                                      AtomicString& charset);
+// Returns the decoded data url as ResourceResponse and SharedBuffer
+// if url had a supported mimetype and parsing was successful.
+PLATFORM_EXPORT PassRefPtr<SharedBuffer> parseDataURLAndPopulateResponse(
+    const KURL&,
+    ResourceResponse&);
 
 PLATFORM_EXPORT bool isRedirectResponseCode(int);
 

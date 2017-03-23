@@ -11,7 +11,9 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
 #include "net/http/http_response_headers.h"
+#include "net/url_request/url_request_data_job.h"
 #include "platform/SharedBuffer.h"
+#include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/URLConversion.h"
 #include "public/platform/WebString.h"
@@ -62,20 +64,45 @@ String getDomainAndRegistry(const String& host, PrivateRegistryFilter filter) {
   return String(domain.data(), domain.length());
 }
 
-PassRefPtr<SharedBuffer> parseDataURL(const KURL& url,
-                                      AtomicString& mimetype,
-                                      AtomicString& charset) {
+PassRefPtr<SharedBuffer> parseDataURLAndPopulateResponse(
+    const KURL& url,
+    ResourceResponse& response) {
+  // The following code contains duplication of GetInfoFromDataURL() and
+  // WebURLLoaderImpl::PopulateURLResponse() in
+  // content/child/web_url_loader_impl.cc. Merge them once content/child is
+  // moved to platform/.
   std::string utf8MimeType;
   std::string utf8Charset;
-  std::string data;
-  if (net::DataURL::Parse(WebStringToGURL(url.getString()), &utf8MimeType,
-                          &utf8Charset, &data) &&
-      mime_util::IsSupportedMimeType(utf8MimeType)) {
-    mimetype = WebString::fromUTF8(utf8MimeType);
-    charset = WebString::fromUTF8(utf8Charset);
-    return SharedBuffer::create(data.data(), data.size());
+  std::string dataString;
+  scoped_refptr<net::HttpResponseHeaders> headers(
+      new net::HttpResponseHeaders(std::string()));
+
+  int result = net::URLRequestDataJob::BuildResponse(
+      WebStringToGURL(url.getString()), &utf8MimeType, &utf8Charset,
+      &dataString, headers.get());
+  if (result != net::OK)
+    return nullptr;
+
+  if (!mime_util::IsSupportedMimeType(utf8MimeType))
+    return nullptr;
+
+  RefPtr<SharedBuffer> data =
+      SharedBuffer::create(dataString.data(), dataString.size());
+  response.setHTTPStatusCode(200);
+  response.setHTTPStatusText("OK");
+  response.setURL(url);
+  response.setMimeType(WebString::fromUTF8(utf8MimeType));
+  response.setExpectedContentLength(data->size());
+  response.setTextEncodingName(WebString::fromUTF8(utf8Charset));
+
+  size_t iter = 0;
+  std::string name;
+  std::string value;
+  while (headers->EnumerateHeaderLines(&iter, &name, &value)) {
+    response.addHTTPHeaderField(WebString::fromLatin1(name),
+                                WebString::fromLatin1(value));
   }
-  return nullptr;
+  return data;
 }
 
 bool isRedirectResponseCode(int responseCode) {

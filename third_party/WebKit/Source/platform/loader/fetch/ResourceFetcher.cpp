@@ -369,33 +369,31 @@ Resource* ResourceFetcher::resourceForStaticData(
     memoryCache()->remove(oldResource);
   }
 
-  AtomicString mimetype;
-  AtomicString charset;
+  ResourceResponse response;
   RefPtr<SharedBuffer> data;
   if (substituteData.isValid()) {
-    mimetype = substituteData.mimeType();
-    charset = substituteData.textEncoding();
     data = substituteData.content();
+    response.setURL(url);
+    response.setMimeType(substituteData.mimeType());
+    response.setExpectedContentLength(data->size());
+    response.setTextEncodingName(substituteData.textEncoding());
   } else if (url.protocolIsData()) {
-    data = PassRefPtr<SharedBuffer>(
-        NetworkUtils::parseDataURL(url, mimetype, charset));
+    data = NetworkUtils::parseDataURLAndPopulateResponse(url, response);
     if (!data)
       return nullptr;
+    // |response| is modified by parseDataURLAndPopulateResponse() and is
+    // ready to be used.
   } else {
     ArchiveResource* archiveResource =
         m_archive->subresourceForURL(request.url());
     // Fall back to the network if the archive doesn't contain the resource.
     if (!archiveResource)
       return nullptr;
-    mimetype = archiveResource->mimeType();
-    charset = archiveResource->textEncoding();
     data = archiveResource->data();
-  }
-
-  ResourceResponse response(url, mimetype, data->size(), charset);
-  if (!substituteData.isValid() && url.protocolIsData()) {
-    response.setHTTPStatusCode(200);
-    response.setHTTPStatusText("OK");
+    response.setURL(url);
+    response.setMimeType(archiveResource->mimeType());
+    response.setExpectedContentLength(data->size());
+    response.setTextEncodingName(archiveResource->textEncoding());
   }
 
   Resource* resource = factory.create(request.resourceRequest(),

@@ -6,4 +6,6 @@ include_rules = [
     # so we have separate DEPS from platform's one.
     "+net/base",
     "+net/http",
+    # For URLRequestDataJob::BuildResponse().
+    "+net/url_request/url_request_data_job.h",
 ]
