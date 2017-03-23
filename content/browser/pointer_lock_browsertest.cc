@@ -315,4 +315,115 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest,
             web_contents()->GetMouseLockWidget());
 }
 
+IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockWheelEventRouting) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* child = root->child_at(0);
+  RenderWidgetHostInputEventRouter* router =
+      web_contents()->GetInputEventRouter();
+  RenderWidgetHostViewBase* root_view = static_cast<RenderWidgetHostViewBase*>(
+      root->current_frame_host()->GetView());
+  RenderWidgetHostViewBase* child_view = static_cast<RenderWidgetHostViewBase*>(
+      child->current_frame_host()->GetView());
+
+  // Request a pointer lock on the root frame's body.
+  EXPECT_TRUE(ExecuteScript(root, "document.body.requestPointerLock()"));
+
+  // Root frame should have been granted pointer lock.
+  bool locked = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(root,
+                                          "window.domAutomationController.send("
+                                          "document.pointerLockElement == "
+                                          "document.body);",
+                                          &locked));
+  EXPECT_TRUE(locked);
+
+  // Add a mouse move wheel event listener to the root frame.
+  EXPECT_TRUE(ExecuteScript(
+      root,
+      "var x; var y; var mX; var mY; document.addEventListener('mousewheel', "
+      "function(e) {x = e.x; y = e.y; dX = e.deltaX; dY = e.deltaY;});"));
+  MainThreadFrameObserver root_observer(root_view->GetRenderWidgetHost());
+  root_observer.Wait();
+
+  blink::WebMouseWheelEvent wheel_event(
+      blink::WebInputEvent::MouseWheel, blink::WebInputEvent::NoModifiers,
+      blink::WebInputEvent::TimeStampForTesting);
+  wheel_event.x = 10;
+  wheel_event.y = 11;
+  wheel_event.deltaX = -12;
+  wheel_event.deltaY = -13;
+  router->RouteMouseWheelEvent(root_view, &wheel_event, ui::LatencyInfo());
+
+  // Make sure that the renderer handled the input event.
+  root_observer.Wait();
+
+  int x, y, deltaX, deltaY;
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      root, "window.domAutomationController.send(x);", &x));
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      root, "window.domAutomationController.send(y);", &y));
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      root, "window.domAutomationController.send(dX);", &deltaX));
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      root, "window.domAutomationController.send(dY);", &deltaY));
+  EXPECT_EQ(10, x);
+  EXPECT_EQ(11, y);
+  EXPECT_EQ(12, deltaX);
+  EXPECT_EQ(13, deltaY);
+
+  // Release pointer lock on root frame.
+  EXPECT_TRUE(ExecuteScript(root, "document.exitPointerLock()"));
+
+  // Request a pointer lock on the child frame's body.
+  EXPECT_TRUE(ExecuteScript(child, "document.body.requestPointerLock()"));
+
+  // Child frame should have been granted pointer lock.
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(child,
+                                          "window.domAutomationController.send("
+                                          "document.pointerLockElement == "
+                                          "document.body);",
+                                          &locked));
+  EXPECT_TRUE(locked);
+
+  // Add a mouse move event listener to the child frame.
+  EXPECT_TRUE(ExecuteScript(
+      child,
+      "var x; var y; var mX; var mY; document.addEventListener('mousewheel', "
+      "function(e) {x = e.x; y = e.y; dX = e.deltaX; dY = e.deltaY;});"));
+  MainThreadFrameObserver child_observer(child_view->GetRenderWidgetHost());
+  child_observer.Wait();
+
+  gfx::Point transformed_point;
+  root_view->TransformPointToCoordSpaceForView(gfx::Point(0, 0), child_view,
+                                               &transformed_point);
+
+  wheel_event.x = -transformed_point.x() + 14;
+  wheel_event.y = -transformed_point.y() + 15;
+  wheel_event.deltaX = -16;
+  wheel_event.deltaY = -17;
+  // We use root_view intentionally as the RenderWidgetHostInputEventRouter is
+  // responsible for correctly routing the event to the child frame.
+  router->RouteMouseWheelEvent(root_view, &wheel_event, ui::LatencyInfo());
+
+  // Make sure that the renderer handled the input event.
+  child_observer.Wait();
+
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      child, "window.domAutomationController.send(x);", &x));
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      child, "window.domAutomationController.send(y);", &y));
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      child, "window.domAutomationController.send(dX);", &deltaX));
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      child, "window.domAutomationController.send(dY);", &deltaY));
+  EXPECT_EQ(14, x);
+  EXPECT_EQ(15, y);
+  EXPECT_EQ(16, deltaX);
+  EXPECT_EQ(17, deltaY);
+}
+
 }  // namespace content

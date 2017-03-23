@@ -263,18 +263,22 @@ void RenderWidgetHostInputEventRouter::RouteMouseWheelEvent(
     RenderWidgetHostViewBase* root_view,
     blink::WebMouseWheelEvent* event,
     const ui::LatencyInfo& latency) {
+  RenderWidgetHostViewBase* target = nullptr;
+  gfx::Point transformed_point;
+
   if (root_view->IsMouseLocked()) {
-    RenderWidgetHostImpl::From(root_view->GetRenderWidgetHost())
-        ->delegate()
-        ->GetMouseLockWidget()
-        ->GetView()
-        ->ProcessMouseEvent(*event, latency);
-    return;
+    target = RenderWidgetHostImpl::From(root_view->GetRenderWidgetHost())
+                 ->delegate()
+                 ->GetMouseLockWidget()
+                 ->GetView();
+    if (!root_view->TransformPointToCoordSpaceForView(
+            gfx::Point(event->x, event->y), target, &transformed_point))
+      return;
+  } else {
+    target = FindEventTarget(root_view, gfx::Point(event->x, event->y),
+                             &transformed_point);
   }
 
-  gfx::Point transformed_point;
-  RenderWidgetHostViewBase* target = FindEventTarget(
-      root_view, gfx::Point(event->x, event->y), &transformed_point);
   if (!target)
     return;
 
