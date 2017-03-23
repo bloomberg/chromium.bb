@@ -107,14 +107,24 @@ class CONTENT_EXPORT ContentClient {
     // Additional schemes that should be allowed to register service workers.
     // Only secure and trustworthy schemes should be added.
     std::vector<std::string> service_worker_schemes;
-    // For the following three, see the documentation in WebSecurityPolicy.
+    // Registers a URL scheme to be treated as a local scheme (i.e., with the
+    // same security rules as those applied to "file" URLs). This means that
+    // normal pages cannot link to or access URLs of this scheme.
     std::vector<std::string> local_schemes;
+    // Registers a URL scheme to be treated as a noAccess scheme. This means
+    // that pages loaded with this URL scheme always have an opaque origin.
     std::vector<std::string> no_access_schemes;
+    // Registers a non-HTTP URL scheme which can be sent CORS requests.
     std::vector<std::string> cors_enabled_schemes;
+    // Registers a URL scheme whose resources can be loaded regardless of a
+    // page's Content Security Policy.
     std::vector<std::string> csp_bypassing_schemes;
     // See https://www.w3.org/TR/powerful-features/#is-origin-trustworthy.
     std::vector<std::string> secure_schemes;
     std::vector<GURL> secure_origins;
+    // Registers a URL scheme as strictly empty documents, allowing them to
+    // commit synchronously.
+    std::vector<std::string> empty_document_schemes;
   };
 
   virtual void AddAdditionalSchemes(Schemes* schemes) {}

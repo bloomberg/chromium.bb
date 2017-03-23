@@ -251,13 +251,13 @@ ChromeRenderThreadObserver::ChromeRenderThreadObserver()
 
   // chrome-native: is a scheme used for placeholder navigations that allow
   // UIs to be drawn with platform native widgets instead of HTML.  These pages
-  // should not be accessible, and should also be treated as empty documents
-  // that can commit synchronously.  No code should be runnable in these pages,
+  // should not be accessible.  No code should be runnable in these pages,
   // so it should not need to access anything nor should it allow javascript
   // URLs since it should never be visible to the user.
+  // See also ChromeContentClient::AddAdditionalSchemes that adds it as an
+  // empty document scheme.
   WebString native_scheme(WebString::fromASCII(chrome::kChromeNativeScheme));
   WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(native_scheme);
-  WebSecurityPolicy::registerURLSchemeAsEmptyDocument(native_scheme);
   WebSecurityPolicy::registerURLSchemeAsNotAllowingJavascriptURLs(
       native_scheme);
 

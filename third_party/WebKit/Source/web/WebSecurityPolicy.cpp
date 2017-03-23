@@ -60,11 +60,6 @@ void WebSecurityPolicy::registerURLSchemeAsFirstPartyWhenTopLevel(
   SchemeRegistry::registerURLSchemeAsFirstPartyWhenTopLevel(scheme);
 }
 
-void WebSecurityPolicy::registerURLSchemeAsEmptyDocument(
-    const WebString& scheme) {
-  SchemeRegistry::registerURLSchemeAsEmptyDocument(scheme);
-}
-
 void WebSecurityPolicy::addOriginAccessWhitelistEntry(
     const WebURL& sourceOrigin,
     const WebString& destinationProtocol,

@@ -61,10 +61,6 @@ class WebSecurityPolicy {
   BLINK_EXPORT static void registerURLSchemeAsFirstPartyWhenTopLevel(
       const WebString&);
 
-  // Registers a URL scheme as strictly empty documents, allowing them to
-  // commit synchronously.
-  BLINK_EXPORT static void registerURLSchemeAsEmptyDocument(const WebString&);
-
   // Support for whitelisting access to origins beyond the same-origin policy.
   BLINK_EXPORT static void addOriginAccessWhitelistEntry(
       const WebURL& sourceOrigin,

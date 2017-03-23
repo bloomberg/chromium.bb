@@ -66,7 +66,6 @@ class PLATFORM_EXPORT SchemeRegistry {
   static void registerURLSchemeAsDisplayIsolated(const String&);
   static bool shouldTreatURLSchemeAsDisplayIsolated(const String&);
 
-  static void registerURLSchemeAsEmptyDocument(const String&);
   static bool shouldLoadURLSchemeAsEmptyDocument(const String&);
 
   static void setDomainRelaxationForbiddenForURLScheme(bool forbidden,

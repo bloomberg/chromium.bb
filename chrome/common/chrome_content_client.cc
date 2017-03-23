@@ -593,6 +593,11 @@ void ChromeContentClient::AddAdditionalSchemes(Schemes* schemes) {
 
   schemes->no_access_schemes.push_back(chrome::kChromeNativeScheme);
 
+  // chrome-native: is a scheme used for placeholder navigations that allow
+  // UIs to be drawn with platform native widgets instead of HTML.  These pages
+  // should be treated as empty documents that can commit synchronously.
+  schemes->empty_document_schemes.push_back(chrome::kChromeNativeScheme);
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (extensions::feature_util::ExtensionServiceWorkersEnabled())
     schemes->service_worker_schemes.push_back(extensions::kExtensionScheme);

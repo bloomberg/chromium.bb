@@ -12,6 +12,7 @@
 #include "content/public/common/url_constants.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
+#include "url/url_util.h"
 
 namespace content {
 
@@ -19,11 +20,19 @@ namespace content {
 bool ShouldMakeNetworkRequestForURL(const GURL& url) {
   CHECK(IsBrowserSideNavigationEnabled());
 
-  // Javascript URLs, about:blank, srcdoc should not send a request
-  // to the network stack.
-  return !url.IsAboutBlank() && !url.SchemeIs(url::kJavaScriptScheme) &&
-         !url.is_empty() && !url.SchemeIs(url::kContentIDScheme) &&
-         url != content::kAboutSrcDocURL;
+  // Javascript URLs, srcdoc, schemes that don't load data should not send a
+  // request to the network stack.
+  if (url.SchemeIs(url::kJavaScriptScheme) || url.is_empty() ||
+      url.SchemeIs(url::kContentIDScheme) || url == content::kAboutSrcDocURL) {
+    return false;
+  }
+
+  for (const auto& scheme : url::GetEmptyDocumentSchemes()) {
+    if (url.SchemeIs(scheme))
+      return false;
+  }
+
+  return true;
 }
 
 SourceLocation::SourceLocation() : line_number(0), column_number(0) {}

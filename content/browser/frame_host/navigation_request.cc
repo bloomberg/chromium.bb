@@ -365,15 +365,16 @@ void NavigationRequest::BeginNavigation() {
       !navigation_handle_->IsSameDocument()) {
     // It's safe to use base::Unretained because this NavigationRequest owns
     // the NavigationHandle where the callback will be stored.
-    // TODO(clamy): pass the real value for |is_external_protocol| if needed.
     // TODO(clamy): pass the method to the NavigationHandle instead of a
     // boolean.
+    bool is_external_protocol =
+        !GetContentClient()->browser()->IsHandledURL(common_params_.url);
     navigation_handle_->WillStartRequest(
         common_params_.method, common_params_.post_data,
         Referrer::SanitizeForRequest(common_params_.url,
                                      common_params_.referrer),
-        begin_params_.has_user_gesture, common_params_.transition, false,
-        begin_params_.request_context_type,
+        begin_params_.has_user_gesture, common_params_.transition,
+        is_external_protocol, begin_params_.request_context_type,
         begin_params_.mixed_content_context_type,
         base::Bind(&NavigationRequest::OnStartChecksComplete,
                    base::Unretained(this)));
@@ -487,10 +488,12 @@ void NavigationRequest::OnRequestRedirected(
 
   // It's safe to use base::Unretained because this NavigationRequest owns the
   // NavigationHandle where the callback will be stored.
-  // TODO(clamy): pass the real value for |is_external_protocol| if needed.
+  bool is_external_protocol =
+      !GetContentClient()->browser()->IsHandledURL(common_params_.url);
   navigation_handle_->WillRedirectRequest(
       common_params_.url, common_params_.method, common_params_.referrer.url,
-      false, response->head.headers, response->head.connection_info,
+      is_external_protocol, response->head.headers,
+      response->head.connection_info,
       base::Bind(&NavigationRequest::OnRedirectChecksComplete,
                  base::Unretained(this)));
 }

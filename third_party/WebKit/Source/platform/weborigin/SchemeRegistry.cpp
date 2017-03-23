@@ -39,10 +39,9 @@ namespace {
 class URLSchemesRegistry final {
  public:
   URLSchemesRegistry()
-      : emptyDocumentSchemes({"about"}),
-        // For ServiceWorker schemes: HTTP is required because http://localhost
-        // is considered secure. Additional checks are performed to ensure that
-        // other http pages are filtered out.
+      :  // For ServiceWorker schemes: HTTP is required because http://localhost
+         // is considered secure. Additional checks are performed to ensure that
+         // other http pages are filtered out.
         serviceWorkerSchemes({"http", "https"}),
         fetchAPISchemes({"http", "https"}),
         allowedInReferrerSchemes({"http", "https"}) {
@@ -58,6 +57,8 @@ class URLSchemesRegistry final {
       contentSecurityPolicyBypassingSchemes.insert(
           scheme.c_str(), SchemeRegistry::PolicyAreaAll);
     }
+    for (auto& scheme : url::GetEmptyDocumentSchemes())
+      emptyDocumentSchemes.insert(scheme.c_str());
   }
   ~URLSchemesRegistry() = default;
 
@@ -159,11 +160,6 @@ bool SchemeRegistry::shouldTreatURLSchemeAsSecure(const String& scheme) {
   if (scheme.isEmpty())
     return false;
   return getURLSchemesRegistry().secureSchemes.contains(scheme);
-}
-
-void SchemeRegistry::registerURLSchemeAsEmptyDocument(const String& scheme) {
-  DCHECK_EQ(scheme, scheme.lower());
-  getMutableURLSchemesRegistry().emptyDocumentSchemes.insert(scheme);
 }
 
 bool SchemeRegistry::shouldLoadURLSchemeAsEmptyDocument(const String& scheme) {
