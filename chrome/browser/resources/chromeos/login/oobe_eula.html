@@ -43,7 +43,7 @@
     <link rel="stylesheet" href="oobe_eula.css">
     <link rel="stylesheet" href="oobe_dialog_parameters.css">
     <oobe-dialog id="eulaLoadingDialog" hidden="[[!eulaLoadingScreenShown]]"
-        role="dialog" aria-label$="$i18n{termsOfServiceLoading}"
+        role="dialog" i18n-values="aria-label:termsOfServiceLoading"
         has-buttons>
       <iron-icon icon="oobe-eula:googleg" class="oobe-icon"></iron-icon>
       <div class="header">
@@ -51,7 +51,7 @@
       </div>
     </oobe-dialog>
     <oobe-dialog id="eulaDialog" hidden="[[eulaLoadingScreenShown]]"
-        role="dialog" aria-label$="$i18n{oobeEulaSectionTitle}"
+        role="dialog" i18n-values="aria-label:oobeEulaSectionTitle"
         has-buttons>
       <hd-iron-icon class="oobe-icon"
           icon1x="oobe-eula-32:googleg" icon2x="oobe-eula-64:googleg">
@@ -62,7 +62,7 @@
       <div class="footer flex layout vertical">
         <iframe id="crosEulaFrame" src="chrome://terms"
             role="document" class="flex focus-on-show"
-            aria-label$="$i18n{oobeEulaIframeLabel}"
+            i18n-values="aria-label:oobeEulaIframeLabel"
             on-load="onFrameLoad_">
         </iframe>
         <a id="installationSettings" href="#"
