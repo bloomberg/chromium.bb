@@ -8957,13 +8957,11 @@ TEST_F(WebFrameSwapTest, RemoteWindowToString) {
   WebRemoteFrame* remoteFrame = remoteClient.frame();
   lastChild(mainFrame())->swap(remoteFrame);
   remoteFrame->setReplicatedOrigin(SecurityOrigin::createUnique());
-  v8::Local<v8::Value> exception = mainFrame()->executeScriptAndReturnValue(
-      WebScriptSource("try { '' + window[2]; } catch (e) { e; }"));
-  ASSERT_FALSE(exception.IsEmpty());
-  EXPECT_STREQ(
-      "SecurityError: Blocked a frame with origin \"http://internal.test\" "
-      "from accessing a cross-origin frame.",
-      *v8::String::Utf8Value(exception));
+  v8::Local<v8::Value> toStringResult =
+      mainFrame()->executeScriptAndReturnValue(
+          WebScriptSource("Object.prototype.toString.call(window[2])"));
+  ASSERT_FALSE(toStringResult.IsEmpty());
+  EXPECT_STREQ("[object Object]", *v8::String::Utf8Value(toStringResult));
 
   reset();
 }
