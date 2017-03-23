@@ -147,4 +147,18 @@ void WindowProxy::initializeIfNeeded() {
   }
 }
 
+v8::Local<v8::Object> WindowProxy::associateWithWrapper(
+    DOMWindow* window,
+    const WrapperTypeInfo* wrapperTypeInfo,
+    v8::Local<v8::Object> wrapper) {
+  if (m_world->domDataStore().set(m_isolate, window, wrapperTypeInfo,
+                                  wrapper)) {
+    wrapperTypeInfo->wrapperCreated();
+    V8DOMWrapper::setNativeInfo(m_isolate, wrapper, wrapperTypeInfo, window);
+    DCHECK(V8DOMWrapper::hasInternalFieldsSet(wrapper));
+  }
+  SECURITY_CHECK(toScriptWrappable(wrapper) == window);
+  return wrapper;
+}
+
 }  // namespace blink

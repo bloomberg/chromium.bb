@@ -120,6 +120,17 @@ class DOMDataStore {
     return m_wrapperMap->newLocal(isolate, object);
   }
 
+  WARN_UNUSED_RESULT bool set(v8::Isolate* isolate,
+                              ScriptWrappable* object,
+                              const WrapperTypeInfo* wrapperTypeInfo,
+                              v8::Local<v8::Object>& wrapper) {
+    DCHECK(object);
+    DCHECK(!wrapper.IsEmpty());
+    if (m_isMainWorld)
+      return object->setWrapper(isolate, wrapperTypeInfo, wrapper);
+    return m_wrapperMap->set(object, wrapperTypeInfo, wrapper);
+  }
+
   void markWrapper(ScriptWrappable* scriptWrappable) {
     m_wrapperMap->markWrapper(scriptWrappable);
   }
@@ -138,17 +149,6 @@ class DOMDataStore {
   }
 
  private:
-  WARN_UNUSED_RESULT bool set(v8::Isolate* isolate,
-                              ScriptWrappable* object,
-                              const WrapperTypeInfo* wrapperTypeInfo,
-                              v8::Local<v8::Object>& wrapper) {
-    ASSERT(object);
-    ASSERT(!wrapper.IsEmpty());
-    if (m_isMainWorld)
-      return object->setWrapper(isolate, wrapperTypeInfo, wrapper);
-    return m_wrapperMap->set(object, wrapperTypeInfo, wrapper);
-  }
-
   // We can use a wrapper stored in a ScriptWrappable when we're in the main
   // world.  This method does the fast check if we're in the main world. If this
   // method returns true, it is guaranteed that we're in the main world. On the

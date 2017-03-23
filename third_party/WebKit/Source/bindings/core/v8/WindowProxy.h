@@ -40,6 +40,7 @@
 
 namespace blink {
 
+class DOMWindow;
 class Frame;
 class ScriptController;
 
@@ -162,6 +163,11 @@ class WindowProxy : public GarbageCollectedFinalized<WindowProxy> {
 
   enum GlobalDetachmentBehavior { DoNotDetachGlobal, DetachGlobal };
   virtual void disposeContext(GlobalDetachmentBehavior) = 0;
+
+  WARN_UNUSED_RESULT v8::Local<v8::Object> associateWithWrapper(
+      DOMWindow*,
+      const WrapperTypeInfo*,
+      v8::Local<v8::Object> wrapper);
 
   v8::Isolate* isolate() const { return m_isolate; }
   Frame* frame() const { return m_frame.get(); }

@@ -8950,6 +8950,24 @@ TEST_F(WebFrameSwapTest, RemoteWindowNamedAccess) {
   reset();
 }
 
+TEST_F(WebFrameSwapTest, RemoteWindowToString) {
+  v8::HandleScope scope(v8::Isolate::GetCurrent());
+
+  FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
+  WebRemoteFrame* remoteFrame = remoteClient.frame();
+  lastChild(mainFrame())->swap(remoteFrame);
+  remoteFrame->setReplicatedOrigin(SecurityOrigin::createUnique());
+  v8::Local<v8::Value> exception = mainFrame()->executeScriptAndReturnValue(
+      WebScriptSource("try { '' + window[2]; } catch (e) { e; }"));
+  ASSERT_FALSE(exception.IsEmpty());
+  EXPECT_STREQ(
+      "SecurityError: Blocked a frame with origin \"http://internal.test\" "
+      "from accessing a cross-origin frame.",
+      *v8::String::Utf8Value(exception));
+
+  reset();
+}
+
 // TODO(alexmos, dcheng): This test and some other OOPIF tests use
 // very little of the test fixture support in WebFrameSwapTest.  We should
 // clean these tests up.

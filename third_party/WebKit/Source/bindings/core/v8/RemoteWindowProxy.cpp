@@ -35,12 +35,9 @@
 
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/V8DOMWrapper.h"
-#include "bindings/core/v8/V8GCForContextDispose.h"
-#include "bindings/core/v8/V8Initializer.h"
 #include "bindings/core/v8/V8Window.h"
 #include "platform/Histogram.h"
 #include "platform/ScriptForbiddenScope.h"
-#include "platform/heap/Handle.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "v8/include/v8.h"
 #include "wtf/Assertions.h"
@@ -56,31 +53,13 @@ void RemoteWindowProxy::disposeContext(GlobalDetachmentBehavior behavior) {
   if (m_lifecycle != Lifecycle::ContextInitialized)
     return;
 
-  if (behavior == DetachGlobal) {
-    v8::Local<v8::Context> context = m_scriptState->context();
-    // Clean up state on the global proxy, which will be reused.
-    if (!m_globalProxy.isEmpty()) {
-      CHECK(m_globalProxy == context->Global());
-      CHECK_EQ(toScriptWrappable(context->Global()),
-               toScriptWrappable(
-                   context->Global()->GetPrototype().As<v8::Object>()));
-      m_globalProxy.get().SetWrapperClassId(0);
-    }
-    V8DOMWrapper::clearNativeInfo(isolate(), context->Global());
-    m_scriptState->detachGlobalObject();
-
+  if (behavior == DetachGlobal && !m_globalProxy.isEmpty()) {
+    m_globalProxy.get().SetWrapperClassId(0);
+    V8DOMWrapper::clearNativeInfo(isolate(), m_globalProxy.newLocal(isolate()));
 #if DCHECK_IS_ON()
     didDetachGlobalObject();
 #endif
   }
-
-  m_scriptState->disposePerContextData();
-
-  // It's likely that disposing the context has created a lot of
-  // garbage. Notify V8 about this so it'll have a chance of cleaning
-  // it up when idle.
-  V8GCForContextDispose::instance().notifyContextDisposed(
-      frame()->isMainFrame());
 
   DCHECK(m_lifecycle == Lifecycle::ContextInitialized);
   m_lifecycle = Lifecycle::ContextDetached;
@@ -96,20 +75,8 @@ void RemoteWindowProxy::initialize() {
   ScriptForbiddenScope::AllowUserAgentScript allowScript;
 
   v8::HandleScope handleScope(isolate());
-
   createContext();
-
-  ScriptState::Scope scope(m_scriptState.get());
-  v8::Local<v8::Context> context = m_scriptState->context();
-  if (m_globalProxy.isEmpty()) {
-    m_globalProxy.set(isolate(), context->Global());
-    CHECK(!m_globalProxy.isEmpty());
-  }
-
   setupWindowPrototypeChain();
-
-  // Remote frames always require a full canAccess() check.
-  context->UseDefaultSecurityToken();
 }
 
 void RemoteWindowProxy::createContext() {
@@ -119,26 +86,24 @@ void RemoteWindowProxy::createContext() {
       V8Window::domTemplate(isolate(), *m_world)->InstanceTemplate();
   CHECK(!globalTemplate.IsEmpty());
 
-  v8::Local<v8::Context> context;
-  {
-    V8PerIsolateData::UseCounterDisabledScope useCounterDisabled(
-        V8PerIsolateData::from(isolate()));
-    context = v8::Context::New(isolate(), nullptr, globalTemplate,
-                               m_globalProxy.newLocal(isolate()));
-  }
-  CHECK(!context.IsEmpty());
+  v8::Local<v8::Object> globalProxy =
+      v8::Context::NewRemoteContext(isolate(), globalTemplate,
+                                    m_globalProxy.newLocal(isolate()))
+          .ToLocalChecked();
+  if (m_globalProxy.isEmpty())
+    m_globalProxy.set(isolate(), globalProxy);
+  else
+    DCHECK(m_globalProxy.get() == globalProxy);
+  CHECK(!m_globalProxy.isEmpty());
 
 #if DCHECK_IS_ON()
   didAttachGlobalObject();
 #endif
 
-  m_scriptState = ScriptState::create(context, m_world);
-
   // TODO(haraken): Currently we cannot enable the following DCHECK because
   // an already detached window proxy can be re-initialized. This is wrong.
   // DCHECK(m_lifecycle == Lifecycle::ContextUninitialized);
   m_lifecycle = Lifecycle::ContextInitialized;
-  DCHECK(m_scriptState->contextIsValid());
 }
 
 void RemoteWindowProxy::setupWindowPrototypeChain() {
@@ -146,10 +111,9 @@ void RemoteWindowProxy::setupWindowPrototypeChain() {
   // corresponding native DOMWindow object.
   DOMWindow* window = frame()->domWindow();
   const WrapperTypeInfo* wrapperTypeInfo = window->wrapperTypeInfo();
-  v8::Local<v8::Context> context = m_scriptState->context();
 
   // The global proxy object.  Note this is not the global object.
-  v8::Local<v8::Object> globalProxy = context->Global();
+  v8::Local<v8::Object> globalProxy = m_globalProxy.newLocal(isolate());
   CHECK(m_globalProxy == globalProxy);
   V8DOMWrapper::setNativeInfo(isolate(), globalProxy, wrapperTypeInfo, window);
   // Mark the handle to be traced by Oilpan, since the global proxy has a
@@ -159,22 +123,9 @@ void RemoteWindowProxy::setupWindowPrototypeChain() {
   // The global object, aka window wrapper object.
   v8::Local<v8::Object> windowWrapper =
       globalProxy->GetPrototype().As<v8::Object>();
-  windowWrapper = V8DOMWrapper::associateObjectWithWrapper(
-      isolate(), window, wrapperTypeInfo, windowWrapper);
-
-  // The prototype object of Window interface.
-  v8::Local<v8::Object> windowPrototype =
-      windowWrapper->GetPrototype().As<v8::Object>();
-  CHECK(!windowPrototype.IsEmpty());
-  V8DOMWrapper::setNativeInfo(isolate(), windowPrototype, wrapperTypeInfo,
-                              window);
-
-  // The named properties object of Window interface.
-  v8::Local<v8::Object> windowProperties =
-      windowPrototype->GetPrototype().As<v8::Object>();
-  CHECK(!windowProperties.IsEmpty());
-  V8DOMWrapper::setNativeInfo(isolate(), windowProperties, wrapperTypeInfo,
-                              window);
+  v8::Local<v8::Object> associatedWrapper =
+      associateWithWrapper(window, wrapperTypeInfo, windowWrapper);
+  DCHECK(associatedWrapper == windowWrapper);
 }
 
 }  // namespace blink
