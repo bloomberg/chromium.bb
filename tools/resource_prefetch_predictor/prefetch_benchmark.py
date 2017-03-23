@@ -19,6 +19,7 @@ _SRC_PATH = os.path.abspath(os.path.join(
 sys.path.append(os.path.join(
     _SRC_PATH, 'tools', 'android', 'customtabs_benchmark', 'scripts'))
 import customtabs_benchmark
+import chrome_setup
 import device_setup
 
 sys.path.append(os.path.join(_SRC_PATH, 'tools', 'android', 'loading'))
@@ -98,7 +99,7 @@ def _RunOnce(device, database_filename, url, prefetch_delay_ms,
 
   disable_prefetch = prefetch_delay_ms == -1
   # Startup tracing to ease debugging.
-  chrome_args = (customtabs_benchmark.CHROME_ARGS
+  chrome_args = (chrome_setup.CHROME_ARGS
                  + ['--trace-startup', '--trace-startup-duration=20'])
   # Speculative Prefetch is enabled through an experiment.
   chrome_args.extend([
