@@ -2019,7 +2019,7 @@ void LayoutTableSection::adjustRowForPagination(LayoutTableRow& rowObject,
 
   // If we have a header group we will paint it at the top of each page,
   // move the rows down to accomodate it.
-  if (header)
+  if (header && header != this)
     paginationStrut += table()->rowOffsetFromRepeatingHeader().toInt();
   rowObject.setPaginationStrut(LayoutUnit(paginationStrut));
 
