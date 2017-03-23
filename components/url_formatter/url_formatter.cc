@@ -15,6 +15,7 @@
 #include "base/strings/utf_offset_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_local_storage.h"
+#include "third_party/icu/source/common/unicode/schriter.h"
 #include "third_party/icu/source/common/unicode/uidna.h"
 #include "third_party/icu/source/common/unicode/uniset.h"
 #include "third_party/icu/source/common/unicode/uscript.h"
@@ -33,6 +34,7 @@ base::string16 IDNToUnicodeWithAdjustments(
     base::OffsetAdjuster::Adjustments* adjustments);
 bool IDNToUnicodeOneComponent(const base::char16* comp,
                               size_t comp_len,
+                              bool is_tld_ascii,
                               base::string16* out);
 
 class AppendComponentTransform {
@@ -200,6 +202,13 @@ base::string16 IDNToUnicodeWithAdjustments(
   input16.reserve(host.length());
   input16.insert(input16.end(), host.begin(), host.end());
 
+  bool is_tld_ascii = true;
+  size_t last_dot = host.rfind('.');
+  if (last_dot != base::StringPiece::npos &&
+      host.substr(last_dot).starts_with(".xn--")) {
+    is_tld_ascii = false;
+  }
+
   // Do each component of the host separately, since we enforce script matching
   // on a per-component basis.
   base::string16 out16;
@@ -217,7 +226,7 @@ base::string16 IDNToUnicodeWithAdjustments(
       // Add the substring that we just found.
       converted_idn =
           IDNToUnicodeOneComponent(input16.data() + component_start,
-                                   component_length, &out16);
+                                   component_length, is_tld_ascii, &out16);
     }
     size_t new_component_length = out16.length() - new_component_start;
 
@@ -241,17 +250,22 @@ class IDNSpoofChecker {
  public:
   IDNSpoofChecker();
 
-  // Returns true if |label| is safe to display as Unicode. In the event of
-  // library failure, all IDN inputs will be treated as unsafe.
-  bool Check(base::StringPiece16 label);
+  // Returns true if |label| is safe to display as Unicode. When the TLD is
+  // ASCII, check if a label is entirely made of Cyrillic letters that look like
+  // Latin letters. In the event of library failure, all IDN inputs will be
+  // treated as unsafe.
+  bool Check(base::StringPiece16 label, bool is_tld_ascii);
 
  private:
   void SetAllowedUnicodeSet(UErrorCode* status);
+  bool IsMadeOfLatinAlikeCyrillic(const icu::UnicodeString& label_string);
 
   USpoofChecker* checker_;
   icu::UnicodeSet deviation_characters_;
   icu::UnicodeSet non_ascii_latin_letters_;
   icu::UnicodeSet kana_letters_exceptions_;
+  icu::UnicodeSet cyrillic_letters_;
+  icu::UnicodeSet cyrillic_letters_latin_alike_;
 
   DISALLOW_COPY_AND_ASSIGN(IDNSpoofChecker);
 };
@@ -314,10 +328,20 @@ IDNSpoofChecker::IDNSpoofChecker() {
       "[\\u3078-\\u307a\\u30d8-\\u30da\\u30fb\\u30fc]"), status);
   kana_letters_exceptions_.freeze();
 
+  // These Cyrillic letters look like Latin. A domain label entirely made of
+  // these letters is blocked as a simpliified whole-script-spoofable.
+  cyrillic_letters_latin_alike_ =
+      icu::UnicodeSet(icu::UnicodeString("[асԁеһіјӏорԛѕԝхуъЬҽпгѵѡ]"), status);
+  cyrillic_letters_latin_alike_.freeze();
+
+  cyrillic_letters_ =
+      icu::UnicodeSet(UNICODE_STRING_SIMPLE("[[:Cyrl:]]"), status);
+  cyrillic_letters_.freeze();
+
   DCHECK(U_SUCCESS(status));
 }
 
-bool IDNSpoofChecker::Check(base::StringPiece16 label) {
+bool IDNSpoofChecker::Check(base::StringPiece16 label, bool is_tld_ascii) {
   UErrorCode status = U_ZERO_ERROR;
   int32_t result = uspoof_check(checker_, label.data(),
                                 base::checked_cast<int32_t>(label.size()),
@@ -345,17 +369,19 @@ bool IDNSpoofChecker::Check(base::StringPiece16 label) {
     return false;
 
   // If there's no script mixing, the input is regarded as safe without any
-  // extra check unless it contains Kana letter exceptions. Note that
-  // the following combinations of scripts are treated as a 'logical' single
-  // script.
+  // extra check unless it contains Kana letter exceptions or it's made entirely
+  // of Cyrillic letters that look like Latin letters. Note that the following
+  // combinations of scripts are treated as a 'logical' single script.
   //  - Chinese: Han, Bopomofo, Common
   //  - Japanese: Han, Hiragana, Katakana, Common
   //  - Korean: Hangul, Han, Common
   result &= USPOOF_RESTRICTION_LEVEL_MASK;
-  if (result == USPOOF_ASCII ||
-      (result == USPOOF_SINGLE_SCRIPT_RESTRICTIVE &&
-       kana_letters_exceptions_.containsNone(label_string)))
-    return true;
+  if (result == USPOOF_ASCII) return true;
+  if (result == USPOOF_SINGLE_SCRIPT_RESTRICTIVE &&
+      kana_letters_exceptions_.containsNone(label_string)) {
+    // Check Cyrillic confusable only for ASCII TLDs.
+    return !is_tld_ascii || !IsMadeOfLatinAlikeCyrillic(label_string);
+  }
 
   // Additional checks for |label| with multiple scripts, one of which is Latin.
   // Disallow non-ASCII Latin letters to mix with a non-Latin script.
@@ -405,6 +431,25 @@ bool IDNSpoofChecker::Check(base::StringPiece16 label) {
   }
   dangerous_pattern->reset(label_string);
   return !dangerous_pattern->find();
+}
+
+bool IDNSpoofChecker::IsMadeOfLatinAlikeCyrillic(
+    const icu::UnicodeString& label_string) {
+  // Collect all the Cyrillic letters in |label_string| and see if they're
+  // a subset of |cyrillic_letters_latin_alike_|.
+  // A shortcut of defining cyrillic_letters_latin_alike_ to include [0-9] and
+  // [_-] and checking if the set contains all letters of |label_string|
+  // would work in most cases, but not if a label has non-letters outside
+  // ASCII.
+  icu::UnicodeSet cyrillic_in_label;
+  icu::StringCharacterIterator it(label_string);
+  for (it.setToStart(); it.hasNext();) {
+    const UChar32 c = it.next32PostInc();
+    if (cyrillic_letters_.contains(c))
+      cyrillic_in_label.add(c);
+  }
+  return !cyrillic_in_label.isEmpty() &&
+         cyrillic_letters_latin_alike_.containsAll(cyrillic_in_label);
 }
 
 void IDNSpoofChecker::SetAllowedUnicodeSet(UErrorCode* status) {
@@ -481,8 +526,8 @@ void IDNSpoofChecker::SetAllowedUnicodeSet(UErrorCode* status) {
 // user. Note that this function does not deal with pure ASCII domain labels at
 // all even though it's possible to make up look-alike labels with ASCII
 // characters alone.
-bool IsIDNComponentSafe(base::StringPiece16 label) {
-  return g_idn_spoof_checker.Get().Check(label);
+bool IsIDNComponentSafe(base::StringPiece16 label, bool is_tld_ascii) {
+  return g_idn_spoof_checker.Get().Check(label, is_tld_ascii);
 }
 
 // A wrapper to use LazyInstance<>::Leaky with ICU's UIDNA, a C pointer to
@@ -527,6 +572,7 @@ base::LazyInstance<UIDNAWrapper>::Leaky g_uidna = LAZY_INSTANCE_INITIALIZER;
 // Returns whether any conversion was performed.
 bool IDNToUnicodeOneComponent(const base::char16* comp,
                               size_t comp_len,
+                              bool is_tld_ascii,
                               base::string16* out) {
   DCHECK(out);
   if (comp_len == 0)
@@ -558,8 +604,9 @@ bool IDNToUnicodeOneComponent(const base::char16* comp,
       // can be safely displayed to the user.
       out->resize(original_length + output_length);
       if (IsIDNComponentSafe(
-          base::StringPiece16(out->data() + original_length,
-                              base::checked_cast<size_t>(output_length))))
+              base::StringPiece16(out->data() + original_length,
+                                  base::checked_cast<size_t>(output_length)),
+              is_tld_ascii))
         return true;
     }
 

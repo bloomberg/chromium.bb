@@ -32,6 +32,7 @@ struct IDNTestCase {
   const bool unicode_allowed;
 };
 
+// TODO(jshin): Replace L"..." with "..." in UTF-8 when it's easier to read.
 const IDNTestCase idn_cases[] = {
   // No IDN
   {"www.google.com", L"www.google.com", true},
@@ -208,6 +209,35 @@ const IDNTestCase idn_cases[] = {
   {"xn--abcdef-k64e.jp", L"abc\x30fb" L"def.jp", false},
   // U+30FB + Latin
   {"xn--abc-os4b.jp", L"\x30fb" L"abc.jp", false},
+
+  // Cyrillic labels made of Latin-look-alike Cyrillic letters.
+  // ѕсоре.com with ѕсоре in Cyrillic
+  {"xn--e1argc3h.com", L"\x0455\x0441\x043e\x0440\x0435.com", false},
+  // ѕсоре123.com with ѕсоре in Cyrillic.
+  {"xn--123-qdd8bmf3n.com",
+      L"\x0455\x0441\x043e\x0440\x0435" L"123.com", false},
+  // ѕсоре-рау.com with ѕсоре and рау in Cyrillic.
+  {"xn----8sbn9akccw8m.com",
+      L"\x0455\x0441\x043e\x0440\x0435-\x0440\x0430\x0443.com", false},
+  // ѕсоре·рау.com with scope and pay in Cyrillic and U+00B7 between them.
+  {"xn--uba29ona9akccw8m.com",
+      L"\x0455\x0441\x043e\x0440\x0435\u00b7\x0440\x0430\x0443.com", false},
+
+  // The same as above three, but in IDN TLD.
+  {"xn--e1argc3h.xn--p1ai",
+      L"\x0455\x0441\x043e\x0440\x0435.\x0440\x0444", true},
+  {"xn--123-qdd8bmf3n.xn--p1ai",
+      L"\x0455\x0441\x043e\x0440\x0435" L"123.\x0440\x0444", true},
+  {"xn--uba29ona9akccw8m.xn--p1ai",
+      L"\x0455\x0441\x043e\x0440\x0435\u00b7\x0440\x0430\x0443.\x0440\x0444",
+      true},
+
+  // ѕсоре-рау.한국 with ѕсоре and рау in Cyrillic.
+  {"xn----8sbn9akccw8m.xn--3e0b707e",
+      L"\x0455\x0441\x043e\x0440\x0435-\x0440\x0430\x0443.\xd55c\xad6d", true},
+
+  // музей (museum in Russian) has characters without a Latin-look-alike.
+  {"xn--e1adhj9a.com", L"\x043c\x0443\x0437\x0435\x0439.com", true},
 
   // Mixed digits: the first two will also fail mixed script test
   // Latin + ASCII digit + Deva digit
