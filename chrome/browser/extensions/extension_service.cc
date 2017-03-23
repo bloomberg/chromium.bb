@@ -105,6 +105,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/install_limiter.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "storage/browser/fileapi/file_system_backend.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #endif
@@ -439,9 +440,22 @@ void ExtensionService::Init() {
   DCHECK(!is_ready());  // Can't redo init.
   DCHECK_EQ(registry_->enabled_extensions().size(), 0u);
 
-  // LoadAllExtensions() calls OnLoadedInstalledExtensions().
   component_loader_->LoadAll();
-  extensions::InstalledLoader(this).LoadAllExtensions();
+  bool load_saved_extensions = true;
+#if defined(OS_CHROMEOS)
+  if (chromeos::ProfileHelper::IsSigninProfile(profile_))
+    load_saved_extensions = false;
+#endif
+  if (load_saved_extensions) {
+    extensions::InstalledLoader(this).LoadAllExtensions();
+  } else {
+    // InstalledLoader::LoadAllExtensions normally calls
+    // OnLoadedInstalledExtensions itself, but here we circumvent that path.
+    // Call OnLoadedInstalledExtensions directly.
+    // TODO(devlin): LoadInstalledExtensions() is synchronous - we can simplify
+    // this.
+    OnLoadedInstalledExtensions();
+  }
   LoadExtensionsFromCommandLineFlag(switches::kDisableExtensionsExcept);
   if (extensions_enabled_)
     LoadExtensionsFromCommandLineFlag(switches::kLoadExtension);

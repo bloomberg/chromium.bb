@@ -46,7 +46,13 @@ class TestProcessManagerDelegate : public ProcessManagerDelegate {
   ~TestProcessManagerDelegate() override {}
 
   // ProcessManagerDelegate implementation.
-  bool IsBackgroundPageAllowed(BrowserContext* context) const override {
+  bool AreBackgroundPagesAllowedForContext(
+      BrowserContext* context) const override {
+    return is_background_page_allowed_;
+  }
+  bool IsExtensionBackgroundPageAllowed(
+      BrowserContext* context,
+      const Extension& extension) const override {
     return is_background_page_allowed_;
   }
   bool DeferCreatingStartupBackgroundHosts(

@@ -1210,8 +1210,16 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
   HostContentSettingsMap* content_settings_map =
     HostContentSettingsMapFactory::GetForProfile(profile);
 
+  bool extensions_enabled = !go_off_the_record;
+#if defined(OS_CHROMEOS)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableLoginScreenApps) &&
+      chromeos::ProfileHelper::IsSigninProfile(profile)) {
+    extensions_enabled = true;
+  }
+#endif
   extensions::ExtensionSystem::Get(profile)->InitForRegularProfile(
-      !go_off_the_record);
+      extensions_enabled);
   // During tests, when |profile| is an instance of TestingProfile,
   // ExtensionSystem might not create an ExtensionService.
   // This block is duplicated in the HostContentSettingsMapFactory

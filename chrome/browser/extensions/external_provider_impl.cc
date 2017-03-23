@@ -140,8 +140,9 @@ void ExternalProviderImpl::SetPrefs(base::DictionaryValue* prefs) {
 
 void ExternalProviderImpl::UpdatePrefs(base::DictionaryValue* prefs) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // We only expect updates from windows registry.
-  CHECK(crx_location_ == Manifest::EXTERNAL_REGISTRY);
+  // We only expect updates from windows registry or via policies on chromeos.
+  CHECK(crx_location_ == Manifest::EXTERNAL_REGISTRY ||
+        download_location_ == Manifest::EXTERNAL_POLICY_DOWNLOAD);
 
   // Check if the service is still alive. It is possible that it went
   // away while |loader_| was working on the FILE thread.
@@ -497,7 +498,23 @@ void ExternalProviderImpl::CreateExternalProviders(
   scoped_refptr<ExternalLoader> external_loader;
   scoped_refptr<ExternalLoader> external_recommended_loader;
   extensions::Manifest::Location crx_location = Manifest::INVALID_LOCATION;
+
 #if defined(OS_CHROMEOS)
+  if (chromeos::ProfileHelper::IsSigninProfile(profile)) {
+    // Download apps installed by policy in the login profile. Flags
+    // FROM_WEBSTORE/WAS_INSTALLED_BY_DEFAULT are applied because these apps are
+    // downloaded from the webstore, and we want to treat them as built-in
+    // extensions.
+    external_loader = new ExternalPolicyLoader(
+        ExtensionManagementFactory::GetForBrowserContext(profile),
+        ExternalPolicyLoader::FORCED);
+    provider_list->push_back(base::MakeUnique<ExternalProviderImpl>(
+        service, external_loader, profile, crx_location,
+        Manifest::EXTERNAL_POLICY_DOWNLOAD,
+        Extension::FROM_WEBSTORE | Extension::WAS_INSTALLED_BY_DEFAULT));
+    return;
+  }
+
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   bool is_chrome_os_public_session = false;

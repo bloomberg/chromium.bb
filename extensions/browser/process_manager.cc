@@ -106,7 +106,6 @@ class IncognitoProcessManager : public ProcessManager {
 
 static void CreateBackgroundHostForExtensionLoad(
     ProcessManager* manager, const Extension* extension) {
-  DVLOG(1) << "CreateBackgroundHostForExtensionLoad " << extension->id();
   if (BackgroundInfo::HasPersistentBackgroundPage(extension))
     manager->CreateBackgroundHost(extension,
                                   BackgroundInfo::GetBackgroundURL(extension));
@@ -365,13 +364,15 @@ bool ProcessManager::CreateBackgroundHost(const Extension* extension,
   // Don't create hosts if the embedder doesn't allow it.
   ProcessManagerDelegate* delegate =
       ExtensionsBrowserClient::Get()->GetProcessManagerDelegate();
-  if (delegate && !delegate->IsBackgroundPageAllowed(browser_context_))
+  if (delegate &&
+      !delegate->IsExtensionBackgroundPageAllowed(browser_context_, *extension))
     return false;
 
   // Don't create multiple background hosts for an extension.
   if (GetBackgroundHostForExtension(extension->id()))
     return true;  // TODO(kalman): return false here? It might break things...
 
+  DVLOG(1) << "CreateBackgroundHost " << extension->id();
   ExtensionHost* host =
       new ExtensionHost(extension, GetSiteInstanceForURL(url).get(), url,
                         VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
@@ -387,7 +388,8 @@ void ProcessManager::MaybeCreateStartupBackgroundHosts() {
   // The embedder might disallow background pages entirely.
   ProcessManagerDelegate* delegate =
       ExtensionsBrowserClient::Get()->GetProcessManagerDelegate();
-  if (delegate && !delegate->IsBackgroundPageAllowed(browser_context_))
+  if (delegate &&
+      !delegate->AreBackgroundPagesAllowedForContext(browser_context_))
     return;
 
   // The embedder might want to defer background page loading. For example,
