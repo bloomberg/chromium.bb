@@ -4,12 +4,11 @@ Last release note version seen:
 0
 
 Dumping release note text:
-Chrome has been updated.
-Here's what's new in DevTools:
+New since the last update
 Improved Performance and Memory panels
 Edit cookies directly from the Application panel
+LEARN MORECLOSE
 
-Learn moreClose
 Last version of release note seen should be updated:
 99
 
