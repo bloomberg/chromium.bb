@@ -220,7 +220,11 @@ class CORE_EXPORT InspectorDOMAgent final
   protocol::Response getBoxModel(
       int nodeId,
       std::unique_ptr<protocol::DOM::BoxModel>*) override;
-  protocol::Response getNodeForLocation(int x, int y, int* outNodeId) override;
+  protocol::Response getNodeForLocation(
+      int x,
+      int y,
+      protocol::Maybe<bool> includeUserAgentShadowDOM,
+      int* outNodeId) override;
   protocol::Response getRelayoutBoundary(int nodeId, int* outNodeId) override;
   protocol::Response getHighlightObjectForTest(
       int nodeId,

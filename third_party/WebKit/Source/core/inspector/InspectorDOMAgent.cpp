@@ -1471,7 +1471,13 @@ Response InspectorDOMAgent::getBoxModel(
   return Response::OK();
 }
 
-Response InspectorDOMAgent::getNodeForLocation(int x, int y, int* nodeId) {
+Response InspectorDOMAgent::getNodeForLocation(
+    int x,
+    int y,
+    Maybe<bool> optionalIncludeUserAgentShadowDOM,
+    int* nodeId) {
+  bool includeUserAgentShadowDOM =
+      optionalIncludeUserAgentShadowDOM.fromMaybe(false);
   Response response = pushDocumentUponHandlelessOperation();
   if (!response.isSuccess())
     return response;
@@ -1479,6 +1485,8 @@ Response InspectorDOMAgent::getNodeForLocation(int x, int y, int* nodeId) {
                          HitTestRequest::AllowChildFrameContent);
   HitTestResult result(request, IntPoint(x, y));
   m_document->frame()->contentLayoutItem().hitTest(result);
+  if (!includeUserAgentShadowDOM)
+    result.setToShadowHostIfInRestrictedShadowRoot();
   Node* node = result.innerPossiblyPseudoNode();
   while (node && node->getNodeType() == Node::kTextNode)
     node = node->parentNode();

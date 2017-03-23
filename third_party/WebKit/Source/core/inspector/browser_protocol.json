@@ -2556,7 +2556,8 @@
                 "name": "getNodeForLocation",
                 "parameters": [
                     { "name": "x", "type": "integer", "description": "X coordinate." },
-                    { "name": "y", "type": "integer", "description": "Y coordinate." }
+                    { "name": "y", "type": "integer", "description": "Y coordinate." },
+                    { "name": "includeUserAgentShadowDOM", "type": "boolean", "optional": true, "description": "False to skip to the nearest non-UA shadow root ancestor (default: false)." }
                 ],
                 "returns": [
                     { "name": "nodeId", "$ref": "NodeId", "description": "Id of the node at given coordinates." }
