@@ -61,7 +61,7 @@ bool IOSChromeSyncedTabDelegate::IsInitialBlankNavigation() const {
 }
 
 int IOSChromeSyncedTabDelegate::GetCurrentEntryIndex() const {
-  return web_state_->GetNavigationManager()->GetCurrentItemIndex();
+  return web_state_->GetNavigationManager()->GetLastCommittedItemIndex();
 }
 
 int IOSChromeSyncedTabDelegate::GetEntryCount() const {

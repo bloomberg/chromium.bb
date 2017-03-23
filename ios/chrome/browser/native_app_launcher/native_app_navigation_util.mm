@@ -18,7 +18,7 @@ namespace native_app_launcher {
 bool IsLinkNavigation(web::WebState* web_state) {
   web::NavigationManager* navigationManager = web_state->GetNavigationManager();
   DCHECK(navigationManager);
-  int index = navigationManager->GetCurrentItemIndex();
+  int index = navigationManager->GetLastCommittedItemIndex();
   // Walks backward on the navigation items list looking for the first item
   // that is not the result of a redirect. Check if user arrived at that
   // via link click or a suggestion on the UI.

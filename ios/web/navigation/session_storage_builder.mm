@@ -20,7 +20,7 @@
 // as this functionality moves from CRWSessionController to
 // NavigationManagerImpl;
 @interface CRWSessionController (ExposedForSerialization)
-@property(nonatomic, readwrite, assign) NSInteger previousNavigationIndex;
+@property(nonatomic, readwrite, assign) NSInteger previousItemIndex;
 @property(nonatomic, readwrite, retain)
     CRWSessionCertificatePolicyManager* sessionCertificatePolicyManager;
 @end
@@ -37,10 +37,9 @@ CRWSessionStorage* SessionStorageBuilder::BuildStorage(
   session_storage.hasOpener = web_state->HasOpener();
   CRWSessionController* session_controller =
       navigation_manager->GetSessionController();
-  session_storage.currentNavigationIndex =
-      session_controller.currentNavigationIndex;
-  session_storage.previousNavigationIndex =
-      session_controller.previousNavigationIndex;
+  session_storage.lastCommittedItemIndex =
+      session_controller.lastCommittedItemIndex;
+  session_storage.previousItemIndex = session_controller.previousItemIndex;
   session_storage.sessionCertificatePolicyManager =
       session_controller.sessionCertificatePolicyManager;
   NSMutableArray* item_storages = [[NSMutableArray alloc] init];
@@ -71,13 +70,13 @@ void SessionStorageBuilder::ExtractSessionState(
         item_storage_builder.BuildNavigationItemImpl(item_storages[index]);
     items[index] = std::move(item_impl);
   }
-  NSUInteger current_index = storage.currentNavigationIndex;
+  NSUInteger last_committed_item_index = storage.lastCommittedItemIndex;
   base::scoped_nsobject<CRWSessionController> session_controller(
-      [[CRWSessionController alloc] initWithBrowserState:nullptr
-                                         navigationItems:std::move(items)
-                                            currentIndex:current_index]);
-  [session_controller
-      setPreviousNavigationIndex:storage.previousNavigationIndex];
+      [[CRWSessionController alloc]
+            initWithBrowserState:nullptr
+                 navigationItems:std::move(items)
+          lastCommittedItemIndex:last_committed_item_index]);
+  [session_controller setPreviousItemIndex:storage.previousItemIndex];
   [session_controller
       setSessionCertificatePolicyManager:storage
                                              .sessionCertificatePolicyManager];

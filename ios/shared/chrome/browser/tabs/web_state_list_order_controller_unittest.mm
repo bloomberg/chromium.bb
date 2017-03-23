@@ -24,7 +24,6 @@ class FakeNavigationManager : public web::TestNavigationManager {
   FakeNavigationManager() = default;
 
   // web::NavigationManager implementation.
-  int GetCurrentItemIndex() const override { return 0; }
   int GetLastCommittedItemIndex() const override { return 0; }
 
   DISALLOW_COPY_AND_ASSIGN(FakeNavigationManager);

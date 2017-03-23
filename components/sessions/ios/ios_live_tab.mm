@@ -33,7 +33,7 @@ bool IOSLiveTab::IsInitialBlankNavigation() {
 }
 
 int IOSLiveTab::GetCurrentEntryIndex() {
-  return navigation_manager()->GetCurrentItemIndex();
+  return navigation_manager()->GetLastCommittedItemIndex();
 }
 
 int IOSLiveTab::GetPendingEntryIndex() {

@@ -19,8 +19,8 @@ class SerializableUserData;
 @interface CRWSessionStorage : NSObject<NSCoding>
 
 @property(nonatomic, assign) BOOL hasOpener;
-@property(nonatomic, assign) NSInteger currentNavigationIndex;
-@property(nonatomic, assign) NSInteger previousNavigationIndex;
+@property(nonatomic, assign) NSInteger lastCommittedItemIndex;
+@property(nonatomic, assign) NSInteger previousItemIndex;
 @property(nonatomic, copy) NSArray* itemStorages;
 @property(nonatomic, retain)
     CRWSessionCertificatePolicyManager* sessionCertificatePolicyManager;

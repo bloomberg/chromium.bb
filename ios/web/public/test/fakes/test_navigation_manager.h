@@ -31,7 +31,6 @@ class TestNavigationManager : public NavigationManager {
       BrowserURLRewriter::URLRewriter rewriter) override;
   int GetItemCount() const override;
   NavigationItem* GetItemAtIndex(size_t index) const override;
-  int GetCurrentItemIndex() const override;
   int GetPendingItemIndex() const override;
   int GetLastCommittedItemIndex() const override;
   bool RemoveItemAtIndex(int index) override;
@@ -63,9 +62,9 @@ class TestNavigationManager : public NavigationManager {
   // GetItemAtIndex(), and GetCurrentItemIndex().
   void AddItem(const GURL& url, ui::PageTransition transition);
 
-  // Sets the index to be returned by GetCurrentItemIndex(). |index| must be
-  // either -1 or between 0 and GetItemCount()-1, inclusively.
-  void SetCurrentItemIndex(const int index);
+  // Sets the index to be returned by GetLastCommittedItemIndex(). |index| must
+  // be either -1 or between 0 and GetItemCount()-1, inclusively.
+  void SetLastCommittedItemIndex(const int index);
 
  private:
   // A list of items constructed by calling AddItem().

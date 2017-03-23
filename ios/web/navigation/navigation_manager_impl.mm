@@ -104,11 +104,11 @@ void NavigationManagerImpl::InitializeSession() {
 
 void NavigationManagerImpl::ReplaceSessionHistory(
     std::vector<std::unique_ptr<web::NavigationItem>> items,
-    int current_index) {
+    int lastCommittedItemIndex) {
   SetSessionController([[CRWSessionController alloc]
-      initWithBrowserState:browser_state_
-           navigationItems:std::move(items)
-              currentIndex:current_index]);
+        initWithBrowserState:browser_state_
+             navigationItems:std::move(items)
+      lastCommittedItemIndex:lastCommittedItemIndex]);
 }
 
 void NavigationManagerImpl::SetFacadeDelegate(
@@ -139,7 +139,7 @@ void NavigationManagerImpl::OnNavigationItemCommitted() {
   LoadCommittedDetails details;
   details.item = GetLastCommittedItem();
   DCHECK(details.item);
-  details.previous_item_index = [session_controller_ previousNavigationIndex];
+  details.previous_item_index = [session_controller_ previousItemIndex];
   if (details.previous_item_index >= 0) {
     DCHECK([session_controller_ previousItem]);
     details.previous_url = [session_controller_ previousItem]->GetURL();
@@ -275,18 +275,14 @@ NavigationItem* NavigationManagerImpl::GetItemAtIndex(size_t index) const {
   return [session_controller_ itemAtIndex:index];
 }
 
-int NavigationManagerImpl::GetCurrentItemIndex() const {
-  return [session_controller_ currentNavigationIndex];
-}
-
 int NavigationManagerImpl::GetPendingItemIndex() const {
   if (GetPendingItem()) {
     if ([session_controller_ pendingItemIndex] != -1) {
       return [session_controller_ pendingItemIndex];
     }
-    // TODO(crbug.com/665189): understand why current item index is
+    // TODO(crbug.com/665189): understand why last committed item index is
     // returned here.
-    return GetCurrentItemIndex();
+    return GetLastCommittedItemIndex();
   }
   return -1;
 }
@@ -294,7 +290,7 @@ int NavigationManagerImpl::GetPendingItemIndex() const {
 int NavigationManagerImpl::GetLastCommittedItemIndex() const {
   if (GetItemCount() == 0)
     return -1;
-  return [session_controller_ currentNavigationIndex];
+  return [session_controller_ lastCommittedItemIndex];
 }
 
 bool NavigationManagerImpl::RemoveItemAtIndex(int index) {
@@ -369,7 +365,7 @@ void NavigationManagerImpl::RemoveTransientURLRewriters() {
 
 int NavigationManagerImpl::GetIndexForOffset(int offset) const {
   int result = [session_controller_ pendingItemIndex] == -1
-                   ? GetCurrentItemIndex()
+                   ? GetLastCommittedItemIndex()
                    : static_cast<int>([session_controller_ pendingItemIndex]);
 
   if (offset < 0) {
@@ -446,7 +442,7 @@ bool NavigationManagerImpl::IsRedirectItemAtIndex(int index) const {
 
 NavigationItem* NavigationManagerImpl::GetLastCommittedNonAppSpecificItem()
     const {
-  int index = GetCurrentItemIndex();
+  int index = GetLastCommittedItemIndex();
   if (index == -1)
     return nullptr;
   WebClient* client = GetWebClient();

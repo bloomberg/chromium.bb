@@ -79,18 +79,13 @@ web::NavigationItem* TestNavigationManager::GetItemAtIndex(size_t index) const {
   return items_[index].get();
 }
 
-int TestNavigationManager::GetCurrentItemIndex() const {
-  return items_index_;
-}
-
-void TestNavigationManager::SetCurrentItemIndex(const int index) {
+void TestNavigationManager::SetLastCommittedItemIndex(const int index) {
   DCHECK(index == -1 || index >= 0 && index < GetItemCount());
   items_index_ = index;
 }
 
 int TestNavigationManager::GetLastCommittedItemIndex() const {
-  NOTREACHED();
-  return 0;
+  return items_index_;
 }
 
 int TestNavigationManager::GetPendingItemIndex() const {
@@ -171,7 +166,7 @@ void TestNavigationManager::AddItem(const GURL& url,
   items_.push_back(web::NavigationItem::Create());
   items_.back()->SetTransitionType(transition);
   items_.back()->SetURL(url);
-  SetCurrentItemIndex(GetItemCount() - 1);
+  SetLastCommittedItemIndex(GetItemCount() - 1);
 }
 
 }  // namespace web

@@ -301,7 +301,8 @@ int WebStateList::GetIndexOfNthWebStateOpenedBy(const web::WebState* opener,
     return kInvalidIndex;
 
   const int opener_navigation_index =
-      use_group ? opener->GetNavigationManager()->GetCurrentItemIndex() : -1;
+      use_group ? opener->GetNavigationManager()->GetLastCommittedItemIndex()
+                : -1;
 
   int found_index = kInvalidIndex;
   for (int index = start_index + 1; index < count() && n; ++index) {

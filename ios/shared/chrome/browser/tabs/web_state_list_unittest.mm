@@ -111,27 +111,29 @@ class FakeNavigationManager : public web::TestNavigationManager {
   FakeNavigationManager() = default;
 
   // web::NavigationManager implementation.
-  int GetCurrentItemIndex() const override { return current_item_index_; }
+  int GetLastCommittedItemIndex() const override {
+    return last_committed_item_index;
+  }
 
-  int GetLastCommittedItemIndex() const override { return current_item_index_; }
+  bool CanGoBack() const override { return last_committed_item_index > 0; }
 
-  bool CanGoBack() const override { return current_item_index_ > 0; }
-
-  bool CanGoForward() const override { return current_item_index_ < INT_MAX; }
+  bool CanGoForward() const override {
+    return last_committed_item_index < INT_MAX;
+  }
 
   void GoBack() override {
     DCHECK(CanGoBack());
-    --current_item_index_;
+    --last_committed_item_index;
   }
 
   void GoForward() override {
     DCHECK(CanGoForward());
-    ++current_item_index_;
+    ++last_committed_item_index;
   }
 
-  void GoToIndex(int index) override { current_item_index_ = index; }
+  void GoToIndex(int index) override { last_committed_item_index = index; }
 
-  int current_item_index_ = 0;
+  int last_committed_item_index = 0;
 
   DISALLOW_COPY_AND_ASSIGN(FakeNavigationManager);
 };

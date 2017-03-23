@@ -37,14 +37,12 @@
   // the incremental merging of the two classes.
   web::NavigationManagerImpl* _navigationManager;
 
-  // Identifies the index of the current navigation in the NavigationItem
-  // array.
-  NSInteger _currentNavigationIndex;
-  // Identifies the index of the previous navigation in the NavigationItem
-  // array.
-  NSInteger _previousNavigationIndex;
+  // Identifies the index of the last committed item in the items array.
+  NSInteger _lastCommittedItemIndex;
+  // Identifies the index of the previous item in the items array.
+  NSInteger _previousItemIndex;
 
-   // Stores the certificate policies decided by the user.
+  // Stores the certificate policies decided by the user.
   CRWSessionCertificatePolicyManager* _sessionCertificatePolicyManager;
 
   // The browser state associated with this CRWSessionController;
@@ -65,7 +63,7 @@
 }
 
 // Redefine as readwrite.
-@property(nonatomic, readwrite, assign) NSInteger currentNavigationIndex;
+@property(nonatomic, readwrite, assign) NSInteger lastCommittedItemIndex;
 
 // TODO(rohitrao): These properties must be redefined readwrite to work around a
 // clang bug. crbug.com/228650
@@ -75,9 +73,9 @@
 // Expose setters for serialization properties.  These are exposed in a category
 // in SessionStorageBuilder, and will be removed as ownership of
 // their backing ivars moves to NavigationManagerImpl.
-@property(nonatomic, readwrite, assign) NSInteger previousNavigationIndex;
+@property(nonatomic, readwrite, assign) NSInteger previousItemIndex;
 
-// Removes all items after currentNavigationIndex_.
+// Removes all items after lastCommittedItemIndex.
 - (void)clearForwardItems;
 // Discards the transient item, if any.
 - (void)discardTransientItem;
@@ -95,8 +93,8 @@ initiationType:(web::NavigationInitiationType)initiationType;
 
 @implementation CRWSessionController
 
-@synthesize currentNavigationIndex = _currentNavigationIndex;
-@synthesize previousNavigationIndex = _previousNavigationIndex;
+@synthesize lastCommittedItemIndex = _lastCommittedItemIndex;
+@synthesize previousItemIndex = _previousItemIndex;
 @synthesize pendingItemIndex = _pendingItemIndex;
 @synthesize sessionCertificatePolicyManager = _sessionCertificatePolicyManager;
 
@@ -104,8 +102,8 @@ initiationType:(web::NavigationInitiationType)initiationType;
   self = [super init];
   if (self) {
     _browserState = browserState;
-    _currentNavigationIndex = -1;
-    _previousNavigationIndex = -1;
+    _lastCommittedItemIndex = -1;
+    _previousItemIndex = -1;
     _pendingItemIndex = -1;
     _sessionCertificatePolicyManager =
         [[CRWSessionCertificatePolicyManager alloc] init];
@@ -115,15 +113,15 @@ initiationType:(web::NavigationInitiationType)initiationType;
 
 - (instancetype)initWithBrowserState:(web::BrowserState*)browserState
                      navigationItems:(web::ScopedNavigationItemList)items
-                        currentIndex:(NSUInteger)currentIndex {
+              lastCommittedItemIndex:(NSUInteger)lastCommittedItemIndex {
   self = [super init];
   if (self) {
     _browserState = browserState;
     _items = web::CreateScopedNavigationItemImplList(std::move(items));
-    _currentNavigationIndex =
-        std::min(static_cast<NSInteger>(currentIndex),
+    _lastCommittedItemIndex =
+        std::min(static_cast<NSInteger>(lastCommittedItemIndex),
                  static_cast<NSInteger>(_items.size()) - 1);
-    _previousNavigationIndex = -1;
+    _previousItemIndex = -1;
     _pendingItemIndex = -1;
     _sessionCertificatePolicyManager =
         [[CRWSessionCertificatePolicyManager alloc] init];
@@ -133,9 +131,9 @@ initiationType:(web::NavigationInitiationType)initiationType;
 
 #pragma mark - Accessors
 
-- (void)setCurrentNavigationIndex:(NSInteger)currentNavigationIndex {
-  if (_currentNavigationIndex != currentNavigationIndex) {
-    _currentNavigationIndex = currentNavigationIndex;
+- (void)setLastCommittedItemIndex:(NSInteger)lastCommittedItemIndex {
+  if (_lastCommittedItemIndex != lastCommittedItemIndex) {
+    _lastCommittedItemIndex = lastCommittedItemIndex;
     if (_navigationManager)
       _navigationManager->RemoveTransientURLRewriters();
   }
@@ -149,7 +147,7 @@ initiationType:(web::NavigationInitiationType)initiationType;
 }
 
 - (BOOL)canPruneAllButLastCommittedItem {
-  return self.currentNavigationIndex != -1 && self.pendingItemIndex == -1 &&
+  return self.lastCommittedItemIndex != -1 && self.pendingItemIndex == -1 &&
          !self.transientItem;
 }
 
@@ -193,18 +191,18 @@ initiationType:(web::NavigationInitiationType)initiationType;
 }
 
 - (web::NavigationItemImpl*)lastCommittedItem {
-  NSInteger index = self.currentNavigationIndex;
+  NSInteger index = self.lastCommittedItemIndex;
   return index == -1 ? nullptr : self.items[index].get();
 }
 
 - (web::NavigationItemImpl*)previousItem {
-  NSInteger index = self.previousNavigationIndex;
+  NSInteger index = self.previousItemIndex;
   return index == -1 || self.items.empty() ? nullptr : self.items[index].get();
 }
 
 - (web::NavigationItemList)backwardItems {
   web::NavigationItemList items;
-  for (size_t index = _currentNavigationIndex; index > 0; --index) {
+  for (size_t index = _lastCommittedItemIndex; index > 0; --index) {
     if (![self isRedirectTransitionForItemAtIndex:index])
       items.push_back(self.items[index - 1].get());
   }
@@ -213,7 +211,7 @@ initiationType:(web::NavigationInitiationType)initiationType;
 
 - (web::NavigationItemList)forwardItems {
   web::NavigationItemList items;
-  NSUInteger lastNonRedirectedIndex = _currentNavigationIndex + 1;
+  NSUInteger lastNonRedirectedIndex = _lastCommittedItemIndex + 1;
   while (lastNonRedirectedIndex < self.items.size()) {
     web::NavigationItem* item = self.items[lastNonRedirectedIndex].get();
     if (!ui::PageTransitionIsRedirect(item->GetTransitionType()))
@@ -251,14 +249,14 @@ initiationType:(web::NavigationInitiationType)initiationType;
         [NSString stringWithFormat:@"%p", self.transientItem];
   }
 #endif
-  return [NSString stringWithFormat:@"current index: %" PRIdNS
-                                    @"\nprevious index: %" PRIdNS
-                                    @"\npending"
-                                    @" index: %" PRIdNS
-                                    @"\n%@\npending: %@\ntransient: %@\n",
-                                    _currentNavigationIndex,
-                                    _previousNavigationIndex, _pendingItemIndex,
-                                    itemsDescription, pendingItemDescription,
+  return [NSString stringWithFormat:@"last committed item index: %" PRIdNS
+                                    @"\nprevious item index: %" PRIdNS
+                                    @"\npending item index: %" PRIdNS
+                                    @"\nall items: %@ \npending item: %@"
+                                    @"\ntransient item: %@\n",
+                                    _lastCommittedItemIndex, _previousItemIndex,
+                                    _pendingItemIndex, itemsDescription,
+                                    pendingItemDescription,
                                     transientItemDescription];
 }
 
@@ -361,15 +359,15 @@ initiationType:(web::NavigationInitiationType)initiationType;
   DCHECK_EQ(self.pendingItemIndex, -1);
   [self discardTransientItem];
 
-  NSInteger forwardItemStartIndex = _currentNavigationIndex + 1;
+  NSInteger forwardItemStartIndex = _lastCommittedItemIndex + 1;
   DCHECK(forwardItemStartIndex >= 0);
 
   size_t itemCount = self.items.size();
   if (forwardItemStartIndex >= static_cast<NSInteger>(itemCount))
     return;
 
-  if (_previousNavigationIndex >= forwardItemStartIndex)
-    _previousNavigationIndex = -1;
+  if (_previousItemIndex >= forwardItemStartIndex)
+    _previousItemIndex = -1;
 
   // Remove the NavigationItems and notify the NavigationManater
   _items.erase(_items.begin() + forwardItemStartIndex, _items.end());
@@ -385,15 +383,15 @@ initiationType:(web::NavigationInitiationType)initiationType;
     // the implementation in NavigationController.)
     self.pendingItem->ResetForCommit();
 
-    NSInteger newNavigationIndex = self.pendingItemIndex;
-    if (newNavigationIndex == -1) {
+    NSInteger newItemIndex = self.pendingItemIndex;
+    if (newItemIndex == -1) {
       [self clearForwardItems];
       // Add the new item at the end.
       _items.push_back(std::move(_pendingItem));
-      newNavigationIndex = self.items.size() - 1;
+      newItemIndex = self.items.size() - 1;
     }
-    _previousNavigationIndex = _currentNavigationIndex;
-    self.currentNavigationIndex = newNavigationIndex;
+    _previousItemIndex = _lastCommittedItemIndex;
+    self.lastCommittedItemIndex = newItemIndex;
     self.pendingItemIndex = -1;
     DCHECK(!_pendingItem);
   }
@@ -444,8 +442,8 @@ initiationType:(web::NavigationInitiationType)initiationType;
   [self clearForwardItems];
   // Add the new item at the end.
   _items.push_back(std::move(pushedItem));
-  _previousNavigationIndex = _currentNavigationIndex;
-  self.currentNavigationIndex = self.items.size() - 1;
+  _previousItemIndex = _lastCommittedItemIndex;
+  self.lastCommittedItemIndex = self.items.size() - 1;
 
   if (_navigationManager)
     _navigationManager->OnNavigationItemCommitted();
@@ -489,28 +487,29 @@ initiationType:(web::NavigationInitiationType)initiationType;
   if (!source.lastCommittedItem)
     return;
 
-  // Copy |sourceItems| into a new NavigationItemList.  |mergedItems| is needs
-  // to be large enough for all items in |source| preceding
-  // |sourceCurrentIndex|, the |source|'s current item, and |self|'s current
-  // item, which comes out to |sourceCurrentIndex| + 2.
-  DCHECK_GT(source.currentNavigationIndex, -1);
-  size_t sourceCurrentIndex =
-      static_cast<size_t>(source.currentNavigationIndex);
-  web::ScopedNavigationItemImplList mergedItems(sourceCurrentIndex + 2);
-  for (size_t index = 0; index <= sourceCurrentIndex; ++index) {
+  // Copy |sourceItems| into a new NavigationItemList.  |mergedItems| needs to
+  // be large enough for all items in |source| preceding
+  // |sourceLastCommittedItemIndex|, the |source|'s current item, and |self|'s
+  // current item, which comes out to |sourceCurrentIndex| + 2.
+  DCHECK_GT(source.lastCommittedItemIndex, -1);
+  size_t sourceLastCommittedItemIndex =
+      static_cast<size_t>(source.lastCommittedItemIndex);
+  web::ScopedNavigationItemImplList mergedItems(sourceLastCommittedItemIndex +
+                                                2);
+  for (size_t index = 0; index <= sourceLastCommittedItemIndex; ++index) {
     mergedItems[index] =
         base::MakeUnique<web::NavigationItemImpl>(*sourceItems[index]);
   }
-  mergedItems.back() = std::move(_items[self.currentNavigationIndex]);
+  mergedItems.back() = std::move(_items[self.lastCommittedItemIndex]);
 
   // Use |mergedItems| as the session history.
   std::swap(mergedItems, _items);
 
   // Update state to reflect inserted NavigationItems.
-  _previousNavigationIndex = -1;
-  _currentNavigationIndex = self.items.size() - 1;
+  _previousItemIndex = -1;
+  _lastCommittedItemIndex = self.items.size() - 1;
 
-  DCHECK_LT(static_cast<NSUInteger>(_currentNavigationIndex),
+  DCHECK_LT(static_cast<NSUInteger>(_lastCommittedItemIndex),
             self.items.size());
 }
 
@@ -518,33 +517,33 @@ initiationType:(web::NavigationInitiationType)initiationType;
   if (index < 0 || static_cast<NSUInteger>(index) >= self.items.size())
     return;
 
-  if (index < _currentNavigationIndex) {
+  if (index < _lastCommittedItemIndex) {
     // Going back.
     [self discardNonCommittedItems];
-  } else if (_currentNavigationIndex < index) {
+  } else if (_lastCommittedItemIndex < index) {
     // Going forward.
     [self discardTransientItem];
   } else {
-    // |delta| is 0, no need to change current navigation index.
+    // |delta| is 0, no need to change the last committed item index.
     return;
   }
 
-  _previousNavigationIndex = _currentNavigationIndex;
-  _currentNavigationIndex = index;
+  _previousItemIndex = _lastCommittedItemIndex;
+  _lastCommittedItemIndex = index;
 }
 
 - (void)removeItemAtIndex:(NSInteger)index {
   DCHECK(index < static_cast<NSInteger>(self.items.size()));
-  DCHECK(index != _currentNavigationIndex);
+  DCHECK(index != _lastCommittedItemIndex);
   DCHECK(index >= 0);
 
   [self discardNonCommittedItems];
 
   _items.erase(_items.begin() + index);
-  if (_currentNavigationIndex > index)
-    _currentNavigationIndex--;
-  if (_previousNavigationIndex >= index)
-    _previousNavigationIndex--;
+  if (_lastCommittedItemIndex > index)
+    _lastCommittedItemIndex--;
+  if (_previousItemIndex >= index)
+    _previousItemIndex--;
 }
 
 - (BOOL)isSameDocumentNavigationBetweenItem:(web::NavigationItem*)firstItem

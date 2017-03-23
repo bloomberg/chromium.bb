@@ -120,10 +120,6 @@ class NavigationManager {
   // Returns the committed NavigationItem at |index|.
   virtual NavigationItem* GetItemAtIndex(size_t index) const = 0;
 
-  // Returns the index from which web would go back/forward or reload.
-  // TODO(crbug.com/533848): Update to return size_t.
-  virtual int GetCurrentItemIndex() const = 0;
-
   // Returns the index of the last committed item or -1 if the last
   // committed item correspond to a new navigation.
   // TODO(crbug.com/533848): Update to return size_t.

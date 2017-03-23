@@ -14,10 +14,10 @@
 namespace {
 // Serialization keys used in NSCoding functions.
 NSString* const kCertificatePolicyManagerKey = @"certificatePolicyManager";
-NSString* const kCurrentNavigationIndexKey = @"currentNavigationIndex";
+NSString* const klastCommittedItemIndexKey = @"lastCommittedItemIndex";
 NSString* const kItemStoragesKey = @"entries";
 NSString* const kHasOpenerKey = @"openedByDOM";
-NSString* const kPreviousNavigationIndexKey = @"previousNavigationIndex";
+NSString* const kPreviousItemIndexKey = @"previousItemIndex";
 }
 
 @interface CRWSessionStorage () {
@@ -30,8 +30,8 @@ NSString* const kPreviousNavigationIndexKey = @"previousNavigationIndex";
 @implementation CRWSessionStorage
 
 @synthesize hasOpener = _hasOpener;
-@synthesize currentNavigationIndex = _currentNavigationIndex;
-@synthesize previousNavigationIndex = _previousNavigationIndex;
+@synthesize lastCommittedItemIndex = _lastCommittedItemIndex;
+@synthesize previousItemIndex = _previousItemIndex;
 @synthesize itemStorages = _itemStorages;
 @synthesize sessionCertificatePolicyManager = _sessionCertificatePolicyManager;
 
@@ -52,15 +52,14 @@ NSString* const kPreviousNavigationIndexKey = @"previousNavigationIndex";
   self = [super init];
   if (self) {
     _hasOpener = [decoder decodeBoolForKey:kHasOpenerKey];
-    _currentNavigationIndex =
-        [decoder decodeIntForKey:kCurrentNavigationIndexKey];
-    _previousNavigationIndex =
-        [decoder decodeIntForKey:kPreviousNavigationIndexKey];
+    _lastCommittedItemIndex =
+        [decoder decodeIntForKey:klastCommittedItemIndexKey];
+    _previousItemIndex = [decoder decodeIntForKey:kPreviousItemIndexKey];
     _itemStorages = [[NSMutableArray alloc]
         initWithArray:[decoder decodeObjectForKey:kItemStoragesKey]];
     // Prior to M34, 0 was used as "no index" instead of -1; adjust for that.
     if (!_itemStorages.count)
-      _currentNavigationIndex = -1;
+      _lastCommittedItemIndex = -1;
     _sessionCertificatePolicyManager =
         [decoder decodeObjectForKey:kCertificatePolicyManagerKey];
     if (!_sessionCertificatePolicyManager) {
@@ -75,10 +74,9 @@ NSString* const kPreviousNavigationIndexKey = @"previousNavigationIndex";
 
 - (void)encodeWithCoder:(NSCoder*)coder {
   [coder encodeBool:self.hasOpener forKey:kHasOpenerKey];
-  [coder encodeInt:self.currentNavigationIndex
-            forKey:kCurrentNavigationIndexKey];
-  [coder encodeInt:self.previousNavigationIndex
-            forKey:kPreviousNavigationIndexKey];
+  [coder encodeInt:self.lastCommittedItemIndex
+            forKey:klastCommittedItemIndexKey];
+  [coder encodeInt:self.previousItemIndex forKey:kPreviousItemIndexKey];
   [coder encodeObject:self.itemStorages forKey:kItemStoragesKey];
   [coder encodeObject:self.sessionCertificatePolicyManager
                forKey:kCertificatePolicyManagerKey];

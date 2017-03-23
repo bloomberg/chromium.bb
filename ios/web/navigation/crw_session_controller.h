@@ -30,8 +30,8 @@ struct Referrer;
 // TODO(crbug.com/454984): Remove this class.
 @interface CRWSessionController : NSObject
 
-@property(nonatomic, readonly, assign) NSInteger currentNavigationIndex;
-@property(nonatomic, readonly, assign) NSInteger previousNavigationIndex;
+@property(nonatomic, readonly, assign) NSInteger lastCommittedItemIndex;
+@property(nonatomic, readonly, assign) NSInteger previousItemIndex;
 // The index of the pending item if it is in |items|, or -1 if |pendingItem|
 // corresponds with a new navigation (created by addPendingItem:).
 @property(nonatomic, readwrite, assign) NSInteger pendingItemIndex;
@@ -66,10 +66,10 @@ struct Referrer;
 // Returns the NavigationItem corresponding with the previously loaded page.
 @property(nonatomic, readonly) web::NavigationItemImpl* previousItem;
 // Returns a list of all non-redirected NavigationItems whose index precedes
-// |currentNavigationIndex|.
+// |lastCommittedItemIndex|.
 @property(nonatomic, readonly) web::NavigationItemList backwardItems;
 // Returns a list of all non-redirected NavigationItems whose index follow
-// |currentNavigationIndex|.
+// |lastCommittedItemIndex|.
 @property(nonatomic, readonly) web::NavigationItemList forwardItems;
 
 // CRWSessionController doesn't have public constructors. New
@@ -133,7 +133,7 @@ struct Referrer;
 // |canPruneAllButLastCommittedItem| is false.
 - (void)copyStateFromSessionControllerAndPrune:(CRWSessionController*)source;
 
-// Sets |currentNavigationIndex_| to the |index| if it's in the entries bounds.
+// Sets |lastCommittedItemIndex| to the |index| if it's in the entries bounds.
 - (void)goToItemAtIndex:(NSInteger)index;
 
 // Removes the item at |index| after discarding any noncomitted entries.
