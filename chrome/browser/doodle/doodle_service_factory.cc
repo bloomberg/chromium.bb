@@ -20,6 +20,10 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_json/safe_json_parser.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/chrome_feature_list.h"
+#endif
+
 // static
 DoodleServiceFactory* DoodleServiceFactory::GetInstance() {
   return base::Singleton<DoodleServiceFactory>::get();
@@ -46,10 +50,15 @@ KeyedService* DoodleServiceFactory::BuildServiceInstanceFor(
   // We don't show doodles in incognito profiles (for now?).
   DCHECK(!profile->IsOffTheRecord());
 
+  bool use_gray_background = false;
+#if defined(OS_ANDROID)
+  use_gray_background =
+      !base::FeatureList::IsEnabled(chrome::android::kChromeHomeFeature);
+#endif
   auto fetcher = base::MakeUnique<doodle::DoodleFetcherImpl>(
       profile->GetRequestContext(),
       GoogleURLTrackerFactory::GetForProfile(profile),
-      base::Bind(&safe_json::SafeJsonParser::Parse));
+      base::Bind(&safe_json::SafeJsonParser::Parse), use_gray_background);
   return new doodle::DoodleService(profile->GetPrefs(), std::move(fetcher),
                                    base::MakeUnique<base::OneShotTimer>(),
                                    base::MakeUnique<base::DefaultClock>(),

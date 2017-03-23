@@ -34,7 +34,8 @@ namespace doodle {
 
 namespace {
 
-const char kDoodleConfigPath[] = "/async/ddljson";
+const char kDoodleConfigPath[] = "/async/ddljson?async=ntp:1,graybg:1";
+const char kDoodleConfigPathNoGrayBg[] = "/async/ddljson?async=ntp:1,graybg:0";
 
 // Required to instantiate a GoogleUrlTracker in UNIT_TEST_MODE.
 class GoogleURLTrackerClientStub : public GoogleURLTrackerClient {
@@ -67,15 +68,16 @@ void ParseJson(
 
 }  // namespace
 
-class DoodleFetcherImplTest : public testing::Test {
+class DoodleFetcherImplTestBase : public testing::Test {
  public:
-  DoodleFetcherImplTest()
+  DoodleFetcherImplTestBase(bool gray_background)
       : google_url_tracker_(base::MakeUnique<GoogleURLTrackerClientStub>(),
                             GoogleURLTracker::UNIT_TEST_MODE),
         doodle_fetcher_(
             new net::TestURLRequestContextGetter(message_loop_.task_runner()),
             &google_url_tracker_,
-            base::Bind(ParseJson)) {}
+            base::Bind(ParseJson),
+            gray_background) {}
 
   void RespondWithData(const std::string& data) {
     net::TestURLFetcher* url_fetcher = GetRunningFetcher();
@@ -114,6 +116,12 @@ class DoodleFetcherImplTest : public testing::Test {
   net::TestURLFetcherFactory url_fetcher_factory_;
   GoogleURLTracker google_url_tracker_;
   DoodleFetcherImpl doodle_fetcher_;
+};
+
+class DoodleFetcherImplTest : public DoodleFetcherImplTestBase {
+ public:
+  DoodleFetcherImplTest()
+      : DoodleFetcherImplTestBase(/*gray_background=*/true) {}
 };
 
 TEST_F(DoodleFetcherImplTest, ReturnsFromFetchWithoutError) {
@@ -423,7 +431,7 @@ TEST_F(DoodleFetcherImplTest, ReceivesBaseUrlFromTracker) {
   // Google base URL is the default anyway. Find a way to set the base URL in
   // the tracker.
   EXPECT_THAT(GetRunningFetcher()->GetOriginalURL(),
-              Eq(GetGoogleBaseURL().Resolve(kDoodleConfigPath)));
+              Eq(Resolve(kDoodleConfigPath)));
 }
 
 TEST_F(DoodleFetcherImplTest, OverridesBaseUrlWithCommandLineArgument) {
@@ -435,6 +443,20 @@ TEST_F(DoodleFetcherImplTest, OverridesBaseUrlWithCommandLineArgument) {
 
   EXPECT_THAT(GetRunningFetcher()->GetOriginalURL(),
               Eq(GURL("http://www.google.kz").Resolve(kDoodleConfigPath)));
+}
+
+class DoodleFetcherImplNoGrayBgTest : public DoodleFetcherImplTestBase {
+ public:
+  DoodleFetcherImplNoGrayBgTest()
+      : DoodleFetcherImplTestBase(/*gray_background=*/false) {}
+};
+
+TEST_F(DoodleFetcherImplNoGrayBgTest, PassesNoGrayBgParam) {
+  base::MockCallback<DoodleFetcherImpl::FinishedCallback> callback;
+  doodle_fetcher()->FetchDoodle(callback.Get());
+
+  EXPECT_THAT(GetRunningFetcher()->GetOriginalURL(),
+              Eq(Resolve(kDoodleConfigPathNoGrayBg)));
 }
 
 }  // namespace doodle

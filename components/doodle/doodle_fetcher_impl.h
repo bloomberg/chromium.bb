@@ -45,7 +45,8 @@ class DoodleFetcherImpl : public DoodleFetcher, public net::URLFetcherDelegate {
   DoodleFetcherImpl(
       scoped_refptr<net::URLRequestContextGetter> download_context,
       GoogleURLTracker* google_url_tracker,
-      const ParseJSONCallback& json_parsing_callback);
+      const ParseJSONCallback& json_parsing_callback,
+      bool gray_background);
   ~DoodleFetcherImpl() override;
 
   // Fetches a doodle asynchronously. The |callback| is called with a
@@ -79,8 +80,9 @@ class DoodleFetcherImpl : public DoodleFetcher, public net::URLFetcherDelegate {
 
   // Parameters set from constructor.
   scoped_refptr<net::URLRequestContextGetter> const download_context_;
-  ParseJSONCallback json_parsing_callback_;
   GoogleURLTracker* google_url_tracker_;
+  ParseJSONCallback json_parsing_callback_;
+  const bool gray_background_;
 
   std::vector<FinishedCallback> callbacks_;
   std::unique_ptr<net::URLFetcher> fetcher_;
