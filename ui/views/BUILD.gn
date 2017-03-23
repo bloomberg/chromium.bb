@@ -40,12 +40,7 @@ aggregate_vector_icons("views_vector_icons") {
 component("views") {
   all_dependent_configs = [ ":flags" ]
   sources = [
-    "accessibility/native_view_accessibility.cc",
     "accessibility/native_view_accessibility.h",
-    "accessibility/native_view_accessibility_mac.h",
-    "accessibility/native_view_accessibility_mac.mm",
-    "accessibility/native_view_accessibility_win.cc",
-    "accessibility/native_view_accessibility_win.h",
     "accessible_pane_view.cc",
     "accessible_pane_view.h",
     "animation/bounds_animator.cc",
@@ -666,6 +661,19 @@ component("views") {
       "QuartzCore.framework",  # Required by bridged_native_widget.mm.
     ]
   }
+
+  if (has_native_accessibility) {
+    sources += [
+      "accessibility/native_view_accessibility_base.cc",
+      "accessibility/native_view_accessibility_base.h",
+      "accessibility/native_view_accessibility_mac.h",
+      "accessibility/native_view_accessibility_mac.mm",
+      "accessibility/native_view_accessibility_win.cc",
+      "accessibility/native_view_accessibility_win.h",
+    ]
+  } else {
+    sources += [ "accessibility/native_view_accessibility_stub.cc" ]
+  }
 }
 
 static_library("test_support_internal") {
@@ -833,7 +841,6 @@ static_library("test_support") {
 source_set("views_unittests_sources") {
   testonly = true
   sources = [
-    "accessibility/native_view_accessibility_unittest.cc",
     "accessibility/native_view_accessibility_win_unittest.cc",
     "accessible_pane_view_unittest.cc",
     "animation/bounds_animator_unittest.cc",
@@ -958,6 +965,10 @@ source_set("views_unittests_sources") {
       "oleacc.lib",
       "comctl32.lib",
     ]
+  }
+
+  if (has_native_accessibility) {
+    sources += [ "accessibility/native_view_accessibility_unittest.cc" ]
   }
 
   if (use_x11) {

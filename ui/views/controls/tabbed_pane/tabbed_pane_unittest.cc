@@ -12,8 +12,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
-#include "ui/views/accessibility/native_view_accessibility.h"
 #include "ui/views/test/test_views.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
@@ -158,8 +158,14 @@ TEST_F(TabbedPaneTest, SelectTabWithAccessibleAction) {
 
   // Check the a11y information for each tab.
   for (int i = 0; i < kNumTabs; ++i) {
-    ui::AXNodeData data =
-        NativeViewAccessibility::Create(GetTabAt(i))->GetData();
+    ui::AXNodeData data;
+
+    // AXViewObjWrapper::Serialize() and NativeViewAccessibilityBase::GetData()
+    // are normally responsible for clearing the state from the default
+    // AXNodeData constructor. Do the same here.
+    data.state = 0;
+
+    GetTabAt(i)->GetAccessibleNodeData(&data);
     SCOPED_TRACE(testing::Message() << "Tab at index: " << i);
     EXPECT_EQ(ui::AX_ROLE_TAB, data.role);
     EXPECT_EQ(DefaultTabTitle(), data.GetString16Attribute(ui::AX_ATTR_NAME));
@@ -171,20 +177,16 @@ TEST_F(TabbedPaneTest, SelectTabWithAccessibleAction) {
   action.action = ui::AX_ACTION_SET_SELECTION;
   // Select the first tab.
 
-  NativeViewAccessibility::Create(GetTabAt(0))
-      ->AccessibilityPerformAction(action);
+  GetTabAt(0)->HandleAccessibleAction(action);
   EXPECT_EQ(0, tabbed_pane_->GetSelectedTabIndex());
 
   // Select the second tab.
-  std::unique_ptr<NativeViewAccessibility> nva =
-      NativeViewAccessibility::Create(GetTabAt(1));
-  nva->AccessibilityPerformAction(action);
+  GetTabAt(1)->HandleAccessibleAction(action);
   EXPECT_EQ(1, tabbed_pane_->GetSelectedTabIndex());
   // Select the second tab again.
-  nva->AccessibilityPerformAction(action);
+  GetTabAt(1)->HandleAccessibleAction(action);
   EXPECT_EQ(1, tabbed_pane_->GetSelectedTabIndex());
 
-  nva.reset();
   widget->CloseNow();
 }
 

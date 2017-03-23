@@ -36,12 +36,12 @@ std::unique_ptr<NativeViewAccessibility> NativeViewAccessibility::Create(
 }
 
 NativeViewAccessibilityWin::NativeViewAccessibilityWin(View* view)
-    : NativeViewAccessibility(view) {}
+    : NativeViewAccessibilityBase(view) {}
 
 NativeViewAccessibilityWin::~NativeViewAccessibilityWin() {}
 
 gfx::NativeViewAccessible NativeViewAccessibilityWin::GetParent() {
-  IAccessible* parent = NativeViewAccessibility::GetParent();
+  IAccessible* parent = NativeViewAccessibilityBase::GetParent();
   if (parent)
     return parent;
 

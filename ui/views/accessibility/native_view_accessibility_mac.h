@@ -6,16 +6,16 @@
 #define UI_VIEWS_ACCESSIBILITY_NATIVE_VIEW_ACCESSIBILITY_MAC_H_
 
 #include "base/macros.h"
-#include "ui/views/accessibility/native_view_accessibility.h"
+#include "ui/views/accessibility/native_view_accessibility_base.h"
 
 namespace views {
 
 // Mac-specific accessibility class for NativeViewAccessibility.
-class NativeViewAccessibilityMac : public NativeViewAccessibility {
+class NativeViewAccessibilityMac : public NativeViewAccessibilityBase {
  public:
   explicit NativeViewAccessibilityMac(View* view);
 
-  // NativeViewAccessibility:
+  // NativeViewAccessibilityBase:
   gfx::NativeViewAccessible GetParent() override;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewAccessibilityMac);

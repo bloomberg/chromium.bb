@@ -6,17 +6,17 @@
 #define UI_VIEWS_ACCESSIBILITY_NATIVE_VIEW_ACCESSIBILITY_AURALINUX_H_
 
 #include "base/macros.h"
-#include "ui/views/accessibility/native_view_accessibility.h"
+#include "ui/views/accessibility/native_view_accessibility_base.h"
 #include "ui/views/view.h"
 
 namespace views {
 
-class NativeViewAccessibilityAuraLinux : public NativeViewAccessibility {
+class NativeViewAccessibilityAuraLinux : public NativeViewAccessibilityBase {
  public:
   NativeViewAccessibilityAuraLinux(View* view);
   ~NativeViewAccessibilityAuraLinux() override;
 
-  // NativeViewAccessibility.
+  // NativeViewAccessibilityBase:
   gfx::NativeViewAccessible GetParent() override;
 
  private:

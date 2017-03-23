@@ -10,22 +10,6 @@
 #include "ui/accessibility/ax_export.h"
 #include "ui/gfx/native_widget_types.h"
 
-// Set PLATFORM_HAS_AX_PLATFORM_NODE_IMPL if this platform has a specific
-// implementation of AXPlatformNode::Create().
-#undef PLATFORM_HAS_AX_PLATFORM_NODE_IMPL
-
-#if defined(OS_WIN)
-#define PLATFORM_HAS_AX_PLATFORM_NODE_IMPL 1
-#endif
-
-#if defined(OS_MACOSX)
-#define PLATFORM_HAS_AX_PLATFORM_NODE_IMPL 1
-#endif
-
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_X11)
-#define PLATFORM_HAS_AX_PLATFORM_NODE_IMPL 1
-#endif
-
 namespace ui {
 
 class AXPlatformNodeDelegate;
@@ -45,14 +29,6 @@ class AX_EXPORT AXPlatformNode {
   // or return NULL if it's not an instance of this class.
   static AXPlatformNode* FromNativeViewAccessible(
       gfx::NativeViewAccessible accessible);
-
-  // Each platform accessibility object has a unique id that's guaranteed
-  // to be a positive number. (It's stored in an int32_t as opposed to
-  // uint32_t because some platforms want to negate it, so we want to ensure
-  // the range is below the signed int max.) This can be used when the
-  // id has to be unique across multiple frames, since node ids are
-  // only unique within one tree.
-  static int32_t GetNextUniqueId();
 
   // Call Destroy rather than deleting this, because the subclass may
   // use reference counting.

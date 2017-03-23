@@ -8,7 +8,7 @@
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_variant.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
-#include "ui/views/accessibility/native_view_accessibility.h"
+#include "ui/views/accessibility/native_view_accessibility_base.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/views_test_base.h"
 

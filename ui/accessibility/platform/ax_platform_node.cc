@@ -9,6 +9,7 @@
 #include "build/build_config.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
+#include "ui/accessibility/platform/ax_platform_unique_id.h"
 
 namespace ui {
 
@@ -19,13 +20,6 @@ using UniqueIdMap = base::hash_map<int32_t, AXPlatformNode*>;
 base::LazyInstance<UniqueIdMap>::DestructorAtExit g_unique_id_map =
     LAZY_INSTANCE_INITIALIZER;
 }
-
-#if !defined(PLATFORM_HAS_AX_PLATFORM_NODE_IMPL)
-// static
-AXPlatformNode* AXPlatformNode::Create(AXPlatformNodeDelegate* delegate) {
-  return nullptr;
-}
-#endif  // !defined(PLATFORM_HAS_AX_PLATFORM_NODE_IMPL)
 
 #if !defined(OS_WIN)
 // This is the default implementation for platforms where native views
@@ -38,19 +32,7 @@ AXPlatformNode* AXPlatformNode::FromNativeViewAccessible(
 }
 #endif
 
-// static
-int32_t AXPlatformNode::GetNextUniqueId() {
-  static int32_t next_unique_id = 1;
-  int32_t unique_id = next_unique_id;
-  if (next_unique_id == INT32_MAX)
-    next_unique_id = 1;
-  else
-    next_unique_id++;
-
-  return unique_id;
-}
-
-AXPlatformNode::AXPlatformNode() : unique_id_(GetNextUniqueId()) {
+AXPlatformNode::AXPlatformNode() : unique_id_(GetNextAXPlatformNodeUniqueId()) {
   g_unique_id_map.Get()[unique_id_] = this;
 }
 

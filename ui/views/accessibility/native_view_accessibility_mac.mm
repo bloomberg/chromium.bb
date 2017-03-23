@@ -19,7 +19,7 @@ std::unique_ptr<NativeViewAccessibility> NativeViewAccessibility::Create(
 }
 
 NativeViewAccessibilityMac::NativeViewAccessibilityMac(View* view)
-    : NativeViewAccessibility(view) {}
+    : NativeViewAccessibilityBase(view) {}
 
 gfx::NativeViewAccessible NativeViewAccessibilityMac::GetParent() {
   if (view_->parent())

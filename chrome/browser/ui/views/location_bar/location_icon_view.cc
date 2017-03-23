@@ -12,6 +12,7 @@
 #include "components/grit/components_scaled_resources.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/label.h"
 

@@ -15,7 +15,7 @@
 #include "content/common/accessibility_messages.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_text_utils.h"
-#include "ui/accessibility/platform/ax_platform_node.h"
+#include "ui/accessibility/platform/ax_platform_unique_id.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -39,7 +39,7 @@ BrowserAccessibility* BrowserAccessibility::Create() {
 BrowserAccessibility::BrowserAccessibility()
     : manager_(NULL),
       node_(NULL),
-      unique_id_(ui::AXPlatformNode::GetNextUniqueId()) {
+      unique_id_(ui::GetNextAXPlatformNodeUniqueId()) {
   g_unique_id_map.Get()[unique_id_] = this;
 }
 

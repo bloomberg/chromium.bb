@@ -159,14 +159,13 @@ std::unique_ptr<NativeViewAccessibility> NativeViewAccessibility::Create(
 }
 
 NativeViewAccessibilityAuraLinux::NativeViewAccessibilityAuraLinux(View* view)
-    : NativeViewAccessibility(view) {
-}
+    : NativeViewAccessibilityBase(view) {}
 
 NativeViewAccessibilityAuraLinux::~NativeViewAccessibilityAuraLinux() {
 }
 
 gfx::NativeViewAccessible NativeViewAccessibilityAuraLinux::GetParent() {
-  gfx::NativeViewAccessible parent = NativeViewAccessibility::GetParent();
+  gfx::NativeViewAccessible parent = NativeViewAccessibilityBase::GetParent();
   if (!parent)
     parent = AuraLinuxApplication::GetInstance()->GetNativeViewAccessible();
   return parent;

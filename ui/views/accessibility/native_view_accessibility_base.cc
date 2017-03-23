@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/accessibility/native_view_accessibility.h"
+#include "ui/views/accessibility/native_view_accessibility_base.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -14,40 +14,29 @@
 
 namespace views {
 
-#if !defined(PLATFORM_HAS_NATIVE_VIEW_ACCESSIBILITY_IMPL)
-// static
-std::unique_ptr<NativeViewAccessibility> NativeViewAccessibility::Create(
-    View* view) {
-  // Use WrapUnique over MakeUnique to invoke the protected constructor.
-  return base::WrapUnique<NativeViewAccessibility>(
-      new NativeViewAccessibility(view));
-}
-#endif  // !defined(PLATFORM_HAS_NATIVE_VIEW_ACCESSIBILITY_IMPL)
-
-NativeViewAccessibility::NativeViewAccessibility(View* view)
+NativeViewAccessibilityBase::NativeViewAccessibilityBase(View* view)
     : view_(view),
       parent_widget_(nullptr),
-      ax_node_(nullptr) {
-  ax_node_ = ui::AXPlatformNode::Create(this);
+      ax_node_(ui::AXPlatformNode::Create(this)) {
+  DCHECK(ax_node_);
 }
 
-NativeViewAccessibility::~NativeViewAccessibility() {
-  if (ax_node_)
-    ax_node_->Destroy();
+NativeViewAccessibilityBase::~NativeViewAccessibilityBase() {
+  ax_node_->Destroy();
   if (parent_widget_)
     parent_widget_->RemoveObserver(this);
 }
 
-gfx::NativeViewAccessible NativeViewAccessibility::GetNativeObject() {
-  return ax_node_ ? ax_node_->GetNativeViewAccessible() : nullptr;
+gfx::NativeViewAccessible NativeViewAccessibilityBase::GetNativeObject() {
+  return ax_node_->GetNativeViewAccessible();
 }
 
-void NativeViewAccessibility::NotifyAccessibilityEvent(ui::AXEvent event_type) {
-  if (ax_node_)
-    ax_node_->NotifyAccessibilityEvent(event_type);
+void NativeViewAccessibilityBase::NotifyAccessibilityEvent(
+    ui::AXEvent event_type) {
+  ax_node_->NotifyAccessibilityEvent(event_type);
 }
 
-bool NativeViewAccessibility::SetFocused(bool focused) {
+bool NativeViewAccessibilityBase::SetFocused(bool focused) {
   if (!ui::AXNodeData::IsFlagSet(GetData().state, ui::AX_STATE_FOCUSABLE))
     return false;
 
@@ -60,7 +49,7 @@ bool NativeViewAccessibility::SetFocused(bool focused) {
 
 // ui::AXPlatformNodeDelegate
 
-const ui::AXNodeData& NativeViewAccessibility::GetData() {
+const ui::AXNodeData& NativeViewAccessibilityBase::GetData() {
   data_ = ui::AXNodeData();
   data_.state = 0;
 
@@ -91,7 +80,7 @@ const ui::AXNodeData& NativeViewAccessibility::GetData() {
   return data_;
 }
 
-int NativeViewAccessibility::GetChildCount() {
+int NativeViewAccessibilityBase::GetChildCount() {
   int child_count = view_->child_count();
 
   std::vector<Widget*> child_widgets;
@@ -101,7 +90,7 @@ int NativeViewAccessibility::GetChildCount() {
   return child_count;
 }
 
-gfx::NativeViewAccessible NativeViewAccessibility::ChildAtIndex(int index) {
+gfx::NativeViewAccessible NativeViewAccessibilityBase::ChildAtIndex(int index) {
   // If this is a root view, our widget might have child widgets. Include
   std::vector<Widget*> child_widgets;
   PopulateChildWidgetVector(&child_widgets);
@@ -117,13 +106,13 @@ gfx::NativeViewAccessible NativeViewAccessibility::ChildAtIndex(int index) {
   return nullptr;
 }
 
-gfx::NativeWindow NativeViewAccessibility::GetTopLevelWidget() {
+gfx::NativeWindow NativeViewAccessibilityBase::GetTopLevelWidget() {
   if (view_->GetWidget())
     return view_->GetWidget()->GetTopLevelWidget()->GetNativeWindow();
   return nullptr;
 }
 
-gfx::NativeViewAccessible NativeViewAccessibility::GetParent() {
+gfx::NativeViewAccessible NativeViewAccessibilityBase::GetParent() {
   if (view_->parent())
     return view_->parent()->GetNativeViewAccessible();
 
@@ -133,11 +122,12 @@ gfx::NativeViewAccessible NativeViewAccessibility::GetParent() {
   return nullptr;
 }
 
-gfx::Vector2d NativeViewAccessibility::GetGlobalCoordinateOffset() {
+gfx::Vector2d NativeViewAccessibilityBase::GetGlobalCoordinateOffset() {
   return gfx::Vector2d(0, 0);  // location is already in screen coordinates.
 }
 
-gfx::NativeViewAccessible NativeViewAccessibility::HitTestSync(int x, int y) {
+gfx::NativeViewAccessible NativeViewAccessibilityBase::HitTestSync(int x,
+                                                                   int y) {
   if (!view_ || !view_->GetWidget())
     return nullptr;
 
@@ -175,7 +165,7 @@ gfx::NativeViewAccessible NativeViewAccessibility::HitTestSync(int x, int y) {
   return GetNativeObject();
 }
 
-gfx::NativeViewAccessible NativeViewAccessibility::GetFocus() {
+gfx::NativeViewAccessible NativeViewAccessibilityBase::GetFocus() {
   FocusManager* focus_manager = view_->GetFocusManager();
   View* focused_view =
       focus_manager ? focus_manager->GetFocusedView() : nullptr;
@@ -183,11 +173,11 @@ gfx::NativeViewAccessible NativeViewAccessibility::GetFocus() {
 }
 
 gfx::AcceleratedWidget
-NativeViewAccessibility::GetTargetForNativeAccessibilityEvent() {
+NativeViewAccessibilityBase::GetTargetForNativeAccessibilityEvent() {
   return gfx::kNullAcceleratedWidget;
 }
 
-bool NativeViewAccessibility::AccessibilityPerformAction(
+bool NativeViewAccessibilityBase::AccessibilityPerformAction(
     const ui::AXActionData& data) {
   switch (data.action) {
     // Handle accessible actions that apply to all Views here.
@@ -211,37 +201,31 @@ bool NativeViewAccessibility::AccessibilityPerformAction(
   return false;
 }
 
-void NativeViewAccessibility::DoDefaultAction() {
+void NativeViewAccessibilityBase::DoDefaultAction() {
   gfx::Point center = view_->GetLocalBounds().CenterPoint();
-  view_->OnMousePressed(ui::MouseEvent(ui::ET_MOUSE_PRESSED,
-                                       center,
-                                       center,
-                                       ui::EventTimeForNow(),
-                                       ui::EF_LEFT_MOUSE_BUTTON,
-                                       ui::EF_LEFT_MOUSE_BUTTON));
-  view_->OnMouseReleased(ui::MouseEvent(ui::ET_MOUSE_RELEASED,
-                                        center,
-                                        center,
-                                        ui::EventTimeForNow(),
-                                        ui::EF_LEFT_MOUSE_BUTTON,
-                                        ui::EF_LEFT_MOUSE_BUTTON));
+  view_->OnMousePressed(ui::MouseEvent(
+      ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
+      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+  view_->OnMouseReleased(ui::MouseEvent(
+      ui::ET_MOUSE_RELEASED, center, center, ui::EventTimeForNow(),
+      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
 }
 
-void NativeViewAccessibility::OnWidgetDestroying(Widget* widget) {
+void NativeViewAccessibilityBase::OnWidgetDestroying(Widget* widget) {
   if (parent_widget_ == widget) {
     parent_widget_->RemoveObserver(this);
     parent_widget_ = nullptr;
   }
 }
 
-void NativeViewAccessibility::SetParentWidget(Widget* parent_widget) {
+void NativeViewAccessibilityBase::SetParentWidget(Widget* parent_widget) {
   if (parent_widget_)
     parent_widget_->RemoveObserver(this);
   parent_widget_ = parent_widget;
   parent_widget_->AddObserver(this);
 }
 
-void NativeViewAccessibility::PopulateChildWidgetVector(
+void NativeViewAccessibilityBase::PopulateChildWidgetVector(
     std::vector<Widget*>* result_child_widgets) {
   // Only attach child widgets to the root view.
   Widget* widget = view_->GetWidget();
@@ -267,8 +251,8 @@ void NativeViewAccessibility::PopulateChildWidgetVector(
     ui::AXPlatformNode* child_widget_platform_node =
         ui::AXPlatformNode::FromNativeViewAccessible(child_widget_accessible);
     if (child_widget_platform_node) {
-      NativeViewAccessibility* child_widget_view_accessibility =
-          static_cast<NativeViewAccessibility*>(
+      NativeViewAccessibilityBase* child_widget_view_accessibility =
+          static_cast<NativeViewAccessibilityBase*>(
               child_widget_platform_node->GetDelegate());
       if (child_widget_view_accessibility->parent_widget() != widget)
         child_widget_view_accessibility->SetParentWidget(widget);
