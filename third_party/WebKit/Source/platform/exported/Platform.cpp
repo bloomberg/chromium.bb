@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "public/platform/Platform.h"
+
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "platform/Histogram.h"
@@ -37,8 +39,8 @@
 #include "platform/heap/BlinkGCMemoryDumpProvider.h"
 #include "platform/heap/GCTaskRunner.h"
 #include "platform/instrumentation/tracing/MemoryCacheDumpProvider.h"
+#include "public/platform/Connector.h"
 #include "public/platform/InterfaceProvider.h"
-#include "public/platform/Platform.h"
 #include "public/platform/WebPrerenderingSupport.h"
 #include "wtf/HashMap.h"
 
@@ -118,11 +120,12 @@ WebThread* Platform::mainThread() const {
   return m_mainThread;
 }
 
+Connector* Platform::connector() {
+  return Connector::getEmptyConnector();
+}
+
 InterfaceProvider* Platform::interfaceProvider() {
   return InterfaceProvider::getEmptyInterfaceProvider();
 }
-
-void Platform::bindServiceConnector(
-    mojo::ScopedMessagePipeHandle remoteHandle) {}
 
 }  // namespace blink

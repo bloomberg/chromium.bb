@@ -71,6 +71,7 @@ class Local;
 
 namespace blink {
 
+class Connector;
 class InterfaceProvider;
 class WebAudioBus;
 class WebAudioLatencyHint;
@@ -599,16 +600,9 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Mojo ---------------------------------------------------------------
 
-  virtual InterfaceProvider* interfaceProvider();
+  virtual Connector* connector();
 
-  // Sets up a connection to the ServiceManager by binding |remoteHandle| to a
-  // remote implementation of
-  // //service_manager/public/interfaces/connector.mojom. Using this connection
-  // the caller can then request connections to other services.
-  // NOTE: This handle is not strongly typed because neither the Blink nor
-  // Chromium types generated from connector.mojom should leak across the
-  // Blink-Chromium boundary.
-  virtual void bindServiceConnector(mojo::ScopedMessagePipeHandle remoteHandle);
+  virtual InterfaceProvider* interfaceProvider();
 
   // Platform events -----------------------------------------------------
   // Device Orientation, Device Motion, Device Light, Battery, Gamepad.

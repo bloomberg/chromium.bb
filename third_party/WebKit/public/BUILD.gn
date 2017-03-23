@@ -89,6 +89,7 @@ if (is_android) {
 # and public structures without actually linking against any Blink libraries.
 source_set("blink_headers") {
   sources = [
+    "platform/Connector.h",
     "platform/FilePathConversion.h",
     "platform/InterfaceProvider.h",
     "platform/Platform.h",

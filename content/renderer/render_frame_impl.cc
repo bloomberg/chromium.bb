@@ -121,6 +121,8 @@
 #include "content/renderer/media/user_media_client_impl.h"
 #include "content/renderer/media/web_media_element_source_utils.h"
 #include "content/renderer/media/webmediaplayer_ms.h"
+#include "content/renderer/mojo/blink_connector_impl.h"
+#include "content/renderer/mojo/blink_connector_js_wrapper.h"
 #include "content/renderer/mojo/blink_interface_registry_impl.h"
 #include "content/renderer/mojo/interface_provider_js_wrapper.h"
 #include "content/renderer/mojo_bindings_controller.h"
@@ -134,6 +136,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
+#include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/renderer_webapplicationcachehost_impl.h"
 #include "content/renderer/renderer_webcolorchooser_impl.h"
 #include "content/renderer/savable_resources.h"
@@ -2650,6 +2653,12 @@ void RenderFrameImpl::EnsureMojoBuiltinsAreAvailable(
       isolate, InterfaceProviderJsWrapper::kPerProcessModuleName,
       InterfaceProviderJsWrapper::Create(isolate, context,
                                          RenderThread::Get()->GetConnector())
+          .ToV8());
+  registry->AddBuiltinModule(
+      isolate, BlinkConnectorJsWrapper::kModuleName,
+      BlinkConnectorJsWrapper::Create(
+          isolate, context,
+          RenderThreadImpl::current()->blink_platform_impl()->connector())
           .ToV8());
 }
 

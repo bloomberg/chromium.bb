@@ -27,34 +27,40 @@ let define = (function(){
   }
 })();
 
-define('Mojo Helpers', [
-    'mojo/public/js/core',
-    'mojo/public/js/router',
-    'mojo/public/js/support',
-    'content/public/renderer/frame_interfaces',
-    'content/public/renderer/interfaces',
-    'content/shell/renderer/layout_test/frame_interface_registry',
-    'content/shell/renderer/layout_test/interface_registry',
-], (core, router, support, frameInterfaces, interfaces, frameInterfaceRegistry,
-    interfaceRegistry) => {
-  let tearDown = () => {
-    frameInterfaces.clearInterfaceOverridesForTesting();
-    interfaces.clearInterfaceOverridesForTesting();
-  };
-  addEventListener('unload', tearDown);
-  if (window.add_completion_callback)
-    add_completion_callback(tearDown);
+define(
+    'Mojo Helpers',
+    [
+      'mojo/public/js/core',
+      'mojo/public/js/router',
+      'mojo/public/js/support',
+      'content/public/renderer/connector',
+      'content/public/renderer/frame_interfaces',
+      'content/public/renderer/interfaces',
+      'content/shell/renderer/layout_test/frame_interface_registry',
+      'content/shell/renderer/layout_test/interface_registry',
+    ],
+    (core, router, support, connector, frameInterfaces, interfaces,
+     frameInterfaceRegistry, interfaceRegistry) => {
+      let tearDown = () => {
+        connector.clearInterfaceOverridesForTesting();
+        frameInterfaces.clearInterfaceOverridesForTesting();
+        interfaces.clearInterfaceOverridesForTesting();
+      };
+      addEventListener('unload', tearDown);
+      if (window.add_completion_callback)
+        add_completion_callback(tearDown);
 
-  return {
-    core,
-    router,
-    support,
-    frameInterfaces,
-    frameInterfaceRegistry,
-    interfaces,
-    interfaceRegistry,
-  };
-});
+      return {
+          core,
+          router,
+          support,
+          connector,
+          frameInterfaces,
+          frameInterfaceRegistry,
+          interfaces,
+          interfaceRegistry,
+      };
+    });
 
 // Returns a promise to an object that exposes common Mojo module interfaces.
 // Additional modules to load can be specified in the |modules| parameter. The

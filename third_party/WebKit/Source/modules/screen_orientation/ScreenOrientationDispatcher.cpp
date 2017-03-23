@@ -4,7 +4,7 @@
 
 #include "modules/screen_orientation/ScreenOrientationDispatcher.h"
 
-#include "platform/ServiceConnector.h"
+#include "public/platform/Connector.h"
 #include "public/platform/Platform.h"
 #include "services/device/public/interfaces/constants.mojom-blink.h"
 
@@ -29,7 +29,7 @@ DEFINE_TRACE(ScreenOrientationDispatcher) {
 void ScreenOrientationDispatcher::startListening() {
   DCHECK(!m_listener);
 
-  ServiceConnector::instance().connectToInterface(
+  Platform::current()->connector()->bindInterface(
       device::mojom::blink::kServiceName, mojo::MakeRequest(&m_listener));
   m_listener->Start();
 }

@@ -75,9 +75,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
   size_t actualMemoryUsageMB() override;
   size_t numberOfProcessors() override;
 
-  void bindServiceConnector(
-      mojo::ScopedMessagePipeHandle remote_handle) override;
-
   size_t maxDecodedImageBytes() override;
   uint32_t getUniqueIdForProcess() override;
   blink::WebString userAgent() override;

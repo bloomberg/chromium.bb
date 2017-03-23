@@ -19,6 +19,7 @@
 #include "content/child/child_shared_bitmap_manager.h"
 #include "content/common/content_export.h"
 #include "content/common/url_loader_factory.mojom.h"
+#include "content/renderer/mojo/blink_connector_impl.h"
 #include "content/renderer/origin_trials/web_trial_token_validator_impl.h"
 #include "content/renderer/top_level_blame_context.h"
 #include "content/renderer/webpublicsuffixlist_impl.h"
@@ -52,6 +53,7 @@ class Connector;
 }
 
 namespace content {
+class BlinkConnectorImpl;
 class BlinkInterfaceProviderImpl;
 class LocalStorageCachedAreas;
 class PlatformEventObserverBase;
@@ -185,6 +187,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       const blink::WebSize& size) override;
   blink::WebCompositorSupport* compositorSupport() override;
   blink::WebString convertIDNToUnicode(const blink::WebString& host) override;
+  BlinkConnectorImpl* connector() override;
   blink::InterfaceProvider* interfaceProvider() override;
   void startListening(blink::WebPlatformEventType,
                       blink::WebPlatformEventListener*) override;
@@ -296,6 +299,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   WebTrialTokenValidatorImpl trial_token_validator_;
 
   std::unique_ptr<LocalStorageCachedAreas> local_storage_cached_areas_;
+
+  std::unique_ptr<BlinkConnectorImpl> blink_connector_;
 
   std::unique_ptr<BlinkInterfaceProviderImpl> blink_interface_provider_;
 
