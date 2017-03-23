@@ -5,11 +5,15 @@
 #import "ios/chrome/browser/content_suggestions/content_suggestions_coordinator.h"
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/remote/remote_suggestions_scheduler.h"
+#include "components/reading_list/core/reading_list_model.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_mediator.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
+#include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_article_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
@@ -135,6 +139,7 @@
 
   __weak ContentSuggestionsCoordinator* weakSelf = self;
   GURL articleURL = articleItem.articleURL;
+  NSString* articleTitle = articleItem.title;
   __weak ContentSuggestionsArticleItem* weakArticle = articleItem;
 
   NSString* openInNewTabTitle =
@@ -154,6 +159,28 @@
                 action:^{
                   // TODO(crbug.com/691979): Add metrics.
                   [weakSelf openNewTabWithURL:articleURL incognito:YES];
+                }
+                 style:UIAlertActionStyleDefault];
+
+  NSString* readLaterTitle =
+      l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_ADDTOREADINGLIST);
+  [self.alertCoordinator
+      addItemWithTitle:readLaterTitle
+                action:^{
+                  ContentSuggestionsCoordinator* strongSelf = weakSelf;
+                  if (!strongSelf)
+                    return;
+
+                  base::RecordAction(
+                      base::UserMetricsAction("MobileReadingListAdd"));
+                  // TODO(crbug.com/691979): Add metrics.
+
+                  ReadingListModel* readingModel =
+                      ReadingListModelFactory::GetForBrowserState(
+                          strongSelf.browserState);
+                  readingModel->AddEntry(articleURL,
+                                         base::SysNSStringToUTF8(articleTitle),
+                                         reading_list::ADDED_VIA_CURRENT_APP);
                 }
                  style:UIAlertActionStyleDefault];
 

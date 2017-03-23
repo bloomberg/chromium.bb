@@ -17,9 +17,11 @@ source_set("content_suggestions") {
   deps = [
     "//base",
     "//components/ntp_snippets",
+    "//components/reading_list/core",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/ntp_snippets",
+    "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/content_suggestions",
