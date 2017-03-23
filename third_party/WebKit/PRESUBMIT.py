@@ -14,10 +14,7 @@ import sys
 
 
 _EXCLUDED_PATHS = (
-    # LayoutTests/imported is excluded because these files are automatically
-    # imported, so we do not have direct control over their content.
-    r'^third_party[\\\/]WebKit[\\\/]LayoutTests[\\\/]imported[\\\/].*',
-    # Also created and imported via a script:
+    # This directory is created and updated via a script.
     r'^third_party[\\\/]WebKit[\\\/]Tools[\\\/]Scripts[\\\/]webkitpy[\\\/]thirdparty[\\\/]wpt[\\\/]wpt[\\\/].*',
 )
 
