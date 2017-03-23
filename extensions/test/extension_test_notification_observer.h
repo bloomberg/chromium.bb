@@ -46,7 +46,8 @@ class ExtensionTestNotificationObserver : public content::NotificationObserver {
   // crashed.
   bool WaitForExtensionCrash(const std::string& extension_id);
 
-  // Wait for the crx installer to be done. Returns true if it really is done.
+  // Wait for the crx installer to be done. Returns true if it has finished
+  // successfully.
   bool WaitForCrxInstallerDone();
 
   // Watch for the given event type from the given source.

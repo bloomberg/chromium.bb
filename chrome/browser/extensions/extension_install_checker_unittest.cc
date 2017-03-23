@@ -18,10 +18,6 @@ const BlacklistState kBlacklistStateError = BLACKLISTED_MALWARE;
 const char kDummyRequirementsError[] = "Requirements error";
 const char kDummyPolicyError[] = "Cannot install extension";
 
-const char kDummyPolicyError2[] = "Another policy error";
-const char kDummyRequirementsError2[] = "Another requirements error";
-const BlacklistState kBlacklistState2 = BLACKLISTED_SECURITY_VULNERABILITY;
-
 }  // namespace
 
 // Stubs most of the checks since we are interested in validating the logic in
@@ -29,8 +25,8 @@ const BlacklistState kBlacklistState2 = BLACKLISTED_SECURITY_VULNERABILITY;
 // checks.
 class ExtensionInstallCheckerForTest : public ExtensionInstallChecker {
  public:
-  ExtensionInstallCheckerForTest()
-      : ExtensionInstallChecker(NULL),
+  ExtensionInstallCheckerForTest(int enabled_checks, bool fail_fast)
+      : ExtensionInstallChecker(nullptr, nullptr, enabled_checks, fail_fast),
         requirements_check_called_(false),
         blacklist_check_called_(false),
         policy_check_called_(false),
@@ -50,21 +46,25 @@ class ExtensionInstallCheckerForTest : public ExtensionInstallChecker {
   bool blacklist_check_called() const { return blacklist_check_called_; }
   bool policy_check_called() const { return policy_check_called_; }
 
-  void MockCheckRequirements(int sequence_number) {
+  void MockCheckRequirements() {
+    if (!is_running())
+      return;
     std::vector<std::string> errors;
     if (!requirements_error_.empty())
       errors.push_back(requirements_error_);
-    OnRequirementsCheckDone(sequence_number, errors);
+    OnRequirementsCheckDone(errors);
   }
 
-  void MockCheckBlacklistState(int sequence_number) {
-    OnBlacklistStateCheckDone(sequence_number, blacklist_state_);
+  void MockCheckBlacklistState() {
+    if (!is_running())
+      return;
+    OnBlacklistStateCheckDone(blacklist_state_);
   }
 
  protected:
   void CheckRequirements() override {
     requirements_check_called_ = true;
-    MockCheckRequirements(current_sequence_number());
+    MockCheckRequirements();
   }
 
   void CheckManagementPolicy() override {
@@ -75,15 +75,7 @@ class ExtensionInstallCheckerForTest : public ExtensionInstallChecker {
 
   void CheckBlacklistState() override {
     blacklist_check_called_ = true;
-    MockCheckBlacklistState(current_sequence_number());
-  }
-
-  void ResetResults() override {
-    ExtensionInstallChecker::ResetResults();
-
-    requirements_check_called_ = false;
-    blacklist_check_called_ = false;
-    policy_check_called_ = false;
+    MockCheckBlacklistState();
   }
 
   bool requirements_check_called_;
@@ -99,6 +91,10 @@ class ExtensionInstallCheckerForTest : public ExtensionInstallChecker {
 // This class implements asynchronous mocks of the requirements and blacklist
 // checks.
 class ExtensionInstallCheckerAsync : public ExtensionInstallCheckerForTest {
+ public:
+  ExtensionInstallCheckerAsync(int enabled_checks, bool fail_fast)
+      : ExtensionInstallCheckerForTest(enabled_checks, fail_fast) {}
+
  protected:
   void CheckRequirements() override {
     requirements_check_called_ = true;
@@ -106,7 +102,7 @@ class ExtensionInstallCheckerAsync : public ExtensionInstallCheckerForTest {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&ExtensionInstallCheckerForTest::MockCheckRequirements,
-                   base::Unretained(this), current_sequence_number()));
+                   base::Unretained(this)));
   }
 
   void CheckBlacklistState() override {
@@ -115,7 +111,7 @@ class ExtensionInstallCheckerAsync : public ExtensionInstallCheckerForTest {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&ExtensionInstallCheckerForTest::MockCheckBlacklistState,
-                   base::Unretained(this), current_sequence_number()));
+                   base::Unretained(this)));
   }
 };
 
@@ -147,40 +143,6 @@ class ExtensionInstallCheckerTest : public testing::Test {
  public:
   ExtensionInstallCheckerTest() {}
   ~ExtensionInstallCheckerTest() override {}
-
-  void RunSecondInvocation(ExtensionInstallCheckerForTest* checker,
-                           int checks_failed) {
-    EXPECT_GT(checks_failed, 0);
-    EXPECT_FALSE(checker->is_running());
-    ValidateExpectedCalls(ExtensionInstallChecker::CHECK_ALL, *checker);
-
-    // Set up different return values.
-    checker->set_blacklist_state(kBlacklistState2);
-    checker->set_policy_check_error(kDummyPolicyError2);
-    checker->set_requirements_error(kDummyRequirementsError2);
-
-    // Run the install checker again and ensure the second set of return values
-    // is received.
-    checker->Start(
-        ExtensionInstallChecker::CHECK_ALL,
-        false /* fail fast */,
-        base::Bind(&ExtensionInstallCheckerTest::ValidateSecondInvocation,
-                   base::Unretained(this),
-                   checker));
-  }
-
-  void ValidateSecondInvocation(ExtensionInstallCheckerForTest* checker,
-                                int checks_failed) {
-    EXPECT_FALSE(checker->is_running());
-    EXPECT_EQ(ExtensionInstallChecker::CHECK_REQUIREMENTS |
-                  ExtensionInstallChecker::CHECK_MANAGEMENT_POLICY,
-              checks_failed);
-    ValidateExpectedCalls(ExtensionInstallChecker::CHECK_ALL, *checker);
-
-    EXPECT_EQ(kBlacklistState2, checker->blacklist_state());
-    ExpectPolicyError(kDummyPolicyError2, *checker);
-    ExpectRequirementsError(kDummyRequirementsError2, *checker);
-  }
 
  protected:
   void SetAllErrors(ExtensionInstallCheckerForTest* checker) {
@@ -242,14 +204,10 @@ class ExtensionInstallCheckerTest : public testing::Test {
   }
 
   void RunChecker(ExtensionInstallCheckerForTest* checker,
-                  bool fail_fast,
-                  int checks_to_run,
                   int expected_checks_run,
                   int expected_result) {
     CheckObserver observer;
-    checker->Start(checks_to_run,
-                   fail_fast,
-                   base::Bind(&CheckObserver::OnChecksComplete,
+    checker->Start(base::Bind(&CheckObserver::OnChecksComplete,
                               base::Unretained(&observer)));
     observer.Wait();
 
@@ -261,8 +219,6 @@ class ExtensionInstallCheckerTest : public testing::Test {
 
   void DoRunAllChecksPass(ExtensionInstallCheckerForTest* checker) {
     RunChecker(checker,
-               false /* fail fast */,
-               ExtensionInstallChecker::CHECK_ALL,
                ExtensionInstallChecker::CHECK_ALL,
                0);
 
@@ -274,8 +230,6 @@ class ExtensionInstallCheckerTest : public testing::Test {
   void DoRunAllChecksFail(ExtensionInstallCheckerForTest* checker) {
     SetAllErrors(checker);
     RunChecker(checker,
-               false /* fail fast */,
-               ExtensionInstallChecker::CHECK_ALL,
                ExtensionInstallChecker::CHECK_ALL,
                ExtensionInstallChecker::CHECK_ALL);
 
@@ -284,35 +238,34 @@ class ExtensionInstallCheckerTest : public testing::Test {
     ExpectBlacklistError(*checker);
   }
 
-  void DoRunSubsetOfChecks(ExtensionInstallCheckerForTest* checker) {
-    // Test check set 1.
-    int tests_to_run = ExtensionInstallChecker::CHECK_MANAGEMENT_POLICY |
-                       ExtensionInstallChecker::CHECK_REQUIREMENTS;
-    SetAllErrors(checker);
-    RunChecker(checker, false, tests_to_run, tests_to_run, tests_to_run);
+  void DoRunSubsetOfChecks(int checks_to_run) {
+    ExtensionInstallCheckerForTest sync_checker(checks_to_run,
+                                                /*fail_fast=*/false);
+    ExtensionInstallCheckerAsync async_checker(checks_to_run,
+                                               /*fail_fast=*/false);
+    ExtensionInstallCheckerForTest* checkers[] = {
+        &sync_checker, &async_checker,
+    };
 
-    ExpectRequirementsError(*checker);
-    ExpectPolicyError(*checker);
-    ExpectBlacklistPass(*checker);
+    for (auto* checker : checkers) {
+      SetAllErrors(checker);
+      RunChecker(checker, checks_to_run, checks_to_run);
 
-    // Test check set 2.
-    tests_to_run = ExtensionInstallChecker::CHECK_BLACKLIST |
-                   ExtensionInstallChecker::CHECK_REQUIREMENTS;
-    SetAllErrors(checker);
-    RunChecker(checker, false, tests_to_run, tests_to_run, tests_to_run);
+      if (checks_to_run & ExtensionInstallChecker::CHECK_REQUIREMENTS)
+        ExpectRequirementsError(*checker);
+      else
+        ExpectRequirementsPass(*checker);
 
-    ExpectRequirementsError(*checker);
-    ExpectPolicyPass(*checker);
-    ExpectBlacklistError(*checker);
+      if (checks_to_run & ExtensionInstallChecker::CHECK_MANAGEMENT_POLICY)
+        ExpectPolicyError(*checker);
+      else
+        ExpectPolicyPass(*checker);
 
-    // Test a single check.
-    tests_to_run = ExtensionInstallChecker::CHECK_BLACKLIST;
-    SetAllErrors(checker);
-    RunChecker(checker, false, tests_to_run, tests_to_run, tests_to_run);
-
-    ExpectRequirementsPass(*checker);
-    ExpectPolicyPass(*checker);
-    ExpectBlacklistError(*checker);
+      if (checks_to_run & ExtensionInstallChecker::CHECK_BLACKLIST)
+        ExpectBlacklistError(*checker);
+      else
+        ExpectBlacklistPass(*checker);
+    }
   }
 
  private:
@@ -320,108 +273,66 @@ class ExtensionInstallCheckerTest : public testing::Test {
   base::MessageLoop message_loop;
 };
 
-class ExtensionInstallCheckerMultipleInvocationTest
-    : public ExtensionInstallCheckerTest {
- public:
-  ExtensionInstallCheckerMultipleInvocationTest() : callback_count_(0) {}
-  ~ExtensionInstallCheckerMultipleInvocationTest() override {}
-
-  void RunSecondInvocation(ExtensionInstallCheckerForTest* checker,
-                           int checks_failed) {
-    ASSERT_EQ(0, callback_count_);
-    ++callback_count_;
-    EXPECT_FALSE(checker->is_running());
-    EXPECT_GT(checks_failed, 0);
-    ValidateExpectedCalls(ExtensionInstallChecker::CHECK_ALL, *checker);
-
-    // Set up different return values.
-    checker->set_blacklist_state(kBlacklistState2);
-    checker->set_policy_check_error(kDummyPolicyError2);
-    checker->set_requirements_error(kDummyRequirementsError2);
-
-    // Run the install checker again and ensure the second set of return values
-    // is received.
-    checker->Start(ExtensionInstallChecker::CHECK_ALL,
-                   false /* fail fast */,
-                   base::Bind(&ExtensionInstallCheckerMultipleInvocationTest::
-                                  ValidateSecondInvocation,
-                              base::Unretained(this),
-                              checker));
-  }
-
-  void ValidateSecondInvocation(ExtensionInstallCheckerForTest* checker,
-                                int checks_failed) {
-    ASSERT_EQ(1, callback_count_);
-    EXPECT_FALSE(checker->is_running());
-    EXPECT_EQ(ExtensionInstallChecker::CHECK_REQUIREMENTS |
-                  ExtensionInstallChecker::CHECK_MANAGEMENT_POLICY,
-              checks_failed);
-    ValidateExpectedCalls(ExtensionInstallChecker::CHECK_ALL, *checker);
-
-    EXPECT_EQ(kBlacklistState2, checker->blacklist_state());
-    ExpectPolicyError(kDummyPolicyError2, *checker);
-    ExpectRequirementsError(kDummyRequirementsError2, *checker);
-  }
-
- private:
-  int callback_count_;
-};
-
 // Test the case where all tests pass.
 TEST_F(ExtensionInstallCheckerTest, AllSucceeded) {
-  ExtensionInstallCheckerForTest sync_checker;
+  ExtensionInstallCheckerForTest sync_checker(
+      ExtensionInstallChecker::CHECK_ALL, /*fail_fast=*/false);
   DoRunAllChecksPass(&sync_checker);
 
-  ExtensionInstallCheckerAsync async_checker;
+  ExtensionInstallCheckerAsync async_checker(ExtensionInstallChecker::CHECK_ALL,
+                                             /*fail_fast=*/false);
   DoRunAllChecksPass(&async_checker);
 }
 
 // Test the case where all tests fail.
 TEST_F(ExtensionInstallCheckerTest, AllFailed) {
-  ExtensionInstallCheckerForTest sync_checker;
+  ExtensionInstallCheckerForTest sync_checker(
+      ExtensionInstallChecker::CHECK_ALL, /*fail_fast=*/false);
   DoRunAllChecksFail(&sync_checker);
 
-  ExtensionInstallCheckerAsync async_checker;
+  ExtensionInstallCheckerAsync async_checker(ExtensionInstallChecker::CHECK_ALL,
+                                             /*fail_fast=*/false);
   DoRunAllChecksFail(&async_checker);
 }
 
 // Test running only a subset of tests.
 TEST_F(ExtensionInstallCheckerTest, RunSubsetOfChecks) {
-  ExtensionInstallCheckerForTest sync_checker;
-  ExtensionInstallCheckerAsync async_checker;
-  DoRunSubsetOfChecks(&sync_checker);
-  DoRunSubsetOfChecks(&async_checker);
+  DoRunSubsetOfChecks(ExtensionInstallChecker::CHECK_MANAGEMENT_POLICY |
+                      ExtensionInstallChecker::CHECK_REQUIREMENTS);
+  DoRunSubsetOfChecks(ExtensionInstallChecker::CHECK_BLACKLIST |
+                      ExtensionInstallChecker::CHECK_REQUIREMENTS);
+  DoRunSubsetOfChecks(ExtensionInstallChecker::CHECK_BLACKLIST);
 }
 
 // Test fail fast with synchronous callbacks.
 TEST_F(ExtensionInstallCheckerTest, FailFastSync) {
   // This test assumes some internal knowledge of the implementation - that
   // the policy check runs first.
-  ExtensionInstallCheckerForTest checker;
-  SetAllErrors(&checker);
-  RunChecker(&checker,
-             true /* fail fast */,
-             ExtensionInstallChecker::CHECK_ALL,
-             ExtensionInstallChecker::CHECK_MANAGEMENT_POLICY,
-             ExtensionInstallChecker::CHECK_MANAGEMENT_POLICY);
+  {
+    ExtensionInstallCheckerForTest checker(ExtensionInstallChecker::CHECK_ALL,
+                                           /*fail_fast=*/true);
+    SetAllErrors(&checker);
+    RunChecker(&checker, ExtensionInstallChecker::CHECK_MANAGEMENT_POLICY,
+               ExtensionInstallChecker::CHECK_MANAGEMENT_POLICY);
 
-  ExpectRequirementsPass(checker);
-  ExpectPolicyError(checker);
-  ExpectBlacklistPass(checker);
+    ExpectRequirementsPass(checker);
+    ExpectPolicyError(checker);
+    ExpectBlacklistPass(checker);
+  }
 
-  // This test assumes some internal knowledge of the implementation - that
-  // the requirements check runs before the blacklist check.
-  SetAllErrors(&checker);
-  RunChecker(&checker,
-             true /* fail fast */,
-             ExtensionInstallChecker::CHECK_REQUIREMENTS |
-                 ExtensionInstallChecker::CHECK_BLACKLIST,
-             ExtensionInstallChecker::CHECK_REQUIREMENTS,
-             ExtensionInstallChecker::CHECK_REQUIREMENTS);
+  {
+    ExtensionInstallCheckerForTest checker(
+        ExtensionInstallChecker::CHECK_REQUIREMENTS |
+            ExtensionInstallChecker::CHECK_BLACKLIST,
+        /*fail_fast=*/true);
+    SetAllErrors(&checker);
+    RunChecker(&checker, ExtensionInstallChecker::CHECK_REQUIREMENTS,
+               ExtensionInstallChecker::CHECK_REQUIREMENTS);
 
-  ExpectRequirementsError(checker);
-  ExpectPolicyPass(checker);
-  ExpectBlacklistPass(checker);
+    ExpectRequirementsError(checker);
+    ExpectPolicyPass(checker);
+    ExpectBlacklistPass(checker);
+  }
 }
 
 // Test fail fast with asynchronous callbacks.
@@ -430,7 +341,9 @@ TEST_F(ExtensionInstallCheckerTest, FailFastAsync) {
   // the requirements check runs before the blacklist check. Both checks should
   // be called, but the requirements check callback arrives first and the
   // blacklist result will be discarded.
-  ExtensionInstallCheckerAsync checker;
+  ExtensionInstallCheckerAsync checker(ExtensionInstallChecker::CHECK_ALL,
+                                       /*fail_fast=*/true);
+
   SetAllErrors(&checker);
 
   // The policy check is synchronous and needs to pass for the other tests to
@@ -438,51 +351,12 @@ TEST_F(ExtensionInstallCheckerTest, FailFastAsync) {
   checker.set_policy_check_error(std::string());
 
   RunChecker(&checker,
-             true /* fail fast */,
-             ExtensionInstallChecker::CHECK_ALL,
              ExtensionInstallChecker::CHECK_ALL,
              ExtensionInstallChecker::CHECK_REQUIREMENTS);
 
   ExpectRequirementsError(checker);
   ExpectPolicyPass(checker);
   ExpectBlacklistPass(checker);
-}
-
-// Test multiple invocations of the install checker. Wait for all checks to
-// complete.
-TEST_F(ExtensionInstallCheckerMultipleInvocationTest, CompleteAll) {
-  ExtensionInstallCheckerAsync checker;
-  SetAllErrors(&checker);
-
-  // Start the second check as soon as the callback of the first run is invoked.
-  checker.Start(
-      ExtensionInstallChecker::CHECK_ALL,
-      false /* fail fast */,
-      base::Bind(
-          &ExtensionInstallCheckerMultipleInvocationTest::RunSecondInvocation,
-          base::Unretained(this),
-          &checker));
-  base::RunLoop().RunUntilIdle();
-}
-
-// Test multiple invocations of the install checker and fail fast.
-TEST_F(ExtensionInstallCheckerMultipleInvocationTest, FailFast) {
-  ExtensionInstallCheckerAsync checker;
-  SetAllErrors(&checker);
-
-  // The policy check is synchronous and needs to pass for the other tests to
-  // run.
-  checker.set_policy_check_error(std::string());
-
-  // Start the second check as soon as the callback of the first run is invoked.
-  checker.Start(
-      ExtensionInstallChecker::CHECK_ALL,
-      true /* fail fast */,
-      base::Bind(
-          &ExtensionInstallCheckerMultipleInvocationTest::RunSecondInvocation,
-          base::Unretained(this),
-          &checker));
-  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace extensions

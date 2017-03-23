@@ -284,16 +284,6 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
         CreateWebAppInfo(kAppTitle, kAppDescription, kAppUrl, 64));
     EXPECT_TRUE(WaitForCrxInstallerDone());
     ASSERT_TRUE(crx_installer->extension());
-    ASSERT_FALSE(HasRequirementErrors(crx_installer.get()));
-    ASSERT_FALSE(HasPolicyErrors(crx_installer.get()));
-  }
-
-  bool HasRequirementErrors(CrxInstaller* crx_installer) {
-    return !crx_installer->install_checker_.requirement_errors().empty();
-  }
-
-  bool HasPolicyErrors(CrxInstaller* crx_installer) {
-    return !crx_installer->install_checker_.policy_error().empty();
   }
 };
 

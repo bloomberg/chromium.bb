@@ -14,13 +14,14 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/extensions/extension_install_checker.h"
 
 class ExtensionService;
+class Profile;
 
 namespace extensions {
 
 class Extension;
+class ExtensionInstallChecker;
 
 // Installs and loads an unpacked extension. Because internal state needs to be
 // held about the instalation process, only one call to Load*() should be made
@@ -117,14 +118,20 @@ class UnpackedInstaller
   // Helper to get the Extension::CreateFlags for the installing extension.
   int GetFlags();
 
-  const Extension* extension() { return install_checker_.extension().get(); }
+  const Extension* extension() { return extension_.get(); }
 
   // The service we will report results back to.
   base::WeakPtr<ExtensionService> service_weak_;
 
+  // The Profile the extension is being installed in.
+  Profile* profile_;
+
   // The pathname of the directory to load from, which is an absolute path
   // after GetAbsolutePath has been called.
   base::FilePath extension_path_;
+
+  // The extension being installed.
+  scoped_refptr<const Extension> extension_;
 
   // If true and the extension contains plugins, we prompt the user before
   // loading.
@@ -139,7 +146,7 @@ class UnpackedInstaller
 
   // Checks management policies and requirements before the extension can be
   // installed.
-  ExtensionInstallChecker install_checker_;
+  std::unique_ptr<ExtensionInstallChecker> install_checker_;
 
   CompletionCallback callback_;
 

@@ -263,7 +263,8 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
     return observer_->WaitForExtensionCrash(extension_id);
   }
 
-  // Wait for the crx installer to be done. Returns true if it really is done.
+  // Wait for the crx installer to be done. Returns true if it has finished
+  // successfully.
   bool WaitForCrxInstallerDone() {
     return observer_->WaitForCrxInstallerDone();
   }
