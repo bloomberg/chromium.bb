@@ -76,7 +76,7 @@ static int read_delta_qindex(AV1_COMMON *cm, MACROBLOCKD *xd, aom_reader *r,
   FRAME_CONTEXT *ec_ctx = cm->fc;
 #endif
 
-  if ((bsize != BLOCK_64X64 || mbmi->skip == 0) && read_delta_q_flag) {
+  if ((bsize != BLOCK_LARGEST || mbmi->skip == 0) && read_delta_q_flag) {
 #if !CONFIG_EC_MULTISYMBOL
     int bit = 1;
     abs = 0;
