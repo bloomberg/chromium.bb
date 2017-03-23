@@ -213,6 +213,14 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   // Otherwise, return the current file size.
   int64_t TotalBytesReceived() const;
 
+  // Helper method to handle stream error
+  void HandleStreamError(SourceStream* source_stream,
+                         DownloadInterruptReason reason);
+
+  // Given a SourceStream object, returns its neighbor that preceds it if
+  // SourceStreams are ordered by their offsets
+  SourceStream* FindPrecedingNeighbor(SourceStream* source_stream);
+
   net::NetLogWithSource net_log_;
 
   // The base file instance.

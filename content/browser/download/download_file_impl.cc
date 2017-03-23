@@ -404,18 +404,7 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream) {
 
   // Take care of communication with our observer.
   if (reason != DOWNLOAD_INTERRUPT_REASON_NONE) {
-    // Error case for both upstream source and file write.
-    // Shut down processing and signal an error to our observer.
-    // Our observer will clean us up.
-    source_stream->stream_reader()->RegisterCallback(base::Closure());
-    weak_factory_.InvalidateWeakPtrs();
-    SendUpdate();  // Make info up to date before error.
-    std::unique_ptr<crypto::SecureHash> hash_state = file_.Finish();
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&DownloadDestinationObserver::DestinationError, observer_,
-                   reason, TotalBytesReceived(), base::Passed(&hash_state)));
-    num_active_streams_--;
+    HandleStreamError(source_stream, reason);
   } else if (state == ByteStreamReader::STREAM_COMPLETE || should_terminate) {
     // Signal successful completion or termination of the current stream.
     source_stream->stream_reader()->RegisterCallback(base::Closure());
@@ -564,6 +553,88 @@ bool DownloadFileImpl::IsDownloadCompleted() {
   }
 
   return true;
+}
+
+void DownloadFileImpl::HandleStreamError(SourceStream* source_stream,
+                                         DownloadInterruptReason reason) {
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  source_stream->stream_reader()->RegisterCallback(base::Closure());
+  source_stream->set_finished(true);
+  num_active_streams_--;
+
+  bool can_recover_from_error = false;
+
+  if (is_sparse_file_) {
+    // If a neighboring stream request is available, check if it can help
+    // download all the data left by |source stream| or has already done so. We
+    // want to avoid the situation that a server always fail additional requests
+    // from the client thus causing the initial request and the download going
+    // nowhere.
+    // TODO(qinmin): make all streams half open so that they can recover
+    // failures from their neighbors.
+    SourceStream* preceding_neighbor = FindPrecedingNeighbor(source_stream);
+    while (preceding_neighbor) {
+      int64_t upper_range = source_stream->offset() + source_stream->length();
+      if ((!preceding_neighbor->is_finished() &&
+           (preceding_neighbor->length() ==
+                DownloadSaveInfo::kLengthFullContent ||
+            preceding_neighbor->offset() + preceding_neighbor->length() >=
+                upper_range)) ||
+          (preceding_neighbor->offset() + preceding_neighbor->bytes_written() >=
+           upper_range)) {
+        can_recover_from_error = true;
+        break;
+      }
+      // If the neighbor cannot recover the error and it has already created
+      // a slice, just interrupt the download.
+      if (preceding_neighbor->bytes_written() > 0)
+        break;
+      preceding_neighbor = FindPrecedingNeighbor(preceding_neighbor);
+    }
+
+    if (can_recover_from_error) {
+      // Since the neighbor stream will download all data downloading from its
+      // offset to source_stream->offset(). Close all other streams in the
+      // middle.
+      for (auto& stream : source_streams_) {
+        if (stream.second->offset() < source_stream->offset() &&
+            stream.second->offset() > preceding_neighbor->offset()) {
+          DCHECK_EQ(stream.second->bytes_written(), 0);
+          stream.second->stream_reader()->RegisterCallback(base::Closure());
+          stream.second->set_finished(true);
+          num_active_streams_--;
+        }
+      }
+    }
+  }
+
+  SendUpdate();  // Make info up to date before error.
+
+  if (!can_recover_from_error) {
+    // Error case for both upstream source and file write.
+    // Shut down processing and signal an error to our observer.
+    // Our observer will clean us up.
+    weak_factory_.InvalidateWeakPtrs();
+    std::unique_ptr<crypto::SecureHash> hash_state = file_.Finish();
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&DownloadDestinationObserver::DestinationError, observer_,
+                   reason, TotalBytesReceived(), base::Passed(&hash_state)));
+  }
+}
+
+DownloadFileImpl::SourceStream* DownloadFileImpl::FindPrecedingNeighbor(
+    SourceStream* source_stream) {
+  int64_t max_preceding_offset = 0;
+  SourceStream* ret = nullptr;
+  for (auto& stream : source_streams_) {
+    int64_t offset = stream.second->offset();
+    if (offset < source_stream->offset() && offset >= max_preceding_offset) {
+      ret = stream.second.get();
+      max_preceding_offset = offset;
+    }
+  }
+  return ret;
 }
 
 DownloadFileImpl::RenameParameters::RenameParameters(
