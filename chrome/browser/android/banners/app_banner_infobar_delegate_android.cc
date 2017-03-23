@@ -55,16 +55,11 @@ bool AppBannerInfoBarDelegateAndroid::Create(
     int event_request_id,
     webapk::InstallSource webapk_install_source) {
   bool is_webapk = ChromeWebApkHost::CanInstallWebApk();
-  std::string webapk_package_name = "";
-  const GURL& url = shortcut_info->url;
-  if (is_webapk)
-    webapk_package_name = ShortcutHelper::QueryWebApkPackage(url);
-  bool is_webapk_already_installed = !webapk_package_name.empty();
+  const GURL url = shortcut_info->url;
   auto infobar_delegate =
       base::WrapUnique(new banners::AppBannerInfoBarDelegateAndroid(
           weak_manager, app_title, std::move(shortcut_info), std::move(icon),
-          event_request_id, is_webapk, is_webapk_already_installed,
-          webapk_install_source));
+          event_request_id, is_webapk, webapk_install_source));
   auto* raw_delegate = infobar_delegate.get();
   auto infobar = base::MakeUnique<AppBannerInfoBarAndroid>(
       std::move(infobar_delegate), url, is_webapk);
@@ -76,10 +71,7 @@ bool AppBannerInfoBarDelegateAndroid::Create(
     if (webapk_install_source == webapk::INSTALL_SOURCE_MENU) {
       webapk::TrackInstallInfoBarShown(
           webapk::WEBAPK_INFOBAR_SHOWN_FROM_MENU);
-      if (is_webapk_already_installed)
-        raw_delegate->UpdateStateForInstalledWebAPK(webapk_package_name);
-      else
-        raw_delegate->Accept();
+      raw_delegate->Accept();
     } else {
       webapk::TrackInstallInfoBarShown(
           webapk::WEBAPK_INFOBAR_SHOWN_FROM_BANNER);
@@ -219,7 +211,6 @@ AppBannerInfoBarDelegateAndroid::AppBannerInfoBarDelegateAndroid(
     std::unique_ptr<SkBitmap> icon,
     int event_request_id,
     bool is_webapk,
-    bool is_webapk_already_installed,
     webapk::InstallSource webapk_install_source)
     : weak_manager_(weak_manager),
       app_title_(app_title),
@@ -228,7 +219,6 @@ AppBannerInfoBarDelegateAndroid::AppBannerInfoBarDelegateAndroid(
       event_request_id_(event_request_id),
       has_user_interaction_(false),
       is_webapk_(is_webapk),
-      is_webapk_already_installed_(is_webapk_already_installed),
       install_state_(INSTALL_NOT_STARTED),
       webapk_install_source_(webapk_install_source),
       weak_ptr_factory_(this) {
@@ -312,10 +302,7 @@ bool AppBannerInfoBarDelegateAndroid::AcceptWebApk(
   // WebAPK.
   if (install_state_ == INSTALLED) {
     Java_AppBannerInfoBarDelegateAndroid_openWebApk(env, java_delegate_);
-    if (is_webapk_already_installed_)
-      webapk::TrackUserAction(webapk::USER_ACTION_OPEN);
-    else
-      webapk::TrackUserAction(webapk::USER_ACTION_INSTALLED_OPEN);
+    webapk::TrackUserAction(webapk::USER_ACTION_INSTALLED_OPEN);
     SendBannerAccepted();
     return true;
   }
@@ -417,10 +404,7 @@ void AppBannerInfoBarDelegateAndroid::TrackWebApkInstallationDismissEvents(
   } else if (install_state == INSTALLED) {
     // If WebAPK is installed from this banner, TrackInstallEvent() is called in
     // OnWebApkInstallFinished().
-    if (is_webapk_already_installed_)
-      webapk::TrackUserAction(webapk::USER_ACTION_OPEN_DISMISS);
-    else
-      webapk::TrackUserAction(webapk::USER_ACTION_INSTALLED_OPEN_DISMISS);
+    webapk::TrackUserAction(webapk::USER_ACTION_INSTALLED_OPEN_DISMISS);
   }
 }
 

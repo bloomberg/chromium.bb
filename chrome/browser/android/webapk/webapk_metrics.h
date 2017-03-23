@@ -46,12 +46,10 @@ enum InfoBarShown {
 
 // User actions after a WebAPK is installed.
 enum UserAction {
-  // TODO(hanxi|zpeng): Records the first two user actions after
-  // crbug.com/638614 is fixed.
   // Launch a previously installed WebAPK since the WebAPK has been installed on
   // the device before.
-  USER_ACTION_OPEN,
-  USER_ACTION_OPEN_DISMISS,
+  USER_ACTION_OPEN,  // Obsolete
+  USER_ACTION_OPEN_DISMISS,  // Obsolete
   // Open a newly installed WebAPK via a successful installation.
   USER_ACTION_INSTALLED_OPEN,
   USER_ACTION_INSTALLED_OPEN_DISMISS,

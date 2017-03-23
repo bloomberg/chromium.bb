@@ -101,7 +101,6 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
       std::unique_ptr<SkBitmap> icon,
       int event_request_id,
       bool is_webapk,
-      bool is_webapk_already_installed,
       webapk::InstallSource webapk_install_source);
 
   // Delegate for promoting an Android app.
@@ -161,7 +160,6 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
   bool has_user_interaction_;
 
   bool is_webapk_;
-  bool is_webapk_already_installed_;
 
   // Indicates the current state of a WebAPK installation.
   InstallState install_state_;
