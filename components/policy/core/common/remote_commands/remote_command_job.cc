@@ -80,6 +80,11 @@ bool RemoteCommandJob::Init(base::TimeTicks now,
                    << " initialized.";
       break;
     }
+    case em::RemoteCommand_Type_DEVICE_FETCH_STATUS: {
+      SYSLOG(INFO) << "Remote fetch device status command " << unique_id_
+                   << " initialized.";
+      break;
+    }
   }
   status_ = NOT_STARTED;
   return true;

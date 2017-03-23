@@ -1061,6 +1061,9 @@ message RemoteCommand {
 
     // Set device volume.
     DEVICE_SET_VOLUME = 2;
+
+    // Force a refresh of device status (attributes and logs).
+    DEVICE_FETCH_STATUS = 3;
   }
 
   // The command type.

@@ -116,6 +116,12 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   // policy server.
   StatusUploader* GetStatusUploader() const { return status_uploader_.get(); }
 
+  // Return the SystemLogUploader used to upload device logs to the policy
+  // server.
+  SystemLogUploader* GetSystemLogUploader() const {
+    return syslog_uploader_.get();
+  }
+
   // Passes the pointer to the schema registry that corresponds to the signin
   // profile.
   //

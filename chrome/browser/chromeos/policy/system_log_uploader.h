@@ -8,6 +8,9 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -89,6 +92,8 @@ class SystemLogUploader : public UploadJob::Delegate {
       feedback::AnonymizerTool* const anonymizer,
       const std::string& data);
 
+  void ScheduleNextSystemLogUploadImmediately();
+
  private:
   // Updates the system log upload enabled field from settings.
   void RefreshUploadSettings();
@@ -132,6 +137,10 @@ class SystemLogUploader : public UploadJob::Delegate {
       upload_enabled_observer_;
 
   base::ThreadChecker thread_checker_;
+
+  // Used to prevent a race condition where two log uploads are being executed
+  // in parallel.
+  bool log_upload_in_progress_ = false;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.

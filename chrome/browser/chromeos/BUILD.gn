@@ -1137,6 +1137,8 @@ source_set("chromeos") {
     "policy/recommendation_restorer_factory.h",
     "policy/remote_commands/affiliated_remote_commands_invalidator.cc",
     "policy/remote_commands/affiliated_remote_commands_invalidator.h",
+    "policy/remote_commands/device_command_fetch_status_job.cc",
+    "policy/remote_commands/device_command_fetch_status_job.h",
     "policy/remote_commands/device_command_reboot_job.cc",
     "policy/remote_commands/device_command_reboot_job.h",
     "policy/remote_commands/device_command_screenshot_job.cc",

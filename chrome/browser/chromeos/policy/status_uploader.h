@@ -59,6 +59,8 @@ class StatusUploader : public MediaCaptureDevicesDispatcher::Observer {
                        content::MediaStreamType stream_type,
                        const content::MediaRequestState state) override;
 
+  void ScheduleNextStatusUploadImmediately();
+
  private:
   // Callback invoked periodically to upload the device status from the
   // DeviceStatusCollector.
@@ -76,7 +78,7 @@ class StatusUploader : public MediaCaptureDevicesDispatcher::Observer {
 
   // Helper method that figures out when the next status upload should
   // be scheduled.
-  void ScheduleNextStatusUpload();
+  void ScheduleNextStatusUpload(bool immediately = false);
 
   // Updates the upload frequency from settings and schedules a new upload
   // if appropriate.
@@ -106,6 +108,10 @@ class StatusUploader : public MediaCaptureDevicesDispatcher::Observer {
 
   // True if there has been any captured media in this session.
   bool has_captured_media_;
+
+  // Used to prevent a race condition where two status uploads are being
+  // executed in parallel.
+  bool status_upload_in_progress_ = false;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.
