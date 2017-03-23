@@ -39,12 +39,14 @@ namespace {
 const char* kBlockPopupsUrl = "http://blockpopups";
 const char* kOpenedWindowUrl = "http://openedwindow";
 
-// JavaScript to open a new window after a short delay.
+// Page with a button that opens a new window after a short delay.
 NSString* kBlockPopupsResponseTemplate =
     @"<input type=\"button\" onclick=\"setTimeout(function() {"
      "window.open('%@')}, 1)\" "
-     "id=\"openWindow\" "
+     "id=\"open-window\" "
      "value=\"openWindow\">";
+// JavaScript that clicks that button.
+NSString* kOpenPopupScript = @"document.getElementById('open-window').click()";
 const std::string kOpenedWindowResponse = "Opened window";
 
 // Opens the block popups settings page.  Must be called from the NTP.
@@ -201,8 +203,10 @@ class ScopedBlockPopupsException {
   [ChromeEarlGrey loadURL:blockPopupsURL];
   chrome_test_util::AssertMainTabCount(1U);
 
-  // Tap the "Open Window" link and make sure the popup opened in a new tab.
-  chrome_test_util::TapWebViewElementWithId("openWindow");
+  // Request popup and make sure the popup opened in a new tab.
+  NSError* error = nil;
+  chrome_test_util::ExecuteJavaScript(kOpenPopupScript, &error);
+  GREYAssert(!error, @"Error during script execution: %@", error);
   chrome_test_util::AssertMainTabCount(2U);
 
   // No infobar should be displayed.
@@ -229,10 +233,13 @@ class ScopedBlockPopupsException {
   [ChromeEarlGrey loadURL:blockPopupsURL];
   chrome_test_util::AssertMainTabCount(1U);
 
-  // Tap the "Open Window" link, then make sure the popup was blocked and an
-  // infobar was displayed.  The window.open() call is run via async JS, so the
-  // infobar may not open immediately.
-  chrome_test_util::TapWebViewElementWithId("openWindow");
+  // Request popup, then make sure it was blocked and an infobar was displayed.
+  // The window.open() call is run via async JS, so the infobar may not open
+  // immediately.
+  NSError* error = nil;
+  chrome_test_util::ExecuteJavaScript(kOpenPopupScript, &error);
+  GREYAssert(!error, @"Error during script execution: %@", error);
+
   [[GREYCondition
       conditionWithName:@"Wait for blocked popups infobar to show"
                   block:^BOOL {

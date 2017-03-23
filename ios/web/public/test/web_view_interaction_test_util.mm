@@ -142,11 +142,15 @@ bool RunActionOnWebViewElementWithId(web::WebState* web_state,
                        element_id.c_str(), js_action];
   __block bool did_complete = false;
   __block bool element_found = false;
-  [web_controller executeUserJavaScript:script
-                      completionHandler:^(id result, NSError*) {
-                        did_complete = true;
-                        element_found = [result boolValue];
-                      }];
+
+  // |executeUserJavaScript:completionHandler:| is no-op for app-specific URLs,
+  // so simulate a user gesture by calling TouchTracking method.
+  [web_controller touched:YES];
+  [web_controller executeJavaScript:script
+                  completionHandler:^(id result, NSError*) {
+                    did_complete = true;
+                    element_found = [result boolValue];
+                  }];
 
   testing::WaitUntilConditionOrTimeout(testing::kWaitForJSCompletionTimeout, ^{
     return did_complete;

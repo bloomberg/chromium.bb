@@ -2296,6 +2296,22 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)executeUserJavaScript:(NSString*)script
             completionHandler:(web::JavaScriptResultBlock)completion {
+  // For security reasons, executing JavaScript on pages with app-specific URLs
+  // is not allowed, because those pages may have elevated privileges.
+  GURL lastCommittedURL = self.webState->GetLastCommittedURL();
+  if (web::GetWebClient()->IsAppSpecificURL(lastCommittedURL)) {
+    if (completion) {
+      dispatch_async(dispatch_get_main_queue(), ^{
+        base::scoped_nsobject<NSError> error([[NSError alloc]
+            initWithDomain:web::kJSEvaluationErrorDomain
+                      code:web::JS_EVALUATION_ERROR_CODE_NO_WEB_VIEW
+                  userInfo:nil]);
+        completion(nil, error);
+      });
+    }
+    return;
+  }
+
   [self setUserInteractionRegistered:YES];
   [self executeJavaScript:script completionHandler:completion];
 }

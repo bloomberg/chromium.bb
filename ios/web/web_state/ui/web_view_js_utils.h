@@ -27,7 +27,9 @@ extern int const kMaximumParsingRecursionDepth;
 // The type of errors that can occur while evaluating JS.
 enum JSEvaluationErrorCode {
   // No web view present to evaluate JS.
-  JS_EVALUATION_ERROR_CODE_NO_WEB_VIEW = 1,
+  JS_EVALUATION_ERROR_CODE_NO_WEB_VIEW = -1000,
+  // JS evaluation is not allowed for security reasons.
+  JS_EVALUATION_ERROR_CODE_REJECTED = -1001,
 };
 
 // Converts result of WKWebView script evaluation to base::Value.

@@ -340,7 +340,13 @@ void SelectNewTabPagePanel(NewTabPage::PanelIdentifier panel_type) {
   if (IsIPadIdiom() && base::ios::IsRunningOnIOS10OrLater()) {
     EARL_GREY_TEST_DISABLED(@"Disabled for iOS10 iPad due to a typing bug.");
   }
-  [ChromeEarlGrey loadURL:GURL("chrome://version")];
+
+  std::map<GURL, std::string> responses;
+  GURL URL = web::test::HttpServer::MakeUrl("http://foo");
+  responses[URL] = "bar";
+  web::test::SetUpSimpleHttpServer(responses);
+  [ChromeEarlGrey loadURL:GURL(URL)];
+
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_typeText(@"javascript:alert('Hello');")];
 
@@ -349,6 +355,25 @@ void SelectNewTabPagePanel(NewTabPage::PanelIdentifier panel_type) {
 
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Hello")]
       assertWithMatcher:grey_notNil()];
+}
+
+// Loads WebUI page, types JavaScript into Omnibox and verifies that alert is
+// not displayed. WebUI pages have elevated privileges and should not allow
+// script execution.
+- (void)testTypeJavaScriptIntoOmniboxWithWebUIPage {
+  // TODO(crbug.com/642544): Enable the test for iPad when typing bug is fixed.
+  if (IsIPadIdiom() && base::ios::IsRunningOnIOS10OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"Disabled for iOS10 iPad due to a typing bug.");
+  }
+  [ChromeEarlGrey loadURL:GURL("chrome://version")];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+      performAction:grey_typeText(@"javascript:alert('Hello');")];
+
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Go")]
+      performAction:grey_tap()];
+
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Hello")]
+      assertWithMatcher:grey_nil()];
 }
 
 // Tests typing in the omnibox.

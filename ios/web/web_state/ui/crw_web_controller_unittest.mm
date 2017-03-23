@@ -33,6 +33,7 @@
 #import "ios/web/test/web_test_with_web_controller.h"
 #import "ios/web/test/wk_web_view_crash_utils.h"
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
+#import "ios/web/web_state/ui/web_view_js_utils.h"
 #import "ios/web/web_state/web_state_impl.h"
 #import "ios/web/web_state/wk_web_view_security_util.h"
 #import "net/base/mac/url_conversions.h"
@@ -872,6 +873,68 @@ TEST_F(CRWWebControllerTitleTest, TitleChange) {
   ExecuteJavaScript(@"window.document.title = 'Title2';");
   EXPECT_EQ("Title2", base::UTF16ToUTF8(web_state()->GetTitle()));
   EXPECT_GE(observer.title_change_count(), 2);
+};
+
+// Test fixture for JavaScript execution.
+class ScriptExecutionTest : public web::WebTestWithWebController {
+ protected:
+  // Calls |executeUserJavaScript:completionHandler:|, waits for script
+  // execution completion, and synchronously returns the result.
+  id ExecuteUserJavaScript(NSString* java_script, NSError** error) {
+    __block id script_result = nil;
+    __block NSError* script_error = nil;
+    __block bool script_executed = false;
+    [web_controller()
+        executeUserJavaScript:java_script
+            completionHandler:^(id local_result, NSError* local_error) {
+              script_result = [local_result retain];
+              script_error = [local_error retain];
+              script_executed = true;
+            }];
+
+    WaitForCondition(^{
+      return script_executed;
+    });
+
+    if (error) {
+      *error = script_error;
+    }
+    [script_error autorelease];
+    return [script_result autorelease];
+  }
+};
+
+// Tests evaluating user script on an http page.
+TEST_F(ScriptExecutionTest, UserScriptOnHttpPage) {
+  LoadHtml(@"<html></html>", GURL(kTestURLString));
+  NSError* error = nil;
+  EXPECT_NSEQ(@0, ExecuteUserJavaScript(@"window.w = 0;", &error));
+  EXPECT_FALSE(error);
+
+  EXPECT_NSEQ(@0, ExecuteJavaScript(@"window.w"));
+};
+
+// Tests evaluating user script on app-specific page. Pages with app-specific
+// URLs have elevated privileges and JavaScript execution should not be allowed
+// for them.
+TEST_F(ScriptExecutionTest, UserScriptOnAppSpecificPage) {
+  LoadHtml(@"<html></html>", GURL(kTestURLString));
+
+  // Change last committed URL to app-specific URL.
+  web::NavigationManagerImpl& nav_manager =
+      [web_controller() webStateImpl]->GetNavigationManagerImpl();
+  nav_manager.AddPendingItem(GURL(kTestAppSpecificURL), web::Referrer(),
+                             ui::PAGE_TRANSITION_TYPED,
+                             web::NavigationInitiationType::USER_INITIATED);
+  [nav_manager.GetSessionController() commitPendingItem];
+
+  NSError* error = nil;
+  EXPECT_FALSE(ExecuteUserJavaScript(@"window.w = 0;", &error));
+  ASSERT_TRUE(error);
+  EXPECT_NSEQ(web::kJSEvaluationErrorDomain, error.domain);
+  EXPECT_EQ(web::JS_EVALUATION_ERROR_CODE_NO_WEB_VIEW, error.code);
+
+  EXPECT_FALSE(ExecuteJavaScript(@"window.w"));
 };
 
 // Fixture class to test WKWebView crashes.
