@@ -40,7 +40,7 @@
 @property(nonatomic, readonly) NSURL* visibleURL;
 
 // The current page title.
-@property(nonatomic, readonly) NSString* pageTitle;
+@property(nonatomic, readonly, copy) NSString* title;
 
 // Page loading progress from 0.0 to 1.0. KVO compliant.
 //

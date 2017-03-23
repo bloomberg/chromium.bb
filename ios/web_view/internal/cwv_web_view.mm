@@ -117,7 +117,7 @@
   return net::NSURLWithGURL(_webState->GetVisibleURL());
 }
 
-- (NSString*)pageTitle {
+- (NSString*)title {
   return base::SysUTF16ToNSString(_webState->GetTitle());
 }
 
