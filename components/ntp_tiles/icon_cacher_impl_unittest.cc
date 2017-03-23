@@ -19,6 +19,7 @@
 #include "components/favicon/core/favicon_util.h"
 #include "components/history/core/browser/history_database_params.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/image_fetcher/core/image_decoder.h"
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "components/image_fetcher/core/request_metadata.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -50,6 +51,14 @@ class MockImageFetcher : public image_fetcher::ImageFetcher {
                     const ImageFetcherCallback& callback));
   MOCK_METHOD1(SetDesiredImageFrameSize, void(const gfx::Size&));
   MOCK_METHOD0(GetImageDecoder, image_fetcher::ImageDecoder*());
+};
+
+class MockImageDecoder : public image_fetcher::ImageDecoder {
+ public:
+  MOCK_METHOD3(DecodeImage,
+               void(const std::string& image_data,
+                    const gfx::Size& desired_image_frame_size,
+                    const image_fetcher::ImageDecodedCallback& callback));
 };
 
 // This class provides methods to inject an image resource where a real resource
@@ -91,6 +100,7 @@ class IconCacherTest : public ::testing::Test {
               GURL("http://url.google/favicon.ico"),
               GURL()),  // thumbnail, unused
         image_fetcher_(new ::testing::StrictMock<MockImageFetcher>),
+        image_decoder_(new ::testing::StrictMock<MockImageDecoder>),
         favicon_service_(/*favicon_client=*/nullptr, &history_service_),
         task_runner_(new base::TestSimpleTaskRunner()) {
     CHECK(history_dir_.CreateUniqueTempDir());
@@ -168,6 +178,7 @@ class IconCacherTest : public ::testing::Test {
   base::MessageLoop message_loop_;
   PopularSites::Site site_;
   std::unique_ptr<MockImageFetcher> image_fetcher_;
+  std::unique_ptr<MockImageDecoder> image_decoder_;
   base::ScopedTempDir history_dir_;
   history::HistoryService history_service_;
   favicon::FaviconServiceImpl favicon_service_;
@@ -179,6 +190,11 @@ ACTION(FailFetch) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(arg2, arg0, gfx::Image(), image_fetcher::RequestMetadata()));
+}
+
+ACTION_P2(DecodeSuccessfully, width, height) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(arg2, gfx::test::CreateImage(width, height)));
 }
 
 ACTION_P2(PassFetch, width, height) {
@@ -289,12 +305,15 @@ TEST_F(IconCacherTest, HandlesEmptyCallbacksNicely) {
 }
 
 TEST_F(IconCacherTest, ProvidesDefaultIconAndSucceedsWithFetching) {
-  // We are not interested which delegate function actually handles the call to
-  // |GetNativeImageNamed| as long as we receive the right image.
-  ON_CALL(mock_resource_delegate_, GetNativeImageNamed(12345))
-      .WillByDefault(Return(gfx::test::CreateImage(64, 64)));
-  ON_CALL(mock_resource_delegate_, GetImageNamed(12345))
-      .WillByDefault(Return(gfx::test::CreateImage(64, 64)));
+  // The returned data string is not used by the mocked decoder.
+  ON_CALL(mock_resource_delegate_, GetRawDataResource(12345, _, _))
+      .WillByDefault(Return(""));
+  // It's not important when the image_fetcher's decoder is used to decode the
+  // image but it must happen at some point.
+  EXPECT_CALL(*image_fetcher_, GetImageDecoder())
+      .WillOnce(Return(image_decoder_.get()));
+  EXPECT_CALL(*image_decoder_, DecodeImage(_, gfx::Size(128, 128), _))
+      .WillOnce(DecodeSuccessfully(64, 64));
   base::MockCallback<base::Closure> preliminary_icon_available;
   base::MockCallback<base::Closure> icon_available;
   base::RunLoop default_loop;
@@ -305,11 +324,14 @@ TEST_F(IconCacherTest, ProvidesDefaultIconAndSucceedsWithFetching) {
                 SetDataUseServiceName(
                     data_use_measurement::DataUseUserData::NTP_TILES));
     EXPECT_CALL(*image_fetcher_, SetDesiredImageFrameSize(gfx::Size(128, 128)));
-    EXPECT_CALL(preliminary_icon_available, Run())
-        .WillOnce(Quit(&default_loop));
     EXPECT_CALL(*image_fetcher_,
                 StartOrQueueNetworkRequest(_, site_.large_icon_url, _))
         .WillOnce(PassFetch(128, 128));
+
+    // Both callback are called async after the request but preliminary has to
+    // preceed icon_available.
+    EXPECT_CALL(preliminary_icon_available, Run())
+        .WillOnce(Quit(&default_loop));
     EXPECT_CALL(icon_available, Run()).WillOnce(Quit(&fetch_loop));
   }
 
