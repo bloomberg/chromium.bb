@@ -22,6 +22,16 @@
       "xctest": true
     },
     {
+      "app": "ios_chrome_reading_list_egtests",
+      "test args": [
+        "--enable-reading-list"
+      ],
+      "device type": "iPhone 6s",
+      "os": "10.0",
+      "xcode version": "8.0",
+      "xctest": true
+    },
+    {
       "app": "ios_chrome_settings_egtests",
       "device type": "iPhone 6s",
       "os": "10.0",
@@ -65,6 +75,16 @@
     },
     {
       "app": "ios_chrome_integration_egtests",
+      "device type": "iPad Air 2",
+      "os": "10.0",
+      "xcode version": "8.0",
+      "xctest": true
+    },
+    {
+      "app": "ios_chrome_reading_list_egtests",
+      "test args": [
+        "--enable-reading-list"
+      ],
       "device type": "iPad Air 2",
       "os": "10.0",
       "xcode version": "8.0",
