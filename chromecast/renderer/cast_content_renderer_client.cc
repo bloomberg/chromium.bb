@@ -19,11 +19,12 @@
 #include "chromecast/renderer/media/media_caps_observer_impl.h"
 #include "components/network_hints/renderer/prescient_networking_dispatcher.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "media/base/media.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/WebKit/public/platform/WebColor.h"
 #include "third_party/WebKit/public/web/WebFrameWidget.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
@@ -70,7 +71,8 @@ void CastContentRendererClient::RenderThreadStarted() {
   // Register as observer for media capabilities
   content::RenderThread* thread = content::RenderThread::Get();
   media::mojom::MediaCapsPtr media_caps;
-  thread->GetRemoteInterfaces()->GetInterface(&media_caps);
+  thread->GetConnector()->BindInterface(content::mojom::kBrowserServiceName,
+                                        &media_caps);
   media::mojom::MediaCapsObserverPtr proxy;
   media_caps_observer_.reset(
       new media::MediaCapsObserverImpl(&proxy, supported_profiles_.get()));

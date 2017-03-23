@@ -23,7 +23,7 @@ class ChromeContentGpuClient : public content::ContentGpuClient {
       service_manager::InterfaceRegistry* registry,
       const gpu::GpuPreferences& gpu_preferences) override;
   void ConsumeInterfacesFromBrowser(
-      service_manager::InterfaceProvider* provider) override;
+      service_manager::Connector* connector) override;
 
  private:
   std::unique_ptr<variations::ChildProcessFieldTrialSyncer> field_trial_syncer_;

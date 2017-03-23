@@ -12,7 +12,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/resource_coordinator/public/cpp/memory/coordinator.h"
 #include "services/resource_coordinator/public/interfaces/memory/memory_instrumentation.mojom.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace memory_instrumentation {
 
@@ -30,20 +30,24 @@ class MemoryDumpManagerDelegateImpl
  public:
   class Config {
    public:
-    Config(service_manager::InterfaceProvider* interface_provider)
-        : interface_provider_(interface_provider), coordinator_(nullptr) {}
+    Config(service_manager::Connector* connector,
+           const std::string& service_name)
+        : connector_(connector),
+          service_name_(service_name),
+          coordinator_(nullptr) {}
     Config(Coordinator* coordinator)
-        : interface_provider_(nullptr), coordinator_(coordinator) {}
+        : connector_(nullptr), coordinator_(coordinator) {}
     ~Config();
 
-    service_manager::InterfaceProvider* interface_provider() const {
-      return interface_provider_;
-    }
+    service_manager::Connector* connector() const { return connector_; }
+
+    const std::string& service_name() const { return service_name_; }
 
     Coordinator* coordinator() const { return coordinator_; }
 
    private:
-    service_manager::InterfaceProvider* interface_provider_;
+    service_manager::Connector* connector_;
+    const std::string service_name_;
     Coordinator* coordinator_;
     bool is_test_config_;
   };

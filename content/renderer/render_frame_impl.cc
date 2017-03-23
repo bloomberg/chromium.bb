@@ -2648,8 +2648,8 @@ void RenderFrameImpl::EnsureMojoBuiltinsAreAvailable(
           .ToV8());
   registry->AddBuiltinModule(
       isolate, InterfaceProviderJsWrapper::kPerProcessModuleName,
-      InterfaceProviderJsWrapper::Create(
-          isolate, context, RenderThread::Get()->GetRemoteInterfaces())
+      InterfaceProviderJsWrapper::Create(isolate, context,
+                                         RenderThread::Get()->GetConnector())
           .ToV8());
 }
 

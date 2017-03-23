@@ -205,7 +205,7 @@ WindowTreeClient::WindowTreeClient(
       io_task_runner = io_thread_->task_runner();
     }
 
-    gpu_ = ui::Gpu::Create(connector, io_task_runner);
+    gpu_ = ui::Gpu::Create(connector, ui::mojom::kServiceName, io_task_runner);
     compositor_context_factory_ =
         base::MakeUnique<MusContextFactory>(gpu_.get());
     initial_context_factory_ = Env::GetInstance()->context_factory();

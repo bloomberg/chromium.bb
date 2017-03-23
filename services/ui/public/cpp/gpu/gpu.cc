@@ -18,21 +18,18 @@
 namespace ui {
 
 Gpu::Gpu(service_manager::Connector* connector,
-         service_manager::InterfaceProvider* provider,
+         const std::string& service_name,
          scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       io_task_runner_(std::move(task_runner)),
       connector_(connector),
-      interface_provider_(provider),
+      service_name_(service_name),
       shutdown_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                       base::WaitableEvent::InitialState::NOT_SIGNALED) {
   DCHECK(main_task_runner_);
-  DCHECK(connector_ || interface_provider_);
+  DCHECK(connector_);
   mojom::GpuPtr gpu_ptr;
-  if (connector_)
-    connector_->BindInterface(ui::mojom::kServiceName, &gpu_ptr);
-  else
-    interface_provider_->GetInterface(&gpu_ptr);
+  connector_->BindInterface(service_name_, &gpu_ptr);
   gpu_memory_buffer_manager_ =
       base::MakeUnique<ClientGpuMemoryBufferManager>(std::move(gpu_ptr));
   if (!io_task_runner_) {
@@ -54,14 +51,10 @@ Gpu::~Gpu() {
 // static
 std::unique_ptr<Gpu> Gpu::Create(
     service_manager::Connector* connector,
+    const std::string& service_name,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  return base::WrapUnique(new Gpu(connector, nullptr, std::move(task_runner)));
-}
-
-std::unique_ptr<Gpu> Gpu::Create(
-    service_manager::InterfaceProvider* provider,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  return base::WrapUnique(new Gpu(nullptr, provider, std::move(task_runner)));
+  return base::WrapUnique(
+      new Gpu(connector, service_name, std::move(task_runner)));
 }
 
 scoped_refptr<cc::ContextProvider> Gpu::CreateContextProvider(
@@ -98,10 +91,7 @@ void Gpu::EstablishGpuChannel(
   if (gpu_)
     return;
 
-  if (connector_)
-    connector_->BindInterface(ui::mojom::kServiceName, &gpu_);
-  else
-    interface_provider_->GetInterface(&gpu_);
+  connector_->BindInterface(service_name_, &gpu_);
   gpu_->EstablishGpuChannel(
       base::Bind(&Gpu::OnEstablishedGpuChannel, base::Unretained(this)));
 }
@@ -114,10 +104,7 @@ scoped_refptr<gpu::GpuChannelHost> Gpu::EstablishGpuChannelSync() {
   int client_id = 0;
   mojo::ScopedMessagePipeHandle channel_handle;
   gpu::GPUInfo gpu_info;
-  if (connector_)
-    connector_->BindInterface(ui::mojom::kServiceName, &gpu_);
-  else
-    interface_provider_->GetInterface(&gpu_);
+  connector_->BindInterface(service_name_, &gpu_);
 
   mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
   if (!gpu_->EstablishGpuChannel(&client_id, &channel_handle, &gpu_info)) {

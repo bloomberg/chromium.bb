@@ -38,6 +38,7 @@
 #include "content/public/common/pepper_plugin_info.h"
 #include "content/public/common/sandbox_init.h"
 #include "content/public/common/service_manager_connection.h"
+#include "content/public/common/service_names.mojom.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_platform_file.h"
 #include "ipc/ipc_sync_channel.h"
@@ -51,7 +52,6 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/resource_reply_thread_registrar.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "ui/base/ui_base_switches.h"
@@ -154,8 +154,8 @@ PpapiThread::PpapiThread(const base::CommandLine& command_line, bool is_broker)
       NOTREACHED();
 #endif
     } else {
-      ChildThread::Get()->GetRemoteInterfaces()->GetInterface(
-          mojo::MakeRequest(&manager_ptr));
+      ChildThread::Get()->GetConnector()->BindInterface(
+          mojom::kBrowserServiceName, mojo::MakeRequest(&manager_ptr));
     }
     discardable_shared_memory_manager_ = base::MakeUnique<
         discardable_memory::ClientDiscardableSharedMemoryManager>(

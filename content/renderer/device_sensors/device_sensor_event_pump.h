@@ -11,10 +11,11 @@
 #include "base/memory/shared_memory.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/platform_event_observer.h"
 #include "content/renderer/render_thread_impl.h"
 #include "mojo/public/cpp/system/platform_handle.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace content {
 
@@ -34,8 +35,8 @@ class CONTENT_EXPORT DeviceSensorMojoClientMixin : public Base {
     // is ready and the layout tests are converted to use that for mocking.
     if (RenderThreadImpl::current() &&
         !RenderThreadImpl::current()->layout_test_mode()) {
-      RenderThread::Get()->GetRemoteInterfaces()->GetInterface(
-          std::move(request));
+      RenderThread::Get()->GetConnector()->BindInterface(
+          mojom::kBrowserServiceName, std::move(request));
     }
   }
 

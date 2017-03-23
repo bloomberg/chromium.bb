@@ -1491,6 +1491,7 @@ test("content_unittests") {
     "//content/public/browser",
     "//content/public/child",
     "//content/public/common",
+    "//content/public/common:service_names",
     "//content/public/renderer",
     "//content/renderer:for_content_tests",
     "//crypto",

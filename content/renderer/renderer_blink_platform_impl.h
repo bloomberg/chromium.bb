@@ -48,7 +48,7 @@ class OrientationData;
 }
 
 namespace service_manager {
-class InterfaceProvider;
+class Connector;
 }
 
 namespace content {
@@ -65,7 +65,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
  public:
   RendererBlinkPlatformImpl(
       blink::scheduler::RendererScheduler* renderer_scheduler,
-      base::WeakPtr<service_manager::InterfaceProvider> remote_interfaces);
+      base::WeakPtr<service_manager::Connector> connector);
   ~RendererBlinkPlatformImpl() override;
 
   // Shutdown must be called just prior to shutting down blink.

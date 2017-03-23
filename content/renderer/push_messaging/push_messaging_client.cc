@@ -13,9 +13,10 @@
 #include "content/child/child_thread_impl.h"
 #include "content/child/push_messaging/push_provider.h"
 #include "content/child/service_worker/web_service_worker_registration_impl.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/renderer/manifest/manifest_manager.h"
 #include "content/renderer/render_frame_impl.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/modules/push_messaging/WebPushError.h"
 #include "third_party/WebKit/public/platform/modules/push_messaging/WebPushSubscription.h"
@@ -30,7 +31,8 @@ namespace content {
 PushMessagingClient::PushMessagingClient(RenderFrame* render_frame)
     : RenderFrameObserver(render_frame) {
   if (ChildThreadImpl::current()) {
-    ChildThreadImpl::current()->GetRemoteInterfaces()->GetInterface(
+    ChildThreadImpl::current()->GetConnector()->BindInterface(
+        mojom::kBrowserServiceName,
         mojo::MakeRequest(&push_messaging_manager_));
   }
 }

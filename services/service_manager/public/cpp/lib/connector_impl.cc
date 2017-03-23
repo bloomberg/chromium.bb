@@ -15,12 +15,12 @@ void EmptyBindCallback(mojom::ConnectResult, const std::string&) {}
 }
 
 ConnectorImpl::ConnectorImpl(mojom::ConnectorPtrInfo unbound_state)
-    : unbound_state_(std::move(unbound_state)) {
+    : unbound_state_(std::move(unbound_state)), weak_factory_(this) {
   thread_checker_.DetachFromThread();
 }
 
 ConnectorImpl::ConnectorImpl(mojom::ConnectorPtr connector)
-    : connector_(std::move(connector)) {
+    : connector_(std::move(connector)), weak_factory_(this) {
   connector_.set_connection_error_handler(
       base::Bind(&ConnectorImpl::OnConnectionError, base::Unretained(this)));
 }
@@ -76,6 +76,12 @@ void ConnectorImpl::BindInterface(
   if (!BindConnectorIfNecessary())
     return;
 
+  if (!local_binder_overrides_.empty() &&
+      local_binder_overrides_.count(interface_name)) {
+    local_binder_overrides_[interface_name].Run(std::move(interface_pipe));
+    return;
+  }
+
   connector_->BindInterface(target, interface_name, std::move(interface_pipe),
                             base::Bind(&EmptyBindCallback));
 }
@@ -94,6 +100,19 @@ void ConnectorImpl::BindConnectorRequest(mojom::ConnectorRequest request) {
   if (!BindConnectorIfNecessary())
     return;
   connector_->Clone(std::move(request));
+}
+
+base::WeakPtr<Connector> ConnectorImpl::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
+void ConnectorImpl::OverrideBinderForTesting(const std::string& interface_name,
+                                             const TestApi::Binder& binder) {
+  local_binder_overrides_[interface_name] = binder;
+}
+
+void ConnectorImpl::ClearBinderOverrides() {
+  local_binder_overrides_.clear();
 }
 
 bool ConnectorImpl::BindConnectorIfNecessary() {

@@ -106,7 +106,7 @@ int ChromeMain(int argc, const char** argv) {
   }
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX)
 
-#if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
+#if defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
   version_info::Channel channel = chrome::GetChannel();
   if (channel == version_info::Channel::CANARY ||
       channel == version_info::Channel::UNKNOWN) {

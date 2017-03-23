@@ -15,7 +15,8 @@
 #include "content/child/service_worker/web_service_worker_registration_impl.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/push_subscription_options.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "content/public/common/service_names.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/modules/push_messaging/WebPushSubscription.h"
 #include "third_party/WebKit/public/platform/modules/push_messaging/WebPushSubscriptionOptions.h"
@@ -106,8 +107,8 @@ PushProvider* PushProvider::ThreadSpecificInstance(
 // static
 void PushProvider::GetInterface(mojom::PushMessagingRequest request) {
   if (ChildThreadImpl::current()) {
-    ChildThreadImpl::current()->GetRemoteInterfaces()->GetInterface(
-        std::move(request));
+    ChildThreadImpl::current()->GetConnector()->BindInterface(
+        mojom::kBrowserServiceName, std::move(request));
   }
 }
 

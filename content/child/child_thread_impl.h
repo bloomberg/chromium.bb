@@ -97,7 +97,7 @@ class CONTENT_EXPORT ChildThreadImpl
   void RecordComputedAction(const std::string& action) override;
   ServiceManagerConnection* GetServiceManagerConnection() override;
   service_manager::InterfaceRegistry* GetInterfaceRegistry() override;
-  service_manager::InterfaceProvider* GetRemoteInterfaces() override;
+  service_manager::Connector* GetConnector() override;
 
   // Returns the service_manager::ServiceInfo for the child process & the
   // browser process, once available.
@@ -251,7 +251,6 @@ class CONTENT_EXPORT ChildThreadImpl
 
   std::unique_ptr<mojo::edk::ScopedIPCSupport> mojo_ipc_support_;
   std::unique_ptr<service_manager::InterfaceRegistry> interface_registry_;
-  std::unique_ptr<service_manager::InterfaceProvider> remote_interfaces_;
   std::unique_ptr<ServiceManagerConnection> service_manager_connection_;
   std::unique_ptr<service_manager::Connection> browser_connection_;
 

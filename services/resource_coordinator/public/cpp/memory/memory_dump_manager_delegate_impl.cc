@@ -12,7 +12,7 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/resource_coordinator/public/cpp/memory/coordinator.h"
 #include "services/resource_coordinator/public/interfaces/memory/memory_instrumentation.mojom.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace memory_instrumentation {
 
@@ -24,8 +24,9 @@ MemoryDumpManagerDelegateImpl::MemoryDumpManagerDelegateImpl(
       config_(config),
       task_runner_(nullptr),
       pending_memory_dump_guid_(0) {
-  if (config.interface_provider() != nullptr) {
-    config.interface_provider()->GetInterface(mojo::MakeRequest(&coordinator_));
+  if (config.connector() != nullptr) {
+    config.connector()->BindInterface(config.service_name(),
+                                      mojo::MakeRequest(&coordinator_));
   } else {
     task_runner_ = base::ThreadTaskRunnerHandle::Get();
     config.coordinator()->BindCoordinatorRequest(

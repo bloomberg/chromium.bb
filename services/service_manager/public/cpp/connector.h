@@ -34,6 +34,22 @@ namespace service_manager {
 // closed.
 class Connector {
  public:
+  class TestApi {
+   public:
+    using Binder = base::Callback<void(mojo::ScopedMessagePipeHandle)>;
+    explicit TestApi(Connector* connector) : connector_(connector) {}
+    // Allows caller to specify a callback to bind requests for |interface_name|
+    // locally, rather than passing the request through the Service Manager.
+    void OverrideBinderForTesting(const std::string& interface_name,
+                                  const Binder& binder) {
+      connector_->OverrideBinderForTesting(interface_name, binder);
+    }
+    void ClearBinderOverrides() { connector_->ClearBinderOverrides(); }
+
+   private:
+    Connector* connector_;
+  };
+
   virtual ~Connector() {}
 
   // Creates a new Connector instance and fills in |*request| with a request
@@ -86,6 +102,13 @@ class Connector {
 
   // Binds a Connector request to the other end of this Connector.
   virtual void BindConnectorRequest(mojom::ConnectorRequest request) = 0;
+
+  virtual base::WeakPtr<Connector> GetWeakPtr() = 0;
+
+ protected:
+  virtual void OverrideBinderForTesting(const std::string& interface_name,
+                                        const TestApi::Binder& binder) = 0;
+  virtual void ClearBinderOverrides() = 0;
 };
 
 }  // namespace service_manager

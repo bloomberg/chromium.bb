@@ -87,6 +87,7 @@
 #include "components/web_cache/renderer/web_cache_impl.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/plugin_instance_throttler.h"
 #include "content/public/renderer/render_frame.h"
@@ -102,7 +103,7 @@
 #include "ppapi/features/features.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "printing/features/features.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebCache.h"
 #include "third_party/WebKit/public/platform/WebCachePolicy.h"
@@ -358,13 +359,15 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 
   {
     startup_metric_utils::mojom::StartupMetricHostPtr startup_metric_host;
-    thread->GetRemoteInterfaces()->GetInterface(&startup_metric_host);
+    thread->GetConnector()->BindInterface(content::mojom::kBrowserServiceName,
+                                          &startup_metric_host);
     startup_metric_host->RecordRendererMainEntryTime(main_entry_time_);
   }
 
 #if defined(OS_WIN)
   if (base::FeatureList::IsEnabled(features::kModuleDatabase)) {
-    thread->GetRemoteInterfaces()->GetInterface(&module_event_sink_);
+    thread->GetConnector()->BindInterface(content::mojom::kBrowserServiceName,
+                                          &module_event_sink_);
 
     // Rebind the ModuleEventSink so that it can be accessed on the IO thread.
     module_event_sink_.Bind(module_event_sink_.PassInterface(),
@@ -1359,15 +1362,19 @@ ChromeContentRendererClient::CreateBrowserPluginDelegate(
 
 void ChromeContentRendererClient::RecordRappor(const std::string& metric,
                                                const std::string& sample) {
-  if (!rappor_recorder_)
-    RenderThread::Get()->GetRemoteInterfaces()->GetInterface(&rappor_recorder_);
+  if (!rappor_recorder_) {
+    RenderThread::Get()->GetConnector()->BindInterface(
+        content::mojom::kBrowserServiceName, &rappor_recorder_);
+  }
   rappor_recorder_->RecordRappor(metric, sample);
 }
 
 void ChromeContentRendererClient::RecordRapporURL(const std::string& metric,
                                                   const GURL& url) {
-  if (!rappor_recorder_)
-    RenderThread::Get()->GetRemoteInterfaces()->GetInterface(&rappor_recorder_);
+  if (!rappor_recorder_) {
+    RenderThread::Get()->GetConnector()->BindInterface(
+        content::mojom::kBrowserServiceName, &rappor_recorder_);
+  }
   rappor_recorder_->RecordRapporURL(metric, url);
 }
 

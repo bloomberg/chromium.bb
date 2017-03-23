@@ -5,6 +5,7 @@
 #ifndef SERVICES_SERVICE_MANAGER_PUBLIC_CPP_LIB_CONNECTOR_IMPL_H_
 #define SERVICES_SERVICE_MANAGER_PUBLIC_CPP_LIB_CONNECTOR_IMPL_H_
 
+#include <map>
 #include <memory>
 
 #include "base/callback.h"
@@ -34,6 +35,10 @@ class ConnectorImpl : public Connector {
                      mojo::ScopedMessagePipeHandle interface_pipe) override;
   std::unique_ptr<Connector> Clone() override;
   void BindConnectorRequest(mojom::ConnectorRequest request) override;
+  base::WeakPtr<Connector> GetWeakPtr() override;
+  void OverrideBinderForTesting(const std::string& interface_name,
+                                const TestApi::Binder& binder) override;
+  void ClearBinderOverrides() override;
 
   bool BindConnectorIfNecessary();
 
@@ -41,6 +46,10 @@ class ConnectorImpl : public Connector {
   mojom::ConnectorPtr connector_;
 
   base::ThreadChecker thread_checker_;
+
+  std::map<std::string, TestApi::Binder> local_binder_overrides_;
+
+  base::WeakPtrFactory<Connector> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectorImpl);
 };

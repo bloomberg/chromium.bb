@@ -20,11 +20,12 @@
 #include "base/trace_event/trace_event.h"
 #include "content/child/child_process.h"
 #include "content/public/child/child_thread.h"
+#include "content/public/common/service_names.mojom.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/limits.h"
 #include "media/base/video_frame.h"
 #include "mojo/public/cpp/system/platform_handle.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace content {
 
@@ -75,7 +76,8 @@ VideoCaptureImpl::VideoCaptureImpl(media::VideoCaptureSessionId session_id)
 
   if (ChildThread::Get()) {  // This will be null in unit tests.
     mojom::VideoCaptureHostPtr temp_video_capture_host;
-    ChildThread::Get()->GetRemoteInterfaces()->GetInterface(
+    ChildThread::Get()->GetConnector()->BindInterface(
+        mojom::kBrowserServiceName,
         mojo::MakeRequest(&temp_video_capture_host));
     video_capture_host_info_ = temp_video_capture_host.PassInterface();
   }

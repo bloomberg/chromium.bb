@@ -20,7 +20,6 @@
 
 namespace service_manager {
 class Connector;
-class InterfaceProvider;
 }
 
 namespace ui {
@@ -39,9 +38,7 @@ class Gpu : public gpu::GpuChannelHostFactory,
   // created and used.
   static std::unique_ptr<Gpu> Create(
       service_manager::Connector* connector,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner = nullptr);
-  static std::unique_ptr<Gpu> Create(
-      service_manager::InterfaceProvider*,
+      const std::string& service_name,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner = nullptr);
 
   scoped_refptr<cc::ContextProvider> CreateContextProvider(
@@ -57,7 +54,7 @@ class Gpu : public gpu::GpuChannelHostFactory,
   friend struct base::DefaultSingletonTraits<Gpu>;
 
   Gpu(service_manager::Connector* connector,
-      service_manager::InterfaceProvider* provider,
+      const std::string& service_name,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   scoped_refptr<gpu::GpuChannelHost> GetGpuChannel();
@@ -74,7 +71,7 @@ class Gpu : public gpu::GpuChannelHostFactory,
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   service_manager::Connector* connector_;
-  service_manager::InterfaceProvider* interface_provider_;
+  const std::string service_name_;
   base::WaitableEvent shutdown_event_;
   std::unique_ptr<base::Thread> io_thread_;
   std::unique_ptr<ClientGpuMemoryBufferManager> gpu_memory_buffer_manager_;

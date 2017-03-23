@@ -18,6 +18,7 @@
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_sync_message.h"
 #include "ipc/message_filter.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/interfaces/interface_provider_spec.mojom.h"
@@ -280,15 +281,12 @@ service_manager::InterfaceRegistry* MockRenderThread::GetInterfaceRegistry() {
   return interface_registry_.get();
 }
 
-service_manager::InterfaceProvider* MockRenderThread::GetRemoteInterfaces() {
-  if (!remote_interfaces_) {
-    service_manager::mojom::InterfaceProviderPtr remote_interface_provider;
-    pending_remote_interface_provider_request_ =
-        MakeRequest(&remote_interface_provider);
-    remote_interfaces_.reset(new service_manager::InterfaceProvider);
-    remote_interfaces_->Bind(std::move(remote_interface_provider));
+service_manager::Connector* MockRenderThread::GetConnector() {
+  if (!connector_) {
+    connector_ =
+        service_manager::Connector::Create(&pending_connector_request_);
   }
-  return remote_interfaces_.get();
+  return connector_.get();
 }
 
 void MockRenderThread::SetFieldTrialGroup(const std::string& trial_name,

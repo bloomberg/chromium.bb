@@ -6,10 +6,11 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "ipc/ipc_sync_message_filter.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/WebKit/public/platform/WebGamepadListener.h"
 #include "third_party/WebKit/public/platform/WebPlatformEventListener.h"
 
@@ -21,8 +22,8 @@ GamepadSharedMemoryReader::GamepadSharedMemoryReader(RenderThread* thread)
       ever_interacted_with_(false),
       binding_(this) {
   if (thread) {
-    thread->GetRemoteInterfaces()->GetInterface(
-        mojo::MakeRequest(&gamepad_monitor_));
+    thread->GetConnector()->BindInterface(mojom::kBrowserServiceName,
+                                          mojo::MakeRequest(&gamepad_monitor_));
     gamepad_monitor_->SetObserver(binding_.CreateInterfacePtrAndBind());
   }
 }

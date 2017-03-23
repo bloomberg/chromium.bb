@@ -14,12 +14,13 @@
 #include "chrome/common/stack_sampling_configuration.h"
 #include "components/metrics/child_call_stack_profile_collector.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/service_names.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/gpu/gpu_arc_video_service.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 #endif
 
 namespace {
@@ -79,9 +80,10 @@ void ChromeContentGpuClient::ExposeInterfacesToBrowser(
 }
 
 void ChromeContentGpuClient::ConsumeInterfacesFromBrowser(
-    service_manager::InterfaceProvider* provider) {
+    service_manager::Connector* connector) {
   metrics::mojom::CallStackProfileCollectorPtr browser_interface;
-  provider->GetInterface(&browser_interface);
+  connector->BindInterface(content::mojom::kBrowserServiceName,
+                           &browser_interface);
   g_call_stack_profile_collector.Get().SetParentProfileCollector(
       std::move(browser_interface));
 }

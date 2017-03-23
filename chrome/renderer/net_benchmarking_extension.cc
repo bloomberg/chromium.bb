@@ -5,8 +5,9 @@
 #include "chrome/renderer/net_benchmarking_extension.h"
 
 #include "chrome/common/net_benchmarking.mojom.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/render_thread.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/WebKit/public/platform/WebCache.h"
 #include "v8/include/v8.h"
 
@@ -71,8 +72,8 @@ class NetBenchmarkingWrapper : public v8::Extension {
 
   static chrome::mojom::NetBenchmarkingPtr ConnectToBrowser() {
     chrome::mojom::NetBenchmarkingPtr net_benchmarking;
-    content::RenderThread::Get()->GetRemoteInterfaces()->GetInterface(
-        &net_benchmarking);
+    content::RenderThread::Get()->GetConnector()->BindInterface(
+        content::mojom::kBrowserServiceName, &net_benchmarking);
     return net_benchmarking;
   }
 

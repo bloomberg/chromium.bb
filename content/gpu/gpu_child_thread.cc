@@ -310,8 +310,7 @@ void GpuChildThread::CreateGpuService(
   if (GetContentClient()->gpu()) {  // NULL in tests.
     GetContentClient()->gpu()->ExposeInterfacesToBrowser(GetInterfaceRegistry(),
                                                          gpu_preferences);
-    GetContentClient()->gpu()->ConsumeInterfacesFromBrowser(
-        GetRemoteInterfaces());
+    GetContentClient()->gpu()->ConsumeInterfacesFromBrowser(GetConnector());
   }
 
   GetInterfaceRegistry()->ResumeBinding();

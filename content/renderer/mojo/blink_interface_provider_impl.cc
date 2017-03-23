@@ -9,9 +9,19 @@
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/public/common/service_names.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace content {
+
+BlinkInterfaceProviderImpl::BlinkInterfaceProviderImpl(
+    base::WeakPtr<service_manager::Connector> connector)
+    : connector_(connector),
+      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      weak_ptr_factory_(this) {
+  weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
+}
 
 BlinkInterfaceProviderImpl::BlinkInterfaceProviderImpl(
     base::WeakPtr<service_manager::InterfaceProvider> remote_interfaces)
@@ -33,10 +43,14 @@ void BlinkInterfaceProviderImpl::getInterface(
     return;
   }
 
-  if (!remote_interfaces_)
-    return;
-
-  remote_interfaces_->GetInterface(name, std::move(handle));
+  if (connector_) {
+    connector_->BindInterface(
+        service_manager::Identity(mojom::kBrowserServiceName,
+                                  service_manager::mojom::kInheritUserID),
+        name, std::move(handle));
+  } else {
+    remote_interfaces_->GetInterface(name, std::move(handle));
+  }
 }
 
 }  // namespace content
