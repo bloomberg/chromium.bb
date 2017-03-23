@@ -187,7 +187,9 @@ os_create_anonymous_file(off_t size)
 		return -1;
 	}
 #else
-	ret = ftruncate(fd, size);
+	do {
+		ret = ftruncate(fd, size);
+	} while (ret < 0 && errno == EINTR);
 	if (ret < 0) {
 		close(fd);
 		return -1;
