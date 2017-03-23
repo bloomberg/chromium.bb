@@ -8,8 +8,10 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/message_loop/message_loop.h"
+#include "base/strings/string_piece.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
@@ -41,7 +43,6 @@ class DataReductionProxySettingsTestBase : public testing::Test {
   static void AddTestProxyToCommandLine();
 
   DataReductionProxySettingsTestBase();
-  DataReductionProxySettingsTestBase(bool promo_allowed);
   ~DataReductionProxySettingsTestBase() override;
 
   void AddProxyToCommandLine();
@@ -68,12 +69,10 @@ class DataReductionProxySettingsTestBase : public testing::Test {
   void InitWithStatisticsPrefs();
   void InitDataReductionProxy(bool enabled_at_startup);
   void CheckDataReductionProxySyntheticTrial(bool enabled);
-  bool SyntheticFieldTrialRegistrationCallback(const std::string& trial_name,
-                                               const std::string& group_name) {
-    synthetic_field_trials_[trial_name] = group_name;
-    return true;
-  }
+  bool OnSyntheticFieldTrialRegistration(base::StringPiece trial_name,
+                                         base::StringPiece group_name);
 
+ protected:
   base::MessageLoopForIO message_loop_;
   std::unique_ptr<DataReductionProxyTestContext> test_context_;
   std::unique_ptr<DataReductionProxySettings> settings_;

@@ -54,15 +54,15 @@ bool ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled() {
 
 // static
 bool ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
-    const std::string& trial_name,
-    const std::string& group_name) {
+    base::StringPiece trial_name,
+    base::StringPiece group_name) {
   return metrics::MetricsServiceAccessor::RegisterSyntheticFieldTrial(
       g_browser_process->metrics_service(), trial_name, group_name);
 }
 
 // static
 bool ChromeMetricsServiceAccessor::RegisterSyntheticMultiGroupFieldTrial(
-    const std::string& trial_name,
+    base::StringPiece trial_name,
     const std::vector<uint32_t>& group_name_hashes) {
   return metrics::MetricsServiceAccessor::RegisterSyntheticMultiGroupFieldTrial(
       g_browser_process->metrics_service(), trial_name, group_name_hashes);
@@ -71,7 +71,7 @@ bool ChromeMetricsServiceAccessor::RegisterSyntheticMultiGroupFieldTrial(
 // static
 bool ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrialWithNameHash(
     uint32_t trial_name_hash,
-    const std::string& group_name) {
+    base::StringPiece group_name) {
   return metrics::MetricsServiceAccessor::
       RegisterSyntheticFieldTrialWithNameHash(
           g_browser_process->metrics_service(), trial_name_hash, group_name);

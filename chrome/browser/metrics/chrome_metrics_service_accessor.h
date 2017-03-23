@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_METRICS_CHROME_METRICS_SERVICE_ACCESSOR_H_
 
 #include <stdint.h>
-#include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/strings/string_piece.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "components/metrics/metrics_service_accessor.h"
 
@@ -143,14 +143,14 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   // Calls metrics::MetricsServiceAccessor::RegisterSyntheticFieldTrial() with
   // g_browser_process->metrics_service(). See that function's declaration for
   // details.
-  static bool RegisterSyntheticFieldTrial(const std::string& trial_name,
-                                          const std::string& group_name);
+  static bool RegisterSyntheticFieldTrial(base::StringPiece trial_name,
+                                          base::StringPiece group_name);
 
   // Calls MetricsServiceAccessor::RegisterSyntheticMultiGroupFieldTrial() with
   // g_browser_process->metrics_service(). See that function's declaration for
   // details.
   static bool RegisterSyntheticMultiGroupFieldTrial(
-      const std::string& trial_name,
+      base::StringPiece trial_name,
       const std::vector<uint32_t>& group_name_hashes);
 
   // Calls
@@ -159,7 +159,7 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   // for details.
   static bool RegisterSyntheticFieldTrialWithNameHash(
       uint32_t trial_name_hash,
-      const std::string& group_name);
+      base::StringPiece group_name);
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ChromeMetricsServiceAccessor);
 };

@@ -7,14 +7,13 @@
 
 #include <stdint.h>
 
-#include <string>
-
+#include "base/strings/string_piece.h"
 
 namespace metrics {
 
 // Computes a uint32_t hash of a given string based on its SHA1 hash. Suitable
 // for uniquely identifying field trial names and group names.
-uint32_t HashName(const std::string& name);
+uint32_t HashName(base::StringPiece name);
 
 }  // namespace metrics
 

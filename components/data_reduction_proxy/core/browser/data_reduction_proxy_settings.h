@@ -74,8 +74,8 @@ enum DataReductionSettingsEnabledAction {
 // be called from there.
 class DataReductionProxySettings : public DataReductionProxyServiceObserver {
  public:
-  typedef base::Callback<bool(const std::string&, const std::string&)>
-      SyntheticFieldTrialRegistrationCallback;
+  using SyntheticFieldTrialRegistrationCallback =
+      base::Callback<bool(base::StringPiece, base::StringPiece)>;
 
   DataReductionProxySettings();
   virtual ~DataReductionProxySettings();
