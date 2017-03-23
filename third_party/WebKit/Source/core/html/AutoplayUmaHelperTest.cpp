@@ -70,7 +70,7 @@ TEST_F(AutoplayUmaHelperTest, VisibilityChangeWhenUnload) {
   EXPECT_CALL(umaHelper(), handleContextDestroyed());
 
   mediaElement().setMuted(true);
-  umaHelper().onAutoplayInitiated(AutoplaySource::Attribute);
+  umaHelper().onAutoplayInitiated(AutoplaySource::Method);
   umaHelper().handlePlayingEvent();
   pageHolder().reset();
   ::testing::Mock::VerifyAndClear(&umaHelper());

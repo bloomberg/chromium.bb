@@ -29,7 +29,6 @@ AutoplayUmaHelper* AutoplayUmaHelper::create(HTMLMediaElement* element) {
 AutoplayUmaHelper::AutoplayUmaHelper(HTMLMediaElement* element)
     : EventListener(CPPEventListenerType),
       ContextLifecycleObserver(nullptr),
-      m_source(AutoplaySource::NumberOfSources),
       m_element(element),
       m_mutedVideoPlayMethodVisibilityObserver(nullptr),
       m_mutedVideoAutoplayOffscreenStartTimeMS(0),
@@ -46,38 +45,53 @@ bool AutoplayUmaHelper::operator==(const EventListener& other) const {
 void AutoplayUmaHelper::onAutoplayInitiated(AutoplaySource source) {
   DEFINE_STATIC_LOCAL(EnumerationHistogram, videoHistogram,
                       ("Media.Video.Autoplay",
-                       static_cast<int>(AutoplaySource::NumberOfSources)));
+                       static_cast<int>(AutoplaySource::NumberOfUmaSources)));
   DEFINE_STATIC_LOCAL(EnumerationHistogram, mutedVideoHistogram,
                       ("Media.Video.Autoplay.Muted",
-                       static_cast<int>(AutoplaySource::NumberOfSources)));
+                       static_cast<int>(AutoplaySource::NumberOfUmaSources)));
   DEFINE_STATIC_LOCAL(EnumerationHistogram, audioHistogram,
                       ("Media.Audio.Autoplay",
-                       static_cast<int>(AutoplaySource::NumberOfSources)));
+                       static_cast<int>(AutoplaySource::NumberOfUmaSources)));
   DEFINE_STATIC_LOCAL(
       EnumerationHistogram, blockedMutedVideoHistogram,
       ("Media.Video.Autoplay.Muted.Blocked", AutoplayBlockedReasonMax));
 
   // Autoplay already initiated
-  // TODO(zqzhang): how about having autoplay attribute and calling `play()` in
-  // the script?
-  if (hasSource())
+  if (m_sources.count(source))
     return;
 
-  m_source = source;
+  m_sources.insert(source);
 
   // Record the source.
   if (m_element->isHTMLVideoElement()) {
-    videoHistogram.count(static_cast<int>(m_source));
+    videoHistogram.count(static_cast<int>(source));
     if (m_element->muted())
-      mutedVideoHistogram.count(static_cast<int>(m_source));
+      mutedVideoHistogram.count(static_cast<int>(source));
   } else {
-    audioHistogram.count(static_cast<int>(m_source));
+    audioHistogram.count(static_cast<int>(source));
+  }
+
+  // Record dual source.
+  if (m_sources.size() ==
+      static_cast<size_t>(AutoplaySource::NumberOfSources)) {
+    if (m_element->isHTMLVideoElement()) {
+      videoHistogram.count(static_cast<int>(AutoplaySource::DualSource));
+      if (m_element->muted())
+        mutedVideoHistogram.count(static_cast<int>(AutoplaySource::DualSource));
+    } else {
+      audioHistogram.count(static_cast<int>(AutoplaySource::DualSource));
+    }
   }
 
   // Record the child frame and top-level frame URLs for autoplay muted videos
   // by attribute.
   if (m_element->isHTMLVideoElement() && m_element->muted()) {
-    if (source == AutoplaySource::Attribute) {
+    if (m_sources.size() ==
+        static_cast<size_t>(AutoplaySource::NumberOfSources)) {
+      Platform::current()->recordRapporURL(
+          "Media.Video.Autoplay.Muted.DualSource.Frame",
+          m_element->document().url());
+    } else if (source == AutoplaySource::Attribute) {
       Platform::current()->recordRapporURL(
           "Media.Video.Autoplay.Muted.Attribute.Frame",
           m_element->document().url());
@@ -261,8 +275,8 @@ void AutoplayUmaHelper::handleContextDestroyed() {
 }
 
 void AutoplayUmaHelper::maybeStartRecordingMutedVideoPlayMethodBecomeVisible() {
-  if (m_source != AutoplaySource::Method || !m_element->isHTMLVideoElement() ||
-      !m_element->muted())
+  if (!m_sources.count(AutoplaySource::Method) ||
+      !m_element->isHTMLVideoElement() || !m_element->muted())
     return;
 
   m_mutedVideoPlayMethodVisibilityObserver = new ElementVisibilityObserver(
@@ -289,7 +303,8 @@ void AutoplayUmaHelper::maybeStopRecordingMutedVideoPlayMethodBecomeVisible(
 }
 
 void AutoplayUmaHelper::maybeStartRecordingMutedVideoOffscreenDuration() {
-  if (!m_element->isHTMLVideoElement() || !m_element->muted())
+  if (!m_element->isHTMLVideoElement() || !m_element->muted() ||
+      !m_sources.count(AutoplaySource::Method))
     return;
 
   // Start recording muted video playing offscreen duration.
@@ -322,13 +337,14 @@ void AutoplayUmaHelper::maybeStopRecordingMutedVideoOffscreenDuration() {
       std::min<int64_t>(m_mutedVideoAutoplayOffscreenDurationMS,
                         std::numeric_limits<int32_t>::max()));
 
-  if (m_source == AutoplaySource::Method) {
-    DEFINE_STATIC_LOCAL(
-        CustomCountHistogram, durationHistogram,
-        ("Media.Video.Autoplay.Muted.PlayMethod.OffscreenDuration", 1,
-         maxOffscreenDurationUmaMS, offscreenDurationUmaBucketCount));
-    durationHistogram.count(boundedTime);
-  }
+  DCHECK(m_sources.count(AutoplaySource::Method));
+
+  DEFINE_STATIC_LOCAL(
+      CustomCountHistogram, durationHistogram,
+      ("Media.Video.Autoplay.Muted.PlayMethod.OffscreenDuration", 1,
+       maxOffscreenDurationUmaMS, offscreenDurationUmaBucketCount));
+  durationHistogram.count(boundedTime);
+
   m_mutedVideoOffscreenDurationVisibilityObserver->stop();
   m_mutedVideoOffscreenDurationVisibilityObserver = nullptr;
   m_mutedVideoAutoplayOffscreenDurationMS = 0;
@@ -363,7 +379,7 @@ bool AutoplayUmaHelper::shouldListenToContextDestroyed() const {
 bool AutoplayUmaHelper::shouldRecordUserPausedAutoplayingCrossOriginVideo()
     const {
   return m_element->isInCrossOriginFrame() && m_element->isHTMLVideoElement() &&
-         m_source != AutoplaySource::NumberOfSources &&
+         !m_sources.empty() &&
          !m_recordedCrossOriginAutoplayResults.count(
              CrossOriginAutoplayResult::UserPaused);
 }

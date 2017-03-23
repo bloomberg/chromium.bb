@@ -20,8 +20,12 @@ enum class AutoplaySource {
   Attribute = 0,
   // Autoplay comes from `play()` method.
   Method = 1,
-  // This enum value must be last.
+  // Used for checking dual source.
   NumberOfSources = 2,
+  // Both sources are used.
+  DualSource = 2,
+  // This enum value must be last.
+  NumberOfUmaSources = 3,
 };
 
 // These values are used for histograms. Do not reorder.
@@ -75,7 +79,7 @@ class CORE_EXPORT AutoplayUmaHelper : public EventListener,
 
   bool isVisible() const { return m_isVisible; }
 
-  bool hasSource() const { return m_source != AutoplaySource::NumberOfSources; }
+  bool hasSource() const { return !m_sources.empty(); }
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -105,9 +109,9 @@ class CORE_EXPORT AutoplayUmaHelper : public EventListener,
   bool shouldListenToContextDestroyed() const;
   bool shouldRecordUserPausedAutoplayingCrossOriginVideo() const;
 
-  // The autoplay source. Use AutoplaySource::NumberOfSources for invalid
-  // source.
-  AutoplaySource m_source;
+  // The autoplay sources.
+  std::set<AutoplaySource> m_sources;
+
   // The media element this UMA helper is attached to. |m_element| owns |this|.
   Member<HTMLMediaElement> m_element;
 
