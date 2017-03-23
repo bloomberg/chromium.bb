@@ -26,7 +26,8 @@
 namespace blink {
 
 // The "Blink-side" serialization version, which defines how Blink will behave
-// during the serialization process. The serialization format has two
+// during the serialization process, is in
+// SerializedScriptValue::wireFormatVersion. The serialization format has two
 // "envelopes": an outer one controlled by Blink and an inner one by V8.
 //
 // They are formatted as follows:
@@ -40,7 +41,6 @@ namespace blink {
 // This version number must be incremented whenever any incompatible changes are
 // made to how Blink writes data. Purely V8-side changes do not require an
 // adjustment to this value.
-static const uint32_t kLatestVersion = 16;
 
 V8ScriptValueSerializer::V8ScriptValueSerializer(
     RefPtr<ScriptState> scriptState,
@@ -68,7 +68,7 @@ RefPtr<SerializedScriptValue> V8ScriptValueSerializer::serialize(
 
   // Write out the file header.
   writeTag(VersionTag);
-  writeUint32(kLatestVersion);
+  writeUint32(SerializedScriptValue::wireFormatVersion);
   m_serializer.WriteHeader();
 
   // Serialize the value and handle errors.

@@ -41,6 +41,8 @@ class GC_PLUGIN_IGNORE("https://crbug.com/644725")
   RefPtr<SerializedScriptValue> serialize(v8::Local<v8::Value>,
                                           ExceptionState&);
 
+  static const uint32_t kLatestVersion;
+
  protected:
   // Returns true if the DOM object was successfully written.
   // If false is returned and no more specific exception is thrown, a generic

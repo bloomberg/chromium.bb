@@ -870,8 +870,12 @@ STATIC_ASSERT_ENUM(
     WebSettings::ProgressBarCompletion::ResourcesBeforeDCLAndSameOriginIFrames,
     ProgressBarCompletion::ResourcesBeforeDCLAndSameOriginIFrames);
 
+// This ensures that the version number published in
+// WebSerializedScriptValueVersion.h matches the serializer's understanding.
+// TODO(jbroman): Fix this to also account for the V8-side version. See
+// https://crbug.com/704293.
 static_assert(kSerializedScriptValueVersion ==
                   SerializedScriptValue::wireFormatVersion,
-              "");
+              "Update WebSerializedScriptValueVersion.h.");
 
 }  // namespace blink
