@@ -1475,6 +1475,8 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
     };
     av1_encode_block_intra(plane, block, blk_row, blk_col, plane_bsize, tx_size,
                            &b_args);
+    av1_set_txb_context(x, plane, block, plane_bsize, tx_size,
+                        args->t_above + blk_col, args->t_left + blk_row);
     if (args->cpi->sf.use_transform_domain_distortion && !CONFIG_DAALA_DIST) {
       dist_block(args->cpi, x, plane, block, blk_row, blk_col, tx_size,
                  &this_rd_stats.dist, &this_rd_stats.sse);
