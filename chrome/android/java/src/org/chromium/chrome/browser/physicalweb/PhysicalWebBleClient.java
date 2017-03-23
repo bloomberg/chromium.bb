@@ -78,14 +78,6 @@ public class PhysicalWebBleClient {
     }
 
     /**
-     * Create a MessageListener that listens during a foreground scan.
-     * @return the MessageListener.
-     */
-    MessageListener createForegroundMessageListener() {
-        return new ForegroundMessageListener();
-    }
-
-    /**
      * Get the URLs from a device within a message.
      * @param message The Nearby message.
      * @return The URL contained in the message.
