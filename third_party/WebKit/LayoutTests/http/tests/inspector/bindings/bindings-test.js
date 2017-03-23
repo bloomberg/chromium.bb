@@ -85,10 +85,6 @@ InspectorTest.navigateFrame = function(frameId, navigateURL, evalSourceURL) {
     }
 }
 
-InspectorTest.markStep = function(title) {
-    InspectorTest.addResult('\nRunning: ' + title);
-}
-
 InspectorTest.addSniffer(Bindings.CompilerScriptMapping.prototype, "_sourceMapAttachedForTest", onSourceMap, true);
 InspectorTest.addSniffer(Bindings.SASSSourceMapping.prototype, "_sourceMapAttachedForTest", onSourceMap, true);
 var sourceMapCallbacks = new Map();

@@ -1,0 +1,46 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/sources-test.js"></script>
+
+<script>
+
+async function test()
+{
+    var test = InspectorTest.testJavascriptOutline;
+
+    InspectorTest.markStep('testAsyncFunction');
+    await test('async function foo() { }');
+
+    InspectorTest.markStep('testGeneratorFunction');
+    await test('function* foo() { }');
+
+    InspectorTest.markStep('testMismatchBrackets');
+    await test(`
+function foo(a, b) {
+    if (a > b) {
+        return a;
+}
+
+function bar(eee) {
+    foo(eee, 2 * eee);
+}
+`);
+
+    InspectorTest.markStep('testSyntaxError');
+    await test(`
+function notAGenerator(a, b) {
+    yield 10;
+}`);
+
+    InspectorTest.completeTest();
+}
+
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>Verify javascript outline</p>
+</body>
+</html>

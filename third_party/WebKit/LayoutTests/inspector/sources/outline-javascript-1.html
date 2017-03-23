@@ -1,0 +1,37 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/sources-test.js"></script>
+
+<script>
+
+async function test()
+{
+    var test = InspectorTest.testJavascriptOutline;
+
+    InspectorTest.markStep('testSimpleFunction');
+    await test('function foo(a, b, c) {}');
+
+    InspectorTest.markStep('testSpreadOperator');
+    await test('function foo(a, b, ...c) {}');
+
+    InspectorTest.markStep('testVariableDeclaration');
+    await test('var a = function(a,b) { }');
+
+    InspectorTest.markStep('testMultipleVariableDeclaration');
+    await test('var a = function(a,b) { }, b = function(c,d) { }');
+
+    InspectorTest.markStep('testObjectProperty');
+    await test('a.b.c = function(d, e) { }');
+
+    InspectorTest.completeTest();
+}
+
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>Verify javascript outline</p>
+</body>
+</html>

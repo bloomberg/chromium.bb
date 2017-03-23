@@ -1,0 +1,28 @@
+Verify javascript outline
+
+
+Running: testClassConstructor
+Text:
+    class Test { constructor(foo, bar) { }}
+Outline:
+
+Running: testClassMethods
+Text:
+    class Test { foo() {} bar() { }}
+Outline:
+
+Running: testAnonymousClass
+Text:
+    var test = class { constructor(foo, bar) { }}
+Outline:
+
+Running: testClassExtends
+Text:
+    var A = class extends B { foo() { }}
+Outline:
+
+Running: testStaticMethod
+Text:
+    class Test { static foo() { }}
+Outline:
+

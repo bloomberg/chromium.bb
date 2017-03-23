@@ -32,6 +32,26 @@ InspectorTest.testPrettyPrint = function(mimeType, text, mappingQueries, next)
     }
 }
 
+InspectorTest.testJavascriptOutline = function(text) {
+    var fulfill;
+    var promise = new Promise(x => fulfill = x);
+    Common.formatterWorkerPool.javaScriptOutline(text, onChunk);
+    var items = [];
+    return promise;
+
+    function onChunk(isLastChunk, outlineItems) {
+        items.pushAll(outlineItems);
+        if (!isLastChunk)
+            return;
+        InspectorTest.addResult('Text:');
+        InspectorTest.addResult(text.split('\n').map(line => '    ' + line).join('\n'));
+        InspectorTest.addResult('Outline:');
+        for (var item of items)
+            InspectorTest.addResult('    ' + item.name + item.arguments + ':' + item.line + ':' + item.column);
+        fulfill();
+    }
+}
+
 InspectorTest.dumpSwatchPositions = function(sourceFrame, bookmarkType)
 {
     var textEditor = sourceFrame.textEditor;

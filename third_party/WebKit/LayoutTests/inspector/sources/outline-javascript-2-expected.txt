@@ -1,0 +1,35 @@
+Verify javascript outline
+
+
+Running: testNamedFunctionVariableAssignment
+Text:
+    var a = function foo(...bar) { }
+Outline:
+    foo(...bar):0:17
+
+Running: testArrowFunction
+Text:
+    var a = x => x + 2
+Outline:
+
+Running: testArrowFunctionWithMultipleArguments
+Text:
+    var a = (x, y) => x + y
+Outline:
+
+Running: testInnerFunctions
+Text:
+    function foo(){ function bar() {} function baz() { }}
+Outline:
+    foo():0:9
+    bar():0:25
+    baz():0:43
+
+Running: testObjectProperties
+Text:
+    x = { run: function() { }, get count() { }, set count(value) { }}
+Outline:
+    run():0:11
+    get count():0:31
+    set count(value):0:48
+

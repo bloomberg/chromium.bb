@@ -23,6 +23,10 @@ console.assert = function(condition, object)
     InspectorTest.addResult(new Error(message).stack);
 }
 
+InspectorTest.markStep = function(title) {
+    InspectorTest.addResult('\nRunning: ' + title);
+}
+
 InspectorTest.startDumpingProtocolMessages = function()
 {
     Protocol.InspectorBackend.Connection.prototype._dumpProtocolMessage = testRunner.logToStderr.bind(testRunner);

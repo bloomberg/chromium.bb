@@ -1,0 +1,37 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/sources-test.js"></script>
+
+<script>
+
+async function test()
+{
+    var test = InspectorTest.testJavascriptOutline;
+
+    InspectorTest.markStep('testClassConstructor');
+    await test('class Test { constructor(foo, bar) { }}');
+
+    InspectorTest.markStep('testClassMethods');
+    await test('class Test { foo() {} bar() { }}');
+
+    InspectorTest.markStep('testAnonymousClass');
+    await test('var test = class { constructor(foo, bar) { }}');
+
+    InspectorTest.markStep('testClassExtends');
+    await test('var A = class extends B { foo() { }}');
+
+    InspectorTest.markStep('testStaticMethod');
+    await test('class Test { static foo() { }}');
+
+    InspectorTest.completeTest();
+}
+
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>Verify javascript outline</p>
+</body>
+</html>
