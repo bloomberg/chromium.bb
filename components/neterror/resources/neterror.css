@@ -397,6 +397,7 @@ html[subframe] body {
 }
 
 .offline .runner-container {
+  direction: ltr;
   height: 150px;
   max-width: 600px;
   overflow: hidden;
