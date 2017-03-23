@@ -294,7 +294,9 @@ void LaserPointerView::AddNewPoint(const gfx::PointF& new_point,
       base::TimeDelta::FromMilliseconds(kPredictionIntervalMs);
   base::TimeDelta max_point_interval =
       base::TimeDelta::FromMilliseconds(kMaxPointIntervalMs);
-  base::TimeTicks last_point_time = current_time;
+  base::TimeTicks last_point_time = new_time;
+  gfx::PointF last_point_location =
+      gfx::ScalePoint(new_point, scale.x(), scale.y());
 
   // Use the last four points for prediction.
   using PositionArray = std::array<gfx::PointF, 4>;
@@ -306,15 +308,16 @@ void LaserPointerView::AddNewPoint(const gfx::PointF& new_point,
     if ((last_point_time - point.time) > max_point_interval)
       break;
 
-    *it++ = gfx::ScalePoint(point.location, scale.x(), scale.y());
     last_point_time = point.time;
+    last_point_location = gfx::ScalePoint(point.location, scale.x(), scale.y());
+    *it++ = last_point_location;
 
     // Stop when no more positions are needed.
     if (it == position.end())
       break;
   }
   // Pad with last point if needed.
-  std::fill(it, position.end(), *(it - 1));
+  std::fill(it, position.end(), last_point_location);
 
   // Note: Currently there's no need to divide by the time delta between
   // points as we assume a constant delta between points that matches the
