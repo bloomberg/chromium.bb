@@ -18,10 +18,6 @@ extern const base::Feature kNotificationsFeature;
 extern const char kNotificationsPriorityParam[];
 constexpr int kNotificationsDefaultPriority = -1;
 
-// "false": use server signals to decide whether to send a notification
-// "true": always send a notification when we receive ARTICLES suggestions
-extern const char kNotificationsAlwaysNotifyParam[];
-
 // "true": use article's snippet as notification's text
 // "false": use article's publisher as notification's text
 extern const char kNotificationsUseSnippetAsTextParam[];

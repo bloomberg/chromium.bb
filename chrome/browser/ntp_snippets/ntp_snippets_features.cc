@@ -11,7 +11,6 @@ const base::Feature kNotificationsFeature = {"ContentSuggestionsNotifications",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
 const char kNotificationsPriorityParam[] = "priority";
-const char kNotificationsAlwaysNotifyParam[] = "always_notify";
 const char kNotificationsUseSnippetAsTextParam[] = "use_snippet_as_text";
 const char kNotificationsKeepWhenFrontmostParam[] =
     "keep_notification_when_frontmost";

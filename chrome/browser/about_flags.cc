@@ -578,16 +578,9 @@ const FeatureEntry::FeatureVariation
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID)
-const FeatureEntry::FeatureParam
-    kContentSuggestionsNotificationsFeatureVariationAlways[] = {
-        {params::ntp_snippets::kNotificationsAlwaysNotifyParam, "true"}};
-
 const FeatureEntry::FeatureVariation
     kContentSuggestionsNotificationsFeatureVariations[] = {
-        {"(notify always)",
-         kContentSuggestionsNotificationsFeatureVariationAlways,
-         arraysize(kContentSuggestionsNotificationsFeatureVariationAlways),
-         nullptr}};
+        {"(notify always)", nullptr, 0, "3313312"}};
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID)
