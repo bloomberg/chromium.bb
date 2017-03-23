@@ -248,7 +248,7 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
 #if CONFIG_EXT_REFS
   RANGE_CHECK_HI(extra_cfg, enable_auto_bwd_ref, 2);
 #endif  // CONFIG_EXT_REFS
-  RANGE_CHECK(extra_cfg, cpu_used, -8, 8);
+  RANGE_CHECK(extra_cfg, cpu_used, 0, 8);
   RANGE_CHECK_HI(extra_cfg, noise_sensitivity, 6);
   RANGE_CHECK(extra_cfg, superblock_size, AOM_SUPERBLOCK_SIZE_64X64,
               AOM_SUPERBLOCK_SIZE_DYNAMIC);
@@ -477,7 +477,7 @@ static aom_codec_err_t set_encoder_config(
 
   oxcf->key_freq = cfg->kf_max_dist;
 
-  oxcf->speed = abs(extra_cfg->cpu_used);
+  oxcf->speed = extra_cfg->cpu_used;
   oxcf->enable_auto_arf = extra_cfg->enable_auto_alt_ref;
 #if CONFIG_EXT_REFS
   oxcf->enable_auto_brf = extra_cfg->enable_auto_bwd_ref;

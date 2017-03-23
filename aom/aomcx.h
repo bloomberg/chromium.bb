@@ -137,7 +137,7 @@ enum aome_enc_control_id {
    * of motion estimation methods. Values greater than 0 will increase encoder
    * speed at the expense of quality.
    *
-   * \note Valid range: -8..8
+   * \note Valid range: 0..8
    */
   AOME_SET_CPUUSED = 13,
 
