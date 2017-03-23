@@ -12,6 +12,7 @@ import contextlib
 import itertools
 import logging
 import os
+import shutil
 import signal
 import sys
 import threading
@@ -34,6 +35,7 @@ from pylib.base import test_instance_factory
 from pylib.base import test_run_factory
 from pylib.results import json_results
 from pylib.results import report_results
+from pylib.utils import logdog_helper
 
 from py_utils import contextlib_ext
 
@@ -232,6 +234,12 @@ def AddDeviceOptions(parser):
       dest='tool',
       help='Run the test under a tool '
            '(use --tool help to list them)')
+
+  parser.add_argument(
+      '--upload-logcats-file',
+      action='store_true',
+      dest='upload_logcats_file',
+      help='Whether to upload logcat file to logdog.')
 
   logcat_output_group = parser.add_mutually_exclusive_group()
   logcat_output_group.add_argument(
@@ -735,6 +743,24 @@ def RunTestsInPlatformMode(args):
       write_json_file(),
       args.json_results_file)
 
+  @contextlib.contextmanager
+  def upload_logcats_file():
+    try:
+      yield
+    finally:
+      if not args.logcat_output_file:
+        logging.critical('Cannot upload logcats file. '
+                        'File to save logcat is not specified.')
+      else:
+        with open(args.logcat_output_file) as src:
+          dst = logdog_helper.open_text('unified_logcats')
+          if dst:
+            shutil.copyfileobj(src, dst)
+
+  logcats_uploader = contextlib_ext.Optional(
+      upload_logcats_file(),
+      'upload_logcats_file' in args and args.upload_logcats_file)
+
   ### Set up test objects.
 
   env = environment_factory.CreateEnvironment(args, infra_error)
@@ -744,7 +770,7 @@ def RunTestsInPlatformMode(args):
 
   ### Run.
 
-  with json_writer, env, test_instance, test_run:
+  with json_writer, logcats_uploader, env, test_instance, test_run:
 
     repetitions = (xrange(args.repeat + 1) if args.repeat >= 0
                    else itertools.count())

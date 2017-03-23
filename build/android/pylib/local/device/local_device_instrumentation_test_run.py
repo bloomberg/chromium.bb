@@ -35,6 +35,7 @@ TIMEOUT_ANNOTATIONS = [
   ('SmallTest', 1 * 60),
 ]
 
+LOGCAT_FILTERS = ['*:e', 'chromium:v', 'cr_*:v']
 
 # TODO(jbudorick): Make this private once the instrumentation test_runner is
 # deprecated.
@@ -295,7 +296,8 @@ class LocalDeviceInstrumentationTestRun(
           time.strftime('%Y%m%dT%H%M%S', time.localtime()),
           device.serial)
       logmon = logdog_logcat_monitor.LogdogLogcatMonitor(
-          device.adb, stream_name)
+          device.adb, stream_name, filter_specs=LOGCAT_FILTERS)
+
       with contextlib_ext.Optional(
           logmon, self._test_instance.should_save_logcat):
         with contextlib_ext.Optional(
