@@ -76,8 +76,6 @@ class SimpleFeature : public Feature {
   bool IsInternal() const override;
   bool IsIdInBlacklist(const std::string& extension_id) const override;
   bool IsIdInWhitelist(const std::string& extension_id) const override;
-  Availability IsAvailableToChannel(
-      version_info::Channel channel) const override;
 
   static bool IsIdInArray(const std::string& extension_id,
                           const char* const array[],

@@ -20,8 +20,6 @@
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/features/feature_channel.h"
-#include "extensions/common/features/feature_provider.h"
 
 namespace extensions {
 
@@ -76,31 +74,24 @@ void RulesRegistryService::EnsureDefaultRulesRegistriesRegistered(
   if (ContainsKey(rule_registries_, key))
     return;
 
-  // Create a web request rules registry if declarative web request is enabled
-  // on the current channel.
-  const Feature* declarative_web_request =
-      FeatureProvider::GetAPIFeature("declarativeWebRequest");
-  if (declarative_web_request->IsAvailableToChannel(GetCurrentChannel())
-          .is_available()) {
-    // Only cache rules for regular pages.
-    RulesCacheDelegate* web_request_cache_delegate = nullptr;
-    if (rules_registry_id == kDefaultRulesRegistryID) {
-      // Create a RulesCacheDelegate.
-      web_request_cache_delegate =
-          new RulesCacheDelegate(true /*log_storage_init_delay*/);
-      cache_delegates_.push_back(base::WrapUnique(web_request_cache_delegate));
-    }
-    scoped_refptr<WebRequestRulesRegistry> web_request_rules_registry(
-        new WebRequestRulesRegistry(
-            browser_context_, web_request_cache_delegate, rules_registry_id));
-
-    RegisterRulesRegistry(web_request_rules_registry);
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&RegisterToExtensionWebRequestEventRouterOnIO,
-                   browser_context_, rules_registry_id,
-                   web_request_rules_registry));
+  // Only cache rules for regular pages.
+  RulesCacheDelegate* web_request_cache_delegate = NULL;
+  if (rules_registry_id == kDefaultRulesRegistryID) {
+    // Create a RulesCacheDelegate.
+    web_request_cache_delegate =
+        new RulesCacheDelegate(true /*log_storage_init_delay*/);
+    cache_delegates_.push_back(base::WrapUnique(web_request_cache_delegate));
   }
+  scoped_refptr<WebRequestRulesRegistry> web_request_rules_registry(
+      new WebRequestRulesRegistry(browser_context_, web_request_cache_delegate,
+                                  rules_registry_id));
+
+  RegisterRulesRegistry(web_request_rules_registry);
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&RegisterToExtensionWebRequestEventRouterOnIO,
+                 browser_context_, rules_registry_id,
+                 web_request_rules_registry));
 
   // Only create a ContentRulesRegistry for regular pages.
   if (rules_registry_id == kDefaultRulesRegistryID) {

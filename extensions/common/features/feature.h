@@ -10,7 +10,6 @@
 
 #include "base/strings/string_piece.h"
 #include "base/values.h"
-#include "components/version_info/version_info.h"
 #include "extensions/common/manifest.h"
 
 class GURL;
@@ -136,12 +135,6 @@ class Feature {
                                             Context context,
                                             const GURL& url,
                                             Platform platform) const = 0;
-
-  // Returns the availability of the feature on the given |channel|. The
-  // availability result will either be IS_AVAILABLE, UNSUPPORTED_CHANNEL or
-  // NOT_PRESENT.
-  virtual Availability IsAvailableToChannel(
-      version_info::Channel channel) const = 0;
 
   // Returns true if the feature is available to the current environment,
   // without needing to know information about an Extension or any other

@@ -98,24 +98,6 @@ bool ComplexFeature::IsIdInWhitelist(const std::string& extension_id) const {
   return false;
 }
 
-Feature::Availability ComplexFeature::IsAvailableToChannel(
-    version_info::Channel channel) const {
-  Feature::Availability first_availability =
-      features_[0]->IsAvailableToChannel(channel);
-  if (first_availability.is_available())
-    return first_availability;
-
-  for (FeatureList::const_iterator it = features_.begin() + 1;
-       it != features_.end(); ++it) {
-    Availability availability = (*it)->IsAvailableToChannel(channel);
-    if (availability.is_available())
-      return availability;
-  }
-  // If none of the SimpleFeatures are available, we return the availability
-  // info of the first SimpleFeature that was not available.
-  return first_availability;
-}
-
 bool ComplexFeature::IsInternal() const {
   // Constructor verifies that composed features are consistent, thus we can
   // return just the first feature's value.

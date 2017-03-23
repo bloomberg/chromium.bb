@@ -41,8 +41,6 @@ class ComplexFeature : public Feature {
 
   bool IsIdInBlacklist(const std::string& extension_id) const override;
   bool IsIdInWhitelist(const std::string& extension_id) const override;
-  Availability IsAvailableToChannel(
-      version_info::Channel channel) const override;
 
  protected:
   // Feature:

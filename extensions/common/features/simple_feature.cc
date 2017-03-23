@@ -53,11 +53,6 @@ Feature::Availability IsAvailableToContextForBind(const Extension* extension,
   return feature->IsAvailableToContext(extension, context, url, platform);
 }
 
-Feature::Availability IsAvailableToChannelForBind(version_info::Channel channel,
-                                                  const Feature* feature) {
-  return feature->IsAvailableToChannel(channel);
-}
-
 // Gets a human-readable name for the given extension type, suitable for giving
 // to developers in an error message.
 std::string GetDisplayName(Manifest::Type type) {
@@ -458,13 +453,6 @@ bool SimpleFeature::IsIdInBlacklist(const std::string& extension_id) const {
 
 bool SimpleFeature::IsIdInWhitelist(const std::string& extension_id) const {
   return IsIdInList(extension_id, whitelist_);
-}
-
-Feature::Availability SimpleFeature::IsAvailableToChannel(
-    version_info::Channel channel) const {
-  if (channel_ && *channel_ < channel)
-    return CreateAvailability(UNSUPPORTED_CHANNEL, *channel_);
-  return CheckDependencies(base::Bind(&IsAvailableToChannelForBind, channel));
 }
 
 // static

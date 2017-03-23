@@ -45,9 +45,15 @@ struct FeatureSessionTypeTestData {
 
 Feature::AvailabilityResult IsAvailableInChannel(Channel channel_for_feature,
                                                  Channel channel_for_testing) {
+  ScopedCurrentChannel current_channel(channel_for_testing);
+
   SimpleFeature feature;
   feature.set_channel(channel_for_feature);
-  return feature.IsAvailableToChannel(channel_for_testing).result();
+  return feature
+      .IsAvailableToManifest("random-extension", Manifest::TYPE_UNKNOWN,
+                             Manifest::INVALID_LOCATION, -1,
+                             Feature::GetCurrentPlatform())
+      .result();
 }
 
 }  // namespace
@@ -756,6 +762,56 @@ TEST_F(SimpleFeatureTest, SupportedChannel) {
             IsAvailableInChannel(Channel::UNKNOWN, Channel::STABLE));
 }
 
+// Tests simple feature availability across channels.
+TEST_F(SimpleFeatureTest, SimpleFeatureAvailability) {
+  std::unique_ptr<ComplexFeature> complex_feature;
+  {
+    std::unique_ptr<SimpleFeature> feature1(new SimpleFeature());
+    feature1->channel_.reset(new Channel(Channel::BETA));
+    feature1->extension_types_.push_back(Manifest::TYPE_EXTENSION);
+    std::unique_ptr<SimpleFeature> feature2(new SimpleFeature());
+    feature2->channel_.reset(new Channel(Channel::BETA));
+    feature2->extension_types_.push_back(Manifest::TYPE_LEGACY_PACKAGED_APP);
+    std::vector<Feature*> list;
+    list.push_back(feature1.release());
+    list.push_back(feature2.release());
+    complex_feature.reset(new ComplexFeature(&list));
+  }
+
+  Feature* feature = static_cast<Feature*>(complex_feature.get());
+  // Make sure both rules are applied correctly.
+  {
+    ScopedCurrentChannel current_channel(Channel::BETA);
+    EXPECT_EQ(
+        Feature::IS_AVAILABLE,
+        feature->IsAvailableToManifest("1",
+                                       Manifest::TYPE_EXTENSION,
+                                       Manifest::INVALID_LOCATION,
+                                       Feature::UNSPECIFIED_PLATFORM).result());
+    EXPECT_EQ(
+        Feature::IS_AVAILABLE,
+        feature->IsAvailableToManifest("2",
+                                       Manifest::TYPE_LEGACY_PACKAGED_APP,
+                                       Manifest::INVALID_LOCATION,
+                                       Feature::UNSPECIFIED_PLATFORM).result());
+  }
+  {
+    ScopedCurrentChannel current_channel(Channel::STABLE);
+    EXPECT_NE(
+        Feature::IS_AVAILABLE,
+        feature->IsAvailableToManifest("1",
+                                       Manifest::TYPE_EXTENSION,
+                                       Manifest::INVALID_LOCATION,
+                                       Feature::UNSPECIFIED_PLATFORM).result());
+    EXPECT_NE(
+        Feature::IS_AVAILABLE,
+        feature->IsAvailableToManifest("2",
+                                       Manifest::TYPE_LEGACY_PACKAGED_APP,
+                                       Manifest::INVALID_LOCATION,
+                                       Feature::UNSPECIFIED_PLATFORM).result());
+  }
+}
+
 // Tests complex feature availability across channels.
 TEST_F(SimpleFeatureTest, ComplexFeatureAvailability) {
   std::unique_ptr<ComplexFeature> complex_feature;
@@ -765,8 +821,8 @@ TEST_F(SimpleFeatureTest, ComplexFeatureAvailability) {
     feature1->channel_.reset(new Channel(Channel::UNKNOWN));
     feature1->extension_types_.push_back(Manifest::TYPE_EXTENSION);
     std::unique_ptr<SimpleFeature> feature2(new SimpleFeature());
-    // Rule: "legacy_packaged_app", channel beta.
-    feature2->channel_.reset(new Channel(Channel::BETA));
+    // Rule: "legacy_packaged_app", channel stable.
+    feature2->channel_.reset(new Channel(Channel::STABLE));
     feature2->extension_types_.push_back(Manifest::TYPE_LEGACY_PACKAGED_APP);
     std::vector<Feature*> list;
     list.push_back(feature1.release());
@@ -774,18 +830,7 @@ TEST_F(SimpleFeatureTest, ComplexFeatureAvailability) {
     complex_feature.reset(new ComplexFeature(&list));
   }
 
-  Feature* feature = complex_feature.get();
-  EXPECT_EQ(Feature::IS_AVAILABLE,
-            feature->IsAvailableToChannel(Channel::UNKNOWN).result());
-  EXPECT_EQ(Feature::IS_AVAILABLE,
-            feature->IsAvailableToChannel(Channel::CANARY).result());
-  EXPECT_EQ(Feature::IS_AVAILABLE,
-            feature->IsAvailableToChannel(Channel::DEV).result());
-  EXPECT_EQ(Feature::IS_AVAILABLE,
-            feature->IsAvailableToChannel(Channel::BETA).result());
-  EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
-            feature->IsAvailableToChannel(Channel::STABLE).result());
-
+  Feature* feature = static_cast<Feature*>(complex_feature.get());
   {
     ScopedCurrentChannel current_channel(Channel::UNKNOWN);
     EXPECT_EQ(Feature::IS_AVAILABLE,
@@ -793,12 +838,6 @@ TEST_F(SimpleFeatureTest, ComplexFeatureAvailability) {
                   ->IsAvailableToManifest("1", Manifest::TYPE_EXTENSION,
                                           Manifest::INVALID_LOCATION,
                                           Feature::UNSPECIFIED_PLATFORM)
-                  .result());
-    EXPECT_EQ(Feature::IS_AVAILABLE,
-              feature
-                  ->IsAvailableToManifest(
-                      "1", Manifest::TYPE_LEGACY_PACKAGED_APP,
-                      Manifest::INVALID_LOCATION, Feature::UNSPECIFIED_PLATFORM)
                   .result());
   }
   {
@@ -809,21 +848,9 @@ TEST_F(SimpleFeatureTest, ComplexFeatureAvailability) {
                       "2", Manifest::TYPE_LEGACY_PACKAGED_APP,
                       Manifest::INVALID_LOCATION, Feature::UNSPECIFIED_PLATFORM)
                   .result());
-    EXPECT_NE(Feature::IS_AVAILABLE,
-              feature
-                  ->IsAvailableToManifest("1", Manifest::TYPE_EXTENSION,
-                                          Manifest::INVALID_LOCATION,
-                                          Feature::UNSPECIFIED_PLATFORM)
-                  .result());
   }
   {
-    ScopedCurrentChannel current_channel(Channel::STABLE);
-    EXPECT_NE(Feature::IS_AVAILABLE,
-              feature
-                  ->IsAvailableToManifest(
-                      "2", Manifest::TYPE_LEGACY_PACKAGED_APP,
-                      Manifest::INVALID_LOCATION, Feature::UNSPECIFIED_PLATFORM)
-                  .result());
+    ScopedCurrentChannel current_channel(Channel::BETA);
     EXPECT_NE(Feature::IS_AVAILABLE,
               feature
                   ->IsAvailableToManifest("1", Manifest::TYPE_EXTENSION,
