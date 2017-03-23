@@ -296,7 +296,8 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
           GetAudioSystem(), GetMediaStreamManager(), RPH->GetID(), kSalt);
 
   EXPECT_EQ(RPH->bad_msg_count(), 0);
-  EXPECT_CALL(listener, Run(_, _, _, _)).Times(0);
+  // We must still get a callback by the contract of RequestDeviceAuthorization.
+  EXPECT_CALL(listener, Run(_, _, _, _)).Times(1);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,

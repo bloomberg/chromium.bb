@@ -53,7 +53,8 @@ class CONTENT_EXPORT AudioOutputAuthorizationHandler {
   // Checks authorization of the device with the hashed id |device_id| for the
   // given render frame id and security origin, or uses |session_id| for
   // authorization. Looks up device id (if |session_id| is used for device
-  // selection) and default device parameters.
+  // selection) and default device parameters. This function will always call
+  // |cb|, even if a bad message if received.
   void RequestDeviceAuthorization(int render_frame_id,
                                   int session_id,
                                   const std::string& device_id,

@@ -114,6 +114,8 @@ void AudioOutputAuthorizationHandler::RequestDeviceAuthorization(
   // Check security origin if nondefault device is requested.
   if (!MediaStreamManager::IsOriginAllowed(render_process_id_,
                                            security_origin)) {
+    cb.Run(media::OUTPUT_DEVICE_STATUS_ERROR_NOT_AUTHORIZED, false,
+           media::AudioParameters::UnavailableDeviceParams(), std::string());
     bad_message::ReceivedBadMessage(render_process_id_,
                                     bad_message::AOAH_UNAUTHORIZED_URL);
     return;
