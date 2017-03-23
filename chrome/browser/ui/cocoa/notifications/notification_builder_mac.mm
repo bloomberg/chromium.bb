@@ -132,16 +132,13 @@ NSString* const kNotificationSettingsButtonTag = @"settingsButton";
 
   // Icon
   if ([notificationData_ objectForKey:kNotificationImage]) {
-    if ([toast respondsToSelector:@selector(_identityImage)]) {
-      if ([[NSImage class] conformsToProtocol:@protocol(NSSecureCoding)]) {
-        NSImage* image = [notificationData_ objectForKey:kNotificationImage];
-        [toast setValue:image forKey:@"_identityImage"];
-      } else {  // NSImage only conforms to NSSecureCoding from 10.10 onwards.
-        base::scoped_nsobject<NSImage> image([[NSImage alloc]
-            initWithData:[notificationData_ objectForKey:kNotificationImage]]);
-        [toast setValue:image forKey:@"_identityImage"];
-      }
-      [toast setValue:@NO forKey:@"_identityImageHasBorder"];
+    if ([[NSImage class] conformsToProtocol:@protocol(NSSecureCoding)]) {
+      NSImage* image = [notificationData_ objectForKey:kNotificationImage];
+      [toast setContentImage:image];
+    } else {  // NSImage only conforms to NSSecureCoding from 10.10 onwards.
+      base::scoped_nsobject<NSImage> image([[NSImage alloc]
+          initWithData:[notificationData_ objectForKey:kNotificationImage]]);
+      [toast setContentImage:image];
     }
   }
 
