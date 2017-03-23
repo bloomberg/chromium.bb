@@ -15,20 +15,13 @@ import org.chromium.chrome.browser.AppHooks;
 
 /**
  * The Client that harvests URLs from BLE signals.
- * This class is designed to scan URSs from Bluetooth Low Energy beacons.
+ * This class is designed to scan URLs from Bluetooth Low Energy beacons.
  * This class is currently an empty implementation and must be extended by a
  * subclass.
  */
 public class PhysicalWebBleClient {
     private static PhysicalWebBleClient sInstance;
     private static final String TAG = "PhysicalWeb";
-
-    // We don't actually listen to any of the onFound or onLost events in the foreground.
-    // The background listener will get these.
-    protected static class ForegroundMessageListener extends MessageListener {
-        @Override
-        public void onFound(Message message) {}
-    }
 
     protected static class BackgroundMessageListener extends MessageListener {
         @Override
