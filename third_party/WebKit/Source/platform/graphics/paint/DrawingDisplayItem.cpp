@@ -37,7 +37,7 @@ void DrawingDisplayItem::analyzeForGpuRasterization(
   // numSlowPaths.
   if (!m_record)
     return;
-  analyzer.analyzePicture(ToSkPicture(m_record.get()));
+  analyzer.analyzePicture(ToSkPicture(m_record).get());
 }
 
 #ifndef NDEBUG
@@ -53,8 +53,8 @@ void DrawingDisplayItem::dumpPropertiesAsDebugString(
 }
 #endif
 
-static bool recordsEqual(const PaintRecord* record1,
-                         const PaintRecord* record2) {
+static bool recordsEqual(sk_sp<const PaintRecord> record1,
+                         sk_sp<const PaintRecord> record2) {
   if (record1->approximateOpCount() != record2->approximateOpCount())
     return false;
 
@@ -116,7 +116,7 @@ bool DrawingDisplayItem::equals(const DisplayItem& other) const {
   if (!record || !otherRecord)
     return false;
 
-  if (recordsEqual(record.get(), otherRecord.get()))
+  if (recordsEqual(record, otherRecord))
     return true;
 
   // Sometimes the client may produce different records for the same visual

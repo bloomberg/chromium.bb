@@ -11,14 +11,6 @@ namespace cc {
 
 using PaintRecord = SkPicture;
 
-inline const SkPicture* ToSkPicture(const PaintRecord* record) {
-  return record;
-}
-
-inline SkPicture* ToSkPicture(PaintRecord* record) {
-  return record;
-}
-
 inline sk_sp<SkPicture> ToSkPicture(sk_sp<PaintRecord> record) {
   return record;
 }

@@ -170,12 +170,7 @@ class CC_PAINT_EXPORT PaintCanvas {
   virtual void drawDisplayItemList(
       scoped_refptr<DisplayItemList> display_item_list) = 0;
 
-  virtual void drawPicture(sk_sp<const PaintRecord> record,
-                           const SkMatrix* matrix,
-                           const PaintFlags* flags) = 0;
-  void drawPicture(sk_sp<const PaintRecord> record) {
-    drawPicture(record, nullptr, nullptr);
-  }
+  virtual void drawPicture(sk_sp<const PaintRecord> record) = 0;
 
   virtual bool isClipEmpty() const = 0;
   virtual bool isClipRect() const = 0;

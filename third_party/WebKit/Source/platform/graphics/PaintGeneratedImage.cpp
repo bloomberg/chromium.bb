@@ -23,7 +23,9 @@ void PaintGeneratedImage::draw(PaintCanvas* canvas,
     canvas->scale(destRect.width() / srcRect.width(),
                   destRect.height() / srcRect.height());
   canvas->translate(-srcRect.x(), -srcRect.y());
-  canvas->drawPicture(m_record, nullptr, &flags);
+  SkRect bounds = m_record->cullRect();
+  canvas->saveLayer(&bounds, &flags);
+  canvas->drawPicture(m_record);
 }
 
 void PaintGeneratedImage::drawTile(GraphicsContext& context,

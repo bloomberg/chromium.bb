@@ -268,10 +268,8 @@ void SkiaPaintCanvas::drawDisplayItemList(
   display_item_list->Raster(canvas_, nullptr);
 }
 
-void SkiaPaintCanvas::drawPicture(sk_sp<const PaintRecord> record,
-                                  const SkMatrix* matrix,
-                                  const PaintFlags* flags) {
-  canvas_->drawPicture(ToSkPicture(record.get()), matrix, ToSkPaint(flags));
+void SkiaPaintCanvas::drawPicture(sk_sp<const PaintRecord> record) {
+  record->playback(canvas_);
 }
 
 bool SkiaPaintCanvas::isClipEmpty() const {

@@ -102,12 +102,7 @@ NOINLINE DISABLE_CFI_PERF void RasterItem(const DisplayItem& base_item,
 
       // SkPicture always does a wrapping save/restore on the canvas, so it is
       // not necessary here.
-      if (callback) {
-        item.picture->playback(canvas, callback);
-      } else {
-        // TODO(enne): switch this to playback once PaintRecord is real.
-        canvas->drawPicture(ToSkPicture(item.picture.get()));
-      }
+      item.picture->playback(canvas, callback);
       break;
     }
     case DisplayItem::FLOAT_CLIP: {
@@ -407,7 +402,7 @@ DisplayItemList::CreateTracedValue(bool include_items) const {
           state->EndArray();
 
           std::string b64_picture;
-          PictureDebugUtil::SerializeAsBase64(ToSkPicture(item.picture.get()),
+          PictureDebugUtil::SerializeAsBase64(ToSkPicture(item.picture).get(),
                                               &b64_picture);
           state->SetString("skp64", b64_picture);
           state->EndDictionary();

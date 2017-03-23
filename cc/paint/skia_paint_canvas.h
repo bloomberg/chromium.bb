@@ -135,9 +135,7 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
   void drawDisplayItemList(
       scoped_refptr<DisplayItemList> display_item_list) override;
 
-  void drawPicture(sk_sp<const PaintRecord> record,
-                   const SkMatrix* matrix,
-                   const PaintFlags* flags) override;
+  void drawPicture(sk_sp<const PaintRecord> record) override;
 
   bool isClipEmpty() const override;
   bool isClipRect() const override;
