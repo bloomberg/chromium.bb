@@ -25,6 +25,20 @@ namespace chromeos {
 
 struct ProxyResolutionServiceProvider::Request {
  public:
+  // Constructor for returning proxy info via an asynchronous D-Bus response.
+  Request(const std::string& source_url,
+          std::unique_ptr<dbus::Response> response,
+          const dbus::ExportedObject::ResponseSender& response_sender,
+          scoped_refptr<net::URLRequestContextGetter> context_getter)
+      : source_url(source_url),
+        response(std::move(response)),
+        response_sender(response_sender),
+        context_getter(context_getter) {
+    DCHECK(this->response);
+    DCHECK(!response_sender.is_null());
+  }
+
+  // Constructor for returning proxy info via a D-Bus signal.
   Request(const std::string& source_url,
           const std::string& signal_interface,
           const std::string& signal_name,
@@ -32,14 +46,26 @@ struct ProxyResolutionServiceProvider::Request {
       : source_url(source_url),
         signal_interface(signal_interface),
         signal_name(signal_name),
-        context_getter(context_getter) {}
+        context_getter(context_getter) {
+    DCHECK(!signal_interface.empty());
+    DCHECK(!signal_name.empty());
+  }
+
   ~Request() = default;
 
   // URL being resolved.
   const std::string source_url;
 
+  // D-Bus response and callback for returning data on resolution completion.
+  // Either these two members or |signal_interface|/|signal_name| must be
+  // supplied, but not both.
+  std::unique_ptr<dbus::Response> response;
+  const dbus::ExportedObject::ResponseSender response_sender;
+
   // D-Bus interface and name for emitting result signal after resolution is
   // complete.
+  // TODO(derat): Remove these and associated code after all callers use async
+  // responses instead of signals: http://crbug.com/446115
   const std::string signal_interface;
   const std::string signal_name;
 
@@ -98,23 +124,43 @@ void ProxyResolutionServiceProvider::ResolveProxy(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
   DCHECK(OnOriginThread());
+
   VLOG(1) << "Handling method call: " << method_call->ToString();
-  // The method call should contain the three string parameters.
   dbus::MessageReader reader(method_call);
   std::string source_url;
-  std::string signal_interface;
-  std::string signal_name;
-  if (!reader.PopString(&source_url) || !reader.PopString(&signal_interface) ||
-      !reader.PopString(&signal_name)) {
-    LOG(ERROR) << "Unexpected method call: " << method_call->ToString();
-    response_sender.Run(std::unique_ptr<dbus::Response>());
+  if (!reader.PopString(&source_url)) {
+    LOG(ERROR) << "Method call lacks source URL: " << method_call->ToString();
+    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
+        method_call, DBUS_ERROR_INVALID_ARGS, "No source URL string arg"));
     return;
   }
 
+  // The signal interface and name arguments are optional but must be supplied
+  // together.
+  std::string signal_interface, signal_name;
+  if (reader.HasMoreData() &&
+      (!reader.PopString(&signal_interface) || signal_interface.empty() ||
+       !reader.PopString(&signal_name) || signal_name.empty())) {
+    LOG(ERROR) << "Method call has invalid interface/name args: "
+               << method_call->ToString();
+    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
+        method_call, DBUS_ERROR_INVALID_ARGS, "Invalid interface/name args"));
+    return;
+  }
+
+  std::unique_ptr<dbus::Response> response =
+      dbus::Response::FromMethodCall(method_call);
   scoped_refptr<net::URLRequestContextGetter> context_getter =
       delegate_->GetRequestContext();
-  auto request = base::MakeUnique<Request>(source_url, signal_interface,
-                                           signal_name, context_getter);
+
+  // If signal information was supplied, emit a signal instead of including
+  // proxy information in the response.
+  std::unique_ptr<Request> request =
+      !signal_interface.empty()
+          ? base::MakeUnique<Request>(source_url, signal_interface, signal_name,
+                                      context_getter)
+          : base::MakeUnique<Request>(source_url, std::move(response),
+                                      response_sender, context_getter);
 
   // This would ideally call PostTaskAndReply() instead of PostTask(), but
   // ResolveProxyOnNetworkThread()'s call to net::ProxyService::ResolveProxy()
@@ -126,9 +172,10 @@ void ProxyResolutionServiceProvider::ResolveProxy(
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Passed(std::move(request))));
 
-  // Send an empty response for now. We'll send a signal once the network proxy
-  // resolution is completed.
-  response_sender.Run(dbus::Response::FromMethodCall(method_call));
+  // If we didn't already pass the response to the Request object because we're
+  // returning data via a signal, send an empty response immediately.
+  if (response)
+    response_sender.Run(std::move(response));
 }
 
 void ProxyResolutionServiceProvider::ResolveProxyOnNetworkThread(
@@ -180,14 +227,22 @@ void ProxyResolutionServiceProvider::NotifyProxyResolved(
     std::unique_ptr<Request> request) {
   DCHECK(OnOriginThread());
 
-  // Send a signal to the client.
-  dbus::Signal signal(request->signal_interface, request->signal_name);
-  dbus::MessageWriter writer(&signal);
-  writer.AppendString(request->source_url);
-  writer.AppendString(request->proxy_info.ToPacString());
-  writer.AppendString(request->error);
-  exported_object_->SendSignal(&signal);
-  VLOG(1) << "Sending signal: " << signal.ToString();
+  if (request->response) {
+    // Reply to the original D-Bus method call.
+    dbus::MessageWriter writer(request->response.get());
+    writer.AppendString(request->proxy_info.ToPacString());
+    writer.AppendString(request->error);
+    request->response_sender.Run(std::move(request->response));
+  } else {
+    // Send a signal to the client.
+    dbus::Signal signal(request->signal_interface, request->signal_name);
+    dbus::MessageWriter writer(&signal);
+    writer.AppendString(request->source_url);
+    writer.AppendString(request->proxy_info.ToPacString());
+    writer.AppendString(request->error);
+    exported_object_->SendSignal(&signal);
+    VLOG(1) << "Sending signal: " << signal.ToString();
+  }
 }
 
 }  // namespace chromeos

@@ -37,52 +37,39 @@ namespace chromeos {
 // This class provides proxy resolution service for CrosDBusService.
 // It processes proxy resolution requests for ChromeOS clients.
 //
-// The following methods are exported.
+// The following method is exported:
 //
 // Interface: org.chromium.LibCrosServiceInterface (kLibCrosServiceInterface)
 // Method: ResolveNetworkProxy (kResolveNetworkProxy)
 // Parameters: string:source_url
-//             string:signal_interface
-//             string:signal_name
+//             string:signal_interface (optional)
+//             string:signal_name (optional)
 //
-//   Resolves the proxy for |source_url|. Returns the result
-//   as a D-Bus signal sent to |signal_interface| and |signal_name|.
+//   Resolves the proxy for |source_url|. If |signal_interface| and
+//   |signal_name| are supplied, returns an empty reply immediately and
+//   asynchronously emits a D-Bus signal to the requested destination.
+//   Otherwise, returns proxy information an asynchronous response without
+//   emitting a signal.
 //
-//   The returned signal will contain the three values:
+//   The signal (if requested) will contain three values:
 //   - string:source_url - requested source URL.
 //   - string:proxy_info - proxy info for the source URL in PAC format
 //                         like "PROXY cache.example.com:12345"
 //   - string:error_message - error message. Empty if successful.
 //
-// This service can be manually tested using dbus-monitor and
-// dbus-send. For instance, you can resolve proxy configuration for
-// http://www.gmail.com/ as follows:
+//   The method call response (if requested) will contain just two values:
+//   - string:proxy_info - proxy info for the source URL in PAC format
+//                         like "PROXY cache.example.com:12345"
+//   - string:error_message - error message. Empty if successful.
 //
-// 1. Open a terminal and run the following:
+// This service can be manually tested using dbus-send:
 //
-//   % dbus-monitor --system interface=org.chromium.TestInterface
-//
-// 2. Open another terminal and run the following:
-//
-//   % dbus-send --system --type=method_call
+//   % dbus-send --system --type=method_call --print-reply
 //       --dest=org.chromium.LibCrosService
 //       /org/chromium/LibCrosService
 //       org.chromium.LibCrosServiceInterface.ResolveNetworkProxy
-//       string:http://www.gmail.com/
-//       string:org.chromium.TestInterface
-//       string:TestSignal
+//       string:https://www.google.com/
 //
-// 3. Go back to the original terminal and check the output which should
-// look like:
-//
-// signal sender=:1.23 -> dest=(null destination) serial=12345
-// path=/org/chromium/LibCrosService; interface=org.chromium.TestInterface;
-// member=TestSignal
-//   string "http://www.gmail.com/"
-//   string "PROXY proxy.example.com:8080"
-//   string ""
-//
-
 class CHROMEOS_EXPORT ProxyResolutionServiceProvider
     : public CrosDBusService::ServiceProviderInterface {
  public:
