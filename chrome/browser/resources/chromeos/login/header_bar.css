@@ -72,14 +72,16 @@ html[screen=oobe] .login-header-bar-animate-slow {
   font-size: 13px;
   height: auto;
   min-height: 34px;
+  padding: 0 16px;
   position: absolute;
   text-align: center;
-  width: 180px;
+  white-space: nowrap;
 }
 
 #more-settings-header-bar-item.active button.add-supervised-user-menu:focus {
   border: 2px solid var(--google-blue-500);
   border-radius: 2px;
+  padding: 0 15px;
 }
 
 html[dir=rtl] .header-bar-item {
