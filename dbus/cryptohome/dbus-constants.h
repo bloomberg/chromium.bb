@@ -149,12 +149,15 @@ enum MountError {
 };
 // Status code signaled from MigrateToDircrypto().
 enum DircryptoMigrationStatus {
-  // 0 means a successful completeion.
-  DYRCRYPTO_MIGRATION_SUCCESS = 0,
+  // 0 means a successful completion.
+  DIRCRYPTO_MIGRATION_SUCCESS = 0,
   // Negative values mean failing completion.
   // TODO(kinaba,dspaid): Add error codes as needed here.
+  DIRCRYPTO_MIGRATION_FAILED = -1,
   // Positive values mean intermediate state report for the running migration.
   // TODO(kinaba,dspaid): Add state codes as needed.
+  DIRCRYPTO_MIGRATION_INITIALIZING = 1,
+  DIRCRYPTO_MIGRATION_IN_PROGRESS = 2,
 };
 }  // namespace cryptohome
 
