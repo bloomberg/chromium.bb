@@ -154,12 +154,24 @@ class FrameGeneratorTest : public testing::Test {
         kRefreshRate, kTickAutomatically);
     compositor_frame_sink_->SetBeginFrameSource(begin_frame_source_.get());
     server_window_delegate_ = base::MakeUnique<TestServerWindowDelegate>();
-    root_window_ = base::MakeUnique<ServerWindow>(server_window_delegate_.get(),
-                                                  WindowId());
-    root_window_->SetVisible(true);
-    frame_generator_ = base::MakeUnique<FrameGenerator>(
-        root_window_.get(), std::move(compositor_frame_sink));
+    frame_generator_ =
+        base::MakeUnique<FrameGenerator>(std::move(compositor_frame_sink));
+    frame_generator_->OnWindowSizeChanged(gfx::Size(1, 2));
   };
+
+  void InitWithSurfaceInfo() {
+    // FrameGenerator requires a valid SurfaceInfo before generating
+    // CompositorFrames.
+    const cc::SurfaceId kArbitrarySurfaceId(
+        cc::FrameSinkId(1, 1),
+        cc::LocalSurfaceId(1, base::UnguessableToken::Create()));
+    const cc::SurfaceInfo kArbitrarySurfaceInfo(kArbitrarySurfaceId, 1.0f,
+                                                gfx::Size(100, 100));
+
+    frame_generator()->OnSurfaceCreated(kArbitrarySurfaceInfo);
+    IssueBeginFrame();
+    EXPECT_EQ(1, NumberOfFramesReceived());
+  }
 
   int NumberOfFramesReceived() {
     return compositor_frame_sink_->number_frames_received();
@@ -185,18 +197,24 @@ class FrameGeneratorTest : public testing::Test {
     return begin_frame_source_->LastAckForObserver(compositor_frame_sink_);
   }
 
-  ServerWindow* root_window() { return root_window_.get(); }
-
  private:
   FakeCompositorFrameSink* compositor_frame_sink_ = nullptr;
   std::unique_ptr<cc::FakeExternalBeginFrameSource> begin_frame_source_;
   std::unique_ptr<TestServerWindowDelegate> server_window_delegate_;
-  std::unique_ptr<ServerWindow> root_window_;
   std::unique_ptr<FrameGenerator> frame_generator_;
   int next_sequence_number_ = 1;
 
   DISALLOW_COPY_AND_ASSIGN(FrameGeneratorTest);
 };
+
+TEST_F(FrameGeneratorTest, InvalidSurfaceInfo) {
+  // After SetUP(), frame_generator() has its |is_window_visible_| set to true
+  // and |bounds_| to an arbitrary non-empty gfx::Rect but not a valid
+  // SurfaceInfo. frame_generator() should not request BeginFrames in this
+  // state.
+  IssueBeginFrame();
+  EXPECT_EQ(0, NumberOfFramesReceived());
+}
 
 TEST_F(FrameGeneratorTest, OnSurfaceCreated) {
   EXPECT_EQ(0, NumberOfFramesReceived());
@@ -236,33 +254,6 @@ TEST_F(FrameGeneratorTest, OnSurfaceCreated) {
   EXPECT_EQ(expected_ack, LastBeginFrameAck());
 }
 
-TEST_F(FrameGeneratorTest, BeginFrameWhileInvisible) {
-  EXPECT_EQ(0, NumberOfFramesReceived());
-
-  // A valid SurfaceInfo is required for BeginFrame processing.
-  const cc::SurfaceId kArbitrarySurfaceId(
-      cc::FrameSinkId(1, 1),
-      cc::LocalSurfaceId(1, base::UnguessableToken::Create()));
-  const cc::SurfaceInfo kArbitrarySurfaceInfo(kArbitrarySurfaceId, 1.0f,
-                                              gfx::Size(100, 100));
-  frame_generator()->OnSurfaceCreated(kArbitrarySurfaceInfo);
-  EXPECT_EQ(0, NumberOfFramesReceived());
-
-  // No frames are produced while invisible but in need of BeginFrames.
-  root_window()->SetVisible(false);
-  IssueBeginFrame();
-  EXPECT_EQ(0, NumberOfFramesReceived());
-  EXPECT_EQ(cc::BeginFrameAck(0, 1, 1, 0, false), LastBeginFrameAck());
-
-  // When visible again, a frame is produced.
-  root_window()->SetVisible(true);
-  IssueBeginFrame();
-  EXPECT_EQ(1, NumberOfFramesReceived());
-  cc::BeginFrameAck expected_ack(0, 2, 2, 0, true);
-  EXPECT_EQ(expected_ack, LastBeginFrameAck());
-  EXPECT_EQ(expected_ack, LastMetadata().begin_frame_ack);
-}
-
 TEST_F(FrameGeneratorTest, SetDeviceScaleFactor) {
   EXPECT_EQ(0, NumberOfFramesReceived());
   const cc::SurfaceId kArbitrarySurfaceId(
@@ -298,16 +289,7 @@ TEST_F(FrameGeneratorTest, SetDeviceScaleFactor) {
 }
 
 TEST_F(FrameGeneratorTest, SetHighContrastMode) {
-  // FrameGenerator requires a valid SurfaceInfo before generating
-  // CompositorFrames.
-  const cc::SurfaceId kArbitrarySurfaceId(
-      cc::FrameSinkId(1, 1),
-      cc::LocalSurfaceId(1, base::UnguessableToken::Create()));
-  const cc::SurfaceInfo kArbitrarySurfaceInfo(kArbitrarySurfaceId, 1.0f,
-                                              gfx::Size(100, 100));
-  frame_generator()->OnSurfaceCreated(kArbitrarySurfaceInfo);
-  IssueBeginFrame();
-  EXPECT_EQ(1, NumberOfFramesReceived());
+  InitWithSurfaceInfo();
 
   // Changing high contrast mode should trigger a BeginFrame.
   frame_generator()->SetHighContrastMode(true);
@@ -319,6 +301,50 @@ TEST_F(FrameGeneratorTest, SetHighContrastMode) {
   const cc::FilterOperations expected_filters(
       {cc::FilterOperation::CreateInvertFilter(1.f)});
   EXPECT_EQ(expected_filters, render_pass_list.front()->filters);
+}
+
+TEST_F(FrameGeneratorTest, WindowBoundsChanged) {
+  InitWithSurfaceInfo();
+
+  // Window bounds change triggers a BeginFrame.
+  constexpr int expected_render_pass_id = 1;
+  const gfx::Size kArbitrarySize(3, 4);
+  frame_generator()->OnWindowSizeChanged(kArbitrarySize);
+  IssueBeginFrame();
+  EXPECT_EQ(2, NumberOfFramesReceived());
+  cc::RenderPass* received_render_pass = LastRenderPassList().front().get();
+  EXPECT_EQ(expected_render_pass_id, received_render_pass->id);
+  EXPECT_EQ(kArbitrarySize, received_render_pass->output_rect.size());
+  EXPECT_EQ(kArbitrarySize, received_render_pass->damage_rect.size());
+  EXPECT_EQ(gfx::Transform(), received_render_pass->transform_to_root_target);
+}
+
+// Change window bounds twice before issuing a BeginFrame. The CompositorFrame
+// submitted by frame_generator() should only has the second bounds.
+TEST_F(FrameGeneratorTest, WindowBoundsChangedTwice) {
+  InitWithSurfaceInfo();
+
+  const gfx::Size kArbitrarySize(3, 4);
+  const gfx::Size kAnotherArbitrarySize(5, 6);
+  frame_generator()->OnWindowSizeChanged(kArbitrarySize);
+  frame_generator()->OnWindowSizeChanged(kAnotherArbitrarySize);
+  IssueBeginFrame();
+  EXPECT_EQ(2, NumberOfFramesReceived());
+  cc::RenderPass* received_render_pass = LastRenderPassList().front().get();
+  EXPECT_EQ(kAnotherArbitrarySize, received_render_pass->output_rect.size());
+  EXPECT_EQ(kAnotherArbitrarySize, received_render_pass->damage_rect.size());
+
+  // frame_generator() stops requesting BeginFrames after getting one.
+  IssueBeginFrame();
+  EXPECT_EQ(2, NumberOfFramesReceived());
+}
+
+TEST_F(FrameGeneratorTest, WindowDamaged) {
+  InitWithSurfaceInfo();
+
+  frame_generator()->OnWindowDamaged();
+  IssueBeginFrame();
+  EXPECT_EQ(2, NumberOfFramesReceived());
 }
 
 }  // namespace test

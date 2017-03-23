@@ -8,17 +8,12 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/timer/timer.h"
-#include "cc/ipc/display_compositor.mojom.h"
+#include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_sink_client.h"
 #include "cc/scheduler/begin_frame_source.h"
-#include "cc/surfaces/frame_sink_id.h"
-#include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/surfaces/surface_id.h"
-#include "cc/surfaces/surface_reference.h"
-#include "services/ui/public/interfaces/window_tree_constants.mojom.h"
+#include "cc/surfaces/surface_info.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/native_widget_types.h"
 
 namespace cc {
 class CompositorFrameSink;
@@ -28,15 +23,12 @@ class RenderPass;
 namespace ui {
 namespace ws {
 
-class ServerWindow;
-
 // Responsible for redrawing the display in response to the redraw requests by
 // submitting CompositorFrames to the owned CompositorFrameSink.
 class FrameGenerator : public cc::CompositorFrameSinkClient,
                        public cc::BeginFrameObserver {
  public:
-  FrameGenerator(
-      ServerWindow* root_window,
+  explicit FrameGenerator(
       std::unique_ptr<cc::CompositorFrameSink> compositor_frame_sink);
   ~FrameGenerator() override;
 
@@ -47,6 +39,7 @@ class FrameGenerator : public cc::CompositorFrameSinkClient,
   void OnSurfaceCreated(const cc::SurfaceInfo& surface_info);
 
   void OnWindowDamaged();
+  void OnWindowSizeChanged(const gfx::Size& pixel_size);
 
  private:
   // cc::CompositorFrameSinkClient implementation:
@@ -69,7 +62,7 @@ class FrameGenerator : public cc::CompositorFrameSinkClient,
   void OnBeginFrameSourcePausedChanged(bool paused) override;
 
   // Generates the CompositorFrame.
-  cc::CompositorFrame GenerateCompositorFrame(const gfx::Rect& output_rect);
+  cc::CompositorFrame GenerateCompositorFrame();
 
   // DrawWindow creates SurfaceDrawQuad for the window manager and appends it to
   // the provided cc::RenderPass.
@@ -79,8 +72,8 @@ class FrameGenerator : public cc::CompositorFrameSinkClient,
   // FrameGenerator as an observer to/from begin_frame_source_ accordingly.
   void SetNeedsBeginFrame(bool needs_begin_frame);
 
-  ServerWindow* const root_window_;
   float device_scale_factor_ = 1.f;
+  gfx::Size pixel_size_;
 
   std::unique_ptr<cc::CompositorFrameSink> compositor_frame_sink_;
   cc::BeginFrameArgs last_begin_frame_args_;

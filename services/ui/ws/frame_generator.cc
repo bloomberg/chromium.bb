@@ -13,17 +13,14 @@
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/shared_quad_state.h"
 #include "cc/quads/surface_draw_quad.h"
-#include "services/ui/ws/server_window.h"
 
 namespace ui {
 
 namespace ws {
 
 FrameGenerator::FrameGenerator(
-    ServerWindow* root_window,
     std::unique_ptr<cc::CompositorFrameSink> compositor_frame_sink)
-    : root_window_(root_window),
-      compositor_frame_sink_(std::move(compositor_frame_sink)) {
+    : compositor_frame_sink_(std::move(compositor_frame_sink)) {
   compositor_frame_sink_->BindToClient(this);
 }
 
@@ -35,8 +32,7 @@ void FrameGenerator::SetDeviceScaleFactor(float device_scale_factor) {
   if (device_scale_factor_ == device_scale_factor)
     return;
   device_scale_factor_ = device_scale_factor;
-  if (window_manager_surface_info_.is_valid())
-    SetNeedsBeginFrame(true);
+  SetNeedsBeginFrame(true);
 }
 
 void FrameGenerator::SetHighContrastMode(bool enabled) {
@@ -44,8 +40,7 @@ void FrameGenerator::SetHighContrastMode(bool enabled) {
     return;
 
   high_contrast_mode_enabled_ = enabled;
-  if (window_manager_surface_info_.is_valid())
-    SetNeedsBeginFrame(true);
+  SetNeedsBeginFrame(true);
 }
 
 void FrameGenerator::OnSurfaceCreated(const cc::SurfaceInfo& surface_info) {
@@ -60,8 +55,15 @@ void FrameGenerator::OnSurfaceCreated(const cc::SurfaceInfo& surface_info) {
 }
 
 void FrameGenerator::OnWindowDamaged() {
-  if (window_manager_surface_info_.is_valid())
-    SetNeedsBeginFrame(true);
+  SetNeedsBeginFrame(true);
+}
+
+void FrameGenerator::OnWindowSizeChanged(const gfx::Size& pixel_size) {
+  if (pixel_size_ == pixel_size)
+    return;
+
+  pixel_size_ = pixel_size;
+  SetNeedsBeginFrame(true);
 }
 
 void FrameGenerator::SetBeginFrameSource(cc::BeginFrameSource* source) {
@@ -101,8 +103,7 @@ void FrameGenerator::OnBeginFrame(const cc::BeginFrameArgs& begin_frame_args) {
   current_begin_frame_ack_ = cc::BeginFrameAck(
       begin_frame_args.source_id, begin_frame_args.sequence_number,
       begin_frame_args.sequence_number, 0, false);
-  if (!root_window_->visible() ||
-      begin_frame_args.type == cc::BeginFrameArgs::MISSED) {
+  if (begin_frame_args.type == cc::BeginFrameArgs::MISSED) {
     begin_frame_source_->DidFinishFrame(this, current_begin_frame_ack_);
     return;
   }
@@ -111,7 +112,8 @@ void FrameGenerator::OnBeginFrame(const cc::BeginFrameArgs& begin_frame_args) {
   last_begin_frame_args_ = begin_frame_args;
 
   // TODO(fsamuel): We should add a trace for generating a top level frame.
-  cc::CompositorFrame frame(GenerateCompositorFrame(root_window_->bounds()));
+  cc::CompositorFrame frame(GenerateCompositorFrame());
+
   compositor_frame_sink_->SubmitCompositorFrame(std::move(frame));
 
   begin_frame_source_->DidFinishFrame(this, current_begin_frame_ack_);
@@ -124,12 +126,11 @@ const cc::BeginFrameArgs& FrameGenerator::LastUsedBeginFrameArgs() const {
 
 void FrameGenerator::OnBeginFrameSourcePausedChanged(bool paused) {}
 
-cc::CompositorFrame FrameGenerator::GenerateCompositorFrame(
-    const gfx::Rect& output_rect) {
+cc::CompositorFrame FrameGenerator::GenerateCompositorFrame() {
   const int render_pass_id = 1;
+  const gfx::Rect bounds(pixel_size_);
   std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
-  render_pass->SetNew(render_pass_id, output_rect, output_rect,
-                      gfx::Transform());
+  render_pass->SetNew(render_pass_id, bounds, bounds, gfx::Transform());
 
   DrawWindow(render_pass.get());
 
@@ -137,23 +138,22 @@ cc::CompositorFrame FrameGenerator::GenerateCompositorFrame(
   frame.render_pass_list.push_back(std::move(render_pass));
   if (high_contrast_mode_enabled_) {
     std::unique_ptr<cc::RenderPass> invert_pass = cc::RenderPass::Create();
-    invert_pass->SetNew(2, output_rect, output_rect, gfx::Transform());
+    invert_pass->SetNew(2, bounds, bounds, gfx::Transform());
     cc::SharedQuadState* shared_state =
         invert_pass->CreateAndAppendSharedQuadState();
     gfx::Size scaled_bounds = gfx::ScaleToCeiledSize(
-        output_rect.size(), window_manager_surface_info_.device_scale_factor(),
+        pixel_size_, window_manager_surface_info_.device_scale_factor(),
         window_manager_surface_info_.device_scale_factor());
-    shared_state->SetAll(gfx::Transform(), scaled_bounds, output_rect,
-                         output_rect, false, 1.f, SkBlendMode::kSrcOver, 0);
+    shared_state->SetAll(gfx::Transform(), scaled_bounds, bounds, bounds, false,
+                         1.f, SkBlendMode::kSrcOver, 0);
     auto* quad = invert_pass->CreateAndAppendDrawQuad<cc::RenderPassDrawQuad>();
     frame.render_pass_list.back()->filters.Append(
         cc::FilterOperation::CreateInvertFilter(1.f));
-    quad->SetNew(shared_state, output_rect, output_rect, render_pass_id,
-                 0 /* mask_resource_id */, gfx::RectF() /* mask_uv_rect */,
-                 gfx::Size() /* mask_texture_size */,
-                 gfx::Vector2dF() /* filters_scale */,
-                 gfx::PointF() /* filters_origin */,
-                 gfx::RectF() /* tex_coord_rect */);
+    quad->SetNew(
+        shared_state, bounds, bounds, render_pass_id, 0 /* mask_resource_id */,
+        gfx::RectF() /* mask_uv_rect */, gfx::Size() /* mask_texture_size */,
+        gfx::Vector2dF() /* filters_scale */,
+        gfx::PointF() /* filters_origin */, gfx::RectF() /* tex_coord_rect */);
     frame.render_pass_list.push_back(std::move(invert_pass));
   }
   frame.metadata.device_scale_factor = device_scale_factor_;
@@ -199,6 +199,7 @@ void FrameGenerator::DrawWindow(cc::RenderPass* pass) {
 }
 
 void FrameGenerator::SetNeedsBeginFrame(bool needs_begin_frame) {
+  needs_begin_frame &= window_manager_surface_info_.is_valid();
   if (needs_begin_frame == observing_begin_frames_)
     return;
 

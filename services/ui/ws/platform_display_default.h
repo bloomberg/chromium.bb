@@ -82,7 +82,6 @@ class PlatformDisplayDefault : public PlatformDisplay,
   display::ViewportMetrics metrics_;
   std::unique_ptr<ui::PlatformWindow> platform_window_;
   gfx::AcceleratedWidget widget_;
-  float init_device_scale_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformDisplayDefault);
 };

@@ -37,8 +37,7 @@ PlatformDisplayDefault::PlatformDisplayDefault(
       image_cursors_(new ImageCursors),
 #endif
       metrics_(metrics),
-      widget_(gfx::kNullAcceleratedWidget),
-      init_device_scale_factor_(metrics.device_scale_factor) {
+      widget_(gfx::kNullAcceleratedWidget) {
 }
 
 PlatformDisplayDefault::~PlatformDisplayDefault() {
@@ -141,8 +140,10 @@ bool PlatformDisplayDefault::UpdateViewportMetrics(
   }
 
   metrics_ = metrics;
-  if (frame_generator_)
+  if (frame_generator_) {
     frame_generator_->SetDeviceScaleFactor(metrics_.device_scale_factor);
+    frame_generator_->OnWindowSizeChanged(metrics_.bounds_in_pixels.size());
+  }
   return true;
 }
 
@@ -265,8 +266,9 @@ void PlatformDisplayDefault::OnAcceleratedWidgetAvailable(
           std::move(display_private),
           std::move(compositor_frame_sink_client_request));
   frame_generator_ = base::MakeUnique<FrameGenerator>(
-      root_window_, std::move(display_client_compositor_frame_sink));
-  frame_generator_->SetDeviceScaleFactor(init_device_scale_factor_);
+      std::move(display_client_compositor_frame_sink));
+  frame_generator_->OnWindowSizeChanged(root_window_->bounds().size());
+  frame_generator_->SetDeviceScaleFactor(metrics_.device_scale_factor);
 }
 
 void PlatformDisplayDefault::OnAcceleratedWidgetDestroyed() {
