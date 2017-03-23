@@ -35,6 +35,7 @@
 #include "content/public/common/referrer.h"
 #include "device/vr/android/gvr/gvr_device.h"
 #include "device/vr/android/gvr/gvr_device_provider.h"
+#include "device/vr/android/gvr/gvr_gamepad_data_fetcher.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "jni/VrShellImpl_jni.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
@@ -91,6 +92,7 @@ VrShell::VrShell(JNIEnv* env,
       reprojected_rendering_(reprojected_rendering),
       gvr_api_(gvr_api),
       weak_ptr_factory_(this) {
+  DVLOG(1) << __FUNCTION__ << "=" << this;
   DCHECK(g_instance == nullptr);
   g_instance = this;
   j_vr_shell_.Reset(env, obj);
@@ -177,6 +179,12 @@ bool RegisterVrShell(JNIEnv* env) {
 }
 
 VrShell::~VrShell() {
+  DVLOG(1) << __FUNCTION__ << "=" << this;
+  if (gamepad_source_active_) {
+    device::GamepadDataFetcherManager::GetInstance()->RemoveSourceFactory(
+        device::GAMEPAD_SOURCE_GVR);
+  }
+
   delegate_provider_->RemoveDelegate();
   {
     // The GvrLayout is, and must always be, used only on the UI thread, and the
@@ -622,6 +630,28 @@ void VrShell::ProcessContentGesture(
   } else if (android_ui_gesture_target_) {
     android_ui_gesture_target_->DispatchWebInputEvent(std::move(event));
   }
+}
+
+void VrShell::UpdateGamepadData(device::GvrGamepadData pad) {
+  if (!gamepad_source_active_) {
+    if (!delegate_provider_->device_provider())
+      return;
+
+    unsigned int device_id =
+        delegate_provider_->device_provider()->Device()->id();
+    device::GamepadDataFetcherManager::GetInstance()->AddFactory(
+        new device::GvrGamepadDataFetcher::Factory(this, device_id));
+    gamepad_source_active_ = true;
+  }
+  if (gamepad_data_fetcher_) {
+    gamepad_data_fetcher_->SetGamepadData(pad);
+  }
+}
+
+void VrShell::RegisterGamepadDataFetcher(
+    device::GvrGamepadDataFetcher* fetcher) {
+  DVLOG(1) << __FUNCTION__ << "(" << fetcher << ")";
+  gamepad_data_fetcher_ = fetcher;
 }
 
 /* static */

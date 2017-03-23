@@ -17,6 +17,7 @@
 #include "chrome/browser/android/vr_shell/ui_interface.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "device/vr/android/gvr/gvr_delegate.h"
+#include "device/vr/android/gvr/gvr_gamepad_data_provider.h"
 #include "device/vr/vr_service.mojom.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
@@ -71,7 +72,9 @@ class VrMetricsHelper;
 
 // The native instance of the Java VrShell. This class is not threadsafe and
 // must only be used on the UI thread.
-class VrShell : public device::GvrDelegate, content::WebContentsObserver {
+class VrShell : public device::GvrDelegate,
+                content::WebContentsObserver,
+                device::GvrGamepadDataProvider {
  public:
   VrShell(JNIEnv* env,
           jobject obj,
@@ -175,6 +178,10 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   void ProcessUIGesture(std::unique_ptr<blink::WebInputEvent> event);
   void ProcessContentGesture(std::unique_ptr<blink::WebInputEvent> event);
 
+  // device::GvrGamepadDataProvider implementation.
+  void UpdateGamepadData(device::GvrGamepadData) override;
+  void RegisterGamepadDataFetcher(device::GvrGamepadDataFetcher*) override;
+
   // TODO(mthiesse): Find a better place for these functions to live.
   static device::mojom::VRPosePtr VRPosePtrFromGvrPose(gvr::Mat4f head_mat);
   static gvr::Sizei GetRecommendedWebVrSize(gvr::GvrApi* gvr_api);
@@ -247,6 +254,12 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   // TODO(mthiesse): Remove the need for this to be stored here.
   // crbug.com/674594
   gvr_context* gvr_api_;
+
+  // Are we currently providing a gamepad factory to the gamepad manager?
+  bool gamepad_source_active_ = false;
+  // Registered fetcher, must remain alive for UpdateGamepadData calls.
+  // That's ok since the fetcher is only destroyed from VrShell's destructor.
+  device::GvrGamepadDataFetcher* gamepad_data_fetcher_ = nullptr;
 
   base::WeakPtrFactory<VrShell> weak_ptr_factory_;
 

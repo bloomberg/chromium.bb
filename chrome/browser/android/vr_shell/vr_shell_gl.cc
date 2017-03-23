@@ -22,6 +22,7 @@
 #include "chrome/browser/android/vr_shell/vr_shell.h"
 #include "chrome/browser/android/vr_shell/vr_shell_renderer.h"
 #include "device/vr/android/gvr/gvr_device.h"
+#include "device/vr/android/gvr/gvr_gamepad_data_provider.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/WebMouseEvent.h"
 #include "ui/gl/android/scoped_java_surface.h"
@@ -467,9 +468,15 @@ void VrShellGl::InitializeRenderer() {
       FROM_HERE, base::Bind(&VrShell::GvrDelegateReady, weak_vr_shell_));
 }
 
-void VrShellGl::UpdateController(const gvr::Vec3f& forward_vector) {
+void VrShellGl::UpdateController() {
   controller_->UpdateState();
 
+  device::GvrGamepadData pad = controller_->GetGamepadData();
+  main_thread_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&VrShell::UpdateGamepadData, weak_vr_shell_, pad));
+}
+
+void VrShellGl::HandleControllerInput(const gvr::Vec3f& forward_vector) {
   if (ShouldDrawWebVr()) {
     // Process screen touch events for Cardboard button compatibility.
     // Also send tap events for controller "touchpad click" events.
@@ -484,6 +491,7 @@ void VrShellGl::UpdateController(const gvr::Vec3f& forward_vector) {
       gesture->x = 0;
       gesture->y = 0;
       SendGesture(InputTarget::CONTENT, std::move(gesture));
+      DVLOG(1) << __FUNCTION__ << ": sent CLICK gesture";
     }
 
     return;
@@ -810,7 +818,7 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
 
   {
     TRACE_EVENT0("gpu", "VrShellGl::UpdateController");
-    UpdateController(GetForwardVector(head_pose));
+    HandleControllerInput(GetForwardVector(head_pose));
   }
 
   DrawWorldElements(head_pose);
@@ -1187,6 +1195,10 @@ void VrShellGl::OnVSync() {
   target = vsync_timebase_ + intervals * vsync_interval_;
   task_runner_->PostDelayedTask(FROM_HERE, vsync_task_.callback(),
                                 target - now);
+
+  // Get controller data now so that it's ready for both WebVR's
+  // gamepad API input and VrShell's own processing.
+  UpdateController();
 
   base::TimeDelta time = intervals * vsync_interval_;
   if (!callback_.is_null()) {

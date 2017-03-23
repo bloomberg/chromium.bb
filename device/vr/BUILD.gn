@@ -64,6 +64,7 @@ component("vr") {
         "android/gvr/gvr_device_provider.h",
         "android/gvr/gvr_gamepad_data_fetcher.cc",
         "android/gvr/gvr_gamepad_data_fetcher.h",
+        "android/gvr/gvr_gamepad_data_provider.h",
       ]
 
       deps += [

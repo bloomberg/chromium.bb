@@ -10,7 +10,6 @@
 #include "chrome/browser/android/vr_shell/non_presenting_gvr_delegate.h"
 #include "device/vr/android/gvr/gvr_device.h"
 #include "device/vr/android/gvr/gvr_device_provider.h"
-#include "device/vr/android/gvr/gvr_gamepad_data_fetcher.h"
 #include "jni/VrShellDelegate_jni.h"
 
 using base::android::JavaParamRef;
@@ -19,10 +18,12 @@ using base::android::AttachCurrentThread;
 namespace vr_shell {
 
 VrShellDelegate::VrShellDelegate(JNIEnv* env, jobject obj) {
+  DVLOG(1) << __FUNCTION__ << "=" << this;
   j_vr_shell_delegate_.Reset(env, obj);
 }
 
 VrShellDelegate::~VrShellDelegate() {
+  DVLOG(1) << __FUNCTION__ << "=" << this;
   if (device_provider_) {
     device_provider_->Device()->OnDelegateChanged();
   }
@@ -55,8 +56,6 @@ void VrShellDelegate::SetDelegate(device::GvrDelegate* delegate,
   }
   if (device_provider_) {
     device::GvrDevice* device = device_provider_->Device();
-    device::GamepadDataFetcherManager::GetInstance()->AddFactory(
-        new device::GvrGamepadDataFetcher::Factory(context, device->id()));
     device->OnDelegateChanged();
   }
 
@@ -65,8 +64,6 @@ void VrShellDelegate::SetDelegate(device::GvrDelegate* delegate,
 
 void VrShellDelegate::RemoveDelegate() {
   delegate_ = nullptr;
-  device::GamepadDataFetcherManager::GetInstance()->RemoveSourceFactory(
-      device::GAMEPAD_SOURCE_GVR);
   if (device_provider_) {
     CreateNonPresentingDelegate();
     device_provider_->Device()->OnDelegateChanged();

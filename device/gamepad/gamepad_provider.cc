@@ -253,7 +253,9 @@ void GamepadProvider::DoPoll() {
       PadState& state = pad_states_.get()[i];
 
       if (!state.active_state && state.source != GAMEPAD_SOURCE_NONE) {
-        OnGamepadConnectionChange(false, i, buffer->items[i]);
+        auto pad = buffer->items[i];
+        pad.connected = false;
+        OnGamepadConnectionChange(false, i, pad);
         ClearPadState(state);
       }
     }

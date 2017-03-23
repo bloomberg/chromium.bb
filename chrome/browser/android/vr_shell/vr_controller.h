@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "device/vr/android/gvr/gvr_gamepad_data_provider.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
@@ -36,6 +37,8 @@ class VrController {
 
   // Must be called when the GL renderer gets OnSurfaceCreated().
   void Initialize(gvr_context* gvr_context);
+
+  device::GvrGamepadData GetGamepadData();
 
   // Must be called when the GL renderer gets OnDrawFrame().
   void UpdateState();
@@ -129,6 +132,9 @@ class VrController {
   bool pinch_started_;
   bool zoom_in_progress_ = false;
   bool touch_position_changed_ = false;
+
+  // Handedness from user prefs (currently only read once on initialization)
+  gvr::ControllerHandedness handedness_;
 
   // Current touch info after the extrapolation.
   std::unique_ptr<TouchInfo> touch_info_;

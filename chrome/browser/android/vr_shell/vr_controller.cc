@@ -82,11 +82,14 @@ class Vector {
 }  // namespace
 
 VrController::VrController(gvr_context* vr_context) {
+  DVLOG(1) << __FUNCTION__ << "=" << this;
   Initialize(vr_context);
   Reset();
 }
 
-VrController::~VrController() {}
+VrController::~VrController() {
+  DVLOG(1) << __FUNCTION__ << "=" << this;
+}
 
 void VrController::OnResume() {
   if (controller_api_)
@@ -96,6 +99,22 @@ void VrController::OnResume() {
 void VrController::OnPause() {
   if (controller_api_)
     controller_api_->Pause();
+}
+
+device::GvrGamepadData VrController::GetGamepadData() {
+  device::GvrGamepadData pad;
+
+  pad.timestamp = controller_state_->GetLastOrientationTimestamp();
+  pad.touch_pos = controller_state_->GetTouchPos();
+  pad.orientation = controller_state_->GetOrientation();
+  pad.accel = controller_state_->GetAccel();
+  pad.gyro = controller_state_->GetGyro();
+  pad.is_touching = controller_state_->IsTouching();
+  pad.controller_button_pressed =
+      controller_state_->GetButtonState(GVR_CONTROLLER_BUTTON_CLICK);
+  pad.right_handed = handedness_ == GVR_CONTROLLER_RIGHT_HANDED;
+
+  return pad;
 }
 
 bool VrController::IsTouching() {
@@ -181,11 +200,30 @@ void VrController::Initialize(gvr_context* gvr_context) {
   CHECK(gvr_context != nullptr) << "invalid gvr_context";
   controller_api_.reset(new gvr::ControllerApi);
   controller_state_.reset(new gvr::ControllerState);
+
   int32_t options = gvr::ControllerApi::DefaultOptions();
 
-  // Enable non-default options, if you need them:
-  // options |= GVR_CONTROLLER_ENABLE_GYRO;
+  // Enable non-default options - WebVR needs gyro, and since VrShell
+  // implements GvrGamepadDataProvider we need this always.
+  options |= GVR_CONTROLLER_ENABLE_GYRO;
+
   CHECK(controller_api_->Init(options, gvr_context));
+
+  std::unique_ptr<gvr::GvrApi> gvr = gvr::GvrApi::WrapNonOwned(gvr_context);
+  // TODO(bajones): Monitor changes to the controller handedness.
+  handedness_ = gvr->GetUserPrefs().GetControllerHandedness();
+
+  // Work around an obscure link error in component build.
+  // third_party/gvr-android-sdk/libgvr_shim_static_arm.a needs
+  // __aeabi_f2lz (float to int64_t static cast implementation) for
+  // ION's logging.cc::ThrottledLogger. Somehow this is no longer
+  // being provided, so convince the compiler to emit it here so that
+  // it's resolvable when linking libchrome.so.
+  // TODO(bshe,crbug.com/704305): look into a more elegant fix?
+  volatile float fixme_float = 1.3f;
+  volatile int64_t fixme_int64 = static_cast<int64_t>(fixme_float);
+  (void)fixme_int64;
+
   controller_api_->Resume();
 }
 
