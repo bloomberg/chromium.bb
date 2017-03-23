@@ -179,7 +179,7 @@ static const struct {
   const char* fallback_name;
   int fallback_shape;
 } kCursorFallbacks[] = {
-    { "pointer",     "hand",            XC_hand1 },
+    { "pointer",     "hand",            XC_hand2 },
     { "progress",    "left_ptr_watch",  XC_watch },
     { "wait",        nullptr,           XC_watch },
     { "cell",        nullptr,           XC_plus },
