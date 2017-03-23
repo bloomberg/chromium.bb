@@ -42,6 +42,8 @@ ArgumentSpec::ArgumentSpec(const base::Value& value)
   InitializeType(dict);
 }
 
+ArgumentSpec::ArgumentSpec(ArgumentType type) : type_(type), optional_(false) {}
+
 void ArgumentSpec::InitializeType(const base::DictionaryValue* dict) {
   std::string ref_string;
   if (dict->GetString("$ref", &ref_string)) {

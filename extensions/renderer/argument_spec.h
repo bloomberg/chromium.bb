@@ -13,6 +13,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/strings/string_piece.h"
 #include "v8/include/v8.h"
 
 namespace base {
@@ -40,10 +41,13 @@ enum class ArgumentType {
 // A description of a given Argument to an Extension.
 class ArgumentSpec {
  public:
+  using PropertiesMap = std::map<std::string, std::unique_ptr<ArgumentSpec>>;
+
   // Reads the description from |value| and sets associated fields.
   // TODO(devlin): We should strongly think about generating these instead of
   // populating them at runtime.
   explicit ArgumentSpec(const base::Value& value);
+  explicit ArgumentSpec(ArgumentType type);
   ~ArgumentSpec();
 
   // Returns true if the passed |value| matches this specification. If
@@ -59,6 +63,27 @@ class ArgumentSpec {
   bool optional() const { return optional_; }
   ArgumentType type() const { return type_; }
   const std::set<std::string>& enum_values() const { return enum_values_; }
+
+  void set_name(base::StringPiece name) { name_ = name.as_string(); }
+  void set_optional(bool optional) { optional_ = optional; }
+  void set_ref(base::StringPiece ref) { ref_ = ref.as_string(); }
+  void set_minimum(int minimum) { minimum_ = minimum; }
+  void set_properties(PropertiesMap properties) {
+    properties_ = std::move(properties);
+  }
+  void set_list_element_type(std::unique_ptr<ArgumentSpec> list_element_type) {
+    list_element_type_ = std::move(list_element_type);
+  }
+  void set_choices(std::vector<std::unique_ptr<ArgumentSpec>> choices) {
+    choices_ = std::move(choices);
+  }
+  void set_enum_values(std::set<std::string> enum_values) {
+    enum_values_ = std::move(enum_values);
+  }
+  void set_additional_properties(
+      std::unique_ptr<ArgumentSpec> additional_properties) {
+    additional_properties_ = std::move(additional_properties);
+  }
 
  private:
   // Initializes this object according to |type_string| and |dict|.

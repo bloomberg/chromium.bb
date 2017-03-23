@@ -4,7 +4,8 @@
 
 // Custom binding for the declarativeContent API.
 
-var binding = require('binding').Binding.create('declarativeContent');
+var binding =
+    apiBridge || require('binding').Binding.create('declarativeContent');
 
 var utils = require('utils');
 var validate = require('schemaUtils').validate;
@@ -12,7 +13,7 @@ var canonicalizeCompoundSelector =
     requireNative('css_natives').CanonicalizeCompoundSelector;
 var setIcon = require('setIcon').setIcon;
 
-binding.registerCustomHook( function(api) {
+binding.registerCustomHook(function(api) {
   var declarativeContent = api.compiledApi;
 
   // Returns the schema definition of type |typeId| defined in |namespace|.
@@ -34,8 +35,16 @@ binding.registerCustomHook( function(api) {
       }
     }
     instance.instanceType = 'declarativeContent.' + typeId;
-    var schema = getSchema(typeId);
-    validate([instance], [schema]);
+    // TODO(devlin): This is wrong. It means we don't validate the construction
+    // of the instance (which really only matters for PageStateMatcher).
+    // Currently, we don't pass the schema to JS with native bindings because
+    // validation should be done natively. We'll need to fix this by either
+    // allowing some validation to occur in JS, or by moving the instantiation
+    // of these types to native code.
+    if (!apiBridge) {
+      var schema = getSchema(typeId);
+      validate([instance], [schema]);
+    }
   }
 
   function canonicalizeCssSelectors(selectors) {
@@ -73,4 +82,5 @@ binding.registerCustomHook( function(api) {
   };
 });
 
-exports.$set('binding', binding.generate());
+if (!apiBridge)
+  exports.$set('binding', binding.generate());

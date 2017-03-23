@@ -226,6 +226,9 @@ APISignature::APISignature(const base::ListValue& specification) {
   }
 }
 
+APISignature::APISignature(std::vector<std::unique_ptr<ArgumentSpec>> signature)
+    : signature_(std::move(signature)) {}
+
 APISignature::~APISignature() {}
 
 bool APISignature::ParseArgumentsToV8(

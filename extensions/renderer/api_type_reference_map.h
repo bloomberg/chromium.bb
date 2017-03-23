@@ -52,6 +52,11 @@ class APITypeReferenceMap {
   // storage.StorageArea.get).
   const APISignature* GetTypeMethodSignature(const std::string& name) const;
 
+  // Returns true if the map has a signature for the given |name|. Unlike
+  // GetTypeMethodSignature(), this will not try to fetch the type by loading
+  // an API.
+  bool HasTypeMethodSignature(const std::string& name) const;
+
   bool empty() const { return type_refs_.empty(); }
   size_t size() const { return type_refs_.size(); }
 

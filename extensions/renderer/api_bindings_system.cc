@@ -85,7 +85,7 @@ void APIBindingsSystem::InitializeType(const std::string& type_name) {
   // will also go away if/when we generate all these specifications.
   std::string::size_type dot = type_name.rfind('.');
   // The type name should be fully qualified (include the API name).
-  DCHECK_NE(std::string::npos, dot);
+  DCHECK_NE(std::string::npos, dot) << type_name;
   DCHECK_LT(dot, type_name.size() - 1);
   std::string api_name = type_name.substr(0, dot);
   // If we've already instantiated the binding, the type should have been in

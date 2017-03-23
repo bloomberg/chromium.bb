@@ -71,4 +71,9 @@ const APISignature* APITypeReferenceMap::GetTypeMethodSignature(
   return iter == type_methods_.end() ? nullptr : iter->second.get();
 }
 
+bool APITypeReferenceMap::HasTypeMethodSignature(
+    const std::string& name) const {
+  return type_methods_.find(name) != type_methods_.end();
+}
+
 }  // namespace extensions

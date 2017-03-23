@@ -24,7 +24,8 @@ class ArgumentSpec;
 // ability to match provided arguments and convert them to base::Values.
 class APISignature {
  public:
-  APISignature(const base::ListValue& specification);
+  explicit APISignature(const base::ListValue& specification);
+  explicit APISignature(std::vector<std::unique_ptr<ArgumentSpec>> signature);
   ~APISignature();
 
   // Parses |arguments| against this signature, and populates |args_out| with

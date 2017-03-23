@@ -134,11 +134,15 @@ class APIBinding {
   std::unique_ptr<APIBindingHooks> binding_hooks_;
 
   // The reference map for all known types; required to outlive this object.
-  const APITypeReferenceMap* type_refs_;
+  APITypeReferenceMap* type_refs_;
 
   // The associated request handler, shared between this and other bindings.
   // Required to outlive this object.
   APIRequestHandler* request_handler_;
+
+  // The associated event handler, shared between this and other bindings.
+  // Required to outlive this object.
+  APIEventHandler* event_handler_;
 
   // The template for this API. Note: some methods may only be available in
   // certain contexts, but this template contains all methods. Those that are
