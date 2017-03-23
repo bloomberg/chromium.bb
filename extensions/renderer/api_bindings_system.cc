@@ -103,8 +103,9 @@ void APIBindingsSystem::CompleteRequest(int request_id,
 
 void APIBindingsSystem::FireEventInContext(const std::string& event_name,
                                            v8::Local<v8::Context> context,
-                                           const base::ListValue& response) {
-  event_handler_.FireEventInContext(event_name, context, response);
+                                           const base::ListValue& response,
+                                           const EventFilteringInfo& filter) {
+  event_handler_.FireEventInContext(event_name, context, response, filter);
 }
 
 APIBindingHooks* APIBindingsSystem::GetHooksForAPI(

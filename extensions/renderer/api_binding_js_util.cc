@@ -75,11 +75,10 @@ void APIBindingJSUtil::RegisterEventArgumentMassager(
   event_handler_->RegisterArgumentMassager(context, event_name, massager);
 }
 
-void APIBindingJSUtil::CreateCustomEvent(
-    gin::Arguments* arguments,
-    v8::Local<v8::Value> v8_event_name,
-    v8::Local<v8::Value> unused_schema,
-    v8::Local<v8::Value> unused_event_options) {
+void APIBindingJSUtil::CreateCustomEvent(gin::Arguments* arguments,
+                                         v8::Local<v8::Value> v8_event_name,
+                                         v8::Local<v8::Value> unused_schema,
+                                         bool supports_filters) {
   v8::Isolate* isolate = arguments->isolate();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Object> holder;
@@ -95,11 +94,16 @@ void APIBindingJSUtil::CreateCustomEvent(
     event_name = gin::V8ToString(v8_event_name);
   }
 
+  DCHECK(!supports_filters || !event_name.empty())
+      << "Events that support filters cannot be anonymous.";
+
   v8::Local<v8::Value> event;
-  if (event_name.empty())
+  if (event_name.empty()) {
     event = event_handler_->CreateAnonymousEventInstance(context);
-  else
-    event = event_handler_->CreateEventInstance(event_name, context);
+  } else {
+    event = event_handler_->CreateEventInstance(event_name, supports_filters,
+                                                context);
+  }
 
   arguments->Return(event);
 }

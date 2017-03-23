@@ -206,6 +206,54 @@ var tests = [
       chrome.test.succeed();
     });
   },
+  function testWebNavigationAndFilteredEvents() {
+    // Tests unfiltered events, which can be exercised with the webNavigation
+    // API.
+    var unfiltered = new Promise((resolve, reject) => {
+      var sawSimple1 = false;
+      var sawSimple2 = false;
+      chrome.webNavigation.onBeforeNavigate.addListener(
+          function listener(details) {
+        // We create a bunch of tabs in other tests, which can potentially
+        // show up here. If this becomes too much of a problem, we can isolate
+        // these tests further, but for now, just using a unique url should be
+        // sufficient.
+        if (details.url.indexOf('unique') == -1)
+          return;
+        if (details.url.indexOf('simple.html') != -1)
+          sawSimple1 = true;
+        else if (details.url.indexOf('simple2.html') != -1)
+          sawSimple2 = true;
+        else
+          chrome.test.fail(details.url);
+
+        if (sawSimple1 && sawSimple2) {
+          chrome.webNavigation.onBeforeNavigate.removeListener(listener);
+          resolve();
+        }
+      });
+    });
+
+    var filtered = new Promise((resolve, reject) => {
+      chrome.webNavigation.onBeforeNavigate.addListener(
+          function listener(details) {
+        chrome.test.assertTrue(details.url.indexOf('unique') != -1);
+        chrome.test.assertTrue(details.url.indexOf('simple2.html') != -1,
+                               details.url);
+        chrome.webNavigation.onBeforeNavigate.removeListener(listener);
+        resolve();
+      }, {url: [{pathContains: 'simple2.html'}]});
+    });
+
+    var url1 =
+        'http://unique.com:' + portNumber + '/native_bindings/simple.html';
+    var url2 =
+        'http://unique.com:' + portNumber + '/native_bindings/simple2.html';
+    chrome.tabs.create({url: url1});
+    chrome.tabs.create({url: url2});
+
+    Promise.all([unfiltered, filtered]).then(() => { chrome.test.succeed(); });
+  },
 ];
 
 chrome.test.getConfig(config => {
