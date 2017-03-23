@@ -4,9 +4,9 @@
  * found in the LICENSE file.
  */
 
-#include "wtf/text/StringConcatenate.h"
+#include "platform/wtf/text/StringConcatenate.h"
 
-#include "wtf/text/StringImpl.h"
+#include "platform/wtf/text/StringImpl.h"
 
 // This macro is helpful for testing how many intermediate Strings are created
 // while evaluating an expression containing operator+.

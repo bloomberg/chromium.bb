@@ -24,10 +24,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "wtf/text/CString.h"
+#include "platform/wtf/text/CString.h"
 
-#include "wtf/ASCIICType.h"
-#include "wtf/allocator/Partitions.h"
+#include "platform/wtf/ASCIICType.h"
+#include "platform/wtf/allocator/Partitions.h"
 #include <string.h>
 
 using namespace std;

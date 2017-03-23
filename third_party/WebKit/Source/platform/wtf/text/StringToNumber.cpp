@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "wtf/text/StringToNumber.h"
+#include "platform/wtf/text/StringToNumber.h"
 
-#include "wtf/ASCIICType.h"
-#include "wtf/dtoa.h"
-#include "wtf/text/StringImpl.h"
+#include "platform/wtf/ASCIICType.h"
+#include "platform/wtf/dtoa.h"
+#include "platform/wtf/text/StringImpl.h"
 #include <type_traits>
 
 namespace WTF {

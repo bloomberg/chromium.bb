@@ -33,9 +33,9 @@
  * file.
  */
 
-#include "wtf/dtoa.h"
+#include "platform/wtf/dtoa.h"
 
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 #include <string.h>
 
 namespace WTF {

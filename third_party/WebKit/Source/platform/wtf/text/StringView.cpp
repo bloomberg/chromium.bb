@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "wtf/text/StringView.h"
+#include "platform/wtf/text/StringView.h"
 
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/StringImpl.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/AtomicString.h"
+#include "platform/wtf/text/StringImpl.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace WTF {
 

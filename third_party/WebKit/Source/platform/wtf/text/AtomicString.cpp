@@ -21,12 +21,12 @@
  *
  */
 
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/text/AtomicString.h"
 
-#include "wtf/dtoa.h"
-#include "wtf/text/AtomicStringTable.h"
-#include "wtf/text/IntegerToStringConversion.h"
-#include "wtf/text/StringImpl.h"
+#include "platform/wtf/dtoa.h"
+#include "platform/wtf/text/AtomicStringTable.h"
+#include "platform/wtf/text/IntegerToStringConversion.h"
+#include "platform/wtf/text/StringImpl.h"
 
 namespace WTF {
 

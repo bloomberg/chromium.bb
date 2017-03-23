@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "wtf/text/AtomicStringTable.h"
+#include "platform/wtf/text/AtomicStringTable.h"
 
-#include "wtf/text/StringHash.h"
-#include "wtf/text/UTF8.h"
+#include "platform/wtf/text/StringHash.h"
+#include "platform/wtf/text/UTF8.h"
 
 namespace WTF {
 

@@ -18,11 +18,11 @@
  *
  */
 
-#include "wtf/text/StringImpl.h"
+#include "platform/wtf/text/StringImpl.h"
 
 #import <CoreFoundation/CFBase.h>
 #import <Foundation/NSObject.h>
-#include "wtf/RetainPtr.h"
+#include "platform/wtf/RetainPtr.h"
 
 namespace WTF {
 

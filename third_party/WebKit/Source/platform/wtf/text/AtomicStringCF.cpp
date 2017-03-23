@@ -23,13 +23,13 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/text/AtomicString.h"
 
-#include "wtf/text/AtomicStringTable.h"
+#include "platform/wtf/text/AtomicStringTable.h"
 
 #if OS(MACOSX)
 
-#include "wtf/text/CString.h"
+#include "platform/wtf/text/CString.h"
 #include <CoreFoundation/CoreFoundation.h>
 
 namespace WTF {

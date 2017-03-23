@@ -18,14 +18,14 @@
  *
  */
 
-#include "wtf/text/StringImpl.h"
+#include "platform/wtf/text/StringImpl.h"
 
 #if OS(MACOSX)
 
-#include "wtf/PassRefPtr.h"
-#include "wtf/RetainPtr.h"
-#include "wtf/Threading.h"
-#include "wtf/allocator/Partitions.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RetainPtr.h"
+#include "platform/wtf/Threading.h"
+#include "platform/wtf/allocator/Partitions.h"
 #include <CoreFoundation/CoreFoundation.h>
 
 namespace WTF {

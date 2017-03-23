@@ -1,85 +1,9 @@
-/*
- * Copyright (C) 2008, 2010 Apple Inc. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1.  Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- * 2.  Redistributions in binary form must reproduce the above copyright
- *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution.
- * 3.  Neither the name of Apple Inc. ("Apple") nor the names of its
- *     contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL APPLE OR ITS CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-#ifndef StringBuffer_h
-#define StringBuffer_h
+#include "platform/wtf/text/StringBuffer.h"
 
-#include "wtf/Allocator.h"
-#include "wtf/Assertions.h"
-#include "wtf/text/StringImpl.h"
-#include "wtf/text/Unicode.h"
-
-namespace WTF {
-
-template <typename CharType>
-class StringBuffer {
-  DISALLOW_NEW();
-  WTF_MAKE_NONCOPYABLE(StringBuffer);
-
- public:
-  StringBuffer() {}
-
-  explicit StringBuffer(unsigned length) {
-    CharType* characters;
-    m_data = StringImpl::createUninitialized(length, characters);
-  }
-
-  ~StringBuffer() {}
-
-  void shrink(unsigned newLength);
-
-  unsigned length() const { return m_data ? m_data->length() : 0; }
-  CharType* characters() {
-    return length() ? const_cast<CharType*>(m_data->getCharacters<CharType>())
-                    : 0;
-  }
-
-  CharType& operator[](unsigned i) {
-    SECURITY_DCHECK(i < length());
-    return characters()[i];
-  }
-
-  PassRefPtr<StringImpl> release() { return std::move(m_data); }
-
- private:
-  RefPtr<StringImpl> m_data;
-};
-
-template <typename CharType>
-void StringBuffer<CharType>::shrink(unsigned newLength) {
-  DCHECK(m_data);
-  if (m_data->length() == newLength)
-    return;
-  m_data = m_data->substring(0, newLength);
-}
-
-}  // namespace WTF
-
-using WTF::StringBuffer;
-
-#endif  // StringBuffer_h
+// The contents of this header was moved to platform/wtf as part of
+// WTF migration project. See the following post for details:
+// https://groups.google.com/a/chromium.org/d/msg/blink-dev/tLdAZCTlcAA/bYXVT8gYCAAJ

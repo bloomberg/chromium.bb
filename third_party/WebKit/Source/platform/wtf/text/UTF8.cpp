@@ -24,11 +24,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "wtf/text/UTF8.h"
+#include "platform/wtf/text/UTF8.h"
 
-#include "wtf/ASCIICType.h"
-#include "wtf/StringHasher.h"
-#include "wtf/text/CharacterNames.h"
+#include "platform/wtf/ASCIICType.h"
+#include "platform/wtf/StringHasher.h"
+#include "platform/wtf/text/CharacterNames.h"
 
 namespace WTF {
 namespace Unicode {

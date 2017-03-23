@@ -23,30 +23,30 @@
  *
  */
 
-#include "wtf/text/StringImpl.h"
+#include "platform/wtf/text/StringImpl.h"
 
-#include "wtf/DynamicAnnotations.h"
-#include "wtf/LeakAnnotations.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/StaticConstructors.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/allocator/Partitions.h"
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/AtomicStringTable.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/CharacterNames.h"
-#include "wtf/text/StringBuffer.h"
-#include "wtf/text/StringHash.h"
-#include "wtf/text/StringToNumber.h"
+#include "platform/wtf/DynamicAnnotations.h"
+#include "platform/wtf/LeakAnnotations.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/StaticConstructors.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/allocator/Partitions.h"
+#include "platform/wtf/text/AtomicString.h"
+#include "platform/wtf/text/AtomicStringTable.h"
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/CharacterNames.h"
+#include "platform/wtf/text/StringBuffer.h"
+#include "platform/wtf/text/StringHash.h"
+#include "platform/wtf/text/StringToNumber.h"
 #include <algorithm>
 #include <memory>
 
 #ifdef STRING_STATS
-#include "wtf/DataLog.h"
-#include "wtf/HashMap.h"
-#include "wtf/HashSet.h"
-#include "wtf/RefCounted.h"
-#include "wtf/ThreadingPrimitives.h"
+#include "platform/wtf/DataLog.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/RefCounted.h"
+#include "platform/wtf/ThreadingPrimitives.h"
 #include <unistd.h>
 #endif
 

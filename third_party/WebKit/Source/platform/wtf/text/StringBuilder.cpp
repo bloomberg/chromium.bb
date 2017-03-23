@@ -24,11 +24,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringBuilder.h"
 
-#include "wtf/dtoa.h"
-#include "wtf/text/IntegerToStringConversion.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/dtoa.h"
+#include "platform/wtf/text/IntegerToStringConversion.h"
+#include "platform/wtf/text/WTFString.h"
 #include <algorithm>
 
 namespace WTF {
