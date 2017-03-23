@@ -55,6 +55,46 @@ class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
     Composition = 1 << CompositionMarkerIndex,
   };
 
+  class MarkerTypesIterator
+      : public std::iterator<std::forward_iterator_tag, MarkerType> {
+   public:
+    explicit MarkerTypesIterator(unsigned markerTypes)
+        : m_remainingTypes(markerTypes) {}
+    MarkerTypesIterator(const MarkerTypesIterator& other) = default;
+
+    bool operator==(const MarkerTypesIterator& other) {
+      return m_remainingTypes == other.m_remainingTypes;
+    }
+    bool operator!=(const MarkerTypesIterator& other) {
+      return !operator==(other);
+    }
+
+    MarkerTypesIterator& operator++() {
+      DCHECK(m_remainingTypes);
+      // Turn off least significant 1-bit (from Hacker's Delight 2-1)
+      // Example:
+      // 7: 7 & 6 = 6
+      // 6: 6 & 5 = 4
+      // 4: 4 & 3 = 0
+      m_remainingTypes &= (m_remainingTypes - 1);
+      return *this;
+    }
+
+    MarkerType operator*() const {
+      DCHECK(m_remainingTypes);
+      // Isolate least significant 1-bit (from Hacker's Delight 2-1)
+      // Example:
+      // 7: 7 & -7 = 1
+      // 6: 6 & -6 = 2
+      // 4: 4 & -4 = 4
+      return static_cast<MarkerType>(m_remainingTypes &
+                                     (~m_remainingTypes + 1));
+    }
+
+   private:
+    unsigned m_remainingTypes;
+  };
+
   class MarkerTypes {
    public:
     // The constructor is intentionally implicit to allow conversion from the
@@ -71,6 +111,9 @@ class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
 
     void add(const MarkerTypes& types) { m_mask |= types.m_mask; }
     void remove(const MarkerTypes& types) { m_mask &= ~types.m_mask; }
+
+    MarkerTypesIterator begin() const { return MarkerTypesIterator(m_mask); }
+    MarkerTypesIterator end() const { return MarkerTypesIterator(0); }
 
    private:
     unsigned m_mask;

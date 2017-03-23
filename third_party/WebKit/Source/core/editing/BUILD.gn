@@ -276,6 +276,7 @@ source_set("unit_tests") {
     "iterators/TextIteratorTest.cpp",
     "iterators/TextSearcherICUTest.cpp",
     "markers/DocumentMarkerControllerTest.cpp",
+    "markers/DocumentMarkerTest.cpp",
     "serializers/StyledMarkupSerializerTest.cpp",
     "spellcheck/IdleSpellCheckCallbackTest.cpp",
     "spellcheck/SpellCheckTestBase.cpp",
