@@ -303,15 +303,13 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetActiveUniformsiv(
     return error::kInvalidArguments;
   }
 
-  GLsizei bufsize = uniformCount;
-  GLsizei length = 0;
-  error::Error error = DoGetActiveUniformsiv(program, uniformCount, indices,
-                                             pname, bufsize, &length, params);
+  error::Error error =
+      DoGetActiveUniformsiv(program, uniformCount, indices, pname, params);
   if (error != error::kNoError) {
     return error;
   }
 
-  result->SetNumResults(length);
+  result->SetNumResults(uniformCount);
   return error::kNoError;
 }
 
@@ -754,16 +752,12 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetUniformIndices(
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  GLsizei length = 0;
   error::Error error =
-      DoGetUniformIndices(program, count, &names[0], count, &length, indices);
+      DoGetUniformIndices(program, count, &names[0], count, indices);
   if (error != error::kNoError) {
     return error;
   }
-  if (length != count) {
-    return error::kOutOfBounds;
-  }
-  result->SetNumResults(length);
+  result->SetNumResults(count);
   return error::kNoError;
 }
 
