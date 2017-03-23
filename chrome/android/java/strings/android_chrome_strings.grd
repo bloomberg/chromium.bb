@@ -2222,7 +2222,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Close dialog
       </message>
       <message name="IDS_BOOKMARK_ACTION_BAR_SEARCH" desc="Button text for bookmark search action on the bookmark action bar [CHAR-LIMIT=32]">
-        Search bookmarks
+        Search your bookmarks
       </message>
       <message name="IDS_BOOKMARK_NO_RESULT" desc="Text explaining that no bookmarks are found to match a search query">
         No bookmarks found

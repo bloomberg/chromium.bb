@@ -595,26 +595,8 @@ void BookmarkBridge::SearchBookmarks(JNIEnv* env,
   for (const bookmarks::TitledUrlMatch& match : results) {
     const BookmarkNode* node = static_cast<const BookmarkNode*>(match.node);
 
-    std::vector<int> title_match_start_positions;
-    std::vector<int> title_match_end_positions;
-    for (auto position : match.title_match_positions) {
-      title_match_start_positions.push_back(position.first);
-      title_match_end_positions.push_back(position.second);
-    }
-
-    std::vector<int> url_match_start_positions;
-    std::vector<int> url_match_end_positions;
-    for (auto position : match.url_match_positions) {
-      url_match_start_positions.push_back(position.first);
-      url_match_end_positions.push_back(position.second);
-    }
-
-    Java_BookmarkBridge_addToBookmarkMatchList(
-        env, j_list, node->id(), node->type(),
-        ToJavaIntArray(env, title_match_start_positions),
-        ToJavaIntArray(env, title_match_end_positions),
-        ToJavaIntArray(env, url_match_start_positions),
-        ToJavaIntArray(env, url_match_end_positions));
+    Java_BookmarkBridge_addToBookmarkIdList(env, j_list, node->id(),
+                                            node->type());
   }
 }
 

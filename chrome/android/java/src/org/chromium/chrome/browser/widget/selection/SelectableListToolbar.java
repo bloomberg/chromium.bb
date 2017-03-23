@@ -78,9 +78,9 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
 
     protected boolean mIsSelectionEnabled;
     protected SelectionDelegate<E> mSelectionDelegate;
+    protected boolean mIsSearching;
 
     private boolean mHasSearchView;
-    private boolean mIsSearching;
     private LinearLayout mSearchView;
     private EditText mSearchEditText;
     private TintedImageButton mClearTextButton;
@@ -313,7 +313,8 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
 
         if (mActionBarDrawerToggle != null) {
             mActionBarDrawerToggle.setDrawerIndicatorEnabled(false);
-            mDrawerLayout.addDrawerListener(null);
+            mDrawerLayout.removeDrawerListener(mActionBarDrawerToggle);
+            mActionBarDrawerToggle = null;
         }
 
         setNavigationOnClickListener(this);

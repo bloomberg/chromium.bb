@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.bookmarks;
 
+import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -32,6 +33,7 @@ import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Tests for the bookmark manager.
@@ -43,19 +45,24 @@ public class BookmarkTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         super(ChromeActivity.class);
     }
 
-    private static final String TEST_PAGE = "/chrome/test/data/android/google.html";
-    private static final String TEST_PAGE_TITLE = "The Google";
+    private static final String TEST_PAGE_URL_GOOGLE = "/chrome/test/data/android/google.html";
+    private static final String TEST_PAGE_TITLE_GOOGLE = "The Google";
+    private static final String TEST_PAGE_TITLE_GOOGLE2 = "Google";
+    private static final String TEST_PAGE_URL_FOO = "/chrome/test/data/android/test.html";
+    private static final String TEST_PAGE_TITLE_FOO = "Foo";
 
     private BookmarkModel mBookmarkModel;
     protected RecyclerView mItemsContainer;
     private String mTestPage;
+    private String mTestPageFoo;
     private EmbeddedTestServer mTestServer;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
-        mTestPage = mTestServer.getURL(TEST_PAGE);
+        mTestPage = mTestServer.getURL(TEST_PAGE_URL_GOOGLE);
+        mTestPageFoo = mTestServer.getURL(TEST_PAGE_URL_FOO);
     }
 
     @Override
@@ -125,31 +132,25 @@ public class BookmarkTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                 BookmarkItem item = mBookmarkModel.getBookmarkById(id);
                 assertEquals(mBookmarkModel.getDefaultFolder(), item.getParentId());
                 assertEquals(mTestPage, item.getUrl());
-                assertEquals(TEST_PAGE_TITLE, item.getTitle());
+                assertEquals(TEST_PAGE_TITLE_GOOGLE, item.getTitle());
             }
         });
     }
 
     @SmallTest
-    public void testOpenBookmark() throws InterruptedException {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mBookmarkModel.addBookmark(mBookmarkModel.getDefaultFolder(), 0, TEST_PAGE_TITLE,
-                        mTestPage);
-            }
-        });
+    public void testOpenBookmark() throws InterruptedException, ExecutionException {
+        addBookmark(TEST_PAGE_TITLE_GOOGLE, mTestPage);
         openBookmarkManager();
         assertTrue("Grid view does not contain added bookmark: ",
-                isItemPresentInBookmarkList(TEST_PAGE_TITLE));
-        final View tile = getViewWithText(mItemsContainer, TEST_PAGE_TITLE);
+                isItemPresentInBookmarkList(TEST_PAGE_TITLE_GOOGLE));
+        final View tile = getViewWithText(mItemsContainer, TEST_PAGE_TITLE_GOOGLE);
         ChromeTabUtils.waitForTabPageLoaded(getActivity().getActivityTab(), new Runnable() {
             @Override
             public void run() {
                 TouchCommon.singleClickView(tile);
             }
         });
-        assertEquals(TEST_PAGE_TITLE, getActivity().getActivityTab().getTitle());
+        assertEquals(TEST_PAGE_TITLE_GOOGLE, getActivity().getActivityTab().getTitle());
     }
 
     @SmallTest
@@ -175,6 +176,57 @@ public class BookmarkTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                 BookmarkUtils.getLastUsedUrl(getActivity()));
     }
 
+    @MediumTest
+    public void testSearchBookmarks() throws Exception {
+        BookmarkPromoHeader.setShouldShowForTests();
+        addBookmark(TEST_PAGE_TITLE_GOOGLE, mTestPage);
+        addBookmark(TEST_PAGE_TITLE_FOO, mTestPageFoo);
+        openBookmarkManager();
+
+        BookmarkItemsAdapter adapter = ((BookmarkItemsAdapter) mItemsContainer.getAdapter());
+        final BookmarkDelegate delegate = adapter.getDelegateForTesting();
+
+        assertEquals(BookmarkUIState.STATE_FOLDER, delegate.getCurrentState());
+        assertEquals("Wrong number of items before starting search.", 3, adapter.getItemCount());
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                delegate.openSearchUI();
+            }
+        });
+
+        assertEquals(BookmarkUIState.STATE_SEARCHING, delegate.getCurrentState());
+        assertEquals("Wrong number of items after showing search UI. The promo should be hidden.",
+                2, adapter.getItemCount());
+
+        searchBookmarks("Google");
+        assertEquals("Wrong number of items after searching.", 1,
+                mItemsContainer.getAdapter().getItemCount());
+
+        BookmarkId newBookmark = addBookmark(TEST_PAGE_TITLE_GOOGLE2, mTestPage);
+        assertEquals("Wrong number of items after bookmark added while searching.", 2,
+                mItemsContainer.getAdapter().getItemCount());
+
+        removeBookmark(newBookmark);
+        assertEquals("Wrong number of items after bookmark removed while searching.", 1,
+                mItemsContainer.getAdapter().getItemCount());
+
+        searchBookmarks("Non-existent page");
+        assertEquals("Wrong number of items after searching for non-existent item.", 0,
+                mItemsContainer.getAdapter().getItemCount());
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                delegate.closeSearchUI();
+            }
+        });
+        assertEquals("Wrong number of items after closing search UI.", 3,
+                mItemsContainer.getAdapter().getItemCount());
+        assertEquals(BookmarkUIState.STATE_FOLDER, delegate.getCurrentState());
+    }
+
     /**
      * Returns the View that has the given text.
      *
@@ -198,6 +250,33 @@ public class BookmarkTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                 }
                 Assert.assertEquals("Exactly one item should be present.", 1, matchingViews.size());
                 return matchingViews.get(0);
+            }
+        });
+    }
+
+    private BookmarkId addBookmark(final String title, final String url) throws ExecutionException {
+        return ThreadUtils.runOnUiThreadBlocking(new Callable<BookmarkId>() {
+            @Override
+            public BookmarkId call() throws Exception {
+                return mBookmarkModel.addBookmark(mBookmarkModel.getDefaultFolder(), 0, title, url);
+            }
+        });
+    }
+
+    private void removeBookmark(final BookmarkId bookmarkId) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mBookmarkModel.deleteBookmark(bookmarkId);
+            }
+        });
+    }
+
+    private void searchBookmarks(final String query) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                ((BookmarkItemsAdapter) mItemsContainer.getAdapter()).search(query);
             }
         });
     }

@@ -47,7 +47,6 @@ public class BookmarkActionBar extends SelectableListToolbar<BookmarkId>
         inflateMenu(R.menu.bookmark_action_bar_menu);
         setOnMenuItemClickListener(this);
 
-        getMenu().findItem(R.id.search_menu_id).setTitle(R.string.bookmark_action_bar_search);
         getMenu().findItem(R.id.selection_mode_edit_menu_id).setTitle(R.string.edit_bookmark);
         getMenu().findItem(R.id.selection_mode_move_menu_id)
                 .setTitle(R.string.bookmark_action_bar_move);
@@ -57,6 +56,11 @@ public class BookmarkActionBar extends SelectableListToolbar<BookmarkId>
 
     @Override
     public void onNavigationBack() {
+        if (mIsSearching) {
+            super.onNavigationBack();
+            return;
+        }
+
         mDelegate.openFolder(mCurrentFolder.getParentId());
     }
 
@@ -154,6 +158,9 @@ public class BookmarkActionBar extends SelectableListToolbar<BookmarkId>
             setNavigationButton(NAVIGATION_BUTTON_BACK);
         }
     }
+
+    @Override
+    public void onSearchStateSet() {}
 
     @Override
     public void onSelectionStateChange(List<BookmarkId> selectedBookmarks) {
