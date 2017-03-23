@@ -1272,6 +1272,9 @@ void DownloadItemImpl::Start(
   if (state_ == RESUMING_INTERNAL)
     UpdateValidatorsOnResumption(new_create_info);
 
+  if (state_ == INITIAL_INTERNAL && job_->UsesParallelRequests())
+    RecordDownloadCount(USES_PARALLEL_REQUESTS);
+
   TransitionTo(TARGET_PENDING_INTERNAL);
 
   job_->Start();

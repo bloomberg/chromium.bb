@@ -91,6 +91,9 @@ enum DownloadCountTypes {
   // candidates for partial resumption.
   STRONG_VALIDATOR_AND_ACCEPTS_RANGES,
 
+  // Count of downloads that uses parallel download requests.
+  USES_PARALLEL_REQUESTS,
+
   DOWNLOAD_COUNT_TYPES_LAST_ENTRY
 };
 

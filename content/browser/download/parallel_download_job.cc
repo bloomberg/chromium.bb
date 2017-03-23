@@ -69,8 +69,13 @@ void ParallelDownloadJob::Resume(bool resume_request) {
     worker.second->Resume();
 }
 
+
 int ParallelDownloadJob::GetParallelRequestCount() const {
   return GetParallelRequestCountConfig();
+}
+
+bool ParallelDownloadJob::UsesParallelRequests() const {
+  return true;
 }
 
 void ParallelDownloadJob::BuildParallelRequestAfterDelay() {

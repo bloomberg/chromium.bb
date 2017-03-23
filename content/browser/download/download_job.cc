@@ -54,4 +54,8 @@ void DownloadJob::AddByteStream(std::unique_ptr<ByteStreamReader> stream_reader,
                  base::Passed(&stream_reader), offset, length));
 }
 
+bool DownloadJob::UsesParallelRequests() const {
+  return false;
+}
+
 }  // namespace content

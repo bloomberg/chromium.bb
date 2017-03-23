@@ -40,6 +40,9 @@ class CONTENT_EXPORT DownloadJob {
   // WebContents.
   virtual WebContents* GetWebContents() const = 0;
 
+  // Returns whether the download uses parallel requests.
+  virtual bool UsesParallelRequests() const;
+
  protected:
   void StartDownload() const;
   void Interrupt(DownloadInterruptReason reason);
