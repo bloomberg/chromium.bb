@@ -17,6 +17,8 @@ source_set("public") {
     "cwv_navigation_delegate.h",
     "cwv_translate_delegate.h",
     "cwv_ui_delegate.h",
+    "cwv_user_content_controller.h",
+    "cwv_user_script.h",
     "cwv_web_view.h",
     "cwv_web_view_configuration.h",
   ]

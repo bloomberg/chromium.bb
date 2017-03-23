@@ -7,6 +7,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "ios/web/public/user_agent.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
+#import "ios/web_view/internal/web_view_early_page_script_provider.h"
 #import "ios/web_view/internal/web_view_web_main_parts.h"
 #import "ios/web_view/public/cwv_delegate.h"
 
@@ -40,6 +41,12 @@ std::string WebViewWebClient::GetProduct() const {
 
 std::string WebViewWebClient::GetUserAgent(web::UserAgentType type) const {
   return web::BuildUserAgentFromProduct(GetProduct());
+}
+
+NSString* WebViewWebClient::GetEarlyPageScript(
+    web::BrowserState* browser_state) const {
+  return WebViewEarlyPageScriptProvider::FromBrowserState(browser_state)
+      .GetScript();
 }
 
 }  // namespace ios_web_view

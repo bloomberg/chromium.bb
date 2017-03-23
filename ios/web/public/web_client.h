@@ -108,6 +108,9 @@ class WebClient {
 
   // Gives the embedder a chance to provide the JavaScript to be injected into
   // the web view as early as possible. Result must not be nil.
+  //
+  // TODO(crbug.com/703964): Change the return value to NSArray<NSString*> to
+  // improve performance.
   virtual NSString* GetEarlyPageScript(BrowserState* browser_state) const;
 
   // Informs the embedder that a certificate error has occurred. If

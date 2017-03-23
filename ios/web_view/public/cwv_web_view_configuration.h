@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
+@class CWVUserContentController;
 @class CWVWebsiteDataStore;
 
 // Configuration used for creation of a CWVWebView.
@@ -20,9 +21,13 @@
 
 - (instancetype)init NS_UNAVAILABLE;
 
+// The user content controller to associate with web views created using this
+// configuration.
+@property(nonatomic, readonly) CWVUserContentController* userContentController;
+
 // YES if it is a configuration with persistent data store which stores all data
 // on disk.
-@property(readonly, getter=isPersistent) BOOL persistent;
+@property(nonatomic, readonly, getter=isPersistent) BOOL persistent;
 
 @end
 

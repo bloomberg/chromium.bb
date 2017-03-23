@@ -25,6 +25,7 @@ class WebViewWebClient : public web::WebClient {
   web::WebMainParts* CreateWebMainParts() override;
   std::string GetProduct() const override;
   std::string GetUserAgent(web::UserAgentType type) const override;
+  NSString* GetEarlyPageScript(web::BrowserState* browser_state) const override;
 
   // Normal browser state associated with the receiver.
   WebViewBrowserState* browser_state() const;

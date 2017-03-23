@@ -54,6 +54,7 @@
 
 @implementation CWVWebView
 
+@synthesize configuration = _configuration;
 @synthesize navigationDelegate = _navigationDelegate;
 @synthesize translationDelegate = _translationDelegate;
 @synthesize estimatedProgress = _estimatedProgress;
