@@ -69,6 +69,12 @@ const base::Feature kBackspaceGoesBackFeature {
 const base::Feature kBlockPromptsIfDismissedOften{
     "BlockPromptsIfDismissedOften", base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if defined(OS_MACOSX)
+// Enables the new bookmark app system (e.g. Add To Applications on Mac).
+const base::Feature kBookmarkApps{"BookmarkAppsMac",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // Fixes for browser hang bugs are deployed in a field trial in order to measure
 // their impact. See crbug.com/478209.
 const base::Feature kBrowserHangFixesExperiment{

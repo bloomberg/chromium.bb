@@ -1873,7 +1873,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kDisableBundledPpapiFlash,
       switches::kDisableCastStreamingHWEncoding,
       switches::kDisableJavaScriptHarmonyShipping,
-      switches::kDisableNewBookmarkApps,
       switches::kEnableBenchmarking,
       switches::kEnableDistillabilityService,
       switches::kEnableNaCl,
@@ -1882,7 +1881,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kEnableNaClNonSfiMode,
 #endif
       switches::kEnableNetBenchmarking,
-      switches::kEnableNewBookmarkApps,
 #if !defined(DISABLE_NACL)
       switches::kForcePNaClSubzero,
 #endif

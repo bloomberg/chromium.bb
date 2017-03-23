@@ -232,9 +232,6 @@ const char kDisableHttp2[] = "disable-http2";
 const char kDisableMinimizeOnSecondLauncherItemClick[] =
     "disable-minimize-on-second-launcher-item-click";
 
-// Disables the new bookmark app system.
-const char kDisableNewBookmarkApps[]        = "disable-new-bookmark-apps";
-
 // Disable auto-reload of error pages if offline.
 const char kDisableOfflineAutoReload[]      = "disable-offline-auto-reload";
 
@@ -367,9 +364,6 @@ const char kEnableNavigationTracing[] = "enable-navigation-tracing";
 
 // Enables the network-related benchmarking extensions.
 const char kEnableNetBenchmarking[]         = "enable-net-benchmarking";
-
-// Enables the new bookmark app system.
-const char kEnableNewBookmarkApps[]         = "enable-new-bookmark-apps";
 
 // Enable auto-reload of error pages if offline.
 const char kEnableOfflineAutoReload[]       = "enable-offline-auto-reload";

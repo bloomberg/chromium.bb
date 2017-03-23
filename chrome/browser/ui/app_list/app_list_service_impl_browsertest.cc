@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/app_list/app_list_view_delegate.h"
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/prefs/pref_service.h"
@@ -103,8 +102,6 @@ IN_PROC_BROWSER_TEST_F(AppListServiceImplBrowserTest, CreatedLazily) {
 // Test that all the items in the context menu for a hosted app have valid
 // labels.
 IN_PROC_BROWSER_TEST_F(AppListServiceImplBrowserTest, ShowContextMenu) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableNewBookmarkApps);
   AppListService* service = AppListService::Get();
   EXPECT_TRUE(service);
 

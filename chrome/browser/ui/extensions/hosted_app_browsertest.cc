@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -15,13 +16,16 @@
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
+
+#if defined(OS_MACOSX)
+#include "chrome/common/chrome_features.h"
+#endif
 
 using content::WebContents;
 using extensions::Extension;
@@ -45,6 +49,14 @@ class HostedAppTest : public ExtensionBrowserTest {
  public:
   HostedAppTest() : app_browser_(nullptr) {}
   ~HostedAppTest() override {}
+
+  // testing::Test:
+  void SetUp() override {
+    ExtensionBrowserTest::SetUp();
+#if defined(OS_MACOSX)
+    scoped_feature_list_.InitAndEnableFeature(features::kBookmarkApps);
+#endif
+  }
 
  protected:
   void SetupApp(const std::string& app_folder, bool is_bookmark_app) {
@@ -77,14 +89,16 @@ class HostedAppTest : public ExtensionBrowserTest {
   }
 
   Browser* app_browser_;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(HostedAppTest);
 };
 
 // Check that the location bar is shown correctly for bookmark apps.
 IN_PROC_BROWSER_TEST_F(HostedAppTest,
                        ShouldShowLocationBarForBookmarkApp) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableNewBookmarkApps);
-
   SetupApp("app", true);
 
   // Navigate to the app's launch page; the location bar should be hidden.
@@ -105,9 +119,6 @@ IN_PROC_BROWSER_TEST_F(HostedAppTest,
 // they navigate to a HTTPS page on the same origin.
 IN_PROC_BROWSER_TEST_F(HostedAppTest,
                        ShouldShowLocationBarForHTTPBookmarkApp) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableNewBookmarkApps);
-
   SetupApp("app", true);
 
   // Navigate to the app's launch page; the location bar should be hidden.
@@ -124,9 +135,6 @@ IN_PROC_BROWSER_TEST_F(HostedAppTest,
 // they navigate to a HTTP page on the same origin.
 IN_PROC_BROWSER_TEST_F(HostedAppTest,
                        ShouldShowLocationBarForHTTPSBookmarkApp) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableNewBookmarkApps);
-
   SetupApp("https_app", true);
 
   // Navigate to the app's launch page; the location bar should be hidden.

@@ -49,6 +49,10 @@ extern const base::Feature kBackspaceGoesBackFeature;
 
 extern const base::Feature kBlockPromptsIfDismissedOften;
 
+#if defined(OS_MACOSX)
+extern const base::Feature kBookmarkApps;
+#endif
+
 extern const base::Feature kBrowserHangFixesExperiment;
 
 #if defined(OS_MACOSX)

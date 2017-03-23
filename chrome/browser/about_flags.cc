@@ -1367,12 +1367,10 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_FIRST_RUN_UI_TRANSITIONS_DESCRIPTION, kOsCrOS,
      SINGLE_VALUE_TYPE(chromeos::switches::kEnableFirstRunUITransitions)},
 #endif  // OS_CHROMEOS
-    {"disable-new-bookmark-apps", IDS_FLAGS_NEW_BOOKMARK_APPS_NAME,
-     IDS_FLAGS_NEW_BOOKMARK_APPS_DESCRIPTION,
-     kOsWin | kOsCrOS | kOsLinux | kOsMac,
-     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableNewBookmarkApps,
-                               switches::kDisableNewBookmarkApps)},
 #if defined(OS_MACOSX)
+    {"bookmark-apps", IDS_FLAGS_NEW_BOOKMARK_APPS_NAME,
+     IDS_FLAGS_NEW_BOOKMARK_APPS_DESCRIPTION, kOsMac,
+     FEATURE_VALUE_TYPE(features::kBookmarkApps)},
     {"disable-hosted-apps-in-windows", IDS_FLAGS_HOSTED_APPS_IN_WINDOWS_NAME,
      IDS_FLAGS_HOSTED_APPS_IN_WINDOWS_DESCRIPTION, kOsMac,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableHostedAppsInWindows,

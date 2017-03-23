@@ -12,6 +12,7 @@
 #import "base/mac/scoped_objc_class_swizzler.h"
 #include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
@@ -20,7 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_features.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/uninstall_reason.h"
@@ -42,9 +43,10 @@ class AppShimMenuControllerBrowserTest
         hosted_app_(nullptr),
         initial_menu_item_count_(0) {}
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    PlatformAppBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableNewBookmarkApps);
+  // testing::Test:
+  void SetUp() override {
+    PlatformAppBrowserTest::SetUp();
+    scoped_feature_list_.InitAndEnableFeature(features::kBookmarkApps);
   }
 
   // Start testing apps and wait for them to launch. |flags| is a bitmask of
@@ -134,6 +136,8 @@ class AppShimMenuControllerBrowserTest
   NSUInteger initial_menu_item_count_;
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(AppShimMenuControllerBrowserTest);
 };
 

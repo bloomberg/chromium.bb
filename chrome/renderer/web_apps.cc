@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/json/json_reader.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -18,7 +19,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/web_application_info.h"
 #include "third_party/WebKit/public/platform/WebIconSizesParser.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -150,11 +151,10 @@ void ParseWebAppFromWebDocument(WebFrame* frame,
       // Bookmark apps also support "apple-touch-icon" and
       // "apple-touch-icon-precomposed".
 #if defined(OS_MACOSX)
-      bool bookmark_apps_enabled = base::CommandLine::ForCurrentProcess()->
-          HasSwitch(switches::kEnableNewBookmarkApps);
+      bool bookmark_apps_enabled =
+          base::FeatureList::IsEnabled(features::kBookmarkApps);
 #else
-      bool bookmark_apps_enabled = !base::CommandLine::ForCurrentProcess()->
-          HasSwitch(switches::kDisableNewBookmarkApps);
+      bool bookmark_apps_enabled = true;
 #endif
       if (base::LowerCaseEqualsASCII(rel, "icon") ||
           base::LowerCaseEqualsASCII(rel, "shortcut icon") ||
