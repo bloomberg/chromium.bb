@@ -428,14 +428,17 @@ void HeapCompact::finishThreadCompaction() {
   m_doCompact = false;
 
   double timeForHeapCompaction = WTF::currentTimeMS() - m_startCompactionTimeMS;
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, timeForHeapCompactionHistogram,
-                      ("BlinkGC.TimeForHeapCompaction", 1, 10 * 1000, 50));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      CustomCountHistogram, timeForHeapCompactionHistogram,
+      new CustomCountHistogram("BlinkGC.TimeForHeapCompaction", 1, 10 * 1000,
+                               50));
   timeForHeapCompactionHistogram.count(timeForHeapCompaction);
   m_startCompactionTimeMS = 0;
 
-  DEFINE_STATIC_LOCAL(
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
       CustomCountHistogram, objectSizeFreedByHeapCompaction,
-      ("BlinkGC.ObjectSizeFreedByHeapCompaction", 1, 4 * 1024 * 1024, 50));
+      new CustomCountHistogram("BlinkGC.ObjectSizeFreedByHeapCompaction", 1,
+                               4 * 1024 * 1024, 50));
   objectSizeFreedByHeapCompaction.count(m_freedSize / 1024);
 
 #if DEBUG_LOG_HEAP_COMPACTION_RUNNING_TIME
