@@ -39,7 +39,7 @@
 
 namespace blink {
 
-class InstrumentingAgents;
+class InspectorInstrumentationAgents;
 class Resource;
 class ThreadDebugger;
 class WorkerGlobalScope;
@@ -76,26 +76,31 @@ class CORE_EXPORT AsyncTask {
 };
 
 // Called from generated instrumentation code.
-CORE_EXPORT InstrumentingAgents* instrumentingAgentsFor(WorkerGlobalScope*);
-CORE_EXPORT InstrumentingAgents* instrumentingAgentsForNonDocumentContext(
-    ExecutionContext*);
+CORE_EXPORT InspectorInstrumentationAgents* instrumentingAgentsFor(
+    WorkerGlobalScope*);
+CORE_EXPORT InspectorInstrumentationAgents*
+instrumentingAgentsForNonDocumentContext(ExecutionContext*);
 
-inline InstrumentingAgents* instrumentingAgentsFor(LocalFrame* frame) {
+inline InspectorInstrumentationAgents* instrumentingAgentsFor(
+    LocalFrame* frame) {
   return frame ? frame->instrumentingAgents() : nullptr;
 }
 
-inline InstrumentingAgents* instrumentingAgentsFor(Document& document) {
+inline InspectorInstrumentationAgents* instrumentingAgentsFor(
+    Document& document) {
   LocalFrame* frame = document.frame();
   if (!frame && document.templateDocumentHost())
     frame = document.templateDocumentHost()->frame();
   return instrumentingAgentsFor(frame);
 }
 
-inline InstrumentingAgents* instrumentingAgentsFor(Document* document) {
+inline InspectorInstrumentationAgents* instrumentingAgentsFor(
+    Document* document) {
   return document ? instrumentingAgentsFor(*document) : nullptr;
 }
 
-inline InstrumentingAgents* instrumentingAgentsFor(ExecutionContext* context) {
+inline InspectorInstrumentationAgents* instrumentingAgentsFor(
+    ExecutionContext* context) {
   if (!context)
     return nullptr;
   return context->isDocument()
@@ -103,11 +108,12 @@ inline InstrumentingAgents* instrumentingAgentsFor(ExecutionContext* context) {
              : instrumentingAgentsForNonDocumentContext(context);
 }
 
-inline InstrumentingAgents* instrumentingAgentsFor(Node* node) {
+inline InspectorInstrumentationAgents* instrumentingAgentsFor(Node* node) {
   return node ? instrumentingAgentsFor(node->document()) : nullptr;
 }
 
-inline InstrumentingAgents* instrumentingAgentsFor(EventTarget* eventTarget) {
+inline InspectorInstrumentationAgents* instrumentingAgentsFor(
+    EventTarget* eventTarget) {
   return eventTarget
              ? instrumentingAgentsFor(eventTarget->getExecutionContext())
              : nullptr;
@@ -136,11 +142,10 @@ CORE_EXPORT void continueWithPolicyIgnore(LocalFrame*,
                                           const ResourceResponse&,
                                           Resource*);
 
-}  // namespace InspectorInstrumentation
+}  // namespace probe
 }  // namespace blink
 
 #include "core/InspectorInstrumentationInl.h"
-
 #include "core/InspectorOverridesInl.h"
 
 #endif  // !defined(InspectorInstrumentation_h)

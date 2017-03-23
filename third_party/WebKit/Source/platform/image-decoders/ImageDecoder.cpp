@@ -20,7 +20,7 @@
 
 #include "platform/image-decoders/ImageDecoder.h"
 
-#include "platform/PlatformInstrumentation.h"
+#include <memory>
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/BitmapImageMetrics.h"
 #include "platform/image-decoders/FastSharedBufferReader.h"
@@ -30,8 +30,8 @@
 #include "platform/image-decoders/jpeg/JPEGImageDecoder.h"
 #include "platform/image-decoders/png/PNGImageDecoder.h"
 #include "platform/image-decoders/webp/WEBPImageDecoder.h"
+#include "platform/instrumentation/PlatformInstrumentation.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

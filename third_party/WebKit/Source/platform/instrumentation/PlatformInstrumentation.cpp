@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/PlatformInstrumentation.h"
+#include "platform/instrumentation/PlatformInstrumentation.h"
 
 namespace blink {
 

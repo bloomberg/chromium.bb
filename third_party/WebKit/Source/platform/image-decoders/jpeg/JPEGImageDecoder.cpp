@@ -37,9 +37,9 @@
 
 #include "platform/image-decoders/jpeg/JPEGImageDecoder.h"
 
-#include "platform/PlatformInstrumentation.h"
-#include "wtf/PtrUtil.h"
 #include <memory>
+#include "platform/instrumentation/PlatformInstrumentation.h"
+#include "wtf/PtrUtil.h"
 
 extern "C" {
 #include <stdio.h>  // jpeglib.h needs stdio FILE.

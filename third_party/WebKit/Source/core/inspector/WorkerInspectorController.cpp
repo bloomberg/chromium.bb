@@ -30,7 +30,7 @@
 
 #include "core/inspector/WorkerInspectorController.h"
 
-#include "core/InstrumentingAgents.h"
+#include "core/InspectorInstrumentationAgents.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorLogAgent.h"
 #include "core/inspector/InspectorTraceEvents.h"
@@ -55,7 +55,7 @@ WorkerInspectorController::WorkerInspectorController(
     WorkerThreadDebugger* debugger)
     : m_debugger(debugger),
       m_thread(thread),
-      m_instrumentingAgents(new InstrumentingAgents()) {
+      m_instrumentingAgents(new InspectorInstrumentationAgents()) {
   m_instrumentingAgents->addInspectorTraceEvents(new InspectorTraceEvents());
 }
 

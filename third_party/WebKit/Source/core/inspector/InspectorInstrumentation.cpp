@@ -30,7 +30,7 @@
 
 #include "core/inspector/InspectorInstrumentation.h"
 
-#include "core/InstrumentingAgents.h"
+#include "core/InspectorInstrumentationAgents.h"
 #include "core/events/Event.h"
 #include "core/events/EventTarget.h"
 #include "core/frame/FrameHost.h"
@@ -158,7 +158,7 @@ void continueWithPolicyIgnore(LocalFrame* frame,
   didReceiveResourceResponseButCanceled(frame, loader, identifier, r, resource);
 }
 
-InstrumentingAgents* instrumentingAgentsFor(
+InspectorInstrumentationAgents* instrumentingAgentsFor(
     WorkerGlobalScope* workerGlobalScope) {
   if (!workerGlobalScope)
     return nullptr;
@@ -168,7 +168,7 @@ InstrumentingAgents* instrumentingAgentsFor(
   return nullptr;
 }
 
-InstrumentingAgents* instrumentingAgentsForNonDocumentContext(
+InspectorInstrumentationAgents* instrumentingAgentsForNonDocumentContext(
     ExecutionContext* context) {
   if (context->isWorkerGlobalScope())
     return instrumentingAgentsFor(toWorkerGlobalScope(context));

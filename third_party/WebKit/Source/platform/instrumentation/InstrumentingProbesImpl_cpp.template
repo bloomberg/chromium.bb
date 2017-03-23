@@ -5,15 +5,17 @@
 // found in the LICENSE file.
 
 
+{% set agents_class = name + "Agents" %}
 {% for file in files %}
-#include "{{file.header_name}}.h"
+#include "{{file.name}}Inl.h"
 {% endfor %}
-#include "InstrumentingAgents.h"
-#include "core/CoreExport.h"
+#include "{{agents_class}}.h"
 {% for agent in agents %}
 {% set class_name = agent | agent_name_to_class %}
 {% if class_name == "PerformanceMonitor" %}
 #include "core/frame/PerformanceMonitor.h"
+{% elif class_name.startswith("Platform") %}
+#include "platform/instrumentation/{{class_name}}.h"
 {% else %}
 #include "core/inspector/{{class_name}}.h"
 {% endif %}
@@ -21,28 +23,28 @@
 
 namespace blink {
 
-InstrumentingAgents::InstrumentingAgents() {}
+{{agents_class}}::{{agents_class}}() {}
 
 {% for agent in agents %}
 {% set class_name = agent | agent_name_to_class %}
 {% set getter_name = class_name | to_lower_case %}
-void InstrumentingAgents::add{{class_name}}({{class_name}}* agent) {
+void {{agents_class}}::add{{class_name}}({{class_name}}* agent) {
   m_{{getter_name}}s.insert(agent);
   m_has{{class_name}}s = true;
 }
 
-void InstrumentingAgents::remove{{class_name}}({{class_name}}* agent) {
+void {{agents_class}}::remove{{class_name}}({{class_name}}* agent) {
   m_{{getter_name}}s.erase(agent);
   m_has{{class_name}}s = !m_{{getter_name}}s.isEmpty();
 }
 
 {% endfor -%}
 
-DEFINE_TRACE(InstrumentingAgents)
+DEFINE_TRACE({{agents_class}})
 {
 {% for agent in agents %}
 {% set getter_name = agent | agent_name_to_class | to_lower_case %}
-    visitor->trace(m_{{getter_name}}s);
+  visitor->trace(m_{{getter_name}}s);
 {% endfor %}
 }
 
@@ -56,7 +58,7 @@ namespace probe {
 
 {% macro probe_body(probe, common_name) %}
 {% set agent_probe_name = common_name or probe.name %}
-  InstrumentingAgents* agents = instrumentingAgentsFor({{probe.params[0].name}});
+  {{agents_class}}* agents = instrumentingAgentsFor({{probe.params[0].name}});
   if (!agents)
     return {{probe.default_return_value}};
 {% for param in probe.params %}

@@ -148,7 +148,7 @@ class WebDevToolsAgentImpl final
   WebDevToolsAgentClient* m_client;
   Member<WebLocalFrameImpl> m_webLocalFrameImpl;
 
-  Member<InstrumentingAgents> m_instrumentingAgents;
+  Member<InspectorInstrumentationAgents> m_instrumentingAgents;
   Member<InspectorResourceContentLoader> m_resourceContentLoader;
   Member<InspectorOverlay> m_overlay;
   Member<InspectedFrames> m_inspectedFrames;

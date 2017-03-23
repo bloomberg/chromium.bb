@@ -4,11 +4,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InstrumentingAgents_h
-#define InstrumentingAgents_h
+{% set agents_class = name + "Agents" %}
 
-#include "core/CoreExport.h"
+#ifndef {{agents_class}}_h
+#define {{agents_class}}_h
+
 #include "platform/heap/HeapAllocator.h"
+{% for define in defines %}
+{{define}}
+{% endfor %}
 
 namespace blink {
 
@@ -16,11 +20,11 @@ namespace blink {
 class {{ agent | agent_name_to_class }};
 {% endfor %}
 
-class CORE_EXPORT InstrumentingAgents : public GarbageCollected<InstrumentingAgents> {
-  WTF_MAKE_NONCOPYABLE(InstrumentingAgents);
+class PROBE_EXPORT {{agents_class}} : public GarbageCollected<{{agents_class}}> {
+  WTF_MAKE_NONCOPYABLE({{agents_class}});
 
  public:
-  InstrumentingAgents();
+  {{agents_class}}();
   DECLARE_TRACE();
 
 {% for agent in agents %}
@@ -43,4 +47,4 @@ class CORE_EXPORT InstrumentingAgents : public GarbageCollected<InstrumentingAge
 
 } // namespace blink
 
-#endif // !defined(InstrumentingAgents_h)
+#endif // !defined({{agents_class}}_h)

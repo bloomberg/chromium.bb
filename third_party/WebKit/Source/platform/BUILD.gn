@@ -132,6 +132,30 @@ action("character_data") {
   ]
 }
 
+action("instrumentation_probes") {
+  script = "instrumentation/InstrumentingProbesCodeGenerator.py"
+
+  input_file = "instrumentation/PlatformInstrumentation.idl"
+  inputs = [
+    input_file,
+    "instrumentation/InstrumentingProbesImpl_cpp.template",
+    "instrumentation/InstrumentingProbesImpl_h.template",
+    "instrumentation/InstrumentingAgents_h.template",
+  ]
+
+  outputs = [
+    "$blink_platform_output_dir/PlatformInstrumentationAgents.h",
+    "$blink_platform_output_dir/PlatformInstrumentationInl.h",
+    "$blink_platform_output_dir/PlatformInstrumentationImpl.cpp",
+  ]
+
+  args = [
+    rebase_path(inputs[0], root_build_dir),
+    "--output_dir",
+    rebase_path(blink_platform_output_dir, root_build_dir),
+  ]
+}
+
 executable("character_data_generator") {
   sources = [
     "text/CharacterPropertyDataGenerator.cpp",
@@ -157,6 +181,7 @@ group("make_platform_generated") {
     ":color_data",
     ":font_family_names",
     ":http_names",
+    ":instrumentation_probes",
     ":runtime_enabled_features",
   ]
 }
@@ -263,8 +288,6 @@ component("platform") {
     "PartitionAllocMemoryDumpProvider.cpp",
     "PartitionAllocMemoryDumpProvider.h",
     "PasteMode.h",
-    "PlatformInstrumentation.cpp",
-    "PlatformInstrumentation.h",
     "PlatformResourceLoader.cpp",
     "PlatformResourceLoader.h",
     "PluginScriptForbiddenScope.cpp",
@@ -1050,6 +1073,10 @@ component("platform") {
     "image-encoders/RGBAtoRGB.h",
     "image-encoders/WEBPImageEncoder.cpp",
     "image-encoders/WEBPImageEncoder.h",
+    "instrumentation/PlatformInstrumentation.cpp",
+    "instrumentation/PlatformInstrumentation.h",
+    "instrumentation/PlatformTraceEventsAgent.cpp",
+    "instrumentation/PlatformTraceEventsAgent.h",
     "instrumentation/tracing/MemoryCacheDumpProvider.cpp",
     "instrumentation/tracing/MemoryCacheDumpProvider.h",
     "instrumentation/tracing/TraceEvent.h",
@@ -1386,6 +1413,7 @@ component("platform") {
              get_target_outputs(":color_data") +
              get_target_outputs(":font_family_names") +
              get_target_outputs(":http_names") +
+             get_target_outputs(":instrumentation_probes") +
              get_target_outputs(":runtime_enabled_features")
 
   configs += [

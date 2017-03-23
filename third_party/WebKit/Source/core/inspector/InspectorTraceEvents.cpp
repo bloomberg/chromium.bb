@@ -89,9 +89,10 @@ void setCallStack(TracedValue* value) {
   v8::Isolate::GetCurrent()->GetCpuProfiler()->CollectSample();
 }
 
-void InspectorTraceEvents::init(InstrumentingAgents* instrumentingAgents,
-                                protocol::UberDispatcher*,
-                                protocol::DictionaryValue*) {
+void InspectorTraceEvents::init(
+    InspectorInstrumentationAgents* instrumentingAgents,
+    protocol::UberDispatcher*,
+    protocol::DictionaryValue*) {
   m_instrumentingAgents = instrumentingAgents;
   m_instrumentingAgents->addInspectorTraceEvents(this);
 }

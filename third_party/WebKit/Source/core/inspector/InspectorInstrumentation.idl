@@ -44,7 +44,7 @@
 *           Examples: DOM, Page, Debugger.
 *
 *   paramAttr - optional attribute controlling the parameters handling (one attribute per parameter max).
-*       Keep - pass first parameter (used to access the InstrumentingAgents instance) to agents.
+*       Keep - pass first parameter (used to access the InspectorInstrumentationAgents instance) to agents.
 *
 *   returnValue: C++ return value. Only "void" and "bool" are supported.
 *
@@ -63,6 +63,8 @@ interface InspectorInstrumentation {
 #include "core/dom/CharacterData.h"
 #include "core/dom/PseudoElement.h"
 #include "core/html/HTMLSlotElement.h"
+
+#define PROBE_EXPORT CORE_EXPORT
 
 class ConsoleMessage;
 class HTMLDocumentParser;
@@ -348,6 +350,9 @@ class XMLHttpRequest;
 }
 
 interface InspectorOverrides {
+
+#define PROBE_EXPORT CORE_EXPORT
+
     [CSS]
     bool forcePseudoState([Keep] Element* element, CSSSelector::PseudoType pseudoState);
 

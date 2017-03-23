@@ -27,7 +27,6 @@
 #include "platform/graphics/Image.h"
 
 #include "platform/Length.h"
-#include "platform/PlatformInstrumentation.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
 #include "platform/geometry/FloatPoint.h"
@@ -38,6 +37,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/PaintRecorder.h"
 #include "platform/graphics/paint/PaintShader.h"
+#include "platform/instrumentation/PlatformInstrumentation.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
 #include "public/platform/Platform.h"

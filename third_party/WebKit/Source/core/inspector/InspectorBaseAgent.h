@@ -32,7 +32,7 @@
 #define InspectorBaseAgent_h
 
 #include "core/CoreExport.h"
-#include "core/InstrumentingAgents.h"
+#include "core/InspectorInstrumentationAgents.h"
 #include "core/inspector/protocol/Protocol.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
@@ -53,7 +53,7 @@ class CORE_EXPORT InspectorAgent
   virtual void didCommitLoadForLocalFrame(LocalFrame*) {}
   virtual void flushPendingProtocolNotifications() {}
 
-  virtual void init(InstrumentingAgents*,
+  virtual void init(InspectorInstrumentationAgents*,
                     protocol::UberDispatcher*,
                     protocol::DictionaryValue*) = 0;
   virtual void dispose() = 0;
@@ -65,7 +65,7 @@ class InspectorBaseAgent : public InspectorAgent,
  public:
   ~InspectorBaseAgent() override {}
 
-  void init(InstrumentingAgents* instrumentingAgents,
+  void init(InspectorInstrumentationAgents* instrumentingAgents,
             protocol::UberDispatcher* dispatcher,
             protocol::DictionaryValue* state) override {
     m_instrumentingAgents = instrumentingAgents;
@@ -102,7 +102,7 @@ class InspectorBaseAgent : public InspectorAgent,
   typename DomainMetainfo::FrontendClass* frontend() const {
     return m_frontend.get();
   }
-  Member<InstrumentingAgents> m_instrumentingAgents;
+  Member<InspectorInstrumentationAgents> m_instrumentingAgents;
   protocol::DictionaryValue* m_state;
 
  private:

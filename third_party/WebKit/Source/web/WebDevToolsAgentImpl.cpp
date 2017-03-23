@@ -35,7 +35,7 @@
 
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/V8Binding.h"
-#include "core/InstrumentingAgents.h"
+#include "core/InspectorInstrumentationAgents.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"

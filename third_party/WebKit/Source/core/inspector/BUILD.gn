@@ -97,25 +97,27 @@ blink_core_sources("inspector") {
 
 action("instrumentation_probes") {
   visibility = [ ":*" ]
-  script = "InstrumentingProbesCodeGenerator.py"
+  script = "../../platform/instrumentation/InstrumentingProbesCodeGenerator.py"
 
   inputs = [
     # Input file for the script.
-    "InstrumentingProbes.idl",
-    "InstrumentingProbesImpl_cpp.template",
-    "InstrumentingProbesImpl_h.template",
-    "InstrumentingAgents_h.template",
+    "InspectorInstrumentation.idl",
+
+    # Templates
+    "../../platform/instrumentation/InstrumentingProbesImpl_cpp.template",
+    "../../platform/instrumentation/InstrumentingProbesImpl_h.template",
+    "../../platform/instrumentation/InstrumentingAgents_h.template",
   ]
 
   outputs = [
     "$blink_core_output_dir/InspectorInstrumentationInl.h",
     "$blink_core_output_dir/InspectorOverridesInl.h",
-    "$blink_core_output_dir/InstrumentingProbesImpl.cpp",
-    "$blink_core_output_dir/InstrumentingAgents.h",
+    "$blink_core_output_dir/InspectorInstrumentationImpl.cpp",
+    "$blink_core_output_dir/InspectorInstrumentationAgents.h",
   ]
 
   args = [
-    rebase_path("InstrumentingProbes.idl", root_build_dir),
+    rebase_path(inputs[0], root_build_dir),
     "--output_dir",
     rebase_path(blink_core_output_dir, root_build_dir),
   ]

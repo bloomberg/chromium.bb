@@ -7,8 +7,13 @@
 #ifndef {{file.header_name}}_h
 #define {{file.header_name}}_h
 
+#include "platform/heap/HeapAllocator.h"
 {% for include in file.includes %}
 {{include}}
+{% endfor %}
+
+{% for define in file.defines %}
+{{define}}
 {% endfor %}
 
 namespace blink {
@@ -32,7 +37,7 @@ namespace probe {
 {% if probe.is_scoped %}
 
 
-class CORE_EXPORT {{probe.name}} : public ProbeBase {
+class PROBE_EXPORT {{probe.name}} : public ProbeBase {
   STACK_ALLOCATED()
  public:
   explicit {{probe.name}}({{ params_decl(probe) }});
@@ -43,7 +48,7 @@ class CORE_EXPORT {{probe.name}} : public ProbeBase {
 };
 {%- else %}
 
-CORE_EXPORT {{probe.return_type}} {{probe.name}}({{ params_decl(probe) }});
+PROBE_EXPORT {{probe.return_type}} {{probe.name}}({{ params_decl(probe) }});
 
 {%- endif %}
 {%- endfor %}

@@ -33,7 +33,7 @@
 #include <memory>
 
 #include "bindings/core/v8/ScriptController.h"
-#include "core/InstrumentingAgents.h"
+#include "core/InspectorInstrumentationAgents.h"
 #include "core/dom/ChildFrameDisconnector.h"
 #include "core/dom/DocumentType.h"
 #include "core/dom/StyleChangeReason.h"
@@ -869,7 +869,7 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
       m_interfaceProvider(interfaceProvider),
       m_interfaceRegistry(interfaceRegistry) {
   if (isLocalRoot()) {
-    m_instrumentingAgents = new InstrumentingAgents();
+    m_instrumentingAgents = new InspectorInstrumentationAgents();
     m_performanceMonitor = new PerformanceMonitor(this);
   } else {
     m_instrumentingAgents = localFrameRoot()->m_instrumentingAgents;

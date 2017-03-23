@@ -29,6 +29,7 @@
 
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/instrumentation/PlatformInstrumentation.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
 #include "platform/loader/fetch/FetchContext.h"
@@ -1240,8 +1241,13 @@ bool ResourceFetcher::startLoad(Resource* resource) {
   }
 
   ResourceRequest request(resource->resourceRequest());
-  context().dispatchWillSendRequest(resource->identifier(), request,
-                                    ResourceResponse(),
+  ResourceResponse response;
+
+  blink::probe::PlatformSendRequest probe(&context(), resource->identifier(),
+                                          request, response,
+                                          resource->options().initiatorInfo);
+
+  context().dispatchWillSendRequest(resource->identifier(), request, response,
                                     resource->options().initiatorInfo);
 
   // TODO(shaochuan): Saving modified ResourceRequest back to |resource|, remove

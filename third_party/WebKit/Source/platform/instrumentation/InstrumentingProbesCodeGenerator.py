@@ -35,6 +35,8 @@ def agent_name_to_class(agent_name):
         return "PerformanceMonitor"
     elif agent_name == "TraceEvents":
         return "InspectorTraceEvents"
+    elif agent_name == "PlatformTraceEvents":
+        return "PlatformTraceEventsAgent"
     else:
         return "Inspector%sAgent" % agent_name
 
@@ -81,16 +83,19 @@ class File(object):
     def __init__(self, name, source):
         self.name = name
         self.header_name = self.name + "Inl"
-        self.includes = [include_inspector_header("InspectorInstrumentation")]
+        self.includes = [include_inspector_header(base_name)]
         self.forward_declarations = []
         self.declarations = []
+        self.defines = []
         for line in map(str.strip, source.split("\n")):
             line = re.sub(r"\s{2,}", " ", line).strip()  # Collapse whitespace
             if len(line) == 0:
                 continue
-            if line[0] == "#":
+            if line.startswith("#define"):
+                self.defines.append(line)
+            elif line.startswith("#include"):
                 self.includes.append(line)
-            elif line.startswith("class "):
+            elif line.startswith("class ") or line.startswith("struct "):
                 self.forward_declarations.append(line)
             else:
                 self.declarations.append(Method(line))
@@ -105,6 +110,8 @@ def include_header(name):
 def include_inspector_header(name):
     if name == "PerformanceMonitor":
         return include_header("core/frame/" + name)
+    if name == "PlatformInstrumentation":
+        return include_header("platform/instrumentation/" + name)
     return include_header("core/inspector/" + name)
 
 
@@ -200,34 +207,40 @@ except Exception:
     exit(1)
 
 jinja_env = initialize_jinja_env(output_dirpath)
+all_agents = set()
+all_defines = []
+base_name = os.path.splitext(os.path.basename(input_path))[0]
+
 fin = open(input_path, "r")
 files = load_model_from_idl(fin.read())
 fin.close()
-all_agents = set()
 
 for f in files:
     for declaration in f.declarations:
         for agent in declaration.agents:
             all_agents.add(agent)
+    all_defines += f.defines
 
 template_context = {
     "files": files,
     "agents": all_agents,
+    "defines": all_defines,
+    "name": base_name,
     "input_file": os.path.basename(input_path)
 }
 cpp_template = jinja_env.get_template("/InstrumentingProbesImpl_cpp.template")
-cpp_file = open(output_dirpath + "/InstrumentingProbesImpl.cpp", "w")
+cpp_file = open(output_dirpath + "/" + base_name + "Impl.cpp", "w")
 cpp_file.write(cpp_template.render(template_context))
 cpp_file.close()
 
 agents_h_template = jinja_env.get_template("/InstrumentingAgents_h.template")
-agents_h_file = open(output_dirpath + "/InstrumentingAgents.h", "w")
+agents_h_file = open(output_dirpath + "/" + base_name + "Agents.h", "w")
 agents_h_file.write(agents_h_template.render(template_context))
 agents_h_file.close()
 
 for f in files:
     template_context["file"] = f
     h_template = jinja_env.get_template("/InstrumentingProbesImpl_h.template")
-    h_file = open(output_dirpath + "/" + f.name + "Inl.h", "w")
+    h_file = open(output_dirpath + "/" + f.header_name + ".h", "w")
     h_file.write(h_template.render(template_context))
     h_file.close()

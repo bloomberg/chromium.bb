@@ -47,6 +47,7 @@ namespace blink {
 class ClientHintsPreferences;
 class KURL;
 class MHTMLArchive;
+class PlatformInstrumentationAgents;
 class ResourceError;
 class ResourceResponse;
 class ResourceTimingInfo;
@@ -72,7 +73,8 @@ class PLATFORM_EXPORT FetchContext
   static FetchContext& nullInstance();
 
   virtual ~FetchContext() {}
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+
+  DECLARE_VIRTUAL_TRACE();
 
   virtual bool isLiveContext() { return false; }
 
@@ -196,8 +198,15 @@ class PLATFORM_EXPORT FetchContext
 
   virtual RefPtr<WebTaskRunner> loadingTaskRunner() const { return nullptr; }
 
+  PlatformInstrumentationAgents* instrumentingAgents() const {
+    return m_instrumentingAgents;
+  }
+
  protected:
-  FetchContext() {}
+  FetchContext();
+
+ private:
+  Member<PlatformInstrumentationAgents> m_instrumentingAgents;
 };
 
 }  // namespace blink
