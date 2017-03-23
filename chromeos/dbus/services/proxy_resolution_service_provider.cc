@@ -15,10 +15,11 @@
 #include "dbus/message.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log_with_source.h"
-#include "net/proxy/proxy_service.h"
+#include "net/proxy/proxy_info.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "url/gurl.h"
 
 namespace chromeos {
 namespace {
@@ -149,9 +150,9 @@ void ProxyResolverImpl::ResolveProxyOnNetworkThread(
 
   VLOG(1) << "Starting network proxy resolution for "
           << request_ptr->source_url;
-  const int result = proxy_service->ResolveProxy(
-      GURL(request_ptr->source_url), std::string(), &request_ptr->proxy_info,
-      callback, nullptr, nullptr, net::NetLogWithSource());
+  const int result =
+      delegate_->ResolveProxy(proxy_service, GURL(request_ptr->source_url),
+                              &request_ptr->proxy_info, callback);
   if (result != net::ERR_IO_PENDING) {
     VLOG(1) << "Network proxy resolution completed synchronously.";
     callback.Run(result);

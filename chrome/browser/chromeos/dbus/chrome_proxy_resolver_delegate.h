@@ -11,14 +11,17 @@
 namespace chromeos {
 
 // Chrome's implementation of ProxyResolverDelegate.
-class ChromeProxyResolverDelegate
-    : public ProxyResolverDelegate {
+class ChromeProxyResolverDelegate : public ProxyResolverDelegate {
  public:
   ChromeProxyResolverDelegate();
   ~ChromeProxyResolverDelegate() override;
 
   // ProxyResolverDelegate override.
   scoped_refptr<net::URLRequestContextGetter> GetRequestContext() override;
+  int ResolveProxy(net::ProxyService* proxy_service,
+                   const GURL& url,
+                   net::ProxyInfo* results,
+                   const net::CompletionCallback& callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeProxyResolverDelegate);
