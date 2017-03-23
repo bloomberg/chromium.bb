@@ -3044,6 +3044,12 @@
                     "name": "TunedClippingLevelMin070",
                     "enable_features": [
                         "TunedClippingLevelMin70"
+                    ],
+                    "disable_features": [
+                        "TunedClippingLevelMin110",
+                        "TunedClippingLevelMin150",
+                        "TunedClippingLevelMin170",
+                        "TunedClippingLevelMin30"
                     ]
                 }
             ]
