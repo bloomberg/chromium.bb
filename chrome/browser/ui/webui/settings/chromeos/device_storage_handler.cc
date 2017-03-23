@@ -34,7 +34,6 @@
 #include "components/drive/chromeos/file_system_interface.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
@@ -143,9 +142,13 @@ void StorageHandler::UpdateSizeStat() {
 
   int64_t* total_size = new int64_t(0);
   int64_t* available_size = new int64_t(0);
-  content::BrowserThread::PostBlockingPoolTaskAndReply(
-      FROM_HERE, base::Bind(&GetSizeStatBlocking, downloads_path, total_size,
-                            available_size),
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE,
+      base::TaskTraits()
+          .WithPriority(base::TaskPriority::USER_VISIBLE)
+          .MayBlock(),
+      base::Bind(&GetSizeStatBlocking, downloads_path, total_size,
+                 available_size),
       base::Bind(&StorageHandler::OnGetSizeStat, base::Unretained(this),
                  base::Owned(total_size), base::Owned(available_size)));
 }
