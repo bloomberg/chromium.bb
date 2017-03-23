@@ -5,6 +5,8 @@
 source_set("test") {
   testonly = true
   sources = [
+    "showcase_eg_utils.h",
+    "showcase_eg_utils.mm",
     "showcase_test_case.h",
     "showcase_test_case.mm",
   ]

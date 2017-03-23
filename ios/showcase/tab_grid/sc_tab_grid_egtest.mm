@@ -4,6 +4,7 @@
 
 #import <EarlGrey/EarlGrey.h>
 
+#import "ios/showcase/test/showcase_eg_utils.h"
 #import "ios/showcase/test/showcase_test_case.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -23,8 +24,7 @@
   EARL_GREY_TEST_DISABLED(
       @"Disabled for devices because it is flaky on iPhone");
 #endif
-  [[EarlGrey selectElementWithMatcher:grey_text(@"TabGridViewController")]
-      performAction:grey_tap()];
+  showcase_utils::Open(@"TabGridViewController");
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Tab 0_button")]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:grey_text(@"TabCommands")]
@@ -32,6 +32,7 @@
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
                                           @"protocol_alerter_done")]
       performAction:grey_tap()];
+  showcase_utils::Close();
 }
 
 @end

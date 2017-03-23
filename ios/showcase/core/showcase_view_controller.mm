@@ -61,6 +61,7 @@ NSString* const kUseCaseKey = @"useCase";
   self.title = @"Showcase";
   self.tableView.tableFooterView = [[UIView alloc] init];
   self.tableView.rowHeight = 70.0;
+  self.tableView.accessibilityIdentifier = @"showcase_home_collection";
 
   self.searchController =
       [[UISearchController alloc] initWithSearchResultsController:nil];
@@ -77,6 +78,8 @@ NSString* const kUseCaseKey = @"useCase";
 
 - (void)viewDidAppear:(BOOL)animated {
   [super viewDidAppear:animated];
+  self.navigationController.hidesBarsOnSwipe = NO;
+
   // Resets the current coordinator whenever the navigation controller pops
   // back to this view controller.
   self.activeCoordinator = nil;

@@ -4,6 +4,7 @@
 
 #import <EarlGrey/EarlGrey.h>
 
+#import "ios/showcase/test/showcase_eg_utils.h"
 #import "ios/showcase/test/showcase_test_case.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -17,10 +18,9 @@
 @implementation SCContentSuggestionsTestCase
 
 // Tests launching ContentSuggestionsViewController.
-- (void)testLaunchAndTappingCell {
-  [[EarlGrey
-      selectElementWithMatcher:grey_text(@"ContentSuggestionsViewController")]
-      performAction:grey_tap()];
+- (void)testLaunch {
+  showcase_utils::Open(@"ContentSuggestionsViewController");
+  showcase_utils::Close();
 }
 
 @end
