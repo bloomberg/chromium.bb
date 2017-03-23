@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_DIAL_DIAL_DEVICE_DATA_H_
-#define CHROME_BROWSER_EXTENSIONS_API_DIAL_DIAL_DEVICE_DATA_H_
+#ifndef CHROME_BROWSER_MEDIA_ROUTER_DISCOVERY_DIAL_DIAL_DEVICE_DATA_H_
+#define CHROME_BROWSER_MEDIA_ROUTER_DISCOVERY_DIAL_DIAL_DEVICE_DATA_H_
 
 #include <string>
 #include <vector>
@@ -12,11 +12,7 @@
 #include "base/values.h"
 #include "url/gurl.h"
 
-namespace extensions {
-namespace api {
-namespace dial {
-
-struct DialDevice;
+namespace media_router {
 
 // Dial device information that is used within the DialService and Registry on
 // the IO thread. It is updated as new information arrives and a list of
@@ -35,14 +31,10 @@ class DialDeviceData {
   }
 
   const std::string& device_id() const { return device_id_; }
-  void set_device_id(const std::string& id) {
-    device_id_ = id;
-  }
+  void set_device_id(const std::string& id) { device_id_ = id; }
 
   const std::string& label() const { return label_; }
-  void set_label(const std::string& label) {
-    label_ = label;
-  }
+  void set_label(const std::string& label) { label_ = label; }
 
   const GURL& device_description_url() const;
   void set_device_description_url(const GURL& url);
@@ -59,9 +51,6 @@ class DialDeviceData {
   int config_id() const { return config_id_; }
   void set_config_id(int config_id) { config_id_ = config_id; }
   bool has_config_id() const { return config_id_ >= 0; }
-
-  // Fills the |device| API struct from this instance.
-  void FillDialDevice(api::dial::DialDevice* device) const;
 
   // Updates this DeviceData based on information from a new response in
   // |new_data|.  Returns |true| if a field was updated that is visible through
@@ -102,8 +91,6 @@ struct DialDeviceDescriptionData {
   GURL app_url;
 };
 
-}  // namespace dial
-}  // namespace api
-}  // namespace extensions
+}  // namespace media_router
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_DIAL_DIAL_DEVICE_DATA_H_
+#endif  // CHROME_BROWSER_MEDIA_ROUTER_DISCOVERY_DIAL_DIAL_DEVICE_DATA_H_

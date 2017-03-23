@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_DIAL_DIAL_REGISTRY_H_
-#define CHROME_BROWSER_EXTENSIONS_API_DIAL_DIAL_REGISTRY_H_
+#ifndef CHROME_BROWSER_MEDIA_ROUTER_DISCOVERY_DIAL_DIAL_REGISTRY_H_
+#define CHROME_BROWSER_MEDIA_ROUTER_DISCOVERY_DIAL_DIAL_REGISTRY_H_
 
 #include <stddef.h>
 
@@ -19,13 +19,11 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/extensions/api/dial/dial_service.h"
+#include "chrome/browser/media/router/discovery/dial/dial_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "net/base/network_change_notifier.h"
 
-namespace extensions {
-namespace api {
-namespace dial {
+namespace media_router {
 
 // Keeps track of devices that have responded to discovery requests and notifies
 // the observer with an updated, complete set of active devices.  The registry's
@@ -203,8 +201,6 @@ class DialRegistry : public DialService::Observer,
   DISALLOW_COPY_AND_ASSIGN(DialRegistry);
 };
 
-}  // namespace dial
-}  // namespace api
-}  // namespace extensions
+}  // namespace media_router
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_DIAL_DIAL_REGISTRY_H_
+#endif  // CHROME_BROWSER_MEDIA_ROUTER_DISCOVERY_DIAL_DIAL_REGISTRY_H_

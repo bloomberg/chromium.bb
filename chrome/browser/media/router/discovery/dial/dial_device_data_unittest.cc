@@ -2,13 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/dial/dial_device_data.h"
-#include "chrome/common/extensions/api/dial.h"
+#include "chrome/browser/media/router/discovery/dial/dial_device_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace extensions {
-namespace api {
-namespace dial {
+namespace media_router {
 
 namespace {
 
@@ -23,22 +20,6 @@ void ExpectEqual(const DialDeviceData& first, const DialDeviceData& second) {
 }
 
 }  // namespace
-
-TEST(DialDeviceDataTest, TestFillDialDevice) {
-  api::dial::DialDevice api_device;
-
-  DialDeviceData device;
-  device.set_device_id("device");
-  device.set_label("label");
-  device.set_device_description_url(GURL("http://127.0.0.1/dd.xml"));
-  device.set_config_id(1);
-
-  device.FillDialDevice(&api_device);
-  EXPECT_EQ(api_device.device_label, device.label());
-  EXPECT_EQ(api_device.device_description_url,
-            device.device_description_url().spec());
-  EXPECT_EQ(*(api_device.config_id), device.config_id());
-}
 
 TEST(DialDeviceDataTest, TestUpdateFrom) {
   DialDeviceData original;
@@ -103,6 +84,4 @@ TEST(DialDeviceDataTest, TestIsDeviceDescriptionUrl) {
       DialDeviceData::IsDeviceDescriptionUrl(GURL("file://path/to/file")));
 }
 
-}  // namespace dial
-}  // namespace api
-}  // namespace extensions
+}  // namespace media_router

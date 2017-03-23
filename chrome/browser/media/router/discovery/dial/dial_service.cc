@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/dial/dial_service.h"
+#include "chrome/browser/media/router/discovery/dial/dial_service.h"
 
 #include <stdint.h>
 
@@ -21,7 +21,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/browser/extensions/api/dial/dial_device_data.h"
+#include "chrome/browser/media/router/discovery/dial/dial_device_data.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/address_family.h"
@@ -54,9 +54,7 @@ using net::NetworkInterfaceList;
 using net::StringIOBuffer;
 using net::UDPSocket;
 
-namespace extensions {
-namespace api {
-namespace dial {
+namespace media_router {
 
 namespace {
 
@@ -91,7 +89,8 @@ const char kSsdpUsnHeader[] = "USN";
 const int kDialRecvBufferSize = 1500;
 
 // Gets a specific header from |headers| and puts it in |value|.
-bool GetHeader(HttpResponseHeaders* headers, const char* name,
+bool GetHeader(HttpResponseHeaders* headers,
+               const char* name,
                std::string* value) {
   return headers->EnumerateHeader(nullptr, std::string(name), value);
 }
@@ -107,11 +106,8 @@ std::string BuildRequest() {
       "ST: %s\r\n"
       "USER-AGENT: %s/%s %s\r\n"
       "\r\n",
-      kDialRequestAddress,
-      kDialRequestPort,
-      kDialMaxResponseDelaySecs,
-      kDialSearchType,
-      version_info::GetProductName().c_str(),
+      kDialRequestAddress, kDialRequestPort, kDialMaxResponseDelaySecs,
+      kDialSearchType, version_info::GetProductName().c_str(),
       version_info::GetVersionNumber().c_str(),
       version_info::GetOSType().c_str()));
   // 1500 is a good MTU value for most Ethernet LANs.
@@ -126,7 +122,8 @@ std::string BuildRequest() {
 void InsertBestBindAddressChromeOS(const chromeos::NetworkTypePattern& type,
                                    net::IPAddressList* bind_address_list) {
   const chromeos::NetworkState* state = chromeos::NetworkHandler::Get()
-      ->network_state_handler()->ConnectedNetworkByType(type);
+                                            ->network_state_handler()
+                                            ->ConnectedNetworkByType(type);
   IPAddress bind_ip_address;
   if (state && bind_ip_address.AssignFromIPLiteral(state->ip_address()) &&
       bind_ip_address.IsIPv4()) {
@@ -204,11 +201,10 @@ void DialServiceImpl::DialSocket::SendOneRequest(
   }
 
   is_writing_ = true;
-  int result = socket_->SendTo(
-      send_buffer.get(), send_buffer->size(), send_address,
-      base::Bind(&DialServiceImpl::DialSocket::OnSocketWrite,
-                 base::Unretained(this),
-                 send_buffer->size()));
+  int result =
+      socket_->SendTo(send_buffer.get(), send_buffer->size(), send_address,
+                      base::Bind(&DialServiceImpl::DialSocket::OnSocketWrite,
+                                 base::Unretained(this), send_buffer->size()));
   bool result_ok = CheckResult("SendTo", result);
   if (result_ok && result > 0) {
     // Synchronous write.
@@ -249,8 +245,8 @@ void DialServiceImpl::DialSocket::OnSocketWrite(int send_buffer_size,
   if (!CheckResult("OnSocketWrite", result))
     return;
   if (result != send_buffer_size) {
-    VLOG(1) << "Sent " << result << " chars, expected "
-            << send_buffer_size << " chars";
+    VLOG(1) << "Sent " << result << " chars, expected " << send_buffer_size
+            << " chars";
   }
   discovery_request_cb_.Run();
 }
@@ -272,8 +268,7 @@ bool DialServiceImpl::DialSocket::ReadSocket() {
   do {
     is_reading_ = true;
     result = socket_->RecvFrom(
-        recv_buffer_.get(),
-        kDialRecvBufferSize, &recv_address_,
+        recv_buffer_.get(), kDialRecvBufferSize, &recv_address_,
         base::Bind(&DialServiceImpl::DialSocket::OnSocketRead,
                    base::Unretained(this)));
     result_ok = CheckResult("RecvFrom", result);
@@ -319,12 +314,11 @@ void DialServiceImpl::DialSocket::HandleResponse(int bytes_read) {
 }
 
 // static
-bool DialServiceImpl::DialSocket::ParseResponse(
-    const std::string& response,
-    const base::Time& response_time,
-    DialDeviceData* device) {
-  int headers_end = HttpUtil::LocateEndOfHeaders(response.c_str(),
-                                                 response.size());
+bool DialServiceImpl::DialSocket::ParseResponse(const std::string& response,
+                                                const base::Time& response_time,
+                                                DialDeviceData* device) {
+  int headers_end =
+      HttpUtil::LocateEndOfHeaders(response.c_str(), response.size());
   if (headers_end < 1) {
     VLOG(1) << "Headers invalid or empty, ignoring: " << response;
     return false;
@@ -475,9 +469,9 @@ void DialServiceImpl::SendNetworkList(const NetworkInterfaceList& networks) {
     if (addr_family == net::ADDRESS_FAMILY_IPV4) {
       InterfaceIndexAddressFamily interface_index_addr_family =
           std::make_pair(iter->interface_index, addr_family);
-      bool inserted = interface_index_addr_family_seen
-          .insert(interface_index_addr_family)
-          .second;
+      bool inserted =
+          interface_index_addr_family_seen.insert(interface_index_addr_family)
+              .second;
       // We have not seen this interface before, so add its IP address to the
       // discovery list.
       if (inserted) {
@@ -509,9 +503,7 @@ void DialServiceImpl::DiscoverOnAddresses(
   // Schedule a timer to finish the discovery process (and close the sockets).
   if (finish_delay_ > TimeDelta::FromSeconds(0)) {
     VLOG(2) << "Starting timer to finish discovery.";
-    finish_timer_.Start(FROM_HERE,
-                        finish_delay_,
-                        this,
+    finish_timer_.Start(FROM_HERE, finish_delay_, this,
                         &DialServiceImpl::FinishDiscovery);
   }
 
@@ -547,8 +539,7 @@ void DialServiceImpl::SendOneRequest() {
     return;
   }
   num_requests_sent_++;
-  VLOG(2) << "Sending request " << num_requests_sent_ << "/"
-          << max_requests_;
+  VLOG(2) << "Sending request " << num_requests_sent_ << "/" << max_requests_;
   for (const auto& socket : dial_sockets_) {
     if (!socket->IsClosed())
       socket->SendOneRequest(send_address_, send_buffer_);
@@ -571,9 +562,7 @@ void DialServiceImpl::NotifyOnDiscoveryRequest() {
     VLOG(2) << "Scheduling timer to send additional requests";
     // TODO(imcheng): Move this to SendOneRequest() once the implications are
     // understood.
-    request_timer_.Start(FROM_HERE,
-                         request_interval_,
-                         this,
+    request_timer_.Start(FROM_HERE, request_interval_, this,
                          &DialServiceImpl::SendOneRequest);
   }
 }
@@ -621,6 +610,4 @@ bool DialServiceImpl::HasOpenSockets() {
   return false;
 }
 
-}  // namespace dial
-}  // namespace api
-}  // namespace extensions
+}  // namespace media_router

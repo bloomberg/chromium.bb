@@ -2,26 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/dial/dial_device_data.h"
+#include "chrome/browser/media/router/discovery/dial/dial_device_data.h"
 
-#include "chrome/common/extensions/api/dial.h"
+namespace media_router {
 
-namespace extensions {
-namespace api {
-namespace dial {
-
-DialDeviceData::DialDeviceData() : max_age_(-1), config_id_(-1) { }
+DialDeviceData::DialDeviceData() : max_age_(-1), config_id_(-1) {}
 
 DialDeviceData::DialDeviceData(const std::string& device_id,
                                const GURL& device_description_url,
                                const base::Time& response_time)
-    : device_id_(device_id), device_description_url_(device_description_url),
-      response_time_(response_time), max_age_(-1), config_id_(-1) {
-}
+    : device_id_(device_id),
+      device_description_url_(device_description_url),
+      response_time_(response_time),
+      max_age_(-1),
+      config_id_(-1) {}
 
 DialDeviceData::DialDeviceData(const DialDeviceData& other) = default;
 
-DialDeviceData::~DialDeviceData() { }
+DialDeviceData::~DialDeviceData() {}
 
 const GURL& DialDeviceData::device_description_url() const {
   return device_description_url_;
@@ -48,20 +46,9 @@ bool DialDeviceData::UpdateFrom(const DialDeviceData& new_data) {
   return updated_api_visible_field;
 }
 
-void DialDeviceData::FillDialDevice(api::dial::DialDevice* device) const {
-  DCHECK(!device_id_.empty());
-  DCHECK(IsDeviceDescriptionUrl(device_description_url_));
-  device->device_label = label_;
-  device->device_description_url = device_description_url_.spec();
-  if (has_config_id())
-    device->config_id.reset(new int(config_id_));
-}
-
 DialDeviceDescriptionData::DialDeviceDescriptionData(
     const std::string& device_description,
     const GURL& app_url)
     : device_description(device_description), app_url(app_url) {}
 
-}  // namespace dial
-}  // namespace api
-}  // namespace extensions
+}  // namespace media_router

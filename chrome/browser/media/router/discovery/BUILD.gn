@@ -1,0 +1,23 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+#
+
+static_library("discovery") {
+  deps = [
+    "//base",
+    "//chrome/common:constants",
+    "//content/public/browser",
+    "//content/public/common",
+  ]
+  sources = [
+    "dial/device_description_fetcher.cc",
+    "dial/device_description_fetcher.h ",
+    "dial/dial_device_data.cc",
+    "dial/dial_device_data.h",
+    "dial/dial_registry.cc",
+    "dial/dial_registry.h",
+    "dial/dial_service.cc",
+    "dial/dial_service.h",
+  ]
+}

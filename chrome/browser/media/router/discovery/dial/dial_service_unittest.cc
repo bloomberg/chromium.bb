@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/dial/dial_service.h"
+#include "chrome/browser/media/router/discovery/dial/dial_service.h"
 
 #include <stddef.h>
 
@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "chrome/browser/extensions/api/dial/dial_device_data.h"
+#include "chrome/browser/media/router/discovery/dial/dial_device_data.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
@@ -29,17 +29,15 @@ using ::testing::Return;
 namespace {
 
 const char kValidResponse[] =
-  "HTTP/1.1 OK\r\n"
-  "LOCATION: http://127.0.0.1/dd.xml\r\n"
-  "USN: some_id\r\n"
-  "CACHE-CONTROL: max-age=1800\r\n"
-  "CONFIGID.UPNP.ORG: 1\r\n\r\n";
+    "HTTP/1.1 OK\r\n"
+    "LOCATION: http://127.0.0.1/dd.xml\r\n"
+    "USN: some_id\r\n"
+    "CACHE-CONTROL: max-age=1800\r\n"
+    "CONFIGID.UPNP.ORG: 1\r\n\r\n";
 
 }  // namespace
 
-namespace extensions {
-namespace api {
-namespace dial {
+namespace media_router {
 
 class MockObserver : public DialService::Observer {
  public:
@@ -48,8 +46,8 @@ class MockObserver : public DialService::Observer {
   MOCK_METHOD1(OnDiscoveryRequest, void(DialService*));
   MOCK_METHOD2(OnDeviceDiscovered, void(DialService*, const DialDeviceData&));
   MOCK_METHOD1(OnDiscoveryFinished, void(DialService*));
-  MOCK_METHOD2(OnError, void(DialService*,
-                             const DialService::DialServiceErrorCode&));
+  MOCK_METHOD2(OnError,
+               void(DialService*, const DialService::DialServiceErrorCode&));
 };
 
 class DialServiceTest : public testing::Test {
@@ -61,6 +59,7 @@ class DialServiceTest : public testing::Test {
     dial_service_.AddObserver(&mock_observer_);
     dial_socket_ = dial_service_.CreateDialSocket();
   }
+
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
   net::TestNetLog test_net_log_;
@@ -94,41 +93,21 @@ TEST_F(DialServiceTest, TestMultipleNetworkInterfaces) {
   dial_service_.max_requests_ = 4;
   dial_service_.discovery_active_ = true;
   net::NetworkInterfaceList interface_list;
-  interface_list.push_back(
-      net::NetworkInterface("network1",
-                            "network1",
-                            0,
-                            net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
-                            mock_ip_,
-                            0,
-                            net::IP_ADDRESS_ATTRIBUTE_NONE));
-  interface_list.push_back(
-      net::NetworkInterface("network2",
-                            "network2",
-                            1,
-                            net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
-                            mock_ip_,
-                            0,
-                            net::IP_ADDRESS_ATTRIBUTE_NONE));
-  interface_list.push_back(
-      net::NetworkInterface("network3",
-                            "network3",
-                            2,
-                            net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
-                            mock_ip_,
-                            0,
-                            net::IP_ADDRESS_ATTRIBUTE_NONE));
+  interface_list.push_back(net::NetworkInterface(
+      "network1", "network1", 0, net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
+      mock_ip_, 0, net::IP_ADDRESS_ATTRIBUTE_NONE));
+  interface_list.push_back(net::NetworkInterface(
+      "network2", "network2", 1, net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
+      mock_ip_, 0, net::IP_ADDRESS_ATTRIBUTE_NONE));
+  interface_list.push_back(net::NetworkInterface(
+      "network3", "network3", 2, net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
+      mock_ip_, 0, net::IP_ADDRESS_ATTRIBUTE_NONE));
 
   // "network4" is equivalent to "network2" because both the address family
   // and interface index are the same.
-  interface_list.push_back(
-      net::NetworkInterface("network4",
-                            "network4",
-                            1,
-                            net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
-                            mock_ip_,
-                            0,
-                            net::IP_ADDRESS_ATTRIBUTE_NONE));
+  interface_list.push_back(net::NetworkInterface(
+      "network4", "network4", 1, net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
+      mock_ip_, 0, net::IP_ADDRESS_ATTRIBUTE_NONE));
 
   // 3 sockets * 4 requests per socket = 12 requests
   EXPECT_CALL(mock_observer_, OnDiscoveryRequest(A<DialService*>())).Times(12);
@@ -153,11 +132,8 @@ TEST_F(DialServiceTest, TestOnDiscoveryRequest) {
 TEST_F(DialServiceTest, TestOnDeviceDiscovered) {
   dial_service_.discovery_active_ = true;
   int response_size = arraysize(kValidResponse) - 1;
-  dial_socket_->recv_buffer_ =
-      new net::IOBufferWithSize(response_size);
-  strncpy(dial_socket_->recv_buffer_->data(),
-          kValidResponse,
-          response_size);
+  dial_socket_->recv_buffer_ = new net::IOBufferWithSize(response_size);
+  strncpy(dial_socket_->recv_buffer_->data(), kValidResponse, response_size);
   dial_socket_->recv_address_ = net::IPEndPoint(mock_ip_, 12345);
 
   DialDeviceData expected_device;
@@ -182,8 +158,8 @@ TEST_F(DialServiceTest, TestResponseParsing) {
 
   // Successful case
   DialDeviceData parsed;
-  EXPECT_TRUE(DialServiceImpl::DialSocket::ParseResponse(
-      kValidResponse, now, &parsed));
+  EXPECT_TRUE(
+      DialServiceImpl::DialSocket::ParseResponse(kValidResponse, now, &parsed));
   EXPECT_EQ("some_id", parsed.device_id());
   EXPECT_EQ("http://127.0.0.1/dd.xml", parsed.device_description_url().spec());
   EXPECT_EQ(1, parsed.config_id());
@@ -193,32 +169,29 @@ TEST_F(DialServiceTest, TestResponseParsing) {
   DialDeviceData not_parsed;
 
   // Empty, garbage
-  EXPECT_FALSE(DialServiceImpl::DialSocket::ParseResponse(
-      std::string(), now, &not_parsed));
-  EXPECT_FALSE(DialServiceImpl::DialSocket::ParseResponse(
-      "\r\n\r\n",
-    now, &not_parsed));
-  EXPECT_FALSE(DialServiceImpl::DialSocket::ParseResponse(
-      "xyzzy",
-      now, &not_parsed));
+  EXPECT_FALSE(DialServiceImpl::DialSocket::ParseResponse(std::string(), now,
+                                                          &not_parsed));
+  EXPECT_FALSE(
+      DialServiceImpl::DialSocket::ParseResponse("\r\n\r\n", now, &not_parsed));
+  EXPECT_FALSE(
+      DialServiceImpl::DialSocket::ParseResponse("xyzzy", now, &not_parsed));
 
   // No headers
-  EXPECT_FALSE(DialServiceImpl::DialSocket::ParseResponse(
-      "HTTP/1.1 OK\r\n\r\n",
-      now, &not_parsed));
+  EXPECT_FALSE(DialServiceImpl::DialSocket::ParseResponse("HTTP/1.1 OK\r\n\r\n",
+                                                          now, &not_parsed));
 
   // Missing LOCATION
-  EXPECT_FALSE(DialServiceImpl::DialSocket::ParseResponse(
-      "HTTP/1.1 OK\r\n"
-      "USN: some_id\r\n\r\n",
-      now, &not_parsed));
+  EXPECT_FALSE(
+      DialServiceImpl::DialSocket::ParseResponse("HTTP/1.1 OK\r\n"
+                                                 "USN: some_id\r\n\r\n",
+                                                 now, &not_parsed));
 
   // Empty LOCATION
-  EXPECT_FALSE(DialServiceImpl::DialSocket::ParseResponse(
-      "HTTP/1.1 OK\r\n"
-      "LOCATION:\r\n"
-      "USN: some_id\r\n\r\n",
-      now, &not_parsed));
+  EXPECT_FALSE(
+      DialServiceImpl::DialSocket::ParseResponse("HTTP/1.1 OK\r\n"
+                                                 "LOCATION:\r\n"
+                                                 "USN: some_id\r\n\r\n",
+                                                 now, &not_parsed));
 
   // Missing USN
   EXPECT_FALSE(DialServiceImpl::DialSocket::ParseResponse(
@@ -234,6 +207,4 @@ TEST_F(DialServiceTest, TestResponseParsing) {
       now, &not_parsed));
 }
 
-}  // namespace dial
-}  // namespace api
-}  // namespace extensions
+}  // namespace media_router

@@ -8,20 +8,18 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/browser/extensions/api/dial/dial_device_data.h"
-#include "chrome/browser/extensions/api/dial/dial_registry.h"
+#include "chrome/browser/media/router/discovery/dial/dial_device_data.h"
+#include "chrome/browser/media/router/discovery/dial/dial_registry.h"
 #include "chrome/common/extensions/api/dial.h"
 #include "components/keyed_service/core/refcounted_keyed_service.h"
 #include "extensions/browser/api/async_api_function.h"
 #include "extensions/browser/event_router.h"
 
-namespace extensions {
-
-namespace api {
-namespace dial {
+namespace media_router {
 class DeviceDescriptionFetcher;
-}  // namespace dial
-}  // namespace api
+}  // namespace media_router
+
+namespace extensions {
 
 class DialFetchDeviceDescriptionFunction;
 
@@ -46,23 +44,25 @@ class DialFetchDeviceDescriptionFunction;
 // real DialRegsitry.
 class DialAPI : public RefcountedKeyedService,
                 public EventRouter::Observer,
-                public api::dial::DialRegistry::Observer {
+                public media_router::DialRegistry::Observer {
  public:
   explicit DialAPI(Profile* profile);
 
   // The DialRegistry for the API. This must always be used only from the IO
   // thread.
-  api::dial::DialRegistry* dial_registry();
+  media_router::DialRegistry* dial_registry();
 
   // Called by the DialRegistry on the IO thread so that the DialAPI dispatches
   // the event to listeners on the UI thread.
-  void SendEventOnUIThread(const api::dial::DialRegistry::DeviceList& devices);
-  void SendErrorOnUIThread(const api::dial::DialRegistry::DialErrorCode type);
+  void SendEventOnUIThread(
+      const media_router::DialRegistry::DeviceList& devices);
+  void SendErrorOnUIThread(
+      const media_router::DialRegistry::DialErrorCode type);
 
   // Sets test device data.
   void SetDeviceForTest(
-      const api::dial::DialDeviceData& device_data,
-      const api::dial::DialDeviceDescriptionData& device_description);
+      const media_router::DialDeviceData& device_data,
+      const media_router::DialDeviceDescriptionData& device_description);
 
  private:
   ~DialAPI() override;
@@ -78,22 +78,26 @@ class DialAPI : public RefcountedKeyedService,
 
   // DialRegistry::Observer:
   void OnDialDeviceEvent(
-      const api::dial::DialRegistry::DeviceList& devices) override;
-  void OnDialError(api::dial::DialRegistry::DialErrorCode type) override;
+      const media_router::DialRegistry::DeviceList& devices) override;
+  void OnDialError(media_router::DialRegistry::DialErrorCode type) override;
 
   // Methods to notify the DialRegistry on the correct thread of new/removed
   // listeners.
   void NotifyListenerAddedOnIOThread();
   void NotifyListenerRemovedOnIOThread();
 
+  // Fills the |device| API struct from |device_data|.
+  void FillDialDevice(const media_router::DialDeviceData& device_data,
+                      api::dial::DialDevice* device) const;
+
   Profile* profile_;
 
   // Created lazily on first access on the IO thread.
-  std::unique_ptr<api::dial::DialRegistry> dial_registry_;
+  std::unique_ptr<media_router::DialRegistry> dial_registry_;
 
   // Device data for testing.
-  std::unique_ptr<api::dial::DialDeviceData> test_device_data_;
-  std::unique_ptr<api::dial::DialDeviceDescriptionData>
+  std::unique_ptr<media_router::DialDeviceData> test_device_data_;
+  std::unique_ptr<media_router::DialDeviceDescriptionData>
       test_device_description_;
 
   DISALLOW_COPY_AND_ASSIGN(DialAPI);
@@ -145,11 +149,11 @@ class DialFetchDeviceDescriptionFunction : public AsyncExtensionFunction {
 
   void GetDeviceDescriptionUrlOnIOThread(const std::string& label);
   void MaybeStartFetch(const GURL& url);
-  void OnFetchComplete(const api::dial::DialDeviceDescriptionData& result);
+  void OnFetchComplete(const media_router::DialDeviceDescriptionData& result);
   void OnFetchError(const std::string& result);
 
   std::unique_ptr<api::dial::FetchDeviceDescription::Params> params_;
-  std::unique_ptr<api::dial::DeviceDescriptionFetcher>
+  std::unique_ptr<media_router::DeviceDescriptionFetcher>
       device_description_fetcher_;
 
   DialAPI* dial_;

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/dial/device_description_fetcher.h"
+#include "chrome/browser/media/router/discovery/dial/device_description_fetcher.h"
 
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/extensions/api/dial/dial_device_data.h"
+#include "chrome/browser/media/router/discovery/dial/dial_device_data.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
@@ -25,9 +25,7 @@ constexpr int kMaxRetries = 3;
 // should be more than sufficient.
 constexpr int kMaxDescriptionSizeBytes = 262144;
 
-namespace extensions {
-namespace api {
-namespace dial {
+namespace media_router {
 
 DeviceDescriptionFetcher::DeviceDescriptionFetcher(
     const GURL& device_description_url,
@@ -177,6 +175,4 @@ void DeviceDescriptionFetcher::ReportError(const std::string& message) {
   std::move(error_cb_).Run(message);
 }
 
-}  // namespace dial
-}  // namespace api
-}  // namespace extensions
+}  // namespace media_router

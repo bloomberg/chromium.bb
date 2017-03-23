@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_DIAL_DIAL_SERVICE_H_
-#define CHROME_BROWSER_EXTENSIONS_API_DIAL_DIAL_SERVICE_H_
+#ifndef CHROME_BROWSER_MEDIA_ROUTER_DISCOVERY_DIAL_DIAL_SERVICE_H_
+#define CHROME_BROWSER_MEDIA_ROUTER_DISCOVERY_DIAL_DIAL_SERVICE_H_
 
 #include <memory>
 #include <string>
@@ -24,9 +24,7 @@ class StringIOBuffer;
 class NetLog;
 }
 
-namespace extensions {
-namespace api {
-namespace dial {
+namespace media_router {
 
 class DialDeviceData;
 
@@ -292,8 +290,6 @@ class DialServiceImpl : public DialService {
   DISALLOW_COPY_AND_ASSIGN(DialServiceImpl);
 };
 
-}  // namespace dial
-}  // namespace api
-}  // namespace extensions
+}  // namespace media_router
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_DIAL_DIAL_SERVICE_H_
+#endif  // CHROME_BROWSER_MEDIA_ROUTER_DISCOVERY_DIAL_DIAL_SERVICE_H_

@@ -5,9 +5,9 @@
 #include <stddef.h>
 
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/extensions/api/dial/dial_device_data.h"
-#include "chrome/browser/extensions/api/dial/dial_registry.h"
-#include "chrome/browser/extensions/api/dial/dial_service.h"
+#include "chrome/browser/media/router/discovery/dial/dial_device_data.h"
+#include "chrome/browser/media/router/discovery/dial/dial_registry.h"
+#include "chrome/browser/media/router/discovery/dial/dial_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -21,9 +21,7 @@ using ::testing::AtLeast;
 using ::testing::Return;
 using ::testing::InSequence;
 
-namespace extensions {
-namespace api {
-namespace dial {
+namespace media_router {
 
 class MockDialObserver : public DialRegistry::Observer {
  public:
@@ -60,9 +58,7 @@ class MockDialRegistry : public DialRegistry {
   }
 
   // Returns the mock Dial service.
-  MockDialService& mock_service() {
-    return mock_service_;
-  }
+  MockDialService& mock_service() { return mock_service_; }
 
   void set_time(Time time) { time_ = time; }
 
@@ -228,8 +224,7 @@ TEST_F(DialRegistryTest, TestExpiredDeviceIsRediscovered) {
   discovery_times.push_back(discovery_times[0] + TimeDelta::FromSeconds(30));
   discovery_times.push_back(discovery_times[1] + TimeDelta::FromSeconds(30));
 
-  DialDeviceData rediscovered_device("first",
-                                     GURL("http://127.0.0.1/dd.xml"),
+  DialDeviceData rediscovered_device("first", GURL("http://127.0.0.1/dd.xml"),
                                      discovery_times[2]);
 
   SetListenerExpectations();
@@ -334,10 +329,10 @@ TEST_F(DialRegistryTest, TestNetworkEventConnectionRestored) {
   // to be added twice.
   EXPECT_CALL(registry_->mock_service(),
               AddObserver(A<DialService::Observer*>()))
-    .Times(2);
+      .Times(2);
   EXPECT_CALL(registry_->mock_service(),
               RemoveObserver(A<DialService::Observer*>()))
-    .Times(2);
+      .Times(2);
 
   InSequence s;
   EXPECT_CALL(registry_->mock_service(), Discover());
@@ -377,6 +372,4 @@ TEST_F(DialRegistryTest, TestNetworkEventConnectionRestored) {
   registry_->OnListenerRemoved();
 }
 
-}  // namespace dial
-}  // namespace api
-}  // namespace extensions
+}  // namespace media_router

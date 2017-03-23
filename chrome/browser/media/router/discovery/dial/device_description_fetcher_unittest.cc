@@ -9,8 +9,8 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/extensions/api/dial/device_description_fetcher.h"
-#include "chrome/browser/extensions/api/dial/dial_device_data.h"
+#include "chrome/browser/media/router/discovery/dial/device_description_fetcher.h"
+#include "chrome/browser/media/router/discovery/dial/dial_device_data.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/http/http_response_headers.h"
@@ -20,9 +20,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-namespace extensions {
-namespace api {
-namespace dial {
+namespace media_router {
 
 class DeviceDescriptionFetcherTest : public testing::Test {
  public:
@@ -174,6 +172,4 @@ TEST_F(DeviceDescriptionFetcherTest, FetchFailsOnResponseTooLarge) {
   test_fetcher->delegate()->OnURLFetchComplete(test_fetcher);
 }
 
-}  // namespace dial
-}  // namespace api
-}  // namespace extensions
+}  // namespace media_router

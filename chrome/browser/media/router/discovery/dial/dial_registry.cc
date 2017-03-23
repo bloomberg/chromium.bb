@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/dial/dial_registry.h"
+#include "chrome/browser/media/router/discovery/dial/dial_registry.h"
 
 #include <memory>
 #include <utility>
@@ -13,10 +13,8 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/api/dial/dial_api.h"
-#include "chrome/browser/extensions/api/dial/dial_device_data.h"
-#include "chrome/browser/extensions/api/dial/dial_service.h"
-#include "chrome/common/extensions/api/dial.h"
+#include "chrome/browser/media/router/discovery/dial/dial_device_data.h"
+#include "chrome/browser/media/router/discovery/dial/dial_service.h"
 #include "components/net_log/chrome_net_log.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -25,9 +23,7 @@ using base::TimeDelta;
 using content::BrowserThread;
 using net::NetworkChangeNotifier;
 
-namespace extensions {
-namespace api {
-namespace dial {
+namespace media_router {
 
 DialRegistry::DialRegistry(base::TimeDelta refresh_interval,
                            base::TimeDelta expiration,
@@ -157,9 +153,7 @@ void DialRegistry::StartPeriodicDiscovery() {
   dial_ = CreateDialService();
   dial_->AddObserver(this);
   DoDiscovery();
-  repeating_timer_.Start(FROM_HERE,
-                         refresh_interval_delta_,
-                         this,
+  repeating_timer_.Start(FROM_HERE, refresh_interval_delta_, this,
                          &DialRegistry::DoDiscovery);
 }
 
@@ -214,7 +208,7 @@ bool DialRegistry::IsDeviceExpired(const DialDeviceData& device) const {
   // Check against the device's cache-control header, if set.
   if (device.has_max_age()) {
     Time max_age_expiration_time =
-      device.response_time() + TimeDelta::FromSeconds(device.max_age());
+        device.response_time() + TimeDelta::FromSeconds(device.max_age());
     if (now > max_age_expiration_time)
       return true;
   }
@@ -231,8 +225,9 @@ void DialRegistry::Clear() {
 void DialRegistry::MaybeSendEvent() {
   // Send an event if the device list has changed since the last event.
   bool needs_event = last_event_registry_generation_ < registry_generation_;
-  VLOG(2) << "lerg = " << last_event_registry_generation_ << ", rg = "
-          << registry_generation_ << ", needs_event = " << needs_event;
+  VLOG(2) << "lerg = " << last_event_registry_generation_
+          << ", rg = " << registry_generation_
+          << ", needs_event = " << needs_event;
   if (needs_event)
     SendEvent();
 }
@@ -372,6 +367,4 @@ void DialRegistry::OnDialError(DialErrorCode type) {
     observer.OnDialError(type);
 }
 
-}  // namespace dial
-}  // namespace api
-}  // namespace extensions
+}  // namespace media_router

@@ -6,9 +6,9 @@
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/dial/dial_api.h"
 #include "chrome/browser/extensions/api/dial/dial_api_factory.h"
-#include "chrome/browser/extensions/api/dial/dial_registry.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/media/router/discovery/dial/dial_registry.h"
 #include "extensions/common/switches.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
@@ -17,9 +17,9 @@
 
 using extensions::Extension;
 using extensions::ResultCatcher;
-using extensions::api::dial::DialDeviceData;
-using extensions::api::dial::DialDeviceDescriptionData;
-using extensions::api::dial::DialRegistry;
+using media_router::DialDeviceData;
+using media_router::DialDeviceDescriptionData;
+using media_router::DialRegistry;
 
 namespace {
 
