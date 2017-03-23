@@ -22,5 +22,5 @@ Tests the coverage highlight in sources after the recording finishes.
 17: - } function outer2() {
 18: -   return outer(0)(0);
 19: - }
-20:   
+20: - 
 

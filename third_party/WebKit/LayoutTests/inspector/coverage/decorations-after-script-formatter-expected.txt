@@ -31,5 +31,5 @@ Tests the gutter decorations in target source code after ScriptFormatterEditorAc
 26: - function outer2() {
 27: -     return outer(0)(0);
 28: - }
-29:   
+29: - 
 

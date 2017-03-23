@@ -26,5 +26,5 @@ Tests the CSS highlight in sources after the Pretty print formatting.
 21: - notUsed2 {
 22: -     color: white
 23: - }
-24:   
+24: - 
 
