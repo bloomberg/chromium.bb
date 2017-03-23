@@ -209,7 +209,7 @@ chrome.fakeApi.bazGreek = function(callback) {};
 chrome.fakeApi.returnString = function() {};
 
 /**
- * @param {function(!chrome.fakeApi.Qux|undefined):void=} callback
+ * @param {function((!chrome.fakeApi.Qux|undefined)):void=} callback
  * @see https://developer.chrome.com/extensions/fakeApi#method-optionalParam
  */
 chrome.fakeApi.optionalParam = function(callback) {};
