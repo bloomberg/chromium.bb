@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "ash/root_window_controller.h"
@@ -363,7 +364,7 @@ std::unique_ptr<base::DictionaryValue> TouchHudDebug::GetAllAsDictionary() {
     if (hud) {
       std::unique_ptr<base::ListValue> list = hud->GetLogAsList();
       if (!list->empty())
-        value->Set(base::Int64ToString(hud->display_id()), list.release());
+        value->Set(base::Int64ToString(hud->display_id()), std::move(list));
     }
   }
   return value;

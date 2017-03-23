@@ -386,23 +386,23 @@ std::unique_ptr<base::DictionaryValue> LayerImpl::LayerTreeAsJson() {
   result->SetInteger("LayerId", id());
   result->SetString("LayerType", LayerTypeAsString());
 
-  base::ListValue* list = new base::ListValue;
+  auto list = base::MakeUnique<base::ListValue>();
   list->AppendInteger(bounds().width());
   list->AppendInteger(bounds().height());
-  result->Set("Bounds", list);
+  result->Set("Bounds", std::move(list));
 
-  list = new base::ListValue;
+  list = base::MakeUnique<base::ListValue>();
   list->AppendDouble(position_.x());
   list->AppendDouble(position_.y());
-  result->Set("Position", list);
+  result->Set("Position", std::move(list));
 
   const gfx::Transform& gfx_transform = test_properties()->transform;
   double transform[16];
   gfx_transform.matrix().asColMajord(transform);
-  list = new base::ListValue;
+  list = base::MakeUnique<base::ListValue>();
   for (int i = 0; i < 16; ++i)
     list->AppendDouble(transform[i]);
-  result->Set("Transform", list);
+  result->Set("Transform", std::move(list));
 
   result->SetBoolean("DrawsContent", draws_content_);
   result->SetBoolean("Is3dSorted", Is3dSorted());
@@ -414,13 +414,13 @@ std::unique_ptr<base::DictionaryValue> LayerImpl::LayerTreeAsJson() {
 
   if (!touch_event_handler_region_.IsEmpty()) {
     std::unique_ptr<base::Value> region = touch_event_handler_region_.AsValue();
-    result->Set("TouchRegion", region.release());
+    result->Set("TouchRegion", std::move(region));
   }
 
-  list = new base::ListValue;
+  list = base::MakeUnique<base::ListValue>();
   for (size_t i = 0; i < test_properties()->children.size(); ++i)
     list->Append(test_properties()->children[i]->LayerTreeAsJson());
-  result->Set("Children", list);
+  result->Set("Children", std::move(list));
 
   return result;
 }

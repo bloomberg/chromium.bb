@@ -385,23 +385,23 @@ void PrefService::ClearMutableValues() {
 }
 
 void PrefService::Set(const std::string& path, const base::Value& value) {
-  SetUserPrefValue(path, value.DeepCopy());
+  SetUserPrefValue(path, value.CreateDeepCopy());
 }
 
 void PrefService::SetBoolean(const std::string& path, bool value) {
-  SetUserPrefValue(path, new base::Value(value));
+  SetUserPrefValue(path, base::MakeUnique<base::Value>(value));
 }
 
 void PrefService::SetInteger(const std::string& path, int value) {
-  SetUserPrefValue(path, new base::Value(value));
+  SetUserPrefValue(path, base::MakeUnique<base::Value>(value));
 }
 
 void PrefService::SetDouble(const std::string& path, double value) {
-  SetUserPrefValue(path, new base::Value(value));
+  SetUserPrefValue(path, base::MakeUnique<base::Value>(value));
 }
 
 void PrefService::SetString(const std::string& path, const std::string& value) {
-  SetUserPrefValue(path, new base::Value(value));
+  SetUserPrefValue(path, base::MakeUnique<base::Value>(value));
 }
 
 void PrefService::SetFilePath(const std::string& path,
@@ -410,7 +410,8 @@ void PrefService::SetFilePath(const std::string& path,
 }
 
 void PrefService::SetInt64(const std::string& path, int64_t value) {
-  SetUserPrefValue(path, new base::Value(base::Int64ToString(value)));
+  SetUserPrefValue(path,
+                   base::MakeUnique<base::Value>(base::Int64ToString(value)));
 }
 
 int64_t PrefService::GetInt64(const std::string& path) const {
@@ -431,7 +432,8 @@ int64_t PrefService::GetInt64(const std::string& path) const {
 }
 
 void PrefService::SetUint64(const std::string& path, uint64_t value) {
-  SetUserPrefValue(path, new base::Value(base::Uint64ToString(value)));
+  SetUserPrefValue(path,
+                   base::MakeUnique<base::Value>(base::Uint64ToString(value)));
 }
 
 uint64_t PrefService::GetUint64(const std::string& path) const {
@@ -491,8 +493,7 @@ void PrefService::ReportUserPrefChanged(const std::string& key) {
 }
 
 void PrefService::SetUserPrefValue(const std::string& path,
-                                   base::Value* new_value) {
-  std::unique_ptr<base::Value> owned_value(new_value);
+                                   std::unique_ptr<base::Value> new_value) {
   DCHECK(CalledOnValidThread());
 
   const Preference* pref = FindPreference(path);
@@ -507,7 +508,7 @@ void PrefService::SetUserPrefValue(const std::string& path,
     return;
   }
 
-  user_pref_store_->SetValue(path, std::move(owned_value), GetWriteFlags(pref));
+  user_pref_store_->SetValue(path, std::move(new_value), GetWriteFlags(pref));
 }
 
 void PrefService::UpdateCommandLinePrefStore(PrefStore* command_line_store) {

@@ -143,17 +143,17 @@ const char* UIResourceLayerImpl::LayerTypeAsString() const {
 std::unique_ptr<base::DictionaryValue> UIResourceLayerImpl::LayerTreeAsJson() {
   std::unique_ptr<base::DictionaryValue> result = LayerImpl::LayerTreeAsJson();
 
-  result->Set("ImageBounds", MathUtil::AsValue(image_bounds_).release());
+  result->Set("ImageBounds", MathUtil::AsValue(image_bounds_));
 
-  base::ListValue* list = new base::ListValue;
+  auto list = base::MakeUnique<base::ListValue>();
   list->AppendDouble(vertex_opacity_[0]);
   list->AppendDouble(vertex_opacity_[1]);
   list->AppendDouble(vertex_opacity_[2]);
   list->AppendDouble(vertex_opacity_[3]);
-  result->Set("VertexOpacity", list);
+  result->Set("VertexOpacity", std::move(list));
 
-  result->Set("UVTopLeft", MathUtil::AsValue(uv_top_left_).release());
-  result->Set("UVBottomRight", MathUtil::AsValue(uv_bottom_right_).release());
+  result->Set("UVTopLeft", MathUtil::AsValue(uv_top_left_));
+  result->Set("UVBottomRight", MathUtil::AsValue(uv_bottom_right_));
 
   return result;
 }
