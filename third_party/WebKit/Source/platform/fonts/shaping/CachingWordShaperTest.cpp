@@ -6,7 +6,6 @@
 
 #include "platform/fonts/CharacterRange.h"
 #include "platform/fonts/FontCache.h"
-#include "platform/fonts/GlyphBuffer.h"
 #include "platform/fonts/shaping/CachingWordShapeIterator.h"
 #include "platform/fonts/shaping/ShapeResultTestInfo.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -115,21 +114,28 @@ TEST_F(CachingWordShaperTest, CommonAccentLeftToRightFillGlyphBuffer) {
   // "/. ." with an accent mark over the first dot.
   const UChar str[] = {0x2F, 0x301, 0x2E, 0x20, 0x2E, 0x0};
   TextRun textRun(str, 5);
+  TextRunPaintInfo runInfo(textRun);
+  runInfo.to = 3;
 
-  CachingWordShaper shaper(font);
-  GlyphBuffer glyphBuffer;
-  shaper.fillGlyphBuffer(textRun, &glyphBuffer, 0, 3);
+  ShapeResultBloberizer bloberizer(font, 1);
+  CachingWordShaper(font).fillGlyphs(runInfo, bloberizer);
 
   Font referenceFont(fontDescription);
   referenceFont.update(nullptr);
-  CachingWordShaper referenceShaper(referenceFont);
-  GlyphBuffer referenceGlyphBuffer;
   referenceFont.setCanShapeWordByWordForTesting(false);
-  referenceShaper.fillGlyphBuffer(textRun, &referenceGlyphBuffer, 0, 3);
+  ShapeResultBloberizer referenceBloberizer(referenceFont, 1);
+  CachingWordShaper(referenceFont).fillGlyphs(runInfo, referenceBloberizer);
 
-  ASSERT_EQ(referenceGlyphBuffer.glyphAt(0), glyphBuffer.glyphAt(0));
-  ASSERT_EQ(referenceGlyphBuffer.glyphAt(1), glyphBuffer.glyphAt(1));
-  ASSERT_EQ(referenceGlyphBuffer.glyphAt(2), glyphBuffer.glyphAt(2));
+  const auto& glyphs =
+      ShapeResultBloberizerTestInfo::pendingRunGlyphs(bloberizer);
+  ASSERT_EQ(glyphs.size(), 3ul);
+  const auto referenceGlyphs =
+      ShapeResultBloberizerTestInfo::pendingRunGlyphs(referenceBloberizer);
+  ASSERT_EQ(referenceGlyphs.size(), 3ul);
+
+  EXPECT_EQ(referenceGlyphs[0], glyphs[0]);
+  EXPECT_EQ(referenceGlyphs[1], glyphs[1]);
+  EXPECT_EQ(referenceGlyphs[2], glyphs[2]);
 }
 
 // Tests that filling a glyph buffer for a specific range returns the same
@@ -139,26 +145,30 @@ TEST_F(CachingWordShaperTest, CommonAccentRightToLeftFillGlyphBuffer) {
   const UChar str[] = {0x5B, 0x5D, 0x20, 0x5B, 0x301, 0x5D, 0x0};
   TextRun textRun(str, 6);
   textRun.setDirection(TextDirection::kRtl);
+  TextRunPaintInfo runInfo(textRun);
+  runInfo.from = 1;
 
-  CachingWordShaper shaper(font);
-  GlyphBuffer glyphBuffer;
-  shaper.fillGlyphBuffer(textRun, &glyphBuffer, 1, 6);
+  ShapeResultBloberizer bloberizer(font, 1);
+  CachingWordShaper(font).fillGlyphs(runInfo, bloberizer);
 
   Font referenceFont(fontDescription);
   referenceFont.update(nullptr);
-  CachingWordShaper referenceShaper(referenceFont);
-  GlyphBuffer referenceGlyphBuffer;
   referenceFont.setCanShapeWordByWordForTesting(false);
-  referenceShaper.fillGlyphBuffer(textRun, &referenceGlyphBuffer, 1, 6);
+  ShapeResultBloberizer referenceBloberizer(referenceFont, 1);
+  CachingWordShaper(referenceFont).fillGlyphs(runInfo, referenceBloberizer);
 
-  ASSERT_EQ(5u, referenceGlyphBuffer.size());
-  ASSERT_EQ(referenceGlyphBuffer.size(), glyphBuffer.size());
+  const auto& glyphs =
+      ShapeResultBloberizerTestInfo::pendingRunGlyphs(bloberizer);
+  ASSERT_EQ(5u, glyphs.size());
+  const auto referenceGlyphs =
+      ShapeResultBloberizerTestInfo::pendingRunGlyphs(referenceBloberizer);
+  ASSERT_EQ(5u, referenceGlyphs.size());
 
-  ASSERT_EQ(referenceGlyphBuffer.glyphAt(0), glyphBuffer.glyphAt(0));
-  ASSERT_EQ(referenceGlyphBuffer.glyphAt(1), glyphBuffer.glyphAt(1));
-  ASSERT_EQ(referenceGlyphBuffer.glyphAt(2), glyphBuffer.glyphAt(2));
-  ASSERT_EQ(referenceGlyphBuffer.glyphAt(3), glyphBuffer.glyphAt(3));
-  ASSERT_EQ(referenceGlyphBuffer.glyphAt(4), glyphBuffer.glyphAt(4));
+  EXPECT_EQ(referenceGlyphs[0], glyphs[0]);
+  EXPECT_EQ(referenceGlyphs[1], glyphs[1]);
+  EXPECT_EQ(referenceGlyphs[2], glyphs[2]);
+  EXPECT_EQ(referenceGlyphs[3], glyphs[3]);
+  EXPECT_EQ(referenceGlyphs[4], glyphs[4]);
 }
 
 // Tests that runs with zero glyphs (the ZWJ non-printable character in this
@@ -173,8 +183,10 @@ TEST_F(CachingWordShaperTest, SubRunWithZeroGlyphs) {
   FloatRect glyphBounds;
   ASSERT_GT(shaper.width(textRun, nullptr, &glyphBounds), 0);
 
-  GlyphBuffer glyphBuffer;
-  shaper.fillGlyphBuffer(textRun, &glyphBuffer, 0, 8);
+  ShapeResultBloberizer bloberizer(font, 1);
+  TextRunPaintInfo runInfo(textRun);
+  runInfo.to = 8;
+  shaper.fillGlyphs(runInfo, bloberizer);
 
   shaper.getCharacterRange(textRun, 0, 8);
 }

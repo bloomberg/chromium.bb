@@ -89,28 +89,22 @@ int CachingWordShaper::offsetForPosition(const TextRun& run,
   return buffer.offsetForPosition(run, targetX, includePartialGlyphs);
 }
 
-float CachingWordShaper::fillGlyphBuffer(
-    const TextRun& run,
-    GlyphBuffer* glyphBuffer,
-    unsigned from,
-    unsigned to) {
+float CachingWordShaper::fillGlyphs(const TextRunPaintInfo& runInfo,
+                                    ShapeResultBloberizer& bloberizer) {
   ShapeResultBuffer buffer;
-  shapeResultsForRun(shapeCache(), &m_font, run, &buffer);
+  shapeResultsForRun(shapeCache(), &m_font, runInfo.run, &buffer);
 
-  return buffer.fillGlyphBuffer(glyphBuffer, run, from, to);
+  return buffer.fillGlyphs(runInfo, bloberizer);
 }
 
-float CachingWordShaper::fillGlyphBufferForTextEmphasis(
-    const TextRun& run,
-    const GlyphData* emphasisData,
-    GlyphBuffer* glyphBuffer,
-    unsigned from,
-    unsigned to) {
+void CachingWordShaper::fillTextEmphasisGlyphs(
+    const TextRunPaintInfo& runInfo,
+    const GlyphData& emphasisData,
+    ShapeResultBloberizer& bloberizer) {
   ShapeResultBuffer buffer;
-  shapeResultsForRun(shapeCache(), &m_font, run, &buffer);
+  shapeResultsForRun(shapeCache(), &m_font, runInfo.run, &buffer);
 
-  return buffer.fillGlyphBufferForTextEmphasis(glyphBuffer, run, emphasisData,
-                                               from, to);
+  buffer.fillTextEmphasisGlyphs(runInfo, emphasisData, bloberizer);
 }
 
 CharacterRange CachingWordShaper::getCharacterRange(const TextRun& run,

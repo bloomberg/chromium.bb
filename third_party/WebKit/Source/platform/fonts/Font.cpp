@@ -31,9 +31,9 @@
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontFallbackIterator.h"
 #include "platform/fonts/FontFallbackList.h"
-#include "platform/fonts/GlyphBuffer.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/shaping/CachingWordShaper.h"
+#include "platform/fonts/shaping/ShapeResultBloberizer.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/graphics/paint/PaintFlags.h"
@@ -105,21 +105,28 @@ void Font::update(FontSelector* fontSelector) const {
   m_fontFallbackList->invalidate(fontSelector);
 }
 
-float Font::buildGlyphBuffer(const TextRunPaintInfo& runInfo,
-                             GlyphBuffer& glyphBuffer,
-                             const GlyphData* emphasisData) const {
-  float width;
-  CachingWordShaper shaper(*this);
-  if (emphasisData) {
-    width = shaper.fillGlyphBufferForTextEmphasis(runInfo.run,
-                                                  emphasisData, &glyphBuffer,
-                                                  runInfo.from, runInfo.to);
-  } else {
-    width = shaper.fillGlyphBuffer(runInfo.run, &glyphBuffer,
-                                   runInfo.from, runInfo.to);
+namespace {
+
+void drawBlobs(PaintCanvas* canvas,
+               const PaintFlags& flags,
+               const ShapeResultBloberizer::BlobBuffer& blobs,
+               const FloatPoint& point) {
+  for (const auto& blobInfo : blobs) {
+    DCHECK(blobInfo.blob);
+    PaintCanvasAutoRestore autoRestore(canvas, false);
+    if (blobInfo.rotation == ShapeResultBloberizer::BlobRotation::CCWRotation) {
+      canvas->save();
+
+      SkMatrix m;
+      m.setSinCos(-1, 0, point.x(), point.y());
+      canvas->concat(m);
+    }
+
+    canvas->drawTextBlob(blobInfo.blob, point.x(), point.y(), flags);
   }
-  return width;
 }
+
+}  // anonymous ns
 
 bool Font::drawText(PaintCanvas* canvas,
                     const TextRunPaintInfo& runInfo,
@@ -131,10 +138,9 @@ bool Font::drawText(PaintCanvas* canvas,
   if (shouldSkipDrawing())
     return false;
 
-  GlyphBuffer glyphBuffer;
-  buildGlyphBuffer(runInfo, glyphBuffer);
-
-  drawGlyphBuffer(canvas, flags, glyphBuffer, point, deviceScaleFactor);
+  ShapeResultBloberizer bloberizer(*this, deviceScaleFactor);
+  CachingWordShaper(*this).fillGlyphs(runInfo, bloberizer);
+  drawBlobs(canvas, flags, bloberizer.blobs(), point);
   return true;
 }
 
@@ -178,11 +184,10 @@ bool Font::drawBidiText(PaintCanvas* canvas,
     TextRunPaintInfo subrunInfo(subrun);
     subrunInfo.bounds = runInfo.bounds;
 
-    // TODO: investigate blob consolidation/caching (technically,
-    //       all subruns could be part of the same blob).
-    GlyphBuffer glyphBuffer;
-    float runWidth = buildGlyphBuffer(subrunInfo, glyphBuffer);
-    drawGlyphBuffer(canvas, flags, glyphBuffer, currPoint, deviceScaleFactor);
+    ShapeResultBloberizer bloberizer(*this, deviceScaleFactor);
+    float runWidth =
+        CachingWordShaper(*this).fillGlyphs(subrunInfo, bloberizer);
+    drawBlobs(canvas, flags, bloberizer.blobs(), currPoint);
 
     bidiRun = bidiRun->next();
     currPoint.move(runWidth, 0);
@@ -207,13 +212,10 @@ void Font::drawEmphasisMarks(PaintCanvas* canvas,
   if (!emphasisGlyphData.fontData)
     return;
 
-  GlyphBuffer glyphBuffer;
-  buildGlyphBuffer(runInfo, glyphBuffer, &emphasisGlyphData);
-
-  if (glyphBuffer.isEmpty())
-    return;
-
-  drawGlyphBuffer(canvas, flags, glyphBuffer, point, deviceScaleFactor);
+  ShapeResultBloberizer bloberizer(*this, deviceScaleFactor);
+  CachingWordShaper(*this).fillTextEmphasisGlyphs(runInfo, emphasisGlyphData,
+                                                  bloberizer);
+  drawBlobs(canvas, flags, bloberizer.blobs(), point);
 }
 
 float Font::width(const TextRun& run,
@@ -224,163 +226,29 @@ float Font::width(const TextRun& run,
   return shaper.width(run, fallbackFonts, glyphBounds);
 }
 
-namespace {
-
-enum BlobRotation {
-  NoRotation,
-  CCWRotation,
-};
-
-class GlyphBufferBloberizer {
-  STACK_ALLOCATED()
- public:
-  GlyphBufferBloberizer(const GlyphBuffer& buffer,
-                        const Font* font,
-                        float deviceScaleFactor)
-      : m_buffer(buffer),
-        m_font(font),
-        m_deviceScaleFactor(deviceScaleFactor),
-        m_hasVerticalOffsets(buffer.hasVerticalOffsets()),
-        m_index(0),
-        m_endIndex(m_buffer.size()),
-        m_rotation(buffer.isEmpty() ? NoRotation : computeBlobRotation(
-                                                       buffer.fontDataAt(0))) {}
-
-  bool done() const { return m_index >= m_endIndex; }
-
-  std::pair<sk_sp<SkTextBlob>, BlobRotation> next() {
-    ASSERT(!done());
-    const BlobRotation currentRotation = m_rotation;
-
-    while (m_index < m_endIndex) {
-      const SimpleFontData* fontData = m_buffer.fontDataAt(m_index);
-      ASSERT(fontData);
-
-      const BlobRotation newRotation = computeBlobRotation(fontData);
-      if (newRotation != m_rotation) {
-        // We're switching to an orientation which requires a different rotation
-        //   => emit the pending blob (and start a new one with the new
-        //      rotation).
-        m_rotation = newRotation;
-        break;
-      }
-
-      const unsigned start = m_index++;
-      while (m_index < m_endIndex && m_buffer.fontDataAt(m_index) == fontData)
-        m_index++;
-
-      appendRun(start, m_index - start, fontData);
-    }
-
-    return std::make_pair(m_builder.make(), currentRotation);
-  }
-
- private:
-  static BlobRotation computeBlobRotation(const SimpleFontData* font) {
-    // For vertical upright text we need to compensate the inherited 90deg CW
-    // rotation (using a 90deg CCW rotation).
-    return (font->platformData().isVerticalAnyUpright() && font->verticalData())
-               ? CCWRotation
-               : NoRotation;
-  }
-
-  void appendRun(unsigned start,
-                 unsigned count,
-                 const SimpleFontData* fontData) {
-    SkPaint paint;
-    fontData->platformData().setupPaint(&paint, m_deviceScaleFactor, m_font);
-    paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
-
-    const SkTextBlobBuilder::RunBuffer& buffer =
-        m_hasVerticalOffsets ? m_builder.allocRunPos(paint, count)
-                             : m_builder.allocRunPosH(paint, count, 0);
-
-    const uint16_t* glyphs = m_buffer.glyphs(start);
-    const float* offsets = m_buffer.offsets(start);
-    std::copy(glyphs, glyphs + count, buffer.glyphs);
-
-    if (m_rotation == NoRotation) {
-      std::copy(offsets, offsets + (m_hasVerticalOffsets ? 2 * count : count),
-                buffer.pos);
-    } else {
-      ASSERT(m_hasVerticalOffsets);
-
-      const float verticalBaselineXOffset =
-          fontData->getFontMetrics().floatAscent() -
-          fontData->getFontMetrics().floatAscent(IdeographicBaseline);
-
-      // TODO(fmalita): why don't we apply this adjustment when building the
-      // glyph buffer?
-      for (unsigned i = 0; i < 2 * count; i += 2) {
-        buffer.pos[i] = SkFloatToScalar(offsets[i] + verticalBaselineXOffset);
-        buffer.pos[i + 1] = SkFloatToScalar(offsets[i + 1]);
-      }
-    }
-  }
-
-  const GlyphBuffer& m_buffer;
-  const Font* m_font;
-  const float m_deviceScaleFactor;
-  const bool m_hasVerticalOffsets;
-
-  SkTextBlobBuilder m_builder;
-  unsigned m_index;
-  unsigned m_endIndex;
-  BlobRotation m_rotation;
-};
-
-}  // anonymous namespace
-
-void Font::drawGlyphBuffer(PaintCanvas* canvas,
-                           const PaintFlags& flags,
-                           const GlyphBuffer& glyphBuffer,
-                           const FloatPoint& point,
-                           float deviceScaleFactor) const {
-  GlyphBufferBloberizer bloberizer(glyphBuffer, this, deviceScaleFactor);
-
-  while (!bloberizer.done()) {
-    auto blob = bloberizer.next();
-    ASSERT(blob.first);
-
-    PaintCanvasAutoRestore autoRestore(canvas, false);
-    if (blob.second == CCWRotation) {
-      canvas->save();
-
-      SkMatrix m;
-      m.setSinCos(-1, 0, point.x(), point.y());
-      canvas->concat(m);
-    }
-
-    canvas->drawTextBlob(blob.first, point.x(), point.y(), flags);
-  }
-}
-
-static int getInterceptsFromBloberizer(const GlyphBuffer& glyphBuffer,
-                                       const Font* font,
-                                       const SkPaint& paint,
-                                       float deviceScaleFactor,
-                                       const std::tuple<float, float>& bounds,
-                                       SkScalar* interceptsBuffer) {
+static int getInterceptsFromBlobs(
+    const ShapeResultBloberizer::BlobBuffer& blobs,
+    const SkPaint& paint,
+    const std::tuple<float, float>& bounds,
+    SkScalar* interceptsBuffer) {
   SkScalar boundsArray[2] = {std::get<0>(bounds), std::get<1>(bounds)};
-  GlyphBufferBloberizer bloberizer(glyphBuffer, font, deviceScaleFactor);
 
   int numIntervals = 0;
-  while (!bloberizer.done()) {
-    auto blob = bloberizer.next();
-    DCHECK(blob.first);
+  for (const auto& blobInfo : blobs) {
+    DCHECK(blobInfo.blob);
 
-    // GlyphBufferBloberizer splits for a new blob rotation, but does not split
+    // ShapeResultBloberizer splits for a new blob rotation, but does not split
     // for a change in font. A TextBlob can contain runs with differing fonts
     // and the getTextBlobIntercepts method handles multiple fonts for us. For
     // upright in vertical blobs we currently have to bail, see crbug.com/655154
-    if (blob.second == BlobRotation::CCWRotation)
+    if (blobInfo.rotation == ShapeResultBloberizer::BlobRotation::CCWRotation)
       continue;
 
     SkScalar* offsetInterceptsBuffer = nullptr;
     if (interceptsBuffer)
       offsetInterceptsBuffer = &interceptsBuffer[numIntervals];
-    numIntervals += paint.getTextBlobIntercepts(blob.first.get(), boundsArray,
-                                                offsetInterceptsBuffer);
+    numIntervals += paint.getTextBlobIntercepts(
+        blobInfo.blob.get(), boundsArray, offsetInterceptsBuffer);
   }
   return numIntervals;
 }
@@ -393,23 +261,23 @@ void Font::getTextIntercepts(const TextRunPaintInfo& runInfo,
   if (shouldSkipDrawing())
     return;
 
-  GlyphBuffer glyphBuffer(GlyphBuffer::Type::TextIntercepts);
-  buildGlyphBuffer(runInfo, glyphBuffer);
+  ShapeResultBloberizer bloberizer(*this, deviceScaleFactor,
+                                   ShapeResultBloberizer::Type::TextIntercepts);
+  CachingWordShaper(*this).fillGlyphs(runInfo, bloberizer);
+  const auto& blobs = bloberizer.blobs();
 
   // Get the number of intervals, without copying the actual values by
   // specifying nullptr for the buffer, following the Skia allocation model for
   // retrieving text intercepts.
   SkPaint paint(ToSkPaint(flags));
-  int numIntervals = getInterceptsFromBloberizer(
-      glyphBuffer, this, paint, deviceScaleFactor, bounds, nullptr);
+  int numIntervals = getInterceptsFromBlobs(blobs, paint, bounds, nullptr);
   if (!numIntervals)
     return;
   DCHECK_EQ(numIntervals % 2, 0);
   intercepts.resize(numIntervals / 2);
 
-  getInterceptsFromBloberizer(glyphBuffer, this, paint, deviceScaleFactor,
-                              bounds,
-                              reinterpret_cast<SkScalar*>(intercepts.data()));
+  getInterceptsFromBlobs(blobs, paint, bounds,
+                         reinterpret_cast<SkScalar*>(intercepts.data()));
 }
 
 static inline FloatRect pixelSnappedSelectionRect(FloatRect rect) {

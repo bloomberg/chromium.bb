@@ -34,7 +34,6 @@
 #include "platform/fonts/Font.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontFallbackIterator.h"
-#include "platform/fonts/GlyphBuffer.h"
 #include "platform/fonts/SmallCapsIterator.h"
 #include "platform/fonts/UTF16TextIterator.h"
 #include "platform/fonts/opentype/OpenTypeCapsSupport.h"

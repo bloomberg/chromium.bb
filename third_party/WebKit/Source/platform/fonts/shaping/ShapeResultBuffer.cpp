@@ -5,8 +5,8 @@
 #include "platform/fonts/shaping/ShapeResultBuffer.h"
 
 #include "platform/fonts/CharacterRange.h"
-#include "platform/fonts/GlyphBuffer.h"
 #include "platform/fonts/SimpleFontData.h"
+#include "platform/fonts/shaping/ShapeResultBloberizer.h"
 #include "platform/fonts/shaping/ShapeResultInlineHeaders.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/text/Character.h"
@@ -17,50 +17,47 @@ namespace blink {
 
 namespace {
 
-inline bool isSkipInkException(const GlyphBuffer& glyphBuffer,
+inline bool isSkipInkException(const ShapeResultBloberizer& bloberizer,
                                const TextRun& run,
                                unsigned characterIndex) {
   // We want to skip descenders in general, but it is undesirable renderings for
   // CJK characters.
-  return glyphBuffer.type() == GlyphBuffer::Type::TextIntercepts &&
+  return bloberizer.type() == ShapeResultBloberizer::Type::TextIntercepts &&
          !run.is8Bit() &&
          Character::isCJKIdeographOrSymbol(run.codepointAt(characterIndex));
 }
 
-inline void addGlyphToBuffer(GlyphBuffer* glyphBuffer,
-                             float advance,
-                             hb_direction_t direction,
-                             const SimpleFontData* fontData,
-                             const HarfBuzzRunGlyphData& glyphData,
-                             const TextRun& run,
-                             unsigned characterIndex) {
+inline void addGlyphToBloberizer(ShapeResultBloberizer& bloberizer,
+                                 float advance,
+                                 hb_direction_t direction,
+                                 const SimpleFontData* fontData,
+                                 const HarfBuzzRunGlyphData& glyphData,
+                                 const TextRun& run,
+                                 unsigned characterIndex) {
   FloatPoint startOffset = HB_DIRECTION_IS_HORIZONTAL(direction)
                                ? FloatPoint(advance, 0)
                                : FloatPoint(0, advance);
-  if (!isSkipInkException(*glyphBuffer, run, characterIndex)) {
-    glyphBuffer->add(glyphData.glyph, fontData, startOffset + glyphData.offset);
-  }
+  if (!isSkipInkException(bloberizer, run, characterIndex))
+    bloberizer.add(glyphData.glyph, fontData, startOffset + glyphData.offset);
 }
 
-inline void addEmphasisMark(GlyphBuffer* buffer,
-                            const GlyphData* emphasisData,
+inline void addEmphasisMark(ShapeResultBloberizer& bloberizer,
+                            const GlyphData& emphasisData,
                             FloatPoint glyphCenter,
                             float midGlyphOffset) {
-  ASSERT(buffer);
-  ASSERT(emphasisData);
-
-  const SimpleFontData* emphasisFontData = emphasisData->fontData;
-  ASSERT(emphasisFontData);
+  const SimpleFontData* emphasisFontData = emphasisData.fontData;
+  DCHECK(emphasisFontData);
 
   bool isVertical = emphasisFontData->platformData().isVerticalAnyUpright() &&
                     emphasisFontData->verticalData();
 
   if (!isVertical) {
-    buffer->add(emphasisData->glyph, emphasisFontData,
-                midGlyphOffset - glyphCenter.x());
+    bloberizer.add(emphasisData.glyph, emphasisFontData,
+                   midGlyphOffset - glyphCenter.x());
   } else {
-    buffer->add(emphasisData->glyph, emphasisFontData,
-                FloatPoint(-glyphCenter.x(), midGlyphOffset - glyphCenter.y()));
+    bloberizer.add(
+        emphasisData.glyph, emphasisFontData,
+        FloatPoint(-glyphCenter.x(), midGlyphOffset - glyphCenter.y()));
   }
 }
 
@@ -89,24 +86,22 @@ inline unsigned countGraphemesInCluster(const UChar* str,
 
 }  // anonymous namespace
 
-float ShapeResultBuffer::fillGlyphBufferForResult(GlyphBuffer* glyphBuffer,
-                                                  const ShapeResult& result,
-                                                  const TextRun& textRun,
-                                                  float initialAdvance,
-                                                  unsigned from,
-                                                  unsigned to,
-                                                  unsigned runOffset) {
+float ShapeResultBuffer::fillGlyphsForResult(ShapeResultBloberizer& bloberizer,
+                                             const ShapeResult& result,
+                                             const TextRunPaintInfo& runInfo,
+                                             float initialAdvance,
+                                             unsigned runOffset) {
   auto totalAdvance = initialAdvance;
 
   for (const auto& run : result.m_runs) {
     totalAdvance = run->forEachGlyphInRange(
-        totalAdvance, from, to, runOffset,
+        totalAdvance, runInfo.from, runInfo.to, runOffset,
         [&](const HarfBuzzRunGlyphData& glyphData, float totalAdvance,
             uint16_t characterIndex) -> bool {
 
-          addGlyphToBuffer(glyphBuffer, totalAdvance, run->m_direction,
-                           run->m_fontData.get(), glyphData, textRun,
-                           characterIndex);
+          addGlyphToBloberizer(bloberizer, totalAdvance, run->m_direction,
+                               run->m_fontData.get(), glyphData, runInfo.run,
+                               characterIndex);
           return true;
         });
   }
@@ -114,14 +109,12 @@ float ShapeResultBuffer::fillGlyphBufferForResult(GlyphBuffer* glyphBuffer,
   return totalAdvance;
 }
 
-float ShapeResultBuffer::fillGlyphBufferForTextEmphasisRun(
-    GlyphBuffer* glyphBuffer,
+float ShapeResultBuffer::fillTextEmphasisGlyphsForRun(
+    ShapeResultBloberizer& bloberizer,
     const ShapeResult::RunInfo* run,
-    const TextRun& textRun,
-    const GlyphData* emphasisData,
+    const TextRunPaintInfo& runInfo,
+    const GlyphData& emphasisData,
     float initialAdvance,
-    unsigned from,
-    unsigned to,
     unsigned runOffset) {
   if (!run)
     return 0;
@@ -130,7 +123,11 @@ float ShapeResultBuffer::fillGlyphBufferForTextEmphasisRun(
   float clusterAdvance = 0;
 
   FloatPoint glyphCenter =
-      emphasisData->fontData->boundsForGlyph(emphasisData->glyph).center();
+      emphasisData.fontData->boundsForGlyph(emphasisData.glyph).center();
+
+  const auto& textRun = runInfo.run;
+  const auto from = runInfo.from;
+  const auto to = runInfo.to;
 
   TextDirection direction = textRun.direction();
 
@@ -169,7 +166,7 @@ float ShapeResultBuffer::fillGlyphBufferForTextEmphasisRun(
     if (textRun.is8Bit()) {
       float glyphAdvanceX = glyphData.advance;
       if (Character::canReceiveTextEmphasis(textRun[currentCharacterIndex])) {
-        addEmphasisMark(glyphBuffer, emphasisData, glyphCenter,
+        addEmphasisMark(bloberizer, emphasisData, glyphCenter,
                         advanceSoFar + glyphAdvanceX / 2);
       }
       advanceSoFar += glyphAdvanceX;
@@ -193,7 +190,7 @@ float ShapeResultBuffer::fillGlyphBufferForTextEmphasisRun(
         // Do not put emphasis marks on space, separator, and control
         // characters.
         if (Character::canReceiveTextEmphasis(textRun[currentCharacterIndex]))
-          addEmphasisMark(glyphBuffer, emphasisData, glyphCenter,
+          addEmphasisMark(bloberizer, emphasisData, glyphCenter,
                           advanceSoFar + glyphAdvanceX / 2);
         advanceSoFar += glyphAdvanceX;
       }
@@ -204,11 +201,11 @@ float ShapeResultBuffer::fillGlyphBufferForTextEmphasisRun(
   return advanceSoFar - initialAdvance;
 }
 
-float ShapeResultBuffer::fillFastHorizontalGlyphBuffer(
-    GlyphBuffer* glyphBuffer,
-    const TextRun& textRun) const {
+float ShapeResultBuffer::fillFastHorizontalGlyphs(
+    const TextRun& textRun,
+    ShapeResultBloberizer& bloberizer) const {
   DCHECK(!hasVerticalOffsets());
-  DCHECK_NE(glyphBuffer->type(), GlyphBuffer::Type::TextIntercepts);
+  DCHECK_NE(bloberizer.type(), ShapeResultBloberizer::Type::TextIntercepts);
 
   float advance = 0;
 
@@ -227,44 +224,41 @@ float ShapeResultBuffer::fillFastHorizontalGlyphBuffer(
           [&](const HarfBuzzRunGlyphData& glyphData,
               float totalAdvance) -> bool {
             DCHECK(!glyphData.offset.height());
-
-            glyphBuffer->add(glyphData.glyph, run->m_fontData.get(),
-                             totalAdvance + glyphData.offset.width());
+            bloberizer.add(glyphData.glyph, run->m_fontData.get(),
+                           totalAdvance + glyphData.offset.width());
             return true;
           });
     }
   }
 
-  ASSERT(!glyphBuffer->hasVerticalOffsets());
-
   return advance;
 }
 
-float ShapeResultBuffer::fillGlyphBuffer(GlyphBuffer* glyphBuffer,
-                                         const TextRun& textRun,
-                                         unsigned from,
-                                         unsigned to) const {
+float ShapeResultBuffer::fillGlyphs(const TextRunPaintInfo& runInfo,
+                                    ShapeResultBloberizer& bloberizer) const {
   // Fast path: full run with no vertical offsets, no text intercepts.
-  if (!from && to == textRun.length() && !hasVerticalOffsets() &&
-      glyphBuffer->type() != GlyphBuffer::Type::TextIntercepts)
-    return fillFastHorizontalGlyphBuffer(glyphBuffer, textRun);
+  if (!runInfo.from && runInfo.to == runInfo.run.length() &&
+      !hasVerticalOffsets() &&
+      bloberizer.type() != ShapeResultBloberizer::Type::TextIntercepts) {
+    return fillFastHorizontalGlyphs(runInfo.run, bloberizer);
+  }
 
   float advance = 0;
 
-  if (textRun.rtl()) {
-    unsigned wordOffset = textRun.length();
+  if (runInfo.run.rtl()) {
+    unsigned wordOffset = runInfo.run.length();
     for (unsigned j = 0; j < m_results.size(); j++) {
       unsigned resolvedIndex = m_results.size() - 1 - j;
       const RefPtr<const ShapeResult>& wordResult = m_results[resolvedIndex];
       wordOffset -= wordResult->numCharacters();
-      advance = fillGlyphBufferForResult(glyphBuffer, *wordResult, textRun,
-                                         advance, from, to, wordOffset);
+      advance = fillGlyphsForResult(bloberizer, *wordResult, runInfo, advance,
+                                    wordOffset);
     }
   } else {
     unsigned wordOffset = 0;
     for (const auto& wordResult : m_results) {
-      advance = fillGlyphBufferForResult(glyphBuffer, *wordResult, textRun,
-                                         advance, from, to, wordOffset);
+      advance = fillGlyphsForResult(bloberizer, *wordResult, runInfo, advance,
+                                    wordOffset);
       wordOffset += wordResult->numCharacters();
     }
   }
@@ -272,29 +266,25 @@ float ShapeResultBuffer::fillGlyphBuffer(GlyphBuffer* glyphBuffer,
   return advance;
 }
 
-float ShapeResultBuffer::fillGlyphBufferForTextEmphasis(
-    GlyphBuffer* glyphBuffer,
-    const TextRun& textRun,
-    const GlyphData* emphasisData,
-    unsigned from,
-    unsigned to) const {
+void ShapeResultBuffer::fillTextEmphasisGlyphs(
+    const TextRunPaintInfo& runInfo,
+    const GlyphData& emphasisData,
+    ShapeResultBloberizer& bloberizer) const {
   float advance = 0;
-  unsigned wordOffset = textRun.rtl() ? textRun.length() : 0;
+  unsigned wordOffset = runInfo.run.rtl() ? runInfo.run.length() : 0;
 
   for (unsigned j = 0; j < m_results.size(); j++) {
-    unsigned resolvedIndex = textRun.rtl() ? m_results.size() - 1 - j : j;
+    unsigned resolvedIndex = runInfo.run.rtl() ? m_results.size() - 1 - j : j;
     const RefPtr<const ShapeResult>& wordResult = m_results[resolvedIndex];
     for (unsigned i = 0; i < wordResult->m_runs.size(); i++) {
       unsigned resolvedOffset =
-          wordOffset - (textRun.rtl() ? wordResult->numCharacters() : 0);
-      advance += fillGlyphBufferForTextEmphasisRun(
-          glyphBuffer, wordResult->m_runs[i].get(), textRun, emphasisData,
-          advance, from, to, resolvedOffset);
+          wordOffset - (runInfo.run.rtl() ? wordResult->numCharacters() : 0);
+      advance += fillTextEmphasisGlyphsForRun(
+          bloberizer, wordResult->m_runs[i].get(), runInfo, emphasisData,
+          advance, resolvedOffset);
     }
-    wordOffset += wordResult->numCharacters() * (textRun.rtl() ? -1 : 1);
+    wordOffset += wordResult->numCharacters() * (runInfo.run.rtl() ? -1 : 1);
   }
-
-  return advance;
 }
 
 // TODO(eae): This is a bit of a hack to allow reuse of the implementation

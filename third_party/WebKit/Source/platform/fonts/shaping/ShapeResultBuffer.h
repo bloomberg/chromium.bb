@@ -10,15 +10,15 @@
 #include "wtf/Allocator.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
-#include <tuple>
 
 namespace blink {
 
 struct CharacterRange;
 class FontDescription;
-class GlyphBuffer;
 struct GlyphData;
+class ShapeResultBloberizer;
 class TextRun;
+struct TextRunPaintInfo;
 
 class PLATFORM_EXPORT ShapeResultBuffer {
   WTF_MAKE_NONCOPYABLE(ShapeResultBuffer);
@@ -34,15 +34,10 @@ class PLATFORM_EXPORT ShapeResultBuffer {
 
   bool hasVerticalOffsets() const { return m_hasVerticalOffsets; }
 
-  float fillGlyphBuffer(GlyphBuffer*,
-                        const TextRun&,
-                        unsigned from,
-                        unsigned to) const;
-  float fillGlyphBufferForTextEmphasis(GlyphBuffer*,
-                                       const TextRun&,
-                                       const GlyphData* emphasisData,
-                                       unsigned from,
-                                       unsigned to) const;
+  float fillGlyphs(const TextRunPaintInfo&, ShapeResultBloberizer&) const;
+  void fillTextEmphasisGlyphs(const TextRunPaintInfo&,
+                              const GlyphData& emphasisData,
+                              ShapeResultBloberizer&) const;
   int offsetForPosition(const TextRun&,
                         float targetX,
                         bool includePartialGlyphs) const;
@@ -76,23 +71,19 @@ class PLATFORM_EXPORT ShapeResultBuffer {
       unsigned from,
       unsigned to);
 
-  float fillFastHorizontalGlyphBuffer(GlyphBuffer*, const TextRun&) const;
+  float fillFastHorizontalGlyphs(const TextRun&, ShapeResultBloberizer&) const;
 
-  static float fillGlyphBufferForResult(GlyphBuffer*,
-                                        const ShapeResult&,
-                                        const TextRun&,
-                                        float initialAdvance,
-                                        unsigned from,
-                                        unsigned to,
-                                        unsigned runOffset);
-  static float fillGlyphBufferForTextEmphasisRun(GlyphBuffer*,
-                                                 const ShapeResult::RunInfo*,
-                                                 const TextRun&,
-                                                 const GlyphData*,
-                                                 float initialAdvance,
-                                                 unsigned from,
-                                                 unsigned to,
-                                                 unsigned runOffset);
+  static float fillGlyphsForResult(ShapeResultBloberizer&,
+                                   const ShapeResult&,
+                                   const TextRunPaintInfo&,
+                                   float initialAdvance,
+                                   unsigned runOffset);
+  static float fillTextEmphasisGlyphsForRun(ShapeResultBloberizer&,
+                                            const ShapeResult::RunInfo*,
+                                            const TextRunPaintInfo&,
+                                            const GlyphData&,
+                                            float initialAdvance,
+                                            unsigned runOffset);
 
   static void addRunInfoRanges(const ShapeResult::RunInfo&,
                                float offset,

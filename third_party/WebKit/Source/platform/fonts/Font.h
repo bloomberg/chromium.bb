@@ -49,7 +49,6 @@ class FloatRect;
 class FontFallbackIterator;
 class FontData;
 class FontSelector;
-class GlyphBuffer;
 class ShapeCache;
 class TextRun;
 struct TextRunPaintInfo;
@@ -172,21 +171,9 @@ class PLATFORM_EXPORT Font {
  private:
   enum ForTextEmphasisOrNot { NotForTextEmphasis, ForTextEmphasis };
 
-  // Returns the total advance.
-  float buildGlyphBuffer(const TextRunPaintInfo&,
-                         GlyphBuffer&,
-                         const GlyphData* emphasisData = nullptr) const;
-  void drawGlyphBuffer(PaintCanvas*,
-                       const PaintFlags&,
-                       const GlyphBuffer&,
-                       const FloatPoint&,
-                       float deviceScaleFactor) const;
-
   GlyphData getEmphasisMarkGlyphData(const AtomicString&) const;
 
   bool computeCanShapeWordByWord() const;
-
-  friend struct SimpleShaper;
 
  public:
   FontSelector* getFontSelector() const;

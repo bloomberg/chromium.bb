@@ -37,9 +37,9 @@ namespace blink {
 
 struct CharacterRange;
 class Font;
-class GlyphBuffer;
 class ShapeCache;
 class SimpleFontData;
+class ShapeResultBloberizer;
 struct GlyphData;
 
 class PLATFORM_EXPORT CachingWordShaper final {
@@ -56,15 +56,11 @@ class PLATFORM_EXPORT CachingWordShaper final {
   int offsetForPosition(const TextRun&,
                         float targetX,
                         bool includePartialGlyphs);
-  float fillGlyphBuffer(const TextRun&,
-                        GlyphBuffer*,
-                        unsigned from,
-                        unsigned to);
-  float fillGlyphBufferForTextEmphasis(const TextRun&,
-                                       const GlyphData* emphasisData,
-                                       GlyphBuffer*,
-                                       unsigned from,
-                                       unsigned to);
+
+  float fillGlyphs(const TextRunPaintInfo&, ShapeResultBloberizer&);
+  void fillTextEmphasisGlyphs(const TextRunPaintInfo&,
+                              const GlyphData& emphasisData,
+                              ShapeResultBloberizer&);
   CharacterRange getCharacterRange(const TextRun&,
                                    unsigned from,
                                    unsigned to);
