@@ -76,6 +76,8 @@ void DisassemblerElf32X86Test::TestExe(const char* file_name,
   bool can_parse_header = disassembler->ParseHeader();
   EXPECT_TRUE(can_parse_header);
   EXPECT_TRUE(disassembler->ok());
+  EXPECT_EQ(EXE_ELF_32_X86, disassembler->kind());
+  EXPECT_EQ(0U, disassembler->image_base());
 
   // The length of the disassembled value will be slightly smaller than the
   // real file, since trailing debug info is not included
@@ -89,9 +91,8 @@ void DisassemblerElf32X86Test::TestExe(const char* file_name,
   EXPECT_EQ('L', offset_p[2]);
   EXPECT_EQ('F', offset_p[3]);
 
-  auto program = base::MakeUnique<AssemblyProgram>(EXE_ELF_32_X86, 0);
-
-  EXPECT_TRUE(disassembler->Disassemble(program.get()));
+  std::unique_ptr<AssemblyProgram> program = disassembler->Disassemble();
+  EXPECT_TRUE(nullptr != program.get());
 
   const std::vector<RVA>& abs32_list = disassembler->Abs32Locations();
 

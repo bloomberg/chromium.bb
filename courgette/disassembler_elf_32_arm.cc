@@ -366,7 +366,7 @@ CheckBool DisassemblerElf32ARM::ParseRelocationSection(
     match = false;
 
   if (!abs32_locations_.empty()) {
-    std::vector<RVA>::iterator reloc_iter = abs32_locations_.begin();
+    std::vector<RVA>::const_iterator reloc_iter = abs32_locations_.begin();
 
     for (uint32_t i = 0; i < section_relocs_count; ++i) {
       if (section_relocs_iter->r_offset == *reloc_iter)

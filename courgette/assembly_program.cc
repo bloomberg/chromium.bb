@@ -309,14 +309,14 @@ CheckBool AssemblyProgram::GenerateInstructions(
     const InstructionGenerator& gen) {
   // Pass 1: Count the space needed to store instructions.
   InstructionCountReceptor count_receptor;
-  if (!gen.Run(this, &count_receptor))
+  if (!gen.Run(&count_receptor))
     return false;
 
   // Pass 2: Emit all instructions to preallocated buffer (uses Phase 1 count).
   InstructionStoreReceptor store_receptor(this);
-  // TODO(huangs): 2016/11: Pass |count_receptor_->size()| to |store_receptor_|
+  // TODO(huangs): 2017/03: Pass |count_receptor->size()| to |store_receptor_|
   // to reserve space for raw data.
-  return gen.Run(this, &store_receptor);
+  return gen.Run(&store_receptor);
 }
 
 CheckBool AssemblyProgram::Emit(ScopedInstruction instruction) {

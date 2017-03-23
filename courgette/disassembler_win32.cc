@@ -221,27 +221,6 @@ bool DisassemblerWin32::ParseHeader() {
   return Good();
 }
 
-bool DisassemblerWin32::Disassemble(AssemblyProgram* program) {
-  if (!ok())
-    return false;
-
-  if (!ParseAbs32Relocs())
-    return false;
-
-  ParseRel32RelocsFromSections();
-
-  PrecomputeLabels(program);
-  RemoveUnusedRel32Locations(program);
-
-  if (!program->GenerateInstructions(
-          base::Bind(&DisassemblerWin32::ParseFile, base::Unretained(this)))) {
-    return false;
-  }
-
-  program->DefaultAssignIndexes();
-  return true;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 
 bool DisassemblerWin32::ParseRelocs(std::vector<RVA>* relocs) {
@@ -365,7 +344,7 @@ bool DisassemblerWin32::QuickDetect(const uint8_t* start,
   return true;
 }
 
-bool DisassemblerWin32::ParseAbs32Relocs() {
+bool DisassemblerWin32::ExtractAbs32Locations() {
   abs32_locations_.clear();
   if (!ParseRelocs(&abs32_locations_))
     return false;
@@ -380,7 +359,7 @@ bool DisassemblerWin32::ParseAbs32Relocs() {
   return true;
 }
 
-void DisassemblerWin32::ParseRel32RelocsFromSections() {
+bool DisassemblerWin32::ExtractRel32Locations() {
   FileOffset file_offset = 0;
   while (file_offset < length()) {
     const Section* section = FindNextSection(file_offset);
@@ -417,6 +396,7 @@ void DisassemblerWin32::ParseRel32RelocsFromSections() {
   }
   VLOG(1) << "common " << common;
 #endif
+  return true;
 }
 
 RvaVisitor* DisassemblerWin32::CreateAbs32TargetRvaVisitor() {
@@ -437,6 +417,12 @@ void DisassemblerWin32::RemoveUnusedRel32Locations(
   rel32_locations_.erase(
       std::remove_if(rel32_locations_.begin(), rel32_locations_.end(), cond),
       rel32_locations_.end());
+}
+
+InstructionGenerator DisassemblerWin32::GetInstructionGenerator(
+    AssemblyProgram* program) {
+  return base::Bind(&DisassemblerWin32::ParseFile, base::Unretained(this),
+                    program);
 }
 
 CheckBool DisassemblerWin32::ParseFile(AssemblyProgram* program,

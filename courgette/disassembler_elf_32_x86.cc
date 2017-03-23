@@ -106,7 +106,7 @@ CheckBool DisassemblerElf32X86::ParseRelocationSection(
   if (abs32_locations_.size() > section_relocs_count)
     match = false;
 
-  std::vector<RVA>::iterator reloc_iter = abs32_locations_.begin();
+  std::vector<RVA>::const_iterator reloc_iter = abs32_locations_.begin();
 
   while (match && (reloc_iter != abs32_locations_.end())) {
     if (section_relocs_iter->r_info != R_386_RELATIVE ||

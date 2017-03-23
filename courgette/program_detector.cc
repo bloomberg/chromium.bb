@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "courgette/assembly_program.h"
 #include "courgette/disassembler.h"
 #include "courgette/disassembler_elf_32_arm.h"
@@ -77,10 +76,8 @@ Status ParseDetectedExecutable(const uint8_t* buffer,
   if (!disassembler)
     return C_INPUT_NOT_RECOGNIZED;
 
-  auto program = base::MakeUnique<AssemblyProgram>(disassembler->kind(),
-                                                   disassembler->image_base());
-
-  if (!disassembler->Disassemble(program.get()))
+  std::unique_ptr<AssemblyProgram> program = disassembler->Disassemble();
+  if (!program.get())
     return C_DISASSEMBLY_FAILED;
 
   *output = std::move(program);

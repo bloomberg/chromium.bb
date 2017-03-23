@@ -4,9 +4,8 @@
 
 #include "courgette/disassembler.h"
 
-#include <memory>
-
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "courgette/assembly_program.h"
 
 namespace courgette {
@@ -38,9 +37,9 @@ Disassembler::Disassembler(const uint8_t* start, size_t length)
   start_ = start;
   length_ = length;
   end_ = start_ + length_;
-};
+}
 
-Disassembler::~Disassembler() {};
+Disassembler::~Disassembler() {}
 
 const uint8_t* Disassembler::FileOffsetToPointer(FileOffset file_offset) const {
   CHECK_LE(file_offset, static_cast<FileOffset>(end_ - start_));
@@ -53,6 +52,23 @@ const uint8_t* Disassembler::RVAToPointer(RVA rva) const {
     return nullptr;
 
   return FileOffsetToPointer(file_offset);
+}
+
+std::unique_ptr<AssemblyProgram> Disassembler::Disassemble() {
+  if (!ok() || !ExtractAbs32Locations() || !ExtractRel32Locations())
+    return nullptr;
+
+  std::unique_ptr<AssemblyProgram> program =
+      base::MakeUnique<AssemblyProgram>(kind(), image_base());
+
+  PrecomputeLabels(program.get());
+  RemoveUnusedRel32Locations(program.get());
+
+  if (!program->GenerateInstructions(GetInstructionGenerator(program.get())))
+    return nullptr;
+
+  program->DefaultAssignIndexes();
+  return program;
 }
 
 bool Disassembler::Good() {

@@ -38,6 +38,7 @@ static_library("courgette_lib") {
     "ensemble_apply.cc",
     "ensemble_create.cc",
     "image_utils.h",
+    "instruction_utils.h",
     "label_manager.cc",
     "label_manager.h",
     "memory_allocator.cc",

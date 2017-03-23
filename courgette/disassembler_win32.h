@@ -15,13 +15,13 @@
 #include "base/macros.h"
 #include "courgette/disassembler.h"
 #include "courgette/image_utils.h"
+#include "courgette/instruction_utils.h"
 #include "courgette/memory_allocator.h"
 #include "courgette/types_win_pe.h"
 
 namespace courgette {
 
 class AssemblyProgram;
-class InstructionReceptor;
 
 class DisassemblerWin32 : public Disassembler {
  public:
@@ -34,7 +34,6 @@ class DisassemblerWin32 : public Disassembler {
   uint64_t image_base() const override { return image_base_; }
   RVA PointerToTargetRVA(const uint8_t* p) const override = 0;
   bool ParseHeader() override;
-  bool Disassemble(AssemblyProgram* program) override;
 
   // Exposed for test purposes
   bool has_text_section() const { return has_text_section_; }
@@ -60,9 +59,13 @@ class DisassemblerWin32 : public Disassembler {
   void ParseRel32RelocsFromSections();
 
   // Disassembler interfaces.
+  bool ExtractAbs32Locations() override;
+  bool ExtractRel32Locations() override;
   RvaVisitor* CreateAbs32TargetRvaVisitor() override;
   RvaVisitor* CreateRel32TargetRvaVisitor() override;
   void RemoveUnusedRel32Locations(AssemblyProgram* program) override;
+  InstructionGenerator GetInstructionGenerator(
+      AssemblyProgram* program) override;
 
   DisassemblerWin32(const uint8_t* start, size_t length);
 

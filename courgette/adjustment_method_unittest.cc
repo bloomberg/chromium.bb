@@ -52,8 +52,8 @@ class AdjustmentMethodTest : public testing::Test {
     Label* labelA = prog->FindAbs32Label(kRvaA);
     Label* labelB = prog->FindAbs32Label(kRvaB);
 
-    AssemblyProgram::InstructionGenerator gen = base::Bind(
-        [](Label* labelA, Label* labelB, AssemblyProgram* prog,
+    InstructionGenerator gen = base::Bind(
+        [](Label* labelA, Label* labelB,
            InstructionReceptor* receptor) -> CheckBool {
           EXPECT_TRUE(receptor->EmitAbs32(labelA));
           EXPECT_TRUE(receptor->EmitAbs32(labelA));

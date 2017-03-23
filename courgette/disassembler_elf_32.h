@@ -15,13 +15,13 @@
 #include "base/macros.h"
 #include "courgette/disassembler.h"
 #include "courgette/image_utils.h"
+#include "courgette/instruction_utils.h"
 #include "courgette/memory_allocator.h"
 #include "courgette/types_elf.h"
 
 namespace courgette {
 
 class AssemblyProgram;
-class InstructionReceptor;
 
 // A Courgette disassembler for 32-bit ELF files. This is only a partial
 // implementation that admits subclasses for the architecture-specific parts of
@@ -106,7 +106,6 @@ class DisassemblerElf32 : public Disassembler {
   ExecutableType kind() const override = 0;
   uint64_t image_base() const override { return 0; }
   bool ParseHeader() override;
-  bool Disassemble(AssemblyProgram* program) override;
 
   virtual e_machine_values ElfEM() const = 0;
 
@@ -170,7 +169,7 @@ class DisassemblerElf32 : public Disassembler {
   CheckBool RVAsToFileOffsets(
       std::vector<std::unique_ptr<TypedRVA>>* typed_rvas) const;
 
-  // Parsing code for Disassemble().
+  // Helpers for ParseFile().
 
   virtual CheckBool ParseRelocationSection(const Elf32_Shdr* section_header,
                                            InstructionReceptor* receptor) const
@@ -185,9 +184,13 @@ class DisassemblerElf32 : public Disassembler {
   CheckBool ParseRel32RelocsFromSections() WARN_UNUSED_RESULT;
 
   // Disassembler interfaces.
+  bool ExtractAbs32Locations() override;
+  bool ExtractRel32Locations() override;
   RvaVisitor* CreateAbs32TargetRvaVisitor() override;
   RvaVisitor* CreateRel32TargetRvaVisitor() override;
   void RemoveUnusedRel32Locations(AssemblyProgram* program) override;
+  InstructionGenerator GetInstructionGenerator(
+      AssemblyProgram* program) override;
 
   CheckBool ParseFile(AssemblyProgram* target,
                       InstructionReceptor* receptor) const WARN_UNUSED_RESULT;
@@ -225,9 +228,10 @@ class DisassemblerElf32 : public Disassembler {
   const char* default_string_section_;
   size_t default_string_section_size_;
 
-  // Sorted abs32 and reel32 RVAs. These are mutable because ParseFile() needs
-  // to sort these by file offsets.
-  mutable std::vector<RVA> abs32_locations_;
+  // Sorted abs32 RVAs.
+  std::vector<RVA> abs32_locations_;
+  // Sorted rel32 RVAs. This is mutable because ParseFile() temporarily sorts
+  // these by file offsets.
   mutable std::vector<std::unique_ptr<TypedRVA>> rel32_locations_;
 
  private:

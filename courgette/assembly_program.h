@@ -16,6 +16,7 @@
 #include "base/memory/free_deleter.h"
 #include "courgette/courgette.h"
 #include "courgette/image_utils.h"
+#include "courgette/instruction_utils.h"
 #include "courgette/label_manager.h"
 #include "courgette/memory_allocator.h"
 
@@ -55,49 +56,6 @@ class Instruction {
   DISALLOW_COPY_AND_ASSIGN(Instruction);
 };
 
-// An interface to receive emitted instructions parsed from an executable.
-class InstructionReceptor {
- public:
-  InstructionReceptor() = default;
-  virtual ~InstructionReceptor() = default;
-
-  // Generates an entire base relocation table.
-  virtual CheckBool EmitPeRelocs() = 0;
-
-  // Generates an ELF style relocation table for X86.
-  virtual CheckBool EmitElfRelocation() = 0;
-
-  // Generates an ELF style relocation table for ARM.
-  virtual CheckBool EmitElfARMRelocation() = 0;
-
-  // Following instruction will be assembled at address 'rva'.
-  virtual CheckBool EmitOrigin(RVA rva) = 0;
-
-  // Generates a single byte of data or machine instruction.
-  virtual CheckBool EmitSingleByte(uint8_t byte) = 0;
-
-  // Generates multiple bytes of data or machine instructions.
-  virtual CheckBool EmitMultipleBytes(const uint8_t* bytes, size_t len) = 0;
-
-  // Generates a 4-byte relative reference to address of 'label'.
-  virtual CheckBool EmitRel32(Label* label) = 0;
-
-  // Generates a 4-byte relative reference to address of 'label' for ARM.
-  virtual CheckBool EmitRel32ARM(uint16_t op,
-                                 Label* label,
-                                 const uint8_t* arm_op,
-                                 uint16_t op_size) = 0;
-
-  // Generates a 4-byte absolute reference to address of 'label'.
-  virtual CheckBool EmitAbs32(Label* label) = 0;
-
-  // Generates an 8-byte absolute reference to address of 'label'.
-  virtual CheckBool EmitAbs64(Label* label) = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(InstructionReceptor);
-};
-
 // An AssemblyProgram is the result of disassembling an executable file.
 //
 // * The disassembler creates labels in the AssemblyProgram and emits
@@ -121,14 +79,6 @@ class AssemblyProgram {
  public:
   using LabelHandler = base::Callback<void(Label*)>;
   using LabelHandlerMap = std::map<OP, LabelHandler>;
-
-  // A callback for GenerateInstructions() to emit instructions. The first
-  // argument (AssemblyProgram*) is provided for Label-related feature access.
-  // The second argument (InstructionReceptor*) is a receptor for instructions.
-  // The callback (which gets called in 2 passes) should return true on success,
-  // and false otherwise.
-  using InstructionGenerator =
-      base::Callback<CheckBool(AssemblyProgram*, InstructionReceptor*)>;
 
   AssemblyProgram(ExecutableType kind, uint64_t image_base);
   ~AssemblyProgram();

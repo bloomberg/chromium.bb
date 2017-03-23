@@ -163,28 +163,6 @@ bool DisassemblerElf32::ParseHeader() {
   return Good();
 }
 
-bool DisassemblerElf32::Disassemble(AssemblyProgram* program) {
-  if (!ok())
-    return false;
-
-  if (!ParseAbs32Relocs())
-    return false;
-
-  if (!ParseRel32RelocsFromSections())  // Does not sort rel32 locations.
-    return false;
-
-  PrecomputeLabels(program);
-  RemoveUnusedRel32Locations(program);
-
-  if (!program->GenerateInstructions(
-          base::Bind(&DisassemblerElf32::ParseFile, base::Unretained(this)))) {
-    return false;
-  }
-
-  program->DefaultAssignIndexes();
-  return true;
-}
-
 CheckBool DisassemblerElf32::IsValidTargetRVA(RVA rva) const {
   if (rva == kUnassignedRVA)
     return false;
@@ -316,7 +294,7 @@ CheckBool DisassemblerElf32::RVAsToFileOffsets(
   return true;
 }
 
-CheckBool DisassemblerElf32::ParseAbs32Relocs() {
+bool DisassemblerElf32::ExtractAbs32Locations() {
   abs32_locations_.clear();
 
   // Loop through sections for relocation sections
@@ -350,7 +328,7 @@ CheckBool DisassemblerElf32::ParseAbs32Relocs() {
   return true;
 }
 
-CheckBool DisassemblerElf32::ParseRel32RelocsFromSections() {
+bool DisassemblerElf32::ExtractRel32Locations() {
   rel32_locations_.clear();
   bool found_rel32 = false;
 
@@ -409,6 +387,12 @@ void DisassemblerElf32::RemoveUnusedRel32Locations(AssemblyProgram* program) {
     }
   }
   rel32_locations_.resize(std::distance(rel32_locations_.begin(), tail_it));
+}
+
+InstructionGenerator DisassemblerElf32::GetInstructionGenerator(
+    AssemblyProgram* program) {
+  return base::Bind(&DisassemblerElf32::ParseFile, base::Unretained(this),
+                    program);
 }
 
 CheckBool DisassemblerElf32::ParseFile(AssemblyProgram* program,
