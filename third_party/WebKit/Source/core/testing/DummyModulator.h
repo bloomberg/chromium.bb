@@ -5,6 +5,7 @@
 #ifndef DummyModulator_h
 #define DummyModulator_h
 
+#include "bindings/core/v8/ScriptModule.h"
 #include "core/dom/Modulator.h"
 #include "platform/heap/Handle.h"
 
@@ -25,6 +26,7 @@ class ModuleScriptFetchRequest;
 class DummyModulator : public GarbageCollectedFinalized<DummyModulator>,
                        public Modulator {
   USING_GARBAGE_COLLECTED_MIXIN(DummyModulator);
+  DISALLOW_COPY_AND_ASSIGN(DummyModulator);
 
  public:
   DummyModulator();
@@ -33,9 +35,14 @@ class DummyModulator : public GarbageCollectedFinalized<DummyModulator>,
 
   ScriptModuleResolver* scriptModuleResolver() override;
   WebTaskRunner* taskRunner() override;
+  ReferrerPolicy referrerPolicy() override;
+  SecurityOrigin* securityOrigin() override;
+
   void fetchNewSingleModule(const ModuleScriptFetchRequest&,
                             ModuleGraphLevel,
                             ModuleScriptLoaderClient*) override;
+  ScriptModule compileModule(const String& script,
+                             const String& urlStr) override;
 };
 
 }  // namespace blink

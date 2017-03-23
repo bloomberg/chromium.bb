@@ -8,6 +8,8 @@
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/weborigin/ReferrerPolicy.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -15,7 +17,9 @@ class LocalFrame;
 class ModuleScript;
 class ModuleScriptFetchRequest;
 class ModuleScriptLoaderClient;
+class ScriptModule;
 class ScriptModuleResolver;
+class SecurityOrigin;
 class WebTaskRunner;
 
 // A SingleModuleClient is notified when single module script node (node as in a
@@ -41,10 +45,15 @@ class CORE_EXPORT Modulator : public GarbageCollectedMixin {
 
   virtual ScriptModuleResolver* scriptModuleResolver() = 0;
   virtual WebTaskRunner* taskRunner() = 0;
+  virtual ReferrerPolicy referrerPolicy() = 0;
+  virtual SecurityOrigin* securityOrigin() = 0;
 
   // https://html.spec.whatwg.org/#resolve-a-module-specifier
   static KURL resolveModuleSpecifier(const String& moduleRequest,
                                      const KURL& baseURL);
+
+  virtual ScriptModule compileModule(const String& script,
+                                     const String& urlStr) = 0;
 
  private:
   friend class ModuleMap;

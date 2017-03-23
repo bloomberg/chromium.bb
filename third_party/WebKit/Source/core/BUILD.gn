@@ -1332,6 +1332,7 @@ source_set("unit_tests") {
     "loader/ProgressTrackerTest.cpp",
     "loader/TextResourceDecoderBuilderTest.cpp",
     "loader/ThreadableLoaderTest.cpp",
+    "loader/modulescript/ModuleScriptLoaderTest.cpp",
     "loader/resource/CSSStyleSheetResourceTest.cpp",
     "loader/resource/FontResourceTest.cpp",
     "loader/resource/ImageResourceTest.cpp",
