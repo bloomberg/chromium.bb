@@ -25,17 +25,17 @@ namespace {
 const char kReturnSignalInterface[] = "org.chromium.TestInterface";
 const char kReturnSignalName[] = "TestSignal";
 
-// Test ProxyResolverDelegate implementation.
-class TestProxyResolverDelegate : public ProxyResolverDelegate {
+// Test ProxyResolutionServiceProvider::Delegate implementation.
+class TestDelegate : public ProxyResolutionServiceProvider::Delegate {
  public:
-  explicit TestProxyResolverDelegate(
+  explicit TestDelegate(
       const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner)
       : request_context_getter_(
             new net::TestURLRequestContextGetter(network_task_runner)) {
     // Use direct connections by default.
     proxy_info_.UseDirect();
   }
-  ~TestProxyResolverDelegate() override {}
+  ~TestDelegate() override = default;
 
   void set_async(bool async) { async_ = async; }
   void set_result(net::Error result) { result_ = result; }
@@ -43,7 +43,7 @@ class TestProxyResolverDelegate : public ProxyResolverDelegate {
   const net::ProxyInfo& proxy_info() const { return proxy_info_; }
   net::ProxyInfo* mutable_proxy_info() { return &proxy_info_; }
 
-  // ProxyResolverDelegate:
+  // ProxyResolutionServiceProvider::Delegate:
   scoped_refptr<net::URLRequestContextGetter> GetRequestContext() override {
     return request_context_getter_;
   }
@@ -75,7 +75,7 @@ class TestProxyResolverDelegate : public ProxyResolverDelegate {
 
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestProxyResolverDelegate);
+  DISALLOW_COPY_AND_ASSIGN(TestDelegate);
 };
 
 }  // namespace
@@ -85,10 +85,9 @@ class ProxyResolutionServiceProviderTest : public testing::Test {
   void SetUp() override {
     // Create the proxy resolution service with the mock bus and the mock
     // resolver injected.
-    delegate_ =
-        new TestProxyResolverDelegate(base::ThreadTaskRunnerHandle::Get());
-    service_provider_.reset(ProxyResolutionServiceProvider::Create(
-        std::unique_ptr<TestProxyResolverDelegate>(delegate_)));
+    delegate_ = new TestDelegate(base::ThreadTaskRunnerHandle::Get());
+    service_provider_ = base::MakeUnique<ProxyResolutionServiceProvider>(
+        std::unique_ptr<TestDelegate>(delegate_));
 
     test_helper_.SetUp(kResolveNetworkProxy, service_provider_.get());
 
@@ -163,8 +162,8 @@ class ProxyResolutionServiceProviderTest : public testing::Test {
   std::unique_ptr<SignalInfo> signal_;
 
   ServiceProviderTestHelper test_helper_;
-  std::unique_ptr<CrosDBusService::ServiceProviderInterface> service_provider_;
-  TestProxyResolverDelegate* delegate_;  // Owned by service_provider_.
+  std::unique_ptr<ProxyResolutionServiceProvider> service_provider_;
+  TestDelegate* delegate_;  // Owned by |service_provider_|.
 };
 
 // Tests that synchronously-resolved proxy information is returned.

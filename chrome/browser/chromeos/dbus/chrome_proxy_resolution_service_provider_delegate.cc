@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/dbus/chrome_proxy_resolver_delegate.h"
+#include "chrome/browser/chromeos/dbus/chrome_proxy_resolution_service_provider_delegate.h"
 
 #include "chrome/browser/profiles/profile_manager.h"
 #include "net/log/net_log_with_source.h"
@@ -11,17 +11,19 @@
 
 namespace chromeos {
 
-ChromeProxyResolverDelegate::ChromeProxyResolverDelegate() {}
+ChromeProxyResolutionServiceProviderDelegate::
+    ChromeProxyResolutionServiceProviderDelegate() {}
 
-ChromeProxyResolverDelegate::~ChromeProxyResolverDelegate() {}
+ChromeProxyResolutionServiceProviderDelegate::
+    ~ChromeProxyResolutionServiceProviderDelegate() {}
 
 scoped_refptr<net::URLRequestContextGetter>
-ChromeProxyResolverDelegate::GetRequestContext() {
+ChromeProxyResolutionServiceProviderDelegate::GetRequestContext() {
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
   return profile->GetRequestContext();
 }
 
-int ChromeProxyResolverDelegate::ResolveProxy(
+int ChromeProxyResolutionServiceProviderDelegate::ResolveProxy(
     net::ProxyService* proxy_service,
     const GURL& url,
     net::ProxyInfo* results,

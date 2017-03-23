@@ -34,9 +34,6 @@ class URLRequestContextGetter;
 
 namespace chromeos {
 
-class ProxyResolverDelegate;
-class ProxyResolverInterface;
-
 // This class provides proxy resolution service for CrosDBusService.
 // It processes proxy resolution requests for ChromeOS clients.
 //
@@ -89,84 +86,64 @@ class ProxyResolverInterface;
 class CHROMEOS_EXPORT ProxyResolutionServiceProvider
     : public CrosDBusService::ServiceProviderInterface {
  public:
+  // Delegate interface providing additional resources to
+  // ProxyResolutionServiceProvider.
+  class CHROMEOS_EXPORT Delegate {
+   public:
+    virtual ~Delegate() {}
+
+    // Returns the request context used to perform proxy resolution.
+    // Always called on UI thread.
+    virtual scoped_refptr<net::URLRequestContextGetter> GetRequestContext() = 0;
+
+    // Thin wrapper around net::ProxyService::ResolveProxy() to make testing
+    // easier.
+    virtual int ResolveProxy(net::ProxyService* proxy_service,
+                             const GURL& url,
+                             net::ProxyInfo* results,
+                             const net::CompletionCallback& callback) = 0;
+  };
+
+  explicit ProxyResolutionServiceProvider(std::unique_ptr<Delegate> delegate);
   ~ProxyResolutionServiceProvider() override;
 
-  // CrosDBusService::ServiceProviderInterface override.
+  // CrosDBusService::ServiceProviderInterface:
   void Start(scoped_refptr<dbus::ExportedObject> exported_object) override;
 
-  // Creates the instance.
-  static ProxyResolutionServiceProvider* Create(
-      std::unique_ptr<ProxyResolverDelegate> delgate);
-
  private:
-  explicit ProxyResolutionServiceProvider(ProxyResolverInterface *resovler);
+  // Data used for a single proxy resolution.
+  struct Request;
 
-  // Called from ExportedObject, when ResolveProxyHandler() is exported as
-  // a D-Bus method, or failed to be exported.
+  // Returns true if called on |origin_thread_|.
+  bool OnOriginThread();
+
+  // Called when ResolveProxy() is exported as a D-Bus method.
   void OnExported(const std::string& interface_name,
                   const std::string& method_name,
                   bool success);
 
-  // Callback to be invoked when ChromeOS clients send network proxy
-  // resolution requests to the service running in chrome executable.
-  // Called on UI thread from dbus request.
-  void ResolveProxyHandler(dbus::MethodCall* method_call,
-      dbus::ExportedObject::ResponseSender response_sender);
+  // Callback invoked when Chrome OS clients send network proxy resolution
+  // requests to the service. Called on UI thread.
+  void ResolveProxy(dbus::MethodCall* method_call,
+                    dbus::ExportedObject::ResponseSender response_sender);
 
-  // Calls ResolveProxyHandler() if weak_ptr is not NULL. Used to ensure a
-  // safe shutdown.
-  static void CallResolveProxyHandler(
-      base::WeakPtr<ProxyResolutionServiceProvider> weak_ptr,
-      dbus::MethodCall* method_call,
-      dbus::ExportedObject::ResponseSender response_sender);
+  // Helper method for ResolveProxy() that runs on network thread.
+  void ResolveProxyOnNetworkThread(std::unique_ptr<Request> request);
 
-  // Returns true if the current thread is on the origin thread.
-  bool OnOriginThread();
+  // Callback on network thread for when net::ProxyService::ResolveProxy()
+  // completes, synchronously or asynchronously.
+  void OnResolutionComplete(std::unique_ptr<Request> request, int result);
 
+  // Called on UI thread from OnResolutionComplete() to pass the resolved proxy
+  // information to the client over D-Bus.
+  void NotifyProxyResolved(std::unique_ptr<Request> request);
+
+  std::unique_ptr<Delegate> delegate_;
   scoped_refptr<dbus::ExportedObject> exported_object_;
-  std::unique_ptr<ProxyResolverInterface> resolver_;
   scoped_refptr<base::SingleThreadTaskRunner> origin_thread_;
   base::WeakPtrFactory<ProxyResolutionServiceProvider> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyResolutionServiceProvider);
-};
-
-// The delegate which provides necessary objects to the proxy resolver.
-class CHROMEOS_EXPORT ProxyResolverDelegate {
- public:
-  virtual ~ProxyResolverDelegate() {}
-
-  // Returns the request context used to perform proxy resolution.
-  // Always called on UI thread.
-  virtual scoped_refptr<net::URLRequestContextGetter> GetRequestContext() = 0;
-
-  // Thin wrapper around net::ProxyService::ResolveProxy() to make testing
-  // easier.
-  virtual int ResolveProxy(net::ProxyService* proxy_service,
-                           const GURL& url,
-                           net::ProxyInfo* results,
-                           const net::CompletionCallback& callback) = 0;
-};
-
-// The interface is defined so we can mock out the proxy resolver
-// implementation.
-class CHROMEOS_EXPORT ProxyResolverInterface {
- public:
-  // Resolves the proxy for the given URL. Returns the result as a
-  // signal sent to |signal_interface| and
-  // |signal_name|. |exported_object| will be used to send the
-  // signal. The signal contains the three string members:
-  //
-  // - source url: the requested source URL.
-  // - proxy info: proxy info for the source URL in PAC format.
-  // - error message: empty if the proxy resolution was successful.
-  virtual void ResolveProxy(
-      const std::string& source_url,
-      const std::string& signal_interface,
-      const std::string& signal_name,
-      scoped_refptr<dbus::ExportedObject> exported_object) = 0;
-
-  virtual ~ProxyResolverInterface();
 };
 
 }  // namespace chromeos
