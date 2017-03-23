@@ -1475,8 +1475,6 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
     };
     av1_encode_block_intra(plane, block, blk_row, blk_col, plane_bsize, tx_size,
                            &b_args);
-    av1_set_txb_context(x, plane, block, plane_bsize, tx_size,
-                        args->t_above + blk_col, args->t_left + blk_row);
     if (args->cpi->sf.use_transform_domain_distortion && !CONFIG_DAALA_DIST) {
       dist_block(args->cpi, x, plane, block, blk_row, blk_col, tx_size,
                  &this_rd_stats.dist, &this_rd_stats.sse);
@@ -1561,13 +1559,8 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
                     coeff_ctx, AV1_XFORM_QUANT_FP);
 #endif  // CONFIG_NEW_QUANT
 #if !CONFIG_PVQ
-    if (x->plane[plane].eobs[block] && !xd->lossless[mbmi->segment_id]) {
-      args->t_above[blk_col] = args->t_left[blk_row] =
-          (av1_optimize_b(cm, x, plane, block, tx_size, coeff_ctx) > 0);
-    } else {
-      args->t_above[blk_col] = (x->plane[plane].eobs[block] > 0);
-      args->t_left[blk_row] = (x->plane[plane].eobs[block] > 0);
-    }
+    if (x->plane[plane].eobs[block] && !xd->lossless[mbmi->segment_id])
+      av1_optimize_b(cm, x, plane, block, tx_size, coeff_ctx);
 #endif  // !CONFIG_PVQ
     dist_block(args->cpi, x, plane, block, blk_row, blk_col, tx_size,
                &this_rd_stats.dist, &this_rd_stats.sse);
@@ -1587,9 +1580,10 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
 
 #else
   this_rd_stats.rate = x->rate;
-  args->t_above[blk_col] = !x->pvq_skip[plane];
-  args->t_left[blk_row] = !x->pvq_skip[plane];
 #endif  // !CONFIG_PVQ
+  av1_set_txb_context(x, plane, block, plane_bsize, tx_size,
+                      args->t_above + blk_col, args->t_left + blk_row);
+
   rd1 = RDCOST(x->rdmult, x->rddiv, this_rd_stats.rate, this_rd_stats.dist);
   rd2 = RDCOST(x->rdmult, x->rddiv, 0, this_rd_stats.sse);
 
