@@ -91,7 +91,9 @@ crashpad`, `gclient sync`, or `gclient runhooks`.
 The Ninja build files and build output are in the `out` directory. Both debug-
 and release-mode configurations are available. The examples below show the debug
 configuration. To build and test the release configuration, substitute `Release`
-for `Debug`.
+for `Debug`. On Windows, four configurations are available: `Debug` and
+`Release` produce 32-bit x86 executables, and `Debug_x64` and `Release_x64`
+produce x86_64 executables.
 
 ```
 $ cd ~/crashpad/crashpad
@@ -112,7 +114,7 @@ Kit)](https://developer.android.com/ndk/) runs on.
 If it’s not already present on your system, [download the NDK package for your
 system](https://developer.android.com/ndk/downloads/) and expand it to a
 suitable location. These instructions assume that it’s been expanded to
-`~/android-ndk-r13`.
+`~/android-ndk-r14`.
 
 To build Crashpad, portions of the NDK must be reassembled into a [standalone
 toolchain](https://developer.android.com/ndk/guides/standalone_toolchain.html).
@@ -126,8 +128,8 @@ desired. To build a standalone toolchain targeting 64-bit ARM and API level 21
 
 ```
 $ cd ~
-$ python android-ndk-r13/build/tools/make_standalone_toolchain.py \
-      --arch=arm64 --api=21 --install-dir=android-ndk-r13_arm64_api21
+$ python android-ndk-r14/build/tools/make_standalone_toolchain.py \
+      --arch=arm64 --api=21 --install-dir=android-ndk-r14_arm64_api21
 ```
 
 Note that Chrome uses Android API level 21 for 64-bit platforms and 16 for
@@ -135,46 +137,35 @@ Note that Chrome uses Android API level 21 for 64-bit platforms and 16 for
 [`build/config/android/config.gni`](https://chromium.googlesource.com/chromium/src/+/master/build/config/android/config.gni)
 which sets `_android_api_level` and `_android64_api_level`.
 
-To configure a Crashpad build for Android using this standalone toolchain, set
-several environment variables directing the build to the standalone toolchain,
-along with GYP options to identify an Android build. This must be done after any
-`gclient sync`, or instead of any `gclient runhooks` operation. The environment
-variables only need to be set for this `gyp_crashpad.py` invocation, and need
-not be permanent.
+To configure a Crashpad build for Android using the standalone toolchain
+assembled above, use `gyp_crashpad_android.py`. This script is a wrapper for
+`gyp_crashpad.py` that sets several environment variables directing the build to
+the standalone toolchain, and several GYP options to identify an Android build.
+This must be done after any `gclient sync`, or instead of any `gclient runhooks`
+operation.
 
 ```
 $ cd ~/crashpad/crashpad
-$ CC_target=~/android-ndk-r13_arm64_api21/bin/clang \
-  CXX_target=~/android-ndk-r13_arm64_api21/bin/clang++ \
-  AR_target=~/android-ndk-r13_arm64_api21/bin/aarch64-linux-android-ar \
-  NM_target=~/android-ndk-r13_arm64_api21/bin/aarch64-linux-android-nm \
-  READELF_target=~/android-ndk-r13_arm64_api21/bin/aarch64-linux-android-readelf \
-  python build/gyp_crashpad.py \
-      -DOS=android -Dtarget_arch=arm64 -Dclang=1 \
-      --generator-output=out_android_arm64_api21 -f ninja-android
+$ python build/gyp_crashpad_android.py \
+      --ndk ~/android-ndk-r14_arm64_api21 \
+      --generator-output out/android_arm64_api21
 ```
 
-It is also possible to use GCC instead of Clang by making the appropriate
-substitutions: `aarch64-linux-android-gcc` for `CC_target`;
-`aarch64-linux-android-g++` for `CXX_target`; and `-Dclang=0` as an argument to
-`gyp_crashpad.py`.
+`gyp_crashpad_android.py` detects the build type based on the characteristics of
+the standalone toolchain given in its `--ndk` argument.
 
-Target “triplets” to use for `ar`, `nm`, `readelf`, `gcc`, and `g++` are:
+`gyp_crashpad_android.py` sets the build up to use Clang by default. It’s also
+possible to use GCC by providing the `--compiler=gcc` argument to
+`gyp_crashpad_android.py`.
 
-| Architecture | Target “triplet”        |
-|:-------------|:------------------------|
-| `arm`        | `arm-linux-androideabi` |
-| `arm64`      | `aarch64-linux-android` |
-| `x86`        | `i686-linux-android`    |
-| `x86_64`     | `x86_64-linux-android`  |
-
-The port is incomplete, but targets known to be working include `crashpad_util`,
-`crashpad_test`, and `crashpad_test_test`. This list will grow over time. To
-build, direct `ninja` to the specific `out` directory chosen by
-`--generator-output` above.
+The Android port is incomplete, but targets known to be working include
+`crashpad_test`, `crashpad_util`, and their tests. This list will grow over
+time. To build, direct `ninja` to the specific `out` directory chosen by the
+`--generator-output` argument to `gyp_crashpad_android.py`.
 
 ```
-$ ninja -C out_android_arm64_api21/out/Debug crashpad_test_test
+$ ninja -C out/android_arm64_api21/out/Debug \
+      crashpad_test_test crashpad_util_test
 ```
 
 ## Testing
@@ -193,11 +184,11 @@ $ out/Debug/crashpad_util_test
 ```
 
 A script is provided to run all of Crashpad’s tests. It accepts a single
-argument that tells it which configuration to test.
+argument, a path to the directory containing the test executables.
 
 ```
 $ cd ~/crashpad/crashpad
-$ python build/run_tests.py Debug
+$ python build/run_tests.py out/Debug
 ```
 
 ### Android
@@ -216,10 +207,10 @@ transferred to the device prior to running the test.
 
 ```
 $ cd ~/crashpad/crashpad
-$ adb push out_android_arm64_api21/out/Debug/crashpad_test_test /data/local/tmp/
+$ adb push out/android_arm64_api21/out/Debug/crashpad_test_test /data/local/tmp/
 [100%] /data/local/tmp/crashpad_test_test
 $ adb push \
-      out_android_arm64_api21/out/Debug/crashpad_test_test_multiprocess_exec_test_child \
+      out/android_arm64_api21/out/Debug/crashpad_test_test_multiprocess_exec_test_child \
       /data/local/tmp/
 [100%] /data/local/tmp/crashpad_test_test_multiprocess_exec_test_child
 $ adb shell mkdir -p /data/local/tmp/crashpad_test_data_root/test

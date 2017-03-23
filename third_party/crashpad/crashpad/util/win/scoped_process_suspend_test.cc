@@ -14,6 +14,7 @@
 
 #include "util/win/scoped_process_suspend.h"
 
+#include <stddef.h>
 #include <tlhelp32.h>
 
 #include <algorithm>
@@ -80,7 +81,7 @@ class ScopedProcessSuspendTest final : public WinChildProcess {
   int Run() override {
     char c;
     // Wait for notification from parent.
-    EXPECT_TRUE(LoggingReadFile(ReadPipeHandle(), &c, sizeof(c)));
+    EXPECT_TRUE(LoggingReadFileExactly(ReadPipeHandle(), &c, sizeof(c)));
     EXPECT_EQ(' ', c);
     return EXIT_SUCCESS;
   }
