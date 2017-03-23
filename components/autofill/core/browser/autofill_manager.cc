@@ -246,10 +246,8 @@ AutofillManager::AutofillManager(
   if (personal_data_ && client_)
     personal_data_->OnSyncServiceInitialized(client_->GetSyncService());
 
-#if defined(OS_ANDROID)
   if (personal_data_ && driver_)
     personal_data_->SetURLRequestContextGetter(driver_->GetURLRequestContext());
-#endif
 }
 
 AutofillManager::~AutofillManager() {}

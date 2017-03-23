@@ -47,12 +47,12 @@ struct EditorField {
   enum class ControlType : int { TEXTFIELD, COMBOBOX };
 
   EditorField(autofill::ServerFieldType type,
-              const base::string16& label,
+              base::string16 label,
               LengthHint length_hint,
               bool required,
               ControlType control_type = ControlType::TEXTFIELD)
       : type(type),
-        label(label),
+        label(std::move(label)),
         length_hint(length_hint),
         required(required),
         control_type(control_type) {}
@@ -64,9 +64,9 @@ struct EditorField {
   };
 
   // Data type in the field.
-  const autofill::ServerFieldType type;
+  autofill::ServerFieldType type;
   // Label to be shown alongside the field.
-  const base::string16 label;
+  base::string16 label;
   // Hint about the length of this field's contents.
   LengthHint length_hint;
   // Whether the field is required.
@@ -124,6 +124,15 @@ class EditorViewController : public PaymentRequestSheetController,
   std::unique_ptr<views::Button> CreatePrimaryButton() override;
   std::unique_ptr<views::View> CreateExtraFooterView() override;
 
+  // views::ComboboxListener:
+  void OnPerformAction(views::Combobox* combobox) override;
+
+  // Update the editor view by removing all it's child views and recreating
+  // the input fields returned by GetFieldDefinitions. Note that
+  // CreateEditorView MUST have been called at least once before calling
+  // UpdateEditorView.
+  virtual void UpdateEditorView();
+
  private:
   // PaymentRequestSheetController:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -132,18 +141,24 @@ class EditorViewController : public PaymentRequestSheetController,
   void ContentsChanged(views::Textfield* sender,
                        const base::string16& new_contents) override;
 
-  // views::ComboboxListener:
-  void OnPerformAction(views::Combobox* combobox) override;
-
   // Creates the whole editor view to go within the editor dialog. It
   // encompasses all the input fields created by CreateInputField().
-  std::unique_ptr<views::View> CreateEditorView();
+  void CreateEditorView();
 
   // Adds some views to |layout|, to represent an input field and its labels.
   // |field| is the field definition, which contains the label and the hint
   // about the length of the input field. A placeholder error label is also
   // added (see implementation).
   void CreateInputField(views::GridLayout* layout, const EditorField& field);
+
+  // The implementation of UpdateEditorView which is also called from
+  // CreateEditorView.
+  void UpdateEditorViewImpl();
+
+  // The editor content view, owned by the client so the derived classes can
+  // refresh it when some user interactions cause layout changes by calling
+  // UpdateEditorView().
+  std::unique_ptr<views::View> editor_view_;
 
   // Used to remember the association between the input field UI element and the
   // original field definition. The ValidatingTextfield* and ValidatingCombobox*

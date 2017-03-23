@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/views/payments/payment_request_browsertest_base.h"
 
+#include <memory>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -97,9 +100,19 @@ void PaymentRequestBrowserTestBase::OnPaymentMethodOpened() {
     event_observer_->Observe(DialogEvent::PAYMENT_METHOD_OPENED);
 }
 
+void PaymentRequestBrowserTestBase::OnShippingSectionOpened() {
+  if (event_observer_)
+    event_observer_->Observe(DialogEvent::SHIPPING_SECTION_OPENED);
+}
+
 void PaymentRequestBrowserTestBase::OnCreditCardEditorOpened() {
   if (event_observer_)
     event_observer_->Observe(DialogEvent::CREDIT_CARD_EDITOR_OPENED);
+}
+
+void PaymentRequestBrowserTestBase::OnShippingAddressEditorOpened() {
+  if (event_observer_)
+    event_observer_->Observe(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
 }
 
 void PaymentRequestBrowserTestBase::OnBackNavigation() {
@@ -110,6 +123,11 @@ void PaymentRequestBrowserTestBase::OnBackNavigation() {
 void PaymentRequestBrowserTestBase::OnContactInfoOpened() {
   if (event_observer_)
     event_observer_->Observe(DialogEvent::CONTACT_INFO_OPENED);
+}
+
+void PaymentRequestBrowserTestBase::OnEditorViewUpdated() {
+  if (event_observer_)
+    event_observer_->Observe(DialogEvent::EDITOR_VIEW_UPDATED);
 }
 
 void PaymentRequestBrowserTestBase::OnWidgetDestroyed(views::Widget* widget) {
@@ -162,10 +180,22 @@ void PaymentRequestBrowserTestBase::OpenPaymentMethodScreen() {
   ClickOnDialogViewAndWait(DialogViewID::PAYMENT_SHEET_PAYMENT_METHOD_SECTION);
 }
 
+void PaymentRequestBrowserTestBase::OpenShippingSectionScreen() {
+  ResetEventObserver(DialogEvent::SHIPPING_SECTION_OPENED);
+
+  ClickOnDialogViewAndWait(DialogViewID::PAYMENT_SHEET_SHIPPING_SECTION);
+}
+
 void PaymentRequestBrowserTestBase::OpenCreditCardEditorScreen() {
   ResetEventObserver(DialogEvent::CREDIT_CARD_EDITOR_OPENED);
 
   ClickOnDialogViewAndWait(DialogViewID::PAYMENT_METHOD_ADD_CARD_BUTTON);
+}
+
+void PaymentRequestBrowserTestBase::OpenShippingAddressEditorScreen() {
+  ResetEventObserver(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
+
+  ClickOnDialogViewAndWait(DialogViewID::PAYMENT_METHOD_ADD_SHIPPING_BUTTON);
 }
 
 content::WebContents* PaymentRequestBrowserTestBase::GetActiveWebContents() {

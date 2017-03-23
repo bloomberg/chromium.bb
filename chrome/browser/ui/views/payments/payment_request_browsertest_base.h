@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PAYMENTS_PAYMENT_REQUEST_BROWSERTEST_BASE_H_
 #define CHROME_BROWSER_UI_VIEWS_PAYMENTS_PAYMENT_REQUEST_BROWSERTEST_BASE_H_
 
+#include <memory>
+#include <string>
 #include <vector>
 
 #include "base/command_line.h"
@@ -39,13 +41,9 @@ namespace payments {
 enum class DialogViewID;
 class PaymentRequest;
 
-namespace {
-
 ACTION_P(QuitMessageLoop, loop) {
   loop->Quit();
 }
-
-}  // namespace
 
 class PersonalDataLoadedObserverMock
     : public autofill::PersonalDataManagerObserver {
@@ -75,9 +73,12 @@ class PaymentRequestBrowserTestBase
   void OnDialogOpened() override;
   void OnOrderSummaryOpened() override;
   void OnPaymentMethodOpened() override;
+  void OnShippingSectionOpened() override;
   void OnCreditCardEditorOpened() override;
+  void OnShippingAddressEditorOpened() override;
   void OnBackNavigation() override;
   void OnContactInfoOpened() override;
+  void OnEditorViewUpdated() override;
 
   // views::WidgetObserver
   // Effective way to be warned of all dialog closures.
@@ -94,7 +95,9 @@ class PaymentRequestBrowserTestBase
   // associated action to happen.
   void OpenOrderSummaryScreen();
   void OpenPaymentMethodScreen();
+  void OpenShippingSectionScreen();
   void OpenCreditCardEditorScreen();
+  void OpenShippingAddressEditorScreen();
 
   content::WebContents* GetActiveWebContents();
 
@@ -154,9 +157,12 @@ class PaymentRequestBrowserTestBase
     DIALOG_CLOSED,
     ORDER_SUMMARY_OPENED,
     PAYMENT_METHOD_OPENED,
+    SHIPPING_SECTION_OPENED,
     CREDIT_CARD_EDITOR_OPENED,
+    SHIPPING_ADDRESS_EDITOR_OPENED,
     BACK_NAVIGATION,
     CONTACT_INFO_OPENED,
+    EDITOR_VIEW_UPDATED,
   };
 
   // DialogEventObserver is used to wait on specific events that may have

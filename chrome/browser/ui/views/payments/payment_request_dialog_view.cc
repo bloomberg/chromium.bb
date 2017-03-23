@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/payments/payment_method_view_controller.h"
 #include "chrome/browser/ui/views/payments/payment_sheet_view_controller.h"
 #include "chrome/browser/ui/views/payments/profile_list_view_controller.h"
+#include "chrome/browser/ui/views/payments/shipping_address_editor_view_controller.h"
 #include "chrome/browser/ui/views/payments/shipping_option_view_controller.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/payments/content/payment_request.h"
@@ -143,6 +144,8 @@ void PaymentRequestDialogView::ShowShippingProfileSheet() {
               request_->spec(), request_->state(), this),
           &controller_map_),
       /* animate = */ true);
+  if (observer_for_testing_)
+    observer_for_testing_->OnShippingSectionOpened();
 }
 
 void PaymentRequestDialogView::ShowShippingOptionSheet() {
@@ -161,6 +164,21 @@ void PaymentRequestDialogView::ShowCreditCardEditor() {
                    /* animate = */ true);
   if (observer_for_testing_)
     observer_for_testing_->OnCreditCardEditorOpened();
+}
+
+void PaymentRequestDialogView::ShowShippingAddressEditor() {
+  view_stack_.Push(CreateViewAndInstallController(
+                       base::MakeUnique<ShippingAddressEditorViewController>(
+                           request_->spec(), request_->state(), this),
+                       &controller_map_),
+                   /* animate = */ true);
+  if (observer_for_testing_)
+    observer_for_testing_->OnShippingAddressEditorOpened();
+}
+
+void PaymentRequestDialogView::EditorViewUpdated() {
+  if (observer_for_testing_)
+    observer_for_testing_->OnEditorViewUpdated();
 }
 
 void PaymentRequestDialogView::ShowDialog() {

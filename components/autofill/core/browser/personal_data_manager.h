@@ -27,9 +27,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_member.h"
 #include "components/webdata/common/web_data_service_consumer.h"
-#if defined(OS_ANDROID)
 #include "net/url_request/url_request_context_getter.h"
-#endif
 
 class AccountTrackerService;
 class Browser;
@@ -274,7 +272,6 @@ class PersonalDataManager : public KeyedService,
     NotifyPersonalDataChanged();
   }
 
-#if defined(OS_ANDROID)
   // Sets the URL request context getter to be used when normalizing addresses
   // with libaddressinput's address validator.
   void SetURLRequestContextGetter(
@@ -286,7 +283,6 @@ class PersonalDataManager : public KeyedService,
   net::URLRequestContextGetter* GetURLRequestContextGetter() const {
     return context_getter_.get();
   }
-#endif
 
  protected:
   // Only PersonalDataManagerFactory and certain tests can create instances of
@@ -330,13 +326,13 @@ class PersonalDataManager : public KeyedService,
       ConvertWalletAddressesAndUpdateWalletCards_MergedProfile);
   FRIEND_TEST_ALL_PREFIXES(
       PersonalDataManagerTest,
-      ConvertWalletAddressesAndUpdateWalletCards_NewCard_AddressAlreadyConverted);
+      ConvertWalletAddressesAndUpdateWalletCards_NewCard_AddressAlreadyConverted);  // NOLINT
   FRIEND_TEST_ALL_PREFIXES(
       PersonalDataManagerTest,
       ConvertWalletAddressesAndUpdateWalletCards_AlreadyConverted);
   FRIEND_TEST_ALL_PREFIXES(
       PersonalDataManagerTest,
-      ConvertWalletAddressesAndUpdateWalletCards_MultipleSimilarWalletAddresses);
+      ConvertWalletAddressesAndUpdateWalletCards_MultipleSimilarWalletAddresses);  // NOLINT
   friend class autofill::AutofillInteractiveTest;
   friend class autofill::AutofillTest;
   friend class autofill::PersonalDataManagerFactory;
@@ -602,11 +598,9 @@ class PersonalDataManager : public KeyedService,
   // Whether new information was received from the sync server.
   bool has_synced_new_data_ = false;
 
-#if defined(OS_ANDROID)
   // The context for the request to be used to fetch libaddressinput's address
   // validation rules.
   scoped_refptr<net::URLRequestContextGetter> context_getter_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(PersonalDataManager);
 };

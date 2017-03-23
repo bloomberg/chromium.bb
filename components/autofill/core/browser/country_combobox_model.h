@@ -38,6 +38,8 @@ class CountryComboboxModel : public ui::ComboboxModel {
   base::string16 GetItemAt(int index) override;
   bool IsItemSeparatorAt(int index) override;
 
+  // The list of countries always has the default country at the top as well as
+  // within the sorted vector.
   const CountryVector& countries() const { return countries_; }
 
   // Returns the default country code for this model.
