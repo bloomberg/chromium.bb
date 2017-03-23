@@ -5,7 +5,6 @@
 #include "modules/bluetooth/BluetoothUUID.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptRegexp.h"
 #include "core/dom/ExceptionCode.h"
 #include "platform/UUID.h"
 #include "wtf/HashMap.h"
