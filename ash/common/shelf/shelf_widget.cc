@@ -250,6 +250,9 @@ void ShelfWidget::PostCreateShelf() {
   // the shelf is hidden because its container is hidden. During auto-hide it is
   // hidden because ShelfWidget is transparent. Some of the ShelfView visibility
   // code could be simplified. http://crbug.com/674773
+  // TODO(jdufualt|jamescook): Remove CHECK and shelf_view_->SetVisible call in
+  // m60 or beyond (see above TODO).
+  CHECK(Shell::Get()->session_controller()->IsActiveUserSessionStarted());
   shelf_view_->SetVisible(
       Shell::Get()->session_controller()->IsActiveUserSessionStarted());
   shelf_layout_manager_->LayoutShelf();
