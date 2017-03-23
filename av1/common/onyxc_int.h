@@ -35,14 +35,11 @@
 #if CONFIG_PVQ
 #include "av1/common/pvq.h"
 #endif
-#if CONFIG_CDEF
-struct AV1Common;
-typedef struct AV1Common AV1_COMMON;
-#include "av1/common/cdef.h"
-#endif
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#define CDEF_MAX_STRENGTHS 16
 
 #define REF_FRAMES_LOG2 3
 #define REF_FRAMES (1 << REF_FRAMES_LOG2)
