@@ -7,16 +7,16 @@ dictionary MediaTrackCapabilities {
     // https://w3c.github.io/mediacapture-image/#mediatrackcapabilities-section
     // TODO(mcasas) move out when partial dictionaries are supported
     // http://crbug.com/579896.
-    [RuntimeEnabled=ImageCapture] sequence<DOMString>  whiteBalanceMode;
-    [RuntimeEnabled=ImageCapture] sequence<DOMString>  exposureMode;
-    [RuntimeEnabled=ImageCapture] sequence<DOMString>  focusMode;
-    [RuntimeEnabled=ImageCapture] MediaSettingsRange   exposureCompensation;
-    [RuntimeEnabled=ImageCapture] MediaSettingsRange   colorTemperature;
-    [RuntimeEnabled=ImageCapture] MediaSettingsRange   iso;
-    [RuntimeEnabled=ImageCapture] MediaSettingsRange   brightness;
-    [RuntimeEnabled=ImageCapture] MediaSettingsRange   contrast;
-    [RuntimeEnabled=ImageCapture] MediaSettingsRange   saturation;
-    [RuntimeEnabled=ImageCapture] MediaSettingsRange   sharpness;
-    [RuntimeEnabled=ImageCapture] MediaSettingsRange   zoom;
-    [RuntimeEnabled=ImageCapture] boolean              torch;
+    [OriginTrialEnabled=ImageCapture] sequence<DOMString>  whiteBalanceMode;
+    [OriginTrialEnabled=ImageCapture] sequence<DOMString>  exposureMode;
+    [OriginTrialEnabled=ImageCapture] sequence<DOMString>  focusMode;
+    [OriginTrialEnabled=ImageCapture] MediaSettingsRange   exposureCompensation;
+    [OriginTrialEnabled=ImageCapture] MediaSettingsRange   colorTemperature;
+    [OriginTrialEnabled=ImageCapture] MediaSettingsRange   iso;
+    [OriginTrialEnabled=ImageCapture] MediaSettingsRange   brightness;
+    [OriginTrialEnabled=ImageCapture] MediaSettingsRange   contrast;
+    [OriginTrialEnabled=ImageCapture] MediaSettingsRange   saturation;
+    [OriginTrialEnabled=ImageCapture] MediaSettingsRange   sharpness;
+    [OriginTrialEnabled=ImageCapture] MediaSettingsRange   zoom;
+    [OriginTrialEnabled=ImageCapture] boolean              torch;
 };

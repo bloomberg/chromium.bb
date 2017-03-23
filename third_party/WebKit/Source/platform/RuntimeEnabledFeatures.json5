@@ -524,15 +524,7 @@
       status: "experimental",
     },
     {
-      name: "MediaConstraints",
-      status: "stable",
-    },
-    {
       name: "MediaDocumentDownloadButton",
-    },
-    {
-      name: "MediaGetSettings",
-      status: "stable",
     },
     {
       name: "MediaQueryShape",

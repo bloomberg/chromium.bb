@@ -51,7 +51,7 @@ enum MediaStreamTrackState {
     [ImplementedAs=stopTrack, RaisesException] void stop();
 
     [RuntimeEnabled=MediaTrackCapabilities] MediaTrackCapabilities getCapabilities();
-    [RuntimeEnabled=MediaConstraints] MediaTrackConstraints getConstraints();
-    [RuntimeEnabled=MediaGetSettings] MediaTrackSettings getSettings();
+    MediaTrackConstraints getConstraints();
+    MediaTrackSettings getSettings();
     [RuntimeEnabled=MediaTrackApplyConstraints, CallWith=ScriptState] Promise<void> applyConstraints(optional MediaTrackConstraints constraints);
 };
