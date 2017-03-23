@@ -157,9 +157,16 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
                                  const BeginNavigationParams& begin_params);
 
   // PlzNavigate
-  // Cancel a NavigationRequest for |frame_tree_node|. Called when
-  // |frame_tree_node| is destroyed.
-  virtual void CancelNavigation(FrameTreeNode* frame_tree_node) {}
+  // Used to abort an ongoing renderer-initiated navigation.
+  virtual void OnAbortNavigation(FrameTreeNode* frame_tree_node) {}
+
+  // PlzNavigate
+  // Cancel a NavigationRequest for |frame_tree_node|. If the request is
+  // renderer-initiated and |inform_renderer| is true, an IPC will be sent to
+  // the renderer process to inform it that the navigation it requested was
+  // cancelled.
+  virtual void CancelNavigation(FrameTreeNode* frame_tree_node,
+                                bool inform_renderer) {}
 
   // Called when the network stack started handling the navigation request
   // so that the |timestamp| when it happened can be recorded into an histogram.

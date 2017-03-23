@@ -342,6 +342,8 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual BlameContext* frameBlameContext() { return nullptr; }
 
   virtual void setHasReceivedUserGesture() {}
+
+  virtual void abortClientNavigation() {}
 };
 
 }  // namespace blink

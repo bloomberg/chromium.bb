@@ -1035,4 +1035,9 @@ void LocalFrameClientImpl::setHasReceivedUserGesture() {
     m_webFrame->client()->setHasReceivedUserGesture();
 }
 
+void LocalFrameClientImpl::abortClientNavigation() {
+  if (m_webFrame->client())
+    m_webFrame->client()->abortClientNavigation();
+}
+
 }  // namespace blink

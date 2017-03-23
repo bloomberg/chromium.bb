@@ -597,6 +597,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void didChangeThemeColor() override;
   void dispatchLoad() override;
   blink::WebEffectiveConnectionType getEffectiveConnectionType() override;
+  void abortClientNavigation() override;
   void didChangeSelection(bool is_empty_selection) override;
   bool handleCurrentKeyboardEvent() override;
   blink::WebColorChooser* createColorChooser(

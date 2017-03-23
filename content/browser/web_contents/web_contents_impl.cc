@@ -556,7 +556,7 @@ WebContentsImpl::~WebContentsImpl() {
   // PlzNavigate: clear up state specific to browser-side navigation.
   if (IsBrowserSideNavigationEnabled()) {
     // Do not update state as the WebContents is being destroyed.
-    frame_tree_.root()->ResetNavigationRequest(true);
+    frame_tree_.root()->ResetNavigationRequest(true, true);
     if (root->speculative_frame_host()) {
       root->speculative_frame_host()->SetRenderFrameCreated(false);
       root->speculative_frame_host()->SetNavigationHandle(

@@ -2726,9 +2726,15 @@ void Document::open() {
       }
     }
 
-    // PlzNavigate: We should abort ongoing navigations handled by the client.
-    if (m_frame->loader().hasProvisionalNavigation())
+    if (m_frame->loader().hasProvisionalNavigation()) {
       m_frame->loader().stopAllLoaders();
+      // PlzNavigate: navigations handled by the client should also be
+      // cancelled.
+      if (m_frame->loader().client() &&
+          m_frame->settings()->getBrowserSideNavigationEnabled()) {
+        m_frame->loader().client()->abortClientNavigation();
+      }
+    }
   }
 
   removeAllEventListenersRecursively();

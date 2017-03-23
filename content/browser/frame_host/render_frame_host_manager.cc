@@ -468,7 +468,7 @@ void RenderFrameHostManager::CommitPendingIfNecessary(
     // commit call below.
     CommitPending();
     if (IsBrowserSideNavigationEnabled())
-      frame_tree_node_->ResetNavigationRequest(false);
+      frame_tree_node_->ResetNavigationRequest(false, true);
   } else if (render_frame_host == render_frame_host_.get()) {
     // A same-process navigation committed while a simultaneous cross-process
     // navigation is still ongoing.
@@ -484,7 +484,7 @@ void RenderFrameHostManager::CommitPendingIfNecessary(
     if (was_caused_by_user_gesture) {
       if (IsBrowserSideNavigationEnabled()) {
         CleanUpNavigation();
-        frame_tree_node_->ResetNavigationRequest(false);
+        frame_tree_node_->ResetNavigationRequest(false, true);
       } else {
         CancelPending();
       }
@@ -1003,7 +1003,7 @@ void RenderFrameHostManager::CancelPendingIfNecessary(
   else if (render_frame_host == speculative_render_frame_host_.get()) {
     // TODO(nasko, clamy): This should just clean up the speculative RFH
     // without canceling the request.  See https://crbug.com/636119.
-    frame_tree_node_->ResetNavigationRequest(false);
+    frame_tree_node_->ResetNavigationRequest(false, true);
   }
 }
 

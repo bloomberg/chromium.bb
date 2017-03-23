@@ -968,7 +968,7 @@ void NavigatorImpl::OnBeforeUnloadACK(FrameTreeNode* frame_tree_node,
   if (proceed)
     navigation_request->BeginNavigation();
   else
-    CancelNavigation(frame_tree_node);
+    CancelNavigation(frame_tree_node, true);
 }
 
 // PlzNavigate
@@ -993,7 +993,7 @@ void NavigatorImpl::OnBeginNavigation(
           .is_history_navigation_in_new_child) {
     // Preemptively clear this local pointer before deleting the request.
     ongoing_navigation_request = nullptr;
-    frame_tree_node->ResetNavigationRequest(false);
+    frame_tree_node->ResetNavigationRequest(false, true);
   }
 
   // The renderer-initiated navigation request is ignored iff a) there is an
@@ -1041,10 +1041,23 @@ void NavigatorImpl::OnBeginNavigation(
   navigation_request->BeginNavigation();
 }
 
+void NavigatorImpl::OnAbortNavigation(FrameTreeNode* frame_tree_node) {
+  NavigationRequest* ongoing_navigation_request =
+      frame_tree_node->navigation_request();
+  if (!ongoing_navigation_request ||
+      ongoing_navigation_request->browser_initiated()) {
+    return;
+  }
+
+  // Abort the renderer-initiated navigation request.
+  CancelNavigation(frame_tree_node, false);
+}
+
 // PlzNavigate
-void NavigatorImpl::CancelNavigation(FrameTreeNode* frame_tree_node) {
+void NavigatorImpl::CancelNavigation(FrameTreeNode* frame_tree_node,
+                                     bool inform_renderer) {
   CHECK(IsBrowserSideNavigationEnabled());
-  frame_tree_node->ResetNavigationRequest(false);
+  frame_tree_node->ResetNavigationRequest(false, inform_renderer);
   if (frame_tree_node->IsMainFrame())
     navigation_data_.reset();
 }

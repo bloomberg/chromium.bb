@@ -3652,7 +3652,7 @@ TEST_F(NavigationControllerTest, ShowBrowserURLAfterFailUntilModified) {
   // stop or a new navigation from the user.  The URL should remain visible.
   if (IsBrowserSideNavigationEnabled()) {
     static_cast<NavigatorImpl*>(main_test_rfh()->frame_tree_node()->navigator())
-        ->CancelNavigation(main_test_rfh()->frame_tree_node());
+        ->CancelNavigation(main_test_rfh()->frame_tree_node(), true);
   } else {
     FrameHostMsg_DidFailProvisionalLoadWithError_Params params;
     params.error_code = net::ERR_ABORTED;

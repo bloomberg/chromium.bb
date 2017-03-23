@@ -225,6 +225,8 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   void setHasReceivedUserGesture() override;
 
+  void abortClientNavigation() override;
+
  private:
   explicit LocalFrameClientImpl(WebLocalFrameImpl*);
 

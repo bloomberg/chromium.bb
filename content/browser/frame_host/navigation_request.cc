@@ -480,7 +480,7 @@ void NavigationRequest::OnRequestRedirected(
     // FilterURL sets the URL to about:blank if the CSP checks prevent the
     // renderer from accessing it.
     if ((url == url::kAboutBlankURL) && (url != common_params_.url)) {
-      frame_tree_node_->ResetNavigationRequest(false);
+      frame_tree_node_->ResetNavigationRequest(false, true);
       return;
     }
   }
@@ -559,7 +559,7 @@ void NavigationRequest::OnResponseStarted(
     // TODO(clamy): Rename ShouldTransferNavigation once PlzNavigate ships.
     if (!frame_tree_node_->navigator()->GetDelegate()->ShouldTransferNavigation(
             frame_tree_node_->IsMainFrame())) {
-      frame_tree_node_->ResetNavigationRequest(false);
+      frame_tree_node_->ResetNavigationRequest(false, true);
       return;
     }
   }
@@ -598,7 +598,7 @@ void NavigationRequest::OnRequestFailed(bool has_stale_copy_in_cache,
 
   // If the request was canceled by the user do not show an error page.
   if (net_error == net::ERR_ABORTED) {
-    frame_tree_node_->ResetNavigationRequest(false);
+    frame_tree_node_->ResetNavigationRequest(false, true);
     return;
   }
 
@@ -833,7 +833,7 @@ void NavigationRequest::CommitNavigation() {
                                       common_params_, request_params_,
                                       is_view_source_);
 
-  frame_tree_node_->ResetNavigationRequest(true);
+  frame_tree_node_->ResetNavigationRequest(true, true);
 }
 
 }  // namespace content

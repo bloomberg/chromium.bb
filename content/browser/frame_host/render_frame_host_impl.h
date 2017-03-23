@@ -749,6 +749,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnUpdateEncoding(const std::string& encoding);
   void OnBeginNavigation(const CommonNavigationParams& common_params,
                          const BeginNavigationParams& begin_params);
+  void OnAbortNavigation();
   void OnDispatchLoad();
   void OnAccessibilityEvents(
       const std::vector<AccessibilityHostMsg_EventParams>& params,

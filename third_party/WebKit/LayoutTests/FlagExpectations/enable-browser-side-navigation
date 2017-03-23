@@ -16,7 +16,5 @@ crbug.com/690946 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/
 crbug.com/690946 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/frame-src-cross-origin-load.html [ Failure ]
 
 # These tests are flaky.
-Bug(none) http/tests/misc/window-open-then-write.html [ Timeout ]
 Bug(none) http/tests/security/popup-allowed-by-sandbox-can-navigate.html [ Failure ]
-Bug(none) virtual/mojo-loading/http/tests/misc/window-open-then-write.html [ Timeout ]
 Bug(none) virtual/mojo-loading/http/tests/security/popup-allowed-by-sandbox-can-navigate.html [ Failure ]

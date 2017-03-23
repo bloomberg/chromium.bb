@@ -88,12 +88,14 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   void OnBeginNavigation(FrameTreeNode* frame_tree_node,
                          const CommonNavigationParams& common_params,
                          const BeginNavigationParams& begin_params) override;
+  void OnAbortNavigation(FrameTreeNode* frame_tree_node) override;
   void LogResourceRequestTime(base::TimeTicks timestamp,
                               const GURL& url) override;
   void LogBeforeUnloadTime(
       const base::TimeTicks& renderer_before_unload_start_time,
       const base::TimeTicks& renderer_before_unload_end_time) override;
-  void CancelNavigation(FrameTreeNode* frame_tree_node) override;
+  void CancelNavigation(FrameTreeNode* frame_tree_node,
+                        bool inform_renderer) override;
   void DiscardPendingEntryIfNeeded(NavigationHandleImpl* handle) override;
 
  private:

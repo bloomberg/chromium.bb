@@ -449,6 +449,10 @@ class BLINK_EXPORT WebFrameClient {
     return WebEffectiveConnectionType::TypeUnknown;
   }
 
+  // PlzNavigate
+  // Called to abort a navigation that is being handled by the browser process.
+  virtual void abortClientNavigation() {}
+
   // Push API ---------------------------------------------------
 
   // Used to access the embedder for the Push API.

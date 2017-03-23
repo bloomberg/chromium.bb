@@ -261,7 +261,10 @@ class CONTENT_EXPORT FrameTreeNode {
   // Resets the current navigation request. If |keep_state| is true, any state
   // created by the NavigationRequest (e.g. speculative RenderFrameHost,
   // loading state) will not be reset by the function.
-  void ResetNavigationRequest(bool keep_state);
+  // If |keep_state| is false and the request is renderer-initiated and
+  // |inform_renderer| is true, an IPC will be sent to the renderer process to
+  // inform it that the navigation it requested was cancelled.
+  void ResetNavigationRequest(bool keep_state, bool inform_renderer);
 
   // Returns true if this node is in a state where the loading progress is being
   // tracked.

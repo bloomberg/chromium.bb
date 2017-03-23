@@ -4130,6 +4130,10 @@ RenderFrameImpl::getEffectiveConnectionType() {
   return effective_connection_type_;
 }
 
+void RenderFrameImpl::abortClientNavigation() {
+  Send(new FrameHostMsg_AbortNavigation(routing_id_));
+}
+
 void RenderFrameImpl::didChangeSelection(bool is_empty_selection) {
   if (!GetRenderWidget()->input_handler().handling_input_event() &&
       !handling_select_range_)

@@ -784,6 +784,7 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateEncoding, OnUpdateEncoding)
     IPC_MESSAGE_HANDLER(FrameHostMsg_BeginNavigation,
                         OnBeginNavigation)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_AbortNavigation, OnAbortNavigation)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DispatchLoad, OnDispatchLoad)
     IPC_MESSAGE_HANDLER(FrameHostMsg_TextSurroundingSelectionResponse,
                         OnTextSurroundingSelectionResponse)
@@ -2044,6 +2045,16 @@ void RenderFrameHostImpl::OnBeginNavigation(
       frame_tree_node(), validated_params, validated_begin_params);
 }
 
+void RenderFrameHostImpl::OnAbortNavigation() {
+  if (!IsBrowserSideNavigationEnabled()) {
+    NOTREACHED();
+    return;
+  }
+  if (!is_active())
+    return;
+  frame_tree_node()->navigator()->OnAbortNavigation(frame_tree_node());
+}
+
 void RenderFrameHostImpl::OnDispatchLoad() {
   CHECK(SiteIsolationPolicy::AreCrossProcessFramesPossible());
 
@@ -2642,7 +2653,7 @@ void RenderFrameHostImpl::DispatchBeforeUnload(bool for_navigation,
   if (IsBrowserSideNavigationEnabled() && !for_navigation) {
     // Cancel any pending navigations, to avoid their navigation commit/fail
     // event from wiping out the is_waiting_for_beforeunload_ack_ state.
-    frame_tree_node_->ResetNavigationRequest(false);
+    frame_tree_node_->ResetNavigationRequest(false, true);
   }
 
   // TODO(creis): Support beforeunload on subframes.  For now just pretend that
@@ -2853,7 +2864,7 @@ void RenderFrameHostImpl::FailedNavigation(
 
   // An error page is expected to commit, hence why is_loading_ is set to true.
   is_loading_ = true;
-  frame_tree_node_->ResetNavigationRequest(true);
+  frame_tree_node_->ResetNavigationRequest(true, true);
 }
 
 void RenderFrameHostImpl::SetUpMojoIfNeeded() {

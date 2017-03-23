@@ -1511,6 +1511,11 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_BeginNavigation,
                     content::CommonNavigationParams,
                     content::BeginNavigationParams)
 
+// PlzNavigate
+// Tells the browser to abort an ongoing renderer-initiated navigation. This is
+// used when the page calls document.open.
+IPC_MESSAGE_ROUTED0(FrameHostMsg_AbortNavigation)
+
 // Sent as a response to FrameMsg_VisualStateRequest.
 // The message is delivered using RenderWidget::QueueMessage.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_VisualStateResponse, uint64_t /* id */)
