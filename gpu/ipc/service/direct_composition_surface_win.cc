@@ -9,6 +9,7 @@
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
 #include "gpu/ipc/service/switches.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_angle_util_win.h"
@@ -167,9 +168,13 @@ void DirectCompositionSurfaceWin::ReleaseCurrentSurface() {
 void DirectCompositionSurfaceWin::InitializeSurface() {
   DCHECK(!dcomp_surface_);
   DCHECK(!swap_chain_);
+  DXGI_FORMAT output_format =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableHDR)
+          ? DXGI_FORMAT_R16G16B16A16_FLOAT
+          : DXGI_FORMAT_B8G8R8A8_UNORM;
   if (enable_dc_layers_) {
     HRESULT hr = dcomp_device_->CreateSurface(
-        size_.width(), size_.height(), DXGI_FORMAT_B8G8R8A8_UNORM,
+        size_.width(), size_.height(), output_format,
         DXGI_ALPHA_MODE_PREMULTIPLIED, dcomp_surface_.Receive());
     has_been_rendered_to_ = false;
     CHECK(SUCCEEDED(hr));
@@ -184,7 +189,7 @@ void DirectCompositionSurfaceWin::InitializeSurface() {
     DXGI_SWAP_CHAIN_DESC1 desc = {};
     desc.Width = size_.width();
     desc.Height = size_.height();
-    desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+    desc.Format = output_format;
     desc.Stereo = FALSE;
     desc.SampleDesc.Count = 1;
     desc.BufferCount = 2;
