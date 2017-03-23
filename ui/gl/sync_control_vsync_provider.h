@@ -23,6 +23,14 @@ class SyncControlVSyncProvider : public gfx::VSyncProvider {
 
   void GetVSyncParameters(const UpdateVSyncCallback& callback) override;
 
+  static constexpr bool IsSupported() {
+#if defined(OS_LINUX)
+    return true;
+#else
+    return false;
+#endif  // defined(OS_LINUX)
+  }
+
  protected:
   virtual bool GetSyncValues(int64_t* system_time,
                              int64_t* media_stream_counter,

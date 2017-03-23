@@ -146,6 +146,11 @@ class EGLSyncControlVSyncProvider : public SyncControlVSyncProvider {
 
   ~EGLSyncControlVSyncProvider() override {}
 
+  static bool IsSupported() {
+    return SyncControlVSyncProvider::IsSupported() &&
+           g_egl_sync_control_supported;
+  }
+
  protected:
   bool GetSyncValues(int64_t* system_time,
                      int64_t* media_stream_counter,
@@ -808,7 +813,7 @@ bool NativeViewGLSurfaceEGL::Initialize(
 
   if (sync_provider)
     vsync_provider_ = std::move(sync_provider);
-  else if (g_egl_sync_control_supported)
+  else if (EGLSyncControlVSyncProvider::IsSupported())
     vsync_provider_.reset(new EGLSyncControlVSyncProvider(surface_));
   return true;
 }
