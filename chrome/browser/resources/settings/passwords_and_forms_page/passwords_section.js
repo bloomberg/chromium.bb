@@ -234,7 +234,7 @@ Polymer({
   setPasswordExceptionsListener_: null,
 
   /** @override */
-  ready: function() {
+  attached: function() {
     // Create listener functions.
     var setSavedPasswordsListener = function(list) {
       this.savedPasswords = list;

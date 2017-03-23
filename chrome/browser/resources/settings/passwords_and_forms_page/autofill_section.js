@@ -209,7 +209,7 @@ AutofillManagerImpl.prototype = {
     setCreditCardsListener_: null,
 
     /** @override */
-    ready: function() {
+    attached: function() {
       // Create listener functions.
       /** @type {function(!Array<!AutofillManager.AddressEntry>)} */
       var setAddressesListener = function(list) {
