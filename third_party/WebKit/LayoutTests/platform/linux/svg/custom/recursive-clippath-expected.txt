@@ -5,13 +5,11 @@ layer at (0,0) size 800x600
     LayoutSVGHiddenContainer {defs} at (50,150) size 50x50
       LayoutSVGResourceClipper {clipPath} [id="clipPath_0"] [clipPathUnits=userSpaceOnUse]
         LayoutSVGRect {rect} at (50,0) size 50x50 [x=50.00] [y=0.00] [width=50.00] [height=50.00]
-          [clipPath="clipPath_0"] LayoutSVGResourceClipper {clipPath} at (50,0) size 50x50
       LayoutSVGRect {rect} at (50,150) size 50x50 [x=50.00] [y=150.00] [width=50.00] [height=50.00]
         [clipPath="clipPath_1"] LayoutSVGResourceClipper {clipPath} at (50,150) size 50x50
       LayoutSVGResourceClipper {clipPath} [id="clipPath_1"] [clipPathUnits=userSpaceOnUse]
         LayoutSVGContainer {use} at (50,150) size 50x50
           LayoutSVGRect {rect} at (50,150) size 50x50 [x=50.00] [y=150.00] [width=50.00] [height=50.00]
-            [clipPath="clipPath_1"] LayoutSVGResourceClipper {clipPath} at (50,150) size 50x50
     LayoutSVGRect {rect} at (50,0) size 100x100 [fill={[type=SOLID] [color=#0000FF]}] [x=50.00] [y=0.00] [width=100.00] [height=100.00]
     LayoutSVGRect {rect} at (50,0) size 100x100 [fill={[type=SOLID] [color=#008000]}] [x=50.00] [y=0.00] [width=100.00] [height=100.00]
       [clipPath="clipPath_0"] LayoutSVGResourceClipper {clipPath} at (50,0) size 50x50

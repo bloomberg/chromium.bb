@@ -45,6 +45,8 @@
 #include "core/layout/svg/LayoutSVGShape.h"
 #include "core/layout/svg/LayoutSVGText.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
+#include "core/layout/svg/SVGResources.h"
+#include "core/layout/svg/SVGResourcesCache.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
 #include "core/layout/svg/line/SVGRootInlineBox.h"
 #include "core/paint/PaintLayer.h"
@@ -706,68 +708,50 @@ void writeSVGGradientStop(TextStream& ts,
 }
 
 void writeResources(TextStream& ts, const LayoutObject& object, int indent) {
+  SVGResources* resources =
+      SVGResourcesCache::cachedResourcesForLayoutObject(&object);
+  if (!resources)
+    return;
   const ComputedStyle& style = object.styleRef();
-  const SVGComputedStyle& svgStyle = style.svgStyle();
   TreeScope& treeScope = object.document();
-  SVGTreeScopeResources& treeScopeResources =
-      treeScope.ensureSVGTreeScopedResources();
-
-  // FIXME: We want to use SVGResourcesCache to determine which resources are
-  // present, instead of quering the resource <-> id cache.
-  // For now leave the DRT output as is, but later on we should change this so
-  // cycles are properly ignored in the DRT output.
-  if (!svgStyle.maskerResource().isEmpty()) {
-    if (LayoutSVGResourceMasker* masker =
-            getLayoutSVGResourceById<LayoutSVGResourceMasker>(
-                treeScopeResources, svgStyle.maskerResource())) {
-      writeIndent(ts, indent);
-      ts << " ";
-      writeNameAndQuotedValue(ts, "masker", svgStyle.maskerResource());
-      ts << " ";
-      writeStandardPrefix(ts, *masker, 0);
-      ts << " " << masker->resourceBoundingBox(&object) << "\n";
-    }
+  if (LayoutSVGResourceMasker* masker = resources->masker()) {
+    writeIndent(ts, indent);
+    ts << " ";
+    writeNameAndQuotedValue(ts, "masker", style.svgStyle().maskerResource());
+    ts << " ";
+    writeStandardPrefix(ts, *masker, 0);
+    ts << " " << masker->resourceBoundingBox(&object) << "\n";
   }
-  if (ClipPathOperation* clipPathOperation = style.clipPath()) {
-    if (clipPathOperation->type() == ClipPathOperation::REFERENCE) {
-      const ReferenceClipPathOperation& clipPathReference =
-          toReferenceClipPathOperation(*clipPathOperation);
-      AtomicString id = SVGURIReference::fragmentIdentifierFromIRIString(
-          clipPathReference.url(), treeScope);
-      if (LayoutSVGResourceClipper* clipper =
-              getLayoutSVGResourceById<LayoutSVGResourceClipper>(
-                  treeScopeResources, id)) {
-        writeIndent(ts, indent);
-        ts << " ";
-        writeNameAndQuotedValue(ts, "clipPath", id);
-        ts << " ";
-        writeStandardPrefix(ts, *clipper, 0);
-        ts << " " << clipper->resourceBoundingBox(object.objectBoundingBox())
-           << "\n";
-      }
-    }
+  if (LayoutSVGResourceClipper* clipper = resources->clipper()) {
+    DCHECK(style.clipPath());
+    DCHECK_EQ(style.clipPath()->type(), ClipPathOperation::REFERENCE);
+    const ReferenceClipPathOperation& clipPathReference =
+        toReferenceClipPathOperation(*style.clipPath());
+    AtomicString id = SVGURIReference::fragmentIdentifierFromIRIString(
+        clipPathReference.url(), treeScope);
+    writeIndent(ts, indent);
+    ts << " ";
+    writeNameAndQuotedValue(ts, "clipPath", id);
+    ts << " ";
+    writeStandardPrefix(ts, *clipper, 0);
+    ts << " " << clipper->resourceBoundingBox(object.objectBoundingBox())
+       << "\n";
   }
-  if (style.hasFilter()) {
-    const FilterOperations& filterOperations = style.filter();
-    if (filterOperations.size() == 1) {
-      const FilterOperation& filterOperation = *filterOperations.at(0);
-      if (filterOperation.type() == FilterOperation::REFERENCE) {
-        const auto& referenceFilterOperation =
-            toReferenceFilterOperation(filterOperation);
-        AtomicString id = SVGURIReference::fragmentIdentifierFromIRIString(
-            referenceFilterOperation.url(), treeScope);
-        if (LayoutSVGResourceFilter* filter =
-                getLayoutSVGResourceById<LayoutSVGResourceFilter>(
-                    treeScopeResources, id)) {
-          writeIndent(ts, indent);
-          ts << " ";
-          writeNameAndQuotedValue(ts, "filter", id);
-          ts << " ";
-          writeStandardPrefix(ts, *filter, 0);
-          ts << " " << filter->resourceBoundingBox(&object) << "\n";
-        }
-      }
-    }
+  if (LayoutSVGResourceFilter* filter = resources->filter()) {
+    DCHECK(style.hasFilter());
+    DCHECK_EQ(style.filter().size(), 1u);
+    const FilterOperation& filterOperation = *style.filter().at(0);
+    DCHECK_EQ(filterOperation.type(), FilterOperation::REFERENCE);
+    const auto& referenceFilterOperation =
+        toReferenceFilterOperation(filterOperation);
+    AtomicString id = SVGURIReference::fragmentIdentifierFromIRIString(
+        referenceFilterOperation.url(), treeScope);
+    writeIndent(ts, indent);
+    ts << " ";
+    writeNameAndQuotedValue(ts, "filter", id);
+    ts << " ";
+    writeStandardPrefix(ts, *filter, 0);
+    ts << " " << filter->resourceBoundingBox(&object) << "\n";
   }
 }
 

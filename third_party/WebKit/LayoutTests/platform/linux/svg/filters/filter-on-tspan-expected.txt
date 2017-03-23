@@ -11,7 +11,6 @@ layer at (0,0) size 800x600
       LayoutSVGTSpan {tspan} at (100,85) size 97.88x19
         [filter="filter"] LayoutSVGResourceFilter {filter} at (90.21,83.10) size 117.45x22.80
         LayoutSVGInlineText {#text} at (168,85) size 26.31x19
-          [filter="filter"] LayoutSVGResourceFilter {filter} at (165.37,83.10) size 31.58x22.80
           chunk 1 text run 1 at (168.00,100.00) startOffset 0 endOffset 4 width 25.88: "Test"
       LayoutSVGInlineText {#text} at (193.88,85) size 4x19
         chunk 1 text run 1 at (193.88,100.00) startOffset 0 endOffset 1 width 4.00: "."

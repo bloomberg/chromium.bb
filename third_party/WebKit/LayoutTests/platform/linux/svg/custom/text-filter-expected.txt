@@ -9,5 +9,4 @@ layer at (0,0) size 800x600
     LayoutSVGText {text} at (4,11) size 563.42x62 contains 1 chunk(s)
       [filter="myfilter"] LayoutSVGResourceFilter {filter} at (-52.34,4.80) size 676.11x74.40
       LayoutSVGInlineText {#text} at (4,11) size 563.42x62
-        [filter="myfilter"] LayoutSVGResourceFilter {filter} at (-52.34,4.80) size 676.11x74.40
         chunk 1 text run 1 at (4.00,60.00) startOffset 0 endOffset 26 width 563.43: "This text should be blury."

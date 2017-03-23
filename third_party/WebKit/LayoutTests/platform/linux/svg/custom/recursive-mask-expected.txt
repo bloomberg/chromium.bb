@@ -7,7 +7,6 @@ layer at (0,0) size 800x600
         LayoutSVGRect {rect} at (0,0) size 50x50 [fill={[type=SOLID] [color=#FFFFFF]}] [x=0.00] [y=0.00] [width=50.00] [height=50.00]
       LayoutSVGResourceMasker {mask} [id="mask2"] [maskUnits=objectBoundingBox] [maskContentUnits=userSpaceOnUse]
         LayoutSVGRect {rect} at (100,0) size 50x50 [fill={[type=SOLID] [color=#FFFFFF]}] [x=100.00] [y=0.00] [width=50.00] [height=50.00]
-          [masker="mask2"] LayoutSVGResourceMasker {mask} at (100,0) size 50x50
       LayoutSVGResourceMasker {mask} [id="mask3"] [maskUnits=objectBoundingBox] [maskContentUnits=userSpaceOnUse]
         LayoutSVGRect {rect} at (0,100) size 50x50 [fill={[type=SOLID] [color=#FFFFFF]}] [x=0.00] [y=100.00] [width=50.00] [height=50.00]
           [masker="mask1"] LayoutSVGResourceMasker {mask} at (0,0) size 0x0
@@ -18,7 +17,6 @@ layer at (0,0) size 800x600
       LayoutSVGResourceMasker {mask} [id="mask4"] [maskUnits=objectBoundingBox] [maskContentUnits=userSpaceOnUse]
         LayoutSVGContainer {use} at (0,100) size 50x50
           LayoutSVGRect {rect} at (0,100) size 50x50 [fill={[type=SOLID] [color=#FFFFFF]}] [x=0.00] [y=100.00] [width=50.00] [height=50.00]
-            [masker="mask4"] LayoutSVGResourceMasker {mask} at (0,100) size 50x50
     LayoutSVGRect {rect} at (0,0) size 100x100 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
       [masker="mask1"] LayoutSVGResourceMasker {mask} at (0,0) size 50x50
     LayoutSVGRect {rect} at (100,0) size 100x100 [fill={[type=SOLID] [color=#0000FF]}] [x=100.00] [y=0.00] [width=100.00] [height=100.00]

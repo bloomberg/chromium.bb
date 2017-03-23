@@ -148,7 +148,6 @@ layer at (0,0) size 450x500
           LayoutSVGText {text} at (0,-36.11) size 128.88x46.44 [transform={m=((1.00,0.00)(0.84,1.00)) t=(-11.03,-6.00)}] [opacity=0.70] contains 1 chunk(s)
             [filter="blur"] LayoutSVGResourceFilter {filter} at (0,-80) size 200x100
             LayoutSVGInlineText {#text} at (0,-36.11) size 128.88x46.44 [opacity=0.70]
-              [filter="blur"] LayoutSVGResourceFilter {filter} at (0,-80) size 200x100
               chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 6 width 128.88: "Shadow"
           LayoutSVGText {text} at (0,-36) size 128.88x46 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,-36) size 128.88x46

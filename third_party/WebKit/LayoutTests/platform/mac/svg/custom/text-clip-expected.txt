@@ -12,5 +12,4 @@ layer at (0,0) size 800x600
       LayoutSVGText {text} at (0,76) size 640.55x63 contains 1 chunk(s)
         [clipPath="myclip"] LayoutSVGResourceClipper {clipPath} at (200,200) size 100x200
         LayoutSVGInlineText {#text} at (0,76) size 640.55x63
-          [clipPath="myclip"] LayoutSVGResourceClipper {clipPath} at (200,200) size 100x200
           chunk 1 text run 1 at (0.00,125.00) startOffset 0 endOffset 28 width 640.56: "FAIL (should be clipped out)"
