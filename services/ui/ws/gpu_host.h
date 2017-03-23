@@ -12,6 +12,7 @@
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "services/ui/gpu/gpu_main.h"
 #include "services/ui/gpu/interfaces/gpu_host.mojom.h"
 #include "services/ui/gpu/interfaces/gpu_service.mojom.h"
@@ -22,6 +23,12 @@ namespace ui {
 class ServerGpuMemoryBufferManager;
 
 namespace ws {
+
+class GpuClient;
+
+namespace test {
+class GpuHostTest;
+}  // namespace test
 
 class GpuHostDelegate;
 
@@ -42,6 +49,9 @@ class GpuHost : public mojom::GpuHost {
                                cc::mojom::DisplayCompositorClientPtr client);
 
  private:
+  friend class test::GpuHostTest;
+
+  GpuClient* AddInternal(mojom::GpuRequest request);
   void OnBadMessageFromGpu();
 
   // mojom::GpuHost:
@@ -74,6 +84,8 @@ class GpuHost : public mojom::GpuHost {
   // TODO(fsamuel): GpuHost should not be holding onto |gpu_main_impl|
   // because that will live in another process soon.
   std::unique_ptr<GpuMain> gpu_main_impl_;
+
+  mojo::StrongBindingSet<mojom::Gpu> gpu_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuHost);
 };

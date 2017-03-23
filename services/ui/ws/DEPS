@@ -11,4 +11,7 @@ specific_include_rules = {
   "gpu_host.h": [
     "+services/ui/gpu/gpu_main.h",
   ],
+  "gpu_host_unittest.cc": [
+    "+services/ui/gpu"
+  ],
 }

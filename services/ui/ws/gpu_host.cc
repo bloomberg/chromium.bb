@@ -16,6 +16,7 @@
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/ui/common/server_gpu_memory_buffer_manager.h"
+#include "services/ui/ws/gpu_client.h"
 #include "services/ui/ws/gpu_host_delegate.h"
 #include "ui/gfx/buffer_format_util.h"
 
@@ -30,71 +31,6 @@ namespace {
 
 // The client Id 1 is reserved for the display compositor.
 const int32_t kInternalGpuChannelClientId = 2;
-
-// The implementation that relays requests from clients to the real
-// service implementation in the GPU process over mojom.GpuService.
-class GpuClient : public mojom::Gpu {
- public:
-  GpuClient(int client_id,
-            gpu::GPUInfo* gpu_info,
-            ServerGpuMemoryBufferManager* gpu_memory_buffer_manager,
-            mojom::GpuService* gpu_service)
-      : client_id_(client_id),
-        gpu_info_(gpu_info),
-        gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
-        gpu_service_(gpu_service) {
-    DCHECK(gpu_memory_buffer_manager_);
-    DCHECK(gpu_service_);
-  }
-  ~GpuClient() override {
-    gpu_memory_buffer_manager_->DestroyAllGpuMemoryBufferForClient(client_id_);
-  }
-
- private:
-  void OnGpuChannelEstablished(const EstablishGpuChannelCallback& callback,
-                               mojo::ScopedMessagePipeHandle channel_handle) {
-    callback.Run(client_id_, std::move(channel_handle), *gpu_info_);
-  }
-
-  // mojom::Gpu overrides:
-  void EstablishGpuChannel(
-      const EstablishGpuChannelCallback& callback) override {
-    // TODO(sad): crbug.com/617415 figure out how to generate a meaningful
-    // tracing id.
-    const uint64_t client_tracing_id = 0;
-    constexpr bool is_gpu_host = false;
-    gpu_service_->EstablishGpuChannel(
-        client_id_, client_tracing_id, is_gpu_host,
-        base::Bind(&GpuClient::OnGpuChannelEstablished, base::Unretained(this),
-                   callback));
-  }
-
-  void CreateGpuMemoryBuffer(
-      gfx::GpuMemoryBufferId id,
-      const gfx::Size& size,
-      gfx::BufferFormat format,
-      gfx::BufferUsage usage,
-      const mojom::Gpu::CreateGpuMemoryBufferCallback& callback) override {
-    auto handle = gpu_memory_buffer_manager_->CreateGpuMemoryBufferHandle(
-        id, client_id_, size, format, usage, gpu::kNullSurfaceHandle);
-    callback.Run(handle);
-  }
-
-  void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
-                              const gpu::SyncToken& sync_token) override {
-    gpu_memory_buffer_manager_->DestroyGpuMemoryBuffer(id, client_id_,
-                                                       sync_token);
-  }
-
-  const int client_id_;
-
-  // The objects these pointers refer to are owned by the GpuHost object.
-  const gpu::GPUInfo* gpu_info_;
-  ServerGpuMemoryBufferManager* gpu_memory_buffer_manager_;
-  mojom::GpuService* gpu_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(GpuClient);
-};
 
 }  // namespace
 
@@ -121,11 +57,7 @@ GpuHost::GpuHost(GpuHostDelegate* delegate)
 GpuHost::~GpuHost() {}
 
 void GpuHost::Add(mojom::GpuRequest request) {
-  mojo::MakeStrongBinding(
-      base::MakeUnique<GpuClient>(next_client_id_++, &gpu_info_,
-                                  gpu_memory_buffer_manager_.get(),
-                                  gpu_service_.get()),
-      std::move(request));
+  AddInternal(std::move(request));
 }
 
 void GpuHost::OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) {
@@ -144,6 +76,15 @@ void GpuHost::CreateDisplayCompositor(
     cc::mojom::DisplayCompositorRequest request,
     cc::mojom::DisplayCompositorClientPtr client) {
   gpu_main_->CreateDisplayCompositor(std::move(request), std::move(client));
+}
+
+GpuClient* GpuHost::AddInternal(mojom::GpuRequest request) {
+  auto client(base::MakeUnique<GpuClient>(next_client_id_++, &gpu_info_,
+                                          gpu_memory_buffer_manager_.get(),
+                                          gpu_service_.get()));
+  GpuClient* client_ref = client.get();
+  gpu_bindings_.AddBinding(std::move(client), std::move(request));
+  return client_ref;
 }
 
 void GpuHost::OnBadMessageFromGpu() {
