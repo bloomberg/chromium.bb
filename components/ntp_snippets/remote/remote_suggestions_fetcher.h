@@ -190,8 +190,6 @@ class RemoteSuggestionsFetcher : public OAuth2TokenService::Consumer,
 
   // API endpoint for fetching suggestions.
   const GURL fetch_url_;
-  // Which API to use
-  const internal::FetchAPI fetch_api_;
 
   // API key to use for non-authenticated requests.
   const std::string api_key_;

@@ -18,7 +18,6 @@ extern const char kStudyName[];
 extern const base::FilePath::CharType kDatabaseFolder[];
 
 // Server endpoints for fetching snippets.
-extern const char kChromeReaderServer[];               // old endpoint
 extern const char kContentSuggestionsServer[];         // used on stable/beta
 extern const char kContentSuggestionsStagingServer[];  // used on dev/canary
 extern const char kContentSuggestionsAlphaServer[];    // for testing

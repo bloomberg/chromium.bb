@@ -40,13 +40,10 @@ using translate::LanguageModel;
 namespace ntp_snippets {
 
 using internal::JsonRequest;
-using internal::FetchAPI;
 using internal::FetchResult;
 
 namespace {
 
-const char kChromeReaderApiScope[] =
-    "https://www.googleapis.com/auth/webhistory";
 const char kContentSuggestionsApiScope[] =
     "https://www.googleapis.com/auth/chrome-content-suggestions";
 const char kSnippetsServerNonAuthorizedFormat[] = "%s?key=%s";
@@ -102,20 +99,6 @@ Status FetchResultToStatus(FetchResult result) {
   }
   NOTREACHED();
   return Status(StatusCode::PERMANENT_ERROR, std::string());
-}
-
-bool UsesChromeContentSuggestionsAPI(const GURL& endpoint) {
-  if (endpoint == kChromeReaderServer) {
-    return false;
-  }
-
-  if (endpoint != kContentSuggestionsServer &&
-      endpoint != kContentSuggestionsStagingServer &&
-      endpoint != kContentSuggestionsAlphaServer) {
-    LOG(WARNING) << "Unknown value for " << kContentSuggestionsBackend << ": "
-                 << endpoint << "; assuming chromecontentsuggestions-style API";
-  }
-  return true;
 }
 
 // Creates suggestions from dictionary values in |list| and adds them to
@@ -267,9 +250,6 @@ RemoteSuggestionsFetcher::RemoteSuggestionsFetcher(
       language_model_(language_model),
       parse_json_callback_(parse_json_callback),
       fetch_url_(api_endpoint),
-      fetch_api_(UsesChromeContentSuggestionsAPI(fetch_url_)
-                     ? FetchAPI::CHROME_CONTENT_SUGGESTIONS_API
-                     : FetchAPI::CHROME_READER_API),
       api_key_(api_key),
       clock_(new base::DefaultClock()),
       user_classifier_(user_classifier) {}
@@ -295,9 +275,7 @@ void RemoteSuggestionsFetcher::FetchSnippets(
   }
 
   JsonRequest::Builder builder;
-  builder.SetFetchAPI(fetch_api_)
-      .SetFetchAPI(fetch_api_)
-      .SetLanguageModel(language_model_)
+  builder.SetLanguageModel(language_model_)
       .SetParams(params)
       .SetParseJsonCallback(parse_json_callback_)
       .SetClock(clock_.get())
@@ -365,9 +343,7 @@ void RemoteSuggestionsFetcher::StartRequest(
 
 void RemoteSuggestionsFetcher::StartTokenRequest() {
   OAuth2TokenService::ScopeSet scopes;
-  scopes.insert(fetch_api_ == FetchAPI::CHROME_CONTENT_SUGGESTIONS_API
-                    ? kContentSuggestionsApiScope
-                    : kChromeReaderApiScope);
+  scopes.insert(kContentSuggestionsApiScope);
   oauth_request_ = token_service_->StartRequest(
       signin_manager_->GetAuthenticatedAccountId(), scopes, this);
 }
@@ -457,8 +433,8 @@ void RemoteSuggestionsFetcher::JsonRequestDone(
                   error_details);
     return;
   }
-  FetchedCategoriesVector categories;
 
+  FetchedCategoriesVector categories;
   if (!JsonToSnippets(*result, &categories, fetch_time)) {
     LOG(WARNING) << "Received invalid snippets: " << last_fetch_json_;
     FetchFinished(OptionalFetchedCategories(), std::move(callback),
@@ -502,70 +478,51 @@ bool RemoteSuggestionsFetcher::JsonToSnippets(
     return false;
   }
 
-  switch (fetch_api_) {
-    case FetchAPI::CHROME_READER_API: {
-      const int kUnusedRemoteCategoryId = -1;
-      categories->push_back(FetchedCategory(
-          Category::FromKnownCategory(KnownCategories::ARTICLES),
-          BuildArticleCategoryInfo(base::nullopt)));
+  const base::ListValue* categories_value = nullptr;
+  if (!top_dict->GetList("categories", &categories_value)) {
+    return false;
+  }
 
-      const base::ListValue* recos = nullptr;
-      return top_dict->GetList("recos", &recos) &&
-             AddSuggestionsFromListValue(
-                 /*content_suggestions_api=*/false, kUnusedRemoteCategoryId,
-                 *recos, &categories->back().suggestions, fetch_time);
+  for (const auto& v : *categories_value) {
+    std::string utf8_title;
+    int remote_category_id = -1;
+    const base::DictionaryValue* category_value = nullptr;
+    if (!(v->GetAsDictionary(&category_value) &&
+          category_value->GetString("localizedTitle", &utf8_title) &&
+          category_value->GetInteger("id", &remote_category_id) &&
+          (remote_category_id > 0))) {
+      return false;
     }
 
-    case FetchAPI::CHROME_CONTENT_SUGGESTIONS_API: {
-      const base::ListValue* categories_value = nullptr;
-      if (!top_dict->GetList("categories", &categories_value)) {
+    RemoteSuggestion::PtrVector suggestions;
+    const base::ListValue* suggestions_list = nullptr;
+    // Absence of a list of suggestions is treated as an empty list, which
+    // is permissible.
+    if (category_value->GetList("suggestions", &suggestions_list)) {
+      if (!AddSuggestionsFromListValue(
+              /*content_suggestions_api=*/true, remote_category_id,
+              *suggestions_list, &suggestions, fetch_time)) {
         return false;
       }
-
-      for (const auto& v : *categories_value) {
-        std::string utf8_title;
-        int remote_category_id = -1;
-        const base::DictionaryValue* category_value = nullptr;
-        if (!(v->GetAsDictionary(&category_value) &&
-              category_value->GetString("localizedTitle", &utf8_title) &&
-              category_value->GetInteger("id", &remote_category_id) &&
-              (remote_category_id > 0))) {
-          return false;
-        }
-
-        RemoteSuggestion::PtrVector suggestions;
-        const base::ListValue* suggestions_list = nullptr;
-        // Absence of a list of suggestions is treated as an empty list, which
-        // is permissible.
-        if (category_value->GetList("suggestions", &suggestions_list)) {
-          if (!AddSuggestionsFromListValue(
-                  /*content_suggestions_api=*/true, remote_category_id,
-                  *suggestions_list, &suggestions, fetch_time)) {
-            return false;
-          }
-        }
-        Category category = Category::FromRemoteCategory(remote_category_id);
-        if (category.IsKnownCategory(KnownCategories::ARTICLES)) {
-          categories->push_back(FetchedCategory(
-              category,
-              BuildArticleCategoryInfo(base::UTF8ToUTF16(utf8_title))));
-        } else {
-          // TODO(tschumann): Right now, the backend does not yet populate this
-          // field. Make it mandatory once the backends provide it.
-          bool allow_fetching_more_results = false;
-          category_value->GetBoolean("allowFetchingMoreResults",
-                                     &allow_fetching_more_results);
-          categories->push_back(FetchedCategory(
-              category, BuildRemoteCategoryInfo(base::UTF8ToUTF16(utf8_title),
-                                                allow_fetching_more_results)));
-        }
-        categories->back().suggestions = std::move(suggestions);
-      }
-      return true;
     }
+    Category category = Category::FromRemoteCategory(remote_category_id);
+    if (category.IsKnownCategory(KnownCategories::ARTICLES)) {
+      categories->push_back(FetchedCategory(
+          category, BuildArticleCategoryInfo(base::UTF8ToUTF16(utf8_title))));
+    } else {
+      // TODO(tschumann): Right now, the backend does not yet populate this
+      // field. Make it mandatory once the backends provide it.
+      bool allow_fetching_more_results = false;
+      category_value->GetBoolean("allowFetchingMoreResults",
+                                 &allow_fetching_more_results);
+      categories->push_back(FetchedCategory(
+          category, BuildRemoteCategoryInfo(base::UTF8ToUTF16(utf8_title),
+                                            allow_fetching_more_results)));
+    }
+    categories->back().suggestions = std::move(suggestions);
   }
-  NOTREACHED();
-  return false;
+
+  return true;
 }
 
 }  // namespace ntp_snippets
