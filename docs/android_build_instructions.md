@@ -224,23 +224,16 @@ CHROMIUM_OUT_DIR env.
 export CHROMIUM_OUT_DIR=out_android
 ```
 
-### Build WebView shell
+### Build WebView
 
 [Android WebView](https://developer.android.com/reference/android/webkit/WebView.html)
 is a system framework component. Since Android KitKat, it is implemented using
 Chromium code (based off the [content module](https://dev.chromium.org/developers/content-module)).
-It is possible to test modifications to WebView using a simple test shell. The
-WebView shell is a view with a URL bar at the top (see [code](https://code.google.com/p/chromium/codesearch#chromium/src/android_webview/test/shell/src/org/chromium/android_webview/test/AwTestContainerView.java))
-and is **independent** of the WebView **implementation in the Android system** (
-the WebView shell is essentially a standalone unbundled app).
-As drawback, the shell runs in non-production rendering mode only.
 
-```shell
-ninja -C out/Release android_webview_apk
-build/android/adb_install_apk.py out/Release/apks/AndroidWebView.apk
-```
-
-If, instead, you want to build the complete Android WebView framework component and test the effect of your chromium changes in other Android app using the WebView, you should follow the [Android AOSP + chromium WebView instructions](https://www.chromium.org/developers/how-tos/build-instructions-android-webview)
+If you want to build the complete Android WebView framework component and test
+the effect of your chromium changes in Android apps using WebView, you should
+follow the [Android AOSP + chromium WebView
+instructions](https://www.chromium.org/developers/how-tos/build-instructions-android-webview)
 
 ### Running
 
@@ -256,12 +249,6 @@ For Chrome public:
 
 ```shell
 build/android/adb_run_chrome_public  http://example.com
-```
-
-For Android WebView shell:
-
-```shell
-build/android/adb_run_android_webview_shell http://example.com
 ```
 
 ### Logging and debugging
@@ -284,7 +271,6 @@ following commands:
 ```shell
 build/android/adb_gdb_content_shell
 build/android/adb_gdb_chrome_public
-build/android/adb_gdb_android_webview_shell http://example.com
 ```
 
 See [Debugging Chromium on Android](https://www.chromium.org/developers/how-tos/debugging-on-android)
