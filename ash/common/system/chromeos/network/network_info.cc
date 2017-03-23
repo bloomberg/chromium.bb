@@ -21,6 +21,25 @@ NetworkInfo::NetworkInfo(const std::string& guid)
       connecting(false),
       type(Type::UNKNOWN) {}
 
+NetworkInfo::NetworkInfo(const NetworkInfo& other)
+    : guid(other.guid),
+      label(other.label),
+      tooltip(other.tooltip),
+      image(other.image),
+      disable(other.disable),
+      highlight(other.highlight),
+      connected(other.connected),
+      connecting(other.connecting),
+      type(other.type) {}
+
 NetworkInfo::~NetworkInfo() {}
+
+bool NetworkInfo::operator==(const NetworkInfo& other) const {
+  return guid == other.guid && label == other.label &&
+         tooltip == other.tooltip && image.BackedBySameObjectAs(other.image) &&
+         disable == other.disable && highlight == other.highlight &&
+         connected == other.connected && connecting == other.connecting &&
+         type == other.type;
+}
 
 }  // namespace ash

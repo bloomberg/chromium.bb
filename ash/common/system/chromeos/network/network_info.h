@@ -23,7 +23,11 @@ struct NetworkInfo {
 
   NetworkInfo();
   NetworkInfo(const std::string& guid);
+  NetworkInfo(const NetworkInfo& other);
   ~NetworkInfo();
+
+  bool operator==(const NetworkInfo& other) const;
+  bool operator!=(const NetworkInfo& other) const { return !(*this == other); }
 
   std::string guid;
   base::string16 label;

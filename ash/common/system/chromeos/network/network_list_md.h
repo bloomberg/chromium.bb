@@ -102,6 +102,10 @@ class NetworkListView : public NetworkListViewBase,
   // network_icon::AnimationObserver:
   void NetworkIconChanged() override;
 
+  // Returns true if the info should be updated to the view for network,
+  // otherwise false.
+  bool NeedUpdateViewForNetwork(const NetworkInfo& info) const;
+
   bool needs_relayout_;
   NetworkListDelegate* delegate_;
 
@@ -121,8 +125,12 @@ class NetworkListView : public NetworkListViewBase,
   NetworkMap network_map_;
 
   // A map of network guids to their view.
-  typedef std::map<std::string, views::View*> NetworkGuidMap;
+  using NetworkGuidMap = std::map<std::string, views::View*>;
   NetworkGuidMap network_guid_map_;
+
+  // Save a map of network guids to their infos against current |network_list_|.
+  using NetworkInfoMap = std::map<std::string, std::unique_ptr<NetworkInfo>>;
+  NetworkInfoMap last_network_info_map_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkListView);
 };

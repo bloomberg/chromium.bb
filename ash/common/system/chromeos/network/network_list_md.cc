@@ -335,6 +335,12 @@ bool NetworkListView::IsNetworkEntry(views::View* view,
 void NetworkListView::UpdateNetworks(
     const NetworkStateHandler::NetworkStateList& networks) {
   SCOPED_NET_LOG_IF_SLOW();
+  // |network_list_| contains all the info and is going to be cleared and
+  // recreated. Save them to |last_network_info_map_|.
+  last_network_info_map_.clear();
+  for (auto& info : network_list_)
+    last_network_info_map_[info->guid] = std::move(info);
+
   network_list_.clear();
   const NetworkTypePattern pattern = delegate_->GetNetworkTypePattern();
   for (const auto* network : networks) {
@@ -583,10 +589,12 @@ void NetworkListView::UpdateNetworkChild(int index, const NetworkInfo* info) {
     network_view = delegate_->CreateViewForNetwork(*info);
   } else {
     network_view = found->second;
-    network_view->RemoveAllChildViews(true);
-    delegate_->UpdateViewForNetwork(network_view, *info);
-    network_view->Layout();
-    network_view->SchedulePaint();
+    if (NeedUpdateViewForNetwork(*info)) {
+      network_view->RemoveAllChildViews(true);
+      delegate_->UpdateViewForNetwork(network_view, *info);
+      network_view->Layout();
+      network_view->SchedulePaint();
+    }
   }
   PlaceViewAtIndex(network_view, index);
   if (info->disable)
@@ -661,7 +669,18 @@ int NetworkListView::UpdateSectionHeaderRow(NetworkTypePattern pattern,
 }
 
 void NetworkListView::NetworkIconChanged() {
-  UpdateNetworkIcons();
+  Update();
+}
+
+bool NetworkListView::NeedUpdateViewForNetwork(const NetworkInfo& info) const {
+  NetworkInfoMap::const_iterator found = last_network_info_map_.find(info.guid);
+  if (found == last_network_info_map_.end()) {
+    // If we cannot find |info| in |last_network_info_map_|, just return true
+    // since this is a new network so we have nothing to compare.
+    return true;
+  } else {
+    return *found->second != info;
+  }
 }
 
 }  // namespace ash
