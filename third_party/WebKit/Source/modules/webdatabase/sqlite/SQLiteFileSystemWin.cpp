@@ -155,10 +155,9 @@ int chromiumCurrentTime(sqlite3_vfs* vfs, double* prNow) {
   return wrappedVfs->xCurrentTime(wrappedVfs, prNow);
 }
 
-int chromiumGetLastError(sqlite3_vfs* vfs, int e, char* s) {
-  // xGetLastError() has never been used by SQLite.  The implementation in
-  // os_win.c indicates this is a reasonable implementation.
-  *s = '\0';
+int chromiumGetLastError(sqlite3_vfs* vfs, int nBuf, char* zBuf) {
+  if (nBuf && zBuf)
+    *zBuf = '\0';
   return 0;
 }
 
