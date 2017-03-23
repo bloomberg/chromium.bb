@@ -1768,6 +1768,7 @@ test("blink_platform_unittests") {
     "scheduler/renderer/budget_pool_unittest.cc",
     "scheduler/renderer/deadline_task_runner_unittest.cc",
     "scheduler/renderer/idle_time_estimator_unittest.cc",
+    "scheduler/renderer/render_widget_signals_unittest.cc",
     "scheduler/renderer/renderer_scheduler_impl_unittest.cc",
     "scheduler/renderer/task_cost_estimator_unittest.cc",
     "scheduler/renderer/task_queue_throttler_unittest.cc",

@@ -13,6 +13,7 @@ using testing::AnyNumber;
 using testing::Mock;
 using testing::_;
 
+namespace blink {
 namespace scheduler {
 
 namespace {
@@ -264,3 +265,4 @@ TEST_F(RenderWidgetSignalsTest,
 }
 
 }  // namespace scheduler
+}  // namespace blink
