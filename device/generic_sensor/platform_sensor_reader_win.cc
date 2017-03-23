@@ -11,6 +11,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/win/iunknown_impl.h"
+#include "base/win/scoped_propvariant.h"
 #include "device/generic_sensor/generic_sensor_consts.h"
 #include "device/generic_sensor/public/cpp/platform_sensor_configuration.h"
 #include "device/generic_sensor/public/cpp/sensor_reading.h"
@@ -38,12 +39,12 @@ bool GetReadingValueForProperty(REFPROPERTYKEY key,
                                 ISensorDataReport& report,
                                 double* value) {
   DCHECK(value);
-  PROPVARIANT variant_value = {};
-  if (SUCCEEDED(report.GetSensorValue(key, &variant_value))) {
-    if (variant_value.vt == VT_R8)
-      *value = variant_value.dblVal;
-    else if (variant_value.vt == VT_R4)
-      *value = variant_value.fltVal;
+  base::win::ScopedPropVariant variant_value;
+  if (SUCCEEDED(report.GetSensorValue(key, variant_value.Receive()))) {
+    if (variant_value.get().vt == VT_R8)
+      *value = variant_value.get().dblVal;
+    else if (variant_value.get().vt == VT_R4)
+      *value = variant_value.get().fltVal;
     else
       return false;
     return true;
@@ -164,6 +165,34 @@ std::unique_ptr<ReaderInitParams> CreateMagnetometerReaderInitParams() {
   return params;
 }
 
+// AbsoluteOrientation sensor reader initialization parameters.
+std::unique_ptr<ReaderInitParams> CreateAbsoluteOrientationReaderInitParams() {
+  auto params = base::MakeUnique<ReaderInitParams>();
+  params->sensor_type_id = SENSOR_TYPE_AGGREGATED_DEVICE_ORIENTATION;
+  params->reader_func =
+      base::Bind([](ISensorDataReport& report, SensorReading& reading) {
+        base::win::ScopedPropVariant quat_variant;
+        HRESULT hr = report.GetSensorValue(SENSOR_DATA_TYPE_QUATERNION,
+                                           quat_variant.Receive());
+        if (FAILED(hr) || quat_variant.get().vt != (VT_VECTOR | VT_UI1) ||
+            quat_variant.get().caub.cElems < 16) {
+          return E_FAIL;
+        }
+
+        float* quat = reinterpret_cast<float*>(quat_variant.get().caub.pElems);
+
+        // Windows uses coordinate system where Z axis points down from device
+        // screen, therefore, using right hand notation, we have to reverse
+        // sign for each quaternion component.
+        reading.values[0] = -quat[0];  // x*sin(Theta/2)
+        reading.values[1] = -quat[1];  // y*sin(Theta/2)
+        reading.values[2] = -quat[2];  // z*sin(Theta/2)
+        reading.values[3] = quat[3];   // cos(Theta/2)
+        return S_OK;
+      });
+  return params;
+}
+
 // Creates ReaderInitParams params structure. To implement support for new
 // sensor types, new switch case should be added and appropriate fields must
 // be set:
@@ -181,6 +210,8 @@ std::unique_ptr<ReaderInitParams> CreateReaderInitParamsForSensor(
       return CreateGyroscopeReaderInitParams();
     case mojom::SensorType::MAGNETOMETER:
       return CreateMagnetometerReaderInitParams();
+    case mojom::SensorType::ABSOLUTE_ORIENTATION:
+      return CreateAbsoluteOrientationReaderInitParams();
     default:
       NOTIMPLEMENTED();
       return nullptr;
@@ -305,11 +336,11 @@ std::unique_ptr<PlatformSensorReaderWin> PlatformSensorReaderWin::Create(
   if (!sensor)
     return nullptr;
 
-  PROPVARIANT variant = {};
-  HRESULT hr =
-      sensor->GetProperty(SENSOR_PROPERTY_MIN_REPORT_INTERVAL, &variant);
-  if (SUCCEEDED(hr) && variant.vt == VT_UI4)
-    params->min_reporting_interval_ms = variant.ulVal;
+  base::win::ScopedPropVariant min_interval;
+  HRESULT hr = sensor->GetProperty(SENSOR_PROPERTY_MIN_REPORT_INTERVAL,
+                                   min_interval.Receive());
+  if (SUCCEEDED(hr) && min_interval.get().vt == VT_UI4)
+    params->min_reporting_interval_ms = min_interval.get().ulVal;
 
   GUID interests[] = {SENSOR_EVENT_STATE_CHANGED, SENSOR_EVENT_DATA_UPDATED};
   hr = sensor->SetEventInterest(interests, arraysize(interests));

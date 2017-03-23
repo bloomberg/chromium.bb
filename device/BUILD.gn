@@ -252,7 +252,10 @@ test("device_unittests") {
     ]
 
     # Needed for "generic_sensor/platform_sensor_and_provider_unittest_win.cc"
-    libs = [ "sensorsapi.lib" ]
+    libs = [
+      "propsys.lib",
+      "sensorsapi.lib",
+    ]
   }
 
   if (enable_vr) {

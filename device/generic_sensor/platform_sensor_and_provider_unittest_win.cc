@@ -3,13 +3,15 @@
 // found in the LICENSE file.
 
 #include <SensorsApi.h>
-#include <Sensors.h>  // NOLINT
+#include <Sensors.h>      // NOLINT
+#include <Propvarutil.h>  // NOLINT
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/win/iunknown_impl.h"
+#include "base/win/scoped_propvariant.h"
 #include "device/generic_sensor/generic_sensor_consts.h"
 #include "device/generic_sensor/platform_sensor_provider_win.h"
 #include "device/generic_sensor/public/interfaces/sensor_provider.mojom.h"
@@ -333,7 +335,9 @@ class PlatformSensorAndProviderTestWin : public ::testing::Test {
       return false;
     }
   };
-  using SensorData = std::map<PROPERTYKEY, double, PropertyKeyCompare>;
+
+  using SensorData =
+      std::map<PROPERTYKEY, const PROPVARIANT*, PropertyKeyCompare>;
 
   // Generates OnDataUpdated event and creates ISensorDataReport with fake
   // |value| for property with |key|.
@@ -363,8 +367,7 @@ class PlatformSensorAndProviderTestWin : public ::testing::Test {
               if (it == values.end())
                 return E_FAIL;
 
-              variant->vt = VT_R8;
-              variant->dblVal = it->second;
+              PropVariantCopy(variant, it->second);
               return S_OK;
             })));
 
@@ -479,7 +482,9 @@ TEST_F(PlatformSensorAndProviderTestWin, SensorStarted) {
   EXPECT_TRUE(StartListening(sensor, client.get(), configuration));
 
   EXPECT_CALL(*client, OnSensorReadingChanged()).Times(1);
-  GenerateDataUpdatedEvent({{SENSOR_DATA_TYPE_LIGHT_LEVEL_LUX, 3.14}});
+  base::win::ScopedPropVariant pvLux;
+  InitPropVariantFromDouble(3.14, pvLux.Receive());
+  GenerateDataUpdatedEvent({{SENSOR_DATA_TYPE_LIGHT_LEVEL_LUX, pvLux.ptr()}});
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(sensor->StopListening(client.get(), configuration));
 }
@@ -567,9 +572,15 @@ TEST_F(PlatformSensorAndProviderTestWin, CheckAccelerometerReadingConversion) {
   double x_accel = 0.25;
   double y_accel = -0.25;
   double z_accel = -0.5;
-  GenerateDataUpdatedEvent({{SENSOR_DATA_TYPE_ACCELERATION_X_G, x_accel},
-                            {SENSOR_DATA_TYPE_ACCELERATION_Y_G, y_accel},
-                            {SENSOR_DATA_TYPE_ACCELERATION_Z_G, z_accel}});
+
+  base::win::ScopedPropVariant pvX, pvY, pvZ;
+  InitPropVariantFromDouble(x_accel, pvX.Receive());
+  InitPropVariantFromDouble(y_accel, pvY.Receive());
+  InitPropVariantFromDouble(z_accel, pvZ.Receive());
+
+  GenerateDataUpdatedEvent({{SENSOR_DATA_TYPE_ACCELERATION_X_G, pvX.ptr()},
+                            {SENSOR_DATA_TYPE_ACCELERATION_Y_G, pvY.ptr()},
+                            {SENSOR_DATA_TYPE_ACCELERATION_Z_G, pvZ.ptr()}});
 
   base::RunLoop().RunUntilIdle();
   SensorReadingSharedBuffer* buffer =
@@ -601,10 +612,15 @@ TEST_F(PlatformSensorAndProviderTestWin, CheckGyroscopeReadingConversion) {
   double y_ang_accel = -1.8;
   double z_ang_accel = -98.7;
 
+  base::win::ScopedPropVariant pvX, pvY, pvZ;
+  InitPropVariantFromDouble(x_ang_accel, pvX.Receive());
+  InitPropVariantFromDouble(y_ang_accel, pvY.Receive());
+  InitPropVariantFromDouble(z_ang_accel, pvZ.Receive());
+
   GenerateDataUpdatedEvent(
-      {{SENSOR_DATA_TYPE_ANGULAR_VELOCITY_X_DEGREES_PER_SECOND, x_ang_accel},
-       {SENSOR_DATA_TYPE_ANGULAR_VELOCITY_Y_DEGREES_PER_SECOND, y_ang_accel},
-       {SENSOR_DATA_TYPE_ANGULAR_VELOCITY_Z_DEGREES_PER_SECOND, z_ang_accel}});
+      {{SENSOR_DATA_TYPE_ANGULAR_VELOCITY_X_DEGREES_PER_SECOND, pvX.ptr()},
+       {SENSOR_DATA_TYPE_ANGULAR_VELOCITY_Y_DEGREES_PER_SECOND, pvY.ptr()},
+       {SENSOR_DATA_TYPE_ANGULAR_VELOCITY_Z_DEGREES_PER_SECOND, pvZ.ptr()}});
 
   base::RunLoop().RunUntilIdle();
   SensorReadingSharedBuffer* buffer =
@@ -636,10 +652,15 @@ TEST_F(PlatformSensorAndProviderTestWin, CheckMagnetometerReadingConversion) {
   double y_magn_field = -162.0;
   double z_magn_field = 457.0;
 
+  base::win::ScopedPropVariant pvX, pvY, pvZ;
+  InitPropVariantFromDouble(x_magn_field, pvX.Receive());
+  InitPropVariantFromDouble(y_magn_field, pvY.Receive());
+  InitPropVariantFromDouble(z_magn_field, pvZ.Receive());
+
   GenerateDataUpdatedEvent(
-      {{SENSOR_DATA_TYPE_MAGNETIC_FIELD_STRENGTH_X_MILLIGAUSS, x_magn_field},
-       {SENSOR_DATA_TYPE_MAGNETIC_FIELD_STRENGTH_Y_MILLIGAUSS, y_magn_field},
-       {SENSOR_DATA_TYPE_MAGNETIC_FIELD_STRENGTH_Z_MILLIGAUSS, z_magn_field}});
+      {{SENSOR_DATA_TYPE_MAGNETIC_FIELD_STRENGTH_X_MILLIGAUSS, pvX.ptr()},
+       {SENSOR_DATA_TYPE_MAGNETIC_FIELD_STRENGTH_Y_MILLIGAUSS, pvY.ptr()},
+       {SENSOR_DATA_TYPE_MAGNETIC_FIELD_STRENGTH_Z_MILLIGAUSS, pvZ.ptr()}});
 
   base::RunLoop().RunUntilIdle();
   SensorReadingSharedBuffer* buffer =
@@ -650,6 +671,53 @@ TEST_F(PlatformSensorAndProviderTestWin, CheckMagnetometerReadingConversion) {
               -y_magn_field * kMicroteslaInMilligauss);
   EXPECT_THAT(buffer->reading.values[2],
               -z_magn_field * kMicroteslaInMilligauss);
+  EXPECT_TRUE(sensor->StopListening(client.get(), configuration));
+}
+
+// Tests that AbsoluteOrientation sensor readings are correctly converted.
+TEST_F(PlatformSensorAndProviderTestWin,
+       CheckDeviceOrientationReadingConversion) {
+  mojo::ScopedSharedBufferHandle handle =
+      PlatformSensorProviderWin::GetInstance()->CloneSharedBufferHandle();
+  mojo::ScopedSharedBufferMapping mapping = handle->MapAtOffset(
+      sizeof(SensorReadingSharedBuffer),
+      SensorReadingSharedBuffer::GetOffset(SensorType::ABSOLUTE_ORIENTATION));
+
+  SetSupportedSensor(SENSOR_TYPE_AGGREGATED_DEVICE_ORIENTATION);
+  auto sensor = CreateSensor(SensorType::ABSOLUTE_ORIENTATION);
+  EXPECT_TRUE(sensor);
+
+  auto client = base::MakeUnique<NiceMock<MockPlatformSensorClient>>(sensor);
+  PlatformSensorConfiguration configuration(10);
+  EXPECT_TRUE(StartListening(sensor, client.get(), configuration));
+  EXPECT_CALL(*client, OnSensorReadingChanged()).Times(1);
+
+  double x = -0.5;
+  double y = -0.5;
+  double z = 0.5;
+  double w = 0.5;
+  float quat_elements[4] = {x, y, z, w};
+
+  base::win::ScopedPropVariant pvQuat;
+
+  // The SENSOR_DATA_TYPE_QUATERNION property has [VT_VECTOR | VT_UI1] type.
+  // https://msdn.microsoft.com/en-us/library/windows/hardware/dn265187(v=vs.85).aspx
+  // Helper functions e.g., InitVariantFromDoubleArray cannot be used for its
+  // intialization and the only way to initialize it, is to use
+  // InitPropVariantFromGUIDAsBuffer with quaternion format GUID.
+  InitPropVariantFromGUIDAsBuffer(SENSOR_DATA_TYPE_QUATERNION.fmtid,
+                                  pvQuat.Receive());
+  memcpy(pvQuat.get().caub.pElems, &quat_elements, sizeof(quat_elements));
+  GenerateDataUpdatedEvent({{SENSOR_DATA_TYPE_QUATERNION, pvQuat.ptr()}});
+
+  base::RunLoop().RunUntilIdle();
+  SensorReadingSharedBuffer* buffer =
+      static_cast<SensorReadingSharedBuffer*>(mapping.get());
+
+  EXPECT_THAT(buffer->reading.values[0], -x);
+  EXPECT_THAT(buffer->reading.values[1], -y);
+  EXPECT_THAT(buffer->reading.values[2], -z);
+  EXPECT_THAT(buffer->reading.values[3], w);
   EXPECT_TRUE(sensor->StopListening(client.get(), configuration));
 }
 
