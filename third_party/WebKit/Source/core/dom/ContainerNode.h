@@ -265,10 +265,12 @@ class CORE_EXPORT ContainerNode : public Node {
 
    public:
     static ChildrenChange forInsertion(Node& node,
+                                       Node* unchangedPrevious,
+                                       Node* unchangedNext,
                                        ChildrenChangeSource byParser) {
       ChildrenChange change = {
           node.isElementNode() ? ElementInserted : NonElementInserted, &node,
-          node.previousSibling(), node.nextSibling(), byParser};
+          unchangedPrevious, unchangedNext, byParser};
       return change;
     }
 
@@ -294,7 +296,16 @@ class CORE_EXPORT ContainerNode : public Node {
 
     ChildrenChangeType type;
     Member<Node> siblingChanged;
+    // |siblingBeforeChange| is
+    //  - siblingChanged.previousSibling before node removal
+    //  - siblingChanged.previousSibling after single node insertion
+    //  - previousSibling of the first inserted node after multiple node
+    //    insertion
     Member<Node> siblingBeforeChange;
+    // |siblingAfterChange| is
+    //  - siblingChanged.nextSibling before node removal
+    //  - siblingChanged.nextSibling after single node insertion
+    //  - nextSibling of the last inserted node after multiple node insertion.
     Member<Node> siblingAfterChange;
     ChildrenChangeSource byParser;
   };

@@ -228,9 +228,12 @@ void ContainerNode::insertNodeVector(const NodeVector& targets,
       notifyNodeInsertedInternal(child, postInsertionNotificationTargets);
     }
   }
-  for (const auto& targetNode : targets)
-    childrenChanged(
-        ChildrenChange::forInsertion(*targetNode, ChildrenChangeSourceAPI));
+  Node* unchangedPrevious =
+      targets.size() > 0 ? targets[0]->previousSibling() : nullptr;
+  for (const auto& targetNode : targets) {
+    childrenChanged(ChildrenChange::forInsertion(
+        *targetNode, unchangedPrevious, next, ChildrenChangeSourceAPI));
+  }
   for (const auto& descendant : postInsertionNotificationTargets) {
     if (descendant->isConnected())
       descendant->didNotifySubtreeInsertionsToDocument();
@@ -713,7 +716,8 @@ void ContainerNode::notifyNodeInserted(Node& root,
   NodeVector postInsertionNotificationTargets;
   notifyNodeInsertedInternal(root, postInsertionNotificationTargets);
 
-  childrenChanged(ChildrenChange::forInsertion(root, source));
+  childrenChanged(ChildrenChange::forInsertion(root, root.previousSibling(),
+                                               root.nextSibling(), source));
 
   for (const auto& targetNode : postInsertionNotificationTargets) {
     if (targetNode->isConnected())
