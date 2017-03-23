@@ -317,10 +317,10 @@ FYI_WATERFALL = {
       'swarming': False,
       'os_type': 'win',
     },
-    'Win7 Release (AMD R5 230)': {
+    'Win7 Release (AMD R7 240)': {
       'swarming_dimensions': [
         {
-          'gpu': '1002:6779',
+          'gpu': '1002:6613',
           'os': 'Windows-2008ServerR2-SP1'
         },
       ],
@@ -1258,7 +1258,8 @@ COMMON_GTESTS = {
 
           # These tests are flaky on old AMD.
           # TODO(jmadill): Enably flaky test retries only on this config.
-          'Win7 Release (AMD R5 230)',
+          # TODO(kbr): revisit this entry now that GPU has been updated.
+          'Win7 Release (AMD R7 240)',
         ],
       },
     ],
