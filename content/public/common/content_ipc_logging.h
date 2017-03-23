@@ -5,8 +5,6 @@
 #ifndef CONTENT_PUBLIC_COMMON_CONTENT_IPC_LOGGING_H_
 #define CONTENT_PUBLIC_COMMON_CONTENT_IPC_LOGGING_H_
 
-#include "ipc/ipc_message.h"  // For IPC_MESSAGE_LOG_ENABLED.
-
 #include <stdint.h>
 
 #include "content/common/content_export.h"
@@ -14,7 +12,7 @@
 
 namespace content {
 
-#if defined(IPC_MESSAGE_LOG_ENABLED)
+#if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
 
 // Register a logger for the given IPC message. Use
 //

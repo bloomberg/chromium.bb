@@ -20,7 +20,7 @@
 namespace IPC {
 namespace internal {
 
-#ifdef IPC_MESSAGE_LOG_ENABLED
+#if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
 
 namespace {
 std::string GetMessageText(const Message& message) {
@@ -42,7 +42,7 @@ std::string GetMessageText(const Message& message) {
                          (message).flags(), TRACE_EVENT_FLAG_FLOW_IN, "class", \
                          IPC_MESSAGE_ID_CLASS((message).type()), "line",       \
                          IPC_MESSAGE_ID_LINE((message).type()));
-#endif  // IPC_MESSAGE_LOG_ENABLED
+#endif  // BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
 
 ChannelReader::ChannelReader(Listener* listener)
   : listener_(listener),

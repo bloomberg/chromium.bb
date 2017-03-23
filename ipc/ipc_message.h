@@ -16,10 +16,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "ipc/ipc_export.h"
-
-#if !defined(NDEBUG)
-#define IPC_MESSAGE_LOG_ENABLED
-#endif
+#include "ipc/ipc_features.h"
 
 namespace IPC {
 
@@ -207,7 +204,7 @@ class IPC_EXPORT Message : public base::Pickle {
   // Returns true if there are any attachment in this message.
   bool HasAttachments() const override;
 
-#ifdef IPC_MESSAGE_LOG_ENABLED
+#if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
   // Adds the outgoing time from Time::Now() at the end of the message and sets
   // a bit to indicate that it's been added.
   void set_sent_time(int64_t time);
@@ -275,7 +272,7 @@ class IPC_EXPORT Message : public base::Pickle {
     return attachment_set_.get();
   }
 
-#ifdef IPC_MESSAGE_LOG_ENABLED
+#if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
   // Used for logging.
   mutable int64_t received_time_;
   mutable std::string output_params_;

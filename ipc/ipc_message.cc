@@ -82,7 +82,7 @@ Message::Message(const Message& other) : base::Pickle(other) {
 
 void Message::Init() {
   dispatch_error_ = false;
-#ifdef IPC_MESSAGE_LOG_ENABLED
+#if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
   received_time_ = 0;
   dont_log_ = false;
   log_data_ = NULL;
@@ -109,7 +109,7 @@ void Message::EnsureMessageAttachmentSet() {
     attachment_set_ = new MessageAttachmentSet;
 }
 
-#ifdef IPC_MESSAGE_LOG_ENABLED
+#if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
 void Message::set_sent_time(int64_t time) {
   DCHECK((header()->flags & HAS_SENT_TIME_BIT) == 0);
   header()->flags |= HAS_SENT_TIME_BIT;
@@ -128,7 +128,7 @@ int64_t Message::sent_time() const {
 void Message::set_received_time(int64_t time) const {
   received_time_ = time;
 }
-#endif
+#endif  // BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
 
 Message::NextMessageInfo::NextMessageInfo()
     : message_size(0), message_found(false), pickle_end(nullptr),
