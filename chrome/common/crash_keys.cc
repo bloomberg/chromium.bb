@@ -16,7 +16,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/flags_ui/flags_ui_switches.h"
 #include "content/public/common/content_switches.h"
-#include "gpu/config/gpu_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/common/chrome_switches.h"
@@ -35,6 +34,20 @@ const char kNumExtensionsCount[] = "num-extensions";
 
 const char kShutdownType[] = "shutdown-type";
 const char kBrowserUnpinTrace[] = "browser-unpin-trace";
+
+#if !defined(OS_ANDROID)
+const char kGPUVendorID[] = "gpu-venid";
+const char kGPUDeviceID[] = "gpu-devid";
+#endif
+const char kGPUDriverVersion[] = "gpu-driver";
+const char kGPUPixelShaderVersion[] = "gpu-psver";
+const char kGPUVertexShaderVersion[] = "gpu-vsver";
+#if defined(OS_MACOSX)
+const char kGPUGLVersion[] = "gpu-glver";
+#elif defined(OS_POSIX)
+const char kGPUVendor[] = "gpu-gl-vendor";
+const char kGPURenderer[] = "gpu-gl-renderer";
+#endif
 
 #if defined(OS_WIN)
 const char kHungRendererOutstandingAckCount[] = "hung-outstanding-acks";
@@ -106,17 +119,17 @@ size_t RegisterChromeCrashKeys() {
     {kShutdownType, kSmallSize},
     {kBrowserUnpinTrace, kMediumSize},
 #if !defined(OS_ANDROID)
-    {gpu::crash_keys::kGPUVendorID, kSmallSize},
-    {gpu::crash_keys::kGPUDeviceID, kSmallSize},
+    {kGPUVendorID, kSmallSize},
+    {kGPUDeviceID, kSmallSize},
 #endif
-    {gpu::crash_keys::kGPUDriverVersion, kSmallSize},
-    {gpu::crash_keys::kGPUPixelShaderVersion, kSmallSize},
-    {gpu::crash_keys::kGPUVertexShaderVersion, kSmallSize},
+    {kGPUDriverVersion, kSmallSize},
+    {kGPUPixelShaderVersion, kSmallSize},
+    {kGPUVertexShaderVersion, kSmallSize},
 #if defined(OS_MACOSX)
-    {gpu::crash_keys::kGPUGLVersion, kSmallSize},
+    {kGPUGLVersion, kSmallSize},
 #elif defined(OS_POSIX)
-    {gpu::crash_keys::kGPUVendor, kSmallSize},
-    {gpu::crash_keys::kGPURenderer, kSmallSize},
+    {kGPUVendor, kSmallSize},
+    {kGPURenderer, kSmallSize},
 #endif
 
     // content/:
