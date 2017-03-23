@@ -1,20 +1,19 @@
 "use strict";
 
-let mockBatteryMonitor = loadMojoModules(
-    'mockBatteryMonitor',
-    ['device/battery/battery_monitor.mojom',
-     'device/battery/battery_status.mojom',
-     'mojo/public/js/bindings',
-    ]).then(mojo => {
-  let [batteryMonitor, batteryStatus, bindings] = mojo.modules;
+let mockBatteryMonitor = loadMojoModules('mockBatteryMonitor', [
+                           'device/battery/battery_monitor.mojom',
+                           'device/battery/battery_status.mojom',
+                           'services/device/public/interfaces/constants.mojom',
+                           'mojo/public/js/bindings',
+                         ]).then(mojo => {
+  let [batteryMonitor, batteryStatus, deviceConstants, bindings] = mojo.modules;
 
   class MockBatteryMonitor {
-    constructor(interfaceProvider) {
-      interfaceProvider.addInterfaceOverrideForTesting(
-          batteryMonitor.BatteryMonitor.name,
+    constructor(connector) {
+      connector.addInterfaceOverrideForTesting(
+          deviceConstants.kServiceName, batteryMonitor.BatteryMonitor.name,
           handle => this.bindingSet_.addBinding(this, handle));
 
-      this.interfaceProvider_ = interfaceProvider;
       this.pendingRequests_ = [];
       this.status_ = null;
       this.bindingSet_ = new bindings.BindingSet(batteryMonitor.BatteryMonitor);
@@ -45,7 +44,7 @@ let mockBatteryMonitor = loadMojoModules(
       this.status_ = null;
     }
   }
-  return new MockBatteryMonitor(mojo.interfaces);
+  return new MockBatteryMonitor(mojo.connector);
 });
 
 let batteryInfo;

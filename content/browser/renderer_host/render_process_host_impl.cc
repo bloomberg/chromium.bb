@@ -166,7 +166,6 @@
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
-#include "device/battery/battery_monitor_impl.h"
 #include "device/gamepad/gamepad_monitor.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gpu_switches.h"
@@ -1209,9 +1208,6 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       base::Bind(&IndexedDBDispatcherHost::AddBinding, indexed_db_factory_));
 
 #if defined(OS_ANDROID)
-  AddUIThreadInterface(registry.get(),
-                       GetGlobalJavaInterfaces()
-                           ->CreateInterfaceFactory<device::BatteryMonitor>());
   AddUIThreadInterface(
       registry.get(), GetGlobalJavaInterfaces()
                           ->CreateInterfaceFactory<
@@ -1225,8 +1221,6 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       GetGlobalJavaInterfaces()
           ->CreateInterfaceFactory<shape_detection::mojom::TextDetection>());
 #else
-  AddUIThreadInterface(
-      registry.get(), base::Bind(&device::BatteryMonitorImpl::Create));
   AddUIThreadInterface(
       registry.get(),
       base::Bind(&ForwardShapeDetectionRequest<

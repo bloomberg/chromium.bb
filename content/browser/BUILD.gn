@@ -67,8 +67,6 @@ source_set("browser") {
     "//content/common:mojo_bindings",
     "//content/public/common:common_sources",
     "//crypto",
-    "//device/battery",
-    "//device/battery:mojo_bindings",
     "//device/bluetooth",
     "//device/gamepad",
     "//device/generic_sensor",
@@ -1840,7 +1838,6 @@ source_set("browser") {
       "tracing/tracing_ui.cc",
       "tracing/tracing_ui.h",
     ]
-    deps -= [ "//device/battery" ]
     deps += [
       "//content/public/android:jni",
       "//media",

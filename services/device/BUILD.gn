@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/features.gni")
 import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
 
@@ -17,6 +18,7 @@ source_set("lib") {
 
   deps = [
     "//base",
+    "//device/battery:mojo_bindings",
     "//device/sensors",
     "//services/device/fingerprint",
     "//services/device/power_monitor",
@@ -30,6 +32,9 @@ source_set("lib") {
       "//services/device/android/register_jni.cc",
       "//services/device/android/register_jni.h",
     ]
+    deps += [ ":device_service_jni_headers" ]
+  } else {
+    deps += [ "//device/battery" ]
   }
 }
 
@@ -54,6 +59,12 @@ source_set("tests") {
     sources += [ "fingerprint/fingerprint_chromeos_unittest.cc" ]
     deps += [ "//services/device/fingerprint" ]
   }
+
+  if (is_android) {
+    deps += [ ":device_service_jni_headers" ]
+  } else {
+    deps += [ "//device/battery" ]
+  }
 }
 
 service_manifest("manifest") {
@@ -62,13 +73,28 @@ service_manifest("manifest") {
 }
 
 if (is_android) {
+  generate_jni("device_service_jni_headers") {
+    sources = [
+      "android/java/src/org/chromium/services/device/InterfaceRegistrar.java",
+    ]
+    jni_package = "device_service"
+  }
+
   android_library("java") {
     java_files = [
+      "android/java/src/org/chromium/services/device/InterfaceRegistrar.java",
       "screen_orientation/android/java/src/org/chromium/device/screen_orientation/ScreenOrientationListener.java",
       "time_zone_monitor/android/java/src/org/chromium/device/time_zone_monitor/TimeZoneMonitor.java",
     ]
     deps = [
       "//base:base_java",
+      "//device/battery:mojo_bindings_java",
+      "//device/battery/android:battery_monitor_java",
+      "//mojo/android:system_java",
+      "//mojo/public/java:bindings_java",
+      "//mojo/public/java:system_java",
+      "//services/service_manager/public/interfaces:interfaces_java",
+      "//services/service_manager/public/java:service_manager_java",
       "//ui/android:ui_java",
     ]
   }

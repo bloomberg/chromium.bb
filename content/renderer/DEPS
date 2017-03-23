@@ -11,7 +11,6 @@ include_rules = [
   "+content/public/child",
   "+content/public/renderer",
   "+content/child",
-  "+device/battery",  # For battery status service.
   "+device/base/synchronization",
   "+device/gamepad/public/interfaces",
   "+device/screen_orientation/public/interfaces",

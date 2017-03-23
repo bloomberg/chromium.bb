@@ -14,8 +14,6 @@ import org.chromium.content.browser.shapedetection.FaceDetectionProviderImpl;
 import org.chromium.content_public.browser.InterfaceRegistrar;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.device.BatteryMonitor;
-import org.chromium.device.battery.BatteryMonitorFactory;
 import org.chromium.device.mojom.VibrationManager;
 import org.chromium.device.nfc.mojom.Nfc;
 import org.chromium.device.vibration.VibrationManagerImpl;
@@ -74,8 +72,6 @@ class InterfaceRegistrarImpl {
                 InterfaceRegistry registry, final Context applicationContext) {
             registry.addInterface(
                     VibrationManager.MANAGER, new VibrationManagerImpl.Factory(applicationContext));
-            registry.addInterface(
-                    BatteryMonitor.MANAGER, new BatteryMonitorFactory(applicationContext));
             registry.addInterface(FaceDetectionProvider.MANAGER,
                     new FaceDetectionProviderImpl.Factory(applicationContext));
             registry.addInterface(AndroidOverlayProvider.MANAGER,

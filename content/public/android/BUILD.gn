@@ -35,8 +35,6 @@ android_library("content_java") {
   deps = [
     ":content_java_resources",
     "//base:base_java",
-    "//device/battery:mojo_bindings_java",
-    "//device/battery/android:battery_monitor_java",
     "//device/bluetooth:java",
     "//device/gamepad:java",
     "//device/generic_sensor:java",

@@ -20,6 +20,7 @@
       "requires": {
         "content_browser": [ "renderer" ],
         "device": [
+          "device:battery_monitor",
           "device:power_monitor",
           "device:screen_orientation",
           "device:sensors",

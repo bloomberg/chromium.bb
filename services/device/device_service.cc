@@ -9,7 +9,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "device/battery/battery_monitor.mojom.h"
+#include "device/battery/battery_monitor_impl.h"
+#include "device/battery/battery_status_service.h"
 #include "device/sensors/device_sensor_host.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "services/device/fingerprint/fingerprint.h"
 #include "services/device/power_monitor/power_monitor_message_broadcaster.h"
 #include "services/device/time_zone_monitor/time_zone_monitor.h"
@@ -17,6 +21,9 @@
 #include "services/service_manager/public/cpp/interface_registry.h"
 
 #if defined(OS_ANDROID)
+#include "base/android/context_utils.h"
+#include "base/android/jni_android.h"
+#include "jni/InterfaceRegistrar_jni.h"
 #include "services/device/android/register_jni.h"
 #include "services/device/screen_orientation/screen_orientation_listener_android.h"
 #endif
@@ -40,10 +47,19 @@ std::unique_ptr<service_manager::Service> CreateDeviceService(
 DeviceService::DeviceService(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
-    : file_task_runner_(std::move(file_task_runner)),
-      io_task_runner_(std::move(io_task_runner)) {}
+    :
+#if defined(OS_ANDROID)
+      java_interface_provider_initialized_(false),
+#endif
+      file_task_runner_(std::move(file_task_runner)),
+      io_task_runner_(std::move(io_task_runner)) {
+}
 
-DeviceService::~DeviceService() {}
+DeviceService::~DeviceService() {
+#if !defined(OS_ANDROID)
+  device::BatteryStatusService::GetInstance()->Shutdown();
+#endif
+}
 
 void DeviceService::OnStart() {}
 
@@ -58,8 +74,22 @@ bool DeviceService::OnConnect(const service_manager::ServiceInfo& remote_info,
   registry->AddInterface<mojom::ScreenOrientationListener>(this);
   registry->AddInterface<mojom::TimeZoneMonitor>(this);
 
+#if defined(OS_ANDROID)
+  registry->AddInterface(
+      GetJavaInterfaceProvider()->CreateInterfaceFactory<BatteryMonitor>());
+#else
+  registry->AddInterface<BatteryMonitor>(this);
+#endif
+
   return true;
 }
+
+#if !defined(OS_ANDROID)
+void DeviceService::Create(const service_manager::Identity& remote_identity,
+                           BatteryMonitorRequest request) {
+  device::BatteryMonitorImpl::Create(std::move(request));
+}
+#endif
 
 void DeviceService::Create(const service_manager::Identity& remote_identity,
                            mojom::FingerprintRequest request) {
@@ -158,5 +188,22 @@ void DeviceService::Create(const service_manager::Identity& remote_identity,
     time_zone_monitor_ = TimeZoneMonitor::Create(file_task_runner_);
   time_zone_monitor_->Bind(std::move(request));
 }
+
+#if defined(OS_ANDROID)
+service_manager::InterfaceProvider* DeviceService::GetJavaInterfaceProvider() {
+  if (!java_interface_provider_initialized_) {
+    service_manager::mojom::InterfaceProviderPtr provider;
+    JNIEnv* env = base::android::AttachCurrentThread();
+    Java_InterfaceRegistrar_createInterfaceRegistryForContext(
+        env, mojo::MakeRequest(&provider).PassMessagePipe().release().value(),
+        base::android::GetApplicationContext());
+    java_interface_provider_.Bind(std::move(provider));
+
+    java_interface_provider_initialized_ = true;
+  }
+
+  return &java_interface_provider_;
+}
+#endif
 
 }  // namespace device

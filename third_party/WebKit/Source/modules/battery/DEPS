@@ -8,5 +8,6 @@ include_rules = [
     "+modules/battery",
     "+platform",
     "+public/platform",
+    "+services/device/public/interfaces/constants.mojom-blink.h",
     "-web",
 ]

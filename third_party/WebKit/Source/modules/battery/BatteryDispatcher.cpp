@@ -5,8 +5,9 @@
 #include "modules/battery/BatteryDispatcher.h"
 
 #include "platform/mojo/MojoHelper.h"
-#include "public/platform/InterfaceProvider.h"
+#include "public/platform/Connector.h"
 #include "public/platform/Platform.h"
+#include "services/device/public/interfaces/constants.mojom-blink.h"
 #include "wtf/Assertions.h"
 
 namespace blink {
@@ -44,8 +45,8 @@ void BatteryDispatcher::updateBatteryStatus(
 
 void BatteryDispatcher::startListening() {
   DCHECK(!m_monitor.is_bound());
-  Platform::current()->interfaceProvider()->getInterface(
-      mojo::MakeRequest(&m_monitor));
+  Platform::current()->connector()->bindInterface(
+      device::mojom::blink::kServiceName, mojo::MakeRequest(&m_monitor));
   queryNextStatus();
 }
 

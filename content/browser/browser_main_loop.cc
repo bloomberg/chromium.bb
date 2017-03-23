@@ -90,7 +90,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/result_codes.h"
-#include "device/battery/battery_status_service.h"
 #include "device/gamepad/gamepad_service.h"
 #include "gpu/vulkan/features.h"
 #include "media/audio/audio_system_impl.h"
@@ -1376,12 +1375,6 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
     TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:GamepadService");
     device::GamepadService::GetInstance()->Terminate();
   }
-#if !defined(OS_ANDROID)
-  {
-    TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:BatteryStatusService");
-    device::BatteryStatusService::GetInstance()->Shutdown();
-  }
-#endif
   {
     TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:DeleteDataSources");
     URLDataManager::DeleteDataSources();

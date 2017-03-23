@@ -6,14 +6,17 @@
 #define SERVICES_DEVICE_DEVICE_SERVICE_H_
 
 #include "base/memory/ref_counted.h"
+#include "device/battery/battery_monitor.mojom.h"
 #include "device/screen_orientation/public/interfaces/screen_orientation.mojom.h"
 #include "device/sensors/public/interfaces/light.mojom.h"
 #include "device/sensors/public/interfaces/motion.mojom.h"
 #include "device/sensors/public/interfaces/orientation.mojom.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/device/public/interfaces/fingerprint.mojom.h"
 #include "services/device/public/interfaces/power_monitor.mojom.h"
 #include "services/device/public/interfaces/time_zone_monitor.mojom.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/cpp/service.h"
 
 namespace base {
@@ -37,6 +40,10 @@ class DeviceService
       public service_manager::InterfaceFactory<mojom::OrientationSensor>,
       public service_manager::InterfaceFactory<
           mojom::OrientationAbsoluteSensor>,
+#if !defined(OS_ANDROID)
+      // On Android the Device Service provides BatteryMonitor via Java.
+      public service_manager::InterfaceFactory<BatteryMonitor>,
+#endif
       public service_manager::InterfaceFactory<mojom::PowerMonitor>,
       public service_manager::InterfaceFactory<
           mojom::ScreenOrientationListener>,
@@ -72,6 +79,12 @@ class DeviceService
   void Create(const service_manager::Identity& remote_identity,
               mojom::OrientationAbsoluteSensorRequest request) override;
 
+#if !defined(OS_ANDROID)
+  // InterfaceFactory<BatteryMonitor>:
+  void Create(const service_manager::Identity& remote_identity,
+              BatteryMonitorRequest request) override;
+#endif
+
   // InterfaceFactory<mojom::PowerMonitor>:
   void Create(const service_manager::Identity& remote_identity,
               mojom::PowerMonitorRequest request) override;
@@ -87,6 +100,16 @@ class DeviceService
   std::unique_ptr<PowerMonitorMessageBroadcaster>
       power_monitor_message_broadcaster_;
   std::unique_ptr<TimeZoneMonitor> time_zone_monitor_;
+#if defined(OS_ANDROID)
+  // Binds |java_interface_provider_| to an interface registry that exposes
+  // factories for the interfaces that are provided via Java on Android.
+  service_manager::InterfaceProvider* GetJavaInterfaceProvider();
+
+  // InterfaceProvider that is bound to the Java-side interface registry.
+  service_manager::InterfaceProvider java_interface_provider_;
+
+  bool java_interface_provider_initialized_;
+#endif
 
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;

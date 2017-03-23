@@ -31,7 +31,6 @@
           "content::mojom::StoragePartitionService",
           "content::mojom::URLLoaderFactory",
           "content::mojom::VideoCaptureHost",
-          "device::BatteryMonitor",
           "device::mojom::GamepadMonitor",
           "discardable_memory::mojom::DiscardableSharedMemoryManager",
           "media::mojom::ImageCapture",
