@@ -40,12 +40,12 @@ class U2fMessage {
                                             const std::vector<uint8_t>& data);
   // Reconstruct a message from serialized message data
   static std::unique_ptr<U2fMessage> CreateFromSerializedData(
-      scoped_refptr<net::IOBufferWithSize> buf);
+      const std::vector<uint8_t>& buf);
   // Pop front of queue with next packet
   scoped_refptr<net::IOBufferWithSize> PopNextPacket();
   // Adds a continuation packet to the packet list, from the serialized
   // response value
-  bool AddContinuationPacket(scoped_refptr<net::IOBufferWithSize> packet_buf);
+  bool AddContinuationPacket(const std::vector<uint8_t>& packet_buf);
   size_t NumPackets();
   // Returns entire message payload
   std::vector<uint8_t> GetMessagePayload() const;

@@ -197,15 +197,14 @@ void U2fHidDevice::OnRead(U2fHidMessageCallback callback,
                           bool success,
                           scoped_refptr<net::IOBuffer> buf,
                           size_t size) {
-  if (!success) {
+  if (!success || !buf) {
     std::move(callback).Run(success, nullptr);
     return;
   }
 
-  scoped_refptr<net::IOBufferWithSize> buffer(new net::IOBufferWithSize(size));
-  memcpy(buffer->data(), buf->data(), size);
+  std::vector<uint8_t> read_buffer(buf->data(), buf->data() + size);
   std::unique_ptr<U2fMessage> read_message =
-      U2fMessage::CreateFromSerializedData(buffer);
+      U2fMessage::CreateFromSerializedData(read_buffer);
 
   if (!read_message) {
     std::move(callback).Run(false, nullptr);
@@ -236,14 +235,13 @@ void U2fHidDevice::OnReadContinuation(std::unique_ptr<U2fMessage> message,
                                       bool success,
                                       scoped_refptr<net::IOBuffer> buf,
                                       size_t size) {
-  if (!success) {
+  if (!success || !buf) {
     std::move(callback).Run(success, nullptr);
     return;
   }
 
-  scoped_refptr<net::IOBufferWithSize> buffer(new net::IOBufferWithSize(size));
-  memcpy(buffer->data(), buf->data(), size);
-  message->AddContinuationPacket(buffer);
+  std::vector<uint8_t> read_buffer(buf->data(), buf->data() + size);
+  message->AddContinuationPacket(read_buffer);
   if (message->MessageComplete()) {
     std::move(callback).Run(success, std::move(message));
     return;

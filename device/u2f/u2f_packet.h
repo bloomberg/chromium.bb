@@ -25,10 +25,10 @@ namespace device {
 // payload information is stored in U2fContinuationPackets.
 class U2fPacket {
  public:
-  U2fPacket(const std::vector<uint8_t> data, uint32_t channel_id);
+  U2fPacket(const std::vector<uint8_t>& data, uint32_t channel_id);
   virtual ~U2fPacket();
 
-  scoped_refptr<net::IOBufferWithSize> GetSerializedBuffer();
+  virtual scoped_refptr<net::IOBufferWithSize> GetSerializedData() = 0;
   std::vector<uint8_t> GetPacketPayload() const;
   uint32_t channel_id() { return channel_id_; }
 
@@ -39,7 +39,6 @@ class U2fPacket {
   static constexpr size_t kPacketSize = 65;
   std::vector<uint8_t> data_;
   uint32_t channel_id_;
-  scoped_refptr<net::IOBufferWithSize> serialized_;
 
  private:
   friend class U2fMessage;
@@ -55,10 +54,9 @@ class U2fInitPacket : public U2fPacket {
  public:
   U2fInitPacket(uint32_t channel_id,
                 uint8_t cmd,
-                const std::vector<uint8_t> data,
+                const std::vector<uint8_t>& data,
                 uint16_t payload_length);
-  U2fInitPacket(scoped_refptr<net::IOBufferWithSize> buf,
-                size_t* remaining_size);
+  U2fInitPacket(const std::vector<uint8_t>& serialized, size_t* remaining_size);
   ~U2fInitPacket() final;
 
   // Creates a packet from the serialized data of an initialization packet. As
@@ -66,8 +64,9 @@ class U2fInitPacket : public U2fPacket {
   // included within the serialized data. Remaining size will be returned to
   // inform the callee how many additional packets to expect.
   static std::unique_ptr<U2fInitPacket> CreateFromSerializedData(
-      scoped_refptr<net::IOBufferWithSize> buf,
+      const std::vector<uint8_t>& serialized,
       size_t* remaining_size);
+  scoped_refptr<net::IOBufferWithSize> GetSerializedData() final;
   uint8_t command() { return command_; }
   uint16_t payload_length() { return payload_length_; }
 
@@ -83,10 +82,10 @@ class U2fInitPacket : public U2fPacket {
 // 0x00 to 0x7f.
 class U2fContinuationPacket : public U2fPacket {
  public:
-  U2fContinuationPacket(const uint32_t channel_id,
-                        const uint8_t sequence,
-                        std::vector<uint8_t> data);
-  U2fContinuationPacket(scoped_refptr<net::IOBufferWithSize> buf,
+  U2fContinuationPacket(uint32_t channel_id,
+                        uint8_t sequence,
+                        const std::vector<uint8_t>& data);
+  U2fContinuationPacket(const std::vector<uint8_t>& serialized,
                         size_t* remaining_size);
   ~U2fContinuationPacket() final;
 
@@ -95,8 +94,9 @@ class U2fContinuationPacket : public U2fPacket {
   // the remaining size should be passed to inform the packet of how much data
   // to expect.
   static std::unique_ptr<U2fContinuationPacket> CreateFromSerializedData(
-      scoped_refptr<net::IOBufferWithSize> buf,
+      const std::vector<uint8_t>& serialized,
       size_t* remaining_size);
+  scoped_refptr<net::IOBufferWithSize> GetSerializedData() final;
   uint8_t sequence() { return sequence_; }
 
  private:

@@ -23,11 +23,9 @@ std::unique_ptr<U2fMessage> U2fMessage::Create(
 
 // static
 std::unique_ptr<U2fMessage> U2fMessage::CreateFromSerializedData(
-    scoped_refptr<net::IOBufferWithSize> buf) {
+    const std::vector<uint8_t>& buf) {
   size_t remaining_size = 0;
-  if (buf == nullptr ||
-      static_cast<size_t>(buf->size()) > U2fPacket::kPacketSize ||
-      static_cast<size_t>(buf->size()) < kInitPacketHeader)
+  if (buf.size() > U2fPacket::kPacketSize || buf.size() < kInitPacketHeader)
     return nullptr;
 
   std::unique_ptr<U2fInitPacket> init_packet =
@@ -95,16 +93,16 @@ std::list<std::unique_ptr<U2fPacket>>::const_iterator U2fMessage::end() {
 
 scoped_refptr<net::IOBufferWithSize> U2fMessage::PopNextPacket() {
   if (NumPackets() > 0) {
-    scoped_refptr<net::IOBufferWithSize> buf =
-        packets_.front()->GetSerializedBuffer();
+    scoped_refptr<net::IOBufferWithSize> data =
+        packets_.front()->GetSerializedData();
+
     packets_.pop_front();
-    return buf;
+    return data;
   }
   return nullptr;
 }
 
-bool U2fMessage::AddContinuationPacket(
-    scoped_refptr<net::IOBufferWithSize> buf) {
+bool U2fMessage::AddContinuationPacket(const std::vector<uint8_t>& buf) {
   size_t remaining_size = remaining_size_;
   std::unique_ptr<U2fContinuationPacket> cont_packet =
       U2fContinuationPacket::CreateFromSerializedData(buf, &remaining_size);
