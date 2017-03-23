@@ -573,6 +573,17 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
     return weak_factory_.GetWeakPtr();
   }
 
+  // Request composition updates from RenderWidget. If |immediate_request| is
+  // true, RenderWidget will respond immediately. If |monitor_updates| is true,
+  // then RenderWidget sends updates for each compositor frame when there are
+  // changes, or when the text selection changes inside a frame. If both fields
+  // are false, RenderWidget will not send any updates. To avoid sending
+  // unnecessary IPCs to RenderWidget (e.g., asking for monitor updates while
+  // we are already receiving updates), when
+  // |monitoring_composition_info_| == |monitor_updates| no IPC is sent to the
+  // renderer unless it is for an immediate request.
+  void RequestCompositionUpdates(bool immediate_request, bool monitor_updates);
+
  protected:
   // ---------------------------------------------------------------------------
   // The following method is overridden by RenderViewHost to send upwards to
@@ -902,6 +913,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // TODO(kenrb, fsamuel): We should use SurfaceIDs for this purpose when they
   // are available in the renderer process. See https://crbug.com/695579.
   uint32_t current_content_source_id_;
+
+  // When true, the RenderWidget is regularly sending updates regarding
+  // composition info. It should only be true when there is a focused editable
+  // node.
+  bool monitoring_composition_info_;
 
 #if defined(OS_MACOSX)
   std::unique_ptr<device::PowerSaveBlocker> power_save_blocker_;

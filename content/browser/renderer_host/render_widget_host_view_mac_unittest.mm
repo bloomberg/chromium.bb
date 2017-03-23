@@ -1582,13 +1582,13 @@ TEST_F(InputMethodMacTest, MonitorCompositionRangeForActiveWidget) {
   // The tab's widget must have received an IPC regarding composition updates.
   const IPC::Message* composition_request_msg_for_tab =
       tab_sink().GetUniqueMessageMatching(
-          InputMsg_RequestCompositionUpdate::ID);
+          InputMsg_RequestCompositionUpdates::ID);
   EXPECT_TRUE(composition_request_msg_for_tab);
 
   // The message should ask for monitoring updates, but no immediate update.
-  InputMsg_RequestCompositionUpdate::Param tab_msg_params;
-  InputMsg_RequestCompositionUpdate::Read(composition_request_msg_for_tab,
-                                          &tab_msg_params);
+  InputMsg_RequestCompositionUpdates::Param tab_msg_params;
+  InputMsg_RequestCompositionUpdates::Read(composition_request_msg_for_tab,
+                                           &tab_msg_params);
   bool is_tab_msg_for_immediate_request = std::get<0>(tab_msg_params);
   bool is_tab_msg_for_monitor_request = std::get<1>(tab_msg_params);
   EXPECT_FALSE(is_tab_msg_for_immediate_request);
@@ -1601,13 +1601,13 @@ TEST_F(InputMethodMacTest, MonitorCompositionRangeForActiveWidget) {
 
   // The tab should receive another IPC for composition updates.
   composition_request_msg_for_tab = tab_sink().GetUniqueMessageMatching(
-      InputMsg_RequestCompositionUpdate::ID);
+      InputMsg_RequestCompositionUpdates::ID);
   EXPECT_TRUE(composition_request_msg_for_tab);
 
   // This time, the tab should have been asked to stop monitoring (and no
   // immediate updates).
-  InputMsg_RequestCompositionUpdate::Read(composition_request_msg_for_tab,
-                                          &tab_msg_params);
+  InputMsg_RequestCompositionUpdates::Read(composition_request_msg_for_tab,
+                                           &tab_msg_params);
   is_tab_msg_for_immediate_request = std::get<0>(tab_msg_params);
   is_tab_msg_for_monitor_request = std::get<1>(tab_msg_params);
   EXPECT_FALSE(is_tab_msg_for_immediate_request);
@@ -1617,14 +1617,14 @@ TEST_F(InputMethodMacTest, MonitorCompositionRangeForActiveWidget) {
   // The child too must have received an IPC for composition updates.
   const IPC::Message* composition_request_msg_for_child =
       child_sink().GetUniqueMessageMatching(
-          InputMsg_RequestCompositionUpdate::ID);
+          InputMsg_RequestCompositionUpdates::ID);
   EXPECT_TRUE(composition_request_msg_for_child);
 
   // Verify that the message is asking for monitoring to start; but no immediate
   // updates.
-  InputMsg_RequestCompositionUpdate::Param child_msg_params;
-  InputMsg_RequestCompositionUpdate::Read(composition_request_msg_for_child,
-                                          &child_msg_params);
+  InputMsg_RequestCompositionUpdates::Param child_msg_params;
+  InputMsg_RequestCompositionUpdates::Read(composition_request_msg_for_child,
+                                           &child_msg_params);
   bool is_child_msg_for_immediate_request = std::get<0>(child_msg_params);
   bool is_child_msg_for_monitor_request = std::get<1>(child_msg_params);
   EXPECT_FALSE(is_child_msg_for_immediate_request);
@@ -1636,12 +1636,12 @@ TEST_F(InputMethodMacTest, MonitorCompositionRangeForActiveWidget) {
 
   // Verify that the child received another IPC for composition updates.
   composition_request_msg_for_child = child_sink().GetUniqueMessageMatching(
-      InputMsg_RequestCompositionUpdate::ID);
+      InputMsg_RequestCompositionUpdates::ID);
   EXPECT_TRUE(composition_request_msg_for_child);
 
   // Verify that this IPC is asking for no monitoring or immediate updates.
-  InputMsg_RequestCompositionUpdate::Read(composition_request_msg_for_child,
-                                          &child_msg_params);
+  InputMsg_RequestCompositionUpdates::Read(composition_request_msg_for_child,
+                                           &child_msg_params);
   is_child_msg_for_immediate_request = std::get<0>(child_msg_params);
   is_child_msg_for_monitor_request = std::get<1>(child_msg_params);
   EXPECT_FALSE(is_child_msg_for_immediate_request);

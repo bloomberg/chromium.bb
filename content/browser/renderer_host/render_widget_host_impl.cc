@@ -294,6 +294,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       new_content_rendering_delay_(
           base::TimeDelta::FromMilliseconds(kNewContentRenderingDelayMs)),
       current_content_source_id_(0),
+      monitoring_composition_info_(false),
       weak_factory_(this) {
   CHECK(delegate_);
   CHECK_NE(MSG_ROUTING_NONE, routing_id_);
@@ -1560,6 +1561,10 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
   if (!renderer_initialized_)
     return;
 
+  // Clear this flag so that we can ask the next renderer for composition
+  // updates.
+  monitoring_composition_info_ = false;
+
   // Clearing this flag causes us to re-create the renderer when recovering
   // from a crashed renderer.
   renderer_initialized_ = false;
@@ -2619,6 +2624,15 @@ void RenderWidgetHostImpl::GrantFileAccessFromDropData(DropData* drop_data) {
                  .append(register_name));
     file_system_file.filesystem_id = filesystem_id;
   }
+}
+
+void RenderWidgetHostImpl::RequestCompositionUpdates(bool immediate_request,
+                                                     bool monitor_updates) {
+  if (!immediate_request && monitor_updates == monitoring_composition_info_)
+    return;
+  monitoring_composition_info_ = monitor_updates;
+  Send(new InputMsg_RequestCompositionUpdates(routing_id_, immediate_request,
+                                              monitor_updates));
 }
 
 }  // namespace content

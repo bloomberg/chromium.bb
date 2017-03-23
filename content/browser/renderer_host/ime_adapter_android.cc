@@ -312,7 +312,7 @@ void ImeAdapterAndroid::RequestCursorUpdate(
   RenderWidgetHostImpl* rwhi = GetFocusedWidget();
   if (!rwhi)
     return;
-  rwhi->Send(new InputMsg_RequestCompositionUpdate(
+  rwhi->Send(new InputMsg_RequestCompositionUpdates(
       rwhi->GetRoutingID(), immediate_request, monitor_request));
 }
 

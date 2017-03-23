@@ -77,7 +77,6 @@ class RenderFrameHostImpl;
 class RenderWidgetHostImpl;
 class RenderWidgetHostView;
 class TouchSelectionControllerClientAura;
-struct TextInputState;
 
 // RenderWidgetHostView class hierarchy described in render_widget_host_view.h.
 class CONTENT_EXPORT RenderWidgetHostViewAura
@@ -576,11 +575,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   bool is_guest_view_hack_;
 
   float device_scale_factor_;
-
-  // The routing and process IDs for the last RenderWidgetHost which had a
-  // TextInputState of non-NONE.
-  int32_t last_active_widget_process_id_;
-  int32_t last_active_widget_routing_id_;
 
   // While this is a ui::EventHandler for targetting, |event_handler_| actually
   // provides an implementation, and directs events to |host_|.

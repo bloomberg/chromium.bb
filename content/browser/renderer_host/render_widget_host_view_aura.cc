@@ -55,7 +55,6 @@
 #include "content/public/browser/overscroll_configuration.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
-#include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "media/base/video_frame.h"
@@ -396,8 +395,6 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
       has_snapped_to_boundary_(false),
       is_guest_view_hack_(is_guest_view_hack),
       device_scale_factor_(0.0f),
-      last_active_widget_process_id_(ChildProcessHost::kInvalidUniqueID),
-      last_active_widget_routing_id_(MSG_ROUTING_NONE),
       event_handler_(new RenderWidgetHostViewEventHandler(host_, this, this)),
       weak_ptr_factory_(this) {
   if (!is_guest_view_hack_)
@@ -2300,28 +2297,13 @@ void RenderWidgetHostViewAura::OnUpdateTextInputStateCalled(
     GetInputMethod()->ShowImeIfNeeded();
   }
 
-  if (state && state->type != ui::TEXT_INPUT_TYPE_NONE) {
-    // Start monitoring the composition information if the focused node is
-    // editable.
-    RenderWidgetHostImpl* last_active_widget =
-        text_input_manager_->GetActiveWidget();
-    last_active_widget_routing_id_ = last_active_widget->GetRoutingID();
-    last_active_widget_process_id_ = last_active_widget->GetProcess()->GetID();
-    last_active_widget->Send(new InputMsg_RequestCompositionUpdate(
-        last_active_widget->GetRoutingID(), false /* immediate request */,
-        true /* monitor request */));
-  } else {
-    // Stop monitoring the composition information if the focused node is not
-    // editable.
-    RenderWidgetHostImpl* last_active_widget = RenderWidgetHostImpl::FromID(
-        last_active_widget_process_id_, last_active_widget_routing_id_);
-    if (last_active_widget) {
-      last_active_widget->Send(new InputMsg_RequestCompositionUpdate(
-          last_active_widget->GetRoutingID(), false /* immediate request */,
-          false /* monitor request */));
-    }
-    last_active_widget_routing_id_ = MSG_ROUTING_NONE;
-    last_active_widget_process_id_ = ChildProcessHost::kInvalidUniqueID;
+  if (auto* render_widget_host =
+          RenderWidgetHostImpl::From(updated_view->GetRenderWidgetHost())) {
+    // Monitor the composition information if there is a focused editable node.
+    render_widget_host->RequestCompositionUpdates(
+        false /* immediate_request */,
+        state &&
+            (state->type != ui::TEXT_INPUT_TYPE_NONE) /* monitor_updates */);
   }
 }
 

@@ -625,8 +625,8 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
                         OnSetViewportIntersection)
     IPC_MESSAGE_HANDLER(ViewMsg_WaitForNextFrameForTests,
                         OnWaitNextFrameForTests)
-    IPC_MESSAGE_HANDLER(InputMsg_RequestCompositionUpdate,
-                        OnRequestCompositionUpdate)
+    IPC_MESSAGE_HANDLER(InputMsg_RequestCompositionUpdates,
+                        OnRequestCompositionUpdates)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragEnter, OnDragTargetDragEnter)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragOver, OnDragTargetDragOver)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragLeave, OnDragTargetDragLeave)
@@ -1880,9 +1880,9 @@ void RenderWidget::OnRequestTextInputStateUpdate() {
 }
 #endif
 
-void RenderWidget::OnRequestCompositionUpdate(bool immediate_request,
-                                              bool monitor_request) {
-  monitor_composition_info_ = monitor_request;
+void RenderWidget::OnRequestCompositionUpdates(bool immediate_request,
+                                               bool monitor_updates) {
+  monitor_composition_info_ = monitor_updates;
   if (!immediate_request)
     return;
   UpdateCompositionInfo(true /* immediate request */);
