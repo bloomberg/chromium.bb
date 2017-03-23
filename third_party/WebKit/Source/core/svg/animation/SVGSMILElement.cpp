@@ -615,6 +615,11 @@ void SVGSMILElement::setTargetElement(SVGElement* target) {
 
   m_targetElement = target;
   didChangeAnimationTarget();
+
+  // If the animation is scheduled and there's an active interval, then
+  // revalidate the animation value.
+  if (m_activeState != Inactive && m_isScheduled)
+    startedActiveInterval();
 }
 
 SMILTime SVGSMILElement::elapsed() const {
