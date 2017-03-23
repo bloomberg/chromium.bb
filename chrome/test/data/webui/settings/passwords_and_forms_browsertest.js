@@ -255,32 +255,6 @@ TEST_F('PasswordsAndFormsBrowserTest', 'uiTests', function() {
         destroyPrefs(prefs);
       });
     });
-
-    test('testAutofillExtensionIndicator', function() {
-      return createPrefs(true, true).then(function(prefs) {
-        var element = createPasswordsAndFormsElement(prefs);
-
-        assertFalse(!!element.$$('#autofillExtensionIndicator'));
-        element.set('prefs.autofill.enabled.extensionId', 'test-id');
-        Polymer.dom.flush();
-
-        assertTrue(!!element.$$('#autofillExtensionIndicator'));
-        destroyPrefs(prefs);
-      });
-    });
-
-    test('testPasswordsExtensionIndicator', function() {
-      return createPrefs(true, true).then(function(prefs) {
-        var element = createPasswordsAndFormsElement(prefs);
-
-        assertFalse(!!element.$$('#passwordsExtensionIndicator'));
-        element.set('prefs.credentials_enable_service.extensionId', 'test-id');
-        Polymer.dom.flush();
-
-        assertTrue(!!element.$$('#passwordsExtensionIndicator'));
-        destroyPrefs(prefs);
-      });
-    });
   });
 
   mocha.run();

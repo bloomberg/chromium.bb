@@ -170,6 +170,25 @@ SettingsAutofillSectionBrowserTest.prototype = {
   },
 };
 
+TEST_F('SettingsAutofillSectionBrowserTest', 'uiTest', function() {
+  suite('AutofillSection', function() {
+    test('testAutofillExtensionIndicator', function() {
+      // Initializing with fake prefs
+      var section = document.createElement('settings-autofill-section');
+      section.prefs = {autofill: {enabled: {}}};
+      document.body.appendChild(section);
+
+      assertFalse(!!section.$$('#autofillExtensionIndicator'));
+      section.set('prefs.autofill.enabled.extensionId', 'test-id');
+      Polymer.dom.flush();
+
+      assertTrue(!!section.$$('#autofillExtensionIndicator'));
+    });
+  });
+
+  mocha.run();
+});
+
 TEST_F('SettingsAutofillSectionBrowserTest', 'CreditCardTests', function() {
   var self = this;
 

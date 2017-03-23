@@ -95,6 +95,8 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"restart", IDS_SETTINGS_RESTART},
     {"save", IDS_SAVE},
     {"settings", IDS_SETTINGS_SETTINGS},
+    {"toggleOn", IDS_SETTINGS_TOGGLE_ON},
+    {"toggleOff", IDS_SETTINGS_TOGGLE_OFF},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));

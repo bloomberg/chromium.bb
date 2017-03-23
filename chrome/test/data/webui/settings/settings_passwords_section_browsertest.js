@@ -184,6 +184,19 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       PasswordManagerImpl.instance_ = passwordManager;
     });
 
+    test('testPasswordsExtensionIndicator', function() {
+      // Initialize with dummy prefs.
+      var element = document.createElement('passwords-section');
+      element.prefs = {credentials_enable_service: {}};
+      document.body.appendChild(element);
+
+      assertFalse(!!element.$$('#passwordsExtensionIndicator'));
+      element.set('prefs.credentials_enable_service.extensionId', 'test-id');
+      Polymer.dom.flush();
+
+      assertTrue(!!element.$$('#passwordsExtensionIndicator'));
+    });
+
     test('verifyNoSavedPasswords', function() {
       var passwordsSection = createPasswordsSection(passwordManager, [], []);
 

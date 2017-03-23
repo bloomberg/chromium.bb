@@ -1,10 +1,14 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html">
 <link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/action_link_css.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../i18n_setup.html">
 <link rel="import" href="../settings_shared_css.html">
+<link rel="import" href="../controls/extension_controlled_indicator.html">
+<link rel="import" href="../controls/settings_toggle_button.html">
+<link rel="import" href="../prefs/prefs.html">
 <link rel="import" href="address_edit_dialog.html">
 <link rel="import" href="credit_card_edit_dialog.html">
 <link rel="import" href="passwords_shared_css.html">
@@ -52,6 +56,24 @@
       }
     </style>
     <div class="settings-box first">
+      <settings-toggle-button id="autofillToggle" class="start primary-toggle"
+          aria-label="$i18n{autofill}" no-extension-indicator
+          label="[[getOnOffLabel_(prefs.autofill.enabled.value)]]"
+          pref="{{prefs.autofill.enabled}}">
+      </settings-toggle-button>
+    </div>
+    <template is="dom-if" if="[[prefs.autofill.enabled.extensionId]]">
+      <div class="settings-box continuation">
+        <extension-controlled-indicator class="start"
+            id="autofillExtensionIndicator"
+            extension-id="[[prefs.autofill.enabled.extensionId]]"
+            extension-name="[[prefs.autofill.enabled.controlledByName]]"
+            extension-can-be-disabled="[[
+                prefs.autofill.enabled.extensionCanBeDisabled]]">
+        </extension-controlled-indicator>
+      </div>
+    </template>
+    <div class="settings-box continuation">
       <h2 class="start">$i18n{addresses}</h2>
       <paper-button class="secondary-button header-aligned-button"
           on-tap="onAddAddressTap_">

@@ -427,5 +427,14 @@ AutofillManagerImpl.prototype = {
     saveCreditCard_: function(event) {
       this.autofillManager_.saveCreditCard(event.detail);
     },
+
+    /**
+     * @private
+     * @param {boolean} toggleValue
+     * @return {string}
+     */
+    getOnOffLabel_: function(toggleValue) {
+      return toggleValue ? this.i18n('toggleOn') : this.i18n('toggleOff');
+    }
   });
 })();

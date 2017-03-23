@@ -334,6 +334,12 @@
   <message name="IDS_SETTINGS_EDIT" desc="Label used on a menu item or button, used in different contexts to edit an item.">
     Edit
   </message>
+  <message name="IDS_SETTINGS_TOGGLE_ON" desc="Label used on a main settings toggle that is on.">
+    On
+  </message>
+  <message name="IDS_SETTINGS_TOGGLE_OFF" desc="Label used on a main settings toggle that is ooff.">
+    Off
+  </message>
 
   <!-- Passwords and Autofill Page -->
   <message name="IDS_SETTINGS_PASSWORDS_AND_AUTOFILL_PAGE_TITLE" desc="Name of the settings page which allows managing passwords and autofill settings.">
