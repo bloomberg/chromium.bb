@@ -313,7 +313,14 @@ html {
   background-color: orange;
 }
 
-#omnibox-url-element {
+#omnibox-border {
+  --statusBarColor: rgb(66, 133, 244);
+  background-color: white;
+  border-radius: 8px;
+  padding: 3px;
+}
+
+#omnibox-contents {
   background-color: white;
   border-radius: 6px;
   box-sizing: border-box;

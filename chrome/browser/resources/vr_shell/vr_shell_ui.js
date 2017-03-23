@@ -26,6 +26,16 @@ var vrShellUi = (function() {
     return !str || 0 === str.length ? '' : str;
   }
 
+  // Generate a two-color progress bar style background using a gradient.
+  function makeProgressBackground(loading, percentage, color, background) {
+    if (!loading) {
+      return background;
+    }
+    return 'linear-gradient(to right, ' + color + ' 0%, ' + color + ' ' +
+        percentage * 100.0 + '%, ' + background + ' ' + percentage * 100 +
+        '%, ' + background + ' 100%)';
+  }
+
   class ContentQuad {
     constructor() {
       /** @const */ this.SCREEN_HEIGHT = 1.375;
@@ -672,18 +682,9 @@ var vrShellUi = (function() {
       }
 
       let indicator = document.querySelector('#url-indicator-border');
-      if (this.loading) {
-        // Remap load progress range 0-100 as 5-95 percent, to avoid the
-        // extremities of the rounded ends of the indicator.
-        let percent = Math.round((this.loadProgress * 0.9 + 0.05) * 100);
-        let gradient = 'linear-gradient(to right, ' + this.statusBarColor +
-            ' 0%, ' + this.statusBarColor + ' ' + percent + '%, ' +
-            this.backgroundColor + ' ' + percent + '%, ' +
-            this.backgroundColor + ' 100%)';
-        indicator.style.background = gradient;
-      } else {
-        indicator.style.background = this.backgroundColor;
-      }
+      indicator.style.background = makeProgressBackground(
+          this.loading, this.loadProgress, this.statusBarColor,
+          this.backgroundColor);
 
       let shouldBeHidden =
           !this.loading && this.visibilityTimeout > 0 && !this.visibilityTimer;
@@ -831,8 +832,15 @@ var vrShellUi = (function() {
       this.enabled = false;
 
       let root = document.querySelector('#omnibox-ui-element');
-      this.domUiElement = new DomUiElement('#omnibox-url-element');
+      this.domUiElement = new DomUiElement('#omnibox-border');
       this.inputField = root.querySelector('#omnibox-input-field');
+
+      let style = window.getComputedStyle(this.domUiElement.domElement);
+      this.statusBarColor = getStyleString(style, '--statusBarColor');
+      this.backgroundColor = style.backgroundColor;
+      this.loading = false;
+      this.loadProgress = 0;
+      this.updateLoadingState();
 
       // Initially invisible.
       let update = new api.UiElementUpdate();
@@ -905,6 +913,24 @@ var vrShellUi = (function() {
     setSuggestions(suggestions) {
       this.suggestions = suggestions;
       this.updateSuggestions();
+    }
+
+    setLoading(loading) {
+      this.loading = loading;
+      this.loadProgress = 0;
+      this.updateLoadingState();
+    }
+
+    setLoadProgress(progress) {
+      this.loadProgress = progress;
+      this.updateLoadingState();
+    }
+
+    updateLoadingState() {
+      let indicator = document.querySelector('#omnibox-border');
+      indicator.style.background = makeProgressBackground(
+          this.loading, this.loadProgress, this.statusBarColor,
+          this.backgroundColor);
     }
 
     updateSuggestions() {
@@ -1262,11 +1288,13 @@ var vrShellUi = (function() {
     /** @override */
     onSetLoading(loading) {
       this.manager.urlIndicator.setLoading(loading);
+      this.manager.omnibox.setLoading(loading);
     }
 
     /** @override */
     onSetLoadingProgress(progress) {
       this.manager.urlIndicator.setLoadProgress(progress);
+      this.manager.omnibox.setLoadProgress(progress);
     }
 
     /** @override */
