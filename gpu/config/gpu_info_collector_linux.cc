@@ -2,29 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stddef.h>
-#include <stdint.h>
-
-#include <vector>
-
 #include "base/command_line.h"
-#include "base/files/file_util.h"
-#include "base/logging.h"
-#include "base/message_loop/message_loop.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
-#include "base/strings/string_tokenizer.h"
-#include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_switches.h"
 #include "third_party/angle/src/gpu_info_util/SystemInfo.h"
 #include "third_party/re2/src/re2/re2.h"
-#include "ui/gl/gl_bindings.h"
-#include "ui/gl/gl_context.h"
-#include "ui/gl/gl_implementation.h"
-#include "ui/gl/gl_surface.h"
-#include "ui/gl/gl_switches.h"
 
 namespace gpu {
 

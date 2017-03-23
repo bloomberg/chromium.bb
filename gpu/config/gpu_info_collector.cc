@@ -307,11 +307,16 @@ void IdentifyActiveGPU(GPUInfo* gpu_info) {
 
 void FillGPUInfoFromSystemInfo(GPUInfo* gpu_info,
                                angle::SystemInfo* system_info) {
+  DCHECK(system_info->primaryGPUIndex >= 0);
+
   angle::GPUDeviceInfo* primary =
       &system_info->gpus[system_info->primaryGPUIndex];
 
   gpu_info->gpu.vendor_id = primary->vendorId;
   gpu_info->gpu.device_id = primary->deviceId;
+  if (system_info->primaryGPUIndex == system_info->activeGPUIndex) {
+    gpu_info->gpu.active = true;
+  }
 
   gpu_info->driver_vendor = std::move(primary->driverVendor);
   gpu_info->driver_version = std::move(primary->driverVersion);
@@ -325,6 +330,9 @@ void FillGPUInfoFromSystemInfo(GPUInfo* gpu_info,
     GPUInfo::GPUDevice device;
     device.vendor_id = system_info->gpus[i].vendorId;
     device.device_id = system_info->gpus[i].deviceId;
+    if (static_cast<int>(i) == system_info->activeGPUIndex) {
+      device.active = true;
+    }
 
     gpu_info->secondary_gpus.push_back(device);
   }

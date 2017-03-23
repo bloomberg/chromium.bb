@@ -92,13 +92,7 @@ source_set("config_sources") {
       ]
     }
   }
-  if (is_linux) {
+  if (is_linux || is_mac) {
     deps += [ "//third_party/angle:angle_gpu_info_util" ]
-  }
-  if (is_mac) {
-    libs = [
-      "IOKit.framework",
-      "CoreFoundation.framework",
-    ]
   }
 }
