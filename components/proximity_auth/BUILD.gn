@@ -13,8 +13,6 @@ static_library("proximity_auth") {
     "bluetooth_util.cc",
     "bluetooth_util.h",
     "bluetooth_util_chromeos.cc",
-    "cryptauth_enroller_factory_impl.cc",
-    "cryptauth_enroller_factory_impl.h",
     "messenger.h",
     "messenger_impl.cc",
     "messenger_impl.h",
