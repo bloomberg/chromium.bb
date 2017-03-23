@@ -11,8 +11,8 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "printing/native_drawing_context.h"
 #include "printing/print_settings.h"
-#include "skia/ext/native_drawing_context.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace base {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SKIA_EXT_NATIVE_DRAWING_CONTEXT_H_
-#define SKIA_EXT_NATIVE_DRAWING_CONTEXT_H_
+#ifndef PRINTING_NATIVE_DRAWING_CONTEXT_H_
+#define PRINTING_NATIVE_DRAWING_CONTEXT_H_
 
 #include "build/build_config.h"
 
@@ -29,4 +29,4 @@ typedef void* NativeDrawingContext;
 
 }  // namespace skia
 
-#endif  // SKIA_EXT_NATIVE_DRAWING_CONTEXT_H_
+#endif  // PRINTING_NATIVE_DRAWING_CONTEXT_H_

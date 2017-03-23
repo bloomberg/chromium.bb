@@ -13,8 +13,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
+#include "printing/native_drawing_context.h"
 #include "printing/print_settings.h"
-#include "skia/ext/native_drawing_context.h"
 
 namespace base {
 class RefCountedMemory;

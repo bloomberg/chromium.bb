@@ -11,8 +11,8 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "printing/native_drawing_context.h"
 #include "printing/printing_export.h"
-#include "skia/ext/native_drawing_context.h"
 
 #if defined(OS_WIN)
 #include <windows.h>

@@ -8,15 +8,17 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "build/build_config.h"
+
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 // The platform-specific device will include the necessary platform headers
 // to get the surface type.
-#include "build/build_config.h"
-#include "skia/ext/native_drawing_context.h"
+
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-
-class SkCanvas;
-class SkPixmap;
 
 // A PlatformCanvas is a software-rasterized SkCanvas which is *also*
 // addressable by the platform-specific drawing API (GDI, Core Graphics,
