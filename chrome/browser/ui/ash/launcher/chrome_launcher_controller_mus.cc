@@ -53,21 +53,9 @@ void ChromeLauncherControllerMus::CloseLauncherItem(ash::ShelfID id) {
   NOTIMPLEMENTED();
 }
 
-void ChromeLauncherControllerMus::Pin(ash::ShelfID id) {
-  NOTIMPLEMENTED();
-}
-
-void ChromeLauncherControllerMus::Unpin(ash::ShelfID id) {
-  NOTIMPLEMENTED();
-}
-
 bool ChromeLauncherControllerMus::IsPinned(ash::ShelfID id) {
   NOTIMPLEMENTED();
   return false;
-}
-
-void ChromeLauncherControllerMus::TogglePinned(ash::ShelfID id) {
-  NOTIMPLEMENTED();
 }
 
 void ChromeLauncherControllerMus::LockV1AppWithID(const std::string& app_id) {

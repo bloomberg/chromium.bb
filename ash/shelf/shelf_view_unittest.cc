@@ -263,8 +263,6 @@ class TestShelfDelegateForShelfView : public TestShelfDelegate {
     return base::checked_cast<ShelfID>(id);
   }
 
-  bool HasShelfIDToAppIDMapping(ShelfID id) const override { return true; }
-
   const std::string& GetAppIDForShelfID(ShelfID id) override {
     // Use |app_id_| member variable because returning a reference to local
     // variable is not allowed.

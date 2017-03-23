@@ -127,7 +127,10 @@ void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
           ash::UMA_CLOSE_THROUGH_CONTEXT_MENU);
       break;
     case MENU_PIN:
-      controller_->TogglePinned(item_.id);
+      if (controller_->IsAppPinned(item_.app_launch_id.app_id()))
+        controller_->UnpinAppWithID(item_.app_launch_id.app_id());
+      else
+        controller_->PinAppWithID(item_.app_launch_id.app_id());
       break;
     case MENU_AUTO_HIDE:
       wm_shelf_->SetAutoHideBehavior(

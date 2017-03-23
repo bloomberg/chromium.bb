@@ -298,10 +298,6 @@ class ProxyShelfDelegate : public ash::ShelfDelegate {
     return controller_->GetShelfIDForAppIDAndLaunchID(app_id, launch_id);
   }
 
-  bool HasShelfIDToAppIDMapping(ash::ShelfID id) const override {
-    return controller_->HasShelfIDToAppIDMapping(id);
-  }
-
   const std::string& GetAppIDForShelfID(ash::ShelfID id) override {
     return controller_->GetAppIDForShelfID(id);
   }

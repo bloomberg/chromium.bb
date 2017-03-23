@@ -6,7 +6,6 @@
 
 #include "ash/common/metrics/pointer_metrics_recorder.h"
 #include "ash/common/session/session_state_delegate.h"
-#include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/shelf_view.h"
 #include "ash/common/shelf/wm_shelf.h"
@@ -169,24 +168,13 @@ int GetNumVisibleWindowsInPrimaryDisplay() {
 
 // Records the number of items in the shelf as an UMA statistic.
 void RecordShelfItemCounts() {
-  ShelfDelegate* shelf_delegate = Shell::Get()->shelf_delegate();
-  DCHECK(shelf_delegate);
-
   int pinned_item_count = 0;
   int unpinned_item_count = 0;
-
-  for (const ShelfItem& shelf_item : Shell::Get()->shelf_model()->items()) {
-    if (shelf_item.type != TYPE_APP_LIST) {
-      // Internal ash apps do not have an app id and thus will always be counted
-      // as unpinned.
-      if (shelf_delegate->HasShelfIDToAppIDMapping(shelf_item.id) &&
-          shelf_delegate->IsAppPinned(
-              shelf_delegate->GetAppIDForShelfID(shelf_item.id))) {
-        ++pinned_item_count;
-      } else {
-        ++unpinned_item_count;
-      }
-    }
+  for (const ShelfItem& item : Shell::Get()->shelf_model()->items()) {
+    if (item.type == TYPE_PINNED_APP || item.type == TYPE_BROWSER_SHORTCUT)
+      ++pinned_item_count;
+    else if (item.type != TYPE_APP_LIST)
+      ++unpinned_item_count;
   }
 
   UMA_HISTOGRAM_COUNTS_100("Ash.Shelf.NumberOfItems",

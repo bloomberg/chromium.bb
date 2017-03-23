@@ -96,17 +96,8 @@ class ChromeLauncherController : public ash::mojom::ShelfObserver,
   // Closes or unpins the shelf item.
   virtual void CloseLauncherItem(ash::ShelfID id) = 0;
 
-  // Pins the specified id. Currently only supports platform apps.
-  virtual void Pin(ash::ShelfID id) = 0;
-
-  // Unpins the specified id, closing if not running.
-  virtual void Unpin(ash::ShelfID id) = 0;
-
   // Returns true if the item identified by |id| is pinned.
   virtual bool IsPinned(ash::ShelfID id) = 0;
-
-  // Pins/unpins the specified id.
-  virtual void TogglePinned(ash::ShelfID id) = 0;
 
   // If there is no item in the shelf for application |app_id|, one is created.
   // The (existing or created) shelf items get then locked against a user's

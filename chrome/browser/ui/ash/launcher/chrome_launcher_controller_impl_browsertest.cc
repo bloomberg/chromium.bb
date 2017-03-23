@@ -339,10 +339,6 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
     return item.id;
   }
 
-  void RemoveShortcut(ash::ShelfID id) {
-    controller_->Unpin(id);
-  }
-
   ash::ShelfID PinFakeApp(const std::string& app_id) {
     return controller_->CreateAppShortcutLauncherItem(ash::AppLaunchId(app_id),
                                                       model_->item_count());
@@ -495,7 +491,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, PinRunning) {
             shelf_model()->ItemIndexByID(id));
 
   // Pin the app. The item should remain.
-  controller_->Pin(id);
+  controller_->PinAppWithID(extension->id());
   ASSERT_EQ(item_count, shelf_model()->item_count());
   const ash::ShelfItem& item2 = *shelf_model()->ItemByID(id);
   EXPECT_EQ(ash::TYPE_PINNED_APP, item2.type);
@@ -546,7 +542,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, UnpinRunning) {
   EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
 
   // Unpin the app. The item should remain.
-  controller_->Unpin(shortcut_id);
+  controller_->UnpinAppWithID(app_id);
   ASSERT_EQ(item_count, shelf_model()->item_count());
   item = *shelf_model()->ItemByID(shortcut_id);
   EXPECT_EQ(ash::TYPE_APP, item.type);
@@ -2042,7 +2038,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_DragOffShelf) {
 
   // Test #5: Uninstalling an application while it is being ripped off should
   // not crash.
-  ash::ShelfID app_id = CreateShortcut("app2");
+  CreateShortcut("app2");
   test.RunMessageLoopUntilAnimationsDone();
   int app2_index = GetIndexOfShelfItemType(ash::TYPE_PINNED_APP);
   EXPECT_EQ(3, model_->item_count());  // And it remains that way.
@@ -2050,7 +2046,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_DragOffShelf) {
                   &generator,
                   &test,
                   RIP_OFF_ITEM_AND_DONT_RELEASE_MOUSE);
-  RemoveShortcut(app_id);
+  controller_->UnpinAppWithID("app2");
   test.RunMessageLoopUntilAnimationsDone();
   EXPECT_EQ(2, model_->item_count());  // The item should now be gone.
   generator.ReleaseLeftButton();
@@ -2224,7 +2220,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, OverflowBubble) {
   EXPECT_TRUE(shelf_->shelf_widget()->IsShowingOverflowBubble());
 
   // Unpin first pinned app and there should be no crash.
-  controller_->UnpinAppWithID(std::string("fake_app_0"));
+  controller_->UnpinAppWithID("fake_app_0");
 
   test.RunMessageLoopUntilAnimationsDone();
   EXPECT_FALSE(shelf_->shelf_widget()->IsShowingOverflowBubble());

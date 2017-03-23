@@ -21,6 +21,21 @@
 namespace ash {
 namespace test {
 
+namespace {
+
+// Set the |type| of the item with the given |shelf_id|, if the item exists.
+void SetItemType(ShelfID shelf_id, ShelfItemType type) {
+  ShelfModel* model = Shell::Get()->shelf_model();
+  ash::ShelfItems::const_iterator item = model->ItemByID(shelf_id);
+  if (item != model->items().end()) {
+    ShelfItem pinned_item = *item;
+    pinned_item.type = type;
+    model->Set(item - model->items().begin(), pinned_item);
+  }
+}
+
+}  // namespace
+
 TestShelfDelegate* TestShelfDelegate::instance_ = nullptr;
 
 // A ShellObserver that sets the shelf alignment and auto hide behavior when the
@@ -59,25 +74,21 @@ TestShelfDelegate::~TestShelfDelegate() {
 }
 
 void TestShelfDelegate::AddShelfItem(WmWindow* window) {
-  AddShelfItem(window, STATUS_CLOSED);
+  AddShelfItem(window, std::string());
 }
 
 void TestShelfDelegate::AddShelfItem(WmWindow* window,
                                      const std::string& app_id) {
-  AddShelfItem(window, STATUS_CLOSED);
-  ShelfID shelf_id = window->aura_window()->GetProperty(kShelfIDKey);
-  AddShelfIDToAppIDMapping(shelf_id, app_id);
-}
-
-void TestShelfDelegate::AddShelfItem(WmWindow* window, ShelfItemStatus status) {
   ShelfItem item;
+  if (!app_id.empty())
+    item.app_launch_id = AppLaunchId(app_id);
   if (window->GetType() == ui::wm::WINDOW_TYPE_PANEL)
     item.type = TYPE_APP_PANEL;
   else
     item.type = TYPE_APP;
   ShelfModel* model = Shell::Get()->shelf_model();
   ShelfID id = model->next_id();
-  item.status = status;
+  item.status = STATUS_CLOSED;
   model->Add(item);
   window->aura_window()->AddObserver(this);
 
@@ -95,13 +106,9 @@ void TestShelfDelegate::RemoveShelfItemForWindow(WmWindow* window) {
   DCHECK_NE(-1, index);
   model->RemoveItemAt(index);
   window->aura_window()->RemoveObserver(this);
-  if (HasShelfIDToAppIDMapping(shelf_id)) {
-    const std::string& app_id = GetAppIDForShelfID(shelf_id);
-    if (IsAppPinned(app_id))
-      UnpinAppWithID(app_id);
-    if (HasShelfIDToAppIDMapping(shelf_id))
-      RemoveShelfIDToAppIDMapping(shelf_id);
-  }
+  const std::string& app_id = GetAppIDForShelfID(shelf_id);
+  if (IsAppPinned(app_id))
+    UnpinAppWithID(app_id);
 }
 
 void TestShelfDelegate::OnWindowDestroying(aura::Window* window) {
@@ -118,29 +125,32 @@ void TestShelfDelegate::OnWindowHierarchyChanging(
 }
 
 ShelfID TestShelfDelegate::GetShelfIDForAppID(const std::string& app_id) {
-  for (auto const& iter : shelf_id_to_app_id_map_) {
-    if (iter.second == app_id)
-      return iter.first;
-  }
-  return 0;
+  // Get shelf id for |app_id| and an empty |launch_id|.
+  return GetShelfIDForAppIDAndLaunchID(app_id, std::string());
 }
 
 ShelfID TestShelfDelegate::GetShelfIDForAppIDAndLaunchID(
     const std::string& app_id,
     const std::string& launch_id) {
-  return GetShelfIDForAppID(app_id);
-}
-
-bool TestShelfDelegate::HasShelfIDToAppIDMapping(ShelfID id) const {
-  return shelf_id_to_app_id_map_.find(id) != shelf_id_to_app_id_map_.end();
+  for (const ShelfItem& item : Shell::Get()->shelf_model()->items()) {
+    // Ash's ShelfWindowWatcher handles app panel windows separately.
+    if (item.type != TYPE_APP_PANEL && item.app_launch_id.app_id() == app_id &&
+        item.app_launch_id.launch_id() == launch_id) {
+      return item.id;
+    }
+  }
+  return kInvalidShelfID;
 }
 
 const std::string& TestShelfDelegate::GetAppIDForShelfID(ShelfID id) {
-  DCHECK_GT(shelf_id_to_app_id_map_.count(id), 0u);
-  return shelf_id_to_app_id_map_[id];
+  ShelfModel* model = Shell::Get()->shelf_model();
+  ash::ShelfItems::const_iterator item = model->ItemByID(id);
+  return item != model->items().end() ? item->app_launch_id.app_id()
+                                      : base::EmptyString();
 }
 
 void TestShelfDelegate::PinAppWithID(const std::string& app_id) {
+  SetItemType(GetShelfIDForAppID(app_id), TYPE_PINNED_APP);
   pinned_apps_.insert(app_id);
 }
 
@@ -149,16 +159,8 @@ bool TestShelfDelegate::IsAppPinned(const std::string& app_id) {
 }
 
 void TestShelfDelegate::UnpinAppWithID(const std::string& app_id) {
+  SetItemType(GetShelfIDForAppID(app_id), TYPE_APP);
   pinned_apps_.erase(app_id);
-}
-
-void TestShelfDelegate::AddShelfIDToAppIDMapping(ShelfID shelf_id,
-                                                 const std::string& app_id) {
-  shelf_id_to_app_id_map_[shelf_id] = app_id;
-}
-
-void TestShelfDelegate::RemoveShelfIDToAppIDMapping(ShelfID shelf_id) {
-  shelf_id_to_app_id_map_.erase(shelf_id);
 }
 
 }  // namespace test

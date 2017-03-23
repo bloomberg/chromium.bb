@@ -24,7 +24,6 @@ class ShelfDelegateMus : public ShelfDelegate {
   ShelfID GetShelfIDForAppID(const std::string& app_id) override;
   ShelfID GetShelfIDForAppIDAndLaunchID(const std::string& app_id,
                                         const std::string& launch_id) override;
-  bool HasShelfIDToAppIDMapping(ShelfID id) const override;
   const std::string& GetAppIDForShelfID(ShelfID id) override;
   void PinAppWithID(const std::string& app_id) override;
   bool IsAppPinned(const std::string& app_id) override;

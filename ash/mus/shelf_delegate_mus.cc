@@ -29,10 +29,6 @@ ShelfID ShelfDelegateMus::GetShelfIDForAppIDAndLaunchID(
   return ShelfDelegateMus::GetShelfIDForAppID(app_id);
 }
 
-bool ShelfDelegateMus::HasShelfIDToAppIDMapping(ShelfID id) const {
-  return Shell::Get()->shelf_controller()->shelf_id_to_app_id().count(id) > 0;
-}
-
 const std::string& ShelfDelegateMus::GetAppIDForShelfID(ShelfID id) {
   if (Shell::Get()->shelf_controller()->shelf_id_to_app_id().count(id))
     return Shell::Get()->shelf_controller()->shelf_id_to_app_id().at(id);
