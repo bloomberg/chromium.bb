@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/locales.gni")
 import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
 
@@ -105,68 +106,10 @@ grit("chromecast_settings") {
   source = "//chromecast/app/resources/chromecast_settings.grd"
   resource_ids = "//chromecast/app/resources/resource_ids"
 
-  # TODO(thakis): Consider removing output_dir in favor of the default
-  # directory, then it becomes possible to qualify includes of
-  # grit/chromecast_settings.h and DEPS files work better too.
-  # https://crbug.com/697090
-  output_dir = "$root_gen_dir/chromecast_strings"
-  use_qualified_include = false
-
   outputs = [
     "grit/chromecast_settings.h",
-    "chromecast_settings_am.pak",
-    "chromecast_settings_ar.pak",
-    "chromecast_settings_bg.pak",
-    "chromecast_settings_bn.pak",
-    "chromecast_settings_ca.pak",
-    "chromecast_settings_cs.pak",
-    "chromecast_settings_da.pak",
-    "chromecast_settings_de.pak",
-    "chromecast_settings_el.pak",
-    "chromecast_settings_en-GB.pak",
-    "chromecast_settings_en-US.pak",
-    "chromecast_settings_es.pak",
-    "chromecast_settings_es-419.pak",
-    "chromecast_settings_et.pak",
-    "chromecast_settings_fa.pak",
-    "chromecast_settings_fake-bidi.pak",
-    "chromecast_settings_fi.pak",
-    "chromecast_settings_fil.pak",
-    "chromecast_settings_fr.pak",
-    "chromecast_settings_gu.pak",
-    "chromecast_settings_he.pak",
-    "chromecast_settings_hi.pak",
-    "chromecast_settings_hr.pak",
-    "chromecast_settings_hu.pak",
-    "chromecast_settings_id.pak",
-    "chromecast_settings_it.pak",
-    "chromecast_settings_ja.pak",
-    "chromecast_settings_kn.pak",
-    "chromecast_settings_ko.pak",
-    "chromecast_settings_lt.pak",
-    "chromecast_settings_lv.pak",
-    "chromecast_settings_ml.pak",
-    "chromecast_settings_mr.pak",
-    "chromecast_settings_ms.pak",
-    "chromecast_settings_nl.pak",
-    "chromecast_settings_nb.pak",
-    "chromecast_settings_pl.pak",
-    "chromecast_settings_pt-BR.pak",
-    "chromecast_settings_pt-PT.pak",
-    "chromecast_settings_ro.pak",
-    "chromecast_settings_ru.pak",
-    "chromecast_settings_sk.pak",
-    "chromecast_settings_sl.pak",
-    "chromecast_settings_sr.pak",
-    "chromecast_settings_sv.pak",
-    "chromecast_settings_sw.pak",
-    "chromecast_settings_ta.pak",
-    "chromecast_settings_te.pak",
-    "chromecast_settings_th.pak",
-    "chromecast_settings_tr.pak",
-    "chromecast_settings_uk.pak",
-    "chromecast_settings_vi.pak",
-    "chromecast_settings_zh-CN.pak",
-    "chromecast_settings_zh-TW.pak",
   ]
+  foreach(locale, locales_with_fake_bidi) {
+    outputs += [ "chromecast_settings_${locale}.pak" ]
+  }
 }

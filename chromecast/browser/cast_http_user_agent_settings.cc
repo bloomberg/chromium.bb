@@ -7,9 +7,9 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "chromecast/app/grit/chromecast_settings.h"
 #include "chromecast/common/cast_content_client.h"
 #include "content/public/browser/browser_thread.h"
-#include "grit/chromecast_settings.h"
 #include "net/http/http_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
