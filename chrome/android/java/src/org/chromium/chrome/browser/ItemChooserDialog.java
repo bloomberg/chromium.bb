@@ -366,6 +366,10 @@ public class ItemChooserDialog {
     // The maximum height of the listview in the dialog (in dp).
     private static final int MAX_HEIGHT_DP = (int) (LIST_ROW_HEIGHT_DP * 8.5);
 
+    // If this variable is false, the window should be closed when it loses focus;
+    // Otherwise, the window should not be closed when it loses focus.
+    private boolean mIgnorePendingWindowFocusChangeForClose;
+
     /**
      * Creates the ItemChooserPopup and displays it (and starts waiting for data).
      *
@@ -425,7 +429,20 @@ public class ItemChooserDialog {
                 getListHeight(mActivity.getWindow().getDecorView().getHeight(),
                         mActivity.getResources().getDisplayMetrics().density)));
 
+        mIgnorePendingWindowFocusChangeForClose = false;
+
         showDialogForView(dialogContainer);
+    }
+
+    /**
+     * Sets whether the window should be closed when it loses focus.
+     *
+     * @param ignorePendingWindowFocusChangeForClose Whether the window should be closed when it
+     * loses focus.
+     */
+    public void setIgnorePendingWindowFocusChangeForClose(
+            boolean ignorePendingWindowFocusChangeForClose) {
+        mIgnorePendingWindowFocusChangeForClose = ignorePendingWindowFocusChangeForClose;
     }
 
     // Computes the height of the device list, bound to half-multiples of the
@@ -444,7 +461,8 @@ public class ItemChooserDialog {
             @Override
             public void onWindowFocusChanged(boolean hasFocus) {
                 super.onWindowFocusChanged(hasFocus);
-                if (!hasFocus) super.dismiss();
+                if (!mIgnorePendingWindowFocusChangeForClose && !hasFocus) super.dismiss();
+                setIgnorePendingWindowFocusChangeForClose(false);
             }
         };
         mDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);

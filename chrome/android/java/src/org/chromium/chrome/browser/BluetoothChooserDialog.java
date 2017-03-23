@@ -301,23 +301,23 @@ public class BluetoothChooserDialog
                 }
                 case ADAPTER_OFF_HELP: {
                     nativeShowBluetoothAdapterOffLink(mNativeBluetoothChooserDialogPtr);
-                    closeDialog();
                     break;
                 }
                 case REQUEST_LOCATION_PERMISSION: {
+                    mItemChooserDialog.setIgnorePendingWindowFocusChangeForClose(true);
                     mWindowAndroid.requestPermissions(
                             new String[] {Manifest.permission.ACCESS_COARSE_LOCATION},
                             BluetoothChooserDialog.this);
                     break;
                 }
                 case REQUEST_LOCATION_SERVICES: {
+                    mItemChooserDialog.setIgnorePendingWindowFocusChangeForClose(true);
                     mContext.startActivity(
                             LocationUtils.getInstance().getSystemLocationSettingsIntent());
                     break;
                 }
                 case NEED_LOCATION_PERMISSION_HELP: {
                     nativeShowNeedLocationPermissionLink(mNativeBluetoothChooserDialogPtr);
-                    closeDialog();
                     break;
                 }
                 case RESTART_SEARCH: {

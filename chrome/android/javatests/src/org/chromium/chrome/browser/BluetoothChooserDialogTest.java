@@ -306,16 +306,10 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
             }
         });
 
-        // TODO(661862): Remove once the dialog no longer closes when the window loses
-        // focus.
-        assertTrue(mChooserDialog.mFinishedEventType != -1);
-
-        // TODO(661862): Uncomment once the dialog no longer closes when the window
-        // loses focus.
-        // assertEquals(1, mChooserDialog.mRestartSearchCount);
-        // assertEquals(removeLinkTags(getActivity().getString(R.string.bluetooth_searching)),
-        //     statusView.getText().toString());
-        // mChooserDialog.closeDialog();
+        assertEquals(1, mChooserDialog.mRestartSearchCount);
+        assertEquals(removeLinkTags(getActivity().getString(R.string.bluetooth_searching)),
+                statusView.getText().toString());
+        mChooserDialog.closeDialog();
     }
 
     @LargeTest
