@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/reading_list/ios/reading_list_entry.h"
+#include "components/reading_list/core/reading_list_entry.h"
 
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/ptr_util.h"
-#include "components/reading_list/ios/offline_url_utils.h"
-#include "components/reading_list/ios/proto/reading_list.pb.h"
-#include "components/reading_list/ios/reading_list_store.h"
+#include "components/reading_list/core/offline_url_utils.h"
+#include "components/reading_list/core/proto/reading_list.pb.h"
+#include "components/reading_list/core/reading_list_store.h"
 #include "components/sync/protocol/reading_list_specifics.pb.h"
 #include "net/base/backoff_entry_serializer.h"
 
@@ -236,8 +236,10 @@ void ReadingListEntry::SetDistilledState(DistillationState distilled_state) {
   DCHECK(distilled_state != WAITING);
   // Increase time until next retry exponentially if the state change from a
   // non-error state to an error state.
-  if ((distilled_state == WILL_RETRY || distilled_state == ERROR) &&
-      distilled_state_ != WILL_RETRY && distilled_state_ != ERROR) {
+  if ((distilled_state == WILL_RETRY ||
+       distilled_state == DISTILLATION_ERROR) &&
+      distilled_state_ != WILL_RETRY &&
+      distilled_state_ != DISTILLATION_ERROR) {
     backoff_->InformOfRequest(false);
     failed_download_counter_++;
   }
@@ -336,15 +338,15 @@ std::unique_ptr<ReadingListEntry> ReadingListEntry::FromReadingListLocal(
       case reading_list::ReadingListLocal::WILL_RETRY:
         distillation_state = ReadingListEntry::WILL_RETRY;
         break;
-      case reading_list::ReadingListLocal::ERROR:
-        distillation_state = ReadingListEntry::ERROR;
+      case reading_list::ReadingListLocal::DISTILLATION_ERROR:
+        distillation_state = ReadingListEntry::DISTILLATION_ERROR;
         break;
     }
   }
 
   base::FilePath distilled_path;
   if (pb_entry.has_distilled_path()) {
-    distilled_path = base::FilePath(pb_entry.distilled_path());
+    distilled_path = base::FilePath::FromUTF8Unsafe(pb_entry.distilled_path());
   }
 
   GURL distilled_url;
@@ -521,7 +523,8 @@ ReadingListEntry::AsReadingListLocal(const base::Time& now) const {
       break;
   }
 
-  reading_list::ReadingListLocal::DistillationState distilation_state;
+  reading_list::ReadingListLocal::DistillationState distilation_state =
+      reading_list::ReadingListLocal::WAITING;
   switch (DistilledState()) {
     case ReadingListEntry::WAITING:
       distilation_state = reading_list::ReadingListLocal::WAITING;
@@ -535,13 +538,13 @@ ReadingListEntry::AsReadingListLocal(const base::Time& now) const {
     case ReadingListEntry::WILL_RETRY:
       distilation_state = reading_list::ReadingListLocal::WILL_RETRY;
       break;
-    case ReadingListEntry::ERROR:
-      distilation_state = reading_list::ReadingListLocal::ERROR;
+    case ReadingListEntry::DISTILLATION_ERROR:
+      distilation_state = reading_list::ReadingListLocal::DISTILLATION_ERROR;
       break;
   }
   pb_entry->set_distillation_state(distilation_state);
   if (!DistilledPath().empty()) {
-    pb_entry->set_distilled_path(DistilledPath().value());
+    pb_entry->set_distilled_path(DistilledPath().AsUTF8Unsafe());
   }
   if (DistilledURL().is_valid()) {
     pb_entry->set_distilled_url(DistilledURL().spec());

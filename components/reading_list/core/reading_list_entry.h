@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_READING_LIST_IOS_READING_LIST_ENTRY_H_
-#define COMPONENTS_READING_LIST_IOS_READING_LIST_ENTRY_H_
+#ifndef COMPONENTS_READING_LIST_CORE_READING_LIST_ENTRY_H_
+#define COMPONENTS_READING_LIST_CORE_READING_LIST_ENTRY_H_
 
 #include <string>
 
@@ -62,8 +62,14 @@ class ReadingListEntry {
   // Entries are created in WAITING state. At some point they will be PROCESSING
   // into one of the three state: PROCESSED, the only state a distilled URL
   // would be set, WILL_RETRY, similar to wait, but with exponential delays or
-  // ERROR where the system will not retry at all.
-  enum DistillationState { WAITING, PROCESSING, PROCESSED, WILL_RETRY, ERROR };
+  // DISTILLATION_ERROR where the system will not retry at all.
+  enum DistillationState {
+    WAITING,
+    PROCESSING,
+    PROCESSED,
+    WILL_RETRY,
+    DISTILLATION_ERROR
+  };
 
   static const net::BackoffEntry::Policy kBackoffPolicy;
 
@@ -206,4 +212,4 @@ class ReadingListEntry {
   DISALLOW_COPY_AND_ASSIGN(ReadingListEntry);
 };
 
-#endif  // COMPONENTS_READING_LIST_IOS_READING_LIST_ENTRY_H_
+#endif  // COMPONENTS_READING_LIST_CORE_READING_LIST_ENTRY_H_

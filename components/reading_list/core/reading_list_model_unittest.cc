@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/reading_list/ios/reading_list_model.h"
+#include "components/reading_list/core/reading_list_model.h"
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/simple_test_clock.h"
-#include "components/reading_list/ios/reading_list_model_impl.h"
-#include "components/reading_list/ios/reading_list_model_storage.h"
-#include "components/reading_list/ios/reading_list_store_delegate.h"
+#include "components/reading_list/core/reading_list_model_impl.h"
+#include "components/reading_list/core/reading_list_model_storage.h"
+#include "components/reading_list/core/reading_list_store_delegate.h"
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_error.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -395,7 +395,7 @@ TEST_F(ReadingListModelTest, SyncMergeEntry) {
   SetStorage(std::move(storage), std::move(clock));
   model_->AddEntry(GURL("http://example.com"), "sample",
                    reading_list::ADDED_VIA_CURRENT_APP);
-  const base::FilePath distilled_path("distilled/page.html");
+  const base::FilePath distilled_path(FILE_PATH_LITERAL("distilled/page.html"));
   const GURL distilled_url("http://example.com/distilled");
   int64_t size = 50;
   int64_t time = 100;
@@ -421,7 +421,7 @@ TEST_F(ReadingListModelTest, SyncMergeEntry) {
   EXPECT_EQ(0ul, UnreadSize());
   EXPECT_EQ(1ul, ReadSize());
   EXPECT_EQ(merged_entry->DistilledPath(),
-            base::FilePath("distilled/page.html"));
+            base::FilePath(FILE_PATH_LITERAL("distilled/page.html")));
   EXPECT_EQ(merged_entry->UpdateTime(), sync_update_time);
   EXPECT_EQ(size, merged_entry->DistillationSize());
   EXPECT_EQ(time * base::Time::kMicrosecondsPerSecond,
@@ -642,7 +642,7 @@ TEST_F(ReadingListModelTest, UpdateDistilledInfo) {
       model_->AddEntry(gurl, "sample", reading_list::ADDED_VIA_CURRENT_APP);
   ClearCounts();
 
-  const base::FilePath distilled_path("distilled/page.html");
+  const base::FilePath distilled_path(FILE_PATH_LITERAL("distilled/page.html"));
   const GURL distilled_url("http://example.com/distilled");
   int64_t size = 50;
   int64_t time = 100;
@@ -692,7 +692,7 @@ TEST_F(ReadingListModelTest, UpdateReadDistilledInfo) {
   const ReadingListEntry* entry = model_->GetEntryByURL(gurl);
   ClearCounts();
 
-  const base::FilePath distilled_path("distilled/page.html");
+  const base::FilePath distilled_path(FILE_PATH_LITERAL("distilled/page.html"));
   const GURL distilled_url("http://example.com/distilled");
   int64_t size = 50;
   int64_t time = 100;

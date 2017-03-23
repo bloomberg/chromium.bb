@@ -2,21 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/reading_list/ios/offline_url_utils.h"
+#include "components/reading_list/core/offline_url_utils.h"
 
+#include "base/logging.h"
 #include "base/md5.h"
 #include "base/strings/stringprintf.h"
 
 namespace {
-const char kOfflineDirectory[] = "Offline";
-const char kMainPageFileName[] = "page.html";
-const char kPDFFileName[] = "file.pdf";
+const base::FilePath::CharType kOfflineDirectory[] =
+    FILE_PATH_LITERAL("Offline");
+const base::FilePath::CharType kMainPageFileName[] =
+    FILE_PATH_LITERAL("page.html");
+const base::FilePath::CharType kPDFFileName[] = FILE_PATH_LITERAL("file.pdf");
 }  // namespace
 
 namespace reading_list {
 
 base::FilePath OfflineRootDirectoryPath(const base::FilePath& profile_path) {
-  return profile_path.Append(FILE_PATH_LITERAL(kOfflineDirectory));
+  return profile_path.Append(kOfflineDirectory);
 }
 
 std::string OfflineURLDirectoryID(const GURL& url) {
@@ -27,17 +30,20 @@ base::FilePath OfflineURLDirectoryAbsolutePath(
     const base::FilePath& profile_path,
     const GURL& url) {
   return OfflineURLAbsolutePathFromRelativePath(
-      profile_path, base::FilePath(OfflineURLDirectoryID(url)));
+      profile_path, base::FilePath::FromUTF8Unsafe(OfflineURLDirectoryID(url)));
 }
 
 base::FilePath OfflinePagePath(const GURL& url, OfflineFileType type) {
-  base::FilePath directory(OfflineURLDirectoryID(url));
+  base::FilePath directory =
+      base::FilePath::FromUTF8Unsafe(OfflineURLDirectoryID(url));
   switch (type) {
     case OFFLINE_TYPE_HTML:
-      return directory.Append(FILE_PATH_LITERAL(kMainPageFileName));
+      return directory.Append(kMainPageFileName);
     case OFFLINE_TYPE_PDF:
-      return directory.Append(FILE_PATH_LITERAL(kPDFFileName));
+      return directory.Append(kPDFFileName);
   }
+  NOTREACHED();
+  return base::FilePath();
 }
 
 base::FilePath OfflineURLAbsolutePathFromRelativePath(

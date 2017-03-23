@@ -4,8 +4,8 @@
 
 #import "components/reading_list/ios/reading_list_model_bridge_observer.h"
 
-#include "components/reading_list/ios/reading_list_entry.h"
-#include "components/reading_list/ios/reading_list_model.h"
+#include "components/reading_list/core/reading_list_entry.h"
+#include "components/reading_list/core/reading_list_model.h"
 
 ReadingListModelBridge::ReadingListModelBridge(
     id<ReadingListModelBridgeObserver> observer,

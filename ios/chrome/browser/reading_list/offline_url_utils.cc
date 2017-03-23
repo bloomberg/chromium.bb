@@ -9,7 +9,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/reading_list/ios/offline_url_utils.h"
+#include "components/reading_list/core/offline_url_utils.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "net/base/url_util.h"
 

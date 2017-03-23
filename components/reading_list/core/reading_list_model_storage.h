@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_READING_LIST_IOS_READING_LIST_MODEL_STORAGE_H_
-#define COMPONENTS_READING_LIST_IOS_READING_LIST_MODEL_STORAGE_H_
+#ifndef COMPONENTS_READING_LIST_CORE_READING_LIST_MODEL_STORAGE_H_
+#define COMPONENTS_READING_LIST_CORE_READING_LIST_MODEL_STORAGE_H_
 
 #include <vector>
 
 #include "base/macros.h"
-#include "components/reading_list/ios/reading_list_entry.h"
+#include "components/reading_list/core/reading_list_entry.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/model/model_type_sync_bridge.h"
 
@@ -71,4 +71,4 @@ class ReadingListModelStorage : public syncer::ModelTypeSyncBridge {
   DISALLOW_COPY_AND_ASSIGN(ReadingListModelStorage);
 };
 
-#endif  // COMPONENTS_READING_LIST_IOS_READING_LIST_MODEL_STORAGE_H_
+#endif  // COMPONENTS_READING_LIST_CORE_READING_LIST_MODEL_STORAGE_H_

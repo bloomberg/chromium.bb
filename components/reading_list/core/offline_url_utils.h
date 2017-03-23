@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_READING_LIST_IOS_OFFLINE_URL_UTILS_H_
-#define COMPONENTS_READING_LIST_IOS_OFFLINE_URL_UTILS_H_
+#ifndef COMPONENTS_READING_LIST_CORE_OFFLINE_URL_UTILS_H_
+#define COMPONENTS_READING_LIST_CORE_OFFLINE_URL_UTILS_H_
 
 #include <string>
 
@@ -49,4 +49,4 @@ std::string OfflineURLDirectoryID(const GURL& url);
 
 }  // namespace reading_list
 
-#endif  // COMPONENTS_READING_LIST_IOS_OFFLINE_URL_UTILS_H_
+#endif  // COMPONENTS_READING_LIST_CORE_OFFLINE_URL_UTILS_H_

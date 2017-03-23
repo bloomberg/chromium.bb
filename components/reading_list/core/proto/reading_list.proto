@@ -35,7 +35,7 @@ message ReadingListLocal {
     PROCESSING = 1;
     PROCESSED = 2;
     WILL_RETRY = 3;
-    ERROR = 4;
+    DISTILLATION_ERROR = 4;
   }
   optional DistillationState distillation_state = 7;
   optional string distilled_path = 8;

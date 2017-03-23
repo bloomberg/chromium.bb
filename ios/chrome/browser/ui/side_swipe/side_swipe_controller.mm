@@ -7,8 +7,8 @@
 #include <memory>
 
 #import "base/ios/weak_nsobject.h"
+#include "components/reading_list/core/reading_list_model.h"
 #include "components/reading_list/core/reading_list_switches.h"
-#import "components/reading_list/ios/reading_list_model.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/infobars/infobar_container_view.h"
 #import "ios/chrome/browser/reading_list/reading_list_model_factory.h"

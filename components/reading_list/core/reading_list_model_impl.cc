@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/reading_list/ios/reading_list_model_impl.h"
+#include "components/reading_list/core/reading_list_model_impl.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -10,8 +10,8 @@
 #include "base/strings/string_util.h"
 #include "base/time/clock.h"
 #include "components/prefs/pref_service.h"
-#include "components/reading_list/ios/reading_list_model_storage.h"
-#include "components/reading_list/ios/reading_list_pref_names.h"
+#include "components/reading_list/core/reading_list_model_storage.h"
+#include "components/reading_list/core/reading_list_pref_names.h"
 #include "url/gurl.h"
 
 ReadingListModelImpl::ReadingListModelImpl(

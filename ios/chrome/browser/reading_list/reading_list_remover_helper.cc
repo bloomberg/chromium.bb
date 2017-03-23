@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/reading_list/reading_list_remover_helper.h"
 
-#include "components/reading_list/ios/reading_list_model.h"
+#include "components/reading_list/core/reading_list_model.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/reading_list/reading_list_download_service.h"
 #include "ios/chrome/browser/reading_list/reading_list_download_service_factory.h"

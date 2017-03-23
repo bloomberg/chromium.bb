@@ -360,7 +360,7 @@ const CGFloat kMargin = 16;
 
   _distillationState = distillationState;
   switch (distillationState) {
-    case ReadingListEntry::ERROR:
+    case ReadingListEntry::DISTILLATION_ERROR:
       [_downloadIndicator setImage:[UIImage imageNamed:kFailureImageString]];
       break;
 

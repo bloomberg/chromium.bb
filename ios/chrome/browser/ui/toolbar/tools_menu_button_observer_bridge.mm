@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "components/reading_list/ios/reading_list_model.h"
+#include "components/reading_list/core/reading_list_model.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_tools_menu_button.h"
 
 @interface ToolsMenuButtonObserverBridge ()

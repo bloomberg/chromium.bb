@@ -5,8 +5,8 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_side_swipe_provider.h"
 
 #include "base/logging.h"
-#include "components/reading_list/ios/reading_list_entry.h"
-#include "components/reading_list/ios/reading_list_model.h"
+#include "components/reading_list/core/reading_list_entry.h"
+#include "components/reading_list/core/reading_list_model.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "net/base/network_change_notifier.h"
 #include "url/gurl.h"

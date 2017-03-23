@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_READING_LIST_IOS_READING_LIST_MODEL_OBSERVER_H_
-#define COMPONENTS_READING_LIST_IOS_READING_LIST_MODEL_OBSERVER_H_
+#ifndef COMPONENTS_READING_LIST_CORE_READING_LIST_MODEL_OBSERVER_H_
+#define COMPONENTS_READING_LIST_CORE_READING_LIST_MODEL_OBSERVER_H_
 
 #include <set>
 #include <vector>
 
-#include "components/reading_list/ios/reading_list_entry.h"
+#include "components/reading_list/core/reading_list_entry.h"
 
 class GURL;
 class ReadingListModel;
@@ -80,4 +80,4 @@ class ReadingListModelObserver {
   DISALLOW_COPY_AND_ASSIGN(ReadingListModelObserver);
 };
 
-#endif  // COMPONENTS_READING_LIST_IOS_READING_LIST_MODEL_OBSERVER_H_
+#endif  // COMPONENTS_READING_LIST_CORE_READING_LIST_MODEL_OBSERVER_H_

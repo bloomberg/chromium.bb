@@ -59,6 +59,8 @@ source_set("reading_list") {
     "//base",
     "//components/prefs",
     "//components/reading_list/core",
+    "//components/reading_list/core:flags",
+    "//components/reading_list/ios",
     "//components/strings",
     "//components/url_formatter",
     "//ios/chrome/app/strings",
@@ -87,7 +89,6 @@ source_set("reading_list") {
     "//url",
   ]
   public_deps = [
-    "//components/reading_list/ios",
     "//ios/chrome/browser/ui/collection_view",
   ]
   allow_circular_includes_from = [ "//ios/chrome/browser/ui/side_swipe" ]
@@ -107,7 +108,7 @@ source_set("unit_tests") {
     "//components/favicon/core",
     "//components/favicon/core/test:test_support",
     "//components/prefs",
-    "//components/reading_list/ios",
+    "//components/reading_list/core",
     "//components/url_formatter",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/favicon",
@@ -132,7 +133,7 @@ source_set("eg_tests") {
   deps = [
     ":reading_list",
     "//base",
-    "//components/reading_list/ios",
+    "//components/reading_list/core",
     "//ios/chrome/app/strings",
     "//ios/chrome/app/theme:theme_grit",
     "//ios/chrome/browser/reading_list",

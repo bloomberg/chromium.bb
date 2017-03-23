@@ -13,9 +13,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
-#include "components/reading_list/ios/offline_url_utils.h"
-#include "components/reading_list/ios/reading_list_entry.h"
-#include "components/reading_list/ios/reading_list_model.h"
+#include "components/reading_list/core/offline_url_utils.h"
+#include "components/reading_list/core/reading_list_entry.h"
+#include "components/reading_list/core/reading_list_model.h"
 #include "ios/chrome/browser/reading_list/reading_list_distiller_page_factory.h"
 #include "ios/web/public/web_thread.h"
 
@@ -140,7 +140,7 @@ void ReadingListDownloadService::SyncWithModel() {
       case ReadingListEntry::WILL_RETRY:
         unprocessed_entries.insert(url);
         break;
-      case ReadingListEntry::ERROR:
+      case ReadingListEntry::DISTILLATION_ERROR:
         break;
     }
   }
@@ -175,7 +175,8 @@ void ReadingListDownloadService::DownloadUnprocessedEntries(
 void ReadingListDownloadService::ScheduleDownloadEntry(const GURL& url) {
   DCHECK(reading_list_model_->loaded());
   const ReadingListEntry* entry = reading_list_model_->GetEntryByURL(url);
-  if (!entry || entry->DistilledState() == ReadingListEntry::ERROR ||
+  if (!entry ||
+      entry->DistilledState() == ReadingListEntry::DISTILLATION_ERROR ||
       entry->DistilledState() == ReadingListEntry::PROCESSED || entry->IsRead())
     return;
   GURL local_url(url);
@@ -189,7 +190,8 @@ void ReadingListDownloadService::ScheduleDownloadEntry(const GURL& url) {
 void ReadingListDownloadService::DownloadEntry(const GURL& url) {
   DCHECK(reading_list_model_->loaded());
   const ReadingListEntry* entry = reading_list_model_->GetEntryByURL(url);
-  if (!entry || entry->DistilledState() == ReadingListEntry::ERROR ||
+  if (!entry ||
+      entry->DistilledState() == ReadingListEntry::DISTILLATION_ERROR ||
       entry->DistilledState() == ReadingListEntry::PROCESSED || entry->IsRead())
     return;
 
@@ -275,8 +277,8 @@ void ReadingListDownloadService::OnDownloadEnd(
       } else {
         UMA_HISTOGRAM_ENUMERATION("ReadingList.Download.Status", FAILURE,
                                   STATUS_MAX);
-        reading_list_model_->SetEntryDistilledState(url,
-                                                    ReadingListEntry::ERROR);
+        reading_list_model_->SetEntryDistilledState(
+            url, ReadingListEntry::DISTILLATION_ERROR);
       }
       break;
     }

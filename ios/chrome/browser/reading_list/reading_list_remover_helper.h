@@ -7,7 +7,7 @@
 
 #include "base/callback.h"
 #include "base/scoped_observer.h"
-#include "components/reading_list/ios/reading_list_model_observer.h"
+#include "components/reading_list/core/reading_list_model_observer.h"
 
 namespace ios {
 class ChromeBrowserState;

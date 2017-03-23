@@ -70,6 +70,7 @@ source_set("toolbar") {
     "//components/omnibox/browser",
     "//components/prefs",
     "//components/reading_list/core",
+    "//components/reading_list/core:flags",
     "//components/reading_list/ios",
     "//components/search_engines",
     "//components/strings",

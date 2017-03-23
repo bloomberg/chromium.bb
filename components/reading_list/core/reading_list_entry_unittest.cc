@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/reading_list/ios/reading_list_entry.h"
+#include "components/reading_list/core/reading_list_entry.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "components/reading_list/ios/proto/reading_list.pb.h"
+#include "components/reading_list/core/proto/reading_list.pb.h"
 #include "components/sync/protocol/reading_list_specifics.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -91,7 +91,7 @@ TEST(ReadingListEntry, DistilledInfo) {
 
   EXPECT_TRUE(e.DistilledPath().empty());
 
-  const base::FilePath distilled_path("distilled/page.html");
+  const base::FilePath distilled_path(FILE_PATH_LITERAL("distilled/page.html"));
   const GURL distilled_url("http://example.com/distilled");
   int64_t size = 50;
   int64_t time = 100;
@@ -109,10 +109,10 @@ TEST(ReadingListEntry, DistilledState) {
 
   EXPECT_EQ(ReadingListEntry::WAITING, e.DistilledState());
 
-  e.SetDistilledState(ReadingListEntry::ERROR);
-  EXPECT_EQ(ReadingListEntry::ERROR, e.DistilledState());
+  e.SetDistilledState(ReadingListEntry::DISTILLATION_ERROR);
+  EXPECT_EQ(ReadingListEntry::DISTILLATION_ERROR, e.DistilledState());
 
-  const base::FilePath distilled_path("distilled/page.html");
+  const base::FilePath distilled_path(FILE_PATH_LITERAL("distilled/page.html"));
   const GURL distilled_url("http://example.com/distilled");
   e.SetDistilledInfo(distilled_path, distilled_url, 50,
                      base::Time::FromTimeT(100));
@@ -136,7 +136,7 @@ TEST(ReadingListEntry, TimeUntilNextTry) {
   EXPECT_EQ(0, e.TimeUntilNextTry().InSeconds());
 
   // First error.
-  e.SetDistilledState(ReadingListEntry::ERROR);
+  e.SetDistilledState(ReadingListEntry::DISTILLATION_ERROR);
   int nextTry = e.TimeUntilNextTry().InMinutes();
   EXPECT_NEAR(kFirstBackoff, nextTry, kFirstBackoff * fuzzing);
   e.SetDistilledState(ReadingListEntry::WILL_RETRY);
@@ -149,7 +149,7 @@ TEST(ReadingListEntry, TimeUntilNextTry) {
   e.SetDistilledState(ReadingListEntry::WILL_RETRY);
   nextTry = e.TimeUntilNextTry().InMinutes();
   EXPECT_NEAR(kSecondBackoff, nextTry, kSecondBackoff * fuzzing);
-  e.SetDistilledState(ReadingListEntry::ERROR);
+  e.SetDistilledState(ReadingListEntry::DISTILLATION_ERROR);
   EXPECT_EQ(nextTry, e.TimeUntilNextTry().InMinutes());
 
   e.SetDistilledState(ReadingListEntry::PROCESSING);
@@ -162,13 +162,13 @@ TEST(ReadingListEntry, TimeUntilNextTry) {
 
   // Fourth error.
   e.SetDistilledState(ReadingListEntry::PROCESSING);
-  e.SetDistilledState(ReadingListEntry::ERROR);
+  e.SetDistilledState(ReadingListEntry::DISTILLATION_ERROR);
   EXPECT_NEAR(kFourthBackoff, e.TimeUntilNextTry().InMinutes(),
               kFourthBackoff * fuzzing);
 
   // Fifth error.
   e.SetDistilledState(ReadingListEntry::PROCESSING);
-  e.SetDistilledState(ReadingListEntry::ERROR);
+  e.SetDistilledState(ReadingListEntry::DISTILLATION_ERROR);
   EXPECT_NEAR(kFifthBackoff, e.TimeUntilNextTry().InMinutes(),
               kFifthBackoff * fuzzing);
 }
@@ -184,7 +184,7 @@ TEST(ReadingListEntry, TimeUntilNextTryInThePast) {
                      base::Time::FromTimeT(10), std::move(backoff));
   double fuzzing = ReadingListEntry::kBackoffPolicy.jitter_factor;
 
-  e.SetDistilledState(ReadingListEntry::ERROR);
+  e.SetDistilledState(ReadingListEntry::DISTILLATION_ERROR);
   ASSERT_NEAR(kFirstBackoff, e.TimeUntilNextTry().InMinutes(),
               kFirstBackoff * fuzzing);
 
@@ -206,19 +206,19 @@ TEST(ReadingListEntry, ResetTimeUntilNextTry) {
                      base::Time::FromTimeT(10), std::move(backoff));
   double fuzzing = ReadingListEntry::kBackoffPolicy.jitter_factor;
 
-  e.SetDistilledState(ReadingListEntry::ERROR);
+  e.SetDistilledState(ReadingListEntry::DISTILLATION_ERROR);
   ASSERT_NEAR(kFirstBackoff, e.TimeUntilNextTry().InMinutes(),
               kFirstBackoff * fuzzing);
 
   // Action.
-  const base::FilePath distilled_path("distilled/page.html");
+  const base::FilePath distilled_path(FILE_PATH_LITERAL("distilled/page.html"));
   const GURL distilled_url("http://example.com/distilled");
   e.SetDistilledInfo(distilled_path, distilled_url, 50,
                      base::Time::FromTimeT(100));
 
   // Test.
   EXPECT_EQ(0, e.TimeUntilNextTry().InSeconds());
-  e.SetDistilledState(ReadingListEntry::ERROR);
+  e.SetDistilledState(ReadingListEntry::DISTILLATION_ERROR);
   ASSERT_NEAR(kFirstBackoff, e.TimeUntilNextTry().InMinutes(),
               kFirstBackoff * fuzzing);
 }
@@ -231,7 +231,7 @@ TEST(ReadingListEntry, FailedDownloadCounter) {
 
   EXPECT_EQ(0, e.FailedDownloadCounter());
 
-  e.SetDistilledState(ReadingListEntry::ERROR);
+  e.SetDistilledState(ReadingListEntry::DISTILLATION_ERROR);
   EXPECT_EQ(1, e.FailedDownloadCounter());
   e.SetDistilledState(ReadingListEntry::WILL_RETRY);
   EXPECT_EQ(1, e.FailedDownloadCounter());
@@ -241,7 +241,7 @@ TEST(ReadingListEntry, FailedDownloadCounter) {
 
   e.SetDistilledState(ReadingListEntry::WILL_RETRY);
   EXPECT_EQ(2, e.FailedDownloadCounter());
-  e.SetDistilledState(ReadingListEntry::ERROR);
+  e.SetDistilledState(ReadingListEntry::DISTILLATION_ERROR);
   EXPECT_EQ(2, e.FailedDownloadCounter());
 }
 
@@ -326,7 +326,7 @@ TEST(ReadingListEntry, AsReadingListLocal) {
             reading_list::ReadingListLocal::WILL_RETRY);
   EXPECT_EQ(will_retry_pb_entry->failed_download_counter(), 1);
 
-  const base::FilePath distilled_path("distilled/page.html");
+  const base::FilePath distilled_path(FILE_PATH_LITERAL("distilled/page.html"));
   const GURL distilled_url("http://example.com/distilled");
   int64_t size = 50;
   entry.SetDistilledInfo(distilled_path, distilled_url, size,
@@ -355,7 +355,7 @@ TEST(ReadingListEntry, AsReadingListLocal) {
 TEST(ReadingListEntry, FromReadingListLocal) {
   ReadingListEntry entry(GURL("http://example.com/"), "title",
                          base::Time::FromTimeT(10));
-  entry.SetDistilledState(ReadingListEntry::ERROR);
+  entry.SetDistilledState(ReadingListEntry::DISTILLATION_ERROR);
 
   std::unique_ptr<reading_list::ReadingListLocal> pb_entry(
       entry.AsReadingListLocal(base::Time::FromTimeT(10)));
@@ -397,13 +397,13 @@ TEST(ReadingListEntry, FromReadingListLocal) {
 TEST(ReadingListEntry, MergeWithEntry) {
   ReadingListEntry local_entry(GURL("http://example.com/"), "title",
                                base::Time::FromTimeT(10));
-  local_entry.SetDistilledState(ReadingListEntry::ERROR);
+  local_entry.SetDistilledState(ReadingListEntry::DISTILLATION_ERROR);
   local_entry.SetTitle("title updated", base::Time::FromTimeT(30));
   int64_t local_update_time_us = local_entry.UpdateTime();
 
   ReadingListEntry sync_entry(GURL("http://example.com/"), "title2",
                               base::Time::FromTimeT(20));
-  sync_entry.SetDistilledState(ReadingListEntry::ERROR);
+  sync_entry.SetDistilledState(ReadingListEntry::DISTILLATION_ERROR);
   int64_t sync_update_time_us = sync_entry.UpdateTime();
   EXPECT_NE(local_update_time_us, sync_update_time_us);
   local_entry.MergeWithEntry(sync_entry);
@@ -414,7 +414,7 @@ TEST(ReadingListEntry, MergeWithEntry) {
   EXPECT_FALSE(local_entry.HasBeenSeen());
   EXPECT_EQ(local_entry.UpdateTime(), sync_update_time_us);
   EXPECT_EQ(local_entry.FailedDownloadCounter(), 1);
-  EXPECT_EQ(local_entry.DistilledState(), ReadingListEntry::ERROR);
+  EXPECT_EQ(local_entry.DistilledState(), ReadingListEntry::DISTILLATION_ERROR);
   // Allow twice the jitter as test is not instantaneous.
   double fuzzing = 2 * ReadingListEntry::kBackoffPolicy.jitter_factor;
   int nextTry = local_entry.TimeUntilNextTry().InMinutes();

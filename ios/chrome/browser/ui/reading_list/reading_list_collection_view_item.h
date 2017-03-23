@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_READING_LIST_READING_LIST_COLLECTION_VIEW_ITEM_H_
 #define IOS_CHROME_BROWSER_UI_READING_LIST_READING_LIST_COLLECTION_VIEW_ITEM_H_
 
-#import "components/reading_list/ios/reading_list_entry.h"
+#import "components/reading_list/core/reading_list_entry.h"
 #import "ios/chrome/browser/favicon/favicon_attributes_provider.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"

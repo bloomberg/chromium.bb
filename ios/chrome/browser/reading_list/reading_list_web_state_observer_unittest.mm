@@ -6,7 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/time/default_clock.h"
-#include "components/reading_list/ios/reading_list_model_impl.h"
+#include "components/reading_list/core/reading_list_model_impl.h"
 #include "ios/chrome/browser/reading_list/offline_url_utils.h"
 #import "ios/web/public/navigation_item.h"
 #include "ios/web/public/reload_type.h"

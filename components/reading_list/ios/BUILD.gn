@@ -5,54 +5,11 @@
 source_set("ios") {
   sources = [
     "favicon_web_state_dispatcher.h",
-    "offline_url_utils.cc",
-    "offline_url_utils.h",
-    "reading_list_entry.cc",
-    "reading_list_entry.h",
-    "reading_list_model.cc",
-    "reading_list_model.h",
     "reading_list_model_bridge_observer.h",
     "reading_list_model_bridge_observer.mm",
-    "reading_list_model_impl.cc",
-    "reading_list_model_impl.h",
-    "reading_list_model_observer.h",
-    "reading_list_model_storage.cc",
-    "reading_list_model_storage.h",
-    "reading_list_pref_names.cc",
-    "reading_list_pref_names.h",
-    "reading_list_store.cc",
-    "reading_list_store.h",
-    "reading_list_store_delegate.h",
   ]
   deps = [
     "//base",
-    "//components/keyed_service/core",
-    "//components/prefs",
     "//components/reading_list/core",
-    "//components/sync",
-    "//net",
-    "//url",
-  ]
-  public_deps = [
-    "//components/reading_list/ios/proto",
-  ]
-}
-
-source_set("unit_tests") {
-  testonly = true
-  sources = [
-    "offline_url_utils_unittest.cc",
-    "reading_list_entry_unittest.cc",
-    "reading_list_model_unittest.cc",
-    "reading_list_store_unittest.cc",
-  ]
-  deps = [
-    ":ios",
-    "//base",
-    "//base/test:test_support",
-    "//components/sync",
-    "//components/sync:test_support_model",
-    "//testing/gtest",
-    "//url",
   ]
 }

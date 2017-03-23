@@ -157,7 +157,7 @@ source_set("ntp_internal") {
     "//components/ntp_tiles",
     "//components/prefs",
     "//components/rappor",
-    "//components/reading_list/core",
+    "//components/reading_list/core:flags",
     "//components/search_engines",
     "//components/strings",
     "//components/suggestions",

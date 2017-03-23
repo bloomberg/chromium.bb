@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/timer/timer.h"
-#include "components/reading_list/ios/reading_list_model_observer.h"
+#include "components/reading_list/core/reading_list_model_observer.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #include "url/gurl.h"
 

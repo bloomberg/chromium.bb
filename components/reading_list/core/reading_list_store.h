@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_READING_LIST_IOS_READING_LIST_STORE_H_
-#define COMPONENTS_READING_LIST_IOS_READING_LIST_STORE_H_
+#ifndef COMPONENTS_READING_LIST_CORE_READING_LIST_STORE_H_
+#define COMPONENTS_READING_LIST_CORE_READING_LIST_STORE_H_
 
 #include <memory>
 #include <string>
 
 #include "base/threading/non_thread_safe.h"
-#include "components/reading_list/ios/reading_list_model_storage.h"
-#include "components/reading_list/ios/reading_list_store_delegate.h"
+#include "components/reading_list/core/reading_list_model_storage.h"
+#include "components/reading_list/core/reading_list_store_delegate.h"
 #include "components/sync/model/model_error.h"
 #include "components/sync/model/model_type_store.h"
 
@@ -171,4 +171,4 @@ class ReadingListStore : public ReadingListModelStorage,
   DISALLOW_COPY_AND_ASSIGN(ReadingListStore);
 };
 
-#endif  // COMPONENTS_READING_LIST_IOS_READING_LIST_STORE_H_
+#endif  // COMPONENTS_READING_LIST_CORE_READING_LIST_STORE_H_

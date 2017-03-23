@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/macros.h"
-#include "components/reading_list/ios/reading_list_model_observer.h"
+#include "components/reading_list/core/reading_list_model_observer.h"
 
 // Protocol duplicating all Reading List Model Observer methods in Objective-C.
 @protocol ReadingListModelBridgeObserver<NSObject>

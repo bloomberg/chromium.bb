@@ -245,7 +245,7 @@ source_set("ui_internal") {
     "//components/infobars/core",
     "//components/prefs",
     "//components/reading_list/core",
-    "//components/reading_list/ios",
+    "//components/reading_list/core:flags",
     "//components/search_engines",
     "//components/sessions",
     "//components/strings",
