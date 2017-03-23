@@ -1255,11 +1255,6 @@ COMMON_GTESTS = {
           'Android Release (Nexus 5)',
           'Android Release (Nexus 6)',
           'Android Release (Nexus 9)',
-
-          # These tests are flaky on old AMD.
-          # TODO(jmadill): Enably flaky test retries only on this config.
-          # TODO(kbr): revisit this entry now that GPU has been updated.
-          'Win7 Release (AMD R7 240)',
         ],
       },
     ],
