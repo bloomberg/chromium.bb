@@ -613,6 +613,15 @@ bool ChromeContentBrowserClientExtensionsPart::ShouldAllowOpenURL(
     return true;
   }
 
+  // <webview> guests should be allowed to load only webview-accessible
+  // resources, but that check is done later in
+  // AllowCrossRendererResourceLoadHelper, so allow <webview> guests to proceed
+  // here and rely on that check instead.  See https://crbug.com/691941.
+  if (site_url.SchemeIs(content::kGuestScheme)) {
+    *result = true;
+    return true;
+  }
+
   if (WebAccessibleResourcesInfo::IsResourceWebAccessible(to_extension,
                                                           to_url.path())) {
     *result = true;

@@ -8,6 +8,8 @@ embedder.guestURL = '';
 window.runTest = function(testName) {
   if (testName == 'testLoadWebviewAccessibleResource') {
     testLoadWebviewAccessibleResource();
+  } else if (testName == 'testReloadWebviewAccessibleResource') {
+    testReloadWebviewAccessibleResource();
   } else {
     window.console.log('Incorrect testName: ' + testName);
     chrome.test.sendMessage('TEST_FAILED');
@@ -31,6 +33,30 @@ function testLoadWebviewAccessibleResource() {
 
   webview.src = embedder.guestURL;
 };
+
+function testReloadWebviewAccessibleResource() {
+  var webview = document.querySelector('webview');
+  var didReload = false;
+
+  webview.addEventListener('loadstop', function() {
+    if (didReload) {
+      // Check that the webview loaded the content correctly.
+      webview.executeScript(
+          {code: 'document.body.innerText'}, function(result) {
+            if (result == 'Foo')
+              chrome.test.sendMessage('TEST_PASSED');
+            else {
+              console.log('webview content is incorrect: ' + result);
+              chrome.test.sendMessage('TEST_FAILED');
+            }
+          });
+    } else {
+      webview.executeScript({code: 'location.reload();'});
+      didReload = true;
+    }
+  });
+  webview.src = '/assets/foo.html';
+}
 
 onload = function() {
   chrome.test.getConfig(function(config) {
