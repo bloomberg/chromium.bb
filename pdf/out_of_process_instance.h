@@ -256,7 +256,6 @@ class OutOfProcessInstance : public pp::Instance,
   pp::FloatPoint starting_scroll_offset_;
   // True if last bitmap was smaller than screen.
   bool last_bitmap_smaller_;
-  double last_zoom_when_smaller_;
   // Current device scale factor.
   float device_scale_;
   // True if the plugin is full-page.

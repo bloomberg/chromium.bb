@@ -283,7 +283,6 @@ OutOfProcessInstance::OutOfProcessInstance(PP_Instance instance)
       zoom_(1.0),
       needs_reraster_(true),
       last_bitmap_smaller_(false),
-      last_zoom_when_smaller_(1.0),
       device_scale_(1.0),
       full_(false),
       paint_manager_(this, this, true),
@@ -466,13 +465,14 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
              starting_scroll_offset_.y() * zoom_ratio / initial_zoom_ratio_));
 
         pinch_vector = pp::Point();
-        last_zoom_when_smaller_ = zoom;
         last_bitmap_smaller_ = true;
       } else if (last_bitmap_smaller_) {
           pinch_center = pp::Point((plugin_size_.width() / device_scale_) / 2,
               (plugin_size_.height() / device_scale_) / 2);
+          const double zoom_when_doc_covers_plugin_width =
+              zoom_ * plugin_size_.width() / GetDocumentPixelWidth();
           paint_offset = pp::Point(
-              (1 - zoom / last_zoom_when_smaller_) * pinch_center.x(),
+              (1 - zoom / zoom_when_doc_covers_plugin_width) * pinch_center.x(),
               (1 - zoom_ratio) * pinch_center.y());
           pinch_vector = pp::Point();
           scroll_delta = pp::Point(
