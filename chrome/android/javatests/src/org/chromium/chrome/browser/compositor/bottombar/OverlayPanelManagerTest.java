@@ -5,21 +5,32 @@
 package org.chromium.chrome.browser.compositor.bottombar;
 
 import android.content.Context;
+import android.support.test.InstrumentationRegistry;
+import android.support.test.annotation.UiThreadTest;
 import android.support.test.filters.SmallTest;
-import android.test.InstrumentationTestCase;
+import android.support.test.rule.UiThreadTestRule;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager.PanelPriority;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 
 /**
  * Class responsible for testing the OverlayPanelManager.
  */
-public class OverlayPanelManagerTest extends InstrumentationTestCase {
+@RunWith(ChromeJUnit4ClassRunner.class)
+public class OverlayPanelManagerTest {
+    @Rule
+    public UiThreadTestRule mRule = new UiThreadTestRule();
 
     // --------------------------------------------------------------------------------------------
     // MockOverlayPanel
@@ -101,10 +112,12 @@ public class OverlayPanelManagerTest extends InstrumentationTestCase {
     // Test Suite
     // --------------------------------------------------------------------------------------------
 
+    @Test
     @SmallTest
     @Feature({"OverlayPanel"})
+    @UiThreadTest
     public void testPanelRequestingShow() {
-        Context context = getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
         OverlayPanelManager panelManager = new OverlayPanelManager();
         OverlayPanel panel =
@@ -112,13 +125,15 @@ public class OverlayPanelManagerTest extends InstrumentationTestCase {
 
         panel.requestPanelShow(StateChangeReason.UNKNOWN);
 
-        assertTrue(panelManager.getActivePanel() == panel);
+        Assert.assertTrue(panelManager.getActivePanel() == panel);
     }
 
+    @Test
     @SmallTest
     @Feature({"OverlayPanel"})
+    @UiThreadTest
     public void testPanelClosed() {
-        Context context = getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
         OverlayPanelManager panelManager = new OverlayPanelManager();
         OverlayPanel panel =
@@ -127,13 +142,15 @@ public class OverlayPanelManagerTest extends InstrumentationTestCase {
         panel.requestPanelShow(StateChangeReason.UNKNOWN);
         panel.closePanel(StateChangeReason.UNKNOWN, false);
 
-        assertTrue(panelManager.getActivePanel() == null);
+        Assert.assertTrue(panelManager.getActivePanel() == null);
     }
 
+    @Test
     @SmallTest
     @Feature({"OverlayPanel"})
+    @UiThreadTest
     public void testHighPrioritySuppressingLowPriority() {
-        Context context = getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
         OverlayPanelManager panelManager = new OverlayPanelManager();
         OverlayPanel lowPriorityPanel =
@@ -144,13 +161,15 @@ public class OverlayPanelManagerTest extends InstrumentationTestCase {
         lowPriorityPanel.requestPanelShow(StateChangeReason.UNKNOWN);
         highPriorityPanel.requestPanelShow(StateChangeReason.UNKNOWN);
 
-        assertTrue(panelManager.getActivePanel() == highPriorityPanel);
+        Assert.assertTrue(panelManager.getActivePanel() == highPriorityPanel);
     }
 
+    @Test
     @SmallTest
     @Feature({"OverlayPanel"})
+    @UiThreadTest
     public void testSuppressedPanelRestored() {
-        Context context = getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
         OverlayPanelManager panelManager = new OverlayPanelManager();
         OverlayPanel lowPriorityPanel =
@@ -162,13 +181,15 @@ public class OverlayPanelManagerTest extends InstrumentationTestCase {
         highPriorityPanel.requestPanelShow(StateChangeReason.UNKNOWN);
         highPriorityPanel.closePanel(StateChangeReason.UNKNOWN, false);
 
-        assertTrue(panelManager.getActivePanel() == lowPriorityPanel);
+        Assert.assertTrue(panelManager.getActivePanel() == lowPriorityPanel);
     }
 
+    @Test
     @SmallTest
     @Feature({"OverlayPanel"})
+    @UiThreadTest
     public void testUnsuppressiblePanelNotRestored() {
-        Context context = getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
         OverlayPanelManager panelManager = new OverlayPanelManager();
         OverlayPanel lowPriorityPanel =
@@ -180,13 +201,15 @@ public class OverlayPanelManagerTest extends InstrumentationTestCase {
         highPriorityPanel.requestPanelShow(StateChangeReason.UNKNOWN);
         highPriorityPanel.closePanel(StateChangeReason.UNKNOWN, false);
 
-        assertTrue(panelManager.getActivePanel() == null);
+        Assert.assertTrue(panelManager.getActivePanel() == null);
     }
 
+    @Test
     @SmallTest
     @Feature({"OverlayPanel"})
+    @UiThreadTest
     public void testSuppressedPanelClosedBeforeRestore() {
-        Context context = getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
         OverlayPanelManager panelManager = new OverlayPanelManager();
         OverlayPanel lowPriorityPanel =
@@ -199,14 +222,16 @@ public class OverlayPanelManagerTest extends InstrumentationTestCase {
         lowPriorityPanel.closePanel(StateChangeReason.UNKNOWN, false);
         highPriorityPanel.closePanel(StateChangeReason.UNKNOWN, false);
 
-        assertEquals(null, panelManager.getActivePanel());
-        assertEquals(0, panelManager.getSuppressedQueueSize());
+        Assert.assertEquals(null, panelManager.getActivePanel());
+        Assert.assertEquals(0, panelManager.getSuppressedQueueSize());
     }
 
+    @Test
     @SmallTest
     @Feature({"OverlayPanel"})
+    @UiThreadTest
     public void testSuppressedPanelPriority() {
-        Context context = getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
         OverlayPanelManager panelManager = new OverlayPanelManager();
         OverlayPanel lowPriorityPanel =
@@ -218,36 +243,38 @@ public class OverlayPanelManagerTest extends InstrumentationTestCase {
 
         // Only one panel is showing, should be medium priority.
         mediumPriorityPanel.requestPanelShow(StateChangeReason.UNKNOWN);
-        assertEquals(panelManager.getActivePanel(), mediumPriorityPanel);
+        Assert.assertEquals(panelManager.getActivePanel(), mediumPriorityPanel);
 
         // High priority should have taken preciedence.
         highPriorityPanel.requestPanelShow(StateChangeReason.UNKNOWN);
-        assertEquals(panelManager.getActivePanel(), highPriorityPanel);
+        Assert.assertEquals(panelManager.getActivePanel(), highPriorityPanel);
 
         // Low priority will be suppressed; high priority should still be showing.
         lowPriorityPanel.requestPanelShow(StateChangeReason.UNKNOWN);
-        assertEquals(panelManager.getActivePanel(), highPriorityPanel);
+        Assert.assertEquals(panelManager.getActivePanel(), highPriorityPanel);
 
         // Start closing panels.
         highPriorityPanel.closePanel(StateChangeReason.UNKNOWN, false);
 
         // After high priority is closed, the medium priority panel should be visible.
-        assertEquals(panelManager.getActivePanel(), mediumPriorityPanel);
+        Assert.assertEquals(panelManager.getActivePanel(), mediumPriorityPanel);
         mediumPriorityPanel.closePanel(StateChangeReason.UNKNOWN, false);
 
         // Finally the low priority panel should be showing.
-        assertEquals(panelManager.getActivePanel(), lowPriorityPanel);
+        Assert.assertEquals(panelManager.getActivePanel(), lowPriorityPanel);
         lowPriorityPanel.closePanel(StateChangeReason.UNKNOWN, false);
 
         // All panels are closed now.
-        assertEquals(null, panelManager.getActivePanel());
-        assertEquals(0, panelManager.getSuppressedQueueSize());
+        Assert.assertEquals(null, panelManager.getActivePanel());
+        Assert.assertEquals(0, panelManager.getSuppressedQueueSize());
     }
 
+    @Test
     @SmallTest
     @Feature({"OverlayPanel"})
+    @UiThreadTest
     public void testSuppressedPanelOrder() {
-        Context context = getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
         OverlayPanelManager panelManager = new OverlayPanelManager();
         OverlayPanel lowPriorityPanel =
@@ -262,41 +289,45 @@ public class OverlayPanelManagerTest extends InstrumentationTestCase {
         lowPriorityPanel.requestPanelShow(StateChangeReason.UNKNOWN);
         mediumPriorityPanel.requestPanelShow(StateChangeReason.UNKNOWN);
 
-        assertEquals(2, panelManager.getSuppressedQueueSize());
+        Assert.assertEquals(2, panelManager.getSuppressedQueueSize());
 
         // Start closing panels.
         highPriorityPanel.closePanel(StateChangeReason.UNKNOWN, false);
 
         // After high priority is closed, the medium priority panel should be visible.
-        assertEquals(panelManager.getActivePanel(), mediumPriorityPanel);
+        Assert.assertEquals(panelManager.getActivePanel(), mediumPriorityPanel);
         mediumPriorityPanel.closePanel(StateChangeReason.UNKNOWN, false);
 
         // Finally the low priority panel should be showing.
-        assertEquals(panelManager.getActivePanel(), lowPriorityPanel);
+        Assert.assertEquals(panelManager.getActivePanel(), lowPriorityPanel);
         lowPriorityPanel.closePanel(StateChangeReason.UNKNOWN, false);
 
         // All panels are closed now.
-        assertTrue(panelManager.getActivePanel() == null);
-        assertEquals(0, panelManager.getSuppressedQueueSize());
+        Assert.assertTrue(panelManager.getActivePanel() == null);
+        Assert.assertEquals(0, panelManager.getSuppressedQueueSize());
     }
 
+    @Test
     @SmallTest
     @Feature({"OverlayPanel"})
+    @UiThreadTest
     public void testLatePanelGetsNecessaryVars() {
-        Context context = getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
         OverlayPanelManager panelManager = new OverlayPanelManager();
         MockOverlayPanel earlyPanel =
                 new MockOverlayPanel(context, null, panelManager, PanelPriority.MEDIUM, true);
 
         // Set necessary vars before any other panels are registered in the manager.
-        panelManager.setContainerView(new LinearLayout(getInstrumentation().getTargetContext()));
+        panelManager.setContainerView(
+                new LinearLayout(InstrumentationRegistry.getInstrumentation().getTargetContext()));
         panelManager.setDynamicResourceLoader(new DynamicResourceLoader(0, null));
 
         MockOverlayPanel latePanel =
                 new MockOverlayPanel(context, null, panelManager, PanelPriority.MEDIUM, true);
 
-        assertTrue(earlyPanel.getContainerView() == latePanel.getContainerView());
-        assertTrue(earlyPanel.getDynamicResourceLoader() == latePanel.getDynamicResourceLoader());
+        Assert.assertTrue(earlyPanel.getContainerView() == latePanel.getContainerView());
+        Assert.assertTrue(
+                earlyPanel.getDynamicResourceLoader() == latePanel.getDynamicResourceLoader());
     }
 }

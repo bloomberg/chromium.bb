@@ -8,17 +8,21 @@ import static org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Ani
 
 import android.os.SystemClock;
 import android.support.test.filters.SmallTest;
-import android.test.InstrumentationTestCase;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animatable;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 /**
  * Unit tests for {@link org.chromium.chrome.browser.compositor.layouts.ChromeAnimation}.
  */
-public class ChromeAnimationTest extends InstrumentationTestCase
-        implements Animatable<ChromeAnimationTest.Property> {
-
+@RunWith(ChromeJUnit4ClassRunner.class)
+public class ChromeAnimationTest implements Animatable<ChromeAnimationTest.Property> {
     protected enum Property {
         FAST_ANIMATION,
         SLOW_ANIMATION
@@ -32,10 +36,8 @@ public class ChromeAnimationTest extends InstrumentationTestCase
     private boolean mHasFinishedFastAnimation;
     private boolean mHasFinishedSlowAnimation;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-
+    @Before
+    public void setUp() throws Exception {
         mHasFinishedFastAnimation = false;
         mHasFinishedSlowAnimation = false;
     }
@@ -86,6 +88,7 @@ public class ChromeAnimationTest extends InstrumentationTestCase
         mAnimations.add(component);
     }
 
+    @Test
     @SmallTest
     @Feature({"ContextualSearch"})
     public void testConcurrentAnimationsFinishSeparately() {
@@ -99,12 +102,12 @@ public class ChromeAnimationTest extends InstrumentationTestCase
 
         // Advances time to check that the fast animation will finish first.
         mAnimations.update(now + FAST_DURATION);
-        assertTrue(mHasFinishedFastAnimation);
-        assertFalse(mHasFinishedSlowAnimation);
+        Assert.assertTrue(mHasFinishedFastAnimation);
+        Assert.assertFalse(mHasFinishedSlowAnimation);
 
         // Advances time to check that all animations are finished.
         mAnimations.update(now + SLOW_DURATION);
-        assertTrue(mHasFinishedFastAnimation);
-        assertTrue(mHasFinishedSlowAnimation);
+        Assert.assertTrue(mHasFinishedFastAnimation);
+        Assert.assertTrue(mHasFinishedSlowAnimation);
     }
 }

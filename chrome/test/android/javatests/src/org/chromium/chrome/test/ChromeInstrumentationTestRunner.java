@@ -57,7 +57,7 @@ public class ChromeInstrumentationTestRunner extends BaseChromiumInstrumentation
         result.addPreTestHook(Policies.getRegistrationHook());
     }
 
-    private class ChromeRestrictionSkipCheck extends RestrictionSkipCheck {
+    static class ChromeRestrictionSkipCheck extends RestrictionSkipCheck {
         private VrDaydreamApi mDaydreamApi;
         private boolean mAttemptedToGetApi;
 
@@ -128,10 +128,11 @@ public class ChromeInstrumentationTestRunner extends BaseChromiumInstrumentation
                     && !DeviceFormFactor.isTablet(getTargetContext())) {
                 return true;
             }
-            if (TextUtils.equals(restriction,
-                    ChromeRestriction.RESTRICTION_TYPE_GOOGLE_PLAY_SERVICES)
-                    && (ConnectionResult.SUCCESS != GoogleApiAvailability.getInstance()
-                    .isGooglePlayServicesAvailable(getTargetContext()))) {
+            if (TextUtils.equals(
+                        restriction, ChromeRestriction.RESTRICTION_TYPE_GOOGLE_PLAY_SERVICES)
+                    && (ConnectionResult.SUCCESS
+                               != GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(
+                                          getTargetContext()))) {
                 return true;
             }
             if (TextUtils.equals(restriction,
@@ -185,8 +186,7 @@ public class ChromeInstrumentationTestRunner extends BaseChromiumInstrumentation
         }
     }
 
-    private class ChromeDisableIfSkipCheck extends DisableIfSkipCheck {
-
+    static class ChromeDisableIfSkipCheck extends DisableIfSkipCheck {
         private final Context mTargetContext;
 
         public ChromeDisableIfSkipCheck(Context targetContext) {
@@ -196,15 +196,15 @@ public class ChromeInstrumentationTestRunner extends BaseChromiumInstrumentation
         @Override
         protected boolean deviceTypeApplies(String type) {
             if (TextUtils.equals(type, ChromeDisableIf.PHONE)
-                    && !DeviceFormFactor.isTablet(getTargetContext())) {
+                    && !DeviceFormFactor.isTablet(mTargetContext)) {
                 return true;
             }
             if (TextUtils.equals(type, ChromeDisableIf.TABLET)
-                    && DeviceFormFactor.isTablet(getTargetContext())) {
+                    && DeviceFormFactor.isTablet(mTargetContext)) {
                 return true;
             }
             if (TextUtils.equals(type, ChromeDisableIf.LARGETABLET)
-                    && DeviceFormFactor.isLargeTablet(getTargetContext())) {
+                    && DeviceFormFactor.isLargeTablet(mTargetContext)) {
                 return true;
             }
             return false;

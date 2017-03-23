@@ -8,13 +8,21 @@ import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_E
 
 import android.content.Context;
 import android.graphics.PointF;
+import android.support.test.InstrumentationRegistry;
+import android.support.test.annotation.UiThreadTest;
 import android.support.test.filters.SmallTest;
-import android.test.InstrumentationTestCase;
+import android.support.test.rule.UiThreadTestRule;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.MotionEvent.PointerCoords;
 import android.view.MotionEvent.PointerProperties;
 import android.widget.FrameLayout;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.ProcessInitException;
@@ -32,6 +40,7 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.util.MathUtils;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModel.MockTabModelDelegate;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModelSelector;
@@ -39,8 +48,8 @@ import org.chromium.chrome.test.util.browser.tabmodel.MockTabModelSelector;
 /**
  * Unit tests for {@link org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome}
  */
-public class LayoutManagerTest extends InstrumentationTestCase
-        implements MockTabModelDelegate {
+@RunWith(ChromeJUnit4ClassRunner.class)
+public class LayoutManagerTest implements MockTabModelDelegate {
     private static final String TAG = "LayoutManagerTest";
 
     private long mLastDownTime = 0;
@@ -74,6 +83,9 @@ public class LayoutManagerTest extends InstrumentationTestCase
         mPointerCoords[1].size = 1;
     }
 
+    @Rule
+    public UiThreadTestRule mRule = new UiThreadTestRule();
+
     /**
      * Simulates time so the animation updates.
      * @param layoutManager The {@link LayoutManagerChrome} to update.
@@ -101,7 +113,8 @@ public class LayoutManagerTest extends InstrumentationTestCase
 
     private void initializeLayoutManagerPhone(int standardTabCount, int incognitoTabCount,
             int standardIndexSelected, int incognitoIndexSelected, boolean incognitoSelected) {
-        Context context = new MockContextForLayout(getInstrumentation().getContext());
+        Context context =
+                new MockContextForLayout(InstrumentationRegistry.getInstrumentation().getContext());
 
         mDpToPx = context.getResources().getDisplayMetrics().density;
 
@@ -134,46 +147,50 @@ public class LayoutManagerTest extends InstrumentationTestCase
 
         MotionEvent event = MotionEvent.obtain(mLastDownTime, time, MotionEvent.ACTION_DOWN,
                 1, mProperties, mPointerCoords, 0, 0, 1, 1, 0, 0, 0, 0);
-        assertTrue("Down event not intercepted", mManager.onInterceptTouchEvent(event, false));
-        assertTrue("Down event not handled", mManager.onTouchEvent(event));
+        Assert.assertTrue(
+                "Down event not intercepted", mManager.onInterceptTouchEvent(event, false));
+        Assert.assertTrue("Down event not handled", mManager.onTouchEvent(event));
     }
 
     private void eventDown1(long time, PointF p) {
         mPointerCoords[1].x = p.x * mDpToPx;
         mPointerCoords[1].y = p.y * mDpToPx;
 
-        assertTrue("Down_1 event not handled", mManager.onTouchEvent(
-                MotionEvent.obtain(mLastDownTime, time,
-                MotionEvent.ACTION_POINTER_DOWN | (0x1 << MotionEvent.ACTION_POINTER_INDEX_SHIFT),
-                2, mProperties, mPointerCoords, 0, 0, 1, 1, 0, 0, 0, 0)));
+        Assert.assertTrue("Down_1 event not handled",
+                mManager.onTouchEvent(MotionEvent.obtain(mLastDownTime, time,
+                        MotionEvent.ACTION_POINTER_DOWN
+                                | (0x1 << MotionEvent.ACTION_POINTER_INDEX_SHIFT),
+                        2, mProperties, mPointerCoords, 0, 0, 1, 1, 0, 0, 0, 0)));
     }
 
     private void eventMove(long time, PointF p) {
         mPointerCoords[0].x = p.x * mDpToPx;
         mPointerCoords[0].y = p.y * mDpToPx;
 
-        assertTrue("Move event not handled", mManager.onTouchEvent(
-                MotionEvent.obtain(mLastDownTime, time, MotionEvent.ACTION_MOVE,
-                1, mProperties, mPointerCoords, 0, 0, 1, 1, 0, 0, 0, 0)));
+        Assert.assertTrue("Move event not handled",
+                mManager.onTouchEvent(
+                        MotionEvent.obtain(mLastDownTime, time, MotionEvent.ACTION_MOVE, 1,
+                                mProperties, mPointerCoords, 0, 0, 1, 1, 0, 0, 0, 0)));
     }
 
     private void eventUp(long time, PointF p) {
         mPointerCoords[0].x = p.x * mDpToPx;
         mPointerCoords[0].y = p.y * mDpToPx;
 
-        assertTrue("Up event not handled", mManager.onTouchEvent(
-                MotionEvent.obtain(mLastDownTime, time, MotionEvent.ACTION_UP,
-                1, mProperties, mPointerCoords, 0, 0, 1, 1, 0, 0, 0, 0)));
+        Assert.assertTrue("Up event not handled",
+                mManager.onTouchEvent(MotionEvent.obtain(mLastDownTime, time, MotionEvent.ACTION_UP,
+                        1, mProperties, mPointerCoords, 0, 0, 1, 1, 0, 0, 0, 0)));
     }
 
     private void eventUp1(long time, PointF p) {
         mPointerCoords[1].x = p.x * mDpToPx;
         mPointerCoords[1].y = p.y * mDpToPx;
 
-        assertTrue("Up_1 event not handled", mManager.onTouchEvent(
-                MotionEvent.obtain(mLastDownTime, time,
-                MotionEvent.ACTION_POINTER_UP | (0x1 << MotionEvent.ACTION_POINTER_INDEX_SHIFT),
-                2, mProperties, mPointerCoords, 0, 0, 1, 1, 0, 0, 0, 0)));
+        Assert.assertTrue("Up_1 event not handled",
+                mManager.onTouchEvent(MotionEvent.obtain(mLastDownTime, time,
+                        MotionEvent.ACTION_POINTER_UP
+                                | (0x1 << MotionEvent.ACTION_POINTER_INDEX_SHIFT),
+                        2, mProperties, mPointerCoords, 0, 0, 1, 1, 0, 0, 0, 0)));
     }
 
     private void eventMoveBoth(long time, PointF p0, PointF p1) {
@@ -182,38 +199,47 @@ public class LayoutManagerTest extends InstrumentationTestCase
         mPointerCoords[1].x = p1.x * mDpToPx;
         mPointerCoords[1].y = p1.y * mDpToPx;
 
-        assertTrue("Move event not handled", mManager.onTouchEvent(
-                MotionEvent.obtain(mLastDownTime, time, MotionEvent.ACTION_MOVE, 2,
-                mProperties, mPointerCoords, 0, 0, 1, 1, 0, 0, 0, 0)));
+        Assert.assertTrue("Move event not handled",
+                mManager.onTouchEvent(
+                        MotionEvent.obtain(mLastDownTime, time, MotionEvent.ACTION_MOVE, 2,
+                                mProperties, mPointerCoords, 0, 0, 1, 1, 0, 0, 0, 0)));
     }
 
+    @Test
     @SmallTest
     @Feature({"Android-TabSwitcher"})
+    @UiThreadTest
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     public void testCreation() {
         initializeLayoutManagerPhone(0, 0);
     }
 
+    @Test
     @SmallTest
     @Feature({"Android-TabSwitcher"})
+    @UiThreadTest
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     public void testStack() throws Exception {
         initializeLayoutManagerPhone(3, 0);
         mManagerPhone.showOverview(true);
-        assertTrue("layoutManager is way too long to end motion", simulateTime(mManager, 1000));
-        assertTrue("The activate layout type is expected to be StackLayout",
+        Assert.assertTrue(
+                "layoutManager is way too long to end motion", simulateTime(mManager, 1000));
+        Assert.assertTrue("The activate layout type is expected to be StackLayout",
                 mManager.getActiveLayout() instanceof StackLayout);
         mManagerPhone.hideOverview(true);
-        assertTrue("layoutManager is way too long to end motion", simulateTime(mManager, 1000));
+        Assert.assertTrue(
+                "layoutManager is way too long to end motion", simulateTime(mManager, 1000));
     }
 
+    @Test
     @SmallTest
     @Feature({"Android-TabSwitcher"})
+    @UiThreadTest
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     public void testStackNoAnimation() throws Exception {
         initializeLayoutManagerPhone(1, 0);
         mManagerPhone.showOverview(false);
-        assertTrue("The activate layout type is expected to be StackLayout",
+        Assert.assertTrue("The activate layout type is expected to be StackLayout",
                 mManager.getActiveLayout() instanceof StackLayout);
         mManagerPhone.hideOverview(false);
     }
@@ -222,8 +248,10 @@ public class LayoutManagerTest extends InstrumentationTestCase
      * Tests the tab pinching behavior with two finger.
      * This test is still under development.
      */
+    @Test
     @SmallTest
     @Feature({"Android-TabSwitcher"})
+    @UiThreadTest
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     public void testStackPinch() throws Exception {
         initializeLayoutManagerPhone(5, 0);
@@ -234,7 +262,7 @@ public class LayoutManagerTest extends InstrumentationTestCase
 
         mManagerPhone.showOverview(false);
         // Basic verifications
-        assertTrue("The activate layout type is expected to be StackLayout",
+        Assert.assertTrue("The activate layout type is expected to be StackLayout",
                 mManager.getActiveLayout() instanceof StackLayout);
 
         StackLayout layout = (StackLayout) mManager.getActiveLayout();
@@ -284,8 +312,8 @@ public class LayoutManagerTest extends InstrumentationTestCase
         time++;
 
         final float delta = 0.001f;
-        assertEquals("Wrong x offset for tab 1", expectedTab1X, tab1.getX(), delta);
-        assertEquals("Wrong y offset for tab 1", expectedTab1Y, tab1.getY(), delta);
+        Assert.assertEquals("Wrong x offset for tab 1", expectedTab1X, tab1.getX(), delta);
+        Assert.assertEquals("Wrong y offset for tab 1", expectedTab1Y, tab1.getY(), delta);
         float expectedTab3X = tab3.getX();
         float expectedTab3Y = tab3.getY();
 
@@ -297,10 +325,10 @@ public class LayoutManagerTest extends InstrumentationTestCase
         mManager.onUpdate(time, 16);
         time++;
 
-        assertEquals("Wrong x offset for tab 1", expectedTab1X, tab1.getX(), delta);
-        assertEquals("Wrong y offset for tab 1", expectedTab1Y, tab1.getY(), delta);
-        assertEquals("Wrong x offset for tab 3", expectedTab3X, tab3.getX(), delta);
-        assertEquals("Wrong y offset for tab 3", expectedTab3Y, tab3.getY(), delta);
+        Assert.assertEquals("Wrong x offset for tab 1", expectedTab1X, tab1.getX(), delta);
+        Assert.assertEquals("Wrong y offset for tab 1", expectedTab1Y, tab1.getY(), delta);
+        Assert.assertEquals("Wrong x offset for tab 3", expectedTab3X, tab3.getX(), delta);
+        Assert.assertEquals("Wrong y offset for tab 3", expectedTab3Y, tab3.getY(), delta);
 
         // Move finger 0: Y and X
         finger0.y += scrollOffset1;
@@ -311,10 +339,10 @@ public class LayoutManagerTest extends InstrumentationTestCase
         mManager.onUpdate(time, 16);
         time++;
 
-        assertEquals("Wrong x offset for tab 1", expectedTab1X, tab1.getX(), delta);
-        assertEquals("Wrong y offset for tab 1", expectedTab1Y, tab1.getY(), delta);
-        assertEquals("Wrong x offset for tab 3", expectedTab3X, tab3.getX(), delta);
-        assertEquals("Wrong y offset for tab 3", expectedTab3Y, tab3.getY(), delta);
+        Assert.assertEquals("Wrong x offset for tab 1", expectedTab1X, tab1.getX(), delta);
+        Assert.assertEquals("Wrong y offset for tab 1", expectedTab1Y, tab1.getY(), delta);
+        Assert.assertEquals("Wrong x offset for tab 3", expectedTab3X, tab3.getX(), delta);
+        Assert.assertEquals("Wrong y offset for tab 3", expectedTab3Y, tab3.getY(), delta);
 
         // Move finger 1: Y and X
         final float scrollOffset3 = (tab3.getY() - layout.getHeight()) / 8.0f;
@@ -326,10 +354,10 @@ public class LayoutManagerTest extends InstrumentationTestCase
         mManager.onUpdate(time, 16);
         time++;
 
-        assertEquals("Wrong x offset for tab 1", expectedTab1X, tab1.getX(), delta);
-        assertEquals("Wrong y offset for tab 1", expectedTab1Y, tab1.getY(), delta);
-        assertEquals("Wrong x offset for tab 3", expectedTab3X, tab3.getX(), delta);
-        assertEquals("Wrong y offset for tab 3", expectedTab3Y, tab3.getY(), delta);
+        Assert.assertEquals("Wrong x offset for tab 1", expectedTab1X, tab1.getX(), delta);
+        Assert.assertEquals("Wrong y offset for tab 1", expectedTab1Y, tab1.getY(), delta);
+        Assert.assertEquals("Wrong x offset for tab 3", expectedTab3X, tab3.getX(), delta);
+        Assert.assertEquals("Wrong y offset for tab 3", expectedTab3Y, tab3.getY(), delta);
 
         // Move finger 0 and 1: Y and X
         finger0.y += scrollOffset1;
@@ -343,128 +371,148 @@ public class LayoutManagerTest extends InstrumentationTestCase
         mManager.onUpdate(time, 16);
         time++;
 
-        assertEquals("Wrong x offset for tab 1", expectedTab1X, tab1.getX(), delta);
-        assertEquals("Wrong y offset for tab 1", expectedTab1Y, tab1.getY(), delta);
-        assertEquals("Wrong x offset for tab 3", expectedTab3X, tab3.getX(), delta);
-        assertEquals("Wrong y offset for tab 3", expectedTab3Y, tab3.getY(), delta);
+        Assert.assertEquals("Wrong x offset for tab 1", expectedTab1X, tab1.getX(), delta);
+        Assert.assertEquals("Wrong y offset for tab 1", expectedTab1Y, tab1.getY(), delta);
+        Assert.assertEquals("Wrong x offset for tab 3", expectedTab3X, tab3.getX(), delta);
+        Assert.assertEquals("Wrong y offset for tab 3", expectedTab3Y, tab3.getY(), delta);
 
         // Done
         eventUp1(time, finger1);
         eventUp(time, finger0);
 
-        assertEquals("Wrong x offset for tab 1", expectedTab1X, tab1.getX(), delta);
-        assertEquals("Wrong y offset for tab 1", expectedTab1Y, tab1.getY(), delta);
-        assertEquals("Wrong x offset for tab 3", expectedTab3X, tab3.getX(), delta);
-        assertEquals("Wrong y offset for tab 3", expectedTab3Y, tab3.getY(), delta);
+        Assert.assertEquals("Wrong x offset for tab 1", expectedTab1X, tab1.getX(), delta);
+        Assert.assertEquals("Wrong y offset for tab 1", expectedTab1Y, tab1.getY(), delta);
+        Assert.assertEquals("Wrong x offset for tab 3", expectedTab3X, tab3.getX(), delta);
+        Assert.assertEquals("Wrong y offset for tab 3", expectedTab3Y, tab3.getY(), delta);
 
         mManagerPhone.hideOverview(false);
     }
 
+    @Test
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @Feature({"Android-TabSwitcher"})
+    @UiThreadTest
     public void testToolbarSideSwipeOnlyTab() throws Exception {
         initializeLayoutManagerPhone(1, 0, 0, TabModel.INVALID_TAB_INDEX, false);
-        assertEquals(mTabModelSelector.getModel(false).index(), 0);
+        Assert.assertEquals(mTabModelSelector.getModel(false).index(), 0);
         runToolbarSideSwipeTestOnCurrentModel(ScrollDirection.LEFT, 0);
         runToolbarSideSwipeTestOnCurrentModel(ScrollDirection.RIGHT, 0);
     }
 
+    @Test
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @Feature({"Android-TabSwitcher"})
+    @UiThreadTest
     public void testToolbarSideSwipeOnlyTabIncognito() throws Exception {
         initializeLayoutManagerPhone(0, 1, TabModel.INVALID_TAB_INDEX, 0, true);
-        assertEquals(mTabModelSelector.getModel(true).index(), 0);
+        Assert.assertEquals(mTabModelSelector.getModel(true).index(), 0);
         runToolbarSideSwipeTestOnCurrentModel(ScrollDirection.LEFT, 0);
         runToolbarSideSwipeTestOnCurrentModel(ScrollDirection.RIGHT, 0);
     }
 
+    @Test
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @Feature({"Android-TabSwitcher"})
+    @UiThreadTest
     public void testToolbarSideSwipeNextTab() throws Exception {
         initializeLayoutManagerPhone(2, 0, 0, TabModel.INVALID_TAB_INDEX, false);
-        assertEquals(mTabModelSelector.getModel(false).index(), 0);
+        Assert.assertEquals(mTabModelSelector.getModel(false).index(), 0);
         runToolbarSideSwipeTestOnCurrentModel(ScrollDirection.LEFT, 1);
     }
 
+    @Test
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @Feature({"Android-TabSwitcher"})
+    @UiThreadTest
     public void testToolbarSideSwipePrevTab() throws Exception {
         initializeLayoutManagerPhone(2, 0, 1, TabModel.INVALID_TAB_INDEX, false);
-        assertEquals(mTabModelSelector.getModel(false).index(), 1);
+        Assert.assertEquals(mTabModelSelector.getModel(false).index(), 1);
         runToolbarSideSwipeTestOnCurrentModel(ScrollDirection.RIGHT, 0);
     }
 
+    @Test
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @Feature({"Android-TabSwitcher"})
+    @UiThreadTest
     public void testToolbarSideSwipeNextTabNone() throws Exception {
         initializeLayoutManagerPhone(2, 0, 1, TabModel.INVALID_TAB_INDEX, false);
-        assertEquals(mTabModelSelector.getModel(false).index(), 1);
+        Assert.assertEquals(mTabModelSelector.getModel(false).index(), 1);
         runToolbarSideSwipeTestOnCurrentModel(ScrollDirection.LEFT, 1);
     }
 
+    @Test
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @Feature({"Android-TabSwitcher"})
+    @UiThreadTest
     public void testToolbarSideSwipePrevTabNone() throws Exception {
         initializeLayoutManagerPhone(2, 0, 0, TabModel.INVALID_TAB_INDEX, false);
-        assertEquals(mTabModelSelector.getModel(false).index(), 0);
+        Assert.assertEquals(mTabModelSelector.getModel(false).index(), 0);
         runToolbarSideSwipeTestOnCurrentModel(ScrollDirection.RIGHT, 0);
     }
 
+    @Test
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @Feature({"Android-TabSwitcher"})
+    @UiThreadTest
     public void testToolbarSideSwipeNextTabIncognito() throws Exception {
         initializeLayoutManagerPhone(0, 2, TabModel.INVALID_TAB_INDEX, 0, true);
-        assertEquals(mTabModelSelector.getModel(true).index(), 0);
+        Assert.assertEquals(mTabModelSelector.getModel(true).index(), 0);
         runToolbarSideSwipeTestOnCurrentModel(ScrollDirection.LEFT, 1);
     }
 
+    @Test
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @Feature({"Android-TabSwitcher"})
+    @UiThreadTest
     public void testToolbarSideSwipePrevTabIncognito() throws Exception {
         initializeLayoutManagerPhone(0, 2, TabModel.INVALID_TAB_INDEX, 1, true);
-        assertEquals(mTabModelSelector.getModel(true).index(), 1);
+        Assert.assertEquals(mTabModelSelector.getModel(true).index(), 1);
         runToolbarSideSwipeTestOnCurrentModel(ScrollDirection.RIGHT, 0);
     }
 
+    @Test
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @Feature({"Android-TabSwitcher"})
+    @UiThreadTest
     public void testToolbarSideSwipeNextTabNoneIncognito() throws Exception {
         initializeLayoutManagerPhone(0, 2, TabModel.INVALID_TAB_INDEX, 1, true);
-        assertEquals(mTabModelSelector.getModel(true).index(), 1);
+        Assert.assertEquals(mTabModelSelector.getModel(true).index(), 1);
         runToolbarSideSwipeTestOnCurrentModel(ScrollDirection.LEFT, 1);
     }
 
+    @Test
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @Feature({"Android-TabSwitcher"})
+    @UiThreadTest
     public void testToolbarSideSwipePrevTabNoneIncognito() throws Exception {
         initializeLayoutManagerPhone(0, 2, TabModel.INVALID_TAB_INDEX, 0, true);
-        assertEquals(mTabModelSelector.getModel(true).index(), 0);
+        Assert.assertEquals(mTabModelSelector.getModel(true).index(), 0);
         runToolbarSideSwipeTestOnCurrentModel(ScrollDirection.RIGHT, 0);
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-
+    @Before
+    public void setUp() throws Exception {
         // Load the browser process.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 try {
-                    ChromeBrowserInitializer.getInstance(
-                            getInstrumentation().getTargetContext()).handleSynchronousStartup();
+                    ChromeBrowserInitializer
+                            .getInstance(
+                                    InstrumentationRegistry.getInstrumentation().getTargetContext())
+                            .handleSynchronousStartup();
                 } catch (ProcessInitException e) {
-                    fail("Failed to load browser");
+                    Assert.fail("Failed to load browser");
                 }
             }
         });
@@ -476,24 +524,25 @@ public class LayoutManagerTest extends InstrumentationTestCase
 
         performToolbarSideSwipe(direction);
 
-        assertEquals("Unexpected model change after side swipe", model.isIncognito(),
+        Assert.assertEquals("Unexpected model change after side swipe", model.isIncognito(),
                 mTabModelSelector.isIncognitoSelected());
 
-        assertEquals("Wrong index after side swipe", finalIndex, model.index());
-        assertEquals("Wrong current tab id", finalId, TabModelUtils.getCurrentTab(model).getId());
-        assertTrue("LayoutManager#getActiveLayout() should be StaticLayout",
+        Assert.assertEquals("Wrong index after side swipe", finalIndex, model.index());
+        Assert.assertEquals(
+                "Wrong current tab id", finalId, TabModelUtils.getCurrentTab(model).getId());
+        Assert.assertTrue("LayoutManager#getActiveLayout() should be StaticLayout",
                 mManager.getActiveLayout() instanceof StaticLayout);
     }
 
     private void performToolbarSideSwipe(ScrollDirection direction) {
-        assertTrue("Unexpected direction for side swipe " + direction,
+        Assert.assertTrue("Unexpected direction for side swipe " + direction,
                 direction == ScrollDirection.LEFT || direction == ScrollDirection.RIGHT);
 
         final Layout layout = mManager.getActiveLayout();
         final EdgeSwipeHandler eventHandler = mManager.getTopSwipeHandler();
 
-        assertNotNull("LayoutManager#getTopSwipeHandler() returned null", eventHandler);
-        assertNotNull("LayoutManager#getActiveLayout() returned null", layout);
+        Assert.assertNotNull("LayoutManager#getTopSwipeHandler() returned null", eventHandler);
+        Assert.assertNotNull("LayoutManager#getActiveLayout() returned null", layout);
 
         final float layoutWidth = layout.getWidth();
         final boolean scrollLeft = direction == ScrollDirection.LEFT;
@@ -503,9 +552,9 @@ public class LayoutManagerTest extends InstrumentationTestCase
         eventHandler.swipeUpdated(deltaX, 0.f, deltaX, 0.f, deltaX, 0.f);
         eventHandler.swipeFinished();
 
-        assertTrue("LayoutManager#getActiveLayout() should be ToolbarSwipeLayout",
+        Assert.assertTrue("LayoutManager#getActiveLayout() should be ToolbarSwipeLayout",
                 mManager.getActiveLayout() instanceof ToolbarSwipeLayout);
-        assertTrue("LayoutManager took too long to finish the animations",
+        Assert.assertTrue("LayoutManager took too long to finish the animations",
                 simulateTime(mManager, 1000));
     }
 
