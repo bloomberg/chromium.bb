@@ -66,7 +66,7 @@ gfx::Rect ConvertRectToPixel(const Layer* layer,
 namespace {
 
 void CheckSnapped(float snapped_position) {
-  const float kEplison = 0.0001f;
+  const float kEplison = 0.0002f;
   float diff = std::abs(snapped_position - gfx::ToRoundedInt(snapped_position));
   DCHECK_LT(diff, kEplison);
 }
