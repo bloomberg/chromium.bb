@@ -1307,8 +1307,9 @@ void av1_warp_plane(WarpedMotionParams *wm,
 #define IDET_WARPEDMODEL_DIFF_BITS (IDET_PREC_BITS - WARPEDMODEL_PREC_BITS)
 #endif  // APPROXIMATE_DIVISOR
 
-static int find_affine_int(const int np, int *pts1, int *pts2,
-                           WarpedMotionParams *wm, int mi_row, int mi_col) {
+static int find_affine_int(const int np, int *pts1, int *pts2, BLOCK_SIZE bsize,
+                           int mvy, int mvx, WarpedMotionParams *wm, int mi_row,
+                           int mi_col) {
   int32_t A[3][3] = { { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 } };
   int32_t Bx[3] = { 0, 0, 0 };
   int32_t By[3] = { 0, 0, 0 };
@@ -1317,6 +1318,10 @@ static int find_affine_int(const int np, int *pts1, int *pts2,
   int64_t C00, C01, C02, C11, C12, C22;
   int64_t Px[3], Py[3];
   int64_t Det, v;
+  const int bw = block_size_wide[bsize];
+  const int bh = block_size_high[bsize];
+  const int cy_offset = AOMMAX(bh, MI_SIZE) / 2 - 1;
+  const int cx_offset = AOMMAX(bw, MI_SIZE) / 2 - 1;
 
   // Offsets to make the values in the arrays smaller
   const int ux = mi_col * MI_SIZE * 8, uy = mi_row * MI_SIZE * 8;
@@ -1340,15 +1345,16 @@ static int find_affine_int(const int np, int *pts1, int *pts2,
   // We need to just compute inv(A).Bx and inv(A).By for the solutions.
   //
   for (j = 0; j < SAMPLES_PER_NEIGHBOR && n < LEAST_SQUARES_SAMPLES_MAX; ++j) {
-    for (i = j; i < np && n < LEAST_SQUARES_SAMPLES_MAX;
-         i += SAMPLES_PER_NEIGHBOR) {
-      const int dx = pts2[i * 2] - ux;
-      const int dy = pts2[i * 2 + 1] - uy;
-      const int sx = pts1[i * 2] - ux;
-      const int sy = pts1[i * 2 + 1] - uy;
-      if (abs(sx - dx) >= LEAST_SQUARES_MV_MAX ||
-          abs(sy - dy) >= LEAST_SQUARES_MV_MAX)
-        continue;
+    // Contribution from sample in current block
+    const int y_offset = j >> 1;
+    const int x_offset = j & 1;
+    int sx, sy, dx, dy;
+    sx = (cx_offset + x_offset) * 8;
+    sy = (cy_offset + y_offset) * 8;
+    dx = sx + mvx;
+    dy = sy + mvy;
+    if (abs(sx - dx) < LEAST_SQUARES_MV_MAX &&
+        abs(sy - dy) < LEAST_SQUARES_MV_MAX) {
       A[0][0] += sx * sx;
       A[0][1] += sx * sy;
       A[0][2] += sx;
@@ -1362,6 +1368,30 @@ static int find_affine_int(const int np, int *pts1, int *pts2,
       By[1] += sy * dy;
       By[2] += dy;
       n++;
+    }
+    // Contribution from neighbor block
+    for (i = j; i < np && n < LEAST_SQUARES_SAMPLES_MAX;
+         i += SAMPLES_PER_NEIGHBOR) {
+      dx = pts2[i * 2] - ux;
+      dy = pts2[i * 2 + 1] - uy;
+      sx = pts1[i * 2] - ux;
+      sy = pts1[i * 2 + 1] - uy;
+      if (abs(sx - dx) < LEAST_SQUARES_MV_MAX &&
+          abs(sy - dy) < LEAST_SQUARES_MV_MAX) {
+        A[0][0] += sx * sx;
+        A[0][1] += sx * sy;
+        A[0][2] += sx;
+        A[1][1] += sy * sy;
+        A[1][2] += sy;
+        A[2][2] += 1;
+        Bx[0] += sx * dx;
+        Bx[1] += sy * dx;
+        Bx[2] += dx;
+        By[0] += sx * dy;
+        By[1] += sy * dy;
+        By[2] += dy;
+        n++;
+      }
     }
   }
   // Compute Cofactors of A
@@ -1431,12 +1461,14 @@ static int find_affine_int(const int np, int *pts1, int *pts2,
   return 0;
 }
 
-int find_projection(const int np, int *pts1, int *pts2,
-                    WarpedMotionParams *wm_params, int mi_row, int mi_col) {
+int find_projection(const int np, int *pts1, int *pts2, BLOCK_SIZE bsize,
+                    int mvy, int mvx, WarpedMotionParams *wm_params, int mi_row,
+                    int mi_col) {
   int result = 1;
   switch (wm_params->wmtype) {
     case AFFINE:
-      result = find_affine_int(np, pts1, pts2, wm_params, mi_row, mi_col);
+      result = find_affine_int(np, pts1, pts2, bsize, mvy, mvx, wm_params,
+                               mi_row, mi_col);
       break;
     default: assert(0 && "Invalid warped motion type!"); return 1;
   }

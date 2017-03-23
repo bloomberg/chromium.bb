@@ -8444,7 +8444,8 @@ static int64_t motion_mode_rd(
                                                             : cm->interp_filter;
 #endif  // CONFIG_DUAL_FILTER
 
-      if (find_projection(mbmi->num_proj_ref[0], pts, pts_inref,
+      if (find_projection(mbmi->num_proj_ref[0], pts, pts_inref, bsize,
+                          mbmi->mv[0].as_mv.row, mbmi->mv[0].as_mv.col,
                           &mbmi->wm_params[0], mi_row, mi_col) == 0) {
         int plane;
         for (plane = 0; plane < 3; ++plane) {

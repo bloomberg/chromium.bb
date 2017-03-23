@@ -2030,7 +2030,8 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #if CONFIG_WARPED_MOTION
     if (mbmi->motion_mode == WARPED_CAUSAL) {
       mbmi->wm_params[0].wmtype = DEFAULT_WMTYPE;
-      find_projection(mbmi->num_proj_ref[0], pts, pts_inref,
+      find_projection(mbmi->num_proj_ref[0], pts, pts_inref, bsize,
+                      mbmi->mv[0].as_mv.row, mbmi->mv[0].as_mv.col,
                       &mbmi->wm_params[0], mi_row, mi_col);
     }
 #endif  // CONFIG_WARPED_MOTION

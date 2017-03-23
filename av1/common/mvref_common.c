@@ -1224,37 +1224,8 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
 
   if (np == 0) {
     return 0;
-  } else {
-    MODE_INFO *mi = xd->mi[0];
-    MB_MODE_INFO *mbmi = &mi->mbmi;
-    int bw = block_size_wide[mbmi->sb_type];
-    int bh = block_size_high[mbmi->sb_type];
-    int mv_row = mbmi->mv[0].as_mv.row;
-    int mv_col = mbmi->mv[0].as_mv.col;
-    int cr_offset = AOMMAX(bh, MI_SIZE) / 2 - 1;
-    int cc_offset = AOMMAX(bw, MI_SIZE) / 2 - 1;
-    int j;
-    int pixelperblock = SAMPLES_PER_NEIGHBOR;
-
-    for (j = 0; j < pixelperblock; j++) {
-      int r_offset = j / 2;
-      int c_offset = j % 2;
-
-      int x = (cc_offset + c_offset + global_offset_c);
-      int y = (cr_offset + r_offset + global_offset_r);
-
-      pts[0] = (x * 8);
-      pts[1] = (y * 8);
-      pts_inref[0] = pts[0] + mv_col;
-      pts_inref[1] = pts[1] + mv_row;
-
-      pts += 2;
-      pts_inref += 2;
-    }
-    np += pixelperblock;
   }
   assert(2 * np <= SAMPLES_ARRAY_SIZE);
-
   return np;
 }
 #endif  // CONFIG_WARPED_MOTION
