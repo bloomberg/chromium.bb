@@ -118,17 +118,33 @@ class ComplexFormDataBytesConsumer final : public BytesConsumer {
         case FormDataElement::data:
           blobData->appendBytes(element.m_data.data(), element.m_data.size());
           break;
-        case FormDataElement::encodedFile:
+        case FormDataElement::encodedFile: {
+          auto fileLength = element.m_fileLength;
+          if (fileLength < 0) {
+            if (!getFileSize(element.m_filename, fileLength)) {
+              m_formData = nullptr;
+              m_blobBytesConsumer = BytesConsumer::createErrored(
+                  Error("Cannot determine a file size"));
+              return;
+            }
+          }
           blobData->appendFile(element.m_filename, element.m_fileStart,
-                               element.m_fileLength,
+                               fileLength,
                                element.m_expectedFileModificationTime);
           break;
+        }
         case FormDataElement::encodedBlob:
           if (element.m_optionalBlobDataHandle)
             blobData->appendBlob(element.m_optionalBlobDataHandle, 0,
                                  element.m_optionalBlobDataHandle->size());
           break;
         case FormDataElement::encodedFileSystemURL:
+          if (element.m_fileLength < 0) {
+            m_formData = nullptr;
+            m_blobBytesConsumer = BytesConsumer::createErrored(
+                Error("Cannot determine a file size"));
+            return;
+          }
           blobData->appendFileSystemURL(
               element.m_fileSystemURL, element.m_fileStart,
               element.m_fileLength, element.m_expectedFileModificationTime);
