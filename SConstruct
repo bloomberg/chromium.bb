@@ -3785,7 +3785,8 @@ def PnaclSetEmulatorForSandboxedTranslator(selected_envs):
   # on ARM, once emulator is actually known (vs in naclsdk.py, where it
   # is not yet known).
   for env in selected_envs:
-    if (env.Bit('bitcode')
+    if (env['NACL_BUILD_FAMILY'] != 'TRUSTED'
+        and env.Bit('bitcode')
         and env.Bit('use_sandboxed_translator')
         and env.UsingEmulator()):
       # This must modify the LINK command itself, since LINKFLAGS may
