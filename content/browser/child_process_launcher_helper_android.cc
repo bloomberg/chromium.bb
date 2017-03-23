@@ -281,11 +281,6 @@ static void OnChildProcessStarted(JNIEnv*,
   delete callback;
 }
 
-jboolean IsSingleProcess(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSingleProcess);
-}
-
 bool RegisterChildProcessLauncher(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }

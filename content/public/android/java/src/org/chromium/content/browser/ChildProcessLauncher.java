@@ -814,7 +814,7 @@ public class ChildProcessLauncher {
         Log.d(TAG, "stopping child connection: pid=%d", pid);
         ChildProcessConnection connection = sServiceMap.remove(pid);
         if (connection == null) {
-            logPidWarning(pid, "Tried to stop non-existent connection");
+            // Can happen for single process.
             return;
         }
         sBindingManager.clearConnection(pid);
@@ -827,13 +827,6 @@ public class ChildProcessLauncher {
      */
     private static IBinder createCallback(int childProcessId, int callbackType) {
         return callbackType == CALLBACK_FOR_GPU_PROCESS ? new GpuProcessCallback() : null;
-    }
-
-    static void logPidWarning(int pid, String message) {
-        // This class is effectively a no-op in single process mode, so don't log warnings there.
-        if (pid > 0 && !nativeIsSingleProcess()) {
-            Log.w(TAG, "%s, pid=%d", message, pid);
-        }
     }
 
     @VisibleForTesting
@@ -938,5 +931,4 @@ public class ChildProcessLauncher {
     }
 
     private static native void nativeOnChildProcessStarted(long clientContext, int pid);
-    private static native boolean nativeIsSingleProcess();
 }
