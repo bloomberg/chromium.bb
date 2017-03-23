@@ -77,7 +77,6 @@ source_set("browser") {
     "//device/nfc:mojo_bindings",
     "//device/power_save_blocker",
     "//device/screen_orientation/public/interfaces",
-    "//device/sensors",
     "//device/vibration",
     "//device/vr",
     "//device/vr:features",

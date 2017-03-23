@@ -168,7 +168,6 @@
 #include "content/public/common/url_constants.h"
 #include "device/battery/battery_monitor_impl.h"
 #include "device/gamepad/gamepad_monitor.h"
-#include "device/sensors/device_sensor_host.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gpu_switches.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -1295,28 +1294,6 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   registry->AddInterface(base::Bind(&hyphenation::HyphenationImpl::Create),
                          file_task_runner);
 #endif
-
-#if defined(OS_ANDROID)
-  // On Android the device sensors implementations need to run on the UI thread
-  // to communicate to Java.
-  AddUIThreadInterface(registry.get(),
-                       base::Bind(&device::DeviceLightHost::Create));
-  AddUIThreadInterface(registry.get(),
-                       base::Bind(&device::DeviceMotionHost::Create));
-  AddUIThreadInterface(registry.get(),
-                       base::Bind(&device::DeviceOrientationHost::Create));
-  AddUIThreadInterface(
-      registry.get(),
-      base::Bind(&device::DeviceOrientationAbsoluteHost::Create));
-#else
-  // On platforms other than Android the device sensors implementations run on
-  // the IO thread.
-  registry->AddInterface(base::Bind(&device::DeviceLightHost::Create));
-  registry->AddInterface(base::Bind(&device::DeviceMotionHost::Create));
-  registry->AddInterface(base::Bind(&device::DeviceOrientationHost::Create));
-  registry->AddInterface(
-      base::Bind(&device::DeviceOrientationAbsoluteHost::Create));
-#endif  // defined(OS_ANDROID)
 
   registry->AddInterface(base::Bind(&device::GamepadMonitor::Create));
 

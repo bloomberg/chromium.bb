@@ -7,6 +7,9 @@
 
 #include "base/memory/ref_counted.h"
 #include "device/screen_orientation/public/interfaces/screen_orientation.mojom.h"
+#include "device/sensors/public/interfaces/light.mojom.h"
+#include "device/sensors/public/interfaces/motion.mojom.h"
+#include "device/sensors/public/interfaces/orientation.mojom.h"
 #include "services/device/public/interfaces/fingerprint.mojom.h"
 #include "services/device/public/interfaces/power_monitor.mojom.h"
 #include "services/device/public/interfaces/time_zone_monitor.mojom.h"
@@ -29,6 +32,11 @@ std::unique_ptr<service_manager::Service> CreateDeviceService(
 class DeviceService
     : public service_manager::Service,
       public service_manager::InterfaceFactory<mojom::Fingerprint>,
+      public service_manager::InterfaceFactory<mojom::LightSensor>,
+      public service_manager::InterfaceFactory<mojom::MotionSensor>,
+      public service_manager::InterfaceFactory<mojom::OrientationSensor>,
+      public service_manager::InterfaceFactory<
+          mojom::OrientationAbsoluteSensor>,
       public service_manager::InterfaceFactory<mojom::PowerMonitor>,
       public service_manager::InterfaceFactory<
           mojom::ScreenOrientationListener>,
@@ -47,6 +55,22 @@ class DeviceService
   // InterfaceFactory<mojom::Fingerprint>:
   void Create(const service_manager::Identity& remote_identity,
               mojom::FingerprintRequest request) override;
+
+  // InterfaceFactory<mojom::LightSensor>:
+  void Create(const service_manager::Identity& remote_identity,
+              mojom::LightSensorRequest request) override;
+
+  // InterfaceFactory<mojom::MotionSensor>:
+  void Create(const service_manager::Identity& remote_identity,
+              mojom::MotionSensorRequest request) override;
+
+  // InterfaceFactory<mojom::OrientationSensor>:
+  void Create(const service_manager::Identity& remote_identity,
+              mojom::OrientationSensorRequest request) override;
+
+  // InterfaceFactory<mojom::OrientationAbsolueSensor>:
+  void Create(const service_manager::Identity& remote_identity,
+              mojom::OrientationAbsoluteSensorRequest request) override;
 
   // InterfaceFactory<mojom::PowerMonitor>:
   void Create(const service_manager::Identity& remote_identity,

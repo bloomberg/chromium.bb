@@ -15,6 +15,7 @@
 #include "content/public/renderer/platform_event_observer.h"
 #include "content/renderer/render_thread_impl.h"
 #include "mojo/public/cpp/system/platform_handle.h"
+#include "services/device/public/interfaces/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace content {
@@ -36,7 +37,7 @@ class CONTENT_EXPORT DeviceSensorMojoClientMixin : public Base {
     if (RenderThreadImpl::current() &&
         !RenderThreadImpl::current()->layout_test_mode()) {
       RenderThread::Get()->GetConnector()->BindInterface(
-          mojom::kBrowserServiceName, std::move(request));
+          device::mojom::kServiceName, std::move(request));
     }
   }
 

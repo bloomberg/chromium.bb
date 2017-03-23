@@ -17,6 +17,7 @@ source_set("lib") {
 
   deps = [
     "//base",
+    "//device/sensors",
     "//services/device/fingerprint",
     "//services/device/power_monitor",
     "//services/device/screen_orientation",

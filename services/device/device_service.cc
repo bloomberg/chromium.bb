@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "device/sensors/device_sensor_host.h"
 #include "services/device/fingerprint/fingerprint.h"
 #include "services/device/power_monitor/power_monitor_message_broadcaster.h"
 #include "services/device/time_zone_monitor/time_zone_monitor.h"
@@ -49,6 +50,10 @@ void DeviceService::OnStart() {}
 bool DeviceService::OnConnect(const service_manager::ServiceInfo& remote_info,
                               service_manager::InterfaceRegistry* registry) {
   registry->AddInterface<mojom::Fingerprint>(this);
+  registry->AddInterface<mojom::LightSensor>(this);
+  registry->AddInterface<mojom::MotionSensor>(this);
+  registry->AddInterface<mojom::OrientationSensor>(this);
+  registry->AddInterface<mojom::OrientationAbsoluteSensor>(this);
   registry->AddInterface<mojom::PowerMonitor>(this);
   registry->AddInterface<mojom::ScreenOrientationListener>(this);
   registry->AddInterface<mojom::TimeZoneMonitor>(this);
@@ -59,6 +64,72 @@ bool DeviceService::OnConnect(const service_manager::ServiceInfo& remote_info,
 void DeviceService::Create(const service_manager::Identity& remote_identity,
                            mojom::FingerprintRequest request) {
   Fingerprint::Create(std::move(request));
+}
+
+void DeviceService::Create(const service_manager::Identity& remote_identity,
+                           mojom::LightSensorRequest request) {
+#if defined(OS_ANDROID)
+  // On Android the device sensors implementations need to run on the UI thread
+  // to communicate to Java.
+  DeviceLightHost::Create(std::move(request));
+#else
+  // On platforms other than Android the device sensors implementations run on
+  // the IO thread.
+  if (io_task_runner_) {
+    io_task_runner_->PostTask(FROM_HERE, base::Bind(&DeviceLightHost::Create,
+                                                    base::Passed(&request)));
+  }
+#endif  // defined(OS_ANDROID)
+}
+
+void DeviceService::Create(const service_manager::Identity& remote_identity,
+                           mojom::MotionSensorRequest request) {
+#if defined(OS_ANDROID)
+  // On Android the device sensors implementations need to run on the UI thread
+  // to communicate to Java.
+  DeviceMotionHost::Create(std::move(request));
+#else
+  // On platforms other than Android the device sensors implementations run on
+  // the IO thread.
+  if (io_task_runner_) {
+    io_task_runner_->PostTask(FROM_HERE, base::Bind(&DeviceMotionHost::Create,
+                                                    base::Passed(&request)));
+  }
+#endif  // defined(OS_ANDROID)
+}
+
+void DeviceService::Create(const service_manager::Identity& remote_identity,
+                           mojom::OrientationSensorRequest request) {
+#if defined(OS_ANDROID)
+  // On Android the device sensors implementations need to run on the UI thread
+  // to communicate to Java.
+  DeviceOrientationHost::Create(std::move(request));
+#else
+  // On platforms other than Android the device sensors implementations run on
+  // the IO thread.
+  if (io_task_runner_) {
+    io_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&DeviceOrientationHost::Create, base::Passed(&request)));
+  }
+#endif  // defined(OS_ANDROID)
+}
+
+void DeviceService::Create(const service_manager::Identity& remote_identity,
+                           mojom::OrientationAbsoluteSensorRequest request) {
+#if defined(OS_ANDROID)
+  // On Android the device sensors implementations need to run on the UI thread
+  // to communicate to Java.
+  DeviceOrientationAbsoluteHost::Create(std::move(request));
+#else
+  // On platforms other than Android the device sensors implementations run on
+  // the IO thread.
+  if (io_task_runner_) {
+    io_task_runner_->PostTask(FROM_HERE,
+                              base::Bind(&DeviceOrientationAbsoluteHost::Create,
+                                         base::Passed(&request)));
+  }
+#endif  // defined(OS_ANDROID)
 }
 
 void DeviceService::Create(const service_manager::Identity& remote_identity,

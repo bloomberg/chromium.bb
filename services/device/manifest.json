@@ -4,10 +4,16 @@
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
+        "device:fingerprint": [ "device::mojom::Fingerprint" ],
         "device:power_monitor": [ "device::mojom::PowerMonitor" ],
         "device:screen_orientation": [ "device::mojom::ScreenOrientationListener" ],
-        "device:time_zone_monitor": [ "device::mojom::TimeZoneMonitor" ],
-	"device:fingerprint": [ "device::mojom::Fingerprint" ]
+        "device:sensors": [
+          "device::mojom::LightSensor",
+          "device::mojom::MotionSensor",
+          "device::mojom::OrientationAbsoluteSensor",
+          "device::mojom::OrientationSensor"
+        ],
+        "device:time_zone_monitor": [ "device::mojom::TimeZoneMonitor" ]
       },
       "requires": {
         "service_manager": [ "service_manager:all_users" ]
