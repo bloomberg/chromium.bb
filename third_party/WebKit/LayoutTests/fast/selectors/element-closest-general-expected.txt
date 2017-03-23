@@ -36,7 +36,7 @@ PASS sour.closest("a") is a
 PASS document.closest is undefined
 PASS document.closest() threw exception TypeError: document.closest is not a function.
 PASS theTarget.closest() threw exception TypeError: Failed to execute 'closest' on 'Element': 1 argument required, but only 0 present..
-PASS theTarget.closest("") threw exception SyntaxError: Failed to execute 'closest' on 'Element': '' is not a valid selector..
+PASS theTarget.closest("") threw exception SyntaxError: Failed to execute 'closest' on 'Element': The provided selector is empty..
 PASS theTarget.closest(".123") threw exception SyntaxError: Failed to execute 'closest' on 'Element': '.123' is not a valid selector..
 PASS theTarget.closest("    ") threw exception SyntaxError: Failed to execute 'closest' on 'Element': '    ' is not a valid selector..
 PASS theTarget.closest(")") threw exception SyntaxError: Failed to execute 'closest' on 'Element': ')' is not a valid selector..

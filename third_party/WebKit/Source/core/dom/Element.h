@@ -626,8 +626,15 @@ class CORE_EXPORT Element : public ContainerNode {
   virtual bool matchesReadOnlyPseudoClass() const { return false; }
   virtual bool matchesReadWritePseudoClass() const { return false; }
   virtual bool matchesValidityPseudoClasses() const { return false; }
-  bool matches(const String& selectors, ExceptionState&);
-  Element* closest(const String& selectors, ExceptionState&);
+
+  // https://dom.spec.whatwg.org/#dom-element-matches
+  bool matches(const AtomicString& selectors,
+               ExceptionState& = ASSERT_NO_EXCEPTION);
+
+  // https://dom.spec.whatwg.org/#dom-element-closest
+  Element* closest(const AtomicString& selectors,
+                   ExceptionState& = ASSERT_NO_EXCEPTION);
+
   virtual bool shouldAppearIndeterminate() const { return false; }
 
   DOMTokenList& classList();

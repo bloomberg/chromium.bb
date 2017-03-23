@@ -3344,18 +3344,19 @@ LayoutObject* Element::pseudoElementLayoutObject(PseudoId pseudoId) const {
   return nullptr;
 }
 
-bool Element::matches(const String& selectors, ExceptionState& exceptionState) {
+bool Element::matches(const AtomicString& selectors,
+                      ExceptionState& exceptionState) {
   SelectorQuery* selectorQuery = document().selectorQueryCache().add(
-      AtomicString(selectors), document(), exceptionState);
+      selectors, document(), exceptionState);
   if (!selectorQuery)
     return false;
   return selectorQuery->matches(*this);
 }
 
-Element* Element::closest(const String& selectors,
+Element* Element::closest(const AtomicString& selectors,
                           ExceptionState& exceptionState) {
   SelectorQuery* selectorQuery = document().selectorQueryCache().add(
-      AtomicString(selectors), document(), exceptionState);
+      selectors, document(), exceptionState);
   if (!selectorQuery)
     return nullptr;
   return selectorQuery->closest(*this);

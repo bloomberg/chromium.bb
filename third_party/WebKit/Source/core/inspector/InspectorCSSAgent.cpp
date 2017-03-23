@@ -1958,8 +1958,9 @@ InspectorCSSAgent::buildArrayForMatchedRuleList(CSSRuleList* ruleList,
         matched = matchesPseudoElement(
             selector, elementPseudoId);  // Modifies |selector|.
       else
-        matched = element->matches(firstTagHistorySelector->selectorText(),
-                                   IGNORE_EXCEPTION_FOR_TESTING);
+        matched = element->matches(
+            AtomicString(firstTagHistorySelector->selectorText()),
+            IGNORE_EXCEPTION_FOR_TESTING);
       if (matched)
         matchingSelectors->addItem(index);
       ++index;

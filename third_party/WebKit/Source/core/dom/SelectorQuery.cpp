@@ -26,6 +26,7 @@
 
 #include "core/dom/SelectorQuery.h"
 
+#include <memory>
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/HTMLNames.h"
 #include "core/css/SelectorChecker.h"
@@ -34,11 +35,11 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/Node.h"
+#include "core/dom/NthIndexCache.h"
 #include "core/dom/StaticNodeList.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -146,12 +147,14 @@ Element* SelectorQuery::closest(Element& targetElement) const {
 }
 
 StaticElementList* SelectorQuery::queryAll(ContainerNode& rootNode) const {
+  NthIndexCache nthIndexCache(rootNode.document());
   HeapVector<Member<Element>> result;
   execute<AllElementsSelectorQueryTrait>(rootNode, result);
   return StaticElementList::adopt(result);
 }
 
 Element* SelectorQuery::queryFirst(ContainerNode& rootNode) const {
+  NthIndexCache nthIndexCache(rootNode.document());
   Element* matchedElement = nullptr;
   execute<SingleElementSelectorQueryTrait>(rootNode, matchedElement);
   return matchedElement;
@@ -597,6 +600,12 @@ SelectorQuery::SelectorQuery(CSSSelectorList selectorList) {
 SelectorQuery* SelectorQueryCache::add(const AtomicString& selectors,
                                        const Document& document,
                                        ExceptionState& exceptionState) {
+  if (selectors.isEmpty()) {
+    exceptionState.throwDOMException(SyntaxError,
+                                     "The provided selector is empty.");
+    return nullptr;
+  }
+
   HashMap<AtomicString, std::unique_ptr<SelectorQuery>>::iterator it =
       m_entries.find(selectors);
   if (it != m_entries.end())
