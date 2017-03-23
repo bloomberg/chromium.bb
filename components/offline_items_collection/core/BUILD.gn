@@ -16,6 +16,8 @@ static_library("core") {
     "offline_item.h",
     "offline_item_filter.h",
     "offline_item_state.h",
+    "throttled_offline_content_provider.cc",
+    "throttled_offline_content_provider.h",
   ]
 
   public_deps = [
@@ -43,6 +45,7 @@ source_set("unit_tests") {
 
   sources = [
     "offline_content_aggregator_unittest.cc",
+    "throttled_offline_content_provider_unittest.cc",
   ]
 
   deps = [
