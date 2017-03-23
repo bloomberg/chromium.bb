@@ -691,6 +691,8 @@ process_toolchain() {
         if enabled mips || [ -z "${INLINE}" ]; then
           enabled extra_warnings || check_add_cflags -Wno-unused-function
         fi
+        # gtest makes heavy use of undefined pre-processor symbols
+        check_cflags "-Wundef" && add_cflags_only "-Wundef"
     fi
 
     if enabled icc; then
