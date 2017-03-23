@@ -26,10 +26,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""This module is used to find files used by run-webkit-tests and
-perftestrunner. It exposes one public function - find() - which takes
-an optional list of paths, optional set of skipped directories and optional
-filter callback.
+"""A utility module used to find files. It exposes one public function: find().
 
 If a list is passed in, the returned list of files is constrained to those
 found under the paths passed in. i.e. calling find(["LayoutTests/fast"])
@@ -37,10 +34,11 @@ will only return files under that directory.
 
 If a set of skipped directories is passed in, the function will filter out
 the files lying in these directories i.e. find(["LayoutTests"], set(["fast"]))
-will return everything except files in fast subfolder.
+will return everything except files in the "fast" subdirectory.
 
 If a callback is passed in, it will be called for the each file and the file
 will be included into the result if the callback returns True.
+
 The callback has to take three arguments: filesystem, dirname and filename.
 """
 
@@ -51,16 +49,22 @@ def find(filesystem, base_dir, paths=None, skipped_directories=None, file_filter
     """Finds the set of tests under a given list of sub-paths.
 
     Args:
-      paths: a list of path expressions relative to base_dir
-          to search. Glob patterns are ok, as are path expressions with
-          forward slashes on Windows. If paths is empty, we look at
-          everything under the base_dir.
-    """
+        filesystem: A FileSystem instance.
+        base_dir: A base directory to search under.
+        paths: A list of path expressions relative to |base_dir|. Glob patterns
+            are OK, as are path expressions with forward slashes on Windows.
+            If paths is not given, we look at everything under |base_dir|.
+        file_filter: A predicate function which takes three arguments:
+            filesystem, dirname and filename.
+        directory_sort_key: A sort key function.
 
+    Returns:
+        An iterable of absolute paths that were found.
+    """
     paths = paths or ['*']
     skipped_directories = skipped_directories or set(['.svn', '_svn'])
-    return _normalized_find(filesystem, _normalize(
-        filesystem, base_dir, paths), skipped_directories, file_filter, directory_sort_key)
+    absolute_paths = _normalize(filesystem, base_dir, paths)
+    return _normalized_find(filesystem, absolute_paths, skipped_directories, file_filter, directory_sort_key)
 
 
 def _normalize(filesystem, base_dir, paths):
@@ -68,13 +72,7 @@ def _normalize(filesystem, base_dir, paths):
 
 
 def _normalized_find(filesystem, paths, skipped_directories, file_filter, directory_sort_key):
-    """Finds the set of tests under the list of paths.
-
-    Args:
-      paths: a list of absolute path expressions to search.
-          Glob patterns are ok.
-    """
-
+    """Finds the set of tests under the given list of paths."""
     paths_to_walk = itertools.chain(*(filesystem.glob(path) for path in paths))
 
     def sort_by_directory_key(files_list):
@@ -82,6 +80,5 @@ def _normalized_find(filesystem, paths, skipped_directories, file_filter, direct
             files_list.sort(key=directory_sort_key)
         return files_list
 
-    all_files = itertools.chain(*(sort_by_directory_key(filesystem.files_under(path, skipped_directories, file_filter))
-                                  for path in paths_to_walk))
-    return all_files
+    return itertools.chain(*(sort_by_directory_key(
+        filesystem.files_under(path, skipped_directories, file_filter)) for path in paths_to_walk))

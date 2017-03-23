@@ -31,6 +31,7 @@ import unittest
 
 from webkitpy.common import find_files
 from webkitpy.common.system.filesystem import FileSystem
+from webkitpy.common.system.filesystem_mock import MockFileSystem
 
 
 class MockWinFileSystem(object):
@@ -45,9 +46,10 @@ class MockWinFileSystem(object):
 class TestWinNormalize(unittest.TestCase):
 
     def assert_filesystem_normalizes(self, filesystem):
-        self.assertEqual(find_files._normalize(filesystem, "c:\\foo",
-                                               ['fast/html', 'fast/canvas/*', 'compositing/foo.html']),
-                         ['c:\\foo\\fast\\html', 'c:\\foo\\fast\\canvas\\*', 'c:\\foo\\compositing\\foo.html'])
+        # pylint: disable=protected-access
+        self.assertEqual(
+            find_files._normalize(filesystem, 'c:\\foo', ['fast/html', 'fast/canvas/*', 'compositing/foo.html']),
+            ['c:\\foo\\fast\\html', 'c:\\foo\\fast\\canvas\\*', 'c:\\foo\\compositing\\foo.html'])
 
     def test_mocked_win(self):
         # This tests test_files.normalize, using portable behavior emulating
@@ -61,3 +63,17 @@ class TestWinNormalize(unittest.TestCase):
         if sys.platform != 'win32':
             return
         self.assert_filesystem_normalizes(FileSystem())
+
+
+class TestFind(unittest.TestCase):
+
+    def test_basic(self):
+        filesystem = MockFileSystem({
+            '/base/a/1': '',
+            '/base/a/2': '',
+            '/base/b/1': '',
+            '/base/c/2': '',
+        })
+        self.assertEqual(list(find_files.find(filesystem, '/base/', ['a'])), ['/base/a/1', '/base/a/2'])
+        self.assertEqual(list(find_files.find(filesystem, '/base/', ['b', 'c'])), ['/base/b/1', '/base/c/2'])
+        self.assertEqual(list(find_files.find(filesystem, '/base/', ['*/1'])), ['/base/a/1', '/base/b/1'])
