@@ -106,10 +106,8 @@ void ContextualSearchDelegate::GatherAndSaveSurroundingText(
       base::Bind(&ContextualSearchDelegate::OnTextSurroundingSelectionAvailable,
                  AsWeakPtr());
   context_ = contextual_search_context;
-  if (context_ == nullptr) {
-    callback.Run(base::string16(), 0, 0);
+  if (context_ == nullptr)
     return;
-  }
 
   context_->SetBasePageEncoding(web_contents->GetEncoding());
   int surroundingTextSize = context_->CanResolve()
@@ -177,6 +175,9 @@ void ContextualSearchDelegate::ResolveSearchTermFromContext() {
 
 void ContextualSearchDelegate::OnURLFetchComplete(
     const net::URLFetcher* source) {
+  if (context_ == nullptr)
+    return;
+
   DCHECK(source == search_term_fetcher_.get());
   int response_code = source->GetResponseCode();
 
