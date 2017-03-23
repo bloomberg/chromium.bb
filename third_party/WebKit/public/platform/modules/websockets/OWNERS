@@ -4,4 +4,5 @@ yhirano@chromium.org
 per-file *.mojom=set noparent
 per-file *.mojom=file://ipc/SECURITY_OWNERS
 
+# TEAM: blink-network-dev@chromium.org
 # COMPONENT: Blink>Network>WebSockets
