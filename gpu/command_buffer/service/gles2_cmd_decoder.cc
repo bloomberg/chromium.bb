@@ -9776,16 +9776,6 @@ bool GLES2DecoderImpl::IsDrawValid(
     GLsizei primcount) {
   DCHECK(instanced || primcount == 1);
 
-  if (workarounds().disallow_large_instanced_draw) {
-    const GLsizei kMaxInstancedDrawPrimitiveCount = 0x4000000;
-    if (primcount > kMaxInstancedDrawPrimitiveCount) {
-      LOCAL_SET_GL_ERROR(
-          GL_OUT_OF_MEMORY, function_name,
-          "Instanced draw primcount too large for this platform");
-      return false;
-    }
-  }
-
   // NOTE: We specifically do not check current_program->IsValid() because
   // it could never be invalid since glUseProgram would have failed. While
   // glLinkProgram could later mark the program as invalid the previous
@@ -9804,15 +9794,24 @@ bool GLES2DecoderImpl::IsDrawValid(
     return false;
   }
 
-  return state_.vertex_attrib_manager
-      ->ValidateBindings(function_name,
-                         this,
-                         feature_info_.get(),
-                         buffer_manager(),
-                         state_.current_program.get(),
-                         max_vertex_accessed,
-                         instanced,
-                         primcount);
+  if (!state_.vertex_attrib_manager->ValidateBindings(
+          function_name, this, feature_info_.get(), buffer_manager(),
+          state_.current_program.get(), max_vertex_accessed, instanced,
+          primcount)) {
+    return false;
+  }
+
+  if (workarounds().disallow_large_instanced_draw) {
+    const GLsizei kMaxInstancedDrawPrimitiveCount = 0x4000000;
+    if (primcount > kMaxInstancedDrawPrimitiveCount) {
+      LOCAL_SET_GL_ERROR(
+          GL_OUT_OF_MEMORY, function_name,
+          "Instanced draw primcount too large for this platform");
+      return false;
+    }
+  }
+
+  return true;
 }
 
 bool GLES2DecoderImpl::SimulateAttrib0(
