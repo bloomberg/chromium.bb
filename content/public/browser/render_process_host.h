@@ -40,6 +40,7 @@ namespace content {
 class BrowserContext;
 class BrowserMessageFilter;
 class RenderProcessHostObserver;
+class RenderWidgetHost;
 class StoragePartition;
 struct GlobalRequestID;
 
@@ -214,6 +215,10 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // process from exiting.
   virtual void AddPendingView() = 0;
   virtual void RemovePendingView() = 0;
+
+  // Adds and removes the widgets owned by this process.
+  virtual void AddWidget(RenderWidgetHost* widget) = 0;
+  virtual void RemoveWidget(RenderWidgetHost* widget) = 0;
 
   // Sets a flag indicating that the process can be abnormally terminated.
   virtual void SetSuddenTerminationAllowed(bool allowed) = 0;

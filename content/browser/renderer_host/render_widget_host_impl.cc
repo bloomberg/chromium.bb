@@ -316,6 +316,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
           RenderWidgetHostID(process->GetID(), routing_id_), this));
   CHECK(result.second) << "Inserting a duplicate item!";
   process_->AddRoute(routing_id_, this);
+  process_->AddWidget(this);
 
   // If we're initially visible, tell the process host that we're alive.
   // Otherwise we'll notify the process host when we are first shown.
@@ -1698,6 +1699,7 @@ void RenderWidgetHostImpl::Destroy(bool also_delete) {
     view_.reset();
   }
 
+  process_->RemoveWidget(this);
   process_->RemoveRoute(routing_id_);
   g_routing_id_widget_map.Get().erase(
       RenderWidgetHostID(process_->GetID(), routing_id_));

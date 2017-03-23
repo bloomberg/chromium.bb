@@ -224,6 +224,12 @@ void MockRenderProcessHost::AddPendingView() {
 void MockRenderProcessHost::RemovePendingView() {
 }
 
+void MockRenderProcessHost::AddWidget(RenderWidgetHost* widget) {
+}
+
+void MockRenderProcessHost::RemoveWidget(RenderWidgetHost* widget) {
+}
+
 void MockRenderProcessHost::SetSuddenTerminationAllowed(bool allowed) {
 }
 

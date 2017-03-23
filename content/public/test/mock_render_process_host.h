@@ -74,6 +74,8 @@ class MockRenderProcessHost : public RenderProcessHost {
   void Cleanup() override;
   void AddPendingView() override;
   void RemovePendingView() override;
+  void AddWidget(RenderWidgetHost* widget) override;
+  void RemoveWidget(RenderWidgetHost* widget) override;
   void SetSuddenTerminationAllowed(bool allowed) override;
   bool SuddenTerminationAllowed() const override;
   BrowserContext* GetBrowserContext() const override;

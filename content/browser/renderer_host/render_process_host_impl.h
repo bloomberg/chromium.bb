@@ -11,6 +11,7 @@
 #include <map>
 #include <memory>
 #include <queue>
+#include <set>
 #include <string>
 
 #include "base/macros.h"
@@ -70,6 +71,7 @@ class PushMessagingManager;
 class RenderFrameMessageFilter;
 class RenderWidgetHelper;
 class RenderWidgetHost;
+class RenderWidgetHostImpl;
 class ResourceMessageFilter;
 class StoragePartition;
 class StoragePartitionImpl;
@@ -139,6 +141,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void Cleanup() override;
   void AddPendingView() override;
   void RemovePendingView() override;
+  void AddWidget(RenderWidgetHost* widget) override;
+  void RemoveWidget(RenderWidgetHost* widget) override;
   void SetSuddenTerminationAllowed(bool enabled) override;
   bool SuddenTerminationAllowed() const override;
   IPC::ChannelProxy* GetChannel() override;
@@ -460,6 +464,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // for multiple widgets, it uses this count to determine when it should be
   // backgrounded.
   int32_t visible_widgets_;
+
+  // The set of widgets in this RenderProcessHostImpl.
+  std::set<RenderWidgetHostImpl*> widgets_;
 
   // Whether this process currently has backgrounded priority. Tracked so that
   // UpdateProcessPriority() can avoid redundantly setting the priority.

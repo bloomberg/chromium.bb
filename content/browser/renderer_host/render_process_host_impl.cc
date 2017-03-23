@@ -2270,6 +2270,14 @@ void RenderProcessHostImpl::RemovePendingView() {
   pending_views_--;
 }
 
+void RenderProcessHostImpl::AddWidget(RenderWidgetHost* widget) {
+  widgets_.insert(static_cast<RenderWidgetHostImpl*>(widget));
+}
+
+void RenderProcessHostImpl::RemoveWidget(RenderWidgetHost* widget) {
+  widgets_.erase(static_cast<RenderWidgetHostImpl*>(widget));
+}
+
 void RenderProcessHostImpl::SetSuddenTerminationAllowed(bool enabled) {
   sudden_termination_allowed_ = enabled;
 }
@@ -3042,15 +3050,9 @@ void RenderProcessHostImpl::GetAudioOutputControllers(
 
 void RenderProcessHostImpl::RecomputeAndUpdateWebKitPreferences() {
   // We are updating all widgets including swapped out ones.
-  std::unique_ptr<RenderWidgetHostIterator> widgets(
-      RenderWidgetHostImpl::GetAllRenderWidgetHosts());
-  while (RenderWidgetHost* widget = widgets->GetNextHost()) {
+  for (auto* widget : widgets_) {
     RenderViewHost* rvh = RenderViewHost::From(widget);
     if (!rvh)
-      continue;
-
-    // Skip widgets in other processes.
-    if (rvh->GetProcess()->GetID() != GetID())
       continue;
 
     rvh->OnWebkitPreferencesChanged();
