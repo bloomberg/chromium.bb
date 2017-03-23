@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/sys_info.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -31,6 +32,12 @@ class ChromeOSInfoPrivateTest : public ExtensionApiTest {
         switches::kForceAppMode);
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(switches::kAppId,
                                                               kTestAppId);
+  }
+
+  void SetDeviceType(const std::string& device_type) {
+    const std::string lsb_release = std::string("DEVICETYPE=") + device_type;
+    base::SysInfo::SetChromeOSVersionInfoForTest(lsb_release,
+                                                 base::Time::Now());
   }
 };
 
@@ -79,6 +86,40 @@ IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, Kiosk) {
 IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, ArcNotAvailable) {
   ASSERT_TRUE(RunPlatformAppTestWithArg("chromeos_info_private/extended",
                                         "arc not-available"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, Chromebase) {
+  SetDeviceType("CHROMEBASE");
+  ASSERT_TRUE(
+      RunPlatformAppTestWithArg("chromeos_info_private/extended", "chromebase"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, Chromebit) {
+  SetDeviceType("CHROMEBIT");
+  ASSERT_TRUE(
+      RunPlatformAppTestWithArg("chromeos_info_private/extended", "chromebit"))
+      << message_;
+}
+IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, Chromebook) {
+  SetDeviceType("CHROMEBOOK");
+  ASSERT_TRUE(
+      RunPlatformAppTestWithArg("chromeos_info_private/extended", "chromebook"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, Chromebox) {
+  SetDeviceType("CHROMEBOX");
+  ASSERT_TRUE(
+      RunPlatformAppTestWithArg("chromeos_info_private/extended", "chromebox"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, UnknownDeviceType) {
+  SetDeviceType("UNKNOWN");
+  ASSERT_TRUE(RunPlatformAppTestWithArg("chromeos_info_private/extended",
+                                        "unknown device type"))
       << message_;
 }
 

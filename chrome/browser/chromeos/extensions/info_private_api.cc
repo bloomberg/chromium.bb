@@ -23,6 +23,7 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "chromeos/system/devicetype.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/arc/arc_util.h"
 #include "components/metrics/metrics_service.h"
@@ -143,6 +144,24 @@ const char kManagedDeviceStatusNotManaged[] = "not managed";
 
 // Value to which managedDeviceStatus property is set for managed devices.
 const char kManagedDeviceStatusManaged[] = "managed";
+
+// Key which corresponds to the deviceType property in JS.
+const char kPropertyDeviceType[] = "deviceType";
+
+// Value to which deviceType property is set for Chromebase.
+const char kDeviceTypeChromebase[] = "chromebase";
+
+// Value to which deviceType property is set for Chromebit.
+const char kDeviceTypeChromebit[] = "chromebit";
+
+// Value to which deviceType property is set for Chromebook.
+const char kDeviceTypeChromebook[] = "chromebook";
+
+// Value to which deviceType property is set for Chromebox.
+const char kDeviceTypeChromebox[] = "chromebox";
+
+// Value to which deviceType property is set when the specific type is unknown.
+const char kDeviceTypeChromedevice[] = "chromedevice";
 
 const struct {
   const char* api_name;
@@ -283,6 +302,21 @@ base::Value* ChromeosInfoPrivateGetFunction::GetValue(
       return new base::Value(kManagedDeviceStatusManaged);
     }
     return new base::Value(kManagedDeviceStatusNotManaged);
+  }
+
+  if (property_name == kPropertyDeviceType) {
+    switch (chromeos::GetDeviceType()) {
+      case chromeos::DeviceType::kChromebox:
+        return new base::Value(kDeviceTypeChromebox);
+      case chromeos::DeviceType::kChromebase:
+        return new base::Value(kDeviceTypeChromebase);
+      case chromeos::DeviceType::kChromebit:
+        return new base::Value(kDeviceTypeChromebit);
+      case chromeos::DeviceType::kChromebook:
+        return new base::Value(kDeviceTypeChromebook);
+      default:
+        return new base::Value(kDeviceTypeChromedevice);
+    }
   }
 
   if (property_name == kPropertyClientId) {

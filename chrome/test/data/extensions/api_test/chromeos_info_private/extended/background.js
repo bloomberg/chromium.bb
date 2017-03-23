@@ -12,7 +12,8 @@ chrome.app.runtime.onLaunched.addListener(function() {
     chrome.chromeosInfoPrivate.get([
       'sessionType',
       'playStoreStatus',
-      'managedDeviceStatus'
+      'managedDeviceStatus',
+      'deviceType'
     ], chrome.test.callbackPass(function(values) {
           switch (testName) {
             case 'kiosk':
@@ -29,6 +30,21 @@ chrome.app.runtime.onLaunched.addListener(function() {
               break;
             case 'managed':
               chrome.test.assertEq('managed', values['managedDeviceStatus']);
+              break;
+            case 'chromebase':
+              chrome.test.assertEq('chromebase', values['deviceType']);
+              break;
+            case 'chromebit':
+              chrome.test.assertEq('chromebit', values['deviceType']);
+              break;
+            case 'chromebook':
+              chrome.test.assertEq('chromebook', values['deviceType']);
+              break;
+            case 'chromebox':
+              chrome.test.assertEq('chromebox', values['deviceType']);
+              break;
+            case 'unknown device type':
+              chrome.test.assertEq('chromedevice', values['deviceType']);
           }
         }));
   });
