@@ -101,6 +101,33 @@ void ExtensionLoaderHandler::RegisterMessages() {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
+// static
+void ExtensionLoaderHandler::GetManifestError(
+    const std::string& error,
+    const base::FilePath& extension_path,
+    const GetManifestErrorCallback& callback) {
+  size_t line = 0u;
+  size_t column = 0u;
+  std::string regex = base::StringPrintf("%s  Line: (\\d+), column: (\\d+), .*",
+                                         manifest_errors::kManifestParseError);
+  // If this was a JSON parse error, we can highlight the exact line with the
+  // error. Otherwise, we should still display the manifest (for consistency,
+  // reference, and so that if we ever make this really fancy and add an editor,
+  // it's ready).
+  //
+  // This regex call can fail, but if it does, we just don't highlight anything.
+  re2::RE2::FullMatch(error, regex, &line, &column);
+
+  // This will read the manifest and call AddFailure with the read manifest
+  // contents.
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE,
+      base::TaskTraits().MayBlock().WithPriority(
+          base::TaskPriority::USER_BLOCKING),
+      base::Bind(&ReadFileToString, extension_path.Append(kManifestFilename)),
+      base::Bind(callback, extension_path, error, line));
+}
+
 void ExtensionLoaderHandler::HandleRetry(const base::ListValue* args) {
   DCHECK(args->empty());
   const base::FilePath file_path = failed_paths_.back();
@@ -144,28 +171,9 @@ void ExtensionLoaderHandler::OnLoadFailure(
   if (web_ui()->GetWebContents()->GetBrowserContext() != browser_context)
     return;
 
-  size_t line = 0u;
-  size_t column = 0u;
-  std::string regex =
-      base::StringPrintf("%s  Line: (\\d+), column: (\\d+), .*",
-                         manifest_errors::kManifestParseError);
-  // If this was a JSON parse error, we can highlight the exact line with the
-  // error. Otherwise, we should still display the manifest (for consistency,
-  // reference, and so that if we ever make this really fancy and add an editor,
-  // it's ready).
-  //
-  // This regex call can fail, but if it does, we just don't highlight anything.
-  re2::RE2::FullMatch(error, regex, &line, &column);
-
-  // This will read the manifest and call AddFailure with the read manifest
-  // contents.
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE,
-      base::TaskTraits().MayBlock().WithPriority(
-          base::TaskPriority::USER_BLOCKING),
-      base::Bind(&ReadFileToString, file_path.Append(kManifestFilename)),
-      base::Bind(&ExtensionLoaderHandler::AddFailure,
-                 weak_ptr_factory_.GetWeakPtr(), file_path, error, line));
+  GetManifestError(error, file_path,
+                   base::Bind(&ExtensionLoaderHandler::AddFailure,
+                              weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ExtensionLoaderHandler::DidStartNavigation(

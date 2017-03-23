@@ -29,6 +29,7 @@
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/install_verifier.h"
+#include "chrome/browser/extensions/path_util.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
@@ -42,6 +43,7 @@
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/extensions/extension_loader_handler.h"
 #include "chrome/common/extensions/api/developer_private.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
@@ -723,9 +725,7 @@ void DeveloperPrivateShowPermissionsDialogFunction::Finish() {
   Respond(NoArguments());
 }
 
-DeveloperPrivateLoadUnpackedFunction::DeveloperPrivateLoadUnpackedFunction()
-    : fail_quietly_(false) {
-}
+DeveloperPrivateLoadUnpackedFunction::DeveloperPrivateLoadUnpackedFunction() {}
 
 ExtensionFunction::ResponseAction DeveloperPrivateLoadUnpackedFunction::Run() {
   std::unique_ptr<developer::LoadUnpacked::Params> params(
@@ -743,6 +743,9 @@ ExtensionFunction::ResponseAction DeveloperPrivateLoadUnpackedFunction::Run() {
   fail_quietly_ = params->options &&
                   params->options->fail_quietly &&
                   *params->options->fail_quietly;
+
+  populate_error_ = params->options && params->options->populate_error &&
+                    *params->options->populate_error;
 
   AddRef();  // Balanced in FileSelected / FileSelectionCanceled.
   return RespondLater();
@@ -773,7 +776,35 @@ void DeveloperPrivateLoadUnpackedFunction::OnLoadComplete(
     const Extension* extension,
     const base::FilePath& file_path,
     const std::string& error) {
-  Respond(extension ? NoArguments() : Error(error));
+  if (extension || !populate_error_) {
+    Respond(extension ? NoArguments() : Error(error));
+    return;
+  }
+
+  ExtensionLoaderHandler::GetManifestError(
+      error, file_path,
+      base::Bind(&DeveloperPrivateLoadUnpackedFunction::OnGotManifestError,
+                 this));
+}
+
+void DeveloperPrivateLoadUnpackedFunction::OnGotManifestError(
+    const base::FilePath& file_path,
+    const std::string& error,
+    size_t line_number,
+    const std::string& manifest) {
+  base::FilePath prettified_path = path_util::PrettifyPath(file_path);
+
+  SourceHighlighter highlighter(manifest, line_number);
+  developer::LoadError response;
+  response.error = error;
+  response.path = base::UTF16ToUTF8(prettified_path.LossyDisplayName());
+
+  response.source = base::MakeUnique<developer::ErrorFileSource>();
+  response.source->before_highlight = highlighter.GetBeforeFeature();
+  response.source->highlight = highlighter.GetFeature();
+  response.source->after_highlight = highlighter.GetAfterFeature();
+
+  Respond(OneArgument(response.ToValue()));
 }
 
 bool DeveloperPrivateChooseEntryFunction::ShowPicker(

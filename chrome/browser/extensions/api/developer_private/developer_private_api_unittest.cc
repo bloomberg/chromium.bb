@@ -33,6 +33,7 @@
 #include "components/policy/policy_constants.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/web_contents_tester.h"
+#include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/event_router_factory.h"
 #include "extensions/browser/extension_error_test_util.h"
 #include "extensions/browser/extension_prefs.h"
@@ -499,6 +500,94 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateLoadUnpacked) {
   EXPECT_EQ(0u, base::STLSetDifference<ExtensionIdSet>(
                     registry()->enabled_extensions().GetIDs(),
                     current_ids).size());
+}
+
+TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateLoadUnpackedLoadError) {
+  std::unique_ptr<content::WebContents> web_contents(
+      content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
+
+  {
+    // Load an extension with a clear manifest error ('version' is invalid).
+    TestExtensionDir dir;
+    dir.WriteManifest(
+        R"({
+             "name": "foo",
+             "description": "bar",
+             "version": 1,
+             "manifest_version": 2
+           })");
+    base::FilePath path = dir.UnpackedPath();
+    api::EntryPicker::SkipPickerAndAlwaysSelectPathForTest(&path);
+
+    scoped_refptr<UIThreadExtensionFunction> function(
+        new api::DeveloperPrivateLoadUnpackedFunction());
+    function->SetRenderFrameHost(web_contents->GetMainFrame());
+    std::unique_ptr<base::Value> result =
+        api_test_utils::RunFunctionAndReturnSingleResult(
+            function.get(),
+            "[{\"failQuietly\": true, \"populateError\": true}]", profile());
+    // The loadError result should be populated.
+    ASSERT_TRUE(result);
+    std::unique_ptr<api::developer_private::LoadError> error =
+        api::developer_private::LoadError::FromValue(*result);
+    ASSERT_TRUE(error);
+    ASSERT_TRUE(error->source);
+    // The source should have *something* (rely on file highlighter tests for
+    // the correct population).
+    EXPECT_FALSE(error->source->before_highlight.empty());
+    // The error should be appropriate (mentioning that version was invalid).
+    EXPECT_TRUE(error->error.find("version") != std::string::npos)
+        << error->error;
+  }
+
+  {
+    // Load an extension with no manifest.
+    TestExtensionDir dir;
+    base::FilePath path = dir.UnpackedPath();
+    api::EntryPicker::SkipPickerAndAlwaysSelectPathForTest(&path);
+
+    scoped_refptr<UIThreadExtensionFunction> function(
+        new api::DeveloperPrivateLoadUnpackedFunction());
+    function->SetRenderFrameHost(web_contents->GetMainFrame());
+    std::unique_ptr<base::Value> result =
+        api_test_utils::RunFunctionAndReturnSingleResult(
+            function.get(),
+            "[{\"failQuietly\": true, \"populateError\": true}]", profile());
+    // The load error should be populated.
+    ASSERT_TRUE(result);
+    std::unique_ptr<api::developer_private::LoadError> error =
+        api::developer_private::LoadError::FromValue(*result);
+    ASSERT_TRUE(error);
+    // The file source should be empty.
+    ASSERT_TRUE(error->source);
+    EXPECT_TRUE(error->source->before_highlight.empty());
+    EXPECT_TRUE(error->source->highlight.empty());
+    EXPECT_TRUE(error->source->after_highlight.empty());
+  }
+
+  {
+    // Load a valid extension.
+    TestExtensionDir dir;
+    dir.WriteManifest(
+        R"({
+             "name": "foo",
+             "description": "bar",
+             "version": "1.0",
+             "manifest_version": 2
+           })");
+    base::FilePath path = dir.UnpackedPath();
+    api::EntryPicker::SkipPickerAndAlwaysSelectPathForTest(&path);
+
+    scoped_refptr<UIThreadExtensionFunction> function(
+        new api::DeveloperPrivateLoadUnpackedFunction());
+    function->SetRenderFrameHost(web_contents->GetMainFrame());
+    std::unique_ptr<base::Value> result =
+        api_test_utils::RunFunctionAndReturnSingleResult(
+            function.get(),
+            "[{\"failQuietly\": true, \"populateError\": true}]", profile());
+    // There should be no load error.
+    ASSERT_FALSE(result);
+  }
 }
 
 // Test developerPrivate.requestFileSource.

@@ -303,6 +303,10 @@ namespace developerPrivate {
     // If false, an alert dialog will show in the event of a reload error.
     // Defaults to false.
     boolean? failQuietly;
+
+    // If true, populates a LoadError for the response rather than setting
+    // lastError.
+    boolean? populateError;
   };
 
   enum PackStatus {
@@ -358,6 +362,30 @@ namespace developerPrivate {
     EventType event_type;
     DOMString item_id;
     ExtensionInfo? extensionInfo;
+  };
+
+  dictionary ErrorFileSource {
+    // The region before the "highlight" portion.
+    // If the region which threw the error was not found, the full contents of
+    // the file will be in the "beforeHighlight" section.
+    DOMString beforeHighlight;
+
+    // The region of the code which threw the error, and should be highlighted.
+    DOMString highlight;
+
+    // The region after the "highlight" portion.
+    DOMString afterHighlight;
+  };
+
+  dictionary LoadError {
+    // The error that occurred when trying to load the extension.
+    DOMString error;
+
+    // The path to the extension.
+    DOMString path;
+
+    // The file source for the error, if it could be retrieved.
+    ErrorFileSource? source;
   };
 
   dictionary RequestFileSourceProperties {
@@ -444,6 +472,7 @@ namespace developerPrivate {
   callback VoidCallback = void();
   callback RequestFileSourceCallback =
       void (RequestFileSourceResponse response);
+  callback LoadErrorCallback = void (optional LoadError error);
 
   interface Functions {
     // Runs auto update for extensions and apps immediately.
@@ -503,7 +532,7 @@ namespace developerPrivate {
     // Loads a user-selected unpacked item.
     // |options| : Additional configuration parameters.
     static void loadUnpacked(optional LoadUnpackedOptions options,
-                             optional VoidCallback callback);
+                             optional LoadErrorCallback callback);
 
     // Loads an extension / app.
     // |directory| : The directory to load the extension from.

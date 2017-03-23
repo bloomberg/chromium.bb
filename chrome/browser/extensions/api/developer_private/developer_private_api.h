@@ -395,8 +395,17 @@ class DeveloperPrivateLoadUnpackedFunction
                       const std::string& error);
 
  private:
+  void OnGotManifestError(const base::FilePath& file_path,
+                          const std::string& error,
+                          size_t line_number,
+                          const std::string& manifest);
+
   // Whether or not we should fail quietly in the event of a load error.
-  bool fail_quietly_;
+  bool fail_quietly_ = false;
+
+  // Whether we populate a developer_private::LoadError on load failure, as
+  // opposed to simply passing the message in lastError.
+  bool populate_error_ = false;
 };
 
 class DeveloperPrivateChoosePathFunction
