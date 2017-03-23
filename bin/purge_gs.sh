@@ -16,12 +16,16 @@ CHROMITE_BIN="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 cd "${CHROMITE_BIN}"
 
-while true; do
-  TARGET=`curl -H "Metadata-Flavor: Google" ${ATTR_URL}`
-  mv -f "${LOG}" "${LOG}.previous"
-  (date && \
-   git pull && \
-   ./purge_builds --debug "--${TARGET}" && \
-   date) >> "${LOG}" 2>&1
-  sleep 24h
-done
+TARGET=`curl -H "Metadata-Flavor: Google" ${ATTR_URL}`
+mv -f "${LOG}" "${LOG}.previous"
+(date && \
+ git pull && \
+ ./purge_builds --debug "--${TARGET}" && \
+ date) >> "${LOG}" 2>&1
+
+# Wait a while.
+echo "Sleeping for 24 hours."
+sleep 24h
+
+# Clean machine will relaunch this script.
+reboot
