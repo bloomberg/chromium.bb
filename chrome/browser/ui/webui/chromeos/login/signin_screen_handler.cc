@@ -1023,8 +1023,12 @@ void SigninScreenHandler::OnUserRemoved(const AccountId& account_id,
 }
 
 void SigninScreenHandler::OnUserImageChanged(const user_manager::User& user) {
-  if (page_is_ready())
-    CallJS("login.AccountPickerScreen.updateUserImage", user.GetAccountId());
+  if (page_is_ready()) {
+    // TODO(jdufault): Remove DCHECK after resolving crbug.com/699798
+    DCHECK(is_js_initialized_and_ready());
+    CallJSOrDefer("login.AccountPickerScreen.updateUserImage",
+                  user.GetAccountId());
+  }
 }
 
 void SigninScreenHandler::OnPreferencesChanged() {
@@ -1294,9 +1298,10 @@ void SigninScreenHandler::HandleToggleKioskAutolaunchScreen() {
 
 void SigninScreenHandler::LoadUsers(const base::ListValue& users_list,
                                     bool showGuest) {
-  CallJS("login.AccountPickerScreen.loadUsers",
-         users_list,
-         delegate_->IsShowGuest());
+  // TODO(jdufault): Remove DCHECK after resolving crbug.com/699798
+  DCHECK(is_js_initialized_and_ready());
+  CallJSOrDefer("login.AccountPickerScreen.loadUsers", users_list,
+                delegate_->IsShowGuest());
 }
 
 void SigninScreenHandler::HandleAccountPickerReady() {

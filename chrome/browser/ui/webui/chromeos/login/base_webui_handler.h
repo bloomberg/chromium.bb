@@ -40,7 +40,7 @@ class JSCallsContainer {
   ~JSCallsContainer();
 
   // Used to decide whether the JS call should be deferred.
-  bool is_initialized() { return is_initialized_; }
+  bool is_initialized() const { return is_initialized_; }
 
   // Used to mark the instance as intialized.
   void mark_initialized() { is_initialized_ = true; }
@@ -224,6 +224,12 @@ class BaseWebUIHandler : public content::WebUIMessageHandler,
   virtual gfx::NativeWindow GetNativeWindow();
 
   void SetBaseScreen(BaseScreen* base_screen);
+
+  // Returns true if JS side has sent a screenStateInitialize event.
+  // TODO(jdufault): Remove after resolving crbug.com/699798
+  bool is_js_initialized_and_ready() const {
+    return js_calls_container_->is_initialized();
+  }
 
  private:
   // Calls Javascript method.
