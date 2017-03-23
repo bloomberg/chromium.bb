@@ -135,7 +135,7 @@ Polymer({
           printerName: '',
           printerPPDPath: '',
           printerProtocol: 'ipp',
-          printerQueue: '',
+          printerQueue: 'ipp/print',
           printerStatus: '',
         };
       },
