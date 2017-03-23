@@ -303,11 +303,17 @@ config("compiler") {
   # ---------------------------------
   if (is_linux || is_android) {
     if (use_pic) {
-      cflags += [ "-fPIC" ]
-      ldflags += [ "-fPIC" ]
+      cflags += [
+        "-fPIC",
+      ]
+      ldflags += [
+        "-fPIC",
+      ]
     }
 
-    cflags += [ "-pipe" ]  # Use pipes for communicating between sub-processes. Faster.
+    cflags += [
+      "-pipe",  # Use pipes for communicating between sub-processes. Faster.
+    ]
 
     ldflags += [
       "-Wl,-z,noexecstack",
@@ -899,10 +905,6 @@ config("default_warnings") {
       # This is necessary for the shared library build.
       "/wd4251",
 
-      # C4312 is a VS 2015 64-bit warning for integer to larger pointer.
-      # TODO(brucedawson): fix warnings, crbug.com/554200
-      "/wd4312",
-
       # C4351: new behavior: elements of array 'array' will be default
       #        initialized
       # This is a silly "warning" that basically just alerts you that the
@@ -965,10 +967,10 @@ config("default_warnings") {
       "/wd4459",
     ]
 
-    cflags_cc += [
-      # Allow "noexcept" annotations even though we compile with exceptions
-      # disabled.
-      "/wd4577",
+    cflags += [
+      # C4312 is a VS 2015 64-bit warning for integer to larger pointer.
+      # TODO(brucedawson): fix warnings, crbug.com/554200
+      "/wd4312",
     ]
 
     if (current_cpu == "x86") {

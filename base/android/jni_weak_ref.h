@@ -18,7 +18,7 @@ class BASE_EXPORT JavaObjectWeakGlobalRef {
  public:
   JavaObjectWeakGlobalRef();
   JavaObjectWeakGlobalRef(const JavaObjectWeakGlobalRef& orig);
-  JavaObjectWeakGlobalRef(JavaObjectWeakGlobalRef&& orig) noexcept;
+  JavaObjectWeakGlobalRef(JavaObjectWeakGlobalRef&& orig);
   JavaObjectWeakGlobalRef(JNIEnv* env, jobject obj);
   JavaObjectWeakGlobalRef(JNIEnv* env,
                           const base::android::JavaRef<jobject>& obj);

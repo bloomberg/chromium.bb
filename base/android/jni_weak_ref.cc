@@ -19,8 +19,7 @@ JavaObjectWeakGlobalRef::JavaObjectWeakGlobalRef(
   Assign(orig);
 }
 
-JavaObjectWeakGlobalRef::JavaObjectWeakGlobalRef(
-    JavaObjectWeakGlobalRef&& orig) noexcept
+JavaObjectWeakGlobalRef::JavaObjectWeakGlobalRef(JavaObjectWeakGlobalRef&& orig)
     : obj_(orig.obj_) {
   orig.obj_ = nullptr;
 }

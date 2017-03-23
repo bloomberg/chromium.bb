@@ -91,7 +91,7 @@ Value::Value(const Value& that) {
   InternalCopyConstructFrom(that);
 }
 
-Value::Value(Value&& that) noexcept {
+Value::Value(Value&& that) {
   InternalMoveConstructFrom(std::move(that));
 }
 
