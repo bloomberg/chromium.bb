@@ -238,6 +238,7 @@ EXCEPTION_CATEGORY_ALL_CATEGORIES = (
 MON_CQ_WALL_CLOCK_SECS = 'chromeos/cbuildbot/cq_wall_clock_seconds'
 MON_CQ_SELF_DESTRUCTION_COUNT = ('chromeos/cbuildbot/build/'
                                  'cq_self_destruction_count')
+MON_CQ_BUILD_DURATION = 'chromeos/cbuildbot/build/cq_build_durations'
 MON_CL_ACTION = 'chromeos/cbuildbot/cl_action'
 MON_PRECQ_LAUNCH_COUNT = 'chromeos/cbuildbot/pre-cq/launch_count'
 MON_PRECQ_CL_LAUNCH_COUNT = 'chromeos/cbuildbot/pre-cq/cl_launch_count'

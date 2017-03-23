@@ -14,23 +14,24 @@ import os
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import cbuildbot_unittest
 from chromite.cbuildbot import commands
+from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import topology
 from chromite.cbuildbot import topology_unittest
-from chromite.lib import constants
-from chromite.lib import failures_lib
-from chromite.cbuildbot import manifest_version
-from chromite.lib import metadata_lib
-from chromite.lib import results_lib
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import report_stages
 from chromite.lib import alerts
 from chromite.lib import cidb
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import fake_cidb
+from chromite.lib import failures_lib
 from chromite.lib import gs_unittest
+from chromite.lib import metadata_lib
+from chromite.lib import metrics
 from chromite.lib import osutils
 from chromite.lib import patch_unittest
+from chromite.lib import results_lib
 from chromite.lib import retry_stats
 from chromite.lib import toolchain
 from chromite.lib import triage_lib
@@ -416,6 +417,30 @@ class ReportStageTest(AbstractReportStageTestCase):
     """Test IsSheriffOMaticImportantBuild with unimportant build."""
     stage = self.ConstructStage()
     self.assertFalse(stage.IsSheriffOMaticImportantBuild())
+
+  def testPerformStage(self):
+    """Test PerformStage."""
+    mock_sd = self.PatchObject(metrics, 'SecondsDistribution')
+    self.PatchObject(report_stages.ReportStage, 'ArchiveResults')
+    stage = self.ConstructStage()
+    stage.PerformStage()
+    self.assertEqual(mock_sd.call_count, 1)
+
+
+class ReportStageForMasterCQTest(AbstractReportStageTestCase):
+  """Test the Report stage for master-paladin."""
+
+  RELEASE_TAG = ''
+  BOT_ID = 'master-paladin'
+
+  def testPerformStage(self):
+    """Test PerformStage."""
+    mock_sd = self.PatchObject(metrics, 'SecondsDistribution')
+    self.PatchObject(report_stages.ReportStage, 'ArchiveResults')
+    stage = self.ConstructStage()
+    stage.PerformStage()
+    self.assertEqual(mock_sd.call_count, 2)
+
 
 class ReportStageNoSyncTest(AbstractReportStageTestCase):
   """Test the Report stage if SyncStage didn't complete.

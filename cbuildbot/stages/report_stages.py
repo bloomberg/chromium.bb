@@ -1017,6 +1017,14 @@ class ReportStage(generic_stages.BuilderStage,
       metrics.SecondsDistribution(constants.MON_BUILD_DURATION).add(
           duration, fields=mon_fields)
 
+      if config_lib.IsMasterCQ(self._run.config):
+        self_destructed = self._run.attrs.metadata.GetValueWithDefault(
+            constants.SELF_DESTRUCTED_BUILD, False)
+        mon_fields = {'status': status_for_db,
+                      'self_destructed': self_destructed}
+        metrics.SecondsDistribution(constants.MON_CQ_BUILD_DURATION).add(
+            duration, fields=mon_fields)
+
       # From this point forward, treat all exceptions as warnings.
       self._post_completion = True
 
