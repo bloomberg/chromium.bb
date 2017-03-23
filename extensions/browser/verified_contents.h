@@ -24,7 +24,7 @@ namespace extensions {
 class VerifiedContents {
  public:
   // Note: the public_key must remain valid for the lifetime of this object.
-  VerifiedContents(const uint8_t* public_key, int public_key_size);
+  VerifiedContents(const uint8_t* public_key, size_t public_key_size);
   ~VerifiedContents();
 
   // Returns true if we successfully parsed the verified_contents.json file at
@@ -59,7 +59,7 @@ class VerifiedContents {
 
   // The public key we should use for signature verification.
   const uint8_t* public_key_;
-  const int public_key_size_;
+  const size_t public_key_size_;
 
   // Indicates whether the signature was successfully validated or not.
   bool valid_signature_;

@@ -24,9 +24,10 @@ class Extension;
 // A pointer to the bytes of a public key, and the number of bytes.
 struct ContentVerifierKey {
   const uint8_t* data;
-  int size;
+  size_t size;
 
-  ContentVerifierKey(const uint8_t* data, int size) : data(data), size(size) {}
+  ContentVerifierKey(const uint8_t* data, size_t size)
+      : data(data), size(size) {}
 };
 
 // This is an interface for clients that want to use a ContentVerifier.

@@ -111,7 +111,7 @@ extern const char kWebStoreAppId[];
 
 // The key used for signing some pieces of data from the webstore.
 extern const uint8_t kWebstoreSignaturesPublicKey[];
-extern const int kWebstoreSignaturesPublicKeySize;
+extern const size_t kWebstoreSignaturesPublicKeySize;
 
 // Enumeration of possible app launch sources.
 // This should be kept in sync with LaunchSource in

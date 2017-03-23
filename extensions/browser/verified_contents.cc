@@ -62,7 +62,7 @@ DictionaryValue* FindDictionaryWithValue(const ListValue* list,
 namespace extensions {
 
 VerifiedContents::VerifiedContents(const uint8_t* public_key,
-                                   int public_key_size)
+                                   size_t public_key_size)
     : public_key_(public_key),
       public_key_size_(public_key_size),
       valid_signature_(false),  // Guilty until proven innocent.

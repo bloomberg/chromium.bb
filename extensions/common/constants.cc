@@ -80,7 +80,7 @@ const uint8_t kWebstoreSignaturesPublicKey[] = {
     0x58, 0x34, 0xc8, 0x22, 0x2d, 0x2a, 0x65, 0x75, 0xa7, 0xd9, 0x08, 0x62,
     0xcd, 0x02, 0x03, 0x01, 0x00, 0x01};
 
-const int kWebstoreSignaturesPublicKeySize =
+const size_t kWebstoreSignaturesPublicKeySize =
     arraysize(kWebstoreSignaturesPublicKey);
 
 const char kMimeTypeJpeg[] = "image/jpeg";

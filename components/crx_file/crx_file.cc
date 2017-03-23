@@ -160,8 +160,8 @@ CrxFile::ValidateError CrxFile::ValidateSignature(
 
   crypto::SignatureVerifier verifier;
   if (!verifier.VerifyInit(crypto::SignatureVerifier::RSA_PKCS1_SHA1,
-                           signature.data(), static_cast<int>(signature.size()),
-                           key.data(), static_cast<int>(key.size()))) {
+                           signature.data(), signature.size(), key.data(),
+                           key.size())) {
     // Signature verification initialization failed. This is most likely
     // caused by a public key in the wrong format (should encode algorithm).
     return ValidateError::CRX_SIGNATURE_VERIFICATION_INITIALIZATION_FAILED;
@@ -170,7 +170,7 @@ CrxFile::ValidateError CrxFile::ValidateSignature(
   uint8_t buf[1 << 12] = {};
   while ((len = ReadAndHash(buf, sizeof(buf[0]), arraysize(buf), file.get(),
                             hash.get())) > 0)
-    verifier.VerifyUpdate(buf, static_cast<int>(len));
+    verifier.VerifyUpdate(buf, len);
 
   if (!verifier.VerifyFinal())
     return ValidateError::CRX_SIGNATURE_VERIFICATION_FAILED;
