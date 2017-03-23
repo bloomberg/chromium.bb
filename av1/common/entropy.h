@@ -119,7 +119,12 @@ static INLINE int av1_get_cat6_extrabits_size(TX_SIZE tx_size,
   // TODO(debargha): Does TX_64X64 require an additional extrabit?
   if (tx_size > TX_32X32) tx_size = TX_32X32;
 #endif
-  int bits = (int)bit_depth + 3 + (int)tx_size;
+#if CONFIG_CB4X4
+  int tx_offset = (tx_size < TX_4X4) ? 0 : (int)(tx_size - TX_4X4);
+#else
+  int tx_offset = (int)(tx_size - TX_4X4);
+#endif
+  int bits = (int)bit_depth + 3 + tx_offset;
   assert(bits <= (int)sizeof(av1_cat6_prob));
   return bits;
 }
