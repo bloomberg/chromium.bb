@@ -39,8 +39,8 @@ Vector<WebTouchPoint> getCoalescedPoints(
   Vector<WebTouchPoint> relatedPoints;
   for (const auto& touchEvent : coalescedEvents) {
     for (unsigned i = 0; i < touchEvent.touchesLength; ++i) {
-      // TODO(nzolghadr): Need to filter out stationary points
-      if (touchEvent.touches[i].id == id)
+      if (touchEvent.touches[i].id == id &&
+          touchEvent.touches[i].state != WebTouchPoint::StateStationary)
         relatedPoints.push_back(touchEvent.touchPointInRootFrame(i));
     }
   }
