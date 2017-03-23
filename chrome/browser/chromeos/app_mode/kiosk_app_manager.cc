@@ -639,8 +639,7 @@ void KioskAppManager::InstallFromCache(const std::string& id) {
   const base::DictionaryValue* extension = nullptr;
   if (external_cache_->cached_extensions()->GetDictionary(id, &extension)) {
     std::unique_ptr<base::DictionaryValue> prefs(new base::DictionaryValue);
-    base::DictionaryValue* extension_copy = extension->DeepCopy();
-    prefs->Set(id, extension_copy);
+    prefs->Set(id, extension->CreateDeepCopy());
     external_loader_->SetCurrentAppExtensions(std::move(prefs));
   } else {
     LOG(ERROR) << "Can't find app in the cached externsions"
@@ -887,7 +886,7 @@ void KioskAppManager::UpdateExternalCachePrefs() {
                        extension_urls::GetWebstoreUpdateUrl().spec());
     }
 
-    prefs->Set(apps_[i]->app_id(), entry.release());
+    prefs->Set(apps_[i]->app_id(), std::move(entry));
   }
   external_cache_->UpdateExtensionsList(std::move(prefs));
 }

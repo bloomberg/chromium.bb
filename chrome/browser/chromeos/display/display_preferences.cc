@@ -315,7 +315,7 @@ void StoreDisplayLayoutPref(const display::DisplayIdList& list,
       layout_value.reset(value->DeepCopy());
   }
   if (display::DisplayLayoutToJson(display_layout, layout_value.get()))
-    pref_data->Set(name, layout_value.release());
+    pref_data->Set(name, std::move(layout_value));
 }
 
 void StoreCurrentDisplayLayoutPrefs() {
@@ -373,7 +373,7 @@ void StoreCurrentDisplayProperties() {
     }
     if (info.has_touch_calibration_data())
       TouchDataToValue(info.GetTouchCalibrationData(), property_value.get());
-    pref_data->Set(base::Int64ToString(id), property_value.release());
+    pref_data->Set(base::Int64ToString(id), std::move(property_value));
   }
 }
 

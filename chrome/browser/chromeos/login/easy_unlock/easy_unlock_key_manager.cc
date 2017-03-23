@@ -118,7 +118,7 @@ void EasyUnlockKeyManager::DeviceDataToRemoteDeviceDictionary(
   dict->SetString(kKeyPsk, data.psk);
   std::unique_ptr<base::DictionaryValue> permit_record(
       new base::DictionaryValue);
-  dict->Set(kKeyPermitRecord, permit_record.release());
+  dict->Set(kKeyPermitRecord, std::move(permit_record));
   dict->SetString(kKeyPermitId, data.public_key);
   dict->SetString(kKeyPermitData, data.public_key);
   dict->SetString(kKeyPermitType, kPermitTypeLicence);

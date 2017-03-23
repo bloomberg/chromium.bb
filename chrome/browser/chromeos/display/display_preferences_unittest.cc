@@ -128,7 +128,7 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
         layout_value.reset(value->DeepCopy());
     }
     if (display::DisplayLayoutToJson(display_layout, layout_value.get()))
-      pref_data->Set(name, layout_value.release());
+      pref_data->Set(name, std::move(layout_value));
   }
 
   void StoreDisplayPropertyForList(const display::DisplayIdList& list,
@@ -149,7 +149,7 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
       std::unique_ptr<base::DictionaryValue> layout_value(
           new base::DictionaryValue());
       layout_value->SetBoolean(key, value != nullptr);
-      pref_data->Set(name, layout_value.release());
+      pref_data->Set(name, std::move(layout_value));
     }
   }
 
@@ -171,12 +171,12 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
     const std::string name = base::Int64ToString(id);
 
     base::DictionaryValue* pref_data = update.Get();
-    base::DictionaryValue* insets_value = new base::DictionaryValue();
+    auto insets_value = base::MakeUnique<base::DictionaryValue>();
     insets_value->SetInteger("insets_top", insets.top());
     insets_value->SetInteger("insets_left", insets.left());
     insets_value->SetInteger("insets_bottom", insets.bottom());
     insets_value->SetInteger("insets_right", insets.right());
-    pref_data->Set(name, insets_value);
+    pref_data->Set(name, std::move(insets_value));
   }
 
   void StoreColorProfile(int64_t id, const std::string& profile) {
@@ -184,9 +184,9 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
     const std::string name = base::Int64ToString(id);
 
     base::DictionaryValue* pref_data = update.Get();
-    base::DictionaryValue* property = new base::DictionaryValue();
+    auto property = base::MakeUnique<base::DictionaryValue>();
     property->SetString("color_profile_name", profile);
-    pref_data->Set(name, property);
+    pref_data->Set(name, std::move(property));
   }
 
   void StoreDisplayRotationPrefsForTest(bool rotation_lock,

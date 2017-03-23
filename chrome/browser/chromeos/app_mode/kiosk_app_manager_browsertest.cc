@@ -325,7 +325,7 @@ class KioskAppManagerTest : public InProcessBrowserTest {
     PrefService* local_state = g_browser_process->local_state();
     DictionaryPrefUpdate dict_update(local_state,
                                      KioskAppManager::kKioskDictionaryName);
-    dict_update->Set(KioskAppManager::kKeyApps, apps_dict.release());
+    dict_update->Set(KioskAppManager::kKeyApps, std::move(apps_dict));
 
     // Make the app appear in device settings.
     base::ListValue device_local_accounts;

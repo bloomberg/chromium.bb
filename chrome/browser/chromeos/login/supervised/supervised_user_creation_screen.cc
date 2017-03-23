@@ -529,9 +529,10 @@ void SupervisedUserCreationScreen::OnGetSupervisedUsers(
   existing_users_.reset(new base::DictionaryValue());
   for (base::DictionaryValue::Iterator it(*users); !it.IsAtEnd();
        it.Advance()) {
+    const base::DictionaryValue* value = nullptr;
+    it.value().GetAsDictionary(&value);
     // Copy that would be stored in this class.
-    base::DictionaryValue* local_copy =
-        static_cast<base::DictionaryValue*>(it.value().DeepCopy());
+    std::unique_ptr<base::DictionaryValue> local_copy = value->CreateDeepCopy();
     // Copy that would be passed to WebUI. It has some extra values for
     // displaying, but does not contain sensitive data, such as master password.
     auto ui_copy = base::MakeUnique<base::DictionaryValue>();
@@ -584,7 +585,7 @@ void SupervisedUserCreationScreen::OnGetSupervisedUsers(
     ui_copy->SetBoolean(kUserNeedPassword, !has_password);
     ui_copy->SetString("id", it.key());
 
-    existing_users_->Set(it.key(), local_copy);
+    existing_users_->Set(it.key(), std::move(local_copy));
     ui_users->Append(std::move(ui_copy));
   }
   view_->ShowExistingSupervisedUsers(ui_users.get());

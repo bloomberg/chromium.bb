@@ -43,8 +43,9 @@ class ManagedBookmarkServiceTest : public testing::Test {
     prefs_ = profile_.GetTestingPrefService();
     ASSERT_FALSE(prefs_->HasPrefPath(bookmarks::prefs::kManagedBookmarks));
 
+    // TODO(crbug.com/697817): Convert SetManagedPrefs to take a unique_ptr.
     prefs_->SetManagedPref(bookmarks::prefs::kManagedBookmarks,
-                           CreateTestTree());
+                           CreateTestTree().release());
     ResetModel();
 
     // The managed node always exists.
@@ -76,22 +77,21 @@ class ManagedBookmarkServiceTest : public testing::Test {
 
   static std::unique_ptr<base::DictionaryValue> CreateFolder(
       const std::string& title,
-      base::ListValue* children) {
+      std::unique_ptr<base::ListValue> children) {
     auto dict = base::MakeUnique<base::DictionaryValue>();
     dict->SetString("name", title);
-    dict->Set("children", children);
+    dict->Set("children", std::move(children));
     return dict;
   }
 
-  static base::ListValue* CreateTestTree() {
-    base::ListValue* folder = new base::ListValue();
-    base::ListValue* empty = new base::ListValue();
-    folder->Append(CreateFolder("Empty", empty));
+  static std::unique_ptr<base::ListValue> CreateTestTree() {
+    auto folder = base::MakeUnique<base::ListValue>();
+    folder->Append(CreateFolder("Empty", base::MakeUnique<base::ListValue>()));
     folder->Append(CreateBookmark("Youtube", "http://youtube.com/"));
 
-    base::ListValue* list = new base::ListValue();
+    auto list = base::MakeUnique<base::ListValue>();
     list->Append(CreateBookmark("Google", "http://google.com/"));
-    list->Append(CreateFolder("Folder", folder));
+    list->Append(CreateFolder("Folder", std::move(folder)));
 
     return list;
   }
@@ -183,7 +183,7 @@ TEST_F(ManagedBookmarkServiceTest, SwapNodes) {
 
   // Verify the final tree.
   std::unique_ptr<base::DictionaryValue> expected(
-      CreateFolder(GetManagedFolderTitle(), updated.release()));
+      CreateFolder(GetManagedFolderTitle(), std::move(updated)));
   EXPECT_TRUE(NodeMatchesValue(managed_->managed_node(), expected.get()));
 }
 
@@ -200,7 +200,7 @@ TEST_F(ManagedBookmarkServiceTest, RemoveNode) {
 
   // Verify the final tree.
   std::unique_ptr<base::DictionaryValue> expected(
-      CreateFolder(GetManagedFolderTitle(), updated.release()));
+      CreateFolder(GetManagedFolderTitle(), std::move(updated)));
   EXPECT_TRUE(NodeMatchesValue(managed_->managed_node(), expected.get()));
 }
 
@@ -220,7 +220,7 @@ TEST_F(ManagedBookmarkServiceTest, CreateNewNodes) {
 
   // Verify the final tree.
   std::unique_ptr<base::DictionaryValue> expected(
-      CreateFolder(GetManagedFolderTitle(), updated.release()));
+      CreateFolder(GetManagedFolderTitle(), std::move(updated)));
   EXPECT_TRUE(NodeMatchesValue(managed_->managed_node(), expected.get()));
 }
 

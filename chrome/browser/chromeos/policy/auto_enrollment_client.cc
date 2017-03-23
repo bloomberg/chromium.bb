@@ -55,10 +55,9 @@ int NextPowerOf2(int64_t value) {
 void UpdateDict(base::DictionaryValue* dict,
                 const char* pref_path,
                 bool set_or_clear,
-                base::Value* value) {
-  std::unique_ptr<base::Value> scoped_value(value);
+                std::unique_ptr<base::Value> value) {
   if (set_or_clear)
-    dict->Set(pref_path, scoped_value.release());
+    dict->Set(pref_path, std::move(value));
   else
     dict->Remove(pref_path, NULL);
 }
@@ -376,18 +375,20 @@ bool AutoEnrollmentClient::OnDeviceStateRequestCompletion(
         response.device_state_retrieval_response();
     {
       DictionaryPrefUpdate dict(local_state_, prefs::kServerBackedDeviceState);
-      UpdateDict(dict.Get(), kDeviceStateManagementDomain,
-                 state_response.has_management_domain(),
-                 new base::Value(state_response.management_domain()));
+      UpdateDict(
+          dict.Get(), kDeviceStateManagementDomain,
+          state_response.has_management_domain(),
+          base::MakeUnique<base::Value>(state_response.management_domain()));
 
       std::string restore_mode =
           ConvertRestoreMode(state_response.restore_mode());
       UpdateDict(dict.Get(), kDeviceStateRestoreMode, !restore_mode.empty(),
-                 new base::Value(restore_mode));
+                 base::MakeUnique<base::Value>(restore_mode));
 
       UpdateDict(dict.Get(), kDeviceStateDisabledMessage,
                  state_response.has_disabled_state(),
-                 new base::Value(state_response.disabled_state().message()));
+                 base::MakeUnique<base::Value>(
+                     state_response.disabled_state().message()));
 
       // Logging as "WARNING" to make sure it's preserved in the logs.
       LOG(WARNING) << "Restore mode: " << restore_mode;

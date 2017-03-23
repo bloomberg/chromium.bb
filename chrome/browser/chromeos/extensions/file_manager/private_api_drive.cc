@@ -760,7 +760,7 @@ void FileManagerPrivateSearchDriveFunction::OnEntryDefinitionList(
     std::unique_ptr<SearchResultInfoList> search_result_info_list,
     std::unique_ptr<EntryDefinitionList> entry_definition_list) {
   DCHECK_EQ(search_result_info_list->size(), entry_definition_list->size());
-  base::ListValue* entries = new base::ListValue();
+  auto entries = base::MakeUnique<base::ListValue>();
 
   // Convert Drive files to something File API stack can understand.
   for (EntryDefinitionList::const_iterator it = entry_definition_list->begin();
@@ -775,7 +775,7 @@ void FileManagerPrivateSearchDriveFunction::OnEntryDefinitionList(
   }
 
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
-  result->Set("entries", entries);
+  result->Set("entries", std::move(entries));
   result->SetString("nextFeed", next_link.spec());
 
   SetResult(std::move(result));
@@ -869,7 +869,7 @@ void FileManagerPrivateSearchDriveMetadataFunction::OnEntryDefinitionList(
     auto result_dict = base::MakeUnique<base::DictionaryValue>();
 
     // FileEntry fields.
-    base::DictionaryValue* entry = new base::DictionaryValue();
+    auto entry = base::MakeUnique<base::DictionaryValue>();
     entry->SetString(
         "fileSystemName", entry_definition_list->at(i).file_system_name);
     entry->SetString(
@@ -880,7 +880,7 @@ void FileManagerPrivateSearchDriveMetadataFunction::OnEntryDefinitionList(
     entry->SetBoolean("fileIsDirectory",
                       entry_definition_list->at(i).is_directory);
 
-    result_dict->Set("entry", entry);
+    result_dict->Set("entry", std::move(entry));
     result_dict->SetString(
         "highlightedBaseName",
         search_result_info_list->at(i).highlighted_base_name);

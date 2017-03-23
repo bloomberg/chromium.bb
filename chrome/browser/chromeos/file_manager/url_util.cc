@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/json/json_writer.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "net/base/escape.h"
@@ -85,15 +86,15 @@ GURL GetFileManagerMainPageUrlWithParams(
   arg_value.SetString("defaultExtension", default_extension);
 
   if (file_types) {
-    base::ListValue* types_list = new base::ListValue();
+    auto types_list = base::MakeUnique<base::ListValue>();
     for (size_t i = 0; i < file_types->extensions.size(); ++i) {
       base::ListValue* extensions_list = new base::ListValue();
       for (size_t j = 0; j < file_types->extensions[i].size(); ++j) {
         extensions_list->AppendString(file_types->extensions[i][j]);
       }
 
-      base::DictionaryValue* dict = new base::DictionaryValue();
-      dict->Set("extensions", extensions_list);
+      auto dict = base::MakeUnique<base::DictionaryValue>();
+      dict->Set("extensions", std::move(extensions_list));
 
       if (i < file_types->extension_description_overrides.size()) {
         base::string16 desc = file_types->extension_description_overrides[i];
@@ -104,9 +105,9 @@ GURL GetFileManagerMainPageUrlWithParams(
       dict->SetBoolean("selected",
                        (static_cast<size_t>(file_type_index) == (i + 1)));
 
-      types_list->Set(i, dict);
+      types_list->Set(i, std::move(dict));
     }
-    arg_value.Set("typeList", types_list);
+    arg_value.Set("typeList", std::move(types_list));
 
     arg_value.SetBoolean("includeAllFiles", file_types->include_all_files);
   }

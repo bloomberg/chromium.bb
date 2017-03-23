@@ -152,12 +152,12 @@ class AccessibilityFeaturesApiTest : public ExtensionApiTest,
     std::unique_ptr<base::ListValue> enabled_list(new base::ListValue);
     for (size_t i = 0; i < enabled_features.size(); ++i)
       enabled_list->AppendString(enabled_features[i]);
-    test_arg.Set(kEnabledFeaturesKey, enabled_list.release());
+    test_arg.Set(kEnabledFeaturesKey, std::move(enabled_list));
 
     std::unique_ptr<base::ListValue> disabled_list(new base::ListValue);
     for (size_t i = 0; i < disabled_features.size(); ++i)
       disabled_list->AppendString(disabled_features[i]);
-    test_arg.Set(kDisabledFeaturesKey, disabled_list.release());
+    test_arg.Set(kDisabledFeaturesKey, std::move(disabled_list));
 
     return base::JSONWriter::Write(test_arg, result);
   }

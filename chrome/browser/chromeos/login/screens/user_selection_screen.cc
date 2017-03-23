@@ -99,7 +99,7 @@ void AddPublicSessionDetailsToUserDictionaryEntry(
       g_browser_process->GetApplicationLocale());
 
   // Set |kKeyInitialLocales| to the list of available locales.
-  user_dict->Set(kKeyInitialLocales, available_locales.release());
+  user_dict->Set(kKeyInitialLocales, std::move(available_locales));
 
   // Set |kKeyInitialLocale| to the initially selected locale.
   user_dict->SetString(kKeyInitialLocale, selected_locale);
@@ -115,8 +115,7 @@ void AddPublicSessionDetailsToUserDictionaryEntry(
   // Set |kKeyInitialKeyboardLayout| to the current keyboard layout. This
   // value will be used temporarily only because the UI immediately requests a
   // list of keyboard layouts suitable for the currently selected locale.
-  user_dict->Set(kKeyInitialKeyboardLayout,
-                 GetCurrentKeyboardLayout().release());
+  user_dict->Set(kKeyInitialKeyboardLayout, GetCurrentKeyboardLayout());
 }
 
 // Returns true if the PIN keyboard should be displayed for the given |user|.
