@@ -14,6 +14,8 @@ group("fuzzers") {
 fuzzer_test("pdfium_fuzzer") {
   sources = [
     "pdfium_fuzzer.cc",
+    "pdfium_fuzzer_helper.cc",
+    "pdfium_fuzzer_helper.h",
   ]
   deps = [
     "//third_party/pdfium",
@@ -26,6 +28,7 @@ fuzzer_test("pdfium_fuzzer") {
     "//v8:external_startup_data",
   ]
   dict = "dicts/pdf.dict"
+  seed_corpus = "src/third_party/pdfium/test"
 }
 
 fuzzer_test("pdf_cmap_fuzzer") {
@@ -180,5 +183,25 @@ if (pdf_enable_xfa) {
       "//third_party/pdfium/testing/libfuzzer:pdf_cfx_saxreader_fuzzer",
     ]
     dict = "dicts/pdf_xml.dict"
+  }
+
+  fuzzer_test("pdfium_xfa_fuzzer") {
+    sources = [
+      "pdfium_fuzzer_helper.cc",
+      "pdfium_fuzzer_helper.h",
+      "pdfium_xfa_fuzzer.cc",
+    ]
+    deps = [
+      "//third_party/pdfium",
+      "//third_party/pdfium:test_support",
+      "//v8",
+      "//v8:v8_libplatform",
+    ]
+    additional_configs = [
+      "//third_party/pdfium:pdfium_core_config",
+      "//v8:external_startup_data",
+    ]
+    dict = "dicts/pdf.dict"
+    seed_corpus = "src/third_party/pdfium/test"
   }
 }
