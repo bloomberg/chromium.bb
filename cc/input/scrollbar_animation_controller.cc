@@ -50,9 +50,10 @@ ScrollbarAnimationController::ScrollbarAnimationController(
       is_animating_(false),
       scroll_layer_id_(scroll_layer_id),
       currently_scrolling_(false),
-      scroll_gesture_has_scrolled_(false),
+      show_in_fast_scroll_(false),
       opacity_(0.0f),
       fade_out_duration_(fade_out_duration),
+      show_scrollbars_on_scroll_gesture_(false),
       need_thinning_animation_(false),
       weak_factory_(this) {
   ApplyOpacityToScrollbars(0.0f);
@@ -74,9 +75,10 @@ ScrollbarAnimationController::ScrollbarAnimationController(
       is_animating_(false),
       scroll_layer_id_(scroll_layer_id),
       currently_scrolling_(false),
-      scroll_gesture_has_scrolled_(false),
+      show_in_fast_scroll_(false),
       opacity_(0.0f),
       fade_out_duration_(fade_out_duration),
+      show_scrollbars_on_scroll_gesture_(true),
       need_thinning_animation_(true),
       weak_factory_(this) {
   vertical_controller_ = SingleScrollbarAnimationControllerThinning::Create(
@@ -120,6 +122,7 @@ void ScrollbarAnimationController::StopAnimation() {
 
 void ScrollbarAnimationController::PostDelayedShow() {
   DCHECK(delayed_scrollbar_fade_out_.IsCancelled());
+  delayed_scrollbar_show_.Cancel();
   delayed_scrollbar_show_.Reset(base::Bind(&ScrollbarAnimationController::Show,
                                            weak_factory_.GetWeakPtr()));
   client_->PostDelayedScrollbarAnimationTask(delayed_scrollbar_show_.callback(),
@@ -129,6 +132,7 @@ void ScrollbarAnimationController::PostDelayedShow() {
 void ScrollbarAnimationController::PostDelayedFadeOut(bool on_resize) {
   DCHECK(delayed_scrollbar_show_.IsCancelled());
   base::TimeDelta delay = on_resize ? fade_out_resize_delay_ : fade_out_delay_;
+  delayed_scrollbar_fade_out_.Cancel();
   delayed_scrollbar_fade_out_.Reset(
       base::Bind(&ScrollbarAnimationController::StartAnimation,
                  weak_factory_.GetWeakPtr()));
@@ -166,17 +170,32 @@ float ScrollbarAnimationController::AnimationProgressAtTime(
   return std::max(std::min(progress, 1.f), 0.f);
 }
 
-void ScrollbarAnimationController::DidScrollBegin() {
-  currently_scrolling_ = true;
-}
-
 void ScrollbarAnimationController::RunAnimationFrame(float progress) {
   ApplyOpacityToScrollbars(1.f - progress);
   if (progress == 1.f)
     StopAnimation();
 }
 
-void ScrollbarAnimationController::DidScrollUpdate(bool on_resize) {
+void ScrollbarAnimationController::DidScrollBegin() {
+  currently_scrolling_ = true;
+}
+
+void ScrollbarAnimationController::DidScrollEnd() {
+  bool has_scrolled = show_in_fast_scroll_;
+  show_in_fast_scroll_ = false;
+
+  currently_scrolling_ = false;
+
+  // We don't fade out scrollbar if they need thinning animation and mouse is
+  // near.
+  if (need_thinning_animation_ && MouseIsNearAnyScrollbar())
+    return;
+
+  if (has_scrolled)
+    PostDelayedFadeOut(false);
+}
+
+void ScrollbarAnimationController::DidScrollUpdate() {
   if (need_thinning_animation_ && Captured())
     return;
 
@@ -188,9 +207,9 @@ void ScrollbarAnimationController::DidScrollUpdate(bool on_resize) {
     // We don't fade out scrollbar if they need thinning animation and mouse is
     // near.
     if (!need_thinning_animation_ || !MouseIsNearAnyScrollbar())
-      PostDelayedFadeOut(on_resize);
+      PostDelayedFadeOut(false);
   } else {
-    scroll_gesture_has_scrolled_ = true;
+    show_in_fast_scroll_ = true;
   }
 
   Show();
@@ -201,19 +220,22 @@ void ScrollbarAnimationController::DidScrollUpdate(bool on_resize) {
   }
 }
 
-void ScrollbarAnimationController::DidScrollEnd() {
-  bool has_scrolled = scroll_gesture_has_scrolled_;
-  scroll_gesture_has_scrolled_ = false;
+void ScrollbarAnimationController::WillUpdateScroll() {
+  if (show_scrollbars_on_scroll_gesture_)
+    DidScrollUpdate();
+}
 
-  currently_scrolling_ = false;
+void ScrollbarAnimationController::DidResize() {
+  StopAnimation();
+  Show();
 
-  // We don't fade out scrollbar if they need thinning animation and mouse is
-  // near.
-  if (need_thinning_animation_ && MouseIsNearAnyScrollbar())
-    return;
-
-  if (has_scrolled)
-    PostDelayedFadeOut(false);
+  // As an optimization, we avoid spamming fade delay tasks during active fast
+  // scrolls.
+  if (!currently_scrolling_) {
+    PostDelayedFadeOut(true);
+  } else {
+    show_in_fast_scroll_ = true;
+  }
 }
 
 void ScrollbarAnimationController::DidMouseDown() {

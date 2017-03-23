@@ -65,8 +65,19 @@ class CC_EXPORT ScrollbarAnimationController {
 
   bool Animate(base::TimeTicks now);
 
+  // WillUpdateScroll expects to be called even if the scroll position won't
+  // change as a result of the scroll. Only effect Aura Overlay Scrollbar.
+  void WillUpdateScroll();
+
+  // DidScrollUpdate expects to be called only if the scroll position change.
+  // Effect both Android and Aura Overlay Scrollbar.
+  void DidScrollUpdate();
+
+  // DidResize expects to be called when clip layer size changed or scroll layer
+  // size changed.
+  void DidResize();
+
   void DidScrollBegin();
-  void DidScrollUpdate(bool on_resize);
   void DidScrollEnd();
 
   void DidMouseDown();
@@ -135,7 +146,7 @@ class CC_EXPORT ScrollbarAnimationController {
 
   const int scroll_layer_id_;
   bool currently_scrolling_;
-  bool scroll_gesture_has_scrolled_;
+  bool show_in_fast_scroll_;
 
   base::CancelableClosure delayed_scrollbar_show_;
   base::CancelableClosure delayed_scrollbar_fade_out_;
@@ -143,6 +154,7 @@ class CC_EXPORT ScrollbarAnimationController {
   float opacity_;
   base::TimeDelta fade_out_duration_;
 
+  const bool show_scrollbars_on_scroll_gesture_;
   const bool need_thinning_animation_;
   std::unique_ptr<SingleScrollbarAnimationControllerThinning>
       vertical_controller_;
