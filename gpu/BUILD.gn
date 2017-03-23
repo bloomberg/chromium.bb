@@ -107,7 +107,9 @@ static_library("test_support") {
     "command_buffer/client/gles2_interface_stub.cc",
     "command_buffer/client/gles2_interface_stub.h",
     "command_buffer/service/error_state_mock.cc",
+    "command_buffer/service/error_state_mock.h",
     "command_buffer/service/gles2_cmd_decoder_mock.cc",
+    "command_buffer/service/gles2_cmd_decoder_mock.h",
     "test_message_loop_type.h",
   ]
 

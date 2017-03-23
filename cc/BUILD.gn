@@ -853,6 +853,7 @@ cc_test("cc_unittests") {
 
     # Setup.
     "test/cc_test_suite.cc",
+    "test/cc_test_suite.h",
     "test/run_all_unittests.cc",
   ]
 
@@ -911,6 +912,7 @@ cc_test("cc_perftests") {
     "raster/texture_compressor_perftest.cc",
     "surfaces/surface_aggregator_perftest.cc",
     "test/cc_test_suite.cc",
+    "test/cc_test_suite.h",
     "test/run_all_perftests.cc",
     "tiles/software_image_decode_cache_perftest.cc",
     "tiles/tile_manager_perftest.cc",

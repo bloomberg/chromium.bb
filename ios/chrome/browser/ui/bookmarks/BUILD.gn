@@ -126,6 +126,7 @@ source_set("unit_tests_arc") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "bookmark_ios_unittest.h",
     "bookmark_utils_ios_unittest.mm",
   ]
   deps = [

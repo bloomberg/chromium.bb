@@ -17,6 +17,7 @@ component("views_content_client") {
     "views_content_client_main_parts_chromeos.cc",
     "views_content_client_main_parts_mac.mm",
     "views_content_main_delegate.cc",
+    "views_content_main_delegate.h",
   ]
 
   defines = [ "VIEWS_CONTENT_CLIENT_IMPLEMENTATION" ]

@@ -135,6 +135,7 @@ component("net") {
     "base/network_interfaces.cc",
     "base/network_interfaces.h",
     "base/network_interfaces_posix.cc",
+    "base/network_interfaces_posix.h",
     "base/parse_number.cc",
     "base/parse_number.h",
     "base/port_util.cc",
@@ -457,6 +458,7 @@ component("net") {
       "base/network_interfaces_linux.cc",
       "base/network_interfaces_mac.cc",
       "base/network_interfaces_win.cc",
+      "base/network_interfaces_win.h",
       "base/network_throttle_manager.h",
       "base/network_throttle_manager_impl.cc",
       "base/network_throttle_manager_impl.h",
@@ -1567,7 +1569,9 @@ component("net") {
       "ssl/ssl_key_logger.h",
       "ssl/ssl_platform_key.h",
       "ssl/ssl_platform_key_android.cc",
+      "ssl/ssl_platform_key_android.h",
       "ssl/ssl_platform_key_mac.cc",
+      "ssl/ssl_platform_key_mac.h",
       "ssl/ssl_platform_key_nss.cc",
       "ssl/ssl_platform_key_util.cc",
       "ssl/ssl_platform_key_util.h",
@@ -2014,7 +2018,10 @@ component("net") {
 
     # Brotli support.
     if (!disable_brotli_filter) {
-      sources += [ "filter/brotli_source_stream.cc" ]
+      sources += [
+        "filter/brotli_source_stream.cc",
+        "filter/brotli_source_stream.h",
+      ]
       deps += [ "//third_party/brotli:dec" ]
     } else {
       sources += [ "filter/brotli_source_stream_disabled.cc" ]
@@ -2657,6 +2664,7 @@ if (!is_ios && !is_android) {
     testonly = true
     sources = [
       "tools/gdig/file_net_log.cc",
+      "tools/gdig/file_net_log.h",
       "tools/gdig/gdig.cc",
     ]
     deps = [

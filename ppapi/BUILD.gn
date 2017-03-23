@@ -440,8 +440,11 @@ if (enable_nacl) {
         "tests/test_nacl_irt_stack_alignment.cc",
         "tests/test_nacl_irt_stack_alignment.h",
         "tests/test_tcp_server_socket_private_disallowed.cc",
+        "tests/test_tcp_server_socket_private_disallowed.h",
         "tests/test_tcp_socket_private_disallowed.cc",
+        "tests/test_tcp_socket_private_disallowed.h",
         "tests/test_udp_socket_private_disallowed.cc",
+        "tests/test_udp_socket_private_disallowed.h",
       ]
 
       defines = [

@@ -13,6 +13,7 @@ component("power_save_blocker") {
   sources = [
     "power_save_blocker.h",
     "power_save_blocker_android.cc",
+    "power_save_blocker_android.h",
     "power_save_blocker_chromeos.cc",
     "power_save_blocker_mac.cc",
     "power_save_blocker_ozone.cc",

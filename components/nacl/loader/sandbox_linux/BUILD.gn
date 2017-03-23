@@ -11,6 +11,7 @@ assert(enable_nacl)
 source_set("sandbox_linux") {
   sources = [
     "nacl_bpf_sandbox_linux.cc",
+    "nacl_bpf_sandbox_linux.h",
     "nacl_sandbox_linux.cc",
   ]
 

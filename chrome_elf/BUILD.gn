@@ -249,6 +249,7 @@ shared_library("blacklist_test_main_dll") {
   sources = [
     "blacklist/test/blacklist_test_main_dll.cc",
     "blacklist/test/blacklist_test_main_dll.def",
+    "blacklist/test/blacklist_test_main_dll.h",
   ]
   deps = [
     ":blacklist",

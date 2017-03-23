@@ -9,10 +9,15 @@ if (is_linux && !is_chromeos && current_cpu != "arm" && use_x11) {
     sources = [
       "compositor_model_bench.cc",
       "forward_render_model.cc",
+      "forward_render_model.h",
       "render_model_utils.cc",
+      "render_model_utils.h",
       "render_models.cc",
+      "render_models.h",
       "render_tree.cc",
+      "render_tree.h",
       "shaders.cc",
+      "shaders.h",
     ]
 
     libs = [ "GL" ]

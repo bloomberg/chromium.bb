@@ -53,6 +53,7 @@ cc_test("cc_blink_unittests") {
 
     # Setup.
     "test/cc_blink_test_suite.cc",
+    "test/cc_blink_test_suite.h",
     "test/run_all_unittests.cc",
   ]
 

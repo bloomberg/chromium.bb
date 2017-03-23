@@ -75,6 +75,7 @@ blink_core_sources("svg") {
     "SVGResources.cpp",
     "SVGResources.h",
     "SVGResourcesCache.cpp",
+    "SVGResourcesCache.h",
     "SVGResourcesCycleSolver.cpp",
     "SVGResourcesCycleSolver.h",
     "SVGTextChunkBuilder.cpp",

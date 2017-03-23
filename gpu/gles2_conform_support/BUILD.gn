@@ -470,6 +470,7 @@ if (internal_gles2_conform_tests) {
 test("gles2_conform_test") {
   sources = [
     "gles2_conform_test.cc",
+    "gles2_conform_test.h",
   ]
   deps = [
     "//base",

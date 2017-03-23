@@ -5,13 +5,20 @@
 static_library("nacl_trusted_plugin") {
   sources = [
     "module_ppapi.cc",
+    "module_ppapi.h",
     "nacl_subprocess.cc",
+    "nacl_subprocess.h",
     "plugin.cc",
     "pnacl_coordinator.cc",
+    "pnacl_coordinator.h",
     "pnacl_resources.cc",
+    "pnacl_resources.h",
     "pnacl_translate_thread.cc",
+    "pnacl_translate_thread.h",
     "ppapi_entrypoints.cc",
+    "ppapi_entrypoints.h",
     "service_runtime.cc",
+    "service_runtime.h",
   ]
 
   deps = [

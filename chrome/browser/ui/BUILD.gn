@@ -933,6 +933,7 @@ split_static_library("ui") {
       "webui/help/version_updater_mac.h",
       "webui/help/version_updater_mac.mm",
       "webui/help/version_updater_win.cc",
+      "webui/help/version_updater_win.h",
       "webui/history_login_handler.cc",
       "webui/history_login_handler.h",
       "webui/identity_internals_ui.cc",
@@ -1483,6 +1484,7 @@ split_static_library("ui") {
       "views/extensions/chooser_dialog_view.cc",
       "views/extensions/chooser_dialog_view.h",
       "views/extensions/extension_install_dialog_view.cc",
+      "views/extensions/extension_install_dialog_view.h",
       "views/extensions/extension_keybinding_registry_views.cc",
       "views/extensions/extension_keybinding_registry_views.h",
       "views/frame/native_widget_mac_frameless_nswindow.h",
@@ -2233,6 +2235,7 @@ split_static_library("ui") {
       "android/infobars/update_password_infobar.cc",
       "android/infobars/update_password_infobar.h",
       "android/javascript_app_modal_dialog_android.cc",
+      "android/javascript_app_modal_dialog_android.h",
       "android/login_handler_android.cc",
       "android/omnibox/omnibox_url_emphasizer.cc",
       "android/omnibox/omnibox_url_emphasizer.h",
@@ -3079,7 +3082,10 @@ split_static_library("ui") {
     ]
     if (!is_chrome_branded) {
       deps -= [ "//google_update" ]
-      sources -= [ "webui/help/version_updater_win.cc" ]
+      sources -= [
+        "webui/help/version_updater_win.cc",
+        "webui/help/version_updater_win.h",
+      ]
       sources += [
         "webui/help/version_updater_basic.cc",
         "webui/help/version_updater_basic.h",

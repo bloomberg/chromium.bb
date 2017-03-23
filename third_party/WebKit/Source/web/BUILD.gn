@@ -92,6 +92,7 @@ component("web") {
     "LocalFileSystemClient.cpp",
     "LocalFileSystemClient.h",
     "LocalFrameClientImpl.cpp",
+    "LocalFrameClientImpl.h",
     "MediaKeysClientImpl.cpp",
     "MediaKeysClientImpl.h",
     "NavigatorContentUtilsClientImpl.cpp",

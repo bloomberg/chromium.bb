@@ -99,6 +99,7 @@ source_set("unit_tests") {
     "core/trace_buffer_writer_unittest.cc",
     "core/trace_ring_buffer_unittest.cc",
     "test/fake_scattered_buffer.cc",
+    "test/fake_scattered_buffer.h",
     "test/proto_zero_generation_unittest.cc",
   ]
 

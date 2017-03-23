@@ -402,6 +402,7 @@ source_set("unit_tests") {
     "api/document_scan/document_scan_api_unittest.cc",
     "api/document_scan/document_scan_interface_chromeos_unittest.cc",
     "api/document_scan/mock_document_scan_interface.cc",
+    "api/document_scan/mock_document_scan_interface.h",
     "api/file_handlers/app_file_handler_util_unittest.cc",
     "api/file_handlers/directory_util_unittest.cc",
     "api/file_handlers/mime_util_unittest.cc",

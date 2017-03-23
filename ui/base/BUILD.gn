@@ -236,6 +236,7 @@ component("base") {
     "resource/resource_bundle.cc",
     "resource/resource_bundle.h",
     "resource/resource_bundle_android.cc",
+    "resource/resource_bundle_android.h",
     "resource/resource_bundle_auralinux.cc",
     "resource/resource_bundle_ios.mm",
     "resource/resource_bundle_mac.mm",
@@ -640,6 +641,7 @@ static_library("test_support") {
     "test/material_design_controller_test_api.h",
     "test/ui_controls.h",
     "test/ui_controls_aura.cc",
+    "test/ui_controls_aura.h",
     "test/ui_controls_internal_win.cc",
     "test/ui_controls_internal_win.h",
     "test/ui_controls_mac.mm",
@@ -718,7 +720,10 @@ static_library("test_support") {
   }
 
   if (!use_aura) {
-    sources -= [ "test/ui_controls_aura.cc" ]
+    sources -= [
+      "test/ui_controls_aura.cc",
+      "test/ui_controls_aura.h",
+    ]
   } else if (is_win) {
     sources -= [ "test/ui_controls_win.cc" ]
   }

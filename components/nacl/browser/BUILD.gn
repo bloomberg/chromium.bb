@@ -80,6 +80,7 @@ source_set("unit_tests") {
     "pnacl_host_unittest.cc",
     "pnacl_translation_cache_unittest.cc",
     "test_nacl_browser_delegate.cc",
+    "test_nacl_browser_delegate.h",
   ]
 
   deps = [
