@@ -318,26 +318,16 @@ blink::WebMouseEvent WebMouseEventBuilder::Build(
   result.button = button;
   SetWebEventLocationFromEventInView(&result, event, view);
 
-  // For NSMouseExited and NSMouseEntered events, they do not have a subtype.
-  // We decide their pointer types by checking if we recevied a
-  // NSTabletProximity event.
-  if (type == NSMouseExited || type == NSMouseEntered) {
-    result.pointerType = pointerType;
-    return result;
-  }
-
-  // For other mouse events and touchpad events, the pointer type is mouse.
-  // For all other tablet events, the pointer type will be just pen.
-  NSEventSubtype subtype = [event subtype];
-  if (subtype != NSTabletPointEventSubtype &&
-      subtype != NSTabletProximityEventSubtype) {
-    result.pointerType = blink::WebPointerProperties::PointerType::Mouse;
+  result.pointerType = pointerType;
+  if ((type == NSMouseExited || type == NSMouseEntered) ||
+      ([event subtype] != NSTabletPointEventSubtype &&
+       [event subtype] != NSTabletProximityEventSubtype)) {
     return result;
   }
 
   // Set stylus properties for events with a subtype of
   // NSTabletPointEventSubtype.
-  result.pointerType = blink::WebPointerProperties::PointerType::Pen;
+  NSEventSubtype subtype = [event subtype];
   result.id = [event deviceID];
   if (subtype == NSTabletPointEventSubtype) {
     result.force = [event pressure];

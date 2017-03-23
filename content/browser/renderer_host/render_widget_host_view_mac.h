@@ -200,6 +200,7 @@ struct TextInputState;
 - (void)updateCursor:(NSCursor*)cursor;
 - (NSRect)firstViewRectForCharacterRange:(NSRange)theRange
                              actualRange:(NSRangePointer)actualRange;
+- (void)tabletEvent:(NSEvent*)theEvent;
 - (void)quickLookWithEvent:(NSEvent*)event;
 - (void)showLookUpDictionaryOverlayAtPoint:(NSPoint)point;
 - (void)showLookUpDictionaryOverlayFromRange:(NSRange)range

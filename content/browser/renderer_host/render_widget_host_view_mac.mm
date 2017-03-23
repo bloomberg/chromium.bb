@@ -1904,11 +1904,21 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 
   // Set the pointer type when we are receiving a NSMouseEntered event and the
   // following NSMouseExited event should have the same pointer type.
+  // For NSMouseExited and NSMouseEntered events, they do not have a subtype.
+  // We decide their pointer types by checking if we recevied a
+  // NSTabletProximity event.
   NSEventType type = [theEvent type];
-  if (type == NSMouseEntered) {
+  if (type == NSMouseEntered || type == NSMouseExited) {
     pointerType_ = isStylusEnteringProximity_
-                       ? blink::WebPointerProperties::PointerType::Pen
+                       ? pointerType_
                        : blink::WebPointerProperties::PointerType::Mouse;
+  } else {
+    NSEventSubtype subtype = [theEvent subtype];
+    // For other mouse events and touchpad events, the pointer type is mouse.
+    if (subtype != NSTabletPointEventSubtype &&
+        subtype != NSTabletProximityEventSubtype) {
+      pointerType_ = blink::WebPointerProperties::PointerType::Mouse;
+    }
   }
 
   if ([self shouldIgnoreMouseEvent:theEvent]) {
@@ -1981,8 +1991,14 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 }
 
 - (void)tabletEvent:(NSEvent*)theEvent {
-  if ([theEvent type] == NSTabletProximity)
+  if ([theEvent type] == NSTabletProximity) {
     isStylusEnteringProximity_ = [theEvent isEnteringProximity];
+    NSPointingDeviceType deviceType = [theEvent pointingDeviceType];
+    // For all tablet events, the pointer type will be pen or eraser.
+    pointerType_ = deviceType == NSEraserPointingDevice
+                       ? blink::WebPointerProperties::PointerType::Eraser
+                       : blink::WebPointerProperties::PointerType::Pen;
+  }
 }
 
 - (BOOL)performKeyEquivalent:(NSEvent*)theEvent {
