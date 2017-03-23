@@ -12,6 +12,7 @@
 #include <math.h>
 #include <limits.h>
 
+#include "./aom_config.h"
 #include "av1/common/alloccommon.h"
 #include "av1/common/onyxc_int.h"
 #include "av1/common/quant_common.h"

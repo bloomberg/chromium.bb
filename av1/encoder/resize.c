@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "./aom_config.h"
 #if CONFIG_AOM_HIGHBITDEPTH
 #include "aom_dsp/aom_dsp_common.h"
 #endif  // CONFIG_AOM_HIGHBITDEPTH

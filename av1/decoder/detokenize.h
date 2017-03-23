@@ -12,11 +12,9 @@
 #ifndef AV1_DECODER_DETOKENIZE_H_
 #define AV1_DECODER_DETOKENIZE_H_
 
+#include "./aom_config.h"
 #if !CONFIG_PVQ || CONFIG_VAR_TX
 #include "av1/decoder/decoder.h"
-#if CONFIG_ANS
-#include "aom_dsp/ans.h"
-#endif  // CONFIG_ANS
 #include "av1/common/scan.h"
 #endif  // !CONFIG_PVQ
 

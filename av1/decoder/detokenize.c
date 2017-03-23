@@ -9,14 +9,12 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include "./aom_config.h"
 #if !CONFIG_PVQ
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
 #endif  // !CONFIG_PVQ
 
-#if CONFIG_ANS
-#include "aom_dsp/ans.h"
-#endif  // CONFIG_ANS
 #include "av1/common/blockd.h"
 
 #define ACCT_STR __func__

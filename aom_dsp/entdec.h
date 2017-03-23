@@ -20,7 +20,7 @@ extern "C" {
 
 typedef struct od_ec_dec od_ec_dec;
 
-#if OD_ACCOUNTING
+#if defined(OD_ACCOUNTING) && OD_ACCOUNTING
 #define OD_ACC_STR , char *acc_str
 #define od_ec_dec_bits(dec, ftb, str) od_ec_dec_bits_(dec, ftb, str)
 #else

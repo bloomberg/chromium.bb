@@ -1686,12 +1686,9 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
           tu_idx_c++;
         }
 
-        if (bsize >= BLOCK_8X8 && eobtotal == 0)
-#if CONFIG_MISC_FIXES
-          mbmi->has_no_coeffs = 1;
-#else
-          mbmi->skip = 1;
-#endif
+        // TODO(CONFIG_COEF_INTERLEAVE owners): bring eob == 0 corner case
+        // into line with the defaut configuration
+        if (bsize >= BLOCK_8X8 && eobtotal == 0) mbmi->skip = 1;
       }
     }
   }

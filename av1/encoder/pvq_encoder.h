@@ -19,6 +19,10 @@
 # include "av1/common/pvq.h"
 # include "av1/encoder/encint.h"
 
+#ifndef OD_SIGNAL_Q_SCALING
+# define OD_SIGNAL_Q_SCALING (0)
+#endif
+
 void aom_encode_band_pvq_splits(aom_writer *w, od_pvq_codeword_ctx *adapt,
  const int *y, int n, int k, int level);
 
