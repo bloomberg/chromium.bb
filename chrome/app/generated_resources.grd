@@ -5557,6 +5557,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_WEBRTC_HW_H264_ENCODING_DESCRIPTION" desc="Description of chrome:flags option to turn on WebRTC hardware h264 video encoding support." translateable="false">
         Support in WebRTC for encoding h264 video streams using platform hardware.
       </message>
+      <message name="IDS_FLAGS_WEBRTC_SRTP_AES_GCM_NAME" desc="Name of chrome:flags option to enable GCM cipher suites for WebRTC" translateable="false">
+        Negotiation with GCM cipher suites for SRTP in WebRTC
+      </message>
+      <message name="IDS_FLAGS_WEBRTC_SRTP_AES_GCM_DESCRIPTION" desc="Description of chrome:flags option to enable GCM cipher suites for WebRTC" translateable="false">
+        When enabled, WebRTC will try to negotiate GCM cipher suites for SRTP.
+      </message>
       <message name="IDS_FLAGS_WEBRTC_STUN_ORIGIN_NAME" desc="Name of chrome:flags option to turn on Origin header for WebRTC STUN messages" translateable="false">
         WebRTC Stun origin header
       </message>
