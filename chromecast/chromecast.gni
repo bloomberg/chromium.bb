@@ -46,7 +46,3 @@ if (chromecast_branding == "public") {
   cast_build_release =
       read_file("//chromecast/internal/build/cast_build_release", "trim string")
 }
-
-# Assistant shall only be enabled on audio-only builds.
-assert(!enable_assistant || is_cast_audio_only,
-       "Assistant is only available on audio devices.")
