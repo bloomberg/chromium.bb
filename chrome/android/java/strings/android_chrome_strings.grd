@@ -1525,7 +1525,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Open in new Chrome tab
       </message>
       <message name="IDS_CONTEXTMENU_OPEN_IN_CHROME_INCOGNITO_TAB" desc="Context sensitive menu item to open the selected link in a Chrome incognito tab from Chrome Custom Tab. [CHAR-LIMIT=30]">
-        Open in Chrome incognito tab
+        Open in incognito tab
       </message>
       <!-- Swipe refresh -->
       <message name="IDS_ACCESSIBILITY_SWIPE_REFRESH" desc="Content description for the swipe refresh action.">

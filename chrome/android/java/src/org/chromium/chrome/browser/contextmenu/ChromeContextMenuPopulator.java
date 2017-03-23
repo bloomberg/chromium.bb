@@ -143,7 +143,11 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         static final int ACTION_CALL = 30;
         static final int ACTION_SEND_TEXT_MESSAGE = 31;
         static final int ACTION_COPY_PHONE_NUMBER = 32;
-        static final int NUM_ACTIONS = 33;
+        static final int ACTION_OPEN_IN_NEW_CHROME_TAB = 33;
+        static final int ACTION_OPEN_IN_CHROME_INCOGNITO_TAB = 34;
+        static final int ACTION_OPEN_IN_BROWSER = 35;
+        static final int ACTION_OPEN_IN_CHROME = 36;
+        static final int NUM_ACTIONS = 37;
 
         // Note: these values must match the ContextMenuSaveLinkType enum in histograms.xml.
         // Only add new values at the end, right before NUM_TYPES. We depend on these specific
@@ -556,12 +560,16 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             ContextMenuUma.record(params, ContextMenuUma.ACTION_SHARE_IMAGE);
             helper.shareImage();
         } else if (itemId == R.id.menu_id_open_in_chrome) {
+            ContextMenuUma.record(params, ContextMenuUma.ACTION_OPEN_IN_CHROME);
             mDelegate.onOpenInChrome(params.getLinkUrl(), params.getPageUrl());
         } else if (itemId == R.id.contextmenu_open_in_new_chrome_tab) {
+            ContextMenuUma.record(params, ContextMenuUma.ACTION_OPEN_IN_NEW_CHROME_TAB);
             mDelegate.onOpenInNewChromeTabFromCCT(getUrl(params), false);
         } else if (itemId == R.id.contextmenu_open_in_chrome_incognito_tab) {
+            ContextMenuUma.record(params, ContextMenuUma.ACTION_OPEN_IN_CHROME_INCOGNITO_TAB);
             mDelegate.onOpenInNewChromeTabFromCCT(getUrl(params), true);
         } else if (itemId == R.id.contextmenu_open_in_browser_id) {
+            ContextMenuUma.record(params, ContextMenuUma.ACTION_OPEN_IN_BROWSER);
             mDelegate.onOpenInDefaultBrowser(params.getLinkUrl());
         } else {
             assert false;
