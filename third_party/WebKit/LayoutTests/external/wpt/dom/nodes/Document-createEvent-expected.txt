@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 336 tests; 240 PASS, 96 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 331 tests; 238 PASS, 93 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS AnimationEvent should be an alias for AnimationEvent. 
 PASS createEvent('AnimationEvent') should be initialized correctly. 
 FAIL animationevent should be an alias for AnimationEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('animationevent') is invalid.
@@ -144,13 +144,6 @@ FAIL createEvent('popstateevent') should be initialized correctly. Cannot read p
 FAIL POPSTATEEVENT should be an alias for PopStateEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('POPSTATEEVENT') is invalid.
 FAIL createEvent('POPSTATEEVENT') should be initialized correctly. Cannot read property 'type' of undefined
 PASS Should throw NOT_SUPPORTED_ERR for pluralized legacy event interface "PopStateEvents" 
-PASS ProgressEvent should be an alias for ProgressEvent. 
-PASS createEvent('ProgressEvent') should be initialized correctly. 
-FAIL progressevent should be an alias for ProgressEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('progressevent') is invalid.
-FAIL createEvent('progressevent') should be initialized correctly. Cannot read property 'type' of undefined
-FAIL PROGRESSEVENT should be an alias for ProgressEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('PROGRESSEVENT') is invalid.
-FAIL createEvent('PROGRESSEVENT') should be initialized correctly. Cannot read property 'type' of undefined
-PASS Should throw NOT_SUPPORTED_ERR for pluralized legacy event interface "ProgressEvents" 
 PASS StorageEvent should be an alias for StorageEvent. 
 FAIL createEvent('StorageEvent') should be initialized correctly. assert_equals: isTrusted should be initialized to false expected (boolean) false but got (undefined) undefined
 FAIL storageevent should be an alias for StorageEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('storageevent') is invalid.
@@ -299,6 +292,10 @@ PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "Presentation
 PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "PresentationConnectionAvailableEvents" 
 PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "PresentationConnectionCloseEvent" 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "PresentationConnectionCloseEvents" 
+FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "ProgressEvent" assert_throws: function "function () {
+        var evt = document.createEvent(eventInterface);
+      }" did not throw
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "ProgressEvents" 
 PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "PromiseRejectionEvent" 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "PromiseRejectionEvents" 
 PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "PushEvent" 

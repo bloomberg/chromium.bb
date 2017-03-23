@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Tests that the ICE gathering state ends up as "completed" after applying a local offer. assert_unreached: Error OperationError: TEST_ERROR Reached unreachable code
+Harness: the test ran to completion.
+

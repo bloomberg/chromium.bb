@@ -1,1 +1,35 @@
+This is a testharness.js-based test.
+FAIL Window interface: attribute ondeviceorientation assert_true: The prototype object must have a property "ondeviceorientation" expected true got false
+FAIL Window interface: attribute ondevicemotion assert_true: The prototype object must have a property "ondevicemotion" expected true got false
+PASS DeviceOrientationEvent interface: existence and properties of interface object 
+PASS DeviceOrientationEvent interface object length 
+PASS DeviceOrientationEvent interface object name 
+FAIL DeviceOrientationEvent interface: existence and properties of interface prototype object assert_equals: class string of DeviceOrientationEvent.prototype expected "[object DeviceOrientationEventPrototype]" but got "[object DeviceOrientationEvent]"
+PASS DeviceOrientationEvent interface: existence and properties of interface prototype object's "constructor" property 
+PASS DeviceOrientationEvent interface: attribute alpha 
+PASS DeviceOrientationEvent interface: attribute beta 
+PASS DeviceOrientationEvent interface: attribute gamma 
+PASS DeviceOrientationEvent interface: attribute absolute 
+PASS DeviceOrientationEvent must be primary interface of new DeviceOrientationEvent("foo") 
+PASS Stringification of new DeviceOrientationEvent("foo") 
+PASS DeviceOrientationEvent interface: new DeviceOrientationEvent("foo") must inherit property "alpha" with the proper type (0) 
+PASS DeviceOrientationEvent interface: new DeviceOrientationEvent("foo") must inherit property "beta" with the proper type (1) 
+PASS DeviceOrientationEvent interface: new DeviceOrientationEvent("foo") must inherit property "gamma" with the proper type (2) 
+PASS DeviceOrientationEvent interface: new DeviceOrientationEvent("foo") must inherit property "absolute" with the proper type (3) 
+PASS DeviceMotionEvent interface: existence and properties of interface object 
+PASS DeviceMotionEvent interface object length 
+PASS DeviceMotionEvent interface object name 
+FAIL DeviceMotionEvent interface: existence and properties of interface prototype object assert_equals: class string of DeviceMotionEvent.prototype expected "[object DeviceMotionEventPrototype]" but got "[object DeviceMotionEvent]"
+PASS DeviceMotionEvent interface: existence and properties of interface prototype object's "constructor" property 
+PASS DeviceMotionEvent interface: attribute acceleration 
+PASS DeviceMotionEvent interface: attribute accelerationIncludingGravity 
+PASS DeviceMotionEvent interface: attribute rotationRate 
+PASS DeviceMotionEvent interface: attribute interval 
+PASS DeviceMotionEvent must be primary interface of new DeviceMotionEvent("foo") 
+PASS Stringification of new DeviceMotionEvent("foo") 
+PASS DeviceMotionEvent interface: new DeviceMotionEvent("foo") must inherit property "acceleration" with the proper type (0) 
+PASS DeviceMotionEvent interface: new DeviceMotionEvent("foo") must inherit property "accelerationIncludingGravity" with the proper type (1) 
+PASS DeviceMotionEvent interface: new DeviceMotionEvent("foo") must inherit property "rotationRate" with the proper type (2) 
+PASS DeviceMotionEvent interface: new DeviceMotionEvent("foo") must inherit property "interval" with the proper type (3) 
+Harness: the test ran to completion.
 

@@ -35,7 +35,7 @@
       var errorEvent = false;
       var cspEvent = false;
 
-      var es = new EventSource("/common/redirect-opt-in.py?status=307&location=http://{{domains[www]}}:{{ports[http][0]}}/common/text-plain.txt");
+      var es = new EventSource("http://{{domains[www]}}:{{ports[http][0]}}/common/text-plain.txt");
       es.onerror = t.step_func(e => {
         assert_equals(es.readyState, EventSource.CLOSED);
 
@@ -46,7 +46,7 @@
       });
 
       document.addEventListener("securitypolicyviolation", t.step_func(e => {
-        if (e.blockedURI != "http://{{domains[www]}}:{{ports[http][0]}}")
+        if (e.blockedURI != "http://{{domains[www]}}:{{ports[http][0]}}/common/text-plain.txt")
             return;
 
         assert_equals(es.readyState, EventSource.CLOSED);
@@ -57,5 +57,5 @@
         if (errorEvent)
             t.done();
       }));
-    }, "EventSource should fire onerror after a redirect.");
-</script>
+    }, "EventSource should fire onerror.");
+

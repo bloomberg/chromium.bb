@@ -6910,6 +6910,11 @@
      {}
     ]
    ],
+   "common/PrefixedLocalStorage.js": [
+    [
+     {}
+    ]
+   ],
    "common/blank.html": [
     [
      {}
@@ -8160,6 +8165,26 @@
      {}
     ]
    ],
+   "content-security-policy/inside-worker/support/connect-src-allow.sub.js": [
+    [
+     {}
+    ]
+   ],
+   "content-security-policy/inside-worker/support/connect-src-self.sub.js": [
+    [
+     {}
+    ]
+   ],
+   "content-security-policy/inside-worker/support/script-src-allow.sub.js": [
+    [
+     {}
+    ]
+   ],
+   "content-security-policy/inside-worker/support/script-src-self.sub.js": [
+    [
+     {}
+    ]
+   ],
    "content-security-policy/media-src/media-src-7_1.html.sub.headers": [
     [
      {}
@@ -8500,6 +8525,11 @@
      {}
     ]
    ],
+   "content-security-policy/support/var-a.js": [
+    [
+     {}
+    ]
+   ],
    "content-security-policy/svg/including.sub.svg": [
     [
      {}
@@ -8620,11 +8650,6 @@
      {}
     ]
    ],
-   "dom/events/CustomEvent-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "dom/events/Event-dispatch-bubbles-false-expected.txt": [
     [
      {}
@@ -8636,11 +8661,6 @@
     ]
    ],
    "dom/events/Event-dispatch-click-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "dom/events/Event-initEvent-expected.txt": [
     [
      {}
     ]
@@ -11581,6 +11601,31 @@
     ]
    ],
    "html/browsers/windows/auxiliary-browsing-contexts/contains.json": [
+    [
+     {}
+    ]
+   ],
+   "html/browsers/windows/auxiliary-browsing-contexts/resources/close-opener.html": [
+    [
+     {}
+    ]
+   ],
+   "html/browsers/windows/auxiliary-browsing-contexts/resources/message-window-opener.html": [
+    [
+     {}
+    ]
+   ],
+   "html/browsers/windows/auxiliary-browsing-contexts/resources/multiple-opener.html": [
+    [
+     {}
+    ]
+   ],
+   "html/browsers/windows/auxiliary-browsing-contexts/resources/no-opener.html": [
+    [
+     {}
+    ]
+   ],
+   "html/browsers/windows/auxiliary-browsing-contexts/resources/open-closer.html": [
     [
      {}
     ]
@@ -19255,6 +19300,11 @@
      {}
     ]
    ],
+   "mediacapture-fromelement/idlharness-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "mediacapture-streams/GUM-deny.https-expected.txt": [
     [
      {}
@@ -20095,11 +20145,6 @@
      {}
     ]
    ],
-   "orientation-event/devicemotionevent-init-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "orientation-event/horizontal-surface-manual-expected.txt": [
     [
      {}
@@ -20121,11 +20166,6 @@
     ]
    ],
    "pointerevents/idlharness-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "pointerevents/pointerevent_click_during_capture-manual-expected.txt": [
     [
      {}
     ]
@@ -22955,6 +22995,21 @@
      {}
     ]
    ],
+   "service-workers/service-worker/ServiceWorkerGlobalScope/resources/postmessage-loopback-worker.js": [
+    [
+     {}
+    ]
+   ],
+   "service-workers/service-worker/ServiceWorkerGlobalScope/resources/postmessage-ping-worker.js": [
+    [
+     {}
+    ]
+   ],
+   "service-workers/service-worker/ServiceWorkerGlobalScope/resources/postmessage-pong-worker.js": [
+    [
+     {}
+    ]
+   ],
    "service-workers/service-worker/ServiceWorkerGlobalScope/resources/registration-attribute-worker.js": [
     [
      {}
@@ -23106,11 +23161,6 @@
     ]
    ],
    "service-workers/service-worker/navigation-redirect.https-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "service-workers/service-worker/oninstall-script-error.https-expected.txt": [
     [
      {}
     ]
@@ -29381,6 +29431,12 @@
      {}
     ]
    ],
+   "IndexedDB/idbobjectstore_createIndex15-autoincrement.htm": [
+    [
+     "/IndexedDB/idbobjectstore_createIndex15-autoincrement.htm",
+     {}
+    ]
+   ],
    "IndexedDB/idbobjectstore_createIndex2.htm": [
     [
      "/IndexedDB/idbobjectstore_createIndex2.htm",
@@ -30793,6 +30849,30 @@
      {}
     ]
    ],
+   "content-security-policy/connect-src/connect-src-beacon-blocked.sub.html": [
+    [
+     "/content-security-policy/connect-src/connect-src-beacon-blocked.sub.html",
+     {}
+    ]
+   ],
+   "content-security-policy/connect-src/connect-src-eventsource-blocked.sub.html": [
+    [
+     "/content-security-policy/connect-src/connect-src-eventsource-blocked.sub.html",
+     {}
+    ]
+   ],
+   "content-security-policy/connect-src/connect-src-websocket-blocked.sub.html": [
+    [
+     "/content-security-policy/connect-src/connect-src-websocket-blocked.sub.html",
+     {}
+    ]
+   ],
+   "content-security-policy/connect-src/connect-src-xmlhttprequest-blocked.sub.html": [
+    [
+     "/content-security-policy/connect-src/connect-src-xmlhttprequest-blocked.sub.html",
+     {}
+    ]
+   ],
    "content-security-policy/embedded-enforcement/allow_csp_from-header.html": [
     [
      "/content-security-policy/embedded-enforcement/allow_csp_from-header.html",
@@ -31000,6 +31080,30 @@
    "content-security-policy/img-src/img-src-4_1.html": [
     [
      "/content-security-policy/img-src/img-src-4_1.html",
+     {}
+    ]
+   ],
+   "content-security-policy/inside-worker/dedicated-inheritance.html": [
+    [
+     "/content-security-policy/inside-worker/dedicated-inheritance.html",
+     {}
+    ]
+   ],
+   "content-security-policy/inside-worker/dedicated-script.html": [
+    [
+     "/content-security-policy/inside-worker/dedicated-script.html",
+     {}
+    ]
+   ],
+   "content-security-policy/inside-worker/shared-inheritance.html": [
+    [
+     "/content-security-policy/inside-worker/shared-inheritance.html",
+     {}
+    ]
+   ],
+   "content-security-policy/inside-worker/shared-script.html": [
+    [
+     "/content-security-policy/inside-worker/shared-script.html",
      {}
     ]
    ],
@@ -36070,6 +36174,36 @@
    "html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-same-origin.html": [
     [
      "/html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-same-origin.html",
+     {}
+    ]
+   ],
+   "html/browsers/windows/auxiliary-browsing-contexts/opener-closed.html": [
+    [
+     "/html/browsers/windows/auxiliary-browsing-contexts/opener-closed.html",
+     {}
+    ]
+   ],
+   "html/browsers/windows/auxiliary-browsing-contexts/opener-multiple.html": [
+    [
+     "/html/browsers/windows/auxiliary-browsing-contexts/opener-multiple.html",
+     {}
+    ]
+   ],
+   "html/browsers/windows/auxiliary-browsing-contexts/opener-noopener.html": [
+    [
+     "/html/browsers/windows/auxiliary-browsing-contexts/opener-noopener.html",
+     {}
+    ]
+   ],
+   "html/browsers/windows/auxiliary-browsing-contexts/opener-noreferrer.html": [
+    [
+     "/html/browsers/windows/auxiliary-browsing-contexts/opener-noreferrer.html",
+     {}
+    ]
+   ],
+   "html/browsers/windows/auxiliary-browsing-contexts/opener.html": [
+    [
+     "/html/browsers/windows/auxiliary-browsing-contexts/opener.html",
      {}
     ]
    ],
@@ -42286,6 +42420,12 @@
    "media-capabilities/query.html": [
     [
      "/media-capabilities/query.html",
+     {}
+    ]
+   ],
+   "mediacapture-fromelement/idlharness.html": [
+    [
+     "/mediacapture-fromelement/idlharness.html",
      {}
     ]
    ],
@@ -52945,6 +53085,12 @@
      {}
     ]
    ],
+   "service-workers/service-worker/ServiceWorkerGlobalScope/postmessage.https.html": [
+    [
+     "/service-workers/service-worker/ServiceWorkerGlobalScope/postmessage.https.html",
+     {}
+    ]
+   ],
    "service-workers/service-worker/ServiceWorkerGlobalScope/registration-attribute.https.html": [
     [
      "/service-workers/service-worker/ServiceWorkerGlobalScope/registration-attribute.https.html",
@@ -56265,6 +56411,18 @@
      {}
     ]
    ],
+   "webrtc/rtcpeerconnection/iceGatheringState.html": [
+    [
+     "/webrtc/rtcpeerconnection/iceGatheringState.html",
+     {}
+    ]
+   ],
+   "webrtc/rtcpeerconnection/rtcconfiguration-icecandidatepoolsize.html": [
+    [
+     "/webrtc/rtcpeerconnection/rtcconfiguration-icecandidatepoolsize.html",
+     {}
+    ]
+   ],
    "webrtc/rtcpeerconnection/rtcpeerconnection-constructor.html": [
     [
      "/webrtc/rtcpeerconnection/rtcpeerconnection-constructor.html",
@@ -58021,7 +58179,7 @@
    "support"
   ],
   "./README.md": [
-   "b9ca613d4f80444113159dd1f6d4985dafe7d43a",
+   "67fc3d0eca8a9b749667d0fc20436834f4203eaa",
    "support"
   ],
   "./check_stability.py": [
@@ -58125,7 +58283,7 @@
    "support"
   ],
   "FileAPI/historical.https-expected.txt": [
-   "1206e1644ff536979931519010b337208b33b037",
+   "160e60497907426c529865a9a4e4939a1758859f",
    "support"
   ],
   "FileAPI/historical.https.html": [
@@ -59156,6 +59314,10 @@
    "5710bdf50b039cb1a3ea56242394fb4f71cd1113",
    "testharness"
   ],
+  "IndexedDB/idbobjectstore_createIndex15-autoincrement.htm": [
+   "1a876f45abcc038941833a489eb7d2fe916fd233",
+   "testharness"
+  ],
   "IndexedDB/idbobjectstore_createIndex2.htm": [
    "d1dc024c1e87761a606082e1aef8e6e6e25c4828",
    "testharness"
@@ -59678,6 +59840,10 @@
   ],
   "clear-site-data/support/test_utils.js": [
    "6980ed5592440f13bccbd83afdf6c6aa0b55e2f2",
+   "support"
+  ],
+  "common/PrefixedLocalStorage.js": [
+   "0516e849d40a16e82e1bb800372df28ed802aa8d",
    "support"
   ],
   "common/blank.html": [
@@ -61024,6 +61190,22 @@
    "8d64a8dd0cd9a115342f0ab27ccc4c5eeefd5200",
    "support"
   ],
+  "content-security-policy/connect-src/connect-src-beacon-blocked.sub.html": [
+   "0965458e1d32dacec7a9379a7f0e484277389398",
+   "testharness"
+  ],
+  "content-security-policy/connect-src/connect-src-eventsource-blocked.sub.html": [
+   "24c0dc7a38b3b8f2e7cd6c3e352e8b3c5c401550",
+   "testharness"
+  ],
+  "content-security-policy/connect-src/connect-src-websocket-blocked.sub.html": [
+   "09e6da88277b530a139865802daa34036fc939fd",
+   "testharness"
+  ],
+  "content-security-policy/connect-src/connect-src-xmlhttprequest-blocked.sub.html": [
+   "2317a621398eb27ba7748481fdb55583a014d95d",
+   "testharness"
+  ],
   "content-security-policy/embedded-enforcement/allow_csp_from-header.html": [
    "70aeb617f5d580917b385346ba629e035f062c32",
    "testharness"
@@ -61322,6 +61504,38 @@
   ],
   "content-security-policy/img-src/img-src-4_1.html.sub.headers": [
    "7a1f34dd845f9af02af9e3f8d71f6ae878ef1abb",
+   "support"
+  ],
+  "content-security-policy/inside-worker/dedicated-inheritance.html": [
+   "225fa2ffe085ac9b419d7ed5287cfad28f3945bf",
+   "testharness"
+  ],
+  "content-security-policy/inside-worker/dedicated-script.html": [
+   "6aa78808362a447ed6535a87f61f6a7cd4ef5670",
+   "testharness"
+  ],
+  "content-security-policy/inside-worker/shared-inheritance.html": [
+   "4e850f5fce61a5f9e83d1e0f6e3f3de1949c4578",
+   "testharness"
+  ],
+  "content-security-policy/inside-worker/shared-script.html": [
+   "e6281a3b4be1bfb5c83e012a379e917a7eff9c0f",
+   "testharness"
+  ],
+  "content-security-policy/inside-worker/support/connect-src-allow.sub.js": [
+   "6a307e17a5f7ebc95c9d37a1acb483ce1a97db60",
+   "support"
+  ],
+  "content-security-policy/inside-worker/support/connect-src-self.sub.js": [
+   "024e549403d5bdf8e7276464313e6009c0dfb7f6",
+   "support"
+  ],
+  "content-security-policy/inside-worker/support/script-src-allow.sub.js": [
+   "a55aa3ad802ab29877b4ed664fb869d27e1851a1",
+   "support"
+  ],
+  "content-security-policy/inside-worker/support/script-src-self.sub.js": [
+   "20cf05dd320866910ef90b30866f700b0552e72a",
    "support"
   ],
   "content-security-policy/media-src/media-src-7_1.html": [
@@ -61821,7 +62035,11 @@
    "support"
   ],
   "content-security-policy/support/testharness-helper.js": [
-   "9ff54032181b9f2fada44e71167efa74af90b7b4",
+   "c8b178ae8dd96aa4552b7ccdca8c53513cc3d713",
+   "support"
+  ],
+  "content-security-policy/support/var-a.js": [
+   "e867879f123a2ab26eb0f0efbec50d6fe3a7ddec",
    "support"
   ],
   "content-security-policy/svg/including.sub.svg": [
@@ -62228,10 +62446,6 @@
    "e239d31a5ec5b30fca8a0ffa1a77be535c714dfb",
    "testharness"
   ],
-  "dom/events/CustomEvent-expected.txt": [
-   "f48bef3b86c6f218b1b183ceefa90d9fbcfc3e7a",
-   "support"
-  ],
   "dom/events/CustomEvent.html": [
    "1ceee10cbe86c94d2c3a68672a78b1c6224c8616",
    "testharness"
@@ -62340,10 +62554,6 @@
    "84e38be2f0e8f3c4f44a95cc296096de3631624b",
    "testharness"
   ],
-  "dom/events/Event-initEvent-expected.txt": [
-   "43e96f2943b9a8d12d8b524a4dcdf3d948a221bc",
-   "support"
-  ],
   "dom/events/Event-initEvent.html": [
    "a01aa825e0905a0efc3afe9bc3015d448e9618f1",
    "testharness"
@@ -62437,7 +62647,7 @@
    "testharness"
   ],
   "dom/interfaces-expected.txt": [
-   "229024e4deea3ff380684d983f93237ed8be8d84",
+   "fb98fe58a52a6f759473c04b46484d15645b07b2",
    "support"
   ],
   "dom/interfaces.html": [
@@ -62913,11 +63123,11 @@
    "support"
   ],
   "dom/nodes/Document-createEvent.html": [
-   "b8e12f05755aa745198b9ee826b30bfbc783d02a",
+   "00da7c85dab7a6f6414d4c58205ac501be0c588d",
    "testharness"
   ],
   "dom/nodes/Document-createEvent.js": [
-   "7b702d744e0524c8dc49ed93d29f5f3148b36293",
+   "6e7d9350e2fd9ffad36fddd4d90438d620c7dbf3",
    "support"
   ],
   "dom/nodes/Document-createProcessingInstruction-xhtml.xhtml": [
@@ -64513,7 +64723,7 @@
    "support"
   ],
   "encoding/idlharness.html": [
-   "13af903792272967d950f006968fa730f75bd3db",
+   "7f1eee3e9d3554fe49e04014501ed12bc57b89e8",
    "testharness"
   ],
   "encoding/iso-2022-jp-decoder-expected.txt": [
@@ -67486,6 +67696,46 @@
   ],
   "html/browsers/windows/auxiliary-browsing-contexts/contains.json": [
    "aecd2f28b5bd6301c51d535a4b1068a10b497899",
+   "support"
+  ],
+  "html/browsers/windows/auxiliary-browsing-contexts/opener-closed.html": [
+   "0e8db3263ca7d2eb070c709b7c13a934bcc77891",
+   "testharness"
+  ],
+  "html/browsers/windows/auxiliary-browsing-contexts/opener-multiple.html": [
+   "606cbe5515a838bae0fa6f1adb6046a90c6fc8b5",
+   "testharness"
+  ],
+  "html/browsers/windows/auxiliary-browsing-contexts/opener-noopener.html": [
+   "78f459b183419146147ab8f2b7526af606a85b0e",
+   "testharness"
+  ],
+  "html/browsers/windows/auxiliary-browsing-contexts/opener-noreferrer.html": [
+   "a0c935eac75021b6dcef4e170848acbdec5b3e4a",
+   "testharness"
+  ],
+  "html/browsers/windows/auxiliary-browsing-contexts/opener.html": [
+   "a8ffd6dfa93df903e592af7f9dd6855dbcbb05ea",
+   "testharness"
+  ],
+  "html/browsers/windows/auxiliary-browsing-contexts/resources/close-opener.html": [
+   "216db7e00601774aff6766fea6e6014d5418bb19",
+   "support"
+  ],
+  "html/browsers/windows/auxiliary-browsing-contexts/resources/message-window-opener.html": [
+   "d273468355750e92c0da122ed753f71e6c97151d",
+   "support"
+  ],
+  "html/browsers/windows/auxiliary-browsing-contexts/resources/multiple-opener.html": [
+   "25f8eeb42f80fe1fa72a500fb4430afeb6250f3d",
+   "support"
+  ],
+  "html/browsers/windows/auxiliary-browsing-contexts/resources/no-opener.html": [
+   "feca38f5c936721ce049c8f074d0ded4b8fda166",
+   "support"
+  ],
+  "html/browsers/windows/auxiliary-browsing-contexts/resources/open-closer.html": [
+   "6b20b15de0e385b31d4de6a9677798387f238821",
    "support"
   ],
   "html/browsers/windows/browsing-context-expected.txt": [
@@ -78180,6 +78430,14 @@
    "c3f2ab0ca87e837a5ffc6dfc1e757e1357c49d1f",
    "support"
   ],
+  "mediacapture-fromelement/idlharness-expected.txt": [
+   "2a14bb74d8a729117abffcb33f37a7e5f4e95045",
+   "support"
+  ],
+  "mediacapture-fromelement/idlharness.html": [
+   "ceeb48e7982eb88561f4c1630cb0fcf15d9cf73c",
+   "testharness"
+  ],
   "mediacapture-streams/GUM-api.https.html": [
    "6f4e3b2b4fdb287f99935193f273cb21becb9669",
    "testharness"
@@ -80113,7 +80371,7 @@
    "support"
   ],
   "navigation-timing/test_document_open.html": [
-   "00b9426fbed2dae4bece7e6dde8339692bc979db",
+   "13e0ed36e865e06060cfb4cf0d3efc6dfc09d684",
    "testharness"
   ],
   "navigation-timing/test_document_readiness_exist.html": [
@@ -80121,7 +80379,7 @@
    "testharness"
   ],
   "navigation-timing/test_navigate_within_document.html": [
-   "6dd6dc6a3b6219ec34e70ecf5c94d384951e216e",
+   "c2a4e7340d17ed4dfbe0899e827a96a733997b7d",
    "testharness"
   ],
   "navigation-timing/test_navigation_attributes_exist.html": [
@@ -80133,7 +80391,7 @@
    "testharness"
   ],
   "navigation-timing/test_navigation_type_backforward.html": [
-   "d5d04a2ae01d3e8707579bf5391e85d97422c9cd",
+   "39bafd06aab6f52e2e61181554cd5d1c0366c6d6",
    "testharness"
   ],
   "navigation-timing/test_navigation_type_enums.html": [
@@ -80141,7 +80399,7 @@
    "testharness"
   ],
   "navigation-timing/test_navigation_type_reload.html": [
-   "71aabca4586f7e12ff3ac99b8a32418bab783acd",
+   "861072d2026f3fc4e35c7d3caf568eac2c8225a9",
    "testharness"
   ],
   "navigation-timing/test_no_previous_document.html": [
@@ -80165,7 +80423,7 @@
    "testharness"
   ],
   "navigation-timing/test_timing_attributes_order.html": [
-   "e3cd4558de7d93736092b1410d9295be8404620e",
+   "db411d2ac783d49f059d24697fb0bea5e1b382d0",
    "testharness"
   ],
   "navigation-timing/test_timing_client_redirect.html": [
@@ -80173,7 +80431,7 @@
    "testharness"
   ],
   "navigation-timing/test_timing_reload.html": [
-   "f0f02d37da8a0effa1d08d0c33c39fe7fbeebc2a",
+   "8daff711c794f7e4f9d3f4fb4d2ef6df08df8ff9",
    "testharness"
   ],
   "navigation-timing/test_timing_server_redirect.html": [
@@ -80187,10 +80445,6 @@
   "navigation-timing/test_unique_performance_objects.html": [
    "c7d89bf7a3119dbfe9a581f82b5ac43ff6645a64",
    "testharness"
-  ],
-  "orientation-event/devicemotionevent-init-expected.txt": [
-   "c60b8873f1c46e419b88ddc2fe46ef19bdc90c60",
-   "support"
   ],
   "orientation-event/devicemotionevent-init.html": [
    "fab191bbebab21f696fefc0ad9e8110b99855eee",
@@ -80221,7 +80475,7 @@
    "support"
   ],
   "orientation-event/idlharness.html": [
-   "d23bfd2d59820008a8783e73e5e349a762dd8b64",
+   "82c25a0555fcf9c95fd98c4c6210a05c2a0e01ce",
    "testharness"
   ],
   "orientation-event/screen-upmost-manual.html": [
@@ -80331,10 +80585,6 @@
   "pointerevents/pointerevent_change-touch-action-onpointerdown_touch-manual.html": [
    "c1bc66cc70a1d58ab31d00717a688c66e39533c2",
    "manual"
-  ],
-  "pointerevents/pointerevent_click_during_capture-manual-expected.txt": [
-   "7d70941668b87a9c5095d08a4d9beda5546ca3c4",
-   "support"
   ],
   "pointerevents/pointerevent_click_during_capture-manual.html": [
    "19fedd25b597078b6a828e6fa0cd997e68cdf661",
@@ -88496,12 +88746,28 @@
    "5037b0f564f3d23c0733ae7b4d59b5353eca8d45",
    "testharness"
   ],
+  "service-workers/service-worker/ServiceWorkerGlobalScope/postmessage.https.html": [
+   "590ee3c06c61aa6788a40a79c2d14fe813da11fe",
+   "testharness"
+  ],
   "service-workers/service-worker/ServiceWorkerGlobalScope/registration-attribute.https.html": [
    "a6652870c60e93ff522ac107c1b69ec9c9fb2781",
    "testharness"
   ],
   "service-workers/service-worker/ServiceWorkerGlobalScope/resources/close-worker.js": [
    "559815205e99f825fdc0a0f2564e7e25586f3c05",
+   "support"
+  ],
+  "service-workers/service-worker/ServiceWorkerGlobalScope/resources/postmessage-loopback-worker.js": [
+   "2aa229507bd66004383f03fbf4b0b8421d2d98e8",
+   "support"
+  ],
+  "service-workers/service-worker/ServiceWorkerGlobalScope/resources/postmessage-ping-worker.js": [
+   "089f722c5ffd6676d6d4408e8837991c7079db99",
+   "support"
+  ],
+  "service-workers/service-worker/ServiceWorkerGlobalScope/resources/postmessage-pong-worker.js": [
+   "86b705c2c5b7c2609356144ebb717b376631659e",
    "support"
   ],
   "service-workers/service-worker/ServiceWorkerGlobalScope/resources/registration-attribute-worker.js": [
@@ -88911,10 +89177,6 @@
   "service-workers/service-worker/onactivate-script-error.https.html": [
    "7c397361b27e4c4d90a84d92b16593ac40d443a9",
    "testharness"
-  ],
-  "service-workers/service-worker/oninstall-script-error.https-expected.txt": [
-   "7c81d1a09c4c0a0df54126626607992b0e8c1d04",
-   "support"
   ],
   "service-workers/service-worker/oninstall-script-error.https.html": [
    "0497bf37f0e3b55a6a4745cae2ec700b6f963fd3",
@@ -91933,7 +92195,7 @@
    "testharness"
   ],
   "web-animations/README.md": [
-   "1ca6d7de0c5f9fd9679ee43893889fc0c10106bf",
+   "d6cb0e31dc3cc6d83b5051cee38a0b8e118fd43f",
    "support"
   ],
   "web-animations/animation-model/animation-types/addition-per-property.html": [
@@ -92786,6 +93048,14 @@
   ],
   "webrtc/promises-call.html": [
    "392d4975b232b9003a75d3771ba5c6f2e992849e",
+   "testharness"
+  ],
+  "webrtc/rtcpeerconnection/iceGatheringState.html": [
+   "4f752838326116e65543a10e023a0cbe9c07e9e8",
+   "testharness"
+  ],
+  "webrtc/rtcpeerconnection/rtcconfiguration-icecandidatepoolsize.html": [
+   "9551402aed448bf6abde4aa815d174ba321cc655",
    "testharness"
   ],
   "webrtc/rtcpeerconnection/rtcpeerconnection-constructor-expected.txt": [
