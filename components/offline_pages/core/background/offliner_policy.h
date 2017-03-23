@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_CORE_BACKGROUND_OFFLINER_POLICY_H_
 #define COMPONENTS_OFFLINE_PAGES_CORE_BACKGROUND_OFFLINER_POLICY_H_
 
+#include "base/sys_info.h"
+
 namespace {
 // The max number of started tries is to guard against pages that make the
 // prerenderer crash.  It should be greater than or equal to the max number of
@@ -17,12 +19,21 @@ const int kMaxCompletedTries = 3;
 // By the time we get to a week, the user has forgotten asking for a page.
 const int kRequestExpirationTimeInSeconds = 60 * 60 * 24 * 7;
 
-// Scheduled background processing time limits.
+// Scheduled background processing time limits for doze mode, which requires
+// Android version >= 6.0 (API level >= 23). Otherwise the scheduled background
+// processing time should be the same as immediate loading (4 min 50 secs), it's
+// capped by the Prerenderer's 5 minute timeout.
 const int kDozeModeBackgroundServiceWindowSeconds = 60 * 3;
 const int kDefaultBackgroundProcessingTimeBudgetSeconds =
     kDozeModeBackgroundServiceWindowSeconds - 10;
 const int kSinglePageTimeLimitWhenBackgroundScheduledSeconds =
     kDozeModeBackgroundServiceWindowSeconds - 10;
+
+const int kNonDozeModeBackgroundServiceWindowSeconds = 60 * 5;
+const int kNonDozeDefaultBackgroundProcessingTimeBudgetSeconds =
+    kNonDozeModeBackgroundServiceWindowSeconds - 10;
+const int kNonDozeSinglePageTimeLimitWhenBackgroundScheduledSeconds =
+    kNonDozeModeBackgroundServiceWindowSeconds - 10;
 
 // Immediate processing time limits.  Note: experiments on GIN-2g-poor show many
 // page requests took 3 or 4 attempts in background scheduled mode with timeout
@@ -45,24 +56,29 @@ class OfflinerPolicy {
         prefer_earlier_requests_(true),
         retry_count_is_more_important_than_recency_(true),
         max_started_tries_(kMaxStartedTries),
-        max_completed_tries_(kMaxCompletedTries),
-        background_scheduled_processing_time_budget_(
-            kDefaultBackgroundProcessingTimeBudgetSeconds) {}
+        max_completed_tries_(kMaxCompletedTries) {
+    int32_t os_major_version = 0;
+    int32_t os_minor_version = 0;
+    int32_t os_bugfix_version = 0;
+    base::SysInfo::OperatingSystemVersionNumbers(
+        &os_major_version, &os_minor_version, &os_bugfix_version);
+    if (os_major_version < 6)
+      has_doze_mode_ = false;
+    else
+      has_doze_mode_ = true;
+  }
 
   // Constructor for unit tests.
   OfflinerPolicy(bool prefer_untried,
                  bool prefer_earlier,
                  bool prefer_retry_count,
                  int max_started_tries,
-                 int max_completed_tries,
-                 int background_processing_time_budget)
+                 int max_completed_tries)
       : prefer_untried_requests_(prefer_untried),
         prefer_earlier_requests_(prefer_earlier),
         retry_count_is_more_important_than_recency_(prefer_retry_count),
         max_started_tries_(max_started_tries),
-        max_completed_tries_(max_completed_tries),
-        background_scheduled_processing_time_budget_(
-            background_processing_time_budget) {}
+        max_completed_tries_(max_completed_tries) {}
 
   // TODO(petewil): Numbers here are chosen arbitrarily, do the proper studies
   // to get good policy numbers. Eventually this should get data from a finch
@@ -109,7 +125,9 @@ class OfflinerPolicy {
   // TODO(dougarnett): Consider parameterizing these time limit/budget
   // calls with processing mode.
   int GetProcessingTimeBudgetWhenBackgroundScheduledInSeconds() const {
-    return background_scheduled_processing_time_budget_;
+    if (has_doze_mode_)
+      return kDefaultBackgroundProcessingTimeBudgetSeconds;
+    return kNonDozeDefaultBackgroundProcessingTimeBudgetSeconds;
   }
 
   // How many seconds to keep trying new pages for, before we give up, when
@@ -121,7 +139,9 @@ class OfflinerPolicy {
   // How long do we allow a page to load before giving up on it when
   // background loading was scheduled.
   int GetSinglePageTimeLimitWhenBackgroundScheduledInSeconds() const {
-    return kSinglePageTimeLimitWhenBackgroundScheduledSeconds;
+    if (has_doze_mode_)
+      return kSinglePageTimeLimitWhenBackgroundScheduledSeconds;
+    return kNonDozeSinglePageTimeLimitWhenBackgroundScheduledSeconds;
   }
 
   // How long do we allow a page to load before giving up on it when
@@ -139,9 +159,9 @@ class OfflinerPolicy {
   bool prefer_untried_requests_;
   bool prefer_earlier_requests_;
   bool retry_count_is_more_important_than_recency_;
+  bool has_doze_mode_;
   int max_started_tries_;
   int max_completed_tries_;
-  int background_scheduled_processing_time_budget_;
 };
 }  // namespace offline_pages
 
