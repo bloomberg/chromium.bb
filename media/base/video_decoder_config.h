@@ -16,8 +16,8 @@
 #include "media/base/hdr_metadata.h"
 #include "media/base/media_export.h"
 #include "media/base/video_codecs.h"
+#include "media/base/video_color_space.h"
 #include "media/base/video_types.h"
-#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -113,8 +113,8 @@ class MEDIA_EXPORT VideoDecoderConfig {
     return encryption_scheme_;
   }
 
-  void set_color_space_info(const gfx::ColorSpace& color_space_info);
-  gfx::ColorSpace color_space_info() const;
+  void set_color_space_info(const VideoColorSpace& color_space_info);
+  VideoColorSpace color_space_info() const;
 
   void set_hdr_metadata(const HDRMetadata& hdr_metadata);
   base::Optional<HDRMetadata> hdr_metadata() const;
@@ -144,7 +144,7 @@ class MEDIA_EXPORT VideoDecoderConfig {
 
   EncryptionScheme encryption_scheme_;
 
-  gfx::ColorSpace color_space_info_;
+  VideoColorSpace color_space_info_;
   base::Optional<HDRMetadata> hdr_metadata_;
 
   // Not using DISALLOW_COPY_AND_ASSIGN here intentionally to allow the compiler

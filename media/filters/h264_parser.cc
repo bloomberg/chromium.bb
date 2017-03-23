@@ -123,14 +123,14 @@ base::Optional<gfx::Rect> H264SPS::GetVisibleRect() const {
 
 // Based on T-REC-H.264 E.2.1, "VUI parameters semantics",
 // available from http://www.itu.int/rec/T-REC-H.264.
-gfx::ColorSpace H264SPS::GetColorSpace() const {
+VideoColorSpace H264SPS::GetColorSpace() const {
   if (colour_description_present_flag) {
-    return gfx::ColorSpace::CreateVideo(
+    return VideoColorSpace(
         colour_primaries, transfer_characteristics, matrix_coefficients,
         video_full_range_flag ? gfx::ColorSpace::RangeID::FULL
                               : gfx::ColorSpace::RangeID::LIMITED);
   } else {
-    return gfx::ColorSpace();
+    return VideoColorSpace();
   }
 }
 

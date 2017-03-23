@@ -171,7 +171,7 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
     std::vector<uint8_t> pps;
 
     // Color space specified by the container.
-    gfx::ColorSpace color_space;
+    VideoColorSpace color_space;
   };
 
   // Interface for collaborating with picture interface to provide memory for

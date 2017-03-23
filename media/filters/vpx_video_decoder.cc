@@ -598,11 +598,12 @@ bool VpxVideoDecoder::VpxDecode(const scoped_refptr<DecoderBuffer>& buffer,
       ->metadata()
       ->SetInteger(VideoFrameMetadata::COLOR_SPACE, color_space);
 
-  if (config_.color_space_info() != gfx::ColorSpace()) {
+  if (config_.color_space_info() != VideoColorSpace()) {
     // config_.color_space_info() comes from the color tag which is
     // more expressive than the bitstream, so prefer it over the
     // bitstream data below.
-    (*video_frame)->set_color_space(config_.color_space_info());
+    (*video_frame)
+        ->set_color_space(config_.color_space_info().ToGfxColorSpace());
   } else {
     gfx::ColorSpace::PrimaryID primaries = gfx::ColorSpace::PrimaryID::INVALID;
     gfx::ColorSpace::TransferID transfer = gfx::ColorSpace::TransferID::INVALID;

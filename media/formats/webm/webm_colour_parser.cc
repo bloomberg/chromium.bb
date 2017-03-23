@@ -428,7 +428,7 @@ WebMColorMetadata WebMColourParser::GetWebMColorMetadata() const {
       range_id = gfx::ColorSpace::RangeID::DERIVED;
       break;
   }
-  color_metadata.color_space = gfx::ColorSpace::CreateVideo(
+  color_metadata.color_space = VideoColorSpace(
       primaries_, transfer_characteristics_, matrix_coefficients_, range_id);
 
   if (max_cll_ != -1)

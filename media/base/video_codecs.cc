@@ -100,7 +100,7 @@ bool ParseNewStyleVp9CodecID(const std::string& codec_id,
                              uint8_t* level_idc,
                              VideoColorSpace* color_space) {
   // Initialize optional fields to their defaults.
-  *color_space = VideoColorSpace::BT709();
+  *color_space = VideoColorSpace::REC709();
 
   std::vector<std::string> fields = base::SplitString(
       codec_id, ".", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);

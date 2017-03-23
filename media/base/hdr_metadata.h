@@ -6,7 +6,6 @@
 #define MEDIA_BASE_HDR_METADATA_H_
 
 #include "media/base/media_export.h"
-#include "ui/gfx/color_space.h"
 
 namespace media {
 

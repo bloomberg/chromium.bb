@@ -20,8 +20,8 @@
 #include "media/base/media_export.h"
 #include "media/base/ranges.h"
 #include "media/base/video_codecs.h"
+#include "media/base/video_color_space.h"
 #include "media/filters/h264_bit_reader.h"
-#include "ui/gfx/color_space.h"
 
 namespace gfx {
 class Rect;
@@ -188,7 +188,7 @@ struct MEDIA_EXPORT H264SPS {
   // the results are in-spec for the given profile or level.
   base::Optional<gfx::Size> GetCodedSize() const;
   base::Optional<gfx::Rect> GetVisibleRect() const;
-  gfx::ColorSpace GetColorSpace() const;
+  VideoColorSpace GetColorSpace() const;
 };
 
 struct MEDIA_EXPORT H264PPS {

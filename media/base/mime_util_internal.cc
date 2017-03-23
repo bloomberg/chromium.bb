@@ -581,7 +581,7 @@ bool MimeUtil::ParseCodecString(const std::string& mime_type_lower_case,
   // Most codec strings do not yet specify color. We choose 709 as default color
   // space elsewhere, so defaulting to 709 here as well. See here for context:
   // https://crrev.com/1221903003/
-  *out_color_space = VideoColorSpace::BT709();
+  *out_color_space = VideoColorSpace::REC709();
 
   std::map<std::string, Codec>::const_iterator itr =
       GetStringToCodecMap().find(codec_id);
@@ -650,7 +650,7 @@ SupportsType MimeUtil::IsSimpleCodecSupported(
 
   SupportsType result = IsCodecSupported(
       mime_type_lower_case, codec, VIDEO_CODEC_PROFILE_UNKNOWN,
-      0 /* video_level */, VideoColorSpace::BT709(), is_encrypted);
+      0 /* video_level */, VideoColorSpace::REC709(), is_encrypted);
 
   // Platform support should never be ambiguous for simple codecs (no range of
   // profiles to consider).

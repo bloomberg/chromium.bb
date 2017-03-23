@@ -183,7 +183,7 @@ TEST_F(RenderMediaClientTest, IsKeySystemsUpdateNeeded) {
 
 TEST_F(RenderMediaClientTest, IsSupportedVideoConfigBasics) {
   // Default to common 709.
-  const media::VideoColorSpace kColorSpace = media::VideoColorSpace::BT709();
+  const media::VideoColorSpace kColorSpace = media::VideoColorSpace::REC709();
 
   // Some codecs do not have a notion of level.
   const int kUnspecifiedLevel = 0;
@@ -234,7 +234,7 @@ TEST_F(RenderMediaClientTest, IsSupportedVideoConfig_VP9TransferFunctions) {
 
   for (int i = 0; i <= (1 << (8 * sizeof(media::VideoColorSpace::TransferID)));
        i++) {
-    media::VideoColorSpace color_space = media::VideoColorSpace::BT709();
+    media::VideoColorSpace color_space = media::VideoColorSpace::REC709();
     color_space.transfer = media::VideoColorSpace::GetTransferID(i);
     bool found = kSupportedTransfers.find(color_space.transfer) !=
                  kSupportedTransfers.end();
@@ -260,7 +260,7 @@ TEST_F(RenderMediaClientTest, IsSupportedVideoConfig_VP9Primaries) {
 
   for (int i = 0; i <= (1 << (8 * sizeof(media::VideoColorSpace::PrimaryID)));
        i++) {
-    media::VideoColorSpace color_space = media::VideoColorSpace::BT709();
+    media::VideoColorSpace color_space = media::VideoColorSpace::REC709();
     color_space.primaries = media::VideoColorSpace::GetPrimaryID(i);
     bool found = kSupportedPrimaries.find(color_space.primaries) !=
                  kSupportedPrimaries.end();
@@ -286,7 +286,7 @@ TEST_F(RenderMediaClientTest, IsSupportedVideoConfig_VP9Matrix) {
 
   for (int i = 0; i <= (1 << (8 * sizeof(media::VideoColorSpace::MatrixID)));
        i++) {
-    media::VideoColorSpace color_space = media::VideoColorSpace::BT709();
+    media::VideoColorSpace color_space = media::VideoColorSpace::REC709();
     color_space.matrix = media::VideoColorSpace::GetMatrixID(i);
     bool found =
         kSupportedMatrix.find(color_space.matrix) != kSupportedMatrix.end();

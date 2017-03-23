@@ -32,6 +32,7 @@
 #include "base/threading/thread.h"
 #include "base/win/scoped_comptr.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
+#include "media/base/video_color_space.h"
 #include "media/filters/h264_parser.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/media_gpu_export.h"
@@ -73,7 +74,7 @@ class H264ConfigChangeDetector {
   bool DetectConfig(const uint8_t* stream, unsigned int size);
   bool config_changed() const { return config_changed_; }
 
-  gfx::ColorSpace current_color_space() const;
+  VideoColorSpace current_color_space() const;
 
  private:
   // These fields are used to track the SPS/PPS in the H.264 bitstream and

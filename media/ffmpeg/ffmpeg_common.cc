@@ -542,7 +542,7 @@ bool AVStreamToVideoDecoderConfig(const AVStream* stream,
                      GetEncryptionScheme(stream));
 
   const AVCodecParameters* codec_parameters = stream->codecpar;
-  config->set_color_space_info(gfx::ColorSpace::CreateVideo(
+  config->set_color_space_info(VideoColorSpace(
       codec_parameters->color_primaries, codec_parameters->color_trc,
       codec_parameters->color_space,
       codec_parameters->color_range != AVCOL_RANGE_MPEG

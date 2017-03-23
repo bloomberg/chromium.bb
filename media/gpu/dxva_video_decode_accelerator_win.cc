@@ -451,14 +451,14 @@ bool H264ConfigChangeDetector::DetectConfig(const uint8_t* stream,
   return true;
 }
 
-gfx::ColorSpace H264ConfigChangeDetector::current_color_space() const {
+VideoColorSpace H264ConfigChangeDetector::current_color_space() const {
   if (!parser_)
-    return gfx::ColorSpace();
+    return VideoColorSpace();
   // TODO(hubbe): Is using last_sps_id_ correct here?
   const H264SPS* sps = parser_->GetSPS(last_sps_id_);
   if (sps)
     return sps->GetColorSpace();
-  return gfx::ColorSpace();
+  return VideoColorSpace();
 }
 
 DXVAVideoDecodeAccelerator::PendingSampleInfo::PendingSampleInfo(
@@ -2174,10 +2174,10 @@ void DXVAVideoDecodeAccelerator::FlushInternal() {
   // Attempt to retrieve an output frame from the decoder. If we have one,
   // return and proceed when the output frame is processed. If we don't have a
   // frame then we are done.
-  gfx::ColorSpace color_space = config_change_detector_->current_color_space();
-  if (!color_space.IsValid())
+  VideoColorSpace color_space = config_change_detector_->current_color_space();
+  if (color_space == VideoColorSpace())
     color_space = config_.color_space;
-  DoDecode(color_space);
+  DoDecode(color_space.ToGfxColorSpace());
   if (OutputSamplesPresent())
     return;
 
@@ -2226,8 +2226,8 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
     return;
   }
 
-  gfx::ColorSpace color_space = config_change_detector_->current_color_space();
-  if (!color_space.IsValid())
+  VideoColorSpace color_space = config_change_detector_->current_color_space();
+  if (color_space == VideoColorSpace())
     color_space = config_.color_space;
 
   if (!inputs_before_decode_) {
@@ -2249,7 +2249,7 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
   // process the input again. Failure in either of these steps is treated as a
   // decoder failure.
   if (hr == MF_E_NOTACCEPTING) {
-    DoDecode(color_space);
+    DoDecode(color_space.ToGfxColorSpace());
     // If the DoDecode call resulted in an output frame then we should not
     // process any more input until that frame is copied to the target surface.
     if (!OutputSamplesPresent()) {
@@ -2281,7 +2281,7 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
   RETURN_AND_NOTIFY_ON_HR_FAILURE(hr, "Failed to process input sample",
                                   PLATFORM_FAILURE, );
 
-  DoDecode(color_space);
+  DoDecode(color_space.ToGfxColorSpace());
 
   State state = GetState();
   RETURN_AND_NOTIFY_ON_FAILURE(

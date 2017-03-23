@@ -43,6 +43,16 @@ VideoColorSpace::VideoColorSpace(int primaries,
       matrix(GetMatrixID(matrix)),
       range(range) {}
 
+bool VideoColorSpace::operator==(const VideoColorSpace& other) const {
+  return primaries == other.primaries && transfer == other.transfer &&
+         matrix == other.matrix && range == other.range;
+}
+
+bool VideoColorSpace::operator!=(const VideoColorSpace& other) const {
+  return primaries != other.primaries || transfer != other.transfer ||
+         matrix != other.matrix || range != other.range;
+}
+
 gfx::ColorSpace VideoColorSpace::ToGfxColorSpace() const {
   // TODO(hubbe): Make this type-safe.
   return gfx::ColorSpace::CreateVideo(static_cast<int>(primaries),
@@ -50,9 +60,20 @@ gfx::ColorSpace VideoColorSpace::ToGfxColorSpace() const {
                                       static_cast<int>(matrix), range);
 }
 
-VideoColorSpace VideoColorSpace::BT709() {
+VideoColorSpace VideoColorSpace::REC709() {
   return VideoColorSpace(PrimaryID::BT709, TransferID::BT709, MatrixID::BT709,
                          gfx::ColorSpace::RangeID::LIMITED);
+}
+VideoColorSpace VideoColorSpace::REC601() {
+  return VideoColorSpace(PrimaryID::SMPTE170M, TransferID::SMPTE170M,
+                         MatrixID::SMPTE170M,
+                         gfx::ColorSpace::RangeID::LIMITED);
+}
+VideoColorSpace VideoColorSpace::JPEG() {
+  // TODO(ccameron): Determine which primaries and transfer function were
+  // intended here.
+  return VideoColorSpace(PrimaryID::BT709, TransferID::IEC61966_2_1,
+                         MatrixID::SMPTE170M, gfx::ColorSpace::RangeID::FULL);
 }
 
 }  // namespace

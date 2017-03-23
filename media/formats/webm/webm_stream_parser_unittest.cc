@@ -169,9 +169,9 @@ TEST_F(WebMStreamParserTest, ColourElement) {
   const VideoDecoderConfig& video_config =
       media_tracks_->getVideoConfig(video_track->bytestream_track_id());
 
-  gfx::ColorSpace expected_color_space(gfx::ColorSpace::PrimaryID::SMPTEST428_1,
-                                       gfx::ColorSpace::TransferID::LOG,
-                                       gfx::ColorSpace::MatrixID::RGB,
+  VideoColorSpace expected_color_space(VideoColorSpace::PrimaryID::SMPTEST428_1,
+                                       VideoColorSpace::TransferID::LOG,
+                                       VideoColorSpace::MatrixID::RGB,
                                        gfx::ColorSpace::RangeID::FULL);
   EXPECT_EQ(video_config.color_space_info(), expected_color_space);
 

@@ -80,13 +80,18 @@ class MEDIA_EXPORT VideoColorSpace {
                   MatrixID matrix,
                   gfx::ColorSpace::RangeID range);
 
+  bool operator==(const VideoColorSpace& other) const;
+  bool operator!=(const VideoColorSpace& other) const;
+
   // These will return INVALID if the number you give it
   // is not a valid enum value.
   static PrimaryID GetPrimaryID(int primary);
   static TransferID GetTransferID(int transfer);
   static MatrixID GetMatrixID(int matrix);
 
-  static VideoColorSpace BT709();
+  static VideoColorSpace REC709();
+  static VideoColorSpace REC601();
+  static VideoColorSpace JPEG();
 
   gfx::ColorSpace ToGfxColorSpace() const;
 
