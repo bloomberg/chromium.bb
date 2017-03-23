@@ -4,6 +4,7 @@
 
 #include "components/history/core/browser/typed_url_sync_metadata_database.h"
 
+#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "sql/statement.h"
 
@@ -31,16 +32,8 @@ TypedURLSyncMetadataDatabase::~TypedURLSyncMetadataDatabase() {}
 
 bool TypedURLSyncMetadataDatabase::GetAllSyncMetadata(
     syncer::MetadataBatch* metadata_batch) {
-  syncer::EntityMetadataMap metadata_records_map;
-
-  // TODO(gangwu): crbug.com/701670 remove metadata_records_map to reduce memory
-  // usage and time.
-  if (GetAllSyncEntityMetadata(&metadata_records_map)) {
-    for (const auto& storage_key_to_metadata : metadata_records_map) {
-      metadata_batch->AddMetadata(storage_key_to_metadata.first,
-                                  storage_key_to_metadata.second);
-    }
-  } else {
+  DCHECK(metadata_batch);
+  if (!GetAllSyncEntityMetadata(metadata_batch)) {
     return false;
   }
 
@@ -109,17 +102,20 @@ bool TypedURLSyncMetadataDatabase::InitSyncTable() {
 }
 
 bool TypedURLSyncMetadataDatabase::GetAllSyncEntityMetadata(
-    syncer::EntityMetadataMap* metadata_records) {
+    syncer::MetadataBatch* metadata_batch) {
+  DCHECK(metadata_batch);
   sql::Statement s(GetDB().GetUniqueStatement(
       "SELECT storage_key, value FROM typed_url_sync_metadata"));
 
   while (s.Step()) {
     std::string storage_key = base::Int64ToString(s.ColumnInt64(0));
     std::string serialized_metadata = s.ColumnString(1);
-    sync_pb::EntityMetadata metadata_record;
-    if (metadata_record.ParseFromString(serialized_metadata)) {
-      metadata_records->insert(std::make_pair(storage_key, metadata_record));
+    sync_pb::EntityMetadata entity_metadata;
+    if (entity_metadata.ParseFromString(serialized_metadata)) {
+      metadata_batch->AddMetadata(storage_key, entity_metadata);
     } else {
+      DLOG(WARNING) << "Failed to deserialize TYPED_URLS model type "
+                       "sync_pb::EntityMetadata.";
       return false;
     }
   }

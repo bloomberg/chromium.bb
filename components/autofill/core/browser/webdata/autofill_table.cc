@@ -1700,13 +1700,8 @@ bool AutofillTable::GetAllSyncMetadata(syncer::ModelType model_type,
                                        syncer::MetadataBatch* metadata_batch) {
   DCHECK_EQ(model_type, syncer::AUTOFILL)
       << "Only the AUTOFILL model type is supported";
-  syncer::EntityMetadataMap metadata_records;
-  if (GetAllSyncEntityMetadata(model_type, &metadata_records)) {
-    for (const auto& pair : metadata_records) {
-      // TODO(pnoland): Add batch transfer of metadata map.
-      metadata_batch->AddMetadata(pair.first, pair.second);
-    }
-  } else {
+  DCHECK(metadata_batch);
+  if (!GetAllSyncEntityMetadata(model_type, metadata_batch)) {
     return false;
   }
 
@@ -1722,9 +1717,10 @@ bool AutofillTable::GetAllSyncMetadata(syncer::ModelType model_type,
 
 bool AutofillTable::GetAllSyncEntityMetadata(
     syncer::ModelType model_type,
-    syncer::EntityMetadataMap* metadata_records) {
+    syncer::MetadataBatch* metadata_batch) {
   DCHECK_EQ(model_type, syncer::AUTOFILL)
       << "Only the AUTOFILL model type is supported";
+  DCHECK(metadata_batch);
 
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT storage_key, value FROM autofill_sync_metadata"));
@@ -1732,10 +1728,12 @@ bool AutofillTable::GetAllSyncEntityMetadata(
   while (s.Step()) {
     std::string storage_key = s.ColumnString(0);
     std::string serialized_metadata = s.ColumnString(1);
-    sync_pb::EntityMetadata metadata_record;
-    if (metadata_record.ParseFromString(serialized_metadata)) {
-      metadata_records->insert(std::make_pair(storage_key, metadata_record));
+    sync_pb::EntityMetadata entity_metadata;
+    if (entity_metadata.ParseFromString(serialized_metadata)) {
+      metadata_batch->AddMetadata(storage_key, entity_metadata);
     } else {
+      DLOG(WARNING) << "Failed to deserialize AUTOFILL model type "
+                       "sync_pb::EntityMetadata.";
       return false;
     }
   }

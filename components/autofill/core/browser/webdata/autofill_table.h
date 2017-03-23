@@ -517,7 +517,7 @@ class AutofillTable : public WebDatabaseTable {
                              base::Time time);
 
   bool GetAllSyncEntityMetadata(syncer::ModelType model_type,
-                                syncer::EntityMetadataMap* metadata_records);
+                                syncer::MetadataBatch* metadata_batch);
 
   bool GetModelTypeState(syncer::ModelType model_type,
                          sync_pb::ModelTypeState* state);

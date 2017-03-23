@@ -61,7 +61,7 @@ class TypedURLSyncMetadataDatabase {
  private:
   // Read all sync_pb::EntityMetadata for typed URL and fill
   // |metadata_records| with it.
-  bool GetAllSyncEntityMetadata(syncer::EntityMetadataMap* metadata_records);
+  bool GetAllSyncEntityMetadata(syncer::MetadataBatch* metadata_batch);
 
   // Read sync_pb::ModelTypeState for typed URL and fill |state| with it.
   bool GetModelTypeState(sync_pb::ModelTypeState* state);
