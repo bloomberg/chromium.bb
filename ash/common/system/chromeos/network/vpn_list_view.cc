@@ -59,6 +59,9 @@ bool UseMd() {
   return MaterialDesignController::IsSystemTrayMenuMaterial();
 }
 
+void IgnoreDisconnectError(const std::string& error_name,
+                           std::unique_ptr<base::DictionaryValue> error_data) {}
+
 // Indicates whether |network| belongs to this VPN provider.
 bool VpnProviderMatchesNetwork(const VPNProvider& provider,
                                const chromeos::NetworkState& network) {
@@ -157,6 +160,9 @@ class VPNListNetworkEntry : public VPNListEntryBase,
   // network_icon::AnimationObserver:
   void NetworkIconChanged() override;
 
+  // views::ButtonListener:
+  void ButtonPressed(Button* sender, const ui::Event& event) override;
+
  private:
   void UpdateFromNetworkState(const chromeos::NetworkState* network);
   void SetupConnectedItemMd(const base::string16& text,
@@ -191,6 +197,26 @@ void VPNListNetworkEntry::NetworkIconChanged() {
   UpdateFromNetworkState(chromeos::NetworkHandler::Get()
                              ->network_state_handler()
                              ->GetNetworkStateFromGuid(guid_));
+}
+
+void VPNListNetworkEntry::ButtonPressed(Button* sender,
+                                        const ui::Event& event) {
+  if (sender != disconnect_button_) {
+    VPNListEntryBase::ButtonPressed(sender, event);
+    return;
+  }
+
+  const chromeos::NetworkState* network = chromeos::NetworkHandler::Get()
+                                              ->network_state_handler()
+                                              ->GetNetworkStateFromGuid(guid_);
+  if (!network)
+    return;
+  WmShell::Get()->RecordUserMetricsAction(
+      UMA_STATUS_AREA_VPN_DISCONNECT_CLICKED);
+  chromeos::NetworkHandler::Get()
+      ->network_connection_handler()
+      ->DisconnectNetwork(network->path(), base::Bind(&base::DoNothing),
+                          base::Bind(&IgnoreDisconnectError));
 }
 
 void VPNListNetworkEntry::UpdateFromNetworkState(
