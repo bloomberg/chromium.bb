@@ -1501,6 +1501,12 @@ inline void BreakingContext::commitAndUpdateLineBreakIfNeeded() {
         m_currentStyle->collapseWhiteSpace())
       m_trailingObjects.clear();
 
+    if (!m_width.fitsOnLine() && m_width.fitsOnLine(0, ExcludeWhitespace) &&
+        m_ignoringSpaces && m_nextObject) {
+      m_width.commit();
+      m_lineBreak.moveToStartOf(m_nextObject);
+    }
+
     if (m_width.committedWidth()) {
       m_atEnd = true;
       return;

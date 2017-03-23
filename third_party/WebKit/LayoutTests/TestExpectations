@@ -482,6 +482,7 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/add-inline-between-floats-wi
 crbug.com/635619 virtual/layout_ng/fast/block/float/add-inline-to-block-flow-and-ensure-layout-on-containers-of-removed-floats.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/add-inline-to-block-flow-with-block-children-that-do-not-need-anonymous-boxes.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/add-inlines-in-block-children-block.html [ Skip ]
+crbug.com/635619 virtual/layout_ng/fast/block/float/assert-when-moving-float.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/avoid-floats-when-negative-margin-top-2.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/avoid-floats-when-negative-margin-top-3.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/avoid-floats-when-negative-margin-top-4.html [ Skip ]
