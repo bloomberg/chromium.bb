@@ -719,31 +719,6 @@ int od_rdo_quant(od_coeff x, int q, double delta0, double pvq_norm_lambda) {
   }
 }
 
-#if OD_SIGNAL_Q_SCALING
-void od_encode_quantizer_scaling(daala_enc_ctx *enc, int q_scaling,
- int sbx, int sby, int skip) {
-  int nhsb;
-  OD_ASSERT(skip == !!skip);
-  nhsb = enc->state.nhsb;
-  OD_ASSERT(sbx < nhsb);
-  OD_ASSERT(sby < enc->state.nvsb);
-  OD_ASSERT(!skip || q_scaling == 0);
-  enc->state.sb_q_scaling[sby*nhsb + sbx] = q_scaling;
-  if (!skip) {
-    int above;
-    int left;
-    /* use value from neighbour if possible, otherwise use 0 */
-    above = sby > 0 ? enc->state.sb_q_scaling[(sby - 1)*enc->state.nhsb + sbx]
-     : 0;
-    left = sbx > 0 ? enc->state.sb_q_scaling[sby*enc->state.nhsb + (sbx - 1)]
-     : 0;
-    aom_encode_cdf_adapt(&enc->w, q_scaling,
-     enc->state.adapt.q_cdf[above + left*4], 4,
-     enc->state.adapt.q_increment);
-  }
-}
-#endif
-
 /** Encode a coefficient block (excepting DC) using PVQ
  *
  * @param [in,out] enc     daala encoder context
@@ -756,9 +731,6 @@ void od_encode_quantizer_scaling(daala_enc_ctx *enc, int q_scaling,
  * @param [in]     beta    per-band activity masking beta param
  * @param [in]     nodesync  make stream robust to error in the reference
  * @param [in]     is_keyframe whether we're encoding a keyframe
- * @param [in]     q_scaling scaling factor to apply to quantizer
- * @param [in]     bx      x-coordinate of this block
- * @param [in]     by      y-coordinate of this block
  * @param [in]     qm      QM with magnitude compensation
  * @param [in]     qm_inv  Inverse of QM with magnitude compensation
  * @param [in]     speed   Make search faster by making approximations
@@ -778,9 +750,6 @@ PVQ_SKIP_TYPE od_pvq_encode(daala_enc_ctx *enc,
                    const od_val16 *beta,
                    int nodesync,
                    int is_keyframe,
-                   int q_scaling,
-                   int bx,
-                   int by,
                    const int16_t *qm,
                    const int16_t *qm_inv,
                    int speed,
@@ -811,11 +780,6 @@ PVQ_SKIP_TYPE od_pvq_encode(daala_enc_ctx *enc,
   double dc_rate;
   int use_masking;
   PVQ_SKIP_TYPE ac_dc_coded;
-#if !OD_SIGNAL_Q_SCALING
-  OD_UNUSED(q_scaling);
-  OD_UNUSED(bx);
-  OD_UNUSED(by);
-#endif
 
   aom_clear_system_state();
 
@@ -923,12 +887,6 @@ PVQ_SKIP_TYPE od_pvq_encode(daala_enc_ctx *enc,
   aom_encode_cdf_adapt(&enc->w, 2 + (out[0] != 0), skip_cdf,
    4, enc->state.adapt.skip_increment);
   ac_dc_coded = AC_CODED + (out[0] != 0);
-#if OD_SIGNAL_Q_SCALING
-  if (bs == OD_TXSIZES - 1 && pli == 0) {
-    od_encode_quantizer_scaling(enc, q_scaling, bx >> (OD_TXSIZES - 1),
-     by >> (OD_TXSIZES - 1), 0);
-  }
-#endif
   cfl_encoded = 0;
   skip_rest = 1;
   skip_theta_value = is_keyframe ? -1 : 0;
@@ -1033,17 +991,6 @@ PVQ_SKIP_TYPE od_pvq_encode(daala_enc_ctx *enc,
     aom_encode_cdf_adapt(&enc->w, out[0] != 0, skip_cdf,
      4, enc->state.adapt.skip_increment);
     ac_dc_coded = (out[0] != 0);
-#if OD_SIGNAL_Q_SCALING
-    if (bs == OD_TXSIZES - 1 && pli == 0) {
-      int skip;
-      skip = out[0] == 0;
-      if (skip) {
-        q_scaling = 0;
-      }
-      od_encode_quantizer_scaling(enc, q_scaling, bx >> (OD_TXSIZES - 1),
-       by >> (OD_TXSIZES - 1), skip);
-    }
-#endif
     if (is_keyframe) for (i = 1; i < 1 << (2*bs + 4); i++) out[i] = 0;
     else for (i = 1; i < 1 << (2*bs + 4); i++) out[i] = ref[i];
   }

@@ -1299,8 +1299,7 @@ PVQ_SKIP_TYPE av1_pvq_encode_helper(MACROBLOCK *x, tran_low_t *const coeff,
                     plane,
                     tx_size, OD_PVQ_BETA[use_activity_masking][plane][tx_size],
                     OD_ROBUST_STREAM,
-                    0,        // is_keyframe,
-                    0, 0, 0,  // q_scaling, bx, by,
+                    0,  // is_keyframe,
                     daala_enc->state.qm + off, daala_enc->state.qm_inv + off,
                     speed,  // speed
                     pvq_info);
