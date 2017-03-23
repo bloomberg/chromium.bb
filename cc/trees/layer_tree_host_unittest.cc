@@ -19,6 +19,7 @@
 #include "cc/animation/timing_function.h"
 #include "cc/input/scroll_elasticity_helper.h"
 #include "cc/layers/content_layer_client.h"
+#include "cc/layers/heads_up_display_layer.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/painted_scrollbar_layer.h"
 #include "cc/layers/picture_layer.h"
@@ -7197,6 +7198,42 @@ class LayerTreeHostTestQueueImageDecodeNonLazy : public LayerTreeHostTest {
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestQueueImageDecodeNonLazy);
+
+class LayerTreeHostTestHudLayerWithLayerLists : public LayerTreeHostTest {
+ public:
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->initial_debug_state.show_paint_rects = true;
+    settings->use_layer_lists = true;
+  }
+
+  void SetupTree() override {
+    LayerTreeHostTest::SetupTree();
+
+    // Build the property trees for the root layer.
+    layer_tree_host()->BuildPropertyTreesForTesting();
+
+    // The HUD layer should not have been setup by the property tree building.
+    DCHECK_EQ(layer_tree_host()->hud_layer(), nullptr);
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override { EndTest(); }
+
+  void DidCommit() override {
+    auto* hud = layer_tree_host()->hud_layer();
+    DCHECK(hud);
+    auto* root_layer = layer_tree_host()->root_layer();
+    DCHECK_EQ(hud->transform_tree_index(), root_layer->transform_tree_index());
+    DCHECK_EQ(hud->clip_tree_index(), root_layer->clip_tree_index());
+    DCHECK_EQ(hud->effect_tree_index(), root_layer->effect_tree_index());
+    DCHECK_EQ(hud->scroll_tree_index(), root_layer->scroll_tree_index());
+  }
+
+  void AfterTest() override {}
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestHudLayerWithLayerLists);
 
 }  // namespace
 }  // namespace cc

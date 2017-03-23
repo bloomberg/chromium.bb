@@ -655,6 +655,16 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
   if (hud_layer_) {
     hud_layer_->PrepareForCalculateDrawProperties(device_viewport_size_,
                                                   device_scale_factor_);
+    // The HUD layer is managed outside the layer list sent to LayerTreeHost
+    // and needs to have its property tree state set.
+    if (settings_.use_layer_lists && root_layer_.get()) {
+      hud_layer_->SetTransformTreeIndex(root_layer_->transform_tree_index());
+      hud_layer_->SetEffectTreeIndex(root_layer_->effect_tree_index());
+      hud_layer_->SetClipTreeIndex(root_layer_->clip_tree_index());
+      hud_layer_->SetScrollTreeIndex(root_layer_->scroll_tree_index());
+      hud_layer_->set_property_tree_sequence_number(
+          root_layer_->property_tree_sequence_number());
+    }
   }
 
   gfx::Transform identity_transform;
