@@ -1,0 +1,13 @@
+This is a testharness.js-based test.
+PASS ServiceWorkerGlobalScope: ExtendableMessageEvent Constructor 
+FAIL no initializer specified Cannot read property 'length' of null
+PASS `bubbles` is specified 
+PASS `cancelable` is specified 
+PASS `data` is specified 
+PASS `origin` is specified 
+PASS `lastEventId` is specified 
+PASS `source` is specified 
+FAIL `ports` is specified Cannot read property 'length' of null
+PASS all initial values are specified 
+Harness: the test ran to completion.
+

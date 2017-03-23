@@ -1,34 +1,10 @@
 <!DOCTYPE html>
 <title>ServiceWorkerGlobalScope: ExtendableMessageEvent</title>
-<script src='../../resources/testharness.js'></script>
-<script src='../../resources/testharnessreport.js'></script>
-<script src='../resources/test-helpers.js'></script>
+<script src='/resources/testharness.js'></script>
+<script src='/resources/testharnessreport.js'></script>
+<script src='../resources/test-helpers.sub.js'></script>
+<script src='./resources/extendable-message-event-utils.js'></script>
 <script>
-
-promise_test(function(t) {
-    var script = 'resources/extendable-message-event-constructor-worker.js';
-    var scope = 'resources/scope/extendable-message-event-constructor';
-    var registration;
-
-    return service_worker_unregister_and_register(t, script, scope)
-      .then(function(r) {
-          registration = r;
-          add_completion_callback(function() { registration.unregister(); });
-          return wait_for_state(t, registration.installing, 'activated');
-        })
-      .then(function() {
-          var saw_message = new Promise(function(resolve) {
-              navigator.serviceWorker.onmessage =
-                  function(event) { resolve(event.data); };
-            });
-          registration.active.postMessage('');
-          return saw_message;
-        })
-      .then(function(result) {
-          assert_equals(result, 'success');
-        });
-  }, 'Test the constructor for ExtendableMessageEvent');
-
 promise_test(function(t) {
     var script = 'resources/extendable-message-event-worker.js';
     var scope = 'resources/scope/extendable-message-event-from-toplevel';
@@ -50,18 +26,20 @@ promise_test(function(t) {
           return saw_message;
         })
       .then(function(results) {
-          var expected_results = [
-              'Client message: [object ExtendableMessageEvent]',
-              '  event.origin: ' + location.origin,
-              '  event.lastEventId: ',
-              '  event.source: [object WindowClient]',
-              '  event.source.url: ' + location.href,
-              '  event.source.frameType: top-level',
-              '  event.source.visibilityState: visible',
-              '  event.source.focused: true',
-              '  event.ports: [object MessagePort]',
-          ];
-          assert_array_equals(results, expected_results);
+          var expected = {
+            constructor: { name: 'ExtendableMessageEvent' },
+            origin: location.origin,
+            lastEventId: '',
+            source: {
+                constructor: { name: 'WindowClient' },
+                frameType: 'top-level',
+                url: location.href,
+                visibilityState: 'visible',
+                focused: true
+            },
+            ports: [ { constructor: { name: 'MessagePort' } } ]
+          };
+          ExtendableMessageEventUtils.assert_equals(results, expected);
         });
   }, 'Post an extendable message from a top-level client');
 
@@ -87,18 +65,20 @@ promise_test(function(t) {
           return saw_message;
         })
       .then(function(results) {
-          var expected_results = [
-              'Client message: [object ExtendableMessageEvent]',
-              '  event.origin: ' + frame.contentWindow.location.origin,
-              '  event.lastEventId: ',
-              '  event.source: [object WindowClient]',
-              '  event.source.url: ' + frame.contentWindow.location.href,
-              '  event.source.frameType: nested',
-              '  event.source.visibilityState: visible',
-              '  event.source.focused: false',
-              '  event.ports: ',
-          ];
-          assert_array_equals(results, expected_results);
+          var expected = {
+              constructor: { name: 'ExtendableMessageEvent' },
+              origin: location.origin,
+              lastEventId: '',
+              source: {
+                  constructor: { name: 'WindowClient' },
+                  url: frame.contentWindow.location.href,
+                  frameType: 'nested',
+                  visibilityState: 'visible',
+                  focused: false
+              },
+              ports: []
+            };
+          ExtendableMessageEventUtils.assert_equals(results, expected);
         });
   }, 'Post an extendable message from a nested client');
 
@@ -119,7 +99,7 @@ promise_test(function(t) {
               navigator.serviceWorker.onmessage = function(event) {
                 switch (event.data.type) {
                   case 'record':
-                    Array.prototype.push.apply(results, event.data.results);
+                    results.push(event.data.results);
                     break;
                   case 'finish':
                     resolve(results);
@@ -131,23 +111,39 @@ promise_test(function(t) {
           return saw_message;
         })
       .then(function(results) {
-          var expected_results = [
-              '1st loopback: [object ExtendableMessageEvent]',
-              '  event.origin: ' + location.origin,
-              '  event.lastEventId: ',
-              '  event.source: [object ServiceWorker]',
-              '  event.source.scriptURL: ' + normalizeURL(script),
-              '  event.source.state: activated',
-              '  event.ports: ',
-              '2nd loopback: [object ExtendableMessageEvent]',
-              '  event.origin: ' + location.origin,
-              '  event.lastEventId: ',
-              '  event.source: [object ServiceWorker]',
-              '  event.source.scriptURL: ' + normalizeURL(script),
-              '  event.source.state: activated',
-              '  event.ports: ',
-          ];
-          assert_array_equals(results, expected_results);
+          assert_equals(results.length, 2);
+
+          var expected_trial_1 = {
+              constructor: { name: 'ExtendableMessageEvent' },
+              origin: location.origin,
+              lastEventId: '',
+              source: {
+                  constructor: { name: 'ServiceWorker' },
+                  scriptURL: normalizeURL(script),
+                  state: 'activated'
+              },
+              ports: []
+          };
+          assert_equals(results[0].trial, 1);
+          ExtendableMessageEventUtils.assert_equals(
+              results[0].event, expected_trial_1
+          );
+
+          var expected_trial_2 = {
+              constructor: { name: 'ExtendableMessageEvent' },
+              origin: location.origin,
+              lastEventId: '',
+              source: {
+                  constructor: { name: 'ServiceWorker' },
+                  scriptURL: normalizeURL(script),
+                  state: 'activated'
+              },
+              ports: [],
+          };
+          assert_equals(results[1].trial, 2);
+          ExtendableMessageEventUtils.assert_equals(
+              results[1].event, expected_trial_2
+          );
         });
   }, 'Post loopback extendable messages');
 
@@ -180,7 +176,7 @@ promise_test(function(t) {
               navigator.serviceWorker.onmessage = function(event) {
                 switch (event.data.type) {
                   case 'record':
-                    Array.prototype.push.apply(results, event.data.results);
+                    results.push(event.data.results);
                     break;
                   case 'finish':
                     resolve(results);
@@ -192,24 +188,39 @@ promise_test(function(t) {
           return saw_message;
         })
       .then(function(results) {
-          var expected_results = [
-              'Ping message: [object ExtendableMessageEvent]',
-              '  event.origin: ' + location.origin,
-              '  event.lastEventId: ',
-              '  event.source: [object ServiceWorker]',
-              '  event.source.scriptURL: ' + normalizeURL(script1),
-              '  event.source.state: activated',
-              '  event.ports: ',
-              'Pong message: [object ExtendableMessageEvent]',
-              '  event.origin: ' + location.origin,
-              '  event.lastEventId: ',
-              '  event.source: [object ServiceWorker]',
-              '  event.source.scriptURL: ' + normalizeURL(script2),
-              '  event.source.state: installed',
-              '  event.ports: ',
-          ];
-          assert_array_equals(results, expected_results);
+          assert_equals(results.length, 2);
+
+          var expected_ping = {
+              constructor: { name: 'ExtendableMessageEvent' },
+              origin: location.origin,
+              lastEventId: '',
+              source: {
+                  constructor: { name: 'ServiceWorker' },
+                  scriptURL: normalizeURL(script1),
+                  state: 'activated'
+              },
+              ports: []
+          };
+          assert_equals(results[0].pingOrPong, 'ping');
+          ExtendableMessageEventUtils.assert_equals(
+              results[0].event, expected_ping
+          );
+
+          var expected_pong = {
+              constructor: { name: 'ExtendableMessageEvent' },
+              origin: location.origin,
+              lastEventId: '',
+              source: {
+                  constructor: { name: 'ServiceWorker' },
+                  scriptURL: normalizeURL(script2),
+                  state: 'installed'
+              },
+              ports: []
+          };
+          assert_equals(results[1].pingOrPong, 'pong');
+          ExtendableMessageEventUtils.assert_equals(
+              results[1].event, expected_pong
+          );
         });
   }, 'Post extendable messages among service workers');
-
 </script>
