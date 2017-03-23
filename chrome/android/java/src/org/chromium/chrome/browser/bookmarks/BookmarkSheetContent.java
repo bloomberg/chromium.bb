@@ -8,7 +8,6 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.toolbar.BottomToolbarPhone;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController;
@@ -26,7 +25,7 @@ public class BookmarkSheetContent implements BottomSheetContent {
      */
     public BookmarkSheetContent(ChromeActivity activity) {
         mBookmarkManager = new BookmarkManager(activity, false);
-        mBookmarkManager.updateForUrl(UrlConstants.BOOKMARKS_URL);
+        mBookmarkManager.updateForUrl(BookmarkUtils.getLastUsedUrl(activity));
         mContentView = mBookmarkManager.getView();
         mToolbarView = mBookmarkManager.detachToolbarView();
         ((BottomToolbarPhone) activity.getToolbarManager().getToolbar())

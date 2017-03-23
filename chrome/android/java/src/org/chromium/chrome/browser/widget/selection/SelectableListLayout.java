@@ -20,14 +20,17 @@ import android.support.v7.widget.RecyclerView.OnScrollListener;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.Toolbar.OnMenuItemClickListener;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewStub;
+import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.FadingShadow;
 import org.chromium.chrome.browser.widget.FadingShadowView;
 import org.chromium.chrome.browser.widget.LoadingView;
@@ -92,6 +95,7 @@ public class SelectableListLayout<E>
     private boolean mToolbarPermanentlyHidden;
     private int mEmptyStringResId;
     private int mSearchEmptyStringResId;
+    private int mChromeHomeEmptyAndLoadingViewTopPadding;
 
     private UiConfig mUiConfig;
 
@@ -136,8 +140,15 @@ public class SelectableListLayout<E>
 
         LayoutInflater.from(getContext()).inflate(R.layout.selectable_list_layout, this);
 
+        // TODO(twellington): Remove this fork in the code after UX decides on final design
+        // for empty and loading views.
+        mChromeHomeEmptyAndLoadingViewTopPadding =
+                getResources().getDimensionPixelSize(R.dimen.chrome_home_empty_view_top_padding);
+
         mEmptyView = (TextView) findViewById(R.id.empty_view);
+        setEmptyOrLoadingViewStyle(mEmptyView);
         mLoadingView = (LoadingView) findViewById(R.id.loading_view);
+        setEmptyOrLoadingViewStyle(mLoadingView);
         mLoadingView.showLoadingUI();
 
         mToolbarStub = (ViewStub) findViewById(R.id.action_bar_stub);
@@ -248,6 +259,7 @@ public class SelectableListLayout<E>
 
         mEmptyView.setCompoundDrawablesWithIntrinsicBounds(null, emptyDrawable, null, null);
         mEmptyView.setText(mEmptyStringResId);
+
         return mEmptyView;
     }
 
@@ -257,6 +269,7 @@ public class SelectableListLayout<E>
     public void onDestroyed() {
         mAdapter.unregisterAdapterDataObserver(mAdapterObserver);
         mToolbar.getSelectionDelegate().removeObserver(this);
+        mToolbar.destroy();
     }
 
     /**
@@ -362,5 +375,14 @@ public class SelectableListLayout<E>
     @VisibleForTesting
     public View getToolbarShadowForTests() {
         return mToolbarShadow;
+    }
+
+    private void setEmptyOrLoadingViewStyle(View view) {
+        if (!FeatureUtilities.isChromeHomeEnabled()) return;
+
+        ((FrameLayout.LayoutParams) view.getLayoutParams()).gravity = Gravity.CENTER_HORIZONTAL;
+        ApiCompatibilityUtils.setPaddingRelative(view, ApiCompatibilityUtils.getPaddingStart(view),
+                view.getPaddingTop() + mChromeHomeEmptyAndLoadingViewTopPadding,
+                ApiCompatibilityUtils.getPaddingEnd(view), view.getPaddingBottom());
     }
 }

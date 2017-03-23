@@ -37,7 +37,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:drawablePadding="3dp"
-            android:textColor="@color/google_grey_700"
+            android:textColor="@color/google_grey_500"
             android:textSize="16sp"
             android:visibility="gone" />
 

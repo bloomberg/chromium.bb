@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.bookmarks;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
+import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.RecyclerView;
@@ -15,7 +16,6 @@ import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordUserAction;
@@ -145,8 +145,8 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate {
                 (SelectableListLayout<BookmarkId>) mMainView.findViewById(R.id.selectable_list);
         mSelectableListLayout = selectableList;
         mSelectableListLayout.initializeEmptyView(
-                ApiCompatibilityUtils.getDrawable(
-                        mActivity.getResources(), R.drawable.bookmark_logo_large),
+                VectorDrawableCompat.create(
+                        mActivity.getResources(), R.drawable.bookmark_big, mActivity.getTheme()),
                 R.string.bookmarks_folder_empty, R.string.bookmark_no_result);
 
         mAdapter = new BookmarkItemsAdapter(activity);
@@ -191,6 +191,8 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate {
      * Destroys and cleans up itself. This must be called after done using this class.
      */
     public void destroy() {
+        mSelectableListLayout.onDestroyed();
+
         for (BookmarkUIObserver observer : mUIObservers) {
             observer.onDestroy();
         }

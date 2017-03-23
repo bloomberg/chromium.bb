@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.support.annotation.CallSuper;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
@@ -112,6 +113,8 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
     private int mOriginalContentInsetStartWithNavigation;
     private int mOriginalContentInsetEndWithActions;
 
+    private boolean mIsDestroyed;
+
     /**
      * Constructor for inflating from XML.
      */
@@ -122,10 +125,9 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
     /**
      * Destroys and cleans up itself.
      */
-    public void destroy() {
-        if (mSelectionDelegate != null) {
-            mSelectionDelegate.removeObserver(this);
-        }
+    void destroy() {
+        mIsDestroyed = true;
+        if (mSelectionDelegate != null) mSelectionDelegate.removeObserver(this);
     }
 
     /**
@@ -391,6 +393,17 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
             UiUtils.hideKeyboard(v);
         }
         return false;
+    }
+
+    @Override
+    public void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+
+        if (mIsDestroyed) return;
+
+        mSelectionDelegate.clearSelection();
+        if (mIsSearching) hideSearchView();
+        if (mDrawerLayout != null) mDrawerLayout.closeDrawer(GravityCompat.START);
     }
 
     /**

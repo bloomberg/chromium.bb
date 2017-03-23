@@ -127,9 +127,6 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
                 VectorDrawableCompat.create(
                         mActivity.getResources(), R.drawable.history_big, mActivity.getTheme()),
                 R.string.history_manager_empty, R.string.history_manager_no_results);
-        // TODO(twellington): remove this after unifying bookmarks and downloads UI with history.
-        mEmptyView.setTextColor(ApiCompatibilityUtils.getColor(mActivity.getResources(),
-                R.color.google_grey_500));
 
         // 6. Create large icon bridge.
         mLargeIconBridge = new LargeIconBridge(Profile.getLastUsedProfile().getOriginalProfile());

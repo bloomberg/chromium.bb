@@ -66,6 +66,8 @@ public class BookmarkActionBar extends SelectableListToolbar<BookmarkId>
 
     @Override
     public boolean onMenuItemClick(MenuItem menuItem) {
+        hideOverflowMenu();
+
         SelectionDelegate<BookmarkId> selectionDelegate = mDelegate.getSelectionDelegate();
         if (menuItem.getItemId() == R.id.edit_menu_id) {
             BookmarkAddEditFolderActivity.startEditFolderActivity(getContext(),

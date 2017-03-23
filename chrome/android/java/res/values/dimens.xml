@@ -436,4 +436,5 @@
     <dimen name="list_item_corner_radius">3dp</dimen>
     <dimen name="list_item_lateral_padding">1dp</dimen>
     <dimen name="history_default_text_margin">16dp</dimen>
+    <dimen name="chrome_home_empty_view_top_padding">16dp</dimen>
 </resources>
