@@ -780,7 +780,7 @@ void TreeView::PaintRow(gfx::Canvas* canvas,
   int icon_index = model_->GetIconIndex(node->model_node());
   if (icon_index != -1)
     icon = icons_[icon_index];
-  else if (node == selected_node_)
+  else if (node == selected_node_ && PlatformStyle::kTreeViewUsesOpenIcon)
     icon = open_icon_;
   else
     icon = closed_icon_;

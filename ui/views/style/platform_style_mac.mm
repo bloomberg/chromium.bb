@@ -26,6 +26,7 @@ const bool PlatformStyle::kDialogDefaultButtonCanBeCancel = false;
 const bool PlatformStyle::kSelectWordOnRightClick = true;
 const bool PlatformStyle::kSelectAllOnRightClickWhenUnfocused = true;
 const bool PlatformStyle::kTreeViewSelectionPaintsEntireRow = true;
+const bool PlatformStyle::kTreeViewUsesOpenIcon = false;
 const bool PlatformStyle::kUseRipples = false;
 
 // On Mac, the Cocoa browser window does not flip its UI in RTL (e.g. bookmark
