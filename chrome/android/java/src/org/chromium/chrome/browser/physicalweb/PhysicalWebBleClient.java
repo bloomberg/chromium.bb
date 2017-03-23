@@ -7,8 +7,6 @@ package org.chromium.chrome.browser.physicalweb;
 import android.os.Handler;
 import android.os.Looper;
 
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.nearby.Nearby;
 import com.google.android.gms.nearby.messages.Message;
 import com.google.android.gms.nearby.messages.MessageFilter;
 import com.google.android.gms.nearby.messages.MessageListener;
@@ -94,15 +92,6 @@ public class PhysicalWebBleClient {
      */
     String getUrlFromMessage(Message message) {
         return null;
-    }
-
-    /**
-     * Modify a GoogleApiClient.Builder as necessary for doing Physical Web scanning.
-     * @param builder The builder to be modified.
-     * @return The Builder.
-     */
-    GoogleApiClient.Builder modifyGoogleApiClientBuilder(GoogleApiClient.Builder builder) {
-        return builder.addApi(Nearby.MESSAGES_API);
     }
 
     /**
