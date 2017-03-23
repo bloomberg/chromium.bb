@@ -54,9 +54,7 @@
 
       <div id="select-app" class="md-select-wrapper"
           hidden$="[[!showApps_(appChoices_, waitingForAndroid_)]]">
-        <select id="menu" class="md-select"
-            disabled="[[!prefs.settings.enable_stylus_tools.value]]"
-            on-change="onSelectedAppChanged_">
+        <select id="menu" class="md-select" on-change="onSelectedAppChanged_">
           <template is="dom-repeat" items="[[appChoices_]]">
             <option value="[[item.value]]" selected="[[item.preferred]]">
               [[item.name]]
