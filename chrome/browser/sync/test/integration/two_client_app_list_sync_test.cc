@@ -332,22 +332,18 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, UpdateIncognitoEnableDisable) {
   ASSERT_FALSE(IsIncognitoEnabled(GetProfile(1), 0));
 }
 
-// crbug.com/689662
-#if defined(OS_CHROMEOS)
-#define MAYBE_DisableApps DISABLED_DisableApps
-#else
-#define MAYBE_DisableApps DisableApps
-#endif
-IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, MAYBE_DisableApps) {
+IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, DisableApps) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameAppList());
 
-  ASSERT_TRUE(GetClient(1)->DisableSyncForDatatype(syncer::APP_LIST));
+  // Disable APP_LIST by disabling APPS since APP_LIST is in APPS groups.
+  ASSERT_TRUE(GetClient(1)->DisableSyncForDatatype(syncer::APPS));
   InstallApp(GetProfile(0), 0);
   ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
   ASSERT_FALSE(AllProfilesHaveSameAppList());
 
-  ASSERT_TRUE(GetClient(1)->EnableSyncForDatatype(syncer::APP_LIST));
+  // Enable APP_LIST by enabling APPS since APP_LIST is in APPS groups.
+  ASSERT_TRUE(GetClient(1)->EnableSyncForDatatype(syncer::APPS));
   ASSERT_TRUE(AwaitQuiescence());
 
   InstallAppsPendingForSync(GetProfile(0));
