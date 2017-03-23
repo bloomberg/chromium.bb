@@ -11,7 +11,7 @@ https://gerrit-review.googlesource.com/Documentation/rest-api.html
 import base64
 import contextlib
 import cookielib
-import httplib
+import httplib  # Still used for its constants.
 import json
 import logging
 import netrc
@@ -27,6 +27,7 @@ import urlparse
 from cStringIO import StringIO
 
 import gclient_utils
+from third_party import httplib2
 
 LOGGER = logging.getLogger()
 TRY_LIMIT = 5
@@ -62,10 +63,8 @@ def _QueryString(param_dict, first_param=None):
 def GetConnectionClass(protocol=None):
   if protocol is None:
     protocol = GERRIT_PROTOCOL
-  if protocol == 'https':
-    return httplib.HTTPSConnection
-  elif protocol == 'http':
-    return httplib.HTTPConnection
+  if protocol in ('http', 'https'):
+    return httplib2.Http
   else:
     raise RuntimeError(
         "Don't know how to work with protocol '%s'" % protocol)
@@ -229,11 +228,11 @@ class GceAuthenticator(Authenticator):
   def _test_is_gce(cls):
     # Based on https://cloud.google.com/compute/docs/metadata#runninggce
     try:
-      resp = cls._get(cls._INFO_URL)
+      resp, _ = cls._get(cls._INFO_URL)
     except socket.error:
       # Could not resolve URL.
       return False
-    return resp.getheader('Metadata-Flavor', None) == 'Google'
+    return resp.get('metadata-flavor') == 'Google'
 
   @staticmethod
   def _get(url, **kwargs):
@@ -247,12 +246,11 @@ class GceAuthenticator(Authenticator):
         next_delay_sec *= 2
 
       p = urlparse.urlparse(url)
-      c = GetConnectionClass(protocol=p.scheme)(p.netloc)
-      c.request('GET', url, **kwargs)
-      resp = c.getresponse()
+      c = GetConnectionClass(protocol=p.scheme)()
+      resp, contents = c.request(url, 'GET', **kwargs)
       LOGGER.debug('GET [%s] #%d/%d (%d)', url, i+1, TRY_LIMIT, resp.status)
       if resp.status < httplib.INTERNAL_SERVER_ERROR:
-        return resp
+        return (resp, contents)
 
   @classmethod
   def _get_token_dict(cls):
@@ -261,10 +259,10 @@ class GceAuthenticator(Authenticator):
       if cls._token_expiration < time.time() - 25:
         return cls._token_cache
 
-    resp = cls._get(cls._ACQUIRE_URL, headers=cls._ACQUIRE_HEADERS)
+    resp, contents = cls._get(cls._ACQUIRE_URL, headers=cls._ACQUIRE_HEADERS)
     if resp.status != httplib.OK:
       return None
-    cls._token_cache = json.load(resp)
+    cls._token_cache = json.loads(contents)
     cls._token_expiration = cls._token_cache['expires_in'] + time.time()
     return cls._token_cache
 
@@ -306,12 +304,11 @@ def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
   conn = GetConnectionClass()(host)
   conn.req_host = host
   conn.req_params = {
-      'url': url,
+      'uri': urlparse.urljoin('%s://%s' % (GERRIT_PROTOCOL, host), url),
       'method': reqtype,
       'headers': headers,
       'body': body,
   }
-  conn.request(**conn.req_params)
   return conn
 
 
@@ -319,7 +316,7 @@ def ReadHttpResponse(conn, expect_status=200, ignore_404=True):
   """Reads an http response from a connection into a string buffer.
 
   Args:
-    conn: An HTTPSConnection or HTTPConnection created by CreateHttpConn, above.
+    conn: An Http object created by CreateHttpConn above.
     expect_status: Success is indicated by this status in the response.
     ignore_404: For many requests, gerrit-on-borg will return 404 if the request
                 doesn't match the database contents.  In most such cases, we
@@ -329,10 +326,10 @@ def ReadHttpResponse(conn, expect_status=200, ignore_404=True):
 
   sleep_time = 0.5
   for idx in range(TRY_LIMIT):
-    response = conn.getresponse()
+    response, contents = conn.request(**conn.req_params)
 
     # Check if this is an authentication issue.
-    www_authenticate = response.getheader('www-authenticate')
+    www_authenticate = response.get('www-authenticate')
     if (response.status in (httplib.UNAUTHORIZED, httplib.FOUND) and
         www_authenticate):
       auth_match = re.search('realm="([^"]+)"', www_authenticate, re.I)
@@ -344,31 +341,25 @@ def ReadHttpResponse(conn, expect_status=200, ignore_404=True):
     # If response.status < 500 then the result is final; break retry loop.
     if response.status < 500:
       LOGGER.debug('got response %d for %s %s', response.status,
-                   conn.req_params['method'], conn.req_params['url'])
+                   conn.req_params['method'], conn.req_params['uri'])
       break
     # A status >=500 is assumed to be a possible transient error; retry.
     http_version = 'HTTP/%s' % ('1.1' if response.version == 11 else '1.0')
     LOGGER.warn('A transient error occurred while querying %s:\n'
                 '%s %s %s\n'
                 '%s %d %s',
-                conn.host, conn.req_params['method'], conn.req_params['url'],
+                conn.host, conn.req_params['method'], conn.req_params['uri'],
                 http_version, http_version, response.status, response.reason)
     if TRY_LIMIT - idx > 1:
       LOGGER.warn('... will retry %d more times.', TRY_LIMIT - idx - 1)
       time.sleep(sleep_time)
       sleep_time = sleep_time * 2
-      req_host = conn.req_host
-      req_params = conn.req_params
-      conn = GetConnectionClass()(req_host)
-      conn.req_host = req_host
-      conn.req_params = req_params
-      conn.request(**req_params)
   if ignore_404 and response.status == 404:
     return StringIO()
   if response.status != expect_status:
-    reason = '%s: %s' % (response.reason, response.read())
+    reason = '%s: %s' % (response.reason, contents)
     raise GerritError(response.status, reason)
-  return StringIO(response.read())
+  return StringIO(contents)
 
 
 def ReadHttpJsonResponse(conn, expect_status=200, ignore_404=True):
