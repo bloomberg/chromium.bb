@@ -725,6 +725,8 @@ public class SingleCategoryPreferences extends PreferenceFragment
     private void updateThirdPartyCookiesCheckBox() {
         ChromeBaseCheckBoxPreference thirdPartyCookiesPref = (ChromeBaseCheckBoxPreference)
                 getPreferenceScreen().findPreference(THIRD_PARTY_COOKIES_TOGGLE_KEY);
+        thirdPartyCookiesPref.setChecked(
+                !PrefServiceBridge.getInstance().isBlockThirdPartyCookiesEnabled());
         thirdPartyCookiesPref.setEnabled(PrefServiceBridge.getInstance().isAcceptCookiesEnabled());
         thirdPartyCookiesPref.setManagedPreferenceDelegate(new ManagedPreferenceDelegate() {
             @Override
