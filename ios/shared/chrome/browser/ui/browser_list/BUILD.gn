@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("model") {
+source_set("browser_list") {
   sources = [
     "browser.h",
     "browser.mm",
@@ -25,7 +25,7 @@ source_set("unit_tests") {
     "browser_list_unittest.mm",
   ]
   deps = [
-    ":model",
+    ":browser_list",
     "//base",
     "//ios/chrome/browser/browser_state:test_support",
     "//testing/gtest",

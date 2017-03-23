@@ -9,7 +9,7 @@
 #ifndef IOS_CLEAN_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_COORDINATOR_H_
 #define IOS_CLEAN_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_COORDINATOR_H_
 
-#import "ios/clean/chrome/browser/browser_coordinator.h"
+#import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator.h"
 
 namespace web {
 class WebState;

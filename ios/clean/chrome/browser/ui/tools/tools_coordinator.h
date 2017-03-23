@@ -11,7 +11,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ios/clean/chrome/browser/browser_coordinator.h"
+#import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator.h"
 
 @protocol ToolbarCommands;
 

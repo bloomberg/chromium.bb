@@ -8,12 +8,12 @@
 
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_coordinator.h"
 
-#import "ios/clean/chrome/browser/browser_coordinator+internal.h"
 #import "ios/clean/chrome/browser/ui/commands/toolbar_commands.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_mediator.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_view_controller.h"
 #import "ios/clean/chrome/browser/ui/tools/tools_coordinator.h"
 #import "ios/shared/chrome/browser/coordinator_context/coordinator_context.h"
+#import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

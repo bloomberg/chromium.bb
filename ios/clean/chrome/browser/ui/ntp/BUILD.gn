@@ -12,8 +12,8 @@ source_set("ntp") {
 
   deps = [
     ":ntp_ui",
-    "//ios/clean/chrome/browser",
     "//ios/shared/chrome/browser/coordinator_context",
+    "//ios/shared/chrome/browser/ui/coordinators",
   ]
 }
 

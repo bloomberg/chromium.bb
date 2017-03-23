@@ -11,12 +11,12 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#import "ios/clean/chrome/browser/browser_coordinator+internal.h"
 #import "ios/clean/chrome/browser/ui/actions/tab_grid_actions.h"
 #import "ios/clean/chrome/browser/ui/animators/zoom_transition_animator.h"
 #import "ios/clean/chrome/browser/ui/tab/tab_coordinator.h"
 #import "ios/clean/chrome/browser/ui/tab_strip/tab_strip_container_view_controller.h"
 #import "ios/shared/chrome/browser/coordinator_context/coordinator_context.h"
+#import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

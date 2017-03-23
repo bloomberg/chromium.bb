@@ -88,7 +88,7 @@ source_set("application_state") {
 
   deps = [
     "//base",
-    "//ios/clean/chrome/browser",
+    "//ios/shared/chrome/browser/ui/coordinators",
   ]
 }
 

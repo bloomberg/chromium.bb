@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CLEAN_CHROME_BROWSER_MODEL_BROWSER_WEB_STATE_LIST_DELEGATE_H_
-#define IOS_CLEAN_CHROME_BROWSER_MODEL_BROWSER_WEB_STATE_LIST_DELEGATE_H_
+#ifndef IOS_SHARED_CHROME_BROWSER_UI_BROWSER_LIST_BROWSER_WEB_STATE_LIST_DELEGATE_H_
+#define IOS_SHARED_CHROME_BROWSER_UI_BROWSER_LIST_BROWSER_WEB_STATE_LIST_DELEGATE_H_
 
 #include "base/macros.h"
 #import "ios/shared/chrome/browser/tabs/web_state_list_delegate.h"
@@ -25,4 +25,4 @@ class BrowserWebStateListDelegate : public WebStateListDelegate {
   DISALLOW_COPY_AND_ASSIGN(BrowserWebStateListDelegate);
 };
 
-#endif  // IOS_CLEAN_CHROME_BROWSER_MODEL_BROWSER_WEB_STATE_LIST_DELEGATE_H_
+#endif  // IOS_SHARED_CHROME_BROWSER_UI_BROWSER_LIST_BROWSER_WEB_STATE_LIST_DELEGATE_H_

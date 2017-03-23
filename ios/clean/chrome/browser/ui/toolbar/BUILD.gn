@@ -15,10 +15,10 @@ source_set("toolbar") {
   deps = [
     ":toolbar_ui",
     "//base",
-    "//ios/clean/chrome/browser",
     "//ios/clean/chrome/browser/ui/commands",
     "//ios/clean/chrome/browser/ui/tools",
     "//ios/shared/chrome/browser/coordinator_context",
+    "//ios/shared/chrome/browser/ui/coordinators",
     "//ios/web",
   ]
 }

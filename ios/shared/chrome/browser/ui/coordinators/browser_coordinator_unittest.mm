@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/clean/chrome/browser/browser_coordinator+internal.h"
-#import "ios/clean/chrome/browser/browser_coordinator.h"
+#import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator.h"
+#import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
 
 #import "ios/shared/chrome/browser/coordinator_context/coordinator_context.h"
 #include "testing/gtest/include/gtest/gtest.h"

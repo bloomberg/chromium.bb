@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/clean/chrome/browser/model/browser_list.h"
+#import "ios/shared/chrome/browser/ui/browser_list/browser_list.h"
 
 #include <memory>
 

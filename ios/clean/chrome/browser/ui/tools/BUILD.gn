@@ -13,11 +13,11 @@ source_set("tools") {
   deps = [
     ":tools_ui",
     "//base",
-    "//ios/clean/chrome/browser",
     "//ios/clean/chrome/browser/ui/actions",
     "//ios/clean/chrome/browser/ui/animators",
     "//ios/clean/chrome/browser/ui/presenters",
     "//ios/shared/chrome/browser/coordinator_context",
+    "//ios/shared/chrome/browser/ui/coordinators",
   ]
 }
 

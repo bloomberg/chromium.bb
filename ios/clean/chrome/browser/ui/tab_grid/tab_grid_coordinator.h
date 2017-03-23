@@ -11,8 +11,8 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ios/clean/chrome/browser/browser_coordinator.h"
 #import "ios/clean/chrome/browser/url_opening.h"
+#import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator.h"
 
 // Coordinator that drives a UI showing a scrollable grid of tabs,
 // which each represent a web browsing tab that can be expanded by tapping.

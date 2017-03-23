@@ -14,8 +14,8 @@ source_set("web_contents") {
 
   deps = [
     ":web_contents_ui",
-    "//ios/clean/chrome/browser",
     "//ios/shared/chrome/browser/coordinator_context",
+    "//ios/shared/chrome/browser/ui/coordinators",
     "//ios/web",
     "//ui/base",
     "//url",

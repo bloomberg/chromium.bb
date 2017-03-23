@@ -12,10 +12,10 @@ source_set("settings") {
 
   deps = [
     "//ios/chrome/browser/ui/settings",
-    "//ios/clean/chrome/browser",
-    "//ios/clean/chrome/browser/model",
     "//ios/clean/chrome/browser/ui/actions",
     "//ios/clean/chrome/browser/ui/commands",
     "//ios/shared/chrome/browser/coordinator_context",
+    "//ios/shared/chrome/browser/ui/browser_list",
+    "//ios/shared/chrome/browser/ui/coordinators",
   ]
 }

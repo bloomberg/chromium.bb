@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/clean/chrome/browser/model/browser.h"
+#import "ios/shared/chrome/browser/ui/browser_list/browser.h"
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#import "ios/clean/chrome/browser/model/browser_web_state_list_delegate.h"
 #import "ios/shared/chrome/browser/tabs/web_state_list.h"
+#import "ios/shared/chrome/browser/ui/browser_list/browser_web_state_list_delegate.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

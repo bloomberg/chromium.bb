@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CLEAN_CHROME_BROWSER_MODEL_BROWSER_LIST_H_
-#define IOS_CLEAN_CHROME_BROWSER_MODEL_BROWSER_LIST_H_
+#ifndef IOS_SHARED_CHROME_BROWSER_UI_BROWSER_LIST_BROWSER_LIST_H_
+#define IOS_SHARED_CHROME_BROWSER_UI_BROWSER_LIST_BROWSER_LIST_H_
 
 #include <memory>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/supports_user_data.h"
-#include "ios/clean/chrome/browser/model/browser.h"
+#include "ios/shared/chrome/browser/ui/browser_list/browser.h"
 
 namespace ios {
 class ChromeBrowserState;
@@ -46,4 +46,4 @@ class BrowserList : public base::SupportsUserData::Data {
   DISALLOW_COPY_AND_ASSIGN(BrowserList);
 };
 
-#endif  // IOS_CLEAN_CHROME_BROWSER_MODEL_BROWSER_LIST_H_
+#endif  // IOS_SHARED_CHROME_BROWSER_UI_BROWSER_LIST_BROWSER_LIST_H_

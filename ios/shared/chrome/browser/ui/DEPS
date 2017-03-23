@@ -1,0 +1,5 @@
+include_rules = [
+  # Allow ios/chrome/browser but not ios/chrome/browser/ui.
+  "+ios/chrome/browser",
+  "-ios/chrome/browser/ui",
+]

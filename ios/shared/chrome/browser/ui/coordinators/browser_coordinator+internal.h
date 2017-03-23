@@ -2,14 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// ======                        New Architecture                         =====
-// =         This code is only used in the new iOS Chrome architecture.       =
-// ============================================================================
+#ifndef IOS_SHARED_CHROME_BROWSER_UI_COORDINATORS_BROWSER_COORDINATOR_INTERNAL_H_
+#define IOS_SHARED_CHROME_BROWSER_UI_COORDINATORS_BROWSER_COORDINATOR_INTERNAL_H_
 
-#ifndef IOS_CHROME_BROWSER_BROWSER_COORDINATOR_INTERNAL_H_
-#define IOS_CHROME_BROWSER_BROWSER_COORDINATOR_INTERNAL_H_
-
-#import "ios/clean/chrome/browser/browser_coordinator.h"
+#import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator.h"
 
 // Internal API for subclasses and categories of BrowserCoordinator.
 //
@@ -97,4 +93,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_BROWSER_COORDINATOR_INTERNAL_H_
+#endif  // IOS_SHARED_CHROME_BROWSER_UI_COORDINATORS_BROWSER_COORDINATOR_INTERNAL_H_
