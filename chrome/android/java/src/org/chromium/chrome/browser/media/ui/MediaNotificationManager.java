@@ -662,9 +662,13 @@ public class MediaNotificationManager {
             return;
         }
 
-        if (mService == null && mediaNotificationInfo.isPaused) return;
-
         mMediaNotificationInfo = mediaNotificationInfo;
+
+        // If there's no pending service start request, don't try to start service. If there is a
+        // pending service start request but the service haven't started yet, only update the
+        // |mMediaNotificationInfo|. The service will update the notification later once it's
+        // started.
+        if (mService == null && mediaNotificationInfo.isPaused) return;
 
         if (mService == null) {
             updateMediaSession();
