@@ -253,7 +253,13 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(MediaFileValidatorTest);
 };
 
-IN_PROC_BROWSER_TEST_F(MediaFileValidatorTest, UnsupportedExtension) {
+// Flaky on linux_chromium_rel_ng. https://crbug.com/704614.
+#if defined(OS_LINUX)
+#define MAYBE_UnsupportedExtension DISABLED_UnsupportedExtension
+#else
+#define MAYBE_UnsupportedExtension UnsupportedExtension
+#endif
+IN_PROC_BROWSER_TEST_F(MediaFileValidatorTest, MAYBE_UnsupportedExtension) {
   MoveTest("a.txt", std::string(kValidImage, arraysize(kValidImage)), false);
 }
 
