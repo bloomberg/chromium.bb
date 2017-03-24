@@ -960,6 +960,14 @@ bool RenderWidgetHostImpl::ScheduleComposite() {
   return true;
 }
 
+void RenderWidgetHostImpl::ProcessIgnoreInputEventsChanged(
+    bool ignore_input_events) {
+  if (ignore_input_events)
+    StopHangMonitorTimeout();
+  else
+    RestartHangMonitorTimeoutIfNecessary();
+}
+
 void RenderWidgetHostImpl::StartHangMonitorTimeout(
     base::TimeDelta delay,
     blink::WebInputEvent::Type event_type) {

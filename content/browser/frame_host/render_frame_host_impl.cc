@@ -1774,7 +1774,6 @@ void RenderFrameHostImpl::OnRunJavaScriptDialog(
   // While a JS message dialog is showing, tabs in the same process shouldn't
   // process input events.
   GetProcess()->SetIgnoreInputEvents(true);
-  render_view_host_->GetWidget()->StopHangMonitorTimeout();
   delegate_->RunJavaScriptDialog(this, message, default_prompt, frame_url,
                                  dialog_type, reply_msg);
 }
@@ -1786,7 +1785,6 @@ void RenderFrameHostImpl::OnRunBeforeUnloadConfirm(
   // While a JS beforeunload dialog is showing, tabs in the same process
   // shouldn't process input events.
   GetProcess()->SetIgnoreInputEvents(true);
-  render_view_host_->GetWidget()->StopHangMonitorTimeout();
 
   // The beforeunload dialog for this frame may have been triggered by a
   // browser-side request to this frame or a frame up in the frame hierarchy.

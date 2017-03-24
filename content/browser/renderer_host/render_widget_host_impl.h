@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -323,15 +324,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // if a composite has already been requested and not acked yet.
   bool ScheduleComposite();
 
-  // Starts a hang monitor timeout. If there's already a hang monitor timeout
-  // the new one will only fire if it has a shorter delay than the time
-  // left on the existing timeouts.
-  void StartHangMonitorTimeout(base::TimeDelta delay,
-                               blink::WebInputEvent::Type event_type);
-
-  // Stops all existing hang monitor timeouts and assumes the renderer is
-  // responsive.
-  void StopHangMonitorTimeout();
+  // Called by the RenderProcessHost to handle the case when the process
+  // changed its state of ignoring input events.
+  void ProcessIgnoreInputEventsChanged(bool ignore_input_events);
 
   // Starts the rendering timeout, which will clear displayed graphics if
   // a new compositor frame is not received before it expires. This also causes
@@ -609,6 +604,14 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   base::WeakPtr<RenderWidgetHostViewBase> view_;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest,
+                           DontPostponeHangMonitorTimeout);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest,
+                           StopAndStartHangMonitorTimeout);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest,
+                           ShorterDelayHangMonitorTimeout);
+  FRIEND_TEST_ALL_PREFIXES(DevToolsManagerTest,
+                           NoUnresponsiveDialogInInspectedContents);
   friend class MockRenderWidgetHost;
   friend class TestRenderViewHost;
 
@@ -724,6 +727,16 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // 3. Grants permissions to file system files.
   // 4. Register the files with the IsolatedContext.
   void GrantFileAccessFromDropData(DropData* drop_data);
+
+  // Starts a hang monitor timeout. If there's already a hang monitor timeout
+  // the new one will only fire if it has a shorter delay than the time
+  // left on the existing timeouts.
+  void StartHangMonitorTimeout(base::TimeDelta delay,
+                               blink::WebInputEvent::Type event_type);
+
+  // Stops all existing hang monitor timeouts and assumes the renderer is
+  // responsive.
+  void StopHangMonitorTimeout();
 
   // true if a renderer has once been valid. We use this flag to display a sad
   // tab only when we lose our renderer and not if a paint occurs during

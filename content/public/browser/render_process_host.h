@@ -198,12 +198,10 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // Adds a message filter to the IPC channel.
   virtual void AddFilter(BrowserMessageFilter* filter) = 0;
 
-  // Try to shutdown the associated render process as fast as possible
+  // Try to shutdown the associated render process as fast as possible.
   virtual bool FastShutdownForPageCount(size_t count) = 0;
 
-  // TODO(ananta)
-  // Revisit whether the virtual functions declared from here on need to be
-  // part of the interface.
+  // Sets whether input events should be ignored for this process.
   virtual void SetIgnoreInputEvents(bool ignore_input_events) = 0;
   virtual bool IgnoreInputEvents() const = 0;
 
