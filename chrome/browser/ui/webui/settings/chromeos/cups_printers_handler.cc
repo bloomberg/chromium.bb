@@ -246,14 +246,35 @@ void CupsPrintersHandler::OnAddedPrinter(
     std::unique_ptr<Printer> printer,
     chromeos::PrinterSetupResult result_code) {
   std::string printer_name = printer->display_name();
-  bool success = (result_code == chromeos::PrinterSetupResult::SUCCESS);
-  if (success) {
-    PrintersManagerFactory::GetForBrowserContext(profile_)->RegisterPrinter(
-        std::move(printer));
+  switch (result_code) {
+    case chromeos::PrinterSetupResult::SUCCESS:
+      PrintersManagerFactory::GetForBrowserContext(profile_)->RegisterPrinter(
+          std::move(printer));
+      break;
+    case chromeos::PrinterSetupResult::PPD_NOT_FOUND:
+      LOG(WARNING) << "Could not locate requested PPD";
+      break;
+    case chromeos::PrinterSetupResult::PPD_TOO_LARGE:
+      LOG(WARNING) << "PPD is too large";
+      break;
+    case chromeos::PrinterSetupResult::PPD_UNRETRIEVABLE:
+      LOG(WARNING) << "Could not retrieve PPD from server";
+      break;
+    case chromeos::PrinterSetupResult::INVALID_PPD:
+      LOG(WARNING) << "Provided PPD is invalid.";
+      break;
+    case chromeos::PrinterSetupResult::PRINTER_UNREACHABLE:
+      LOG(WARNING) << "Could not contact printer for configuration";
+      break;
+    case chromeos::PrinterSetupResult::DBUS_ERROR:
+    case chromeos::PrinterSetupResult::FATAL_ERROR:
+      LOG(ERROR) << "Unrecoverable error.  Reboot required.";
+      break;
   }
-  CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::Value("on-add-cups-printer"),
-                         base::Value(success), base::Value(printer_name));
+  CallJavascriptFunction(
+      "cr.webUIListenerCallback", base::Value("on-add-cups-printer"),
+      base::Value(result_code == chromeos::PrinterSetupResult::SUCCESS),
+      base::Value(printer_name));
 }
 
 void CupsPrintersHandler::OnAddPrinterError() {

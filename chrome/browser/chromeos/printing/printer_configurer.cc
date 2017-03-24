@@ -19,6 +19,7 @@
 #include "chromeos/printing/ppd_provider.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/cros_system_api/dbus/debugd/dbus-constants.h"
 
 namespace chromeos {
 
@@ -67,14 +68,28 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
     // It's expected that debug daemon posts callbacks on the UI thread.
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-    PrinterSetupResult result = UNKNOWN;
+    PrinterSetupResult result;
     switch (result_code) {
-      case 0:
-        result = SUCCESS;
+      case debugd::CupsResult::CUPS_SUCCESS:
+        result = PrinterSetupResult::SUCCESS;
         break;
+      case debugd::CupsResult::CUPS_INVALID_PPD:
+        result = PrinterSetupResult::INVALID_PPD;
+        break;
+      case debugd::CupsResult::CUPS_AUTOCONF_FAILURE:
+        // There are other reasons autoconf fails but this is the most likely.
+        result = PrinterSetupResult::PRINTER_UNREACHABLE;
+        break;
+      case debugd::CupsResult::CUPS_LPADMIN_FAILURE:
+        // Printers should always be configurable by lpadmin.
+        NOTREACHED() << "lpadmin could not add the printer";
+        result = PrinterSetupResult::FATAL_ERROR;
+        break;
+      case debugd::CupsResult::CUPS_FATAL:
       default:
-        // TODO(skau): Fill out with more granular errors.
-        result = FATAL_ERROR;
+        // We have no idea.  It must be fatal.
+        LOG(ERROR) << "Unrecognized printer setup error: " << result_code;
+        result = PrinterSetupResult::FATAL_ERROR;
         break;
     }
 
@@ -118,6 +133,7 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
         cb.Run(PPD_UNRETRIEVABLE);
         break;
       case printing::PpdProvider::CallbackResultCode::INTERNAL_ERROR:
+        // TODO(skau): Add PPD_TOO_LARGE when it's reported by the PpdProvider.
         cb.Run(FATAL_ERROR);
         break;
     }

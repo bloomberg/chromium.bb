@@ -15,7 +15,6 @@ class Profile;
 namespace chromeos {
 
 enum PrinterSetupResult {
-  UNKNOWN,
   FATAL_ERROR,
   SUCCESS,              // Printer set up successfully
   PRINTER_UNREACHABLE,  // Could not reach printer
