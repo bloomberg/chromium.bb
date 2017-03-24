@@ -17,6 +17,8 @@
 #include "base/debug/stack_trace.h"
 #include "base/debug/thread_heap_usage_tracker.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/pattern.h"
+#include "base/strings/string_piece.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/heap_profiler.h"
@@ -719,6 +721,18 @@ bool MemoryDumpManager::PollFastMemoryTotal(uint64_t* memory_total) {
 }
 
 // static
+uint32_t MemoryDumpManager::GetDumpsSumKb(const std::string& pattern,
+                                          const ProcessMemoryDump* pmd) {
+  uint64_t sum = 0;
+  for (const auto& kv : pmd->allocator_dumps()) {
+    auto name = StringPiece(kv.first);
+    if (MatchPattern(name, pattern))
+      sum += kv.second->GetSize();
+  }
+  return sum / 1024;
+}
+
+// static
 void MemoryDumpManager::FinalizeDumpAndAddToTrace(
     std::unique_ptr<ProcessMemoryDumpAsyncState> pmd_async_state) {
   HEAP_PROFILER_SCOPED_IGNORE;
@@ -736,6 +750,10 @@ void MemoryDumpManager::FinalizeDumpAndAddToTrace(
   TRACE_EVENT_WITH_FLOW0(kTraceCategory,
                          "MemoryDumpManager::FinalizeDumpAndAddToTrace",
                          TRACE_ID_MANGLE(dump_guid), TRACE_EVENT_FLAG_FLOW_IN);
+
+  // The results struct to fill.
+  // TODO(hjd): Transitional until we send the full PMD. See crbug.com/704203
+  MemoryDumpCallbackResult result;
 
   for (const auto& kv : pmd_async_state->process_dumps) {
     ProcessId pid = kv.first;  // kNullProcessId for the current process.
@@ -757,6 +775,30 @@ void MemoryDumpManager::FinalizeDumpAndAddToTrace(
         kTraceEventNumArgs, kTraceEventArgNames,
         kTraceEventArgTypes, nullptr /* arg_values */, &event_value,
         TRACE_EVENT_FLAG_HAS_ID);
+
+    // TODO(hjd): Transitional until we send the full PMD. See crbug.com/704203
+    // Don't try to fill the struct in detailed mode since it is hard to avoid
+    // double counting.
+    if (pmd_async_state->req_args.level_of_detail ==
+        MemoryDumpLevelOfDetail::DETAILED)
+      continue;
+
+    // TODO(hjd): Transitional until we send the full PMD. See crbug.com/704203
+    if (pid == kNullProcessId) {
+      result.chrome_dump.malloc_total_kb =
+          GetDumpsSumKb("malloc", process_memory_dump);
+      result.chrome_dump.v8_total_kb =
+          GetDumpsSumKb("v8/*", process_memory_dump);
+
+      // partition_alloc reports sizes for both allocated_objects and
+      // partitions. The memory allocated_objects uses is a subset of
+      // the partitions memory so to avoid double counting we only
+      // count partitions memory.
+      result.chrome_dump.partition_alloc_total_kb =
+          GetDumpsSumKb("partition_alloc/partitions/*", process_memory_dump);
+      result.chrome_dump.blink_gc_total_kb =
+          GetDumpsSumKb("blink_gc", process_memory_dump);
+    }
   }
 
   bool tracing_still_enabled;
