@@ -11,6 +11,7 @@
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/InspectorWorkerAgent.h"
+#include "core/loader/FrameLoader.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 
 namespace blink {
@@ -47,7 +48,7 @@ void InspectorTracingAgent::restore() {
 
 void InspectorTracingAgent::frameStartedLoading(LocalFrame* frame,
                                                 FrameLoadType type) {
-  if (frame != m_inspectedFrames->root() || type != FrameLoadTypeReload)
+  if (frame != m_inspectedFrames->root() || !isReloadLoadType(type))
     return;
   m_client->showReloadingBlanket();
 }
