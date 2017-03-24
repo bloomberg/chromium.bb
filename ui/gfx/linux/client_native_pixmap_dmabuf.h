@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_PLATFORM_DRM_COMMON_CLIENT_NATIVE_PIXMAP_DMABUF_H_
-#define UI_OZONE_PLATFORM_DRM_COMMON_CLIENT_NATIVE_PIXMAP_DMABUF_H_
+#ifndef UI_GFX_LINUX_CLIENT_NATIVE_PIXMAP_DMABUF_H_
+#define UI_GFX_LINUX_CLIENT_NATIVE_PIXMAP_DMABUF_H_
 
 #include <stdint.h>
 
@@ -15,7 +15,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_pixmap_handle.h"
 
-namespace ui {
+namespace gfx {
 
 class ClientNativePixmapDmaBuf : public gfx::ClientNativePixmap {
  public:
@@ -44,6 +44,6 @@ class ClientNativePixmapDmaBuf : public gfx::ClientNativePixmap {
   DISALLOW_COPY_AND_ASSIGN(ClientNativePixmapDmaBuf);
 };
 
-}  // namespace ui
+}  // namespace gfx
 
-#endif  // UI_OZONE_PLATFORM_DRM_COMMON_CLIENT_NATIVE_PIXMAP_DMABUF_H_
+#endif  // UI_GFX_LINUX_CLIENT_NATIVE_PIXMAP_DMABUF_H_

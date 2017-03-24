@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/platform/drm/common/client_native_pixmap_dmabuf.h"
+#include "ui/gfx/linux/client_native_pixmap_dmabuf.h"
 
 #include <fcntl.h>
 #include <linux/version.h>
@@ -39,7 +39,7 @@ struct local_dma_buf_sync {
 #include <linux/dma-buf.h>
 #endif
 
-namespace ui {
+namespace gfx {
 
 namespace {
 
@@ -147,4 +147,4 @@ int ClientNativePixmapDmaBuf::GetStride(size_t plane) const {
   return pixmap_handle_.planes[plane].stride;
 }
 
-}  // namespace ui
+}  // namespace gfx

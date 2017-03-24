@@ -527,6 +527,17 @@ source_set("memory_buffer_sources") {
     "//base",
     "//ui/gfx/geometry",
   ]
+
+  if (is_linux) {
+    sources += [
+      "linux/client_native_pixmap_dmabuf.cc",
+      "linux/client_native_pixmap_dmabuf.h",
+      "linux/client_native_pixmap_factory_dmabuf.cc",
+      "linux/client_native_pixmap_factory_dmabuf.h",
+    ]
+
+    deps += [ "//third_party/libdrm" ]
+  }
 }
 
 static_library("test_support") {
