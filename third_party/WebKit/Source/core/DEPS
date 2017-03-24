@@ -1,6 +1,7 @@
 include_rules = [
     "+bindings/core",
     "-bindings/modules",
+    "+build/mac",
     "+build/win",
     "+core",
     "-inspector/v8",

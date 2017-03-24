@@ -8,7 +8,13 @@
 
 #define PrecompilePlatform_h_
 
+#if defined(_MSC_VER)
 #include "build/win/Precompile.h"
+#elif defined(__APPLE__)
+#include "build/mac/Prefix.h"
+#else
+#error implement
+#endif
 
 // Include Oilpan's Handle.h by default, as it is included by a significant
 // portion of platform/ source files.

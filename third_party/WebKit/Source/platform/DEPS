@@ -42,6 +42,7 @@ include_rules = [
     "+ui/gfx",
     "+url",
     "+webp",
+    "+build/mac",
     "+build/win",
     "-bindings",
     "-core",

@@ -69,6 +69,8 @@ config("blink_pch") {
 
       # Force include the header.
       cflags = [ "/FI$precompiled_header" ]
+    } else if (is_mac) {
+      precompiled_source = "//third_party/WebKit/Source/build/mac/Prefix.h"
     }
   }
 }
@@ -175,13 +177,5 @@ config("non_test_config") {
 
   if (is_clang) {
     cflags += [ "-Wglobal-constructors" ]
-  }
-}
-
-if (is_mac) {
-  # This sets up precompiled headers for Mac.
-  config("mac_precompiled_headers") {
-    precompiled_header = rebase_path("build/mac/Prefix.h", root_build_dir)
-    precompiled_source = "//third_party/WebKit/Source/build/mac/Prefix.h"
   }
 }

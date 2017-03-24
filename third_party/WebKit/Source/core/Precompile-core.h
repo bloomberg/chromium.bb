@@ -7,7 +7,13 @@
 #endif
 #define PrecompileCore_h_
 
+#if defined(_MSC_VER)
 #include "build/win/Precompile.h"
+#elif defined(__APPLE__)
+#include "build/mac/Prefix.h"
+#else
+#error implement
+#endif
 
 // In Blink a lot of operations center around dom and Document, or around
 // layout/rendering and LayoutObject. Those two headers are in turn pulling
