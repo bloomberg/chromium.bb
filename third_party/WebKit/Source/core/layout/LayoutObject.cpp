@@ -1636,7 +1636,6 @@ void LayoutObject::markAncestorsForOverflowRecalcIfNeeded() {
 void LayoutObject::setNeedsOverflowRecalcAfterStyleChange() {
   bool neededRecalc = needsOverflowRecalcAfterStyleChange();
   setSelfNeedsOverflowRecalcAfterStyleChange();
-  setMayNeedPaintInvalidation();
   if (!neededRecalc)
     markAncestorsForOverflowRecalcIfNeeded();
 }
