@@ -16,7 +16,7 @@
 
 external/csswg-test/WOFF2-UserAgent [ Skip ]
 external/csswg-test/compositing-1 [ Skip ]
-# Owners: jfernandez@igalia.com
+## Owners: jfernandez@igalia.com
 # external/csswg-test/css-align-3 [ Pass ]
 external/csswg-test/css-animations-1 [ Skip ]
 external/csswg-test/css-backgrounds-3 [ Skip ]
@@ -160,7 +160,8 @@ external/csswg-test/mediaqueries-3 [ Skip ]
 external/csswg-test/reference [ Skip ]
 external/csswg-test/resources [ Skip ]
 external/csswg-test/selectors-3 [ Skip ]
-external/csswg-test/selectors-4 [ Skip ]
+## Owners: rego@igalia.com
+# external/csswg-test/selectors-4 [ Pass ]
 external/csswg-test/support [ Skip ]
 external/csswg-test/tools [ Skip ]
 external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/README [ Skip ]
