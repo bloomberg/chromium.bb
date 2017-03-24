@@ -27,6 +27,10 @@ class CONTENT_EXPORT LoaderDelegateImpl : public LoaderDelegate {
   void DidGetRedirectForResourceRequest(
       const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
       std::unique_ptr<ResourceRedirectDetails> details) override;
+  void LogResourceRequestTime(base::TimeTicks timestamp,
+                              int render_process_id,
+                              int render_frame_id,
+                              const GURL& url) override;
 };
 
 }  // namespace content

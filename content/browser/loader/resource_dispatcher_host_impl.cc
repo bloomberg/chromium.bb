@@ -39,10 +39,7 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/frame_host/frame_tree.h"
-#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request_info.h"
-#include "content/browser/frame_host/navigator.h"
 #include "content/browser/loader/async_resource_handler.h"
 #include "content/browser/loader/detachable_resource_handler.h"
 #include "content/browser/loader/intercepting_resource_handler.h"
@@ -290,24 +287,6 @@ void AttachRequestBodyBlobDataHandles(
     // upload completion. The |body| takes ownership of |handle|.
     const void* key = handle.get();
     body->SetUserData(key, handle.release());
-  }
-}
-
-// PlzNavigate
-// This method is called in the UI thread to send the timestamp of a resource
-// request to the respective Navigator (for an UMA histogram).
-void LogResourceRequestTimeOnUI(
-    base::TimeTicks timestamp,
-    int render_process_id,
-    int render_frame_id,
-    const GURL& url) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RenderFrameHostImpl* host =
-      RenderFrameHostImpl::FromID(render_process_id, render_frame_id);
-  if (host != nullptr) {
-    DCHECK(host->frame_tree_node()->IsMainFrame());
-    host->frame_tree_node()->navigator()->LogResourceRequestTime(
-        timestamp, url);
   }
 }
 
@@ -898,12 +877,11 @@ void ResourceDispatcherHostImpl::OnRequestResourceInternal(
   // instead.
   if (request_data.resource_type == RESOURCE_TYPE_MAIN_FRAME &&
       request_data.transferred_request_request_id == -1 &&
-      !IsBrowserSideNavigationEnabled()) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&LogResourceRequestTimeOnUI, TimeTicks::Now(),
-                   requester_info->child_id(), request_data.render_frame_id,
-                   request_data.url));
+      !IsBrowserSideNavigationEnabled() && loader_delegate_) {
+    loader_delegate_->LogResourceRequestTime(TimeTicks::Now(),
+                                             requester_info->child_id(),
+                                             request_data.render_frame_id,
+                                             request_data.url);
   }
   BeginRequest(requester_info, request_id, request_data,
                SyncLoadResultCallback(), routing_id, std::move(mojo_request),
