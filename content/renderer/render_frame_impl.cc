@@ -4647,7 +4647,7 @@ blink::WebPushClient* RenderFrameImpl::pushClient() {
   return push_messaging_client_;
 }
 
-blink::WebRelatedAppsFetcher* RenderFrameImpl::relatedAppsFetcher() {
+blink::WebRelatedAppsFetcher* RenderFrameImpl::getRelatedAppsFetcher() {
   if (!related_apps_fetcher_)
     related_apps_fetcher_.reset(new RelatedAppsFetcher(manifest_manager_));
 

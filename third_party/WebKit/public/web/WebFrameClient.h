@@ -466,7 +466,7 @@ class BLINK_EXPORT WebFrameClient {
   // InstalledApp API ----------------------------------------------------
 
   // Used to access the embedder for the InstalledApp API.
-  virtual WebRelatedAppsFetcher* relatedAppsFetcher() { return nullptr; }
+  virtual WebRelatedAppsFetcher* getRelatedAppsFetcher() { return nullptr; }
 
   // Editing -------------------------------------------------------------
 
