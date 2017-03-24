@@ -68,7 +68,7 @@ class EventTest(cros_test_lib.TestCase):
       self.assertEqual(e[ce.EVENT_STATUS], ce.EVENT_STATUS_RUNNING)
 
     self.assertTrue(self.emitCalled)
-    self.assertEqual(self.emitEvent[ce.EVENT_STATUS], ce.EVENT_STATUS_FINISHED)
+    self.assertEqual(self.emitEvent[ce.EVENT_STATUS], ce.EVENT_STATUS_PASS)
 
   def testWithFailureCall(self):
     """test with fail() call"""

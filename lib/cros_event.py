@@ -17,12 +17,12 @@ import multiprocessing
 EVENT_ID = 'id'
 
 EVENT_START_TIME = 'start_time'
-EVENT_END_TIME = 'end_time'
+EVENT_FINISH_TIME = 'finish_time'
 
 EVENT_STATUS = 'status'
 EVENT_STATUS_RUNNING = 'running'
-EVENT_STATUS_FINISHED = 'finished'
-EVENT_STATUS_FAIL = 'failed'
+EVENT_STATUS_PASS = 'pass'
+EVENT_STATUS_FAIL = 'fail'
 
 EVENT_FAIL_MSG = 'failure_message'
 
@@ -111,11 +111,11 @@ class Event(dict):
 
   def __exit__(self, exc_type, exc_value, traceback):
     """Writes event to emit_func, if given"""
-    self[EVENT_END_TIME] = time()
+    self[EVENT_FINISH_TIME] = time()
 
     if EVENT_STATUS not in self or self[EVENT_STATUS] == EVENT_STATUS_RUNNING:
       if exc_value == None:
-        self[EVENT_STATUS] = EVENT_STATUS_FINISHED
+        self[EVENT_STATUS] = EVENT_STATUS_PASS
       else:
         self[EVENT_STATUS] = EVENT_STATUS_FAIL
         self[EVENT_FAIL_MSG] = repr(exc_value)

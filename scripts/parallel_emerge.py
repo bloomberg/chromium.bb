@@ -927,7 +927,7 @@ def EmergeProcess(output, target, *args, **kwargs):
   Returns:
     The exit code returned by the subprocess.
   """
-  event = cros_event.newEvent(kind="EmergePackage", package=target)
+  event = cros_event.newEvent(kind="EmergePackage", name=target)
   pid = os.fork()
   if pid == 0:
     try:
