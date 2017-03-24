@@ -6,22 +6,29 @@
 
 #include "ash/accelerators/accelerator_commands_aura.h"
 #include "ash/common/ash_switches.h"
+#include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm_window.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/display_util.h"
 #include "ash/display/mirror_window_controller.h"
+#include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/screen_util.h"
+#include "ash/shared/app_types.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/mirror_window_test_api.h"
 #include "ash/wm/window_state_aura.h"
+#include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
+#include "chromeos/accelerometer/accelerometer_reader.h"
+#include "chromeos/accelerometer/accelerometer_types.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_observer.h"
@@ -2925,6 +2932,204 @@ TEST_F(DisplayManagerTest, GuessDisplayIdFieldsInDisplayLayout) {
 
   EXPECT_EQ(id1, stored.placement_list[0].parent_display_id);
   EXPECT_EQ(id2, stored.placement_list[0].display_id);
+}
+
+namespace {
+
+class TestObserver : public ScreenOrientationController::Observer {
+ public:
+  TestObserver() {}
+  ~TestObserver() override{};
+
+  void OnUserRotationLockChanged() override { count_++; }
+
+  int countAndReset() {
+    int tmp = count_;
+    count_ = 0;
+    return tmp;
+  }
+
+ private:
+  int count_ = 0;
+};
+
+}  // namespace
+
+TEST_F(DisplayManagerTest, SaveRestoreUserRotationLock) {
+  Shell* shell = Shell::Get();
+  display::DisplayManager* display_manager = shell->display_manager();
+  display::test::DisplayManagerTestApi test_api(display_manager);
+  test_api.SetFirstDisplayAsInternalDisplay();
+  ScreenOrientationController* orientation_controller =
+      shell->screen_orientation_controller();
+  TestObserver test_observer;
+  orientation_controller->AddObserver(&test_observer);
+
+  // Set up windows with portrait,lanscape and any.
+  aura::Window* window_a = CreateTestWindowInShellWithId(0);
+  {
+    WmWindow* wm_window_a = WmWindow::Get(window_a);
+    wm_window_a->SetAppType(static_cast<int>(AppType::CHROME_APP));
+    orientation_controller->LockOrientationForWindow(
+        wm_window_a, blink::WebScreenOrientationLockAny);
+  }
+  aura::Window* window_p = CreateTestWindowInShellWithId(0);
+  {
+    WmWindow* wm_window_p = WmWindow::Get(window_p);
+    wm_window_p->SetAppType(static_cast<int>(AppType::CHROME_APP));
+    orientation_controller->LockOrientationForWindow(
+        wm_window_p, blink::WebScreenOrientationLockPortrait);
+  }
+  aura::Window* window_l = CreateTestWindowInShellWithId(0);
+  {
+    WmWindow* wm_window_l = WmWindow::Get(window_l);
+    wm_window_l->SetAppType(static_cast<int>(AppType::CHROME_APP));
+    orientation_controller->LockOrientationForWindow(
+        wm_window_l, blink::WebScreenOrientationLockLandscape);
+  }
+
+  DisplayConfigurationController* configuration_controller =
+      shell->display_configuration_controller();
+  display::Screen* screen = display::Screen::GetScreen();
+
+  // Rotate to portrait in clamshell.
+  configuration_controller->SetDisplayRotation(
+      screen->GetPrimaryDisplay().id(), display::Display::ROTATE_90,
+      display::Display::ROTATION_SOURCE_USER);
+  EXPECT_EQ(display::Display::ROTATE_90,
+            screen->GetPrimaryDisplay().rotation());
+  EXPECT_FALSE(display_manager->registered_internal_display_rotation_lock());
+
+  EXPECT_EQ(0, test_observer.countAndReset());
+  // Just enabling will not save the lock.
+  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      true);
+  EXPECT_EQ(1, test_observer.countAndReset());
+
+  EXPECT_EQ(display::Display::ROTATE_0, screen->GetPrimaryDisplay().rotation());
+  EXPECT_FALSE(display_manager->registered_internal_display_rotation_lock());
+
+  // Enable lock at 0.
+  orientation_controller->ToggleUserRotationLock();
+  EXPECT_EQ(1, test_observer.countAndReset());
+
+  EXPECT_TRUE(display_manager->registered_internal_display_rotation_lock());
+  EXPECT_EQ(display::Display::ROTATE_0,
+            display_manager->registered_internal_display_rotation());
+
+  // Application can overwwrite the locked orientation.
+  wm::ActivateWindow(window_p);
+  EXPECT_EQ(display::Display::ROTATE_90,
+            screen->GetPrimaryDisplay().rotation());
+  EXPECT_EQ(display::Display::ROTATE_0,
+            display_manager->registered_internal_display_rotation());
+  EXPECT_EQ(0, test_observer.countAndReset());
+
+  // Any will rotate to the locked rotation.
+  wm::ActivateWindow(window_a);
+  EXPECT_EQ(display::Display::ROTATE_0, screen->GetPrimaryDisplay().rotation());
+  EXPECT_TRUE(display_manager->registered_internal_display_rotation_lock());
+  EXPECT_EQ(display::Display::ROTATE_0,
+            display_manager->registered_internal_display_rotation());
+  EXPECT_EQ(0, test_observer.countAndReset());
+
+  wm::ActivateWindow(window_l);
+  EXPECT_EQ(display::Display::ROTATE_0, screen->GetPrimaryDisplay().rotation());
+  EXPECT_TRUE(display_manager->registered_internal_display_rotation_lock());
+  EXPECT_EQ(display::Display::ROTATE_0,
+            display_manager->registered_internal_display_rotation());
+  EXPECT_EQ(0, test_observer.countAndReset());
+
+  // Exit tablet mode reset to clamshell's rotation, which is 90.
+  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      false);
+  EXPECT_EQ(1, test_observer.countAndReset());
+  EXPECT_EQ(display::Display::ROTATE_90,
+            screen->GetPrimaryDisplay().rotation());
+  // Activate Any.
+  wm::ActivateWindow(window_a);
+  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      true);
+  EXPECT_EQ(1, test_observer.countAndReset());
+  // Entering with active ANY will lock again to landscape.
+  EXPECT_EQ(display::Display::ROTATE_0, screen->GetPrimaryDisplay().rotation());
+
+  wm::ActivateWindow(window_p);
+  EXPECT_EQ(display::Display::ROTATE_90,
+            screen->GetPrimaryDisplay().rotation());
+  EXPECT_EQ(0, test_observer.countAndReset());
+  orientation_controller->ToggleUserRotationLock();
+  orientation_controller->ToggleUserRotationLock();
+  EXPECT_EQ(2, test_observer.countAndReset());
+
+  EXPECT_TRUE(display_manager->registered_internal_display_rotation_lock());
+  EXPECT_EQ(display::Display::ROTATE_90,
+            display_manager->registered_internal_display_rotation());
+
+  wm::ActivateWindow(window_l);
+  EXPECT_EQ(display::Display::ROTATE_0, screen->GetPrimaryDisplay().rotation());
+  EXPECT_EQ(display::Display::ROTATE_90,
+            display_manager->registered_internal_display_rotation());
+
+  // ANY will rotate to locked ortation.
+  wm::ActivateWindow(window_a);
+  EXPECT_EQ(display::Display::ROTATE_90,
+            screen->GetPrimaryDisplay().rotation());
+
+  orientation_controller->RemoveObserver(&test_observer);
+}
+
+TEST_F(DisplayManagerTest, UserRotationLockReverse) {
+  Shell* shell = Shell::Get();
+  display::DisplayManager* display_manager = shell->display_manager();
+  display::test::DisplayManagerTestApi test_api(display_manager);
+  test_api.SetFirstDisplayAsInternalDisplay();
+  ScreenOrientationController* orientation_controller =
+      shell->screen_orientation_controller();
+
+  // Set up windows with portrait,lanscape and any.
+  aura::Window* window = CreateTestWindowInShellWithId(0);
+  WmWindow* wm_window = WmWindow::Get(window);
+  wm_window->SetAppType(static_cast<int>(AppType::CHROME_APP));
+  display::Screen* screen = display::Screen::GetScreen();
+
+  // Just enabling will not save the lock.
+  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      true);
+
+  orientation_controller->LockOrientationForWindow(
+      wm_window, blink::WebScreenOrientationLockPortrait);
+  EXPECT_EQ(display::Display::ROTATE_90,
+            screen->GetPrimaryDisplay().rotation());
+
+  const float kMeanGravity = -9.8066f;
+
+  scoped_refptr<chromeos::AccelerometerUpdate> reverse_portrait(
+      new chromeos::AccelerometerUpdate());
+  reverse_portrait->Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, kMeanGravity,
+                        0.f, 0.f);
+  orientation_controller->OnAccelerometerUpdated(reverse_portrait);
+
+  EXPECT_EQ(display::Display::ROTATE_270,
+            screen->GetPrimaryDisplay().rotation());
+
+  scoped_refptr<chromeos::AccelerometerUpdate> portrait(
+      new chromeos::AccelerometerUpdate());
+  portrait->Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, -kMeanGravity, 0.f, 0.f);
+  orientation_controller->OnAccelerometerUpdated(portrait);
+  EXPECT_EQ(display::Display::ROTATE_90,
+            screen->GetPrimaryDisplay().rotation());
+
+  // Enable lock at 90.
+  orientation_controller->ToggleUserRotationLock();
+  EXPECT_TRUE(display_manager->registered_internal_display_rotation_lock());
+  EXPECT_EQ(display::Display::ROTATE_90,
+            display_manager->registered_internal_display_rotation());
+
+  orientation_controller->OnAccelerometerUpdated(reverse_portrait);
+
+  EXPECT_EQ(display::Display::ROTATE_90,
+            screen->GetPrimaryDisplay().rotation());
 }
 
 }  // namespace ash
