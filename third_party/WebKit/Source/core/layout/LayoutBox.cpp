@@ -2296,7 +2296,7 @@ bool LayoutBox::paintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
   // the changed part of children when the box got resized. In SPv2 this is
   // handled by detecting paint property changes.
   if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-    if (hasClipRelatedProperty() || hasControlClip())
+    if (hasClipRelatedProperty())
       return false;
   }
 

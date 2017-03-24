@@ -823,10 +823,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return isOutOfFlowPositioned() && !style()->hasAutoClip();
   }
   bool hasOverflowClip() const { return m_bitfields.hasOverflowClip(); }
-  bool hasClipRelatedProperty() const {
-    return hasClip() || hasOverflowClip() || hasClipPath() ||
-           style()->containsPaint();
-  }
+  bool hasClipRelatedProperty() const;
 
   bool hasTransformRelatedProperty() const {
     return m_bitfields.hasTransformRelatedProperty();

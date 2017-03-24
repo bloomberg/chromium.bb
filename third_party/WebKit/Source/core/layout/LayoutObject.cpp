@@ -424,6 +424,15 @@ LayoutObject* LayoutObject::nextInPreOrder() const {
   return nextInPreOrderAfterChildren();
 }
 
+bool LayoutObject::hasClipRelatedProperty() const {
+  if (hasClip() || hasOverflowClip() || hasClipPath() ||
+      style()->containsPaint())
+    return true;
+  if (isBox() && toLayoutBox(this)->hasControlClip())
+    return true;
+  return false;
+}
+
 LayoutObject* LayoutObject::nextInPreOrderAfterChildren() const {
   LayoutObject* o = nextSibling();
   if (!o) {

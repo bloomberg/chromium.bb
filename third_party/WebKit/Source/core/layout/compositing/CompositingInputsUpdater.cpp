@@ -48,10 +48,12 @@ static const PaintLayer* findParentLayerOnClippingContainerChain(
     if (current->hasLayer())
       return static_cast<const LayoutBoxModelObject*>(current)->layer();
     // Having clip or overflow clip forces the LayoutObject to become a layer,
-    // except for contains: paint, which may apply to SVG.
+    // except for contains: paint, which may apply to SVG, and
+    // control clip, which may apply to LayoutBox subtypes.
     // SVG (other than LayoutSVGRoot) cannot have PaintLayers.
     DCHECK(!current->hasClipRelatedProperty() ||
-           current->styleRef().containsPaint());
+           current->styleRef().containsPaint() ||
+           (current->isBox() && toLayoutBox(current)->hasControlClip()));
   }
   NOTREACHED();
   return nullptr;
