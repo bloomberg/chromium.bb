@@ -5,8 +5,8 @@ onload = function() {
 </script>
 <style>
 .composited {
-  /* Triggers promotion without creating stacking context. */
-  backface-visibility: hidden;
+  /* Triggers promotion and creates a stacking context */
+  will-change: transform;
 }
 
 #scroller {
@@ -20,15 +20,15 @@ onload = function() {
   background: red;
 }
 
-.relative {
-  position: relative;
-  top: 225px;
+.sticky {
+  position: sticky;
+  top: 25px;
   height: 50px;
   background: green;
 }
 </style>
 <div id="scroller" class="composited">
   <div class="composited container">
-    <div class="composited relative"></div>
+    <div class="composited sticky"></div>
   </div>
 </div>

@@ -1541,6 +1541,63 @@ TEST_P(CompositedLayerMappingTest, StickyPositionTableCellContentOffset) {
 }
 
 TEST_P(CompositedLayerMappingTest, StickyPositionEnclosingLayersContentOffset) {
+  // Using backface-visibility: hidden causes the scroller to become composited
+  // without creating a stacking context. This is important as enclosing layer
+  // scroll correction works differently depending on whether you are in a
+  // stacking context or not.
+  setBodyInnerHTML(
+      "<style>.composited { backface-visibility: hidden; }"
+      "#scroller { overflow: auto; height: 200px; width: 200px; }"
+      ".container { height: 500px; }"
+      ".innerPadding { height: 10px; }"
+      "#sticky { position: sticky; top: 25px; height: 50px; }</style>"
+      "<div id='scroller' class='composited'>"
+      "  <div class='composited container'>"
+      "    <div class='composited container'>"
+      "      <div class='innerPadding'></div>"
+      "      <div id='sticky' class='composited'></div>"
+      "  </div></div></div>");
+
+  PaintLayer* stickyLayer =
+      toLayoutBox(getLayoutObjectByElementId("sticky"))->layer();
+  CompositedLayerMapping* stickyMapping = stickyLayer->compositedLayerMapping();
+  ASSERT_TRUE(stickyMapping);
+
+  WebLayerStickyPositionConstraint constraint =
+      stickyMapping->mainGraphicsLayer()
+          ->contentLayer()
+          ->layer()
+          ->stickyPositionConstraint();
+  EXPECT_EQ(IntPoint(0, 10),
+            IntPoint(constraint.parentRelativeStickyBoxOffset));
+
+  // Now scroll the page - this should not affect the parent-relative offset.
+  LayoutBoxModelObject* scroller =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("scroller"));
+  PaintLayerScrollableArea* scrollableArea = scroller->getScrollableArea();
+  scrollableArea->scrollToAbsolutePosition(
+      FloatPoint(scrollableArea->scrollPosition().x(), 100));
+  ASSERT_EQ(100.0, scrollableArea->scrollPosition().y());
+
+  stickyLayer->setNeedsCompositingInputsUpdate();
+  EXPECT_TRUE(stickyLayer->needsCompositingInputsUpdate());
+  document().view()->updateLifecycleToCompositingCleanPlusScrolling();
+  EXPECT_FALSE(stickyLayer->needsCompositingInputsUpdate());
+
+  constraint = stickyMapping->mainGraphicsLayer()
+                   ->contentLayer()
+                   ->layer()
+                   ->stickyPositionConstraint();
+  EXPECT_EQ(IntPoint(0, 10),
+            IntPoint(constraint.parentRelativeStickyBoxOffset));
+}
+
+TEST_P(CompositedLayerMappingTest,
+       StickyPositionEnclosingLayersWithStackingContextContentOffset) {
+  // Using will-change: transform causes the scroller to become a stacking
+  // context. This changes how its descendant layers interact with it; they no
+  // longer have a scrollParent and instead just refer to it only as their
+  // ancestorOverflowLayer.
   setBodyInnerHTML(
       "<style>.composited { will-change: transform; }"
       "#scroller { overflow: auto; height: 200px; width: 200px; }"
@@ -1548,10 +1605,10 @@ TEST_P(CompositedLayerMappingTest, StickyPositionEnclosingLayersContentOffset) {
       ".innerPadding { height: 10px; }"
       "#sticky { position: sticky; top: 25px; height: 50px; }</style>"
       "<div id='scroller' class='composited'>"
-      "<div class='composited container'>"
       "  <div class='composited container'>"
-      "    <div class='innerPadding'></div>"
-      "    <div id='sticky' class='composited'></div>"
+      "    <div class='composited container'>"
+      "      <div class='innerPadding'></div>"
+      "      <div id='sticky' class='composited'></div>"
       "  </div></div></div>");
 
   PaintLayer* stickyLayer =

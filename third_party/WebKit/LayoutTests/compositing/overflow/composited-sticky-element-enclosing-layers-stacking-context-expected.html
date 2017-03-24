@@ -5,8 +5,8 @@ onload = function() {
 </script>
 <style>
 .composited {
-  /* Triggers promotion without creating stacking context. */
-  backface-visibility: hidden;
+  /* Triggers promotion and creates a stacking context */
+  will-change: transform;
 }
 
 #scroller {

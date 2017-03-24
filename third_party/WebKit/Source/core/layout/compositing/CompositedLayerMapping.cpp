@@ -329,7 +329,8 @@ void CompositedLayerMapping::updateStickyConstraints(
     LayoutPoint enclosingLayerOffset;
     compositingContainer->convertToLayerCoords(ancestorOverflowLayer,
                                                enclosingLayerOffset);
-    if (compositingContainer != ancestorOverflowLayer) {
+    DCHECK(!scrollParent() || scrollParent() == ancestorOverflowLayer);
+    if (!scrollParent() && compositingContainer != ancestorOverflowLayer) {
       enclosingLayerOffset += LayoutSize(
           ancestorOverflowLayer->getScrollableArea()->getScrollOffset());
     }

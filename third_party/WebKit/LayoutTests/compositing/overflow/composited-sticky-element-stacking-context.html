@@ -5,19 +5,19 @@ onload = function() {
 </script>
 <style>
 .composited {
-  /* Triggers promotion without creating stacking context. */
-  backface-visibility: hidden;
+  /* Triggers promotion and creates a stacking context */
+  will-change: transform;
 }
 
 #scroller {
-  background: white;
   height: 200px;
   overflow: auto;
   width: 200px;
 }
+
 .sticky {
-  position: relative;
-  top: 100px;
+  position: sticky;
+  top: 0;
   height: 50px;
   background: green;
 }
