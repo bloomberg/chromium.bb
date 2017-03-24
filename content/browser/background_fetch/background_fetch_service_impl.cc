@@ -12,6 +12,7 @@
 #include "content/common/background_fetch/background_fetch_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -39,6 +40,7 @@ BackgroundFetchServiceImpl::BackgroundFetchServiceImpl(
 BackgroundFetchServiceImpl::~BackgroundFetchServiceImpl() = default;
 
 void BackgroundFetchServiceImpl::Fetch(int64_t service_worker_registration_id,
+                                       const url::Origin& origin,
                                        const std::string& tag,
                                        const BackgroundFetchOptions& options,
                                        const FetchCallback& callback) {
@@ -59,6 +61,7 @@ void BackgroundFetchServiceImpl::Fetch(int64_t service_worker_registration_id,
 
 void BackgroundFetchServiceImpl::UpdateUI(
     int64_t service_worker_registration_id,
+    const url::Origin& origin,
     const std::string& tag,
     const std::string& title,
     const UpdateUICallback& callback) {
@@ -71,6 +74,7 @@ void BackgroundFetchServiceImpl::UpdateUI(
 }
 
 void BackgroundFetchServiceImpl::Abort(int64_t service_worker_registration_id,
+                                       const url::Origin& origin,
                                        const std::string& tag,
                                        const AbortCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -83,6 +87,7 @@ void BackgroundFetchServiceImpl::Abort(int64_t service_worker_registration_id,
 
 void BackgroundFetchServiceImpl::GetRegistration(
     int64_t service_worker_registration_id,
+    const url::Origin& origin,
     const std::string& tag,
     const GetRegistrationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -95,6 +100,7 @@ void BackgroundFetchServiceImpl::GetRegistration(
 }
 
 void BackgroundFetchServiceImpl::GetTags(int64_t service_worker_registration_id,
+                                         const url::Origin& origin,
                                          const GetTagsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 

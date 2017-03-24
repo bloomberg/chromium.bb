@@ -52,7 +52,8 @@ void BackgroundFetchBridge::fetch(
     std::unique_ptr<RegistrationCallback> callback) {
   // TODO(peter): Include |requests| in the Mojo call.
   getService()->Fetch(
-      supplementable()->webRegistration()->registrationId(), tag,
+      supplementable()->webRegistration()->registrationId(),
+      getSecurityOrigin(), tag,
       mojom::blink::BackgroundFetchOptions::From(options),
       convertToBaseCallback(
           WTF::bind(&BackgroundFetchBridge::didGetRegistration,
@@ -62,7 +63,8 @@ void BackgroundFetchBridge::fetch(
 void BackgroundFetchBridge::abort(const String& tag,
                                   std::unique_ptr<AbortCallback> callback) {
   getService()->Abort(supplementable()->webRegistration()->registrationId(),
-                      tag, convertToBaseCallback(std::move(callback)));
+                      getSecurityOrigin(), tag,
+                      convertToBaseCallback(std::move(callback)));
 }
 
 void BackgroundFetchBridge::updateUI(
@@ -70,7 +72,7 @@ void BackgroundFetchBridge::updateUI(
     const String& title,
     std::unique_ptr<UpdateUICallback> callback) {
   getService()->UpdateUI(supplementable()->webRegistration()->registrationId(),
-                         tag, title,
+                         getSecurityOrigin(), tag, title,
                          convertToBaseCallback(std::move(callback)));
 }
 
@@ -78,7 +80,8 @@ void BackgroundFetchBridge::getRegistration(
     const String& tag,
     std::unique_ptr<RegistrationCallback> callback) {
   getService()->GetRegistration(
-      supplementable()->webRegistration()->registrationId(), tag,
+      supplementable()->webRegistration()->registrationId(),
+      getSecurityOrigin(), tag,
       convertToBaseCallback(
           WTF::bind(&BackgroundFetchBridge::didGetRegistration,
                     wrapPersistent(this), WTF::passed(std::move(callback)))));
@@ -101,7 +104,12 @@ void BackgroundFetchBridge::didGetRegistration(
 
 void BackgroundFetchBridge::getTags(std::unique_ptr<GetTagsCallback> callback) {
   getService()->GetTags(supplementable()->webRegistration()->registrationId(),
+                        getSecurityOrigin(),
                         convertToBaseCallback(std::move(callback)));
+}
+
+SecurityOrigin* BackgroundFetchBridge::getSecurityOrigin() {
+  return supplementable()->getExecutionContext()->getSecurityOrigin();
 }
 
 mojom::blink::BackgroundFetchServicePtr& BackgroundFetchBridge::getService() {

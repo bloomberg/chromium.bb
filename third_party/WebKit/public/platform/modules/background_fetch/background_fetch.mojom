@@ -4,6 +4,8 @@
 
 module blink.mojom;
 
+import "url/mojo/origin.mojom";
+
 enum BackgroundFetchError {
   NONE,
   DUPLICATED_TAG,
@@ -42,6 +44,7 @@ interface BackgroundFetchService {
   // Creates a new Background Fetch registration identified by |tag| with the
   // given |options| for the sequence of |requests|.
   Fetch(int64 service_worker_registration_id,
+        url.mojom.Origin origin,
         string tag,
         BackgroundFetchOptions options)
       => (BackgroundFetchError error,
@@ -49,23 +52,30 @@ interface BackgroundFetchService {
 
   // Updates the user interface for the Background Fetch identified by the
   // |service_worker_registration_id| and the |tag|.
-  UpdateUI(int64 service_worker_registration_id, string tag, string title)
+  UpdateUI(int64 service_worker_registration_id,
+           url.mojom.Origin origin,
+           string tag,
+           string title)
       => (BackgroundFetchError error);
 
   // Aborts the Background Fetch registration identified by the
   // |service_worker_registration_id| and the |tag|.
-  Abort(int64 service_worker_registration_id, string tag)
+  Abort(int64 service_worker_registration_id,
+        url.mojom.Origin origin,
+        string tag)
       => (BackgroundFetchError error);
 
   // Gets the Background Fetch registration identified by the
   // |service_worker_registration_id| and the |tag|.
-  GetRegistration(int64 service_worker_registration_id, string tag)
+  GetRegistration(int64 service_worker_registration_id,
+                  url.mojom.Origin origin,
+                  string tag)
       => (BackgroundFetchError error,
           BackgroundFetchRegistration? registration);
 
   // Gets the sequence of tags for active Background Fetch registrations given
   // the |service_worker_registration_id|.
-  GetTags(int64 service_worker_registration_id)
+  GetTags(int64 service_worker_registration_id, url.mojom.Origin origin)
       => (BackgroundFetchError error,
           array<string> tags);
 };

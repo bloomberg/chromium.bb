@@ -13,6 +13,10 @@
 #include "base/memory/ref_counted.h"
 #include "third_party/WebKit/public/platform/modules/background_fetch/background_fetch.mojom.h"
 
+namespace url {
+class Origin;
+}
+
 namespace content {
 
 class BackgroundFetchContext;
@@ -33,20 +37,25 @@ class BackgroundFetchServiceImpl : public blink::mojom::BackgroundFetchService {
 
   // blink::mojom::BackgroundFetchService implementation.
   void Fetch(int64_t service_worker_registration_id,
+             const url::Origin& origin,
              const std::string& tag,
              const BackgroundFetchOptions& options,
              const FetchCallback& callback) override;
   void UpdateUI(int64_t service_worker_registration_id,
+                const url::Origin& origin,
                 const std::string& tag,
                 const std::string& title,
                 const UpdateUICallback& callback) override;
   void Abort(int64_t service_worker_registration_id,
+             const url::Origin& origin,
              const std::string& tag,
              const AbortCallback& callback) override;
   void GetRegistration(int64_t service_worker_registration_id,
+                       const url::Origin& origin,
                        const std::string& tag,
                        const GetRegistrationCallback& callback) override;
   void GetTags(int64_t service_worker_registration_id,
+               const url::Origin& origin,
                const GetTagsCallback& callback) override;
 
  private:

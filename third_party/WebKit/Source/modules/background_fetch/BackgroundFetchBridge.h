@@ -75,6 +75,10 @@ class BackgroundFetchBridge final
  private:
   explicit BackgroundFetchBridge(ServiceWorkerRegistration&);
 
+  // Returns the security origin for the Service Worker registration this bridge
+  // is servicing, which is to be included in the Mojo calls.
+  SecurityOrigin* getSecurityOrigin();
+
   // Returns an initialized BackgroundFetchServicePtr. A connection will be
   // established after the first call to this method.
   mojom::blink::BackgroundFetchServicePtr& getService();
