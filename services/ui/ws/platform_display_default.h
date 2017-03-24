@@ -45,7 +45,7 @@ class PlatformDisplayDefault : public PlatformDisplay,
   void SetCursorById(mojom::Cursor cursor) override;
   void UpdateTextInputState(const ui::TextInputState& state) override;
   void SetImeVisibility(bool visible) override;
-  bool UpdateViewportMetrics(const display::ViewportMetrics& metrics) override;
+  void UpdateViewportMetrics(const display::ViewportMetrics& metrics) override;
   gfx::AcceleratedWidget GetAcceleratedWidget() const override;
   FrameGenerator* GetFrameGenerator() override;
 

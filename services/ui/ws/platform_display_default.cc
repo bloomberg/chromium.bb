@@ -128,10 +128,10 @@ FrameGenerator* PlatformDisplayDefault::GetFrameGenerator() {
   return frame_generator_.get();
 }
 
-bool PlatformDisplayDefault::UpdateViewportMetrics(
+void PlatformDisplayDefault::UpdateViewportMetrics(
     const display::ViewportMetrics& metrics) {
   if (metrics_ == metrics)
-    return false;
+    return;
 
   gfx::Rect bounds = platform_window_->GetBounds();
   if (bounds.size() != metrics.bounds_in_pixels.size()) {
@@ -144,7 +144,6 @@ bool PlatformDisplayDefault::UpdateViewportMetrics(
     frame_generator_->SetDeviceScaleFactor(metrics_.device_scale_factor);
     frame_generator_->OnWindowSizeChanged(metrics_.bounds_in_pixels.size());
   }
-  return true;
 }
 
 gfx::AcceleratedWidget PlatformDisplayDefault::GetAcceleratedWidget() const {

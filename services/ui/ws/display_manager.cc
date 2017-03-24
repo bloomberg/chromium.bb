@@ -227,12 +227,10 @@ void DisplayManager::OnDisplayModified(
   Display* ws_display = GetDisplayById(display.id());
   DCHECK(ws_display);
 
+  // Update the cached display information.
   ws_display->SetDisplay(display);
-  // Update the platform display and check if anything has actually changed.
-  if (!ws_display->platform_display()->UpdateViewportMetrics(metrics))
-    return;
 
-  // Send IPCs to WM clients first with new display information.
+  // Send IPC to WMs with new display information.
   std::vector<WindowManagerWindowTreeFactory*> factories =
       window_server_->window_manager_window_tree_factory_set()->GetFactories();
   for (WindowManagerWindowTreeFactory* factory : factories) {
@@ -240,8 +238,10 @@ void DisplayManager::OnDisplayModified(
       factory->window_tree()->OnWmDisplayModified(display);
   }
 
-  // Change the root ServerWindow size after sending IPC to WM.
+  // Update the PlatformWindow and ServerWindow size. This must happen after
+  // OnWmDisplayModified() so the WM has updated the display size.
   ws_display->OnViewportMetricsChanged(metrics);
+
   OnDisplayUpdate(display);
 }
 

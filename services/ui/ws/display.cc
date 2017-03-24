@@ -277,6 +277,8 @@ void Display::OnNativeCaptureLost() {
 
 void Display::OnViewportMetricsChanged(
     const display::ViewportMetrics& metrics) {
+  platform_display_->UpdateViewportMetrics(metrics);
+
   if (root_->bounds().size() == metrics.bounds_in_pixels.size())
     return;
 

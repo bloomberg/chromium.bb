@@ -51,9 +51,8 @@ class PlatformDisplay : public ui::EventSource {
   virtual void UpdateTextInputState(const ui::TextInputState& state) = 0;
   virtual void SetImeVisibility(bool visible) = 0;
 
-  // Updates the viewport metrics for the display, returning true if any
-  // metrics have changed.
-  virtual bool UpdateViewportMetrics(
+  // Updates the viewport metrics for the display.
+  virtual void UpdateViewportMetrics(
       const display::ViewportMetrics& metrics) = 0;
 
   // Returns the AcceleratedWidget associated with the Display. It can return

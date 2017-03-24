@@ -45,11 +45,8 @@ class TestPlatformDisplay : public PlatformDisplay {
   }
   void UpdateTextInputState(const ui::TextInputState& state) override {}
   void SetImeVisibility(bool visible) override {}
-  bool UpdateViewportMetrics(const display::ViewportMetrics& metrics) override {
-    if (metrics_ == metrics)
-      return false;
+  void UpdateViewportMetrics(const display::ViewportMetrics& metrics) override {
     metrics_ = metrics;
-    return true;
   }
   gfx::AcceleratedWidget GetAcceleratedWidget() const override {
     return gfx::kNullAcceleratedWidget;
