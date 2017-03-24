@@ -11,6 +11,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/common/extensions/removable_storage_writer.mojom.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/browser_thread.h"
@@ -29,8 +30,8 @@ class ImageWriterUtilityClientTest : public InProcessBrowserTest {
     EXPECT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &image_));
 
     base::RunLoop run_loop;
-    content::BrowserThread::PostBlockingPoolTaskAndReply(
-        FROM_HERE,
+    base::PostTaskWithTraitsAndReply(
+        FROM_HERE, base::TaskTraits().MayBlock(),
         base::Bind(&ImageWriterUtilityClientTest::FillFile, image_, pattern),
         run_loop.QuitClosure());
 
@@ -41,8 +42,8 @@ class ImageWriterUtilityClientTest : public InProcessBrowserTest {
     device_ = image_.ReplaceExtension(FILE_PATH_LITERAL("out"));
 
     base::RunLoop run_loop;
-    content::BrowserThread::PostBlockingPoolTaskAndReply(
-        FROM_HERE,
+    base::PostTaskWithTraitsAndReply(
+        FROM_HERE, base::TaskTraits().MayBlock(),
         base::Bind(&ImageWriterUtilityClientTest::FillFile, device_, pattern),
         run_loop.QuitClosure());
 
