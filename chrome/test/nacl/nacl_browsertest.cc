@@ -390,7 +390,7 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl,
 
 // Test Subzero. Subzero is triggered by the O0 option so reuse
 // test harnesses that use "optlevel": 0.
-IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnaclSubzero, PnaclErrorHandling) {
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnaclSubzero, MAYBE_PnaclErrorHandling) {
   RunNaClIntegrationTest(FILE_PATH_LITERAL("pnacl_error_handling.html"));
 }
 
