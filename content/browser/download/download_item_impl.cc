@@ -1165,9 +1165,6 @@ void DownloadItemImpl::Init(bool active,
                             DownloadType download_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (active)
-    RecordDownloadCount(START_COUNT);
-
   std::string file_name;
   if (download_type == SRC_HISTORY_IMPORT) {
     // target_path_ works for History and Save As versions.
@@ -1204,6 +1201,7 @@ void DownloadItemImpl::Start(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!download_file_.get());
   DVLOG(20) << __func__ << "() this=" << DebugString(true);
+  RecordDownloadCount(START_COUNT);
 
   download_file_ = std::move(file);
   job_ = DownloadJobFactory::CreateJob(this, std::move(req_handle),
@@ -1263,6 +1261,15 @@ void DownloadItemImpl::Start(
         offset, std::move(hash_state), new_create_info.result);
     UpdateObservers();
     return;
+  }
+
+  if (state_ == INITIAL_INTERNAL) {
+    RecordDownloadCount(NEW_DOWNLOAD_COUNT);
+    RecordDownloadMimeType(mime_type_);
+    if (!GetBrowserContext()->IsOffTheRecord()) {
+      RecordDownloadCount(NEW_DOWNLOAD_COUNT_NORMAL_PROFILE);
+      RecordDownloadMimeTypeForNormalProfile(mime_type_);
+    }
   }
 
   // Successful download start.
@@ -1563,6 +1570,9 @@ void DownloadItemImpl::Completed() {
   end_time_ = base::Time::Now();
   TransitionTo(COMPLETE_INTERNAL);
   RecordDownloadCompleted(start_tick_, received_bytes_);
+  if (!GetBrowserContext()->IsOffTheRecord()) {
+    RecordDownloadCount(COMPLETED_COUNT_NORMAL_PROFILE);
+  }
 
   if (auto_opened_) {
     // If it was already handled by the delegate, do nothing.

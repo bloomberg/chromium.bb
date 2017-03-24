@@ -367,7 +367,6 @@ bool DownloadRequestCore::OnResponseStarted(
           create_info->url_chain.back().GetOrigin())
     create_info->save_info->suggested_name.clear();
 
-  RecordDownloadMimeType(create_info->mime_type);
   RecordDownloadContentDisposition(create_info->content_disposition);
   RecordDownloadSourcePageTransitionType(create_info->transition_type);
 

@@ -61,6 +61,7 @@ namespace {
 class MockDelegate : public DownloadItemImplDelegate {
  public:
   MockDelegate() : DownloadItemImplDelegate() {
+    browser_context_.reset(new TestBrowserContext);
     SetDefaultExpectations();
   }
 
@@ -80,7 +81,10 @@ class MockDelegate : public DownloadItemImplDelegate {
   MOCK_METHOD2(MockResumeInterruptedDownload,
                void(DownloadUrlParameters* params, uint32_t id));
 
-  MOCK_CONST_METHOD0(GetBrowserContext, BrowserContext*());
+  BrowserContext* GetBrowserContext() const override {
+    return browser_context_.get();
+  }
+
   MOCK_METHOD1(DownloadOpened, void(DownloadItemImpl*));
   MOCK_METHOD1(DownloadRemoved, void(DownloadItemImpl*));
   MOCK_CONST_METHOD1(AssertStateConsistent, void(DownloadItemImpl*));
@@ -99,6 +103,8 @@ class MockDelegate : public DownloadItemImplDelegate {
     EXPECT_CALL(*this, ShouldOpenDownload(_, _))
         .WillRepeatedly(Return(true));
   }
+
+  std::unique_ptr<TestBrowserContext> browser_context_;
 };
 
 class MockRequestHandle : public DownloadRequestHandleInterface {
@@ -617,8 +623,6 @@ TEST_F(DownloadItemTest, ContinueAfterInterrupted) {
   EXPECT_CALL(*download_file, FullPath())
       .WillOnce(ReturnRefOfCopy(base::FilePath()));
   EXPECT_CALL(*download_file, Detach());
-  EXPECT_CALL(*mock_delegate(), GetBrowserContext())
-      .WillRepeatedly(Return(browser_context()));
   EXPECT_CALL(*mock_delegate(), MockResumeInterruptedDownload(_, _)).Times(1);
   item->DestinationObserverAsWeakPtr()->DestinationError(
       DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR, 0,
@@ -704,8 +708,6 @@ TEST_F(DownloadItemTest, LimitRestartsAfterInterrupted) {
 
   EXPECT_CALL(*mock_delegate(), DetermineDownloadTarget(item, _))
       .WillRepeatedly(SaveArg<1>(&callback));
-  EXPECT_CALL(*mock_delegate(), GetBrowserContext())
-      .WillRepeatedly(Return(browser_context()));
   EXPECT_CALL(*mock_delegate(), MockResumeInterruptedDownload(_, _))
       .Times(DownloadItemImpl::kMaxAutoResumeAttempts);
   for (int i = 0; i < (DownloadItemImpl::kMaxAutoResumeAttempts + 1); ++i) {
@@ -778,8 +780,6 @@ TEST_F(DownloadItemTest, FailedResumptionDoesntUpdateOriginState) {
   EXPECT_EQ(kMimeType, item->GetMimeType());
 
   EXPECT_CALL(*mock_delegate(), MockResumeInterruptedDownload(_, _));
-  EXPECT_CALL(*mock_delegate(), GetBrowserContext())
-      .WillRepeatedly(Return(browser_context()));
   EXPECT_CALL(*download_file, Detach());
   item->DestinationObserverAsWeakPtr()->DestinationError(
       DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR, 0,
@@ -833,8 +833,6 @@ TEST_F(DownloadItemTest, SucceededResumptionUpdatesOriginState) {
   MockDownloadFile* download_file =
       DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
   EXPECT_CALL(*mock_delegate(), MockResumeInterruptedDownload(_, _));
-  EXPECT_CALL(*mock_delegate(), GetBrowserContext())
-      .WillRepeatedly(Return(browser_context()));
   EXPECT_CALL(*download_file, Detach());
   item->DestinationObserverAsWeakPtr()->DestinationError(
       DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR, 0,
@@ -885,8 +883,6 @@ TEST_F(DownloadItemTest, ResumeUsingFinalURL) {
   EXPECT_CALL(*download_file, FullPath())
       .WillOnce(ReturnRefOfCopy(base::FilePath()));
   EXPECT_CALL(*download_file, Detach());
-  EXPECT_CALL(*mock_delegate(), GetBrowserContext())
-      .WillRepeatedly(Return(browser_context()));
   EXPECT_CALL(*mock_delegate(), MockResumeInterruptedDownload(
                                     Property(&DownloadUrlParameters::url,
                                              GURL("http://example.com/c")),

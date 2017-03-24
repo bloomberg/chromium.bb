@@ -594,14 +594,12 @@ void RecordDownloadImageType(const std::string& mime_type_string) {
     }
   }
 
-  UMA_HISTOGRAM_ENUMERATION("Download.ContentImageType",
-                            download_image,
+  UMA_HISTOGRAM_ENUMERATION("Download.ContentImageType", download_image,
                             DOWNLOAD_IMAGE_MAX);
 }
 
-}  // namespace
-
-void RecordDownloadMimeType(const std::string& mime_type_string) {
+DownloadContent DownloadContentFromMimeType(
+    const std::string& mime_type_string) {
   DownloadContent download_content = DOWNLOAD_CONTENT_UNRECOGNIZED;
 
   // Look up exact matches.
@@ -631,9 +629,21 @@ void RecordDownloadMimeType(const std::string& mime_type_string) {
     }
   }
 
-  // Record the value.
-  UMA_HISTOGRAM_ENUMERATION("Download.ContentType",
-                            download_content,
+  return download_content;
+}
+
+}  // namespace
+
+void RecordDownloadMimeType(const std::string& mime_type_string) {
+  UMA_HISTOGRAM_ENUMERATION("Download.Start.ContentType",
+                            DownloadContentFromMimeType(mime_type_string),
+                            DOWNLOAD_CONTENT_MAX);
+}
+
+void RecordDownloadMimeTypeForNormalProfile(
+    const std::string& mime_type_string) {
+  UMA_HISTOGRAM_ENUMERATION("Download.Start.ContentType.NormalProfile",
+                            DownloadContentFromMimeType(mime_type_string),
                             DOWNLOAD_CONTENT_MAX);
 }
 
