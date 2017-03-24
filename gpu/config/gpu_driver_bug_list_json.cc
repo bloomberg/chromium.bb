@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "9.37",
+  "version": "9.38",
   "entries": [
     {
       "id": 1,
@@ -2353,22 +2353,6 @@ LONG_STRING_CONST(
       "gl_vendor": "NVIDIA.*",
       "features": [
         "unpack_alignment_workaround_with_unpack_buffer"
-      ]
-    },
-    {
-      "id": 218,
-      "description": "Certain Adreno 4xx and 5xx drivers often crash in glProgramBinary.",
-      "cr_bugs": [699122],
-      "os": {
-        "type": "android"
-      },
-      "driver_version": {
-        "op": ">=",
-        "value": "103.0"
-      },
-      "gl_renderer": "Adreno \\(TM\\) [45].*",
-      "features": [
-        "disable_program_disk_cache"
       ]
     },
     {
