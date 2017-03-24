@@ -26,6 +26,7 @@
 #ifndef WebLayerStickyPositionConstraint_h
 #define WebLayerStickyPositionConstraint_h
 
+#include "public/platform/WebLayer.h"
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebRect.h"
 
@@ -62,6 +63,11 @@ struct WebLayerStickyPositionConstraint {
   // element should not be shifted beyond.
   WebRect scrollContainerRelativeContainingBlockRect;
 
+  // The nearest ancestor sticky layers that affect the sticky box constraint
+  // rect and the containing block constraint rect respectively.
+  int nearestLayerShiftingStickyBox;
+  int nearestLayerShiftingContainingBlock;
+
   WebLayerStickyPositionConstraint()
       : isSticky(false),
         isAnchoredLeft(false),
@@ -71,7 +77,9 @@ struct WebLayerStickyPositionConstraint {
         leftOffset(0.f),
         rightOffset(0.f),
         topOffset(0.f),
-        bottomOffset(0.f) {}
+        bottomOffset(0.f),
+        nearestLayerShiftingStickyBox(WebLayer::kInvalidLayerId),
+        nearestLayerShiftingContainingBlock(WebLayer::kInvalidLayerId) {}
 };
 
 }  // namespace blink

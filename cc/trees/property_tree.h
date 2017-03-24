@@ -139,17 +139,7 @@ class CC_EXPORT PropertyTree {
   PropertyTrees* property_trees_;
 };
 
-struct StickyPositionNodeData {
-  int scroll_ancestor;
-  LayerStickyPositionConstraint constraints;
-
-  // This is the offset that blink has already applied to counteract the main
-  // thread scroll offset of the scroll ancestor. We need to account for this
-  // by computing the additional offset necessary to keep the element stuck.
-  gfx::Vector2dF main_thread_offset;
-
-  StickyPositionNodeData() : scroll_ancestor(-1) {}
-};
+struct StickyPositionNodeData;
 
 class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
  public:
@@ -309,6 +299,35 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   std::vector<int> nodes_affected_by_outer_viewport_bounds_delta_;
   std::vector<TransformCachedNodeData> cached_data_;
   std::vector<StickyPositionNodeData> sticky_position_data_;
+};
+
+struct StickyPositionNodeData {
+  int scroll_ancestor;
+  LayerStickyPositionConstraint constraints;
+
+  // This is the offset that blink has already applied to counteract the main
+  // thread scroll offset of the scroll ancestor. We need to account for this
+  // by computing the additional offset necessary to keep the element stuck.
+  gfx::Vector2dF main_thread_offset;
+
+  // In order to properly compute the sticky offset, we need to know if we have
+  // any sticky ancestors both between ourselves and our containing block and
+  // between our containing block and the viewport. These ancestors are then
+  // used to correct the constraining rect locations.
+  int nearest_node_shifting_sticky_box;
+  int nearest_node_shifting_containing_block;
+
+  // For performance we cache our accumulated sticky offset to allow descendant
+  // sticky elements to offset their constraint rects. Because we can either
+  // affect the sticky box constraint rect or the containing block constraint
+  // rect, we need to accumulate both.
+  gfx::Vector2dF total_sticky_box_sticky_offset;
+  gfx::Vector2dF total_containing_block_sticky_offset;
+
+  StickyPositionNodeData()
+      : scroll_ancestor(TransformTree::kInvalidNodeId),
+        nearest_node_shifting_sticky_box(TransformTree::kInvalidNodeId),
+        nearest_node_shifting_containing_block(TransformTree::kInvalidNodeId) {}
 };
 
 class CC_EXPORT ClipTree final : public PropertyTree<ClipNode> {

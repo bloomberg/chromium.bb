@@ -591,6 +591,9 @@ void Layer::SetPosition(const gfx::PointF& position) {
       StickyPositionNodeData* sticky_data =
           property_trees->transform_tree.StickyPositionData(
               transform_tree_index());
+      // TODO(smcgruer): Pass main thread sticky-shifting offsets of
+      // non-promoted ancestors, or promote all ancestor sticky elements.
+      // See http://crbug.com/702229
       sticky_data->main_thread_offset =
           position.OffsetFromOrigin() -
           sticky_data->constraints.parent_relative_sticky_box_offset

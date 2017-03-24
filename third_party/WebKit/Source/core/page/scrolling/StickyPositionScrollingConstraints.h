@@ -113,6 +113,21 @@ class StickyPositionScrollingConstraints final {
     return m_totalContainingBlockStickyOffset;
   }
 
+  const LayoutBoxModelObject* nearestStickyAncestor() const {
+    // If we have one or more sticky ancestor elements between ourselves and our
+    // containing block, |m_nearestStickyBoxShiftingStickyBox| points to the
+    // closest. Otherwise, |m_nearestStickyBoxShiftingContainingBlock| points
+    // to the the first sticky ancestor between our containing block (inclusive)
+    // and our scroll ancestor (exclusive). Therefore our nearest sticky
+    // ancestor is the former if it exists, or the latter otherwise.
+    //
+    // If both are null, then we have no sticky ancestors before our scroll
+    // ancestor, so the correct action is to return null.
+    return m_nearestStickyBoxShiftingStickyBox
+               ? m_nearestStickyBoxShiftingStickyBox
+               : m_nearestStickyBoxShiftingContainingBlock;
+  }
+
   bool operator==(const StickyPositionScrollingConstraints& other) const {
     return m_leftOffset == other.m_leftOffset &&
            m_rightOffset == other.m_rightOffset &&

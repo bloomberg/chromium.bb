@@ -345,8 +345,7 @@ bool TransformTree::CombineInversesBetween(int source_id,
 gfx::Vector2dF StickyPositionOffset(TransformTree* tree, TransformNode* node) {
   if (node->sticky_position_constraint_id == -1)
     return gfx::Vector2dF();
-  const StickyPositionNodeData* sticky_data =
-      tree->StickyPositionData(node->id);
+  StickyPositionNodeData* sticky_data = tree->StickyPositionData(node->id);
   const LayerStickyPositionConstraint& constraint = sticky_data->constraints;
   ScrollNode* scroll_node =
       tree->property_trees()->scroll_tree.Node(sticky_data->scroll_ancestor);
@@ -367,9 +366,35 @@ gfx::Vector2dF StickyPositionOffset(TransformTree* tree, TransformNode* node) {
       scroll_position,
       gfx::SizeF(tree->property_trees()->scroll_tree.scroll_clip_layer_bounds(
           scroll_node->id)));
-  gfx::Vector2dF sticky_offset(
-      constraint.scroll_container_relative_sticky_box_rect.OffsetFromOrigin());
   gfx::Vector2dF layer_offset(sticky_data->main_thread_offset);
+
+  gfx::Vector2dF ancestor_sticky_box_offset;
+  if (sticky_data->nearest_node_shifting_sticky_box !=
+      TransformTree::kInvalidNodeId) {
+    ancestor_sticky_box_offset =
+        tree->StickyPositionData(sticky_data->nearest_node_shifting_sticky_box)
+            ->total_sticky_box_sticky_offset;
+  }
+
+  gfx::Vector2dF ancestor_containing_block_offset;
+  if (sticky_data->nearest_node_shifting_containing_block !=
+      TransformTree::kInvalidNodeId) {
+    ancestor_containing_block_offset =
+        tree->StickyPositionData(
+                sticky_data->nearest_node_shifting_containing_block)
+            ->total_containing_block_sticky_offset;
+  }
+
+  // Compute the current position of the constraint rects based on the original
+  // positions and the offsets from ancestor sticky elements.
+  gfx::RectF sticky_box_rect =
+      gfx::RectF(constraint.scroll_container_relative_sticky_box_rect) +
+      ancestor_sticky_box_offset + ancestor_containing_block_offset;
+  gfx::RectF containing_block_rect =
+      gfx::RectF(constraint.scroll_container_relative_containing_block_rect) +
+      ancestor_containing_block_offset;
+
+  gfx::Vector2dF sticky_offset(sticky_box_rect.OffsetFromOrigin());
 
   // In each of the following cases, we measure the limit which is the point
   // that the element should stick to, clamping on one side to 0 (because sticky
@@ -382,55 +407,52 @@ gfx::Vector2dF StickyPositionOffset(TransformTree* tree, TransformNode* node) {
   // over bottom offset.
   if (constraint.is_anchored_right) {
     float right_limit = clip.right() - constraint.right_offset;
-    float right_delta = std::min<float>(
-        0, right_limit -
-               constraint.scroll_container_relative_sticky_box_rect.right());
-    float available_space = std::min<float>(
-        0, constraint.scroll_container_relative_containing_block_rect.x() -
-               constraint.scroll_container_relative_sticky_box_rect.x());
+    float right_delta =
+        std::min<float>(0, right_limit - sticky_box_rect.right());
+    float available_space =
+        std::min<float>(0, containing_block_rect.x() - sticky_box_rect.x());
     if (right_delta < available_space)
       right_delta = available_space;
     sticky_offset.set_x(sticky_offset.x() + right_delta);
   }
   if (constraint.is_anchored_left) {
     float left_limit = clip.x() + constraint.left_offset;
-    float left_delta = std::max<float>(
-        0,
-        left_limit - constraint.scroll_container_relative_sticky_box_rect.x());
+    float left_delta = std::max<float>(0, left_limit - sticky_box_rect.x());
     float available_space = std::max<float>(
-        0, constraint.scroll_container_relative_containing_block_rect.right() -
-               constraint.scroll_container_relative_sticky_box_rect.right());
+        0, containing_block_rect.right() - sticky_box_rect.right());
     if (left_delta > available_space)
       left_delta = available_space;
     sticky_offset.set_x(sticky_offset.x() + left_delta);
   }
   if (constraint.is_anchored_bottom) {
     float bottom_limit = clip.bottom() - constraint.bottom_offset;
-    float bottom_delta = std::min<float>(
-        0, bottom_limit -
-               constraint.scroll_container_relative_sticky_box_rect.bottom());
-    float available_space = std::min<float>(
-        0, constraint.scroll_container_relative_containing_block_rect.y() -
-               constraint.scroll_container_relative_sticky_box_rect.y());
+    float bottom_delta =
+        std::min<float>(0, bottom_limit - sticky_box_rect.bottom());
+    float available_space =
+        std::min<float>(0, containing_block_rect.y() - sticky_box_rect.y());
     if (bottom_delta < available_space)
       bottom_delta = available_space;
     sticky_offset.set_y(sticky_offset.y() + bottom_delta);
   }
   if (constraint.is_anchored_top) {
     float top_limit = clip.y() + constraint.top_offset;
-    float top_delta = std::max<float>(
-        0,
-        top_limit - constraint.scroll_container_relative_sticky_box_rect.y());
+    float top_delta = std::max<float>(0, top_limit - sticky_box_rect.y());
     float available_space = std::max<float>(
-        0, constraint.scroll_container_relative_containing_block_rect.bottom() -
-               constraint.scroll_container_relative_sticky_box_rect.bottom());
+        0, containing_block_rect.bottom() - sticky_box_rect.bottom());
     if (top_delta > available_space)
       top_delta = available_space;
     sticky_offset.set_y(sticky_offset.y() + top_delta);
   }
+
+  sticky_data->total_sticky_box_sticky_offset =
+      ancestor_sticky_box_offset + sticky_offset -
+      sticky_box_rect.OffsetFromOrigin();
+  sticky_data->total_containing_block_sticky_offset =
+      ancestor_sticky_box_offset + ancestor_containing_block_offset +
+      sticky_offset - sticky_box_rect.OffsetFromOrigin();
+
   return sticky_offset - layer_offset - node->source_to_parent -
-         constraint.scroll_container_relative_sticky_box_rect
-             .OffsetFromOrigin();
+         sticky_box_rect.OffsetFromOrigin();
 }
 
 void TransformTree::UpdateLocalTransform(TransformNode* node) {

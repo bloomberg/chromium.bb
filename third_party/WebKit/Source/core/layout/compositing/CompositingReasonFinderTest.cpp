@@ -271,7 +271,7 @@ TEST_F(CompositingReasonFinderTest, RequiresCompositingForEffectAnimation) {
       CompositingReasonFinder::requiresCompositingForEffectAnimation(*style));
 }
 
-TEST_F(CompositingReasonFinderTest, DoNotCompositeNestedSticky) {
+TEST_F(CompositingReasonFinderTest, CompositeNestedSticky) {
   ScopedCompositeFixedPositionForTest compositeFixedPosition(true);
 
   setBodyInnerHTML(
@@ -300,7 +300,7 @@ TEST_F(CompositingReasonFinderTest, DoNotCompositeNestedSticky) {
   ASSERT_TRUE(innerStickyLayer);
 
   EXPECT_EQ(PaintsIntoOwnBacking, outerStickyLayer->compositingState());
-  EXPECT_EQ(NotComposited, innerStickyLayer->compositingState());
+  EXPECT_EQ(PaintsIntoOwnBacking, innerStickyLayer->compositingState());
 }
 
 }  // namespace blink

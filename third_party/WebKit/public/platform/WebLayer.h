@@ -26,6 +26,8 @@
 #ifndef WebLayer_h
 #define WebLayer_h
 
+#include "cc/layers/layer.h"
+
 #include "WebBlendMode.h"
 #include "WebColor.h"
 #include "WebCommon.h"
@@ -57,6 +59,8 @@ struct WebLayerStickyPositionConstraint;
 class WebLayer {
  public:
   virtual ~WebLayer() {}
+
+  static constexpr int kInvalidLayerId = cc::Layer::INVALID_ID;
 
   // Returns a positive ID that will be unique across all WebLayers allocated in
   // this process.

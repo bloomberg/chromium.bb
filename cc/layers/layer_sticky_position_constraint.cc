@@ -4,6 +4,8 @@
 
 #include "cc/layers/layer_sticky_position_constraint.h"
 
+#include "cc/layers/layer.h"
+
 namespace cc {
 
 LayerStickyPositionConstraint::LayerStickyPositionConstraint()
@@ -15,7 +17,9 @@ LayerStickyPositionConstraint::LayerStickyPositionConstraint()
       left_offset(0.f),
       right_offset(0.f),
       top_offset(0.f),
-      bottom_offset(0.f) {}
+      bottom_offset(0.f),
+      nearest_layer_shifting_sticky_box(Layer::INVALID_ID),
+      nearest_layer_shifting_containing_block(Layer::INVALID_ID) {}
 
 LayerStickyPositionConstraint::LayerStickyPositionConstraint(
     const LayerStickyPositionConstraint& other)
@@ -33,7 +37,11 @@ LayerStickyPositionConstraint::LayerStickyPositionConstraint(
       scroll_container_relative_sticky_box_rect(
           other.scroll_container_relative_sticky_box_rect),
       scroll_container_relative_containing_block_rect(
-          other.scroll_container_relative_containing_block_rect) {}
+          other.scroll_container_relative_containing_block_rect),
+      nearest_layer_shifting_sticky_box(
+          other.nearest_layer_shifting_sticky_box),
+      nearest_layer_shifting_containing_block(
+          other.nearest_layer_shifting_containing_block) {}
 
 bool LayerStickyPositionConstraint::operator==(
     const LayerStickyPositionConstraint& other) const {
@@ -52,12 +60,22 @@ bool LayerStickyPositionConstraint::operator==(
          scroll_container_relative_sticky_box_rect ==
              other.scroll_container_relative_sticky_box_rect &&
          scroll_container_relative_containing_block_rect ==
-             other.scroll_container_relative_containing_block_rect;
+             other.scroll_container_relative_containing_block_rect &&
+         nearest_layer_shifting_sticky_box ==
+             other.nearest_layer_shifting_sticky_box &&
+         nearest_layer_shifting_containing_block ==
+             other.nearest_layer_shifting_containing_block;
 }
 
 bool LayerStickyPositionConstraint::operator!=(
     const LayerStickyPositionConstraint& other) const {
   return !(*this == other);
+}
+
+int LayerStickyPositionConstraint::NearestStickyAncestor() {
+  return (nearest_layer_shifting_sticky_box != Layer::INVALID_ID)
+             ? nearest_layer_shifting_sticky_box
+             : nearest_layer_shifting_containing_block;
 }
 
 }  // namespace cc

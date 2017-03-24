@@ -232,20 +232,8 @@ bool CompositingReasonFinder::requiresCompositingForScrollDependentPosition(
   if (layer->sticksToViewport())
     return m_layoutView.frameView()->isScrollable();
 
-  if (layer->layoutObject().style()->position() != EPosition::kSticky)
-    return false;
-
-  // Don't promote nested sticky elements; the compositor can't handle them.
-  // TODO(smcgruer): Add cc nested sticky support (http://crbug.com/672710)
-  PaintLayerScrollableArea* scrollableArea =
-      layer->ancestorOverflowLayer()->getScrollableArea();
-  DCHECK(scrollableArea->stickyConstraintsMap().contains(
-      const_cast<PaintLayer*>(layer)));
-
-  return layer->ancestorOverflowLayer()->scrollsOverflow() &&
-         !scrollableArea->stickyConstraintsMap()
-              .at(const_cast<PaintLayer*>(layer))
-              .hasAncestorStickyElement();
+  return layer->layoutObject().style()->position() == EPosition::kSticky &&
+         layer->ancestorOverflowLayer()->scrollsOverflow();
 }
 
 }  // namespace blink

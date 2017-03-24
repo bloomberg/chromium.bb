@@ -378,6 +378,10 @@ ToWebLayerStickyPositionConstraint(
       constraint.scroll_container_relative_sticky_box_rect;
   web_constraint.scrollContainerRelativeContainingBlockRect =
       constraint.scroll_container_relative_containing_block_rect;
+  web_constraint.nearestLayerShiftingStickyBox =
+      constraint.nearest_layer_shifting_sticky_box;
+  web_constraint.nearestLayerShiftingContainingBlock =
+      constraint.nearest_layer_shifting_containing_block;
   return web_constraint;
 }
 static cc::LayerStickyPositionConstraint ToStickyPositionConstraint(
@@ -398,6 +402,10 @@ static cc::LayerStickyPositionConstraint ToStickyPositionConstraint(
       web_constraint.scrollContainerRelativeStickyBoxRect;
   constraint.scroll_container_relative_containing_block_rect =
       web_constraint.scrollContainerRelativeContainingBlockRect;
+  constraint.nearest_layer_shifting_sticky_box =
+      web_constraint.nearestLayerShiftingStickyBox;
+  constraint.nearest_layer_shifting_containing_block =
+      web_constraint.nearestLayerShiftingContainingBlock;
   return constraint;
 }
 void WebLayerImpl::setStickyPositionConstraint(

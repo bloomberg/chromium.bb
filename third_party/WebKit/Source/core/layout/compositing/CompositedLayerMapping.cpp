@@ -308,14 +308,24 @@ void CompositedLayerMapping::updateStickyConstraints(
 
   WebLayerStickyPositionConstraint webConstraint;
   if (sticky) {
+    const StickyConstraintsMap& constraintsMap =
+        ancestorOverflowLayer->getScrollableArea()->stickyConstraintsMap();
     const StickyPositionScrollingConstraints& constraints =
-        ancestorOverflowLayer->getScrollableArea()->stickyConstraintsMap().at(
-            &m_owningLayer);
+        constraintsMap.at(&m_owningLayer);
 
-    // Find the layout offset of the unshifted sticky box within its
-    // compositingContainer. If the enclosing layer is not the scroller, then
-    // the offset must be adjusted to include the scroll offset to keep it
-    // relative to compositingContainer.
+    // Find the layout offset of the unshifted sticky box within its parent
+    // composited layer. This information is used by the compositor side to
+    // compute the additional offset required to keep the element stuck under
+    // compositor scrolling.
+    //
+    // Starting from the scroll container relative location, removing the
+    // enclosing layer's offset and the content offset in the composited layer
+    // results in the parent-layer relative offset.
+    FloatPoint parentRelativeStickyBoxOffset =
+        constraints.scrollContainerRelativeStickyBoxRect().location();
+
+    // The enclosing layers offset returned from |convertToLayerCoords| must be
+    // adjusted for both scroll and ancestor sticky elements.
     LayoutPoint enclosingLayerOffset;
     compositingContainer->convertToLayerCoords(ancestorOverflowLayer,
                                                enclosingLayerOffset);
@@ -323,12 +333,19 @@ void CompositedLayerMapping::updateStickyConstraints(
       enclosingLayerOffset += LayoutSize(
           ancestorOverflowLayer->getScrollableArea()->getScrollOffset());
     }
+    // TODO(smcgruer): Until http://crbug.com/702229 is fixed, the nearest
+    // sticky ancestor may be non-composited which will make this offset wrong.
+    if (const LayoutBoxModelObject* ancestor =
+            constraints.nearestStickyAncestor()) {
+      enclosingLayerOffset -=
+          roundedIntSize(constraintsMap.at(ancestor->layer())
+                             .getTotalContainingBlockStickyOffset());
+    }
 
-    FloatPoint stickyBoxOffset =
-        constraints.scrollContainerRelativeStickyBoxRect().location();
     DCHECK(!m_contentOffsetInCompositingLayerDirty);
-    stickyBoxOffset.moveBy(FloatPoint(-enclosingLayerOffset) -
-                           FloatSize(contentOffsetInCompositingLayer()));
+    parentRelativeStickyBoxOffset.moveBy(
+        FloatPoint(-enclosingLayerOffset) -
+        FloatSize(contentOffsetInCompositingLayer()));
 
     webConstraint.isSticky = true;
     webConstraint.isAnchoredLeft =
@@ -348,12 +365,36 @@ void CompositedLayerMapping::updateStickyConstraints(
     webConstraint.topOffset = constraints.topOffset();
     webConstraint.bottomOffset = constraints.bottomOffset();
     webConstraint.parentRelativeStickyBoxOffset =
-        roundedIntPoint(stickyBoxOffset);
+        roundedIntPoint(parentRelativeStickyBoxOffset);
     webConstraint.scrollContainerRelativeStickyBoxRect =
         enclosingIntRect(constraints.scrollContainerRelativeStickyBoxRect());
     webConstraint.scrollContainerRelativeContainingBlockRect = enclosingIntRect(
         constraints.scrollContainerRelativeContainingBlockRect());
-    // TODO(smcgruer): Copy fields for nested sticky in cc (crbug.com/672710)
+    // TODO(smcgruer): Until http://crbug.com/702229 is fixed, the nearest
+    // sticky layers may not be composited and we may incorrectly end up with
+    // invalid layer IDs.
+    LayoutBoxModelObject* stickyBoxShiftingAncestor =
+        constraints.nearestStickyBoxShiftingStickyBox();
+    if (stickyBoxShiftingAncestor &&
+        stickyBoxShiftingAncestor->layer()->compositedLayerMapping()) {
+      webConstraint.nearestLayerShiftingStickyBox =
+          stickyBoxShiftingAncestor->layer()
+              ->compositedLayerMapping()
+              ->mainGraphicsLayer()
+              ->platformLayer()
+              ->id();
+    }
+    LayoutBoxModelObject* containingBlockShiftingAncestor =
+        constraints.nearestStickyBoxShiftingContainingBlock();
+    if (containingBlockShiftingAncestor &&
+        containingBlockShiftingAncestor->layer()->compositedLayerMapping()) {
+      webConstraint.nearestLayerShiftingContainingBlock =
+          containingBlockShiftingAncestor->layer()
+              ->compositedLayerMapping()
+              ->mainGraphicsLayer()
+              ->platformLayer()
+              ->id();
+    }
   }
 
   m_graphicsLayer->setStickyPositionConstraint(webConstraint);

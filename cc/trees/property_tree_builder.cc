@@ -719,10 +719,36 @@ bool AddTransformNodeIfNeeded(
             .AddNodeAffectedByOuterViewportBoundsDelta(node->id);
       }
     }
+    // TODO(smcgruer): Pass main thread sticky-shifting offsets of
+    // non-promoted ancestors, or promote all ancestor sticky elements.
+    // See http://crbug.com/702229
     sticky_data->main_thread_offset =
         layer->position().OffsetFromOrigin() -
         sticky_data->constraints.parent_relative_sticky_box_offset
             .OffsetFromOrigin();
+
+    // Copy the ancestor nodes for later use. These layers are guaranteed to
+    // have transform nodes at this point because they are our ancestors (so
+    // have already been processed) and are sticky (so have transform nodes).
+    int shifting_sticky_box_layer_id =
+        sticky_data->constraints.nearest_layer_shifting_sticky_box;
+    if (shifting_sticky_box_layer_id != Layer::INVALID_ID) {
+      sticky_data->nearest_node_shifting_sticky_box =
+          data_for_children->property_trees->transform_tree
+              .FindNodeIndexFromOwningLayerId(shifting_sticky_box_layer_id);
+      DCHECK(sticky_data->nearest_node_shifting_sticky_box !=
+             TransformTree::kInvalidNodeId);
+    }
+    int shifting_containing_block_layer_id =
+        sticky_data->constraints.nearest_layer_shifting_containing_block;
+    if (shifting_containing_block_layer_id != Layer::INVALID_ID) {
+      sticky_data->nearest_node_shifting_containing_block =
+          data_for_children->property_trees->transform_tree
+              .FindNodeIndexFromOwningLayerId(
+                  shifting_containing_block_layer_id);
+      DCHECK(sticky_data->nearest_node_shifting_containing_block !=
+             TransformTree::kInvalidNodeId);
+    }
   }
 
   node->needs_local_transform_update = true;

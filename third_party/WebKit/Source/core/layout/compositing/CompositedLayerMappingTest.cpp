@@ -1588,4 +1588,98 @@ TEST_P(CompositedLayerMappingTest, StickyPositionEnclosingLayersContentOffset) {
             IntPoint(constraint.parentRelativeStickyBoxOffset));
 }
 
+TEST_P(CompositedLayerMappingTest, StickyPositionNestedStickyContentOffset) {
+  setBodyInnerHTML(
+      "<style>.composited { will-change: transform; }"
+      "#scroller { overflow: auto; height: 200px; width: 200px; }"
+      ".container { height: 500px; }"
+      "#outerSticky { position: sticky; top: 0; height: 100px; }"
+      "#middleSticky { position: sticky; top: 10px; height: 50px; }"
+      "#innerSticky { position: sticky; top: 25px; height: 25px; }</style>"
+      "<div id='scroller' class='composited'>"
+      "  <div style='height: 50px'></div>"
+      "  <div class='composited container'>"
+      "    <div style='height: 10px;'></div>"
+      "    <div id='outerSticky' class='composited'>"
+      "      <div id='middleSticky' class='composited'>"
+      "        <div style='height: 5px;'></div>"
+      "        <div id='innerSticky' class='composited'></div>"
+      "      </div>"
+      "    </div>"
+      "  </div>"
+      "</div>");
+
+  PaintLayer* outerSticky =
+      toLayoutBox(getLayoutObjectByElementId("outerSticky"))->layer();
+  PaintLayer* middleSticky =
+      toLayoutBox(getLayoutObjectByElementId("middleSticky"))->layer();
+  PaintLayer* innerSticky =
+      toLayoutBox(getLayoutObjectByElementId("innerSticky"))->layer();
+
+  WebLayerStickyPositionConstraint outerStickyConstraint =
+      outerSticky->compositedLayerMapping()
+          ->mainGraphicsLayer()
+          ->contentLayer()
+          ->layer()
+          ->stickyPositionConstraint();
+  WebLayerStickyPositionConstraint middleStickyConstraint =
+      middleSticky->compositedLayerMapping()
+          ->mainGraphicsLayer()
+          ->contentLayer()
+          ->layer()
+          ->stickyPositionConstraint();
+  WebLayerStickyPositionConstraint innerStickyConstraint =
+      innerSticky->compositedLayerMapping()
+          ->mainGraphicsLayer()
+          ->contentLayer()
+          ->layer()
+          ->stickyPositionConstraint();
+
+  EXPECT_EQ(IntPoint(0, 10),
+            IntPoint(outerStickyConstraint.parentRelativeStickyBoxOffset));
+  EXPECT_EQ(IntPoint(0, 0),
+            IntPoint(middleStickyConstraint.parentRelativeStickyBoxOffset));
+  EXPECT_EQ(IntPoint(0, 5),
+            IntPoint(innerStickyConstraint.parentRelativeStickyBoxOffset));
+
+  // Scroll the content to engage the sticky elements.
+  LayoutBoxModelObject* scroller =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("scroller"));
+  PaintLayerScrollableArea* scrollableArea = scroller->getScrollableArea();
+  scrollableArea->scrollToAbsolutePosition(
+      FloatPoint(scrollableArea->scrollPosition().x(), 110));
+  ASSERT_EQ(110.0, scrollableArea->scrollPosition().y());
+
+  outerSticky->setNeedsCompositingInputsUpdate();
+  middleSticky->setNeedsCompositingInputsUpdate();
+  innerSticky->setNeedsCompositingInputsUpdate();
+
+  document().view()->updateLifecycleToCompositingCleanPlusScrolling();
+
+  outerStickyConstraint = outerSticky->compositedLayerMapping()
+                              ->mainGraphicsLayer()
+                              ->contentLayer()
+                              ->layer()
+                              ->stickyPositionConstraint();
+  middleStickyConstraint = middleSticky->compositedLayerMapping()
+                               ->mainGraphicsLayer()
+                               ->contentLayer()
+                               ->layer()
+                               ->stickyPositionConstraint();
+  innerStickyConstraint = innerSticky->compositedLayerMapping()
+                              ->mainGraphicsLayer()
+                              ->contentLayer()
+                              ->layer()
+                              ->stickyPositionConstraint();
+
+  // After scrolling and despite ancestor sticky changes, the offset relative to
+  // the parent layer should remain constant.
+  EXPECT_EQ(IntPoint(0, 10),
+            IntPoint(outerStickyConstraint.parentRelativeStickyBoxOffset));
+  EXPECT_EQ(IntPoint(0, 0),
+            IntPoint(middleStickyConstraint.parentRelativeStickyBoxOffset));
+  EXPECT_EQ(IntPoint(0, 5),
+            IntPoint(innerStickyConstraint.parentRelativeStickyBoxOffset));
+}
+
 }  // namespace blink
