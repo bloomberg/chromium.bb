@@ -8,11 +8,10 @@
 </head>
 <body>
   <script>
-    // Use offline context for decoding because we want a fixed known sample
-    // rate, independent of the hardware because the test file is encoded at
-    // 44.1 kHz.  If we don't, decodeAudioData() will resample the data messing
-    // up the assumptions in this test.  The length is unimportant.
-    let context = new OfflineAudioContext(1, 1, 44100);
+    // The functionality of decodeAudioData() is orthogonal to the type and the
+    // state of AudioContext. So we use the online context here and any
+    // resampling of the file is okay for this test.
+    let context = new AudioContext();
 
     // Test file URLs.
     let validAudioFileUrl = '../resources/media/24bit-44khz.wav';
@@ -114,8 +113,10 @@
                      'successCallback should not have invoked');
       };
 
-      let decodeAudioDataPromise = context.decodeAudioData(
-          invalidArrayBuffer.slice(), successOrErrorCallback, successOrErrorCallback);
+      let decodeAudioDataPromise =
+          context.decodeAudioData(invalidArrayBuffer.slice(),
+                                  successOrErrorCallback,
+                                  successOrErrorCallback);
 
       should(decodeAudioDataPromise, 'decodeAudioData promise')
           .beRejected('EncodingError')
@@ -124,8 +125,7 @@
 
     // decodeAudioData() should be functional even after the associated context
     // is closed.
-    // TODO(crbug.com/692650)
-    audit.define('close-context-with-pending-decode', (task, should) => {
+    audit.define('decoding-on-closed-context', (task, should) => {
       // Use one handler for resolve and reject. |promiseArg| is a parameter for
       // handlers; it is a decoded audio buffer for success case and an error
       // object for failure case.
