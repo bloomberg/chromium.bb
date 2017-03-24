@@ -17,6 +17,8 @@ source_set("tabs") {
     "web_state_list_observer_bridge.mm",
     "web_state_list_order_controller.h",
     "web_state_list_order_controller.mm",
+    "web_state_opener.h",
+    "web_state_opener.mm",
   ]
   deps = [
     "//base",
@@ -46,6 +48,7 @@ source_set("unit_tests") {
     "web_state_list_fast_enumeration_helper_unittest.mm",
     "web_state_list_order_controller_unittest.mm",
     "web_state_list_unittest.mm",
+    "web_state_opener_unittest.mm",
   ]
   deps = [
     ":tabs",

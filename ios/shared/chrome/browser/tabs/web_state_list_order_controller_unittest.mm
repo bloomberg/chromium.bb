@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #import "ios/shared/chrome/browser/tabs/fake_web_state_list_delegate.h"
 #import "ios/shared/chrome/browser/tabs/web_state_list.h"
+#import "ios/shared/chrome/browser/tabs/web_state_opener.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -58,8 +59,8 @@ class WebStateListOrderControllerTest : public PlatformTest {
 };
 
 TEST_F(WebStateListOrderControllerTest, DetermineInsertionIndex) {
-  web_state_list_.InsertWebState(0, CreateWebState(), nullptr);
-  web_state_list_.InsertWebState(1, CreateWebState(), nullptr);
+  web_state_list_.InsertWebState(0, CreateWebState());
+  web_state_list_.InsertWebState(1, CreateWebState());
   web::WebState* opener = web_state_list_.GetWebStateAt(0);
 
   // Verify that first child WebState is inserted after |opener| if there are
@@ -78,15 +79,17 @@ TEST_F(WebStateListOrderControllerTest, DetermineInsertionIndex) {
 
   // Add a child WebState to |opener|, and verify that a second child would be
   // inserted after the first.
-  web_state_list_.InsertWebState(2, CreateWebState(), opener);
+  web_state_list_.InsertWebState(2, CreateWebState());
+  web_state_list_.SetOpenerOfWebStateAt(2, WebStateOpener(opener));
 
   EXPECT_EQ(3, order_controller_.DetermineInsertionIndex(
                    ui::PAGE_TRANSITION_LINK, opener));
 
   // Add a grand-child to |opener|, and verify that adding another child to
   // |opener| would be inserted before the grand-child.
-  web_state_list_.InsertWebState(3, CreateWebState(),
-                                 web_state_list_.GetWebStateAt(1));
+  web_state_list_.InsertWebState(3, CreateWebState());
+  web_state_list_.SetOpenerOfWebStateAt(
+      3, WebStateOpener(web_state_list_.GetWebStateAt(1)));
 
   EXPECT_EQ(3, order_controller_.DetermineInsertionIndex(
                    ui::PAGE_TRANSITION_LINK, opener));

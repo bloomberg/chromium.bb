@@ -12,6 +12,7 @@
 #import "ios/shared/chrome/browser/tabs/web_state_list_delegate.h"
 #import "ios/shared/chrome/browser/tabs/web_state_list_observer.h"
 #import "ios/shared/chrome/browser/tabs/web_state_list_order_controller.h"
+#import "ios/shared/chrome/browser/tabs/web_state_opener.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/web_state/web_state.h"
 
@@ -26,15 +27,15 @@ class WebStateList::WebStateWrapper {
   ~WebStateWrapper();
 
   web::WebState* web_state() const { return web_state_; }
-  web::WebState* opener() const { return opener_; }
 
   // Replaces the wrapped WebState (and clear associated state) and returns the
   // old WebState after forfeiting ownership.
   web::WebState* ReplaceWebState(web::WebState* web_state);
 
-  // Sets the opener for the wrapped WebState and record the opener navigation
-  // index to allow detecting navigation changes during the same session.
-  void SetOpener(web::WebState* opener);
+  // Gets and sets information about this WebState opener. The navigation index
+  // is used to detect navigation changes during the same session.
+  WebStateOpener opener() const { return opener_; }
+  void set_opener(WebStateOpener opener) { opener_ = opener; }
 
   // Returns whether |opener| spawned the wrapped WebState. If |use_group| is
   // true, also use the opener navigation index to detect navigation changes
@@ -45,14 +46,13 @@ class WebStateList::WebStateWrapper {
 
  private:
   web::WebState* web_state_;
-  web::WebState* opener_ = nullptr;
-  int opener_last_committed_index_;
+  WebStateOpener opener_;
 
   DISALLOW_COPY_AND_ASSIGN(WebStateWrapper);
 };
 
 WebStateList::WebStateWrapper::WebStateWrapper(web::WebState* web_state)
-    : web_state_(web_state) {
+    : web_state_(web_state), opener_(nullptr) {
   DCHECK(web_state_);
 }
 
@@ -63,29 +63,21 @@ web::WebState* WebStateList::WebStateWrapper::ReplaceWebState(
   DCHECK(web_state);
   DCHECK_NE(web_state, web_state_);
   std::swap(web_state, web_state_);
-  opener_ = nullptr;
+  opener_ = WebStateOpener(nullptr);
   return web_state;
-}
-
-void WebStateList::WebStateWrapper::SetOpener(web::WebState* opener) {
-  opener_ = opener;
-  if (opener_) {
-    opener_last_committed_index_ =
-        opener_->GetNavigationManager()->GetLastCommittedItemIndex();
-  }
 }
 
 bool WebStateList::WebStateWrapper::WasOpenedBy(const web::WebState* opener,
                                                 int opener_navigation_index,
                                                 bool use_group) const {
   DCHECK(opener);
-  if (opener_ != opener)
+  if (opener_.opener != opener)
     return false;
 
   if (!use_group)
     return true;
 
-  return opener_last_committed_index_ == opener_navigation_index;
+  return opener_.navigation_index == opener_navigation_index;
 }
 
 WebStateList::WebStateList(WebStateListDelegate* delegate,
@@ -131,15 +123,15 @@ int WebStateList::GetIndexOfWebState(const web::WebState* web_state) const {
   return kInvalidIndex;
 }
 
-web::WebState* WebStateList::GetOpenerOfWebStateAt(int index) const {
+WebStateOpener WebStateList::GetOpenerOfWebStateAt(int index) const {
   DCHECK(ContainsIndex(index));
   return web_state_wrappers_[index]->opener();
 }
 
-void WebStateList::SetOpenerOfWebStateAt(int index, web::WebState* opener) {
+void WebStateList::SetOpenerOfWebStateAt(int index, WebStateOpener opener) {
   DCHECK(ContainsIndex(index));
-  DCHECK(ContainsIndex(GetIndexOfWebState(opener)));
-  web_state_wrappers_[index]->SetOpener(opener);
+  DCHECK(ContainsIndex(GetIndexOfWebState(opener.opener)));
+  web_state_wrappers_[index]->set_opener(opener);
 }
 
 int WebStateList::GetIndexOfNextWebStateOpenedBy(const web::WebState* opener,
@@ -154,9 +146,7 @@ int WebStateList::GetIndexOfLastWebStateOpenedBy(const web::WebState* opener,
   return GetIndexOfNthWebStateOpenedBy(opener, start_index, use_group, INT_MAX);
 }
 
-void WebStateList::InsertWebState(int index,
-                                  web::WebState* web_state,
-                                  web::WebState* opener) {
+void WebStateList::InsertWebState(int index, web::WebState* web_state) {
   DCHECK(ContainsIndex(index) || index == count());
   delegate_->WillAddWebState(web_state);
 
@@ -166,21 +156,22 @@ void WebStateList::InsertWebState(int index,
   if (active_index_ >= index)
     ++active_index_;
 
-  if (opener)
-    SetOpenerOfWebStateAt(index, opener);
-
   for (auto& observer : observers_)
     observer.WebStateInsertedAt(this, web_state, index);
 }
 
 void WebStateList::AppendWebState(ui::PageTransition transition,
                                   web::WebState* web_state,
-                                  web::WebState* opener) {
-  int index = order_controller_->DetermineInsertionIndex(transition, opener);
+                                  WebStateOpener opener) {
+  int index =
+      order_controller_->DetermineInsertionIndex(transition, opener.opener);
   if (index < 0 || count() < index)
     index = count();
 
-  InsertWebState(index, web_state, opener);
+  InsertWebState(index, web_state);
+
+  if (opener.opener)
+    SetOpenerOfWebStateAt(index, opener);
 }
 
 void WebStateList::MoveWebStateAt(int from_index, int to_index) {
@@ -211,8 +202,7 @@ void WebStateList::MoveWebStateAt(int from_index, int to_index) {
 }
 
 web::WebState* WebStateList::ReplaceWebStateAt(int index,
-                                               web::WebState* web_state,
-                                               web::WebState* opener) {
+                                               web::WebState* web_state) {
   DCHECK(ContainsIndex(index));
   delegate_->WillAddWebState(web_state);
 
@@ -220,9 +210,6 @@ web::WebState* WebStateList::ReplaceWebStateAt(int index,
 
   auto& web_state_wrapper = web_state_wrappers_[index];
   web::WebState* old_web_state = web_state_wrapper->ReplaceWebState(web_state);
-
-  if (opener && opener != old_web_state)
-    SetOpenerOfWebStateAt(index, opener);
 
   for (auto& observer : observers_)
     observer.WebStateReplacedAt(this, old_web_state, web_state, index);
@@ -232,11 +219,11 @@ web::WebState* WebStateList::ReplaceWebStateAt(int index,
 
 web::WebState* WebStateList::DetachWebStateAt(int index) {
   DCHECK(ContainsIndex(index));
-  ClearOpenersReferencing(index);
-
   int new_active_index = order_controller_->DetermineNewActiveIndex(index);
 
   web::WebState* old_web_state = web_state_wrappers_[index]->web_state();
+
+  ClearOpenersReferencing(index);
   web_state_wrappers_.erase(web_state_wrappers_.begin() + index);
 
   // Update the active index to prevent observer from seeing an invalid WebState
@@ -275,8 +262,8 @@ void WebStateList::RemoveObserver(WebStateListObserver* observer) {
 void WebStateList::ClearOpenersReferencing(int index) {
   web::WebState* old_web_state = web_state_wrappers_[index]->web_state();
   for (auto& web_state_wrapper : web_state_wrappers_) {
-    if (web_state_wrapper->opener() == old_web_state)
-      web_state_wrapper->SetOpener(nullptr);
+    if (web_state_wrapper->opener().opener == old_web_state)
+      web_state_wrapper->set_opener(WebStateOpener(nullptr));
   }
 }
 

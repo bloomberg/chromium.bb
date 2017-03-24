@@ -69,7 +69,7 @@ class WebStateListFastEnumerationHelperTest : public PlatformTest {
       test_web_state->SetCurrentURL(GURL(urls[index]));
 
       web_state_list_.InsertWebState(web_state_list_.count(),
-                                     test_web_state.release(), nullptr);
+                                     test_web_state.release());
     }
   }
 

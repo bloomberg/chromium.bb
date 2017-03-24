@@ -49,7 +49,7 @@
     web::WebState::CreateParams webStateCreateParams(browser->browser_state());
     std::unique_ptr<web::WebState> webState =
         web::WebState::Create(webStateCreateParams);
-    self.webStateList.InsertWebState(0, webState.release(), nullptr);
+    self.webStateList.InsertWebState(0, webState.release());
   }
   self.webStateList.ActivateWebStateAt(0);
 }
@@ -106,7 +106,7 @@
   std::unique_ptr<web::WebState> webState =
       web::WebState::Create(webStateCreateParams);
   self.webStateList.InsertWebState(self.webStateList.count(),
-                                   webState.release(), nullptr);
+                                   webState.release());
   [self showTabAtIndex:self.webStateList.count() - 1];
 }
 

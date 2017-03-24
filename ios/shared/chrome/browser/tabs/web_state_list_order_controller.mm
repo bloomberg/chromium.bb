@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #import "ios/shared/chrome/browser/tabs/web_state_list.h"
+#import "ios/shared/chrome/browser/tabs/web_state_opener.h"
 
 WebStateListOrderController::WebStateListOrderController(
     WebStateList* web_state_list)
@@ -53,19 +54,19 @@ int WebStateListOrderController::DetermineNewActiveIndex(
   if (index != WebStateList::kInvalidIndex)
     return GetValidIndex(index, removing_index);
 
-  web::WebState* opener =
+  WebStateOpener opener =
       web_state_list_->GetOpenerOfWebStateAt(removing_index);
-  if (opener) {
+  if (opener.opener) {
     // If the WebState was in a group, shift selection to the next WebState in
     // the group.
     int index = web_state_list_->GetIndexOfNextWebStateOpenedBy(
-        opener, removing_index, false);
+        opener.opener, removing_index, false);
 
     if (index != WebStateList::kInvalidIndex)
       return GetValidIndex(index, removing_index);
 
     // If there is no subsequent group member, just fall back to opener itself.
-    index = web_state_list_->GetIndexOfWebState(opener);
+    index = web_state_list_->GetIndexOfWebState(opener.opener);
     return GetValidIndex(index, removing_index);
   }
 

@@ -16,6 +16,7 @@
 class WebStateListDelegate;
 class WebStateListObserver;
 class WebStateListOrderController;
+struct WebStateOpener;
 
 namespace web {
 class WebState;
@@ -58,13 +59,14 @@ class WebStateList {
   // WebState is not in the model.
   int GetIndexOfWebState(const web::WebState* web_state) const;
 
-  // Returns the WebState that opened the WebState at the specified index or
-  // null if there is no opener on record.
-  web::WebState* GetOpenerOfWebStateAt(int index) const;
+  // Returns information about the opener of the WebState at the specified
+  // index. The structure |opener| will be null if there is no opener.
+  WebStateOpener GetOpenerOfWebStateAt(int index) const;
 
-  // Sets the opener for WebState at the specified index. The |opener| must be
-  // in the WebStateList.
-  void SetOpenerOfWebStateAt(int index, web::WebState* opener);
+  // Stores information about the opener of the WebState at the specified
+  // index. The WebStateOpener |opener| must be non-null and the WebState
+  // must be in WebStateList.
+  void SetOpenerOfWebStateAt(int index, WebStateOpener opener);
 
   // Returns the index of the next WebState in the sequence of WebStates opened
   // from the specified WebState after |start_index|, or kInvalidIndex if there
@@ -82,28 +84,24 @@ class WebStateList {
                                      int start_index,
                                      bool use_group) const;
 
-  // Inserts the specified WebState at the specified index with an optional
-  // opener (null if there is no opener).
-  void InsertWebState(int index,
-                      web::WebState* web_state,
-                      web::WebState* opener);
+  // Inserts the specified WebState at the specified index.
+  void InsertWebState(int index, web::WebState* web_state);
 
   // Inserts the specified WebState at the best position in the WebStateList
-  // given the specified transition, opener (optional, may be null), etc. It
-  // defaults to inserting the WebState at the end of the list.
+  // given the specified transition, opener, etc. It defaults to inserting the
+  // WebState at the end of the list.
   void AppendWebState(ui::PageTransition transition,
                       web::WebState* web_state,
-                      web::WebState* opener);
+                      WebStateOpener opener);
 
   // Moves the WebState at the specified index to another index.
   void MoveWebStateAt(int from_index, int to_index);
 
   // Replaces the WebState at the specified index with new WebState. Returns
   // the old WebState at that index to the caller (abandon ownership of the
-  // returned WebState). An optional opener for the new WebState may be passed.
+  // returned WebState).
   web::WebState* ReplaceWebStateAt(int index,
-                                   web::WebState* web_state,
-                                   web::WebState* opener) WARN_UNUSED_RESULT;
+                                   web::WebState* web_state) WARN_UNUSED_RESULT;
 
   // Detaches the WebState at the specified index. Returns the detached WebState
   // to the caller (abandon ownership of the returned WebState).

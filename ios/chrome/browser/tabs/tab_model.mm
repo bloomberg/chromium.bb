@@ -45,6 +45,7 @@
 #import "ios/shared/chrome/browser/tabs/web_state_list_fast_enumeration_helper.h"
 #import "ios/shared/chrome/browser/tabs/web_state_list_metrics_observer.h"
 #import "ios/shared/chrome/browser/tabs/web_state_list_observer.h"
+#import "ios/shared/chrome/browser/tabs/web_state_opener.h"
 #import "ios/web/navigation/crw_session_certificate_policy_manager.h"
 #import "ios/web/navigation/crw_session_controller.h"
 #include "ios/web/public/browser_state.h"
@@ -452,8 +453,9 @@ Tab* GetOpenerForTab(id<NSFastEnumeration> tabs, Tab* tab) {
   if (index == WebStateList::kInvalidIndex)
     return nil;
 
-  web::WebState* opener = _webStateList->GetOpenerOfWebStateAt(index);
-  return opener ? LegacyTabHelper::GetTabForWebState(opener) : nil;
+  WebStateOpener opener = _webStateList->GetOpenerOfWebStateAt(index);
+  return opener.opener ? LegacyTabHelper::GetTabForWebState(opener.opener)
+                       : nil;
 }
 
 - (Tab*)insertTabWithURL:(const GURL&)URL
@@ -533,12 +535,18 @@ Tab* GetOpenerForTab(id<NSFastEnumeration> tabs, Tab* tab) {
 
   [_tabRetainer addObject:tab];
   if (index == TabModelConstants::kTabPositionAutomatically) {
-    _webStateList->AppendWebState(transition, tab.webState, parentTab.webState);
+    _webStateList->AppendWebState(
+        transition, tab.webState,
+        WebStateOpener(parentTab.webState, tab.openerNavigationIndex));
   } else {
     DCHECK_LE(index, static_cast<NSUInteger>(INT_MAX));
     const int insertion_index = static_cast<int>(index);
-    _webStateList->InsertWebState(insertion_index, tab.webState,
-                                  parentTab.webState);
+    _webStateList->InsertWebState(insertion_index, tab.webState);
+    if (parentTab.webState) {
+      _webStateList->SetOpenerOfWebStateAt(
+          insertion_index,
+          WebStateOpener(parentTab.webState, tab.openerNavigationIndex));
+    }
   }
 
   // Persist the session due to a new tab being inserted. If this is a
@@ -593,8 +601,14 @@ Tab* GetOpenerForTab(id<NSFastEnumeration> tabs, Tab* tab) {
   // object destroyed as expected, so it will fine to ignore the result then
   // too. See http://crbug.com/546222 for progress of changing the ownership
   // of the WebStates.
-  ignore_result(_webStateList->ReplaceWebStateAt(
-      index, newTab.webState, GetOpenerForTab(self, newTab).webState));
+  ignore_result(_webStateList->ReplaceWebStateAt(index, newTab.webState));
+
+  Tab* parentTab = GetOpenerForTab(self, newTab);
+  if (parentTab) {
+    _webStateList->SetOpenerOfWebStateAt(
+        index,
+        WebStateOpener(parentTab.webState, newTab.openerNavigationIndex));
+  }
 
   [oldTab setParentTabModel:nil];
   [oldTab close];
@@ -891,7 +905,8 @@ Tab* GetOpenerForTab(id<NSFastEnumeration> tabs, Tab* tab) {
     Tab* opener = GetOpenerForTab(restoredTabs.get(), tab);
     if (opener) {
       DCHECK(opener.webState);
-      _webStateList->SetOpenerOfWebStateAt(index, opener.webState);
+      _webStateList->SetOpenerOfWebStateAt(
+          index, WebStateOpener(opener.webState, tab.openerNavigationIndex));
     }
   }
 
