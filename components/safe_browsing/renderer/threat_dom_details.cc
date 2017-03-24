@@ -109,7 +109,7 @@ SafeBrowsingHostMsg_ThreatDOMDetails_Node* GetNodeForElement(
     const safe_browsing::ElementToNodeMap& element_to_node_map,
     std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node>* resources) {
   DCHECK(element_to_node_map.count(element) > 0);
-  int resource_index = element_to_node_map.at(element);
+  size_t resource_index = element_to_node_map.at(element);
   return &(resources->at(resource_index));
 }
 
@@ -171,7 +171,7 @@ void HandleElement(
   // Update the ID mapping. First generate the ID for the current node.
   // Then, if its parent is available, set the current node's parent ID, and
   // also update the parent's children with the current node's ID.
-  const size_t child_id = element_to_node_map->size() + 1;
+  const int child_id = static_cast<int>(element_to_node_map->size()) + 1;
   child_node.node_id = child_id;
   blink::WebNode cur_parent_element = element.parentNode();
   while (!cur_parent_element.isNull()) {

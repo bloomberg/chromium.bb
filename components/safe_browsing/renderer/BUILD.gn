@@ -18,8 +18,5 @@ source_set("renderer") {
       "//third_party/WebKit/public:blink",
       "//url/ipc:url_ipc",
     ]
-    if (is_win) {
-      cflags = [ "/wd4267" ]  # conversion from 'size_t' to 'int' on x64 (crbug.com/702773)
-    }
   }
 }
