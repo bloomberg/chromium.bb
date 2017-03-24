@@ -181,7 +181,6 @@ ScrollBar.prototype.onMouseMove_ = function(event) {
   }
   var clientSize = this.clientHeight_;
   var totalSize = this.scrollHeight_;
-  // TODO(hirono): Fix the geometric calculation.  crbug.com/253779
   var buttonSize = Math.max(50, clientSize / totalSize * clientSize);
   var buttonPosition = this.buttonPressedPosition_ +
       (event.screenY - this.buttonPressedEvent_.screenY);
