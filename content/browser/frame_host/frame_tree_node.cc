@@ -503,6 +503,8 @@ bool FrameTreeNode::StopLoading() {
     if (navigation_request_) {
       navigation_request_->navigation_handle()->set_net_error_code(
           net::ERR_ABORTED);
+      navigator_->DiscardPendingEntryIfNeeded(
+          navigation_request_->navigation_handle());
     }
     ResetNavigationRequest(false, true);
   }

@@ -6794,4 +6794,25 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(1, controller.GetEntryCount());
 }
 
+// Tests that stopping a load clears the pending navigation entry.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, StopDuringLoad) {
+  // Load an initial page since the behavior differs for the first entry.
+  GURL start_url(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+
+  TestNavigationObserver same_tab_observer(shell()->web_contents(), 1);
+  GURL slow_url = embedded_test_server()->GetURL("/slow?60");
+  shell()->LoadURL(slow_url);
+  shell()->web_contents()->Stop();
+
+  // For non-PlzNavigate case, this happens asynchronously.
+  if (!IsBrowserSideNavigationEnabled())
+    same_tab_observer.Wait();
+
+  const NavigationController& controller =
+      shell()->web_contents()->GetController();
+  ASSERT_EQ(controller.GetPendingEntry(), nullptr);
+}
+
 }  // namespace content
