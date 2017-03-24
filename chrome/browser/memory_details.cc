@@ -228,8 +228,9 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
   std::unique_ptr<content::RenderWidgetHostIterator> widget_it(
       RenderWidgetHost::GetRenderWidgetHosts());
   while (content::RenderWidgetHost* widget = widget_it->GetNextHost()) {
-    // Ignore processes that don't have a connection, such as crashed tabs.
-    if (!widget->GetProcess()->HasConnection())
+    // Ignore processes that don't have a connection, such as crashed tabs,
+    // or processes that are still launching.
+    if (!widget->GetProcess()->IsReady())
       continue;
     base::ProcessId pid = base::GetProcId(widget->GetProcess()->GetHandle());
     widgets_by_pid[pid].push_back(widget);
