@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/web_contents_sizer.h"
+#include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -194,15 +195,13 @@ bool OffscreenTab::HandleContextMenu(const content::ContextMenuParams& params) {
   return true;
 }
 
-bool OffscreenTab::PreHandleKeyboardEvent(
+content::KeyboardEventProcessingResult OffscreenTab::PreHandleKeyboardEvent(
     WebContents* source,
-    const content::NativeWebKeyboardEvent& event,
-    bool* is_keyboard_shortcut) {
+    const content::NativeWebKeyboardEvent& event) {
   DCHECK_EQ(offscreen_tab_web_contents_.get(), source);
   // Intercept and silence all keyboard events before they can be sent to the
   // renderer.
-  *is_keyboard_shortcut = false;
-  return true;
+  return content::KeyboardEventProcessingResult::HANDLED;
 }
 
 bool OffscreenTab::PreHandleGestureEvent(WebContents* source,

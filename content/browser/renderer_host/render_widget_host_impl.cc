@@ -64,6 +64,7 @@
 #include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -1168,12 +1169,13 @@ void RenderWidgetHostImpl::ForwardTouchEventWithLatencyInfo(
 
 void RenderWidgetHostImpl::ForwardKeyboardEvent(
     const NativeWebKeyboardEvent& key_event) {
-  ForwardKeyboardEventWithCommands(key_event, nullptr);
+  ForwardKeyboardEventWithCommands(key_event, nullptr, nullptr);
 }
 
 void RenderWidgetHostImpl::ForwardKeyboardEventWithCommands(
     const NativeWebKeyboardEvent& key_event,
-    const std::vector<EditCommand>* commands) {
+    const std::vector<EditCommand>* commands,
+    bool* update_event) {
   TRACE_EVENT0("input", "RenderWidgetHostImpl::ForwardKeyboardEvent");
   if (owner_delegate_ &&
       !owner_delegate_->MayRenderWidgetForwardKeyboardEvent(key_event)) {
@@ -1218,7 +1220,7 @@ void RenderWidgetHostImpl::ForwardKeyboardEventWithCommands(
   // Only pre-handle the key event if it's not handled by the input method.
   if (delegate_ && !key_event.skip_in_browser) {
     // We need to set |suppress_events_until_keydown_| to true if
-    // PreHandleKeyboardEvent() returns true, but |this| may already be
+    // PreHandleKeyboardEvent() handles the event, but |this| may already be
     // destroyed at that time. So set |suppress_events_until_keydown_| true
     // here, then revert it afterwards when necessary.
     if (key_event.type() == WebKeyboardEvent::RawKeyDown)
@@ -1226,8 +1228,21 @@ void RenderWidgetHostImpl::ForwardKeyboardEventWithCommands(
 
     // Tab switching/closing accelerators aren't sent to the renderer to avoid
     // a hung/malicious renderer from interfering.
-    if (delegate_->PreHandleKeyboardEvent(key_event, &is_shortcut))
-      return;
+    switch (delegate_->PreHandleKeyboardEvent(key_event)) {
+      case KeyboardEventProcessingResult::HANDLED:
+        return;
+#if defined(USE_AURA)
+      case KeyboardEventProcessingResult::HANDLED_DONT_UPDATE_EVENT:
+        if (update_event)
+          *update_event = false;
+        return;
+#endif
+      case KeyboardEventProcessingResult::NOT_HANDLED:
+        break;
+      case KeyboardEventProcessingResult::NOT_HANDLED_IS_SHORTCUT:
+        is_shortcut = true;
+        break;
+    }
 
     if (key_event.type() == WebKeyboardEvent::RawKeyDown)
       suppress_events_until_keydown_ = false;

@@ -176,6 +176,7 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/invalidate_type.h"
+#include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
@@ -1256,16 +1257,16 @@ void Browser::SetFocusToLocationBar(bool select_all) {
   window_->SetFocusToLocationBar(select_all);
 }
 
-bool Browser::PreHandleKeyboardEvent(content::WebContents* source,
-                                     const NativeWebKeyboardEvent& event,
-                                     bool* is_keyboard_shortcut) {
+content::KeyboardEventProcessingResult Browser::PreHandleKeyboardEvent(
+    content::WebContents* source,
+    const NativeWebKeyboardEvent& event) {
   // Forward keyboard events to the manager for fullscreen / mouse lock. This
   // may consume the event (e.g., Esc exits fullscreen mode).
   // TODO(koz): Write a test for this http://crbug.com/100441.
   if (exclusive_access_manager_->HandleUserKeyPress(event))
-    return true;
+    return content::KeyboardEventProcessingResult::HANDLED;
 
-  return window()->PreHandleKeyboardEvent(event, is_keyboard_shortcut);
+  return window()->PreHandleKeyboardEvent(event);
 }
 
 void Browser::HandleKeyboardEvent(content::WebContents* source,

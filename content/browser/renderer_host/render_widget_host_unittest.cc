@@ -27,6 +27,7 @@
 #include "content/common/input_messages.h"
 #include "content/common/resize_params.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -411,12 +412,15 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   }
 
  protected:
-  bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
-                              bool* is_keyboard_shortcut) override {
+  KeyboardEventProcessingResult PreHandleKeyboardEvent(
+      const NativeWebKeyboardEvent& event) override {
     prehandle_keyboard_event_type_ = event.type();
     prehandle_keyboard_event_called_ = true;
-    *is_keyboard_shortcut = prehandle_keyboard_event_is_shortcut_;
-    return prehandle_keyboard_event_;
+    if (prehandle_keyboard_event_)
+      return KeyboardEventProcessingResult::HANDLED;
+    return prehandle_keyboard_event_is_shortcut_
+               ? KeyboardEventProcessingResult::NOT_HANDLED_IS_SHORTCUT
+               : KeyboardEventProcessingResult::NOT_HANDLED;
   }
 
   void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) override {
@@ -569,7 +573,7 @@ class RenderWidgetHostTest : public testing::Test {
                                         GetNextSimulatedEventTimeSeconds());
     EditCommands commands;
     commands.emplace_back("name", "value");
-    host_->ForwardKeyboardEventWithCommands(native_event, &commands);
+    host_->ForwardKeyboardEventWithCommands(native_event, &commands, nullptr);
   }
 
   void SimulateMouseEvent(WebInputEvent::Type type) {

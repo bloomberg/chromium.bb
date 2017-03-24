@@ -68,9 +68,9 @@ class ExtensionViewHost
       content::WebContents* source,
       const content::OpenURLParams& params) override;
   bool ShouldTransferNavigation(bool is_main_frame_navigation) override;
-  bool PreHandleKeyboardEvent(content::WebContents* source,
-                              const content::NativeWebKeyboardEvent& event,
-                              bool* is_keyboard_shortcut) override;
+  content::KeyboardEventProcessingResult PreHandleKeyboardEvent(
+      content::WebContents* source,
+      const content::NativeWebKeyboardEvent& event) override;
   void HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override;

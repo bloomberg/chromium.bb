@@ -55,6 +55,7 @@
 #include "content/common/input_messages.h"
 #include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "content/public/common/content_features.h"
@@ -210,13 +211,17 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   void UpdateDeviceScaleFactor(double device_scale_factor) override {
     last_device_scale_factor_ = device_scale_factor;
   }
+  void set_pre_handle_keyboard_event_result(
+      KeyboardEventProcessingResult result) {
+    pre_handle_keyboard_event_result_ = result;
+  }
 
  protected:
   // RenderWidgetHostDelegate:
-  bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
-                              bool* is_keyboard_shortcut) override {
+  KeyboardEventProcessingResult PreHandleKeyboardEvent(
+      const NativeWebKeyboardEvent& event) override {
     last_event_.reset(new NativeWebKeyboardEvent(event));
-    return true;
+    return pre_handle_keyboard_event_result_;
   }
   void Cut() override {}
   void Copy() override {}
@@ -235,6 +240,8 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   TextInputManager text_input_manager_;
   RenderWidgetHostImpl* focused_widget_;
   double last_device_scale_factor_;
+  KeyboardEventProcessingResult pre_handle_keyboard_event_result_ =
+      KeyboardEventProcessingResult::HANDLED;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderWidgetHostDelegate);
 };
@@ -4269,12 +4276,28 @@ TEST_F(RenderWidgetHostViewAuraTest, KeyEvent) {
   view_->OnKeyEvent(&key_event);
 
   const NativeWebKeyboardEvent* event = delegates_.back()->last_event();
-  EXPECT_NE(nullptr, event);
-  if (event) {
-    EXPECT_EQ(key_event.key_code(), event->windowsKeyCode);
-    EXPECT_EQ(ui::KeycodeConverter::DomCodeToNativeKeycode(key_event.code()),
-              event->nativeKeyCode);
-  }
+  ASSERT_TRUE(event);
+  EXPECT_EQ(key_event.key_code(), event->windowsKeyCode);
+  EXPECT_EQ(ui::KeycodeConverter::DomCodeToNativeKeycode(key_event.code()),
+            event->nativeKeyCode);
+}
+
+TEST_F(RenderWidgetHostViewAuraTest, KeyEventsHandled) {
+  view_->InitAsChild(nullptr);
+  view_->Show();
+
+  ui::KeyEvent key_event1(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
+  view_->OnKeyEvent(&key_event1);
+  // Normally event should be handled.
+  EXPECT_TRUE(key_event1.handled());
+
+  ASSERT_FALSE(delegates_.empty());
+  // Make the delegate mark the event as not-handled.
+  delegates_.back()->set_pre_handle_keyboard_event_result(
+      KeyboardEventProcessingResult::HANDLED_DONT_UPDATE_EVENT);
+  ui::KeyEvent key_event2(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
+  view_->OnKeyEvent(&key_event2);
+  EXPECT_FALSE(key_event2.handled());
 }
 
 TEST_F(RenderWidgetHostViewAuraTest, SetCanScrollForWebMouseWheelEvent) {

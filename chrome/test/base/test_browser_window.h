@@ -80,11 +80,10 @@ class TestBrowserWindow : public BrowserWindow {
   void FocusInfobars() override {}
   void RotatePaneFocus(bool forwards) override {}
   void ShowAppMenu() override {}
-  bool PreHandleKeyboardEvent(const content::NativeWebKeyboardEvent& event,
-                              bool* is_keyboard_shortcut) override;
+  content::KeyboardEventProcessingResult PreHandleKeyboardEvent(
+      const content::NativeWebKeyboardEvent& event) override;
   void HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) override {}
-
   bool IsBookmarkBarVisible() const override;
   bool IsBookmarkBarAnimating() const override;
   bool IsTabStripEditable() const override;

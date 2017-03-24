@@ -22,6 +22,7 @@
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/invalidate_type.h"
+#include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -379,13 +380,12 @@ void AppWindow::AddNewContents(WebContents* source,
                                 was_blocked);
 }
 
-bool AppWindow::PreHandleKeyboardEvent(
+content::KeyboardEventProcessingResult AppWindow::PreHandleKeyboardEvent(
     content::WebContents* source,
-    const content::NativeWebKeyboardEvent& event,
-    bool* is_keyboard_shortcut) {
+    const content::NativeWebKeyboardEvent& event) {
   const Extension* extension = GetExtension();
   if (!extension)
-    return false;
+    return content::KeyboardEventProcessingResult::NOT_HANDLED;
 
   // Here, we can handle a key event before the content gets it. When we are
   // fullscreen and it is not forced, we want to allow the user to leave
@@ -400,10 +400,10 @@ bool AppWindow::PreHandleKeyboardEvent(
       !extension->permissions_data()->HasAPIPermission(
           APIPermission::kOverrideEscFullscreen)) {
     Restore();
-    return true;
+    return content::KeyboardEventProcessingResult::HANDLED;
   }
 
-  return false;
+  return content::KeyboardEventProcessingResult::NOT_HANDLED;
 }
 
 void AppWindow::HandleKeyboardEvent(

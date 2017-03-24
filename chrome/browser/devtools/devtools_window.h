@@ -297,9 +297,9 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   void BeforeUnloadFired(content::WebContents* tab,
                          bool proceed,
                          bool* proceed_to_fire_unload) override;
-  bool PreHandleKeyboardEvent(content::WebContents* source,
-                              const content::NativeWebKeyboardEvent& event,
-                              bool* is_keyboard_shortcut) override;
+  content::KeyboardEventProcessingResult PreHandleKeyboardEvent(
+      content::WebContents* source,
+      const content::NativeWebKeyboardEvent& event) override;
   void HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override;

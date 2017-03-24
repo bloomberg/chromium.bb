@@ -5,9 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_GLOBAL_SHORTCUT_LISTENER_CHROMEOS_H_
 #define CHROME_BROWSER_EXTENSIONS_GLOBAL_SHORTCUT_LISTENER_CHROMEOS_H_
 
-#include "chrome/browser/extensions/global_shortcut_listener.h"
-
 #include "base/macros.h"
+#include "chrome/browser/extensions/global_shortcut_listener.h"
 #include "ui/base/accelerators/accelerator.h"
 
 namespace extensions {

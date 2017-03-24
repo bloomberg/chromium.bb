@@ -135,8 +135,8 @@ class BrowserWindowCocoa
       const GURL& virtual_url,
       const security_state::SecurityInfo& security_info) override;
   void ShowAppMenu() override;
-  bool PreHandleKeyboardEvent(const content::NativeWebKeyboardEvent& event,
-                              bool* is_keyboard_shortcut) override;
+  content::KeyboardEventProcessingResult PreHandleKeyboardEvent(
+      const content::NativeWebKeyboardEvent& event) override;
   void HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) override;
   void CutCopyPaste(int command_id) override;

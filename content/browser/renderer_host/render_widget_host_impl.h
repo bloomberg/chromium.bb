@@ -347,9 +347,13 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
 
   // Forwards the keyboard event with optional commands to the renderer. If
   // |key_event| is not forwarded for any reason, then |commands| are ignored.
+  // |update_event| (if non-null) is set to indicate whether the underlying
+  // event in |key_event| should be updated. |update_event| is only used on
+  // aura.
   void ForwardKeyboardEventWithCommands(
       const NativeWebKeyboardEvent& key_event,
-      const std::vector<EditCommand>* commands);
+      const std::vector<EditCommand>* commands,
+      bool* update_event = nullptr);
 
   // Forwards the given message to the renderer. These are called by the view
   // when it has received a message.

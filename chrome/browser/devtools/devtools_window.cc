@@ -39,6 +39,7 @@
 #include "components/zoom/zoom_controller.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -122,9 +123,9 @@ class DevToolsToolboxDelegate
   content::WebContents* OpenURLFromTab(
       content::WebContents* source,
       const content::OpenURLParams& params) override;
-  bool PreHandleKeyboardEvent(content::WebContents* source,
-                              const content::NativeWebKeyboardEvent& event,
-                              bool* is_keyboard_shortcut) override;
+  content::KeyboardEventProcessingResult PreHandleKeyboardEvent(
+      content::WebContents* source,
+      const content::NativeWebKeyboardEvent& event) override;
   void HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override;
@@ -157,14 +158,14 @@ content::WebContents* DevToolsToolboxDelegate::OpenURLFromTab(
   return source;
 }
 
-bool DevToolsToolboxDelegate::PreHandleKeyboardEvent(
+content::KeyboardEventProcessingResult
+DevToolsToolboxDelegate::PreHandleKeyboardEvent(
     content::WebContents* source,
-    const content::NativeWebKeyboardEvent& event,
-    bool* is_keyboard_shortcut) {
+    const content::NativeWebKeyboardEvent& event) {
   BrowserWindow* window = GetInspectedBrowserWindow();
   if (window)
-    return window->PreHandleKeyboardEvent(event, is_keyboard_shortcut);
-  return false;
+    return window->PreHandleKeyboardEvent(event);
+  return content::KeyboardEventProcessingResult::NOT_HANDLED;
 }
 
 void DevToolsToolboxDelegate::HandleKeyboardEvent(
@@ -1100,16 +1101,14 @@ void DevToolsWindow::BeforeUnloadFired(WebContents* tab,
   }
 }
 
-bool DevToolsWindow::PreHandleKeyboardEvent(
+content::KeyboardEventProcessingResult DevToolsWindow::PreHandleKeyboardEvent(
     WebContents* source,
-    const content::NativeWebKeyboardEvent& event,
-    bool* is_keyboard_shortcut) {
+    const content::NativeWebKeyboardEvent& event) {
   BrowserWindow* inspected_window = GetInspectedBrowserWindow();
   if (inspected_window) {
-    return inspected_window->PreHandleKeyboardEvent(event,
-                                                    is_keyboard_shortcut);
+    return inspected_window->PreHandleKeyboardEvent(event);
   }
-  return false;
+  return content::KeyboardEventProcessingResult::NOT_HANDLED;
 }
 
 void DevToolsWindow::HandleKeyboardEvent(

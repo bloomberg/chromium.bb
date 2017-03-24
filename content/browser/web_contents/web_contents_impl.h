@@ -633,8 +633,8 @@ class CONTENT_EXPORT WebContentsImpl
   void ScreenInfoChanged() override;
   void UpdateDeviceScaleFactor(double device_scale_factor) override;
   void GetScreenInfo(ScreenInfo* screen_info) override;
-  bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
-                              bool* is_keyboard_shortcut) override;
+  KeyboardEventProcessingResult PreHandleKeyboardEvent(
+      const NativeWebKeyboardEvent& event) override;
   void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) override;
   bool HandleWheelEvent(const blink::WebMouseWheelEvent& event) override;
   bool PreHandleGestureEvent(const blink::WebGestureEvent& event) override;

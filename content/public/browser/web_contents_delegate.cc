@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
+#include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/security_style_explanations.h"
 #include "content/public/browser/web_contents.h"
@@ -111,11 +112,10 @@ void WebContentsDelegate::ViewSourceForFrame(WebContents* source,
                     ui::PAGE_TRANSITION_LINK, false));
 }
 
-bool WebContentsDelegate::PreHandleKeyboardEvent(
+KeyboardEventProcessingResult WebContentsDelegate::PreHandleKeyboardEvent(
     WebContents* source,
-    const NativeWebKeyboardEvent& event,
-    bool* is_keyboard_shortcut) {
-  return false;
+    const NativeWebKeyboardEvent& event) {
+  return KeyboardEventProcessingResult::NOT_HANDLED;
 }
 
 bool WebContentsDelegate::PreHandleGestureEvent(

@@ -59,8 +59,11 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
     // Converts |rect| from window coordinate to screen coordinate.
     virtual gfx::Rect ConvertRectToScreen(const gfx::Rect& rect) const = 0;
     // Call keybindings handler against the event and send matched edit commands
-    // to the renderer instead.
-    virtual void ForwardKeyboardEvent(const NativeWebKeyboardEvent& event) = 0;
+    // to the renderer instead. |update_event| (if non-null) is set to indicate
+    // whether ui::KeyEvent::SetHandled() should be called on the underlying
+    // ui::KeyEvent.
+    virtual void ForwardKeyboardEvent(const NativeWebKeyboardEvent& event,
+                                      bool* update_event) = 0;
     // Returns whether the widget needs to grab mouse capture to work properly.
     virtual bool NeedsMouseCapture() = 0;
     virtual void SetTooltipsEnabled(bool enable) = 0;

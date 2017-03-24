@@ -1233,7 +1233,8 @@ void RenderWidgetHostViewAura::InsertChar(const ui::KeyEvent& event) {
   if (host_ && (event_handler_->accept_return_character() ||
                 event.GetCharacter() != ui::VKEY_RETURN)) {
     // Send a blink::WebInputEvent::Char event to |host_|.
-    ForwardKeyboardEvent(NativeWebKeyboardEvent(event, event.GetCharacter()));
+    ForwardKeyboardEvent(NativeWebKeyboardEvent(event, event.GetCharacter()),
+                         nullptr);
   }
 }
 
@@ -2226,7 +2227,8 @@ void RenderWidgetHostViewAura::DetachFromInputMethod() {
 }
 
 void RenderWidgetHostViewAura::ForwardKeyboardEvent(
-    const NativeWebKeyboardEvent& event) {
+    const NativeWebKeyboardEvent& event,
+    bool* update_event) {
   RenderWidgetHostImpl* target_host = host_;
 
   // If there are multiple widgets on the page (such as when there are
@@ -2252,12 +2254,13 @@ void RenderWidgetHostViewAura::ForwardKeyboardEvent(
                                           it->argument()));
     }
 
-    target_host->ForwardKeyboardEventWithCommands(event, &edit_commands);
+    target_host->ForwardKeyboardEventWithCommands(event, &edit_commands,
+                                                  update_event);
     return;
   }
 #endif
 
-  target_host->ForwardKeyboardEvent(event);
+  target_host->ForwardKeyboardEventWithCommands(event, nullptr, update_event);
 }
 
 void RenderWidgetHostViewAura::CreateSelectionController() {

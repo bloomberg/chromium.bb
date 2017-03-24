@@ -7,8 +7,8 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
+#include "content/public/browser/keyboard_event_processing_result.h"
 #include "ui/gfx/geometry/rect.h"
-
 
 // Helpers --------------------------------------------------------------------
 
@@ -121,10 +121,10 @@ ToolbarActionsBar* TestBrowserWindow::GetToolbarActionsBar() {
   return nullptr;
 }
 
-bool TestBrowserWindow::PreHandleKeyboardEvent(
-    const content::NativeWebKeyboardEvent& event,
-    bool* is_keyboard_shortcut) {
-  return false;
+content::KeyboardEventProcessingResult
+TestBrowserWindow::PreHandleKeyboardEvent(
+    const content::NativeWebKeyboardEvent& event) {
+  return content::KeyboardEventProcessingResult::NOT_HANDLED;
 }
 
 bool TestBrowserWindow::IsBookmarkBarVisible() const {

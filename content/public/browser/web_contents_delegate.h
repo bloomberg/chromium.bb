@@ -79,6 +79,8 @@ namespace content {
 struct OpenURLParams;
 struct WebContentsUnresponsiveState;
 
+enum class KeyboardEventProcessingResult;
+
 // Objects implement this interface to get notified about changes in the
 // WebContents and to provide necessary functionality.
 class CONTENT_EXPORT WebContentsDelegate {
@@ -259,12 +261,10 @@ class CONTENT_EXPORT WebContentsDelegate {
                                   const PageState& page_state);
 
   // Allows delegates to handle keyboard events before sending to the renderer.
-  // Returns true if the |event| was handled. Otherwise, if the |event| would be
-  // handled in HandleKeyboardEvent() method as a normal keyboard shortcut,
-  // |*is_keyboard_shortcut| should be set to true.
-  virtual bool PreHandleKeyboardEvent(WebContents* source,
-                                      const NativeWebKeyboardEvent& event,
-                                      bool* is_keyboard_shortcut);
+  // See enum for description of return values.
+  virtual KeyboardEventProcessingResult PreHandleKeyboardEvent(
+      WebContents* source,
+      const NativeWebKeyboardEvent& event);
 
   // Allows delegates to handle unhandled keyboard messages coming back from
   // the renderer.

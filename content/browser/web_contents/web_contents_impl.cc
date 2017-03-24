@@ -100,6 +100,7 @@
 #include "content/public/browser/guest_mode.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/javascript_dialog_manager.h"
+#include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/browser/load_notification_details.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_details.h"
@@ -1768,11 +1769,10 @@ void WebContentsImpl::ScreenInfoChanged() {
     browser_plugin_embedder_->ScreenInfoChanged();
 }
 
-bool WebContentsImpl::PreHandleKeyboardEvent(
-    const NativeWebKeyboardEvent& event,
-    bool* is_keyboard_shortcut) {
-  return delegate_ &&
-      delegate_->PreHandleKeyboardEvent(this, event, is_keyboard_shortcut);
+KeyboardEventProcessingResult WebContentsImpl::PreHandleKeyboardEvent(
+    const NativeWebKeyboardEvent& event) {
+  return delegate_ ? delegate_->PreHandleKeyboardEvent(this, event)
+                   : KeyboardEventProcessingResult::NOT_HANDLED;
 }
 
 void WebContentsImpl::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {

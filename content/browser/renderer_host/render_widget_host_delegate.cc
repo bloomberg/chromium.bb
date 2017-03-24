@@ -7,16 +7,16 @@
 #include "build/build_config.h"
 #include "components/rappor/public/sample.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
+#include "content/public/browser/keyboard_event_processing_result.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace content {
 
 void RenderWidgetHostDelegate::GetScreenInfo(ScreenInfo*) {}
 
-bool RenderWidgetHostDelegate::PreHandleKeyboardEvent(
-    const NativeWebKeyboardEvent& event,
-    bool* is_keyboard_shortcut) {
-  return false;
+KeyboardEventProcessingResult RenderWidgetHostDelegate::PreHandleKeyboardEvent(
+    const NativeWebKeyboardEvent& event) {
+  return KeyboardEventProcessingResult::NOT_HANDLED;
 }
 
 bool RenderWidgetHostDelegate::HandleWheelEvent(

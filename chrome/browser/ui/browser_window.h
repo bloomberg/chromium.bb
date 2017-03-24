@@ -42,6 +42,7 @@ class SaveCardBubbleView;
 namespace content {
 class WebContents;
 struct NativeWebKeyboardEvent;
+enum class KeyboardEventProcessingResult;
 }
 
 namespace extensions {
@@ -308,12 +309,8 @@ class BrowserWindow : public ui::BaseWindow {
 
   // Allows the BrowserWindow object to handle the specified keyboard event
   // before sending it to the renderer.
-  // Returns true if the |event| was handled. Otherwise, if the |event| would
-  // be handled in HandleKeyboardEvent() method as a normal keyboard shortcut,
-  // |*is_keyboard_shortcut| should be set to true.
-  virtual bool PreHandleKeyboardEvent(
-      const content::NativeWebKeyboardEvent& event,
-      bool* is_keyboard_shortcut) = 0;
+  virtual content::KeyboardEventProcessingResult PreHandleKeyboardEvent(
+      const content::NativeWebKeyboardEvent& event) = 0;
 
   // Allows the BrowserWindow object to handle the specified keyboard event,
   // if the renderer did not process it.

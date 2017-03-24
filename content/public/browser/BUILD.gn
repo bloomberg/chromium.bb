@@ -133,6 +133,7 @@ source_set("browser_sources") {
     "invalidate_type.h",
     "javascript_dialog_manager.cc",
     "javascript_dialog_manager.h",
+    "keyboard_event_processing_result.h",
     "load_notification_details.h",
     "local_storage_usage_info.h",
     "media_capture_devices.h",

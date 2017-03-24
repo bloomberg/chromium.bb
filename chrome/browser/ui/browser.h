@@ -478,9 +478,9 @@ class Browser : public TabStripModelObserver,
   bool CanOverscrollContent() const override;
   bool ShouldPreserveAbortedURLs(content::WebContents* source) override;
   void SetFocusToLocationBar(bool select_all) override;
-  bool PreHandleKeyboardEvent(content::WebContents* source,
-                              const content::NativeWebKeyboardEvent& event,
-                              bool* is_keyboard_shortcut) override;
+  content::KeyboardEventProcessingResult PreHandleKeyboardEvent(
+      content::WebContents* source,
+      const content::NativeWebKeyboardEvent& event) override;
   void HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override;

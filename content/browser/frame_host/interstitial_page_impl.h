@@ -159,8 +159,8 @@ class CONTENT_EXPORT InterstitialPageImpl
 
   // RenderWidgetHostDelegate implementation:
   void RenderWidgetDeleted(RenderWidgetHostImpl* render_widget_host) override;
-  bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
-                              bool* is_keyboard_shortcut) override;
+  KeyboardEventProcessingResult PreHandleKeyboardEvent(
+      const NativeWebKeyboardEvent& event) override;
   void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) override;
   TextInputManager* GetTextInputManager() override;
   void GetScreenInfo(content::ScreenInfo* screen_info) override;

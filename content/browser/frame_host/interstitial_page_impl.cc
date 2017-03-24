@@ -42,6 +42,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/invalidate_type.h"
+#include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -548,13 +549,11 @@ void InterstitialPageImpl::RenderWidgetDeleted(
   CHECK(!web_contents_);
 }
 
-bool InterstitialPageImpl::PreHandleKeyboardEvent(
-    const NativeWebKeyboardEvent& event,
-    bool* is_keyboard_shortcut) {
+KeyboardEventProcessingResult InterstitialPageImpl::PreHandleKeyboardEvent(
+    const NativeWebKeyboardEvent& event) {
   if (!enabled())
-    return false;
-  return render_widget_host_delegate_->PreHandleKeyboardEvent(
-      event, is_keyboard_shortcut);
+    return KeyboardEventProcessingResult::NOT_HANDLED;
+  return render_widget_host_delegate_->PreHandleKeyboardEvent(event);
 }
 
 void InterstitialPageImpl::HandleKeyboardEvent(

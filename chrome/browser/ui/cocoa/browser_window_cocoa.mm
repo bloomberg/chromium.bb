@@ -58,6 +58,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/translate/core/browser/language_state.h"
+#include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -694,34 +695,35 @@ void BrowserWindowCocoa::ShowAppMenu() {
   // No-op. Mac doesn't support showing the menus via alt keys.
 }
 
-bool BrowserWindowCocoa::PreHandleKeyboardEvent(
-    const NativeWebKeyboardEvent& event, bool* is_keyboard_shortcut) {
+content::KeyboardEventProcessingResult
+BrowserWindowCocoa::PreHandleKeyboardEvent(
+    const NativeWebKeyboardEvent& event) {
   // Handle ESC to dismiss permission bubbles, but still forward it
   // to the window afterwards.
   if (event.windowsKeyCode == ui::VKEY_ESCAPE)
     [controller_ dismissPermissionBubble];
 
   if (![BrowserWindowUtils shouldHandleKeyboardEvent:event])
-    return false;
+    return content::KeyboardEventProcessingResult::NOT_HANDLED;
 
   if (event.type() == blink::WebInputEvent::RawKeyDown &&
       [controller_
           handledByExtensionCommand:event.os_event
                            priority:ui::AcceleratorManager::kHighPriority])
-    return true;
+    return content::KeyboardEventProcessingResult::HANDLED;
 
   int id = [BrowserWindowUtils getCommandId:event];
   if (id == -1)
-    return false;
+    return content::KeyboardEventProcessingResult::NOT_HANDLED;
 
   if (browser_->command_controller()->IsReservedCommandOrKey(id, event)) {
-      return [BrowserWindowUtils handleKeyboardEvent:event.os_event
-                                            inWindow:window()];
+    return [BrowserWindowUtils handleKeyboardEvent:event.os_event
+                                          inWindow:window()]
+               ? content::KeyboardEventProcessingResult::HANDLED
+               : content::KeyboardEventProcessingResult::NOT_HANDLED;
   }
 
-  DCHECK(is_keyboard_shortcut);
-  *is_keyboard_shortcut = true;
-  return false;
+  return content::KeyboardEventProcessingResult::NOT_HANDLED_IS_SHORTCUT;
 }
 
 void BrowserWindowCocoa::HandleKeyboardEvent(

@@ -248,6 +248,7 @@ void RenderWidgetHostViewEventHandler::OnKeyEvent(ui::KeyEvent* event) {
       return;
   }
 
+  bool mark_event_as_handled = true;
   // We need to handle the Escape key for Pepper Flash.
   if (host_view_->is_fullscreen() && event->key_code() == ui::VKEY_ESCAPE) {
     // Focus the window we were created from.
@@ -283,9 +284,10 @@ void RenderWidgetHostViewEventHandler::OnKeyEvent(ui::KeyEvent* event) {
     SetKeyboardFocus();
     // We don't have to communicate with an input method here.
     NativeWebKeyboardEvent webkit_event(*event);
-    delegate_->ForwardKeyboardEvent(webkit_event);
+    delegate_->ForwardKeyboardEvent(webkit_event, &mark_event_as_handled);
   }
-  event->SetHandled();
+  if (mark_event_as_handled)
+    event->SetHandled();
 }
 
 void RenderWidgetHostViewEventHandler::OnMouseEvent(ui::MouseEvent* event) {
