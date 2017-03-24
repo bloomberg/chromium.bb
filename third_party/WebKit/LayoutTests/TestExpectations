@@ -803,8 +803,6 @@ crbug.com/492664 [ Mac ] external/csswg-test/css-writing-modes-3/bidi-isolate-00
 crbug.com/492664 [ Win ] external/csswg-test/css-writing-modes-3/bidi-override-005.html [ Failure ]
 crbug.com/492664 [ Win ] external/csswg-test/css-writing-modes-3/bidi-plaintext-001.html [ Failure ]
 
-crbug.com/704292 virtual/disable-spinvalidation/paint/invalidation/invalidate-caret-in-composited-scrolling-container.html [ NeedsRebaseline ]
-
 crbug.com/267206 [ Mac ] virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 
 crbug.com/280342 [ Linux Win ] http/tests/media/progress-events-generated-correctly.html [ Failure Pass ]
@@ -1427,8 +1425,6 @@ crbug.com/645988 external/wpt/uievents/order-of-events/focus-events/focus-manual
 crbug.com/662010 [ Win7 ] csspaint/invalidation-background-image.html [ Skip ]
 
 crbug.com/693568 virtual/gpu/fast/canvas/canvas-imageSmoothingQuality.html [ Failure ]
-
-crbug.com/704292 paint/invalidation/invalidate-caret-in-composited-scrolling-container.html [ NeedsRebaseline ]
 
 # These tests are skipped as there is no touch support on Mac.
 crbug.com/613672 [ Mac ] fast/events/pointerevents/multi-pointer-event-in-slop-region.html [ Skip ]
