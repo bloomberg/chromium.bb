@@ -86,10 +86,11 @@ class OzonePlatformX11 : public OzonePlatform {
 
   void InitializeUI(const InitParams& params) override {
     InitializeCommon(params);
-    window_manager_.reset(new X11WindowManagerOzone);
-    overlay_manager_.reset(new StubOverlayManager());
+    CreatePlatformEventSource();
+    window_manager_ = base::MakeUnique<X11WindowManagerOzone>();
+    overlay_manager_ = base::MakeUnique<StubOverlayManager>();
     input_controller_ = CreateStubInputController();
-    cursor_factory_ozone_.reset(new X11CursorFactoryOzone());
+    cursor_factory_ozone_ = base::MakeUnique<X11CursorFactoryOzone>();
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
   }
 
@@ -97,7 +98,13 @@ class OzonePlatformX11 : public OzonePlatform {
 
   void InitializeGPU(const InitParams& params) override {
     InitializeCommon(params);
-    surface_factory_ozone_.reset(new X11SurfaceFactory());
+
+    // In single process mode either the UI thread will create an event source
+    // or it's a test and an event source isn't desired.
+    if (!params.single_process && !RunningInsideMus())
+      CreatePlatformEventSource();
+
+    surface_factory_ozone_ = base::MakeUnique<X11SurfaceFactory>();
   }
 
   void InitializeGPU() override { NOTREACHED(); }
@@ -116,15 +123,22 @@ class OzonePlatformX11 : public OzonePlatform {
     if (common_initialized_)
       return;
 
-    // If both UI and GPU are running in the same process then XInitThreads()
-    // must be the first Xlib call.
+    // In single process mode XInitThreads() must be the first Xlib call.
     if (params.single_process || RunningInsideMus())
       XInitThreads();
 
     ui::SetDefaultX11ErrorHandlers();
-    event_source_.reset(new X11EventSourceLibevent(gfx::GetXDisplay()));
 
     common_initialized_ = true;
+  }
+
+  // Creates |event_source_| if it doesn't already exist.
+  void CreatePlatformEventSource() {
+    if (event_source_)
+      return;
+
+    XDisplay* display = gfx::GetXDisplay();
+    event_source_ = base::MakeUnique<X11EventSourceLibevent>(display);
   }
 
   bool common_initialized_ = false;
