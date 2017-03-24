@@ -118,15 +118,15 @@ class SVGResources {
   void resetStroke();
   void resetLinkedResource();
 
-  bool setClipper(LayoutSVGResourceClipper*);
-  bool setFilter(LayoutSVGResourceFilter*);
-  bool setMarkerStart(LayoutSVGResourceMarker*);
-  bool setMarkerMid(LayoutSVGResourceMarker*);
-  bool setMarkerEnd(LayoutSVGResourceMarker*);
-  bool setMasker(LayoutSVGResourceMasker*);
-  bool setFill(LayoutSVGResourcePaintServer*);
-  bool setStroke(LayoutSVGResourcePaintServer*);
-  bool setLinkedResource(LayoutSVGResourceContainer*);
+  void setClipper(LayoutSVGResourceClipper*);
+  void setFilter(LayoutSVGResourceFilter*);
+  void setMarkerStart(LayoutSVGResourceMarker*);
+  void setMarkerMid(LayoutSVGResourceMarker*);
+  void setMarkerEnd(LayoutSVGResourceMarker*);
+  void setMasker(LayoutSVGResourceMasker*);
+  void setFill(LayoutSVGResourcePaintServer*);
+  void setStroke(LayoutSVGResourcePaintServer*);
+  void setLinkedResource(LayoutSVGResourceContainer*);
 
   // From SVG 1.1 2nd Edition
   // clipper: 'container elements' and 'graphics elements'

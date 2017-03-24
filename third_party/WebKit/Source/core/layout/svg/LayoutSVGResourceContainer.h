@@ -21,7 +21,6 @@
 #define LayoutSVGResourceContainer_h
 
 #include "core/layout/svg/LayoutSVGHiddenContainer.h"
-#include "core/svg/SVGTreeScopeResources.h"
 
 namespace blink {
 
@@ -115,17 +114,6 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
 
   HashSet<LayoutObject*> m_clients;
 };
-
-template <typename Layout>
-Layout* getLayoutSVGResourceById(SVGTreeScopeResources& treeScopeResources,
-                                 const AtomicString& id) {
-  if (LayoutSVGResourceContainer* container =
-          treeScopeResources.resourceById(id)) {
-    if (container->resourceType() == Layout::s_resourceType)
-      return static_cast<Layout*>(container);
-  }
-  return nullptr;
-}
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGResourceContainer,
                                 isSVGResourceContainer());
