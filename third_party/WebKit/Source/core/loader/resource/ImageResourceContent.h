@@ -16,6 +16,7 @@
 #include "platform/loader/fetch/ResourceLoadPriority.h"
 #include "platform/loader/fetch/ResourceStatus.h"
 #include "platform/weborigin/KURL.h"
+#include "wtf/AutoReset.h"
 #include "wtf/HashCountedSet.h"
 #include "wtf/HashMap.h"
 
@@ -176,6 +177,12 @@ class CORE_EXPORT ImageResourceContent final
   void notifyObservers(NotifyFinishOption, const IntRect* changeRect = nullptr);
   void markObserverFinished(ImageResourceObserver*);
 
+  class ProhibitAddRemoveObserverInScope : public AutoReset<bool> {
+   public:
+    ProhibitAddRemoveObserverInScope(const ImageResourceContent* content)
+        : AutoReset(&content->m_isAddRemoveObserverProhibited, true) {}
+  };
+
   Member<ImageResourceInfo> m_info;
 
   RefPtr<blink::Image> m_image;
@@ -188,6 +195,8 @@ class CORE_EXPORT ImageResourceContent final
   // Indicates if this resource's encoded image data can be purged and refetched
   // from disk cache to save memory usage. See crbug/664437.
   bool m_isRefetchableDataFromDiskCache;
+
+  mutable bool m_isAddRemoveObserverProhibited = false;
 
 #if DCHECK_IS_ON()
   bool m_isUpdateImageBeingCalled = false;

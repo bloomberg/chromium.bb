@@ -96,6 +96,8 @@ DEFINE_TRACE(ImageResourceContent) {
 
 void ImageResourceContent::markObserverFinished(
     ImageResourceObserver* observer) {
+  ProhibitAddRemoveObserverInScope prohibitAddRemoveObserverInScope(this);
+
   auto it = m_observers.find(observer);
   if (it == m_observers.end())
     return;
@@ -104,9 +106,14 @@ void ImageResourceContent::markObserverFinished(
 }
 
 void ImageResourceContent::addObserver(ImageResourceObserver* observer) {
+  CHECK(!m_isAddRemoveObserverProhibited);
+
   m_info->willAddClientOrObserver();
 
-  m_observers.add(observer);
+  {
+    ProhibitAddRemoveObserverInScope prohibitAddRemoveObserverInScope(this);
+    m_observers.add(observer);
+  }
 
   if (m_info->isCacheValidator())
     return;
@@ -124,6 +131,8 @@ void ImageResourceContent::addObserver(ImageResourceObserver* observer) {
 
 void ImageResourceContent::removeObserver(ImageResourceObserver* observer) {
   DCHECK(observer);
+  CHECK(!m_isAddRemoveObserverProhibited);
+  ProhibitAddRemoveObserverInScope prohibitAddRemoveObserverInScope(this);
 
   auto it = m_observers.find(observer);
   if (it != m_observers.end()) {
@@ -146,6 +155,7 @@ static void priorityFromObserver(const ImageResourceObserver* observer,
 }
 
 ResourcePriority ImageResourceContent::priorityFromObservers() const {
+  ProhibitAddRemoveObserverInScope prohibitAddRemoveObserverInScope(this);
   ResourcePriority priority;
 
   for (const auto& it : m_finishedObservers)
@@ -261,18 +271,34 @@ LayoutSize ImageResourceContent::imageSize(
 void ImageResourceContent::notifyObservers(
     NotifyFinishOption notifyingFinishOption,
     const IntRect* changeRect) {
-  for (auto* observer : m_finishedObservers.asVector()) {
-    if (m_finishedObservers.contains(observer))
-      observer->imageChanged(this, changeRect);
+  {
+    Vector<ImageResourceObserver*> finishedObserversAsVector;
+    {
+      ProhibitAddRemoveObserverInScope prohibitAddRemoveObserverInScope(this);
+      finishedObserversAsVector = m_finishedObservers.asVector();
+    }
+
+    for (auto* observer : finishedObserversAsVector) {
+      if (m_finishedObservers.contains(observer))
+        observer->imageChanged(this, changeRect);
+    }
   }
-  for (auto* observer : m_observers.asVector()) {
-    if (m_observers.contains(observer)) {
-      observer->imageChanged(this, changeRect);
-      if (notifyingFinishOption == ShouldNotifyFinish &&
-          m_observers.contains(observer) &&
-          !m_info->schedulingReloadOrShouldReloadBrokenPlaceholder()) {
-        markObserverFinished(observer);
-        observer->imageNotifyFinished(this);
+  {
+    Vector<ImageResourceObserver*> observersAsVector;
+    {
+      ProhibitAddRemoveObserverInScope prohibitAddRemoveObserverInScope(this);
+      observersAsVector = m_observers.asVector();
+    }
+
+    for (auto* observer : observersAsVector) {
+      if (m_observers.contains(observer)) {
+        observer->imageChanged(this, changeRect);
+        if (notifyingFinishOption == ShouldNotifyFinish &&
+            m_observers.contains(observer) &&
+            !m_info->schedulingReloadOrShouldReloadBrokenPlaceholder()) {
+          markObserverFinished(observer);
+          observer->imageNotifyFinished(this);
+        }
       }
     }
   }
@@ -376,6 +402,8 @@ bool ImageResourceContent::shouldPauseAnimation(const blink::Image* image) {
   if (!image || image != m_image)
     return false;
 
+  ProhibitAddRemoveObserverInScope prohibitAddRemoveObserverInScope(this);
+
   for (const auto& it : m_finishedObservers) {
     if (it.key->willRenderImage())
       return false;
@@ -400,13 +428,16 @@ void ImageResourceContent::updateImageAnimationPolicy() {
     return;
 
   ImageAnimationPolicy newPolicy = ImageAnimationPolicyAllowed;
-  for (const auto& it : m_finishedObservers) {
-    if (it.key->getImageAnimationPolicy(newPolicy))
-      break;
-  }
-  for (const auto& it : m_observers) {
-    if (it.key->getImageAnimationPolicy(newPolicy))
-      break;
+  {
+    ProhibitAddRemoveObserverInScope prohibitAddRemoveObserverInScope(this);
+    for (const auto& it : m_finishedObservers) {
+      if (it.key->getImageAnimationPolicy(newPolicy))
+        break;
+    }
+    for (const auto& it : m_observers) {
+      if (it.key->getImageAnimationPolicy(newPolicy))
+        break;
+    }
   }
 
   if (m_image->animationPolicy() != newPolicy) {
