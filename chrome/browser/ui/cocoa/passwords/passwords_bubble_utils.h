@@ -25,6 +25,7 @@ constexpr CGFloat kRelatedControlVerticalSpacing = 8;
 constexpr CGFloat kTitleTextInset = 2;
 constexpr CGFloat kUnrelatedControlVerticalPadding = 15;
 constexpr CGFloat kVerticalAvatarMargin = 8;
+constexpr CGFloat kConfirmationBubbleContentInset = 2;
 
 // Returns a font for password bubbles.
 NSFont* LabelFont();

@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/harmony/layout_delegate.h"
 #include "chrome/browser/ui/views/passwords/credentials_item_view.h"
 #include "chrome/browser/ui/views/passwords/credentials_selection_view.h"
 #include "chrome/browser/ui/views/passwords/manage_password_items_view.h"
@@ -767,6 +768,12 @@ ManagePasswordsBubbleView::ManagePasswordsBubbleView(
                                  : ManagePasswordsBubbleModel::USER_ACTION),
       initially_focused_view_(nullptr) {
   mouse_handler_.reset(new WebContentMouseHandler(this, this->web_contents()));
+  // Set title margins to make the title and the content left aligned.
+  const int side_margin = margins().left();
+  set_title_margins(
+      gfx::Insets(LayoutDelegate::Get()->GetMetric(
+                      LayoutDelegate::Metric::PANEL_CONTENT_MARGIN),
+                  side_margin, 0, side_margin));
 }
 
 ManagePasswordsBubbleView::~ManagePasswordsBubbleView() {
