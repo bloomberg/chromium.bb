@@ -214,6 +214,10 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // Allow the delegate to handle the cursor update. Returns true if handled.
   virtual bool OnUpdateDragCursor();
 
+  // Returns true if the provided RenderWidgetHostImpl matches the current
+  // RenderWidgetHost on the main frame, and false otherwise.
+  virtual bool IsWidgetForMainFrame(RenderWidgetHostImpl*);
+
   // Inner WebContents Helpers -------------------------------------------------
   //
   // These functions are helpers in managing a hierharchy of WebContents

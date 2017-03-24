@@ -850,6 +850,13 @@ bool RenderWidgetHostViewEventHandler::ShouldRouteEvent(
   //    in a similar manner to RenderWidgetHostViewGuest.
   bool result = host_->delegate() && host_->delegate()->GetInputEventRouter() &&
                 !disable_input_event_router_for_testing_;
+
+  // Do not route events that are currently targeted to page popups such as
+  // <select> element drop-downs, since these cannot contain cross-process
+  // frames.
+  if (host_->delegate() && !host_->delegate()->IsWidgetForMainFrame(host_))
+    return false;
+
   // ScrollEvents get transformed into MouseWheel events, and so are treated
   // the same as mouse events for routing purposes.
   if (event->IsMouseEvent() || event->type() == ui::ET_SCROLL)

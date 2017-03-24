@@ -97,6 +97,10 @@ bool RenderWidgetHostDelegate::OnUpdateDragCursor() {
   return false;
 }
 
+bool RenderWidgetHostDelegate::IsWidgetForMainFrame(RenderWidgetHostImpl*) {
+  return false;
+}
+
 bool RenderWidgetHostDelegate::AddDomainInfoToRapporSample(
     rappor::Sample* sample) {
   sample->SetStringField("Domain", "Unknown");

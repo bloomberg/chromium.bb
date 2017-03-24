@@ -6311,13 +6311,17 @@ class ShowWidgetMessageFilter : public content::BrowserMessageFilter {
 
   gfx::Rect last_initial_rect() const { return initial_rect_; }
 
+  int last_routing_id() const { return routing_id_; }
+
   void Wait() {
     initial_rect_ = gfx::Rect();
+    routing_id_ = MSG_ROUTING_NONE;
     message_loop_runner_->Run();
   }
 
   void Reset() {
     initial_rect_ = gfx::Rect();
+    routing_id_ = MSG_ROUTING_NONE;
     message_loop_runner_ = new content::MessageLoopRunner;
   }
 
@@ -6342,11 +6346,13 @@ class ShowWidgetMessageFilter : public content::BrowserMessageFilter {
 
   void OnShowWidgetOnUI(int route_id, const gfx::Rect& initial_rect) {
     initial_rect_ = initial_rect;
+    routing_id_ = route_id;
     message_loop_runner_->Quit();
   }
 
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
   gfx::Rect initial_rect_;
+  int routing_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ShowWidgetMessageFilter);
 };
@@ -6408,6 +6414,47 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, PopupMenuTest) {
 #else
   EXPECT_EQ(popup_rect.x() - rwhv_root->GetViewBounds().x(), 354);
   EXPECT_EQ(popup_rect.y() - rwhv_root->GetViewBounds().y(), 94);
+#endif
+
+#if defined(OS_LINUX)
+  // Verify click-and-drag selection of popups still works on Linux with
+  // OOPIFs enabled. This is only necessary to test on Aura because Mac and
+  // Android use native widgets. Windows does not support this as UI
+  // convention (it requires separate clicks to open the menu and select an
+  // option). See https://crbug.com/703191.
+  int process_id = child_node->current_frame_host()->GetProcess()->GetID();
+  filter->Reset();
+  RenderWidgetHostInputEventRouter* router =
+      static_cast<WebContentsImpl*>(shell()->web_contents())
+          ->GetInputEventRouter();
+  // Re-open the select element.
+  click_event.x = 360;
+  click_event.y = 90;
+  click_event.clickCount = 1;
+  router->RouteMouseEvent(rwhv_root, &click_event, ui::LatencyInfo());
+
+  filter->Wait();
+
+  RenderWidgetHostView* popup_view =
+      RenderWidgetHost::FromID(process_id, filter->last_routing_id())
+          ->GetView();
+
+  RenderWidgetHostMouseEventMonitor popup_monitor(
+      popup_view->GetRenderWidgetHost());
+
+  // Next send a mouse up directly targeting the first option, simulating a
+  // drag. This requires a ui::MouseEvent because it tests behavior that is
+  // above RWH input event routing.
+  ui::MouseEvent mouse_up_event(ui::ET_MOUSE_RELEASED, gfx::Point(10, 5),
+                                gfx::Point(10, 5), ui::EventTimeForNow(),
+                                ui::EF_LEFT_MOUSE_BUTTON,
+                                ui::EF_LEFT_MOUSE_BUTTON);
+  static_cast<RenderWidgetHostViewAura*>(popup_view)
+      ->OnMouseEvent(&mouse_up_event);
+
+  // This verifies that the popup actually received the event, and it wasn't
+  // diverted to a different RenderWidgetHostView due to mouse capture.
+  EXPECT_TRUE(popup_monitor.EventWasReceived());
 #endif
 }
 

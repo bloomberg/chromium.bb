@@ -2545,6 +2545,11 @@ bool WebContentsImpl::OnUpdateDragCursor() {
   return false;
 }
 
+bool WebContentsImpl::IsWidgetForMainFrame(
+    RenderWidgetHostImpl* render_widget_host) {
+  return render_widget_host == GetMainFrame()->GetRenderWidgetHost();
+}
+
 BrowserAccessibilityManager*
     WebContentsImpl::GetRootBrowserAccessibilityManager() {
   RenderFrameHostImpl* rfh = GetMainFrame();
