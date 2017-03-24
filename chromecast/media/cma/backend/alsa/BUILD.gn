@@ -110,14 +110,14 @@ source_set("slew_volume") {
   ]
 }
 
-alsa_controls_volume = !enable_assistant
+alsa_owns_volume = !enable_assistant
 
 buildflag_header("alsa_features") {
   header = "alsa_features.h"
 
   flags = [
     "ALSA_MONOTONIC_RAW_TSTAMPS=$use_alsa_monotonic_raw_tstamps",
-    "ALSA_CONTROLS_VOLUME=$alsa_controls_volume",
+    "ALSA_OWNS_VOLUME=$alsa_owns_volume",
   ]
 }
 

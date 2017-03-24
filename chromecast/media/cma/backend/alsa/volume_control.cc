@@ -133,8 +133,9 @@ class VolumeControlInternal : public AlsaVolumeControl::Delegate {
   void SetVolume(AudioContentType type, float level) {
     level = std::max(0.0f, std::min(level, 1.0f));
     thread_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&VolumeControlInternal::SetVolumeOnThread,
-                              base::Unretained(this), type, level));
+        FROM_HERE,
+        base::Bind(&VolumeControlInternal::SetVolumeOnThread,
+                   base::Unretained(this), type, level, false /* from_alsa */));
   }
 
   bool IsMuted(AudioContentType type) {
@@ -144,12 +145,13 @@ class VolumeControlInternal : public AlsaVolumeControl::Delegate {
 
   void SetMuted(AudioContentType type, bool muted) {
     thread_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&VolumeControlInternal::SetMutedOnThread,
-                              base::Unretained(this), type, muted));
+        FROM_HERE,
+        base::Bind(&VolumeControlInternal::SetMutedOnThread,
+                   base::Unretained(this), type, muted, false /* from_alsa */));
   }
 
   void SetOutputLimit(AudioContentType type, float limit) {
-    if (BUILDFLAG(ALSA_CONTROLS_VOLUME)) {
+    if (BUILDFLAG(ALSA_OWNS_VOLUME)) {
       return;
     }
     limit = std::max(0.0f, std::min(limit, 1.0f));
@@ -167,9 +169,9 @@ class VolumeControlInternal : public AlsaVolumeControl::Delegate {
                       AudioContentType::kCommunication}) {
       CHECK(stored_values_.GetDouble(ContentTypeToDbFSKey(type), &dbfs));
       volumes_[type] = VolumeControl::DbFSToVolume(dbfs);
-      if (BUILDFLAG(ALSA_CONTROLS_VOLUME)) {
-        // If ALSA controls volume, our internal mixer should not apply any
-        // scaling multiplier.
+      if (BUILDFLAG(ALSA_OWNS_VOLUME)) {
+        // If ALSA owns volume, our internal mixer should not apply any scaling
+        // multiplier.
         StreamMixerAlsa::Get()->SetVolume(type, 1.0f);
       } else {
         StreamMixerAlsa::Get()->SetVolume(type, DbFsToScale(dbfs));
@@ -179,9 +181,9 @@ class VolumeControlInternal : public AlsaVolumeControl::Delegate {
       muted_[type] = false;
     }
 
-    if (BUILDFLAG(ALSA_CONTROLS_VOLUME)) {
-      // If ALSA controls the volume, then read the current volume and mute
-      // state from the ALSA mixer element(s).
+    if (BUILDFLAG(ALSA_OWNS_VOLUME)) {
+      // If ALSA owns the volume, then read the current volume and mute state
+      // from the ALSA mixer element(s).
       volumes_[AudioContentType::kMedia] = alsa_volume_control_->GetVolume();
       muted_[AudioContentType::kMedia] = alsa_volume_control_->IsMuted();
     } else {
@@ -194,10 +196,15 @@ class VolumeControlInternal : public AlsaVolumeControl::Delegate {
     initialize_complete_event_.Signal();
   }
 
-  void SetVolumeOnThread(AudioContentType type, float level) {
+  void SetVolumeOnThread(AudioContentType type, float level, bool from_alsa) {
     DCHECK(thread_.task_runner()->BelongsToCurrentThread());
+    DCHECK(!from_alsa || type == AudioContentType::kMedia);
     {
       base::AutoLock lock(volume_lock_);
+      if (from_alsa && alsa_volume_control_->VolumeThroughAlsa(
+                           volumes_[AudioContentType::kMedia]) == level) {
+        return;
+      }
       if (level == volumes_[type]) {
         return;
       }
@@ -205,11 +212,11 @@ class VolumeControlInternal : public AlsaVolumeControl::Delegate {
     }
 
     float dbfs = VolumeControl::VolumeToDbFS(level);
-    if (!BUILDFLAG(ALSA_CONTROLS_VOLUME)) {
+    if (!BUILDFLAG(ALSA_OWNS_VOLUME)) {
       StreamMixerAlsa::Get()->SetVolume(type, DbFsToScale(dbfs));
     }
 
-    if (type == AudioContentType::kMedia) {
+    if (!from_alsa && type == AudioContentType::kMedia) {
       alsa_volume_control_->SetVolume(level);
     }
 
@@ -224,7 +231,7 @@ class VolumeControlInternal : public AlsaVolumeControl::Delegate {
     SerializeJsonToFile(storage_path_, stored_values_);
   }
 
-  void SetMutedOnThread(AudioContentType type, bool muted) {
+  void SetMutedOnThread(AudioContentType type, bool muted, bool from_alsa) {
     DCHECK(thread_.task_runner()->BelongsToCurrentThread());
     {
       base::AutoLock lock(volume_lock_);
@@ -234,11 +241,11 @@ class VolumeControlInternal : public AlsaVolumeControl::Delegate {
       muted_[type] = muted;
     }
 
-    if (!BUILDFLAG(ALSA_CONTROLS_VOLUME)) {
+    if (!BUILDFLAG(ALSA_OWNS_VOLUME)) {
       StreamMixerAlsa::Get()->SetMuted(type, muted);
     }
 
-    if (type == AudioContentType::kMedia) {
+    if (!from_alsa && type == AudioContentType::kMedia) {
       alsa_volume_control_->SetMuted(muted);
     }
 
@@ -253,46 +260,9 @@ class VolumeControlInternal : public AlsaVolumeControl::Delegate {
   // AlsaVolumeControl::Delegate implementation:
   void OnAlsaVolumeOrMuteChange(float new_volume, bool new_mute) override {
     DCHECK(thread_.task_runner()->BelongsToCurrentThread());
-    bool volume_changed = false;
-    bool mute_changed = false;
-    {
-      base::AutoLock lock(volume_lock_);
-      if (alsa_volume_control_->VolumeThroughAlsa(
-              volumes_[AudioContentType::kMedia]) != new_volume) {
-        volume_changed = true;
-        volumes_[AudioContentType::kMedia] = new_volume;
-      }
-
-      if (muted_[AudioContentType::kMedia] != new_mute) {
-        mute_changed = true;
-        muted_[AudioContentType::kMedia] = new_mute;
-      }
-    }
-
-    if (!volume_changed && !mute_changed) {
-      return;
-    }
-
-    {
-      base::AutoLock lock(observer_lock_);
-      if (volume_changed) {
-        for (VolumeObserver* observer : volume_observers_) {
-          observer->OnVolumeChange(AudioContentType::kMedia, new_volume);
-        }
-      }
-      if (mute_changed) {
-        for (VolumeObserver* observer : volume_observers_) {
-          observer->OnMuteChange(AudioContentType::kMedia, new_mute);
-        }
-      }
-    }
-
-    if (volume_changed) {
-      float dbfs = VolumeControl::VolumeToDbFS(new_volume);
-      stored_values_.SetDouble(ContentTypeToDbFSKey(AudioContentType::kMedia),
-                               dbfs);
-      SerializeJsonToFile(storage_path_, stored_values_);
-    }
+    SetVolumeOnThread(AudioContentType::kMedia, new_volume,
+                      true /* from_alsa */);
+    SetMutedOnThread(AudioContentType::kMedia, new_mute, true /* from_alsa */);
   }
 
   base::FilePath storage_path_;
