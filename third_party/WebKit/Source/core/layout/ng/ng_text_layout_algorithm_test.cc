@@ -7,6 +7,7 @@
 #include "core/dom/TagCollection.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/ng/ng_inline_node.h"
+#include "core/layout/ng/ng_physical_line_box_fragment.h"
 #include "core/layout/ng/ng_physical_text_fragment.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/geometry/LayoutRect.h"
@@ -56,33 +57,37 @@ TEST_F(NGTextLayoutAlgorithmTest, TextFloatsAroundFloatsBefore) {
       toNGPhysicalBoxFragment(html_fragment->Children()[0].get());
   auto* container_fragment =
       toNGPhysicalBoxFragment(body_fragment->Children()[0].get());
-  auto* text_fragments_wrapper =
+  auto* line_box_fragments_wrapper =
       toNGPhysicalBoxFragment(container_fragment->Children()[0].get());
+  Vector<NGPhysicalTextFragment*> text_fragments;
+  for (const auto& child : line_box_fragments_wrapper->Children()) {
+    auto* line_box = toNGPhysicalLineBoxFragment(child.get());
+    EXPECT_EQ(1u, line_box->Children().size());
+    for (const auto& text : line_box->Children())
+      text_fragments.push_back(toNGPhysicalTextFragment(text.get()));
+  }
 
   LayoutText* layout_text =
       toLayoutText(getLayoutObjectByElementId("text")->slowFirstChild());
   ASSERT(layout_text->hasTextBoxes());
 
-  ASSERT_EQ(4UL, text_fragments_wrapper->Children().size());
+  ASSERT_EQ(4UL, text_fragments.size());
 
-  auto* text_fragment1 =
-      toNGPhysicalTextFragment(text_fragments_wrapper->Children()[0].get());
+  auto* text_fragment1 = text_fragments[0];
   // 40 = #left-float1' width 30 + #left-float2 10
   EXPECT_EQ(LayoutUnit(40), text_fragment1->LeftOffset());
   EXPECT_EQ("The quick ", text_fragment1->Text());
   InlineTextBox* inline_text_box1 = layout_text->firstTextBox();
   EXPECT_EQ(LayoutUnit(40), inline_text_box1->x());
 
-  auto* text_fragment2 =
-      toNGPhysicalTextFragment(text_fragments_wrapper->Children()[1].get());
+  auto* text_fragment2 = text_fragments[1];
   // 40 = #left-float1' width 30
   EXPECT_EQ(LayoutUnit(30), text_fragment2->LeftOffset());
   EXPECT_EQ("brown fox ", text_fragment2->Text());
   InlineTextBox* inline_text_box2 = inline_text_box1->nextTextBox();
   EXPECT_EQ(LayoutUnit(30), inline_text_box2->x());
 
-  auto* text_fragment3 =
-      toNGPhysicalTextFragment(text_fragments_wrapper->Children()[2].get());
+  auto* text_fragment3 = text_fragments[2];
   EXPECT_EQ(LayoutUnit(), text_fragment3->LeftOffset());
   EXPECT_EQ("jumps over the lazy ", text_fragment3->Text());
   InlineTextBox* inline_text_box3 = inline_text_box2->nextTextBox();

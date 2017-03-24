@@ -32,11 +32,18 @@ class LayoutObject;
 // coordinate system.
 class CORE_EXPORT NGPhysicalFragment : public RefCounted<NGPhysicalFragment> {
  public:
-  enum NGFragmentType { kFragmentBox = 0, kFragmentText = 1 };
+  enum NGFragmentType {
+    kFragmentBox = 0,
+    kFragmentText = 1,
+    kFragmentLineBox = 2
+    // When adding new values, make sure the bit size of |type_| is large
+    // enough to store.
+  };
 
   NGFragmentType Type() const { return static_cast<NGFragmentType>(type_); }
   bool IsBox() const { return Type() == NGFragmentType::kFragmentBox; }
   bool IsText() const { return Type() == NGFragmentType::kFragmentText; }
+  bool IsLineBox() const { return Type() == NGFragmentType::kFragmentLineBox; }
 
   // Override RefCounted's deref() to ensure operator delete is called on the
   // appropriate subclass type.
@@ -53,10 +60,6 @@ class CORE_EXPORT NGPhysicalFragment : public RefCounted<NGPhysicalFragment> {
   NGPhysicalSize Size() const { return size_; }
   LayoutUnit Width() const { return size_.width; }
   LayoutUnit Height() const { return size_.height; }
-
-  // Returns the total size, including the contents outside of the border-box.
-  LayoutUnit WidthOverflow() const { return overflow_.width; }
-  LayoutUnit HeightOverflow() const { return overflow_.height; }
 
   // Returns the offset relative to the parent fragment's content-box.
   LayoutUnit LeftOffset() const {
@@ -96,17 +99,15 @@ class CORE_EXPORT NGPhysicalFragment : public RefCounted<NGPhysicalFragment> {
  protected:
   NGPhysicalFragment(LayoutObject* layout_object,
                      NGPhysicalSize size,
-                     NGPhysicalSize overflow,
                      NGFragmentType type,
                      RefPtr<NGBreakToken> break_token = nullptr);
 
   LayoutObject* layout_object_;
   NGPhysicalSize size_;
-  NGPhysicalSize overflow_;
   NGPhysicalOffset offset_;
   RefPtr<NGBreakToken> break_token_;
 
-  unsigned type_ : 1;
+  unsigned type_ : 2;
   unsigned is_placed_ : 1;
 
  private:

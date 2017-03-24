@@ -10,6 +10,7 @@
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_line_builder.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
+#include "core/layout/ng/ng_physical_line_box_fragment.h"
 #include "core/layout/ng/ng_physical_text_fragment.h"
 #include "core/layout/ng/ng_text_fragment.h"
 #include "core/layout/ng/ng_text_layout_algorithm.h"
@@ -98,9 +99,12 @@ class NGInlineNodeTest : public RenderingTest {
     algorithm.LayoutInline(&line_builder);
 
     RefPtr<NGLayoutResult> result = line_builder.CreateFragments();
-    for (const auto& child :
-         toNGPhysicalBoxFragment(result->PhysicalFragment().get())
-             ->Children()) {
+    const NGPhysicalBoxFragment* container =
+        toNGPhysicalBoxFragment(result->PhysicalFragment().get());
+    EXPECT_EQ(container->Children().size(), 1u);
+    const NGPhysicalLineBoxFragment* line =
+        toNGPhysicalLineBoxFragment(container->Children()[0].get());
+    for (const auto& child : line->Children()) {
       fragments_out->push_back(toNGPhysicalTextFragment(child.get()));
     }
   }

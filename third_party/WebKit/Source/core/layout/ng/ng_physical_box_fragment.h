@@ -28,6 +28,10 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
                         const NGMarginStrut& end_margin_strut,
                         RefPtr<NGBreakToken> break_token = nullptr);
 
+  // Returns the total size, including the contents outside of the border-box.
+  LayoutUnit WidthOverflow() const { return overflow_.width; }
+  LayoutUnit HeightOverflow() const { return overflow_.height; }
+
   const Vector<RefPtr<NGPhysicalFragment>>& Children() const {
     return children_;
   }
@@ -46,6 +50,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
   const NGMarginStrut& EndMarginStrut() const { return end_margin_strut_; }
 
  private:
+  NGPhysicalSize overflow_;
   Vector<RefPtr<NGPhysicalFragment>> children_;
   Vector<RefPtr<NGFloatingObject>> positioned_floats_;
   const WTF::Optional<NGLogicalOffset> bfc_offset_;

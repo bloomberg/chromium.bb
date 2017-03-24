@@ -99,9 +99,6 @@ class CORE_EXPORT NGFragmentBuilder final {
 
   // Creates the fragment. Can only be called once.
   RefPtr<NGLayoutResult> ToBoxFragment();
-  RefPtr<NGPhysicalTextFragment> ToTextFragment(unsigned index,
-                                                unsigned start_offset,
-                                                unsigned end_offset);
 
   Vector<RefPtr<NGPhysicalFragment>>& MutableChildren() { return children_; }
 

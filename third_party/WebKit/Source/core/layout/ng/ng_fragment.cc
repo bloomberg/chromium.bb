@@ -16,18 +16,6 @@ LayoutUnit NGFragment::BlockSize() const {
                                                : physical_fragment_->Width();
 }
 
-LayoutUnit NGFragment::InlineOverflow() const {
-  return writing_mode_ == kHorizontalTopBottom
-             ? physical_fragment_->WidthOverflow()
-             : physical_fragment_->HeightOverflow();
-}
-
-LayoutUnit NGFragment::BlockOverflow() const {
-  return writing_mode_ == kHorizontalTopBottom
-             ? physical_fragment_->HeightOverflow()
-             : physical_fragment_->WidthOverflow();
-}
-
 LayoutUnit NGFragment::InlineOffset() const {
   return writing_mode_ == kHorizontalTopBottom
              ? physical_fragment_->LeftOffset()

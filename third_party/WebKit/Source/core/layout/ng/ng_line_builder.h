@@ -9,19 +9,18 @@
 #include "core/layout/ng/geometry/ng_logical_offset.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_fragment_builder.h"
-#include "core/layout/ng/ng_layout_opportunity_iterator.h"
-#include "core/layout/ng/ng_physical_fragment.h"
+#include "core/layout/ng/ng_line_height_metrics.h"
 #include "platform/fonts/FontBaseline.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
-class ComputedStyle;
-class FontMetrics;
 class NGConstraintSpace;
 class NGInlineNode;
 class NGLayoutInlineItem;
+class NGLineBoxFragmentBuilder;
+class NGTextFragmentBuilder;
 
 // NGLineBuilder creates the fragment tree for a line.
 // NGLineBuilder manages the current line as a range, |start| and |end|.
@@ -120,50 +119,14 @@ class CORE_EXPORT NGLineBuilder final {
   //   be positioned after we're done with the current line.
   void LayoutAndPositionFloat(LayoutUnit end_position, LayoutObject*);
 
-  // Represents block-direction metrics for an |NGLayoutInlineItem|.
-  struct InlineItemMetrics {
-    float ascent;
-    float descent;
-    float ascent_and_leading;
-    float descent_and_leading;
-
-    // Use the leading from the 'line-height' property, or the font metrics of
-    // the primary font if 'line-height: normal'.
-    InlineItemMetrics(const ComputedStyle&, FontBaseline);
-
-    // Use the leading from the font metrics.
-    InlineItemMetrics(const FontMetrics&, FontBaseline);
-
-   private:
-    void Initialize(const FontMetrics&, FontBaseline, float line_height);
-  };
-
-  // LineBoxData is a set of data for a line box that are computed in early
-  // phases, such as in |CreateLine()|, and will be used in later phases.
-  // TODO(kojii): Not sure if all these data are needed in fragment tree. If
-  // they are, we can create a linebox fragment, store them there, and this
-  // isn't needed. For now, we're trying to minimize data in fragments.
-  struct LineBoxData {
-    unsigned fragment_end;
-    LayoutUnit inline_size;
-    LayoutUnit top_with_leading;
-    float max_ascent = 0;
-    float max_descent = 0;
-    float max_ascent_and_leading = 0;
-    float max_descent_and_leading = 0;
-
-    // Include |InlineItemMetrics| into the metrics for this line box.
-    void UpdateMaxAscentAndDescent(const InlineItemMetrics&);
-  };
-
   void PlaceItems(const Vector<LineItemChunk, 32>&);
   void AccumulateUsedFonts(const NGLayoutInlineItem&,
                            const LineItemChunk&,
-                           LineBoxData*);
+                           NGLineBoxFragmentBuilder*);
   LayoutUnit PlaceAtomicInline(const NGLayoutInlineItem&,
                                LayoutUnit estimated_baseline,
-                               LineBoxData*,
-                               NGFragmentBuilder*);
+                               NGLineBoxFragmentBuilder*,
+                               NGTextFragmentBuilder*);
 
   // Finds the next layout opportunity for the next text fragment.
   void FindNextLayoutOpportunity();
@@ -171,7 +134,6 @@ class CORE_EXPORT NGLineBuilder final {
   Persistent<NGInlineNode> inline_box_;
   NGConstraintSpace* constraint_space_;  // Not owned as STACK_ALLOCATED.
   Vector<RefPtr<NGLayoutResult>, 32> layout_results_;
-  Vector<LineBoxData, 32> line_box_data_list_;
   unsigned start_index_ = 0;
   unsigned start_offset_ = 0;
   unsigned last_index_ = 0;

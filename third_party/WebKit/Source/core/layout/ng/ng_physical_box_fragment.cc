@@ -19,9 +19,9 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
     RefPtr<NGBreakToken> break_token)
     : NGPhysicalFragment(layout_object,
                          size,
-                         overflow,
                          kFragmentBox,
                          std::move(break_token)),
+      overflow_(overflow),
       positioned_floats_(positioned_floats),
       bfc_offset_(bfc_offset),
       end_margin_strut_(end_margin_strut) {

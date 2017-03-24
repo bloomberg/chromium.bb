@@ -25,10 +25,6 @@ class CORE_EXPORT NGFragment {
   LayoutUnit InlineSize() const;
   LayoutUnit BlockSize() const;
 
-  // Returns the total size, including the contents outside of the border-box.
-  LayoutUnit InlineOverflow() const;
-  LayoutUnit BlockOverflow() const;
-
   // Returns the offset relative to the parent fragment's content-box.
   LayoutUnit InlineOffset() const;
   LayoutUnit BlockOffset() const;

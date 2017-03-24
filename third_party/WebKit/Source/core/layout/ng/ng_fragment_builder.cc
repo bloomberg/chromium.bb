@@ -161,7 +161,6 @@ NGFragmentBuilder& NGFragmentBuilder::AddOutOfFlowDescendant(
 }
 
 RefPtr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
-  // TODO(layout-ng): Support text fragments
   DCHECK_EQ(type_, NGPhysicalFragment::kFragmentBox);
   DCHECK_EQ(offsets_.size(), children_.size());
 
@@ -196,20 +195,6 @@ RefPtr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
   return adoptRef(
       new NGLayoutResult(std::move(fragment), out_of_flow_descendants_,
                          out_of_flow_positions_, unpositioned_floats_));
-}
-
-RefPtr<NGPhysicalTextFragment> NGFragmentBuilder::ToTextFragment(
-    unsigned index,
-    unsigned start_offset,
-    unsigned end_offset) {
-  DCHECK_EQ(type_, NGPhysicalFragment::kFragmentText);
-  DCHECK(children_.isEmpty());
-  DCHECK(offsets_.isEmpty());
-
-  return adoptRef(new NGPhysicalTextFragment(
-      node_->GetLayoutObject(), toNGInlineNode(node_), index, start_offset,
-      end_offset, size_.ConvertToPhysical(writing_mode_),
-      overflow_.ConvertToPhysical(writing_mode_)));
 }
 
 }  // namespace blink
