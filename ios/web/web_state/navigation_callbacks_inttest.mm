@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <string>
 
 #include "base/memory/ptr_util.h"
 #import "ios/web/public/navigation_item.h"
@@ -22,6 +23,8 @@ namespace web {
 
 namespace {
 
+const char kExpectedMimeType[] = "text/html";
+
 // Verifies correctness of |NavigationContext| for new page navigation passed to
 // |DidFinishNavigation|.
 ACTION_P2(VerifyNewPageContext, web_state, url) {
@@ -31,6 +34,10 @@ ACTION_P2(VerifyNewPageContext, web_state, url) {
   EXPECT_EQ(url, context->GetUrl());
   EXPECT_FALSE(context->IsSameDocument());
   EXPECT_FALSE(context->IsErrorPage());
+  ASSERT_TRUE(context->GetResponseHeaders());
+  std::string mime_type;
+  context->GetResponseHeaders()->GetMimeType(&mime_type);
+  EXPECT_EQ(kExpectedMimeType, mime_type);
   NavigationManager* navigation_manager = web_state->GetNavigationManager();
   NavigationItem* item = navigation_manager->GetLastCommittedItem();
   EXPECT_GT(item->GetTimestamp().ToInternalValue(), 0);
@@ -46,6 +53,23 @@ ACTION_P2(VerifySameDocumentContext, web_state, url) {
   EXPECT_EQ(url, context->GetUrl());
   EXPECT_TRUE(context->IsSameDocument());
   EXPECT_FALSE(context->IsErrorPage());
+  EXPECT_FALSE(context->GetResponseHeaders());
+  NavigationManager* navigation_manager = web_state->GetNavigationManager();
+  NavigationItem* item = navigation_manager->GetLastCommittedItem();
+  EXPECT_GT(item->GetTimestamp().ToInternalValue(), 0);
+  EXPECT_EQ(url, item->GetURL());
+}
+
+// Verifies correctness of |NavigationContext| for new page navigation to native
+// URLs passed to |DidFinishNavigation|.
+ACTION_P2(VerifyNewNativePageContext, web_state, url) {
+  NavigationContext* context = arg0;
+  ASSERT_TRUE(context);
+  EXPECT_EQ(web_state, context->GetWebState());
+  EXPECT_EQ(url, context->GetUrl());
+  EXPECT_FALSE(context->IsSameDocument());
+  EXPECT_FALSE(context->IsErrorPage());
+  EXPECT_FALSE(context->GetResponseHeaders());
   NavigationManager* navigation_manager = web_state->GetNavigationManager();
   NavigationItem* item = navigation_manager->GetLastCommittedItem();
   EXPECT_GT(item->GetTimestamp().ToInternalValue(), 0);
@@ -162,7 +186,7 @@ TEST_F(DidFinishNavigationTest, StateNavigation) {
 TEST_F(DidFinishNavigationTest, NativeContentNavigation) {
   GURL url(url::SchemeHostPort(kTestNativeContentScheme, "ui", 0).Serialize());
   EXPECT_CALL(*observer_, DidFinishNavigation(_))
-      .WillOnce(VerifyNewPageContext(web_state(), url));
+      .WillOnce(VerifyNewNativePageContext(web_state(), url));
   LoadUrl(url);
 }
 

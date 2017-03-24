@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "ios/web/public/web_state/navigation_context.h"
 #include "url/gurl.h"
 
@@ -19,7 +20,8 @@ class NavigationContextImpl : public NavigationContext {
   // Creates navigation context for sucessful navigation to a different page.
   static std::unique_ptr<NavigationContext> CreateNavigationContext(
       WebState* web_state,
-      const GURL& url);
+      const GURL& url,
+      const scoped_refptr<net::HttpResponseHeaders>& response_headers);
 
   // Creates navigation context for sucessful same page navigation.
   static std::unique_ptr<NavigationContext> CreateSameDocumentNavigationContext(
@@ -29,25 +31,30 @@ class NavigationContextImpl : public NavigationContext {
   // Creates navigation context for the error page navigation.
   static std::unique_ptr<NavigationContext> CreateErrorPageNavigationContext(
       WebState* web_state,
-      const GURL& url);
+      const GURL& url,
+      const scoped_refptr<net::HttpResponseHeaders>& response_headers);
 
   // NavigationContext overrides:
   WebState* GetWebState() override;
   const GURL& GetUrl() const override;
   bool IsSameDocument() const override;
   bool IsErrorPage() const override;
+  net::HttpResponseHeaders* GetResponseHeaders() const override;
 
  private:
-  NavigationContextImpl(WebState* web_state,
-                        const GURL& url,
-                        bool is_same_page,
-                        bool is_error_page);
+  NavigationContextImpl(
+      WebState* web_state,
+      const GURL& url,
+      bool is_same_page,
+      bool is_error_page,
+      const scoped_refptr<net::HttpResponseHeaders>& response_headers);
   ~NavigationContextImpl() override;
 
   WebState* web_state_ = nullptr;
   GURL url_;
   bool is_same_document_ = false;
   bool is_error_page_ = false;
+  scoped_refptr<net::HttpResponseHeaders> response_headers_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationContextImpl);
 };

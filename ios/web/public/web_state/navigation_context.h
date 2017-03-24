@@ -7,6 +7,10 @@
 
 class GURL;
 
+namespace net {
+class HttpResponseHeaders;
+}
+
 namespace web {
 
 class WebState;
@@ -33,6 +37,11 @@ class NavigationContext {
 
   // Whether the navigation resulted in an error page.
   virtual bool IsErrorPage() const = 0;
+
+  // Returns the response headers for the request, or null if there aren't any
+  // response headers or they have not been received yet. The response headers
+  // returned should not be modified, as modifications will not be reflected.
+  virtual net::HttpResponseHeaders* GetResponseHeaders() const = 0;
 
   virtual ~NavigationContext() {}
 };

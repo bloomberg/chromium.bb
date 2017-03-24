@@ -393,7 +393,7 @@ TEST_F(WebStateImplTest, ObserverTest) {
   EXPECT_EQ(web_state_.get(), observer->load_page_info()->web_state);
   EXPECT_TRUE(observer->load_page_info()->success);
 
-  // Test that DidFinishNavigation() is called for same page navigations.
+  // Test that DidFinishNavigation() is called for same document navigations.
   ASSERT_FALSE(observer->did_finish_navigation_info());
   web_state_->OnSameDocumentNavigation(url);
   ASSERT_TRUE(observer->did_finish_navigation_info());
@@ -405,6 +405,7 @@ TEST_F(WebStateImplTest, ObserverTest) {
   EXPECT_EQ(url, context->GetUrl());
   EXPECT_TRUE(context->IsSameDocument());
   EXPECT_FALSE(context->IsErrorPage());
+  EXPECT_FALSE(context->GetResponseHeaders());
 
   // Reset the observer and test that DidFinishNavigation() is called
   // for error navigations.
@@ -419,6 +420,7 @@ TEST_F(WebStateImplTest, ObserverTest) {
   EXPECT_EQ(url, context->GetUrl());
   EXPECT_FALSE(context->IsSameDocument());
   EXPECT_TRUE(context->IsErrorPage());
+  EXPECT_FALSE(context->GetResponseHeaders());
 
   // Test that OnTitleChanged() is called.
   ASSERT_FALSE(observer->title_was_set_info());

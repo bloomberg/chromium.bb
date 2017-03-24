@@ -177,7 +177,8 @@ void WebStateImpl::SetFacadeDelegate(WebStateFacadeDelegate* facade_delegate) {
 
 void WebStateImpl::OnNavigationCommitted(const GURL& url) {
   std::unique_ptr<NavigationContext> context =
-      NavigationContextImpl::CreateNavigationContext(this, url);
+      NavigationContextImpl::CreateNavigationContext(this, url,
+                                                     GetHttpResponseHeaders());
   for (auto& observer : observers_)
     observer.DidFinishNavigation(context.get());
 }
@@ -191,7 +192,8 @@ void WebStateImpl::OnSameDocumentNavigation(const GURL& url) {
 
 void WebStateImpl::OnErrorPageNavigation(const GURL& url) {
   std::unique_ptr<NavigationContext> context =
-      NavigationContextImpl::CreateErrorPageNavigationContext(this, url);
+      NavigationContextImpl::CreateErrorPageNavigationContext(
+          this, url, GetHttpResponseHeaders());
   for (auto& observer : observers_)
     observer.DidFinishNavigation(context.get());
 }

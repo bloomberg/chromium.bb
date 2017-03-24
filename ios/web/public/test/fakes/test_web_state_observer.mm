@@ -8,6 +8,7 @@
 #include "ios/web/public/web_state/navigation_context.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "ios/web/web_state/navigation_context_impl.h"
+#include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace web {
@@ -77,11 +78,13 @@ void TestWebStateObserver::DidFinishNavigation(NavigationContext* context) {
     ASSERT_FALSE(context->IsSameDocument());
     did_finish_navigation_info_->context =
         NavigationContextImpl::CreateErrorPageNavigationContext(
-            context->GetWebState(), context->GetUrl());
+            context->GetWebState(), context->GetUrl(),
+            context->GetResponseHeaders());
   } else {
     did_finish_navigation_info_->context =
-        NavigationContextImpl::CreateNavigationContext(context->GetWebState(),
-                                                       context->GetUrl());
+        NavigationContextImpl::CreateNavigationContext(
+            context->GetWebState(), context->GetUrl(),
+            context->GetResponseHeaders());
   }
 }
 

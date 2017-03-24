@@ -11,9 +11,16 @@
 #import "ios/web/public/test/fakes/test_web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ios/web/web_state/navigation_context_impl.h"
+#include "net/http/http_response_headers.h"
 #include "testing/platform_test.h"
 
 namespace web {
+namespace {
+const char kRawResponseHeaders[] =
+    "HTTP/1.1 200 OK\0"
+    "Content-Length: 450\0"
+    "Connection: keep-alive\0";
+}  // namespace
 
 // Test fixture to test WebStateObserverBridge class.
 class WebStateObserverBridgeTest : public PlatformTest {
@@ -21,11 +28,14 @@ class WebStateObserverBridgeTest : public PlatformTest {
   WebStateObserverBridgeTest()
       : observer_([[CRWTestWebStateObserver alloc] init]),
         bridge_(base::MakeUnique<WebStateObserverBridge>(&test_web_state_,
-                                                         observer_.get())) {}
+                                                         observer_.get())),
+        response_headers_(new net::HttpResponseHeaders(
+            std::string(kRawResponseHeaders, sizeof(kRawResponseHeaders)))) {}
 
   web::TestWebState test_web_state_;
   base::scoped_nsobject<CRWTestWebStateObserver> observer_;
   std::unique_ptr<WebStateObserverBridge> bridge_;
+  scoped_refptr<net::HttpResponseHeaders> response_headers_;
 };
 
 // Tests |webState:didStartProvisionalNavigationForURL:| forwarding.
@@ -47,8 +57,8 @@ TEST_F(WebStateObserverBridgeTest, DidFinishNavigation) {
 
   GURL url("https://chromium.test/");
   std::unique_ptr<web::NavigationContext> context =
-      web::NavigationContextImpl::CreateNavigationContext(&test_web_state_,
-                                                          url);
+      web::NavigationContextImpl::CreateNavigationContext(&test_web_state_, url,
+                                                          response_headers_);
   bridge_->DidFinishNavigation(context.get());
 
   ASSERT_TRUE([observer_ didFinishNavigationInfo]);
@@ -60,6 +70,8 @@ TEST_F(WebStateObserverBridgeTest, DidFinishNavigation) {
   EXPECT_EQ(context->IsSameDocument(), actual_context->IsSameDocument());
   EXPECT_EQ(context->IsErrorPage(), actual_context->IsErrorPage());
   EXPECT_EQ(context->GetUrl(), actual_context->GetUrl());
+  EXPECT_EQ(context->GetResponseHeaders(),
+            actual_context->GetResponseHeaders());
 }
 
 // Tests |webState:didCommitNavigationWithDetails:| forwarding.

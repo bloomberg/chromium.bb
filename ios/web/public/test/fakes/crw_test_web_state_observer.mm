@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "ios/web/public/web_state/navigation_context.h"
 #include "ios/web/web_state/navigation_context_impl.h"
+#include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace web {
@@ -155,11 +156,13 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
     ASSERT_FALSE(navigation->IsSameDocument());
     _didFinishNavigationInfo->context =
         web::NavigationContextImpl::CreateErrorPageNavigationContext(
-            navigation->GetWebState(), navigation->GetUrl());
+            navigation->GetWebState(), navigation->GetUrl(),
+            navigation->GetResponseHeaders());
   } else {
     _didFinishNavigationInfo->context =
         web::NavigationContextImpl::CreateNavigationContext(
-            navigation->GetWebState(), navigation->GetUrl());
+            navigation->GetWebState(), navigation->GetUrl(),
+            navigation->GetResponseHeaders());
   }
 }
 

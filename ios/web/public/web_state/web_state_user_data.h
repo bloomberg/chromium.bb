@@ -25,7 +25,7 @@ namespace web {
 //   // ... more private stuff here ...
 // }
 // --- in foo.cc ---
-// DEFINE_WEB_CONTENTS_USER_DATA_KEY(Foo);
+// DEFINE_WEB_STATE_USER_DATA_KEY(Foo);
 //
 template <typename T>
 class WebStateUserData : public base::SupportsUserData::Data {
