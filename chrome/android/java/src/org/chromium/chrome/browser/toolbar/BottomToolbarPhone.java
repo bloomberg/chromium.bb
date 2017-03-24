@@ -201,6 +201,10 @@ public class BottomToolbarPhone extends ToolbarPhone {
     protected void updateVisualsForToolbarState() {
         super.updateVisualsForToolbarState();
 
+        // TODO(mdjones): Creating a new tab from the tab switcher skips the
+        // drawTabSwitcherFadeAnimation which would otherwise make this line unnecessary.
+        if (mTabSwitcherState == STATIC_TAB) mToolbarHandleView.setAlpha(1f);
+
         // The tab switcher's background color should not affect the toolbar handle; it should only
         // switch color based on the static tab's theme color. This is done so fade in/out looks
         // correct.
