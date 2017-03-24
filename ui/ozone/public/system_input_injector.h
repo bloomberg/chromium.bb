@@ -11,7 +11,7 @@
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/gfx/geometry/point_f.h"
-#include "ui/ozone/ozone_export.h"
+#include "ui/ozone/ozone_base_export.h"
 
 namespace gfx {
 class PointF;
@@ -21,7 +21,7 @@ namespace ui {
 
 // Interface for converting input into ui::Events and injecting them to the
 // Ozone platform.
-class OZONE_EXPORT SystemInputInjector {
+class OZONE_BASE_EXPORT SystemInputInjector {
  public:
   SystemInputInjector() {}
   virtual ~SystemInputInjector() {}

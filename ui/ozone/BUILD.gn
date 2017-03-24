@@ -60,6 +60,7 @@ config("vgem_map") {
 
 component("ozone_base") {
   sources = [
+    "ozone_base_export.h",
     "public/cursor_factory_ozone.cc",
     "public/cursor_factory_ozone.h",
     "public/gl_ozone.h",
@@ -111,6 +112,10 @@ source_set("platform") {
   sources = [
     "common/stub_client_native_pixmap_factory.cc",
     "common/stub_client_native_pixmap_factory.h",
+    "ozone_export.h",
+    "platform_constructor_list.h",
+    "platform_object.h",
+    "platform_object_internal.h",
     "platform_selection.cc",
     "platform_selection.h",
     "public/client_native_pixmap_factory_ozone.cc",
