@@ -2,6 +2,7 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <div id="editable" contenteditable></div>
+<textarea id="txt"></textarea>
 <script>
 test(() => {
     assert_not_equals(window.testRunner, undefined, 'This test requires testRunner.');
@@ -25,5 +26,28 @@ test(() => {
     testRunner.execCommand('transpose');
     assert_equals(editable.innerHTML, 'acb');
     assert_equals(eventRecorder, 'beforeinput-insertTranspose-cb-input-insertTranspose');
-});
+}, 'Transpose on contenteditable');
+
+test(() => {
+    assert_not_equals(window.testRunner, undefined, 'This test requires testRunner.');
+
+    let eventRecorder = '';
+    document.addEventListener('beforeinput', event => {
+        eventRecorder += `beforeinput-${event.inputType}-${event.data}-`;
+    });
+    document.addEventListener('input', event => {
+        eventRecorder += `input-${event.inputType}`;
+    });
+
+    const txt = document.getElementById('txt');
+    txt.value = 'abc';
+    txt.focus();
+    txt.setSelectionRange(3, 3); // End of first line.
+
+    // Test Transpose.
+    eventRecorder = '';
+    testRunner.execCommand('transpose');
+    assert_equals(txt.value, 'acb');
+    assert_equals(eventRecorder, 'beforeinput-insertTranspose-cb-input-insertTranspose');
+}, 'Transpose on <textarea>');
 </script>

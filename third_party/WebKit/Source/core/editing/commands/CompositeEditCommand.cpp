@@ -100,6 +100,8 @@ bool CompositeEditCommand::apply() {
       case InputEvent::InputType::InsertParagraph:
       case InputEvent::InputType::InsertFromPaste:
       case InputEvent::InputType::InsertFromDrop:
+      case InputEvent::InputType::InsertFromYank:
+      case InputEvent::InputType::InsertTranspose:
       case InputEvent::InputType::InsertReplacementText:
       case InputEvent::InputType::InsertCompositionText:
       case InputEvent::InputType::DeleteWordBackward:
@@ -113,7 +115,8 @@ bool CompositeEditCommand::apply() {
       case InputEvent::InputType::None:
         break;
       default:
-        NOTREACHED();
+        NOTREACHED() << "Not supported input type on plain-text only element:"
+                     << static_cast<int>(inputType());
         return false;
     }
   }
