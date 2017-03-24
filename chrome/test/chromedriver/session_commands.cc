@@ -435,6 +435,9 @@ Status ExecuteSwitchToWindow(Session* session,
       return status;
   }
 
+  status = session->chrome->ActivateWebView(web_view_id);
+  if (status.IsError())
+    return status;
   session->window = web_view_id;
   session->SwitchToTopFrame();
   session->mouse_position = WebPoint(0, 0);
