@@ -482,7 +482,7 @@ TEST_F(FFmpegDemuxerTest, Read_Audio) {
   audio->Read(NewReadCB(FROM_HERE, 27, 3000, true));
   base::RunLoop().Run();
 
-  EXPECT_EQ(22084, demuxer_->GetMemoryUsage());
+  EXPECT_EQ(166866, demuxer_->GetMemoryUsage());
 }
 
 TEST_F(FFmpegDemuxerTest, Read_Video) {
@@ -499,7 +499,7 @@ TEST_F(FFmpegDemuxerTest, Read_Video) {
   video->Read(NewReadCB(FROM_HERE, 1057, 33000, false));
   base::RunLoop().Run();
 
-  EXPECT_EQ(323, demuxer_->GetMemoryUsage());
+  EXPECT_EQ(148778, demuxer_->GetMemoryUsage());
 }
 
 TEST_F(FFmpegDemuxerTest, Read_Text) {

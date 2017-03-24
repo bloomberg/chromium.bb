@@ -251,8 +251,9 @@ std::unique_ptr<FFmpegDemuxerStream> FFmpegDemuxerStream::Create(
       demuxer, stream, std::move(audio_config), std::move(video_config)));
 }
 
-static void UnmarkEndOfStream(AVFormatContext* format_context) {
+static void UnmarkEndOfStreamAndClearError(AVFormatContext* format_context) {
   format_context->pb->eof_reached = 0;
+  format_context->pb->error = 0;
 }
 
 //
@@ -780,16 +781,9 @@ void FFmpegDemuxerStream::SatisfyPendingRead() {
 }
 
 bool FFmpegDemuxerStream::HasAvailableCapacity() {
-  // TODO(scherkus): Remove this return and reenable time-based capacity
-  // after our data sources support canceling/concurrent reads, see
-  // http://crbug.com/165762 for details.
-#if 1
-  return !read_cb_.is_null();
-#else
-  // Try to have one second's worth of encoded data per stream.
-  const base::TimeDelta kCapacity = base::TimeDelta::FromSeconds(1);
+  // Try to have two second's worth of encoded data per stream.
+  const base::TimeDelta kCapacity = base::TimeDelta::FromSeconds(2);
   return buffer_queue_.IsEmpty() || buffer_queue_.Duration() < kCapacity;
-#endif
 }
 
 size_t FFmpegDemuxerStream::MemoryUsage() const {
@@ -935,7 +929,8 @@ void FFmpegDemuxer::AbortPendingReads() {
 
   // Aborting the read may cause EOF to be marked, undo this.
   blocking_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&UnmarkEndOfStream, glue_->format_context()));
+      FROM_HERE,
+      base::Bind(&UnmarkEndOfStreamAndClearError, glue_->format_context()));
   pending_read_ = false;
 
   // TODO(dalecurtis): We probably should report PIPELINE_ERROR_ABORT here
