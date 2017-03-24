@@ -964,6 +964,7 @@ def _is_git_numberer_enabled(remote_url, remote_ref):
       'chromium/src',
       'external/webrtc',
       'v8/v8',
+      'infra/experimental',
   ]
 
   assert remote_ref and remote_ref.startswith('refs/'), remote_ref
@@ -4687,6 +4688,11 @@ def CMDdcommit(parser, args):
   return 1
 
 
+# Two special branches used by git cl land.
+MERGE_BRANCH = 'git-cl-commit'
+CHERRY_PICK_BRANCH = 'git-cl-cherry-pick'
+
+
 @subcommand.usage('[upstream branch to apply against]')
 def CMDland(parser, args):
   """Commits the current changelist via git.
@@ -4840,9 +4846,7 @@ def CMDland(parser, args):
   # We want to squash all this branch's commits into one commit with the proper
   # description. We do this by doing a "reset --soft" to the base branch (which
   # keeps the working copy the same), then landing that.
-  MERGE_BRANCH = 'git-cl-commit'
-  CHERRY_PICK_BRANCH = 'git-cl-cherry-pick'
-  # Delete the branches if they exist.
+  # Delete the special branches if they exist.
   for branch in [MERGE_BRANCH, CHERRY_PICK_BRANCH]:
     showref_cmd = ['show-ref', '--quiet', '--verify', 'refs/heads/%s' % branch]
     result = RunGitWithCode(showref_cmd)
@@ -4883,24 +4887,13 @@ def CMDland(parser, args):
       git_numberer_enabled = _is_git_numberer_enabled(
           RunGit(['config', 'remote.%s.url' % remote]).strip(), branch)
 
-    if git_numberer_enabled:
-      # TODO(tandrii): maybe do autorebase + retry on failure
-      # http://crbug.com/682934, but better just use Gerrit :)
-      logging.debug('Adding git number footers')
-      parent_msg = RunGit(['show', '-s', '--format=%B', merge_base]).strip()
-      commit_desc.update_with_git_number_footers(merge_base, parent_msg,
-                                                 branch)
-      # Ensure timestamps are monotonically increasing.
-      timestamp = max(1 + _get_committer_timestamp(merge_base),
-                      _get_committer_timestamp('HEAD'))
-      _git_amend_head(commit_desc.description, timestamp)
-      change_desc = ChangeDescription(commit_desc.description)
-
-    retcode, output = RunGitWithCode(
-        ['push', '--porcelain', pushurl, 'HEAD:%s' % branch])
+    retcode = PushToGitWithAutoRebase(
+        pushurl, branch, commit_desc.description, git_numberer_enabled)
     if retcode == 0:
       revision = RunGit(['rev-parse', 'HEAD']).strip()
-    logging.debug(output)
+      if git_numberer_enabled:
+        change_desc = ChangeDescription(
+            RunGit(['show', '-s', '--format=%B', 'HEAD']).strip())
   except:  # pylint: disable=bare-except
     if _IS_BEING_TESTED:
       logging.exception('this is likely your ACTUAL cause of test failure.\n'
@@ -4911,6 +4904,7 @@ def CMDland(parser, args):
     # And then swap back to the original branch and clean up.
     RunGit(['checkout', '-q', cl.GetBranch()])
     RunGit(['branch', '-D', MERGE_BRANCH])
+    RunGit(['branch', '-D', CHERRY_PICK_BRANCH], error_ok=True)
 
   if not revision:
     print('Failed to push. If this persists, please file a bug.')
@@ -4941,6 +4935,75 @@ def CMDland(parser, args):
     RunCommand([POSTUPSTREAM_HOOK, merge_base], error_ok=True)
 
   return 0
+
+
+def PushToGitWithAutoRebase(remote, branch, original_description,
+                            git_numberer_enabled, max_attempts=3):
+  """Pushes current HEAD commit on top of remote's branch.
+
+  Attempts to fetch and autorebase on push failures.
+  Adds git number footers on the fly.
+
+  Returns integer code from last command.
+  """
+  cherry = RunGit(['rev-parse', 'HEAD']).strip()
+  code = 0
+  attempts_left = max_attempts
+  while attempts_left:
+    attempts_left -= 1
+    print('Attempt %d of %d' % (max_attempts - attempts_left, max_attempts))
+
+    # Fetch remote/branch into local cherry_pick_branch, overriding the latter.
+    # If fetch fails, retry.
+    print('Fetching %s/%s...' % (remote, branch))
+    code, out = RunGitWithCode(
+        ['retry', 'fetch', remote,
+         '+%s:refs/heads/%s' % (branch, CHERRY_PICK_BRANCH)])
+    if code:
+      print('Fetch failed with exit code %d.' % code)
+      print(out.strip())
+      continue
+
+    print('Cherry-picking commit on top of latest %s' % branch)
+    RunGitWithCode(['checkout', 'refs/heads/%s' % CHERRY_PICK_BRANCH],
+                   suppress_stderr=True)
+    parent_hash = RunGit(['rev-parse', 'HEAD']).strip()
+    code, out = RunGitWithCode(['cherry-pick', cherry])
+    if code:
+      print('Your patch doesn\'t apply cleanly to \'%s\' HEAD @ %s, '
+            'the following files have merge conflicts:' %
+            (branch, parent_hash))
+      print(RunGit(['diff', '--name-status', '--diff-filter=U']).strip())
+      print('Please rebase your patch and try again.')
+      RunGitWithCode(['cherry-pick', '--abort'])
+      break
+
+    commit_desc = ChangeDescription(original_description)
+    if git_numberer_enabled:
+      logging.debug('Adding git number footers')
+      parent_msg = RunGit(['show', '-s', '--format=%B', parent_hash]).strip()
+      commit_desc.update_with_git_number_footers(parent_hash, parent_msg,
+                                                 branch)
+      # Ensure timestamps are monotonically increasing.
+      timestamp = max(1 + _get_committer_timestamp(parent_hash),
+                      _get_committer_timestamp('HEAD'))
+      _git_amend_head(commit_desc.description, timestamp)
+
+    code, out = RunGitWithCode(
+        ['push', '--porcelain', remote, 'HEAD:%s' % branch])
+    print(out)
+    if code == 0:
+      break
+    if IsFatalPushFailure(out):
+      print('Fatal push error. Make sure your .netrc credentials and git '
+            'user.email are correct and you have push access to the repo.')
+      break
+  return code
+
+
+def IsFatalPushFailure(push_stdout):
+  """True if retrying push won't help."""
+  return '(prohibited by Gerrit)' in push_stdout
 
 
 @subcommand.usage('<patch url or issue id or issue url>')

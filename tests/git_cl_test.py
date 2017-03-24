@@ -957,13 +957,27 @@ class TestGitCl(TestCase):
         'desc\n\nBUG=500658\nBUG=proj:1234',
         [])
 
-  def _land_rietveld_common(self, debug=False):
+  def _land_rietveld_calls(self, repo_url, git_numberer_enabled=False,
+                            parent_msg=None,
+                            new_msg=None,
+                            fail_after_parent_msg=False,
+                            fail_cherry_pick=False,
+                            fail_push_count=0,
+                            debug=False):
     if debug:
       # Very useful due to finally clause in git cl land raising exceptions and
       # shadowing real cause of failure.
       self.mock(git_cl, '_IS_BEING_TESTED', True)
     else:
       self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
+
+    if git_numberer_enabled:
+      # Special mocks to check validity of timestamp.
+      original_git_amend_head = git_cl._git_amend_head
+      def _git_amend_head_mock(msg, tstamp):
+        self._mocked_call(['git_amend_head committer timestamp', tstamp])
+        return original_git_amend_head(msg, tstamp)
+      self.mock(git_cl, '_git_amend_head', _git_amend_head_mock)
 
     self.mock(git_cl, '_is_git_numberer_enabled', lambda url, ref:
         self._mocked_call('_is_git_numberer_enabled', url, ref))
@@ -1023,76 +1037,126 @@ class TestGitCl(TestCase):
       ((['git', 'config', 'branch.feature.merge'],), 'refs/heads/master'),
       ((['git', 'config', 'branch.feature.remote'],), 'origin'),
       ((['git', 'config', '--get', 'remote.origin.url'],),
-       'https://chromium.googlesource.com/infra/infra'),
+       repo_url),
+
+      ((['git', 'config', 'remote.origin.url'],), repo_url),
+      (('_is_git_numberer_enabled', repo_url, 'refs/heads/master'),
+       git_numberer_enabled),
+
+      # Auto-rebase init.
+      ((['git', 'rev-parse', 'HEAD'],), 'sha1_for_cherry_pick'),
+    ]
+    # Auto-rebase loops.
+    for attempt in xrange(fail_push_count + 1):
+      self.calls += [
+        # Auto-rebase loop start.
+        ((['git', 'retry', 'fetch', 'origin',
+          '+refs/heads/master:refs/heads/git-cl-cherry-pick'],), ''),
+        ((['git', 'checkout', 'refs/heads/git-cl-cherry-pick'],), ''),
+        # NOTE: if fail_push_count>0, this sha1_of_parent should probably be
+        # different in each loop iteration for truly realistic test.
+        ((['git', 'rev-parse', 'HEAD'],), 'sha1_of_parent'),
+        ((['git', 'cherry-pick', 'sha1_for_cherry_pick'],),
+         callError(1, 'failed to cherry pick') if fail_cherry_pick
+         else ''),
+      ]
+      if fail_cherry_pick:
+        return
+
+      if git_numberer_enabled:
+        assert parent_msg
+        self.calls += [
+          ((['git', 'show', '-s', '--format=%B', 'sha1_of_parent'],),
+           parent_msg),
+        ]
+        if fail_after_parent_msg:
+          return
+        assert new_msg
+        self.calls += [
+          ((['git', 'show', '-s', '--format=%ct', 'sha1_of_parent'],),
+           '1480022355'),  # Committer's unix timestamp.
+          ((['git', 'show', '-s', '--format=%ct', 'HEAD'],),
+           '1480024000'),
+          ((['git_amend_head committer timestamp', 1480024000],), ''),
+          ((['git', 'commit', '--amend', '-m', new_msg],), ''),
+        ]
+      self.calls += [
+        ((['git', 'push', '--porcelain', 'origin', 'HEAD:refs/heads/master'],),
+         CERR1 if attempt < fail_push_count else ''),
+      ]
+    # End of autorebase + push.
+
+    self.calls += [
+      ((['git', 'rev-parse', 'HEAD'],), 'sha1_committed'),
+    ]
+    if git_numberer_enabled:
+      self.calls += [
+        ((['git', 'show', '-s', '--format=%B', 'HEAD'],), new_msg),
+      ]
+
+    # Cleanup calls.
+    self.calls += [
+      ((['git', 'checkout', '-q', 'feature'],), ''),
+      ((['git', 'branch', '-D', 'git-cl-commit'],), ''),
+      ((['git', 'branch', '-D', 'git-cl-cherry-pick'],), ''),
     ]
 
   def test_land_rietveld(self):
-    self._land_rietveld_common(debug=False)
+    self._land_rietveld_calls(
+        repo_url='https://chromium.googlesource.com/infra/infra',
+        git_numberer_enabled=False,
+        debug=False)
     self.calls += [
-      ((['git', 'config', 'remote.origin.url'],),
-       'https://chromium.googlesource.com/infra/infra'),
-      (('_is_git_numberer_enabled',
-        'https://chromium.googlesource.com/infra/infra',
-        'refs/heads/master'),
-       False),
-      ((['git', 'push', '--porcelain', 'origin', 'HEAD:refs/heads/master'],),
-       ''),
-      ((['git', 'rev-parse', 'HEAD'],), 'fake_sha_rebased'),
-      ((['git', 'checkout', '-q', 'feature'],), ''),
-      ((['git', 'branch', '-D', 'git-cl-commit'],), ''),
       ((['git', 'config', 'rietveld.viewvc-url'],),
        'https://chromium.googlesource.com/infra/infra/+/'),
       ((['update_description', 123,
          'Issue: 123\n\nR=john@chromium.org\n\nCommitted: '
-         'https://chromium.googlesource.com/infra/infra/+/fake_sha_rebased'],),
+         'https://chromium.googlesource.com/infra/infra/+/sha1_committed'],),
        ''),
       ((['add_comment', 123, 'Committed patchset #2 (id:20001) manually as '
-                             'fake_sha_rebased (presubmit successful).'],), ''),
+                             'sha1_committed (presubmit successful).'],), ''),
     ]
     git_cl.main(['land'])
 
-  def test_land_rietveld_git_numberer(self):
-    self._land_rietveld_common(debug=False)
-
-    # Special mocks to check validity of timestamp.
-    original_git_amend_head = git_cl._git_amend_head
-    def _git_amend_head_mock(msg, tstamp):
-      self._mocked_call(['git_amend_head committer timestamp', tstamp])
-      return original_git_amend_head(msg, tstamp)
-    self.mock(git_cl, '_git_amend_head', _git_amend_head_mock)
-
+  def test_land_rietveld_fail_cherry_pick(self):
+    self._land_rietveld_calls(
+        repo_url='https://chromium.googlesource.com/infra/infra',
+        git_numberer_enabled=False,
+        fail_cherry_pick=True,
+        debug=False)
     self.calls += [
-      ((['git', 'config', 'remote.origin.url'],),
-       'https://chromium.googlesource.com/chromium/src'),
-      (('_is_git_numberer_enabled',
-        'https://chromium.googlesource.com/chromium/src',
-        'refs/heads/master'),
-       True),
-      ((['git', 'show', '-s', '--format=%B', 'fake_ancestor_sha'],),
-       'This is parent commit.\n'
-       '\n'
-       'Cr-Commit-Position: refs/heads/master@{#543}\n'
-       'Cr-Branched-From: refs/svn/2014@{#2208}'),
-      ((['git', 'show', '-s', '--format=%ct', 'fake_ancestor_sha'],),
-       '1480022355'),  # Committer's unix timestamp.
-      ((['git', 'show', '-s', '--format=%ct', 'HEAD'],),
-       '1480024000'),
-
-      ((['git_amend_head committer timestamp', 1480024000],), None),
-      ((['git', 'commit', '--amend', '-m',
-        'Issue: 123\n\nR=john@chromium.org\n'
-        '\n'
-        'Review-Url: https://codereview.chromium.org/123 .\n'
-        'Cr-Commit-Position: refs/heads/master@{#544}\n'
-        'Cr-Branched-From: refs/svn/2014@{#2208}'],), ''),
-
-      ((['git', 'push', '--porcelain', 'origin', 'HEAD:refs/heads/master'],),
-       ''),
-      ((['git', 'rev-parse', 'HEAD'],), 'fake_sha_rebased'),
+      ((['git', 'diff', '--name-status', '--diff-filter=U'],),
+       'U       path/file1\n'
+       'U       file2.cpp\n'),
+      ((['git', 'cherry-pick', '--abort'],), ''),
       ((['git', 'checkout', '-q', 'feature'],), ''),
       ((['git', 'branch', '-D', 'git-cl-commit'],), ''),
+      ((['git', 'branch', '-D', 'git-cl-cherry-pick'],), ''),
+    ]
+    git_cl.main(['land'])
+
+  def test_land_rietveld_git_numberer_fail_1_push(self):
+    return self.test_land_rietveld_git_numberer(fail_push_count=1)
+
+  def test_land_rietveld_git_numberer(self, fail_push_count=0):
+    self._land_rietveld_calls(
+        repo_url='https://chromium.googlesource.com/chromium/src',
+        git_numberer_enabled=True,
+        parent_msg=('This is parent commit.\n'
+                    '\n'
+                    'Cr-Commit-Position: refs/heads/master@{#543}\n'
+                    'Cr-Branched-From: refs/svn/2014@{#2208}'),
+        new_msg=('Issue: 123\n\nR=john@chromium.org\n'
+                 '\n'
+                 'Review-Url: https://codereview.chromium.org/123 .\n'
+                 'Cr-Commit-Position: refs/heads/master@{#544}\n'
+                 'Cr-Branched-From: refs/svn/2014@{#2208}'),
+        fail_push_count=fail_push_count,
+        debug=False)
+
+    self.calls += [
       ((['git', 'config', 'rietveld.viewvc-url'],),
-       'https://chromium.googlesource.com/infra/infra/+/'),
+       'https://chromium.googlesource.com/chromium/src/+/'),
       ((['update_description', 123,
          'Issue: 123\n\nR=john@chromium.org\n'
          '\n'
@@ -1100,27 +1164,25 @@ class TestGitCl(TestCase):
          'Cr-Commit-Position: refs/heads/master@{#544}\n'
          'Cr-Branched-From: refs/svn/2014@{#2208}\n'
          'Committed: '
-         'https://chromium.googlesource.com/infra/infra/+/fake_sha_rebased'],),
+         'https://chromium.googlesource.com/chromium/src/+/sha1_committed'],),
        ''),
       ((['add_comment', 123, 'Committed patchset #2 (id:20001) manually as '
-                             'fake_sha_rebased (presubmit successful).'],), ''),
+                             'sha1_committed (presubmit successful).'],), ''),
     ]
     git_cl.main(['land'])
 
   def test_land_rietveld_git_numberer_bad_parent(self):
-    self._land_rietveld_common(debug=False)
+    self._land_rietveld_calls(
+        repo_url='https://chromium.googlesource.com/v8/v8',
+        git_numberer_enabled=True,
+        parent_msg='This is parent commit with no footer.',
+        fail_after_parent_msg=True,
+        debug=False)
     self.calls += [
-      ((['git', 'config', 'remote.origin.url'],),
-       'https://chromium.googlesource.com/v8/v8'),
-      (('_is_git_numberer_enabled',
-        'https://chromium.googlesource.com/v8/v8', 'refs/heads/master'),
-       True),
-
-      ((['git', 'show', '-s', '--format=%B', 'fake_ancestor_sha'],),
-       'This is parent commit with no footer.'),
-
+      # Cleanup calls to restore original state.
       ((['git', 'checkout', '-q', 'feature'],), ''),
       ((['git', 'branch', '-D', 'git-cl-commit'],), ''),
+      ((['git', 'branch', '-D', 'git-cl-cherry-pick'],), ''),
     ]
     with self.assertRaises(ValueError) as cm:
       git_cl.main(['land'])
