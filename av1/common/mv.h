@@ -155,12 +155,12 @@ typedef struct {
 
 static INLINE int block_center_x(int mi_col, BLOCK_SIZE bs) {
   const int bw = block_size_wide[bs];
-  return mi_col * MI_SIZE + bw / 2;
+  return mi_col * MI_SIZE + bw / 2 - 1;
 }
 
 static INLINE int block_center_y(int mi_row, BLOCK_SIZE bs) {
   const int bh = block_size_high[bs];
-  return mi_row * MI_SIZE + bh / 2;
+  return mi_row * MI_SIZE + bh / 2 - 1;
 }
 
 // Convert a global motion translation vector (which may have more bits than a
