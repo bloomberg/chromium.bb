@@ -137,6 +137,10 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
   int quantizer;
   double lambda;
   int nplanes = 3;
+  DECLARE_ALIGNED(32, uint16_t, inbuf[OD_DERING_INBUF_SIZE]);
+  uint16_t *in;
+  DECLARE_ALIGNED(32, uint16_t, dst[MAX_MIB_SIZE * MAX_MIB_SIZE * 8 * 8]);
+  DECLARE_ALIGNED(32, uint16_t, tmp_dst[MAX_MIB_SIZE * MAX_MIB_SIZE * 8 * 8]);
   int chroma_dering =
       xd->plane[1].subsampling_x == xd->plane[1].subsampling_y &&
       xd->plane[2].subsampling_x == xd->plane[2].subsampling_y;
@@ -188,16 +192,13 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
       }
     }
   }
+  in = inbuf + OD_FILT_VBORDER * OD_FILT_BSTRIDE + OD_FILT_HBORDER;
   sb_count = 0;
   for (sbr = 0; sbr < nvsb; sbr++) {
     for (sbc = 0; sbc < nhsb; sbc++) {
       int nvb, nhb;
       int gi;
       int dirinit = 0;
-      DECLARE_ALIGNED(32, uint16_t,
-                      dst[3][MAX_MIB_SIZE * MAX_MIB_SIZE * 8 * 8]);
-      DECLARE_ALIGNED(32, uint16_t,
-                      tmp_dst[MAX_MIB_SIZE * MAX_MIB_SIZE * 8 * 8]);
       nhb = AOMMIN(MAX_MIB_SIZE, cm->mi_cols - MAX_MIB_SIZE * sbc);
       nvb = AOMMIN(MAX_MIB_SIZE, cm->mi_rows - MAX_MIB_SIZE * sbr);
       dering_count = sb_compute_dering_list(cm, sbr * MAX_MIB_SIZE,
@@ -206,27 +207,22 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
       for (pli = 0; pli < nplanes; pli++) {
         /* Copy the dst buffer only once since it will always be written at
            the same place. */
-        copy_sb16_16(dst[pli], MAX_MIB_SIZE << bsize[pli], src[pli],
+        copy_sb16_16(dst, MAX_MIB_SIZE << bsize[pli], src[pli],
                      sbr * MAX_MIB_SIZE << bsize[pli],
                      sbc * MAX_MIB_SIZE << bsize[pli], stride[pli],
                      nvb << bsize[pli], nhb << bsize[pli]);
-      }
-      for (gi = 0; gi < TOTAL_STRENGTHS; gi++) {
-        int threshold;
-        int clpf_strength;
-        DECLARE_ALIGNED(32, uint16_t, inbuf[OD_DERING_INBUF_SIZE]);
-        uint16_t *in;
-        level = dering_level_table[gi / CLPF_STRENGTHS];
-        threshold = level << coeff_shift;
-        for (pli = 0; pli < nplanes; pli++) {
+        for (i = 0; i < OD_DERING_INBUF_SIZE; i++)
+          inbuf[i] = OD_DERING_VERY_LARGE;
+        for (gi = 0; gi < TOTAL_STRENGTHS; gi++) {
+          int threshold;
+          int clpf_strength;
+          level = dering_level_table[gi / CLPF_STRENGTHS];
+          threshold = level << coeff_shift;
           if (pli > 0 && !chroma_dering) threshold = 0;
-          in = inbuf + OD_FILT_VBORDER * OD_FILT_BSTRIDE + OD_FILT_HBORDER;
           /* We avoid filtering the pixels for which some of the pixels to
              average
              are outside the frame. We could change the filter instead, but it
              would add special cases for any future vectorization. */
-          for (i = 0; i < OD_DERING_INBUF_SIZE; i++)
-            inbuf[i] = OD_DERING_VERY_LARGE;
           int yoff = OD_FILT_VBORDER * (sbr != 0);
           int xoff = OD_FILT_HBORDER * (sbc != 0);
           int ysize =
@@ -242,10 +238,10 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
                     dering_count, threshold,
                     clpf_strength + (clpf_strength == 3), clpf_damping,
                     coeff_shift);
-          copy_dering_16bit_to_16bit(dst[pli], MAX_MIB_SIZE << bsize[pli],
-                                     tmp_dst, dlist, dering_count, bsize[pli]);
+          copy_dering_16bit_to_16bit(dst, MAX_MIB_SIZE << bsize[pli], tmp_dst,
+                                     dlist, dering_count, bsize[pli]);
           mse[pli][sb_count][gi] = (int)compute_dist(
-              dst[pli], MAX_MIB_SIZE << bsize[pli],
+              dst, MAX_MIB_SIZE << bsize[pli],
               &ref_coeff[pli][(sbr * stride[pli] * MAX_MIB_SIZE << bsize[pli]) +
                               (sbc * MAX_MIB_SIZE << bsize[pli])],
               stride[pli], nhb, nvb, coeff_shift, bsize[pli]);
