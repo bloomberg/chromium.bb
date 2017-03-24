@@ -24,8 +24,7 @@ class Profile;
 }
 
 // Designated initializer.
-- (id)initWithPermissionInfo:
-          (const WebsiteSettingsUI::PermissionInfo&)permissionInfo
+- (id)initWithPermissionInfo:(const PageInfoUI::PermissionInfo&)permissionInfo
                       forURL:(const GURL&)url
                 withCallback:(PermissionMenuModel::ChangeCallback)callback
                      profile:(Profile*)profile;

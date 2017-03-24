@@ -18,7 +18,7 @@ class TestCallback {
   PermissionMenuModel::ChangeCallback callback() {
     return base::Bind(&TestCallback::PermissionChanged, base::Unretained(this));
   }
-  void PermissionChanged(const WebsiteSettingsUI::PermissionInfo& permission) {
+  void PermissionChanged(const PageInfoUI::PermissionInfo& permission) {
     current_ = permission.setting;
   }
 
@@ -38,7 +38,7 @@ class PermissionMenuModelTest : public testing::Test {
 
 TEST_F(PermissionMenuModelTest, TestDefault) {
   TestCallback callback;
-  WebsiteSettingsUI::PermissionInfo permission;
+  PageInfoUI::PermissionInfo permission;
   permission.type = CONTENT_SETTINGS_TYPE_COOKIES;
   permission.setting = CONTENT_SETTING_ALLOW;
   permission.default_setting = CONTENT_SETTING_ALLOW;
@@ -53,7 +53,7 @@ TEST_F(PermissionMenuModelTest, TestDefaultMediaHttp) {
     ContentSettingsType type = i ? CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC
                                  : CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA;
     TestCallback callback;
-    WebsiteSettingsUI::PermissionInfo permission;
+    PageInfoUI::PermissionInfo permission;
     permission.type = type;
     permission.setting = CONTENT_SETTING_ALLOW;
     permission.default_setting = CONTENT_SETTING_ALLOW;
@@ -73,7 +73,7 @@ TEST_F(PermissionMenuModelTest, TestAllowBlock) {
 
 TEST_F(PermissionMenuModelTest, TestIncognitoNotifications) {
   TestCallback callback;
-  WebsiteSettingsUI::PermissionInfo permission;
+  PageInfoUI::PermissionInfo permission;
   permission.type = CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
   permission.setting = CONTENT_SETTING_ASK;
   permission.default_setting = CONTENT_SETTING_ASK;

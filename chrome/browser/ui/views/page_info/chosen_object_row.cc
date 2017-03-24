@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/page_info/chosen_object_row.h"
 
 #include "chrome/browser/ui/views/page_info/chosen_object_row_observer.h"
-#include "chrome/browser/ui/views/page_info/website_settings_popup_view.h"
+#include "chrome/browser/ui/views/page_info/page_info_popup_view.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -15,7 +15,7 @@
 #include "ui/views/layout/grid_layout.h"
 
 ChosenObjectRow::ChosenObjectRow(
-    std::unique_ptr<WebsiteSettingsUI::ChosenObjectInfo> info)
+    std::unique_ptr<PageInfoUI::ChosenObjectInfo> info)
     : info_(std::move(info)) {
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
@@ -33,15 +33,14 @@ ChosenObjectRow::ChosenObjectRow(
   layout->StartRow(1, column_set_id);
   // Create the permission icon.
   icon_ = new views::ImageView();
-  const gfx::Image& image =
-      WebsiteSettingsUI::GetChosenObjectIcon(*info_, false);
+  const gfx::Image& image = PageInfoUI::GetChosenObjectIcon(*info_, false);
   icon_->SetImage(image.ToImageSkia());
   layout->AddView(icon_, 1, 1, views::GridLayout::CENTER,
                   views::GridLayout::CENTER);
   // Create the label that displays the permission type.
-  views::Label* label = new views::Label(l10n_util::GetStringFUTF16(
-      info_->ui_info.label_string_id,
-      WebsiteSettingsUI::ChosenObjectToUIString(*info_)));
+  views::Label* label = new views::Label(
+      l10n_util::GetStringFUTF16(info_->ui_info.label_string_id,
+                                 PageInfoUI::ChosenObjectToUIString(*info_)));
   layout->AddView(label, 1, 1, views::GridLayout::LEADING,
                   views::GridLayout::CENTER);
   // Create the delete button.
@@ -70,8 +69,7 @@ ChosenObjectRow::~ChosenObjectRow() {}
 void ChosenObjectRow::ButtonPressed(views::Button* sender,
                                     const ui::Event& event) {
   // Change the icon to reflect the selected setting.
-  const gfx::Image& image =
-      WebsiteSettingsUI::GetChosenObjectIcon(*info_, true);
+  const gfx::Image& image = PageInfoUI::GetChosenObjectIcon(*info_, true);
   icon_->SetImage(image.ToImageSkia());
 
   RemoveChildView(delete_button_);

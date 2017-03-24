@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PAGE_INFO_CHOSEN_OBJECT_ROW_OBSERVER_H_
 #define CHROME_BROWSER_UI_VIEWS_PAGE_INFO_CHOSEN_OBJECT_ROW_OBSERVER_H_
 
-#include "chrome/browser/ui/page_info/website_settings_ui.h"
+#include "chrome/browser/ui/page_info/page_info_ui.h"
 
 class ChosenObjectRowObserver {
  public:
   // This method is called when permission for the object is revoked.
   virtual void OnChosenObjectDeleted(
-      const WebsiteSettingsUI::ChosenObjectInfo& info) = 0;
+      const PageInfoUI::ChosenObjectInfo& info) = 0;
 
  protected:
   virtual ~ChosenObjectRowObserver() {}

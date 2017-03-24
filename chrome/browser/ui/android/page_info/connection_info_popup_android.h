@@ -11,18 +11,18 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "chrome/browser/ui/page_info/website_settings_ui.h"
+#include "chrome/browser/ui/page_info/page_info_ui.h"
 
 namespace content {
 class WebContents;
 }
 
-// Android implementation of the website settings UI which displays detailed
+// Android implementation of the page info UI which displays detailed
 // connection and certificate information for the website.
-class ConnectionInfoPopupAndroid : public WebsiteSettingsUI {
+class ConnectionInfoPopupAndroid : public PageInfoUI {
  public:
   ConnectionInfoPopupAndroid(JNIEnv* env,
-                             jobject java_website_settings,
+                             jobject java_page_info,
                              content::WebContents* web_contents);
   ~ConnectionInfoPopupAndroid() override;
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
@@ -34,7 +34,7 @@ class ConnectionInfoPopupAndroid : public WebsiteSettingsUI {
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& java_web_contents);
 
-  // WebsiteSettingsUI implementations.
+  // PageInfoUI implementations.
   void SetCookieInfo(const CookieInfoList& cookie_info_list) override;
   void SetPermissionInfo(const PermissionInfoList& permission_info_list,
                          ChosenObjectInfoList chosen_object_info_list) override;
@@ -43,8 +43,8 @@ class ConnectionInfoPopupAndroid : public WebsiteSettingsUI {
   static bool RegisterConnectionInfoPopupAndroid(JNIEnv* env);
 
  private:
-  // The presenter that controls the Website Settings UI.
-  std::unique_ptr<WebsiteSettings> presenter_;
+  // The presenter that controls the Page Info UI.
+  std::unique_ptr<PageInfo> presenter_;
 
   // The java prompt implementation.
   base::android::ScopedJavaGlobalRef<jobject> popup_jobject_;

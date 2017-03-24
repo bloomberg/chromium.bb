@@ -23,9 +23,9 @@
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
+#include "chrome/browser/ui/cocoa/page_info/page_info_utils_cocoa.h"
 #include "chrome/browser/ui/cocoa/page_info/permission_selector_button.h"
 #include "chrome/browser/ui/cocoa/page_info/split_block_button.h"
-#include "chrome/browser/ui/cocoa/page_info/website_settings_utils_cocoa.h"
 #include "chrome/browser/ui/cocoa/permission_bubble/permission_bubble_cocoa.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
@@ -109,12 +109,11 @@ const NSInteger kFullscreenLeftOffset = 40;
     __block PermissionPrompt::Delegate* blockDelegate = delegate;
     __block AllowBlockMenuButton* blockSelf = self;
     PermissionMenuModel::ChangeCallback changeCallback =
-        base::BindBlock(^(const WebsiteSettingsUI::PermissionInfo& permission) {
-            blockDelegate->ToggleAccept(
-                index, permission.setting == CONTENT_SETTING_ALLOW);
-            [blockSelf setFrameSize:
-                SizeForWebsiteSettingsButtonTitle(blockSelf,
-                                                  [blockSelf title])];
+        base::BindBlock(^(const PageInfoUI::PermissionInfo& permission) {
+          blockDelegate->ToggleAccept(
+              index, permission.setting == CONTENT_SETTING_ALLOW);
+          [blockSelf setFrameSize:SizeForPageInfoButtonTitle(
+                                      blockSelf, [blockSelf title])];
         });
 
     menuModel_.reset(
@@ -128,7 +127,7 @@ const NSInteger kFullscreenLeftOffset = 40;
     // Adjust the size to fit the current title.  Using only -sizeToFit leaves
     // an ugly amount of whitespace between the title and the arrows because it
     // will fit to the largest element in the menu, not just the selected item.
-    [self setFrameSize:SizeForWebsiteSettingsButtonTitle(self, [self title])];
+    [self setFrameSize:SizeForPageInfoButtonTitle(self, [self title])];
   }
   return self;
 }
@@ -136,7 +135,7 @@ const NSInteger kFullscreenLeftOffset = 40;
 - (CGFloat)maximumTitleWidth {
   CGFloat maxTitleWidth = 0;
   for (NSMenuItem* item in [self itemArray]) {
-    NSSize size = SizeForWebsiteSettingsButtonTitle(self, [item title]);
+    NSSize size = SizeForPageInfoButtonTitle(self, [item title]);
     maxTitleWidth = std::max(maxTitleWidth, size.width);
   }
   return maxTitleWidth;

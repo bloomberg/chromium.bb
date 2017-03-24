@@ -123,7 +123,7 @@ bool LocationIconDecoration::OnMousePressed(NSRect frame, NSPoint location) {
 
   WebContents* tab = owner_->GetWebContents();
   Browser* browser = chrome::FindBrowserWithWebContents(tab);
-  chrome::ShowWebsiteSettings(browser, tab);
+  chrome::ShowPageInfo(browser, tab);
   return true;
 }
 

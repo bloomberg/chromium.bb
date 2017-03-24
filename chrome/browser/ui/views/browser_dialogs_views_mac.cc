@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
 #include "chrome/browser/ui/views/content_setting_bubble_contents.h"
-#include "chrome/browser/ui/views/page_info/website_settings_popup_view.h"
+#include "chrome/browser/ui/views/page_info/page_info_popup_view.h"
 #include "chrome/browser/ui/views/task_manager_view.h"
 #include "chrome/browser/ui/views/update_recommended_message_box.h"
 
@@ -21,7 +21,7 @@
 
 namespace chrome {
 
-void ShowWebsiteSettingsBubbleViewsAtPoint(
+void ShowPageInfoBubbleViewsAtPoint(
     const gfx::Point& anchor_point,
     Profile* profile,
     content::WebContents* web_contents,
@@ -34,14 +34,13 @@ void ShowWebsiteSettingsBubbleViewsAtPoint(
   // earlier because the popup is shown on mouse release (but dismissed on
   // mouse pressed). A Cocoa browser does both on mouse pressed, so a check
   // when showing is sufficient.
-  if (WebsiteSettingsPopupView::GetShownPopupType() !=
-      WebsiteSettingsPopupView::POPUP_NONE) {
+  if (PageInfoPopupView::GetShownPopupType() != PageInfoPopupView::POPUP_NONE) {
     return;
   }
 
-  WebsiteSettingsPopupView::ShowPopup(
-      nullptr, gfx::Rect(anchor_point, gfx::Size()), profile, web_contents,
-      virtual_url, security_info);
+  PageInfoPopupView::ShowPopup(nullptr, gfx::Rect(anchor_point, gfx::Size()),
+                               profile, web_contents, virtual_url,
+                               security_info);
 }
 
 void ShowBookmarkBubbleViewsAtPoint(const gfx::Point& anchor_point,

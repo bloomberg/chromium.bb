@@ -7,10 +7,10 @@
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/page_info/page_info_ui.h"
 #include "chrome/browser/ui/page_info/permission_menu_model.h"
-#include "chrome/browser/ui/page_info/website_settings_ui.h"
 #include "chrome/browser/ui/views/page_info/non_accessible_image_view.h"
-#include "chrome/browser/ui/views/page_info/website_settings_popup_view.h"
+#include "chrome/browser/ui/views/page_info/page_info_popup_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -235,18 +235,18 @@ void PermissionCombobox::OnPerformAction(Combobox* combobox) {
 PermissionSelectorRow::PermissionSelectorRow(
     Profile* profile,
     const GURL& url,
-    const WebsiteSettingsUI::PermissionInfo& permission,
+    const PageInfoUI::PermissionInfo& permission,
     views::GridLayout* layout)
     : profile_(profile), icon_(NULL), menu_button_(NULL), combobox_(NULL) {
   // Create the permission icon.
   icon_ = new NonAccessibleImageView();
-  const gfx::Image& image = WebsiteSettingsUI::GetPermissionIcon(permission);
+  const gfx::Image& image = PageInfoUI::GetPermissionIcon(permission);
   icon_->SetImage(image.ToImageSkia());
   layout->AddView(icon_, 1, 1, views::GridLayout::CENTER,
                   views::GridLayout::CENTER);
   // Create the label that displays the permission type.
-  label_ = new views::Label(
-      WebsiteSettingsUI::PermissionTypeToUIString(permission.type));
+  label_ =
+      new views::Label(PageInfoUI::PermissionTypeToUIString(permission.type));
   layout->AddView(label_, 1, 1, views::GridLayout::LEADING,
                   views::GridLayout::CENTER);
   // Create the menu model.
@@ -290,23 +290,23 @@ PermissionSelectorRow::~PermissionSelectorRow() {
 
 void PermissionSelectorRow::InitializeMenuButtonView(
     views::GridLayout* layout,
-    const WebsiteSettingsUI::PermissionInfo& permission) {
+    const PageInfoUI::PermissionInfo& permission) {
   bool button_enabled =
       permission.source == content_settings::SETTING_SOURCE_USER;
   menu_button_ = new internal::PermissionMenuButton(
-      WebsiteSettingsUI::PermissionActionToUIString(
+      PageInfoUI::PermissionActionToUIString(
           profile_, permission.type, permission.setting,
           permission.default_setting, permission.source),
       menu_model_.get(), button_enabled);
   menu_button_->SetEnabled(button_enabled);
   menu_button_->SetAccessibleName(
-      WebsiteSettingsUI::PermissionTypeToUIString(permission.type));
+      PageInfoUI::PermissionTypeToUIString(permission.type));
   layout->AddView(menu_button_);
 }
 
 void PermissionSelectorRow::InitializeComboboxView(
     views::GridLayout* layout,
-    const WebsiteSettingsUI::PermissionInfo& permission) {
+    const PageInfoUI::PermissionInfo& permission) {
   bool button_enabled =
       permission.source == content_settings::SETTING_SOURCE_USER;
   combobox_model_adapter_.reset(
@@ -315,23 +315,23 @@ void PermissionSelectorRow::InitializeComboboxView(
                                                button_enabled, true);
   combobox_->SetEnabled(button_enabled);
   combobox_->SetAccessibleName(
-      WebsiteSettingsUI::PermissionTypeToUIString(permission.type));
+      PageInfoUI::PermissionTypeToUIString(permission.type));
   layout->AddView(combobox_);
 }
 
 void PermissionSelectorRow::PermissionChanged(
-    const WebsiteSettingsUI::PermissionInfo& permission) {
+    const PageInfoUI::PermissionInfo& permission) {
   // Change the permission icon to reflect the selected setting.
-  const gfx::Image& image = WebsiteSettingsUI::GetPermissionIcon(permission);
+  const gfx::Image& image = PageInfoUI::GetPermissionIcon(permission);
   icon_->SetImage(image.ToImageSkia());
 
   // Update the menu button text to reflect the new setting.
   if (menu_button_) {
-    menu_button_->SetText(WebsiteSettingsUI::PermissionActionToUIString(
+    menu_button_->SetText(PageInfoUI::PermissionActionToUIString(
         profile_, permission.type, permission.setting,
         permission.default_setting, content_settings::SETTING_SOURCE_USER));
     menu_button_->SizeToPreferredSize();
-    // Re-layout will be done at the |WebsiteSettingsPopupView| level, since
+    // Re-layout will be done at the |PageInfoPopupView| level, since
     // that view may need to resize itself to accomodate the new sizes of its
     // contents.
     menu_button_->InvalidateLayout();

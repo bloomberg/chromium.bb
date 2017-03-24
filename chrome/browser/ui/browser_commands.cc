@@ -897,7 +897,7 @@ void ShowFindBar(Browser* browser) {
   browser->GetFindBarController()->Show();
 }
 
-bool ShowWebsiteSettings(Browser* browser, content::WebContents* web_contents) {
+bool ShowPageInfo(Browser* browser, content::WebContents* web_contents) {
   content::NavigationEntry* entry =
       web_contents->GetController().GetVisibleEntry();
   if (!entry)
@@ -908,7 +908,7 @@ bool ShowWebsiteSettings(Browser* browser, content::WebContents* web_contents) {
   security_state::SecurityInfo security_info;
   helper->GetSecurityInfo(&security_info);
 
-  browser->window()->ShowWebsiteSettings(
+  browser->window()->ShowPageInfo(
       Profile::FromBrowserContext(web_contents->GetBrowserContext()),
       web_contents, entry->GetVirtualURL(), security_info);
   return true;

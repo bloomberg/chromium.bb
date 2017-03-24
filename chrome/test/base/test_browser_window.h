@@ -115,7 +115,7 @@ class TestBrowserWindow : public BrowserWindow {
       bool app_modal,
       const base::Callback<void(bool)>& callback) override {}
   void UserChangedTheme() override {}
-  void ShowWebsiteSettings(
+  void ShowPageInfo(
       Profile* profile,
       content::WebContents* web_contents,
       const GURL& virtual_url,

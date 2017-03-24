@@ -123,7 +123,7 @@ class ToolbarView : public views::AccessiblePaneView,
   const ToolbarModel* GetToolbarModel() const override;
   ContentSettingBubbleModelDelegate* GetContentSettingBubbleModelDelegate()
       override;
-  void ShowWebsiteSettings(content::WebContents* web_contents) override;
+  void ShowPageInfo(content::WebContents* web_contents) override;
 
   // CommandObserver:
   void EnabledStateChangedForCommand(int id, bool enabled) override;

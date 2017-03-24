@@ -35,7 +35,7 @@ dialogs are:
 5. One-click signin
 6. Site permissions bubble
 7. "Card unmask prompt" (TODO(ellyjones): what is this?)
-8. Website settings dialog
+8. Page info dialog
 
 Once all of these dialogs are converted and tested behind the feature, we can
 ship to canary and dev channels and watch for any performance or crash rate

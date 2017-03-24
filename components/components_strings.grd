@@ -313,8 +313,8 @@
         Open startup pages
       </message>
 
-      <!-- Website Settings UI -->
-      <message name="IDS_WEBSITE_SETTINGS_NON_SECURE_TRANSPORT" desc="Text that is displayed in the header of the Website Settings popup if the website uses non-secure transport.">
+      <!-- Page Info UI -->
+      <message name="IDS_PAGE_INFO_NON_SECURE_TRANSPORT" desc="Text that is displayed in the header of the Website Settings popup if the website uses non-secure transport.">
         Your connection to this site is not private.
       </message>
 

@@ -5,14 +5,13 @@
 #import "chrome/browser/ui/cocoa/page_info/permission_selector_button.h"
 
 #include "base/strings/sys_string_conversions.h"
-#include "chrome/browser/ui/cocoa/page_info/website_settings_utils_cocoa.h"
-#include "chrome/browser/ui/page_info/website_settings_ui.h"
+#include "chrome/browser/ui/cocoa/page_info/page_info_utils_cocoa.h"
+#include "chrome/browser/ui/page_info/page_info_ui.h"
 #import "ui/base/cocoa/menu_controller.h"
 
 @implementation PermissionSelectorButton
 
-- (id)initWithPermissionInfo:
-          (const WebsiteSettingsUI::PermissionInfo&)permissionInfo
+- (id)initWithPermissionInfo:(const PageInfoUI::PermissionInfo&)permissionInfo
                       forURL:(const GURL&)url
                 withCallback:(PermissionMenuModel::ChangeCallback)callback
                      profile:(Profile*)profile {
@@ -31,7 +30,7 @@
 
     // Set the button title.
     base::scoped_nsobject<NSMenuItem> titleItem([[NSMenuItem alloc] init]);
-    base::string16 buttonTitle = WebsiteSettingsUI::PermissionActionToUIString(
+    base::string16 buttonTitle = PageInfoUI::PermissionActionToUIString(
         profile, permissionInfo.type, permissionInfo.setting,
         permissionInfo.default_setting, permissionInfo.source);
     [titleItem setTitle:base::SysUTF16ToNSString(buttonTitle)];
@@ -41,7 +40,7 @@
     [self sizeToFit];
 
     // Size the button to just fit the visible title - not all of its items.
-    [self setFrameSize:SizeForWebsiteSettingsButtonTitle(self, [self title])];
+    [self setFrameSize:SizeForPageInfoButtonTitle(self, [self title])];
   }
   return self;
 }
@@ -53,10 +52,10 @@
   CGFloat maxTitleWidth = 0;
   for (NSMenuItem* item in [self itemArray]) {
     NSString* title =
-        base::SysUTF16ToNSString(WebsiteSettingsUI::PermissionActionToUIString(
+        base::SysUTF16ToNSString(PageInfoUI::PermissionActionToUIString(
             profile, type, static_cast<ContentSetting>([item tag]),
             defaultSetting, content_settings::SETTING_SOURCE_USER));
-    NSSize size = SizeForWebsiteSettingsButtonTitle(self, title);
+    NSSize size = SizeForPageInfoButtonTitle(self, title);
     maxTitleWidth = std::max(maxTitleWidth, size.width);
   }
   return maxTitleWidth;

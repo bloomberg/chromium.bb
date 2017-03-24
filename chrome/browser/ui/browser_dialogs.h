@@ -117,8 +117,8 @@ content::ColorChooser* ShowColorChooser(content::WebContents* web_contents,
 
 #if defined(OS_MACOSX)
 
-// Shows a Views website settings bubble at the given anchor point.
-void ShowWebsiteSettingsBubbleViewsAtPoint(
+// Shows a Views page info bubble at the given anchor point.
+void ShowPageInfoBubbleViewsAtPoint(
     const gfx::Point& anchor_point,
     Profile* profile,
     content::WebContents* web_contents,

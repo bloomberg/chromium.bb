@@ -58,7 +58,7 @@ import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibil
 import org.chromium.chrome.browser.gsa.GSAState;
 import org.chromium.chrome.browser.metrics.PageLoadMetrics;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
-import org.chromium.chrome.browser.page_info.WebsiteSettingsPopup;
+import org.chromium.chrome.browser.page_info.PageInfoPopup;
 import org.chromium.chrome.browser.rappor.RapporServiceBridge;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -902,10 +902,8 @@ public class CustomTabActivity extends ChromeActivity {
             return true;
         } else if (id == R.id.info_menu_id) {
             if (getTabModelSelector().getCurrentTab() == null) return false;
-            WebsiteSettingsPopup.show(
-                    this, getTabModelSelector().getCurrentTab(),
-                    getToolbarManager().getContentPublisher(),
-                    WebsiteSettingsPopup.OPENED_FROM_MENU);
+            PageInfoPopup.show(this, getTabModelSelector().getCurrentTab(),
+                    getToolbarManager().getContentPublisher(), PageInfoPopup.OPENED_FROM_MENU);
             return true;
         }
         return super.onMenuOrKeyboardAction(id, fromMenu);

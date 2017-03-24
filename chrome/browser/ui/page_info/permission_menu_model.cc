@@ -14,11 +14,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
 
-PermissionMenuModel::PermissionMenuModel(
-    Profile* profile,
-    const GURL& url,
-    const WebsiteSettingsUI::PermissionInfo& info,
-    const ChangeCallback& callback)
+PermissionMenuModel::PermissionMenuModel(Profile* profile,
+                                         const GURL& url,
+                                         const PageInfoUI::PermissionInfo& info,
+                                         const ChangeCallback& callback)
     : ui::SimpleMenuModel(this),
       host_content_settings_map_(
           HostContentSettingsMapFactory::GetForProfile(profile)),
@@ -38,16 +37,13 @@ PermissionMenuModel::PermissionMenuModel(
 
   switch (effective_default_setting) {
     case CONTENT_SETTING_ALLOW:
-      label = l10n_util::GetStringUTF16(
-          IDS_WEBSITE_SETTINGS_MENU_ITEM_DEFAULT_ALLOW);
+      label = l10n_util::GetStringUTF16(IDS_PAGE_INFO_MENU_ITEM_DEFAULT_ALLOW);
       break;
     case CONTENT_SETTING_BLOCK:
-      label = l10n_util::GetStringUTF16(
-          IDS_WEBSITE_SETTINGS_MENU_ITEM_DEFAULT_BLOCK);
+      label = l10n_util::GetStringUTF16(IDS_PAGE_INFO_MENU_ITEM_DEFAULT_BLOCK);
       break;
     case CONTENT_SETTING_ASK:
-      label =
-          l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_MENU_ITEM_DEFAULT_ASK);
+      label = l10n_util::GetStringUTF16(IDS_PAGE_INFO_MENU_ITEM_DEFAULT_ASK);
       break;
     case CONTENT_SETTING_DETECT_IMPORTANT_CONTENT:
       // TODO(tommycli): We display the ASK string for DETECT because with
@@ -55,8 +51,8 @@ PermissionMenuModel::PermissionMenuModel(
       // Once the feature flag is gone, migrate the actual setting to ASK.
       label = l10n_util::GetStringUTF16(
           PluginUtils::ShouldPreferHtmlOverPlugins(host_content_settings_map_)
-              ? IDS_WEBSITE_SETTINGS_MENU_ITEM_DEFAULT_ASK
-              : IDS_WEBSITE_SETTINGS_MENU_ITEM_DEFAULT_DETECT_IMPORTANT_CONTENT);
+              ? IDS_PAGE_INFO_MENU_ITEM_DEFAULT_ASK
+              : IDS_PAGE_INFO_MENU_ITEM_DEFAULT_DETECT_IMPORTANT_CONTENT);
       break;
     case CONTENT_SETTING_NUM_SETTINGS:
       NOTREACHED();
@@ -68,7 +64,7 @@ PermissionMenuModel::PermissionMenuModel(
   // which means the elements of the menu themselves have to be shorter, instead
   // of simply setting a shorter label on the menubutton.
   if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
-    label = WebsiteSettingsUI::PermissionActionToUIString(
+    label = PageInfoUI::PermissionActionToUIString(
         profile, permission_.type, CONTENT_SETTING_DEFAULT,
         effective_default_setting, permission_.source);
   }
@@ -86,9 +82,9 @@ PermissionMenuModel::PermissionMenuModel(
       permission_.type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA;
   if (!allow_disabled_for_notifications &&
       (!is_media_permission || content::IsOriginSecure(url))) {
-    label = l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_MENU_ITEM_ALLOW);
+    label = l10n_util::GetStringUTF16(IDS_PAGE_INFO_MENU_ITEM_ALLOW);
     if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
-      label = WebsiteSettingsUI::PermissionActionToUIString(
+      label = PageInfoUI::PermissionActionToUIString(
           profile, permission_.type, CONTENT_SETTING_ALLOW,
           effective_default_setting, permission_.source);
     }
@@ -101,14 +97,14 @@ PermissionMenuModel::PermissionMenuModel(
   if (permission_.type == CONTENT_SETTINGS_TYPE_PLUGINS &&
       !PluginUtils::ShouldPreferHtmlOverPlugins(host_content_settings_map_)) {
     label = l10n_util::GetStringUTF16(
-        IDS_WEBSITE_SETTINGS_MENU_ITEM_DETECT_IMPORTANT_CONTENT);
+        IDS_PAGE_INFO_MENU_ITEM_DETECT_IMPORTANT_CONTENT);
     AddCheckItem(CONTENT_SETTING_DETECT_IMPORTANT_CONTENT, label);
   }
 
   // Retrieve the string to show for blocking the permission.
-  label = l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_MENU_ITEM_BLOCK);
+  label = l10n_util::GetStringUTF16(IDS_PAGE_INFO_MENU_ITEM_BLOCK);
   if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
-    label = WebsiteSettingsUI::PermissionActionToUIString(
+    label = PageInfoUI::PermissionActionToUIString(
         profile, info.type, CONTENT_SETTING_BLOCK, effective_default_setting,
         info.source);
   }

@@ -81,12 +81,13 @@ TEST(NSURLProtectionSpaceUtilTest, ShowForSocksProxy) {
   // Expecting the following text:
   // The proxy chromium.org requires a username and password.
   // Your connection to this site is not private.
-  NSString* expectedText = [NSString
-      stringWithFormat:@"%@ %@", l10n_util::GetNSStringF(
+  NSString* expectedText =
+      [NSString stringWithFormat:@"%@ %@",
+                                 l10n_util::GetNSStringF(
                                      IDS_LOGIN_DIALOG_PROXY_AUTHORITY,
                                      base::SysNSStringToUTF16(kTestHost)),
-                       l10n_util::GetNSString(
-                           IDS_WEBSITE_SETTINGS_NON_SECURE_TRANSPORT)];
+                                 l10n_util::GetNSString(
+                                     IDS_PAGE_INFO_NON_SECURE_TRANSPORT)];
 
   EXPECT_NSEQ(expectedText, MessageForHTTPAuth(protectionSpace));
 }
@@ -101,12 +102,13 @@ TEST(NSURLProtectionSpaceUtilTest, ShowForHttpProxy) {
   // Expecting the following text:
   // The proxy http://chromium.org requires a username and password.
   // Your connection to this site is not private.
-  NSString* expectedText = [NSString
-      stringWithFormat:@"%@ %@", l10n_util::GetNSStringF(
+  NSString* expectedText =
+      [NSString stringWithFormat:@"%@ %@",
+                                 l10n_util::GetNSStringF(
                                      IDS_LOGIN_DIALOG_PROXY_AUTHORITY,
                                      base::SysNSStringToUTF16(kTestHttpOrigin)),
-                       l10n_util::GetNSString(
-                           IDS_WEBSITE_SETTINGS_NON_SECURE_TRANSPORT)];
+                                 l10n_util::GetNSString(
+                                     IDS_PAGE_INFO_NON_SECURE_TRANSPORT)];
   EXPECT_NSEQ(expectedText, MessageForHTTPAuth(protectionSpace));
 }
 
@@ -130,7 +132,7 @@ TEST(NSURLProtectionSpaceUtilTest, ShowForHttpsProxy) {
                              IDS_LOGIN_DIALOG_PROXY_AUTHORITY,
                              base::SysNSStringToUTF16(kTestHttpsOrigin)),
                          l10n_util::GetNSString(
-                             IDS_WEBSITE_SETTINGS_NON_SECURE_TRANSPORT)];
+                             IDS_PAGE_INFO_NON_SECURE_TRANSPORT)];
   } else {
     // Expecting the following text:
     // The proxy https://chromium.org:80 requires a username and password.
@@ -150,12 +152,13 @@ TEST(NSURLProtectionSpaceUtilTest, ShowForHttpServer) {
 
   // Expecting the following text:
   // http://chromium.org requires a username and password.
-  NSString* expectedText = [NSString
-      stringWithFormat:@"%@ %@", l10n_util::GetNSStringF(
+  NSString* expectedText =
+      [NSString stringWithFormat:@"%@ %@",
+                                 l10n_util::GetNSStringF(
                                      IDS_LOGIN_DIALOG_AUTHORITY,
                                      base::SysNSStringToUTF16(kTestHttpOrigin)),
-                       l10n_util::GetNSString(
-                           IDS_WEBSITE_SETTINGS_NON_SECURE_TRANSPORT)];
+                                 l10n_util::GetNSString(
+                                     IDS_PAGE_INFO_NON_SECURE_TRANSPORT)];
   EXPECT_NSEQ(expectedText, MessageForHTTPAuth(protectionSpace));
 }
 

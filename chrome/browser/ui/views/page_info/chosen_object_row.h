@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_PAGE_INFO_CHOSEN_OBJECT_ROW_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ui/page_info/website_settings_ui.h"
+#include "chrome/browser/ui/page_info/page_info_ui.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
@@ -22,8 +22,7 @@ class ChosenObjectRowObserver;
 // access to.
 class ChosenObjectRow : public views::View, public views::ButtonListener {
  public:
-  explicit ChosenObjectRow(
-      std::unique_ptr<WebsiteSettingsUI::ChosenObjectInfo> info);
+  explicit ChosenObjectRow(std::unique_ptr<PageInfoUI::ChosenObjectInfo> info);
 
   void AddObserver(ChosenObjectRowObserver* observer);
 
@@ -37,7 +36,7 @@ class ChosenObjectRow : public views::View, public views::ButtonListener {
   views::ImageButton* delete_button_;  // Owned by the views hierarchy.
 
   base::ObserverList<ChosenObjectRowObserver> observer_list_;
-  std::unique_ptr<WebsiteSettingsUI::ChosenObjectInfo> info_;
+  std::unique_ptr<PageInfoUI::ChosenObjectInfo> info_;
 
   DISALLOW_COPY_AND_ASSIGN(ChosenObjectRow);
 };

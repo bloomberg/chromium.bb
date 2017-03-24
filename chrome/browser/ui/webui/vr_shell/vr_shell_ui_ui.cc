@@ -194,12 +194,10 @@ content::WebUIDataSource* CreateVrShellUIHTMLSource() {
   source->AddResourcePath("vk.css", IDR_VR_SHELL_UI_VK_CSS);
   source->AddResourcePath("vk.js", IDR_VR_SHELL_UI_VK_JS);
   source->SetDefaultResource(IDR_VR_SHELL_UI_HTML);
-  source->AddLocalizedString(
-      "insecureWebVrContentPermanent",
-      IDS_WEBSITE_SETTINGS_INSECURE_WEBVR_CONTENT_PERMANENT);
-  source->AddLocalizedString(
-      "insecureWebVrContentTransient",
-      IDS_WEBSITE_SETTINGS_INSECURE_WEBVR_CONTENT_TRANSIENT);
+  source->AddLocalizedString("insecureWebVrContentPermanent",
+                             IDS_PAGE_INFO_INSECURE_WEBVR_CONTENT_PERMANENT);
+  source->AddLocalizedString("insecureWebVrContentTransient",
+                             IDS_PAGE_INFO_INSECURE_WEBVR_CONTENT_TRANSIENT);
   source->AddLocalizedString("back", IDS_VR_SHELL_UI_BACK_BUTTON);
   source->AddLocalizedString("forward", IDS_VR_SHELL_UI_FORWARD_BUTTON);
   source->AddLocalizedString("reload", IDS_VR_SHELL_UI_RELOAD_BUTTON);

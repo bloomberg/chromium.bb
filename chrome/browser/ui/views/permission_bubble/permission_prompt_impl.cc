@@ -80,7 +80,7 @@ class PermissionCombobox : public views::MenuButton,
                            const ui::Event* event) override;
 
   // Callback when a permission's setting is changed.
-  void PermissionChanged(const WebsiteSettingsUI::PermissionInfo& permission);
+  void PermissionChanged(const PageInfoUI::PermissionInfo& permission);
 
  private:
   int index_;
@@ -129,7 +129,7 @@ void PermissionCombobox::OnMenuButtonClicked(views::MenuButton* source,
 }
 
 void PermissionCombobox::PermissionChanged(
-    const WebsiteSettingsUI::PermissionInfo& permission) {
+    const PageInfoUI::PermissionInfo& permission) {
   SetText(model_->GetLabelAt(model_->GetIndexOfCommandId(permission.setting)));
   SizeToPreferredSize();
 

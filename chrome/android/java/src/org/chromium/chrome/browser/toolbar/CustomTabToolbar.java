@@ -46,7 +46,7 @@ import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout;
 import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
-import org.chromium.chrome.browser.page_info.WebsiteSettingsPopup;
+import org.chromium.chrome.browser.page_info.PageInfoPopup;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.ColorUtils;
@@ -183,8 +183,8 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
                 if (activity == null) return;
                 String publisherName = mState == STATE_TITLE_ONLY
                         ? parsePublisherNameFromUrl(currentTab.getUrl()) : null;
-                WebsiteSettingsPopup.show(activity, currentTab, publisherName,
-                        WebsiteSettingsPopup.OPENED_FROM_TOOLBAR);
+                PageInfoPopup.show(
+                        activity, currentTab, publisherName, PageInfoPopup.OPENED_FROM_TOOLBAR);
             }
         });
     }

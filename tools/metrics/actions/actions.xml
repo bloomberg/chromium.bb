@@ -1409,7 +1409,7 @@ should be able to be added at any place in this file.
   <owner>mariakhomenko@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
   <description>
-    An instant app was launched from the website settings popup.
+    An instant app was launched from the page info popup.
   </description>
 </action>
 
@@ -10518,13 +10518,13 @@ should be able to be added at any place in this file.
 
 <action name="MobileWebsiteSettingsOpenedFromMenu">
   <owner>tedchoc@chromium.org</owner>
-  <description>Website Settings opened via the menu.</description>
+  <description>Page Info opened via the menu.</description>
 </action>
 
 <action name="MobileWebsiteSettingsOpenedFromToolbar">
   <owner>tedchoc@chromium.org</owner>
   <description>
-    Website Settings opened via the toolbar page info (i.e. https lock) icon.
+    Page Info opened via the toolbar page info (i.e. https lock) icon.
   </description>
 </action>
 

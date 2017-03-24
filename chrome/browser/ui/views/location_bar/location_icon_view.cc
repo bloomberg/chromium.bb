@@ -6,7 +6,7 @@
 
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "chrome/browser/ui/views/page_info/website_settings_popup_view.h"
+#include "chrome/browser/ui/views/page_info/page_info_popup_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/grit/components_scaled_resources.h"
@@ -55,8 +55,7 @@ bool LocationIconView::OnMousePressed(const ui::MouseEvent& event) {
   }
 
   suppress_mouse_released_action_ =
-      WebsiteSettingsPopupView::GetShownPopupType() !=
-      WebsiteSettingsPopupView::POPUP_NONE;
+      PageInfoPopupView::GetShownPopupType() != PageInfoPopupView::POPUP_NONE;
   return true;
 }
 
@@ -102,7 +101,7 @@ bool LocationIconView::OnActivate(const ui::Event& event) {
   WebContents* contents = location_bar_->GetWebContents();
   if (!contents)
     return false;
-  location_bar_->delegate()->ShowWebsiteSettings(contents);
+  location_bar_->delegate()->ShowPageInfo(contents);
   return true;
 }
 

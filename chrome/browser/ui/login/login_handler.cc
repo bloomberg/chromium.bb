@@ -519,7 +519,7 @@ void LoginHandler::GetDialogStrings(const GURL& request_url,
     // TODO(asanka): The string should be different for proxies and servers.
     // http://crbug.com/620756
     *explanation =
-        l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_NON_SECURE_TRANSPORT);
+        l10n_util::GetStringUTF16(IDS_PAGE_INFO_NON_SECURE_TRANSPORT);
   } else {
     explanation->clear();
   }

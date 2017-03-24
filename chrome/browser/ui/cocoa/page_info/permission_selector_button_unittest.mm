@@ -6,7 +6,7 @@
 
 #include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
-#include "chrome/browser/ui/page_info/website_settings_ui.h"
+#include "chrome/browser/ui/page_info/page_info_ui.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 
@@ -23,7 +23,7 @@ class PermissionSelectorButtonTest : public CocoaTest {
  public:
   PermissionSelectorButtonTest() {
     got_callback_ = false;
-    WebsiteSettingsUI::PermissionInfo test_info;
+    PageInfoUI::PermissionInfo test_info;
     test_info.type = kTestPermissionType;
     test_info.setting = CONTENT_SETTING_BLOCK;
     test_info.source = content_settings::SETTING_SOURCE_USER;
@@ -39,7 +39,7 @@ class PermissionSelectorButtonTest : public CocoaTest {
     [[test_window() contentView] addSubview:view_];
   }
 
-  void Callback(const WebsiteSettingsUI::PermissionInfo& permission) {
+  void Callback(const PageInfoUI::PermissionInfo& permission) {
     EXPECT_TRUE(permission.type == kTestPermissionType);
     got_callback_ = true;
   }

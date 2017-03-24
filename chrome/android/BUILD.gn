@@ -254,7 +254,7 @@ android_library("chrome_java") {
     "//chrome:signin_metrics_enum_javagen",
     "//chrome:quick_action_category_enum_javagen",
     "//chrome:page_info_connection_type_javagen",
-    "//chrome:website_settings_action_javagen",
+    "//chrome:page_info_action_javagen",
     "//components/browsing_data/core:browsing_data_utils_java",
     "//components/browsing_data/core:clear_browsing_data_tab_java",
     "//components/infobars/core:infobar_enums_java",

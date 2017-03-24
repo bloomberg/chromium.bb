@@ -378,7 +378,7 @@ void ChromeAutofillClient::ShowHttpNotSecureExplanation() {
   // On desktop platforms, open Page Info, which briefly explains the HTTP
   // warning message and provides a link to the Help Center for more details.
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
-  if (browser && chrome::ShowWebsiteSettings(browser, web_contents()))
+  if (browser && chrome::ShowPageInfo(browser, web_contents()))
     return;
 // Otherwise fall through to the section below that opens the URL directly.
 #endif

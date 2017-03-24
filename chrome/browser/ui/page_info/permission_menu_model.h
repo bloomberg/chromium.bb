@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_PAGE_INFO_PERMISSION_MENU_MODEL_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ui/page_info/website_settings_ui.h"
+#include "chrome/browser/ui/page_info/page_info_ui.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -18,13 +18,13 @@ class Profile;
 class PermissionMenuModel : public ui::SimpleMenuModel,
                             public ui::SimpleMenuModel::Delegate {
  public:
-  typedef base::Callback<void(const WebsiteSettingsUI::PermissionInfo&)>
+  typedef base::Callback<void(const PageInfoUI::PermissionInfo&)>
       ChangeCallback;
 
   // Create a new menu model for permission settings.
   PermissionMenuModel(Profile* profile,
                       const GURL& url,
-                      const WebsiteSettingsUI::PermissionInfo& info,
+                      const PageInfoUI::PermissionInfo& info,
                       const ChangeCallback& callback);
   // Creates a special-case menu model that only has the allow and block
   // options.  It does not track a permission type.  |setting| is the
@@ -45,7 +45,7 @@ class PermissionMenuModel : public ui::SimpleMenuModel,
   HostContentSettingsMap* host_content_settings_map_;
 
   // The permission info represented by the menu model.
-  WebsiteSettingsUI::PermissionInfo permission_;
+  PageInfoUI::PermissionInfo permission_;
 
   // Callback to be called when the permission's setting is changed.
   ChangeCallback callback_;

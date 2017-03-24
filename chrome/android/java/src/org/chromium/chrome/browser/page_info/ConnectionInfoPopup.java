@@ -31,7 +31,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 
 /**
- * Java side of Android implementation of the website settings UI.
+ * Java side of Android implementation of the page info UI.
  */
 public class ConnectionInfoPopup implements OnClickListener {
     private static final String TAG = "ConnectionInfoPopup";
@@ -145,7 +145,7 @@ public class ConnectionInfoPopup implements OnClickListener {
         mCertificateViewer = new TextView(mContext);
         mCertificateViewer.setText(label);
         mCertificateViewer.setTextColor(ApiCompatibilityUtils.getColor(
-                mContext.getResources(), R.color.website_settings_popup_text_link));
+                mContext.getResources(), R.color.page_info_popup_text_link));
         mCertificateViewer.setTextSize(DESCRIPTION_TEXT_SIZE_SP);
         mCertificateViewer.setOnClickListener(this);
         mCertificateViewer.setPadding(0, mPaddingThin, 0, 0);
@@ -180,7 +180,7 @@ public class ConnectionInfoPopup implements OnClickListener {
         mLinkUrl = HELP_URL;
         mMoreInfoLink.setText(linkText);
         mMoreInfoLink.setTextColor(ApiCompatibilityUtils.getColor(
-                mContext.getResources(), R.color.website_settings_popup_text_link));
+                mContext.getResources(), R.color.page_info_popup_text_link));
         mMoreInfoLink.setTextSize(DESCRIPTION_TEXT_SIZE_SP);
         mMoreInfoLink.setPadding(0, mPaddingThin, 0, 0);
         mMoreInfoLink.setOnClickListener(this);

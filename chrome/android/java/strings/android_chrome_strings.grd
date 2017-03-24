@@ -1623,7 +1623,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Still adding previous site
       </message>
 
-      <!-- WebsiteSettingsPopup (PageInfo dialog) -->
+      <!-- PageInfoPopup (PageInfo dialog) -->
       <message name="IDS_PAGE_INFO_SITE_SETTINGS_BUTTON" desc="Text in the button that opens a website's Site Settings from the Page Info dialog.">
         Site Settings
       </message>

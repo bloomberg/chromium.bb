@@ -23,7 +23,7 @@ NSString* MessageForHTTPAuth(NSURLProtectionSpace* protectionSpace) {
     return RequesterIdentity(protectionSpace);
 
   NSString* securityWarning =
-      l10n_util::GetNSString(IDS_WEBSITE_SETTINGS_NON_SECURE_TRANSPORT);
+      l10n_util::GetNSString(IDS_PAGE_INFO_NON_SECURE_TRANSPORT);
   return
       [NSString stringWithFormat:@"%@ %@", RequesterIdentity(protectionSpace),
                                  securityWarning];

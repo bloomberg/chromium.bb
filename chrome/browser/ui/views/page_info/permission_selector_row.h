@@ -10,8 +10,8 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "chrome/browser/ui/page_info/page_info_ui.h"
 #include "chrome/browser/ui/page_info/permission_menu_model.h"
-#include "chrome/browser/ui/page_info/website_settings_ui.h"
 #include "chrome/browser/ui/views/page_info/permission_selector_row_observer.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -26,7 +26,7 @@ class PermissionMenuButton;
 }
 
 namespace test {
-class WebsiteSettingsPopupViewTestApi;
+class PageInfoPopupViewTestApi;
 }
 
 namespace views {
@@ -46,23 +46,21 @@ class PermissionSelectorRow {
   // The |PermissionSelectorRow|'s constituent views are added to |layout|.
   PermissionSelectorRow(Profile* profile,
                         const GURL& url,
-                        const WebsiteSettingsUI::PermissionInfo& permission,
+                        const PageInfoUI::PermissionInfo& permission,
                         views::GridLayout* layout);
   virtual ~PermissionSelectorRow();
 
   void AddObserver(PermissionSelectorRowObserver* observer);
 
-  void PermissionChanged(const WebsiteSettingsUI::PermissionInfo& permission);
+  void PermissionChanged(const PageInfoUI::PermissionInfo& permission);
 
  private:
-  friend class test::WebsiteSettingsPopupViewTestApi;
+  friend class test::PageInfoPopupViewTestApi;
 
-  void InitializeMenuButtonView(
-      views::GridLayout* layout,
-      const WebsiteSettingsUI::PermissionInfo& permission);
-  void InitializeComboboxView(
-      views::GridLayout* layout,
-      const WebsiteSettingsUI::PermissionInfo& permission);
+  void InitializeMenuButtonView(views::GridLayout* layout,
+                                const PageInfoUI::PermissionInfo& permission);
+  void InitializeComboboxView(views::GridLayout* layout,
+                              const PageInfoUI::PermissionInfo& permission);
 
   // Returns the "button" for this row, which is the control used to change the
   // permission's value. This is either a |MenuButton| or a |Combobox|.

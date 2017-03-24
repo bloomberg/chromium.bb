@@ -161,7 +161,7 @@
 #include "chrome/browser/ui/android/page_info/certificate_chain_helper.h"
 #include "chrome/browser/ui/android/page_info/certificate_viewer_android.h"
 #include "chrome/browser/ui/android/page_info/connection_info_popup_android.h"
-#include "chrome/browser/ui/android/page_info/website_settings_popup_android.h"
+#include "chrome/browser/ui/android/page_info/page_info_popup_android.h"
 #include "chrome/browser/ui/android/snackbars/auto_signin_prompt_controller.h"
 #include "chrome/browser/ui/android/ssl_client_certificate_request.h"
 #include "chrome/browser/ui/android/tab_model/single_tab_model.h"
@@ -441,8 +441,8 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"WebApkUpdateDataFetcher", WebApkUpdateDataFetcher::Register},
     {"WebContentsFactory", RegisterWebContentsFactory},
     {"WebsitePreferenceBridge", RegisterWebsitePreferenceBridge},
-    {"WebsiteSettingsPopupAndroid",
-     WebsiteSettingsPopupAndroid::RegisterWebsiteSettingsPopupAndroid},
+    {"PageInfoPopupAndroid",
+     PageInfoPopupAndroid::RegisterPageInfoPopupAndroid},
 #if BUILDFLAG(ENABLE_PRINTING) && !BUILDFLAG(ENABLE_PRINT_PREVIEW)
     {"PrintingContext",
      printing::PrintingContextAndroid::RegisterPrintingContext},

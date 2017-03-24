@@ -1548,13 +1548,13 @@ if (is_android) {
 
   java_cpp_enum("page_info_connection_type_javagen") {
     sources = [
-      "browser/ui/android/page_info/website_settings_popup_android.h",
+      "browser/ui/android/page_info/page_info_popup_android.h",
     ]
   }
 
-  java_cpp_enum("website_settings_action_javagen") {
+  java_cpp_enum("page_info_action_javagen") {
     sources = [
-      "browser/ui/page_info/website_settings.h",
+      "browser/ui/page_info/page_info.h",
     ]
   }
 

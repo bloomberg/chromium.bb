@@ -11,7 +11,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
-#include "chrome/browser/ui/page_info/website_settings.h"
+#include "chrome/browser/ui/page_info/page_info.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
@@ -46,7 +46,7 @@ static jlong Init(JNIEnv* env,
 
 ConnectionInfoPopupAndroid::ConnectionInfoPopupAndroid(
     JNIEnv* env,
-    jobject java_website_settings_pop,
+    jobject java_page_info_pop,
     WebContents* web_contents) {
   // Important to use GetVisibleEntry to match what's showing in the omnibox.
   content::NavigationEntry* nav_entry =
@@ -54,7 +54,7 @@ ConnectionInfoPopupAndroid::ConnectionInfoPopupAndroid(
   if (nav_entry == nullptr)
     return;
 
-  popup_jobject_.Reset(env, java_website_settings_pop);
+  popup_jobject_.Reset(env, java_page_info_pop);
 
   SecurityStateTabHelper* helper =
       SecurityStateTabHelper::FromWebContents(web_contents);
@@ -63,7 +63,7 @@ ConnectionInfoPopupAndroid::ConnectionInfoPopupAndroid(
   security_state::SecurityInfo security_info;
   helper->GetSecurityInfo(&security_info);
 
-  presenter_.reset(new WebsiteSettings(
+  presenter_.reset(new PageInfo(
       this, Profile::FromBrowserContext(web_contents->GetBrowserContext()),
       TabSpecificContentSettings::FromWebContents(web_contents), web_contents,
       nav_entry->GetURL(), security_info));
@@ -90,7 +90,7 @@ void ConnectionInfoPopupAndroid::SetIdentityInfo(
 
   {
     int icon_id = ResourceMapper::MapFromChromiumId(
-        WebsiteSettingsUI::GetIdentityIconID(identity_info.identity_status));
+        PageInfoUI::GetIdentityIconID(identity_info.identity_status));
 
     // The headline and the certificate dialog link of the site's identity
     // section is only displayed if the site's identity was verified. If the
@@ -109,7 +109,7 @@ void ConnectionInfoPopupAndroid::SetIdentityInfo(
     // Only show the certificate viewer link if the connection actually used a
     // certificate.
     if (identity_info.identity_status !=
-        WebsiteSettings::SITE_IDENTITY_STATUS_NO_CERT) {
+        PageInfo::SITE_IDENTITY_STATUS_NO_CERT) {
       certificate_label =
           l10n_util::GetStringUTF16(IDS_PAGEINFO_CERT_INFO_BUTTON);
     }
@@ -129,8 +129,7 @@ void ConnectionInfoPopupAndroid::SetIdentityInfo(
 
   {
     int icon_id = ResourceMapper::MapFromChromiumId(
-        WebsiteSettingsUI::GetConnectionIconID(
-            identity_info.connection_status));
+        PageInfoUI::GetConnectionIconID(identity_info.connection_status));
 
     ScopedJavaLocalRef<jstring> description = ConvertUTF8ToJavaString(
         env, identity_info.connection_status_description);

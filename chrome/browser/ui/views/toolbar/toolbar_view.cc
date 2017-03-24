@@ -421,8 +421,8 @@ ToolbarView::GetContentSettingBubbleModelDelegate() {
   return browser_->content_setting_bubble_model_delegate();
 }
 
-void ToolbarView::ShowWebsiteSettings(content::WebContents* web_contents) {
-  chrome::ShowWebsiteSettings(browser_, web_contents);
+void ToolbarView::ShowPageInfo(content::WebContents* web_contents) {
+  chrome::ShowPageInfo(browser_, web_contents);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
