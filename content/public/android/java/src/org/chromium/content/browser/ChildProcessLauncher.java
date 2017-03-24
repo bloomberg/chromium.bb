@@ -45,7 +45,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Code can run on these threads: UI, Launcher, async thread pool, binder, and one-off
  * background threads.
  */
-@JNINamespace("content")
+@JNINamespace("content::internal")
 public class ChildProcessLauncher {
     private static final String TAG = "ChildProcLauncher";
 

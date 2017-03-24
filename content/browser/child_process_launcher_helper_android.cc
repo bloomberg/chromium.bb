@@ -38,71 +38,11 @@ namespace internal {
 
 namespace {
 
-// Starts a process as a child process spawned by the Android ActivityManager.
-// The created process handle is returned to the |callback| on success, 0 is
-// returned if the process could not be created.
-void StartChildProcess(const base::CommandLine::StringVector& argv,
-                       int child_process_id,
-                       content::FileDescriptorInfo* files_to_register,
-                       const StartChildProcessCallback& callback) {
-  JNIEnv* env = AttachCurrentThread();
-  DCHECK(env);
-
-  // Create the Command line String[]
-  ScopedJavaLocalRef<jobjectArray> j_argv = ToJavaArrayOfStrings(env, argv);
-
-  size_t file_count = files_to_register->GetMappingSize();
-  DCHECK(file_count > 0);
-
-  ScopedJavaLocalRef<jclass> j_file_info_class = base::android::GetClass(
-      env, "org/chromium/base/process_launcher/FileDescriptorInfo");
-  ScopedJavaLocalRef<jobjectArray> j_file_infos(
-      env, env->NewObjectArray(file_count, j_file_info_class.obj(), NULL));
-  base::android::CheckException(env);
-
-  for (size_t i = 0; i < file_count; ++i) {
-    int fd = files_to_register->GetFDAt(i);
-    PCHECK(0 <= fd);
-    int id = files_to_register->GetIDAt(i);
-    const auto& region = files_to_register->GetRegionAt(i);
-    bool auto_close = files_to_register->OwnsFD(fd);
-    ScopedJavaLocalRef<jobject> j_file_info =
-        Java_ChildProcessLauncher_makeFdInfo(env, id, fd, auto_close,
-                                             region.offset, region.size);
-    PCHECK(j_file_info.obj());
-    env->SetObjectArrayElement(j_file_infos.obj(), i, j_file_info.obj());
-    if (auto_close) {
-      ignore_result(files_to_register->ReleaseFD(fd).release());
-    }
-  }
-
-  constexpr int param_key = 0;  // TODO(boliu): Use this.
-  Java_ChildProcessLauncher_start(
-      env, base::android::GetApplicationContext(), param_key, j_argv,
-      child_process_id, j_file_infos,
-      reinterpret_cast<intptr_t>(new StartChildProcessCallback(callback)));
-}
-
 // Stops a child process based on the handle returned from StartChildProcess.
 void StopChildProcess(base::ProcessHandle handle) {
   JNIEnv* env = AttachCurrentThread();
   DCHECK(env);
   Java_ChildProcessLauncher_stop(env, static_cast<jint>(handle));
-}
-
-bool IsChildProcessOomProtected(base::ProcessHandle handle) {
-  JNIEnv* env = AttachCurrentThread();
-  DCHECK(env);
-  return Java_ChildProcessLauncher_isOomProtected(env,
-                                                  static_cast<jint>(handle));
-}
-
-void SetChildProcessInForeground(base::ProcessHandle handle,
-                                 bool in_foreground) {
-  JNIEnv* env = AttachCurrentThread();
-  DCHECK(env);
-  return Java_ChildProcessLauncher_setInForeground(
-      env, static_cast<jint>(handle), static_cast<jboolean>(in_foreground));
 }
 
 // Callback invoked from Java once the process has been started.
@@ -196,11 +136,44 @@ ChildProcessLauncherHelper::LaunchProcessOnLauncherThread(
     int* launch_result) {
   *is_synchronous_launch = false;
 
-  StartChildProcess(command_line()->argv(),
-                    child_process_id(),
-                    files_to_register.get(),
-                    base::Bind(&ChildProcessStartedCallback,
-                               RetainedRef(this)));
+  JNIEnv* env = AttachCurrentThread();
+  DCHECK(env);
+
+  // Create the Command line String[]
+  ScopedJavaLocalRef<jobjectArray> j_argv =
+      ToJavaArrayOfStrings(env, command_line()->argv());
+
+  size_t file_count = files_to_register->GetMappingSize();
+  DCHECK(file_count > 0);
+
+  ScopedJavaLocalRef<jclass> j_file_info_class = base::android::GetClass(
+      env, "org/chromium/base/process_launcher/FileDescriptorInfo");
+  ScopedJavaLocalRef<jobjectArray> j_file_infos(
+      env, env->NewObjectArray(file_count, j_file_info_class.obj(), NULL));
+  base::android::CheckException(env);
+
+  for (size_t i = 0; i < file_count; ++i) {
+    int fd = files_to_register->GetFDAt(i);
+    PCHECK(0 <= fd);
+    int id = files_to_register->GetIDAt(i);
+    const auto& region = files_to_register->GetRegionAt(i);
+    bool auto_close = files_to_register->OwnsFD(fd);
+    ScopedJavaLocalRef<jobject> j_file_info =
+        Java_ChildProcessLauncher_makeFdInfo(env, id, fd, auto_close,
+                                             region.offset, region.size);
+    PCHECK(j_file_info.obj());
+    env->SetObjectArrayElement(j_file_infos.obj(), i, j_file_info.obj());
+    if (auto_close) {
+      ignore_result(files_to_register->ReleaseFD(fd).release());
+    }
+  }
+
+  constexpr int param_key = 0;  // TODO(boliu): Use this.
+  Java_ChildProcessLauncher_start(
+      env, base::android::GetApplicationContext(), param_key, j_argv,
+      child_process_id(), j_file_infos,
+      reinterpret_cast<intptr_t>(new StartChildProcessCallback(
+          base::Bind(&ChildProcessStartedCallback, RetainedRef(this)))));
 
   return Process();
 }
@@ -215,8 +188,10 @@ base::TerminationStatus ChildProcessLauncherHelper::GetTerminationStatus(
     const ChildProcessLauncherHelper::Process& process,
     bool known_dead,
     int* exit_code) {
-  if (IsChildProcessOomProtected(process.process.Handle()))
+  if (Java_ChildProcessLauncher_isOomProtected(
+          AttachCurrentThread(), static_cast<jint>(process.process.Handle()))) {
     return base::TERMINATION_STATUS_OOM_PROTECTED;
+  }
   return base::GetTerminationStatus(process.process.Handle(), exit_code);
 }
 
@@ -238,8 +213,12 @@ void ChildProcessLauncherHelper::ForceNormalProcessTerminationSync(
 
 // static
 void ChildProcessLauncherHelper::SetProcessBackgroundedOnLauncherThread(
-      base::Process process, bool background) {
-  SetChildProcessInForeground(process.Handle(), !background);
+    base::Process process,
+    bool background) {
+  JNIEnv* env = AttachCurrentThread();
+  DCHECK(env);
+  return Java_ChildProcessLauncher_setInForeground(
+      env, static_cast<jint>(process.Handle()), !background);
 }
 
 // static
@@ -260,8 +239,6 @@ base::File OpenFileToShare(const base::FilePath& path,
   return base::File(base::android::OpenApkAsset(path.value(), region));
 }
 
-}  // namespace internal
-
 // Called from ChildProcessLauncher.java when the ChildProcess was
 // started.
 // |client_context| is the pointer to StartChildProcessCallback which was
@@ -281,8 +258,10 @@ static void OnChildProcessStarted(JNIEnv*,
   delete callback;
 }
 
+}  // namespace internal
+
 bool RegisterChildProcessLauncher(JNIEnv* env) {
-  return RegisterNativesImpl(env);
+  return internal::RegisterNativesImpl(env);
 }
 
 }  // namespace content
