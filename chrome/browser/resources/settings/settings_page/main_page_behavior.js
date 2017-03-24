@@ -67,13 +67,18 @@ var MainPageBehaviorImpl = {
         !!oldRoute && !!oldRoute.parent && !!oldRoute.section &&
         oldRoute.parent.section != oldRoute.section;
 
-    // Always scroll to the top if navigating from a section to the root route
-    // or when navigating to the About page.
-    if (this.scroller &&
-        ((oldRouteWasSection && newRoute == settings.Route.BASIC) ||
-         newRoute == settings.Route.ABOUT)) {
-      this.scroller.scrollTop = 0;
-      return;
+    if (this.scroller) {
+      // When navigating from a section to the root route, we just need to
+      // scroll to the top, and can early exit afterwards.
+      if (oldRouteWasSection && newRoute == settings.Route.BASIC) {
+        this.scroller.scrollTop = 0;
+        return;
+      }
+
+      // When navigating to the About page, we need to scroll to the top, and
+      // still do the rest of section management.
+      if (newRoute == settings.Route.ABOUT)
+        this.scroller.scrollTop = 0;
     }
 
     // Scroll to the section except for back/forward. Also scroll for any
