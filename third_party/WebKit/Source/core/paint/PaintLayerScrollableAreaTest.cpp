@@ -596,4 +596,30 @@ TEST_F(PaintLayerScrollableAreaTest, ShowAutoScrollbarsForVisibleContent) {
   ASSERT_TRUE(scrollableArea);
   EXPECT_TRUE(scrollableArea->hasVerticalScrollbar());
 }
+
+TEST_F(PaintLayerScrollableAreaTest, FloatOverflowInRtlContainer) {
+  RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(false);
+  setBodyInnerHTML(
+      "<!DOCTYPE html>"
+      "<style>"
+      "#container {"
+      "  width: 200px;"
+      "  overflow-x: auto;"
+      "  overflow-y: scroll;"
+      "  direction: rtl;"
+      "}"
+      "</style>"
+      "<div id='container'>"
+      "  <div style='float:left'>"
+      "lorem ipsum"
+      "  </div>"
+      "</div>");
+  document().view()->updateAllLifecyclePhases();
+  Element* container = document().getElementById("container");
+  ASSERT_TRUE(container);
+  PaintLayerScrollableArea* scrollableArea =
+      toLayoutBoxModelObject(container->layoutObject())->getScrollableArea();
+  ASSERT_TRUE(scrollableArea);
+  EXPECT_FALSE(scrollableArea->hasHorizontalScrollbar());
+}
 }

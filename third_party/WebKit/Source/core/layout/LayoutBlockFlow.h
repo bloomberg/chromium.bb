@@ -327,9 +327,11 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
   LayoutUnit xPositionForFloatIncludingMargin(
       const FloatingObject& child) const {
-    if (isHorizontalWritingMode())
-      return child.x() + child.layoutObject()->marginLeft();
-
+    LayoutUnit scrollbarAdjustment(originAdjustmentForScrollbars().width());
+    if (isHorizontalWritingMode()) {
+      return child.x() + child.layoutObject()->marginLeft() +
+             scrollbarAdjustment;
+    }
     return child.x() + marginBeforeForChild(*child.layoutObject());
   }
 
