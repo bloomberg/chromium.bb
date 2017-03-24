@@ -67,6 +67,9 @@ var TestSiteSettingsPrefsBrowserProxy = function() {
     'setProtocolDefault'
   ]);
 
+  /** @private {boolean} */
+  this.hasIncognito = false;
+
   /** @private {!SiteSettingsPref} */
   this.prefs_ = prefsEmpty;
 
@@ -88,6 +91,15 @@ var TestSiteSettingsPrefsBrowserProxy = function() {
 
 TestSiteSettingsPrefsBrowserProxy.prototype = {
   __proto__: settings.TestBrowserProxy.prototype,
+
+  /**
+   * Pretends an incognito session started or ended.
+   * @param {boolean} hasIncognito True for session started.
+   */
+  setIncognito: function(hasIncognito) {
+    this.hasIncognito = hasIncognito;
+    cr.webUIListenerCallback('onIncognitoStatusChanged', hasIncognito);
+  },
 
   /**
    * Sets the prefs to use when testing.
@@ -231,6 +243,14 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
       console.log('getExceptionList received unknown category: ' + contentType);
 
     assert(pref != undefined, 'Pref is missing for ' + contentType);
+
+    if (this.hasIncognito) {
+      var incognitoElements = [];
+      for (var i = 0; i < pref.length; ++i)
+        incognitoElements.push(Object.assign({incognito: true}, pref[i]));
+      pref = pref.concat(incognitoElements);
+    }
+
     return Promise.resolve(pref);
   },
 
