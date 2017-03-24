@@ -142,7 +142,7 @@ void OneCopyRasterBufferProvider::OrderingBarrier() {
 
 ResourceFormat OneCopyRasterBufferProvider::GetResourceFormat(
     bool must_support_alpha) const {
-  if (resource_provider_->IsResourceFormatSupported(preferred_tile_format_) &&
+  if (resource_provider_->IsTextureFormatSupported(preferred_tile_format_) &&
       (DoesResourceFormatSupportAlpha(preferred_tile_format_) ||
        !must_support_alpha)) {
     return preferred_tile_format_;

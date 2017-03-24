@@ -109,7 +109,11 @@ class CC_EXPORT ResourceProvider
   }
   size_t num_resources() const { return resources_.size(); }
 
-  bool IsResourceFormatSupported(ResourceFormat format) const;
+  bool IsTextureFormatSupported(ResourceFormat format) const;
+
+  // Returns true if the provided |format| can be used as a render buffer.
+  // Note that render buffer support implies texture support.
+  bool IsRenderBufferFormatSupported(ResourceFormat format) const;
 
   // Checks whether a resource is in use by a consumer.
   bool InUseByConsumer(ResourceId id);

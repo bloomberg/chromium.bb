@@ -120,12 +120,14 @@ GpuRasterBufferProvider::GpuRasterBufferProvider(
     ResourceProvider* resource_provider,
     bool use_distance_field_text,
     int gpu_rasterization_msaa_sample_count,
+    ResourceFormat preferred_tile_format,
     bool async_worker_context_enabled)
     : compositor_context_provider_(compositor_context_provider),
       worker_context_provider_(worker_context_provider),
       resource_provider_(resource_provider),
       use_distance_field_text_(use_distance_field_text),
       msaa_sample_count_(gpu_rasterization_msaa_sample_count),
+      preferred_tile_format_(preferred_tile_format),
       async_worker_context_enabled_(async_worker_context_enabled) {
   DCHECK(compositor_context_provider);
   DCHECK(worker_context_provider);
@@ -175,6 +177,13 @@ void GpuRasterBufferProvider::OrderingBarrier() {
 
 ResourceFormat GpuRasterBufferProvider::GetResourceFormat(
     bool must_support_alpha) const {
+  if (resource_provider_->IsRenderBufferFormatSupported(
+          preferred_tile_format_) &&
+      (DoesResourceFormatSupportAlpha(preferred_tile_format_) ||
+       !must_support_alpha)) {
+    return preferred_tile_format_;
+  }
+
   return resource_provider_->best_render_buffer_format();
 }
 

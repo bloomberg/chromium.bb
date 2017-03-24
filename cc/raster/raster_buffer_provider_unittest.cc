@@ -182,13 +182,15 @@ class RasterBufferProviderTest
         Create3dResourceProvider();
         raster_buffer_provider_ = base::MakeUnique<GpuRasterBufferProvider>(
             context_provider_.get(), worker_context_provider_.get(),
-            resource_provider_.get(), false, 0, false);
+            resource_provider_.get(), false, 0,
+            PlatformColor::BestTextureFormat(), false);
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_ASYNC_GPU:
         Create3dResourceProvider();
         raster_buffer_provider_ = base::MakeUnique<GpuRasterBufferProvider>(
             context_provider_.get(), worker_context_provider_.get(),
-            resource_provider_.get(), false, 0, true);
+            resource_provider_.get(), false, 0,
+            PlatformColor::BestTextureFormat(), true);
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_BITMAP:
         CreateSoftwareResourceProvider();

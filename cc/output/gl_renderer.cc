@@ -426,7 +426,7 @@ bool GLRenderer::CanPartialSwap() {
 
 ResourceFormat GLRenderer::BackbufferFormat() const {
   if (current_frame()->current_render_pass->color_space.IsHDR() &&
-      resource_provider_->IsResourceFormatSupported(RGBA_F16)) {
+      resource_provider_->IsRenderBufferFormatSupported(RGBA_F16)) {
     return RGBA_F16;
   }
   return resource_provider_->best_texture_format();
