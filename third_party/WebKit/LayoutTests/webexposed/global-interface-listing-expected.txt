@@ -3742,7 +3742,7 @@ interface ImageBitmapRenderingContext
     method transferFromImageBitmap
 interface ImageCapture
     attribute @@toStringTag
-    getter videoStreamTrack
+    getter track
     method constructor
     method getPhotoCapabilities
     method grabFrame

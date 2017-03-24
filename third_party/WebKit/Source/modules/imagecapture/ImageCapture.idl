@@ -13,7 +13,7 @@
     RaisesException=Constructor,
     OriginTrialEnabled=ImageCapture,
 ] interface ImageCapture {
-    readonly attribute MediaStreamTrack videoStreamTrack;
+    [ImplementedAs=videoStreamTrack] readonly attribute MediaStreamTrack track;
 
     [CallWith=ScriptState] Promise<PhotoCapabilities> getPhotoCapabilities();
     [CallWith=ScriptState] Promise<void> setOptions(PhotoSettings photoSettings);

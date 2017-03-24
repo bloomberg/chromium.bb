@@ -19,7 +19,7 @@ function makeAsyncTest(modifyTrack, message) {
       assert_false(videoTrack.muted);
 
       var capturer = new ImageCapture(videoTrack);
-      assert_equals(capturer.videoStreamTrack, videoTrack);
+      assert_equals(capturer.track, videoTrack);
 
       modifyTrack(videoTrack);
 
