@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
-<script src="../resources/test-helpers.js"></script>
-<script src="../../resources/get-host-info.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="test-helpers.sub.js"></script>
+<script src="/common/get-host-info.sub.js"></script>
 <body>
 <script>
 var host_info = get_host_info();
 
 function send_result(result) {
   window.parent.postMessage({message: result},
-                            host_info['HTTP_ORIGIN']);
+                            host_info['HTTPS_ORIGIN']);
 }
 
 function executeTask(params) {

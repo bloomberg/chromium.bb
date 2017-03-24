@@ -1,9 +1,13 @@
 <!DOCTYPE html>
+<!-- This is in chromium/ because it relies on caching headers in the Service
+  Worker script's response which are no longer necessary.
+  Spec change: https://github.com/w3c/ServiceWorker/pull/1020
+  Bug: https://bugs.chromium.org/p/chromium/issues/detail?id=675540 -->
 <title>Service Worker: Claim() when update happens after redirect</title>
-<script src="../resources/get-host-info.js"></script>
-<script src="../resources/testharness.js"></script>
-<script src="../resources/testharnessreport.js"></script>
-<script src="resources/test-helpers.js"></script>
+<script src="../../resources/get-host-info.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../resources/test-helpers.js"></script>
 <body>
 <script>
 var host_info = get_host_info();
