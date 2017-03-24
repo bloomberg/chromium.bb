@@ -189,6 +189,10 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
     RenderWidgetHostImpl::OnTouchEventAck(event, ack_result);
   }
 
+  void reset_new_content_rendering_timeout_fired() {
+    new_content_rendering_timeout_fired_ = false;
+  }
+
   bool new_content_rendering_timeout_fired() const {
     return new_content_rendering_timeout_fired_;
   }
@@ -1256,37 +1260,66 @@ TEST_F(RenderWidgetHostTest, MultipleInputEvents) {
 // Test that the rendering timeout for newly loaded content fires
 // when enough time passes without receiving a new compositor frame.
 TEST_F(RenderWidgetHostTest, NewContentRenderingTimeout) {
+  const gfx::Size frame_size(50, 50);
+  const cc::LocalSurfaceId local_surface_id(1,
+                                            base::UnguessableToken::Create());
+
   host_->set_new_content_rendering_delay_for_testing(
       base::TimeDelta::FromMicroseconds(10));
 
-  // Test immediate start and stop, ensuring that the timeout doesn't fire.
-  host_->StartNewContentRenderingTimeout(0);
-  host_->OnFirstPaintAfterLoad();
+  // Start the timer and immediately send a CompositorFrame with the
+  // content_source_id of the new page. The timeout shouldn't fire.
+  host_->StartNewContentRenderingTimeout(5);
+  cc::CompositorFrame frame = MakeCompositorFrame(1.f, frame_size);
+  frame.metadata.content_source_id = 5;
+  host_->OnMessageReceived(ViewHostMsg_SwapCompositorFrame(
+      0, 0, local_surface_id, frame, std::vector<IPC::Message>()));
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       TimeDelta::FromMicroseconds(20));
   base::RunLoop().Run();
 
   EXPECT_FALSE(host_->new_content_rendering_timeout_fired());
+  host_->reset_new_content_rendering_timeout_fired();
 
-  // Test that the timer doesn't fire if it receives a stop before
-  // a start.
-  host_->OnFirstPaintAfterLoad();
-  host_->StartNewContentRenderingTimeout(0);
+  // Start the timer but receive frames only from the old page. The timer
+  // should fire.
+  host_->StartNewContentRenderingTimeout(10);
+  frame = MakeCompositorFrame(1.f, frame_size);
+  frame.metadata.content_source_id = 9;
+  host_->OnMessageReceived(ViewHostMsg_SwapCompositorFrame(
+      0, 0, local_surface_id, frame, std::vector<IPC::Message>()));
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
+      TimeDelta::FromMicroseconds(20));
+  base::RunLoop().Run();
+
+  EXPECT_TRUE(host_->new_content_rendering_timeout_fired());
+  host_->reset_new_content_rendering_timeout_fired();
+
+  // Send a CompositorFrame with content_source_id of the new page before we
+  // attempt to start the timer. The timer shouldn't fire.
+  frame = MakeCompositorFrame(1.f, frame_size);
+  frame.metadata.content_source_id = 7;
+  host_->OnMessageReceived(ViewHostMsg_SwapCompositorFrame(
+      0, 0, local_surface_id, frame, std::vector<IPC::Message>()));
+  host_->StartNewContentRenderingTimeout(7);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       TimeDelta::FromMicroseconds(20));
   base::RunLoop().Run();
 
   EXPECT_FALSE(host_->new_content_rendering_timeout_fired());
+  host_->reset_new_content_rendering_timeout_fired();
 
-  // Test with a long delay to ensure that it does fire this time.
-  host_->StartNewContentRenderingTimeout(0);
+  // Don't send any frames after the timer starts. The timer should fire.
+  host_->StartNewContentRenderingTimeout(20);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       TimeDelta::FromMicroseconds(20));
   base::RunLoop().Run();
   EXPECT_TRUE(host_->new_content_rendering_timeout_fired());
+  host_->reset_new_content_rendering_timeout_fired();
 }
 
 // This tests that a compositor frame received with a stale content source ID
@@ -1297,7 +1330,8 @@ TEST_F(RenderWidgetHostTest, SwapCompositorFrameWithBadSourceId) {
                                             base::UnguessableToken::Create());
 
   host_->StartNewContentRenderingTimeout(100);
-  host_->OnFirstPaintAfterLoad();
+  host_->set_new_content_rendering_delay_for_testing(
+      base::TimeDelta::FromMicroseconds(9999));
 
   {
     // First swap a frame with an invalid ID.

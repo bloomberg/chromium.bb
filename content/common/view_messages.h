@@ -868,12 +868,6 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_MoveValidationMessage,
 // after the frame widget has painted something.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_DidFirstVisuallyNonEmptyPaint)
 
-// Send after a paint happens after any page commit, including a blank one.
-// TODO(kenrb): This, and all ViewHostMsg_* messages that actually pertain to
-// RenderWidget(Host), should be renamed to WidgetHostMsg_*.
-// See https://crbug.com/537793.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_DidFirstPaintAfterLoad)
-
 // Sent in reply to ViewMsg_WaitForNextFrameForTests.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_WaitForNextFrameForTests_ACK)
 

@@ -283,7 +283,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       has_touch_handler_(false),
       is_in_touchpad_gesture_scroll_(false),
       is_in_touchscreen_gesture_scroll_(false),
-      received_paint_after_load_(false),
       latency_tracker_(),
       next_browser_snapshot_id_(1),
       owned_by_render_frame_host_(false),
@@ -570,8 +569,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnSelectionBoundsChanged)
     IPC_MESSAGE_HANDLER(InputHostMsg_ImeCompositionRangeChanged,
                         OnImeCompositionRangeChanged)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidFirstPaintAfterLoad,
-                        OnFirstPaintAfterLoad)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetNeedsBeginFrames, OnSetNeedsBeginFrames)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeTouched, OnFocusedNodeTouched)
     IPC_MESSAGE_HANDLER(DragHostMsg_StartDragging, OnStartDragging)
@@ -1003,20 +1000,10 @@ void RenderWidgetHostImpl::StartNewContentRenderingTimeout(
   // It is possible for a compositor frame to arrive before the browser is
   // notified about the page being committed, in which case no timer is
   // necessary.
-  if (received_paint_after_load_) {
-    received_paint_after_load_ = false;
+  if (last_received_content_source_id_ >= current_content_source_id_)
     return;
-  }
 
   new_content_rendering_timeout_->Start(new_content_rendering_delay_);
-}
-
-void RenderWidgetHostImpl::OnFirstPaintAfterLoad() {
-  if (new_content_rendering_timeout_->IsRunning()) {
-    new_content_rendering_timeout_->Stop();
-  } else {
-    received_paint_after_load_ = true;
-  }
 }
 
 void RenderWidgetHostImpl::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
@@ -1881,6 +1868,8 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
   last_frame_size_ = frame_size;
   last_device_scale_factor_ = device_scale_factor;
 
+  last_received_content_source_id_ = frame.metadata.content_source_id;
+
   if (frame.metadata.begin_frame_ack.sequence_number <
       cc::BeginFrameArgs::kStartingFrameNumber) {
     // Received an invalid ack, renderer misbehaved.
@@ -1921,6 +1910,13 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
     SendReclaimCompositorResources(routing_id_, compositor_frame_sink_id,
                                    process_->GetID(), true /* is_swap_ack */,
                                    resources);
+  }
+
+  // After navigation, if a frame belonging to the new page is received, stop
+  // the timer that triggers clearing the graphics of the last page.
+  if (last_received_content_source_id_ >= current_content_source_id_ &&
+      new_content_rendering_timeout_->IsRunning()) {
+    new_content_rendering_timeout_->Stop();
   }
 
   RenderProcessHost* rph = GetProcess();

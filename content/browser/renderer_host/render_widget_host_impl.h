@@ -334,12 +334,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // |next_source_id| to be discarded.
   void StartNewContentRenderingTimeout(uint32_t next_source_id);
 
-  // Notification that a new compositor frame has been generated following
-  // a page load. This stops |new_content_rendering_timeout_|, or prevents
-  // the timer from running if the load commit message hasn't been received
-  // yet.
-  void OnFirstPaintAfterLoad();
-
   // Forwards the keyboard event with optional commands to the renderer. If
   // |key_event| is not forwarded for any reason, then |commands| are ignored.
   // |update_event| (if non-null) is set to indicate whether the underlying
@@ -876,18 +870,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
 
   std::unique_ptr<TimeoutMonitor> new_content_rendering_timeout_;
 
-  // This boolean is true if RenderWidgetHostImpl receives a compositor frame
-  // from a newly loaded page before StartNewContentRenderingTimeout() is
-  // called. This means that a paint for the new load has completed before
-  // the browser received a DidCommitProvisionalLoad message. In that case
-  // |new_content_rendering_timeout_| is not needed. The renderer will send
-  // both the FirstPaintAfterLoad and DidCommitProvisionalLoad messages after
-  // any new page navigation, it doesn't matter which is received first, and
-  // it should not be possible to interleave other navigations in between
-  // receipt of those messages (unless FirstPaintAfterLoad is prevented from
-  // being sent, in which case the timer should fire).
-  bool received_paint_after_load_;
-
   RenderWidgetHostLatencyTracker latency_tracker_;
 
   int next_browser_snapshot_id_;
@@ -935,6 +917,13 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // composition info. It should only be true when there is a focused editable
   // node.
   bool monitoring_composition_info_;
+
+  // This is the content_source_id of the latest frame received. This value is
+  // compared against current_content_source_id_ to determine whether the
+  // received frame belongs to the current page. If a frame for the current page
+  // does not arrive in time after nagivation, we clear the graphics of the old
+  // page. See RenderWidget::current_content_source_id_ for more information.
+  uint32_t last_received_content_source_id_ = 0;
 
 #if defined(OS_MACOSX)
   std::unique_ptr<device::PowerSaveBlocker> power_save_blocker_;

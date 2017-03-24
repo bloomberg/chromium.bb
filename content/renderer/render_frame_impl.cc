@@ -3702,15 +3702,11 @@ void RenderFrameImpl::didCommitProvisionalLoad(
       return;
   }
 
-  // For navigations that change the document, the browser process needs to be
-  // notified of the first paint of that page, so it can cancel the timer that
-  // waits for it.
-  if (is_main_frame_ && !navigation_state->WasWithinSameDocument()) {
+  // Navigations that change the document represent a new content source.  Keep
+  // track of that on the widget to help the browser process detect when stale
+  // compositor frames are being shown after a commit.
+  if (is_main_frame_ && !navigation_state->WasWithinSameDocument())
     GetRenderWidget()->IncrementContentSourceId();
-    render_view_->QueueMessage(
-        new ViewHostMsg_DidFirstPaintAfterLoad(render_view_->routing_id_),
-        MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE);
-  }
 
   // When we perform a new navigation, we need to update the last committed
   // session history entry with state for the page we are leaving. Do this
