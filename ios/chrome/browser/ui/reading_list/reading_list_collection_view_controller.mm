@@ -276,20 +276,6 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 
 #pragma mark - UICollectionViewDelegate
 
-- (UICollectionReusableView*)collectionView:(UICollectionView*)collectionView
-          viewForSupplementaryElementOfKind:(NSString*)kind
-                                atIndexPath:(NSIndexPath*)indexPath {
-  UICollectionReusableView* cell = [super collectionView:collectionView
-                       viewForSupplementaryElementOfKind:kind
-                                             atIndexPath:indexPath];
-  MDCCollectionViewTextCell* textCell =
-      base::mac::ObjCCast<MDCCollectionViewTextCell>(cell);
-  if (textCell) {
-    textCell.textLabel.textColor = [[MDCPalette greyPalette] tint500];
-  }
-  return cell;
-};
-
 - (void)collectionView:(UICollectionView*)collectionView
     didSelectItemAtIndexPath:(NSIndexPath*)indexPath {
   [super collectionView:collectionView didSelectItemAtIndexPath:indexPath];
@@ -1143,6 +1129,7 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
       header.text = l10n_util::GetNSString(IDS_IOS_READING_LIST_UNREAD_HEADER);
       break;
   }
+  header.textColor = [[MDCPalette greyPalette] tint500];
   return header;
 }
 

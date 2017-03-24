@@ -123,6 +123,7 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
       [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader] autorelease];
   usernameHeader.text =
       l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_USERNAME);
+  usernameHeader.textColor = [[MDCPalette greyPalette] tint500];
   [model setHeader:usernameHeader
       forSectionWithIdentifier:SectionIdentifierUsername];
   PasswordDetailsItem* usernameItem =
@@ -137,6 +138,7 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
       [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader] autorelease];
   passwordHeader.text =
       l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_PASSWORD);
+  passwordHeader.textColor = [[MDCPalette greyPalette] tint500];
   [model setHeader:passwordHeader
       forSectionWithIdentifier:SectionIdentifierPassword];
   _passwordItem.reset(
@@ -183,6 +185,7 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
   CollectionViewTextItem* item = [
       [[CollectionViewTextItem alloc] initWithType:ItemTypeDelete] autorelease];
   item.text = l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_DELETE_BUTTON);
+  item.textColor = [[MDCPalette cr_redPalette] tint500];
   item.accessibilityTraits |= UIAccessibilityTraitButton;
   return item;
 }
@@ -298,37 +301,6 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
 
 - (void)deletePassword {
   [_weakDelegate deletePassword:_passwordForm];
-}
-
-#pragma mark - UICollectionViewDataSource
-
-- (UICollectionReusableView*)collectionView:(UICollectionView*)collectionView
-          viewForSupplementaryElementOfKind:(NSString*)kind
-                                atIndexPath:(NSIndexPath*)indexPath {
-  UICollectionReusableView* view = [super collectionView:collectionView
-                       viewForSupplementaryElementOfKind:kind
-                                             atIndexPath:indexPath];
-  MDCCollectionViewTextCell* textCell =
-      base::mac::ObjCCast<MDCCollectionViewTextCell>(view);
-  if (textCell) {
-    textCell.textLabel.textColor = [[MDCPalette greyPalette] tint500];
-  }
-  return view;
-}
-
-- (UICollectionViewCell*)collectionView:(UICollectionView*)collectionView
-                 cellForItemAtIndexPath:(NSIndexPath*)indexPath {
-  UICollectionViewCell* cell =
-      [super collectionView:collectionView cellForItemAtIndexPath:indexPath];
-
-  NSInteger type = [self.collectionViewModel itemTypeForIndexPath:indexPath];
-  if (type == ItemTypeDelete) {
-    MDCCollectionViewTextCell* textCell =
-        base::mac::ObjCCastStrict<MDCCollectionViewTextCell>(cell);
-    textCell.textLabel.textColor = [[MDCPalette cr_redPalette] tint500];
-  }
-
-  return cell;
 }
 
 #pragma mark - UICollectionViewDelegate

@@ -270,6 +270,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     CollectionViewTextItem* syncToHeader = [[[CollectionViewTextItem alloc]
         initWithType:ItemTypeHeader] autorelease];
     syncToHeader.text = l10n_util::GetNSString(IDS_IOS_SYNC_TO_TITLE);
+    syncToHeader.textColor = [[MDCPalette greyPalette] tint500];
     [model setHeader:syncToHeader
         forSectionWithIdentifier:SectionIdentifierSyncAccounts];
     ProfileOAuth2TokenService* oauth2_service =
@@ -296,6 +297,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader] autorelease];
   syncServicesHeader.text =
       l10n_util::GetNSString(IDS_IOS_SYNC_DATA_TYPES_TITLE);
+  syncServicesHeader.textColor = [[MDCPalette greyPalette] tint500];
   [model setHeader:syncServicesHeader
       forSectionWithIdentifier:SectionIdentifierSyncServices];
   BOOL syncEverythingEnabled = _syncSetupService->IsSyncingAllDataTypes();
@@ -463,23 +465,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
       break;
   }
   return cell;
-}
-
-// Method for overriding the header view of a section. Used to set the header
-// text color to gray.
-- (UICollectionReusableView*)collectionView:(UICollectionView*)collectionView
-          viewForSupplementaryElementOfKind:(NSString*)kind
-                                atIndexPath:(NSIndexPath*)indexPath {
-  UICollectionReusableView* view = [super collectionView:collectionView
-                       viewForSupplementaryElementOfKind:kind
-                                             atIndexPath:indexPath];
-
-  MDCCollectionViewTextCell* textCell =
-      base::mac::ObjCCast<MDCCollectionViewTextCell>(view);
-  if (textCell) {
-    textCell.textLabel.textColor = [[MDCPalette greyPalette] tint500];
-  }
-  return view;
 }
 
 #pragma mark UICollectionViewDelegate

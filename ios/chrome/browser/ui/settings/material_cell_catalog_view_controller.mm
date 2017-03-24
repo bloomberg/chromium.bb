@@ -39,7 +39,7 @@
 #import "ios/public/provider/chrome/browser/signin/signin_resources_provider.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
 namespace {
 
@@ -111,6 +111,8 @@ const CGFloat kHorizontalImageFixedSize = 40;
   CollectionViewTextItem* textHeader = [
       [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader] autorelease];
   textHeader.text = @"MDCCollectionViewTextCell";
+  textHeader.textFont = [MDCTypography body2Font];
+  textHeader.textColor = [[MDCPalette greyPalette] tint500];
   [model setHeader:textHeader
       forSectionWithIdentifier:SectionIdentifierTextCell];
 
@@ -328,25 +330,6 @@ const CGFloat kHorizontalImageFixedSize = 40;
   // Customize collection view settings.
   self.styler.cellStyle = MDCCollectionViewCellStyleCard;
 }
-
-#pragma mark UICollectionViewDataSource
-
-- (UICollectionReusableView*)collectionView:(UICollectionView*)collectionView
-          viewForSupplementaryElementOfKind:(NSString*)kind
-                                atIndexPath:(NSIndexPath*)indexPath {
-  UICollectionReusableView* cell = [super collectionView:collectionView
-                       viewForSupplementaryElementOfKind:kind
-                                             atIndexPath:indexPath];
-  MDCCollectionViewTextCell* textCell =
-      base::mac::ObjCCast<MDCCollectionViewTextCell>(cell);
-  if (textCell) {
-    textCell.textLabel.font =
-        [[MDFRobotoFontLoader sharedInstance] mediumFontOfSize:14];
-    textCell.textLabel.textColor = [[MDCPalette greyPalette] tint500];
-  }
-
-  return cell;
-};
 
 #pragma mark MDCCollectionViewStylingDelegate
 

@@ -260,7 +260,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
   if (_paymentRequest->selected_shipping_option()) {
     CollectionViewTextItem* selectedShippingOptionItem =
         [[CollectionViewTextItem alloc] initWithType:ItemTypeShippingOption];
+    selectedShippingOptionItem.textFont = [MDCTypography body2Font];
+    selectedShippingOptionItem.textColor = [[MDCPalette greyPalette] tint900];
+    selectedShippingOptionItem.detailTextFont = [MDCTypography body1Font];
+    selectedShippingOptionItem.detailTextColor =
+        [[MDCPalette greyPalette] tint900];
     shippingOptionItem = selectedShippingOptionItem;
+
     _selectedShippingOptionItem = selectedShippingOptionItem;
     [self fillShippingOptionItem:selectedShippingOptionItem
                       withOption:_paymentRequest->selected_shipping_option()];
@@ -468,15 +474,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
       detailCell.detailTextLabel.font = [MDCTypography body2Font];
       detailCell.detailTextLabel.textColor =
           [[MDCPalette cr_bluePalette] tint700];
-      break;
-    }
-    case ItemTypeShippingOption: {
-      MDCCollectionViewTextCell* textCell =
-          base::mac::ObjCCastStrict<MDCCollectionViewTextCell>(cell);
-      textCell.textLabel.font = [MDCTypography body2Font];
-      textCell.textLabel.textColor = [[MDCPalette greyPalette] tint900];
-      textCell.detailTextLabel.font = [MDCTypography body1Font];
-      textCell.detailTextLabel.textColor = [[MDCPalette greyPalette] tint900];
       break;
     }
     default:

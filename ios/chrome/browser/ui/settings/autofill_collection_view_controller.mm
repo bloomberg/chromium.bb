@@ -170,16 +170,21 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (CollectionViewItem*)profileSectionHeader {
-  CollectionViewTextItem* header = [
-      [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader] autorelease];
+  CollectionViewTextItem* header = [self genericHeader];
   header.text = l10n_util::GetNSString(IDS_IOS_AUTOFILL_ADDRESSES_GROUP_NAME);
   return header;
 }
 
 - (CollectionViewItem*)cardSectionHeader {
+  CollectionViewTextItem* header = [self genericHeader];
+  header.text = l10n_util::GetNSString(IDS_IOS_AUTOFILL_CREDITCARDS_GROUP_NAME);
+  return header;
+}
+
+- (CollectionViewTextItem*)genericHeader {
   CollectionViewTextItem* header = [
       [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader] autorelease];
-  header.text = l10n_util::GetNSString(IDS_IOS_AUTOFILL_CREDITCARDS_GROUP_NAME);
+  header.textColor = [[MDCPalette greyPalette] tint500];
   return header;
 }
 
@@ -267,20 +272,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
                     forControlEvents:UIControlEventValueChanged];
   }
   return cell;
-}
-
-- (UICollectionReusableView*)collectionView:(UICollectionView*)collectionView
-          viewForSupplementaryElementOfKind:(NSString*)kind
-                                atIndexPath:(NSIndexPath*)indexPath {
-  UICollectionReusableView* view = [super collectionView:collectionView
-                       viewForSupplementaryElementOfKind:kind
-                                             atIndexPath:indexPath];
-  MDCCollectionViewTextCell* textCell =
-      base::mac::ObjCCast<MDCCollectionViewTextCell>(view);
-  if (textCell) {
-    textCell.textLabel.textColor = [[MDCPalette greyPalette] tint500];
-  }
-  return view;
 }
 
 #pragma mark - Switch Callbacks

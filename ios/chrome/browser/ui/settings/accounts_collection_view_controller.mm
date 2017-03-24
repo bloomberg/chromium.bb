@@ -243,6 +243,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader] autorelease];
   header.text = l10n_util::GetNSString(IDS_IOS_OPTIONS_ACCOUNTS_DESCRIPTION);
   header.accessibilityIdentifier = kSettingsHeaderId;
+  header.textColor = [[MDCPalette greyPalette] tint500];
   return header;
 }
 
@@ -368,22 +369,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
     default:
       break;
   }
-}
-
-#pragma mark - UICollectionViewDataSource
-
-- (UICollectionReusableView*)collectionView:(UICollectionView*)collectionView
-          viewForSupplementaryElementOfKind:(NSString*)kind
-                                atIndexPath:(NSIndexPath*)indexPath {
-  UICollectionReusableView* view = [super collectionView:collectionView
-                       viewForSupplementaryElementOfKind:kind
-                                             atIndexPath:indexPath];
-  MDCCollectionViewTextCell* textCell =
-      base::mac::ObjCCast<MDCCollectionViewTextCell>(view);
-  if (textCell) {
-    textCell.textLabel.textColor = [[MDCPalette greyPalette] tint500];
-  }
-  return view;
 }
 
 #pragma mark - MDCCollectionViewStylingDelegate

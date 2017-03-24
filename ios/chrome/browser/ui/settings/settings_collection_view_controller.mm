@@ -332,6 +332,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
   CollectionViewTextItem* basicsHeader = [
       [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader] autorelease];
   basicsHeader.text = l10n_util::GetNSString(IDS_IOS_OPTIONS_GENERAL_TAB_LABEL);
+  basicsHeader.textColor = [[MDCPalette greyPalette] tint500];
   [model setHeader:basicsHeader
       forSectionWithIdentifier:SectionIdentifierBasics];
   [model addItem:[self searchEngineDetailItem]
@@ -349,6 +350,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
       [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader] autorelease];
   advancedHeader.text =
       l10n_util::GetNSString(IDS_IOS_OPTIONS_ADVANCED_TAB_LABEL);
+  advancedHeader.textColor = [[MDCPalette greyPalette] tint500];
   [model setHeader:advancedHeader
       forSectionWithIdentifier:SectionIdentifierAdvanced];
   [model addItem:[self voiceSearchDetailItem]
@@ -371,6 +373,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
     CollectionViewTextItem* debugHeader = [[[CollectionViewTextItem alloc]
         initWithType:ItemTypeHeader] autorelease];
     debugHeader.text = @"Debug";
+    debugHeader.textColor = [[MDCPalette greyPalette] tint500];
     [model setHeader:debugHeader
         forSectionWithIdentifier:SectionIdentifierDebug];
   }
@@ -679,21 +682,6 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
   }
 
   return cell;
-}
-
-- (UICollectionReusableView*)collectionView:(UICollectionView*)collectionView
-          viewForSupplementaryElementOfKind:(NSString*)kind
-                                atIndexPath:(NSIndexPath*)indexPath {
-  UICollectionReusableView* view = [super collectionView:collectionView
-                       viewForSupplementaryElementOfKind:kind
-                                             atIndexPath:indexPath];
-
-  MDCCollectionViewTextCell* textCell =
-      base::mac::ObjCCast<MDCCollectionViewTextCell>(view);
-  if (textCell) {
-    textCell.textLabel.textColor = [[MDCPalette greyPalette] tint500];
-  }
-  return view;
 }
 
 #pragma mark UICollectionViewDelegate

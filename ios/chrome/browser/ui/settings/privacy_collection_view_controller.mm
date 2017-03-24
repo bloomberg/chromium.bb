@@ -165,6 +165,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       initWithType:ItemTypeOtherDevicesHeader] autorelease];
   otherDevicesHeader.text =
       l10n_util::GetNSString(IDS_IOS_OPTIONS_CONTINUITY_LABEL);
+  otherDevicesHeader.textColor = [[MDCPalette greyPalette] tint500];
   [model setHeader:otherDevicesHeader
       forSectionWithIdentifier:SectionIdentifierOtherDevices];
   [model addItem:[self handoffDetailItem]
@@ -176,6 +177,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       initWithType:ItemTypeWebServicesHeader] autorelease];
   webServicesHeader.text =
       l10n_util::GetNSString(IDS_IOS_OPTIONS_WEB_SERVICES_LABEL);
+  webServicesHeader.textColor = [[MDCPalette greyPalette] tint500];
   [model setHeader:webServicesHeader
       forSectionWithIdentifier:SectionIdentifierWebServices];
   _showSuggestionsItem.reset([[self showSuggestionsSwitchItem] retain]);
@@ -336,21 +338,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 
   return cell;
-}
-
-- (UICollectionReusableView*)collectionView:(UICollectionView*)collectionView
-          viewForSupplementaryElementOfKind:(NSString*)kind
-                                atIndexPath:(NSIndexPath*)indexPath {
-  UICollectionReusableView* view = [super collectionView:collectionView
-                       viewForSupplementaryElementOfKind:kind
-                                             atIndexPath:indexPath];
-
-  MDCCollectionViewTextCell* textCell =
-      base::mac::ObjCCast<MDCCollectionViewTextCell>(view);
-  if (textCell) {
-    textCell.textLabel.textColor = [[MDCPalette greyPalette] tint500];
-  }
-  return view;
 }
 
 #pragma mark UICollectionViewDelegate

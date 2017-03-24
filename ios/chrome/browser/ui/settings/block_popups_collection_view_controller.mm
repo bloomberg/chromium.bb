@@ -146,20 +146,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return cell;
 }
 
-- (UICollectionReusableView*)collectionView:(UICollectionView*)collectionView
-          viewForSupplementaryElementOfKind:(NSString*)kind
-                                atIndexPath:(NSIndexPath*)indexPath {
-  UICollectionReusableView* view = [super collectionView:collectionView
-                       viewForSupplementaryElementOfKind:kind
-                                             atIndexPath:indexPath];
-  MDCCollectionViewTextCell* textCell =
-      base::mac::ObjCCast<MDCCollectionViewTextCell>(view);
-  if (textCell) {
-    textCell.textLabel.textColor = [[MDCPalette greyPalette] tint500];
-  }
-  return view;
-};
-
 #pragma mark - MDCCollectionViewEditingDelegate
 
 - (BOOL)collectionView:(UICollectionView*)collectionView
@@ -311,6 +297,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   CollectionViewTextItem* header = [
       [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader] autorelease];
   header.text = l10n_util::GetNSString(IDS_IOS_POPUPS_ALLOWED);
+  header.textColor = [[MDCPalette greyPalette] tint500];
   [model setHeader:header forSectionWithIdentifier:SectionIdentifierExceptions];
 
   for (size_t i = 0; i < _exceptions.GetSize(); ++i) {
