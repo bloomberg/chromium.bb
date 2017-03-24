@@ -119,12 +119,10 @@ static inline bool isAcceleratedCanvas(const LayoutObject& layoutObject) {
   return false;
 }
 
-static inline bool isCanvasControlledByOffscreen(
-    const LayoutObject& layoutObject) {
+static inline bool isPlaceholderCanvas(const LayoutObject& layoutObject) {
   if (layoutObject.isCanvas()) {
     HTMLCanvasElement* canvas = toHTMLCanvasElement(layoutObject.node());
-    if (canvas->surfaceLayerBridge())
-      return true;
+    return canvas->surfaceLayerBridge();
   }
   return false;
 }
@@ -469,6 +467,10 @@ void CompositedLayerMapping::updateContentsOpaque() {
     m_graphicsLayer->setContentsOpaque(false);
     m_backgroundLayer->setContentsOpaque(
         m_owningLayer.backgroundIsKnownToBeOpaqueInRect(compositedBounds()));
+  } else if (isPlaceholderCanvas(layoutObject())) {
+    // TODO(crbug.com/705019): Contents could be opaque, but that cannot be
+    // determined from the main thread. Or can it?
+    m_graphicsLayer->setContentsOpaque(false);
   } else {
     // For non-root layers, background is painted by the scrolling contents
     // layer if all backgrounds are background attachment local, otherwise
@@ -796,7 +798,7 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration() {
   } else if (layoutObject.isVideo()) {
     HTMLMediaElement* mediaElement = toHTMLMediaElement(layoutObject.node());
     m_graphicsLayer->setContentsToPlatformLayer(mediaElement->platformLayer());
-  } else if (isCanvasControlledByOffscreen(layoutObject)) {
+  } else if (isPlaceholderCanvas(layoutObject)) {
     HTMLCanvasElement* canvas = toHTMLCanvasElement(layoutObject.node());
     m_graphicsLayer->setContentsToPlatformLayer(
         canvas->surfaceLayerBridge()->getWebLayer());

@@ -224,7 +224,6 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
   const int renderPassId = 1;
   std::unique_ptr<cc::RenderPass> pass = cc::RenderPass::Create();
   pass->SetNew(renderPassId, bounds, bounds, gfx::Transform());
-  pass->has_transparent_background = false;
 
   cc::SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
   sqs->SetAll(gfx::Transform(), bounds.size(), bounds, bounds, false, 1.f,
@@ -281,7 +280,10 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
       pass->CreateAndAppendDrawQuad<cc::TextureDrawQuad>();
   gfx::Size rectSize(m_width, m_height);
 
+  // TODO(crbug.com/705019): optimize for contexts that have {alpha: false}
   const bool needsBlending = true;
+  gfx::Rect opaqueRect(0, 0);
+
   // TOOD(crbug.com/645993): this should be inherited from WebGL context's
   // creation settings.
   const bool premultipliedAlpha = true;
@@ -293,7 +295,7 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
   // TODO(crbug.com/645590): filter should respect the image-rendering CSS
   // property of associated canvas element.
   const bool nearestNeighbor = false;
-  quad->SetAll(sqs, bounds, bounds, bounds, needsBlending, resource.id,
+  quad->SetAll(sqs, bounds, opaqueRect, bounds, needsBlending, resource.id,
                gfx::Size(), premultipliedAlpha, uvTopLeft, uvBottomRight,
                SK_ColorTRANSPARENT, vertexOpacity, yflipped, nearestNeighbor,
                false);
