@@ -78,10 +78,10 @@ GpuFeatureStatus GetGpuRasterizationFeatureStatus(
     return kGpuFeatureStatusBlacklisted;
 
 #if defined(OS_ANDROID)
-  // We can't use GPU rasterization on low-end devices, because the Ganesh
-  // cache would consume too much memory.
-  if (base::SysInfo::IsLowEndDevice())
-    return kGpuFeatureStatusBlacklisted;
+  // GPU Raster is always enabled on non-low-end Android. On low-end, it is
+  // controlled by a Finch experiment.
+  if (!base::SysInfo::IsLowEndDevice())
+    return kGpuFeatureStatusEnabled;
 #endif  // defined(OS_ANDROID)
 
   // Gpu Rasterization on platforms that are not fully enabled is controlled by

@@ -9,8 +9,8 @@ namespace features {
 
 // Enable GPU Rasterization by default. This can still be overridden by
 // --force-gpu-rasterization or --disable-gpu-rasterization.
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
-// DefaultEnableGpuRasterization has launched on Android and Mac.
+#if defined(OS_MACOSX)
+// DefaultEnableGpuRasterization has launched on Mac.
 const base::Feature kDefaultEnableGpuRasterization{
     "DefaultEnableGpuRasterization", base::FEATURE_ENABLED_BY_DEFAULT};
 #else
