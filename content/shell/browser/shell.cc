@@ -30,7 +30,7 @@
 #include "content/public/common/webrtc_ip_handling_policy.h"
 #include "content/shell/browser/layout_test/blink_test_controller.h"
 #include "content/shell/browser/layout_test/layout_test_bluetooth_chooser_factory.h"
-#include "content/shell/browser/layout_test/layout_test_devtools_frontend.h"
+#include "content/shell/browser/layout_test/layout_test_devtools_bindings.h"
 #include "content/shell/browser/layout_test/layout_test_javascript_dialog_manager.h"
 #include "content/shell/browser/layout_test/secondary_test_window_observer.h"
 #include "content/shell/browser/shell_browser_main_parts.h"

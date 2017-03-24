@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/browser/layout_test/layout_test_devtools_frontend.h"
+#include "content/shell/browser/layout_test/layout_test_devtools_bindings.h"
 
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
@@ -20,24 +20,8 @@
 
 namespace content {
 
-// static
-LayoutTestDevToolsFrontend* LayoutTestDevToolsFrontend::Show(
-    WebContents* inspected_contents,
-    const std::string& settings,
-    const std::string& frontend_url) {
-  Shell* shell = Shell::CreateNewWindow(inspected_contents->GetBrowserContext(),
-                                        GURL(),
-                                        NULL,
-                                        gfx::Size());
-  LayoutTestDevToolsFrontend* devtools_frontend =
-      new LayoutTestDevToolsFrontend(shell, inspected_contents);
-  devtools_frontend->SetPreferences(settings);
-  shell->LoadURL(GetDevToolsPathAsURL(frontend_url));
-  return devtools_frontend;
-}
-
 // static.
-GURL LayoutTestDevToolsFrontend::GetDevToolsPathAsURL(
+GURL LayoutTestDevToolsBindings::GetDevToolsPathAsURL(
     const std::string& frontend_url) {
   if (!frontend_url.empty())
     return GURL(frontend_url);
@@ -74,7 +58,7 @@ GURL LayoutTestDevToolsFrontend::GetDevToolsPathAsURL(
 }
 
 // static.
-GURL LayoutTestDevToolsFrontend::MapJSTestURL(const GURL& test_url) {
+GURL LayoutTestDevToolsBindings::MapJSTestURL(const GURL& test_url) {
   std::string url_string = GetDevToolsPathAsURL(std::string()).spec();
   std::string inspector_file_name = "inspector.html";
   size_t start_position = url_string.find(inspector_file_name);
@@ -84,18 +68,21 @@ GURL LayoutTestDevToolsFrontend::MapJSTestURL(const GURL& test_url) {
   return GURL(url_string);
 }
 
-void LayoutTestDevToolsFrontend::ReuseFrontend(const std::string& settings,
-                                               const std::string frontend_url) {
-  DisconnectFromTarget();
+void LayoutTestDevToolsBindings::LoadDevTools(const std::string& settings,
+                                              const std::string& frontend_url) {
   SetPreferences(settings);
-  ready_for_test_ = false;
-  pending_evaluations_.clear();
-  frontend_shell()->LoadURL(GetDevToolsPathAsURL(frontend_url));
+  GURL devtools_url =
+      LayoutTestDevToolsBindings::GetDevToolsPathAsURL(frontend_url);
+  NavigationController::LoadURLParams params(devtools_url);
+  params.transition_type = ui::PageTransitionFromInt(
+      ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+  web_contents()->GetController().LoadURLWithParams(params);
+  web_contents()->Focus();
+  CreateFrontendHost();
 }
 
-void LayoutTestDevToolsFrontend::EvaluateInFrontend(
-    int call_id,
-    const std::string& script) {
+void LayoutTestDevToolsBindings::EvaluateInFrontend(int call_id,
+                                                    const std::string& script) {
   if (!ready_for_test_) {
     pending_evaluations_.push_back(std::make_pair(call_id, script));
     return;
@@ -105,36 +92,26 @@ void LayoutTestDevToolsFrontend::EvaluateInFrontend(
   base::JSONWriter::Write(base::Value(script), &encoded_script);
   std::string source =
       base::StringPrintf("DevToolsAPI.evaluateForTestInFrontend(%d, %s);",
-                         call_id,
-                         encoded_script.c_str());
+                         call_id, encoded_script.c_str());
   web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
       base::UTF8ToUTF16(source));
 }
 
-LayoutTestDevToolsFrontend::LayoutTestDevToolsFrontend(
-    Shell* frontend_shell,
+LayoutTestDevToolsBindings::LayoutTestDevToolsBindings(
+    WebContents* devtools_contents,
     WebContents* inspected_contents)
-    : ShellDevToolsFrontend(frontend_shell, inspected_contents),
-      ready_for_test_(false) {
-}
+    : ShellDevToolsBindings(devtools_contents, inspected_contents, nullptr),
+      ready_for_test_(false) {}
 
-LayoutTestDevToolsFrontend::~LayoutTestDevToolsFrontend() {
-}
+LayoutTestDevToolsBindings::~LayoutTestDevToolsBindings() {}
 
-void LayoutTestDevToolsFrontend::AgentHostClosed(
-    DevToolsAgentHost* agent_host, bool replaced) {
-  // Do not close the front-end shell.
-}
-
-void LayoutTestDevToolsFrontend::HandleMessageFromDevToolsFrontend(
+void LayoutTestDevToolsBindings::HandleMessageFromDevToolsFrontend(
     const std::string& message) {
   std::string method;
   base::DictionaryValue* dict = nullptr;
   std::unique_ptr<base::Value> parsed_message = base::JSONReader::Read(message);
-  if (parsed_message &&
-      parsed_message->GetAsDictionary(&dict) &&
-      dict->GetString("method", &method) &&
-      method == "readyForTest") {
+  if (parsed_message && parsed_message->GetAsDictionary(&dict) &&
+      dict->GetString("method", &method) && method == "readyForTest") {
     ready_for_test_ = true;
     for (const auto& pair : pending_evaluations_)
       EvaluateInFrontend(pair.first, pair.second);
@@ -142,15 +119,15 @@ void LayoutTestDevToolsFrontend::HandleMessageFromDevToolsFrontend(
     return;
   }
 
-  ShellDevToolsFrontend::HandleMessageFromDevToolsFrontend(message);
+  ShellDevToolsBindings::HandleMessageFromDevToolsFrontend(message);
 }
 
-void LayoutTestDevToolsFrontend::RenderProcessGone(
+void LayoutTestDevToolsBindings::RenderProcessGone(
     base::TerminationStatus status) {
   BlinkTestController::Get()->DevToolsProcessCrashed();
 }
 
-void LayoutTestDevToolsFrontend::RenderFrameCreated(
+void LayoutTestDevToolsBindings::RenderFrameCreated(
     RenderFrameHost* render_frame_host) {
   BlinkTestController::Get()->HandleNewRenderFrameHost(render_frame_host);
 }

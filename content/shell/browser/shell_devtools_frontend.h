@@ -9,82 +9,34 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
-#include "base/values.h"
-#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "net/url_request/url_fetcher_delegate.h"
-
-#if !defined(OS_ANDROID)
-#include "content/public/browser/devtools_frontend_host.h"
-#endif
-
-namespace base {
-class Value;
-}
+#include "content/shell/browser/shell_devtools_bindings.h"
 
 namespace content {
 
-class RenderViewHost;
 class Shell;
 class WebContents;
 
-class ShellDevToolsFrontend : public WebContentsObserver,
-                              public DevToolsAgentHostClient,
-                              public net::URLFetcherDelegate {
+class ShellDevToolsFrontend : public ShellDevToolsDelegate,
+                              public WebContentsObserver {
  public:
   static ShellDevToolsFrontend* Show(WebContents* inspected_contents);
 
   void Activate();
   void Focus();
   void InspectElementAt(int x, int y);
-  void Close();
-
-  void DisconnectFromTarget();
+  void Close() override;
 
   Shell* frontend_shell() const { return frontend_shell_; }
 
-  void CallClientFunction(const std::string& function_name,
-                          const base::Value* arg1,
-                          const base::Value* arg2,
-                          const base::Value* arg3);
-
- protected:
-  ShellDevToolsFrontend(Shell* frontend_shell, WebContents* inspected_contents);
-  ~ShellDevToolsFrontend() override;
-
-  // content::DevToolsAgentHostClient implementation.
-  void AgentHostClosed(DevToolsAgentHost* agent_host, bool replaced) override;
-  void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
-                               const std::string& message) override;
-  void SetPreferences(const std::string& json);
-  virtual void HandleMessageFromDevToolsFrontend(const std::string& message);
-
  private:
   // WebContentsObserver overrides
-  void RenderViewCreated(RenderViewHost* render_view_host) override;
-  void DocumentAvailableInMainFrame() override;
   void WebContentsDestroyed() override;
 
-  // net::URLFetcherDelegate overrides.
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
-
-  void SendMessageAck(int request_id,
-                      const base::Value* arg1);
-
+  ShellDevToolsFrontend(Shell* frontend_shell, WebContents* inspected_contents);
+  ~ShellDevToolsFrontend() override;
   Shell* frontend_shell_;
-  WebContents* inspected_contents_;
-  scoped_refptr<DevToolsAgentHost> agent_host_;
-  int inspect_element_at_x_;
-  int inspect_element_at_y_;
-#if !defined(OS_ANDROID)
-  std::unique_ptr<DevToolsFrontendHost> frontend_host_;
-#endif
-  using PendingRequestsMap = std::map<const net::URLFetcher*, int>;
-  PendingRequestsMap pending_requests_;
-  base::DictionaryValue preferences_;
-  base::WeakPtrFactory<ShellDevToolsFrontend> weak_factory_;
+  std::unique_ptr<ShellDevToolsBindings> devtools_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellDevToolsFrontend);
 };

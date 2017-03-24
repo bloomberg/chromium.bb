@@ -43,7 +43,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/shell/browser/layout_test/layout_test_bluetooth_chooser_factory.h"
-#include "content/shell/browser/layout_test/layout_test_devtools_frontend.h"
+#include "content/shell/browser/layout_test/layout_test_devtools_bindings.h"
 #include "content/shell/browser/layout_test/layout_test_first_device_bluetooth_chooser.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
@@ -232,7 +232,6 @@ BlinkTestController::BlinkTestController()
           base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kEnableLeakDetection)),
       crash_when_leak_found_(false),
-      devtools_frontend_(NULL),
       render_process_host_observer_(this) {
   CHECK(!instance_);
   instance_ = this;
@@ -277,7 +276,7 @@ bool BlinkTestController::PrepareForLayoutTest(
   if (test_url.spec().find("/inspector-unit/") == std::string::npos)
     test_url_ = test_url;
   else
-    test_url_ = LayoutTestDevToolsFrontend::MapJSTestURL(test_url);
+    test_url_ = LayoutTestDevToolsBindings::MapJSTestURL(test_url);
   did_send_initial_test_configuration_ = false;
   printer_->reset();
   frame_to_layout_dump_map_.clear();
@@ -494,9 +493,8 @@ void BlinkTestController::RenderFrameCreated(
 void BlinkTestController::DevToolsProcessCrashed() {
   DCHECK(CalledOnValidThread());
   printer_->AddErrorMessage("#CRASHED - devtools");
-  if (devtools_frontend_)
-      devtools_frontend_->Close();
-  devtools_frontend_ = NULL;
+  devtools_bindings_.reset();
+  devtools_window_.reset();
 }
 
 void BlinkTestController::WebContentsDestroyed() {
@@ -577,6 +575,7 @@ void BlinkTestController::DiscardMainWindow() {
   // If we're running a test, we need to close all windows and exit the message
   // loop. Otherwise, we're already outside of the message loop, and we just
   // discard the main window.
+  devtools_bindings_.reset();
   WebContentsObserver::Observe(NULL);
   if (test_phase_ != BETWEEN_TESTS) {
     Shell::CloseAllWindows();
@@ -805,31 +804,33 @@ void BlinkTestController::OnClearDevToolsLocalStorage() {
   StoragePartition* storage_partition =
       BrowserContext::GetStoragePartition(browser_context, NULL);
   storage_partition->GetDOMStorageContext()->DeleteLocalStorage(
-      content::LayoutTestDevToolsFrontend::GetDevToolsPathAsURL("")
+      content::LayoutTestDevToolsBindings::GetDevToolsPathAsURL("")
           .GetOrigin());
 }
 
 void BlinkTestController::OnShowDevTools(const std::string& settings,
                                          const std::string& frontend_url) {
-  if (!devtools_frontend_) {
-    devtools_frontend_ = LayoutTestDevToolsFrontend::Show(
-        main_window_->web_contents(), settings, frontend_url);
-  } else {
-    devtools_frontend_->ReuseFrontend(settings, frontend_url);
+  if (!devtools_window_) {
+    ShellBrowserContext* browser_context =
+        ShellContentBrowserClient::Get()->browser_context();
+    devtools_window_.reset(content::Shell::CreateNewWindow(
+        browser_context, GURL(), nullptr, initial_size_));
   }
-  devtools_frontend_->Activate();
-  devtools_frontend_->Focus();
+  devtools_bindings_.reset(new LayoutTestDevToolsBindings(
+      devtools_window_->web_contents(), main_window_->web_contents()));
+  devtools_bindings_->LoadDevTools(settings, frontend_url);
+  devtools_window_->web_contents()->GetRenderViewHost()->GetWidget()->Focus();
+  devtools_window_->web_contents()->Focus();
 }
 
 void BlinkTestController::OnEvaluateInDevTools(
     int call_id, const std::string& script) {
-  if (devtools_frontend_)
-    devtools_frontend_->EvaluateInFrontend(call_id, script);
+  if (devtools_bindings_)
+    devtools_bindings_->EvaluateInFrontend(call_id, script);
 }
 
 void BlinkTestController::OnCloseDevTools() {
-  if (devtools_frontend_)
-    devtools_frontend_->DisconnectFromTarget();
+  devtools_bindings_.reset();
 }
 
 void BlinkTestController::OnGoToOffset(int offset) {
@@ -890,10 +891,9 @@ void BlinkTestController::OnCaptureSessionHistory() {
 void BlinkTestController::OnCloseRemainingWindows() {
   DevToolsAgentHost::DetachAllClients();
   std::vector<Shell*> open_windows(Shell::windows());
-  Shell* devtools_shell = devtools_frontend_ ?
-      devtools_frontend_->frontend_shell() : NULL;
   for (size_t i = 0; i < open_windows.size(); ++i) {
-    if (open_windows[i] != main_window_ && open_windows[i] != devtools_shell)
+    if (open_windows[i] != main_window_ &&
+        open_windows[i] != devtools_window_.get())
       open_windows[i]->Close();
   }
   base::RunLoop().RunUntilIdle();
