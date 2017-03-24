@@ -311,11 +311,6 @@ class SigninExtensionsDeviceCloudPolicyBrowserTestBase
     BrowserPolicyConnectorChromeOS* connector =
         g_browser_process->platform_part()->browser_policy_connector_chromeos();
     connector->device_management_service()->ScheduleInitialization(0);
-
-    ExtensionService* service =
-        extensions::ExtensionSystem::Get(GetSigninProfile())
-            ->extension_service();
-    service->set_extensions_enabled(true);
   }
 
   static base::FilePath GetTestExtensionSourcePath() {

@@ -51,7 +51,8 @@ void TestExtensionSystem::Shutdown() {
 ExtensionService* TestExtensionSystem::CreateExtensionService(
     const base::CommandLine* command_line,
     const base::FilePath& install_directory,
-    bool autoupdate_enabled) {
+    bool autoupdate_enabled,
+    bool extensions_enabled) {
   state_store_.reset(new StateStore(
       profile_, store_factory_, ValueStoreFrontend::BackendType::RULES, false));
   management_policy_.reset(new ManagementPolicy());
@@ -59,14 +60,10 @@ ExtensionService* TestExtensionSystem::CreateExtensionService(
       ExtensionManagementFactory::GetForBrowserContext(profile_)
           ->GetProviders());
   runtime_data_.reset(new RuntimeData(ExtensionRegistry::Get(profile_)));
-  extension_service_.reset(new ExtensionService(profile_,
-                                                command_line,
-                                                install_directory,
-                                                ExtensionPrefs::Get(profile_),
-                                                Blacklist::Get(profile_),
-                                                autoupdate_enabled,
-                                                true,
-                                                &ready_));
+  extension_service_.reset(new ExtensionService(
+      profile_, command_line, install_directory, ExtensionPrefs::Get(profile_),
+      Blacklist::Get(profile_), autoupdate_enabled, extensions_enabled,
+      &ready_));
   extension_service_->ClearProvidersForTesting();
   return extension_service_.get();
 }

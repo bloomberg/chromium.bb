@@ -1804,15 +1804,26 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
   EXPECT_TRUE(new_command_updater->IsCommandEnabled(IDC_OPTIONS));
 }
 
+class BrowserTestWithExtensionsDisabled : public BrowserTest {
+ protected:
+  BrowserTestWithExtensionsDisabled() {}
+  ~BrowserTestWithExtensionsDisabled() override = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    BrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kDisableExtensions);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowserTestWithExtensionsDisabled);
+};
+
 // Makes sure Extensions and Settings commands are disabled in certain
 // circumstances even though normally they should stay enabled.
-IN_PROC_BROWSER_TEST_F(BrowserTest,
+IN_PROC_BROWSER_TEST_F(BrowserTestWithExtensionsDisabled,
                        DisableExtensionsAndSettingsWhenIncognitoIsDisabled) {
   CommandUpdater* command_updater =
       browser()->command_controller()->command_updater();
-  // Disable extensions. This should disable Extensions menu.
-  extensions::ExtensionSystem::Get(browser()->profile())->extension_service()->
-      set_extensions_enabled(false);
   // Set Incognito to DISABLED.
   IncognitoModePrefs::SetAvailability(browser()->profile()->GetPrefs(),
                                       IncognitoModePrefs::DISABLED);

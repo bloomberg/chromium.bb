@@ -73,11 +73,7 @@ std::unique_ptr<TestingProfile> BuildTestingProfile(
 }  // namespace
 
 ExtensionServiceTestBase::ExtensionServiceInitParams::
-    ExtensionServiceInitParams()
-    : autoupdate_enabled(false),
-      is_first_run(true),
-      profile_is_supervised(false) {
-}
+    ExtensionServiceInitParams() {}
 
 ExtensionServiceTestBase::ExtensionServiceInitParams::
     ExtensionServiceInitParams(const ExtensionServiceInitParams& other) =
@@ -189,6 +185,13 @@ void ExtensionServiceTestBase::InitializeExtensionServiceWithUpdater() {
   params.autoupdate_enabled = true;
   InitializeExtensionService(params);
   service_->updater()->Start();
+}
+
+void ExtensionServiceTestBase::
+    InitializeExtensionServiceWithExtensionsDisabled() {
+  ExtensionServiceInitParams params = CreateDefaultInitParams();
+  params.extensions_enabled = false;
+  InitializeExtensionService(params);
 }
 
 void ExtensionServiceTestBase::ResetThreadBundle(int options) {
@@ -315,14 +318,12 @@ void ExtensionServiceTestBase::CreateExtensionService(
   if (!params.is_first_run)
     ExtensionPrefs::Get(profile_.get())->SetAlertSystemFirstRun();
 
-  service_ =
-      system->CreateExtensionService(base::CommandLine::ForCurrentProcess(),
-                                     params.extensions_install_dir,
-                                     params.autoupdate_enabled);
+  service_ = system->CreateExtensionService(
+      base::CommandLine::ForCurrentProcess(), params.extensions_install_dir,
+      params.autoupdate_enabled, params.extensions_enabled);
 
   service_->SetFileTaskRunnerForTesting(
       base::ThreadTaskRunnerHandle::Get().get());
-  service_->set_extensions_enabled(true);
   service_->component_loader()->set_ignore_whitelist_for_testing(true);
 
   // When we start up, we want to make sure there is no external provider,

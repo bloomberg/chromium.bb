@@ -1063,22 +1063,22 @@ TEST_F(ExtensionServiceTest, PendingImports) {
   EXPECT_TRUE(service()->pending_extension_manager()->Remove(pending_id));
 }
 
+// Tests that installation fails with extensions disabled.
+TEST_F(ExtensionServiceTest, InstallExtensionsWithExtensionsDisabled) {
+  InitializeExtensionServiceWithExtensionsDisabled();
+  base::FilePath path = data_dir().AppendASCII("good.crx");
+  InstallCRX(path, INSTALL_FAILED);
+}
+
 // Test installing extensions. This test tries to install few extensions using
 // crx files. If you need to change those crx files, feel free to repackage
 // them, throw away the key used and change the id's above.
 TEST_F(ExtensionServiceTest, InstallExtension) {
   InitializeEmptyExtensionService();
-
-  // Extensions not enabled.
-  service()->set_extensions_enabled(false);
-  base::FilePath path = data_dir().AppendASCII("good.crx");
-  InstallCRX(path, INSTALL_FAILED);
-  service()->set_extensions_enabled(true);
-
   ValidatePrefKeyCount(0);
 
   // A simple extension that should install without error.
-  path = data_dir().AppendASCII("good.crx");
+  base::FilePath path = data_dir().AppendASCII("good.crx");
   InstallCRX(path, INSTALL_NEW);
   // TODO(erikkay): verify the contents of the installed extension.
 
@@ -1177,7 +1177,6 @@ TEST_F(ExtensionServiceTest, InstallingExternalExtensionWithFlags) {
   InitializeEmptyExtensionService();
 
   base::FilePath path = data_dir().AppendASCII("good.crx");
-  service()->set_extensions_enabled(true);
 
   // Register and install an external extension.
   std::unique_ptr<base::Version> version(new base::Version("1.0.0.0"));
@@ -1210,7 +1209,6 @@ TEST_F(ExtensionServiceTest, UninstallingExternalExtensions) {
   InitializeEmptyExtensionService();
 
   base::FilePath path = data_dir().AppendASCII("good.crx");
-  service()->set_extensions_enabled(true);
 
   // Install an external extension.
   content::WindowedNotificationObserver observer(
@@ -1303,7 +1301,6 @@ TEST_F(ExtensionServiceTest, UninstallingNotLoadedExtension) {
 TEST_F(ExtensionServiceTest, FailOnWrongId) {
   InitializeEmptyExtensionService();
   base::FilePath path = data_dir().AppendASCII("good.crx");
-  service()->set_extensions_enabled(true);
 
   std::unique_ptr<base::Version> version(new base::Version("1.0.0.0"));
 
@@ -1338,7 +1335,6 @@ TEST_F(ExtensionServiceTest, FailOnWrongId) {
 TEST_F(ExtensionServiceTest, FailOnWrongVersion) {
   InitializeEmptyExtensionService();
   base::FilePath path = data_dir().AppendASCII("good.crx");
-  service()->set_extensions_enabled(true);
 
   // Install an external extension with a version from the external
   // source that is not equal to the version in the extension manifest.
@@ -2097,6 +2093,16 @@ TEST_F(ExtensionServiceTest, PackExtensionOpenSSLKey) {
   InstallCRX(crx_path, INSTALL_NEW);
 }
 
+TEST_F(ExtensionServiceTest, TestInstallThemeWithExtensionsDisabled) {
+  // Themes can be installed, even when extensions are disabled.
+  InitializeExtensionServiceWithExtensionsDisabled();
+  base::FilePath path = data_dir().AppendASCII("theme.crx");
+  InstallCRX(path, INSTALL_NEW);
+  ValidatePrefKeyCount(1);
+  ValidateIntegerPref(theme_crx, "state", Extension::ENABLED);
+  ValidateIntegerPref(theme_crx, "location", Manifest::INTERNAL);
+}
+
 #if defined(THREAD_SANITIZER)
 // Flaky under Tsan. http://crbug.com/377702
 #define MAYBE_InstallTheme DISABLED_InstallTheme
@@ -2116,9 +2122,6 @@ TEST_F(ExtensionServiceTest, MAYBE_InstallTheme) {
   ValidateIntegerPref(theme_crx, "state", Extension::ENABLED);
   ValidateIntegerPref(theme_crx, "location", Manifest::INTERNAL);
 
-  // A theme when extensions are disabled. Themes can be installed, even when
-  // extensions are disabled.
-  service()->set_extensions_enabled(false);
   path = data_dir().AppendASCII("theme2.crx");
   InstallCRX(path, INSTALL_NEW);
   ValidatePrefKeyCount(++pref_count);
@@ -2127,7 +2130,6 @@ TEST_F(ExtensionServiceTest, MAYBE_InstallTheme) {
 
   // A theme with extension elements. Themes cannot have extension elements,
   // so any such elements (like content scripts) should be ignored.
-  service()->set_extensions_enabled(true);
   {
     path = data_dir().AppendASCII("theme_with_extension.crx");
     const Extension* extension = InstallCRX(path, INSTALL_NEW);
@@ -4178,7 +4180,6 @@ TEST_F(ExtensionServiceTest, PolicyBlockedPermissionPolicyUpdate) {
 #endif
 TEST_F(ExtensionServiceTest, MAYBE_ExternalExtensionAutoAcknowledgement) {
   InitializeEmptyExtensionService();
-  service()->set_extensions_enabled(true);
 
   {
     // Register and install an external extension.
@@ -4303,7 +4304,6 @@ TEST_F(ExtensionServiceTest, ExternalExtensionIsNotDisabledOnUpdate) {
 // This tests if default apps are installed correctly.
 TEST_F(ExtensionServiceTest, DefaultAppsInstall) {
   InitializeEmptyExtensionService();
-  service()->set_extensions_enabled(true);
 
   {
     std::string json_data =
@@ -4347,7 +4347,6 @@ TEST_F(ExtensionServiceTest, UpdatingPendingExternalExtensionWithFlags) {
   InitializeEmptyExtensionService();
 
   base::FilePath path = data_dir().AppendASCII("good.crx");
-  service()->set_extensions_enabled(true);
 
   // Register and install an external extension.
   std::unique_ptr<base::Version> version(new base::Version("1.0.0.0"));
@@ -4432,38 +4431,24 @@ TEST_F(ExtensionServiceTest, DisableTerminatedExtension) {
   EXPECT_EQ(0u, registry()->blacklisted_extensions().size());
 }
 
-// Tests disabling all extensions (simulating --disable-extensions flag).
+// Tests that with the kDisableExtensions flag, extensions are not loaded by
+// the ExtensionService...
+TEST_F(ExtensionServiceTest, PRE_DisableAllExtensions) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisableExtensions);
+  InitializeGoodInstalledExtensionService();
+  service()->Init();
+  EXPECT_TRUE(registry()->GenerateInstalledExtensionsSet()->is_empty());
+}
+
+// ... But, if we remove the switch, they are.
 TEST_F(ExtensionServiceTest, DisableAllExtensions) {
-  InitializeEmptyExtensionService();
-
-  base::FilePath path = data_dir().AppendASCII("good.crx");
-  InstallCRX(path, INSTALL_NEW);
-
-  EXPECT_EQ(1u, registry()->enabled_extensions().size());
-  EXPECT_EQ(0u, registry()->disabled_extensions().size());
-
-  // Disable extensions.
-  service()->set_extensions_enabled(false);
-  service()->ReloadExtensionsForTest();
-
-  // There shouldn't be extensions in either list.
-  EXPECT_EQ(0u, registry()->enabled_extensions().size());
-  EXPECT_EQ(0u, registry()->disabled_extensions().size());
-
-  // This shouldn't do anything when all extensions are disabled.
-  service()->EnableExtension(good_crx);
-  service()->ReloadExtensionsForTest();
-
-  // There still shouldn't be extensions in either list.
-  EXPECT_EQ(0u, registry()->enabled_extensions().size());
-  EXPECT_EQ(0u, registry()->disabled_extensions().size());
-
-  // And then re-enable the extensions.
-  service()->set_extensions_enabled(true);
-  service()->ReloadExtensionsForTest();
-
-  EXPECT_EQ(1u, registry()->enabled_extensions().size());
-  EXPECT_EQ(0u, registry()->disabled_extensions().size());
+  EXPECT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableExtensions));
+  InitializeGoodInstalledExtensionService();
+  service()->Init();
+  EXPECT_FALSE(registry()->GenerateInstalledExtensionsSet()->is_empty());
+  EXPECT_FALSE(registry()->enabled_extensions().is_empty());
 }
 
 // Tests reloading extensions.
@@ -5180,8 +5165,7 @@ void ExtensionServiceTest::TestExternalProvider(
 #if defined(OS_WIN)
 TEST_F(ExtensionServiceTest, ExternalInstallRegistry) {
   // This should all work, even when normal extension installation is disabled.
-  InitializeEmptyExtensionService();
-  service()->set_extensions_enabled(false);
+  InitializeExtensionServiceWithExtensionsDisabled();
 
   // Now add providers. Extension system takes ownership of the objects.
   MockExtensionProvider* reg_provider =
@@ -5204,8 +5188,7 @@ TEST_F(ExtensionServiceTest, ExternalInstallPref) {
 
 TEST_F(ExtensionServiceTest, ExternalInstallPrefUpdateUrl) {
   // This should all work, even when normal extension installation is disabled.
-  InitializeEmptyExtensionService();
-  service()->set_extensions_enabled(false);
+  InitializeExtensionServiceWithExtensionsDisabled();
 
   // TODO(skerner): The mock provider is not a good model of a provider
   // that works with update URLs, because it adds file and version info.
@@ -5222,8 +5205,7 @@ TEST_F(ExtensionServiceTest, ExternalInstallPrefUpdateUrl) {
 
 TEST_F(ExtensionServiceTest, ExternalInstallPolicyUpdateUrl) {
   // This should all work, even when normal extension installation is disabled.
-  InitializeEmptyExtensionService();
-  service()->set_extensions_enabled(false);
+  InitializeExtensionServiceWithExtensionsDisabled();
 
   // TODO(skerner): The mock provider is not a good model of a provider
   // that works with update URLs, because it adds file and version info.
@@ -5248,19 +5230,8 @@ TEST_F(ExtensionServiceTest, ExternalUninstall) {
       .DirName()
       .AppendASCII("PreferencesExternal");
 
-  // This initializes the extensions service with no ExternalProviders.
   InitializeInstalledExtensionService(pref_path, source_install_dir);
-  service()->set_extensions_enabled(false);
-
   service()->Init();
-
-  ASSERT_EQ(0u, GetErrors().size());
-  ASSERT_EQ(0u, loaded_.size());
-
-  // Verify that it's not the disabled extensions flag causing it not to load.
-  service()->set_extensions_enabled(true);
-  service()->ReloadExtensionsForTest();
-  base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(0u, GetErrors().size());
   ASSERT_EQ(0u, loaded_.size());
@@ -5845,10 +5816,8 @@ TEST_F(ExtensionServiceTest, StorageQuota) {
 
 // Tests ComponentLoader::Add().
 TEST_F(ExtensionServiceTest, ComponentExtensions) {
-  InitializeEmptyExtensionService();
-
   // Component extensions should work even when extensions are disabled.
-  service()->set_extensions_enabled(false);
+  InitializeExtensionServiceWithExtensionsDisabled();
 
   base::FilePath path = data_dir()
                             .AppendASCII("good")
@@ -6349,7 +6318,6 @@ TEST_F(ExtensionServiceTest, ExternalInstallGlobalError) {
 
   // This is a normal extension, installed normally.
   // This should NOT trigger an alert.
-  service()->set_extensions_enabled(true);
   base::FilePath path = data_dir().AppendASCII("good.crx");
   InstallCRX(path, INSTALL_NEW);
 
@@ -6506,7 +6474,6 @@ TEST_F(ExtensionServiceTest, MultipleExternalInstallErrors) {
   FeatureSwitch::ScopedOverride prompt(
       FeatureSwitch::prompt_for_external_extensions(), true);
   InitializeEmptyExtensionService();
-  service()->set_extensions_enabled(true);
 
   MockExtensionProvider* reg_provider =
       new MockExtensionProvider(service(), Manifest::EXTERNAL_REGISTRY);

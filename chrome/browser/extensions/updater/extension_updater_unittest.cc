@@ -1504,7 +1504,6 @@ class ExtensionUpdaterTest : public testing::Test {
                                  base::FilePath(), false);
     ExtensionService* extension_service =
         ExtensionSystem::Get(&profile)->extension_service();
-    extension_service->set_extensions_enabled(true);
 
     scoped_refptr<CrxInstaller> fake_crx1(
         CrxInstaller::CreateSilent(extension_service));

@@ -55,9 +55,10 @@ class ExtensionServiceTestBase : public testing::Test {
     base::FilePath profile_path;
     base::FilePath pref_file;
     base::FilePath extensions_install_dir;
-    bool autoupdate_enabled;     // defaults to false.
-    bool is_first_run;           // defaults to true.
-    bool profile_is_supervised;  // defaults to false.
+    bool autoupdate_enabled = false;
+    bool extensions_enabled = true;
+    bool is_first_run = true;
+    bool profile_is_supervised = false;
 
     // Though you could use this constructor, you probably want to use
     // CreateDefaultInitParams(), and then make a change or two.
@@ -97,6 +98,9 @@ class ExtensionServiceTestBase : public testing::Test {
 
   // Initialize an ExtensionService with autoupdate enabled.
   void InitializeExtensionServiceWithUpdater();
+
+  // Initializes an ExtensionService without extensions enabled.
+  void InitializeExtensionServiceWithExtensionsDisabled();
 
   // Resets the browser thread bundle to one with |options|.
   void ResetThreadBundle(int options);

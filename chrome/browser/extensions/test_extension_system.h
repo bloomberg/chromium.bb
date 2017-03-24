@@ -40,7 +40,8 @@ class TestExtensionSystem : public ExtensionSystem {
   ExtensionService* CreateExtensionService(
       const base::CommandLine* command_line,
       const base::FilePath& install_directory,
-      bool autoupdate_enabled);
+      bool autoupdate_enabled,
+      bool enable_extensions = true);
 
   void CreateSocketManager();
 

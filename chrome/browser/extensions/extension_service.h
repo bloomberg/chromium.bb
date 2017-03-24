@@ -383,7 +383,6 @@ class ExtensionService
   content::BrowserContext* GetBrowserContext() const;
 
   bool extensions_enabled() const { return extensions_enabled_; }
-  void set_extensions_enabled(bool enabled) { extensions_enabled_ = enabled; }
 
   const base::FilePath& install_directory() const { return install_directory_; }
 
