@@ -1912,7 +1912,10 @@ void DesktopWindowTreeHostX11::MapWindow(ui::WindowShowState show_state) {
   // Before we map the window, set size hints. Otherwise, some window managers
   // will ignore toplevel XMoveWindow commands.
   XSizeHints size_hints;
-  size_hints.flags = PPosition;
+  size_hints.flags = 0;
+  long supplied_return;
+  XGetWMNormalHints(xdisplay_, xwindow_, &size_hints, &supplied_return);
+  size_hints.flags |= PPosition;
   size_hints.x = bounds_in_pixels_.x();
   size_hints.y = bounds_in_pixels_.y();
   XSetWMNormalHints(xdisplay_, xwindow_, &size_hints);
