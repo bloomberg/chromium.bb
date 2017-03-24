@@ -132,16 +132,17 @@ class AuthenticatorMock(object):
     return http
 
 
-def CookiesAuthenticatorMockFactory(hosts_with_creds=None, same_cookie=False):
+def CookiesAuthenticatorMockFactory(hosts_with_creds=None, same_auth=False):
   """Use to mock Gerrit/Git credentials from ~/.netrc or ~/.gitcookies.
 
   Usage:
     >>> self.mock(git_cl.gerrit_util, "CookiesAuthenticator",
-                  CookiesAuthenticatorMockFactory({'host1': 'cookie1'}))
+                  CookiesAuthenticatorMockFactory({'host': ('user', _, 'pass')})
 
   OR
     >>> self.mock(git_cl.gerrit_util, "CookiesAuthenticator",
-                  CookiesAuthenticatorMockFactory(cookie='cookie'))
+                  CookiesAuthenticatorMockFactory(
+                      same_auth=('user', '', 'pass'))
   """
   class CookiesAuthenticatorMock(git_cl.gerrit_util.CookiesAuthenticator):
     def __init__(self):  # pylint: disable=super-init-not-called
@@ -153,9 +154,9 @@ def CookiesAuthenticatorMockFactory(hosts_with_creds=None, same_cookie=False):
     @classmethod
     def get_netrc_path(cls):
       return '~/.netrc'
-    def get_auth_header(self, host):
-      if same_cookie:
-        return same_cookie
+    def _get_auth_for_host(self, host):
+      if same_auth:
+        return same_auth
       return (hosts_with_creds or {}).get(host)
   return CookiesAuthenticatorMock
 
@@ -1215,7 +1216,7 @@ class TestGitCl(TestCase):
 
   @classmethod
   def _gerrit_base_calls(cls, issue=None, fetched_description=None,
-                         fetched_status=None):
+                         fetched_status=None, other_cl_owner=None):
     calls = [
         ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
         ((['git', 'config', 'branch.master.git-cl-similarity'],),
@@ -1242,8 +1243,10 @@ class TestGitCl(TestCase):
     if issue:
       calls += [
         (('GetChangeDetail', 'chromium-review.googlesource.com',
-          '123456', ['CURRENT_REVISION', 'CURRENT_COMMIT']),
+          '123456',
+          ['DETAILED_ACCOUNTS', 'CURRENT_REVISION', 'CURRENT_COMMIT']),
          {
+           'owner': {'email': (other_cl_owner or 'owner@example.com')},
            'change_id': '123456789',
            'current_revision': 'sha1_of_current_revision',
            'revisions': { 'sha1_of_current_revision': {
@@ -1259,6 +1262,10 @@ class TestGitCl(TestCase):
                             'allowed'), SystemExitMock()),
         ]
         return calls
+      if other_cl_owner:
+        calls += [
+          (('ask_for_data', 'Press Enter to upload, or Ctrl+C to abort'), ''),
+        ]
 
     calls += cls._git_sanity_checks('fake_ancestor_sha', 'master',
                                   get_remote_branch=False)
@@ -1457,7 +1464,8 @@ class TestGitCl(TestCase):
       issue=None,
       cc=None,
       git_mirror=None,
-      fetched_status=None):
+      fetched_status=None,
+      other_cl_owner=None):
     """Generic gerrit upload test framework."""
     if squash_mode is None:
       if '--no-squash' in upload_args:
@@ -1471,7 +1479,8 @@ class TestGitCl(TestCase):
     cc = cc or []
     self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
     self.mock(git_cl.gerrit_util, 'CookiesAuthenticator',
-              CookiesAuthenticatorMockFactory(same_cookie='same_cred'))
+              CookiesAuthenticatorMockFactory(
+                same_auth=('git-owner.example.com', '', 'pass')))
     self.mock(git_cl._GerritChangelistImpl, '_GerritCommitMsgHookCheck',
               lambda _, offer_removal: None)
     self.mock(git_cl.gclient_utils, 'RunEditor',
@@ -1488,7 +1497,8 @@ class TestGitCl(TestCase):
     self.calls = self._gerrit_base_calls(
         issue=issue,
         fetched_description=description,
-        fetched_status=fetched_status)
+        fetched_status=fetched_status,
+        other_cl_owner=other_cl_owner)
     if fetched_status != 'ABANDONED':
       self.calls += self._gerrit_upload_calls(
           description, reviewers, squash,
@@ -1609,6 +1619,24 @@ class TestGitCl(TestCase):
           expected_upstream_ref='origin/master',
           issue=123456,
           fetched_status='ABANDONED')
+
+  def test_gerrit_upload_squash_reupload_to_not_owned(self):
+    self.mock(git_cl.gerrit_util, 'GetAccountDetails',
+              lambda *_, **__: {'email': 'yet-another@example.com'})
+    description = 'desc\nBUG=\n\nChange-Id: 123456789'
+    self._run_gerrit_upload_test(
+          ['--squash'],
+          description,
+          [],
+          squash=True,
+          expected_upstream_ref='origin/master',
+          issue=123456,
+          other_cl_owner='other@example.com')
+    self.assertIn(
+        'WARNING: change 123456 is owned by other@example.com, but you '
+        'authenticate to Gerrit as yet-another@example.com.\n'
+        'Uploading may fail due to lack of permissions',
+        git_cl.sys.stdout.getvalue())
 
   def test_upload_branch_deps(self):
     self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
@@ -2045,7 +2073,7 @@ class TestGitCl(TestCase):
 
   def test_gerrit_ensure_authenticated_missing(self):
     cl = self._test_gerrit_ensure_authenticated_common(auth={
-      'chromium.googlesource.com': 'git is ok, but gerrit one is missing',
+      'chromium.googlesource.com': ('git-is.ok', '', 'but gerrit is missing'),
     })
     self.calls.append(
         ((['DieWithError',
@@ -2059,8 +2087,10 @@ class TestGitCl(TestCase):
   def test_gerrit_ensure_authenticated_conflict(self):
     self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
     cl = self._test_gerrit_ensure_authenticated_common(auth={
-      'chromium.googlesource.com': 'one',
-      'chromium-review.googlesource.com': 'other',
+      'chromium.googlesource.com':
+          ('git-one.example.com', None, 'secret1'),
+      'chromium-review.googlesource.com':
+          ('git-other.example.com', None, 'secret2'),
     })
     self.calls.append(
         (('ask_for_data', 'If you know what you are doing '
@@ -2069,8 +2099,10 @@ class TestGitCl(TestCase):
 
   def test_gerrit_ensure_authenticated_ok(self):
     cl = self._test_gerrit_ensure_authenticated_common(auth={
-      'chromium.googlesource.com': 'same',
-      'chromium-review.googlesource.com': 'same',
+      'chromium.googlesource.com':
+          ('git-same.example.com', None, 'secret'),
+      'chromium-review.googlesource.com':
+          ('git-same.example.com', None, 'secret'),
     })
     self.assertIsNone(cl.EnsureAuthenticated(force=False))
 

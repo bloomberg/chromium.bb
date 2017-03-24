@@ -184,18 +184,29 @@ class CookiesAuthenticator(Authenticator):
 
     return gitcookies
 
-  def get_auth_header(self, host):
-    auth = None
+  def _get_auth_for_host(self, host):
     for domain, creds in self.gitcookies.iteritems():
       if cookielib.domain_match(host, domain):
-        auth = (creds[0], None, creds[1])
-        break
+        return (creds[0], None, creds[1])
+    return self.netrc.authenticators(host)
 
-    if not auth:
-      auth = self.netrc.authenticators(host)
+  def get_auth_header(self, host):
+    auth = self._get_auth_for_host(host)
     if auth:
       return 'Basic %s' % (base64.b64encode('%s:%s' % (auth[0], auth[2])))
     return None
+
+  def get_auth_email(self, host):
+    """Best effort parsing of email to be used for auth for the given host."""
+    auth = self._get_auth_for_host(host)
+    if not auth:
+      return None
+    login = auth[0]
+    # login typically looks like 'git-xxx.example.com'
+    if not login.startswith('git-') or '.' not in login:
+      return None
+    username, domain = login[len('git-'):].split('.', 1)
+    return '%s@%s' % (username, domain)
 
 
 # Backwards compatibility just in case somebody imports this outside of
@@ -803,6 +814,21 @@ def GetGerritBranch(host, project, branch):
   if response:
     return response
   raise GerritError(200, 'Unable to get gerrit branch')
+
+
+def GetAccountDetails(host, account_id='self'):
+  """Returns details of the account.
+
+  If account_id is not given, uses magic value 'self' which corresponds to
+  whichever account user is authenticating as.
+
+  Documentation:
+    https://gerrit-review.googlesource.com/Documentation/rest-api-accounts.html#get-account
+  """
+  if account_id != 'self':
+    account_id = int(account_id)
+  conn = CreateHttpConn(host, '/accounts/%s' % account_id)
+  return ReadHttpJsonResponse(conn)
 
 
 @contextlib.contextmanager
