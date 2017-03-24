@@ -566,9 +566,11 @@ window.Audit = (function () {
       let passDetail, failDetail;
       let errors = {};
 
-      for (let index in this._actual) {
-        if (this._actual[index] !== this._expected)
-          errors[index] = this._actual[index];
+      let actual = this._actual;
+      let expected = this._expected;
+      for (let index = 0; index < actual.length; ++index) {
+        if (actual[index] !== expected)
+          errors[index] = actual[index];
       }
 
       let numberOfErrors = Object.keys(errors).length;
@@ -616,9 +618,11 @@ window.Audit = (function () {
       let failDetail;
       let differences = {};
 
-      for (let index in this._actual) {
-        if (this._actual[index] !== this._expected)
-          differences[index] = this._actual[index];
+      let actual = this._actual;
+      let expected = this._expected;
+      for (let index = 0; index < actual.length; ++index) {
+        if (actual[index] !== expected)
+          differences[index] = actual[index];
       }
 
       let numberOfDifferences = Object.keys(differences).length;
@@ -659,8 +663,10 @@ window.Audit = (function () {
         return this._assert(passed, passDetail, failDetail);
       }
 
-      for (let index in this._actual) {
-        if (this._actual[index] !== this._expected[index])
+      let actual = this._actual;
+      let expected = this._expected;
+      for (let index = 0; index < actual.length; ++index) {
+        if (actual[index] !== expected[index])
           errorIndices.push(index);
       }
 
@@ -755,9 +761,11 @@ window.Audit = (function () {
       let passed = true;
       let passDetail, failDetail;
 
-      for (let index in this._actual) {
-        let diff = Math.abs(this._actual[index - 1] - this._actual[index]);
-        if (diff >= this._expected) {
+      let actual = this._actual;
+      let expected = this._expected;
+      for (let index = 0; index < actual.length; ++index) {
+        let diff = Math.abs(actual[index - 1] - actual[index]);
+        if (diff >= expected) {
           passed = false;
           failDetail = '${actual} has a glitch at index ' + index + ' of size '
             + diff + '.';
@@ -838,9 +846,12 @@ window.Audit = (function () {
       // relative error is Infinity because the expected value is 0.
       let maxRelError = -Infinity, maxRelErrorIndex = -1;
 
-      for (let index in this._expected) {
-        let diff = Math.abs(this._actual[index] - this._expected[index]);
-        let absExpected = Math.abs(this._expected[index]);
+      let actual = this._actual;
+      let expected = this._expected;
+
+      for (let index = 0; index < expected.length; ++index) {
+        let diff = Math.abs(actual[index] - expected[index]);
+        let absExpected = Math.abs(expected[index]);
         let relError = diff / absExpected;
 
         if (diff > Math.max(absErrorThreshold,
@@ -883,11 +894,11 @@ window.Audit = (function () {
         let printedIndices = [];
         for (let index in errors) {
           failDetail += '\n' + _formatFailureEntry(
-                                   index, this._actual[index],
-                                   this._expected[index], errors[index],
+                                   index, actual[index],
+                                   expected[index], errors[index],
                                    _closeToThreshold(
                                        absErrorThreshold, relErrorThreshold,
-                                       this._expected[index]));
+                                       expected[index]));
 
           printedIndices.push(index);
           if (++counter > this._options.numberOfErrors) {
@@ -909,11 +920,11 @@ window.Audit = (function () {
           // Print an entry for this index if we haven't already.
           failDetail +=
               _formatFailureEntry(
-                  maxAbsErrorIndex, this._actual[maxAbsErrorIndex],
-                  this._expected[maxAbsErrorIndex], errors[maxAbsErrorIndex],
+                  maxAbsErrorIndex, actual[maxAbsErrorIndex],
+                  expected[maxAbsErrorIndex], errors[maxAbsErrorIndex],
                   _closeToThreshold(
                       absErrorThreshold, relErrorThreshold,
-                      this._expected[maxAbsErrorIndex])) +
+                      expected[maxAbsErrorIndex])) +
               '\n';
         }
         failDetail += '\tMax RelError of ' + maxRelError.toExponential(16) +
@@ -924,11 +935,11 @@ window.Audit = (function () {
           // Print an entry for this index if we haven't already.
           failDetail +=
               _formatFailureEntry(
-                  maxRelErrorIndex, this._actual[maxRelErrorIndex],
-                  this._expected[maxRelErrorIndex], errors[maxRelErrorIndex],
+                  maxRelErrorIndex, actual[maxRelErrorIndex],
+                  expected[maxRelErrorIndex], errors[maxRelErrorIndex],
                   _closeToThreshold(
                       absErrorThreshold, relErrorThreshold,
-                      this._expected[maxRelErrorIndex])) +
+                      expected[maxRelErrorIndex])) +
               '\n';
         }
       }
