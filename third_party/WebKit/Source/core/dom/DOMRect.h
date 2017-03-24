@@ -7,7 +7,7 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "core/CoreExport.h"
-#include "core/geometry/DOMRectReadOnly.h"
+#include "core/dom/DOMRectReadOnly.h"
 
 namespace blink {
 

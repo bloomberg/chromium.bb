@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/geometry/DOMQuad.h"
+#include "core/dom/DOMQuad.h"
 
 #include "bindings/core/v8/V8ObjectBuilder.h"
-#include "core/geometry/DOMPoint.h"
-#include "core/geometry/DOMQuadInit.h"
-#include "core/geometry/DOMRect.h"
-#include "core/geometry/DOMRectInit.h"
+#include "core/dom/DOMPoint.h"
+#include "core/dom/DOMQuadInit.h"
+#include "core/dom/DOMRect.h"
+#include "core/dom/DOMRectInit.h"
 
 namespace blink {
 

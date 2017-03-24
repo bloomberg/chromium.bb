@@ -6,7 +6,7 @@
 #define DOMPoint_h
 
 #include "core/CoreExport.h"
-#include "core/geometry/DOMPointReadOnly.h"
+#include "core/dom/DOMPointReadOnly.h"
 
 namespace blink {
 

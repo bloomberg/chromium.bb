@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/geometry/DOMPoint.h"
+#include "core/dom/DOMPoint.h"
 
-#include "core/geometry/DOMPointInit.h"
+#include "core/dom/DOMPointInit.h"
 
 namespace blink {
 

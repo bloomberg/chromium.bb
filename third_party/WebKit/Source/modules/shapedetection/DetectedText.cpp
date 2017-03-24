@@ -4,7 +4,7 @@
 
 #include "modules/shapedetection/DetectedText.h"
 
-#include "core/geometry/DOMRect.h"
+#include "core/dom/DOMRect.h"
 
 namespace blink {
 
