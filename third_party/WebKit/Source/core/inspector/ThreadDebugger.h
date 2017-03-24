@@ -35,8 +35,6 @@ class CORE_EXPORT ThreadDebugger : public v8_inspector::V8InspectorClient,
   virtual bool isWorker() = 0;
   v8_inspector::V8Inspector* v8Inspector() const { return m_v8Inspector.get(); }
 
-  static void willExecuteScript(v8::Isolate*, int scriptId);
-  static void didExecuteScript(v8::Isolate*);
   static void idleStarted(v8::Isolate*);
   static void idleFinished(v8::Isolate*);
 

@@ -541,10 +541,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::runCompiledScript(
     v8::MicrotasksScope microtasksScope(isolate,
                                         v8::MicrotasksScope::kRunMicrotasks);
     probe::ExecuteScript probe(context);
-    ThreadDebugger::willExecuteScript(isolate,
-                                      script->GetUnboundScript()->GetId());
     result = script->Run(isolate->GetCurrentContext());
-    ThreadDebugger::didExecuteScript(isolate);
   }
 
   CHECK(!isolate->IsDead());
@@ -612,11 +609,9 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::callAsConstructor(
   v8::MicrotasksScope microtasksScope(isolate,
                                       v8::MicrotasksScope::kRunMicrotasks);
   probe::CallFunction probe(context, function, depth);
-  ThreadDebugger::willExecuteScript(isolate, function->ScriptId());
   v8::MaybeLocal<v8::Value> result =
       constructor->CallAsConstructor(isolate->GetCurrentContext(), argc, argv);
   CHECK(!isolate->IsDead());
-  ThreadDebugger::didExecuteScript(isolate);
   return result;
 }
 
@@ -651,11 +646,9 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::callFunction(
   v8::MicrotasksScope microtasksScope(isolate,
                                       v8::MicrotasksScope::kRunMicrotasks);
   probe::CallFunction probe(context, function, depth);
-  ThreadDebugger::willExecuteScript(isolate, function->ScriptId());
   v8::MaybeLocal<v8::Value> result =
       function->Call(isolate->GetCurrentContext(), receiver, argc, args);
   CHECK(!isolate->IsDead());
-  ThreadDebugger::didExecuteScript(isolate);
 
   return result;
 }

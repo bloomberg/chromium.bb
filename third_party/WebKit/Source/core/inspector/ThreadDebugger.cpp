@@ -67,17 +67,6 @@ MessageLevel ThreadDebugger::v8MessageLevelToMessageLevel(
   return result;
 }
 
-void ThreadDebugger::willExecuteScript(v8::Isolate* isolate, int scriptId) {
-  if (ThreadDebugger* debugger = ThreadDebugger::from(isolate))
-    debugger->v8Inspector()->willExecuteScript(isolate->GetCurrentContext(),
-                                               scriptId);
-}
-
-void ThreadDebugger::didExecuteScript(v8::Isolate* isolate) {
-  if (ThreadDebugger* debugger = ThreadDebugger::from(isolate))
-    debugger->v8Inspector()->didExecuteScript(isolate->GetCurrentContext());
-}
-
 void ThreadDebugger::idleStarted(v8::Isolate* isolate) {
   if (ThreadDebugger* debugger = ThreadDebugger::from(isolate))
     debugger->v8Inspector()->idleStarted();
