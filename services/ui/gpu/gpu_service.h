@@ -54,6 +54,8 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
 
   ~GpuService() override;
 
+  void UpdateGPUInfoFromPreferences(const gpu::GpuPreferences& preferences);
+
   void InitializeWithHost(mojom::GpuHostPtr gpu_host,
                           const gpu::GpuPreferences& preferences,
                           gpu::GpuProcessActivityFlags activity_flags,
@@ -79,6 +81,11 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
     in_host_process_ = in_host_process;
   }
 
+  void set_start_time(base::Time start_time) { start_time_ = start_time; }
+
+  const gpu::GPUInfo& gpu_info() const { return gpu_info_; }
+  void set_gpu_info(const gpu::GPUInfo& gpu_info) { gpu_info_ = gpu_info; }
+
  private:
   friend class GpuMain;
 
@@ -95,8 +102,6 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
   gl::GLShareGroup* share_group() {
     return gpu_channel_manager_->share_group();
   }
-
-  const gpu::GPUInfo& gpu_info() const { return gpu_info_; }
 
   // gpu::GpuChannelManagerDelegate:
   void DidCreateOffscreenContext(const GURL& active_url) override;
@@ -174,6 +179,7 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
 
   // Whether this is running in the same process as the gpu host.
   bool in_host_process_ = false;
+  base::Time start_time_;
 
   mojo::BindingSet<mojom::GpuService> bindings_;
 

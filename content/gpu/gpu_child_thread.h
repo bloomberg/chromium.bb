@@ -40,10 +40,6 @@ class GpuMemoryBufferFactory;
 class GpuWatchdogThread;
 }
 
-namespace sandbox {
-class TargetServices;
-}
-
 namespace content {
 class GpuServiceFactory;
 
@@ -60,13 +56,13 @@ class GpuChildThread : public ChildThreadImpl,
     std::string header;
     std::string message;
   };
-  typedef std::queue<LogMessage> DeferredMessages;
+  typedef std::vector<LogMessage> DeferredMessages;
 
   GpuChildThread(std::unique_ptr<gpu::GpuWatchdogThread> gpu_watchdog_thread,
                  bool dead_on_arrival,
                  const gpu::GPUInfo& gpu_info,
                  const gpu::GpuFeatureInfo& gpu_feature_info,
-                 const DeferredMessages& deferred_messages,
+                 DeferredMessages deferred_messages,
                  gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory);
 
   GpuChildThread(const InProcessChildThreadParams& params,
@@ -80,11 +76,15 @@ class GpuChildThread : public ChildThreadImpl,
 
   void Init(const base::Time& process_start_time);
 
-  gpu::GpuWatchdogThread* watchdog_thread() {
-    return gpu_service_->watchdog_thread();
-  }
-
  private:
+  GpuChildThread(const ChildThreadImpl::Options& options,
+                 std::unique_ptr<gpu::GpuWatchdogThread> gpu_watchdog_thread,
+                 bool dead_on_arrival,
+                 bool in_browser_process,
+                 const gpu::GPUInfo& gpu_info,
+                 const gpu::GpuFeatureInfo& gpu_feature_info,
+                 gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory);
+
   void CreateGpuMainService(ui::mojom::GpuMainAssociatedRequest request);
 
   // ChildThreadImpl:.
@@ -112,7 +112,6 @@ class GpuChildThread : public ChildThreadImpl,
 
   // Message handlers.
   void OnCollectGraphicsInfo();
-  void OnSetVideoMemoryWindowCount(uint32_t window_count);
 
   void OnGpuSwitched();
 
@@ -129,21 +128,12 @@ class GpuChildThread : public ChildThreadImpl,
   // Set this flag to true if a fatal error occurred before we receive the
   // OnInitialize message, in which case we just declare ourselves DOA.
   const bool dead_on_arrival_;
-  base::Time process_start_time_;
-
-#if defined(OS_WIN)
-  // Windows specific client sandbox interface.
-  sandbox::TargetServices* target_services_;
-#endif
-
-  // Information about the GPU, such as device and vendor ID.
-  gpu::GPUInfo gpu_info_;
 
   // Error messages collected in gpu_main() before the thread is created.
   DeferredMessages deferred_messages_;
 
   // Whether the GPU thread is running in the browser process.
-  bool in_browser_process_;
+  const bool in_browser_process_;
 
   // ServiceFactory for service_manager::Service hosting.
   std::unique_ptr<GpuServiceFactory> service_factory_;

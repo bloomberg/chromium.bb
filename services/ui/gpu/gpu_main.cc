@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/power_monitor/power_monitor_device_source.h"
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "gpu/ipc/gpu_in_process_thread_service.h"
@@ -48,6 +49,7 @@ GpuMain::GpuMain(mojom::GpuMainRequest request)
     : gpu_thread_("GpuThread"),
       io_thread_("GpuIOThread"),
       compositor_thread_("DisplayCompositorThread"),
+      power_monitor_(base::MakeUnique<base::PowerMonitorDeviceSource>()),
       binding_(this, std::move(request)) {
   base::Thread::Options thread_options;
 

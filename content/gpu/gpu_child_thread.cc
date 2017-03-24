@@ -129,22 +129,16 @@ GpuChildThread::GpuChildThread(
     bool dead_on_arrival,
     const gpu::GPUInfo& gpu_info,
     const gpu::GpuFeatureInfo& gpu_feature_info,
-    const DeferredMessages& deferred_messages,
+    DeferredMessages deferred_messages,
     gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory)
-    : ChildThreadImpl(GetOptions(gpu_memory_buffer_factory)),
-      dead_on_arrival_(dead_on_arrival),
-      gpu_info_(gpu_info),
-      deferred_messages_(deferred_messages),
-      in_browser_process_(false),
-      gpu_service_(new ui::GpuService(gpu_info,
-                                      std::move(watchdog_thread),
-                                      gpu_memory_buffer_factory,
-                                      ChildProcess::current()->io_task_runner(),
-                                      gpu_feature_info)),
-      gpu_main_binding_(this) {
-#if defined(OS_WIN)
-  target_services_ = NULL;
-#endif
+    : GpuChildThread(GetOptions(gpu_memory_buffer_factory),
+                     std::move(watchdog_thread),
+                     dead_on_arrival,
+                     false /* in_browser_process */,
+                     gpu_info,
+                     gpu_feature_info,
+                     gpu_memory_buffer_factory) {
+  deferred_messages_ = std::move(deferred_messages);
 }
 
 GpuChildThread::GpuChildThread(
@@ -152,28 +146,43 @@ GpuChildThread::GpuChildThread(
     const gpu::GPUInfo& gpu_info,
     const gpu::GpuFeatureInfo& gpu_feature_info,
     gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory)
-    : ChildThreadImpl(ChildThreadImpl::Options::Builder()
-                          .InBrowserProcess(params)
-                          .AddStartupFilter(new GpuMemoryBufferMessageFilter(
-                              gpu_memory_buffer_factory))
-                          .ConnectToBrowser(true)
-                          .Build()),
-      dead_on_arrival_(false),
-      gpu_info_(gpu_info),
-      in_browser_process_(true),
+    : GpuChildThread(ChildThreadImpl::Options::Builder()
+                         .InBrowserProcess(params)
+                         .AddStartupFilter(new GpuMemoryBufferMessageFilter(
+                             gpu_memory_buffer_factory))
+                         .ConnectToBrowser(true)
+                         .Build(),
+                     nullptr /* watchdog_thread */,
+                     false /* dead_on_arrival */,
+                     true /* in_browser_process */,
+                     gpu_info,
+                     gpu_feature_info,
+                     gpu_memory_buffer_factory) {}
+
+GpuChildThread::GpuChildThread(
+    const ChildThreadImpl::Options& options,
+    std::unique_ptr<gpu::GpuWatchdogThread> gpu_watchdog_thread,
+    bool dead_on_arrival,
+    bool in_browser_process,
+    const gpu::GPUInfo& gpu_info,
+    const gpu::GpuFeatureInfo& gpu_feature_info,
+    gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory)
+    : ChildThreadImpl(options),
+      dead_on_arrival_(dead_on_arrival),
+      in_browser_process_(in_browser_process),
       gpu_service_(new ui::GpuService(gpu_info,
-                                      nullptr /* watchdog thread */,
+                                      std::move(gpu_watchdog_thread),
                                       gpu_memory_buffer_factory,
                                       ChildProcess::current()->io_task_runner(),
                                       gpu_feature_info)),
       gpu_main_binding_(this) {
-#if defined(OS_WIN)
-  target_services_ = NULL;
-#endif
-  DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kSingleProcess) ||
-         base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kInProcessGPU));
+  if (in_browser_process_) {
+    DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
+               switches::kSingleProcess) ||
+           base::CommandLine::ForCurrentProcess()->HasSwitch(
+               switches::kInProcessGPU));
+  }
+  gpu_service_->set_in_host_process(in_browser_process_);
 }
 
 GpuChildThread::~GpuChildThread() {
@@ -184,8 +193,7 @@ void GpuChildThread::Shutdown() {
 }
 
 void GpuChildThread::Init(const base::Time& process_start_time) {
-  process_start_time_ = process_start_time;
-  gpu_service_->set_in_host_process(in_browser_process_);
+  gpu_service_->set_start_time(process_start_time);
 
 #if defined(OS_ANDROID)
   // When running in in-process mode, this has been set in the browser at
@@ -264,25 +272,12 @@ void GpuChildThread::CreateGpuService(
     const gpu::GpuPreferences& gpu_preferences,
     mojo::ScopedSharedBufferHandle activity_flags) {
   gpu_service_->Bind(std::move(request));
-
-  gpu_info_.video_decode_accelerator_capabilities =
-      media::GpuVideoDecodeAccelerator::GetCapabilities(gpu_preferences);
-  gpu_info_.video_encode_accelerator_supported_profiles =
-      media::GpuVideoEncodeAccelerator::GetSupportedProfiles(gpu_preferences);
-  gpu_info_.jpeg_decode_accelerator_supported =
-      media::GpuJpegDecodeAcceleratorFactoryProvider::
-          IsAcceleratedJpegDecodeSupported();
-
-  // Record initialization only after collecting the GPU info because that can
-  // take a significant amount of time.
-  gpu_info_.initialization_time = base::Time::Now() - process_start_time_;
-  Send(new GpuHostMsg_Initialized(!dead_on_arrival_, gpu_info_,
+  gpu_service_->UpdateGPUInfoFromPreferences(gpu_preferences);
+  Send(new GpuHostMsg_Initialized(!dead_on_arrival_, gpu_service_->gpu_info(),
                                   gpu_service_->gpu_feature_info()));
-  while (!deferred_messages_.empty()) {
-    const LogMessage& log = deferred_messages_.front();
+  for (const LogMessage& log : deferred_messages_)
     gpu_host->RecordLogMessage(log.severity, log.header, log.message);
-    deferred_messages_.pop();
-  }
+  deferred_messages_.clear();
 
   if (dead_on_arrival_) {
     LOG(ERROR) << "Exiting GPU process due to errors during initialization";
@@ -326,14 +321,15 @@ void GpuChildThread::OnCollectGraphicsInfo() {
   if (dead_on_arrival_)
     return;
 
+  gpu::GPUInfo gpu_info(gpu_service_->gpu_info());
 #if defined(OS_MACOSX)
   // gpu::CollectContextGraphicsInfo() is already called during gpu process
   // initialization (see GpuInit::InitializeAndStartSandbox()) on non-mac
   // platforms, and during in-browser gpu thread initialization on all platforms
   // (See InProcessGpuThread::Init()).
   if (!in_browser_process_) {
-    DCHECK_EQ(gpu::kCollectInfoNone, gpu_info_.context_info_state);
-    gpu::CollectInfoResult result = gpu::CollectContextGraphicsInfo(&gpu_info_);
+    DCHECK_EQ(gpu::kCollectInfoNone, gpu_info.context_info_state);
+    gpu::CollectInfoResult result = gpu::CollectContextGraphicsInfo(&gpu_info);
     switch (result) {
       case gpu::kCollectInfoFatalFailure:
         LOG(ERROR) << "gpu::CollectGraphicsInfo failed (fatal).";
@@ -348,7 +344,7 @@ void GpuChildThread::OnCollectGraphicsInfo() {
       case gpu::kCollectInfoSuccess:
         break;
     }
-    GetContentClient()->SetGpuInfo(gpu_info_);
+    GetContentClient()->SetGpuInfo(gpu_info);
   }
 #endif
 
@@ -362,11 +358,12 @@ void GpuChildThread::OnCollectGraphicsInfo() {
   // This is slow, but it's the only thing the unsandboxed GPU process does,
   // and GpuDataManager prevents us from sending multiple collecting requests,
   // so it's OK to be blocking.
-  gpu::GetDxDiagnostics(&gpu_info_.dx_diagnostics);
-  gpu_info_.dx_diagnostics_info_state = gpu::kCollectInfoSuccess;
+  gpu::GetDxDiagnostics(&gpu_info.dx_diagnostics);
+  gpu_info.dx_diagnostics_info_state = gpu::kCollectInfoSuccess;
 #endif  // OS_WIN
 
-  Send(new GpuHostMsg_GraphicsInfoCollected(gpu_info_));
+  gpu_service_->set_gpu_info(gpu_info);
+  Send(new GpuHostMsg_GraphicsInfoCollected(gpu_info));
 
 #if defined(OS_WIN)
   if (!in_browser_process_) {

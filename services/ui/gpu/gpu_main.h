@@ -5,6 +5,7 @@
 #ifndef SERVICES_UI_GPU_GPU_MAIN_H_
 #define SERVICES_UI_GPU_GPU_MAIN_H_
 
+#include "base/power_monitor/power_monitor.h"
 #include "base/threading/thread.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "gpu/ipc/service/gpu_init.h"
@@ -101,6 +102,7 @@ class GpuMain : public gpu::GpuSandboxHelper, public mojom::GpuMain {
   base::Thread compositor_thread_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_thread_task_runner_;
 
+  base::PowerMonitor power_monitor_;
   mojo::Binding<mojom::GpuMain> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMain);

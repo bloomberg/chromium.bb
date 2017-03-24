@@ -115,7 +115,7 @@ bool GpuProcessLogMessageHandler(int severity,
   log.severity = severity;
   log.header = str.substr(0, message_start);
   log.message = str.substr(message_start);
-  deferred_messages.Get().push(std::move(log));
+  deferred_messages.Get().push_back(std::move(log));
   return false;
 }
 
@@ -285,17 +285,13 @@ int GpuMain(const MainFunctionParams& parameters) {
   GpuProcess gpu_process(io_thread_priority);
   GpuChildThread* child_thread = new GpuChildThread(
       gpu_init.TakeWatchdogThread(), dead_on_arrival, gpu_init.gpu_info(),
-      gpu_init.gpu_feature_info(), deferred_messages.Get(),
+      gpu_init.gpu_feature_info(), std::move(deferred_messages.Get()),
       gpu_memory_buffer_factory.get());
-  while (!deferred_messages.Get().empty())
-    deferred_messages.Get().pop();
+  deferred_messages.Get().clear();
 
   child_thread->Init(start_time);
 
   gpu_process.set_main_thread(child_thread);
-
-  if (child_thread->watchdog_thread())
-    child_thread->watchdog_thread()->AddPowerObserver();
 
 #if defined(OS_ANDROID)
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(

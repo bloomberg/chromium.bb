@@ -90,11 +90,8 @@ GpuService::~GpuService() {
   shutdown_event_.Signal();
 }
 
-void GpuService::InitializeWithHost(mojom::GpuHostPtr gpu_host,
-                                    const gpu::GpuPreferences& preferences,
-                                    gpu::GpuProcessActivityFlags activity_flags,
-                                    gpu::SyncPointManager* sync_point_manager,
-                                    base::WaitableEvent* shutdown_event) {
+void GpuService::UpdateGPUInfoFromPreferences(
+    const gpu::GpuPreferences& preferences) {
   DCHECK(CalledOnValidThread());
   DCHECK(!gpu_host_);
   gpu_preferences_ = preferences;
@@ -105,6 +102,16 @@ void GpuService::InitializeWithHost(mojom::GpuHostPtr gpu_host,
   gpu_info_.jpeg_decode_accelerator_supported =
       media::GpuJpegDecodeAcceleratorFactoryProvider::
           IsAcceleratedJpegDecodeSupported();
+  // Record initialization only after collecting the GPU info because that can
+  // take a significant amount of time.
+  gpu_info_.initialization_time = base::Time::Now() - start_time_;
+}
+
+void GpuService::InitializeWithHost(mojom::GpuHostPtr gpu_host,
+                                    const gpu::GpuPreferences& preferences,
+                                    gpu::GpuProcessActivityFlags activity_flags,
+                                    gpu::SyncPointManager* sync_point_manager,
+                                    base::WaitableEvent* shutdown_event) {
   gpu_host->DidInitialize(gpu_info_);
   gpu_host_ =
       mojom::ThreadSafeGpuHostPtr::Create(gpu_host.PassInterface(), io_runner_);
@@ -135,6 +142,8 @@ void GpuService::InitializeWithHost(mojom::GpuHostPtr gpu_host,
 
   media_gpu_channel_manager_.reset(
       new media::MediaGpuChannelManager(gpu_channel_manager_.get()));
+  if (watchdog_thread())
+    watchdog_thread()->AddPowerObserver();
 }
 
 void GpuService::Bind(mojom::GpuServiceRequest request) {
