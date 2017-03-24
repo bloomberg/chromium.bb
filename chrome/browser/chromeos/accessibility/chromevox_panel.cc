@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/accessibility/chromevox_panel.h"
+
 #include "ash/common/accessibility_types.h"
 #include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/common/shelf/wm_shelf.h"
@@ -11,7 +13,7 @@
 #include "ash/shell.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-#include "chrome/browser/chromeos/accessibility/chromevox_panel.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/data_use_measurement/data_use_web_contents_observer.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -28,6 +30,8 @@ namespace {
 
 const int kPanelHeight = 35;
 const char kChromeVoxPanelRelativeUrl[] = "/cvox2/background/panel.html";
+const char kChromeVoxPanelBlockedUserSessionQuery[] =
+    "?blockedUserSession=true";
 const char kFullscreenURLFragment[] = "fullscreen";
 const char kDisableSpokenFeedbackURLFragment[] = "close";
 const char kFocusURLFragment[] = "focus";
@@ -67,11 +71,20 @@ class ChromeVoxPanelWebContentsObserver : public content::WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(ChromeVoxPanelWebContentsObserver);
 };
 
-ChromeVoxPanel::ChromeVoxPanel(content::BrowserContext* browser_context)
-    : widget_(nullptr), web_view_(nullptr), panel_fullscreen_(false) {
+ChromeVoxPanel::ChromeVoxPanel(content::BrowserContext* browser_context,
+                               bool for_blocked_user_session)
+    : widget_(nullptr),
+      web_view_(nullptr),
+      panel_fullscreen_(false),
+      for_blocked_user_session_(for_blocked_user_session) {
   std::string url("chrome-extension://");
   url += extension_misc::kChromeVoxExtensionId;
   url += kChromeVoxPanelRelativeUrl;
+  if (for_blocked_user_session ||
+      chromeos::ProfileHelper::IsSigninProfile(
+          Profile::FromBrowserContext(browser_context))) {
+    url += kChromeVoxPanelBlockedUserSessionQuery;
+  }
 
   views::WebView* web_view = new views::WebView(browser_context);
   content::WebContents* contents = web_view->GetWebContents();

@@ -84,6 +84,17 @@ Panel.init = function() {
   /** @type {Panel.Mode} @private */
   this.mode_ = Panel.Mode.COLLAPSED;
 
+  var blockedSessionQuery = location.search.match(
+      /[?&]?blockedUserSession=(true|false)/);
+  /**
+   * Whether the panel is loaded for blocked user session - e.g. on sign-in or
+   * lock screen.
+   * @type {boolean}
+   * @private @const
+   */
+  this.isUserSessionBlocked_ =
+      !!blockedSessionQuery && blockedSessionQuery[1] == 'true';
+
   /**
    * The array of top-level menus.
    * @type {!Array<PanelMenu>}
@@ -104,7 +115,8 @@ Panel.init = function() {
    * @type {boolean}
    * @private
    */
-  this.menusEnabled_ = localStorage['useClassic'] == 'false';
+  this.menusEnabled_ =
+      !this.isUserSessionBlocked_ && localStorage['useClassic'] == 'false';
 
   /**
    * @type {Tutorial}
@@ -128,8 +140,16 @@ Panel.init = function() {
     Panel.exec(/** @type {PanelCommand} */(command));
   }, false);
 
-  $('menus_button').addEventListener('mousedown', Panel.onOpenMenus, false);
-  $('options').addEventListener('click', Panel.onOptions, false);
+  if (this.isUserSessionBlocked_) {
+    $('menus_button').disabled = true;
+    $('triangle').hidden = true;
+
+    $('options').disabled = true;
+  } else {
+    $('menus_button').addEventListener('mousedown', Panel.onOpenMenus, false);
+    $('options').addEventListener('click', Panel.onOptions, false);
+  }
+
   $('close').addEventListener('click', Panel.onClose, false);
 
   $('tutorial_next').addEventListener('click', Panel.onTutorialNext, false);
@@ -238,6 +258,8 @@ Panel.exec = function(command) {
  * Enable the ChromeVox Menus.
  */
 Panel.onEnableMenus = function() {
+  if (this.isUserSessionBlocked_)
+    return;
   Panel.menusEnabled_ = true;
   $('menus_button').disabled = false;
   $('triangle').hidden = false;
@@ -247,6 +269,8 @@ Panel.onEnableMenus = function() {
  * Disable the ChromeVox Menus.
  */
 Panel.onDisableMenus = function() {
+  if (this.isUserSessionBlocked_)
+    return;
   Panel.menusEnabled_ = false;
   $('menus_button').disabled = true;
   $('triangle').hidden = true;
@@ -261,6 +285,9 @@ Panel.setMode = function(mode) {
   if (this.mode_ == mode)
     return;
 
+  if (this.isUserSessionBlocked_ &&
+      mode != Panel.Mode.COLLAPSED && mode != Panel.Mode.FOCUSED)
+    return;
   this.mode_ = mode;
 
   document.title = Msgs.getMsg(Panel.ModeInfo[this.mode_].title);
