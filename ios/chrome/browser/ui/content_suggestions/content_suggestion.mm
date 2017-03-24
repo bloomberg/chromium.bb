@@ -14,7 +14,6 @@
 @implementation ContentSuggestion
 
 @synthesize title = _title;
-@synthesize image = _image;
 @synthesize text = _text;
 @synthesize url = _url;
 @synthesize publisher = _publisher;

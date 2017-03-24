@@ -28,8 +28,6 @@ typedef NS_ENUM(NSInteger, ContentSuggestionType) {
 @property(nonatomic, copy, nullable) NSString* title;
 // Text for the suggestion.
 @property(nonatomic, copy, nullable) NSString* text;
-// Image for the suggestion.
-@property(nonatomic, strong, nullable) UIImage* image;
 // URL associated with the suggestion.
 @property(nonatomic, assign) GURL url;
 // The name of the publisher.
