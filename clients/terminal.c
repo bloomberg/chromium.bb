@@ -38,6 +38,7 @@
 #include <sys/epoll.h>
 #include <wchar.h>
 #include <locale.h>
+#include <errno.h>
 
 #include <linux/input.h>
 
@@ -481,6 +482,7 @@ struct terminal {
 	int selection_start_row, selection_start_col;
 	int selection_end_row, selection_end_col;
 	struct wl_list link;
+	int pace_pipe;
 };
 
 /* Create default tab stops, every 8 characters */
@@ -860,6 +862,10 @@ resize_handler(struct widget *widget,
 	struct terminal *terminal = data;
 	int32_t columns, rows, m;
 
+	if (terminal->pace_pipe >= 0) {
+		close(terminal->pace_pipe);
+		terminal->pace_pipe = -1;
+	}
 	m = 2 * terminal->margin;
 	columns = (width - m) / (int32_t) terminal->average_width;
 	rows = (height - m) / (int32_t) terminal->extents.height;
@@ -3027,9 +3033,34 @@ terminal_run(struct terminal *terminal, const char *path)
 {
 	int master;
 	pid_t pid;
+	int pipes[2];
+
+	/* Awkwardness: There's a sticky race condition here.  If
+	 * anything prints after the forkpty() but before the window has
+	 * a size then we'll segfault.  So we make a pipe and wait on
+	 * it before actually exec()ing the terminal.  The resize
+	 * handler closes it in the parent process and the child continues
+	 * on to launch a shell.
+	 *
+	 * The reason we don't just do terminal_run() after the window
+	 * has a size is that we'd prefer to perform the fork() before
+	 * the process opens a wayland connection.
+	 */
+	if (pipe(pipes) == -1) {
+		fprintf(stderr, "Can't create pipe for pacing.\n");
+		exit(EXIT_FAILURE);
+	}
 
 	pid = forkpty(&master, NULL, NULL, NULL);
 	if (pid == 0) {
+		int ret;
+
+		close(pipes[1]);
+		do {
+			char tmp;
+			ret = read(pipes[0], &tmp, 1);
+		} while (ret == -1 && errno == EINTR);
+		close(pipes[0]);
 		setenv("TERM", option_term, 1);
 		setenv("COLORTERM", option_term, 1);
 		if (execl(path, path, NULL)) {
@@ -3041,7 +3072,9 @@ terminal_run(struct terminal *terminal, const char *path)
 		return -1;
 	}
 
+	close(pipes[0]);
 	terminal->master = master;
+	terminal->pace_pipe = pipes[1];
 	fcntl(master, F_SETFL, O_NONBLOCK);
 	terminal->io_task.run = io_handler;
 	display_watch_fd(terminal->display, terminal->master,
