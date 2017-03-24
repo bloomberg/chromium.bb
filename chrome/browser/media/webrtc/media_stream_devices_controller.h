@@ -13,6 +13,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "content/public/browser/web_contents_delegate.h"
 
+class MediaStreamDevicesController;
 class Profile;
 class TabSpecificContentSettings;
 
@@ -30,6 +31,17 @@ class MediaStreamDevicesControllerBrowserTest;
 
 namespace test {
 class MediaStreamDevicesControllerTestApi;
+}
+
+namespace internal {
+// Delegate showing permission prompts.
+class PermissionPromptDelegate {
+ public:
+  virtual void ShowPrompt(
+      bool user_gesture,
+      content::WebContents* web_contents,
+      std::unique_ptr<MediaStreamDevicesController> controller) = 0;
+};
 }
 
 class MediaStreamDevicesController : public PermissionRequest {
@@ -74,15 +86,6 @@ class MediaStreamDevicesController : public PermissionRequest {
   friend class test::MediaStreamDevicesControllerTestApi;
   friend class policy::MediaStreamDevicesControllerBrowserTest;
 
-  // Delegate showing permission prompts.
-  class PermissionPromptDelegate {
-   public:
-    virtual void ShowPrompt(
-        bool user_gesture,
-        content::WebContents* web_contents,
-        std::unique_ptr<MediaStreamDevicesController> controller) = 0;
-  };
-
   class MediaPermissionStatus;
   class PermissionPromptDelegateImpl;
 
@@ -90,7 +93,7 @@ class MediaStreamDevicesController : public PermissionRequest {
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback,
-      PermissionPromptDelegate* delegate);
+      internal::PermissionPromptDelegate* delegate);
 
   MediaStreamDevicesController(content::WebContents* web_contents,
                                const content::MediaStreamRequest& request,
@@ -165,7 +168,7 @@ class MediaStreamDevicesController : public PermissionRequest {
   // audio/video devices was granted or not.
   content::MediaResponseCallback callback_;
 
-  std::unique_ptr<PermissionPromptDelegate> delegate_;
+  std::unique_ptr<internal::PermissionPromptDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamDevicesController);
 };

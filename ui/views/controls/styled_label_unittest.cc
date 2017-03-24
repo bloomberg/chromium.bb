@@ -489,7 +489,7 @@ TEST_F(StyledLabelTest, SetBaseFontList) {
   std::string font_name("arial");
   gfx::Font font(font_name, 30);
   styled()->SetBaseFontList(gfx::FontList(font));
-  Label label(ASCIIToUTF16(text), {gfx::FontList(font)});
+  Label label(ASCIIToUTF16(text), Label::CustomFont{gfx::FontList(font)});
 
   styled()->SetBounds(0,
                       0,

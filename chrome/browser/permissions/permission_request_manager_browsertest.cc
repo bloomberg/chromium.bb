@@ -29,7 +29,7 @@
 
 namespace test {
 class MediaStreamDevicesControllerTestApi
-    : public MediaStreamDevicesController::PermissionPromptDelegate {
+    : public internal::PermissionPromptDelegate {
  public:
   static void AddRequestToManager(
       PermissionRequestManager* manager,

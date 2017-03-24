@@ -35,7 +35,7 @@ class MediaStreamDevicesControllerTest : public WebRtcTestBase {
   // we should remove PermissionPromptDelegate and just use
   // MockPermissionPromptFactory instead. The APIs are the same.
   class TestPermissionPromptDelegate
-      : public MediaStreamDevicesController::PermissionPromptDelegate {
+      : public internal::PermissionPromptDelegate {
    public:
     void ShowPrompt(
         bool user_gesture,

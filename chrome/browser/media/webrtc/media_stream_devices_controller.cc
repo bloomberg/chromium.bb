@@ -253,7 +253,7 @@ class MediaStreamDevicesController::MediaPermissionStatus {
 // Implementation of PermissionPromptDelegate which actually shows a permission
 // prompt.
 class MediaStreamDevicesController::PermissionPromptDelegateImpl
-    : public MediaStreamDevicesController::PermissionPromptDelegate {
+    : public internal::PermissionPromptDelegate {
  public:
   void ShowPrompt(
       bool user_gesture,
@@ -404,7 +404,7 @@ void MediaStreamDevicesController::RequestPermissionsWithDelegate(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback,
-    PermissionPromptDelegate* delegate) {
+    internal::PermissionPromptDelegate* delegate) {
   if (request.request_type == content::MEDIA_OPEN_DEVICE_PEPPER_ONLY) {
     MediaPermissionRequestLogger::LogRequest(
         web_contents, request.render_process_id, request.render_frame_id,
