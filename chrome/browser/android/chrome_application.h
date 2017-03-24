@@ -23,9 +23,6 @@ class ChromeApplication {
  public:
   static bool RegisterBindings(JNIEnv* env);
 
-  // Opens the autofill settings page.
-  static void ShowAutofillSettings();
-
   // Opens the password settings page.
   static void ShowPasswordSettings();
 

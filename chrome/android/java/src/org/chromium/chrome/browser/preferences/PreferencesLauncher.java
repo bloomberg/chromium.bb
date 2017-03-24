@@ -8,6 +8,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 
+import org.chromium.base.ContextUtils;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.browser.preferences.autofill.AutofillAndPaymentsPreferences;
 import org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataPreferences;
 import org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataTabsFragment;
 
@@ -58,5 +61,11 @@ public class PreferencesLauncher {
                 ? ClearBrowsingDataTabsFragment.class.getName()
                 : ClearBrowsingDataPreferences.class.getName();
         return createIntentForSettingsPage(context, fragmentName);
+    }
+
+    @CalledByNative
+    private static void showAutofillSettings() {
+        launchSettingsPage(ContextUtils.getApplicationContext(),
+                AutofillAndPaymentsPreferences.class.getName());
     }
 }

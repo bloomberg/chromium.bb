@@ -102,12 +102,6 @@ bool ChromeApplication::RegisterBindings(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-void ChromeApplication::ShowAutofillSettings() {
-  Java_ChromeApplication_showAutofillSettings(
-      base::android::AttachCurrentThread(),
-      base::android::GetApplicationContext());
-}
-
 void ChromeApplication::ShowPasswordSettings() {
   Java_ChromeApplication_showPasswordSettings(
       base::android::AttachCurrentThread(),

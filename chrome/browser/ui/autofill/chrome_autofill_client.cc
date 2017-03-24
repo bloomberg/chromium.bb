@@ -49,7 +49,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/context_utils.h"
-#include "chrome/browser/android/chrome_application.h"
+#include "chrome/browser/android/preferences/preferences_launcher.h"
 #include "chrome/browser/android/signin/signin_promo_util_android.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/android/autofill/autofill_logger_android.h"
@@ -154,7 +154,7 @@ ukm::UkmService* ChromeAutofillClient::GetUkmService() {
 
 void ChromeAutofillClient::ShowAutofillSettings() {
 #if defined(OS_ANDROID)
-  chrome::android::ChromeApplication::ShowAutofillSettings();
+  chrome::android::PreferencesLauncher::ShowAutofillSettings();
 #else
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   if (browser)
