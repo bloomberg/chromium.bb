@@ -3004,11 +3004,11 @@ void GLRenderer::SetUseProgram(const ProgramKey& program_key,
   // https://crbug.com/699243
   // The source color space for non-YUV draw quads should always be full-range
   // RGB.
-  DCHECK_EQ(src_color_space, src_color_space.GetAsFullRangeRGB());
   if (settings_->enable_color_correct_rendering) {
     SetUseProgram(program_key, src_color_space,
                   current_frame()->current_render_pass->color_space);
   } else {
+    DCHECK_EQ(src_color_space, src_color_space.GetAsFullRangeRGB());
     SetUseProgram(program_key, gfx::ColorSpace(), gfx::ColorSpace());
   }
 }

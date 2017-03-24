@@ -81,7 +81,10 @@ unsigned int ColorLUTCache::MakeLUT(const gfx::ColorTransform* transform,
     }
   }
 
-  unsigned int lut_texture;
+  GLuint previously_bound_texture = 0;
+  GLuint lut_texture = 0;
+  gl_->GetIntegerv(GL_TEXTURE_BINDING_2D,
+                   reinterpret_cast<GLint*>(&previously_bound_texture));
   gl_->GenTextures(1, &lut_texture);
   gl_->BindTexture(GL_TEXTURE_2D, lut_texture);
   gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -92,6 +95,7 @@ unsigned int ColorLUTCache::MakeLUT(const gfx::ColorTransform* transform,
                   lut_samples * lut_samples, 0, GL_RGBA,
                   sizeof(T) == 1 ? GL_UNSIGNED_BYTE : GL_HALF_FLOAT_OES,
                   lut.data());
+  gl_->BindTexture(GL_TEXTURE_2D, previously_bound_texture);
   return lut_texture;
 }
 

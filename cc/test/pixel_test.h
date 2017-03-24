@@ -34,6 +34,10 @@ class PixelTest : public testing::Test {
                     const base::FilePath& ref_file,
                     const PixelComparator& comparator);
 
+  bool RunPixelTest(RenderPassList* pass_list,
+                    std::vector<SkColor>* ref_pixels,
+                    const PixelComparator& comparator);
+
   bool RunPixelTestWithReadbackTarget(
       RenderPassList* pass_list,
       RenderPass* target,
