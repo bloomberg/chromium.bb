@@ -51,6 +51,7 @@ component("url") {
     "url_parse_internal.h",
     "url_util.cc",
     "url_util.h",
+    "url_util_internal.h",
   ]
 
   defines = [ "URL_IMPLEMENTATION" ]
