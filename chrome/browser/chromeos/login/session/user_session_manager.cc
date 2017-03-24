@@ -61,6 +61,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/component_updater/ev_whitelist_component_installer.h"
 #include "chrome/browser/component_updater/sth_set_component_installer.h"
+#include "chrome/browser/cryptauth/chrome_cryptauth_service_factory.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_brand_chromeos.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -82,6 +83,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/cert_loader.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/components/tether/initializer.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/cryptohome/cryptohome_util.h"
 #include "chromeos/dbus/cryptohome_client.h"
@@ -1226,6 +1228,12 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
     InitializeCertificateTransparencyComponents(user);
 
     arc::ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(profile);
+
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            chromeos::switches::kEnableTether)) {
+      chromeos::tether::Initializer::Initialize(
+          ChromeCryptAuthServiceFactory::GetForBrowserContext(profile));
+    }
   }
 
   UpdateEasyUnlockKeys(user_context_);
