@@ -420,7 +420,7 @@ void MemoryDumpManager::RegisterPollingMDPOnDumpThread(
   // registered. This handles the case where OnTraceLogEnabled() did not notify
   // ready since no polling supported mdp has yet been registered.
   if (dump_providers_for_polling_.size() == 1)
-    dump_scheduler_->NotifyPollingSupported();
+    MemoryDumpScheduler::GetInstance()->EnablePollingIfNeeded();
 }
 
 void MemoryDumpManager::UnregisterPollingMDPOnDumpThread(
@@ -514,8 +514,7 @@ void MemoryDumpManager::CreateProcessDump(const MemoryDumpRequestArgs& args,
     CHECK(!session_state_ ||
           session_state_->IsDumpModeAllowed(args.level_of_detail));
 
-    if (dump_scheduler_)
-      dump_scheduler_->NotifyDumpTriggered();
+    MemoryDumpScheduler::GetInstance()->NotifyDumpTriggered();
   }
 
   TRACE_EVENT_WITH_FLOW0(kTraceCategory, "MemoryDumpManager::CreateProcessDump",
@@ -868,18 +867,6 @@ void MemoryDumpManager::OnTraceLogEnabled() {
             session_state, &MemoryDumpSessionState::type_name_deduplicator));
   }
 
-  std::unique_ptr<MemoryDumpScheduler> dump_scheduler(
-      new MemoryDumpScheduler(this, dump_thread->task_runner()));
-  DCHECK_LE(memory_dump_config.triggers.size(), 3u);
-  for (const auto& trigger : memory_dump_config.triggers) {
-    if (!session_state->IsDumpModeAllowed(trigger.level_of_detail)) {
-      NOTREACHED();
-      continue;
-    }
-    dump_scheduler->AddTrigger(trigger.trigger_type, trigger.level_of_detail,
-                               trigger.min_time_between_dumps_ms);
-  }
-
   {
     AutoLock lock(lock_);
 
@@ -888,7 +875,6 @@ void MemoryDumpManager::OnTraceLogEnabled() {
 
     DCHECK(!dump_thread_);
     dump_thread_ = std::move(dump_thread);
-    dump_scheduler_ = std::move(dump_scheduler);
 
     subtle::NoBarrier_Store(&memory_tracing_enabled_, 1);
 
@@ -897,15 +883,28 @@ void MemoryDumpManager::OnTraceLogEnabled() {
       if (mdpinfo->options.is_fast_polling_supported)
         dump_providers_for_polling_.insert(mdpinfo);
     }
+
+    MemoryDumpScheduler* dump_scheduler = MemoryDumpScheduler::GetInstance();
+    dump_scheduler->Setup(this, dump_thread_->task_runner());
+    DCHECK_LE(memory_dump_config.triggers.size(), 3u);
+    for (const auto& trigger : memory_dump_config.triggers) {
+      if (!session_state_->IsDumpModeAllowed(trigger.level_of_detail)) {
+        NOTREACHED();
+        continue;
+      }
+      dump_scheduler->AddTrigger(trigger.trigger_type, trigger.level_of_detail,
+                                 trigger.min_time_between_dumps_ms);
+    }
+
     // Notify polling supported only if some polling supported provider was
     // registered, else RegisterPollingMDPOnDumpThread() will notify when first
     // polling MDP registers.
     if (!dump_providers_for_polling_.empty())
-      dump_scheduler_->NotifyPollingSupported();
+      dump_scheduler->EnablePollingIfNeeded();
 
     // Only coordinator process triggers periodic global memory dumps.
     if (delegate_->IsCoordinator())
-      dump_scheduler_->NotifyPeriodicTriggerSupported();
+      dump_scheduler->EnablePeriodicTriggerIfNeeded();
   }
 
 }
@@ -918,14 +917,12 @@ void MemoryDumpManager::OnTraceLogDisabled() {
     return;
   subtle::NoBarrier_Store(&memory_tracing_enabled_, 0);
   std::unique_ptr<Thread> dump_thread;
-  std::unique_ptr<MemoryDumpScheduler> scheduler;
   {
     AutoLock lock(lock_);
     dump_thread = std::move(dump_thread_);
     session_state_ = nullptr;
-    scheduler = std::move(dump_scheduler_);
+    MemoryDumpScheduler::GetInstance()->DisableAllTriggers();
   }
-  scheduler->DisableAllTriggers();
 
   // Thread stops are blocking and must be performed outside of the |lock_|
   // or will deadlock (e.g., if SetupNextMemoryDump() tries to acquire it).

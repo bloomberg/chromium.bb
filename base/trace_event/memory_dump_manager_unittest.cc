@@ -275,7 +275,8 @@ class MemoryDumpManagerTest : public testing::Test {
   void DisableTracing() { TraceLog::GetInstance()->SetDisabled(); }
 
   bool IsPeriodicDumpingEnabled() const {
-    return mdm_->dump_scheduler_->IsPeriodicTimerRunningForTesting();
+    return MemoryDumpScheduler::GetInstance()
+        ->IsPeriodicTimerRunningForTesting();
   }
 
   int GetMaxConsecutiveFailuresCount() const {

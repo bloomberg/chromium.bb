@@ -24,18 +24,18 @@ class MemoryDumpSchedulerPollingTest : public testing::Test {
   void SetUp() override {
     MemoryDumpScheduler::SetPollingIntervalForTesting(1);
     uint32_t kMinPollsToDump = 5;
-    mds_.reset(new MemoryDumpScheduler(nullptr, nullptr));
+    mds_ = MemoryDumpScheduler::GetInstance();
+    mds_->Setup(nullptr, nullptr);
     mds_->AddTrigger(MemoryDumpType::PEAK_MEMORY_USAGE,
                      MemoryDumpLevelOfDetail::LIGHT, kMinPollsToDump);
-    mds_->polling_state_.ResetTotals();
-    mds_->polling_state_.current_state =
+    mds_->polling_state_->ResetTotals();
+    mds_->polling_state_->current_state =
         MemoryDumpScheduler::PollingTriggerState::ENABLED;
   }
 
   void TearDown() override {
-    mds_->polling_state_.current_state =
+    mds_->polling_state_->current_state =
         MemoryDumpScheduler::PollingTriggerState::DISABLED;
-    mds_.reset();
   }
 
  protected:
@@ -44,7 +44,7 @@ class MemoryDumpSchedulerPollingTest : public testing::Test {
   }
 
   uint32_t num_samples_tracked_;
-  std::unique_ptr<MemoryDumpScheduler> mds_;
+  MemoryDumpScheduler* mds_;
 };
 
 TEST_F(MemoryDumpSchedulerPollingTest, PeakDetection) {
@@ -87,12 +87,12 @@ TEST_F(MemoryDumpSchedulerPollingTest, NotifyDumpTriggered) {
     bool did_trigger = ShouldTriggerDump(total);
     // Dumps should never be triggered since NotifyDumpTriggered() is called
     // frequently.
-    EXPECT_NE(0u, mds_->polling_state_.last_dump_memory_total);
+    EXPECT_NE(0u, mds_->polling_state_->last_dump_memory_total);
     EXPECT_GT(num_samples_tracked_ - 1,
-              mds_->polling_state_.last_memory_totals_kb_index);
-    EXPECT_LT(static_cast<int64_t>(total -
-                                   mds_->polling_state_.last_dump_memory_total),
-              mds_->polling_state_.memory_increase_threshold);
+              mds_->polling_state_->last_memory_totals_kb_index);
+    EXPECT_LT(static_cast<int64_t>(
+                  total - mds_->polling_state_->last_dump_memory_total),
+              mds_->polling_state_->memory_increase_threshold);
     ASSERT_FALSE(did_trigger && i) << "Unexpected dump at " << i;
   }
 }

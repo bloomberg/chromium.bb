@@ -372,9 +372,6 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
   // dump_providers_enabled_ list) when tracing is not enabled.
   subtle::AtomicWord memory_tracing_enabled_;
 
-  // For triggering memory dumps.
-  std::unique_ptr<MemoryDumpScheduler> dump_scheduler_;
-
   // Thread used for MemoryDumpProviders which don't specify a task runner
   // affinity.
   std::unique_ptr<Thread> dump_thread_;
