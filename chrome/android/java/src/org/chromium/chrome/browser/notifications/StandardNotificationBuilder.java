@@ -26,10 +26,10 @@ public class StandardNotificationBuilder extends NotificationBuilderBase {
         // TODO(crbug.com/697104) We should probably use a Compat builder.
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory.createChromeNotificationBuilder(false /* preferCompat */,
-                        NotificationConstants.CATEGORY_ID_SITES,
+                        NotificationConstants.CHANNEL_ID_SITES,
                         mContext.getString(
                                 org.chromium.chrome.R.string.notification_category_sites),
-                        NotificationConstants.CATEGORY_GROUP_ID_GENERAL,
+                        NotificationConstants.CHANNEL_GROUP_ID_GENERAL,
                         mContext.getString(
                                 org.chromium.chrome.R.string.notification_category_group_general));
 

@@ -87,7 +87,7 @@ public class NotificationConstants {
     static final String GROUP_WEB_PREFIX = "Web:";
 
     // Notification channel ids.
-    public static final String CATEGORY_ID_BROWSER = "browser";
-    public static final String CATEGORY_ID_SITES = "sites";
-    public static final String CATEGORY_GROUP_ID_GENERAL = "general";
+    public static final String CHANNEL_ID_BROWSER = "browser";
+    public static final String CHANNEL_ID_SITES = "sites";
+    public static final String CHANNEL_GROUP_ID_GENERAL = "general";
 }

@@ -165,9 +165,9 @@ public class MediaCaptureNotificationService extends Service {
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
                         .createChromeNotificationBuilder(true /* preferCompat */,
-                                NotificationConstants.CATEGORY_ID_BROWSER,
+                                NotificationConstants.CHANNEL_ID_BROWSER,
                                 mContext.getString(R.string.notification_category_browser),
-                                NotificationConstants.CATEGORY_GROUP_ID_GENERAL,
+                                NotificationConstants.CHANNEL_GROUP_ID_GENERAL,
                                 mContext.getString(R.string.notification_category_group_general))
                         .setAutoCancel(false)
                         .setOngoing(true)

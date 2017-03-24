@@ -104,10 +104,10 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
                         .createChromeNotificationBuilder(true /* preferCompat */,
-                                NotificationConstants.CATEGORY_ID_BROWSER,
+                                NotificationConstants.CHANNEL_ID_BROWSER,
                                 mApplicationContext.getString(
                                         R.string.notification_category_browser),
-                                NotificationConstants.CATEGORY_GROUP_ID_GENERAL,
+                                NotificationConstants.CHANNEL_GROUP_ID_GENERAL,
                                 mApplicationContext.getString(
                                         R.string.notification_category_group_general))
                         .setAutoCancel(true)

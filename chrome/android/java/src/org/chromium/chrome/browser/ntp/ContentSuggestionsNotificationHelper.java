@@ -153,9 +153,9 @@ public class ContentSuggestionsNotificationHelper {
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
                         .createChromeNotificationBuilder(true /* preferCompat */,
-                                NotificationConstants.CATEGORY_ID_BROWSER,
+                                NotificationConstants.CHANNEL_ID_BROWSER,
                                 context.getString(R.string.notification_category_browser),
-                                NotificationConstants.CATEGORY_GROUP_ID_GENERAL,
+                                NotificationConstants.CHANNEL_GROUP_ID_GENERAL,
                                 context.getString(R.string.notification_category_group_general))
                         .setAutoCancel(true)
                         .setContentIntent(PendingIntent.getBroadcast(context, 0, contentIntent, 0))

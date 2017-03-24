@@ -92,7 +92,7 @@ public class NotificationBuilderForO extends NotificationBuilder {
     }
 
     private static int getChannelImportance(String channelId) {
-        return NotificationConstants.CATEGORY_ID_SITES.equals(channelId)
+        return NotificationConstants.CHANNEL_ID_SITES.equals(channelId)
                 ? NotificationManager.IMPORTANCE_DEFAULT
                 : NotificationManager.IMPORTANCE_LOW;
     }

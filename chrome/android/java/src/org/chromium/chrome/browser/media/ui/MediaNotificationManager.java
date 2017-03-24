@@ -758,9 +758,9 @@ public class MediaNotificationManager {
 
     private void updateNotificationBuilder() {
         mNotificationBuilder = NotificationBuilderFactory.createChromeNotificationBuilder(
-                true /* preferCompat */, NotificationConstants.CATEGORY_ID_BROWSER,
+                true /* preferCompat */, NotificationConstants.CHANNEL_ID_BROWSER,
                 mContext.getString(org.chromium.chrome.R.string.notification_category_browser),
-                NotificationConstants.CATEGORY_GROUP_ID_GENERAL,
+                NotificationConstants.CHANNEL_GROUP_ID_GENERAL,
                 mContext.getString(
                         org.chromium.chrome.R.string.notification_category_group_general));
         setMediaStyleLayoutForNotificationBuilder(mNotificationBuilder);
