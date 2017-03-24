@@ -52,6 +52,12 @@ static void alloc_mode_context(AV1_COMMON *cm, int num_4x4_blk,
                     aom_memalign(32, num_pix * sizeof(*ctx->dqcoeff[i])));
     CHECK_MEM_ERROR(cm, ctx->eobs[i],
                     aom_memalign(32, num_blk * sizeof(*ctx->eobs[i])));
+#if CONFIG_LV_MAP
+    CHECK_MEM_ERROR(
+        cm, ctx->txb_entropy_ctx[i],
+        aom_memalign(32, num_blk * sizeof(*ctx->txb_entropy_ctx[i])));
+#endif
+
 #if CONFIG_PVQ
     CHECK_MEM_ERROR(cm, ctx->pvq_ref_coeff[i],
                     aom_memalign(32, num_pix * sizeof(*ctx->pvq_ref_coeff[i])));
@@ -88,6 +94,10 @@ static void free_mode_context(PICK_MODE_CONTEXT *ctx) {
 #endif
     aom_free(ctx->eobs[i]);
     ctx->eobs[i] = 0;
+#if CONFIG_LV_MAP
+    aom_free(ctx->txb_entropy_ctx[i]);
+    ctx->txb_entropy_ctx[i] = 0;
+#endif
   }
 
 #if CONFIG_PALETTE

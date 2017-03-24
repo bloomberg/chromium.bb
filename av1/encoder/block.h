@@ -45,6 +45,9 @@ typedef struct macroblock_plane {
   tran_low_t *qcoeff;
   tran_low_t *coeff;
   uint16_t *eobs;
+#if CONFIG_LV_MAP
+  uint8_t *txb_entropy_ctx;
+#endif
   struct buf_2d src;
 
   // Quantizer setings

@@ -25,6 +25,9 @@
 
 #include "av1/encoder/av1_quantize.h"
 #include "av1/encoder/encodemb.h"
+#if CONFIG_LV_MAP
+#include "av1/encoder/encodetxb.h"
+#endif
 #include "av1/encoder/hybrid_fwd_txfm.h"
 #include "av1/encoder/rd.h"
 #include "av1/encoder/tokenize.h"
@@ -633,6 +636,10 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
         av1_quantize_skip(tx2d_size, qcoeff, dqcoeff, eob);
       }
     }
+#if CONFIG_LV_MAP
+    p->txb_entropy_ctx[block] =
+        (uint8_t)av1_get_txb_entropy_context(qcoeff, scan_order, *eob);
+#endif  // CONFIG_LV_MAP
     return;
   }
 #endif  // CONFIG_AOM_HIGHBITDEPTH
@@ -645,7 +652,11 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
       av1_quantize_skip(tx2d_size, qcoeff, dqcoeff, eob);
     }
   }
-#else  // #if !CONFIG_PVQ
+#if CONFIG_LV_MAP
+  p->txb_entropy_ctx[block] =
+      (uint8_t)av1_get_txb_entropy_context(qcoeff, scan_order, *eob);
+#endif  // CONFIG_LV_MAP
+#else   // #if !CONFIG_PVQ
   (void)xform_quant_idx;
 #if CONFIG_AOM_HIGHBITDEPTH
   fwd_txfm_param.bd = xd->bd;
@@ -1015,7 +1026,11 @@ void av1_set_txb_context(MACROBLOCK *x, int plane, int block, TX_SIZE tx_size,
   (void)tx_size;
   struct macroblock_plane *p = &x->plane[plane];
 
+#if !CONFIG_LV_MAP
   *a = *l = p->eobs[block] > 0;
+#else   // !CONFIG_LV_MAP
+  *a = *l = p->txb_entropy_ctx[block];
+#endif  // !CONFIG_LV_MAP
 
 #if CONFIG_VAR_TX || CONFIG_LV_MAP
   int i;

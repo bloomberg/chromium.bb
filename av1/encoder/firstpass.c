@@ -585,6 +585,9 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
     pd[i].pvq_ref_coeff = ctx->pvq_ref_coeff[i];
 #endif
     p[i].eobs = ctx->eobs[i];
+#if CONFIG_LV_MAP
+    p[i].txb_entropy_ctx = ctx->txb_entropy_ctx[i];
+#endif
   }
 
   av1_init_mv_probs(cm);

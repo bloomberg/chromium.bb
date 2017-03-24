@@ -367,6 +367,21 @@ typedef struct TxbParams {
   int rate;
 } TxbParams;
 
+int av1_get_txb_entropy_context(const tran_low_t *qcoeff,
+                                const SCAN_ORDER *scan_order, int eob) {
+  const int16_t *scan = scan_order->scan;
+  int cul_level = 0;
+  int c;
+  for (c = 0; c < eob; ++c) {
+    cul_level += abs(qcoeff[scan[c]]);
+  }
+
+  cul_level = AOMMIN(COEFF_CONTEXT_MASK, cul_level);
+  set_dc_sign(&cul_level, qcoeff[0]);
+
+  return cul_level;
+}
+
 static void update_txb_context(int plane, int block, int blk_row, int blk_col,
                                BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
                                void *arg) {
@@ -385,20 +400,9 @@ static void update_txb_context(int plane, int block, int blk_row, int blk_col,
   const TX_TYPE tx_type = get_tx_type(plane_type, xd, block, tx_size);
   const SCAN_ORDER *const scan_order =
       get_scan(cm, tx_size, tx_type, is_inter_block(mbmi));
-  const int16_t *scan = scan_order->scan;
   (void)plane_bsize;
 
-  int cul_level = 0;
-  int c;
-  for (c = 0; c < eob; ++c) {
-    cul_level += abs(qcoeff[scan[c]]);
-  }
-
-  cul_level = AOMMIN(COEFF_CONTEXT_MASK, cul_level);
-
-  // DC value
-  set_dc_sign(&cul_level, qcoeff[0]);
-
+  int cul_level = av1_get_txb_entropy_context(qcoeff, scan_order, eob);
   av1_set_contexts(xd, pd, plane, tx_size, cul_level, blk_col, blk_row);
 }
 
