@@ -169,11 +169,13 @@ class SlaveStatus(object):
       created_ts = build_info.created_ts
       status = None
       result = None
+      url = None
 
       try:
         content = buildbucket_client.GetBuildRequest(buildbucket_id, dry_run)
         status = buildbucket_lib.GetBuildStatus(content)
         result = buildbucket_lib.GetBuildResult(content)
+        url = buildbucket_lib.GetBuildURL(content)
       except buildbucket_lib.BuildbucketResponseException as e:
         # If we have a temporary issue accessing the build status from the
         # Buildbucket, log the error and continue with other builds.
@@ -182,13 +184,12 @@ class SlaveStatus(object):
                       build_config, buildbucket_id, e)
 
       all_buildbucket_info_dict[build_config] = buildbucket_lib.BuildbucketInfo(
-          buildbucket_id, retry, created_ts, status, result)
+          buildbucket_id, retry, created_ts, status, result, url)
 
     return all_buildbucket_info_dict
 
-  def _GetNewlyCompletedSlaveBuildbucketInfo(self, all_buildbucket_info_dict,
-                                             completed):
-    """Get buildbucket info for newly completed builds.
+  def _GetNewSlaveBuildbucketInfo(self, all_buildbucket_info_dict, completed):
+    """Get buildbucket info for slave builds not in the completed set.
 
     Args:
       all_buildbucket_info_dict: A dict mapping all slave build config names
@@ -196,8 +197,8 @@ class SlaveStatus(object):
       completed: A set of builds completed before.
 
     Returns:
-       A dict mapping newly completed slave build config name to its
-       BuildbucketInfo. The dict only contains builds not in completed set.
+       A dict mapping config names of slave builds which are not in the
+       completed set to their BuildbucketInfos.
     """
     completed = completed or {}
     return {k: v for k, v in all_buildbucket_info_dict.iteritems()
@@ -222,7 +223,7 @@ class SlaveStatus(object):
       self.all_buildbucket_info_dict = self.GetAllSlaveBuildbucketInfo(
           self.buildbucket_client, scheduled_buildbucket_info_dict,
           dry_run=self.dry_run)
-      self.buildbucket_info_dict = self._GetNewlyCompletedSlaveBuildbucketInfo(
+      self.buildbucket_info_dict = self._GetNewSlaveBuildbucketInfo(
           self.all_buildbucket_info_dict, self.completed_builds)
       self._SetStatusBuildsDict()
 

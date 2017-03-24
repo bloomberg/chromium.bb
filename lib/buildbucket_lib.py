@@ -59,7 +59,7 @@ BUILDBUCKET_TEST_HOST = 'cr-buildbucket-test.appspot.com'
 # Namedtupe to store buildbucket related info.
 BuildbucketInfo = collections.namedtuple(
     'BuildbucketInfo',
-    ['buildbucket_id', 'retry', 'created_ts', 'status', 'result'])
+    ['buildbucket_id', 'retry', 'created_ts', 'status', 'result', 'url'])
 
 class BuildbucketResponseException(Exception):
   """Exception got from Buildbucket Response."""
@@ -103,7 +103,7 @@ def GetScheduledBuildDict(scheduled_slave_list):
   for (build_config, buildbucket_id, created_ts) in scheduled_slave_list:
     if build_config not in buildbucket_info_dict:
       buildbucket_info_dict[build_config] = BuildbucketInfo(
-          buildbucket_id, 0, created_ts, None, None)
+          buildbucket_id, 0, created_ts, None, None, None)
     else:
       old_info = buildbucket_info_dict[build_config]
       # If a slave occurs multiple times, increment retry count and keep
@@ -111,10 +111,11 @@ def GetScheduledBuildDict(scheduled_slave_list):
       new_retry = old_info.retry + 1
       if created_ts > buildbucket_info_dict[build_config].created_ts:
         buildbucket_info_dict[build_config] = BuildbucketInfo(
-            buildbucket_id, new_retry, created_ts, None, None)
+            buildbucket_id, new_retry, created_ts, None, None, None)
       else:
         buildbucket_info_dict[build_config] = BuildbucketInfo(
-            old_info.buildbucket_id, new_retry, old_info.created_ts, None, None)
+            old_info.buildbucket_id, new_retry, old_info.created_ts, None, None,
+            None)
 
   return buildbucket_info_dict
 

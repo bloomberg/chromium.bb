@@ -20,70 +20,77 @@ from chromite.lib import fake_cidb
 from chromite.lib import metadata_lib
 from chromite.lib import patch_unittest
 
-# pylint: disable=protected-access
 
+# pylint: disable=protected-access
 class BuildbucketInfos(object):
   """Helper methods to build BuildbucketInfo."""
 
   @staticmethod
-  def GetScheduledBuild(bb_id='scheduled_id_1', retry=0):
+  def GetScheduledBuild(bb_id='scheduled_id_1', retry=0, url=None):
     return buildbucket_lib.BuildbucketInfo(
         buildbucket_id=bb_id,
         retry=retry,
         created_ts=1,
         status=constants.BUILDBUCKET_BUILDER_STATUS_SCHEDULED,
-        result=None
+        result=None,
+        url=url
     )
 
   @staticmethod
-  def GetStartedBuild(bb_id='started_id_1', retry=0):
+  def GetStartedBuild(bb_id='started_id_1', retry=0, url=None):
     return buildbucket_lib.BuildbucketInfo(
         buildbucket_id=bb_id,
         retry=retry,
         created_ts=1,
         status=constants.BUILDBUCKET_BUILDER_STATUS_STARTED,
-        result=None
+        result=None,
+        url=url
     )
 
   @staticmethod
-  def GetSuccessBuild(bb_id='success_id_1', retry=0):
+  def GetSuccessBuild(bb_id='success_id_1', retry=0, url=None):
     return buildbucket_lib.BuildbucketInfo(
         buildbucket_id=bb_id,
         retry=retry,
         created_ts=1,
         status=constants.BUILDBUCKET_BUILDER_STATUS_COMPLETED,
-        result=constants.BUILDBUCKET_BUILDER_RESULT_SUCCESS
+        result=constants.BUILDBUCKET_BUILDER_RESULT_SUCCESS,
+        url=url
     )
 
   @staticmethod
-  def GetFailureBuild(bb_id='failure_id_1', retry=0):
+  def GetFailureBuild(bb_id='failure_id_1', retry=0, url=None):
     return buildbucket_lib.BuildbucketInfo(
         buildbucket_id=bb_id,
         retry=retry,
         created_ts=1,
         status=constants.BUILDBUCKET_BUILDER_STATUS_COMPLETED,
-        result=constants.BUILDBUCKET_BUILDER_RESULT_FAILURE
+        result=constants.BUILDBUCKET_BUILDER_RESULT_FAILURE,
+        url=url
     )
 
   @staticmethod
-  def GetCanceledBuild(bb_id='canceled_id_1', retry=0):
+  def GetCanceledBuild(bb_id='canceled_id_1', retry=0, url=None):
     return buildbucket_lib.BuildbucketInfo(
         buildbucket_id=bb_id,
         retry=retry,
         created_ts=1,
         status=constants.BUILDBUCKET_BUILDER_STATUS_COMPLETED,
-        result=constants.BUILDBUCKET_BUILDER_RESULT_CANCELED
+        result=constants.BUILDBUCKET_BUILDER_RESULT_CANCELED,
+        url=url
     )
 
   @staticmethod
-  def GetMissingBuild(bb_id='missing_id_1', retry=0):
+  def GetMissingBuild(bb_id='missing_id_1', retry=0, url=None):
     return buildbucket_lib.BuildbucketInfo(
         buildbucket_id=bb_id,
         retry=retry,
         created_ts=1,
         status=None,
-        result=None
+        result=None,
+        url=url
     )
+
 
 class SlaveStatusTest(patch_unittest.MockPatchBase):
   """Test methods testing methods in SalveStatus class."""
@@ -139,7 +146,7 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
     self.PatchObject(build_status.SlaveStatus,
                      'GetAllSlaveBuildbucketInfo')
     self.PatchObject(build_status.SlaveStatus,
-                     '_GetNewlyCompletedSlaveBuildbucketInfo',
+                     '_GetNewSlaveBuildbucketInfo',
                      return_value=buildbucket_info_dict)
     self.PatchObject(buildbucket_lib, 'GetBuildInfoDict',
                      return_value=buildbucket_info_dict)
@@ -1079,18 +1086,22 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
 
     # Test completed builds.
     buildbucket_info_dict = {
-        'build1': buildbucket_lib.BuildbucketInfo('id_1', 1, 0, None, None),
-        'build2': buildbucket_lib.BuildbucketInfo('id_2', 1, 0, None, None)
+        'build1': buildbucket_lib.BuildbucketInfo(
+            'id_1', 1, 0, None, None, None),
+        'build2': buildbucket_lib.BuildbucketInfo(
+            'id_2', 1, 0, None, None, None)
     }
     self.PatchObject(buildbucket_lib, 'GetScheduledBuildDict',
                      return_value=buildbucket_info_dict)
 
     expected_status = 'COMPLETED'
     expected_result = 'SUCCESS'
+    expected_url = 'fake_url'
     content = {
         'build': {
             'status': expected_status,
-            'result': expected_result
+            'result': expected_result,
+            'url': expected_url
         }
     }
 
@@ -1106,10 +1117,14 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
                      expected_status)
     self.assertEqual(updated_buildbucket_info_dict['build1'].result,
                      expected_result)
+    self.assertEqual(updated_buildbucket_info_dict['build1'].url,
+                     expected_url)
     self.assertEqual(updated_buildbucket_info_dict['build2'].status,
                      expected_status)
     self.assertEqual(updated_buildbucket_info_dict['build2'].result,
                      expected_result)
+    self.assertEqual(updated_buildbucket_info_dict['build1'].url,
+                     expected_url)
 
     # Test started builds.
     expected_status = 'STARTED'
@@ -1142,8 +1157,8 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
     self.assertIsNone(updated_buildbucket_info_dict['build1'].status)
     self.assertIsNone(updated_buildbucket_info_dict['build2'].status)
 
-  def test_GetNewlyCompletedSlaveBuildbucketInfo(self):
-    """Test GetNewlyCompletedSlaveBuildbucketInfo."""
+  def test_GetNewSlaveBuildbucketInfo(self):
+    """Test _GetNewSlaveBuildbucketInfo."""
     all_buildbucket_info_dict = self._GetCompletedBuildInfoDict()
     completed = {'completed_success'}
 
@@ -1151,7 +1166,7 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
         builders_array=[self._GetCompletedAllSet()],
         config=self.master_cq_config)
 
-    new_buildbucket_info = slave_status._GetNewlyCompletedSlaveBuildbucketInfo(
+    new_buildbucket_info = slave_status._GetNewSlaveBuildbucketInfo(
         all_buildbucket_info_dict, completed)
 
     self.assertItemsEqual(new_buildbucket_info.keys(),
