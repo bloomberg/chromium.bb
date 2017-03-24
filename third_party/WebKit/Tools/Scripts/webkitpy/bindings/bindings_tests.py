@@ -77,7 +77,7 @@ DEPENDENCY_IDL_FILES = frozenset([
 
 # core/inspector/InspectorInstrumentation.idl is not a valid Blink IDL.
 NON_BLINK_IDL_FILES = frozenset([
-    'InstrumentingProbes.idl',
+    'InspectorInstrumentation.idl',
 ])
 
 COMPONENT_DIRECTORY = frozenset(['core', 'modules'])
