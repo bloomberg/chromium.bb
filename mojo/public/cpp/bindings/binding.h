@@ -192,10 +192,10 @@ class Binding {
   // true if a method was successfully read and dispatched.
   //
   // This method may only be called if the object has been bound to a message
-  // pipe and there are no associated interfaces running.
+  // pipe. This returns once a message is received either on the master
+  // interface or any associated interfaces.
   bool WaitForIncomingMethodCall(
       MojoDeadline deadline = MOJO_DEADLINE_INDEFINITE) {
-    CHECK(!HasAssociatedInterfaces());
     return internal_state_.WaitForIncomingMethodCall(deadline);
   }
 
