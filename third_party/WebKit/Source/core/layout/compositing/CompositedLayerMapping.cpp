@@ -1410,16 +1410,6 @@ void CompositedLayerMapping::updateScrollingLayerGeometry(
   IntRect overflowClipRect =
       pixelSnappedIntRect(layoutBox.overflowClipRect(LayoutPoint()));
 
-  const TopDocumentRootScrollerController& globalRootScrollerController =
-      layoutBox.document().page()->globalRootScrollerController();
-
-  if (&m_owningLayer == globalRootScrollerController.rootScrollerPaintLayer()) {
-    LayoutRect clipRect =
-        layoutBox.document().layoutView()->overflowClipRect(LayoutPoint());
-    DCHECK(clipRect.size() == LayoutSize(pixelSnappedIntRect(clipRect).size()));
-    overflowClipRect.setSize(pixelSnappedIntRect(clipRect).size());
-  }
-
   // When a m_childTransformLayer exists, local content offsets for the
   // m_scrollingLayer have already been applied. Otherwise, we apply them here.
   IntSize localContentOffset(0, 0);

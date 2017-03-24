@@ -606,15 +606,6 @@ void PaintLayerCompositor::updateContainerSizes() {
     return;
 
   FrameView* frameView = m_layoutView.frameView();
-
-  const TopDocumentRootScrollerController& globalRootScrollerController =
-      m_layoutView.document().page()->globalRootScrollerController();
-
-  // The global root scroller must always size to the root FrameView.
-  if (rootLayer() &&
-      rootLayer() == globalRootScrollerController.rootScrollerPaintLayer())
-    frameView = m_layoutView.document().topDocument().view();
-
   m_containerLayer->setSize(FloatSize(frameView->visibleContentSize()));
   m_overflowControlsHostLayer->setSize(
       FloatSize(frameView->visibleContentSize(IncludeScrollbars)));

@@ -42,25 +42,6 @@ void TopDocumentRootScrollerController::didChangeRootScroller() {
   recomputeGlobalRootScroller();
 }
 
-void TopDocumentRootScrollerController::mainFrameViewResized() {
-  Element* rootScroller = globalRootScroller();
-
-  ScrollableArea* area =
-      RootScrollerUtil::scrollableAreaForRootScroller(rootScroller);
-
-  if (!area)
-    return;
-
-  if (PaintLayer* layer = area->layer()) {
-    layer->setNeedsCompositingInputsUpdate();
-
-    // This is needed if the root scroller is an iframe, since the iframe
-    // doesn't have a scrolling/clip layer, its PLC has a container layer that
-    // needs to be resized instead.
-    layer->compositor()->frameViewDidChangeSize();
-  }
-}
-
 ScrollableArea* TopDocumentRootScrollerController::rootScrollerArea() const {
   return RootScrollerUtil::scrollableAreaForRootScroller(globalRootScroller());
 }

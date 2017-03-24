@@ -1627,20 +1627,23 @@ void FrameView::viewportSizeChanged(bool widthChanged, bool heightChanged) {
   DCHECK(widthChanged || heightChanged);
   DCHECK(m_frame->page());
 
-  if (LayoutViewItem layoutView = this->layoutViewItem()) {
-    if (layoutView.usesCompositing())
-      layoutView.compositor()->frameViewDidChangeSize();
-  }
+  bool rootLayerScrollingEnabled =
+      RuntimeEnabledFeatures::rootLayerScrollingEnabled();
 
-  // Ensure the root scroller compositing layers update geometry in response to
-  // the URL bar resizing.
-  if (m_frame->isMainFrame())
-    m_frame->page()->globalRootScrollerController().mainFrameViewResized();
+  if (LayoutViewItem layoutView = this->layoutViewItem()) {
+    if (layoutView.usesCompositing()) {
+      if (rootLayerScrollingEnabled) {
+        layoutView.layer()->setNeedsCompositingInputsUpdate();
+        if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+          setNeedsPaintPropertyUpdate();
+      } else {
+        layoutView.compositor()->frameViewDidChangeSize();
+      }
+    }
+  }
 
   showOverlayScrollbars();
 
-  bool rootLayerScrollingEnabled =
-      RuntimeEnabledFeatures::rootLayerScrollingEnabled();
   if (rootLayerScrollingEnabled) {
     // The background must be repainted when the FrameView is resized, even if
     // the initial containing block does not change (so we can't rely on layout
