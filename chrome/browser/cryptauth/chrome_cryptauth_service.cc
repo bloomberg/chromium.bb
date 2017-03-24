@@ -29,7 +29,6 @@
 #include "components/cryptauth/secure_message_delegate.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/prefs/pref_service.h"
-#include "components/proximity_auth/logging/logging.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/translate/core/browser/translate_download_manager.h"
@@ -49,6 +48,8 @@ PrefService* GetLocalState() {
   return g_browser_process ? g_browser_process->local_state() : nullptr;
 }
 
+// TODO(khorimoto): Refactor this and combine it with EasyUnlockService's
+// static function.
 std::string GetDeviceId() {
   PrefService* local_state = GetLocalState();
   if (!local_state)
@@ -62,7 +63,7 @@ std::string GetDeviceId() {
   return device_id;
 }
 
-cryptauth::DeviceClassifier GetDeviceClassifierImpl() {
+cryptauth::DeviceClassifier GetDeviceClassifierInternal() {
   cryptauth::DeviceClassifier device_classifier;
 
 #if defined(OS_CHROMEOS)
@@ -132,7 +133,7 @@ cryptauth::GcmDeviceInfo GetGcmDeviceInfo() {
   return device_info;
 }
 
-std::string GetAccountIdImpl(Profile* profile) {
+std::string GetAccountId(Profile* profile) {
 #if defined(OS_CHROMEOS)
   SigninManagerBase* manager = SigninManagerFactory::GetForProfile(profile);
 #else
@@ -141,16 +142,16 @@ std::string GetAccountIdImpl(Profile* profile) {
   return manager ? manager->GetAuthenticatedAccountId() : std::string();
 }
 
-std::unique_ptr<cryptauth::CryptAuthClientFactory>
-CreateCryptAuthClientFactoryImpl(Profile* profile) {
+std::unique_ptr<cryptauth::CryptAuthClientFactory> CreateCryptAuthClientFactory(
+    Profile* profile) {
   return base::MakeUnique<cryptauth::CryptAuthClientFactoryImpl>(
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-      GetAccountIdImpl(profile), profile->GetRequestContext(),
-      GetDeviceClassifierImpl());
+      GetAccountId(profile), profile->GetRequestContext(),
+      GetDeviceClassifierInternal());
 }
 
 std::unique_ptr<cryptauth::SecureMessageDelegate>
-CreateSecureMessageDelegateImpl() {
+CreateSecureMessageDelegate() {
 #if defined(OS_CHROMEOS)
   return base::MakeUnique<chromeos::SecureMessageDelegateChromeOS>();
 #else
@@ -158,6 +159,9 @@ CreateSecureMessageDelegateImpl() {
 #endif
 }
 
+// TODO(khorimoto): When integrating ChromeCryptAuthService into EasyUnlock
+// code, delete this class and refactor
+// proximity_auth::CryptAuthEnrollerFactory.
 class CryptAuthEnrollerFactoryImpl
     : public cryptauth::CryptAuthEnrollerFactory {
  public:
@@ -165,8 +169,7 @@ class CryptAuthEnrollerFactoryImpl
 
   std::unique_ptr<cryptauth::CryptAuthEnroller> CreateInstance() override {
     return base::MakeUnique<cryptauth::CryptAuthEnrollerImpl>(
-        CreateCryptAuthClientFactoryImpl(profile_),
-        CreateSecureMessageDelegateImpl());
+        CreateCryptAuthClientFactory(profile_), CreateSecureMessageDelegate());
   }
 
  private:
@@ -186,59 +189,32 @@ std::unique_ptr<ChromeCryptAuthService> ChromeCryptAuthService::Create(
   std::unique_ptr<cryptauth::CryptAuthDeviceManager> device_manager =
       base::MakeUnique<cryptauth::CryptAuthDeviceManager>(
           base::MakeUnique<base::DefaultClock>(),
-          CreateCryptAuthClientFactoryImpl(profile), gcm_manager.get(),
+          CreateCryptAuthClientFactory(profile), gcm_manager.get(),
           profile->GetPrefs());
 
   std::unique_ptr<cryptauth::CryptAuthEnrollmentManager> enrollment_manager =
       base::MakeUnique<cryptauth::CryptAuthEnrollmentManager>(
           base::MakeUnique<base::DefaultClock>(),
           base::MakeUnique<CryptAuthEnrollerFactoryImpl>(profile),
-          CreateSecureMessageDelegateImpl(), GetGcmDeviceInfo(),
-          gcm_manager.get(), profile->GetPrefs());
-
-  // Note: ChromeCryptAuthServiceFactory DependsOn(OAuth2TokenServiceFactory),
-  // so |token_service| is guaranteed to outlast this service.
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+          CreateSecureMessageDelegate(), GetGcmDeviceInfo(), gcm_manager.get(),
+          profile->GetPrefs());
 
   return base::WrapUnique(new ChromeCryptAuthService(
       std::move(gcm_manager), std::move(device_manager),
-      std::move(enrollment_manager), profile, token_service));
+      std::move(enrollment_manager)));
 }
 
 ChromeCryptAuthService::ChromeCryptAuthService(
     std::unique_ptr<cryptauth::CryptAuthGCMManager> gcm_manager,
     std::unique_ptr<cryptauth::CryptAuthDeviceManager> device_manager,
-    std::unique_ptr<cryptauth::CryptAuthEnrollmentManager> enrollment_manager,
-    Profile* profile,
-    OAuth2TokenService* token_service)
+    std::unique_ptr<cryptauth::CryptAuthEnrollmentManager> enrollment_manager)
     : KeyedService(),
       cryptauth::CryptAuthService(),
       gcm_manager_(std::move(gcm_manager)),
       enrollment_manager_(std::move(enrollment_manager)),
-      device_manager_(std::move(device_manager)),
-      profile_(profile),
-      token_service_(token_service) {
-  gcm_manager_->StartListening();
-
-  if (!token_service_->RefreshTokenIsAvailable(GetAccountId())) {
-    PA_LOG(INFO) << "Refresh token not yet available; "
-                 << "waiting before starting CryptAuth managers.";
-    token_service_->AddObserver(this);
-  } else {
-    enrollment_manager_->Start();
-    device_manager_->Start();
-  }
-}
+      device_manager_(std::move(device_manager)) {}
 
 ChromeCryptAuthService::~ChromeCryptAuthService() {}
-
-void ChromeCryptAuthService::Shutdown() {
-  token_service_->RemoveObserver(this);
-  enrollment_manager_.reset();
-  device_manager_.reset();
-  gcm_manager_.reset();
-}
 
 cryptauth::CryptAuthDeviceManager*
 ChromeCryptAuthService::GetCryptAuthDeviceManager() {
@@ -251,28 +227,5 @@ ChromeCryptAuthService::GetCryptAuthEnrollmentManager() {
 }
 
 cryptauth::DeviceClassifier ChromeCryptAuthService::GetDeviceClassifier() {
-  return GetDeviceClassifierImpl();
-}
-
-std::string ChromeCryptAuthService::GetAccountId() {
-  return GetAccountIdImpl(profile_);
-}
-
-std::unique_ptr<cryptauth::SecureMessageDelegate>
-ChromeCryptAuthService::CreateSecureMessageDelegate() {
-  return CreateSecureMessageDelegateImpl();
-}
-
-std::unique_ptr<cryptauth::CryptAuthClientFactory>
-ChromeCryptAuthService::CreateCryptAuthClientFactory() {
-  return CreateCryptAuthClientFactoryImpl(profile_);
-}
-
-void ChromeCryptAuthService::OnRefreshTokenAvailable(
-    const std::string& account_id) {
-  if (account_id == GetAccountId()) {
-    token_service_->RemoveObserver(this);
-    enrollment_manager_->Start();
-    device_manager_->Start();
-  }
+  return GetDeviceClassifierInternal();
 }

@@ -10,10 +10,7 @@
 
 class PrefService;
 class Profile;
-
-namespace cryptauth {
-class CryptAuthService;
-}  // namespace cryptauth
+class EasyUnlockServiceRegular;
 
 // A Chrome-specific implementation of the ProximityAuthClient interface.
 // There is one |ChromeProximityAuthClient| per |Profile|.
@@ -44,7 +41,8 @@ class ChromeProximityAuthClient : public proximity_auth::ProximityAuthClient {
       base::Callback<void(const std::string& challenge)> callback) override;
 
  private:
-  cryptauth::CryptAuthService* GetCryptAuthService();
+  // Returns the EasyUnlockService instance used inside user sessions.
+  EasyUnlockServiceRegular* GetEasyUnlockServiceRegular();
 
   Profile* const profile_;
 

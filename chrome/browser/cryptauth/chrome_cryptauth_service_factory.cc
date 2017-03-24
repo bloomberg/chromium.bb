@@ -5,37 +5,29 @@
 #include "chrome/browser/cryptauth/chrome_cryptauth_service_factory.h"
 
 #include "chrome/browser/cryptauth/chrome_cryptauth_service.h"
-#include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 // static
-cryptauth::CryptAuthService*
-ChromeCryptAuthServiceFactory::GetForBrowserContext(
+cryptauth::CryptAuthService* CryptAuthServiceFactory::GetForBrowserContext(
     content::BrowserContext* context) {
   return static_cast<ChromeCryptAuthService*>(
       GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
 // static
-ChromeCryptAuthServiceFactory* ChromeCryptAuthServiceFactory::GetInstance() {
-  return base::Singleton<ChromeCryptAuthServiceFactory>::get();
+CryptAuthServiceFactory* CryptAuthServiceFactory::GetInstance() {
+  return base::Singleton<CryptAuthServiceFactory>::get();
 }
 
-ChromeCryptAuthServiceFactory::ChromeCryptAuthServiceFactory()
+CryptAuthServiceFactory::CryptAuthServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "CryptAuthService",
-          BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
-  DependsOn(SigninManagerFactory::GetInstance());
-  DependsOn(gcm::GCMProfileServiceFactory::GetInstance());
-}
+          BrowserContextDependencyManager::GetInstance()) {}
 
-ChromeCryptAuthServiceFactory::~ChromeCryptAuthServiceFactory() {}
+CryptAuthServiceFactory::~CryptAuthServiceFactory() {}
 
-KeyedService* ChromeCryptAuthServiceFactory::BuildServiceInstanceFor(
+KeyedService* CryptAuthServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
   return ChromeCryptAuthService::Create(profile).release();

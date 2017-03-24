@@ -11,24 +11,24 @@
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 // Factory which is used to access the CryptAuthService singleton.
-class ChromeCryptAuthServiceFactory : public BrowserContextKeyedServiceFactory {
+class CryptAuthServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
   static cryptauth::CryptAuthService* GetForBrowserContext(
       content::BrowserContext* context);
 
-  static ChromeCryptAuthServiceFactory* GetInstance();
+  static CryptAuthServiceFactory* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<ChromeCryptAuthServiceFactory>;
+  friend struct base::DefaultSingletonTraits<CryptAuthServiceFactory>;
 
-  ChromeCryptAuthServiceFactory();
-  ~ChromeCryptAuthServiceFactory() override;
+  CryptAuthServiceFactory();
+  ~CryptAuthServiceFactory() override;
 
   // BrowserContextKeyedServiceFactory
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeCryptAuthServiceFactory);
+  DISALLOW_COPY_AND_ASSIGN(CryptAuthServiceFactory);
 };
 
 #endif  // CHROME_BROWSER_CRYPTAUTH_CHROME_CRYPTAUTH_SERVICE_FACTORY_H_
