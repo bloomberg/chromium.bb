@@ -2574,13 +2574,6 @@ InlineBoxPosition computeInlineBoxPosition(const VisiblePosition& position) {
                                   position.affinity());
 }
 
-InlineBoxPosition computeInlineBoxPosition(
-    const VisiblePositionInFlatTree& position) {
-  DCHECK(position.isValid()) << position;
-  return computeInlineBoxPosition(position.deepEquivalent(),
-                                  position.affinity());
-}
-
 InlineBoxPosition computeInlineBoxPosition(const Position& position,
                                            TextAffinity affinity,
                                            TextDirection primaryDirection) {

@@ -278,66 +278,6 @@ TEST_F(VisibleUnitsTest, characterBefore) {
   EXPECT_EQ('1', characterBefore(createVisiblePositionInFlatTree(*five, 0)));
 }
 
-TEST_F(VisibleUnitsTest, computeInlineBoxPosition) {
-  const char* bodyContent =
-      "<p id=host><b id=one>1</b><b id=two>22</b></p><b id=three>333</b>";
-  const char* shadowContent =
-      "<b id=four>4444</b><content select=#two></content><content "
-      "select=#one></content><b id=five>5555</b>";
-  setBodyContent(bodyContent);
-  ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
-
-  Node* one = document().getElementById("one")->firstChild();
-  Node* two = document().getElementById("two")->firstChild();
-  Node* three = document().getElementById("three")->firstChild();
-  Node* four = shadowRoot->getElementById("four")->firstChild();
-  Node* five = shadowRoot->getElementById("five")->firstChild();
-
-  EXPECT_EQ(computeInlineBoxPosition(PositionInFlatTree(one, 0),
-                                     TextAffinity::Downstream),
-            computeInlineBoxPosition(createVisiblePositionInFlatTree(*one, 0)));
-  EXPECT_EQ(computeInlineBoxPosition(PositionInFlatTree(one, 1),
-                                     TextAffinity::Downstream),
-            computeInlineBoxPosition(createVisiblePositionInFlatTree(*one, 1)));
-
-  EXPECT_EQ(computeInlineBoxPosition(PositionInFlatTree(two, 0),
-                                     TextAffinity::Downstream),
-            computeInlineBoxPosition(createVisiblePositionInFlatTree(*two, 0)));
-  EXPECT_EQ(computeInlineBoxPosition(PositionInFlatTree(two, 1),
-                                     TextAffinity::Downstream),
-            computeInlineBoxPosition(createVisiblePositionInFlatTree(*two, 1)));
-  EXPECT_EQ(computeInlineBoxPosition(PositionInFlatTree(two, 2),
-                                     TextAffinity::Downstream),
-            computeInlineBoxPosition(createVisiblePositionInFlatTree(*two, 2)));
-
-  EXPECT_EQ(
-      computeInlineBoxPosition(PositionInFlatTree(three, 0),
-                               TextAffinity::Downstream),
-      computeInlineBoxPosition(createVisiblePositionInFlatTree(*three, 0)));
-  EXPECT_EQ(
-      computeInlineBoxPosition(PositionInFlatTree(three, 1),
-                               TextAffinity::Downstream),
-      computeInlineBoxPosition(createVisiblePositionInFlatTree(*three, 1)));
-
-  EXPECT_EQ(
-      computeInlineBoxPosition(PositionInFlatTree(four, 0),
-                               TextAffinity::Downstream),
-      computeInlineBoxPosition(createVisiblePositionInFlatTree(*four, 0)));
-  EXPECT_EQ(
-      computeInlineBoxPosition(PositionInFlatTree(four, 1),
-                               TextAffinity::Downstream),
-      computeInlineBoxPosition(createVisiblePositionInFlatTree(*four, 1)));
-
-  EXPECT_EQ(
-      computeInlineBoxPosition(PositionInFlatTree(five, 0),
-                               TextAffinity::Downstream),
-      computeInlineBoxPosition(createVisiblePositionInFlatTree(*five, 0)));
-  EXPECT_EQ(
-      computeInlineBoxPosition(PositionInFlatTree(five, 1),
-                               TextAffinity::Downstream),
-      computeInlineBoxPosition(createVisiblePositionInFlatTree(*five, 1)));
-}
-
 TEST_F(VisibleUnitsTest, computeInlineBoxPositionBidiIsolate) {
   // "|" is bidi-level 0, and "foo" and "bar" are bidi-level 2
   setBodyContent(

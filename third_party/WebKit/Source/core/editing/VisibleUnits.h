@@ -322,8 +322,6 @@ computeInlineBoxPosition(const PositionInFlatTree&,
                          TextAffinity,
                          TextDirection primaryDirection);
 CORE_EXPORT InlineBoxPosition computeInlineBoxPosition(const VisiblePosition&);
-CORE_EXPORT InlineBoxPosition
-computeInlineBoxPosition(const VisiblePositionInFlatTree&);
 
 // Rect is local to the returned layoutObject
 CORE_EXPORT LayoutRect localCaretRectOfPosition(const PositionWithAffinity&,
