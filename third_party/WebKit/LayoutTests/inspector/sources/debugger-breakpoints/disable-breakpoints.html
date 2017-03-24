@@ -22,9 +22,10 @@ var test = function()
             function didShowScriptSource(sourceFrame)
             {
                 InspectorTest.addResult("Script source was shown.");
-                InspectorTest.setBreakpoint(sourceFrame, 7, "", true);
                 InspectorTest.waitUntilPaused(didPause);
-                InspectorTest.runTestFunction();
+                InspectorTest.createNewBreakpoint(sourceFrame, 7, "", true)
+                    .then(() => InspectorTest.waitBreakpointSidebarPane())
+                    .then(() => InspectorTest.runTestFunction());
             }
 
             function didPause(callFrames)

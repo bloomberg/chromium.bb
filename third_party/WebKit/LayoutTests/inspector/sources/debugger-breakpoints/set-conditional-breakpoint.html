@@ -32,8 +32,10 @@ var test = function()
             {
                 currentSourceFrame = sourceFrame;
                 InspectorTest.addResult("Script source was shown.");
-                setBreakpointAndWaitUntilPaused(currentSourceFrame, 16, "true", didPause);
-                InspectorTest.runTestFunction();
+                InspectorTest.waitUntilPaused(didPause);
+                InspectorTest.createNewBreakpoint(currentSourceFrame, 16, "true", true)
+                    .then(() => InspectorTest.waitBreakpointSidebarPane())
+                    .then(() => InspectorTest.runTestFunction());
             }
 
             function didPause(callFrames)
@@ -66,10 +68,10 @@ var test = function()
             {
                 currentSourceFrame = sourceFrame;
                 InspectorTest.addResult("Script source was shown.");
-                setBreakpoint(currentSourceFrame, 16, "false");
-                InspectorTest.runTestFunction();
-                InspectorTest.waitBreakpointSidebarPane().then(testFunctionFinished);
-                
+                InspectorTest.createNewBreakpoint(currentSourceFrame, 16, "false", true)
+                    .then(() => InspectorTest.waitBreakpointSidebarPane())
+                    .then(() => InspectorTest.runTestFunction())
+                    .then(testFunctionFinished);
             }
 
             function testFunctionFinished(callFrames)
@@ -88,40 +90,6 @@ var test = function()
             }
         },
     ]);
-
-    function setBreakpoint(sourceFrame, lineNumber, condition, callback)
-    {
-        var expectedBreakpointId;
-        InspectorTest.addSniffer(Bindings.BreakpointManager.ModelBreakpoint.prototype, "_didSetBreakpointInDebugger", didSetBreakpointInDebugger);
-        InspectorTest.setBreakpoint(sourceFrame, lineNumber, condition, true);
-
-        function didSetBreakpointInDebugger(breakpointManagerCallback, breakpointId)
-        {
-            if (callback)
-                callback(breakpointId);
-        }
-    }
-
-    function setBreakpointAndWaitUntilPaused(sourceFrame, lineNumber, condition, pausedCallback)
-    {
-        setBreakpoint(sourceFrame, lineNumber, condition, didSetBreakpointInDebugger);
-        var expectedBreakpointId;
-
-        function didSetBreakpointInDebugger(breakpointId)
-        {
-            expectedBreakpointId = breakpointId;
-            InspectorTest.waitUntilPaused(didPause);
-        }
-
-        function didPause(callFrames, reason, breakpointIds)
-        {
-            InspectorTest.assertEquals(breakpointIds.length, 1);
-            InspectorTest.assertEquals(breakpointIds[0], expectedBreakpointId);
-            InspectorTest.assertEquals(reason, "other");
-
-            pausedCallback(callFrames);
-        }
-    }
 }
 
 </script>

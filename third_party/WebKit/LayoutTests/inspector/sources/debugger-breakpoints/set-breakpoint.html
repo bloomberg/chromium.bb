@@ -30,9 +30,12 @@ var test = function()
             function didShowScriptSource(sourceFrame)
             {
                 currentSourceFrame = sourceFrame;
+                InspectorTest.prepareSourceFrameForBreakpointTest(currentSourceFrame);
                 InspectorTest.addResult("Script source was shown.");
-                setBreakpointAndWaitUntilPaused(currentSourceFrame, 16, didPause);
-                InspectorTest.runTestFunction();
+                InspectorTest.waitUntilPaused(didPause);
+                InspectorTest.createNewBreakpoint(currentSourceFrame, 16, "", true)
+                    .then(() => InspectorTest.waitBreakpointSidebarPane())
+                    .then(() => InspectorTest.runTestFunction());
             }
 
             function didPause(callFrames)
@@ -40,8 +43,8 @@ var test = function()
                 InspectorTest.addResult("Script execution paused.");
                 InspectorTest.captureStackTrace(callFrames);
                 InspectorTest.dumpBreakpointSidebarPane();
+                InspectorTest.removeBreakpoint(currentSourceFrame, 16)
                 InspectorTest.waitBreakpointSidebarPane().then(breakpointRemoved);
-                InspectorTest.removeBreakpoint(currentSourceFrame, 16);
             }
 
             function breakpointRemoved()
@@ -64,8 +67,10 @@ var test = function()
             function didShowScriptSource(sourceFrame)
             {
                 currentSourceFrame = sourceFrame;
-                setBreakpointAndWaitUntilPaused(currentSourceFrame, 6, didPause);
-                InspectorTest.evaluateInPage("setTimeout(oneLineTestFunction, 0)");
+                InspectorTest.waitUntilPaused(didPause);
+                InspectorTest.createNewBreakpoint(currentSourceFrame, 6, "", true)
+                    .then(() => InspectorTest.waitBreakpointSidebarPane())
+                    .then(() => InspectorTest.evaluateInPage("setTimeout(oneLineTestFunction, 0)"));
             }
 
             function didPause(callFrames)
@@ -115,28 +120,6 @@ var test = function()
             }
         }
     ]);
-
-    function setBreakpointAndWaitUntilPaused(sourceFrame, lineNumber, pausedCallback)
-    {
-        var expectedBreakpointId;
-        InspectorTest.addSniffer(Bindings.BreakpointManager.ModelBreakpoint.prototype, "_didSetBreakpointInDebugger", didSetBreakpointInDebugger);
-        InspectorTest.setBreakpoint(sourceFrame, lineNumber, "", true);
-
-        function didSetBreakpointInDebugger(callback, breakpointId)
-        {
-            expectedBreakpointId = breakpointId;
-            InspectorTest.waitUntilPaused(didPause);
-        }
-
-        function didPause(callFrames, reason, breakpointIds)
-        {
-            InspectorTest.assertEquals(breakpointIds.length, 1);
-            InspectorTest.assertEquals(breakpointIds[0], expectedBreakpointId);
-            InspectorTest.assertEquals(reason, "other");
-
-            pausedCallback(callFrames);
-        }
-    }
 }
 
 </script>
