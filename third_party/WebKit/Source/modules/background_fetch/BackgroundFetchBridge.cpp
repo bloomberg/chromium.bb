@@ -12,6 +12,7 @@
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
 
 namespace blink {
 
@@ -46,8 +47,10 @@ BackgroundFetchBridge::~BackgroundFetchBridge() = default;
 
 void BackgroundFetchBridge::fetch(
     const String& tag,
+    Vector<WebServiceWorkerRequest> requests,
     const BackgroundFetchOptions& options,
     std::unique_ptr<RegistrationCallback> callback) {
+  // TODO(peter): Include |requests| in the Mojo call.
   getService()->Fetch(
       supplementable()->webRegistration()->registrationId(), tag,
       mojom::blink::BackgroundFetchOptions::From(options),

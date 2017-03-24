@@ -8,13 +8,15 @@
 <h1>BackgroundFetchManager.fetch()</h1>
 <p>This test validates the behaviour of the fetch() method.</p>
 
-<!-- TODO(peter): Move this to the WPT directory when it's merged. -->
+<!-- TODO(peter): Move this to the WPT directory when it's merged and the
+     behaviour of fetch() for null and empty sequences is defined. -->
 
 <script>
 'use strict';
 
 const workerUrl = 'resources/empty-worker.js';
 const scope = 'resources/scope/' + location.pathname;
+const tag = 'my-background-fetch';
 
 promise_test(function(test) {
   return service_worker_unregister_and_register(test, workerUrl, scope)
@@ -29,7 +31,42 @@ promise_test(function(test) {
 }, 'BackgroundFetchManager.fetch() requires an activated Service Worker.');
 
 promise_test(function(test) {
-  const tag = 'my-background-fetch';
+  let registration = null;
+  return service_worker_unregister_and_register(test, workerUrl, scope)
+    .then(r => {
+      registration = r;
+      return wait_for_state(test, r.installing, 'activated');
+    })
+    .then(() => registration.backgroundFetch.fetch(tag, null))
+    .then(() => unreached_fulfillment(test), () => true /* pass */);
+
+}, 'BackgroundFetchManager.fetch() throws when given a null request.');
+
+promise_test(function(test) {
+  let registration = null;
+  return service_worker_unregister_and_register(test, workerUrl, scope)
+    .then(r => {
+      registration = r;
+      return wait_for_state(test, r.installing, 'activated');
+    })
+    .then(() => registration.backgroundFetch.fetch(tag, []))
+    .then(() => unreached_fulfillment(test), () => true /* pass */);
+
+}, 'BackgroundFetchManager.fetch() throws when given an empty sequence.');
+
+promise_test(function(test) {
+  let registration = null;
+  return service_worker_unregister_and_register(test, workerUrl, scope)
+    .then(r => {
+      registration = r;
+      return wait_for_state(test, r.installing, 'activated');
+    })
+    .then(() => registration.backgroundFetch.fetch(tag, ['resources/non-existing-file.png', null]))
+    .then(() => unreached_fulfillment(test), () => true /* pass */);
+
+}, 'BackgroundFetchManager.fetch() throws when given a sequence with a null request.');
+
+promise_test(function(test) {
   const options = {
     icons: [
       {

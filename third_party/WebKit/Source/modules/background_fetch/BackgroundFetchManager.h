@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "modules/ModulesExport.h"
 #include "platform/heap/GarbageCollected.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/background_fetch/background_fetch.mojom-blink.h"
@@ -16,14 +17,16 @@ namespace blink {
 class BackgroundFetchBridge;
 class BackgroundFetchOptions;
 class BackgroundFetchRegistration;
+class ExceptionState;
 class RequestOrUSVStringOrRequestOrUSVStringSequence;
 class ScriptPromiseResolver;
 class ScriptState;
 class ServiceWorkerRegistration;
+class WebServiceWorkerRequest;
 
 // Implementation of the BackgroundFetchManager JavaScript object, accessible
 // by developers through ServiceWorkerRegistration.backgroundFetch.
-class BackgroundFetchManager final
+class MODULES_EXPORT BackgroundFetchManager final
     : public GarbageCollected<BackgroundFetchManager>,
       public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -39,14 +42,24 @@ class BackgroundFetchManager final
       ScriptState*,
       const String& tag,
       const RequestOrUSVStringOrRequestOrUSVStringSequence& requests,
-      const BackgroundFetchOptions&);
+      const BackgroundFetchOptions&,
+      ExceptionState&);
   ScriptPromise get(ScriptState*, const String& tag);
   ScriptPromise getTags(ScriptState*);
 
   DECLARE_TRACE();
 
  private:
+  friend class BackgroundFetchManagerTest;
+
   explicit BackgroundFetchManager(ServiceWorkerRegistration*);
+
+  // Creates a vector of WebServiceWorkerRequest objects for the given set of
+  // |requests|, which can be either Request objects or URL strings.
+  static Vector<WebServiceWorkerRequest> createWebRequestVector(
+      ScriptState*,
+      const RequestOrUSVStringOrRequestOrUSVStringSequence& requests,
+      ExceptionState&);
 
   void didFetch(ScriptPromiseResolver*,
                 mojom::blink::BackgroundFetchError,

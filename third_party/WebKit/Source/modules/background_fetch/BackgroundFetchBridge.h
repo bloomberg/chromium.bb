@@ -18,6 +18,7 @@ namespace blink {
 
 class BackgroundFetchOptions;
 class BackgroundFetchRegistration;
+class WebServiceWorkerRequest;
 
 // The bridge is responsible for establishing and maintaining the Mojo
 // connection to the BackgroundFetchService. It's keyed on an active Service
@@ -45,6 +46,7 @@ class BackgroundFetchBridge final
   // given |options| for the sequence of |requests|. The |callback| will be
   // invoked when the registration has been created.
   void fetch(const String& tag,
+             Vector<WebServiceWorkerRequest> requests,
              const BackgroundFetchOptions&,
              std::unique_ptr<RegistrationCallback>);
 

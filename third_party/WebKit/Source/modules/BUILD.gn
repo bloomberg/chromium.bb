@@ -234,6 +234,7 @@ source_set("unit_tests") {
 
   sources = [
     "accessibility/AXObjectTest.cpp",
+    "background_fetch/BackgroundFetchManagerTest.cpp",
     "cachestorage/CacheTest.cpp",
     "canvas/HTMLCanvasElementModuleTest.cpp",
     "canvas2d/CanvasRenderingContext2DAPITest.cpp",
