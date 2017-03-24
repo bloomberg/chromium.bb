@@ -7,6 +7,7 @@
 #include <stdlib.h>
 
 #include "chrome/app/chrome_dll_resource.h"
+#include "chrome/common/chrome_icon_resources_win.h"
 #include "chrome/install_static/install_modes.h"
 
 namespace install_static {
@@ -41,6 +42,7 @@ const InstallConstants kInstallModes[] = {
         ChannelStrategy::ADDITIONAL_PARAMETERS,
         true,  // Supports system-level installs.
         true,  // Supported multi-install.
+        icon_resources::kApplicationIndex,
         IDR_MAINFRAME,
     },
     // A secondary install mode for Google Chrome SxS (canary).
@@ -60,6 +62,7 @@ const InstallConstants kInstallModes[] = {
         ChannelStrategy::FIXED,
         false,  // Does not support system-level installs.
         false,  // Did not support multi-install.
+        icon_resources::kSxSApplicationIndex,
         IDR_SXS,
     },
     // clang-format on

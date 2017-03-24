@@ -52,7 +52,7 @@ IDR_MAINFRAME           ICON                    "theme\\chromium\\win\\chromium.
 // Start a naming scheme to keep icons in order. A leading X is used to keep
 // the name alphabetically after IDR_SXS. The maximum of the number that follows
 // should be incremented when a new icon is added. The icon indices in
-// chrome_icon_resources_win.cc should also be updated.
+// chrome_icon_resources_win.h should also be updated.
 
 #if defined(GOOGLE_CHROME_BUILD)
 IDR_X001_APP_LIST       ICON                    "theme\\google_chrome\\win\\app_list.ico"

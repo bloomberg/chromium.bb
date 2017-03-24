@@ -174,7 +174,7 @@ class ShellUtilShortcutTest : public testing::Test {
     if (properties.has_icon()) {
       expected_properties.set_icon(properties.icon, properties.icon_index);
     } else {
-      int icon_index = dist->GetIconIndex();
+      int icon_index = install_static::GetIconResourceIndex();
       expected_properties.set_icon(chrome_exe_, icon_index);
     }
 

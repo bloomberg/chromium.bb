@@ -37,10 +37,6 @@ class GoogleChromeDistribution : public BrowserDistribution {
 
   base::string16 GetShortcutName() override;
 
-  base::string16 GetIconFilename() override;
-
-  int GetIconIndex() override;
-
   base::string16 GetBaseAppName() override;
 
   base::string16 GetPublisherName() override;

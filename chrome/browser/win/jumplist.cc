@@ -34,7 +34,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/installer/util/browser_distribution.h"
+#include "chrome/install_static/install_util.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/history/core/browser/history_service.h"
@@ -136,8 +136,7 @@ bool UpdateTaskCategory(
   if (!PathService::Get(base::FILE_EXE, &chrome_path))
     return false;
 
-  BrowserDistribution* distribution = BrowserDistribution::GetDistribution();
-  int icon_index = distribution->GetIconIndex();
+  int icon_index = install_static::GetIconResourceIndex();
 
   ShellLinkItemList items;
 

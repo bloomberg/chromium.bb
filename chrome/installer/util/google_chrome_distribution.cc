@@ -21,7 +21,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
-#include "chrome/common/chrome_icon_resources_win.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/app_registration_data.h"
@@ -153,10 +152,6 @@ base::string16 GoogleChromeDistribution::GetShortcutName() {
   return installer::GetLocalizedString(IDS_PRODUCT_NAME_BASE);
 }
 
-int GoogleChromeDistribution::GetIconIndex() {
-  return icon_resources::kApplicationIndex;
-}
-
 base::string16 GoogleChromeDistribution::GetPublisherName() {
   const base::string16& publisher_name =
       installer::GetLocalizedString(IDS_ABOUT_VERSION_COMPANY_NAME_BASE);
@@ -232,10 +227,6 @@ base::string16 GoogleChromeDistribution::GetDistributionData(HKEY root_key) {
 base::string16 GoogleChromeDistribution::GetUninstallRegPath() {
   return L"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\"
          L"Google Chrome";
-}
-
-base::string16 GoogleChromeDistribution::GetIconFilename() {
-  return installer::kChromeExe;
 }
 
 // This method checks if we need to change "ap" key in Google Update to try

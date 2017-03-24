@@ -352,7 +352,7 @@ void GetChromeProgIdEntries(BrowserDistribution* dist,
   // Assert that this is only called with the one relevant distribution.
   // TODO(grt): Remove this when BrowserDistribution goes away.
   DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
-  int chrome_icon_index = dist->GetIconIndex();
+  int chrome_icon_index = install_static::GetIconResourceIndex();
 
   ApplicationInfo app_info;
   app_info.prog_id = GetBrowserProgId(suffix);
@@ -412,8 +412,9 @@ void GetShellIntegrationEntries(BrowserDistribution* dist,
                                 const base::FilePath& chrome_exe,
                                 const base::string16& suffix,
                                 ScopedVector<RegistryEntry>* entries) {
-  const base::string16 icon_path(
-      ShellUtil::FormatIconLocation(chrome_exe, dist->GetIconIndex()));
+  DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
+  const base::string16 icon_path(ShellUtil::FormatIconLocation(
+      chrome_exe, install_static::GetIconResourceIndex()));
   const base::string16 quoted_exe_path(L"\"" + chrome_exe.value() + L"\"");
 
   // Register for the Start Menu "Internet" link (pre-Win7).
@@ -591,6 +592,7 @@ void GetXPStyleDefaultBrowserUserEntries(BrowserDistribution* dist,
                                          const base::FilePath& chrome_exe,
                                          const base::string16& suffix,
                                          ScopedVector<RegistryEntry>* entries) {
+  DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
   // File extension associations.
   base::string16 html_prog_id(GetBrowserProgId(suffix));
   for (int i = 0; ShellUtil::kDefaultFileAssociations[i] != NULL; i++) {
@@ -600,8 +602,8 @@ void GetXPStyleDefaultBrowserUserEntries(BrowserDistribution* dist,
 
   // Protocols associations.
   base::string16 chrome_open = ShellUtil::GetChromeShellOpenCmd(chrome_exe);
-  base::string16 chrome_icon =
-      ShellUtil::FormatIconLocation(chrome_exe, dist->GetIconIndex());
+  base::string16 chrome_icon = ShellUtil::FormatIconLocation(
+      chrome_exe, install_static::GetIconResourceIndex());
   for (int i = 0; ShellUtil::kBrowserProtocolAssociations[i] != NULL; i++) {
     GetXPStyleUserProtocolEntries(ShellUtil::kBrowserProtocolAssociations[i],
                                   chrome_icon, chrome_open, entries);
@@ -922,11 +924,12 @@ bool RegisterChromeAsDefaultProtocolClientXPStyle(
     BrowserDistribution* dist,
     const base::FilePath& chrome_exe,
     const base::string16& protocol) {
+  DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
   ScopedVector<RegistryEntry> entries;
   const base::string16 chrome_open(
       ShellUtil::GetChromeShellOpenCmd(chrome_exe));
-  const base::string16 chrome_icon(
-      ShellUtil::FormatIconLocation(chrome_exe, dist->GetIconIndex()));
+  const base::string16 chrome_icon(ShellUtil::FormatIconLocation(
+      chrome_exe, install_static::GetIconResourceIndex()));
   GetXPStyleUserProtocolEntries(protocol, chrome_icon, chrome_open, &entries);
   // Change the default protocol handler for current user.
   if (!ShellUtil::AddRegistryEntries(HKEY_CURRENT_USER, entries)) {

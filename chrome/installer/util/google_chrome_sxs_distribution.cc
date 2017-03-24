@@ -8,7 +8,6 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "chrome/common/chrome_icon_resources_win.h"
 #include "chrome/installer/util/installer_util_strings.h"
 #include "chrome/installer/util/updating_app_registration_data.h"
 
@@ -50,10 +49,6 @@ base::string16 GoogleChromeSxSDistribution::GetUninstallRegPath() {
 BrowserDistribution::DefaultBrowserControlPolicy
     GoogleChromeSxSDistribution::GetDefaultBrowserControlPolicy() {
   return DEFAULT_BROWSER_OS_CONTROL_ONLY;
-}
-
-int GoogleChromeSxSDistribution::GetIconIndex() {
-  return icon_resources::kSxSApplicationIndex;
 }
 
 bool GoogleChromeSxSDistribution::ShouldSetExperimentLabels() {

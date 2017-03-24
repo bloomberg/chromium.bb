@@ -7,6 +7,7 @@
 #include <stdlib.h>
 
 #include "chrome/app/chrome_dll_resource.h"
+#include "chrome/common/chrome_icon_resources_win.h"
 #include "chrome/install_static/install_modes.h"
 
 namespace install_static {
@@ -41,6 +42,7 @@ const InstallConstants kInstallModes[] = {
         ChannelStrategy::UNSUPPORTED,
         true,  // Supports system-level installs.
         true,  // Supported multi-install.
+        icon_resources::kApplicationIndex,
         IDR_MAINFRAME,
     },
     // clang-format on

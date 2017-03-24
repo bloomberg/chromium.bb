@@ -9,25 +9,35 @@ namespace icon_resources {
 
 // This file contains the indices of icon resources in chrome_exe.rc.
 
-// The Chrome/Chromium application icon.
-extern const int kApplicationIndex;
+enum {
+  // The main application icon is always index 0.
+  kApplicationIndex = 0,
+
 #if defined(GOOGLE_CHROME_BUILD)
-extern const int kApplication2Index;
-extern const int kApplication3Index;
-extern const int kApplication4Index;
-#endif
+  // Legacy indices that are no longer used.
+  kApplication2Index = 1,
+  kApplication3Index = 2,
+  kApplication4Index = 3,
 
-// The Chrome Canary application icon.
-extern const int kSxSApplicationIndex;
+  // The Chrome Canary application icon.
+  kSxSApplicationIndex = 4,
 
-// The Chrome/Chromium App Launcher icon.
-extern const int kAppLauncherIndex;
+  // The Chrome App Launcher icon.
+  kAppLauncherIndex = 5,
 
-// The Chrome/Chromium Incognito icon.
-extern const int kIncognitoIndex;
+  // The Chrome App Launcher Canary icon.
+  kSxSAppLauncherIndex = 6,
 
-// The Chrome App Launcher Canary icon.
-extern const int kSxSAppLauncherIndex;
+  // The Chrome incognito icon.
+  kIncognitoIndex = 7,
+#else   // defined(GOOGLE_CHROME_BUILD)
+  // The Chromium App Launcher icon.
+  kAppLauncherIndex = 1,
+
+  // The Chromium incognito icon.
+  kIncognitoIndex = 2,
+#endif  // defined(GOOGLE_CHROME_BUILD)
+};
 
 }  // namespace icon_resources
 

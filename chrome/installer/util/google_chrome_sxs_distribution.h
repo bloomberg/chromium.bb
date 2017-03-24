@@ -21,7 +21,6 @@ class GoogleChromeSxSDistribution : public GoogleChromeDistribution {
  public:
   base::string16 GetBaseAppName() override;
   base::string16 GetShortcutName() override;
-  int GetIconIndex() override;
   base::string16 GetStartMenuShortcutSubfolder(
       Subfolder subfolder_type) override;
   base::string16 GetUninstallRegPath() override;

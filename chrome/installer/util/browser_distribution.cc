@@ -18,7 +18,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
-#include "chrome/common/chrome_icon_resources_win.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/installer/util/app_registration_data.h"
 #include "chrome/installer/util/google_chrome_distribution.h"
@@ -113,14 +112,6 @@ base::string16 BrowserDistribution::GetDisplayName() {
 
 base::string16 BrowserDistribution::GetShortcutName() {
   return GetBaseAppName();
-}
-
-int BrowserDistribution::GetIconIndex() {
-  return icon_resources::kApplicationIndex;
-}
-
-base::string16 BrowserDistribution::GetIconFilename() {
-  return installer::kChromeExe;
 }
 
 base::string16 BrowserDistribution::GetStartMenuShortcutSubfolder(

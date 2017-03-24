@@ -440,9 +440,9 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
                                          install_path.value(),
                                          true);
 
-    BrowserDistribution* dist = product.distribution();
-    base::string16 chrome_icon = ShellUtil::FormatIconLocation(
-        install_path.Append(dist->GetIconFilename()), dist->GetIconIndex());
+    base::string16 chrome_icon =
+        ShellUtil::FormatIconLocation(install_path.Append(kChromeExe),
+                                      install_static::GetIconResourceIndex());
     install_list->AddSetRegValueWorkItem(reg_root,
                                          uninstall_reg,
                                          KEY_WOW64_32KEY,

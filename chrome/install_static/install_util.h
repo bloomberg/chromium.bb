@@ -100,6 +100,9 @@ std::wstring GetActiveSetupPath();
 // install mode never included a DelegateExecute verb handler.
 std::wstring GetLegacyCommandExecuteImplClsid();
 
+// Returns the index of the icon resource in the main executable for the mode.
+int GetIconResourceIndex();
+
 // Returns true if usage stats collecting is enabled for this user for the
 // current executable.
 bool GetCollectStatsConsent();

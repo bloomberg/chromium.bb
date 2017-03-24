@@ -342,6 +342,10 @@ std::wstring GetLegacyCommandExecuteImplClsid() {
   return InstallDetails::Get().mode().legacy_command_execute_clsid;
 }
 
+int GetIconResourceIndex() {
+  return InstallDetails::Get().mode().app_icon_resource_index;
+}
+
 bool GetCollectStatsConsent() {
   bool enabled = true;
 

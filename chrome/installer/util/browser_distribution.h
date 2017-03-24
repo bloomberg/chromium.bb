@@ -64,13 +64,6 @@ class BrowserDistribution {
   // Returns the localized name of the Chrome shortcut for this distribution.
   virtual base::string16 GetShortcutName();
 
-  // Returns the index of the Chrome icon for this distribution, inside the file
-  // specified by GetIconFilename().
-  virtual int GetIconIndex();
-
-  // Returns the executable filename (not path) that contains the product icon.
-  virtual base::string16 GetIconFilename();
-
   // Returns the localized name of the subfolder in the Start Menu identified by
   // |subfolder_type| that this distribution should create shortcuts in. For
   // SUBFOLDER_CHROME this returns GetShortcutName().

@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/shell_util.h"
@@ -34,8 +35,10 @@ void ChromeBrowserOperations::AddDefaultShortcutProperties(
   if (!properties->has_target())
     properties->set_target(target_exe);
 
-  if (!properties->has_icon())
-    properties->set_icon(target_exe, dist->GetIconIndex());
+  if (!properties->has_icon()) {
+    DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
+    properties->set_icon(target_exe, install_static::GetIconResourceIndex());
+  }
 
   if (!properties->has_app_id()) {
     DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
