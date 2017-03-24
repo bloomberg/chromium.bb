@@ -280,13 +280,28 @@ static void copy_dering_16bit_to_8bit(uint8_t *dst, int dstride, uint16_t *src,
 void od_dering(uint8_t *dst, int dstride, uint16_t *y, uint16_t *in, int xdec,
                int dir[OD_DERING_NBLOCKS][OD_DERING_NBLOCKS], int *dirinit,
                int var[OD_DERING_NBLOCKS][OD_DERING_NBLOCKS], int pli,
-               dering_list *dlist, int dering_count, int threshold,
+               dering_list *dlist, int dering_count, int level,
                int clpf_strength, int clpf_damping, int coeff_shift,
                int skip_dering, int hbd) {
   int bi;
   int bx;
   int by;
   int bsize;
+
+  // TODO(stemidts): We might be good with fewer strengths and different
+  // strengths for chroma.  Perhaps reduce CDEF_STRENGTH_BITS to 5 and
+  // DERING_STRENGTHS to 8 and use the following tables:
+  // static int level_table[DERING_STRENGTHS] = {0, 1, 3, 7, 14, 24, 39, 63};
+  // static int level_table_uv[DERING_STRENGTHS] = {0, 1, 2, 5, 8, 12, 18, 25};
+  // For now, use 21 strengths and the same for luma and chroma.
+  static int level_table[DERING_STRENGTHS] = {
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 17, 20, 24, 28, 33, 39, 46, 54, 63
+  };
+  static int level_table_uv[DERING_STRENGTHS] = {
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 17, 20, 24, 28, 33, 39, 46, 54, 63
+  };
+
+  int threshold = (pli ? level_table_uv : level_table)[level] << coeff_shift;
   od_filter_dering_direction_func filter_dering_direction[OD_DERINGSIZES] = {
     od_filter_dering_direction_4x4, od_filter_dering_direction_8x8
   };

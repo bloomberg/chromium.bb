@@ -20,10 +20,6 @@
 #include "av1/common/onyxc_int.h"
 #include "av1/common/reconinter.h"
 
-int dering_level_table[DERING_STRENGTHS] = {
-  0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 17, 20, 24, 28, 33, 39, 46, 54, 63
-};
-
 int sb_all_skip(const AV1_COMMON *const cm, int mi_row, int mi_col) {
   int r, c;
   int maxc, maxr;
@@ -171,12 +167,11 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
       if (!dering_left) cstart = -OD_FILT_HBORDER;
       nhb = AOMMIN(MAX_MIB_SIZE, cm->mi_cols - MAX_MIB_SIZE * sbc);
       nvb = AOMMIN(MAX_MIB_SIZE, cm->mi_rows - MAX_MIB_SIZE * sbr);
-      level = dering_level_table
-          [cm->cdef_strengths[cm->mi_grid_visible[MAX_MIB_SIZE * sbr *
-                                                      cm->mi_stride +
-                                                  MAX_MIB_SIZE * sbc]
-                                  ->mbmi.cdef_strength] /
-           CLPF_STRENGTHS];
+      level = cm->cdef_strengths[cm->mi_grid_visible[MAX_MIB_SIZE * sbr *
+                                                         cm->mi_stride +
+                                                     MAX_MIB_SIZE * sbc]
+                                     ->mbmi.cdef_strength] /
+              CLPF_STRENGTHS;
       clpf_strength =
           cm->cdef_strengths[cm->mi_grid_visible[MAX_MIB_SIZE * sbr *
                                                      cm->mi_stride +
@@ -184,12 +179,11 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                                  ->mbmi.cdef_strength] %
           CLPF_STRENGTHS;
       clpf_strength += clpf_strength == 3;
-      uv_level = dering_level_table
-          [cm->cdef_uv_strengths[cm->mi_grid_visible[MAX_MIB_SIZE * sbr *
-                                                         cm->mi_stride +
-                                                     MAX_MIB_SIZE * sbc]
-                                     ->mbmi.cdef_strength] /
-           CLPF_STRENGTHS];
+      uv_level = cm->cdef_uv_strengths[cm->mi_grid_visible[MAX_MIB_SIZE * sbr *
+                                                               cm->mi_stride +
+                                                           MAX_MIB_SIZE * sbc]
+                                           ->mbmi.cdef_strength] /
+                 CLPF_STRENGTHS;
       uv_clpf_strength =
           cm->cdef_uv_strengths[cm->mi_grid_visible[MAX_MIB_SIZE * sbr *
                                                         cm->mi_stride +
@@ -209,7 +203,6 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
       curr_row_dering[sbc] = 1;
       for (pli = 0; pli < nplanes; pli++) {
         uint16_t dst[OD_BSIZE_MAX * OD_BSIZE_MAX];
-        int threshold;
         int coffset;
         int rend, cend;
         int clpf_damping = 3 - (pli != AOM_PLANE_Y) + (cm->base_qindex >> 6);
@@ -344,8 +337,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                     coffset, xd->plane[pli].dst.stride, OD_FILT_VBORDER,
                     (nhb << bsize[pli]));
 
-        threshold = level << coeff_shift;
-        if (threshold == 0 && clpf_strength == 0) continue;
+        if (level == 0 && clpf_strength == 0) continue;
 #if CONFIG_AOM_HIGHBITDEPTH
         if (cm->use_highbitdepth) {
           od_dering((uint8_t *)&CONVERT_TO_SHORTPTR(
@@ -355,8 +347,8 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                                       (sbc * MAX_MIB_SIZE << bsize[pli])],
                     xd->plane[pli].dst.stride, dst,
                     &src[OD_FILT_VBORDER * OD_FILT_BSTRIDE + OD_FILT_HBORDER],
-                    dec[pli], dir, NULL, var, pli, dlist, dering_count,
-                    threshold, clpf_strength, clpf_damping, coeff_shift, 0, 1);
+                    dec[pli], dir, NULL, var, pli, dlist, dering_count, level,
+                    clpf_strength, clpf_damping, coeff_shift, 0, 1);
         } else {
 #endif
           od_dering(
@@ -365,7 +357,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                                       (sbc * MAX_MIB_SIZE << bsize[pli])],
               xd->plane[pli].dst.stride, dst,
               &src[OD_FILT_VBORDER * OD_FILT_BSTRIDE + OD_FILT_HBORDER],
-              dec[pli], dir, NULL, var, pli, dlist, dering_count, threshold,
+              dec[pli], dir, NULL, var, pli, dlist, dering_count, level,
               clpf_strength, clpf_damping, coeff_shift, 0, 0);
 
 #if CONFIG_AOM_HIGHBITDEPTH

@@ -153,7 +153,6 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
   int bsize[3];
   int dec[3];
   int pli;
-  int level;
   int dering_count;
   int coeff_shift = AOMMAX(cm->bit_depth - 8, 0);
   uint64_t best_tot_mse = (uint64_t)1 << 63;
@@ -244,8 +243,7 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
         for (gi = 0; gi < TOTAL_STRENGTHS; gi++) {
           int threshold;
           int clpf_strength;
-          level = dering_level_table[gi / CLPF_STRENGTHS];
-          threshold = level << coeff_shift;
+          threshold = gi / CLPF_STRENGTHS;
           if (pli > 0 && !chroma_dering) threshold = 0;
           /* We avoid filtering the pixels for which some of the pixels to
              average
