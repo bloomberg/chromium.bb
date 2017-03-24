@@ -131,7 +131,7 @@ ScriptPromise ImageCapture::getPhotoCapabilities(ScriptState* scriptState) {
   // scriptState->getExecutionContext()->getSecurityOrigin()->toString()
   m_service->GetCapabilities(
       m_streamTrack->component()->source()->id(),
-      convertToBaseCallback(WTF::bind(&ImageCapture::onCapabilities,
+      convertToBaseCallback(WTF::bind(&ImageCapture::onPhotoCapabilities,
                                       wrapPersistent(this),
                                       wrapPersistent(resolver))));
   return promise;
@@ -157,61 +157,21 @@ ScriptPromise ImageCapture::setOptions(ScriptState* scriptState,
   // TODO(mcasas): should be using a mojo::StructTraits instead.
   auto settings = media::mojom::blink::PhotoSettings::New();
 
-  settings->has_zoom = photoSettings.hasZoom();
-  if (settings->has_zoom)
-    settings->zoom = photoSettings.zoom();
   settings->has_height = photoSettings.hasImageHeight();
   if (settings->has_height)
     settings->height = photoSettings.imageHeight();
   settings->has_width = photoSettings.hasImageWidth();
   if (settings->has_width)
     settings->width = photoSettings.imageWidth();
-  settings->has_focus_mode = photoSettings.hasFocusMode();
-  if (settings->has_focus_mode)
-    settings->focus_mode = parseMeteringMode(photoSettings.focusMode());
-  settings->has_exposure_mode = photoSettings.hasExposureMode();
-  if (settings->has_exposure_mode)
-    settings->exposure_mode = parseMeteringMode(photoSettings.exposureMode());
-  settings->has_exposure_compensation = photoSettings.hasExposureCompensation();
-  if (settings->has_exposure_compensation)
-    settings->exposure_compensation = photoSettings.exposureCompensation();
-  settings->has_white_balance_mode = photoSettings.hasWhiteBalanceMode();
-  if (settings->has_white_balance_mode)
-    settings->white_balance_mode =
-        parseMeteringMode(photoSettings.whiteBalanceMode());
-  settings->has_iso = photoSettings.hasIso();
-  if (settings->has_iso)
-    settings->iso = photoSettings.iso();
+
   settings->has_red_eye_reduction = photoSettings.hasRedEyeReduction();
   if (settings->has_red_eye_reduction)
     settings->red_eye_reduction = photoSettings.redEyeReduction();
   settings->has_fill_light_mode = photoSettings.hasFillLightMode();
-  if (settings->has_fill_light_mode)
+  if (settings->has_fill_light_mode) {
     settings->fill_light_mode =
         parseFillLightMode(photoSettings.fillLightMode());
-  if (photoSettings.hasPointsOfInterest()) {
-    for (const auto& point : photoSettings.pointsOfInterest()) {
-      auto mojoPoint = media::mojom::blink::Point2D::New();
-      mojoPoint->x = point.x();
-      mojoPoint->y = point.y();
-      settings->points_of_interest.push_back(std::move(mojoPoint));
-    }
   }
-  settings->has_color_temperature = photoSettings.hasColorTemperature();
-  if (settings->has_color_temperature)
-    settings->color_temperature = photoSettings.colorTemperature();
-  settings->has_brightness = photoSettings.hasBrightness();
-  if (settings->has_brightness)
-    settings->brightness = photoSettings.brightness();
-  settings->has_contrast = photoSettings.hasContrast();
-  if (settings->has_contrast)
-    settings->contrast = photoSettings.contrast();
-  settings->has_saturation = photoSettings.hasSaturation();
-  if (settings->has_saturation)
-    settings->saturation = photoSettings.saturation();
-  settings->has_sharpness = photoSettings.hasSharpness();
-  if (settings->has_sharpness)
-    settings->sharpness = photoSettings.sharpness();
 
   m_service->SetOptions(m_streamTrack->component()->source()->id(),
                         std::move(settings),
@@ -318,6 +278,18 @@ void ImageCapture::setMediaTrackConstraints(
     m_currentConstraints.setFocusMode(constraints.focusMode());
     settings->focus_mode =
         parseMeteringMode(constraints.focusMode().getAsString());
+  }
+
+  // TODO(mcasas): support ConstrainPoint2DParameters.
+  if (constraints.hasPointsOfInterest() &&
+      constraints.pointsOfInterest().isPoint2DSequence()) {
+    for (const auto& point :
+         constraints.pointsOfInterest().getAsPoint2DSequence()) {
+      auto mojoPoint = media::mojom::blink::Point2D::New();
+      mojoPoint->x = point.x();
+      mojoPoint->y = point.y();
+      settings->points_of_interest.push_back(std::move(mojoPoint));
+    }
   }
 
   // TODO(mcasas): support ConstrainDoubleRange where applicable.
@@ -439,7 +411,7 @@ ImageCapture::ImageCapture(ExecutionContext* context, MediaStreamTrack* track)
                                       wrapPersistent(this))));
 }
 
-void ImageCapture::onCapabilities(
+void ImageCapture::onPhotoCapabilities(
     ScriptPromiseResolver* resolver,
     media::mojom::blink::PhotoCapabilitiesPtr capabilities) {
   if (!m_serviceRequests.contains(resolver))
@@ -454,31 +426,13 @@ void ImageCapture::onCapabilities(
     // TODO(mcasas): Remove the explicit MediaSettingsRange::create() when
     // mojo::StructTraits supports garbage-collected mappings,
     // https://crbug.com/700180.
-    caps->setIso(MediaSettingsRange::create(std::move(capabilities->iso)));
     caps->setImageHeight(
         MediaSettingsRange::create(std::move(capabilities->height)));
     caps->setImageWidth(
         MediaSettingsRange::create(std::move(capabilities->width)));
-    caps->setZoom(MediaSettingsRange::create(std::move(capabilities->zoom)));
-    caps->setExposureCompensation(MediaSettingsRange::create(
-        std::move(capabilities->exposure_compensation)));
-    caps->setColorTemperature(
-        MediaSettingsRange::create(std::move(capabilities->color_temperature)));
-    caps->setBrightness(
-        MediaSettingsRange::create(std::move(capabilities->brightness)));
-    caps->setContrast(
-        MediaSettingsRange::create(std::move(capabilities->contrast)));
-    caps->setSaturation(
-        MediaSettingsRange::create(std::move(capabilities->saturation)));
-    caps->setSharpness(
-        MediaSettingsRange::create(std::move(capabilities->sharpness)));
-
-    caps->setFocusMode(capabilities->focus_mode);
-    caps->setExposureMode(capabilities->exposure_mode);
-    caps->setWhiteBalanceMode(capabilities->white_balance_mode);
     caps->setFillLightMode(capabilities->fill_light_mode);
-
     caps->setRedEyeReduction(capabilities->red_eye_reduction);
+
     resolver->resolve(caps);
   }
   m_serviceRequests.erase(resolver);
@@ -497,7 +451,7 @@ void ImageCapture::onSetOptions(ScriptPromiseResolver* resolver, bool result) {
   // Retrieve the current device status after setting the options.
   m_service->GetCapabilities(
       m_streamTrack->component()->source()->id(),
-      convertToBaseCallback(WTF::bind(&ImageCapture::onCapabilities,
+      convertToBaseCallback(WTF::bind(&ImageCapture::onPhotoCapabilities,
                                       wrapPersistent(this),
                                       wrapPersistent(resolver))));
 }
@@ -584,6 +538,7 @@ void ImageCapture::onServiceConnectionError() {
 DEFINE_TRACE(ImageCapture) {
   visitor->trace(m_streamTrack);
   visitor->trace(m_capabilities);
+  visitor->trace(m_currentConstraints);
   visitor->trace(m_serviceRequests);
   EventTargetWithInlineData::trace(visitor);
   ContextLifecycleObserver::trace(visitor);

@@ -9,7 +9,6 @@
 <script>
 
 const meteringModeNames = ["none", "manual", "single-shot", "continuous"];
-const fillLightModeNames = ["none", "off", "auto", "flash", "torch"];
 
 // This test verifies that we can all MediaStreamTrack.applyConstraints(), with
 // a mock Mojo service implementation.
@@ -23,6 +22,9 @@ async_test(function(t) {
   const constraints = { advanced : [{ whiteBalanceMode : "manual",
                                       exposureMode     : "continuous",
                                       focusMode        : "single-shot",
+
+                                      pointsOfInterest : [{x : 0.1, y : 0.2},
+                                                          {x : 0.3, y : 0.4}],
 
                                       exposureCompensation : 133.77,
                                       colorTemperature     : 6000,

@@ -8,7 +8,6 @@
 </body>
 <script>
 
-const meteringModeNames = ["none", "manual", "single-shot", "continuous"];
 const fillLightModeNames = ["none", "off", "auto", "flash", "torch"];
 
 // This test verifies that ImageCapture can get PhotoCapabilities(), with a mock
@@ -37,12 +36,6 @@ async_test(function(t) {
     .then(capabilities => {
       assert_true(capabilities instanceof PhotoCapabilities);
 
-      assert_true(capabilities.iso instanceof MediaSettingsRange);
-      assert_equals(capabilities.iso.max, mock_capabilities.iso.max);
-      assert_equals(capabilities.iso.min, mock_capabilities.iso.min);
-      assert_equals(capabilities.iso.current, mock_capabilities.iso.current);
-      assert_equals(capabilities.iso.step, mock_capabilities.iso.step);
-
       assert_true(capabilities.imageHeight instanceof MediaSettingsRange);
       assert_equals(capabilities.imageHeight.max,
                     mock_capabilities.height.max);
@@ -62,33 +55,6 @@ async_test(function(t) {
                     mock_capabilities.width.current);
       assert_equals(capabilities.imageWidth.step, mock_capabilities.width.step);
 
-      assert_true(capabilities.zoom instanceof MediaSettingsRange);
-      assert_equals(capabilities.zoom.max, mock_capabilities.zoom.max);
-      assert_equals(capabilities.zoom.min, mock_capabilities.zoom.min);
-      assert_equals(capabilities.zoom.current, mock_capabilities.zoom.current);
-      assert_equals(capabilities.zoom.step, mock_capabilities.zoom.step);
-
-      assert_equals(capabilities.focusMode,
-          meteringModeNames[mock_capabilities.focus_mode], 'focusMode');
-
-      assert_equals(capabilities.exposureMode,
-          meteringModeNames[mock_capabilities.exposure_mode], 'exposureMode;');
-
-      assert_true(capabilities.exposureCompensation instanceof
-                  MediaSettingsRange);
-      assert_equals(capabilities.exposureCompensation.max,
-                    mock_capabilities.exposure_compensation.max);
-      assert_equals(capabilities.exposureCompensation.min,
-                    mock_capabilities.exposure_compensation.min);
-      assert_equals(capabilities.exposureCompensation.current,
-                    mock_capabilities.exposure_compensation.current);
-      assert_equals(capabilities.exposureCompensation.step,
-                    mock_capabilities.exposure_compensation.step);
-
-      assert_equals(capabilities.whiteBalanceMode,
-          meteringModeNames[mock_capabilities.white_balance_mode],
-          'whiteBalanceMode');
-
       assert_equals(capabilities.fillLightMode,
           fillLightModeNames[mock_capabilities.fill_light_mode],
           'fillLightMode');
@@ -96,53 +62,6 @@ async_test(function(t) {
       assert_true(capabilities.redEyeReduction,
           mock_capabilities.red_eye_reduction, 'redEyeReduction');
 
-      assert_true(capabilities.colorTemperature instanceof MediaSettingsRange);
-      assert_equals(capabilities.colorTemperature.max,
-                    mock_capabilities.color_temperature.max);
-      assert_equals(capabilities.colorTemperature.min,
-                    mock_capabilities.color_temperature.min);
-      assert_equals(capabilities.colorTemperature.current,
-                    mock_capabilities.color_temperature.current);
-      assert_equals(capabilities.colorTemperature.step,
-                    mock_capabilities.color_temperature.step);
-
-      assert_true(capabilities.brightness instanceof MediaSettingsRange);
-      assert_equals(capabilities.brightness.max,
-                    mock_capabilities.brightness.max);
-      assert_equals(capabilities.brightness.min,
-                    mock_capabilities.brightness.min);
-      assert_equals(capabilities.brightness.current,
-                    mock_capabilities.brightness.current);
-      assert_equals(capabilities.brightness.step,
-                    mock_capabilities.brightness.step);
-
-      assert_true(capabilities.contrast instanceof MediaSettingsRange);
-      assert_equals(capabilities.contrast.max, mock_capabilities.contrast.max);
-      assert_equals(capabilities.contrast.min, mock_capabilities.contrast.min);
-      assert_equals(capabilities.contrast.current,
-                    mock_capabilities.contrast.current);
-      assert_equals(capabilities.contrast.step,
-                    mock_capabilities.contrast.step);
-
-      assert_true(capabilities.saturation instanceof MediaSettingsRange);
-      assert_equals(capabilities.saturation.max,
-                    mock_capabilities.saturation.max);
-      assert_equals(capabilities.saturation.min,
-                    mock_capabilities.saturation.min);
-      assert_equals(capabilities.saturation.current,
-                    mock_capabilities.saturation.current);
-      assert_equals(capabilities.saturation.step,
-                    mock_capabilities.saturation.step);
-
-      assert_true(capabilities.sharpness instanceof MediaSettingsRange);
-      assert_equals(capabilities.sharpness.max,
-                    mock_capabilities.sharpness.max);
-      assert_equals(capabilities.sharpness.min,
-                    mock_capabilities.sharpness.min);
-      assert_equals(capabilities.sharpness.current,
-                    mock_capabilities.sharpness.current);
-      assert_equals(capabilities.sharpness.step,
-                    mock_capabilities.sharpness.step);
       t.done();
     })
     .catch(error => {

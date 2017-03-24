@@ -72,8 +72,8 @@ class MODULES_EXPORT ImageCapture final
  private:
   ImageCapture(ExecutionContext*, MediaStreamTrack*);
 
-  void onCapabilities(ScriptPromiseResolver*,
-                      media::mojom::blink::PhotoCapabilitiesPtr);
+  void onPhotoCapabilities(ScriptPromiseResolver*,
+                           media::mojom::blink::PhotoCapabilitiesPtr);
   void onSetOptions(ScriptPromiseResolver*, bool);
   void onTakePhoto(ScriptPromiseResolver*, media::mojom::blink::BlobPtr);
   void onCapabilitiesUpdate(media::mojom::blink::PhotoCapabilitiesPtr);

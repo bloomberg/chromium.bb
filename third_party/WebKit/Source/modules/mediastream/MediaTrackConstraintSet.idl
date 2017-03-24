@@ -8,6 +8,7 @@ typedef (long or ConstrainLongRange) ConstrainLong;
 typedef (double or ConstrainDoubleRange) ConstrainDouble;
 typedef (boolean or ConstrainBooleanParameters) ConstrainBoolean;
 typedef (DOMString or sequence<DOMString> or ConstrainDOMStringParameters) ConstrainDOMString;
+typedef (sequence<Point2D> or ConstrainPoint2DParameters) ConstrainPoint2D;
 
 dictionary MediaTrackConstraintSet {
     ConstrainLong width;
@@ -40,8 +41,7 @@ dictionary MediaTrackConstraintSet {
     [OriginTrialEnabled=ImageCapture] ConstrainDOMString whiteBalanceMode;
     [OriginTrialEnabled=ImageCapture] ConstrainDOMString exposureMode;
     [OriginTrialEnabled=ImageCapture] ConstrainDOMString focusMode;
-    // TODO(mcasas): add support for ConstrainPoint2D pointsOfInterest, see
-    // https://crbug.com/700607
+    [OriginTrialEnabled=ImageCapture] ConstrainPoint2D   pointsOfInterest;
     [OriginTrialEnabled=ImageCapture] ConstrainDouble    exposureCompensation;
     [OriginTrialEnabled=ImageCapture] ConstrainDouble    colorTemperature;
     [OriginTrialEnabled=ImageCapture] ConstrainDouble    iso;

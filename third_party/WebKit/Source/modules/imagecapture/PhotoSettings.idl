@@ -2,23 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://www.w3.org/TR/image-capture/#PhotoSettings
+// https://w3c.github.io/mediacapture-image/##photosettings-section
 
 dictionary PhotoSettings {
-    MeteringMode whiteBalanceMode;
-    double colorTemperature;
-    MeteringMode exposureMode;
-    double exposureCompensation;
-    double iso;
     boolean redEyeReduction;
-    MeteringMode focusMode;
-    sequence<Point2D> pointsOfInterest;
-
-    double brightness;
-    double contrast;
-    double saturation;
-    double sharpness;
-    double zoom;
     double imageHeight;
     double imageWidth;
     FillLightMode fillLightMode;

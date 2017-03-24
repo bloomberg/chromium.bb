@@ -8,7 +8,6 @@
 </body>
 <script>
 
-const meteringModeNames = ["none", "manual", "single-shot", "continuous"];
 const fillLightModeNames = ["none", "off", "auto", "flash", "torch"];
 
 // This test verifies that ImageCapture can call setOptions()s, with a mock Mojo
@@ -21,23 +20,10 @@ async_test(function(t) {
   var stream = canvas.captureStream();
 
   var theMock = null;
-  const optionsDict = { zoom : 1.7,
-                        imageWidth : 1080,
+  const optionsDict = { imageWidth : 1080,
                         imageHeight : 100,
-                        focusMode : "single-shot",
-                        pointsOfInterest : [{x : 0.1, y : 0.2},
-                                            {x : 0.3, y : 0.4}],
-                        exposureMode : "continuous",
-                        exposureCompensation : 133,
-                        whiteBalanceMode : "manual",
-                        iso : 120,
                         redEyeReduction : true,
-                        fillLightMode : "flash",
-                        colorTemperature : 6000,
-                        brightness : 3,
-                        contrast : 4,
-                        saturation : 5,
-                        sharpness : 6
+                        fillLightMode : "flash"
                       };
   mockImageCaptureReady
     .then(mock => {
@@ -51,60 +37,24 @@ async_test(function(t) {
       return capturer.setOptions(optionsDict);
     })
     .then(function() {
-      assert_true(theMock.options().has_zoom, 'has_zoom must be true');
-      assert_approx_equals(optionsDict.zoom, theMock.options().zoom, 0.1, 'zoom value');
-      assert_equals(true, theMock.options().has_width, 'has_width must be true');
-      assert_equals(optionsDict.imageWidth, theMock.options().width, 'width value');
-      assert_equals(true, theMock.options().has_height, 'has_height must be true');
-      assert_equals(optionsDict.imageHeight, theMock.options().height, 'height value');
-      assert_equals(true, theMock.options().has_focus_mode, 'has_focus_mode must be true');
-      assert_equals(optionsDict.focusMode,
-                    meteringModeNames[theMock.options().focus_mode],
-                    'focusMode value');
-      assert_equals(optionsDict.pointsOfInterest.length,
-                    theMock.options().points_of_interest.length,
-                    'amount of points of interest');
-      for (i = 0; i < optionsDict.pointsOfInterest.length; i++) {
-          assert_approx_equals(optionsDict.pointsOfInterest[i].x,
-                              theMock.options().points_of_interest[i].x,
-                              0.001,
-                              'pointsOfInterest\'s x');
-          assert_approx_equals(optionsDict.pointsOfInterest[i].y,
-                               theMock.options().points_of_interest[i].y,
-                               0.001,
-                               'pointsOfInterest\' y');
-      }
-      assert_equals(true, theMock.options().has_exposure_mode, 'has_exposure_mode must be true');
-      assert_equals(optionsDict.exposureMode,
-                    meteringModeNames[theMock.options().exposure_mode],
-                    'exposureMode value');
-      assert_equals(true, theMock.options().has_exposure_compensation,
-                    'has_exposure_compensation must be true');
-      assert_equals(optionsDict.exposureCompensation,
-                    theMock.options().exposure_compensation,
-                    'exposure_compensation value');
-      assert_equals(true, theMock.options().has_white_balance_mode, 'has_white_balance_mode must be true');
-      assert_equals(optionsDict.whiteBalanceMode,
-                    meteringModeNames[theMock.options().white_balance_mode],
-                    'whiteBalanceMode value');
-      assert_equals(true, theMock.options().has_iso, 'has_iso must be true');
-      assert_equals(optionsDict.iso, theMock.options().iso, 'iso value');
-      assert_equals(true, theMock.options().has_red_eye_reduction,
-                    'has_red_eye_reduction must be true');
+      assert_equals(true, theMock.options().has_width, 'has_width');
+      assert_equals(optionsDict.imageWidth, theMock.options().width, 'width');
+      assert_equals(true, theMock.options().has_height, 'has_height');
+      assert_equals(optionsDict.imageHeight, theMock.options().height,
+                    'height');
+
       // Depending on how mojo boolean packing in integers is arranged, this can
       // be a number instead of a boolean, compare directly.
       // TODO(mcasas): Revert to assert_equals() when yzshen@ has sorted it out.
-      assert_true(optionsDict.redEyeReduction == theMock.options().red_eye_reduction,
-                    'red_eye_reduction value');
-      assert_equals(true, theMock.options().has_fill_light_mode, 'has_fill_light_mode must be true');
+      assert_true(
+          optionsDict.redEyeReduction == theMock.options().red_eye_reduction,
+          'red_eye_reduction');
+
+      assert_equals(true, theMock.options().has_fill_light_mode,
+                    'has_fill_light_mode');
       assert_equals(optionsDict.fillLightMode,
                     fillLightModeNames[theMock.options().fill_light_mode],
-                    'fillLightMode value');
-      assert_true(theMock.options().has_color_temperature,
-                  'has_color_temperature must be true');
-      assert_equals(optionsDict.colorTemperature,
-                    theMock.options().color_temperature,
-                    'colorTemperature value');
+                    'fillLightMode');
 
       t.done();
     })

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://www.w3.org/TR/image-capture/#PhotoCapabilities
+// https://w3c.github.io/mediacapture-image/##photocapabilities-section
 
 enum MeteringMode {
     "none",
@@ -22,20 +22,8 @@ enum FillLightMode {
 [
     OriginTrialEnabled=ImageCapture,
 ] interface PhotoCapabilities {
-    readonly attribute MeteringMode whiteBalanceMode;
-    readonly attribute MediaSettingsRange colorTemperature;
-    readonly attribute MeteringMode exposureMode;
-    readonly attribute MediaSettingsRange exposureCompensation;
-    readonly attribute MediaSettingsRange iso;
-    readonly attribute boolean redEyeReduction;
-    readonly attribute MeteringMode focusMode;
-
-    readonly attribute MediaSettingsRange brightness;
-    readonly attribute MediaSettingsRange contrast;
-    readonly attribute MediaSettingsRange saturation;
-    readonly attribute MediaSettingsRange sharpness;
     readonly attribute MediaSettingsRange imageHeight;
     readonly attribute MediaSettingsRange imageWidth;
-    readonly attribute MediaSettingsRange zoom;
     readonly attribute FillLightMode fillLightMode;
+    readonly attribute boolean redEyeReduction;
 };
