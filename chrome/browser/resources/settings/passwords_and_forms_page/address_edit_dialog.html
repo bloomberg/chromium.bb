@@ -15,6 +15,7 @@
       :host {
         --iron-autogrow-textarea: {
           box-sizing: border-box;
+          padding: 0;
         };
       }
 
@@ -63,6 +64,16 @@
         #dialog .body {
           max-height: 270px;
         }
+      }
+
+      paper-textarea {
+        /**
+         * Workaround for iron-autogrow-textarea's display:inline-block creating
+         * too much vertical space than intended.
+         */
+        --layout-relative : {
+          line-height: 1;
+        };
       }
     </style>
     <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}">
