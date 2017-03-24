@@ -806,7 +806,8 @@ def tests_are_up_to_date(waterfalls):
       config_data = fp.read().strip()
     all_tests.update(tests)
     up_to_date &= tests_data == config_data
-  verify_all_tests_in_benchmark_csv(all_tests, get_all_benchmarks_metadata())
+  verify_all_tests_in_benchmark_csv(all_tests,
+                                    get_all_waterfall_benchmarks_metadata())
   return up_to_date
 
 
@@ -819,7 +820,8 @@ def update_all_tests(waterfalls):
       json.dump(tests, fp, indent=2, separators=(',', ': '), sort_keys=True)
       fp.write('\n')
     all_tests.update(tests)
-  verify_all_tests_in_benchmark_csv(all_tests, get_all_benchmarks_metadata())
+  verify_all_tests_in_benchmark_csv(all_tests,
+                                    get_all_waterfall_benchmarks_metadata())
 
 
 def src_dir():
@@ -843,9 +845,24 @@ NON_TELEMETRY_BENCHMARKS = {
 }
 
 
-# Returns a dictionary mapping benchmark name to benchmark owner metadata
-def get_all_benchmarks_metadata():
-  metadata = NON_TELEMETRY_BENCHMARKS
+# If you change this dictionary, run tools/perf/generate_perf_data
+NON_WATERFALL_BENCHMARKS = {
+    'sizes (mac)': BenchmarkMetadata('tapted@chromium.org', None),
+    'sizes (win)': BenchmarkMetadata('grt@chromium.org', None),
+    'sizes (linux)': BenchmarkMetadata('thestig@chromium.org', None),
+    'resource_sizes': BenchmarkMetadata(
+        'agrieve@chromium.org, rnephew@chromium.org, perezju@chromium.org',
+        None)
+}
+
+
+# Returns a dictionary mapping waterfall benchmark name to benchmark owner
+# metadata
+def get_all_waterfall_benchmarks_metadata():
+  return get_all_benchmarks_metadata(NON_TELEMETRY_BENCHMARKS)
+
+
+def get_all_benchmarks_metadata(metadata):
   benchmark_list = current_benchmarks(False)
 
   for benchmark in benchmark_list:
@@ -897,7 +914,9 @@ def update_benchmark_csv():
   ]
 
   csv_data = []
-  benchmark_metadata = get_all_benchmarks_metadata()
+  all_benchmarks = NON_TELEMETRY_BENCHMARKS
+  all_benchmarks.update(NON_WATERFALL_BENCHMARKS)
+  benchmark_metadata = get_all_benchmarks_metadata(all_benchmarks)
   for benchmark_name in benchmark_metadata:
     csv_data.append([
         benchmark_name,
@@ -911,7 +930,7 @@ def update_benchmark_csv():
   perf_dir = os.path.join(src_dir(), 'tools', 'perf')
   benchmark_file = os.path.join(perf_dir, 'benchmark.csv')
   with open(benchmark_file, 'wb') as f:
-    writer = csv.writer(f)
+    writer = csv.writer(f, lineterminator="\n")
     writer.writerows(csv_data)
 
 
