@@ -22,6 +22,26 @@
           "reason": "subtree"
         },
         {
+          "object": "LayoutSVGForeignObject foreignObject",
+          "rect": [0, 0, 100, 100],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutSVGForeignObject foreignObject",
+          "rect": [0, 0, 100, 100],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow P",
+          "rect": [210, 113, 100, 46],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow P",
+          "rect": [210, 13, 100, 46],
+          "reason": "subtree"
+        },
+        {
           "object": "LayoutSVGContainer g id='text3g'",
           "rect": [0, 3, 13, 4],
           "reason": "subtree"
