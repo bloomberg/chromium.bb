@@ -19,7 +19,6 @@ test("ios_clean_chrome_unittests") {
     ios_packed_resources_target,
 
     # Add unit_tests target here.
-    "//ios/clean/chrome/browser/ui/commands:unit_tests",
     "//ios/clean/chrome/browser/ui/web_contents:unit_tests",
   ]
 }

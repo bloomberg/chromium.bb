@@ -12,6 +12,8 @@
 class WebStateList;
 class WebStateListDelegate;
 
+@class CommandDispatcher;
+
 namespace ios {
 class ChromeBrowserState;
 }
@@ -26,9 +28,12 @@ class Browser {
   WebStateList& web_state_list() { return *web_state_list_.get(); }
   const WebStateList& web_state_list() const { return *web_state_list_.get(); }
 
+  CommandDispatcher* dispatcher() { return dispatcher_; }
+
   ios::ChromeBrowserState* browser_state() const { return browser_state_; }
 
  private:
+  __strong CommandDispatcher* dispatcher_;
   ios::ChromeBrowserState* browser_state_;
   std::unique_ptr<WebStateListDelegate> web_state_list_delegate_;
   std::unique_ptr<WebStateList> web_state_list_;

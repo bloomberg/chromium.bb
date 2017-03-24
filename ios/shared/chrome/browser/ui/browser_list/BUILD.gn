@@ -15,6 +15,7 @@ source_set("browser_list") {
     "//base",
     "//ios/chrome/browser/browser_state",
     "//ios/shared/chrome/browser/tabs",
+    "//ios/shared/chrome/browser/ui/commands",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }

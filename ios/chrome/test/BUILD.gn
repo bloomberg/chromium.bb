@@ -190,6 +190,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/test/base:unit_tests",
     "//ios/shared/chrome/browser/tabs:unit_tests",
     "//ios/shared/chrome/browser/ui/browser_list:unit_tests",
+    "//ios/shared/chrome/browser/ui/commands:unit_tests",
     "//ios/shared/chrome/browser/ui/coordinators:unit_tests",
   ]
 

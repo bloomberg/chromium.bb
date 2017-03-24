@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/clean/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/shared/chrome/browser/ui/commands/command_dispatcher.h"
 
 #import <Foundation/Foundation.h>
 
