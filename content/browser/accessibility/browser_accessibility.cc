@@ -335,14 +335,6 @@ int32_t BrowserAccessibility::GetId() const {
   return node_ ? node_->id() : -1;
 }
 
-const ui::AXNodeData& BrowserAccessibility::GetData() const {
-  CR_DEFINE_STATIC_LOCAL(ui::AXNodeData, empty_data, ());
-  if (node_)
-    return node_->data();
-  else
-    return empty_data;
-}
-
 gfx::RectF BrowserAccessibility::GetLocation() const {
   return GetData().location;
 }
@@ -1221,6 +1213,66 @@ gfx::Rect BrowserAccessibility::RelativeToAbsoluteBounds(
   }
 
   return gfx::ToEnclosingRect(bounds);
+}
+
+// AXPlatformNodeDelegate.
+const ui::AXNodeData& BrowserAccessibility::GetData() const {
+  CR_DEFINE_STATIC_LOCAL(ui::AXNodeData, empty_data, ());
+  if (node_)
+    return node_->data();
+  else
+    return empty_data;
+}
+
+gfx::NativeWindow BrowserAccessibility::GetTopLevelWidget() {
+  NOTREACHED();
+  return nullptr;
+}
+
+gfx::NativeViewAccessible BrowserAccessibility::GetParent() {
+  NOTREACHED();
+  return nullptr;
+}
+
+int BrowserAccessibility::GetChildCount() {
+  NOTREACHED();
+  return -1;
+}
+
+gfx::NativeViewAccessible BrowserAccessibility::ChildAtIndex(int index) {
+  NOTREACHED();
+  return nullptr;
+}
+
+gfx::Vector2d BrowserAccessibility::GetGlobalCoordinateOffset() {
+  NOTREACHED();
+  return gfx::Vector2d();
+}
+
+gfx::NativeViewAccessible BrowserAccessibility::HitTestSync(int x, int y) {
+  NOTREACHED();
+  return nullptr;
+}
+
+gfx::NativeViewAccessible BrowserAccessibility::GetFocus() {
+  NOTREACHED();
+  return nullptr;
+}
+
+gfx::AcceleratedWidget
+BrowserAccessibility::GetTargetForNativeAccessibilityEvent() {
+  NOTREACHED();
+  return gfx::kNullAcceleratedWidget;
+}
+
+bool BrowserAccessibility::AccessibilityPerformAction(
+    const ui::AXActionData& data) {
+  NOTREACHED();
+  return false;
+}
+
+void BrowserAccessibility::DoDefaultAction() {
+  NOTREACHED();
 }
 
 }  // namespace content

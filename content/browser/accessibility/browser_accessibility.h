@@ -22,6 +22,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_range.h"
 #include "ui/accessibility/ax_text_utils.h"
+#include "ui/accessibility/platform/ax_platform_node_delegate.h"
 
 // Set PLATFORM_HAS_NATIVE_ACCESSIBILITY_IMPL if this platform has
 // a platform-specific subclass of BrowserAccessibility and
@@ -64,7 +65,7 @@ class BrowserAccessibilityManager;
 // for tests.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class CONTENT_EXPORT BrowserAccessibility {
+class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
  public:
   // Creates a platform specific BrowserAccessibility. Ownership passes to the
   // caller.
@@ -236,7 +237,6 @@ class CONTENT_EXPORT BrowserAccessibility {
   int32_t GetIndexInParent() const;
 
   int32_t GetId() const;
-  const ui::AXNodeData& GetData() const;
   gfx::RectF GetLocation() const;
   ui::AXRole GetRole() const;
   int32_t GetState() const;
@@ -364,6 +364,19 @@ class CONTENT_EXPORT BrowserAccessibility {
 
   // Gets the text offsets where new lines start.
   std::vector<int> GetLineStartOffsets() const;
+
+  // AXPlatformNodeDelegate.
+  const ui::AXNodeData& GetData() const override;
+  gfx::NativeWindow GetTopLevelWidget() override;
+  gfx::NativeViewAccessible GetParent() override;
+  int GetChildCount() override;
+  gfx::NativeViewAccessible ChildAtIndex(int index) override;
+  gfx::Vector2d GetGlobalCoordinateOffset() override;
+  gfx::NativeViewAccessible HitTestSync(int x, int y) override;
+  gfx::NativeViewAccessible GetFocus() override;
+  gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override;
+  bool AccessibilityPerformAction(const ui::AXActionData& data) override;
+  void DoDefaultAction() override;
 
  protected:
   using AXPlatformPositionInstance = AXPlatformPosition::AXPositionInstance;
