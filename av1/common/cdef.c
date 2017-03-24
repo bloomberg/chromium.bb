@@ -155,6 +155,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   unsigned char *row_dering, *prev_row_dering, *curr_row_dering;
   int dering_count;
   int dir[OD_DERING_NBLOCKS][OD_DERING_NBLOCKS] = { { 0 } };
+  int var[OD_DERING_NBLOCKS][OD_DERING_NBLOCKS] = { { 0 } };
   int stride;
   int bsize[3];
   int dec[3];
@@ -380,7 +381,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
         if (threshold == 0 && clpf_strength == 0) continue;
         od_dering(dst,
                   &src[OD_FILT_VBORDER * OD_FILT_BSTRIDE + OD_FILT_HBORDER],
-                  dec[pli], dir, pli, dlist, dering_count, threshold,
+                  dec[pli], dir, NULL, var, pli, dlist, dering_count, threshold,
                   clpf_strength, clpf_damping, coeff_shift);
 #if CONFIG_AOM_HIGHBITDEPTH
         if (cm->use_highbitdepth) {

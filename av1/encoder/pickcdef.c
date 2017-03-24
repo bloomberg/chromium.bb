@@ -100,6 +100,7 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
   uint16_t *ref_coeff[3];
   dering_list dlist[MAX_MIB_SIZE * MAX_MIB_SIZE];
   int dir[OD_DERING_NBLOCKS][OD_DERING_NBLOCKS] = { { 0 } };
+  int var[OD_DERING_NBLOCKS][OD_DERING_NBLOCKS] = { { 0 } };
   int stride[3];
   int bsize[3];
   int dec[3];
@@ -179,6 +180,7 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
     for (sbc = 0; sbc < nhsb; sbc++) {
       int nvb, nhb;
       int gi;
+      int dirinit = 0;
       DECLARE_ALIGNED(32, uint16_t, dst[MAX_MIB_SIZE * MAX_MIB_SIZE * 8 * 8]);
       DECLARE_ALIGNED(32, uint16_t,
                       tmp_dst[MAX_MIB_SIZE * MAX_MIB_SIZE * 8 * 8]);
@@ -225,9 +227,10 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
             }
           }
           clpf_strength = gi % CLPF_STRENGTHS;
-          od_dering(tmp_dst, in, dec[pli], dir, pli, dlist, dering_count,
-                    threshold, clpf_strength + (clpf_strength == 3),
-                    clpf_damping, coeff_shift);
+          od_dering(tmp_dst, in, dec[pli], dir, &dirinit, var, pli, dlist,
+                    dering_count, threshold,
+                    clpf_strength + (clpf_strength == 3), clpf_damping,
+                    coeff_shift);
           copy_dering_16bit_to_16bit(dst, MAX_MIB_SIZE << bsize[pli], tmp_dst,
                                      dlist, dering_count, bsize[pli]);
           mse[pli][sb_count][gi] = (int)compute_dist(
