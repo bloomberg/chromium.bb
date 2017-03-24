@@ -101,10 +101,10 @@
 #      'target_name': 'gear_menu',
 #      'includes': ['../../../../compile_js2.gypi'],
 #    },
-    {
-      'target_name': 'list_container',
-      'includes': ['../../../../compile_js2.gypi'],
-    },
+#    {
+#      'target_name': 'list_container',
+#      'includes': ['../../../../compile_js2.gypi'],
+#    },
     {
       'target_name': 'location_line',
       'dependencies': [
