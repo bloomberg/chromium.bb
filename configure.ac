@@ -92,6 +92,7 @@ AX_APPEND_COMPILE_FLAGS(m4_flatten([
   -Woverloaded-virtual
   -Wreorder
   -Wsign-compare
+  -Wunused-local-typedefs
   -Wunused-variable
   -Wvla
 ]), [WARN_CXXFLAGS], [${ax_compiler_flags_test}])

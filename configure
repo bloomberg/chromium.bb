@@ -7295,7 +7295,7 @@ fi
 
 
 
-for flag in    -Wmissing-braces   -Wnon-virtual-dtor   -Woverloaded-virtual   -Wreorder   -Wsign-compare   -Wunused-variable   -Wvla ; do
+for flag in    -Wmissing-braces   -Wnon-virtual-dtor   -Woverloaded-virtual   -Wreorder   -Wsign-compare   -Wunused-local-typedefs   -Wunused-variable   -Wvla ; do
   as_CACHEVAR=`$as_echo "ax_cv_check_cxxflags_${ax_compiler_flags_test}_$flag" | $as_tr_sh`
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether C++ compiler accepts $flag" >&5
 $as_echo_n "checking whether C++ compiler accepts $flag... " >&6; }
