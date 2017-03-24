@@ -5,6 +5,10 @@
   'targets': [
 #    {
 #      'target_name': 'actions_submenu',
+#      'dependencies': [
+#        '../compiled_resources2.gyp:actions_model',
+#        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:command',
+#      ],
 #      'includes': ['../../../../compile_js2.gypi'],
 #    },
 #    {
@@ -97,14 +101,24 @@
       ],
       'includes': ['../../../../compile_js2.gypi'],
     },
-#    {
-#      'target_name': 'files_menu',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'gear_menu',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'files_menu',
+      'dependencies': [
+        '../../../../externs/compiled_resources2.gyp:paper_elements',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:menu',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:menu_item',
+        '<(EXTERNS_GYP):web_animations',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'gear_menu',
+      'dependencies': [
+        '../../../common/js/compiled_resources2.gyp:util',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
 #    {
 #      'target_name': 'list_container',
 #      'includes': ['../../../../compile_js2.gypi'],
