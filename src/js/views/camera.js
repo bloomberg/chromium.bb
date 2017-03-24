@@ -2135,7 +2135,22 @@ camera.views.Camera.prototype.start_ = function() {
     this.startWithConstraints_(
         constraintsCandidates[index],
         function() {
-          this.videoDeviceId_ = constraintsCandidates[index].video.deviceId;
+          if (constraintsCandidates[index].video.deviceId) {
+            // For non-default cameras fetch the deviceId from constraints.
+            // Works on all supported Chrome versions.
+            this.videoDeviceId_ = constraintsCandidates[index].video.deviceId;
+          } else {
+            // For default camera, obtain the deviceId from settings, which is
+            // a feature available only from 59. For older Chrome versions,
+            // it's impossible to detect the device id. As a result, if the
+            // default camera was changed to rear in chrome://settings, then
+            // toggling the camera may not work when pressed for the first time
+            // (the same camera would be opened).
+            var track = this.stream_.getVideoTracks()[0];
+            var trackSettings = track.getSettings && track.getSettings();
+            this.videoDeviceId_ = trackSettings && trackSettings.deviceId ||
+                null;
+          }
           this.updateMirroring_();
           onSuccess();
         }.bind(this),
