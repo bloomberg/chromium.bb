@@ -30,6 +30,7 @@
 #include "core/CoreExport.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/graphics/GraphicsTypes.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {

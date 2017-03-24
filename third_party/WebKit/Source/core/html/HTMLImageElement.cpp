@@ -629,63 +629,6 @@ bool HTMLImageElement::isInteractiveContent() const {
   return fastHasAttribute(usemapAttr);
 }
 
-PassRefPtr<Image> HTMLImageElement::getSourceImageForCanvas(
-    SourceImageStatus* status,
-    AccelerationHint,
-    SnapshotReason,
-    const FloatSize& defaultObjectSize) const {
-  if (!complete() || !cachedImage()) {
-    *status = IncompleteSourceImageStatus;
-    return nullptr;
-  }
-
-  if (cachedImage()->errorOccurred()) {
-    *status = UndecodableSourceImageStatus;
-    return nullptr;
-  }
-
-  RefPtr<Image> sourceImage;
-  if (cachedImage()->getImage()->isSVGImage()) {
-    UseCounter::count(document(), UseCounter::SVGInCanvas2D);
-    SVGImage* svgImage = toSVGImage(cachedImage()->getImage());
-    IntSize imageSize =
-        roundedIntSize(svgImage->concreteObjectSize(defaultObjectSize));
-    sourceImage = SVGImageForContainer::create(
-        svgImage, imageSize, 1, document().completeURL(imageSourceURL()));
-  } else {
-    sourceImage = cachedImage()->getImage();
-  }
-
-  *status = NormalSourceImageStatus;
-  return sourceImage->imageForDefaultFrame();
-}
-
-bool HTMLImageElement::isSVGSource() const {
-  return cachedImage() && cachedImage()->getImage()->isSVGImage();
-}
-
-bool HTMLImageElement::wouldTaintOrigin(
-    SecurityOrigin* destinationSecurityOrigin) const {
-  ImageResourceContent* image = cachedImage();
-  if (!image)
-    return false;
-  return !image->isAccessAllowed(destinationSecurityOrigin);
-}
-
-FloatSize HTMLImageElement::elementSize(
-    const FloatSize& defaultObjectSize) const {
-  ImageResourceContent* image = cachedImage();
-  if (!image)
-    return FloatSize();
-
-  if (image->getImage() && image->getImage()->isSVGImage())
-    return toSVGImage(cachedImage()->getImage())
-        ->concreteObjectSize(defaultObjectSize);
-
-  return FloatSize(image->imageSize(
-      LayoutObject::shouldRespectImageOrientation(layoutObject()), 1.0f));
-}
-
 FloatSize HTMLImageElement::defaultDestinationSize(
     const FloatSize& defaultObjectSize) const {
   ImageResourceContent* image = cachedImage();
@@ -816,10 +759,6 @@ void HTMLImageElement::selectSourceURL(
     ensureCollapsedOrFallbackContent();
 }
 
-const KURL& HTMLImageElement::sourceURL() const {
-  return cachedImage()->response().url();
-}
-
 void HTMLImageElement::didAddUserAgentShadowRoot(ShadowRoot&) {
   HTMLImageFallbackHelper::createAltTextShadowTree(*this);
 }
@@ -887,27 +826,6 @@ PassRefPtr<ComputedStyle> HTMLImageElement::customStyleForLayoutObject() {
   }
 }
 
-bool HTMLImageElement::isOpaque() const {
-  Image* image = const_cast<HTMLImageElement*>(this)->imageContents();
-  return image && image->currentFrameKnownToBeOpaque();
-}
-
-int HTMLImageElement::sourceWidth() {
-  SourceImageStatus status;
-  FloatSize defaultObjectSize(width(), height());
-  RefPtr<Image> image = getSourceImageForCanvas(
-      &status, PreferNoAcceleration, SnapshotReasonUnknown, defaultObjectSize);
-  return image->width();
-}
-
-int HTMLImageElement::sourceHeight() {
-  SourceImageStatus status;
-  FloatSize defaultObjectSize(width(), height());
-  RefPtr<Image> image = getSourceImageForCanvas(
-      &status, PreferNoAcceleration, SnapshotReasonUnknown, defaultObjectSize);
-  return image->height();
-}
-
 IntSize HTMLImageElement::bitmapSourceSize() const {
   ImageResourceContent* image = cachedImage();
   if (!image)
@@ -926,5 +844,9 @@ void HTMLImageElement::associateWith(HTMLFormElement* form) {
     m_form->didAssociateByParser();
   }
 };
+
+FloatSize HTMLImageElement::sourceDefaultObjectSize() {
+  return FloatSize(width(), height());
+}
 
 }  // namespace blink

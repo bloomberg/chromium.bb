@@ -5,7 +5,7 @@
 #ifndef BaseRenderingContext2D_h
 #define BaseRenderingContext2D_h
 
-#include "bindings/modules/v8/CSSImageValueOrHTMLImageElementOrHTMLVideoElementOrHTMLCanvasElementOrImageBitmapOrOffscreenCanvas.h"
+#include "bindings/modules/v8/CSSImageValueOrHTMLImageElementOrSVGImageElementOrHTMLVideoElementOrHTMLCanvasElementOrImageBitmapOrOffscreenCanvas.h"
 #include "bindings/modules/v8/StringOrCanvasGradientOrCanvasPattern.h"
 #include "core/html/ImageData.h"
 #include "modules/ModulesExport.h"
@@ -27,7 +27,7 @@ class ImageBuffer;
 class Path2D;
 class SVGMatrixTearOff;
 
-typedef CSSImageValueOrHTMLImageElementOrHTMLVideoElementOrHTMLCanvasElementOrImageBitmapOrOffscreenCanvas
+typedef CSSImageValueOrHTMLImageElementOrSVGImageElementOrHTMLVideoElementOrHTMLCanvasElementOrImageBitmapOrOffscreenCanvas
     CanvasImageSourceUnion;
 
 class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,

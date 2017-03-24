@@ -22,6 +22,7 @@
 #define SVGImageElement_h
 
 #include "core/SVGNames.h"
+#include "core/html/canvas/CanvasImageElementSource.h"
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGAnimatedPreserveAspectRatio.h"
 #include "core/svg/SVGGraphicsElement.h"
@@ -31,8 +32,9 @@
 
 namespace blink {
 
-class SVGImageElement final : public SVGGraphicsElement,
-                              public SVGURIReference {
+class CORE_EXPORT SVGImageElement final : public SVGGraphicsElement,
+                                          public CanvasImageElementSource,
+                                          public SVGURIReference {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(SVGImageElement);
 
@@ -77,7 +79,8 @@ class SVGImageElement final : public SVGGraphicsElement,
 
   bool selfHasRelativeLengths() const override;
   void didMoveToNewDocument(Document& oldDocument) override;
-  SVGImageLoader& imageLoader() const { return *m_imageLoader; }
+  SVGImageLoader& imageLoader() const override { return *m_imageLoader; }
+  FloatSize sourceDefaultObjectSize() override;
 
   Member<SVGAnimatedLength> m_x;
   Member<SVGAnimatedLength> m_y;

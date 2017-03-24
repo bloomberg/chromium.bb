@@ -15,6 +15,7 @@
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/ImageData.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
+#include "core/svg/SVGImageElement.h"
 #include "modules/canvas2d/CanvasGradient.h"
 #include "modules/canvas2d/CanvasPattern.h"
 #include "modules/canvas2d/CanvasStyle.h"
@@ -913,6 +914,8 @@ static inline CanvasImageSource* toImageSourceInternal(
     video->videoWillBeDrawnToCanvas();
     return video;
   }
+  if (value.isSVGImageElement())
+    return value.getAsSVGImageElement();
   if (value.isHTMLCanvasElement())
     return value.getAsHTMLCanvasElement();
   if (value.isImageBitmap()) {

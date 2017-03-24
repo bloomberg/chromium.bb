@@ -61,7 +61,7 @@ class HitTestCanvasResult;
 class Path2D;
 class TextMetrics;
 
-typedef CSSImageValueOrHTMLImageElementOrHTMLVideoElementOrHTMLCanvasElementOrImageBitmapOrOffscreenCanvas
+typedef CSSImageValueOrHTMLImageElementOrSVGImageElementOrHTMLVideoElementOrHTMLCanvasElementOrImageBitmapOrOffscreenCanvas
     CanvasImageSourceUnion;
 
 class MODULES_EXPORT CanvasRenderingContext2D final

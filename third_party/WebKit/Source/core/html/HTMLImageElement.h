@@ -29,7 +29,7 @@
 #include "core/html/FormAssociated.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLImageLoader.h"
-#include "core/html/canvas/CanvasImageSource.h"
+#include "core/html/canvas/CanvasImageElementSource.h"
 #include "core/imagebitmap/ImageBitmapSource.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/loader/fetch/FetchRequest.h"
@@ -44,7 +44,7 @@ class ImageBitmapOptions;
 
 class CORE_EXPORT HTMLImageElement final
     : public HTMLElement,
-      public CanvasImageSource,
+      public CanvasImageElementSource,
       public ImageBitmapSource,
       public ActiveScriptWrappable<HTMLImageElement>,
       public FormAssociated {
@@ -116,20 +116,9 @@ class CORE_EXPORT HTMLImageElement final
   virtual void ensurePrimaryContent();
   bool isCollapsed() const;
 
-  // CanvasImageSource implementation
-  PassRefPtr<Image> getSourceImageForCanvas(SourceImageStatus*,
-                                            AccelerationHint,
-                                            SnapshotReason,
-                                            const FloatSize&) const override;
-  bool isSVGSource() const override;
-  bool wouldTaintOrigin(SecurityOrigin*) const override;
-  FloatSize elementSize(const FloatSize&) const override;
+  // CanvasImageSource interface implementation.
+  FloatSize sourceDefaultObjectSize() override;
   FloatSize defaultDestinationSize(const FloatSize&) const override;
-  const KURL& sourceURL() const override;
-  bool isAccelerated() const override { return false; }
-  bool isOpaque() const override;
-  int sourceWidth() override;
-  int sourceHeight() override;
 
   // public so that HTMLPictureElement can call this as well.
   void selectSourceURL(ImageLoader::UpdateFromElementBehavior);
@@ -208,7 +197,7 @@ class CORE_EXPORT HTMLImageElement final
   void resetFormOwner();
   ImageCandidate findBestFitImageFromPictureParent();
   void setBestFitURLAndDPRFromImageCandidate(const ImageCandidate&);
-  HTMLImageLoader& imageLoader() const { return *m_imageLoader; }
+  HTMLImageLoader& imageLoader() const override { return *m_imageLoader; }
   void notifyViewportChanged();
   void createMediaQueryListIfDoesNotExist();
 
