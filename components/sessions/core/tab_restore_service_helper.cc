@@ -410,16 +410,11 @@ void TabRestoreServiceHelper::PopulateTab(Tab* tab,
                                           int index,
                                           LiveTabContext* context,
                                           LiveTab* live_tab) {
-  const int pending_index = live_tab->GetPendingEntryIndex();
   int entry_count =
       live_tab->IsInitialBlankNavigation() ? 0 : live_tab->GetEntryCount();
-  if (entry_count == 0 && pending_index == 0)
-    entry_count++;
   tab->navigations.resize(static_cast<int>(entry_count));
   for (int i = 0; i < entry_count; ++i) {
-    SerializedNavigationEntry entry = (i == pending_index)
-                                          ? live_tab->GetPendingEntry()
-                                          : live_tab->GetEntryAtIndex(i);
+    SerializedNavigationEntry entry = live_tab->GetEntryAtIndex(i);
     tab->navigations[i] = entry;
   }
   tab->timestamp = TimeNow();
