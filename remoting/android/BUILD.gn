@@ -6,6 +6,7 @@ import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//remoting/android/client_java_tmpl.gni")
 import("//remoting/android/remoting_apk_tmpl.gni")
+import("//remoting/credits/credits.gni")
 import("//remoting/remoting_options.gni")
 import("//remoting/tools/build/remoting_localize.gni")
 
@@ -19,50 +20,14 @@ generate_jni("jni_headers") {
   jni_package = "remoting"
 }
 
-action("credits") {
-  credits_html_file = "$target_gen_dir/credits.html"
-  script = "//tools/licenses.py"
-  depfile = "$target_gen_dir/$target_name.d"
-  credits_template = "//remoting/credits/credits.tmpl"
-  credits_entry_template = "//remoting/credits/credits_entry.tmpl"
-  inputs = [
-    credits_template,
-    credits_entry_template,
-  ]
-  outputs = [
-    credits_html_file,
-  ]
-  args = [
-    "credits",
-    rebase_path(credits_html_file, root_build_dir),
-    "--file-template",
-    rebase_path(credits_template, root_build_dir),
-    "--entry-template",
-    rebase_path(credits_entry_template, root_build_dir),
-    "--depfile",
-    rebase_path(depfile, root_build_dir),
-    "--gn-target",
-    "//remoting/android:remoting_apk",
-    "--gn-out-dir",
-    rebase_path(root_build_dir),
-  ]
-}
+_raw_resources_base_dir = "$target_gen_dir/credits_resources_raw/res"
 
-_raw_resources_base_dir = "$target_gen_dir/remoting_android_raw_resources/res"
-copy("remoting_android_raw_resources") {
-  _credits_html = get_label_info("//remoting/android:credits",
-                                 "target_gen_dir") + "/credits.html"
-  sources = [
-    "//remoting/credits/credits_css.css",
-    "//remoting/credits/credits_js.js",
-    _credits_html,
-  ]
-  outputs = [
-    "$_raw_resources_base_dir/raw/{{source_file_part}}",
-  ]
-  deps = [
-    ":credits",
-  ]
+# The target is named this way, instead of "..._raw_resources", specifically
+# to avoid matching any of the _java_target_whitelist items in
+# build/config/android/internal_rules.gni
+remoting_credits("credits_resources_raw") {
+  credits_gen_dir = "$_raw_resources_base_dir/raw"
+  gn_target = "//remoting/android:remoting_apk"
 }
 
 remoting_localize("remoting_apk_manifest") {
@@ -78,11 +43,9 @@ android_resources("remoting_android_client_java_resources") {
   custom_package = "org.chromium.chromoting"
   resource_dirs = [ "java/res" ]
   generated_resource_dirs = [ _raw_resources_base_dir ]
-  generated_resource_files =
-      get_target_outputs(":remoting_android_raw_resources")
-
+  generated_resource_files = get_target_outputs(":credits_resources_raw")
   deps = [
-    ":remoting_android_raw_resources",
+    ":credits_resources_raw",
     "//remoting/resources:strings_java",
     "//third_party/android_tools:android_support_v7_appcompat_java",
   ]
