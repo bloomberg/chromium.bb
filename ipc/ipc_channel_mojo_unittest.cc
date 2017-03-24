@@ -670,8 +670,8 @@ class ChannelProxyRunner {
 
   mojo::ScopedMessagePipeHandle handle_;
   base::Thread io_thread_;
-  std::unique_ptr<IPC::ChannelProxy> proxy_;
   base::WaitableEvent never_signaled_;
+  std::unique_ptr<IPC::ChannelProxy> proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(ChannelProxyRunner);
 };

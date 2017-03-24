@@ -55,8 +55,26 @@ void SyncHandleRegistry::UnregisterHandle(const Handle& handle) {
   handles_.erase(handle);
 }
 
-bool SyncHandleRegistry::WatchAllHandles(const bool* should_stop[],
-                                         size_t count) {
+bool SyncHandleRegistry::RegisterEvent(base::WaitableEvent* event,
+                                       const base::Closure& callback) {
+  auto result = events_.insert({event, callback});
+  DCHECK(result.second);
+  MojoResult rv = wait_set_.AddEvent(event);
+  if (rv == MOJO_RESULT_OK)
+    return true;
+  DCHECK_EQ(MOJO_RESULT_ALREADY_EXISTS, rv);
+  return false;
+}
+
+void SyncHandleRegistry::UnregisterEvent(base::WaitableEvent* event) {
+  auto it = events_.find(event);
+  DCHECK(it != events_.end());
+  events_.erase(it);
+  MojoResult rv = wait_set_.RemoveEvent(event);
+  DCHECK_EQ(MOJO_RESULT_OK, rv);
+}
+
+bool SyncHandleRegistry::Wait(const bool* should_stop[], size_t count) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   size_t num_ready_handles;
@@ -71,12 +89,21 @@ bool SyncHandleRegistry::WatchAllHandles(const bool* should_stop[],
 
     // TODO(yzshen): Theoretically it can reduce sync call re-entrancy if we
     // give priority to the handle that is waiting for sync response.
+    base::WaitableEvent* ready_event = nullptr;
     num_ready_handles = 1;
-    wait_set_.Wait(&num_ready_handles, &ready_handle, &ready_handle_result);
-    DCHECK_EQ(1u, num_ready_handles);
+    wait_set_.Wait(&ready_event, &num_ready_handles, &ready_handle,
+                   &ready_handle_result);
+    if (num_ready_handles) {
+      DCHECK_EQ(1u, num_ready_handles);
+      const auto iter = handles_.find(ready_handle);
+      iter->second.Run(ready_handle_result);
+    }
 
-    const auto iter = handles_.find(ready_handle);
-    iter->second.Run(ready_handle_result);
+    if (ready_event) {
+      const auto iter = events_.find(ready_event);
+      DCHECK(iter != events_.end());
+      iter->second.Run();
+    }
   };
 
   return false;

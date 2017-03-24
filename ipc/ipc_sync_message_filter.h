@@ -10,13 +10,10 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
-#include "base/synchronization/waitable_event_watcher.h"
 #include "ipc/ipc_sender.h"
 #include "ipc/ipc_sync_message.h"
 #include "ipc/message_filter.h"
-#include "ipc/mojo_event.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
@@ -63,17 +60,11 @@ class IPC_EXPORT SyncMessageFilter : public MessageFilter, public Sender {
   ~SyncMessageFilter() override;
 
  private:
-  class IOMessageLoopObserver;
-
   friend class SyncChannel;
-  friend class IOMessageLoopObserver;
 
   void SendOnIOThread(Message* message);
   // Signal all the pending sends as done, used in an error condition.
   void SignalAllEvents();
-
-  void OnShutdownEventSignaled(base::WaitableEvent* event);
-  void OnIOMessageLoopDestroyed();
 
   // NOTE: This must ONLY be called on the Channel's thread.
   void GetGenericRemoteAssociatedInterface(
@@ -99,18 +90,6 @@ class IPC_EXPORT SyncMessageFilter : public MessageFilter, public Sender {
   base::Lock lock_;
 
   base::WaitableEvent* const shutdown_event_;
-
-  // Used to asynchronously watch |shutdown_event_| on the IO thread and forward
-  // to |shutdown_mojo_event_| (see below.)
-  base::WaitableEventWatcher shutdown_watcher_;
-
-  // A Mojo event which can be watched for shutdown. Signals are forwarded to
-  // this event asynchronously from |shutdown_event_|.
-  MojoEvent shutdown_mojo_event_;
-
-  scoped_refptr<IOMessageLoopObserver> io_message_loop_observer_;
-
-  base::WeakPtrFactory<SyncMessageFilter> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncMessageFilter);
 };

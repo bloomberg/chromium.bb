@@ -17,10 +17,13 @@
 #include "build/build_config.h"
 #include "ipc/ipc_message.h"
 
+namespace base {
+class WaitableEvent;
+}
+
 namespace IPC {
 
 class MessageReplyDeserializer;
-class MojoEvent;
 
 class IPC_EXPORT SyncMessage : public Message {
  public:
@@ -90,12 +93,12 @@ class IPC_EXPORT MessageReplyDeserializer {
 // When sending a synchronous message, this structure contains an object
 // that knows how to deserialize the response.
 struct PendingSyncMsg {
-  PendingSyncMsg(int id, MessageReplyDeserializer* d, MojoEvent* e)
-      : id(id), deserializer(d), done_event(e), send_result(false) { }
+  PendingSyncMsg(int id, MessageReplyDeserializer* d, base::WaitableEvent* e)
+      : id(id), deserializer(d), done_event(e), send_result(false) {}
 
   int id;
   MessageReplyDeserializer* deserializer;
-  MojoEvent* done_event;
+  base::WaitableEvent* done_event;
   bool send_result;
 };
 

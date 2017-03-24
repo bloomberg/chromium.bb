@@ -19,7 +19,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "ipc/mojo_event.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/associated_group_controller.h"
 #include "mojo/public/cpp/bindings/connector.h"
@@ -31,7 +30,7 @@
 #include "mojo/public/cpp/bindings/pipe_control_message_handler.h"
 #include "mojo/public/cpp/bindings/pipe_control_message_handler_delegate.h"
 #include "mojo/public/cpp/bindings/pipe_control_message_proxy.h"
-#include "mojo/public/cpp/bindings/sync_handle_watcher.h"
+#include "mojo/public/cpp/bindings/sync_event_watcher.h"
 
 namespace IPC {
 
@@ -436,7 +435,7 @@ class ChannelAssociatedGroupController
       DCHECK(!sync_watcher_);
     }
 
-    void OnSyncMessageEventHandleReady(MojoResult result) {
+    void OnSyncMessageEventReady() {
       DCHECK(task_runner_->BelongsToCurrentThread());
 
       scoped_refptr<Endpoint> keepalive(this);
@@ -491,22 +490,18 @@ class ChannelAssociatedGroupController
       {
         base::AutoLock locker(controller_->lock_);
         if (!sync_message_event_) {
-          sync_message_event_.reset(new MojoEvent);
+          sync_message_event_ = base::MakeUnique<base::WaitableEvent>(
+              base::WaitableEvent::ResetPolicy::MANUAL,
+              base::WaitableEvent::InitialState::NOT_SIGNALED);
           if (peer_closed_ || !sync_messages_.empty())
             SignalSyncMessageEvent();
         }
       }
 
-      sync_watcher_.reset(new mojo::SyncHandleWatcher(
-          sync_message_event_->GetHandle(), MOJO_HANDLE_SIGNAL_READABLE,
-          base::Bind(&Endpoint::OnSyncMessageEventHandleReady,
-                     base::Unretained(this))));
-    }
-
-    void EnsureSyncMessageEventExists() {
-      controller_->lock_.AssertAcquired();
-      if (!sync_message_event_)
-        sync_message_event_.reset(new MojoEvent);
+      sync_watcher_ = base::MakeUnique<mojo::SyncEventWatcher>(
+          sync_message_event_.get(),
+          base::Bind(&Endpoint::OnSyncMessageEventReady,
+                     base::Unretained(this)));
     }
 
     uint32_t GenerateSyncMessageId() {
@@ -525,8 +520,8 @@ class ChannelAssociatedGroupController
     base::Optional<mojo::DisconnectReason> disconnect_reason_;
     mojo::InterfaceEndpointClient* client_ = nullptr;
     scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-    std::unique_ptr<mojo::SyncHandleWatcher> sync_watcher_;
-    std::unique_ptr<MojoEvent> sync_message_event_;
+    std::unique_ptr<mojo::SyncEventWatcher> sync_watcher_;
+    std::unique_ptr<base::WaitableEvent> sync_message_event_;
     std::queue<std::pair<uint32_t, MessageWrapper>> sync_messages_;
     uint32_t next_sync_message_id_ = 0;
 

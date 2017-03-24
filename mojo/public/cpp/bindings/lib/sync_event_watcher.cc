@@ -1,39 +1,33 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/bindings/sync_handle_watcher.h"
+#include "mojo/public/cpp/bindings/sync_event_watcher.h"
 
 #include "base/logging.h"
 
 namespace mojo {
 
-SyncHandleWatcher::SyncHandleWatcher(
-    const Handle& handle,
-    MojoHandleSignals handle_signals,
-    const SyncHandleRegistry::HandleCallback& callback)
-    : handle_(handle),
-      handle_signals_(handle_signals),
+SyncEventWatcher::SyncEventWatcher(base::WaitableEvent* event,
+                                   const base::Closure& callback)
+    : event_(event),
       callback_(callback),
-      registered_(false),
-      register_request_count_(0),
       registry_(SyncHandleRegistry::current()),
       destroyed_(new base::RefCountedData<bool>(false)) {}
 
-SyncHandleWatcher::~SyncHandleWatcher() {
+SyncEventWatcher::~SyncEventWatcher() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (registered_)
-    registry_->UnregisterHandle(handle_);
-
+    registry_->UnregisterEvent(event_);
   destroyed_->data = true;
 }
 
-void SyncHandleWatcher::AllowWokenUpBySyncWatchOnSameThread() {
+void SyncEventWatcher::AllowWokenUpBySyncWatchOnSameThread() {
   DCHECK(thread_checker_.CalledOnValidThread());
   IncrementRegisterCount();
 }
 
-bool SyncHandleWatcher::SyncWatch(const bool* should_stop) {
+bool SyncEventWatcher::SyncWatch(const bool* should_stop) {
   DCHECK(thread_checker_.CalledOnValidThread());
   IncrementRegisterCount();
   if (!registered_) {
@@ -55,20 +49,17 @@ bool SyncHandleWatcher::SyncWatch(const bool* should_stop) {
   return result;
 }
 
-void SyncHandleWatcher::IncrementRegisterCount() {
+void SyncEventWatcher::IncrementRegisterCount() {
   register_request_count_++;
-  if (!registered_) {
-    registered_ =
-        registry_->RegisterHandle(handle_, handle_signals_, callback_);
-  }
+  if (!registered_)
+    registered_ = registry_->RegisterEvent(event_, callback_);
 }
 
-void SyncHandleWatcher::DecrementRegisterCount() {
+void SyncEventWatcher::DecrementRegisterCount() {
   DCHECK_GT(register_request_count_, 0u);
-
   register_request_count_--;
   if (register_request_count_ == 0 && registered_) {
-    registry_->UnregisterHandle(handle_);
+    registry_->UnregisterEvent(event_);
     registered_ = false;
   }
 }

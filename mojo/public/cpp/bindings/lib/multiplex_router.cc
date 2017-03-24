@@ -14,11 +14,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/interface_endpoint_client.h"
 #include "mojo/public/cpp/bindings/interface_endpoint_controller.h"
 #include "mojo/public/cpp/bindings/lib/may_auto_lock.h"
-#include "mojo/public/cpp/bindings/sync_handle_watcher.h"
+#include "mojo/public/cpp/bindings/sync_event_watcher.h"
 
 namespace mojo {
 namespace internal {
@@ -37,8 +38,7 @@ class MultiplexRouter::InterfaceEndpoint
         closed_(false),
         peer_closed_(false),
         handle_created_(false),
-        client_(nullptr),
-        event_signalled_(false) {}
+        client_(nullptr) {}
 
   // ---------------------------------------------------------------------------
   // The following public methods are safe to call from any threads without
@@ -108,33 +108,20 @@ class MultiplexRouter::InterfaceEndpoint
 
   void SignalSyncMessageEvent() {
     router_->AssertLockAcquired();
-    if (event_signalled_)
+    if (sync_message_event_signaled_)
       return;
-
-    event_signalled_ = true;
-    if (!sync_message_event_sender_.is_valid())
-      return;
-
-    MojoResult result =
-        WriteMessageRaw(sync_message_event_sender_.get(), nullptr, 0, nullptr,
-                        0, MOJO_WRITE_MESSAGE_FLAG_NONE);
-    DCHECK_EQ(MOJO_RESULT_OK, result);
+    sync_message_event_signaled_ = true;
+    if (sync_message_event_)
+      sync_message_event_->Signal();
   }
 
   void ResetSyncMessageSignal() {
     router_->AssertLockAcquired();
-
-    if (!event_signalled_)
+    if (!sync_message_event_signaled_)
       return;
-
-    event_signalled_ = false;
-    if (!sync_message_event_receiver_.is_valid())
-      return;
-
-    MojoResult result =
-        ReadMessageRaw(sync_message_event_receiver_.get(), nullptr, nullptr,
-                       nullptr, nullptr, MOJO_READ_MESSAGE_FLAG_MAY_DISCARD);
-    DCHECK_EQ(MOJO_RESULT_OK, result);
+    sync_message_event_signaled_ = false;
+    if (sync_message_event_)
+      sync_message_event_->Reset();
   }
 
   // ---------------------------------------------------------------------------
@@ -174,13 +161,9 @@ class MultiplexRouter::InterfaceEndpoint
     DCHECK(!sync_watcher_);
   }
 
-  void OnHandleReady(MojoResult result) {
+  void OnSyncEventSignaled() {
     DCHECK(task_runner_->BelongsToCurrentThread());
     scoped_refptr<MultiplexRouter> router_protector(router_);
-
-    // Because we never close |sync_message_event_{sender,receiver}_| before
-    // destruction or set a deadline, |result| should always be MOJO_RESULT_OK.
-    DCHECK_EQ(MOJO_RESULT_OK, result);
 
     MayAutoLock locker(&router_->lock_);
     scoped_refptr<InterfaceEndpoint> self_protector(this);
@@ -207,25 +190,18 @@ class MultiplexRouter::InterfaceEndpoint
 
     {
       MayAutoLock locker(&router_->lock_);
-
-      if (!sync_message_event_sender_.is_valid()) {
-        MojoResult result =
-            CreateMessagePipe(nullptr, &sync_message_event_sender_,
-                              &sync_message_event_receiver_);
-        DCHECK_EQ(MOJO_RESULT_OK, result);
-
-        if (event_signalled_) {
-          // Reset the flag so that SignalSyncMessageEvent() will actually
-          // signal using the newly-created message pipe.
-          event_signalled_ = false;
-          SignalSyncMessageEvent();
-        }
+      if (!sync_message_event_) {
+        sync_message_event_.emplace(
+            base::WaitableEvent::ResetPolicy::MANUAL,
+            base::WaitableEvent::InitialState::NOT_SIGNALED);
+        if (sync_message_event_signaled_)
+          sync_message_event_->Signal();
       }
     }
-
-    sync_watcher_.reset(new SyncHandleWatcher(
-        sync_message_event_receiver_.get(), MOJO_HANDLE_SIGNAL_READABLE,
-        base::Bind(&InterfaceEndpoint::OnHandleReady, base::Unretained(this))));
+    sync_watcher_.reset(
+        new SyncEventWatcher(&sync_message_event_.value(),
+                             base::Bind(&InterfaceEndpoint::OnSyncEventSignaled,
+                                        base::Unretained(this))));
   }
 
   // ---------------------------------------------------------------------------
@@ -253,20 +229,18 @@ class MultiplexRouter::InterfaceEndpoint
   // Not owned. It is null if no client is attached to this endpoint.
   InterfaceEndpointClient* client_;
 
-  // A message pipe used as an event to signal that sync messages are available.
-  // The message pipe handles are initialized under the router's lock and remain
-  // unchanged afterwards. They may be accessed outside of the router's lock
-  // later.
-  ScopedMessagePipeHandle sync_message_event_sender_;
-  ScopedMessagePipeHandle sync_message_event_receiver_;
-  bool event_signalled_;
+  // An event used to signal that sync messages are available. The event is
+  // initialized under the router's lock and remains unchanged afterwards. It
+  // may be accessed outside of the router's lock later.
+  base::Optional<base::WaitableEvent> sync_message_event_;
+  bool sync_message_event_signaled_ = false;
 
   // ---------------------------------------------------------------------------
   // The following members are only valid while a client is attached. They are
   // used exclusively on the client's thread. They may be accessed outside of
   // the router's lock.
 
-  std::unique_ptr<SyncHandleWatcher> sync_watcher_;
+  std::unique_ptr<SyncEventWatcher> sync_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(InterfaceEndpoint);
 };

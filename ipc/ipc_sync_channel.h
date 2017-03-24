@@ -22,6 +22,7 @@
 #include "mojo/public/cpp/system/simple_watcher.h"
 
 namespace base {
+class RunLoop;
 class WaitableEvent;
 };
 
@@ -32,7 +33,6 @@ class SyncHandleRegistry;
 namespace IPC {
 
 class ChannelFactory;
-class MojoEvent;
 class SyncMessage;
 
 // This is similar to ChannelProxy, with the added feature of supporting sending
@@ -151,11 +151,11 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
 
     // Returns a Mojo Event that signals when a sync send is complete or timed
     // out or the process shut down.
-    MojoEvent* GetSendDoneEvent();
+    base::WaitableEvent* GetSendDoneEvent();
 
     // Returns a Mojo Event that signals when an incoming message that's not the
     // pending reply needs to get dispatched (by calling DispatchMessages.)
-    MojoEvent* GetDispatchEvent();
+    base::WaitableEvent* GetDispatchEvent();
 
     void DispatchMessages();
 
@@ -177,6 +177,9 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
     int restrict_dispatch_group() const {
       return restrict_dispatch_group_;
     }
+
+    void OnSendDoneEventSignaled(base::RunLoop* nested_loop,
+                                 base::WaitableEvent* event);
 
    private:
     ~SyncContext() override;
@@ -215,7 +218,7 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
       const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
       base::WaitableEvent* shutdown_event);
 
-  void OnDispatchHandleReady(MojoResult result);
+  void OnDispatchEventSignaled(base::WaitableEvent* event);
 
   SyncContext* sync_context() {
     return reinterpret_cast<SyncContext*>(context());
@@ -240,7 +243,8 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
   scoped_refptr<mojo::SyncHandleRegistry> sync_handle_registry_;
 
   // Used to signal events between the IPC and listener threads.
-  mojo::SimpleWatcher dispatch_watcher_;
+  base::WaitableEventWatcher dispatch_watcher_;
+  base::WaitableEventWatcher::EventCallback dispatch_watcher_callback_;
 
   // Tracks SyncMessageFilters created before complete channel initialization.
   std::vector<scoped_refptr<SyncMessageFilter>> pre_init_sync_message_filters_;
