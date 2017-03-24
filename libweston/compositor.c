@@ -918,6 +918,39 @@ weston_view_damage_below(struct weston_view *view)
 	weston_view_schedule_repaint(view);
 }
 
+/** Send wl_surface.enter/leave events
+ *
+ * \param surface The surface.
+ * \param output The entered/left output.
+ * \param enter True if entered.
+ * \param left True if left.
+ *
+ * Send the enter/leave events for all protocol objects bound to the given
+ * output by the client owning the surface.
+ */
+static void
+weston_surface_send_enter_leave(struct weston_surface *surface,
+				struct weston_output *output,
+				bool enter,
+				bool leave)
+{
+	struct wl_resource *wloutput;
+	struct wl_client *client;
+
+	assert(enter != leave);
+
+	client = wl_resource_get_client(surface->resource);
+	wl_resource_for_each(wloutput, &output->resource_list) {
+		if (wl_resource_get_client(wloutput) != client)
+			continue;
+
+		if (enter)
+			wl_surface_send_enter(surface->resource, wloutput);
+		if (leave)
+			wl_surface_send_leave(surface->resource, wloutput);
+	}
+}
+
 /**
  * \param es    The surface
  * \param mask  The new set of outputs for the surface
@@ -933,9 +966,8 @@ weston_surface_update_output_mask(struct weston_surface *es, uint32_t mask)
 	uint32_t different = es->output_mask ^ mask;
 	uint32_t entered = mask & different;
 	uint32_t left = es->output_mask & different;
+	uint32_t output_bit;
 	struct weston_output *output;
-	struct wl_resource *resource = NULL;
-	struct wl_client *client;
 
 	es->output_mask = mask;
 	if (es->resource == NULL)
@@ -943,19 +975,14 @@ weston_surface_update_output_mask(struct weston_surface *es, uint32_t mask)
 	if (different == 0)
 		return;
 
-	client = wl_resource_get_client(es->resource);
-
 	wl_list_for_each(output, &es->compositor->output_list, link) {
-		if (1u << output->id & different)
-			resource =
-				wl_resource_find_for_client(&output->resource_list,
-							 client);
-		if (resource == NULL)
+		output_bit = 1u << output->id;
+		if (!(output_bit & different))
 			continue;
-		if (1u << output->id & entered)
-			wl_surface_send_enter(es->resource, resource);
-		if (1u << output->id & left)
-			wl_surface_send_leave(es->resource, resource);
+
+		weston_surface_send_enter_leave(es, output,
+						output_bit & entered,
+						output_bit & left);
 	}
 }
 
