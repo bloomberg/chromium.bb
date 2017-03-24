@@ -208,6 +208,72 @@ TEST(SimpleColorSpace, BT709toSRGBICC) {
   EXPECT_GT(tmp.z(), tmp.y());
 }
 
+TEST(SimpleColorSpace, ICCProfileOnlyXYZ) {
+  const float kEpsilon = 2.5f / 255.f;
+  ICCProfile icc_profile = ICCProfileForTestingNoAnalyticTrFn();
+  ColorSpace icc_space = icc_profile.GetColorSpace();
+  ColorSpace xyzd50 = ColorSpace::CreateXYZD50();
+
+  ColorTransform::TriStim input_value(127.f / 255, 187.f / 255, 157.f / 255);
+  ColorTransform::TriStim transformed_value = input_value;
+  ColorTransform::TriStim expected_transformed_value(
+      0.34090986847877502f, 0.42633286118507385f, 0.3408740758895874f);
+
+  // One step should be needed, namely, the SkColorSpaceXform.
+  std::unique_ptr<ColorTransform> icc_to_xyzd50(
+      ColorTransform::NewColorTransform(
+          icc_space, xyzd50, ColorTransform::Intent::INTENT_ABSOLUTE));
+  EXPECT_EQ(icc_to_xyzd50->NumberOfStepsForTesting(), 1u);
+  icc_to_xyzd50->Transform(&transformed_value, 1);
+  EXPECT_NEAR(transformed_value.x(), expected_transformed_value.x(), kEpsilon);
+  EXPECT_NEAR(transformed_value.y(), expected_transformed_value.y(), kEpsilon);
+  EXPECT_NEAR(transformed_value.z(), expected_transformed_value.z(), kEpsilon);
+
+  // One step should be needed, namely, the SkColorSpaceXform.
+  std::unique_ptr<ColorTransform> xyzd50_to_icc(
+      ColorTransform::NewColorTransform(
+          xyzd50, icc_space, ColorTransform::Intent::INTENT_ABSOLUTE));
+  EXPECT_EQ(xyzd50_to_icc->NumberOfStepsForTesting(), 1u);
+  xyzd50_to_icc->Transform(&transformed_value, 1);
+  EXPECT_NEAR(input_value.x(), transformed_value.x(), kEpsilon);
+  EXPECT_NEAR(input_value.y(), transformed_value.y(), kEpsilon);
+  EXPECT_NEAR(input_value.z(), transformed_value.z(), kEpsilon);
+}
+
+TEST(SimpleColorSpace, ICCProfileOnlyColorSpin) {
+  const float kEpsilon = 2.5f / 255.f;
+  ICCProfile icc_profile = ICCProfileForTestingNoAnalyticTrFn();
+  ColorSpace icc_space = icc_profile.GetColorSpace();
+  ColorSpace colorspin =
+      ICCProfileForTestingColorSpin().GetParametricColorSpace();
+
+  ColorTransform::TriStim input_value(0.25f, 0.5f, 0.75f);
+  ColorTransform::TriStim transformed_value = input_value;
+  ColorTransform::TriStim expected_transformed_value(
+      0.49694931507110596f, 0.74937951564788818f, 0.31359460949897766f);
+
+  // Three steps will be needed.
+  std::unique_ptr<ColorTransform> icc_to_colorspin(
+      ColorTransform::NewColorTransform(
+          icc_space, colorspin, ColorTransform::Intent::INTENT_PERCEPTUAL));
+  EXPECT_EQ(icc_to_colorspin->NumberOfStepsForTesting(), 3u);
+  icc_to_colorspin->Transform(&transformed_value, 1);
+  EXPECT_NEAR(transformed_value.x(), expected_transformed_value.x(), kEpsilon);
+  EXPECT_NEAR(transformed_value.y(), expected_transformed_value.y(), kEpsilon);
+  EXPECT_NEAR(transformed_value.z(), expected_transformed_value.z(), kEpsilon);
+
+  transformed_value = expected_transformed_value;
+  std::unique_ptr<ColorTransform> colorspin_to_icc(
+      ColorTransform::NewColorTransform(
+          colorspin, icc_space, ColorTransform::Intent::INTENT_PERCEPTUAL));
+  EXPECT_EQ(colorspin_to_icc->NumberOfStepsForTesting(), 3u);
+  transformed_value = expected_transformed_value;
+  colorspin_to_icc->Transform(&transformed_value, 1);
+  EXPECT_NEAR(input_value.x(), transformed_value.x(), kEpsilon);
+  EXPECT_NEAR(input_value.y(), transformed_value.y(), kEpsilon);
+  EXPECT_NEAR(input_value.z(), transformed_value.z(), kEpsilon);
+}
+
 TEST(SimpleColorSpace, GetColorSpace) {
   ICCProfile srgb_icc = ICCProfileForTestingSRGB();
   ColorSpace sRGB = srgb_icc.GetColorSpace();
