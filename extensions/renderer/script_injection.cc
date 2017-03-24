@@ -323,8 +323,25 @@ void ScriptInjection::OnJsInjectionCompleted(
     base::TimeDelta elapsed) {
   DCHECK(!did_inject_js_);
 
-  if (injection_host_->id().type() == HostID::EXTENSIONS)
+  if (injection_host_->id().type() == HostID::EXTENSIONS) {
     UMA_HISTOGRAM_TIMES("Extensions.InjectedScriptExecutionTime", elapsed);
+    switch (run_location_) {
+      case UserScript::DOCUMENT_START:
+        UMA_HISTOGRAM_TIMES(
+            "Extensions.InjectedScriptExecutionTime.DocumentStart", elapsed);
+        break;
+      case UserScript::DOCUMENT_END:
+        UMA_HISTOGRAM_TIMES(
+            "Extensions.InjectedScriptExecutionTime.DocumentEnd", elapsed);
+        break;
+      case UserScript::DOCUMENT_IDLE:
+        UMA_HISTOGRAM_TIMES(
+            "Extensions.InjectedScriptExecutionTime.DocumentIdle", elapsed);
+        break;
+      default:
+        break;
+    }
+  }
 
   bool expects_results = injector_->ExpectsResults();
   if (expects_results) {
