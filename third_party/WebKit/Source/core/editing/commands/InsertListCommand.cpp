@@ -608,6 +608,17 @@ void InsertListCommand::listifyParagraph(const VisiblePosition& originalStart,
   // inline ancestors of start, since it is easier for editing to produce
   // clean markup when inline elements are pushed down as far as possible.
   Position insertionPos(mostBackwardCaretPosition(startPos));
+  // Also avoid the temporary <span> element created by 'unlistifyParagraph'.
+  // This element can be selected by mostBackwardCaretPosition when startPor
+  // points to a element with previous siblings or ancestors with siblings.
+  // |-A
+  // | |-B
+  // | +-C (insertion point)
+  // |   |-D (*)
+  if (isHTMLSpanElement(insertionPos.anchorNode())) {
+    insertionPos =
+        Position::inParentBeforeNode(*insertionPos.computeContainerNode());
+  }
   // Also avoid the containing list item.
   Node* const listChild = enclosingListChild(insertionPos.anchorNode());
   if (isHTMLLIElement(listChild))
