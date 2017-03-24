@@ -109,7 +109,7 @@ class MapsIntegrationTest(
     action_runner = tab.action_runner
     action_runner.Navigate(url)
     action_runner.WaitForJavaScriptCondition(
-        'window.testDone', timeout=180)
+        'window.testDone', timeout=320)
 
     # TODO(kbr): This should not be necessary, but it's not clear if the test
     # is failing on the bots in its absence. Remove once we can verify that
