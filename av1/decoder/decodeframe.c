@@ -3841,6 +3841,11 @@ static const uint8_t *decode_tiles_mt(AV1Decoder *pbi, const uint8_t *data,
 #if CONFIG_PVQ
         daala_dec_init(cm, &twd->xd.daala_dec, &twd->bit_reader);
 #endif
+#if CONFIG_EC_ADAPT
+        // Initialise the tile context from the frame context
+        twd->tctx = *cm->fc;
+        twd->xd.tile_ctx = &twd->tctx;
+#endif
 #if CONFIG_PALETTE
         twd->xd.plane[0].color_index_map = twd->color_index_map[0];
         twd->xd.plane[1].color_index_map = twd->color_index_map[1];
