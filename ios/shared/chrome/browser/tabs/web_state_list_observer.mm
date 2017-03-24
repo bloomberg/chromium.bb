@@ -22,9 +22,17 @@ void WebStateListObserver::WebStateReplacedAt(WebStateList* web_state_list,
                                               web::WebState* new_web_state,
                                               int index) {}
 
+void WebStateListObserver::WillDetachWebStateAt(WebStateList* web_state_list,
+                                                web::WebState* web_state,
+                                                int index) {}
+
 void WebStateListObserver::WebStateDetachedAt(WebStateList* web_state_list,
                                               web::WebState* web_state,
                                               int index) {}
+
+void WebStateListObserver::WillCloseWebStateAt(WebStateList* web_state_list,
+                                               web::WebState* web_state,
+                                               int index) {}
 
 void WebStateListObserver::WebStateActivatedAt(WebStateList* web_state_list,
                                                web::WebState* old_web_state,

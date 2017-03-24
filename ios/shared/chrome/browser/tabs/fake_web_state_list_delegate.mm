@@ -13,3 +13,5 @@ FakeWebStateListDelegate::FakeWebStateListDelegate() = default;
 FakeWebStateListDelegate::~FakeWebStateListDelegate() = default;
 
 void FakeWebStateListDelegate::WillAddWebState(web::WebState* web_state) {}
+
+void FakeWebStateListDelegate::WebStateDetached(web::WebState* web_state) {}

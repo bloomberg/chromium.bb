@@ -23,6 +23,11 @@ class WebStateListDelegate {
   // to do any preparation that it deems necessary.
   virtual void WillAddWebState(web::WebState* web_state) = 0;
 
+  // Notifies the delegate that the specified WebState has been detached from
+  // the WebStateList (via detaching/closing/replacing existing) and allows it
+  // to do any clean up that it deems necessary.
+  virtual void WebStateDetached(web::WebState* web_state) = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(WebStateListDelegate);
 };

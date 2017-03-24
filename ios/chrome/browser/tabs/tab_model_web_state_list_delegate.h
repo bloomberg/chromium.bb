@@ -19,6 +19,7 @@ class TabModelWebStateListDelegate : public WebStateListDelegate {
 
   // WebStateListDelegate implementation.
   void WillAddWebState(web::WebState* web_state) override;
+  void WebStateDetached(web::WebState* web_state) override;
 
  private:
   base::WeakNSObject<TabModel> tab_model_;

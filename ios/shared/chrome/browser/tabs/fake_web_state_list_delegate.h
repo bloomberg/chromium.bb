@@ -16,6 +16,7 @@ class FakeWebStateListDelegate : public WebStateListDelegate {
 
   // WebStateListDelegate implementation.
   void WillAddWebState(web::WebState* web_state) override;
+  void WebStateDetached(web::WebState* web_state) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeWebStateListDelegate);

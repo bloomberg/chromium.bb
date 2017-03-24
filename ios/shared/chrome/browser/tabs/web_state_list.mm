@@ -214,6 +214,7 @@ web::WebState* WebStateList::ReplaceWebStateAt(int index,
   for (auto& observer : observers_)
     observer.WebStateReplacedAt(this, old_web_state, web_state, index);
 
+  delegate_->WebStateDetached(old_web_state);
   return old_web_state;
 }
 
@@ -222,6 +223,8 @@ web::WebState* WebStateList::DetachWebStateAt(int index) {
   int new_active_index = order_controller_->DetermineNewActiveIndex(index);
 
   web::WebState* old_web_state = web_state_wrappers_[index]->web_state();
+  for (auto& observer : observers_)
+    observer.WillDetachWebStateAt(this, old_web_state, index);
 
   ClearOpenersReferencing(index);
   web_state_wrappers_.erase(web_state_wrappers_.begin() + index);
@@ -241,6 +244,7 @@ web::WebState* WebStateList::DetachWebStateAt(int index) {
   if (active_web_state_was_closed)
     NotifyIfActiveWebStateChanged(old_web_state, false);
 
+  delegate_->WebStateDetached(old_web_state);
   return old_web_state;
 }
 

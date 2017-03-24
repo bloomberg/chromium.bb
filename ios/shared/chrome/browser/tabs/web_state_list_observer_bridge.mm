@@ -58,6 +58,19 @@ void WebStateListObserverBridge::WebStateReplacedAt(
                   atIndex:index];
 }
 
+void WebStateListObserverBridge::WillDetachWebStateAt(
+    WebStateList* web_state_list,
+    web::WebState* web_state,
+    int index) {
+  const SEL selector = @selector(webStateList:willDetachWebState:atIndex:);
+  if (![observer_ respondsToSelector:selector])
+    return;
+
+  [observer_ webStateList:web_state_list
+       willDetachWebState:web_state
+                  atIndex:index];
+}
+
 void WebStateListObserverBridge::WebStateDetachedAt(
     WebStateList* web_state_list,
     web::WebState* web_state,
@@ -68,6 +81,19 @@ void WebStateListObserverBridge::WebStateDetachedAt(
 
   [observer_ webStateList:web_state_list
         didDetachWebState:web_state
+                  atIndex:index];
+}
+
+void WebStateListObserverBridge::WillCloseWebStateAt(
+    WebStateList* web_state_list,
+    web::WebState* web_state,
+    int index) {
+  const SEL selector = @selector(webStateList:willCloseWebState:atIndex:);
+  if (![observer_ respondsToSelector:selector])
+    return;
+
+  [observer_ webStateList:web_state_list
+        willCloseWebState:web_state
                   atIndex:index];
 }
 

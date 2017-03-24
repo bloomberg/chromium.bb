@@ -18,3 +18,5 @@ BrowserWebStateListDelegate::BrowserWebStateListDelegate(Browser* browser)
 BrowserWebStateListDelegate::~BrowserWebStateListDelegate() = default;
 
 void BrowserWebStateListDelegate::WillAddWebState(web::WebState* web_state) {}
+
+void BrowserWebStateListDelegate::WebStateDetached(web::WebState* web_state) {}
