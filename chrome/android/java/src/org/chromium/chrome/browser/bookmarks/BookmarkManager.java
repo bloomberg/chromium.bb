@@ -355,7 +355,8 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate {
 
     @Override
     public void openFolder(BookmarkId folder) {
-        mToolbar.hideSearchView();
+        if (mToolbar.isSearching()) mToolbar.hideSearchView();
+
         setState(BookmarkUIState.createFolderState(folder, mBookmarkModel));
         mRecyclerView.scrollToPosition(0);
     }

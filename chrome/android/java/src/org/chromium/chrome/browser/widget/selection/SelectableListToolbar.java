@@ -468,12 +468,17 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
         setContentInsetEndWithActions(contentInsetEndWithActions);
     }
 
-    SelectionDelegate<E> getSelectionDelegate() {
-        return mSelectionDelegate;
+    /**
+     * @return Whether search mode is currently active. Once a search is started, this method will
+     *         return true until the search is ended regardless of whether the toolbar view changes
+     *         dues to a selection.
+     */
+    public boolean isSearching() {
+        return mIsSearching;
     }
 
-    boolean isSearching() {
-        return mIsSearching;
+    SelectionDelegate<E> getSelectionDelegate() {
+        return mSelectionDelegate;
     }
 
     /**
