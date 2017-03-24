@@ -1723,9 +1723,11 @@ crbug.com/524646 [ Mac10.10 ] fast/dom/shadow/shadowdom-for-button.html [ Failur
 crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-multiple-window.html [ Failure Pass Timeout ]
 crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-multiple-worker.html [ Failure Pass Timeout ]
 crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-multiple-sharedworker.html [ Failure Pass Timeout ]
+crbug.com/538717 [ Win ] http/tests/permissions/chromium/test-request-worker.html [ Pass Timeout ]
 crbug.com/538717 [ Win Mac Linux ] virtual/mojo-loading/http/tests/permissions/chromium/test-request-multiple-window.html [ Failure Pass Timeout ]
 crbug.com/538717 [ Win Mac Linux ] virtual/mojo-loading/http/tests/permissions/chromium/test-request-multiple-worker.html [ Failure Pass Timeout ]
 crbug.com/538717 [ Win Mac Linux ] virtual/mojo-loading/http/tests/permissions/chromium/test-request-multiple-sharedworker.html [ Failure Pass Timeout ]
+crbug.com/538717 [ Win ] virtual/mojo-loading/http/tests/permissions/chromium/test-request-worker.html [ Pass Timeout ]
 
 crbug.com/543369 [ Linux ] fast/forms/select-popup/popup-menu-appearance-tall.html [ Failure ]
 
