@@ -23,26 +23,45 @@ using base::TimeDelta;
 using content::BrowserThread;
 using net::NetworkChangeNotifier;
 
+namespace {
+
+// How often to poll for devices.
+const int kDialRefreshIntervalSecs = 120;
+
+// We prune a device if it does not respond after this time.
+const int kDialExpirationSecs = 240;
+
+// The maximum number of devices retained at once in the registry.
+const size_t kDialMaxDevices = 256;
+
+}  // namespace
+
 namespace media_router {
 
-DialRegistry::DialRegistry(base::TimeDelta refresh_interval,
-                           base::TimeDelta expiration,
-                           const size_t max_devices)
+DialRegistry::DialRegistry()
     : num_listeners_(0),
       registry_generation_(0),
       last_event_registry_generation_(0),
       label_count_(0),
-      refresh_interval_delta_(refresh_interval),
-      expiration_delta_(expiration),
-      max_devices_(max_devices) {
+      refresh_interval_delta_(
+          base::TimeDelta::FromSeconds(kDialRefreshIntervalSecs)),
+      expiration_delta_(base::TimeDelta::FromSeconds(kDialExpirationSecs)),
+      max_devices_(kDialMaxDevices) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_GT(max_devices_, 0U);
+  // This is a leaky singleton, so there's no code to remove |this| as an
+  // observer.
   NetworkChangeNotifier::AddNetworkChangeObserver(this);
 }
 
-DialRegistry::~DialRegistry() {
+// This is a leaky singleton and the dtor won't be called.
+DialRegistry::~DialRegistry() = default;
+
+// static
+DialRegistry* DialRegistry::GetInstance() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+  return base::Singleton<DialRegistry,
+                         base::LeakySingletonTraits<DialRegistry>>::get();
 }
 
 std::unique_ptr<DialService> DialRegistry::CreateDialService() {
@@ -153,8 +172,9 @@ void DialRegistry::StartPeriodicDiscovery() {
   dial_ = CreateDialService();
   dial_->AddObserver(this);
   DoDiscovery();
-  repeating_timer_.Start(FROM_HERE, refresh_interval_delta_, this,
-                         &DialRegistry::DoDiscovery);
+  repeating_timer_.reset(new base::RepeatingTimer());
+  repeating_timer_->Start(FROM_HERE, refresh_interval_delta_, this,
+                          &DialRegistry::DoDiscovery);
 }
 
 void DialRegistry::DoDiscovery() {
@@ -169,7 +189,8 @@ void DialRegistry::StopPeriodicDiscovery() {
   if (!dial_)
     return;
 
-  repeating_timer_.Stop();
+  repeating_timer_->Stop();
+  repeating_timer_.reset();
   dial_->RemoveObserver(this);
   ClearDialService();
 }

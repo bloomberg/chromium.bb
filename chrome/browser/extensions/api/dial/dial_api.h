@@ -92,8 +92,9 @@ class DialAPI : public RefcountedKeyedService,
 
   Profile* profile_;
 
-  // Created lazily on first access on the IO thread.
-  std::unique_ptr<media_router::DialRegistry> dial_registry_;
+  // Created lazily on first access on the IO thread. Does not take ownership of
+  // |dial_registry_|.
+  media_router::DialRegistry* dial_registry_;
 
   // Device data for testing.
   std::unique_ptr<media_router::DialDeviceData> test_device_data_;

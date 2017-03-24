@@ -44,11 +44,7 @@ class MockDialService : public DialService {
 
 class MockDialRegistry : public DialRegistry {
  public:
-  MockDialRegistry(const base::TimeDelta& refresh_interval,
-                   const base::TimeDelta& expiration,
-                   const size_t max_devices)
-      : DialRegistry(refresh_interval, expiration, max_devices),
-        time_(Time::Now()) {}
+  MockDialRegistry() : DialRegistry(), time_(Time::Now()) {}
 
   ~MockDialRegistry() override {
     // Don't let the DialRegistry delete this.
@@ -88,8 +84,7 @@ class DialRegistryTest : public testing::Test {
         first_device_("first", GURL("http://127.0.0.1/dd.xml"), Time::Now()),
         second_device_("second", GURL("http://127.0.0.2/dd.xml"), Time::Now()),
         third_device_("third", GURL("http://127.0.0.3/dd.xml"), Time::Now()) {
-    registry_ = base::MakeUnique<MockDialRegistry>(
-        TimeDelta::FromSeconds(1000), TimeDelta::FromSeconds(10), 10);
+    registry_ = base::MakeUnique<MockDialRegistry>();
     registry_->RegisterObserver(&mock_observer_);
     list_with_first_device_.push_back(first_device_);
     list_with_second_device_.push_back(second_device_);
@@ -120,15 +115,15 @@ TEST_F(DialRegistryTest, TestAddRemoveListeners) {
   EXPECT_CALL(registry_->mock_service(), Discover());
   EXPECT_CALL(mock_observer_, OnDialDeviceEvent(empty_list_)).Times(2);
 
-  EXPECT_FALSE(registry_->repeating_timer_.IsRunning());
+  EXPECT_FALSE(registry_->repeating_timer_);
   registry_->OnListenerAdded();
-  EXPECT_TRUE(registry_->repeating_timer_.IsRunning());
+  EXPECT_TRUE(registry_->repeating_timer_->IsRunning());
   registry_->OnListenerAdded();
-  EXPECT_TRUE(registry_->repeating_timer_.IsRunning());
+  EXPECT_TRUE(registry_->repeating_timer_->IsRunning());
   registry_->OnListenerRemoved();
-  EXPECT_TRUE(registry_->repeating_timer_.IsRunning());
+  EXPECT_TRUE(registry_->repeating_timer_->IsRunning());
   registry_->OnListenerRemoved();
-  EXPECT_FALSE(registry_->repeating_timer_.IsRunning());
+  EXPECT_FALSE(registry_->repeating_timer_);
 }
 
 TEST_F(DialRegistryTest, TestNoDevicesDiscovered) {
@@ -210,7 +205,7 @@ TEST_F(DialRegistryTest, TestDeviceExpires) {
   registry_->OnDeviceDiscovered(nullptr, first_device_);
   registry_->OnDiscoveryFinished(nullptr);
 
-  registry_->set_time(Time::Now() + TimeDelta::FromSeconds(30));
+  registry_->set_time(Time::Now() + TimeDelta::FromSeconds(300));
 
   registry_->DoDiscovery();
   registry_->OnDiscoveryRequest(nullptr);
@@ -221,8 +216,8 @@ TEST_F(DialRegistryTest, TestDeviceExpires) {
 TEST_F(DialRegistryTest, TestExpiredDeviceIsRediscovered) {
   std::vector<Time> discovery_times;
   discovery_times.push_back(Time::Now());
-  discovery_times.push_back(discovery_times[0] + TimeDelta::FromSeconds(30));
-  discovery_times.push_back(discovery_times[1] + TimeDelta::FromSeconds(30));
+  discovery_times.push_back(discovery_times[0] + TimeDelta::FromSeconds(300));
+  discovery_times.push_back(discovery_times[1] + TimeDelta::FromSeconds(300));
 
   DialDeviceData rediscovered_device("first", GURL("http://127.0.0.1/dd.xml"),
                                      discovery_times[2]);

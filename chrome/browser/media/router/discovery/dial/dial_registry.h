@@ -15,7 +15,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -54,13 +54,7 @@ class DialRegistry : public DialService::Observer,
     virtual ~Observer() {}
   };
 
-  // Create the DIAL registry and pass a reference to allow it to notify on
-  // DIAL device events.
-  DialRegistry(base::TimeDelta refresh_interval,
-               base::TimeDelta expiration,
-               const size_t max_devices);
-
-  ~DialRegistry() override;
+  static DialRegistry* GetInstance();
 
   // Called by the DIAL API when event listeners are added or removed. The dial
   // service is started after the first listener is added and stopped after the
@@ -68,13 +62,19 @@ class DialRegistry : public DialService::Observer,
   void OnListenerAdded();
   void OnListenerRemoved();
 
-  // This class does not take ownership of observer.
+  // pass a reference of |observer| to allow it to notify on DIAL device events.
+  // This class does not take ownership of |observer|.
   void RegisterObserver(Observer* observer);
   void UnregisterObserver(Observer* observer);
 
   // Called by the DIAL API to try to kickoff a discovery if there is not one
   // already active.
   bool DiscoverNow();
+
+  // Starts and stops periodic discovery.  Periodic discovery is done when there
+  // are registered event listeners.
+  void StartPeriodicDiscovery();
+  void StopPeriodicDiscovery();
 
   // Returns the URL of the device description for the device identified by
   // |label|, or an empty GURL if no such device exists.
@@ -101,6 +101,12 @@ class DialRegistry : public DialService::Observer,
       base::hash_map<std::string, std::unique_ptr<DialDeviceData>>;
   using DeviceByLabelMap = std::map<std::string, DialDeviceData*>;
 
+  friend class MockDialRegistry;
+  friend struct base::DefaultSingletonTraits<DialRegistry>;
+
+  DialRegistry();
+  ~DialRegistry() override;
+
   // DialService::Observer:
   void OnDiscoveryRequest(DialService* service) override;
   void OnDeviceDiscovered(DialService* service,
@@ -117,10 +123,6 @@ class DialRegistry : public DialService::Observer,
   void OnDialDeviceEvent(const DeviceList& devices);
   void OnDialError(DialErrorCode type);
 
-  // Starts and stops periodic discovery.  Periodic discovery is done when there
-  // are registered event listeners.
-  void StartPeriodicDiscovery();
-  void StopPeriodicDiscovery();
 
   // Check whether we are in a state ready to discover and dispatch error
   // notifications if not.
@@ -179,8 +181,9 @@ class DialRegistry : public DialService::Observer,
   // construct the device list sent to API clients.
   DeviceByLabelMap device_by_label_map_;
 
-  // Timer used to manage periodic discovery requests.
-  base::RepeatingTimer repeating_timer_;
+  // Timer used to manage periodic discovery requests. Timer is created and
+  // destroyed on IO thread.
+  std::unique_ptr<base::RepeatingTimer> repeating_timer_;
 
   // Interface from which the DIAL API is notified of DIAL device events. the
   // DIAL API owns this DIAL registry.
