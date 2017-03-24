@@ -5,10 +5,10 @@
 #include "modules/shapedetection/ShapeDetector.h"
 
 #include "core/dom/DOMException.h"
-#include "core/dom/DOMRect.h"
 #include "core/dom/Document.h"
 #include "core/frame/ImageBitmap.h"
 #include "core/frame/LocalFrame.h"
+#include "core/geometry/DOMRect.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/ImageData.h"

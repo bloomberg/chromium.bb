@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/DOMPointReadOnly.h"
+#include "core/geometry/DOMPointReadOnly.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8ObjectBuilder.h"
-#include "core/dom/DOMMatrixInit.h"
-#include "core/dom/DOMMatrixReadOnly.h"
-#include "core/dom/DOMPoint.h"
-#include "core/dom/DOMPointInit.h"
+#include "core/geometry/DOMMatrixInit.h"
+#include "core/geometry/DOMMatrixReadOnly.h"
+#include "core/geometry/DOMPoint.h"
+#include "core/geometry/DOMPointInit.h"
 
 namespace blink {
 
@@ -21,8 +21,7 @@ DOMPointReadOnly* DOMPointReadOnly::create(double x,
   return new DOMPointReadOnly(x, y, z, w);
 }
 
-ScriptValue DOMPointReadOnly::toJSONForBinding(
-    ScriptState* scriptState) const {
+ScriptValue DOMPointReadOnly::toJSONForBinding(ScriptState* scriptState) const {
   V8ObjectBuilder result(scriptState);
   result.addNumber("x", x());
   result.addNumber("y", y());

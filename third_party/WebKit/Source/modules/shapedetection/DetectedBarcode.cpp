@@ -4,7 +4,7 @@
 
 #include "modules/shapedetection/DetectedBarcode.h"
 
-#include "core/dom/DOMRect.h"
+#include "core/geometry/DOMRect.h"
 
 namespace blink {
 

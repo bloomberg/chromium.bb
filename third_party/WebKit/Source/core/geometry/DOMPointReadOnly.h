@@ -32,7 +32,7 @@ class CORE_EXPORT DOMPointReadOnly : public GarbageCollected<DOMPointReadOnly>,
   double w() const { return m_w; }
 
   DEFINE_INLINE_TRACE() {}
-  
+
   ScriptValue toJSONForBinding(ScriptState*) const;
   DOMPoint* matrixTransform(DOMMatrixInit&, ExceptionState&);
 
