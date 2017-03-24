@@ -188,10 +188,17 @@ static int rockchip_bo_create_with_modifiers(struct bo *bo,
 		uint32_t stride;
 		/*
 		 * Since the ARM L1 cache line size is 64 bytes, align to that
-		 * as a performance optimization.
+		 * as a performance optimization. For YV12, the Mali cmem allocator
+		 * requires that chroma planes are aligned to 64-bytes, so align the
+		 * luma plane to 128 bytes.
 		 */
 		stride = drv_stride_from_format(format, width, 0);
-		stride = ALIGN(stride, 64);
+		if (format == DRM_FORMAT_YVU420 ||
+		    format == DRM_FORMAT_YVU420_ANDROID)
+			stride = ALIGN(stride, 128);
+		else
+			stride = ALIGN(stride, 64);
+
 		drv_bo_from_format(bo, stride, height, format);
 	}
 
