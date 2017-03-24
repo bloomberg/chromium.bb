@@ -302,7 +302,7 @@ TEST(MinidumpWriterTest, MinidumpStacksSkippedIfRequested) {
       ++threads_with_stacks;
     }
   }
-  ASSERT_EQUAL(1, threads_with_stacks);
+  ASSERT_EQ(1, threads_with_stacks);
   close(fds[1]);
 }
 
