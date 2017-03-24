@@ -288,6 +288,7 @@ class TestRunner(object):
         stderr=subprocess.STDOUT,
     )
 
+    failure_count = 0
     while True:
       line = proc.stdout.readline()
       if not line:
@@ -296,6 +297,16 @@ class TestRunner(object):
       parser.ProcessLine(line)
       print line
       sys.stdout.flush()
+
+      # If there is a new test failure, take a desktop screenshot.
+      # parser.FailedTests() considers in progress tests as failed, so a check
+      # is needed that the current test isn't included in the list of failed
+      # tests.
+      new_failure_count = len([test for test in parser.FailedTests()
+                               if test != parser.GetCurrentTest()])
+      if (new_failure_count > failure_count):
+        self.screenshot_desktop()
+        failure_count = new_failure_count
 
     proc.wait()
     sys.stdout.flush()
