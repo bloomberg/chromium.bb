@@ -33,6 +33,9 @@
 #include "av1/common/reconintra.h"
 #include "av1/common/scan.h"
 #include "av1/common/seg_common.h"
+#if CONFIG_LV_MAP
+#include "av1/common/txb_common.h"
+#endif
 #if CONFIG_WARPED_MOTION
 #include "av1/common/warped_motion.h"
 #endif  // CONFIG_WARPED_MOTION
@@ -43,6 +46,9 @@
 #include "av1/encoder/encodemb.h"
 #include "av1/encoder/encodemv.h"
 #include "av1/encoder/encoder.h"
+#if CONFIG_LV_MAP
+#include "av1/encoder/encodetxb.h"
+#endif
 #include "av1/encoder/hybrid_fwd_txfm.h"
 #include "av1/encoder/mcomp.h"
 #if CONFIG_PALETTE
@@ -1118,10 +1124,11 @@ static int64_t av1_block_error2_c(const tran_low_t *coeff,
  * can skip this if the last coefficient in this transform block, e.g. the
  * 16th coefficient in a 4x4 block or the 64th coefficient in a 8x8 block,
  * were non-zero). */
-int av1_cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
-                    int block, TX_SIZE tx_size, const SCAN_ORDER *scan_order,
-                    const ENTROPY_CONTEXT *a, const ENTROPY_CONTEXT *l,
-                    int use_fast_coef_costing) {
+#if !CONFIG_LV_MAP
+static int cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
+                       int block, TX_SIZE tx_size, const SCAN_ORDER *scan_order,
+                       const ENTROPY_CONTEXT *a, const ENTROPY_CONTEXT *l,
+                       int use_fast_coef_costing) {
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   const struct macroblock_plane *p = &x->plane[plane];
@@ -1258,6 +1265,39 @@ int av1_cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
   }
 
   return cost;
+}
+#endif  // !CONFIG_LV_MAP
+
+int av1_cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
+                    int block, TX_SIZE tx_size, const SCAN_ORDER *scan_order,
+                    const ENTROPY_CONTEXT *a, const ENTROPY_CONTEXT *l,
+                    int use_fast_coef_costing) {
+#if !CONFIG_LV_MAP
+  return cost_coeffs(cm, x, plane, block, tx_size, scan_order, a, l,
+                     use_fast_coef_costing);
+#else  // !CONFIG_LV_MAP
+  (void)scan_order;
+  (void)use_fast_coef_costing;
+  const MACROBLOCKD *xd = &x->e_mbd;
+  const MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
+  const struct macroblockd_plane *pd = &xd->plane[plane];
+  const BLOCK_SIZE bsize = mbmi->sb_type;
+#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
+  const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
+#else
+  const BLOCK_SIZE plane_bsize =
+      AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
+#endif  // CONFIG_CHROMA_2X2
+#else   // CONFIG_CB4X4
+  const BLOCK_SIZE plane_bsize =
+      get_plane_block_size(AOMMAX(BLOCK_8X8, bsize), pd);
+#endif  // CONFIG_CB4X4
+
+  TXB_CTX txb_ctx;
+  get_txb_ctx(plane_bsize, tx_size, plane, a, l, &txb_ctx);
+  return av1_cost_coeffs_txb(cm, x, plane, block, &txb_ctx);
+#endif  // !CONFIG_LV_MAP
 }
 #endif  // !CONFIG_PVQ || CONFIG_VAR_TX
 

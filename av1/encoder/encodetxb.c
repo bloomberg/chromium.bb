@@ -245,7 +245,7 @@ static INLINE void get_base_ctx_set(const tran_low_t *tcoeffs,
 }
 
 int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
-                        int block, TXB_CTX *txb_ctx, int *cul_level) {
+                        int block, TXB_CTX *txb_ctx) {
   MACROBLOCKD *const xd = &x->e_mbd;
   const TX_SIZE tx_size = get_tx_size(plane, xd);
   const PLANE_TYPE plane_type = get_plane_type(plane);
@@ -260,7 +260,6 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
   aom_prob *nz_map = xd->fc->nz_map[tx_size][plane_type];
 
   const int bwl = b_width_log2_lookup[txsize_to_bsize[tx_size]] + 2;
-  *cul_level = 0;
   // txb_mask is only initialized for once here. After that, it will be set when
   // coding zero map and then reset when coding level 1 info.
   uint8_t txb_mask[32 * 32] = { 0 };
@@ -311,7 +310,6 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
 
         if (level == i + 1) {
           cost += av1_cost_bit(coeff_base[i][ctx_ls[i]], 1);
-          *cul_level += level;
           continue;
         }
         cost += av1_cost_bit(coeff_base[i][ctx_ls[i]], 0);
@@ -320,7 +318,6 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
       if (level > NUM_BASE_LEVELS) {
         int idx;
         int ctx;
-        *cul_level += level;
 
         ctx = get_level_ctx(qcoeff, scan[c], bwl);
 
@@ -360,10 +357,6 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
 
     txb_mask[scan[c]] = 1;
   }
-
-  *cul_level = AOMMIN(63, *cul_level);
-  // DC value
-  set_dc_sign(cul_level, qcoeff[0]);
 
   return cost;
 }
