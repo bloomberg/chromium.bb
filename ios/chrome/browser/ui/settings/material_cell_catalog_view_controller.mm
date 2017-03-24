@@ -59,6 +59,7 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeTextCheckmark = kItemTypeEnumZero,
   ItemTypeTextDetail,
+  ItemTypeText,
   ItemTypeTextError,
   ItemTypeDetailBasic,
   ItemTypeDetailLeftMedium,
@@ -127,6 +128,19 @@ const CGFloat kHorizontalImageFixedSize = 40;
       @"Text cell with text that is so long it must truncate at some point";
   textCell2.accessoryType = MDCCollectionViewCellAccessoryDetailButton;
   [model addItem:textCell2 toSectionWithIdentifier:SectionIdentifierTextCell];
+  CollectionViewTextItem* textCell3 =
+      [[[CollectionViewTextItem alloc] initWithType:ItemTypeText] autorelease];
+  textCell3.text = @"Truncated text cell with three lines:";
+  textCell3.detailText = @"One title line and two detail lines, so it should "
+                         @"wrap nicely at some point.";
+  textCell3.numberOfDetailTextLines = 0;
+  [model addItem:textCell3 toSectionWithIdentifier:SectionIdentifierTextCell];
+  CollectionViewTextItem* smallTextCell =
+      [[[CollectionViewTextItem alloc] initWithType:ItemTypeText] autorelease];
+  smallTextCell.text = @"Text cell with small font but height of 48.";
+  smallTextCell.textFont = [smallTextCell.textFont fontWithSize:8];
+  [model addItem:smallTextCell
+      toSectionWithIdentifier:SectionIdentifierTextCell];
 
   // Text and Error cell.
   TextAndErrorItem* textAndErrorItem =
@@ -343,6 +357,9 @@ const CGFloat kHorizontalImageFixedSize = 40;
     case ItemTypeSwitchDynamicHeight:
     case ItemTypeSwitchSync:
     case ItemTypeAccountControlDynamicHeight:
+    case ItemTypeTextCheckmark:
+    case ItemTypeTextDetail:
+    case ItemTypeText:
     case ItemTypeTextError:
     case ItemTypeAutofillCVC:
     case ItemTypeAutofillStatus:

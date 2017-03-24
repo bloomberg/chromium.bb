@@ -22,24 +22,26 @@
 // The secondary text to display.
 @property(nonatomic, nullable, copy) NSString* detailText;
 
-// The image to show.
-@property(nonatomic, nullable, strong) UIImage* image;
-
-// The font of the main text. The Default value is the medium Roboto font of
-// size 14.
+// The font of the main text. Default is the medium Roboto font of size 14.
 @property(nonatomic, null_resettable, copy) UIFont* textFont;
 
-// The color of the main text. The Default value is the 900 tint color of the
-// grey palette.
+// The color of the main text. Default is the 900 tint color of the grey
+// palette.
 @property(nonatomic, null_resettable, copy) UIColor* textColor;
 
-// The font of the secondary text. The Default value is the regular Roboto font
-// of size 14.
+// The maximum number of lines of the main text. Default is 1.
+@property(nonatomic, assign) NSInteger numberOfTextLines;
+
+// The font of the secondary text. Default is the regular Roboto font of size
+// 14.
 @property(nonatomic, null_resettable, copy) UIFont* detailTextFont;
 
-// The color of the secondary text. The default value is the 500 tint color of
-// the grey palette.
+// The color of the secondary text. Default is the 500 tint color of the grey
+// palette.
 @property(nonatomic, null_resettable, copy) UIColor* detailTextColor;
+
+// The maximum number of lines of the secondary text. Default is 1.
+@property(nonatomic, assign) NSInteger numberOfDetailTextLines;
 
 @end
 

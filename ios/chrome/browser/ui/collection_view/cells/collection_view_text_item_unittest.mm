@@ -7,6 +7,7 @@
 #import <CoreGraphics/CoreGraphics.h>
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_cell.h"
 #import "ios/chrome/browser/ui/collection_view/cells/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -17,12 +18,12 @@
 
 namespace {
 
-TEST(CollectionViewItemTest, ConfigureCellPortsAccessoryType) {
+TEST(CollectionViewTextItemTest, ConfigureCellPortsAccessoryType) {
   CollectionViewTextItem* item =
       [[CollectionViewTextItem alloc] initWithType:0];
   item.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
-  MDCCollectionViewTextCell* cell = [[[item cellClass] alloc] init];
-  EXPECT_TRUE([cell isMemberOfClass:[MDCCollectionViewTextCell class]]);
+  CollectionViewTextCell* cell = [[[item cellClass] alloc] init];
+  EXPECT_TRUE([cell isMemberOfClass:[CollectionViewTextCell class]]);
   EXPECT_EQ(MDCCollectionViewCellAccessoryNone, [cell accessoryType]);
   [item configureCell:cell];
   EXPECT_EQ(MDCCollectionViewCellAccessoryCheckmark, [cell accessoryType]);
@@ -33,17 +34,13 @@ TEST(CollectionViewTextItemTest, ConfigureCellPortsTextCellProperties) {
       [[CollectionViewTextItem alloc] initWithType:0];
   item.text = @"some text";
   item.detailText = @"some detail text";
-  UIImage* image = ios_internal::CollectionViewTestImage();
-  item.image = image;
-  MDCCollectionViewTextCell* cell = [[[item cellClass] alloc] init];
-  EXPECT_TRUE([cell isMemberOfClass:[MDCCollectionViewTextCell class]]);
+  CollectionViewTextCell* cell = [[[item cellClass] alloc] init];
+  EXPECT_TRUE([cell isMemberOfClass:[CollectionViewTextCell class]]);
   EXPECT_FALSE([cell textLabel].text);
   EXPECT_FALSE([cell detailTextLabel].text);
-  EXPECT_FALSE([cell imageView].image);
   [item configureCell:cell];
   EXPECT_NSEQ(@"some text", [cell textLabel].text);
   EXPECT_NSEQ(@"some detail text", [cell detailTextLabel].text);
-  EXPECT_NSEQ(image, [cell imageView].image);
 }
 
 }  // namespace

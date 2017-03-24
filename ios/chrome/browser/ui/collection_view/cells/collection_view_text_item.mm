@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 
+#import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_cell.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
 
@@ -16,16 +17,19 @@
 @synthesize accessoryType = _accessoryType;
 @synthesize text = _text;
 @synthesize detailText = _detailText;
-@synthesize image = _image;
 @synthesize textFont = _textFont;
 @synthesize textColor = _textColor;
+@synthesize numberOfTextLines = _numberOfTextLines;
 @synthesize detailTextFont = _detailTextFont;
 @synthesize detailTextColor = _detailTextColor;
+@synthesize numberOfDetailTextLines = _numberOfDetailTextLines;
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
   if (self) {
-    self.cellClass = [MDCCollectionViewTextCell class];
+    self.cellClass = [CollectionViewTextCell class];
+    _numberOfTextLines = 1;
+    _numberOfDetailTextLines = 1;
   }
   return self;
 }
@@ -61,12 +65,11 @@
 
 #pragma mark CollectionViewItem
 
-- (void)configureCell:(MDCCollectionViewTextCell*)cell {
+- (void)configureCell:(CollectionViewTextCell*)cell {
   [super configureCell:cell];
   cell.accessoryType = self.accessoryType;
   cell.textLabel.text = self.text;
   cell.detailTextLabel.text = self.detailText;
-  cell.imageView.image = self.image;
   cell.isAccessibilityElement = YES;
   if (self.detailText.length == 0) {
     cell.accessibilityLabel = self.text;
@@ -78,8 +81,10 @@
   // Styling.
   cell.textLabel.font = self.textFont;
   cell.textLabel.textColor = self.textColor;
+  cell.textLabel.numberOfLines = self.numberOfTextLines;
   cell.detailTextLabel.font = self.detailTextFont;
   cell.detailTextLabel.textColor = self.detailTextColor;
+  cell.detailTextLabel.numberOfLines = self.numberOfDetailTextLines;
 }
 
 @end
