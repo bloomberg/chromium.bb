@@ -243,11 +243,7 @@ LaserPointerView::LaserPointerView(base::TimeDelta life_duration,
                       .device_scale_factor();
 }
 
-LaserPointerView::~LaserPointerView() {
-  // Make sure GPU memory buffer is unmapped before being destroyed.
-  if (gpu_memory_buffer_)
-    gpu_memory_buffer_->Unmap();
-}
+LaserPointerView::~LaserPointerView() {}
 
 void LaserPointerView::Stop() {
   buffer_damage_rect_.Union(GetBoundingBox());
@@ -473,13 +469,6 @@ void LaserPointerView::UpdateBuffer() {
       return;
     }
 
-    // Map buffer and keep it mapped until destroyed.
-    bool rv = gpu_memory_buffer_->Map();
-    if (!rv) {
-      LOG(ERROR) << "Failed to map GPU memory buffer";
-      return;
-    }
-
     // Make sure the first update rectangle covers the whole buffer.
     update_rect = gfx::Rect(screen_bounds.size());
   }
@@ -488,6 +477,12 @@ void LaserPointerView::UpdateBuffer() {
   update_rect.Intersect(gfx::Rect(screen_bounds.size()));
   if (update_rect.IsEmpty())
     return;
+
+  // Map buffer for writing.
+  if (!gpu_memory_buffer_->Map()) {
+    LOG(ERROR) << "Failed to map GPU memory buffer";
+    return;
+  }
 
   // Create a temporary canvas for update rectangle.
   gfx::Canvas canvas(update_rect.size(), scale_factor_, false);
@@ -574,6 +569,9 @@ void LaserPointerView::UpdateBuffer() {
         SkImageInfo::MakeN32Premul(pixel_rect.width(), pixel_rect.height()),
         data + pixel_rect.y() * stride + pixel_rect.x() * 4, stride, 0, 0);
   }
+
+  // Unmap to flush writes to buffer.
+  gpu_memory_buffer_->Unmap();
 
   // Update surface damage rectangle.
   surface_damage_rect_.Union(update_rect);
