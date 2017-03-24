@@ -49,7 +49,7 @@ bool NativeViewAccessibilityBase::SetFocused(bool focused) {
 
 // ui::AXPlatformNodeDelegate
 
-const ui::AXNodeData& NativeViewAccessibilityBase::GetData() {
+const ui::AXNodeData& NativeViewAccessibilityBase::GetData() const {
   data_ = ui::AXNodeData();
   data_.state = 0;
 

@@ -71,7 +71,7 @@ TestAXNodeWrapper::~TestAXNodeWrapper() {
   platform_node_->Destroy();
 }
 
-const AXNodeData& TestAXNodeWrapper::GetData() {
+const AXNodeData& TestAXNodeWrapper::GetData() const {
   return node_->data();
 }
 

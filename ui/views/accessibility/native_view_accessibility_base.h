@@ -40,7 +40,7 @@ class VIEWS_EXPORT NativeViewAccessibilityBase
   bool SetFocused(bool focused);
 
   // ui::AXPlatformNodeDelegate
-  const ui::AXNodeData& GetData() override;
+  const ui::AXNodeData& GetData() const override;
   int GetChildCount() override;
   gfx::NativeViewAccessible ChildAtIndex(int index) override;
   gfx::NativeWindow GetTopLevelWidget() override;
@@ -76,7 +76,7 @@ class VIEWS_EXPORT NativeViewAccessibilityBase
   // a scoped_ptr. It is dereferenced in the destructor.
   ui::AXPlatformNode* ax_node_;
 
-  ui::AXNodeData data_;
+  mutable ui::AXNodeData data_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewAccessibilityBase);
 };

@@ -70,9 +70,7 @@ class AuraLinuxApplication
 
   // ui::AXPlatformNodeDelegate:
 
-  const ui::AXNodeData& GetData() override {
-    return data_;
-  }
+  const ui::AXNodeData& GetData() const override { return data_; }
 
   gfx::NativeWindow GetTopLevelWidget() override { return nullptr; }
 

@@ -34,7 +34,7 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // Virtually all of the information is obtained from this structure
   // (role, state, name, cursor position, etc.) - the rest of this interface
   // is mostly to implement support for walking the accessibility tree.
-  virtual const AXNodeData& GetData() = 0;
+  virtual const AXNodeData& GetData() const = 0;
 
   // Get the window the node is contained in.
   virtual gfx::NativeWindow GetTopLevelWidget() = 0;
