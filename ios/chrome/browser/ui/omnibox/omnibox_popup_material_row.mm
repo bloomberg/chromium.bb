@@ -126,6 +126,9 @@ const CGFloat kAppendButtonSize = 48.0;
 - (void)updateLeadingImage:(int)imageID {
   _imageView.image = NativeImage(imageID);
 
+  _imageView.accessibilityIdentifier =
+      [NSString stringWithFormat:@"leading image id %d", imageID];
+
   // Adjust the vertical position based on the current size of the row.
   CGRect frame = _imageView.frame;
   frame.origin.y = floor((_rowHeight - kImageDimensionLength) / 2);
