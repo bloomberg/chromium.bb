@@ -15394,6 +15394,79 @@
             "chrome_internal"
         ]
     },
+    "nasher-chromium-pfq": {
+        "_template": "chromium_pfq",
+        "boards": [
+            "nasher"
+        ],
+        "buildslave_type": "baremetal",
+        "important": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "nasher-compile-only-pre-cq": {
+        "_template": "compile_only_pre_cq",
+        "boards": [
+            "nasher"
+        ]
+    },
+    "nasher-full": {
+        "_template": "full",
+        "boards": [
+            "nasher"
+        ],
+        "buildslave_type": "baremetal",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "nasher-no-vmtest-pre-cq": {
+        "_template": "no_vmtest_pre_cq",
+        "boards": [
+            "nasher"
+        ]
+    },
+    "nasher-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "nasher"
+        ],
+        "important": false,
+        "vm_tests": []
+    },
+    "nasher-pre-cq": {
+        "_template": "pre_cq",
+        "boards": [
+            "nasher"
+        ],
+        "buildslave_type": "baremetal"
+    },
+    "nasher-release": {
+        "_template": "release",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "nasher"
+        ],
+        "buildslave_type": "baremetal"
+    },
+    "nasher-tot-chromium-pfq-informational": {
+        "_template": "chromium_pfq_informational",
+        "boards": [
+            "nasher"
+        ],
+        "buildslave_type": "baremetal",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "nasher-unittest-stress": {
+        "_template": "unittest_stress",
+        "boards": [
+            "nasher"
+        ]
+    },
     "newbie-chrome-pfq": {
         "_template": "chrome_pfq",
         "boards": [
