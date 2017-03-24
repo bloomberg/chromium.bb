@@ -6,8 +6,9 @@ function vibration_mocks(mojo) {
       [
         'mojo/public/js/bindings',
         'device/vibration/vibration_manager.mojom',
+        'services/device/public/interfaces/constants.mojom',
       ],
-      (bindings, vibrationManager) => {
+      (bindings, vibrationManager, deviceConstants) => {
         class MockVibrationManager {
           constructor() {
             this.bindingSet =
@@ -43,19 +44,16 @@ function vibration_mocks(mojo) {
         }
 
         let mockVibrationManager = new MockVibrationManager;
-        mojo.frameInterfaces.addInterfaceOverrideForTesting(
+        mojo.connector.addInterfaceOverrideForTesting(
+            deviceConstants.kServiceName,
             vibrationManager.VibrationManager.name, handle => {
               mockVibrationManager.bindingSet.addBinding(
                   mockVibrationManager, handle);
             });
 
         return Promise.resolve({
-          // Interface instance bound to main frame.
+          // Mock interface instance bound.
           mockVibrationManager: mockVibrationManager,
-          // Constructor for mock VibrationManager class.
-          MockVibrationManager: MockVibrationManager,
-          // Loaded mojom interface.
-          VibrationManager: vibrationManager.VibrationManager,
         });
       });
 }

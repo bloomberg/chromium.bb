@@ -7,5 +7,6 @@ include_rules = [
     "+modules/vibration",
     "+platform",
     "+public/platform",
+    "+services/device/public/interfaces/constants.mojom-blink.h",
     "-web",
 ]

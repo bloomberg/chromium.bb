@@ -448,7 +448,6 @@ target(link_target_type, "renderer") {
     "//device/sensors/public/cpp:full",
     "//device/sensors/public/interfaces",
     "//device/usb/public/interfaces",
-    "//device/vibration:mojo_bindings",
     "//gin",
     "//gpu",
     "//gpu/command_buffer/client:gles2_interface",

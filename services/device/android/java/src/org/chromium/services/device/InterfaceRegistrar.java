@@ -10,6 +10,8 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.device.BatteryMonitor;
 import org.chromium.device.battery.BatteryMonitorFactory;
+import org.chromium.device.mojom.VibrationManager;
+import org.chromium.device.vibration.VibrationManagerImpl;
 import org.chromium.mojo.system.impl.CoreImpl;
 import org.chromium.services.service_manager.InterfaceRegistry;
 
@@ -23,5 +25,7 @@ class InterfaceRegistrar {
                 CoreImpl.getInstance().acquireNativeHandle(nativeHandle).toMessagePipeHandle());
         registry.addInterface(
                 BatteryMonitor.MANAGER, new BatteryMonitorFactory(applicationContext));
+        registry.addInterface(
+                VibrationManager.MANAGER, new VibrationManagerImpl.Factory(applicationContext));
     }
 }

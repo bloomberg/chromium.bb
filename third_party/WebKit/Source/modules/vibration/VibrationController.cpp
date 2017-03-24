@@ -25,7 +25,9 @@
 #include "core/frame/Navigator.h"
 #include "core/page/Page.h"
 #include "platform/mojo/MojoHelper.h"
-#include "public/platform/InterfaceProvider.h"
+#include "public/platform/Connector.h"
+#include "public/platform/Platform.h"
+#include "services/device/public/interfaces/constants.mojom-blink.h"
 
 // Maximum number of entries in a vibration pattern.
 const unsigned kVibrationPatternLengthMax = 99;
@@ -83,8 +85,9 @@ VibrationController::VibrationController(Document& document)
       m_isRunning(false),
       m_isCallingCancel(false),
       m_isCallingVibrate(false) {
-  document.frame()->interfaceProvider()->getInterface(
-      mojo::MakeRequest(&m_service));
+  Platform::current()->connector()->bindInterface(
+      device::mojom::blink::kServiceName,
+      mojo::MakeRequest(&m_vibrationManager));
 }
 
 VibrationController::~VibrationController() {}
@@ -124,11 +127,12 @@ void VibrationController::doVibrate(TimerBase* timer) {
       !getExecutionContext() || !page()->isPageVisible())
     return;
 
-  if (m_service) {
+  if (m_vibrationManager) {
     m_isCallingVibrate = true;
-    m_service->Vibrate(m_pattern[0], convertToBaseCallback(WTF::bind(
-                                         &VibrationController::didVibrate,
-                                         wrapPersistent(this))));
+    m_vibrationManager->Vibrate(
+        m_pattern[0],
+        convertToBaseCallback(
+            WTF::bind(&VibrationController::didVibrate, wrapPersistent(this))));
   }
 }
 
@@ -157,9 +161,9 @@ void VibrationController::cancel() {
   m_pattern.clear();
   m_timerDoVibrate.stop();
 
-  if (m_isRunning && !m_isCallingCancel && m_service) {
+  if (m_isRunning && !m_isCallingCancel && m_vibrationManager) {
     m_isCallingCancel = true;
-    m_service->Cancel(convertToBaseCallback(
+    m_vibrationManager->Cancel(convertToBaseCallback(
         WTF::bind(&VibrationController::didCancel, wrapPersistent(this))));
   }
 
@@ -179,7 +183,7 @@ void VibrationController::contextDestroyed(ExecutionContext*) {
   cancel();
 
   // If the document context was destroyed, never call the mojo service again.
-  m_service.reset();
+  m_vibrationManager.reset();
 }
 
 void VibrationController::pageVisibilityChanged() {

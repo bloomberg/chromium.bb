@@ -14,9 +14,7 @@ import org.chromium.content.browser.shapedetection.FaceDetectionProviderImpl;
 import org.chromium.content_public.browser.InterfaceRegistrar;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.device.mojom.VibrationManager;
 import org.chromium.device.nfc.mojom.Nfc;
-import org.chromium.device.vibration.VibrationManagerImpl;
 import org.chromium.installedapp.mojom.InstalledAppProvider;
 import org.chromium.media.mojom.AndroidOverlayProvider;
 import org.chromium.mojo.system.impl.CoreImpl;
@@ -70,8 +68,6 @@ class InterfaceRegistrarImpl {
         @Override
         public void registerInterfaces(
                 InterfaceRegistry registry, final Context applicationContext) {
-            registry.addInterface(
-                    VibrationManager.MANAGER, new VibrationManagerImpl.Factory(applicationContext));
             registry.addInterface(FaceDetectionProvider.MANAGER,
                     new FaceDetectionProviderImpl.Factory(applicationContext));
             registry.addInterface(AndroidOverlayProvider.MANAGER,

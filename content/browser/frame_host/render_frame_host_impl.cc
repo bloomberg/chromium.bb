@@ -97,7 +97,6 @@
 #include "content/public/common/url_utils.h"
 #include "device/generic_sensor/sensor_provider_impl.h"
 #include "device/geolocation/geolocation_service_context.h"
-#include "device/vibration/vibration_manager_impl.h"
 #include "device/vr/features.h"
 #include "device/wake_lock/wake_lock_service_context.h"
 #include "media/base/media_switches.h"
@@ -2468,16 +2467,9 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       base::Bind(&MediaSessionServiceImpl::Create, base::Unretained(this)));
 
 #if defined(OS_ANDROID)
-  GetInterfaceRegistry()->AddInterface(
-      GetGlobalJavaInterfaces()
-          ->CreateInterfaceFactory<device::mojom::VibrationManager>());
-
   // Creates a MojoRendererService, passing it a MediaPlayerRender.
   GetInterfaceRegistry()->AddInterface<media::mojom::Renderer>(base::Bind(
       &content::CreateMediaPlayerRenderer, base::Unretained(this)));
-#else
-  GetInterfaceRegistry()->AddInterface(
-      base::Bind(&device::VibrationManagerImpl::Create));
 #endif  // defined(OS_ANDROID)
 
   GetInterfaceRegistry()->AddInterface(base::Bind(

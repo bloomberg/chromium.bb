@@ -20,6 +20,7 @@ source_set("lib") {
     "//base",
     "//device/battery:mojo_bindings",
     "//device/sensors",
+    "//device/vibration:mojo_bindings",
     "//services/device/fingerprint",
     "//services/device/power_monitor",
     "//services/device/screen_orientation",
@@ -34,7 +35,10 @@ source_set("lib") {
     ]
     deps += [ ":device_service_jni_headers" ]
   } else {
-    deps += [ "//device/battery" ]
+    deps += [
+      "//device/battery",
+      "//device/vibration",
+    ]
   }
 }
 
@@ -90,6 +94,8 @@ if (is_android) {
       "//base:base_java",
       "//device/battery:mojo_bindings_java",
       "//device/battery/android:battery_monitor_java",
+      "//device/vibration:mojo_bindings_java",
+      "//device/vibration/android:vibration_manager_java",
       "//mojo/android:system_java",
       "//mojo/public/java:bindings_java",
       "//mojo/public/java:system_java",

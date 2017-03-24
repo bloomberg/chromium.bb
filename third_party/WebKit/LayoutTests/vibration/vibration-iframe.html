@@ -13,22 +13,9 @@ if (!window.testRunner)
 // TODO(leonhsl): Add more test cases http://crbug.com/701288
 
 vibration_test(vibration => {
-  let mockForSubFrame = new vibration.MockVibrationManager;
   let promise = new Promise(resolve => {
     let iframe = document.createElement('iframe');
     iframe.src = 'resources/vibrate-from-iframe.html';
-    iframe.onload = () => {
-      iframe.contentWindow.gin.define(
-          'Mojo Service Registry', ['content/public/renderer/frame_interfaces'],
-          (frameInterfaces) => {
-            frameInterfaces.addInterfaceOverrideForTesting(
-                vibration.VibrationManager.name, handle => {
-                  mockForSubFrame.bindingSet.addBinding(
-                      mockForSubFrame, handle);
-                });
-            iframe.contentWindow.postMessage('Ready', '*');
-          });
-    };
 
     document.body.appendChild(iframe);
 
@@ -45,29 +32,15 @@ vibration_test(vibration => {
 
   return promise.then(msgData => {
     assert_equals(msgData, 'Cancel');
-    assert_equals(mockForSubFrame.getDuration(), 1234);
-    assert_true(mockForSubFrame.isCancelled());
+    assert_equals(vibration.mockVibrationManager.getDuration(), 1234);
+    assert_true(vibration.mockVibrationManager.isCancelled());
   });
 }, 'Iframe reload cancels vibration started by it before.');
 
 vibration_test(vibration => {
-  let mockForSubFrame = new vibration.MockVibrationManager;
   let promise = new Promise(resolve => {
     let iframe = document.createElement('iframe');
     iframe.src = 'resources/vibrate-from-iframe.html';
-    iframe.onload = () => {
-      iframe.contentWindow.gin.define(
-          'Mojo Service Registry', ['content/public/renderer/frame_interfaces'],
-          (frameInterfaces) => {
-            frameInterfaces.addInterfaceOverrideForTesting(
-                vibration.VibrationManager.name, handle => {
-                  mockForSubFrame.bindingSet.addBinding(
-                      mockForSubFrame, handle);
-                });
-            iframe.contentWindow.postMessage('Ready', '*');
-          });
-    };
-
     document.body.appendChild(iframe);
 
     window.onmessage = msg => {
@@ -83,8 +56,8 @@ vibration_test(vibration => {
 
   return promise.then(msgData => {
     assert_equals(msgData, 'Cancel');
-    assert_equals(mockForSubFrame.getDuration(), 1234);
-    assert_true(mockForSubFrame.isCancelled());
+    assert_equals(vibration.mockVibrationManager.getDuration(), 1234);
+    assert_true(vibration.mockVibrationManager.isCancelled());
   });
 }, 'Iframe destroy cancels vibration started by it before.');
 

@@ -54,7 +54,6 @@ template("implement_content_app") {
       "//device/power_save_blocker",
       "//device/sensors",
       "//device/usb",
-      "//device/vibration",
       "//gpu",
       "//media",
       "//media/capture",

@@ -26,6 +26,8 @@
 #include "jni/InterfaceRegistrar_jni.h"
 #include "services/device/android/register_jni.h"
 #include "services/device/screen_orientation/screen_orientation_listener_android.h"
+#else
+#include "device/vibration/vibration_manager_impl.h"
 #endif
 
 namespace device {
@@ -77,8 +79,12 @@ bool DeviceService::OnConnect(const service_manager::ServiceInfo& remote_info,
 #if defined(OS_ANDROID)
   registry->AddInterface(
       GetJavaInterfaceProvider()->CreateInterfaceFactory<BatteryMonitor>());
+  registry->AddInterface(
+      GetJavaInterfaceProvider()
+          ->CreateInterfaceFactory<mojom::VibrationManager>());
 #else
   registry->AddInterface<BatteryMonitor>(this);
+  registry->AddInterface<mojom::VibrationManager>(this);
 #endif
 
   return true;
@@ -88,6 +94,11 @@ bool DeviceService::OnConnect(const service_manager::ServiceInfo& remote_info,
 void DeviceService::Create(const service_manager::Identity& remote_identity,
                            BatteryMonitorRequest request) {
   device::BatteryMonitorImpl::Create(std::move(request));
+}
+
+void DeviceService::Create(const service_manager::Identity& remote_identity,
+                           mojom::VibrationManagerRequest request) {
+  VibrationManagerImpl::Create(std::move(request));
 }
 #endif
 

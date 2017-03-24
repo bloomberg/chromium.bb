@@ -24,7 +24,8 @@
           "device:power_monitor",
           "device:screen_orientation",
           "device:sensors",
-          "device:time_zone_monitor"
+          "device:time_zone_monitor",
+          "device:vibration"
         ],
         "ui": [
           "discardable_memory",

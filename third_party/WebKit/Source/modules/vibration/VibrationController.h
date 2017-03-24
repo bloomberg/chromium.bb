@@ -74,9 +74,9 @@ class MODULES_EXPORT VibrationController final
   // Inherited from PageVisibilityObserver.
   void pageVisibilityChanged() override;
 
-  // The VibrationManager mojo service. This is reset in |contextDestroyed|
+  // Ptr to VibrationManager mojo interface. This is reset in |contextDestroyed|
   // and must not be called or recreated after it is reset.
-  device::mojom::blink::VibrationManagerPtr m_service;
+  device::mojom::blink::VibrationManagerPtr m_vibrationManager;
 
   // Timer for calling |doVibrate| after a delay. It is safe to call
   // |startOneshot| when the timer is already running: it may affect the time

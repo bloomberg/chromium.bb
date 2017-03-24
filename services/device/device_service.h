@@ -11,6 +11,7 @@
 #include "device/sensors/public/interfaces/light.mojom.h"
 #include "device/sensors/public/interfaces/motion.mojom.h"
 #include "device/sensors/public/interfaces/orientation.mojom.h"
+#include "device/vibration/vibration_manager.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/device/public/interfaces/fingerprint.mojom.h"
 #include "services/device/public/interfaces/power_monitor.mojom.h"
@@ -43,6 +44,8 @@ class DeviceService
 #if !defined(OS_ANDROID)
       // On Android the Device Service provides BatteryMonitor via Java.
       public service_manager::InterfaceFactory<BatteryMonitor>,
+      // On Android the Device Service provides VibrationManager via Java.
+      public service_manager::InterfaceFactory<mojom::VibrationManager>,
 #endif
       public service_manager::InterfaceFactory<mojom::PowerMonitor>,
       public service_manager::InterfaceFactory<
@@ -83,6 +86,9 @@ class DeviceService
   // InterfaceFactory<BatteryMonitor>:
   void Create(const service_manager::Identity& remote_identity,
               BatteryMonitorRequest request) override;
+  // InterfaceFactory<mojom::VibrationManager>:
+  void Create(const service_manager::Identity& remote_identity,
+              mojom::VibrationManagerRequest request) override;
 #endif
 
   // InterfaceFactory<mojom::PowerMonitor>:

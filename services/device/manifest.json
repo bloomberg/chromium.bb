@@ -14,7 +14,8 @@
           "device::mojom::OrientationAbsoluteSensor",
           "device::mojom::OrientationSensor"
         ],
-        "device:time_zone_monitor": [ "device::mojom::TimeZoneMonitor" ]
+        "device:time_zone_monitor": [ "device::mojom::TimeZoneMonitor" ],
+        "device:vibration": [ "device::mojom::VibrationManager" ]
       },
       "requires": {
         "service_manager": [ "service_manager:all_users" ]
