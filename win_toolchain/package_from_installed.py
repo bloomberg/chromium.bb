@@ -37,7 +37,7 @@ import get_toolchain_if_necessary
 
 VS_VERSION = None
 WIN_VERSION = None
-
+VC_TOOLS = None
 
 def BuildFileList(override_dir):
   result = []
@@ -48,36 +48,25 @@ def BuildFileList(override_dir):
       'DIA SDK/idl',
       'DIA SDK/include',
       'DIA SDK/lib',
-      'VC/atlmfc',
-      'VC/crt',
+      VC_TOOLS + '/atlmfc',
+      VC_TOOLS + '/crt',
       'VC/redist',
   ]
 
   if override_dir:
     paths += [
-        (os.path.join(override_dir, 'bin'), 'VC/bin'),
-        (os.path.join(override_dir, 'include'), 'VC/include'),
-        (os.path.join(override_dir, 'lib'), 'VC/lib'),
+        (os.path.join(override_dir, 'bin'), VC_TOOLS + '/bin'),
+        (os.path.join(override_dir, 'include'), VC_TOOLS + '/include'),
+        (os.path.join(override_dir, 'lib'), VC_TOOLS + '/lib'),
     ]
   else:
     paths += [
-        'VC/bin',
-        'VC/include',
-        'VC/lib',
+        VC_TOOLS + '/bin',
+        VC_TOOLS + '/include',
+        VC_TOOLS + '/lib',
     ]
 
-  if VS_VERSION == '2013':
-    paths += [
-        ('VC/redist/x86/Microsoft.VC120.CRT', 'sys32'),
-        ('VC/redist/x86/Microsoft.VC120.MFC', 'sys32'),
-        ('VC/redist/Debug_NonRedist/x86/Microsoft.VC120.DebugCRT', 'sys32'),
-        ('VC/redist/Debug_NonRedist/x86/Microsoft.VC120.DebugMFC', 'sys32'),
-        ('VC/redist/x64/Microsoft.VC120.CRT', 'sys64'),
-        ('VC/redist/x64/Microsoft.VC120.MFC', 'sys64'),
-        ('VC/redist/Debug_NonRedist/x64/Microsoft.VC120.DebugCRT', 'sys64'),
-        ('VC/redist/Debug_NonRedist/x64/Microsoft.VC120.DebugMFC', 'sys64'),
-    ]
-  elif VS_VERSION == '2015':
+  if VS_VERSION == '2015':
     paths += [
         ('VC/redist/x86/Microsoft.VC140.CRT', 'sys32'),
         ('VC/redist/x86/Microsoft.VC140.CRT', 'win_sdk/bin/x86'),
@@ -92,20 +81,40 @@ def BuildFileList(override_dir):
         ('VC/redist/debug_nonredist/x64/Microsoft.VC140.DebugCRT', 'sys64'),
         ('VC/redist/debug_nonredist/x64/Microsoft.VC140.DebugMFC', 'sys64'),
     ]
+  elif VS_VERSION == '2017':
+    paths += [
+        ('VC/redist/MSVC/14.10.25008/x86/Microsoft.VC150.CRT', 'sys32'),
+        ('VC/redist/MSVC/14.10.25008/x86/Microsoft.VC150.CRT', 'win_sdk/bin/x86'),
+        ('VC/redist/MSVC/14.10.25017/x86/Microsoft.VC150.MFC', 'sys32'),
+        ('VC/redist/MSVC/14.10.25008/debug_nonredist/x86/Microsoft.VC150.DebugCRT', 'sys32'),
+        ('VC/redist/MSVC/14.10.25017/debug_nonredist/x86/Microsoft.VC150.DebugMFC', 'sys32'),
+        ('VC/redist/MSVC/14.10.25008/x64/Microsoft.VC150.CRT', 'sys64'),
+        ('VC/redist/MSVC/14.10.25008/x64/Microsoft.VC150.CRT', 'VC/bin/amd64_x86'),
+        ('VC/redist/MSVC/14.10.25008/x64/Microsoft.VC150.CRT', 'VC/bin/amd64'),
+        ('VC/redist/MSVC/14.10.25008/x64/Microsoft.VC150.CRT', 'win_sdk/bin/x64'),
+        ('VC/redist/MSVC/14.10.25017/x64/Microsoft.VC150.MFC', 'sys64'),
+        ('VC/redist/MSVC/14.10.25008/debug_nonredist/x64/Microsoft.VC150.DebugCRT', 'sys64'),
+        ('VC/redist/MSVC/14.10.25017/debug_nonredist/x64/Microsoft.VC150.DebugMFC', 'sys64'),
+    ]
   else:
     raise ValueError('VS_VERSION %s' % VS_VERSION)
 
-  if VS_VERSION == '2013':
-    vs_path = r'C:\Program Files (x86)\Microsoft Visual Studio 12.0'
-  else:
+  if VS_VERSION == '2015':
     vs_path = r'C:\Program Files (x86)\Microsoft Visual Studio 14.0'
+  elif VS_VERSION == '2017':
+    vs_path = r'C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional'
+  else:
+    assert ValueError(VS_VERSION)
 
   for path in paths:
     src = path[0] if isinstance(path, tuple) else path
     # Note that vs_path is ignored if src is an absolute path.
     # normpath is needed to change '/' to '\\' characters.
     combined = os.path.normpath(os.path.join(vs_path, src))
-    assert os.path.exists(combined) and os.path.isdir(combined)
+    if not os.path.exists(combined):
+      raise Exception('%s missing.' % combined)
+    if not os.path.isdir(combined):
+      raise Exception('%s not a directory.' % combined)
     for root, _, files in os.walk(combined):
       for f in files:
         final_from = os.path.normpath(os.path.join(root, f))
@@ -117,17 +126,7 @@ def BuildFileList(override_dir):
         else:
           assert final_from.startswith(vs_path)
           dest = final_from[len(vs_path) + 1:]
-          if VS_VERSION == '2013' and dest.lower().endswith('\\xtree'):
-            # Patch for C4702 in xtree on VS2013. http://crbug.com/346399.
-            (handle, patched) = tempfile.mkstemp()
-            with open(final_from, 'rb') as unpatched_f:
-              unpatched_contents = unpatched_f.read()
-            os.write(handle,
-                unpatched_contents.replace('warning(disable: 4127)',
-                                           'warning(disable: 4127 4702)'))
-            result.append((patched, dest))
-          else:
-            result.append((final_from, dest))
+          result.append((final_from, dest))
 
   # Just copy the whole SDK.
   sdk_path = r'C:\Program Files (x86)\Windows Kits\10'
@@ -141,49 +140,47 @@ def BuildFileList(override_dir):
       if (tail.startswith('References\\') or
           tail.startswith('Windows Performance Toolkit\\')):
         continue
-      if VS_VERSION == '2015':
-        # There may be many Include\Lib\Source directories for many different
-        # versions of Windows and packaging them all wastes ~450 MB
-        # (uncompressed) per version and wastes time. Only copy the specified
-        # version.
-        if (tail.startswith('Include\\') or tail.startswith('Lib\\') or
-            tail.startswith('Source\\')):
-          if tail.count(WIN_VERSION) == 0:
-            continue
+      # There may be many Include\Lib\Source directories for many different
+      # versions of Windows and packaging them all wastes ~450 MB
+      # (uncompressed) per version and wastes time. Only copy the specified
+      # version.
+      if (tail.startswith('Include\\') or tail.startswith('Lib\\') or
+          tail.startswith('Source\\')):
+        if tail.count(WIN_VERSION) == 0:
+          continue
       to = os.path.join('win_sdk', tail)
       result.append((combined, to))
 
-  if VS_VERSION == '2015':
-    # Copy the x86 ucrt DLLs to all directories with 32-bit binaries that are
-    # added to the path by SetEnv.cmd, and to sys32.
-    ucrt_paths = glob.glob(os.path.join(sdk_path, r'redist\ucrt\dlls\x86\*'))
-    for ucrt_path in ucrt_paths:
-      ucrt_file = os.path.split(ucrt_path)[1]
-      for dest_dir in [ r'win_sdk\bin\x86', 'sys32' ]:
-        result.append((ucrt_path, os.path.join(dest_dir, ucrt_file)))
+  # Copy the x86 ucrt DLLs to all directories with 32-bit binaries that are
+  # added to the path by SetEnv.cmd, and to sys32.
+  ucrt_paths = glob.glob(os.path.join(sdk_path, r'redist\ucrt\dlls\x86\*'))
+  for ucrt_path in ucrt_paths:
+    ucrt_file = os.path.split(ucrt_path)[1]
+    for dest_dir in [ r'win_sdk\bin\x86', 'sys32' ]:
+      result.append((ucrt_path, os.path.join(dest_dir, ucrt_file)))
 
-    # Copy the x64 ucrt DLLs to all directories with 64-bit binaries that are
-    # added to the path by SetEnv.cmd, and to sys64.
-    ucrt_paths = glob.glob(os.path.join(sdk_path, r'redist\ucrt\dlls\x64\*'))
-    for ucrt_path in ucrt_paths:
-      ucrt_file = os.path.split(ucrt_path)[1]
-      for dest_dir in [ r'VC\bin\amd64_x86', r'VC\bin\amd64',
-                        r'win_sdk\bin\x64', 'sys64']:
-        result.append((ucrt_path, os.path.join(dest_dir, ucrt_file)))
+  # Copy the x64 ucrt DLLs to all directories with 64-bit binaries that are
+  # added to the path by SetEnv.cmd, and to sys64.
+  ucrt_paths = glob.glob(os.path.join(sdk_path, r'redist\ucrt\dlls\x64\*'))
+  for ucrt_path in ucrt_paths:
+    ucrt_file = os.path.split(ucrt_path)[1]
+    for dest_dir in [ r'VC\bin\amd64_x86', r'VC\bin\amd64',
+                      r'win_sdk\bin\x64', 'sys64']:
+      result.append((ucrt_path, os.path.join(dest_dir, ucrt_file)))
 
-    system_crt_files = [
-        # Needed to let debug binaries run.
-        'ucrtbased.dll',
-    ]
-    bitness = platform.architecture()[0]
-    # When running 64-bit python the x64 DLLs will be in System32
-    x64_path = 'System32' if bitness == '64bit' else 'Sysnative'
-    x64_path = os.path.join(r'C:\Windows', x64_path)
-    for system_crt_file in system_crt_files:
-        result.append((os.path.join(r'C:\Windows\SysWOW64', system_crt_file),
-                        os.path.join('sys32', system_crt_file)))
-        result.append((os.path.join(x64_path, system_crt_file),
-                        os.path.join('sys64', system_crt_file)))
+  system_crt_files = [
+      # Needed to let debug binaries run.
+      'ucrtbased.dll',
+  ]
+  bitness = platform.architecture()[0]
+  # When running 64-bit python the x64 DLLs will be in System32
+  x64_path = 'System32' if bitness == '64bit' else 'Sysnative'
+  x64_path = os.path.join(r'C:\Windows', x64_path)
+  for system_crt_file in system_crt_files:
+      result.append((os.path.join(r'C:\Windows\SysWOW64', system_crt_file),
+                      os.path.join('sys32', system_crt_file)))
+      result.append((os.path.join(x64_path, system_crt_file),
+                      os.path.join('sys64', system_crt_file)))
 
   # Generically drop all arm stuff that we don't need, and
   # drop .msi files because we don't need installers, and drop windows.winmd
@@ -191,6 +188,7 @@ def BuildFileList(override_dir):
   return [(f, t) for f, t in result if 'arm\\' not in f.lower() and
                                        'arm64\\' not in f.lower() and
                                        not f.lower().endswith('.msi') and
+                                       not f.lower().endswith('.msm') and
                                        not f.lower().endswith('windows.winmd')]
 
 
@@ -200,17 +198,18 @@ def GenerateSetEnvCmd(target_dir):
 
   This is normally generated by a full install of the SDK, but we
   do it here manually since we do not do a full install."""
+  vc_tools_parts = VC_TOOLS.split('/')
+
   # All these paths are relative to the directory containing SetEnv.cmd.
   include_dirs = [
     ['..', '..', 'win_sdk', 'Include', WIN_VERSION, 'um'],
     ['..', '..', 'win_sdk', 'Include', WIN_VERSION, 'shared'],
     ['..', '..', 'win_sdk', 'Include', WIN_VERSION, 'winrt'],
   ]
-  if VS_VERSION == '2015':
-    include_dirs.append(['..', '..', 'win_sdk', 'Include', WIN_VERSION, 'ucrt'])
+  include_dirs.append(['..', '..', 'win_sdk', 'Include', WIN_VERSION, 'ucrt'])
   include_dirs.extend([
-    ['..', '..', 'VC', 'include'],
-    ['..', '..', 'VC', 'atlmfc', 'include'],
+    ['..', '..'] + vc_tools_parts + ['include'],
+    ['..', '..'] + vc_tools_parts + ['atlmfc', 'include'],
   ])
   # Common to x86 and x64
   env = collections.OrderedDict([
@@ -221,32 +220,61 @@ def GenerateSetEnvCmd(target_dir):
     ('INCLUDE', include_dirs),
   ])
   # x86. Always use amd64_x86 cross, not x86 on x86.
-  env_x86 = collections.OrderedDict([
-    ('PATH', [
-      ['..', '..', 'win_sdk', 'bin', 'x86'],
-      ['..', '..', 'VC', 'bin', 'amd64_x86'],
-      ['..', '..', 'VC', 'bin', 'amd64'],  # Needed for mspdb1x0.dll.
-    ]),
-    ('LIB', [
-      ['..', '..', 'VC', 'lib'],
-      ['..', '..', 'win_sdk', 'Lib', WIN_VERSION, 'um', 'x86'],
-      ['..', '..', 'win_sdk', 'Lib', WIN_VERSION, 'ucrt', 'x86'],  # VS 2015
-      ['..', '..', 'VC', 'atlmfc', 'lib'],
-    ]),
-  ])
+  if VS_VERSION == '2017':
+    env_x86 = collections.OrderedDict([
+      ('PATH', [
+        ['..', '..', 'win_sdk', 'bin', 'x64'],
+        ['..', '..'] + vc_tools_parts + ['bin', 'HostX64', 'x86'],
+        ['..', '..'] + vc_tools_parts + ['bin', 'HostX64', 'x64'],  # Needed for mspdb1x0.dll.
+      ]),
+      ('LIB', [
+        ['..', '..'] + vc_tools_parts + ['lib', 'x86'],
+        ['..', '..', 'win_sdk', 'Lib', WIN_VERSION, 'um', 'x86'],
+        ['..', '..', 'win_sdk', 'Lib', WIN_VERSION, 'ucrt', 'x86'],
+        ['..', '..'] + vc_tools_parts + ['atlmfc', 'lib', 'x86'],
+      ]),
+    ])
+  else:
+    env_x86 = collections.OrderedDict([
+      ('PATH', [
+        ['..', '..', 'win_sdk', 'bin', 'x86'],
+        ['..', '..', 'VC', 'bin', 'amd64_x86'],
+        ['..', '..', 'VC', 'bin', 'amd64'],  # Needed for mspdb1x0.dll.
+      ]),
+      ('LIB', [
+        ['..', '..', 'VC', 'lib'],
+        ['..', '..', 'win_sdk', 'Lib', WIN_VERSION, 'um', 'x86'],
+        ['..', '..', 'win_sdk', 'Lib', WIN_VERSION, 'ucrt', 'x86'],
+        ['..', '..', 'VC', 'atlmfc', 'lib'],
+      ]),
+    ])
   # x64.
-  env_x64 = collections.OrderedDict([
-    ('PATH', [
-      ['..', '..', 'win_sdk', 'bin', 'x64'],
-      ['..', '..', 'VC', 'bin', 'amd64'],
-    ]),
-    ('LIB', [
-      ['..', '..', 'VC', 'lib', 'amd64'],
-      ['..', '..', 'win_sdk', 'Lib', WIN_VERSION, 'um', 'x64'],
-      ['..', '..', 'win_sdk', 'Lib', WIN_VERSION, 'ucrt', 'x64'],  # VS 2015
-      ['..', '..', 'VC', 'atlmfc', 'lib', 'amd64'],
-    ]),
-  ])
+  if VS_VERSION == '2017':
+    env_x64 = collections.OrderedDict([
+      ('PATH', [
+        ['..', '..', 'win_sdk', 'bin', 'x64'],
+        ['..', '..'] + vc_tools_parts + ['bin', 'HostX64', 'x64'],
+      ]),
+      ('LIB', [
+        ['..', '..'] + vc_tools_parts + ['lib', 'x64'],
+        ['..', '..', 'win_sdk', 'Lib', WIN_VERSION, 'um', 'x64'],
+        ['..', '..', 'win_sdk', 'Lib', WIN_VERSION, 'ucrt', 'x64'],
+        ['..', '..'] + vc_tools_parts + ['atlmfc', 'lib', 'x64'],
+      ]),
+    ])
+  else:
+    env_x64 = collections.OrderedDict([
+      ('PATH', [
+        ['..', '..', 'win_sdk', 'bin', 'x64'],
+        ['..', '..', 'VC', 'bin', 'amd64'],
+      ]),
+      ('LIB', [
+        ['..', '..', 'VC', 'lib', 'amd64'],
+        ['..', '..', 'win_sdk', 'Lib', WIN_VERSION, 'um', 'x64'],
+        ['..', '..', 'win_sdk', 'Lib', WIN_VERSION, 'ucrt', 'x64'],
+        ['..', '..', 'VC', 'atlmfc', 'lib', 'amd64'],
+      ]),
+    ])
   def BatDirs(dirs):
     return ';'.join(['%~dp0' + os.path.join(*d) for d in dirs])
   set_env_prefix = os.path.join(target_dir, r'win_sdk\bin\SetEnv')
@@ -301,10 +329,7 @@ def RenameToSha1(output):
   tempdir = tempfile.mkdtemp()
   old_dir = os.getcwd()
   os.chdir(tempdir)
-  if VS_VERSION == '2013':
-    rel_dir = 'vs2013_files'
-  else:
-    rel_dir = 'vs_files'
+  rel_dir = 'vs_files'
   with zipfile.ZipFile(
       os.path.join(old_dir, output), 'r', zipfile.ZIP_DEFLATED, True) as zf:
     zf.extractall(rel_dir)
@@ -318,11 +343,11 @@ def RenameToSha1(output):
 
 
 def main():
-  usage = 'usage: %prog [options] 2013|2015'
+  usage = 'usage: %prog [options] 2015|2017'
   parser = optparse.OptionParser(usage)
   parser.add_option('-w', '--winver', action='store', type='string',
-                    dest='winver', default='10.0.10586.0',
-                    help='Windows SDK version, such as 10.0.10586.0')
+                    dest='winver', default='10.0.14393.0',
+                    help='Windows SDK version, such as 10.0.14393.0')
   parser.add_option('-d', '--dryrun', action='store_true', dest='dryrun',
                     default=False,
                     help='scan for file existence and prints statistics')
@@ -331,8 +356,8 @@ def main():
                     help='Specify alternate bin/include/lib directory')
   (options, args) = parser.parse_args()
 
-  if len(args) != 1 or args[0] not in ('2013', '2015'):
-    print 'Must specify 2013 or 2015'
+  if len(args) != 1 or args[0] not in ('2015', '2017'):
+    print 'Must specify 2015 or 2017'
     parser.print_help();
     return 1
 
@@ -347,6 +372,11 @@ def main():
   VS_VERSION = args[0]
   global WIN_VERSION
   WIN_VERSION = options.winver
+  global VC_TOOLS
+  if VS_VERSION == '2017':
+    VC_TOOLS = 'VC/Tools/MSVC/14.10.25017'
+  else:
+    VC_TOOLS = 'VC'
 
   print 'Building file list for VS %s Windows %s...' % (VS_VERSION, WIN_VERSION)
   files = BuildFileList(options.override_dir)
