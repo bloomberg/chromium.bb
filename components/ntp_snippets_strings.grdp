@@ -54,8 +54,8 @@
     Your open tabs appear here
   </message>
 
-  <message name="IDS_NTP_NOTIFICATIONS_READ_THIS_STORY_AND_MORE" desc="When notifying the user about a news article, identifies the publisher of that article and gives the number of additional news articles that are available to read. Shown beneath the title of the article. Articles come in batches of 10, so the number of additional articles will usually be 9.">
-    Read stories from <ph name="ARTICLE_PUBLISHER">$1<ex>World News Corporation</ex></ph> and <ph name="OTHER_ARTICLE_COUNT">$2<ex>9</ex></ph> more
+  <message name="IDS_NTP_NOTIFICATIONS_READ_THIS_STORY_AND_MORE" desc="Used in notifications about news articles. The notification first gives the title of a headline article, then uses this string to identify the publisher of that article and the number of additional articles available to read. Articles come in batches of 10, from a variety of publishers, so usually the number of additional articles is 9 (headline article + 9 others = 10 articles).">
+    From <ph name="ARTICLE_PUBLISHER">$1<ex>World News Corporation</ex></ph>. Read this and <ph name="OTHER_ARTICLE_COUNT">$2<ex>9</ex></ph> other stories.
   </message>
 
 </grit-part>
