@@ -62,6 +62,12 @@ void SlowTraceSource::OnGetTraceData(
   callback.Run(trace_data.get());
 }
 
+bool SlowTraceSource::AllowCaching() const {
+  // Should not be cached to reflect dynamically-generated contents that may
+  // depend on current settings.
+  return false;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // SlowTraceController

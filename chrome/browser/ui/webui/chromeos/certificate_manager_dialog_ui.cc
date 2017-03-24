@@ -49,6 +49,11 @@ class CertificateManagerDialogHTMLSource : public content::URLDataSource {
     return "text/html";
   }
   bool ShouldAddContentSecurityPolicy() const override { return false; }
+  bool AllowCaching() const override {
+    // Should not be cached to reflect dynamically-generated contents that may
+    // depend on current locale setting.
+    return false;
+  }
 
  protected:
   ~CertificateManagerDialogHTMLSource() override {}

@@ -34,6 +34,7 @@ class SlowTraceSource : public content::URLDataSource {
       const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
       const content::URLDataSource::GotDataCallback& callback) override;
   std::string GetMimeType(const std::string& path) const override;
+  bool AllowCaching() const override;
 
  private:
   ~SlowTraceSource() override;
