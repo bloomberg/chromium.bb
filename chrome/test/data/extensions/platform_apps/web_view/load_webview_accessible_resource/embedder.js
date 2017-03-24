@@ -10,6 +10,8 @@ window.runTest = function(testName) {
     testLoadWebviewAccessibleResource();
   } else if (testName == 'testReloadWebviewAccessibleResource') {
     testReloadWebviewAccessibleResource();
+  } else if (testName == 'testLoadWebviewInaccessibleResource') {
+    testLoadWebviewInaccessibleResource();
   } else {
     window.console.log('Incorrect testName: ' + testName);
     chrome.test.sendMessage('TEST_FAILED');
@@ -55,6 +57,43 @@ function testReloadWebviewAccessibleResource() {
       didReload = true;
     }
   });
+  webview.src = '/assets/foo.html';
+}
+
+function testLoadWebviewInaccessibleResource() {
+  var webview = document.querySelector('webview');
+  var didNavigate = false;
+
+  // Once the webview loads /foo.html, instruct it to navigate to a
+  // non-webview-accessible resource.
+  webview.addEventListener('loadstop', function() {
+    if (didNavigate)
+      return;
+
+    var inaccessibleURL = document.origin + "/inaccessible.html";
+    webview.executeScript({code: 'location="' + inaccessibleURL + '";'});
+    didNavigate = true;
+  });
+
+  // The inaccessible URL should be blocked, and the webview should stay at
+  // foo.html.
+  webview.addEventListener('loadabort', function(e) {
+    if (e.reason != 'ERR_BLOCKED_BY_CLIENT') {
+      console.log("incorrect error reason in loadabort: " + e.reason);
+      chrome.test.sendMessage('TEST_FAILED');
+    }
+
+    // Check that the webview content hasn't changed.
+    webview.executeScript({code: 'document.body.innerText'}, function(result) {
+      if (result == 'Foo') {
+        chrome.test.sendMessage('TEST_PASSED');
+      } else {
+        console.log('webview content is incorrect: ' + result);
+        chrome.test.sendMessage('TEST_FAILED');
+      }
+    });
+  });
+
   webview.src = '/assets/foo.html';
 }
 

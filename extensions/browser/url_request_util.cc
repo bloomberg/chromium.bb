@@ -152,17 +152,16 @@ bool AllowCrossRendererResourceLoadHelper(bool is_guest,
                                           const std::string& resource_path,
                                           ui::PageTransition page_transition,
                                           bool* allowed) {
-  // |owner_extension == extension| needs to be checked because extension
-  // resources should only be accessible to WebViews owned by that extension.
-  if (is_guest && owner_extension == extension &&
-      WebviewInfo::IsResourceWebviewAccessible(extension, partition_id,
-                                               resource_path)) {
-    *allowed = true;
-    return true;
-  }
+  if (is_guest) {
+    // An extension's resources should only be accessible to WebViews owned by
+    // that extension.
+    if (owner_extension != extension) {
+      *allowed = false;
+      return true;
+    }
 
-  if (is_guest && !ui::PageTransitionIsWebTriggerable(page_transition)) {
-    *allowed = false;
+    *allowed = WebviewInfo::IsResourceWebviewAccessible(extension, partition_id,
+                                                        resource_path);
     return true;
   }
 

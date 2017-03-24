@@ -3318,6 +3318,26 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, ReloadWebviewAccessibleResource) {
   EXPECT_EQ(webview_url, web_view_contents->GetLastCommittedURL());
 }
 
+// Tests that a WebView cannot load a webview-inaccessible resource. See
+// https://crbug.com/640072.
+IN_PROC_BROWSER_TEST_P(WebViewTest, LoadWebviewInaccessibleResource) {
+  TestHelper("testLoadWebviewInaccessibleResource",
+             "web_view/load_webview_accessible_resource", NEEDS_TEST_SERVER);
+
+  content::WebContents* embedder_contents = GetEmbedderWebContents();
+  content::WebContents* web_view_contents =
+      GetGuestViewManager()->GetLastGuestCreated();
+  ASSERT_TRUE(embedder_contents);
+  ASSERT_TRUE(web_view_contents);
+
+  // Check that the webview stays at the first page that it loaded (foo.html),
+  // and does not commit inaccessible.html.
+  GURL embedder_url(embedder_contents->GetLastCommittedURL());
+  GURL foo_url(embedder_url.GetOrigin().spec() + "assets/foo.html");
+
+  EXPECT_EQ(foo_url, web_view_contents->GetLastCommittedURL());
+}
+
 // Tests that a webview inside an iframe can load and that it is destroyed when
 // the iframe is detached.
 IN_PROC_BROWSER_TEST_P(WebViewTest, LoadWebviewInsideIframe) {
