@@ -246,10 +246,10 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 
 
 {##############################################################################}
-{% macro attribute_cache_property_callback(attribute) %}
-v8::Local<v8::Private> {{v8_class_or_partial}}::{{attribute.name}}CachedAccessorCallback(v8::Isolate* isolate)
+{% macro attribute_cached_property_key(attribute) %}
+v8::Local<v8::Private> {{v8_class_or_partial}}::{{attribute.name}}CachedPropertyKey(v8::Isolate* isolate)
 {
-    return V8PrivateProperty::get{{attribute.cached_accessor_name}}(isolate).getPrivate();
+  return V8PrivateProperty::get{{attribute.cached_accessor_name}}(isolate).getPrivate();
 }
 {% endmacro %}
 
@@ -480,7 +480,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 {% set property_attribute = 'static_cast<v8::PropertyAttribute>(%s)' %
                             ' | '.join(attribute.property_attributes) %}
 {% set cached_accessor_callback =
-       '%s::%sCachedAccessorCallback' % (v8_class_or_partial, attribute.name)
+       '%s::%sCachedPropertyKey' % (v8_class_or_partial, attribute.name)
        if attribute.is_cached_accessor else
        'nullptr' %}
 {% set holder_check = 'V8DOMConfiguration::DoNotCheckHolder'

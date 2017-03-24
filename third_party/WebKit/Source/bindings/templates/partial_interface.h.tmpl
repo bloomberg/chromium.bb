@@ -53,7 +53,7 @@ class {{v8_class_or_partial}} {
   // Callback functions
   {% for attribute in attributes %}
   {% if attribute.is_cached_accessor %}
-  {{exported}}static v8::Local<v8::Private> {{attribute.name}}CachedAccessorCallback(v8::Isolate* isolate);
+  {{exported}}static v8::Local<v8::Private> {{attribute.name}}CachedPropertyKey(v8::Isolate* isolate);
   {% endif %}
   {% for world_suffix in attribute.world_suffixes %}
   {% if not attribute.constructor_type %}

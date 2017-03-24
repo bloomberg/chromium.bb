@@ -72,7 +72,7 @@ class CORE_EXPORT V8DOMConfiguration final {
     AllWorlds = MainWorld | NonMainWorlds,
   };
 
-  typedef v8::Local<v8::Private> (*CachedAccessorCallback)(v8::Isolate*);
+  typedef v8::Local<v8::Private> (*CachedPropertyKey)(v8::Isolate*);
 
   // AttributeConfiguration translates into calls to SetNativeDataProperty() on
   // either the instance or the prototype ObjectTemplate, based on
@@ -86,7 +86,7 @@ class CORE_EXPORT V8DOMConfiguration final {
     // TODO(vogelheim): This has to be removed too since it's only used in
     //                  accessors.
     // The accessor's 'result' is stored in a private property.
-    CachedAccessorCallback cachedAccessorCallback;
+    CachedPropertyKey cachedPropertyKey;
     const WrapperTypeInfo* data;
     // v8::PropertyAttribute
     unsigned attribute : 8;
@@ -140,7 +140,7 @@ class CORE_EXPORT V8DOMConfiguration final {
     v8::FunctionCallback getter;
     v8::FunctionCallback setter;
     // The accessor's 'result' is stored in a private property.
-    CachedAccessorCallback cachedAccessorCallback;
+    CachedPropertyKey cachedPropertyKey;
     const WrapperTypeInfo* data;
     // v8::PropertyAttribute
     unsigned attribute : 8;

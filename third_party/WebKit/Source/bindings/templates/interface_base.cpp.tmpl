@@ -77,11 +77,7 @@ static void (*{{method.name}}MethodForPartialInterface)(const v8::FunctionCallba
 
 {##############################################################################}
 {# Attributes #}
-{% from 'attributes.cpp.tmpl' import constructor_getter_callback,
-       attribute_getter, attribute_getter_callback,
-       attribute_setter, attribute_setter_callback,
-       attribute_cache_property_callback,
-       with context %}
+{% from 'attributes.cpp.tmpl' import attribute_getter, attribute_setter with context %}
 {% for attribute in attributes %}
 {% for world_suffix in attribute.world_suffixes %}
 {% if not attribute.has_custom_getter and not attribute.constructor_type %}
@@ -179,14 +175,14 @@ static const struct {
 {% for constant in constants | has_special_getter %}
 {{constant_getter_callback(constant)}}
 {% endfor %}
+
 {# Attributes #}
 {% from 'attributes.cpp.tmpl' import constructor_getter_callback,
        attribute_getter_callback, attribute_setter_callback,
-       attribute_cache_property_callback,
-       with context %}
+       attribute_cached_property_key with context %}
 {% for attribute in attributes %}
 {% if attribute.is_cached_accessor %}
-{{attribute_cache_property_callback(attribute)}}
+{{attribute_cached_property_key(attribute)}}
 {% endif %}
 {% for world_suffix in attribute.world_suffixes %}
 {% if not attribute.constructor_type %}

@@ -159,7 +159,7 @@ template <class FunctionOrTemplate>
 v8::Local<FunctionOrTemplate> createAccessorFunctionOrTemplate(
     v8::Isolate*,
     v8::FunctionCallback,
-    V8DOMConfiguration::CachedAccessorCallback,
+    V8DOMConfiguration::CachedPropertyKey,
     v8::Local<v8::Value> data,
     v8::Local<v8::Signature>,
     int length);
@@ -169,15 +169,15 @@ v8::Local<v8::FunctionTemplate>
 createAccessorFunctionOrTemplate<v8::FunctionTemplate>(
     v8::Isolate* isolate,
     v8::FunctionCallback callback,
-    V8DOMConfiguration::CachedAccessorCallback cachedAccessorCallback,
+    V8DOMConfiguration::CachedPropertyKey cachedPropertyKey,
     v8::Local<v8::Value> data,
     v8::Local<v8::Signature> signature,
     int length) {
   v8::Local<v8::FunctionTemplate> functionTemplate;
   if (callback) {
-    if (cachedAccessorCallback) {
+    if (cachedPropertyKey) {
       functionTemplate = v8::FunctionTemplate::NewWithCache(
-          isolate, callback, cachedAccessorCallback(isolate), data, signature,
+          isolate, callback, cachedPropertyKey(isolate), data, signature,
           length);
     } else {
       functionTemplate =
@@ -196,7 +196,7 @@ template <>
 v8::Local<v8::Function> createAccessorFunctionOrTemplate<v8::Function>(
     v8::Isolate* isolate,
     v8::FunctionCallback callback,
-    V8DOMConfiguration::CachedAccessorCallback,
+    V8DOMConfiguration::CachedPropertyKey,
     v8::Local<v8::Value> data,
     v8::Local<v8::Signature> signature,
     int length) {
@@ -230,9 +230,9 @@ void installAccessorInternal(
   v8::Local<v8::Name> name = v8AtomicString(isolate, accessor.name);
   v8::FunctionCallback getterCallback = accessor.getter;
   v8::FunctionCallback setterCallback = accessor.setter;
-  V8DOMConfiguration::CachedAccessorCallback cachedAccessorCallback = nullptr;
+  V8DOMConfiguration::CachedPropertyKey cachedPropertyKey = nullptr;
   if (world.isMainWorld()) {
-    cachedAccessorCallback = accessor.cachedAccessorCallback;
+    cachedPropertyKey = accessor.cachedPropertyKey;
   }
 
   // Support [LenientThis] by not specifying the signature.  V8 does not do
@@ -248,8 +248,7 @@ void installAccessorInternal(
       (V8DOMConfiguration::OnInstance | V8DOMConfiguration::OnPrototype)) {
     v8::Local<FunctionOrTemplate> getter =
         createAccessorFunctionOrTemplate<FunctionOrTemplate>(
-            isolate, getterCallback, cachedAccessorCallback, data, signature,
-            0);
+            isolate, getterCallback, cachedPropertyKey, data, signature, 0);
     v8::Local<FunctionOrTemplate> setter =
         createAccessorFunctionOrTemplate<FunctionOrTemplate>(
             isolate, setterCallback, nullptr, data, signature, 1);

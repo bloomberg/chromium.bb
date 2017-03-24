@@ -160,7 +160,7 @@ class {{v8_class}} {
 
   {% for attribute in attributes %}
   {% if attribute.is_cached_accessor %}
-  {{exported}}static v8::Local<v8::Private> {{attribute.name}}CachedAccessorCallback(v8::Isolate*);
+  {{exported}}static v8::Local<v8::Private> {{attribute.name}}CachedPropertyKey(v8::Isolate*);
   {% endif %}
   {% for world_suffix in attribute.world_suffixes %}
   {% if not attribute.constructor_type %}
