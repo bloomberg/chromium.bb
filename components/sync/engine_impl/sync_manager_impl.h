@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "components/sync/base/cryptographer.h"
@@ -103,7 +104,7 @@ class SyncManagerImpl
   bool HasDirectoryTypeDebugInfoObserver(
       TypeDebugInfoObserver* observer) override;
   void RequestEmitDebugInfo() override;
-  void ClearServerData(const ClearServerDataCallback& callback) override;
+  void ClearServerData(const base::Closure& callback) override;
   void OnCookieJarChanged(bool account_mismatch, bool empty_jar) override;
   void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) override;
 

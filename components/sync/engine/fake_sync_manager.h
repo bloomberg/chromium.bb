@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
@@ -114,7 +115,7 @@ class FakeSyncManager : public SyncManager {
   bool HasDirectoryTypeDebugInfoObserver(
       TypeDebugInfoObserver* observer) override;
   void RequestEmitDebugInfo() override;
-  void ClearServerData(const ClearServerDataCallback& callback) override;
+  void ClearServerData(const base::Closure& callback) override;
   void OnCookieJarChanged(bool account_mismatch, bool empty_jar) override;
   void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) override;
 

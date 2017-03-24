@@ -128,14 +128,12 @@ class FakeSyncEngineCollectDeleteDirParam : public FakeSyncEngine {
 // called.
 class SyncEngineCaptureClearServerData : public FakeSyncEngine {
  public:
-  using ClearServerDataCalled =
-      base::Callback<void(const syncer::SyncManager::ClearServerDataCallback&)>;
+  using ClearServerDataCalled = base::Callback<void(const base::Closure&)>;
   explicit SyncEngineCaptureClearServerData(
       const ClearServerDataCalled& clear_server_data_called)
       : clear_server_data_called_(clear_server_data_called) {}
 
-  void ClearServerData(
-      const syncer::SyncManager::ClearServerDataCallback& callback) override {
+  void ClearServerData(const base::Closure& callback) override {
     clear_server_data_called_.Run(callback);
   }
 
@@ -155,9 +153,8 @@ ACTION_P(ReturnNewMockHostCollectDeleteDirParam, delete_dir_param) {
   return new FakeSyncEngineCollectDeleteDirParam(delete_dir_param);
 }
 
-void OnClearServerDataCalled(
-    syncer::SyncManager::ClearServerDataCallback* captured_callback,
-    const syncer::SyncManager::ClearServerDataCallback& callback) {
+void OnClearServerDataCalled(base::Closure* captured_callback,
+                             const base::Closure& callback) {
   *captured_callback = callback;
 }
 
@@ -305,7 +302,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
   }
 
   void ExpectSyncEngineCreationCaptureClearServerData(
-      syncer::SyncManager::ClearServerDataCallback* captured_callback) {
+      base::Closure* captured_callback) {
     EXPECT_CALL(*component_factory_, CreateSyncEngine(_, _, _, _))
         .Times(1)
         .WillOnce(ReturnNewMockHostCaptureClearServerData(captured_callback));
@@ -705,7 +702,7 @@ TEST_F(ProfileSyncServiceTest, OnLocalSetPassphraseEncryption) {
   IssueTestTokens();
   CreateService(ProfileSyncService::AUTO_START);
 
-  syncer::SyncManager::ClearServerDataCallback captured_callback;
+  base::Closure captured_callback;
   syncer::ConfigureReason configure_reason = syncer::CONFIGURE_REASON_UNKNOWN;
 
   // Initialize sync, ensure that both DataTypeManager and SyncEngine are
@@ -778,7 +775,7 @@ TEST_F(ProfileSyncServiceTest,
 
   // Simulate browser restart. First configuration is a regular one.
   service()->Shutdown();
-  syncer::SyncManager::ClearServerDataCallback captured_callback;
+  base::Closure captured_callback;
   ExpectSyncEngineCreationCaptureClearServerData(&captured_callback);
   ExpectDataTypeManagerCreation(
       1, GetRecordingConfigureCalledCallback(&configure_reason));
@@ -811,7 +808,7 @@ TEST_F(ProfileSyncServiceTest,
 // interrupted, transition again from catch up sync cycle after browser restart.
 TEST_F(ProfileSyncServiceTest,
        OnLocalSetPassphraseEncryption_RestartDuringClearServerData) {
-  syncer::SyncManager::ClearServerDataCallback captured_callback;
+  base::Closure captured_callback;
   syncer::ConfigureReason configure_reason = syncer::CONFIGURE_REASON_UNKNOWN;
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(

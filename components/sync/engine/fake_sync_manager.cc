@@ -260,7 +260,7 @@ void FakeSyncManager::SetInvalidatorEnabled(bool invalidator_enabled) {
   // Do nothing.
 }
 
-void FakeSyncManager::ClearServerData(const ClearServerDataCallback& callback) {
+void FakeSyncManager::ClearServerData(const base::Closure& callback) {
   callback.Run();
 }
 

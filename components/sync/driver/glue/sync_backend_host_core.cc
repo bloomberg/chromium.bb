@@ -576,9 +576,9 @@ void SyncBackendHostCore::SaveChanges() {
 }
 
 void SyncBackendHostCore::DoClearServerData(
-    const SyncManager::ClearServerDataCallback& frontend_callback) {
+    const base::Closure& frontend_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  const SyncManager::ClearServerDataCallback callback =
+  const base::Closure callback =
       base::Bind(&SyncBackendHostCore::ClearServerDataDone,
                  weak_ptr_factory_.GetWeakPtr(), frontend_callback);
   sync_manager_->ClearServerData(callback);

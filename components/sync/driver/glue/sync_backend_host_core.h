@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
@@ -161,8 +162,7 @@ class SyncBackendHostCore
   // application is backgrounded.
   void SaveChanges();
 
-  void DoClearServerData(
-      const SyncManager::ClearServerDataCallback& frontend_callback);
+  void DoClearServerData(const base::Closure& frontend_callback);
 
   // Notify the syncer that the cookie jar has changed.
   void DoOnCookieJarChanged(bool account_mismatch,

@@ -422,8 +422,7 @@ void SyncBackendHostImpl::RefreshTypesForTest(ModelTypeSet types) {
       base::Bind(&SyncBackendHostCore::DoRefreshTypes, core_, types));
 }
 
-void SyncBackendHostImpl::ClearServerData(
-    const SyncManager::ClearServerDataCallback& callback) {
+void SyncBackendHostImpl::ClearServerData(const base::Closure& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   sync_task_runner_->PostTask(
       FROM_HERE,
@@ -440,7 +439,7 @@ void SyncBackendHostImpl::OnCookieJarChanged(bool account_mismatch,
 }
 
 void SyncBackendHostImpl::ClearServerDataDoneOnFrontendLoop(
-    const SyncManager::ClearServerDataCallback& frontend_callback) {
+    const base::Closure& frontend_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   frontend_callback.Run();
 }

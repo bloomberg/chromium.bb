@@ -89,8 +89,7 @@ class SyncBackendHostImpl : public SyncEngine, public InvalidationHandler {
   void EnableDirectoryTypeDebugInfoForwarding() override;
   void DisableDirectoryTypeDebugInfoForwarding() override;
   void RefreshTypesForTest(ModelTypeSet types) override;
-  void ClearServerData(
-      const SyncManager::ClearServerDataCallback& callback) override;
+  void ClearServerData(const base::Closure& callback) override;
   void OnCookieJarChanged(bool account_mismatch,
                           bool empty_jar,
                           const base::Closure& callback) override;
@@ -193,7 +192,7 @@ class SyncBackendHostImpl : public SyncEngine, public InvalidationHandler {
   void HandleConnectionStatusChangeOnFrontendLoop(ConnectionStatus status);
 
   void ClearServerDataDoneOnFrontendLoop(
-      const SyncManager::ClearServerDataCallback& frontend_callback);
+      const base::Closure& frontend_callback);
 
   void OnCookieJarChangedDoneOnFrontendLoop(const base::Closure& callback);
 

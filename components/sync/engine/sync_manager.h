@@ -269,8 +269,6 @@ class SyncManager {
     std::unique_ptr<SyncEncryptionHandler::NigoriState> saved_nigori_state;
   };
 
-  using ClearServerDataCallback = base::Callback<void(void)>;
-
   SyncManager();
   virtual ~SyncManager();
 
@@ -403,7 +401,7 @@ class SyncManager {
   // This is an asynchronous operation that requires interaction with the sync
   // server. The operation will automatically be retried with backoff until it
   // completes successfully or sync is shutdown.
-  virtual void ClearServerData(const ClearServerDataCallback& callback) = 0;
+  virtual void ClearServerData(const base::Closure& callback) = 0;
 
   // Updates Sync's tracking of whether the cookie jar has a mismatch with the
   // chrome account. See ClientConfigParams proto message for more info.
