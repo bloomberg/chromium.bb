@@ -122,7 +122,7 @@ DeviceMotionData* DeviceMotionData::create(const DeviceMotionEventInit& init) {
       init.hasRotationRate()
           ? DeviceMotionData::RotationRate::create(init.rotationRate())
           : nullptr,
-      init.hasInterval() ? init.interval() : 0);
+      init.interval());
 }
 
 DeviceMotionData* DeviceMotionData::create(const device::MotionData& data) {

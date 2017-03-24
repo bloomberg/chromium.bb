@@ -8,5 +8,5 @@ dictionary DeviceMotionEventInit : EventInit {
   DeviceAccelerationInit? acceleration;
   DeviceAccelerationInit? accelerationIncludingGravity;
   DeviceRotationRateInit? rotationRate;
-  double? interval = null;
+  double interval = 0;
 };

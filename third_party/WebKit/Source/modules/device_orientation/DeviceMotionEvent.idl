@@ -30,5 +30,5 @@ interface DeviceMotionEvent : Event {
     readonly attribute DeviceAcceleration? acceleration;
     readonly attribute DeviceAcceleration? accelerationIncludingGravity;
     readonly attribute DeviceRotationRate? rotationRate;
-    readonly attribute double? interval;
+    readonly attribute double interval;
 };

@@ -80,8 +80,7 @@ DeviceRotationRate* DeviceMotionEvent::rotationRate() {
   return m_rotationRate.get();
 }
 
-double DeviceMotionEvent::interval(bool& isNull) const {
-  isNull = false;
+double DeviceMotionEvent::interval() const {
   return m_deviceMotionData->interval();
 }
 

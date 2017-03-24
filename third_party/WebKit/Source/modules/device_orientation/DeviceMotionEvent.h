@@ -58,7 +58,7 @@ class DeviceMotionEvent final : public Event {
   DeviceAcceleration* acceleration();
   DeviceAcceleration* accelerationIncludingGravity();
   DeviceRotationRate* rotationRate();
-  double interval(bool& isNull) const;
+  double interval() const;
 
   const AtomicString& interfaceName() const override;
 
