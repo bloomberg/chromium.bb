@@ -308,6 +308,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void OnSwapCompositorFrame(uint32_t compositor_frame_sink_id,
                              const cc::LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame) override;
+  void OnBeginFrameDidNotSwap(const cc::BeginFrameAck& ack) override;
   void ClearCompositorFrame() override;
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
       BrowserAccessibilityDelegate* delegate, bool for_root_frame) override;

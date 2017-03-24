@@ -282,8 +282,17 @@ void BrowserCompositorMac::SwapCompositorFrame(
     recyclable_compositor_->compositor()->SetScaleAndSize(scale_factor,
                                                           pixel_size);
   }
+  cc::BeginFrameAck ack(frame.metadata.begin_frame_ack);
   delegated_frame_host_->SwapDelegatedFrame(compositor_frame_sink_id,
                                             local_surface_id, std::move(frame));
+  if (begin_frame_source_)
+    begin_frame_source_->DidFinishFrame(this, ack);
+}
+
+void BrowserCompositorMac::OnBeginFrameDidNotSwap(
+    const cc::BeginFrameAck& ack) {
+  if (begin_frame_source_)
+    begin_frame_source_->DidFinishFrame(this, ack);
 }
 
 void BrowserCompositorMac::SetHasTransparentBackground(bool transparent) {
