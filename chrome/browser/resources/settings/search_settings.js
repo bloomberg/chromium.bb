@@ -44,15 +44,11 @@ cr.define('settings', function() {
   var IGNORED_ELEMENTS = new Set([
     'CONTENT',
     'CR-EVENTS',
+    'DIALOG',
     'IMG',
     'IRON-ICON',
     'IRON-LIST',
     'PAPER-ICON-BUTTON',
-    /* TODO(dpapad): paper-item is used for dynamically populated dropdown
-     * menus. Perhaps a better approach is to mark the entire dropdown menu such
-     * that search algorithm can skip it as a whole instead.
-     */
-    'PAPER-ITEM',
     'PAPER-RIPPLE',
     'PAPER-SLIDER',
     'PAPER-SPINNER',

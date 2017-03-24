@@ -99,6 +99,30 @@ cr.define('settings_test', function() {
       });
     });
 
+    test('ignored elements are ignored', function() {
+      var text = 'hello';
+      document.body.innerHTML =
+          `<settings-section hidden-by-search>
+             <cr-events>${text}</cr-events>
+             <dialog>${text}</dialog>
+             <iron-icon>${text}</iron-icon>
+             <iron-list>${text}</iron-list>
+             <paper-icon-button>${text}</paper-icon-button>
+             <paper-ripple>${text}</paper-ripple>
+             <paper-slider>${text}</paper-slider>
+             <paper-spinner>${text}</paper-spinner>
+             <style>${text}</style>
+             <template>${text}</template>
+           </settings-section>`;
+
+      var section = document.querySelector('settings-section');
+      assertTrue(section.hiddenBySearch);
+
+      return searchManager.search(text, section).then(function() {
+        assertTrue(section.hiddenBySearch);
+      });
+    });
+
     // Test that multiple requests for the same text correctly highlight their
     // corresponding part of the tree without affecting other parts of the tree.
     test('multiple simultaneous requests for the same text', function() {
