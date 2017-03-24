@@ -784,8 +784,7 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(
 
   // Measure the number of legacy URL schemes ('ftp://') and the number of
   // embedded-credential ('http://user:password@...') resources embedded as
-  // subresources. in the hopes that we can block them at some point in the
-  // future.
+  // subresources.
   if (resourceRequest.frameType() != WebURLRequest::FrameTypeTopLevel) {
     DCHECK(frame()->document());
     if (SchemeRegistry::shouldTreatURLSchemeAsLegacy(url.protocol()) &&
@@ -794,8 +793,8 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(
       Deprecation::countDeprecation(
           frame()->document(), UseCounter::LegacyProtocolEmbeddedAsSubresource);
 
-      // TODO(mkwst): Drop the runtime-enabled check in M59:
-      // https://www.chromestatus.com/feature/5709390967472128
+      // TODO(mkwst): Enabled by default in M59. Drop the runtime-enabled check
+      // in M60: https://www.chromestatus.com/feature/5709390967472128
       if (RuntimeEnabledFeatures::blockLegacySubresourcesEnabled())
         return ResourceRequestBlockedReason::Origin;
     }

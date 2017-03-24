@@ -78,8 +78,8 @@ chrome.test.getConfig(function(config) {
     // function disallowedSSL() {
     //   doReq("https://a.com", false);
     // },
-    function allowedFtpHostAllowed() {
-      doReq('ftp://127.0.0.1', true);
+    function allowedFtpHostDisallowed() {
+      doReq('ftp://127.0.0.1', false);
     },
     function disallowedFtpHostDisallowed() {
       doReq('ftp://this.host.is.not.whitelisted', false);

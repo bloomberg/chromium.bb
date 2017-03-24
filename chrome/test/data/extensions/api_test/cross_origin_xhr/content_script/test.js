@@ -70,8 +70,8 @@ chrome.test.getConfig(function(config) {
         // script is injected into.
         doReq('http://localhost', true);
       },
-      function allowedFtpHostAllowed() {
-        doReq('ftp://127.0.0.1', true);
+      function allowedFtpHostDisllowed() {
+        doReq('ftp://127.0.0.1', false);
       },
       function disallowedFtpHostDisallowed() {
         // The host is the same as the current page, but the scheme differs.

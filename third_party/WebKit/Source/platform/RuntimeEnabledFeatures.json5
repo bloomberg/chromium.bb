@@ -1016,7 +1016,7 @@
     },
     {
       name: "BlockLegacySubresources",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "MediaControlsOverlayPlayButton",

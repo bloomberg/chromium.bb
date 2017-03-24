@@ -270,11 +270,9 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
     case UseCounter::LegacyProtocolEmbeddedAsSubresource:
       return String::format(
           "Subresource requests using legacy protocols (like `ftp:`) are "
-          "deprecated, and will be blocked in %s. Please deliver "
-          "web-accessible resources over modern protocols like HTTPS. "
-          "See https://www.chromestatus.com/feature/5709390967472128 for more "
-          "details.",
-          milestoneString(M59));
+          "are blocked. Please deliver web-accessible resources over modern "
+          "protocols like HTTPS. See "
+          "https://www.chromestatus.com/feature/5709390967472128 for details.");
 
     case UseCounter::RequestedSubresourceWithEmbeddedCredentials:
       return String::format(
