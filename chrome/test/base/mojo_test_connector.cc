@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/test/test_launcher.h"
@@ -51,6 +52,7 @@ class MojoTestState : public content::TestState {
             base::TestLauncher::LaunchOptions* test_launch_options) {
     command_line->AppendSwitch(MojoTestConnector::kTestSwitch);
     command_line->AppendSwitch(switches::kChildProcess);
+    command_line->AppendSwitchASCII(switches::kMusConfig, switches::kMash);
 
     platform_channel_ = base::MakeUnique<mojo::edk::PlatformChannelPair>();
 

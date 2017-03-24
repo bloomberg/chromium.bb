@@ -5204,7 +5204,7 @@ if (is_chromeos && enable_package_mash_services) {
     testonly = true
     embedded_services = [ ":mash_browser_tests_manifest" ]
     standalone_services = [ "//services/tracing:manifest" ]
-    catalog_deps = [ "//chrome/app:catalog_for_mash" ]
+    catalog_deps = [ "//chrome/app:catalog_for_mus" ]
   }
 
   copy("mash_browser_tests_catalog_copy") {

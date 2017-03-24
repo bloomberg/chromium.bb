@@ -338,6 +338,8 @@ extern const char kWindows8Search[];
 
 #if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
 extern const char kMash[];
+extern const char kMus[];
+extern const char kMusConfig[];
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OFFICIAL_BUILD)

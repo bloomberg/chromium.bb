@@ -1,12 +1,12 @@
 {
-  // NOTE: This is the manifest for service:chrome_mash, which is only used to
-  // package services for the Mash environment when baked into the Chrome binary
-  // (i.e. "chrome --mash")
+  // NOTE: This is the manifest for service:chrome_mus, which is only used to
+  // package services for the Mus environment when baked into the Chrome binary
+  // (i.e. "chrome --mus")
   //
   // If you need to require or provide capabilities from Chrome itself within
   // the you should instead modify chrome_content_browser_manifest_overlay.json.
-  "name": "chrome_mash",
-  "display_name": "Chrome Mash Packaged Services",
+  "name": "chrome_mus",
+  "display_name": "Chrome Mus Packaged Services",
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
@@ -16,10 +16,8 @@
       },
       "requires": {
         "*": [ "app" ],
-        "ash": [ "app" ],
         "catalog": [ "control" ],
         "content_browser": [ "app" ],
-        "quick_launch": [ "app" ],
         "service_manager": [ "service_manager:instance_per_child" ],
         "ui": [ "app" ]
       }

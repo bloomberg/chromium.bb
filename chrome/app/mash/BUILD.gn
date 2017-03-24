@@ -38,7 +38,10 @@ source_set("mash") {
   ]
 
   if (is_chromeos) {
-    deps += [ "//ash/resources" ]
+    deps += [
+      ":chrome_mus_catalog",
+      "//ash/resources",
+    ]
   }
 
   if (is_posix) {
@@ -81,7 +84,7 @@ service_manifest("mash_manifest") {
 
 catalog("catalog") {
   embedded_services = [ ":mash_manifest" ]
-  catalog_deps = [ "//chrome/app:catalog_for_mash" ]
+  catalog_deps = [ "//chrome/app:catalog_for_mus" ]
   standalone_services = [
     "//mash/example/views_examples:manifest",
     "//mash/simple_wm:manifest",
@@ -98,4 +101,31 @@ source_set("mash_service_overrides") {
   data = [
     "mash_service_overrides.json",
   ]
+}
+
+if (is_chromeos) {
+  service_manifest("mus_manifest") {
+    name = "chrome_mus"
+    source = "chrome_mus_manifest.json"
+    packaged_services = [
+      "//services/ui:manifest",
+
+      # TODO(sky): verify if we need this.
+      "//services/ui/ime/test_ime_driver:manifest",
+    ]
+
+    if (enable_nacl) {
+      packaged_services += [ "//components/nacl/loader:nacl_loader_manifest" ]
+    }
+  }
+
+  catalog("catalog_mus") {
+    embedded_services = [ ":mus_manifest" ]
+    catalog_deps = [ "//chrome/app:catalog_for_mus" ]
+  }
+
+  catalog_cpp_source("chrome_mus_catalog") {
+    catalog = ":catalog_mus"
+    generated_function_name = "CreateChromeMusCatalog"
+  }
 }
