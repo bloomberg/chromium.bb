@@ -1385,13 +1385,37 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
      */
     public boolean dispatchKeyEvent(KeyEvent event) {
         if (GamepadList.dispatchKeyEvent(event)) return true;
-        if (getContentViewClient().shouldOverrideKeyEvent(event)) {
+        if (!shouldPropagateKeyEvent(event)) {
             return mContainerViewInternals.super_dispatchKeyEvent(event);
         }
 
         if (mImeAdapter.dispatchKeyEvent(event)) return true;
 
         return mContainerViewInternals.super_dispatchKeyEvent(event);
+    }
+
+    /**
+     * Check whether a key should be propagated to the embedder or not.
+     * We need to send almost every key to Blink. However:
+     * 1. We don't want to block the device on the renderer for
+     * some keys like menu, home, call.
+     * 2. There are no WebKit equivalents for some of these keys
+     * (see app/keyboard_codes_win.h)
+     * Note that these are not the same set as KeyEvent.isSystemKey:
+     * for instance, AKEYCODE_MEDIA_* will be dispatched to webkit*.
+     */
+    private static boolean shouldPropagateKeyEvent(KeyEvent event) {
+        int keyCode = event.getKeyCode();
+        if (keyCode == KeyEvent.KEYCODE_MENU || keyCode == KeyEvent.KEYCODE_HOME
+                || keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_CALL
+                || keyCode == KeyEvent.KEYCODE_ENDCALL || keyCode == KeyEvent.KEYCODE_POWER
+                || keyCode == KeyEvent.KEYCODE_HEADSETHOOK || keyCode == KeyEvent.KEYCODE_CAMERA
+                || keyCode == KeyEvent.KEYCODE_FOCUS || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN
+                || keyCode == KeyEvent.KEYCODE_VOLUME_MUTE
+                || keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+            return false;
+        }
+        return true;
     }
 
     /**

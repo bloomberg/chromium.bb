@@ -58,7 +58,6 @@ import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.content.browser.AppWebMessagePort;
-import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.ContentViewStatics;
 import org.chromium.content.browser.SmartClipProvider;
@@ -72,6 +71,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.navigation_controller.LoadURLType;
 import org.chromium.content_public.browser.navigation_controller.UserAgentOverrideOption;
 import org.chromium.content_public.common.Referrer;
+import org.chromium.device.gamepad.GamepadList;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.PageTransition;
@@ -272,7 +272,6 @@ public class AwContents implements SmartClipProvider {
     private WebContents mWebContents;
     private NavigationController mNavigationController;
     private final AwContentsClient mContentsClient;
-    private final AwContentViewClient mContentViewClient;
     private AwWebContentsObserver mWebContentsObserver;
     private final AwContentsClientBridge mContentsClientBridge;
     private final AwWebContentsDelegateAdapter mWebContentsDelegate;
@@ -758,7 +757,6 @@ public class AwContents implements SmartClipProvider {
         mAwViewMethods = new AwViewMethodsImpl();
         mFullScreenTransitionsState = new FullScreenTransitionsState(
                 mContainerView, mInternalAccessAdapter, mAwViewMethods);
-        mContentViewClient = new AwContentViewClient(contentsClient, settings, this);
         mLayoutSizer = dependencyFactory.createLayoutSizer();
         mSettings = settings;
         mLayoutSizer.setDelegate(new AwLayoutSizerDelegate());
@@ -805,17 +803,15 @@ public class AwContents implements SmartClipProvider {
         onContainerViewChanged();
     }
 
-    private void initializeContentViewCore(ContentViewCore contentViewCore,
-            Context context, ViewAndroidDelegate viewDelegate,
-            InternalAccessDelegate internalDispatcher, WebContents webContents,
-            GestureStateListener gestureStateListener, ContentViewClient contentViewClient,
+    private void initializeContentViewCore(ContentViewCore contentViewCore, Context context,
+            ViewAndroidDelegate viewDelegate, InternalAccessDelegate internalDispatcher,
+            WebContents webContents, GestureStateListener gestureStateListener,
             WindowAndroid windowAndroid) {
         contentViewCore.initialize(viewDelegate, internalDispatcher, webContents, windowAndroid);
         contentViewCore.setActionModeCallback(
                 new AwActionModeCallback(mContext, this,
                         contentViewCore.getActionModeCallbackHelper()));
         contentViewCore.addGestureStateListener(gestureStateListener);
-        contentViewCore.setContentViewClient(contentViewClient);
     }
 
     boolean isFullScreen() {
@@ -1055,7 +1051,7 @@ public class AwContents implements SmartClipProvider {
                 mContainerView, mContentsClient, mContentViewCore.getRenderCoordinates());
         initializeContentViewCore(mContentViewCore, mContext, mViewAndroidDelegate,
                 mInternalAccessAdapter, webContents, new AwGestureStateListener(),
-                mContentViewClient, mWindowAndroid.getWindowAndroid());
+                mWindowAndroid.getWindowAndroid());
         nativeSetJavaPeers(mNativeAwContents, this, mWebContentsDelegate, mContentsClientBridge,
                 mIoThreadClient, mInterceptNavigationDelegate);
         mWebContents = mContentViewCore.getWebContents();
@@ -3132,6 +3128,16 @@ public class AwContents implements SmartClipProvider {
             if (isDestroyedOrNoOperation(NO_WARN)) return false;
             if (isDpadEvent(event)) {
                 mSettings.setSpatialNavigationEnabled(true);
+            }
+
+            // Following check is dup'ed from |ContentViewCore.dispatchKeyEvent| to avoid
+            // embedder-specific customization, which is necessary only for WebView.
+            if (GamepadList.dispatchKeyEvent(event)) return true;
+
+            // This check reflects Chrome's behavior and is a workaround for http://b/7697782.
+            if (mContentsClient.hasWebViewClient()
+                    && mContentsClient.shouldOverrideKeyEvent(event)) {
+                return mInternalAccessAdapter.super_dispatchKeyEvent(event);
             }
             return mContentViewCore.dispatchKeyEvent(event);
         }
