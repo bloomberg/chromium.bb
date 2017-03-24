@@ -87,13 +87,13 @@ source_set("ipc_common_sources") {
     ":command_buffer_traits_sources",
     ":surface_handle_type",
     "//gpu/command_buffer/common:gles2_utils",
+    "//ipc",
   ]
 
   deps = [
     "//base",
     "//gpu/command_buffer/common:common_sources",
     "//gpu/config:config_sources",
-    "//ipc",
     "//ui/base",
     "//ui/events/ipc",
     "//ui/gfx/ipc",

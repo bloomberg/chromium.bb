@@ -84,7 +84,6 @@ source_set("browser") {
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/ipc/host",
     "//gpu/vulkan:features",
-    "//ipc",
     "//media",
     "//media/capture",
     "//media/capture/mojo:image_capture",
@@ -159,6 +158,7 @@ source_set("browser") {
   ]
 
   public_deps = [
+    "//ipc",
     "//media/mojo/interfaces:remoting",
     "//third_party/leveldatabase",
   ]

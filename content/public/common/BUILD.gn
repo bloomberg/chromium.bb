@@ -252,6 +252,7 @@ source_set("common_sources") {
     ":service_names",
     "//content/common",
     "//content/public/common:interfaces",
+    "//ipc",
     "//mojo/edk/system",
     "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp",
@@ -268,7 +269,6 @@ source_set("common_sources") {
     # needed because of allow_circular_includes_from.
     "//components/mime_util",
     "//content/common:mojo_bindings",
-    "//ipc",
     "//media",
     "//mojo/common",
     "//net",

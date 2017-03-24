@@ -213,6 +213,7 @@ static_library("content_shell_lib") {
     "//content/public/common",
     "//content/public/renderer",
     "//content/public/utility",
+    "//ipc",
   ]
   deps = [
     ":mojo_bindings",
@@ -242,7 +243,6 @@ static_library("content_shell_lib") {
     "//device/sensors/public/cpp:full",
     "//gin",
     "//gpu",
-    "//ipc",
     "//media",
     "//media/capture",
     "//mojo/edk/js",

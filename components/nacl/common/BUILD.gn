@@ -28,6 +28,7 @@ if (enable_nacl) {
     public_deps = [
       ":minimal_content_dummy",
       ":switches",
+      "//ipc",
     ]
 
     deps = [
@@ -35,7 +36,6 @@ if (enable_nacl) {
       "//base",
       "//base:base_static",
       "//content/public/common:service_names",
-      "//ipc",
       "//mojo/edk/system",
       "//services/service_manager/public/cpp",
     ]
@@ -75,12 +75,12 @@ if (enable_nacl) {
       ":minimal",
       ":mojo_bindings",
       ":switches",
+      "//ipc",
     ]
 
     deps = [
       "//base",
       "//content/public/common",
-      "//ipc",
       "//url",
     ]
 

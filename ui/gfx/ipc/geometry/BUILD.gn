@@ -12,7 +12,7 @@ component("geometry") {
 
   defines = [ "GFX_IPC_GEOMETRY_IMPLEMENTATION" ]
 
-  deps = [
+  public_deps = [
     "//base",
     "//ipc",
     "//ui/gfx/geometry",

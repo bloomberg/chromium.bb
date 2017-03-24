@@ -21,8 +21,11 @@ static_library("renderer") {
     "//components/guest_view/common",
     "//content/public/common",
     "//content/public/renderer",
-    "//ipc",
     "//third_party/WebKit/public:blink",
     "//v8",
+  ]
+
+  public_deps = [
+    "//ipc",
   ]
 }

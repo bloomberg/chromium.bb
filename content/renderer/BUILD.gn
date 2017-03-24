@@ -416,7 +416,10 @@ target(link_target_type, "renderer") {
   ]
   defines = []
 
-  public_deps = []
+  public_deps = [
+    "//ipc",
+  ]
+
   deps = [
     "//base:i18n",
     "//cc",

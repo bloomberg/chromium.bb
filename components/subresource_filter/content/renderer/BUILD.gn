@@ -17,9 +17,11 @@ static_library("renderer") {
     "//components/subresource_filter/core/common",
     "//content/public/common",
     "//content/public/renderer",
-    "//ipc",
     "//third_party/WebKit/public:blink",
     "//url",
+  ]
+  public_deps = [
+    "//ipc",
   ]
 }
 

@@ -31,7 +31,6 @@ component("host") {
 
   deps = [
     "//base",
-    "//ipc",
     "//media:shared_memory_support",
     "//ppapi/c",
     "//ppapi/proxy:ipc",
@@ -39,5 +38,9 @@ component("host") {
     "//ui/events:events_base",
     "//ui/surface",
     "//url",
+  ]
+
+  public_deps = [
+    "//ipc",
   ]
 }

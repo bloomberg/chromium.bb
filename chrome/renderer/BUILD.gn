@@ -303,6 +303,9 @@ static_library("renderer") {
       "//media/cast:receiver",
       "//media/cast:sender",
     ]
+    public_deps = [
+      "//ipc",
+    ]
     if (!enable_webrtc) {
       sources -= [
         "media/cast_receiver_session.cc",

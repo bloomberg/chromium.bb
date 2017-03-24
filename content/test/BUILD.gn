@@ -229,6 +229,7 @@ static_library("test_support") {
     "//content/public/app:both",
     "//content/public/browser",
     "//content/public/common",
+    "//ipc",
     "//third_party/WebKit/public:blink",
     "//third_party/WebKit/public:test_support",
   ]

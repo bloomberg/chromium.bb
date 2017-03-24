@@ -274,6 +274,7 @@ component("proxy") {
   ]
 
   public_deps = [
+    "//ipc",
     "//ppapi/proxy:ipc_sources",
   ]
 
@@ -282,7 +283,6 @@ component("proxy") {
     "//base",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/ipc/common:command_buffer_traits",
-    "//ipc",
     "//media:shared_memory_support",
     "//mojo/edk/system",
     "//ppapi/c",
@@ -357,10 +357,14 @@ source_set("ipc_sources") {
   deps = [
     "//base",
     "//gpu/ipc/common:command_buffer_traits",
-    "//ipc",
     "//ppapi/c",
     "//ppapi/shared_impl",
   ]
+
+  public_deps = [
+    "//ipc",
+  ]
+
   if (!is_nacl) {
     deps += [ "//skia" ]
   }

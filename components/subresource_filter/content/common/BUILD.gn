@@ -13,8 +13,10 @@ static_library("common") {
   deps = [
     "//components/subresource_filter/core/common",
     "//content/public/common",
-    "//ipc",
     "//url",
+  ]
+  public_deps = [
+    "//ipc",
   ]
 }
 

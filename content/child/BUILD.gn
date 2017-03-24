@@ -216,6 +216,7 @@ target(link_target_type, "child") {
 
   public_deps = [
     "//gpu/ipc/client:client",
+    "//ipc",
     "//services/service_manager/public/interfaces:interfaces_blink",
   ]
 
@@ -234,7 +235,6 @@ target(link_target_type, "child") {
     "//content/public/common:common_sources",
     "//crypto:platform",
     "//gpu/command_buffer/client",
-    "//ipc",
     "//media",
     "//media/blink",
     "//mojo/common",

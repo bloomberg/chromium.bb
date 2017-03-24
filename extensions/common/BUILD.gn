@@ -267,6 +267,7 @@ if (enable_extensions) {
     public_deps = [
       ":common_constants",
       ":mojo",
+      "//ipc",
       "//skia",
     ]
 
@@ -286,7 +287,6 @@ if (enable_extensions) {
       "//extensions:extensions_resources",
       "//extensions/common/api",
       "//extensions/strings",
-      "//ipc",
       "//net",
       "//third_party/boringssl",
       "//third_party/icu",

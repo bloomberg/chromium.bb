@@ -13,7 +13,7 @@ component("color") {
 
   defines = [ "GFX_IPC_COLOR_IMPLEMENTATION" ]
 
-  deps = [
+  public_deps = [
     "//base",
     "//ipc",
     "//ui/gfx:gfx",

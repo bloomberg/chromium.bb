@@ -26,6 +26,10 @@ source_set("surfaces") {
     "//ui/gfx/geometry/mojo",
   ]
 
+  public_deps = [
+    "//ipc",
+  ]
+
   if (use_ozone) {
     sources += [
       "display_output_surface_ozone.cc",

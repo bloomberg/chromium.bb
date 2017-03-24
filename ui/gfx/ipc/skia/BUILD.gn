@@ -14,10 +14,13 @@ component("skia") {
 
   deps = [
     "//base",
-    "//ipc",
     "//skia",
     "//ui/gfx",
     "//ui/gfx/geometry",
+  ]
+
+  public_deps = [
+    "//ipc",
     "//ui/gfx/ipc",
   ]
 }

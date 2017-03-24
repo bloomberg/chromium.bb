@@ -1398,6 +1398,7 @@ split_static_library("browser") {
     "//components/payments/core",
     "//components/sync",
     "//content/public/browser",
+    "//ipc",
     "//sql",
   ]
   deps = [
@@ -1576,7 +1577,6 @@ split_static_library("browser") {
     "//gin:gin_features",
     "//google_apis",
     "//gpu/config",
-    "//ipc",
     "//media",
     "//media:media_features",
     "//media/midi",

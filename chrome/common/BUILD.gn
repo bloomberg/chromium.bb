@@ -522,6 +522,8 @@ static_library("common") {
         "safe_browsing/zip_analyzer_results.h",
       ]
 
+      public_deps += [ "//ipc" ]
+
       # safe_archive_analyzer.mojom has a [Native] trait that depends on
       # the protobuf headers in the sources list above.
       allow_circular_includes_from = [ ":mojo_bindings" ]

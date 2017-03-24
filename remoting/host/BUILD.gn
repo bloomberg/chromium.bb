@@ -309,7 +309,6 @@ static_library("host") {
     "//crypto",
     "//device/power_save_blocker",
     "//google_apis",
-    "//ipc",
     "//remoting/base",
     "//remoting/base:authorization",
     "//remoting/host/security_key",
@@ -320,7 +319,9 @@ static_library("host") {
     "//ui/events/platform",
   ]
 
-  public_deps = []
+  public_deps = [
+    "//ipc",
+  ]
 
   if (!is_ios) {
     deps += [ "//components/policy:generated" ]
