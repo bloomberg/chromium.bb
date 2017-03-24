@@ -163,9 +163,9 @@ Tab* GetOpenerForTab(id<NSFastEnumeration> tabs, Tab* tab) {
   // WebState owns the associated Tab.
   base::scoped_nsobject<NSMutableSet<Tab*>> _tabRetainer;
 
-  // WebStateListObserver bridges to react to modifications of the model (may
-  // send notification, translate and forward events, update metrics, ...).
-  std::vector<std::unique_ptr<WebStateListObserver>> _observerBridges;
+  // WebStateListObservers reacting to modifications of the model (may send
+  // notification, translate and forward events, update metrics, ...).
+  std::vector<std::unique_ptr<WebStateListObserver>> _webStateListObservers;
 
   // The delegate for sync.
   std::unique_ptr<TabModelSyncedWindowDelegate> _syncedWindowDelegate;
@@ -237,10 +237,10 @@ Tab* GetOpenerForTab(id<NSFastEnumeration> tabs, Tab* tab) {
   // Clear weak pointer to WebStateListMetricsObserver before destroying it.
   _webStateListMetricsObserver = nullptr;
 
-  // Unregister all listeners before closing all the tabs.
-  for (const auto& observerBridge : _observerBridges)
-    _webStateList->RemoveObserver(observerBridge.get());
-  _observerBridges.clear();
+  // Unregister all observers before closing all the tabs.
+  for (const auto& webStateListObserver : _webStateListObservers)
+    _webStateList->RemoveObserver(webStateListObserver.get());
+  _webStateListObservers.clear();
 
   // Make sure the tabs do clean after themselves. It is important for
   // removeObserver: to be called first otherwise a lot of unecessary work will
@@ -286,6 +286,10 @@ Tab* GetOpenerForTab(id<NSFastEnumeration> tabs, Tab* tab) {
   return static_cast<NSUInteger>(_webStateList->count());
 }
 
+- (WebStateList*)webStateList {
+  return _webStateList.get();
+}
+
 - (instancetype)initWithSessionWindow:(SessionWindowIOS*)window
                        sessionService:(SessionServiceIOS*)service
                          browserState:(ios::ChromeBrowserState*)browserState {
@@ -319,28 +323,31 @@ Tab* GetOpenerForTab(id<NSFastEnumeration> tabs, Tab* tab) {
     DCHECK(service);
     _sessionService.reset([service retain]);
 
-    _observerBridges.push_back(
+    _webStateListObservers.push_back(
         base::MakeUnique<SnapshotCacheWebStateListObserver>(
             [SnapshotCache sharedInstance]));
     if (_tabUsageRecorder) {
-      _observerBridges.push_back(
+      _webStateListObservers.push_back(
           base::MakeUnique<TabUsageRecorderWebStateListObserver>(
               _tabUsageRecorder.get()));
     }
-    _observerBridges.push_back(base::MakeUnique<TabParentingObserver>());
-    _observerBridges.push_back(base::MakeUnique<WebStateListObserverBridge>(
-        [[TabModelSelectedTabObserver alloc] initWithTabModel:self]));
-    _observerBridges.push_back(base::MakeUnique<WebStateListObserverBridge>(
-        [[TabModelObserversBridge alloc] initWithTabModel:self
-                                        tabModelObservers:_observers.get()]));
+    _webStateListObservers.push_back(base::MakeUnique<TabParentingObserver>());
+    _webStateListObservers.push_back(
+        base::MakeUnique<WebStateListObserverBridge>(
+            [[TabModelSelectedTabObserver alloc] initWithTabModel:self]));
+    _webStateListObservers.push_back(
+        base::MakeUnique<WebStateListObserverBridge>(
+            [[TabModelObserversBridge alloc]
+                 initWithTabModel:self
+                tabModelObservers:_observers.get()]));
 
     auto webStateListMetricsObserver =
         base::MakeUnique<WebStateListMetricsObserver>();
     _webStateListMetricsObserver = webStateListMetricsObserver.get();
-    _observerBridges.push_back(std::move(webStateListMetricsObserver));
+    _webStateListObservers.push_back(std::move(webStateListMetricsObserver));
 
-    for (const auto& observerBridge : _observerBridges)
-      _webStateList->AddObserver(observerBridge.get());
+    for (const auto& webStateListObserver : _webStateListObservers)
+      _webStateList->AddObserver(webStateListObserver.get());
 
     if (window) {
       DCHECK([_observers empty]);

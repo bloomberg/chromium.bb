@@ -21,6 +21,7 @@ class SessionID;
 @protocol TabModelObserver;
 class TabModelSyncedWindowDelegate;
 class TabUsageRecorder;
+class WebStateList;
 
 namespace ios {
 class ChromeBrowserState;
@@ -112,6 +113,9 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 
 // Determines the number of tabs in the model.
 @property(nonatomic, readonly) NSUInteger count;
+
+// The WebStateList owned by the TabModel.
+@property(nonatomic, readonly) WebStateList* webStateList;
 
 // Initializes tabs from a restored session. |-setCurrentTab| needs to be called
 // in order to display the views associated with the tabs. Waits until the views
