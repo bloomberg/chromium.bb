@@ -35,6 +35,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -53,6 +54,7 @@ namespace {
 
 using google_breakpad::BasicSourceLineResolver;
 using google_breakpad::Minidump;
+using google_breakpad::MinidumpThreadList;
 using google_breakpad::MinidumpProcessor;
 using google_breakpad::ProcessState;
 using google_breakpad::SimpleSymbolSupplier;
@@ -81,6 +83,8 @@ bool PrintMinidumpProcess(const string &minidump_file,
   BasicSourceLineResolver resolver;
   MinidumpProcessor minidump_processor(symbol_supplier.get(), &resolver);
 
+  // Increase the maximum number of threads.
+  MinidumpThreadList::set_max_threads(std::numeric_limits<uint32_t>::max());
   // Process the minidump.
   Minidump dump(minidump_file);
   if (!dump.Read()) {
