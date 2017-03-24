@@ -310,6 +310,9 @@ source_set("unit_tests") {
   if (is_mac) {
     sources -= [ "password_store_default_unittest.cc" ]
   }
+  if (is_ios) {
+    sources += [ "login_database_ios_unittest.cc" ]
+  }
   deps = [
     ":test_support",
     ":unit_tests_bundle_data",
