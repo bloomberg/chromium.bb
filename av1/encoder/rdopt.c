@@ -3658,6 +3658,8 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
           ? x->palette_buffer->best_palette_color_map
           : NULL;
   int palette_y_mode_ctx = 0;
+  const int try_palette =
+      cpi->common.allow_screen_content_tools && bsize >= BLOCK_8X8;
 #endif  // CONFIG_PALETTE
   const MODE_INFO *above_mi = xd->above_mi;
   const MODE_INFO *left_mi = xd->left_mi;
@@ -3754,11 +3756,12 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       this_rate_tokenonly -= tx_size_cost(cpi, x, bsize, mbmi->tx_size);
     }
 #if CONFIG_PALETTE
-    if (cpi->common.allow_screen_content_tools && mbmi->mode == DC_PRED)
+    if (try_palette && mbmi->mode == DC_PRED) {
       this_rate +=
           av1_cost_bit(av1_default_palette_y_mode_prob[bsize - BLOCK_8X8]
                                                       [palette_y_mode_ctx],
                        0);
+    }
 #endif  // CONFIG_PALETTE
 #if CONFIG_FILTER_INTRA
     if (mbmi->mode == DC_PRED)
@@ -3806,7 +3809,7 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 #endif  // CONFIG_PVQ
 
 #if CONFIG_PALETTE
-  if (cpi->common.allow_screen_content_tools) {
+  if (try_palette) {
     rd_pick_palette_intra_sby(cpi, x, bsize, palette_y_mode_ctx,
                               bmode_costs[DC_PRED], &best_mbmi,
                               best_palette_color_map, &best_rd, &best_model_rd,
@@ -9644,6 +9647,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
 #if CONFIG_PALETTE
+  const int try_palette =
+      cpi->common.allow_screen_content_tools && bsize >= BLOCK_8X8;
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
 #endif  // CONFIG_PALETTE
   MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
@@ -9800,7 +9805,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 
 #if CONFIG_PALETTE
   av1_zero(pmi_uv);
-  if (cm->allow_screen_content_tools) {
+  if (try_palette) {
     if (above_mi)
       palette_ctx += (above_mi->mbmi.palette_mode_info.palette_size[0] > 0);
     if (left_mi)
@@ -10305,7 +10310,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
                              &rate_uv_tokenonly[uv_tx], &dist_uvs[uv_tx],
                              &skip_uvs[uv_tx], &mode_uv[uv_tx]);
 #if CONFIG_PALETTE
-        if (cm->allow_screen_content_tools) pmi_uv[uv_tx] = *pmi;
+        if (try_palette) pmi_uv[uv_tx] = *pmi;
 #endif  // CONFIG_PALETTE
 
 #if CONFIG_EXT_INTRA
@@ -10321,7 +10326,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       skippable = skippable && skip_uvs[uv_tx];
       mbmi->uv_mode = mode_uv[uv_tx];
 #if CONFIG_PALETTE
-      if (cm->allow_screen_content_tools) {
+      if (try_palette) {
         pmi->palette_size[1] = pmi_uv[uv_tx].palette_size[1];
         memcpy(pmi->palette_colors + PALETTE_MAX_SIZE,
                pmi_uv[uv_tx].palette_colors + PALETTE_MAX_SIZE,
@@ -10351,9 +10356,10 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 #endif  // CONFIG_CB4X4
 
 #if CONFIG_PALETTE
-      if (cpi->common.allow_screen_content_tools && mbmi->mode == DC_PRED)
+      if (try_palette && mbmi->mode == DC_PRED) {
         rate2 += av1_cost_bit(
             av1_default_palette_y_mode_prob[bsize - BLOCK_8X8][palette_ctx], 0);
+      }
 #endif  // CONFIG_PALETTE
 
       if (!xd->lossless[mbmi->segment_id] && bsize >= BLOCK_8X8) {
@@ -11013,7 +11019,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 
 #if CONFIG_PALETTE
   // Only try palette mode when the best mode so far is an intra mode.
-  if (cm->allow_screen_content_tools && !is_inter_mode(best_mbmode.mode)) {
+  if (try_palette && !is_inter_mode(best_mbmode.mode)) {
     int rate2 = 0;
 #if CONFIG_SUPERTX
     int best_rate_nocoef;

@@ -2204,6 +2204,7 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
         mbmi->palette_mode_info.palette_size[plane];
     if (palette_size_plane > 0) {
       int rows, cols;
+      assert(mbmi->sb_type >= BLOCK_8X8);
       av1_get_block_dimensions(mbmi->sb_type, plane, xd, NULL, NULL, &rows,
                                &cols);
       assert(*tok < tok_end);
