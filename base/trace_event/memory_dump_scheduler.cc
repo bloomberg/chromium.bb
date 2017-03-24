@@ -282,8 +282,11 @@ void MemoryDumpScheduler::PollingTriggerState::ResetTotals() {
     // Set threshold to 1% of total system memory.
     SystemMemoryInfoKB meminfo;
     bool res = GetSystemMemoryInfo(&meminfo);
-    if (res)
-      memory_increase_threshold = (meminfo.total / 100) * 1024;
+    if (res) {
+      memory_increase_threshold =
+          (static_cast<int64_t>(meminfo.total) / 100) * 1024;
+    }
+    DCHECK_GT(memory_increase_threshold, 0u);
 #endif
   }
 
