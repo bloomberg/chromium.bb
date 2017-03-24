@@ -33,9 +33,29 @@ void LogPreviewsEligibilityReason(PreviewsEligibilityReason status,
           "Previews.EligibilityReason.Offline", static_cast<int>(status),
           static_cast<int>(PreviewsEligibilityReason::LAST));
       break;
+    case PreviewsType::CLIENT_LOFI:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Previews.EligibilityReason.ClientLoFi", static_cast<int>(status),
+          static_cast<int>(PreviewsEligibilityReason::LAST));
+      break;
     default:
       NOTREACHED();
   }
+}
+
+net::EffectiveConnectionType GetEffectiveConnectionTypeThresholdForPreviewsType(
+    PreviewsType type) {
+  switch (type) {
+    case PreviewsType::OFFLINE:
+      return params::EffectiveConnectionTypeThresholdForOffline();
+    case PreviewsType::CLIENT_LOFI:
+      return params::EffectiveConnectionTypeThresholdForClientLoFi();
+    case PreviewsType::NONE:
+    case PreviewsType::LAST:
+      break;
+  }
+  NOTREACHED();
+  return net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
 }
 
 }  // namespace
@@ -115,8 +135,9 @@ bool PreviewsIOData::ShouldAllowPreview(const net::URLRequest& request,
         PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE, type);
     return false;
   }
+
   if (network_quality_estimator->GetEffectiveConnectionType() >
-      params::EffectiveConnectionTypeThreshold()) {
+      GetEffectiveConnectionTypeThresholdForPreviewsType(type)) {
     LogPreviewsEligibilityReason(PreviewsEligibilityReason::NETWORK_NOT_SLOW,
                                  type);
     return false;
@@ -124,8 +145,8 @@ bool PreviewsIOData::ShouldAllowPreview(const net::URLRequest& request,
   // LOAD_VALIDATE_CACHE or LOAD_BYPASS_CACHE mean the user reloaded the page.
   // If this is a query for offline previews, reloads should be disallowed.
   if (type == PreviewsType::OFFLINE &&
-      request.load_flags() &
-          (net::LOAD_VALIDATE_CACHE | net::LOAD_BYPASS_CACHE)) {
+      (request.load_flags() &
+       (net::LOAD_VALIDATE_CACHE | net::LOAD_BYPASS_CACHE))) {
     LogPreviewsEligibilityReason(
         PreviewsEligibilityReason::RELOAD_DISALLOWED_FOR_OFFLINE, type);
     return false;

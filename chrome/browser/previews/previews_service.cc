@@ -24,6 +24,8 @@ bool IsPreviewsTypeEnabled(previews::PreviewsType type) {
   switch (type) {
     case previews::PreviewsType::OFFLINE:
       return previews::params::IsOfflinePreviewsEnabled();
+    case previews::PreviewsType::CLIENT_LOFI:
+      return previews::params::IsClientLoFiEnabled();
     case previews::PreviewsType::NONE:
     case previews::PreviewsType::LAST:
       break;
@@ -38,6 +40,8 @@ int GetPreviewsTypeVersion(previews::PreviewsType type) {
   switch (type) {
     case previews::PreviewsType::OFFLINE:
       return previews::params::OfflinePreviewsVersion();
+    case previews::PreviewsType::CLIENT_LOFI:
+      return previews::params::ClientLoFiVersion();
     case previews::PreviewsType::NONE:
     case previews::PreviewsType::LAST:
       break;

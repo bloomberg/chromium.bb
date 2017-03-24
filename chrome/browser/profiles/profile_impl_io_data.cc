@@ -194,11 +194,11 @@ void ProfileImplIOData::Handle::Init(
   if (io_data_->lazy_params_->domain_reliability_monitor)
     io_data_->lazy_params_->domain_reliability_monitor->MoveToNetworkThread();
 
-  io_data_->previews_io_data_ = base::MakeUnique<previews::PreviewsIOData>(
+  io_data_->set_previews_io_data(base::MakeUnique<previews::PreviewsIOData>(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
   PreviewsServiceFactory::GetForProfile(profile_)->Initialize(
-      io_data_->previews_io_data_.get(),
+      io_data_->previews_io_data(),
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO), profile_path);
 
   io_data_->set_data_reduction_proxy_io_data(
@@ -546,7 +546,7 @@ void ProfileImplIOData::InitializeInternal(
 #if defined(OS_ANDROID)
   request_interceptors.push_back(
       base::MakeUnique<offline_pages::OfflinePageRequestInterceptor>(
-          previews_io_data_.get()));
+          previews_io_data()));
 #endif
 
   // The data reduction proxy interceptor should be as close to the network

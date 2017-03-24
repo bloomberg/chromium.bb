@@ -50,6 +50,8 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_util.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/policy/core/common/cloud/policy_header_io_helper.h"
+#include "components/previews/core/previews_experiments.h"
+#include "components/previews/core/previews_io_data.h"
 #include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/rappor_service_impl.h"
 #include "components/search_engines/template_url_service.h"
@@ -890,6 +892,13 @@ content::PreviewsState ChromeResourceDispatcherHostDelegate::GetPreviewsState(
       previews_state |= content::SERVER_LOFI_ON;
     if (data_reduction_proxy_io_data->ShouldEnableLitePages(url_request))
       previews_state |= content::SERVER_LITE_PAGE_ON;
+
+    previews::PreviewsIOData* previews_io_data = io_data->previews_io_data();
+    if (data_reduction_proxy_io_data->IsEnabled() && previews_io_data &&
+        previews_io_data->ShouldAllowPreview(
+            url_request, previews::PreviewsType::CLIENT_LOFI)) {
+      previews_state |= content::CLIENT_LOFI_ON;
+    }
   }
 
   if (previews_state == content::PREVIEWS_UNSPECIFIED)

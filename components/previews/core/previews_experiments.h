@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_PREVIEWS_CORE_PREVIEWS_EXPERIMENTS_H_
 #define COMPONENTS_PREVIEWS_CORE_PREVIEWS_EXPERIMENTS_H_
 
-#include <memory>
 #include <utility>
 #include <vector>
 
@@ -48,9 +47,9 @@ base::TimeDelta SingleOptOutDuration();
 // shown as a preview.
 base::TimeDelta OfflinePreviewFreshnessDuration();
 
-// The threshold of EffectiveConnectionType above which previews should not be
-// served.
-net::EffectiveConnectionType EffectiveConnectionTypeThreshold();
+// The threshold of EffectiveConnectionType above which offline previews should
+// not be served.
+net::EffectiveConnectionType EffectiveConnectionTypeThresholdForOffline();
 
 // Whether offline previews are enabled.
 bool IsOfflinePreviewsEnabled();
@@ -58,25 +57,36 @@ bool IsOfflinePreviewsEnabled();
 // The blacklist version for offline previews.
 int OfflinePreviewsVersion();
 
+// Whether Client LoFi previews are enabled.
+bool IsClientLoFiEnabled();
+
+// The blacklist version for Client LoFi previews.
+int ClientLoFiVersion();
+
+// The threshold of EffectiveConnectionType above which Client LoFi previews
+// should not be served.
+net::EffectiveConnectionType EffectiveConnectionTypeThresholdForClientLoFi();
+
 }  // namespace params
 
 enum class PreviewsType {
   NONE = 0,
+
   // The user is shown an offline page as a preview.
   OFFLINE = 1,
+
+  // Replace images with placeholders generated on the client.
+  CLIENT_LOFI = 2,
+
   // Insert new enum values here. Keep values sequential to allow looping
   // from NONE+1 to LAST-1.
-  LAST = 2,
+  LAST = 3,
 };
 
 typedef std::vector<std::pair<PreviewsType, int>> PreviewsTypeList;
 
 // Returns true if any client-side previews experiment is active.
 bool IsIncludedInClientSidePreviewsExperimentsFieldTrial();
-
-// Sets the appropriate state for field trial and variations to imitate the
-// offline pages field trial.
-bool EnableOfflinePreviewsForTesting();
 
 }  // namespace previews
 

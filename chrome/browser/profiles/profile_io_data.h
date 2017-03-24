@@ -97,6 +97,10 @@ class PolicyHeaderIOHelper;
 class URLBlacklistManager;
 }  // namespace policy
 
+namespace previews {
+class PreviewsIOData;
+}
+
 // Conceptually speaking, the ProfileIOData represents data that lives on the IO
 // thread that is owned by a Profile, such as, but not limited to, network
 // objects like CookieMonster, HttpTransactionFactory, etc.  Profile owns
@@ -241,6 +245,10 @@ class ProfileIOData {
     return data_reduction_proxy_io_data_.get();
   }
 
+  previews::PreviewsIOData* previews_io_data() const {
+    return previews_io_data_.get();
+  }
+
   // This function is to be used to check if the |url| is defined in
   // blacklist or whitelist policy.
   virtual policy::URLBlacklist::URLBlacklistState GetURLBlacklistState(
@@ -382,6 +390,9 @@ class ProfileIOData {
   void set_data_reduction_proxy_io_data(
       std::unique_ptr<data_reduction_proxy::DataReductionProxyIOData>
           data_reduction_proxy_io_data) const;
+
+  void set_previews_io_data(
+      std::unique_ptr<previews::PreviewsIOData> previews_io_data) const;
 
   net::ProxyService* proxy_service() const {
     return proxy_service_.get();
@@ -553,6 +564,8 @@ class ProfileIOData {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   mutable scoped_refptr<extensions::InfoMap> extension_info_map_;
 #endif
+
+  mutable std::unique_ptr<previews::PreviewsIOData> previews_io_data_;
 
   mutable std::unique_ptr<data_reduction_proxy::DataReductionProxyIOData>
       data_reduction_proxy_io_data_;

@@ -31,10 +31,6 @@ class HttpServerPropertiesManager;
 class SdchOwner;
 }  // namespace net
 
-namespace previews {
-class PreviewsIOData;
-}
-
 namespace storage {
 class SpecialStoragePolicy;
 }  // namespace storage
@@ -226,8 +222,6 @@ class ProfileImplIOData : public ProfileIOData {
       domain_reliability_monitor_;
 
   mutable std::unique_ptr<net::SdchOwner> sdch_policy_;
-
-  mutable std::unique_ptr<previews::PreviewsIOData> previews_io_data_;
 
   // Parameters needed for isolated apps.
   base::FilePath profile_path_;
