@@ -9,17 +9,19 @@
 <dom-module id="category-default-setting">
   <template>
     <style include="settings-shared"></style>
-    <div class="settings-box first two-line">
-      <div class="start secondary">[[sliderDescription_]]</div>
+    <div class="settings-box first">
       <settings-toggle-button id="toggle" pref="{{controlParams_}}"
+          class="start" label="[[sliderDescription_]]"
           disabled$="[[isToggleDisabled_(category)]]">
       </settings-toggle-button>
     </div>
     <template is="dom-if" if="[[subOptionLabel]]">
-      <div class="settings-box">
+      <div class$="settings-box [[subOptionClass_(subOptionSecondary)]]">
         <div class="start">
           [[subOptionLabel]]
-          <div class="secondary">[[subOptionSecondary]]</div>
+          <div class="secondary" hidden$="[[!subOptionSecondary]]">
+            [[subOptionSecondary]]
+          </div>
         </div>
         <settings-toggle-button disabled$="[[!controlParams_.value]]"
             id="subOptionToggle" pref="{{subControlParams_}}">

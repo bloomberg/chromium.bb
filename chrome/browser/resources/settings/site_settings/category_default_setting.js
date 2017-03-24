@@ -50,6 +50,12 @@ Polymer({
     /* Labels for the toggle on/off positions. */
     toggleOffLabel: String,
     toggleOnLabel: String,
+
+    subOptionLabel: String,
+    subOptionSecondary: {
+      type: String,
+      value: null,  // Needs default value so binding fires upon initialization.
+    },
   },
 
   observers: [
@@ -208,5 +214,15 @@ Polymer({
   isToggleDisabled_: function() {
     return this.category == settings.ContentSettingsTypes.POPUPS &&
         loadTimeData.getBoolean('isGuest');
+  },
+
+  /**
+   * Returns classname to indicate secondary label exists.
+   * @param {boolean} subOptionLabel
+   * @return {string}
+   * @private
+   */
+  subOptionClass_: function(subOptionLabel) {
+    return subOptionLabel ? 'two-line' : '';
   }
 });
