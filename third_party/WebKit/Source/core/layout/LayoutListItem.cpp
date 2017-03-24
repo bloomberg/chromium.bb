@@ -257,6 +257,11 @@ static LayoutObject* getParentOfFirstLineBox(LayoutBlockFlow* curr,
     if (currChild == marker)
       continue;
 
+    // Shouldn't add marker into Overflow box, instead, add marker
+    // into listitem
+    if (currChild->hasOverflowClip())
+      break;
+
     if (currChild->isInline() &&
         (!currChild->isLayoutInline() ||
          curr->generatesLineBoxesForInlineChild(currChild)))
