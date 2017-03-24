@@ -30,6 +30,10 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+namespace base {
+class SequencedTaskRunner;
+}
+
 namespace chrome {
 struct FaviconImageResult;
 }
@@ -180,6 +184,9 @@ class JumpList : public sessions::TabRestoreServiceObserver,
   // Id of last favicon task. It's used to cancel current task if a new one
   // comes in before it finishes.
   base::CancelableTaskTracker::TaskId task_id_;
+
+  // A task runner which runs the background file deletion tasks sequentially.
+  scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
 
   // For callbacks may be run after destruction.
   base::WeakPtrFactory<JumpList> weak_ptr_factory_;

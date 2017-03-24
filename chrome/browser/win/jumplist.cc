@@ -5,18 +5,18 @@
 #include "chrome/browser/win/jumplist.h"
 
 #include <Shlwapi.h>
-#include <windows.h>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
@@ -27,6 +27,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/shell_integration_win.h"
+#include "chrome/browser/win/jumplist_file_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_icon_resources_win.h"
 #include "chrome/common/chrome_switches.h"
@@ -229,28 +230,13 @@ bool UpdateJumpList(const wchar_t* app_id,
   return true;
 }
 
-// Renames the directory |from_dir| to |to_path|. This method fails if any
-// process has a handle open in |from_dir| or if |to_path| exists. Base::Move()
-// tries to rename a file and if this fails, it tries copy-n-delete; This
-// RenameDirectory method only does the rename part.
-bool RenameDirectory(const base::FilePath& from_path,
-                     const base::FilePath& to_path) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  if (from_path.ReferencesParent() || to_path.ReferencesParent())
-    return false;
-  if (from_path.value().length() >= MAX_PATH ||
-      to_path.value().length() >= MAX_PATH) {
-    return false;
-  }
-  return MoveFileEx(from_path.value().c_str(), to_path.value().c_str(), 0) != 0;
-}
-
 // Updates the jumplist, once all the data has been fetched.
 void RunUpdateOnFileThread(
     IncognitoModePrefs::Availability incognito_availability,
     const std::wstring& app_id,
     const base::FilePath& icon_dir,
-    base::RefCountedData<JumpListData>* ref_counted_data) {
+    base::RefCountedData<JumpListData>* ref_counted_data,
+    const scoped_refptr<base::SequencedTaskRunner>& sequenced_task_runner) {
   JumpListData* data = &ref_counted_data->data;
   ShellLinkItemList local_most_visited_pages;
   ShellLinkItemList local_recently_closed_pages;
@@ -267,73 +253,25 @@ void RunUpdateOnFileThread(
     local_recently_closed_pages = data->recently_closed_pages_;
   }
 
-  // Delete the directory which contains old icon files, rename the current
-  // icon directory, and create a new directory which contains new JumpList
-  // icon files.
-  base::FilePath icon_dir_old = icon_dir.DirName().Append(
-      icon_dir.BaseName().value() + FILE_PATH_LITERAL("Old"));
+  // Delete the contents in JumpListIcons directory and log the delete status
+  // to UMA.
+  FolderDeleteResult delete_status =
+      DeleteDirectoryContent(icon_dir, kFileDeleteLimit);
 
-  enum FolderOperationResult {
-    SUCCESS = 0,
-    DELETE_DEST_FAILED = 1 << 0,
-    RENAME_FAILED = 1 << 1,
-    DELETE_SRC_CONTENT_FAILED = 1 << 2,
-    DELETE_SRC_DIR_FAILED = 1 << 3,
-    CREATE_SRC_FAILED = 1 << 4,
-    // This value is beyond the sum of all bit fields above and
-    // should remain last (shifted by one more than the last value)
-    END = 1 << 5
-  };
+  UMA_HISTOGRAM_ENUMERATION("WinJumplist.DeleteStatusJumpListIcons",
+                            delete_status, END);
 
-  // This variable records the status of three folder operations.
-  uint32_t folder_operation_status = FolderOperationResult::SUCCESS;
-
-  base::ScopedClosureRunner log_operation_status_when_done(base::Bind(
-      [](uint32_t* folder_operation_status_ptr) {
-        UMA_HISTOGRAM_ENUMERATION(
-            "WinJumplist.DetailedFolderResultsDeleteUpdated",
-            *folder_operation_status_ptr, FolderOperationResult::END);
-      },
-      base::Unretained(&folder_operation_status)));
-
-  // If deletion of |icon_dir_old| fails, do not rename |icon_dir| to
-  // |icon_dir_old|, instead, delete |icon_dir| directly to avoid bloating
-  // |icon_dir_old| by moving more things to it.
-  if (!base::DeleteFile(icon_dir_old, true)) {
-    folder_operation_status |= FolderOperationResult::DELETE_DEST_FAILED;
-    // If deletion of any item in |icon_dir| fails, exit early. If deletion of
-    // all the items succeeds while only deletion of the dir fails, it is okay
-    // to proceed. This skips creating the same directory and updating jumplist
-    // icons to avoid bloating the JumplistIcons folder.
-    if (!base::DeleteFile(icon_dir, true)) {
-      if (!::PathIsDirectoryEmpty(icon_dir.value().c_str())) {
-        folder_operation_status |=
-            FolderOperationResult::DELETE_SRC_CONTENT_FAILED;
-        return;
-      }
-      folder_operation_status |= FolderOperationResult::DELETE_SRC_DIR_FAILED;
-    }
-  } else if (!RenameDirectory(icon_dir, icon_dir_old)) {
-    // If RenameDirectory() fails, delete |icon_dir| to avoid file accumulation
-    // in this directory, which can eventually lead the folder to be huge.
-    folder_operation_status |= FolderOperationResult::RENAME_FAILED;
-    // If deletion of any item in |icon_dir| fails, exit early. If deletion of
-    // all the items succeeds while only deletion of the dir fails, it is okay
-    // to proceed. This skips creating the same directory and updating jumplist
-    // icons to avoid bloating the JumplistIcons folder.
-    if (!base::DeleteFile(icon_dir, true)) {
-      if (!::PathIsDirectoryEmpty(icon_dir.value().c_str())) {
-        folder_operation_status |=
-            FolderOperationResult::DELETE_SRC_CONTENT_FAILED;
-        return;
-      }
-      folder_operation_status |= FolderOperationResult::DELETE_SRC_DIR_FAILED;
-    }
-  }
-
-  // If CreateDirectory() fails, exit early.
-  if (!base::CreateDirectory(icon_dir)) {
-    folder_operation_status |= FolderOperationResult::CREATE_SRC_FAILED;
+  // If JumpListIcons directory is not empty, skip jumplist update and return
+  // early. If the directory doesn't exist which shouldn't though, try to create
+  // a new JumpListIcons directory. If the creation fails, return early.
+  if (base::DirectoryExists(icon_dir)) {
+    DirectoryEmptyStatus empty_status =
+        ::PathIsDirectoryEmpty(icon_dir.value().c_str()) ? EMPTY : NON_EMPTY;
+    UMA_HISTOGRAM_ENUMERATION("WinJumplist.EmptyStatusJumpListIcons",
+                              empty_status, EMPTY_STATUS_END);
+    if (empty_status == NON_EMPTY)
+      return;
+  } else if (!base::CreateDirectory(icon_dir)) {
     return;
   }
 
@@ -349,6 +287,17 @@ void RunUpdateOnFileThread(
   // with it.
   UpdateJumpList(app_id.c_str(), local_most_visited_pages,
                  local_recently_closed_pages, incognito_availability);
+
+  // Post a background task to delete JumpListIconsOld folder if it exists and
+  // log the delete results to UMA.
+  base::FilePath icon_dir_old = icon_dir.DirName().Append(
+      icon_dir.BaseName().value() + FILE_PATH_LITERAL("Old"));
+
+  if (base::DirectoryExists(icon_dir_old)) {
+    sequenced_task_runner->PostTask(
+        FROM_HERE, base::Bind(&DeleteDirectoryAndLogResults, icon_dir_old,
+                              kFileDeleteLimit));
+  }
 }
 
 }  // namespace
@@ -363,6 +312,12 @@ JumpList::JumpList(Profile* profile)
       profile_(profile),
       jumplist_data_(new base::RefCountedData<JumpListData>),
       task_id_(base::CancelableTaskTracker::kBadTaskId),
+      sequenced_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          base::TaskTraits()
+              .WithPriority(base::TaskPriority::BACKGROUND)
+              .WithShutdownBehavior(
+                  base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
+              .MayBlock())),
       weak_ptr_factory_(this) {
   DCHECK(Enabled());
   // To update JumpList when a tab is added or removed, we add this object to
@@ -661,11 +616,9 @@ void JumpList::DeferredRunUpdate() {
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&RunUpdateOnFileThread,
-                 incognito_availability,
-                 app_id_,
-                 icon_dir_,
-                 base::RetainedRef(jumplist_data_)));
+      base::Bind(&RunUpdateOnFileThread, incognito_availability, app_id_,
+                 icon_dir_, base::RetainedRef(jumplist_data_),
+                 sequenced_task_runner_));
 }
 
 void JumpList::TopSitesLoaded(history::TopSites* top_sites) {
