@@ -375,7 +375,8 @@ void FrameFetchContext::addAdditionalRequestHeaders(ResourceRequest& request,
   if (!request.url().isEmpty() && !request.url().protocolIsInHTTPFamily())
     return;
 
-  if (masterDocumentLoader()->loadType() == FrameLoadTypeReload)
+  // Reload should reflect the current data saver setting.
+  if (isReloadLoadType(masterDocumentLoader()->loadType()))
     request.clearHTTPHeaderField("Save-Data");
 
   if (frame()->settings() && frame()->settings()->getDataSaverEnabled())

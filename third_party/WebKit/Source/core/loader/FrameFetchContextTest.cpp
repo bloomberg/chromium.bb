@@ -696,6 +696,7 @@ TEST_F(FrameFetchContextTest, ModifyPriorityForLowPriorityIframes) {
                 ResourceLoadPriorityMedium));
 }
 
+// Tests if "Save-Data" header is correctly added on the first load and reload.
 TEST_F(FrameFetchContextTest, EnableDataSaver) {
   Settings* settings = document->frame()->settings();
   settings->setDataSaverEnabled(true);
@@ -709,8 +710,32 @@ TEST_F(FrameFetchContextTest, EnableDataSaver) {
   EXPECT_EQ("on", resourceRequest.httpHeaderField("Save-Data"));
 }
 
+// Tests if "Save-Data" header is not added when the data saver is disabled.
 TEST_F(FrameFetchContextTest, DisabledDataSaver) {
   ResourceRequest resourceRequest("http://www.example.com");
+  fetchContext->addAdditionalRequestHeaders(resourceRequest, FetchMainResource);
+  EXPECT_EQ(String(), resourceRequest.httpHeaderField("Save-Data"));
+}
+
+// Tests if reload variants can reflect the current data saver setting.
+TEST_F(FrameFetchContextTest, ChangeDataSaverConfig) {
+  Settings* settings = document->frame()->settings();
+  settings->setDataSaverEnabled(true);
+  ResourceRequest resourceRequest("http://www.example.com");
+  fetchContext->addAdditionalRequestHeaders(resourceRequest, FetchMainResource);
+  EXPECT_EQ("on", resourceRequest.httpHeaderField("Save-Data"));
+
+  settings->setDataSaverEnabled(false);
+  document->loader()->setLoadType(FrameLoadTypeReloadMainResource);
+  fetchContext->addAdditionalRequestHeaders(resourceRequest, FetchMainResource);
+  EXPECT_EQ(String(), resourceRequest.httpHeaderField("Save-Data"));
+
+  settings->setDataSaverEnabled(true);
+  fetchContext->addAdditionalRequestHeaders(resourceRequest, FetchMainResource);
+  EXPECT_EQ("on", resourceRequest.httpHeaderField("Save-Data"));
+
+  settings->setDataSaverEnabled(false);
+  document->loader()->setLoadType(FrameLoadTypeReloadMainResource);
   fetchContext->addAdditionalRequestHeaders(resourceRequest, FetchMainResource);
   EXPECT_EQ(String(), resourceRequest.httpHeaderField("Save-Data"));
 }
