@@ -375,9 +375,9 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnaclDebugMasked,
       "pnacl_debug_url.html?nmf_file=pnacl_has_debug_flag_off.nmf"));
 }
 
-// NaClBrowserTestPnacl{,Subzero}.PnaclErrorHandling are flaky on Win XP.
-// http://crbug.com/499878
-#if defined(OS_WIN)
+// NaClBrowserTestPnacl.PnaclErrorHandling is flaky on Linux.
+// http://crbug.com/704980
+#if defined(OS_LINUX)
 #define MAYBE_PnaclErrorHandling DISABLED_PnaclErrorHandling
 #else
 #define MAYBE_PnaclErrorHandling PnaclErrorHandling
@@ -390,8 +390,7 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl,
 
 // Test Subzero. Subzero is triggered by the O0 option so reuse
 // test harnesses that use "optlevel": 0.
-IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnaclSubzero,
-                       MAYBE_PnaclErrorHandling) {
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnaclSubzero, PnaclErrorHandling) {
   RunNaClIntegrationTest(FILE_PATH_LITERAL("pnacl_error_handling.html"));
 }
 
