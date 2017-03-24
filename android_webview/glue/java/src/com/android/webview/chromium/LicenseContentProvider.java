@@ -4,25 +4,32 @@
 
 package com.android.webview.chromium;
 
+import android.annotation.TargetApi;
 import android.content.ContentProvider;
 import android.content.ContentValues;
-import android.content.res.AssetFileDescriptor;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
-import org.chromium.base.FileUtils;
-
-import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Content provider for the OSS licenses file.
+ * This is compiled into the stub WebView and so should not depend on any classes from Chromium.
  */
-public class LicenseContentProvider extends ContentProvider {
+@TargetApi(Build.VERSION_CODES.KITKAT)
+public class LicenseContentProvider
+        extends ContentProvider implements ContentProvider.PipeDataWriter<String> {
     public static final String LICENSES_URI_SUFFIX = "LicenseContentProvider/webview_licenses";
     public static final String LICENSES_CONTENT_TYPE = "text/html";
+    private static final String TAG = "LicenseCP";
 
     @Override
     public boolean onCreate() {
@@ -30,30 +37,26 @@ public class LicenseContentProvider extends ContentProvider {
     }
 
     @Override
-    public AssetFileDescriptor openAssetFile(Uri uri, String mode) {
+    public ParcelFileDescriptor openFile(Uri uri, String mode) throws FileNotFoundException {
         if (uri != null && uri.toString().endsWith(LICENSES_URI_SUFFIX)) {
-            try {
-                return extractAsset("webview_licenses.notice");
-            } catch (IOException e) {
-                Log.e("WebView", "Failed to open the license file", e);
-            }
+            return openPipeHelper(null, null, null, "webview_licenses.notice", this);
         }
         return null;
     }
 
-    // This is to work around the known limitation of AssetManager.openFd to refuse
-    // opening files that are compressed in the apk file.
-    private AssetFileDescriptor extractAsset(String name) throws IOException {
-        File extractedFile = new File(getContext().getCacheDir(), name);
-        if (!extractedFile.exists()) {
-            FileUtils.extractAsset(getContext(), name, extractedFile);
+    @Override
+    public void writeDataToPipe(
+            ParcelFileDescriptor output, Uri uri, String mimeType, Bundle opts, String filename) {
+        try (InputStream in = getContext().getAssets().open(filename);
+                OutputStream out = new FileOutputStream(output.getFileDescriptor());) {
+            byte[] buf = new byte[8192];
+            int size = -1;
+            while ((size = in.read(buf)) != -1) {
+                out.write(buf, 0, size);
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Failed to read the license file", e);
         }
-        ParcelFileDescriptor parcelFd =
-                ParcelFileDescriptor.open(extractedFile, ParcelFileDescriptor.MODE_READ_ONLY);
-        if (parcelFd != null) {
-            return new AssetFileDescriptor(parcelFd, 0, parcelFd.getStatSize());
-        }
-        return null;
     }
 
     @Override

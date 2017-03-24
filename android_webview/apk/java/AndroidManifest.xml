@@ -26,19 +26,19 @@
         {% macro common(manifest_package, webview_lib) %}
             <meta-data android:name="com.android.webview.WebViewLibrary"
                        android:value="{{ webview_lib }}" />
+            <activity android:name="com.android.webview.chromium.LicenseActivity"
+                      android:label="@string/license_activity_title">
+                <intent-filter>
+                    <action android:name="android.settings.WEBVIEW_LICENSE" />
+                    <category android:name="android.intent.category.DEFAULT" />
+                </intent-filter>
+                <meta-data android:name="com.android.settings.PRIMARY_PROFILE_CONTROLLED"
+                           android:value="true" />
+            </activity>
+            <provider android:name="com.android.webview.chromium.LicenseContentProvider"
+                      android:exported="true"
+                      android:authorities="{{ manifest_package }}.LicenseContentProvider" />
             {% if donor_package is not defined %}
-                <activity android:name="com.android.webview.chromium.LicenseActivity"
-                          android:label="@string/license_activity_title">
-                    <intent-filter>
-                        <action android:name="android.settings.WEBVIEW_LICENSE" />
-                        <category android:name="android.intent.category.DEFAULT" />
-                    </intent-filter>
-                    <meta-data android:name="com.android.settings.PRIMARY_PROFILE_CONTROLLED"
-                               android:value="true" />
-                </activity>
-                <provider android:name="com.android.webview.chromium.LicenseContentProvider"
-                          android:exported="true"
-                          android:authorities="{{ manifest_package }}.LicenseContentProvider" />
                 <service android:name="org.chromium.android_webview.crash.CrashReceiverService"
                          android:exported="true"
                          android:process=":crash_receiver_service"/>

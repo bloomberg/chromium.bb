@@ -147,6 +147,15 @@ android_assets("assets") {
   ]
 }
 
+android_assets("stub_assets") {
+  sources = [
+    webview_license_path,
+  ]
+  deps = [
+    ":generate_webview_license_notice",
+  ]
+}
+
 action("generate_webview_license_notice") {
   script = "tools/webview_licenses.py"
   depfile = "$target_gen_dir/$target_name.d"

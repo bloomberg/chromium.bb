@@ -9,11 +9,12 @@ import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-
-import org.chromium.base.Log;
+import android.util.Log;
 
 /**
  * Activity for displaying WebView OSS licenses.
+ * This is compiled into the stub WebView and so should not depend on any classes from Chromium
+ * other than LicenseContentProvider.
  */
 public class LicenseActivity extends Activity {
     @Override
