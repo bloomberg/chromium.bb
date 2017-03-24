@@ -14,6 +14,7 @@
 #include "core/editing/commands/UndoStack.h"
 #include "core/editing/commands/UndoStep.h"
 #include "core/editing/iterators/CharacterIterator.h"
+#include "core/editing/spellcheck/ColdModeSpellCheckRequester.h"
 #include "core/editing/spellcheck/HotModeSpellCheckRequester.h"
 #include "core/editing/spellcheck/SpellCheckRequester.h"
 #include "core/editing/spellcheck/SpellChecker.h"
@@ -26,7 +27,6 @@ namespace blink {
 
 namespace {
 
-const int kColdModeChunkSize = 16384;
 const int kColdModeTimerIntervalMS = 1000;
 const int kConsecutiveColdModeTimerIntervalMS = 200;
 const int kHotModeRequestTimeoutMS = 200;
@@ -34,22 +34,13 @@ const int kInvalidHandle = -1;
 const int kDummyHandleForForcedInvocation = -2;
 const double kForcedInvocationDeadlineSeconds = 10;
 
-bool shouldCheckNodeInColdMode(Node& node) {
-  if (!node.isElementNode())
-    return false;
-  const Position& position = Position::firstPositionInNode(&node);
-  if (!isEditablePosition(position))
-    return false;
-  return SpellChecker::isSpellCheckingEnabledAt(position);
-}
-
 }  // namespace
 
 IdleSpellCheckCallback::~IdleSpellCheckCallback() {}
 
 DEFINE_TRACE(IdleSpellCheckCallback) {
   visitor->trace(m_frame);
-  visitor->trace(m_nextNodeInColdMode);
+  visitor->trace(m_coldModeRequester);
   IdleRequestCallback::trace(visitor);
   SynchronousMutationObserver::trace(visitor);
 }
@@ -61,10 +52,9 @@ IdleSpellCheckCallback* IdleSpellCheckCallback::create(LocalFrame& frame) {
 IdleSpellCheckCallback::IdleSpellCheckCallback(LocalFrame& frame)
     : m_state(State::kInactive),
       m_idleCallbackHandle(kInvalidHandle),
-      m_needsMoreColdModeInvocationForTesting(false),
       m_frame(frame),
       m_lastProcessedUndoStepSequence(0),
-      m_lastCheckedDOMTreeVersionInColdMode(0),
+      m_coldModeRequester(ColdModeSpellCheckRequester::create(frame)),
       m_coldModeTimer(TaskRunnerHelper::get(TaskType::UnspecedTimer, &frame),
                       this,
                       &IdleSpellCheckCallback::coldModeTimerFired) {}
@@ -164,84 +154,6 @@ void IdleSpellCheckCallback::hotModeInvocation(IdleDeadline* deadline) {
   }
 }
 
-// TODO(xiaochengh): Deduplicate with SpellChecker::chunkAndMarkAllMisspellings.
-void IdleSpellCheckCallback::chunkAndRequestFullCheckingFor(
-    const Element& editable) {
-  const EphemeralRange& fullRange = EphemeralRange::rangeOfContents(editable);
-  const int fullLength = TextIterator::rangeLength(fullRange.startPosition(),
-                                                   fullRange.endPosition());
-
-  // Check the full content if it is short.
-  if (fullLength <= kColdModeChunkSize) {
-    spellCheckRequester().requestCheckingFor(fullRange);
-    return;
-  }
-
-  // TODO(xiaochengh): Figure out if this is going to cause performance issues.
-  // In that case, we need finer-grained control over request generation.
-  Position chunkStart = fullRange.startPosition();
-  const int chunkLimit = fullLength / kColdModeChunkSize + 1;
-  for (int chunkIndex = 0; chunkIndex <= chunkLimit; ++chunkIndex) {
-    const Position& chunkEnd =
-        calculateCharacterSubrange(
-            EphemeralRange(chunkStart, fullRange.endPosition()), 0,
-            kColdModeChunkSize)
-            .endPosition();
-    if (chunkEnd <= chunkStart)
-      break;
-    const EphemeralRange chunkRange(chunkStart, chunkEnd);
-    const EphemeralRange& checkRange =
-        chunkIndex >= 1 ? expandEndToSentenceBoundary(chunkRange)
-                        : expandRangeToSentenceBoundary(chunkRange);
-
-    spellCheckRequester().requestCheckingFor(checkRange, chunkIndex);
-
-    chunkStart = checkRange.endPosition();
-  }
-}
-
-void IdleSpellCheckCallback::coldModeInvocation(IdleDeadline* deadline) {
-  TRACE_EVENT0("blink", "IdleSpellCheckCallback::coldModeInvocation");
-
-  Node* body = frame().document()->body();
-  if (!body) {
-    m_nextNodeInColdMode = nullptr;
-    m_lastCheckedDOMTreeVersionInColdMode =
-        frame().document()->domTreeVersion();
-    return;
-  }
-
-  // TODO(xiaochengh): Figure out if this has any performance impact.
-  frame().document()->updateStyleAndLayout();
-
-  if (m_lastCheckedDOMTreeVersionInColdMode !=
-      frame().document()->domTreeVersion())
-    m_nextNodeInColdMode = body;
-
-  while (m_nextNodeInColdMode && deadline->timeRemaining() > 0) {
-    if (!shouldCheckNodeInColdMode(*m_nextNodeInColdMode)) {
-      m_nextNodeInColdMode =
-          FlatTreeTraversal::next(*m_nextNodeInColdMode, body);
-      continue;
-    }
-
-    chunkAndRequestFullCheckingFor(toElement(*m_nextNodeInColdMode));
-    m_nextNodeInColdMode =
-        FlatTreeTraversal::nextSkippingChildren(*m_nextNodeInColdMode, body);
-  }
-
-  m_lastCheckedDOMTreeVersionInColdMode = frame().document()->domTreeVersion();
-}
-
-bool IdleSpellCheckCallback::coldModeFinishesFullDocument() const {
-  if (m_needsMoreColdModeInvocationForTesting) {
-    m_needsMoreColdModeInvocationForTesting = false;
-    return false;
-  }
-
-  return !m_nextNodeInColdMode;
-}
-
 void IdleSpellCheckCallback::handleEvent(IdleDeadline* deadline) {
   DCHECK(RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled());
   DCHECK(frame().document());
@@ -260,8 +172,8 @@ void IdleSpellCheckCallback::handleEvent(IdleDeadline* deadline) {
     setNeedsColdModeInvocation();
   } else if (m_state == State::kColdModeRequested) {
     m_state = State::kInColdModeInvocation;
-    coldModeInvocation(deadline);
-    if (coldModeFinishesFullDocument())
+    m_coldModeRequester->invoke(deadline);
+    if (m_coldModeRequester->fullDocumentChecked())
       m_state = State::kInactive;
     else
       setNeedsColdModeInvocation();
@@ -310,6 +222,10 @@ void IdleSpellCheckCallback::skipColdModeTimerForTesting() {
   DCHECK(m_coldModeTimer.isActive());
   m_coldModeTimer.stop();
   coldModeTimerFired(&m_coldModeTimer);
+}
+
+void IdleSpellCheckCallback::setNeedsMoreColdModeInvocationForTesting() {
+  m_coldModeRequester->setNeedsMoreInvocationForTesting();
 }
 
 }  // namespace blink

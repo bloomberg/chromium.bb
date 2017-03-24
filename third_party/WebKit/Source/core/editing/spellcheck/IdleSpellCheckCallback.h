@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class ColdModeSpellCheckRequester;
 class LocalFrame;
 class SpellCheckRequester;
 
@@ -56,9 +57,7 @@ class CORE_EXPORT IdleSpellCheckCallback final
   // Exposed for testing only.
   SpellCheckRequester& spellCheckRequester() const;
   void forceInvocationForTesting();
-  void setNeedsMoreColdModeInvocationForTesting() {
-    m_needsMoreColdModeInvocationForTesting = true;
-  }
+  void setNeedsMoreColdModeInvocationForTesting();
   void skipColdModeTimerForTesting();
   int idleCallbackHandle() const { return m_idleCallbackHandle; }
 
@@ -83,19 +82,15 @@ class CORE_EXPORT IdleSpellCheckCallback final
   // Functions for cold mode.
   void coldModeTimerFired(TimerBase*);
   void coldModeInvocation(IdleDeadline*);
-  bool coldModeFinishesFullDocument() const;
-  void chunkAndRequestFullCheckingFor(const Element&);
 
   // Implements |SynchronousMutationObserver|.
   void contextDestroyed(Document*) final;
 
   State m_state;
   int m_idleCallbackHandle;
-  mutable bool m_needsMoreColdModeInvocationForTesting;
   const Member<LocalFrame> m_frame;
   uint64_t m_lastProcessedUndoStepSequence;
-  uint64_t m_lastCheckedDOMTreeVersionInColdMode;
-  Member<Node> m_nextNodeInColdMode;
+  const Member<ColdModeSpellCheckRequester> m_coldModeRequester;
   TaskRunnerTimer<IdleSpellCheckCallback> m_coldModeTimer;
 };
 
