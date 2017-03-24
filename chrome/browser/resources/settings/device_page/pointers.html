@@ -29,9 +29,14 @@
       <!-- Subsection title only appears if both mouse and touchpad exist. -->
       <h2 hidden$="[[!hasTouchpad]]">$i18n{mouseTitle}</h2>
       <div class="settings-box first">
-        <settings-toggle-button class="start"
+        <!-- Do not change the mouse button pref before the mouse is released.
+             See crbug.com/686949 -->
+        <settings-toggle-button id="mouseSwapButton" class="start"
             pref="{{prefs.settings.mouse.primary_right}}"
-            label="$i18n{mouseSwapButtons}">
+            label="$i18n{mouseSwapButtons}"
+            on-settings-boolean-control-change="onMouseSwapButtonsChange_"
+            on-down="onMouseSwapButtonsDown_" on-up="onMouseSwapButtonsUp_"
+            no-set-pref>
         </settings-toggle-button>
       </div>
       <div class="settings-box">

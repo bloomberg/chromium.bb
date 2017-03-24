@@ -23,6 +23,7 @@
     {
       'target_name': 'pointers',
       'dependencies': [
+        '../controls/compiled_resources2.gyp:settings_toggle_button',
         'device_page_browser_proxy'
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],

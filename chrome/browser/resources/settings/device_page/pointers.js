@@ -32,6 +32,10 @@ Polymer({
     },
   },
 
+  // Used to correctly identify when the mouse button has been released.
+  // crbug.com/686949.
+  receivedMouseSwapButtonsDown_: false,
+
   /**
    * Prevents the link from activating its parent paper-radio-button.
    * @param {!Event} e
@@ -46,8 +50,29 @@ Polymer({
    * @param {boolean} hasMouse
    * @param {boolean} hasTouchpad
    * @return {string}
+   * @private
    */
   getSubsectionClass_: function(hasMouse, hasTouchpad) {
     return hasMouse && hasTouchpad ? 'subsection' : '';
+  },
+
+  /** @private */
+  onMouseSwapButtonsDown_: function() {
+    this.receivedMouseSwapButtonsDown_ = true;
+  },
+
+  /** @private */
+  onMouseSwapButtonsUp_: function() {
+    this.receivedMouseSwapButtonsDown_ = false;
+    /** @type {!SettingsToggleButtonElement} */ (this.$.mouseSwapButton)
+        .sendPrefChange();
+  },
+
+  /** @private */
+  onMouseSwapButtonsChange_: function(event) {
+    if (!this.receivedMouseSwapButtonsDown_) {
+      /** @type {!SettingsToggleButtonElement} */ (this.$.mouseSwapButton)
+          .sendPrefChange();
+    }
   },
 });
