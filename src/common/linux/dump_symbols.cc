@@ -610,7 +610,6 @@ bool LoadSymbols(const string& obj_file,
   typedef typename ElfClass::Addr Addr;
   typedef typename ElfClass::Phdr Phdr;
   typedef typename ElfClass::Shdr Shdr;
-  typedef typename ElfClass::Word Word;
 
   Addr loading_addr = GetLoadingAddress<ElfClass>(
       GetOffset<ElfClass, Phdr>(elf_header, elf_header->e_phoff),
