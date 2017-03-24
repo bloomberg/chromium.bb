@@ -23,7 +23,6 @@
 #define SVGFitToViewBox_h
 
 #include "core/SVGNames.h"
-#include "core/dom/QualifiedName.h"
 #include "core/svg/SVGAnimatedPreserveAspectRatio.h"
 #include "core/svg/SVGAnimatedRect.h"
 #include "core/svg/SVGPreserveAspectRatio.h"
@@ -33,6 +32,7 @@
 namespace blink {
 
 class AffineTransform;
+class QualifiedName;
 
 class SVGFitToViewBox : public GarbageCollectedMixin {
  public:
@@ -43,6 +43,7 @@ class SVGFitToViewBox : public GarbageCollectedMixin {
 
   static bool isKnownAttribute(const QualifiedName&);
 
+  bool hasValidViewBox() const { return m_viewBox->currentValue()->isValid(); }
   bool hasEmptyViewBox() const {
     return m_viewBox->currentValue()->isValid() &&
            m_viewBox->currentValue()->value().isEmpty();

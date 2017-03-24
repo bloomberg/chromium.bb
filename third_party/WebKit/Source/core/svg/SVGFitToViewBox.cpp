@@ -21,6 +21,7 @@
 
 #include "core/svg/SVGFitToViewBox.h"
 
+#include "core/dom/QualifiedName.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGParsingError.h"
 #include "platform/geometry/FloatRect.h"

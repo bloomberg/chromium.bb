@@ -162,8 +162,7 @@ static void setPatternAttributes(const SVGPatternElement* element,
   if (!attributes.hasHeight() && element->height()->isSpecified())
     attributes.setHeight(element->height()->currentValue());
 
-  if (!attributes.hasViewBox() && element->viewBox()->isSpecified() &&
-      element->viewBox()->currentValue()->isValid())
+  if (!attributes.hasViewBox() && element->hasValidViewBox())
     attributes.setViewBox(element->viewBox()->currentValue()->value());
 
   if (!attributes.hasPreserveAspectRatio() &&

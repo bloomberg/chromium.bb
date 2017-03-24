@@ -582,9 +582,9 @@ SVGPreserveAspectRatio* SVGSVGElement::currentPreserveAspectRatio() const {
   if (m_viewSpec)
     return m_viewSpec->preserveAspectRatio();
 
-  if (!viewBox()->currentValue()->isValid() && shouldSynthesizeViewBox()) {
-    // If no viewBox is specified and we're embedded through SVGImage, then
-    // synthesize a pAR with the value 'none'.
+  if (!hasValidViewBox() && shouldSynthesizeViewBox()) {
+    // If no (valid) viewBox is specified and we're embedded through SVGImage,
+    // then synthesize a pAR with the value 'none'.
     SVGPreserveAspectRatio* synthesizedPAR = SVGPreserveAspectRatio::create();
     synthesizedPAR->setAlign(
         SVGPreserveAspectRatio::kSvgPreserveaspectratioNone);
