@@ -3026,10 +3026,12 @@ error::Error GLES2DecoderPassthroughImpl::DoGetUniformBlocksCHROMIUM(
     glGetActiveUniformBlockName(
         service_program, uniform_block_index, active_uniform_block_max_length,
         &uniform_block_name_length, uniform_block_name_buf.data());
+
+    DCHECK(uniform_block_name_length + 1 <= active_uniform_block_max_length);
     block_info.name_offset = data->size();
-    block_info.name_length = uniform_block_name_length;
+    block_info.name_length = uniform_block_name_length + 1;
     AppendStringToBuffer(data, uniform_block_name_buf.data(),
-                         uniform_block_name_length);
+                         uniform_block_name_length + 1);
 
     GLint uniform_block_active_uniforms = 0;
     glGetActiveUniformBlockiv(service_program, uniform_block_index,
@@ -3128,11 +3130,12 @@ GLES2DecoderPassthroughImpl::DoGetTransformFeedbackVaryingsCHROMIUM(
     TransformFeedbackVaryingInfo varying_info;
     varying_info.size = size;
     varying_info.type = type;
-    varying_info.name_length = data->size();
-    varying_info.name_length = length;
 
+    DCHECK(length + 1 <= max_transform_feedback_varying_length);
+    varying_info.name_length = data->size();
+    varying_info.name_length = length + 1;
     AppendStringToBuffer(data, transform_feedback_varying_name_buf.data(),
-                         length);
+                         length + 1);
 
     InsertValueIntoBuffer(
         data, varying_info,
