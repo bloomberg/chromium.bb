@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/mac/scoped_nsobject.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_handset_view_controller.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_ios_unittest.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_promo_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 using bookmarks::BookmarkNode;
 
@@ -59,10 +62,10 @@ TEST_F(BookmarkHomeViewControllerTest, DeleteNodesUpdatesEditNodes) {
     toDelete.insert(f1);
     toDelete.insert(f2a);
 
-    base::scoped_nsobject<MockBookmarkHomeHandsetViewController> controller(
+    MockBookmarkHomeHandsetViewController* controller =
         [[MockBookmarkHomeHandsetViewController alloc]
             initWithLoader:nil
-              browserState:chrome_browser_state_.get()]);
+              browserState:chrome_browser_state_.get()];
 
     [controller resetEditNodes];
     [controller insertEditNode:f1 atIndexPath:nil];
