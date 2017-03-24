@@ -60,11 +60,11 @@ def _QueryString(param_dict, first_param=None):
   return '+'.join(q)
 
 
-def GetConnectionClass(protocol=None):
+def GetConnectionObject(protocol=None):
   if protocol is None:
     protocol = GERRIT_PROTOCOL
   if protocol in ('http', 'https'):
-    return httplib2.Http
+    return httplib2.Http()
   else:
     raise RuntimeError(
         "Don't know how to work with protocol '%s'" % protocol)
@@ -257,7 +257,7 @@ class GceAuthenticator(Authenticator):
         next_delay_sec *= 2
 
       p = urlparse.urlparse(url)
-      c = GetConnectionClass(protocol=p.scheme)()
+      c = GetConnectionObject(protocol=p.scheme)
       resp, contents = c.request(url, 'GET', **kwargs)
       LOGGER.debug('GET [%s] #%d/%d (%d)', url, i+1, TRY_LIMIT, resp.status)
       if resp.status < httplib.INTERNAL_SERVER_ERROR:
@@ -312,7 +312,7 @@ def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
       LOGGER.debug('%s: %s' % (key, val))
     if body:
       LOGGER.debug(body)
-  conn = GetConnectionClass()(host)
+  conn = GetConnectionObject()
   conn.req_host = host
   conn.req_params = {
       'uri': urlparse.urljoin('%s://%s' % (GERRIT_PROTOCOL, host), url),
