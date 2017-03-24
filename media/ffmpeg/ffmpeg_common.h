@@ -6,6 +6,7 @@
 #define MEDIA_FFMPEG_FFMPEG_COMMON_H_
 
 #include <stdint.h>
+#include <string>
 
 // Used for FFmpeg error codes.
 #include <cerrno>
@@ -149,6 +150,9 @@ AVPixelFormat VideoPixelFormatToAVPixelFormat(VideoPixelFormat video_format);
 
 ColorSpace AVColorSpaceToColorSpace(AVColorSpace color_space,
                                     AVColorRange color_range);
+
+// Converts an AVERROR error number to a description.
+std::string AVErrorToString(int errnum);
 
 // Returns a 32-bit hash for the given codec name.  See the VerifyUmaCodecHashes
 // unit test for more information and code for generating the histogram XML.

@@ -744,6 +744,12 @@ ColorSpace AVColorSpaceToColorSpace(AVColorSpace color_space,
   return COLOR_SPACE_UNSPECIFIED;
 }
 
+std::string AVErrorToString(int errnum) {
+  char errbuf[AV_ERROR_MAX_STRING_SIZE] = {0};
+  av_strerror(errnum, errbuf, AV_ERROR_MAX_STRING_SIZE);
+  return std::string(errbuf);
+}
+
 int32_t HashCodecName(const char* codec_name) {
   // Use the first 32-bits from the SHA1 hash as the identifier.
   int32_t hash;

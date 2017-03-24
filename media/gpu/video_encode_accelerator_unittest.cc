@@ -19,6 +19,7 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -38,6 +39,7 @@
 #include "media/base/bitstream_buffer.h"
 #include "media/base/cdm_context.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/media_log.h"
 #include "media/base/media_util.h"
 #include "media/base/test_data_util.h"
 #include "media/base/video_decoder.h"
@@ -747,7 +749,7 @@ VideoFrameQualityValidator::VideoFrameQualityValidator(
     const base::Closure& flush_complete_cb,
     const base::Closure& decode_error_cb)
     : profile_(profile),
-      decoder_(new FFmpegVideoDecoder()),
+      decoder_(new FFmpegVideoDecoder(make_scoped_refptr(new MediaLog()))),
       decode_cb_(
           base::Bind(&VideoFrameQualityValidator::DecodeDone, AsWeakPtr())),
       eos_decode_cb_(

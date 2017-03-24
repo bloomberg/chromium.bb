@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -333,7 +334,8 @@ std::unique_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer(
 
 // Android does not have an ffmpeg video decoder.
 #if !defined(MEDIA_DISABLE_FFMPEG) && !defined(OS_ANDROID)
-  video_decoders.push_back(new FFmpegVideoDecoder());
+  video_decoders.push_back(
+      new FFmpegVideoDecoder(make_scoped_refptr(new MediaLog())));
 #endif
 
   // Simulate a 60Hz rendering sink.

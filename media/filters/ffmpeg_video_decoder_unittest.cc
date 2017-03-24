@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -18,8 +19,10 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/gmock_callback_support.h"
 #include "media/base/limits.h"
+#include "media/base/media_log.h"
 #include "media/base/media_util.h"
 #include "media/base/mock_filters.h"
+#include "media/base/mock_media_log.h"
 #include "media/base/test_data_util.h"
 #include "media/base/test_helpers.h"
 #include "media/base/video_decoder.h"
@@ -50,10 +53,15 @@ ACTION_P(ReturnBuffer, buffer) {
   arg0.Run(buffer.get() ? DemuxerStream::kOk : DemuxerStream::kAborted, buffer);
 }
 
+MATCHER(ContainsInvalidDataLog, "") {
+  return CONTAINS_STRING(arg, "Invalid data");
+}
+
 class FFmpegVideoDecoderTest : public testing::Test {
  public:
   FFmpegVideoDecoderTest()
-      : decoder_(new FFmpegVideoDecoder()),
+      : media_log_(new StrictMock<MockMediaLog>()),
+        decoder_(new FFmpegVideoDecoder(media_log_)),
         decode_cb_(base::Bind(&FFmpegVideoDecoderTest::DecodeDone,
                               base::Unretained(this))) {
     FFmpegGlue::InitializeFFmpeg();
@@ -197,6 +205,8 @@ class FFmpegVideoDecoderTest : public testing::Test {
 
   MOCK_METHOD1(DecodeDone, void(DecodeStatus));
 
+  scoped_refptr<StrictMock<MockMediaLog>> media_log_;
+
   base::MessageLoop message_loop_;
   std::unique_ptr<FFmpegVideoDecoder> decoder_;
 
@@ -275,6 +285,8 @@ TEST_F(FFmpegVideoDecoderTest, DecodeFrame_0ByteFrame) {
 TEST_F(FFmpegVideoDecoderTest, DecodeFrame_DecodeError) {
   Initialize();
 
+  EXPECT_MEDIA_LOG(ContainsInvalidDataLog());
+
   // The error is only raised on the second decode attempt, so we expect at
   // least one successful decode but we don't expect valid frame to be decoded.
   // During the second decode attempt an error is raised.
@@ -292,6 +304,8 @@ TEST_F(FFmpegVideoDecoderTest, DecodeFrame_DecodeError) {
 // A corrupt frame followed by an EOS buffer should raise a decode error.
 TEST_F(FFmpegVideoDecoderTest, DecodeFrame_DecodeErrorAtEndOfStream) {
   Initialize();
+
+  EXPECT_MEDIA_LOG(ContainsInvalidDataLog());
 
   EXPECT_EQ(DecodeStatus::DECODE_ERROR,
             DecodeSingleFrame(corrupt_i_frame_buffer_));
