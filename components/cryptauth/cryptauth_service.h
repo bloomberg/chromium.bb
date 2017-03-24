@@ -10,8 +10,10 @@
 
 namespace cryptauth {
 
+class CryptAuthClientFactory;
 class CryptAuthDeviceManager;
 class CryptAuthEnrollmentManager;
+class SecureMessageDelegate;
 
 // Service which provides access to various CryptAuth singletons.
 class CryptAuthService {
@@ -19,6 +21,11 @@ class CryptAuthService {
   virtual CryptAuthDeviceManager* GetCryptAuthDeviceManager() = 0;
   virtual CryptAuthEnrollmentManager* GetCryptAuthEnrollmentManager() = 0;
   virtual DeviceClassifier GetDeviceClassifier() = 0;
+  virtual std::string GetAccountId() = 0;
+  virtual std::unique_ptr<SecureMessageDelegate>
+  CreateSecureMessageDelegate() = 0;
+  virtual std::unique_ptr<CryptAuthClientFactory>
+  CreateCryptAuthClientFactory() = 0;
 
  protected:
   CryptAuthService() {}

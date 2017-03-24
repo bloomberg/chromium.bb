@@ -8,9 +8,20 @@ namespace chromeos {
 
 namespace tether {
 
-void Initializer::Initialize() {}
+// static
+Initializer* Initializer::instance_ = nullptr;
 
-Initializer::Initializer() {}
+void Initializer::Initialize(cryptauth::CryptAuthService* cryptauth_service) {
+  if (instance_) {
+    // TODO(khorimoto): Determine if a new instance should be created.
+    instance_->cryptauth_service_ = cryptauth_service;
+  } else {
+    instance_ = new Initializer(cryptauth_service);
+  }
+}
+
+Initializer::Initializer(cryptauth::CryptAuthService* cryptauth_service)
+    : cryptauth_service_(cryptauth_service) {}
 
 Initializer::~Initializer() {}
 
