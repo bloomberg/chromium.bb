@@ -19,8 +19,8 @@ embedder.setUp_ = function(config) {
   embedder.redirectGuestURLDest =
       embedder.baseGuestURL + '/guest_redirect.html';
   embedder.windowOpenGuestURL = embedder.baseGuestURL + '/guest.html';
-  embedder.samePageNavigationURL =
-      embedder.baseGuestURL + '/guest_same_page_navigation.html';
+  embedder.sameDocumentNavigationURL =
+      embedder.baseGuestURL + '/guest_same_document_navigation.html';
 };
 
 window.runTest = function(testName) {
@@ -1052,9 +1052,9 @@ function testLoadAbortNonWebSafeScheme() {
   document.body.appendChild(webview);
 };
 
-// This test verifies that the loadStart isn't sent for same page navigations,
-// while loadCommit is (per docs).
-function testLoadEventsSamePageNavigation() {
+// This test verifies that the loadStart isn't sent for same-document
+// navigations, while loadCommit is (per docs).
+function testLoadEventsSameDocumentNavigation() {
   var webview = new WebView();
   var loadStartCount = 0;
   var loadCommitCount = 0;
@@ -1070,7 +1070,7 @@ function testLoadEventsSamePageNavigation() {
     embedder.test.succeed();
   });
 
-  webview.src = embedder.samePageNavigationURL;
+  webview.src = embedder.sameDocumentNavigationURL;
   document.body.appendChild(webview);
 }
 
@@ -1780,7 +1780,7 @@ embedder.test.testList = {
   'testLoadAbortIllegalJavaScriptURL': testLoadAbortIllegalJavaScriptURL,
   'testLoadAbortInvalidNavigation': testLoadAbortInvalidNavigation,
   'testLoadAbortNonWebSafeScheme': testLoadAbortNonWebSafeScheme,
-  'testLoadEventsSamePageNavigation': testLoadEventsSamePageNavigation,
+  'testLoadEventsSameDocumentNavigation': testLoadEventsSameDocumentNavigation,
   'testLoadProgressEvent': testLoadProgressEvent,
   'testLoadStartLoadRedirect': testLoadStartLoadRedirect,
   'testNavigateAfterResize': testNavigateAfterResize,
