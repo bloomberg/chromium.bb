@@ -1016,6 +1016,8 @@ component("base") {
     "trace_event/trace_category.h",
     "trace_event/trace_config.cc",
     "trace_event/trace_config.h",
+    "trace_event/trace_config_category_filter.cc",
+    "trace_event/trace_config_category_filter.h",
     "trace_event/trace_event.h",
     "trace_event/trace_event_android.cc",
     "trace_event/trace_event_argument.cc",

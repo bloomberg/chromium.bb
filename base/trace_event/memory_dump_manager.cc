@@ -242,11 +242,19 @@ void MemoryDumpManager::Initialize(
           AllocationContextTracker::CaptureMode::PSEUDO_STACK &&
       !(TraceLog::GetInstance()->enabled_modes() & TraceLog::FILTERING_MODE)) {
     // Create trace config with heap profiling filter.
+    std::string filter_string = "*";
+    const char* const kFilteredCategories[] = {
+        TRACE_DISABLED_BY_DEFAULT("net"), TRACE_DISABLED_BY_DEFAULT("cc"),
+        MemoryDumpManager::kTraceCategory};
+    for (const char* cat : kFilteredCategories)
+      filter_string = filter_string + "," + cat;
+    TraceConfigCategoryFilter category_filter;
+    category_filter.InitializeFromString(filter_string);
+
     TraceConfig::EventFilterConfig heap_profiler_filter_config(
         HeapProfilerEventFilter::kName);
-    heap_profiler_filter_config.AddIncludedCategory("*");
-    heap_profiler_filter_config.AddIncludedCategory(
-        MemoryDumpManager::kTraceCategory);
+    heap_profiler_filter_config.SetCategoryFilter(category_filter);
+
     TraceConfig::EventFilters filters;
     filters.push_back(heap_profiler_filter_config);
     TraceConfig filtering_trace_config;
