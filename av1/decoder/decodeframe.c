@@ -21,6 +21,7 @@
 #include "aom_dsp/aom_dsp_common.h"
 #include "aom_dsp/bitreader.h"
 #include "aom_dsp/bitreader_buffer.h"
+#include "aom_dsp/binary_codes_reader.h"
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
 #include "aom_ports/mem_ops.h"

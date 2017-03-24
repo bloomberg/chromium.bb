@@ -39,6 +39,8 @@ endif
 DSP_SRCS-yes += bitwriter.h
 DSP_SRCS-yes += bitwriter_buffer.c
 DSP_SRCS-yes += bitwriter_buffer.h
+DSP_SRCS-yes += binary_codes_writer.c
+DSP_SRCS-yes += binary_codes_writer.h
 DSP_SRCS-yes += psnr.c
 DSP_SRCS-yes += psnr.h
 DSP_SRCS-$(CONFIG_INTERNAL_STATS) += ssim.c
@@ -62,6 +64,8 @@ endif
 DSP_SRCS-yes += bitreader.h
 DSP_SRCS-yes += bitreader_buffer.c
 DSP_SRCS-yes += bitreader_buffer.h
+DSP_SRCS-yes += binary_codes_reader.c
+DSP_SRCS-yes += binary_codes_reader.h
 endif
 
 # intra predictions

@@ -80,15 +80,3 @@ void av1_diff_update_prob_(aom_reader *r, aom_prob *p ACCT_STR_PARAM) {
     *p = (aom_prob)inv_remap_prob(delp, *p);
   }
 }
-
-#if CONFIG_GLOBAL_MOTION
-int aom_read_primitive_symmetric(aom_reader *r, unsigned int mag_bits) {
-  if (aom_read_bit(r, ACCT_STR_NAME)) {
-    int s = aom_read_bit(r, ACCT_STR_NAME);
-    int x = aom_read_literal(r, mag_bits, ACCT_STR_NAME) + 1;
-    return (s > 0 ? -x : x);
-  } else {
-    return 0;
-  }
-}
-#endif  // CONFIG_GLOBAL_MOTION

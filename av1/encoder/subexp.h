@@ -42,14 +42,6 @@ int av1_prob_update_search_model_subframe(
     unsigned int ct[ENTROPY_NODES][COEF_PROBS_BUFS][2], const aom_prob *oldp,
     aom_prob *bestp, aom_prob upd, int stepsize, int n);
 #endif  // CONFIG_SUBFRAME_PROB_UPDATE
-
-//
-// mag_bits is number of bits for magnitude. The alphabet is of size
-// 2 * 2^mag_bits + 1, symmetric around 0, where one bit is used to
-// indicate 0 or non-zero, mag_bits bits are used to indicate magnitide
-// and 1 more bit for the sign if non-zero.
-void aom_write_primitive_symmetric(aom_writer *w, int word,
-                                   unsigned int mag_bits);
 #ifdef __cplusplus
 }  // extern "C"
 #endif

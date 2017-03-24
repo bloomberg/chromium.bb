@@ -280,16 +280,3 @@ int av1_cond_prob_diff_update_savings(aom_prob *oldp, const unsigned int ct[2],
       av1_prob_diff_update_savings_search(ct, *oldp, &newp, upd, probwt);
   return savings;
 }
-
-void aom_write_primitive_symmetric(aom_writer *w, int word,
-                                   unsigned int abs_bits) {
-  if (word == 0) {
-    aom_write_bit(w, 0);
-  } else {
-    const int x = abs(word);
-    const int s = word < 0;
-    aom_write_bit(w, 1);
-    aom_write_bit(w, s);
-    aom_write_literal(w, x - 1, abs_bits);
-  }
-}

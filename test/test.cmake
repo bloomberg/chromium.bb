@@ -185,6 +185,7 @@ if (CONFIG_AV1_DECODER AND CONFIG_AV1_ENCODER)
       "${AOM_ROOT}/test/idct8x8_test.cc"
       "${AOM_ROOT}/test/partial_idct_test.cc"
       "${AOM_ROOT}/test/superframe_test.cc"
+      "${AOM_ROOT}/test/binary_codes_test.cc"
       "${AOM_ROOT}/test/tile_independence_test.cc")
 
   if (CONFIG_ANS)

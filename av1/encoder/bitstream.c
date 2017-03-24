@@ -16,6 +16,7 @@
 #include "aom/aom_encoder.h"
 #include "aom_dsp/bitwriter_buffer.h"
 #include "aom_dsp/aom_dsp_common.h"
+#include "aom_dsp/binary_codes_writer.h"
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/mem_ops.h"
 #include "aom_ports/system_state.h"
