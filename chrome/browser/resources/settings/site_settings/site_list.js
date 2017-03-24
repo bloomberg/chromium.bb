@@ -105,16 +105,6 @@ Polymer({
     showSessionOnlyAction_: Boolean,
 
     /**
-     * Keeps track of the incognito status of the current profile (whether one
-     * exists).
-     * @private
-     */
-    incognitoProfileActive_: {
-      type: Boolean,
-      value: false,
-    },
-
-    /**
      * All possible actions in the action menu.
      * @private
      */
@@ -150,18 +140,21 @@ Polymer({
       this.configureWidget_();
   },
 
-  onIncognitoStatusChanged_: function(incognitoEnabled) {
-    // A change notification is not sent for each site that is deleted during
-    // incognito profile destruction. Therefore, we reconfigure the list when
-    // the incognito profile is destroyed, except for SESSION_ONLY, which won't
-    // have any incognito exceptions.
+  /**
+   * Called for each site list when incognito is enabled or disabled. Only
+   * called on change (opening N incogito windows only fires one message).
+   * Another message is sent when the *last* incognito window closes.
+   * @private
+   */
+  onIncognitoStatusChanged_: function() {
+    // The SESSION_ONLY list won't have any incognito exceptions. (Minor
+    // optimization, not required).
     if (this.categorySubtype == settings.PermissionValues.SESSION_ONLY)
       return;
 
-    if (this.incognitoProfileActive_)
-      this.configureWidget_();  // The incognito profile is being destroyed.
-
-    this.incognitoProfileActive_ = incognitoEnabled;
+    // A change notification is not sent for each site. So we repopulate the
+    // whole list when the incognito profile is created or destroyed.
+    this.populateList_();
   },
 
   /**
