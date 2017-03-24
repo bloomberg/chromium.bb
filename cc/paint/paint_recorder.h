@@ -27,13 +27,10 @@ class CC_PAINT_EXPORT PaintRecorder {
     return getRecordingCanvas();
   }
 
-  ALWAYS_INLINE PaintCanvas* beginRecording(
-      SkScalar width,
-      SkScalar height,
-      SkBBHFactory* rtree_factory = nullptr) {
+  ALWAYS_INLINE PaintCanvas* beginRecording(SkScalar width, SkScalar height) {
     uint32_t record_flags = 0;
     canvas_.emplace(
-        recorder_.beginRecording(width, height, rtree_factory, record_flags));
+        recorder_.beginRecording(width, height, nullptr, record_flags));
     return getRecordingCanvas();
   }
 

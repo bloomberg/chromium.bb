@@ -37,10 +37,9 @@ RecordingImageBufferSurface::RecordingImageBufferSurface(
 RecordingImageBufferSurface::~RecordingImageBufferSurface() {}
 
 void RecordingImageBufferSurface::initializeCurrentFrame() {
-  static SkRTreeFactory rTreeFactory;
   m_currentFrame = WTF::wrapUnique(new PaintRecorder);
-  PaintCanvas* canvas = m_currentFrame->beginRecording(
-      size().width(), size().height(), &rTreeFactory);
+  PaintCanvas* canvas =
+      m_currentFrame->beginRecording(size().width(), size().height());
   // Always save an initial frame, to support resetting the top level matrix
   // and clip.
   canvas->save();
