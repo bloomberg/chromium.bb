@@ -65,6 +65,23 @@ void MediaStreamSource::setReadyState(ReadyState readyState) {
     copyToVector(m_observers, observers);
     for (auto observer : observers)
       observer->sourceChangedState();
+
+    // setReadyState() will be invoked via the MediaStreamComponent::dispose()
+    // prefinalizer, allocating |observers|. Which means that |observers| will
+    // live until the next GC (but be unreferenced by other heap objects),
+    // _but_ it will potentially contain references to Observers that were
+    // GCed after the MediaStreamComponent prefinalizer had completed.
+    //
+    // So, if the next GC is a conservative one _and_ it happens to find
+    // a reference to |observers| when scanning the stack, we're in trouble
+    // as it contains references to now-dead objects.
+    //
+    // Work around this by explicitly clearing the vector backing store.
+    //
+    // TODO(sof): consider adding run-time checks that disallows this kind
+    // of dead object revivification by default.
+    for (size_t i = 0; i < observers.size(); ++i)
+      observers[i] = nullptr;
   }
 }
 
