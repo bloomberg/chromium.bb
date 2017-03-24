@@ -9,4 +9,6 @@ interface WorkerInternals {
     // values from the UseCounter::Feature enum.
     [CallWith=ScriptState] void countFeature(unsigned long feature);
     [CallWith=ScriptState] void countDeprecation(unsigned long feature);
+
+    [CallWith=ScriptState] void collectGarbage();
 };

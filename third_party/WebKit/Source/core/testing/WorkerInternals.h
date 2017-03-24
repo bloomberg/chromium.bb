@@ -25,6 +25,8 @@ class WorkerInternals final : public GarbageCollectedFinalized<WorkerInternals>,
   void countFeature(ScriptState*, uint32_t feature);
   void countDeprecation(ScriptState*, uint32_t feature);
 
+  void collectGarbage(ScriptState*);
+
   DEFINE_INLINE_TRACE() {}
 
  private:

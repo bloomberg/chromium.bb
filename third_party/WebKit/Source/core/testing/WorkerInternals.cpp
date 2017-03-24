@@ -30,4 +30,9 @@ void WorkerInternals::countDeprecation(ScriptState* scriptState,
                                 static_cast<UseCounter::Feature>(feature));
 }
 
+void WorkerInternals::collectGarbage(ScriptState* scriptState) {
+  scriptState->isolate()->RequestGarbageCollectionForTesting(
+      v8::Isolate::kFullGarbageCollection);
+}
+
 }  // namespace blink
