@@ -795,14 +795,8 @@ public class MediaDrmBridge {
         }
 
         try {
-            try {
-                mMediaDrm.provideKeyResponse(sessionId, response);
-            } catch (java.lang.IllegalStateException e) {
-                // This is not really an exception. Some error code are incorrectly
-                // reported as an exception.
-                // TODO(qinmin): remove this exception catch when b/10495563 is fixed.
-                Log.e(TAG, "Exception intentionally caught when calling provideKeyResponse()", e);
-            }
+            mMediaDrm.provideKeyResponse(sessionId, response);
+
             Log.d(TAG, "Key successfully added for session %s", bytesToHexString(sessionId));
             onPromiseResolved(promiseId);
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
@@ -814,6 +808,8 @@ public class MediaDrmBridge {
             // TODO(xhwang): Should we handle this?
             Log.e(TAG, "failed to provide key response", e);
         } catch (android.media.DeniedByServerException e) {
+            Log.e(TAG, "failed to provide key response", e);
+        } catch (java.lang.IllegalStateException e) {
             Log.e(TAG, "failed to provide key response", e);
         }
         onPromiseRejected(promiseId, "Update session failed.");
