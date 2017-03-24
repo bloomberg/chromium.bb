@@ -148,7 +148,7 @@ void NGInlineNode::SegmentText() {
   // TODO(kojii): Move this to caller, this will be used again after line break.
   NGBidiParagraph bidi;
   text_content_.ensure16Bit();
-  if (!bidi.SetParagraph(text_content_, BlockStyle())) {
+  if (!bidi.SetParagraph(text_content_, Style())) {
     // On failure, give up bidi resolving and reordering.
     is_bidi_enabled_ = false;
     return;
@@ -304,10 +304,10 @@ MinMaxContentSize NGInlineNode::ComputeMinMaxContentSize() {
   // size. This gives the min-content, the width where lines wrap at every break
   // opportunity.
   NGWritingMode writing_mode =
-      FromPlatformWritingMode(BlockStyle()->getWritingMode());
+      FromPlatformWritingMode(Style().getWritingMode());
   RefPtr<NGConstraintSpace> constraint_space =
       NGConstraintSpaceBuilder(writing_mode)
-          .SetTextDirection(BlockStyle()->direction())
+          .SetTextDirection(Style().direction())
           .SetAvailableSize({LayoutUnit(), NGSizeIndefinite})
           .ToConstraintSpace(writing_mode);
   NGLineBuilder line_builder(this, constraint_space.get());

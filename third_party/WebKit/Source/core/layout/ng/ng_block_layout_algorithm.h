@@ -37,7 +37,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   RefPtr<NGLayoutResult> Layout() override;
 
  private:
-  NGBoxStrut CalculateMargins(NGBlockNode* child,
+  NGBoxStrut CalculateMargins(NGLayoutInputNode* child,
                               const NGConstraintSpace& space);
 
   // Creates a new constraint space for the current child.
@@ -61,10 +61,6 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
 
   // Updates the fragment's BFC offset if it's not already set.
   void UpdateFragmentBfcOffset(const NGLogicalOffset& offset);
-
-  NGLogicalOffset GetChildSpaceOffset() const {
-    return NGLogicalOffset(border_and_padding_.inline_start, content_size_);
-  }
 
   const NGConstraintSpace& ConstraintSpace() const {
     DCHECK(constraint_space_);

@@ -10,10 +10,12 @@
 
 namespace blink {
 
+class ComputedStyle;
 class LayoutObject;
 class NGBreakToken;
 class NGConstraintSpace;
 class NGLayoutResult;
+struct MinMaxContentSize;
 
 // Represents the input to a layout algorithm for a given node. The layout
 // engine should use the style, node type to determine which type of layout
@@ -22,6 +24,10 @@ class CORE_EXPORT NGLayoutInputNode
     : public GarbageCollectedFinalized<NGLayoutInputNode> {
  public:
   enum NGLayoutInputNodeType { kLegacyBlock = 0, kLegacyInline = 1 };
+
+  bool IsInline() { return type_ == kLegacyInline; }
+
+  bool IsBlock() { return type_ == kLegacyBlock; }
 
   virtual ~NGLayoutInputNode(){};
 
@@ -33,6 +39,10 @@ class CORE_EXPORT NGLayoutInputNode
 
   // Returns the LayoutObject which is associated with this node.
   virtual LayoutObject* GetLayoutObject() = 0;
+
+  virtual MinMaxContentSize ComputeMinMaxContentSize() = 0;
+
+  virtual const ComputedStyle& Style() const = 0;
 
   NGLayoutInputNodeType Type() const {
     return static_cast<NGLayoutInputNodeType>(type_);

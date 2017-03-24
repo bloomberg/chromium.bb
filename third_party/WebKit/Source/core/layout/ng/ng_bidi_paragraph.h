@@ -33,7 +33,7 @@ class NGBidiParagraph {
   // level of each run.
   // Returns false on failure. Nothing other than the destructor should be
   // called.
-  bool SetParagraph(const String&, const ComputedStyle*);
+  bool SetParagraph(const String&, const ComputedStyle&);
 
   // Returns whether the paragraph is LTR, RTL, or MIXED.
   UBiDiDirection Direction() const { return ubidi_getDirection(ubidi_); }

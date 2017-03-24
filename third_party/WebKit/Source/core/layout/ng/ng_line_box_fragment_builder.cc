@@ -51,7 +51,7 @@ NGLineBoxFragmentBuilder::ToLineBoxFragment() {
   DCHECK_EQ(offsets_.size(), children_.size());
 
   NGWritingMode writing_mode(
-      FromPlatformWritingMode(node_->BlockStyle()->getWritingMode()));
+      FromPlatformWritingMode(node_->Style().getWritingMode()));
   NGPhysicalSize physical_size =
       NGLogicalSize(inline_size_, Metrics().LineHeight())
           .ConvertToPhysical(writing_mode);

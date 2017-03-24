@@ -42,9 +42,9 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   // special constraint spaces -- infinite available size for max content, zero
   // available size for min content, and percentage resolution size zero for
   // both.
-  MinMaxContentSize ComputeMinMaxContentSize();
+  MinMaxContentSize ComputeMinMaxContentSize() override;
 
-  const ComputedStyle& Style() const;
+  const ComputedStyle& Style() const override;
 
   NGLayoutInputNode* FirstChild();
 

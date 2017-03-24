@@ -356,8 +356,7 @@ void NGLineBuilder::PlaceItems(
 
   // Accumulate a "strut"; a zero-width inline box with the element's font and
   // line height properties. https://drafts.csswg.org/css2/visudet.html#strut
-  const ComputedStyle* block_style = inline_box_->BlockStyle();
-  NGLineHeightMetrics block_metrics(*block_style, baseline_type_);
+  NGLineHeightMetrics block_metrics(inline_box_->Style(), baseline_type_);
   line_box.UniteMetrics(block_metrics);
 
   // Use the block style to compute the estimated baseline position because the

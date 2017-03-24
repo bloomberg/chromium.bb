@@ -39,7 +39,7 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   ~NGInlineNode() override;
 
   LayoutBlockFlow* GetLayoutBlockFlow() const { return block_; }
-  const ComputedStyle* BlockStyle() const { return block_->style(); }
+  const ComputedStyle& Style() const override { return block_->styleRef(); }
   NGLayoutInputNode* NextSibling() override;
 
   RefPtr<NGLayoutResult> Layout(NGConstraintSpace*, NGBreakToken*) override;
@@ -48,7 +48,7 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   // Computes the value of min-content and max-content for this anonymous block
   // box. min-content is the inline size when lines wrap at every break
   // opportunity, and max-content is when lines do not wrap at all.
-  MinMaxContentSize ComputeMinMaxContentSize();
+  MinMaxContentSize ComputeMinMaxContentSize() override;
 
   // Instruct to re-compute |PrepareLayout| on the next layout.
   void InvalidatePrepareLayout();

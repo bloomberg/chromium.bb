@@ -39,7 +39,7 @@ RefPtr<NGPhysicalTextFragment> NGTextFragmentBuilder::ToTextFragment(
     unsigned start_offset,
     unsigned end_offset) {
   NGWritingMode writing_mode(
-      FromPlatformWritingMode(node_->BlockStyle()->getWritingMode()));
+      FromPlatformWritingMode(node_->Style().getWritingMode()));
   return adoptRef(new NGPhysicalTextFragment(
       node_->GetLayoutObject(), node_, index, start_offset, end_offset,
       size_.ConvertToPhysical(writing_mode)));

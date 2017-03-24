@@ -15,16 +15,16 @@ NGBidiParagraph::~NGBidiParagraph() {
 }
 
 bool NGBidiParagraph::SetParagraph(const String& text,
-                                   const ComputedStyle* block_style) {
+                                   const ComputedStyle& block_style) {
   DCHECK(!ubidi_);
   ubidi_ = ubidi_open();
   ICUError error;
   ubidi_setPara(
       ubidi_, text.characters16(), text.length(),
-      block_style->getUnicodeBidi() == UnicodeBidi::kPlaintext
+      block_style.getUnicodeBidi() == UnicodeBidi::kPlaintext
           ? UBIDI_DEFAULT_LTR
-          : (block_style->direction() == TextDirection::kRtl ? UBIDI_RTL
-                                                             : UBIDI_LTR),
+          : (block_style.direction() == TextDirection::kRtl ? UBIDI_RTL
+                                                            : UBIDI_LTR),
       nullptr, &error);
   if (U_FAILURE(error)) {
     NOTREACHED();
