@@ -81,7 +81,8 @@ class InlineLoginHandlerImpl : public InlineLoginHandler,
                               const std::string& password,
                               const std::string& session_index,
                               const std::string& auth_code,
-                              bool choose_what_to_sync);
+                              bool choose_what_to_sync,
+                              bool is_force_sign_in_with_usermanager);
     FinishCompleteLoginParams(const FinishCompleteLoginParams& other);
     ~FinishCompleteLoginParams();
 
@@ -112,6 +113,9 @@ class InlineLoginHandlerImpl : public InlineLoginHandler,
     std::string auth_code;
     // True if the user wants to configure sync before signing in.
     bool choose_what_to_sync;
+    // True if user signing in with UserManager when force-sign-in policy is
+    // enabled.
+    bool is_force_sign_in_with_usermanager;
   };
 
   static void FinishCompleteLogin(const FinishCompleteLoginParams& params,
@@ -150,7 +154,8 @@ class InlineSigninHelper : public GaiaAuthConsumer {
                      const std::string& auth_code,
                      const std::string& signin_scoped_device_id,
                      bool choose_what_to_sync,
-                     bool confirm_untrusted_signin);
+                     bool confirm_untrusted_signin,
+                     bool is_force_sign_in_with_usermanager);
   ~InlineSigninHelper() override;
 
  private:
@@ -204,6 +209,7 @@ class InlineSigninHelper : public GaiaAuthConsumer {
   std::string auth_code_;
   bool choose_what_to_sync_;
   bool confirm_untrusted_signin_;
+  bool is_force_sign_in_with_usermanager_;
 
   DISALLOW_COPY_AND_ASSIGN(InlineSigninHelper);
 };

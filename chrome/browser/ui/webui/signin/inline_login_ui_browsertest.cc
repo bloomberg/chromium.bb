@@ -10,12 +10,17 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler_impl.h"
 #include "chrome/browser/ui/webui/signin/inline_login_ui.h"
@@ -190,7 +195,8 @@ MockInlineSigninHelper::MockInlineSigninHelper(
                          auth_code,
                          signin_scoped_device_id,
                          choose_what_to_sync,
-                         confirm_untrusted_signin) {}
+                         confirm_untrusted_signin,
+                         false) {}
 
 // This class is used to mock out virtual methods with side effects so that
 // tests below can ensure they are called without causing side effects.
@@ -208,7 +214,8 @@ class MockSyncStarterInlineSigninHelper : public InlineSigninHelper {
       const std::string& auth_code,
       const std::string& signin_scoped_device_id,
       bool choose_what_to_sync,
-      bool confirm_untrusted_signin);
+      bool confirm_untrusted_signin,
+      bool is_force_sign_in_with_usermanager);
 
   MOCK_METHOD8(CreateSyncStarter,
                void(Browser*,
@@ -236,7 +243,8 @@ MockSyncStarterInlineSigninHelper::MockSyncStarterInlineSigninHelper(
     const std::string& auth_code,
     const std::string& signin_scoped_device_id,
     bool choose_what_to_sync,
-    bool confirm_untrusted_signin)
+    bool confirm_untrusted_signin,
+    bool is_force_sign_in_with_usermanager)
     : InlineSigninHelper(handler,
                          getter,
                          profile,
@@ -249,7 +257,8 @@ MockSyncStarterInlineSigninHelper::MockSyncStarterInlineSigninHelper(
                          auth_code,
                          signin_scoped_device_id,
                          choose_what_to_sync,
-                         confirm_untrusted_signin) {}
+                         confirm_untrusted_signin,
+                         is_force_sign_in_with_usermanager) {}
 
 }  // namespace
 
@@ -580,18 +589,15 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
   // do need the RunUntilIdle() at the end.
   MockSyncStarterInlineSigninHelper* helper =
       new MockSyncStarterInlineSigninHelper(
-          handler,
-          browser()->profile()->GetRequestContext(),
-          browser()->profile(),
-          url,
-          "foo@gmail.com",
-          "gaiaid-12345",
+          handler, browser()->profile()->GetRequestContext(),
+          browser()->profile(), url, "foo@gmail.com", "gaiaid-12345",
           "password",
-          "",  // session index
+          "",           // session index
           "auth_code",  // auth code
           std::string(),
           false,  // choose what to sync
-          false);  // confirm untrusted signin
+          false,  // confirm untrusted signin
+          false);
   EXPECT_CALL(
       *helper,
       CreateSyncStarter(_, _, _, _, "refresh_token",
@@ -599,8 +605,20 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
                         OneClickSigninSyncStarter::CONFIRM_SYNC_SETTINGS_FIRST,
                         OneClickSigninSyncStarter::CONFIRM_AFTER_SIGNIN));
 
+  ProfileAttributesEntry* entry;
+  ASSERT_TRUE(g_browser_process->profile_manager()
+                  ->GetProfileAttributesStorage()
+                  .GetProfileAttributesWithPath(browser()->profile()->GetPath(),
+                                                &entry));
+  entry->SetIsSigninRequired(true);
+
+  ASSERT_EQ(1ul, BrowserList::GetInstance()->size());
   SimulateOnClientOAuthSuccess(helper, "refresh_token");
   base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(1ul, BrowserList::GetInstance()->size());
+  // if |force_sign_in_with_user_manager| is false, the profile should be
+  // unlocked early and InlineLoginHelper won't try to do it again
+  ASSERT_TRUE(entry->IsSigninRequired());
 }
 
 // Test signin helper creates sync starter with correct confirmation when
@@ -616,18 +634,15 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
   // do need the RunUntilIdle() at the end.
   MockSyncStarterInlineSigninHelper* helper =
       new MockSyncStarterInlineSigninHelper(
-          handler,
-          browser()->profile()->GetRequestContext(),
-          browser()->profile(),
-          url,
-          "foo@gmail.com",
-          "gaiaid-12345",
+          handler, browser()->profile()->GetRequestContext(),
+          browser()->profile(), url, "foo@gmail.com", "gaiaid-12345",
           "password",
-          "",  // session index
+          "",           // session index
           "auth_code",  // auth code
           std::string(),
-          true,  // choose what to sync
-          false);  // confirm untrusted signin
+          true,   // choose what to sync
+          false,  // confirm untrusted signin
+          false);
   EXPECT_CALL(*helper, CreateSyncStarter(
                            _, _, _, _, "refresh_token",
                            OneClickSigninSyncStarter::CURRENT_PROFILE,
@@ -651,18 +666,15 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
   // do need the RunUntilIdle() at the end.
   MockSyncStarterInlineSigninHelper* helper =
       new MockSyncStarterInlineSigninHelper(
-          handler,
-          browser()->profile()->GetRequestContext(),
-          browser()->profile(),
-          url,
-          "foo@gmail.com",
-          "gaiaid-12345",
+          handler, browser()->profile()->GetRequestContext(),
+          browser()->profile(), url, "foo@gmail.com", "gaiaid-12345",
           "password",
-          "",  // session index
+          "",           // session index
           "auth_code",  // auth code
           std::string(),
           false,  // choose what to sync
-          true);  // confirm untrusted signin
+          true,   // confirm untrusted signin
+          false);
   EXPECT_CALL(
       *helper,
       CreateSyncStarter(_, _, _, _, "refresh_token",
@@ -687,18 +699,15 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
   // do need the RunUntilIdle() at the end.
   MockSyncStarterInlineSigninHelper* helper =
       new MockSyncStarterInlineSigninHelper(
-          handler,
-          browser()->profile()->GetRequestContext(),
-          browser()->profile(),
-          url,
-          "foo@gmail.com",
-          "gaiaid-12345",
+          handler, browser()->profile()->GetRequestContext(),
+          browser()->profile(), url, "foo@gmail.com", "gaiaid-12345",
           "password",
-          "",  // session index
+          "",           // session index
           "auth_code",  // auth code
           std::string(),
           false,  // choose what to sync
-          false);  // confirm untrusted signin
+          false,  // confirm untrusted signin
+          false);
 
   // Even though "choose what to sync" is false, the source of the URL is
   // settings, which means the user wants to CONFIGURE_SYNC_FIRST.
@@ -728,8 +737,9 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
                             "",           // session index
                             "auth_code",  // auth code
                             std::string(),
-                            false,   // choose what to sync
-                            false);  // confirm untrusted signin
+                            false,  // choose what to sync
+                            false,  // confirm untrusted signin
+                            false);
   SimulateOnClientOAuthSuccess(&helper, "refresh_token");
   ASSERT_EQ(1ul, token_service()->GetAccounts().size());
   base::RunLoop().RunUntilIdle();
@@ -752,11 +762,45 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
                             "",           // session index
                             "auth_code",  // auth code
                             std::string(),
-                            false,   // choose what to sync
-                            false);  // confirm untrusted signin
+                            false,  // choose what to sync
+                            false,  // confirm untrusted signin
+                            false);
   SimulateOnClientOAuthSuccess(&helper, "refresh_token");
   ASSERT_EQ(1ul, token_service()->GetAccounts().size());
   base::RunLoop().RunUntilIdle();
+}
+
+IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
+                       ForceSigninWithUserManager) {
+  GURL url("chrome://chrome-signin/?access_point=0&reason=0");
+  base::WeakPtr<InlineLoginHandlerImpl> handler;
+  // MockSyncStarterInlineSigninHelper will delete itself when done using
+  // base::ThreadTaskRunnerHandle::DeleteSoon(), so need to delete here.  But
+  // do need the RunUntilIdle() at the end.
+  MockSyncStarterInlineSigninHelper* helper =
+      new MockSyncStarterInlineSigninHelper(
+          handler, browser()->profile()->GetRequestContext(),
+          browser()->profile(), url, "foo@gmail.com", "gaiaid-12345",
+          "password", "", "auth_code", std::string(), false, false, true);
+  EXPECT_CALL(
+      *helper,
+      CreateSyncStarter(_, _, _, _, "refresh_token",
+                        OneClickSigninSyncStarter::CURRENT_PROFILE,
+                        OneClickSigninSyncStarter::CONFIRM_SYNC_SETTINGS_FIRST,
+                        OneClickSigninSyncStarter::CONFIRM_AFTER_SIGNIN));
+
+  ProfileAttributesEntry* entry;
+  ASSERT_TRUE(g_browser_process->profile_manager()
+                  ->GetProfileAttributesStorage()
+                  .GetProfileAttributesWithPath(browser()->profile()->GetPath(),
+                                                &entry));
+  entry->SetIsSigninRequired(true);
+
+  ASSERT_EQ(1ul, BrowserList::GetInstance()->size());
+  SimulateOnClientOAuthSuccess(helper, "refresh_token");
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(2ul, BrowserList::GetInstance()->size());
+  ASSERT_FALSE(entry->IsSigninRequired());
 }
 
 class InlineLoginUISafeIframeBrowserTest : public InProcessBrowserTest {
