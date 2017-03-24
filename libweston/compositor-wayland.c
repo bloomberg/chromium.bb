@@ -111,7 +111,7 @@ struct wayland_output {
 
 	int keyboard_count;
 
-	char *name;
+	char *title;
 	struct frame *frame;
 
 	struct {
@@ -708,6 +708,7 @@ wayland_output_destroy(struct weston_output *base)
 	if (output->frame_cb)
 		wl_callback_destroy(output->frame_cb);
 
+	free(output->title);
 	free(output);
 }
 
@@ -835,36 +836,17 @@ wayland_output_set_windowed(struct wayland_output *output)
 {
 	struct wayland_backend *b =
 		to_wayland_backend(output->base.compositor);
-	int tlen;
-	char *title;
 
 	if (output->frame)
 		return 0;
 
-	if (output->name) {
-		tlen = strlen(output->name) + strlen(WINDOW_TITLE " - ");
-		title = malloc(tlen + 1);
-		if (!title)
-			return -1;
-
-		snprintf(title, tlen + 1, WINDOW_TITLE " - %s", output->name);
-	} else {
-		title = strdup(WINDOW_TITLE);
-	}
-
-	if (output->parent.xdg_toplevel)
-		zxdg_toplevel_v6_set_title(output->parent.xdg_toplevel, title);
-
 	if (!b->theme) {
 		b->theme = theme_create();
-		if (!b->theme) {
-			free(title);
+		if (!b->theme)
 			return -1;
-		}
 	}
 	output->frame = frame_create(b->theme, 100, 100,
-				     FRAME_BUTTON_CLOSE, title);
-	free(title);
+				     FRAME_BUTTON_CLOSE, output->title);
 	if (!output->frame)
 		return -1;
 
@@ -1132,6 +1114,8 @@ wayland_backend_create_output_surface(struct wayland_output *output)
 		zxdg_toplevel_v6_add_listener(output->parent.xdg_toplevel,
 					      &xdg_toplevel_listener, output);
 
+		zxdg_toplevel_v6_set_title(output->parent.xdg_toplevel, output->title);
+
 		wl_surface_commit(output->parent.surface);
 
 		output->parent.wait_for_configure = true;
@@ -1239,9 +1223,13 @@ err_output:
 }
 
 static struct wayland_output *
-wayland_output_create_common(void)
+wayland_output_create_common(const char *name)
 {
 	struct wayland_output *output;
+	size_t len;
+
+	/* name can't be NULL. */
+	assert(name);
 
 	output = zalloc(sizeof *output);
 	if (output == NULL) {
@@ -1252,6 +1240,18 @@ wayland_output_create_common(void)
 	output->base.destroy = wayland_output_destroy;
 	output->base.disable = wayland_output_disable;
 	output->base.enable = wayland_output_enable;
+	output->base.name = strdup(name);
+
+	/* setup output name/title. */
+	len = strlen(WINDOW_TITLE " - ") + strlen(name) + 1;
+	output->title = zalloc(len);
+	if (!output->title) {
+		free(output->base.name);
+		free(output);
+		return NULL;
+	}
+
+	snprintf(output->title, len, WINDOW_TITLE " - %s", name);
 
 	return output;
 }
@@ -1259,12 +1259,7 @@ wayland_output_create_common(void)
 static int
 wayland_output_create(struct weston_compositor *compositor, const char *name)
 {
-	struct wayland_output *output = wayland_output_create_common();
-
-	/* name can't be NULL. */
-	assert(name);
-
-	output->base.name = strdup(name);
+	struct wayland_output *output = wayland_output_create_common(name);
 
 	weston_output_init(&output->base, compositor);
 	weston_compositor_add_pending_output(&output->base, compositor);
@@ -1324,10 +1319,8 @@ static int
 wayland_output_create_for_parent_output(struct wayland_backend *b,
 					struct wayland_parent_output *poutput)
 {
-	struct wayland_output *output = wayland_output_create_common();
+	struct wayland_output *output = wayland_output_create_common("wlparent");
 	struct weston_mode *mode;
-
-	output->base.name = strdup("wlparent");
 
 	if (poutput->current_mode) {
 		mode = poutput->current_mode;
@@ -1364,7 +1357,8 @@ wayland_output_create_for_parent_output(struct wayland_backend *b,
 	return 0;
 
 out:
-	free(output->name);
+	free(output->base.name);
+	free(output->title);
 	free(output);
 
 	return -1;
@@ -1373,10 +1367,8 @@ out:
 static int
 wayland_output_create_fullscreen(struct wayland_backend *b)
 {
-	struct wayland_output *output = wayland_output_create_common();
+	struct wayland_output *output = wayland_output_create_common("wayland-fullscreen");
 	int width = 0, height = 0;
-
-	output->base.name = strdup("wayland-fullscreen");
 
 	weston_output_init(&output->base, b->compositor);
 
@@ -1411,7 +1403,8 @@ wayland_output_create_fullscreen(struct wayland_backend *b)
 err_set_size:
 	wayland_backend_destroy_output_surface(output);
 err_surface:
-	free(output->name);
+	free(output->base.name);
+	free(output->title);
 	free(output);
 
 	return -1;
