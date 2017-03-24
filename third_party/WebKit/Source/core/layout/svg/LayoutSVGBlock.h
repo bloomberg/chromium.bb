@@ -26,19 +26,10 @@ namespace blink {
 
 class SVGElement;
 
-// A common class of SVG objects that delegate layout, paint, etc. tasks to
-// LayoutBlockFlow. It has two coordinate spaces:
-// - local SVG coordinate space: similar to LayoutSVGModelObject, the space
-//   that localSVGTransform() applies.
-// - local HTML coordinate space: defined by frameRect() as if the local SVG
-//   coordinate space created a containing block. Like other LayoutBlockFlow
-//   objects, LayoutSVGBlock's frameRect() is also in physical coordinates with
-//   flipped blocks direction in the "containing block".
 class LayoutSVGBlock : public LayoutBlockFlow {
  public:
   explicit LayoutSVGBlock(SVGElement*);
 
-  // These mapping functions map coordinates in HTML spaces.
   void mapLocalToAncestor(const LayoutBoxModelObject* ancestor,
                           TransformState&,
                           MapCoordinatesFlags = ApplyContainerFlip) const final;
@@ -48,10 +39,6 @@ class LayoutSVGBlock : public LayoutBlockFlow {
   const LayoutObject* pushMappingToContainer(
       const LayoutBoxModelObject* ancestorToStopAt,
       LayoutGeometryMap&) const final;
-  bool mapToVisualRectInAncestorSpaceInternal(
-      const LayoutBoxModelObject* ancestor,
-      TransformState&,
-      VisualRectFlags = DefaultVisualRectFlags) const final;
 
   AffineTransform localSVGTransform() const final { return m_localTransform; }
 
@@ -59,6 +46,10 @@ class LayoutSVGBlock : public LayoutBlockFlow {
 
  protected:
   void willBeDestroyed() override;
+  bool mapToVisualRectInAncestorSpaceInternal(
+      const LayoutBoxModelObject* ancestor,
+      TransformState&,
+      VisualRectFlags = DefaultVisualRectFlags) const final;
 
   AffineTransform m_localTransform;
 

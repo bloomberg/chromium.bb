@@ -53,7 +53,7 @@ class LayoutSVGForeignObject final : public LayoutSVGBlock {
   void layout() override;
 
   FloatRect objectBoundingBox() const override {
-    return FloatRect(frameRect());
+    return FloatRect(FloatPoint(), FloatSize(size()));
   }
   FloatRect strokeBoundingBox() const override { return objectBoundingBox(); }
   FloatRect visualRectInLocalSVGCoordinates() const override {
@@ -69,6 +69,8 @@ class LayoutSVGForeignObject final : public LayoutSVGBlock {
   }
 
   void setNeedsTransformUpdate() override { m_needsTransformUpdate = true; }
+
+  AffineTransform localToSVGParentTransform() const override;
 
  private:
   LayoutUnit elementX() const;

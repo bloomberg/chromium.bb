@@ -2633,6 +2633,8 @@ crbug.com/685951 css2.1/t040304-c64-uri-00-a-g.html [ Failure Pass ]
 # Sheriff failures 2017-02-03
 crbug.com/688515 fast/spatial-navigation/snav-div-overflow-scrol-hidden.html [ Pass Failure ]
 
+crbug.com/704643 paint/invalidation/svg/text-rescale.html [ NeedsRebaseline ]
+
 # Flaky on trybots
 crbug.com/688486 external/wpt/service-workers/service-worker/fetch-request-redirect.https.html [ Failure Pass ]
 crbug.com/688486 external/wpt/service-workers/service-worker/fetch-request-resources.https.html [ Failure Pass ]

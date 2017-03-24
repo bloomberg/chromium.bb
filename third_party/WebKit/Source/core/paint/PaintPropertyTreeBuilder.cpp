@@ -282,7 +282,11 @@ void PaintPropertyTreeBuilder::updateTransformForNonRootSVG(
          context.current.paintOffset == LayoutPoint());
 
   if (object.needsPaintPropertyUpdate() || context.forceSubtreeUpdate) {
-    AffineTransform transform = object.localToSVGParentTransform();
+    // TODO(pdr): Refactor this so all non-root SVG objects use the same
+    // transform function.
+    const AffineTransform& transform = object.isSVGForeignObject()
+                                           ? object.localSVGTransform()
+                                           : object.localToSVGParentTransform();
     // TODO(pdr): Check for the presence of a transform instead of the value.
     // Checking for an identity matrix will cause the property tree structure
     // to change during animations if the animation passes through the
