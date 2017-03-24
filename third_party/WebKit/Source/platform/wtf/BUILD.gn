@@ -71,6 +71,8 @@ source_set("platform_wtf") {
     "BitVector.cpp",
     "BitVector.h",
     "BitwiseOperations.h",
+    "BloomFilter.h",
+    "ByteOrder.h",
     "ByteSwap.h",
     "CPU.h",
     "CheckedNumeric.h",
@@ -83,10 +85,13 @@ source_set("platform_wtf") {
     "CurrentTime.h",
     "DataLog.cpp",
     "DataLog.h",
+    "DateMath.cpp",
+    "DateMath.h",
     "Deque.h",
     "DoublyLinkedList.h",
     "DynamicAnnotations.cpp",
     "DynamicAnnotations.h",
+    "FilePrintStream.cpp",
     "FilePrintStream.h",
     "Forward.h",
     "Functional.h",
@@ -101,6 +106,7 @@ source_set("platform_wtf") {
     "HashTableDeletedValueType.h",
     "HashTraits.h",
     "HexNumber.h",
+    "InstanceCounter.cpp",
     "InstanceCounter.h",
     "LeakAnnotations.h",
     "LinkedHashSet.h",
@@ -112,31 +118,43 @@ source_set("platform_wtf") {
     "NotFound.h",
     "Optional.h",
     "PassRefPtr.h",
+    "PrintStream.cpp",
     "PrintStream.h",
     "PtrUtil.h",
     "RefCounted.h",
     "RefPtr.h",
+    "RefVector.h",
     "RetainPtr.h",
+    "SaturatedArithmetic.h",
     "SizeAssertions.h",
+    "SizeLimits.cpp",
     "SpinLock.h",
+    "StackUtil.cpp",
     "StackUtil.h",
     "StaticConstructors.h",
     "StdLibExtras.h",
     "StringExtras.h",
     "StringHasher.h",
+    "TerminatedArray.h",
+    "TerminatedArrayBuilder.h",
     "ThreadRestrictionVerifier.h",
     "ThreadSafeRefCounted.h",
     "ThreadSpecific.h",
+    "ThreadSpecificWin.cpp",
     "Threading.h",
     "ThreadingPrimitives.h",
+    "ThreadingPthreads.cpp",
+    "ThreadingWin.cpp",
     "Time.h",
     "TreeNode.h",
     "TriState.h",
     "TypeTraits.h",
     "Vector.h",
     "VectorTraits.h",
+    "WTF.cpp",
     "WTF.h",
     "WTFExport.h",
+    "WTFThreadData.cpp",
     "WTFThreadData.h",
     "WeakPtr.h",
     "allocator/PartitionAllocator.cpp",
@@ -144,6 +162,8 @@ source_set("platform_wtf") {
     "allocator/Partitions.cpp",
     "allocator/Partitions.h",
     "build_config.h",
+    "debug/Alias.h",
+    "debug/CrashLogging.h",
     "dtoa.cpp",
     "dtoa.h",
     "dtoa/bignum-dtoa.cc",
@@ -275,15 +295,15 @@ source_set("platform_wtf") {
   # those files are actually moved to here.
 
   if (is_win) {
-    # sources -= [ "ThreadingPthreads.cpp" ]
+    sources -= [ "ThreadingPthreads.cpp" ]
 
     cflags = [ "/wd4068" ]  # Unknown pragma.
   } else {
     # Non-Windows.
-    # sources -= [
-    #   "ThreadSpecificWin.cpp",
-    #   "ThreadingWin.cpp",
-    # ]
+    sources -= [
+      "ThreadSpecificWin.cpp",
+      "ThreadingWin.cpp",
+    ]
   }
 
   if (is_android) {

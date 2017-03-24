@@ -69,15 +69,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "wtf/DateMath.h"
+#include "platform/wtf/DateMath.h"
 
-#include "wtf/ASCIICType.h"
-#include "wtf/Assertions.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/MathExtras.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/StringExtras.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/ASCIICType.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/StringExtras.h"
+#include "platform/wtf/text/StringBuilder.h"
 #include <algorithm>
 #include <limits.h>
 #include <limits>

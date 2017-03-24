@@ -96,18 +96,18 @@
  *      59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#include "wtf/Threading.h"
+#include "platform/wtf/Threading.h"
 
 #if OS(WIN)
 
-#include "wtf/CurrentTime.h"
-#include "wtf/DateMath.h"
-#include "wtf/HashMap.h"
-#include "wtf/MathExtras.h"
-#include "wtf/ThreadSpecific.h"
-#include "wtf/ThreadingPrimitives.h"
-#include "wtf/WTFThreadData.h"
-#include "wtf/dtoa/double-conversion.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/DateMath.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/ThreadSpecific.h"
+#include "platform/wtf/ThreadingPrimitives.h"
+#include "platform/wtf/WTFThreadData.h"
+#include "platform/wtf/dtoa/double-conversion.h"
 #include <errno.h>
 #include <process.h>
 #include <windows.h>
