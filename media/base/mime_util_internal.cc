@@ -710,15 +710,24 @@ SupportsType MimeUtil::IsCodecSupported(const std::string& mime_type_lower_case,
     ambiguous_platform_support = true;
   }
 
-  if (GetMediaClient() && video_codec != kUnknownVideoCodec &&
-      !GetMediaClient()->IsSupportedVideoConfig(
-          {video_codec, video_profile, video_level, color_space})) {
-    return IsNotSupported;
+  if (video_codec != kUnknownVideoCodec) {
+    VideoConfig video_config = {video_codec, video_profile, video_level,
+                                color_space};
+
+    // If MediaClient is provided use it to check for decoder support.
+    MediaClient* media_client = GetMediaClient();
+    if (media_client && !media_client->IsSupportedVideoConfig(video_config))
+      return IsNotSupported;
+
+    // When no MediaClient is provided, assume default decoders are available
+    // as described by media::IsSupportedVideoConfig().
+    if (!media_client && !IsSupportedVideoConfig(video_config))
+      return IsNotSupported;
   }
 
 #if defined(OS_ANDROID)
   // TODO(chcunningham): Delete this. Android platform support should be
-  // handled by (android specific) MediaClient.
+  // handled by (android specific) media::IsSupportedVideoConfig() above.
   if (!IsCodecSupportedOnAndroid(codec, mime_type_lower_case, is_encrypted,
                                  platform_info_)) {
     return IsNotSupported;
