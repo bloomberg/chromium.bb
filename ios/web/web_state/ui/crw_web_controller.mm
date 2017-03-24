@@ -1801,10 +1801,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   GURL navUrl = params.url;
   ui::PageTransition transition = params.transition_type;
   DCHECK(!(transition & ui::PAGE_TRANSITION_FORWARD_BACK));
-  // This method is allowed to handle reload only for transient items, which
-  // is essentially loading the same URL again.
-  DCHECK(!(transition & ui::PAGE_TRANSITION_RELOAD) ||
-         self.navigationManagerImpl->GetTransientItem());
 
   BOOL initialNavigation = NO;
   // Clear transient view before making any changes to history and navigation
