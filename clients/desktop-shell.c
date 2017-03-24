@@ -212,6 +212,10 @@ panel_launcher_activate(struct panel_launcher *widget)
 		return;
 
 	argv = widget->argv.data;
+
+	if (setsid() == -1)
+		exit(EXIT_FAILURE);
+
 	if (execve(argv[0], argv, widget->envp.data) < 0) {
 		fprintf(stderr, "execl '%s' failed: %m\n", argv[0]);
 		exit(1);
