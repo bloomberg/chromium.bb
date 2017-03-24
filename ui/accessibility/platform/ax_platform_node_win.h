@@ -9,6 +9,7 @@
 #include <atlcom.h>
 #include <oleacc.h>
 
+#include "base/compiler_specific.h"
 #include "base/observer_list.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "ui/accessibility/ax_export.h"
@@ -32,14 +33,15 @@ class AX_EXPORT IAccessible2UsageObserver {
 extern AX_EXPORT base::ObserverList<IAccessible2UsageObserver>&
     GetIAccessible2UsageObserverList();
 
-class __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
-AXPlatformNodeWin
-: public CComObjectRootEx<CComMultiThreadModel>,
-    public IDispatchImpl<IAccessible2_2, &IID_IAccessible2,
-                         &LIBID_IAccessible2Lib>,
-    public IAccessibleText,
-    public IServiceProvider,
-    public AXPlatformNodeBase {
+class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
+    AXPlatformNodeWin
+    : public NON_EXPORTED_BASE(CComObjectRootEx<CComMultiThreadModel>),
+      public IDispatchImpl<IAccessible2_2,
+                           &IID_IAccessible2,
+                           &LIBID_IAccessible2Lib>,
+      public IAccessibleText,
+      public IServiceProvider,
+      public NON_EXPORTED_BASE(AXPlatformNodeBase) {
  public:
   BEGIN_COM_MAP(AXPlatformNodeWin)
     COM_INTERFACE_ENTRY2(IDispatch, IAccessible2_2)
