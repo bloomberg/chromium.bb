@@ -40,12 +40,12 @@ class GbmSurfaceFactory : public SurfaceFactoryOzone {
       gfx::AcceleratedWidget widget) override;
   std::unique_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
       gfx::AcceleratedWidget widget) override;
-  scoped_refptr<ui::NativePixmap> CreateNativePixmap(
+  scoped_refptr<gfx::NativePixmap> CreateNativePixmap(
       gfx::AcceleratedWidget widget,
       gfx::Size size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage) override;
-  scoped_refptr<NativePixmap> CreateNativePixmapFromHandle(
+  scoped_refptr<gfx::NativePixmap> CreateNativePixmapFromHandle(
       gfx::AcceleratedWidget widget,
       gfx::Size size,
       gfx::BufferFormat format,

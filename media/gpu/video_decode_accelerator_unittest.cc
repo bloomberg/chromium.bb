@@ -338,7 +338,7 @@ class TextureRef : public base::RefCounted<TextureRef> {
   uint32_t texture_id_;
   base::Closure no_longer_needed_cb_;
 #if defined(USE_OZONE)
-  scoped_refptr<ui::NativePixmap> pixmap_;
+  scoped_refptr<gfx::NativePixmap> pixmap_;
 #endif
 };
 

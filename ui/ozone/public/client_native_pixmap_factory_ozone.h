@@ -10,7 +10,7 @@
 
 namespace ui {
 
-OZONE_EXPORT std::unique_ptr<ClientNativePixmapFactory>
+OZONE_EXPORT std::unique_ptr<gfx::ClientNativePixmapFactory>
 CreateClientNativePixmapFactoryOzone();
 
 }  // namespace ui

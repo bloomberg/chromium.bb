@@ -4,7 +4,7 @@
 
 #include "ui/gfx/client_native_pixmap_factory.h"
 
-namespace ui {
+namespace gfx {
 
 namespace {
 
@@ -29,4 +29,4 @@ ClientNativePixmapFactory::ClientNativePixmapFactory() {}
 
 ClientNativePixmapFactory::~ClientNativePixmapFactory() {}
 
-}  // namespace ui
+}  // namespace gfx

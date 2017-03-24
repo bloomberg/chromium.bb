@@ -808,7 +808,7 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
 
 #if defined(USE_OZONE)
   client_native_pixmap_factory_ = ui::CreateClientNativePixmapFactoryOzone();
-  ui::ClientNativePixmapFactory::SetInstance(
+  gfx::ClientNativePixmapFactory::SetInstance(
       client_native_pixmap_factory_.get());
 #endif
 

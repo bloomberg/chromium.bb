@@ -205,6 +205,7 @@ action("generate_constructor_list") {
     "--namespace=ui",
     "--typename=OzonePlatform",
     "--typename=ClientNativePixmapFactory",
+    "--using=gfx::ClientNativePixmapFactory",
     "--include=\"ui/gfx/client_native_pixmap_factory.h\"",
     "--include=\"ui/ozone/public/ozone_platform.h\"",
   ]

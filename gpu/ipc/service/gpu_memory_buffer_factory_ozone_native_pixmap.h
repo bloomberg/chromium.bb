@@ -58,10 +58,9 @@ class GPU_EXPORT GpuMemoryBufferFactoryOzoneNativePixmap
  private:
   using NativePixmapMapKey = std::pair<int, int>;
   using NativePixmapMapKeyHash = base::IntPairHash<NativePixmapMapKey>;
-  using NativePixmapMap =
-      std::unordered_map<NativePixmapMapKey,
-                         scoped_refptr<ui::NativePixmap>,
-                         NativePixmapMapKeyHash>;
+  using NativePixmapMap = std::unordered_map<NativePixmapMapKey,
+                                             scoped_refptr<gfx::NativePixmap>,
+                                             NativePixmapMapKeyHash>;
   NativePixmapMap native_pixmaps_;
   base::Lock native_pixmaps_lock_;
 

@@ -7,7 +7,7 @@
 
 #include "ui/gfx/gfx_export.h"
 
-namespace ui {
+namespace gfx {
 
 // This represents a buffer that can be written to directly by regular CPU code,
 // but can also be read by the GPU.
@@ -25,6 +25,6 @@ class GFX_EXPORT ClientNativePixmap {
   virtual int GetStride(size_t plane) const = 0;
 };
 
-}  // namespace ui
+}  // namespace gfx
 
 #endif  // UI_GFX_CLIENT_NATIVE_PIXMAP_H_

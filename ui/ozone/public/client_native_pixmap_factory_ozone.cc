@@ -10,11 +10,11 @@
 
 namespace ui {
 
-std::unique_ptr<ClientNativePixmapFactory>
+std::unique_ptr<gfx::ClientNativePixmapFactory>
 CreateClientNativePixmapFactoryOzone() {
   TRACE_EVENT1("ozone", "CreateClientNativePixmapFactoryOzone", "platform",
                GetOzonePlatformName());
-  return PlatformObject<ClientNativePixmapFactory>::Create();
+  return PlatformObject<gfx::ClientNativePixmapFactory>::Create();
 }
 
 }  // namespace ui

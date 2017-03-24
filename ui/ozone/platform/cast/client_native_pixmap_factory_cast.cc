@@ -16,7 +16,7 @@ namespace {
 // Dummy ClientNativePixmap implementation for Cast ozone.
 // Our NativePixmaps are just used to plumb an overlay frame through,
 // so they get instantiated, but not used.
-class ClientNativePixmapCast : public ClientNativePixmap {
+class ClientNativePixmapCast : public gfx::ClientNativePixmap {
  public:
   // ClientNativePixmap implementation:
   bool Map() override {
@@ -34,7 +34,7 @@ class ClientNativePixmapCast : public ClientNativePixmap {
   }
 };
 
-class ClientNativePixmapFactoryCast : public ClientNativePixmapFactory {
+class ClientNativePixmapFactoryCast : public gfx::ClientNativePixmapFactory {
  public:
   // ClientNativePixmapFactoryCast implementation:
   bool IsConfigurationSupported(gfx::BufferFormat format,
@@ -43,7 +43,7 @@ class ClientNativePixmapFactoryCast : public ClientNativePixmapFactory {
            usage == gfx::BufferUsage::SCANOUT;
   }
 
-  std::unique_ptr<ClientNativePixmap> ImportFromHandle(
+  std::unique_ptr<gfx::ClientNativePixmap> ImportFromHandle(
       const gfx::NativePixmapHandle& handle,
       const gfx::Size& size,
       gfx::BufferUsage usage) override {
@@ -53,7 +53,7 @@ class ClientNativePixmapFactoryCast : public ClientNativePixmapFactory {
 
 }  // namespace
 
-ClientNativePixmapFactory* CreateClientNativePixmapFactoryCast() {
+gfx::ClientNativePixmapFactory* CreateClientNativePixmapFactoryCast() {
   return new ClientNativePixmapFactoryCast();
 }
 

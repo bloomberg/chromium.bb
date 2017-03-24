@@ -47,12 +47,12 @@ bool IsNativeGpuMemoryBufferConfigurationSupported(gfx::BufferFormat format,
 #endif
 
 #if defined(USE_OZONE)
-  if (!ui::ClientNativePixmapFactory::GetInstance()) {
+  if (!gfx::ClientNativePixmapFactory::GetInstance()) {
     // unittests don't have to set ClientNativePixmapFactory.
     return false;
   }
-  return ui::ClientNativePixmapFactory::GetInstance()->IsConfigurationSupported(
-      format, usage);
+  return gfx::ClientNativePixmapFactory::GetInstance()
+      ->IsConfigurationSupported(format, usage);
 #endif
 
   NOTREACHED();

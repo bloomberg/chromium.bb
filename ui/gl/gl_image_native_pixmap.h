@@ -13,13 +13,13 @@
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_image_egl.h"
 
-namespace ui {
+namespace gl {
 
 class GL_EXPORT GLImageNativePixmap : public gl::GLImageEGL {
  public:
   GLImageNativePixmap(const gfx::Size& size, unsigned internalformat);
 
-  bool Initialize(NativePixmap* pixmap, gfx::BufferFormat format);
+  bool Initialize(gfx::NativePixmap* pixmap, gfx::BufferFormat format);
 
   // Overridden from GLImage:
   unsigned GetInternalFormat() override;
@@ -41,10 +41,10 @@ class GL_EXPORT GLImageNativePixmap : public gl::GLImageEGL {
 
  private:
   unsigned internalformat_;
-  scoped_refptr<NativePixmap> pixmap_;
+  scoped_refptr<gfx::NativePixmap> pixmap_;
   bool has_image_flush_external_;
 };
 
-}  // namespace ui
+}  // namespace gl
 
 #endif  // UI_GL_GL_IMAGE_NATIVE_PIXMAP_H_

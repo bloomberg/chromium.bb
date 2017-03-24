@@ -181,7 +181,7 @@ class Service
 
   bool test_config_;
 #if defined(USE_OZONE)
-  std::unique_ptr<ui::ClientNativePixmapFactory> client_native_pixmap_factory_;
+  std::unique_ptr<gfx::ClientNativePixmapFactory> client_native_pixmap_factory_;
 #endif
 
   // Manages display hardware and handles display management. May register Mojo

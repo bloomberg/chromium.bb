@@ -222,7 +222,7 @@ GLOzone* WaylandSurfaceFactory::GetGLOzone(
   }
 }
 
-scoped_refptr<NativePixmap> WaylandSurfaceFactory::CreateNativePixmap(
+scoped_refptr<gfx::NativePixmap> WaylandSurfaceFactory::CreateNativePixmap(
     gfx::AcceleratedWidget widget,
     gfx::Size size,
     gfx::BufferFormat format,
@@ -231,7 +231,8 @@ scoped_refptr<NativePixmap> WaylandSurfaceFactory::CreateNativePixmap(
   return nullptr;
 }
 
-scoped_refptr<NativePixmap> WaylandSurfaceFactory::CreateNativePixmapFromHandle(
+scoped_refptr<gfx::NativePixmap>
+WaylandSurfaceFactory::CreateNativePixmapFromHandle(
     gfx::AcceleratedWidget widget,
     gfx::Size size,
     gfx::BufferFormat format,

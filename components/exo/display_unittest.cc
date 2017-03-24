@@ -61,7 +61,7 @@ TEST_F(DisplayTest, DISABLED_CreateLinuxDMABufBuffer) {
 
   std::unique_ptr<Display> display(new Display);
   // Creating a prime buffer from a native pixmap handle should succeed.
-  scoped_refptr<ui::NativePixmap> pixmap =
+  scoped_refptr<gfx::NativePixmap> pixmap =
       ui::OzonePlatform::GetInstance()
           ->GetSurfaceFactoryOzone()
           ->CreateNativePixmap(gfx::kNullAcceleratedWidget, buffer_size,

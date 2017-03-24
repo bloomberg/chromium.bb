@@ -22,7 +22,7 @@ namespace gl {
 class GLImage;
 }
 
-namespace ui {
+namespace gfx {
 class NativePixmap;
 }
 
@@ -56,7 +56,7 @@ class VaapiDrmPicture : public VaapiPicture {
   bool Initialize();
 
   // Ozone buffer, the storage of the EGLImage and the VASurface.
-  scoped_refptr<ui::NativePixmap> pixmap_;
+  scoped_refptr<gfx::NativePixmap> pixmap_;
 
   // EGLImage bound to the GL textures used by the VDA client.
   scoped_refptr<gl::GLImage> gl_image_;

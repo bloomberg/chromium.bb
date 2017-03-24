@@ -71,7 +71,7 @@ class FileSurface : public SurfaceOzoneCanvas {
   sk_sp<SkSurface> surface_;
 };
 
-class TestPixmap : public ui::NativePixmap {
+class TestPixmap : public gfx::NativePixmap {
  public:
   explicit TestPixmap(gfx::BufferFormat format) : format_(format) {}
 
@@ -138,7 +138,7 @@ HeadlessSurfaceFactory::CreateCanvasForWidget(gfx::AcceleratedWidget widget) {
   return base::WrapUnique<SurfaceOzoneCanvas>(new FileSurface(window->path()));
 }
 
-scoped_refptr<NativePixmap> HeadlessSurfaceFactory::CreateNativePixmap(
+scoped_refptr<gfx::NativePixmap> HeadlessSurfaceFactory::CreateNativePixmap(
     gfx::AcceleratedWidget widget,
     gfx::Size size,
     gfx::BufferFormat format,

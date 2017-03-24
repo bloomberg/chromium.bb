@@ -11,7 +11,7 @@ namespace ui {
 
 // Platforms which don't need to share native pixmap use this.
 // The caller takes ownership of the instance.
-ClientNativePixmapFactory* CreateStubClientNativePixmapFactory();
+gfx::ClientNativePixmapFactory* CreateStubClientNativePixmapFactory();
 
 }  // namespace ui
 

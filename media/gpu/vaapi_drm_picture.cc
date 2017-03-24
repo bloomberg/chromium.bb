@@ -77,7 +77,7 @@ bool VaapiDrmPicture::Initialize() {
 
     gfx::BufferFormat format = pixmap_->GetBufferFormat();
 
-    scoped_refptr<ui::GLImageNativePixmap> image(new ui::GLImageNativePixmap(
+    scoped_refptr<gl::GLImageNativePixmap> image(new gl::GLImageNativePixmap(
         size_, BufferFormatToInternalFormat(format)));
     if (!image->Initialize(pixmap_.get(), format)) {
       LOG(ERROR) << "Failed to create GLImage";

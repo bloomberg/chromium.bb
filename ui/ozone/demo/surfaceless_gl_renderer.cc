@@ -41,12 +41,12 @@ bool SurfacelessGlRenderer::BufferWrapper::Initialize(
   glGenTextures(1, &gl_tex_);
 
   gfx::BufferFormat format = display::DisplaySnapshot::PrimaryFormat();
-  scoped_refptr<NativePixmap> pixmap =
+  scoped_refptr<gfx::NativePixmap> pixmap =
       OzonePlatform::GetInstance()
           ->GetSurfaceFactoryOzone()
           ->CreateNativePixmap(widget, size, format, gfx::BufferUsage::SCANOUT);
-  scoped_refptr<ui::GLImageNativePixmap> image(
-      new ui::GLImageNativePixmap(size, GL_RGB));
+  scoped_refptr<gl::GLImageNativePixmap> image(
+      new gl::GLImageNativePixmap(size, GL_RGB));
   if (!image->Initialize(pixmap.get(), format)) {
     LOG(ERROR) << "Failed to create GLImage";
     return false;

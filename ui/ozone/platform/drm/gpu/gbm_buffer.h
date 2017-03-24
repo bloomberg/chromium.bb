@@ -82,7 +82,7 @@ class GbmBuffer : public GbmBufferBase {
   DISALLOW_COPY_AND_ASSIGN(GbmBuffer);
 };
 
-class GbmPixmap : public NativePixmap {
+class GbmPixmap : public gfx::NativePixmap {
  public:
   GbmPixmap(GbmSurfaceFactory* surface_manager,
             const scoped_refptr<GbmBuffer>& buffer);

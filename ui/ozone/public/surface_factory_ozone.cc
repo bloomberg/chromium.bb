@@ -35,7 +35,7 @@ std::vector<gfx::BufferFormat> SurfaceFactoryOzone::GetScanoutFormats(
   return std::vector<gfx::BufferFormat>();
 }
 
-scoped_refptr<ui::NativePixmap> SurfaceFactoryOzone::CreateNativePixmap(
+scoped_refptr<gfx::NativePixmap> SurfaceFactoryOzone::CreateNativePixmap(
     gfx::AcceleratedWidget widget,
     gfx::Size size,
     gfx::BufferFormat format,
@@ -43,7 +43,7 @@ scoped_refptr<ui::NativePixmap> SurfaceFactoryOzone::CreateNativePixmap(
   return nullptr;
 }
 
-scoped_refptr<ui::NativePixmap>
+scoped_refptr<gfx::NativePixmap>
 SurfaceFactoryOzone::CreateNativePixmapFromHandle(
     gfx::AcceleratedWidget widget,
     gfx::Size size,

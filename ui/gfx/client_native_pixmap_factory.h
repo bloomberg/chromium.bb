@@ -15,11 +15,9 @@
 #include "ui/gfx/gfx_export.h"
 
 namespace gfx {
+
 struct NativePixmapHandle;
 class Size;
-}
-
-namespace ui {
 
 // The Ozone interface allows external implementations to hook into Chromium to
 // provide a client pixmap for non-GPU processes.
@@ -49,6 +47,6 @@ class GFX_EXPORT ClientNativePixmapFactory {
   DISALLOW_COPY_AND_ASSIGN(ClientNativePixmapFactory);
 };
 
-}  // namespace ui
+}  // namespace gfx
 
 #endif  // UI_GFX_CLIENT_NATIVE_PIXMAP_FACTORY_H_

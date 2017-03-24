@@ -8,7 +8,7 @@
 
 namespace ui {
 
-ClientNativePixmapFactory* CreateClientNativePixmapFactoryHeadless() {
+gfx::ClientNativePixmapFactory* CreateClientNativePixmapFactoryHeadless() {
   return CreateStubClientNativePixmapFactory();
 }
 

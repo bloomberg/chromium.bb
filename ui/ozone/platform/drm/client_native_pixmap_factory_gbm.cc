@@ -16,7 +16,7 @@ namespace ui {
 
 namespace {
 
-class ClientNativePixmapGbm : public ClientNativePixmap {
+class ClientNativePixmapGbm : public gfx::ClientNativePixmap {
  public:
   ClientNativePixmapGbm() {}
   ~ClientNativePixmapGbm() override {}
@@ -38,7 +38,7 @@ class ClientNativePixmapGbm : public ClientNativePixmap {
 
 }  // namespace
 
-class ClientNativePixmapFactoryGbm : public ClientNativePixmapFactory {
+class ClientNativePixmapFactoryGbm : public gfx::ClientNativePixmapFactory {
  public:
   ClientNativePixmapFactoryGbm() {}
   ~ClientNativePixmapFactoryGbm() override {}
@@ -81,7 +81,7 @@ class ClientNativePixmapFactoryGbm : public ClientNativePixmapFactory {
     NOTREACHED();
     return false;
   }
-  std::unique_ptr<ClientNativePixmap> ImportFromHandle(
+  std::unique_ptr<gfx::ClientNativePixmap> ImportFromHandle(
       const gfx::NativePixmapHandle& handle,
       const gfx::Size& size,
       gfx::BufferUsage usage) override {
@@ -110,7 +110,7 @@ class ClientNativePixmapFactoryGbm : public ClientNativePixmapFactory {
   DISALLOW_COPY_AND_ASSIGN(ClientNativePixmapFactoryGbm);
 };
 
-ClientNativePixmapFactory* CreateClientNativePixmapFactoryGbm() {
+gfx::ClientNativePixmapFactory* CreateClientNativePixmapFactoryGbm() {
   return new ClientNativePixmapFactoryGbm();
 }
 

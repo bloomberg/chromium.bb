@@ -5,12 +5,14 @@
 #ifndef UI_OZONE_PLATFORM_DRM_CLIENT_NATIVE_PIXMAP_FACTORY_GBM_H_
 #define UI_OZONE_PLATFORM_DRM_CLIENT_NATIVE_PIXMAP_FACTORY_GBM_H_
 
+namespace gfx {
+class ClientNativePixmapFactory;
+}
+
 namespace ui {
 
-class ClientNativePixmapFactory;
-
 // Constructor hook for use in constructor_list.cc
-ClientNativePixmapFactory* CreateClientNativePixmapFactoryGbm();
+gfx::ClientNativePixmapFactory* CreateClientNativePixmapFactoryGbm();
 
 }  // namespace ui
 

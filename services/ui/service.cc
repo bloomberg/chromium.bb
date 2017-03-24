@@ -171,10 +171,10 @@ void Service::OnStart() {
   ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()
       ->SetCurrentLayoutByName("us");
   client_native_pixmap_factory_ = ui::CreateClientNativePixmapFactoryOzone();
-  ui::ClientNativePixmapFactory::SetInstance(
+  gfx::ClientNativePixmapFactory::SetInstance(
       client_native_pixmap_factory_.get());
 
-  DCHECK(ui::ClientNativePixmapFactory::GetInstance());
+  DCHECK(gfx::ClientNativePixmapFactory::GetInstance());
 #endif
 
 // TODO(rjkroege): Enter sandbox here before we start threads in GpuState

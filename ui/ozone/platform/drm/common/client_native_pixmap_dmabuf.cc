@@ -62,7 +62,8 @@ void PrimeSyncEnd(int dmabuf_fd) {
 }  // namespace
 
 // static
-std::unique_ptr<ClientNativePixmap> ClientNativePixmapDmaBuf::ImportFromDmabuf(
+std::unique_ptr<gfx::ClientNativePixmap>
+ClientNativePixmapDmaBuf::ImportFromDmabuf(
     const gfx::NativePixmapHandle& handle,
     const gfx::Size& size) {
   return base::WrapUnique(new ClientNativePixmapDmaBuf(handle, size));

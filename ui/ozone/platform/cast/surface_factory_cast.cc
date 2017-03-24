@@ -45,7 +45,7 @@ class DummySurface : public SurfaceOzoneCanvas {
   DISALLOW_COPY_AND_ASSIGN(DummySurface);
 };
 
-class CastPixmap : public NativePixmap {
+class CastPixmap : public gfx::NativePixmap {
  public:
   explicit CastPixmap(GLOzoneEglCast* parent) : parent_(parent) {}
 
@@ -129,7 +129,7 @@ std::unique_ptr<SurfaceOzoneCanvas> SurfaceFactoryCast::CreateCanvasForWidget(
   return base::WrapUnique<SurfaceOzoneCanvas>(new DummySurface());
 }
 
-scoped_refptr<NativePixmap> SurfaceFactoryCast::CreateNativePixmap(
+scoped_refptr<gfx::NativePixmap> SurfaceFactoryCast::CreateNativePixmap(
     gfx::AcceleratedWidget widget,
     gfx::Size size,
     gfx::BufferFormat format,

@@ -17,7 +17,8 @@
 namespace gpu {
 namespace {
 
-void FreeNativePixmapForTesting(scoped_refptr<ui::NativePixmap> native_pixmap) {
+void FreeNativePixmapForTesting(
+    scoped_refptr<gfx::NativePixmap> native_pixmap) {
   // Nothing to do here. |native_pixmap| will be freed when this function
   // returns and reference count drops to 0.
 }
@@ -29,7 +30,7 @@ GpuMemoryBufferImplOzoneNativePixmap::GpuMemoryBufferImplOzoneNativePixmap(
     const gfx::Size& size,
     gfx::BufferFormat format,
     const DestructionCallback& callback,
-    std::unique_ptr<ui::ClientNativePixmap> pixmap,
+    std::unique_ptr<gfx::ClientNativePixmap> pixmap,
     const std::vector<gfx::NativePixmapPlane>& planes,
     base::ScopedFD fd)
     : GpuMemoryBufferImpl(id, size, format, callback),
@@ -47,9 +48,8 @@ GpuMemoryBufferImplOzoneNativePixmap::CreateFromHandle(
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
     const DestructionCallback& callback) {
-
   // GpuMemoryBufferImpl needs the FD to implement GetHandle() but
-  // ui::ClientNativePixmapFactory::ImportFromHandle is expected to take
+  // gfx::ClientNativePixmapFactory::ImportFromHandle is expected to take
   // ownership of the FD passed in the handle so we have to dup it here in
   // order to pass a valid FD to the GpuMemoryBufferImpl ctor.
   base::ScopedFD scoped_fd;
@@ -67,8 +67,8 @@ GpuMemoryBufferImplOzoneNativePixmap::CreateFromHandle(
                                           true /* auto_close */);
   }
   native_pixmap_handle.planes = handle.native_pixmap_handle.planes;
-  std::unique_ptr<ui::ClientNativePixmap> native_pixmap =
-      ui::ClientNativePixmapFactory::GetInstance()->ImportFromHandle(
+  std::unique_ptr<gfx::ClientNativePixmap> native_pixmap =
+      gfx::ClientNativePixmapFactory::GetInstance()->ImportFromHandle(
           native_pixmap_handle, size, usage);
   DCHECK(native_pixmap);
 
@@ -91,7 +91,7 @@ base::Closure GpuMemoryBufferImplOzoneNativePixmap::AllocateForTesting(
     gfx::BufferUsage usage,
     gfx::GpuMemoryBufferHandle* handle) {
   DCHECK(IsConfigurationSupported(format, usage));
-  scoped_refptr<ui::NativePixmap> pixmap =
+  scoped_refptr<gfx::NativePixmap> pixmap =
       ui::OzonePlatform::GetInstance()
           ->GetSurfaceFactoryOzone()
           ->CreateNativePixmap(gfx::kNullAcceleratedWidget, size, format,

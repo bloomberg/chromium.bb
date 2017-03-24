@@ -137,7 +137,7 @@ std::vector<gfx::BufferFormat> GbmSurfaceFactory::GetScanoutFormats(
   return scanout_formats;
 }
 
-scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
+scoped_refptr<gfx::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
     gfx::AcceleratedWidget widget,
     gfx::Size size,
     gfx::BufferFormat format,
@@ -156,7 +156,8 @@ scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
   return make_scoped_refptr(new GbmPixmap(this, buffer));
 }
 
-scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmapFromHandle(
+scoped_refptr<gfx::NativePixmap>
+GbmSurfaceFactory::CreateNativePixmapFromHandle(
     gfx::AcceleratedWidget widget,
     gfx::Size size,
     gfx::BufferFormat format,

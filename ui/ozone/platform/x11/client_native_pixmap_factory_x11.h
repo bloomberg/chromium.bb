@@ -5,12 +5,14 @@
 #ifndef UI_OZONE_PLATFORM_X11_CLIENT_NATIVE_PIXMAP_FACTORY_X11_H_
 #define UI_OZONE_PLATFORM_X11_CLIENT_NATIVE_PIXMAP_FACTORY_X11_H_
 
+namespace gfx {
+class ClientNativePixmapFactory;
+}
+
 namespace ui {
 
-class ClientNativePixmapFactory;
-
 // Constructor hook for use in constructor_list.cc
-ClientNativePixmapFactory* CreateClientNativePixmapFactoryX11();
+gfx::ClientNativePixmapFactory* CreateClientNativePixmapFactoryX11();
 
 }  // namespace ui
 

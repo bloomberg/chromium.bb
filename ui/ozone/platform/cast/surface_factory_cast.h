@@ -33,7 +33,7 @@ class SurfaceFactoryCast : public SurfaceFactoryOzone {
   GLOzone* GetGLOzone(gl::GLImplementation implementation) override;
   std::unique_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
       gfx::AcceleratedWidget widget) override;
-  scoped_refptr<NativePixmap> CreateNativePixmap(
+  scoped_refptr<gfx::NativePixmap> CreateNativePixmap(
       gfx::AcceleratedWidget widget,
       gfx::Size size,
       gfx::BufferFormat format,

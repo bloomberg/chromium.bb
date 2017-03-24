@@ -27,7 +27,7 @@ GpuMemoryBufferFactoryOzoneNativePixmap::CreateGpuMemoryBuffer(
     gfx::BufferUsage usage,
     int client_id,
     SurfaceHandle surface_handle) {
-  scoped_refptr<ui::NativePixmap> pixmap =
+  scoped_refptr<gfx::NativePixmap> pixmap =
       ui::OzonePlatform::GetInstance()
           ->GetSurfaceFactoryOzone()
           ->CreateNativePixmap(surface_handle, size, format, usage);
@@ -76,7 +76,7 @@ GpuMemoryBufferFactoryOzoneNativePixmap::CreateImageForGpuMemoryBuffer(
     SurfaceHandle surface_handle) {
   DCHECK_EQ(handle.type, gfx::NATIVE_PIXMAP);
 
-  scoped_refptr<ui::NativePixmap> pixmap;
+  scoped_refptr<gfx::NativePixmap> pixmap;
 
   // If CreateGpuMemoryBuffer was used to allocate this buffer then avoid
   // creating a new native pixmap for it.
@@ -106,8 +106,8 @@ GpuMemoryBufferFactoryOzoneNativePixmap::CreateImageForGpuMemoryBuffer(
     }
   }
 
-  scoped_refptr<ui::GLImageNativePixmap> image(
-      new ui::GLImageNativePixmap(size, internalformat));
+  scoped_refptr<gl::GLImageNativePixmap> image(
+      new gl::GLImageNativePixmap(size, internalformat));
   if (!image->Initialize(pixmap.get(), format)) {
     LOG(ERROR) << "Failed to create GLImage " << size.ToString() << " format "
                << static_cast<int>(format);
@@ -121,7 +121,7 @@ GpuMemoryBufferFactoryOzoneNativePixmap::CreateAnonymousImage(
     const gfx::Size& size,
     gfx::BufferFormat format,
     unsigned internalformat) {
-  scoped_refptr<ui::NativePixmap> pixmap =
+  scoped_refptr<gfx::NativePixmap> pixmap =
       ui::OzonePlatform::GetInstance()
           ->GetSurfaceFactoryOzone()
           ->CreateNativePixmap(gpu::kNullSurfaceHandle, size, format,
@@ -131,8 +131,8 @@ GpuMemoryBufferFactoryOzoneNativePixmap::CreateAnonymousImage(
                << static_cast<int>(format);
     return nullptr;
   }
-  scoped_refptr<ui::GLImageNativePixmap> image(
-      new ui::GLImageNativePixmap(size, internalformat));
+  scoped_refptr<gl::GLImageNativePixmap> image(
+      new gl::GLImageNativePixmap(size, internalformat));
   if (!image->Initialize(pixmap.get(), format)) {
     LOG(ERROR) << "Failed to create GLImage " << size.ToString() << " format "
                << static_cast<int>(format);

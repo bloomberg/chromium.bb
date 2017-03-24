@@ -601,7 +601,7 @@ scoped_refptr<VASurface> VaapiWrapper::CreateUnownedSurface(
 
 #if defined(USE_OZONE)
 scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForPixmap(
-    const scoped_refptr<ui::NativePixmap>& pixmap) {
+    const scoped_refptr<gfx::NativePixmap>& pixmap) {
   // Create a VASurface for a NativePixmap by importing the underlying dmabufs.
   VASurfaceAttribExternalBuffers va_attrib_extbuf;
   memset(&va_attrib_extbuf, 0, sizeof(va_attrib_extbuf));
@@ -667,8 +667,8 @@ scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForPixmap(
 }
 
 bool VaapiWrapper::ProcessPixmap(
-    const scoped_refptr<ui::NativePixmap>& source_pixmap,
-    scoped_refptr<ui::NativePixmap> target_pixmap) {
+    const scoped_refptr<gfx::NativePixmap>& source_pixmap,
+    scoped_refptr<gfx::NativePixmap> target_pixmap) {
   scoped_refptr<VASurface> va_surface = CreateVASurfaceForPixmap(source_pixmap);
   if (!va_surface) {
     LOG(ERROR) << "Failed creating VA Surface for source_pixmap";

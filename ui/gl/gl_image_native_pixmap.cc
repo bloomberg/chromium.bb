@@ -23,7 +23,7 @@
 #define DRM_FORMAT_YVU420 FOURCC('Y', 'V', '1', '2')
 #define DRM_FORMAT_NV12 FOURCC('N', 'V', '1', '2')
 
-namespace ui {
+namespace gl {
 namespace {
 
 bool ValidInternalFormat(unsigned internalformat, gfx::BufferFormat format) {
@@ -121,7 +121,7 @@ GLImageNativePixmap::GLImageNativePixmap(const gfx::Size& size,
 
 GLImageNativePixmap::~GLImageNativePixmap() {}
 
-bool GLImageNativePixmap::Initialize(NativePixmap* pixmap,
+bool GLImageNativePixmap::Initialize(gfx::NativePixmap* pixmap,
                                      gfx::BufferFormat format) {
   DCHECK(!pixmap_);
   if (pixmap->GetEGLClientBuffer()) {
@@ -277,4 +277,4 @@ unsigned GLImageNativePixmap::GetInternalFormatForTesting(
   return GL_NONE;
 }
 
-}  // namespace ui
+}  // namespace gl

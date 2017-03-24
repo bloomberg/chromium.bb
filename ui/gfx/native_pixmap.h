@@ -17,9 +17,6 @@
 namespace gfx {
 class Rect;
 class RectF;
-}
-
-namespace ui {
 
 // This represents a buffer that can be directly imported via GL for
 // rendering, or exported via dma-buf fds.
@@ -77,6 +74,6 @@ class NativePixmap : public base::RefCountedThreadSafe<NativePixmap> {
   DISALLOW_COPY_AND_ASSIGN(NativePixmap);
 };
 
-}  // namespace ui
+}  // namespace gfx
 
 #endif  // UI_GFX_NATIVE_PIXMAP_H_

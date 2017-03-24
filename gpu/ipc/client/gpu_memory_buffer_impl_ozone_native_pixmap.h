@@ -13,7 +13,7 @@
 #include "gpu/gpu_export.h"
 #include "gpu/ipc/client/gpu_memory_buffer_impl.h"
 
-namespace ui {
+namespace gfx {
 class ClientNativePixmap;
 }
 
@@ -53,11 +53,11 @@ class GPU_EXPORT GpuMemoryBufferImplOzoneNativePixmap
       const gfx::Size& size,
       gfx::BufferFormat format,
       const DestructionCallback& callback,
-      std::unique_ptr<ui::ClientNativePixmap> native_pixmap,
+      std::unique_ptr<gfx::ClientNativePixmap> native_pixmap,
       const std::vector<gfx::NativePixmapPlane>& planes,
       base::ScopedFD fd);
 
-  std::unique_ptr<ui::ClientNativePixmap> pixmap_;
+  std::unique_ptr<gfx::ClientNativePixmap> pixmap_;
   std::vector<gfx::NativePixmapPlane> planes_;
   base::ScopedFD fd_;
 

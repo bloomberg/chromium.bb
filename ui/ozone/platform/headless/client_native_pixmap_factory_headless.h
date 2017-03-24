@@ -5,12 +5,14 @@
 #ifndef UI_OZONE_PLATFORM_HEADLESS_CLIENT_NATIVE_PIXMAP_FACTORY_HEADLESS_H_
 #define UI_OZONE_PLATFORM_HEADLESS_CLIENT_NATIVE_PIXMAP_FACTORY_HEADLESS_H_
 
+namespace gfx {
+class ClientNativePixmapFactory;
+}
+
 namespace ui {
 
-class ClientNativePixmapFactory;
-
 // Constructor hook for use in constructor_list.cc
-ClientNativePixmapFactory* CreateClientNativePixmapFactoryHeadless();
+gfx::ClientNativePixmapFactory* CreateClientNativePixmapFactoryHeadless();
 
 }  // namespace ui
 

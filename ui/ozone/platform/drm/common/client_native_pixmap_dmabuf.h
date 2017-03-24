@@ -17,9 +17,9 @@
 
 namespace ui {
 
-class ClientNativePixmapDmaBuf : public ClientNativePixmap {
+class ClientNativePixmapDmaBuf : public gfx::ClientNativePixmap {
  public:
-  static std::unique_ptr<ClientNativePixmap> ImportFromDmabuf(
+  static std::unique_ptr<gfx::ClientNativePixmap> ImportFromDmabuf(
       const gfx::NativePixmapHandle& handle,
       const gfx::Size& size);
 

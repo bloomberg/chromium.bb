@@ -36,7 +36,7 @@ class GLImageNativePixmapTestDelegate {
                                                const uint8_t color[4]) const {
     ui::SurfaceFactoryOzone* surface_factory =
         ui::OzonePlatform::GetInstance()->GetSurfaceFactoryOzone();
-    scoped_refptr<ui::NativePixmap> pixmap =
+    scoped_refptr<gfx::NativePixmap> pixmap =
         surface_factory->CreateNativePixmap(gfx::kNullAcceleratedWidget, size,
                                             format, usage);
     DCHECK(pixmap);
@@ -56,8 +56,8 @@ class GLImageNativePixmapTestDelegate {
       client_pixmap->Unmap();
     }
 
-    scoped_refptr<ui::GLImageNativePixmap> image(new ui::GLImageNativePixmap(
-        size, ui::GLImageNativePixmap::GetInternalFormatForTesting(format)));
+    scoped_refptr<gl::GLImageNativePixmap> image(new gl::GLImageNativePixmap(
+        size, gl::GLImageNativePixmap::GetInternalFormatForTesting(format)));
     EXPECT_TRUE(image->Initialize(pixmap.get(), pixmap->GetBufferFormat()));
     return image;
   }
@@ -74,7 +74,7 @@ class GLImageNativePixmapTestDelegate {
   }
 
  private:
-  std::unique_ptr<ui::ClientNativePixmapFactory> client_pixmap_factory_;
+  std::unique_ptr<gfx::ClientNativePixmapFactory> client_pixmap_factory_;
 };
 
 using GLImageScanoutType = testing::Types<

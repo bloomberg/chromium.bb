@@ -122,13 +122,14 @@ bool GbmSurface::CreatePixmaps() {
   if (!fbo_)
     return true;
   for (size_t i = 0; i < arraysize(textures_); i++) {
-    scoped_refptr<NativePixmap> pixmap = surface_factory()->CreateNativePixmap(
-        widget(), GetSize(), gfx::BufferFormat::BGRA_8888,
-        gfx::BufferUsage::SCANOUT);
+    scoped_refptr<gfx::NativePixmap> pixmap =
+        surface_factory()->CreateNativePixmap(widget(), GetSize(),
+                                              gfx::BufferFormat::BGRA_8888,
+                                              gfx::BufferUsage::SCANOUT);
     if (!pixmap)
       return false;
-    scoped_refptr<GLImageNativePixmap> image =
-        new GLImageNativePixmap(GetSize(), GL_BGRA_EXT);
+    scoped_refptr<gl::GLImageNativePixmap> image =
+        new gl::GLImageNativePixmap(GetSize(), GL_BGRA_EXT);
     if (!image->Initialize(pixmap.get(), gfx::BufferFormat::BGRA_8888))
       return false;
     images_[i] = image;
