@@ -785,6 +785,14 @@ wayland_output_resize_surface(struct wayland_output *output)
 		wl_surface_set_opaque_region(output->parent.surface, region);
 		wl_region_destroy(region);
 
+		if (output->parent.xdg_surface) {
+			zxdg_surface_v6_set_window_geometry(output->parent.xdg_surface,
+							    ix,
+							    iy,
+							    iwidth,
+							    iheight);
+		}
+
 		width = frame_width(output->frame);
 		height = frame_height(output->frame);
 	} else {
@@ -797,6 +805,14 @@ wayland_output_resize_surface(struct wayland_output *output)
 		wl_region_add(region, 0, 0, width, height);
 		wl_surface_set_opaque_region(output->parent.surface, region);
 		wl_region_destroy(region);
+
+		if (output->parent.xdg_surface) {
+			zxdg_surface_v6_set_window_geometry(output->parent.xdg_surface,
+							    0,
+							    0,
+							    width,
+							    height);
+		}
 	}
 
 #ifdef ENABLE_EGL
