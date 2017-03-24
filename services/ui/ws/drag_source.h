@@ -18,6 +18,9 @@ class DragSource {
  public:
   virtual ~DragSource() {}
 
+  // Called during a drag operation when the mouse cursor moves.
+  virtual void OnDragMoved(const gfx::Point& location) = 0;
+
   // Called when a drag operation is completed. |success| is true when a target
   // window signaled the successful completion of the drag, false in all other
   // cases where a drag was aborted at any step in the process. |action_taken|

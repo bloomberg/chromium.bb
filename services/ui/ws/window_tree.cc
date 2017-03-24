@@ -68,6 +68,16 @@ class TargetedEvent : public ServerWindowObserver {
   DISALLOW_COPY_AND_ASSIGN(TargetedEvent);
 };
 
+struct WindowTree::DragMoveState {
+  // Whether we've queued a move to |queued_cursor_location_| when we get an
+  // ack from WmMoveDragImage.
+  bool has_queued_drag_window_move = false;
+
+  // When |has_queued_drag_window_move_| is true, this is a location which
+  // should be sent to the window manager as soon as it acked the last one.
+  gfx::Point queued_cursor_location;
+};
+
 WindowTree::WindowTree(WindowServer* window_server,
                        const UserId& user_id,
                        ServerWindow* root,
@@ -78,7 +88,8 @@ WindowTree::WindowTree(WindowServer* window_server,
       next_window_id_(1),
       access_policy_(std::move(access_policy)),
       event_ack_id_(0),
-      window_manager_internal_(nullptr) {
+      window_manager_internal_(nullptr),
+      drag_weak_factory_(this) {
   if (root)
     roots_.insert(root);
   access_policy_->Init(id_, this);
@@ -231,6 +242,16 @@ void WindowTree::NotifyChangeCompleted(
     mojom::WindowManagerErrorCode error_code) {
   client()->OnChangeCompleted(
       change_id, error_code == mojom::WindowManagerErrorCode::SUCCESS);
+}
+
+void WindowTree::OnWmMoveDragImageAck() {
+  if (drag_move_state_->has_queued_drag_window_move) {
+    gfx::Point queued_location = drag_move_state_->queued_cursor_location;
+    drag_move_state_.reset();
+    OnDragMoved(queued_location);
+  } else {
+    drag_move_state_.reset();
+  }
 }
 
 bool WindowTree::SetCapture(const ClientWindowId& client_window_id) {
@@ -1791,8 +1812,15 @@ void WindowTree::GetCursorLocationMemory(
 void WindowTree::PerformDragDrop(
     uint32_t change_id,
     Id source_window_id,
+    const gfx::Point& screen_location,
     const std::unordered_map<std::string, std::vector<uint8_t>>& drag_data,
-    uint32_t drag_operation) {
+    const SkBitmap& drag_image,
+    const gfx::Vector2d& drag_image_offset,
+    uint32_t drag_operation,
+    ui::mojom::PointerKind source) {
+  // TODO(erg): SkBitmap is the wrong data type for the drag image; we should
+  // be passing ImageSkias once http://crbug.com/655874 is implemented.
+
   ServerWindow* window = GetWindowByClientId(ClientWindowId(source_window_id));
   bool success = window && access_policy_->CanInitiateDragLoop(window);
   if (!success || !ShouldRouteToWindowManager(window)) {
@@ -1822,13 +1850,15 @@ void WindowTree::PerformDragDrop(
     return;
   }
 
-  // TODO(erg): Dealing with |drag_representation| is hard, so we're going to
-  // deal with that later.
+  WindowManagerState* wms = display_root->window_manager_state();
+
+  // Send the drag representation to the window manager.
+  wms->window_tree()->window_manager_internal_->WmBuildDragImage(
+      screen_location, drag_image, drag_image_offset, source);
 
   // Here, we need to dramatically change how the mouse pointer works. Once
   // we've started a drag drop operation, cursor events don't go to windows as
   // normal.
-  WindowManagerState* wms = display_root->window_manager_state();
   window_server_->StartDragLoop(change_id, window, this);
   wms->SetDragDropSourceWindow(this, window, this, drag_data, drag_operation);
 }
@@ -2125,6 +2155,27 @@ bool WindowTree::IsWindowCreatedByWindowManager(
          window->id().client_id;
 }
 
+void WindowTree::OnDragMoved(const gfx::Point& location) {
+  DCHECK(window_server_->in_drag_loop());
+  DCHECK_EQ(this, window_server_->GetCurrentDragLoopInitiator());
+
+  ServerWindow* window = window_server_->GetCurrentDragLoopWindow();
+  WindowManagerDisplayRoot* display_root = GetWindowManagerDisplayRoot(window);
+  if (!display_root)
+    return;
+
+  if (drag_move_state_) {
+    drag_move_state_->has_queued_drag_window_move = true;
+    drag_move_state_->queued_cursor_location = location;
+  } else {
+    WindowManagerState* wms = display_root->window_manager_state();
+    drag_move_state_ = base::MakeUnique<DragMoveState>();
+    wms->window_tree()->window_manager_internal_->WmMoveDragImage(
+        location, base::Bind(&WindowTree::OnWmMoveDragImageAck,
+                             drag_weak_factory_.GetWeakPtr()));
+  }
+}
+
 void WindowTree::OnDragCompleted(bool success, uint32_t action_taken) {
   DCHECK(window_server_->in_drag_loop());
 
@@ -2140,6 +2191,8 @@ void WindowTree::OnDragCompleted(bool success, uint32_t action_taken) {
   window_server_->EndDragLoop();
   WindowManagerState* wms = display_root->window_manager_state();
   wms->EndDragDrop();
+  wms->window_tree()->window_manager_internal_->WmDestroyDragImage();
+  drag_weak_factory_.InvalidateWeakPtrs();
 
   client()->OnPerformDragDropCompleted(change_id, success, action_taken);
 }

@@ -232,6 +232,19 @@ void TestWindowManager::WmCreateTopLevelWindow(
 void TestWindowManager::WmClientJankinessChanged(ClientSpecificId client_id,
                                                  bool janky) {}
 
+void TestWindowManager::WmBuildDragImage(const gfx::Point& screen_location,
+                                         const SkBitmap& drag_image,
+                                         const gfx::Vector2d& drag_image_offset,
+                                         ui::mojom::PointerKind source) {}
+
+void TestWindowManager::WmMoveDragImage(
+    const gfx::Point& screen_location,
+    const WmMoveDragImageCallback& callback) {
+  callback.Run();
+}
+
+void TestWindowManager::WmDestroyDragImage() {}
+
 void TestWindowManager::WmPerformMoveLoop(uint32_t change_id,
                                           uint32_t window_id,
                                           mojom::MoveLoopSource source,

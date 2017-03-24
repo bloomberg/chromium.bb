@@ -107,6 +107,8 @@ bool DragController::DispatchPointerEvent(const ui::PointerEvent& event,
     EnsureWindowObserved(current_target);
   }
 
+  source_->OnDragMoved(screen_position);
+
   if (current_target && current_target == current_target_window_ &&
       event.type() != ET_POINTER_UP) {
     QueueOperation(current_target, OperationType::OVER, event_flags,

@@ -9,9 +9,11 @@ import "services/ui/public/interfaces/cursor.mojom";
 import "services/ui/public/interfaces/event_matcher.mojom";
 import "services/ui/public/interfaces/window_manager_constants.mojom";
 import "services/ui/public/interfaces/window_tree_constants.mojom";
+import "skia/public/interfaces/bitmap.mojom";
 import "ui/base/mojo/ui_base_types.mojom";
 import "ui/display/mojo/display.mojom";
 import "ui/events/mojo/event.mojom";
+import "ui/events/mojo/event_constants.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 // WindowManager is used when a WindowTreeClient attempts to modify
@@ -188,6 +190,23 @@ interface WindowManager {
   // state, Mus will tell the window manager about it so that the window manager
   // can update the UI for the janky windows.
   WmClientJankinessChanged(uint16 client_id, bool janky);
+
+  // Asks the WindowManager to create a drag representation window: a window
+  // which contains a single image representation.
+  //
+  // TODO(erg): SkBitmap is the wrong data type for the drag image; we should
+  // be passing ImageSkias once http://crbug.com/655874 is implemented.
+  WmBuildDragImage(gfx.mojom.Point screen_location,
+                   skia.mojom.Bitmap? drag_image,
+                   gfx.mojom.Vector2d drag_image_offset,
+                   PointerKind source);
+
+  // Moves the drag representation image to |screen_location|. The window server
+  // queues further drags locally until they receive the callback.
+  WmMoveDragImage(gfx.mojom.Point screen_location) => ();
+
+  // Called when the drag image is no longer needed.
+  WmDestroyDragImage();
 
   // Asks the WindowManager to interactively move the window. This will return
   // whether this completed successfully or not through the client's

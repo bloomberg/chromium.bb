@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "ash/common/drag_drop/drag_image_view.h"
 #include "ash/common/session/session_controller.h"
 #include "ash/common/wm/container_finder.h"
 #include "ash/common/wm/window_state.h"
@@ -59,6 +60,15 @@
 
 namespace ash {
 namespace mus {
+
+struct WindowManager::DragState {
+  // An image representation of the contents of the current drag and drop
+  // clipboard.
+  std::unique_ptr<ash::DragImageView> view;
+
+  // The cursor offset of the dragged item.
+  gfx::Vector2d image_offset;
+};
 
 // TODO: need to register OSExchangeDataProviderMus. http://crbug.com/665077.
 WindowManager::WindowManager(service_manager::Connector* connector)
@@ -364,6 +374,50 @@ void WindowManager::OnWmClientJankinessChanged(
     bool janky) {
   for (auto* window : client_windows)
     window->SetProperty(kWindowIsJanky, janky);
+}
+
+void WindowManager::OnWmBuildDragImage(const gfx::Point& screen_location,
+                                       const SkBitmap& drag_image,
+                                       const gfx::Vector2d& drag_image_offset,
+                                       ui::mojom::PointerKind source) {
+  if (drag_image.isNull())
+    return;
+
+  // TODO(erg): Get the right display for this drag image. Right now, none of
+  // the drag drop code is multidisplay aware.
+
+  // TODO(erg): SkBitmap is the wrong data type for the drag image; we should
+  // be passing ImageSkias once http://crbug.com/655874 is implemented.
+
+  WmWindow* root_window =
+      WmWindow::Get((*GetRootWindowControllers().begin())->GetRootWindow());
+
+  ui::DragDropTypes::DragEventSource ui_source =
+      source == ui::mojom::PointerKind::MOUSE
+          ? ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE
+          : ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH;
+  std::unique_ptr<DragImageView> drag_view =
+      base::MakeUnique<DragImageView>(root_window, ui_source);
+  drag_view->SetImage(gfx::ImageSkia::CreateFrom1xBitmap(drag_image));
+  gfx::Size size = drag_view->GetPreferredSize();
+  gfx::Rect drag_image_bounds(screen_location - drag_image_offset, size);
+  drag_view->SetBoundsInScreen(drag_image_bounds);
+  drag_view->SetWidgetVisible(true);
+
+  drag_state_ = base::MakeUnique<DragState>();
+  drag_state_->view = std::move(drag_view);
+  drag_state_->image_offset = drag_image_offset;
+}
+
+void WindowManager::OnWmMoveDragImage(const gfx::Point& screen_location) {
+  if (drag_state_) {
+    drag_state_->view->SetScreenPosition(screen_location -
+                                         drag_state_->image_offset);
+  }
+}
+
+void WindowManager::OnWmDestroyDragImage() {
+  drag_state_.reset();
 }
 
 void WindowManager::OnWmWillCreateDisplay(const display::Display& display) {

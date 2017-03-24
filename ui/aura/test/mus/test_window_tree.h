@@ -193,8 +193,12 @@ class TestWindowTree : public ui::mojom::WindowTree {
   void PerformDragDrop(
       uint32_t change_id,
       uint32_t source_window_id,
+      const gfx::Point& screen_location,
       const std::unordered_map<std::string, std::vector<uint8_t>>& drag_data,
-      uint32_t drag_operation) override;
+      const SkBitmap& drag_image,
+      const gfx::Vector2d& drag_image_offset,
+      uint32_t drag_operation,
+      ui::mojom::PointerKind source) override;
   void CancelDragDrop(uint32_t window_id) override;
   void PerformWindowMove(uint32_t change_id,
                          uint32_t window_id,

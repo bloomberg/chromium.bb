@@ -133,9 +133,6 @@ int DragDropControllerMus::StartDragAndDrop(
     ui::DragDropTypes::DragEventSource source) {
   DCHECK(!current_drag_state_);
 
-  // TODO(erg): Pass |cursor_location| and |bitmap| in PerformDragDrop() when
-  // we start showing an image representation of the drag under he cursor.
-
   base::RunLoop run_loop;
   WindowMus* root_window_mus = WindowMus::Get(root_window);
   const uint32_t change_id =
@@ -149,12 +146,20 @@ int DragDropControllerMus::StartDragAndDrop(
   base::MessageLoop* loop = base::MessageLoop::current();
   base::MessageLoop::ScopedNestableTaskAllower allow_nested(loop);
 
+  ui::mojom::PointerKind mojo_source = ui::mojom::PointerKind::MOUSE;
+  if (source != ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE) {
+    // TODO(erg): This collapses both touch and pen events to touch.
+    mojo_source = ui::mojom::PointerKind::TOUCH;
+  }
+
   std::map<std::string, std::vector<uint8_t>> drag_data =
       static_cast<const aura::OSExchangeDataProviderMus&>(data.provider())
           .GetData();
-  window_tree_->PerformDragDrop(change_id, root_window_mus->server_id(),
-                                mojo::MapToUnorderedMap(drag_data),
-                                drag_operations);
+  window_tree_->PerformDragDrop(
+      change_id, root_window_mus->server_id(), screen_location,
+      mojo::MapToUnorderedMap(drag_data),
+      *data.provider().GetDragImage().bitmap(),
+      data.provider().GetDragImageOffset(), drag_operations, mojo_source);
 
   run_loop.Run();
 

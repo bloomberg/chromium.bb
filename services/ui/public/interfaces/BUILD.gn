@@ -36,6 +36,7 @@ mojom("interfaces") {
     "//gpu/ipc/common:interfaces",
     "//services/ui/public/interfaces/display",
     "//services/ui/public/interfaces/ime",
+    "//skia/public/interfaces",
     "//ui/base/mojo:mojo_bindings",
     "//ui/display/mojo:interfaces",
     "//ui/events/mojo:interfaces",

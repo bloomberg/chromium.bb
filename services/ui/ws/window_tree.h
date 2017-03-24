@@ -17,6 +17,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "cc/ipc/surface_id.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
@@ -372,6 +373,11 @@ class WindowTree : public mojom::WindowTree,
   void NotifyChangeCompleted(uint32_t change_id,
                              mojom::WindowManagerErrorCode error_code);
 
+  // Callback for when WmMoveDragImage completes. This sends off the next
+  // queued move under the image if the mouse had further moves while we were
+  // waiting for the last move to be acknowledged.
+  void OnWmMoveDragImageAck();
+
   // WindowTree:
   void NewWindow(uint32_t change_id,
                  Id transport_window_id,
@@ -460,8 +466,12 @@ class WindowTree : public mojom::WindowTree,
   void PerformDragDrop(
       uint32_t change_id,
       Id source_window_id,
+      const gfx::Point& screen_location,
       const std::unordered_map<std::string, std::vector<uint8_t>>& drag_data,
-      uint32_t drag_operation) override;
+      const SkBitmap& drag_image,
+      const gfx::Vector2d& drag_image_offset,
+      uint32_t drag_operation,
+      ui::mojom::PointerKind source) override;
   void CancelDragDrop(Id window_id) override;
   void PerformWindowMove(uint32_t change_id,
                          Id window_id,
@@ -500,6 +510,7 @@ class WindowTree : public mojom::WindowTree,
       const ServerWindow* window) const override;
 
   // DragSource:
+  void OnDragMoved(const gfx::Point& location) override;
   void OnDragCompleted(bool success, uint32_t action_taken) override;
   ServerWindow* GetWindowById(const WindowId& id) override;
   DragTargetConnection* GetDragTargetForWindow(
@@ -585,6 +596,15 @@ class WindowTree : public mojom::WindowTree,
   std::unique_ptr<WaitingForTopLevelWindowInfo>
       waiting_for_top_level_window_info_;
   bool embedder_intercepts_events_ = false;
+
+  // State kept while we're waiting for the window manager to ack a
+  // WmMoveDragImage. Non-null while we're waiting for a response.
+  struct DragMoveState;
+  std::unique_ptr<DragMoveState> drag_move_state_;
+
+  // A weak ptr factory for callbacks from the window manager for when we send
+  // a image move. All weak ptrs are invalidated when a drag is completed.
+  base::WeakPtrFactory<WindowTree> drag_weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTree);
 };

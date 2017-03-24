@@ -117,6 +117,21 @@ class AURA_EXPORT WindowManagerDelegate {
       const std::set<Window*>& client_windows,
       bool janky) = 0;
 
+  // Called when a Mus client has started a drag, and wants this image to be
+  // the drag representation.
+  virtual void OnWmBuildDragImage(const gfx::Point& screen_location,
+                                  const SkBitmap& drag_image,
+                                  const gfx::Vector2d& drag_image_offset,
+                                  ui::mojom::PointerKind source) = 0;
+
+  // Called during drags when the drag location has changed and the drag
+  // representation must be moved.
+  virtual void OnWmMoveDragImage(const gfx::Point& screen_location) = 0;
+
+  // Called when a drag is complete or canceled, and signals that the drag image
+  // should be removed.
+  virtual void OnWmDestroyDragImage() = 0;
+
   // When a new display is added OnWmWillCreateDisplay() is called, and then
   // OnWmNewDisplay(). OnWmWillCreateDisplay() is intended to add the display
   // to the set of displays (see Screen).

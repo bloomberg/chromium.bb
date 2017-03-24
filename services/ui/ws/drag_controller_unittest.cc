@@ -236,6 +236,8 @@ class DragControllerTest : public testing::Test,
   }
 
   // Overridden from DragControllerSource:
+  void OnDragMoved(const gfx::Point& location) override {}
+
   void OnDragCompleted(bool success, uint32_t action_taken) override {
     drag_completed_action_ = action_taken;
     drag_completed_value_ = success;

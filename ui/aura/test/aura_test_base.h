@@ -109,6 +109,12 @@ class AuraTestBase : public testing::Test,
       std::map<std::string, std::vector<uint8_t>>* properties) override;
   void OnWmClientJankinessChanged(const std::set<Window*>& client_windows,
                                   bool janky) override;
+  void OnWmBuildDragImage(const gfx::Point& cursor_location,
+                          const SkBitmap& drag_image,
+                          const gfx::Vector2d& drag_image_offset,
+                          ui::mojom::PointerKind source) override {}
+  void OnWmMoveDragImage(const gfx::Point& cursor_location) override {}
+  void OnWmDestroyDragImage() override {}
   void OnWmWillCreateDisplay(const display::Display& display) override;
   void OnWmNewDisplay(std::unique_ptr<WindowTreeHostMus> window_tree_host,
                       const display::Display& display) override;

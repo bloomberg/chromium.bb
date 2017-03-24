@@ -1495,6 +1495,36 @@ void WindowTreeClient::WmClientJankinessChanged(ClientSpecificId client_id,
   }
 }
 
+void WindowTreeClient::WmBuildDragImage(const gfx::Point& screen_location,
+                                        const SkBitmap& drag_image,
+                                        const gfx::Vector2d& drag_image_offset,
+                                        ui::mojom::PointerKind source) {
+  if (!window_manager_delegate_)
+    return;
+
+  window_manager_delegate_->OnWmBuildDragImage(screen_location, drag_image,
+                                               drag_image_offset, source);
+}
+
+void WindowTreeClient::WmMoveDragImage(
+    const gfx::Point& screen_location,
+    const WmMoveDragImageCallback& callback) {
+  if (!window_manager_delegate_) {
+    callback.Run();
+    return;
+  }
+
+  window_manager_delegate_->OnWmMoveDragImage(screen_location);
+  callback.Run();
+}
+
+void WindowTreeClient::WmDestroyDragImage() {
+  if (!window_manager_delegate_)
+    return;
+
+  window_manager_delegate_->OnWmDestroyDragImage();
+}
+
 void WindowTreeClient::WmPerformMoveLoop(uint32_t change_id,
                                          Id window_id,
                                          ui::mojom::MoveLoopSource source,

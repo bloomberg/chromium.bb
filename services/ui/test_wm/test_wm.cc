@@ -124,6 +124,12 @@ class TestWM : public service_manager::Service,
                                   bool janky) override {
     // Don't care.
   }
+  void OnWmBuildDragImage(const gfx::Point& screen_location,
+                          const SkBitmap& drag_image,
+                          const gfx::Vector2d& drag_image_offset,
+                          ui::mojom::PointerKind source) override {}
+  void OnWmMoveDragImage(const gfx::Point& screen_location) override {}
+  void OnWmDestroyDragImage() override {}
   void OnWmWillCreateDisplay(const display::Display& display) override {
     // This class only deals with one display.
     DCHECK_EQ(0u, screen_->display_list().displays().size());

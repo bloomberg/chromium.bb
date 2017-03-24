@@ -65,6 +65,15 @@ void MusDemoInternal::OnWmClientJankinessChanged(
   // Don't care
 }
 
+void MusDemoInternal::OnWmBuildDragImage(const gfx::Point& screen_location,
+                                         const SkBitmap& drag_image,
+                                         const gfx::Vector2d& drag_image_offset,
+                                         ui::mojom::PointerKind source) {}
+
+void MusDemoInternal::OnWmMoveDragImage(const gfx::Point& screen_location) {}
+
+void MusDemoInternal::OnWmDestroyDragImage() {}
+
 void MusDemoInternal::OnWmWillCreateDisplay(const display::Display& display) {
   AddPrimaryDisplay(display);
 }

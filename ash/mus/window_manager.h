@@ -151,6 +151,12 @@ class WindowManager : public aura::WindowManagerDelegate,
       std::map<std::string, std::vector<uint8_t>>* properties) override;
   void OnWmClientJankinessChanged(const std::set<aura::Window*>& client_windows,
                                   bool not_responding) override;
+  void OnWmBuildDragImage(const gfx::Point& screen_location,
+                          const SkBitmap& drag_image,
+                          const gfx::Vector2d& drag_image_offset,
+                          ui::mojom::PointerKind source) override;
+  void OnWmMoveDragImage(const gfx::Point& screen_location) override;
+  void OnWmDestroyDragImage() override;
   void OnWmWillCreateDisplay(const display::Display& display) override;
   void OnWmNewDisplay(std::unique_ptr<aura::WindowTreeHostMus> window_tree_host,
                       const display::Display& display) override;
@@ -202,6 +208,10 @@ class WindowManager : public aura::WindowManagerDelegate,
 
   // See WmShellMus's constructor for details. Tests may set to false.
   bool create_session_state_delegate_stub_for_test_ = true;
+
+  // State that is only valid during a drag.
+  struct DragState;
+  std::unique_ptr<DragState> drag_state_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManager);
 };

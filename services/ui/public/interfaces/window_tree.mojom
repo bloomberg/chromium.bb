@@ -14,8 +14,10 @@ import "services/ui/public/interfaces/mus_constants.mojom";
 import "services/ui/public/interfaces/window_manager.mojom";
 import "services/ui/public/interfaces/window_manager_constants.mojom";
 import "services/ui/public/interfaces/window_tree_constants.mojom";
+import "skia/public/interfaces/bitmap.mojom";
 import "ui/base/mojo/ui_base_types.mojom";
 import "ui/events/mojo/event.mojom";
+import "ui/events/mojo/event_constants.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/platform_window/mojo/text_input_state.mojom";
 
@@ -293,13 +295,23 @@ interface WindowTree {
   CancelWindowMove(uint32 window_id);
 
   // Called by the client to start a drag operation. |source_window_id| is the
-  // source window, |drag_data| is the entire set of mime to raw data
-  // mapping. We send this during the start of the drag because most views
+  // source window, |screen_location| is what the source thinks their location
+  // of the pointer which started the drag is, |drag_data| is the entire set of
+  // mime to raw data mapping. |drag_image| and |drag_image_offset| describe
+  // an image to hold behind the cursor which represents the data on the
+  // clipboard. We send this during the start of the drag because most views
   // clients will try to read all this data on first entry.
+  //
+  // TODO(erg): SkBitmap is the wrong data type for the drag image; we should
+  // be passing ImageSkias once http://crbug.com/655874 is implemented.
   PerformDragDrop(uint32 change_id,
                   uint32 source_window_id,
+                  gfx.mojom.Point screen_location,
                   map<string, array<uint8>> drag_data,
-                  uint32 drag_operation);
+                  skia.mojom.Bitmap? drag_image,
+                  gfx.mojom.Vector2d drag_image_offset,
+                  uint32 drag_operation,
+                  PointerKind source);
 
   // Called by the client to cancel any in progress drag drop operation. This
   // will result in a change completed for the underlying change.

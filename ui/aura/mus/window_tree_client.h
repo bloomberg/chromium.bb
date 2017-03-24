@@ -423,6 +423,13 @@ class AURA_EXPORT WindowTreeClient
           transport_properties) override;
   void WmClientJankinessChanged(ClientSpecificId client_id,
                                 bool janky) override;
+  void WmBuildDragImage(const gfx::Point& screen_location,
+                        const SkBitmap& drag_image,
+                        const gfx::Vector2d& drag_image_offset,
+                        ui::mojom::PointerKind source) override;
+  void WmMoveDragImage(const gfx::Point& screen_location,
+                       const WmMoveDragImageCallback& callback) override;
+  void WmDestroyDragImage() override;
   void WmPerformMoveLoop(uint32_t change_id,
                          Id window_id,
                          ui::mojom::MoveLoopSource source,
