@@ -158,7 +158,7 @@ id<GREYMatcher> TranslateSettingsButton() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_TRANSLATE_SETTING);
 }
 // Matcher for the save button in the save password bar.
-id<GREYMatcher> savePasswordButton() {
+id<GREYMatcher> SavePasswordButton() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_PASSWORD_MANAGER_SAVE_BUTTON);
 }
 
@@ -445,7 +445,7 @@ bool IsCertificateCleared() {
   // Login to page and click to save password and check that its saved.
   [ChromeEarlGrey loadURL:URL];
   chrome_test_util::TapWebViewElementWithId("Login");
-  [[EarlGrey selectElementWithMatcher:savePasswordButton()]
+  [[EarlGrey selectElementWithMatcher:SavePasswordButton()]
       performAction:grey_tap()];
 }
 
