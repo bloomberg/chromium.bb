@@ -1120,6 +1120,22 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, BlockedOnRedirect) {
   EXPECT_EQ(finished_navigation, logger.finished_navigation_urls());
 }
 
+// Tests that when a navigation starts while there's an existing one, the first
+// one has the right error code set on its navigation handle.
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, ErrorCodeOnCancel) {
+  GURL slow_url = embedded_test_server()->GetURL("/slow?60");
+  NavigationHandleObserver observer(shell()->web_contents(), slow_url);
+  shell()->LoadURL(slow_url);
+
+  GURL url2(embedded_test_server()->GetURL("/title1.html"));
+  TestNavigationObserver same_tab_observer(
+      shell()->web_contents(), 1);
+  shell()->LoadURL(url2);
+  same_tab_observer.Wait();
+
+  EXPECT_EQ(net::ERR_ABORTED, observer.net_error_code());
+}
+
 // This class allows running tests with PlzNavigate enabled, regardless of
 // default test configuration.
 class PlzNavigateNavigationHandleImplBrowserTest : public ContentBrowserTest {

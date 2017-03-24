@@ -383,8 +383,14 @@ void FrameTreeNode::CreatedNavigationRequest(
   // There's no need to reset the state: there's still an ongoing load, and the
   // RenderFrameHostManager will take care of updates to the speculative
   // RenderFrameHost in DidCreateNavigationRequest below.
-  if (was_previously_loading)
+  if (was_previously_loading) {
+    if (navigation_request_) {
+      // Mark the old request as aborted.
+      navigation_request_->navigation_handle()->set_net_error_code(
+          net::ERR_ABORTED);
+    }
     ResetNavigationRequest(true, true);
+  }
 
   navigation_request_ = std::move(navigation_request);
   render_manager()->DidCreateNavigationRequest(navigation_request_.get());
