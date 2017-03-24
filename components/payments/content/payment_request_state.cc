@@ -34,6 +34,19 @@ PaymentRequestState::PaymentRequestState(
   SetDefaultProfileSelections();
 }
 
+bool PaymentRequestState::CanMakePayment() const {
+  // TODO(crbug.com/704675): Handle incognito mode when replying to this method.
+  for (const std::unique_ptr<PaymentInstrument>& instrument :
+       available_instruments_) {
+    if (instrument.get()->IsValid() &&
+        spec_->supported_card_networks_set().count(
+            instrument.get()->method_name())) {
+      return true;
+    }
+  }
+  return false;
+}
+
 void PaymentRequestState::AddObserver(Observer* observer) {
   CHECK(observer);
   observers_.AddObserver(observer);

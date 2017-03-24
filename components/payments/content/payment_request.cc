@@ -84,8 +84,11 @@ void PaymentRequest::Complete(payments::mojom::PaymentComplete result) {
 }
 
 void PaymentRequest::CanMakePayment() {
-  // TODO(mathp): Return whether we can make payment.
-  client_->OnCanMakePayment(mojom::CanMakePaymentQueryResult::CAN_MAKE_PAYMENT);
+  // TODO(crbug.com/704676): Implement a quota policy for this method.
+  client_->OnCanMakePayment(
+      state()->CanMakePayment()
+          ? mojom::CanMakePaymentQueryResult::CAN_MAKE_PAYMENT
+          : mojom::CanMakePaymentQueryResult::CANNOT_MAKE_PAYMENT);
 }
 
 void PaymentRequest::OnInvalidSpecProvided() {

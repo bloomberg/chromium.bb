@@ -56,6 +56,9 @@ class PaymentRequestState : public PaymentInstrument::Delegate {
                       autofill::PersonalDataManager* personal_data_manager);
   ~PaymentRequestState() override;
 
+  // Returns whether the user has at least one instrument that satisfies the
+  // specified supported payment methods.
+  bool CanMakePayment() const;
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 

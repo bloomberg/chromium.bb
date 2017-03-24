@@ -156,4 +156,143 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestAbortTest, OpenThenAbort) {
   EXPECT_FALSE(web_contents_modal_dialog_manager->IsDialogActive());
 }
 
+class PaymentRequestBasicCardTest : public PaymentRequestBrowserTestBase {
+ protected:
+  PaymentRequestBasicCardTest()
+      : PaymentRequestBrowserTestBase("/payment_request_basic_card_test.html") {
+  }
+
+  void InvokePaymentRequestWithJs(const std::string& js) {
+    ResetEventObserver(DialogEvent::DIALOG_OPENED);
+
+    ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), js));
+
+    WaitForObservedEvent();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PaymentRequestBasicCardTest);
+};
+
+// One network is specified in 'basic-card' data, one in supportedMethods.
+IN_PROC_BROWSER_TEST_F(PaymentRequestBasicCardTest,
+                       BasicCard_NetworksSpecified) {
+  InvokePaymentRequestWithJs("buy();");
+
+  std::vector<PaymentRequest*> requests =
+      GetPaymentRequests(GetActiveWebContents());
+  EXPECT_EQ(1u, requests.size());
+  std::vector<std::string> supported_card_networks =
+      requests[0]->spec()->supported_card_networks();
+  EXPECT_EQ(2u, supported_card_networks.size());
+  // The networks appear in the order in which they were specified by the
+  // merchant.
+  EXPECT_EQ("mastercard", supported_card_networks[0]);
+  EXPECT_EQ("visa", supported_card_networks[1]);
+}
+
+// Only specifying 'basic-card' with no supportedNetworks means all networks are
+// supported.
+IN_PROC_BROWSER_TEST_F(PaymentRequestBasicCardTest,
+                       BasicCard_NoNetworksSpecified) {
+  InvokePaymentRequestWithJs("buyBasicCard();");
+
+  std::vector<PaymentRequest*> requests =
+      GetPaymentRequests(GetActiveWebContents());
+  EXPECT_EQ(1u, requests.size());
+  std::vector<std::string> supported_card_networks =
+      requests[0]->spec()->supported_card_networks();
+  // The default ordering is alphabetical.
+  EXPECT_EQ(8u, supported_card_networks.size());
+  EXPECT_EQ("amex", supported_card_networks[0]);
+  EXPECT_EQ("diners", supported_card_networks[1]);
+  EXPECT_EQ("discover", supported_card_networks[2]);
+  EXPECT_EQ("jcb", supported_card_networks[3]);
+  EXPECT_EQ("mastercard", supported_card_networks[4]);
+  EXPECT_EQ("mir", supported_card_networks[5]);
+  EXPECT_EQ("unionpay", supported_card_networks[6]);
+  EXPECT_EQ("visa", supported_card_networks[7]);
+}
+
+// Specifying 'basic-card' after having explicitely included a network yields
+// the expected order when in different supportedMethods lists.
+IN_PROC_BROWSER_TEST_F(PaymentRequestBasicCardTest,
+                       BasicCard_NetworkThenBasicCard_DifferentList) {
+  InvokePaymentRequestWithJs(
+      "buyHelper([{"
+      "  supportedMethods: ['mastercard'],"
+      "}, {"
+      "  supportedMethods: ['basic-card']"
+      "}]);");
+
+  std::vector<PaymentRequest*> requests =
+      GetPaymentRequests(GetActiveWebContents());
+  EXPECT_EQ(1u, requests.size());
+  std::vector<std::string> supported_card_networks =
+      requests[0]->spec()->supported_card_networks();
+  // 'mastercard' is first because it was explicitely specified first. The rest
+  // is alphabetical.
+  EXPECT_EQ(8u, supported_card_networks.size());
+  EXPECT_EQ("mastercard", supported_card_networks[0]);
+  EXPECT_EQ("amex", supported_card_networks[1]);
+  EXPECT_EQ("diners", supported_card_networks[2]);
+  EXPECT_EQ("discover", supported_card_networks[3]);
+  EXPECT_EQ("jcb", supported_card_networks[4]);
+  EXPECT_EQ("mir", supported_card_networks[5]);
+  EXPECT_EQ("unionpay", supported_card_networks[6]);
+  EXPECT_EQ("visa", supported_card_networks[7]);
+}
+
+// Specifying 'basic-card' after having explicitely included a network yields
+// the expected order when in the same supportedMethods list.
+IN_PROC_BROWSER_TEST_F(PaymentRequestBasicCardTest,
+                       BasicCard_NetworkThenBasicCard_SameList) {
+  InvokePaymentRequestWithJs(
+      "buyHelper([{"
+      "  supportedMethods: ['visa', 'basic-card']"
+      "}]);");
+
+  std::vector<PaymentRequest*> requests =
+      GetPaymentRequests(GetActiveWebContents());
+  EXPECT_EQ(1u, requests.size());
+  std::vector<std::string> supported_card_networks =
+      requests[0]->spec()->supported_card_networks();
+  // 'visa' is first because it was explicitely specified first. The rest
+  // is alphabetical.
+  EXPECT_EQ(8u, supported_card_networks.size());
+  EXPECT_EQ("visa", supported_card_networks[0]);
+  EXPECT_EQ("amex", supported_card_networks[1]);
+  EXPECT_EQ("diners", supported_card_networks[2]);
+  EXPECT_EQ("discover", supported_card_networks[3]);
+  EXPECT_EQ("jcb", supported_card_networks[4]);
+  EXPECT_EQ("mastercard", supported_card_networks[5]);
+  EXPECT_EQ("mir", supported_card_networks[6]);
+  EXPECT_EQ("unionpay", supported_card_networks[7]);
+}
+
+// Specifying 'basic-card' with some networks after having explicitely included
+// the same networks does not yield duplicates and has the expected order.
+IN_PROC_BROWSER_TEST_F(PaymentRequestBasicCardTest,
+                       BasicCard_NetworkThenBasicCardWithSameNetwork) {
+  InvokePaymentRequestWithJs(
+      "buyHelper([{"
+      "  supportedMethods: ['mastercard', 'visa']"
+      "}, {"
+      "  supportedMethods: ['basic-card'],"
+      "  data: {"
+      "    supportedNetworks: ['visa', 'mastercard', 'jcb'],"
+      "  }"
+      "}]);");
+
+  std::vector<PaymentRequest*> requests =
+      GetPaymentRequests(GetActiveWebContents());
+  EXPECT_EQ(1u, requests.size());
+  std::vector<std::string> supported_card_networks =
+      requests[0]->spec()->supported_card_networks();
+  EXPECT_EQ(3u, supported_card_networks.size());
+  EXPECT_EQ("mastercard", supported_card_networks[0]);
+  EXPECT_EQ("visa", supported_card_networks[1]);
+  EXPECT_EQ("jcb", supported_card_networks[2]);
+}
+
 }  // namespace payments
