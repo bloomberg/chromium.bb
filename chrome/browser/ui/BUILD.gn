@@ -26,9 +26,11 @@ config("ui_warnings") {
 # Use a static library here because many test binaries depend on this but don't
 # require many files from it. This makes linking more efficient.
 split_static_library("ui") {
-  # Split into multiple static libraries on Windows official builds, where we
-  # run into a 2GB max size limit.
-  if (is_win && is_official_build) {
+  # Split into multiple static libraries on Windows builds. We have hit size
+  # limits on Windows official builds and on goma builds when symbol_level = 2
+  # is selected. Always splitting on Windows builds is simpler than trying to
+  # perfectly calculate the scenarios where it is required.
+  if (is_win) {
     split_count = 5
   } else {
     split_count = 1
