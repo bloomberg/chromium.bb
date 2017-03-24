@@ -407,7 +407,7 @@ component("skia") {
     }
     deps += [
       "//build/linux:fontconfig",
-      "//build/linux:freetype2",
+      "//build/config/freetype",
       "//third_party/expat",
       "//third_party/icu:icuuc",
     ]
@@ -417,7 +417,7 @@ component("skia") {
     deps += [
       "//third_party/android_tools:cpu_features",
       "//third_party/expat",
-      "//third_party/freetype",
+      "//build/config/freetype",
     ]
   }
 

@@ -52,7 +52,7 @@ component("fontconfig") {
   ]
 
   deps = [
-    "//build/linux:freetype2",
+    "//build/config/freetype",
     "//third_party/libxml",
     "//third_party/zlib",
   ]
