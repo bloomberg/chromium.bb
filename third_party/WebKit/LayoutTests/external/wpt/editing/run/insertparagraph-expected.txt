@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 5302 tests; 5017 PASS, 285 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 5302 tests; 5145 PASS, 157 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS [["defaultparagraphseparator","div"],["insertparagraph",""]] "foo[bar]baz": execCommand("defaultparagraphseparator", false, "div") return value 
 PASS [["defaultparagraphseparator","div"],["insertparagraph",""]] "foo[bar]baz": execCommand("insertparagraph", false, "") return value 
 PASS [["defaultparagraphseparator","div"],["insertparagraph",""]] "foo[bar]baz" checks for modifications to non-editable content 
@@ -1045,10 +1045,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagr
 FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<div style=\"display:none\">foo<br></div><div style=\"display:none\">bar<br></div>baz" but got "<div><br></div><div style=\"display:none\">foobar</div>baz"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandIndeterm("stylewithcss") before 
 FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandState("stylewithcss") before assert_equals: Wrong result returned expected false but got true
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandValue("defaultparagraphseparator") before 
@@ -1068,10 +1068,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparag
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<div style=\"display:none\">foo<br></div><div style=\"display:none\">bar<br></div>baz" but got "<div><br></div><div style=\"display:none\">foobar</div>baz"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandValue("defaultparagraphseparator") before 
@@ -1091,10 +1091,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagrap
 FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<div style=\"display:none\">foo<br></div><div style=\"display:none\">bar<br></div>baz" but got "<p><br></p><div style=\"display:none\">foobar</div>baz"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandValue("defaultparagraphseparator") before 
@@ -1114,10 +1114,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagra
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<div style=\"display:none\">foo<br></div><div style=\"display:none\">bar<br></div>baz" but got "<p><br></p><div style=\"display:none\">foobar</div>baz"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div style=display:none>foo[]bar</div>baz" queryCommandValue("defaultparagraphseparator") before 
@@ -2133,10 +2133,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagr
 FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<div><b>foo</b></div><div><b>bar</b></div>" but got "<b>foo</b><div><b>bar</b></div>"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandValue("defaultparagraphseparator") before 
@@ -2156,10 +2156,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparag
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<div><b>foo</b></div><div><b>bar</b></div>" but got "<b>foo</b><div><b>bar</b></div>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandValue("defaultparagraphseparator") before 
@@ -2179,10 +2179,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagrap
 FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><b>foo</b></p><p><b>bar</b></p>" but got "<b>foo</b><p><b>bar</b></p>"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandValue("defaultparagraphseparator") before 
@@ -2202,10 +2202,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagra
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><b>foo</b></p><p><b>bar</b></p>" but got "<b>foo</b><p><b>bar</b></p>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>" queryCommandValue("defaultparagraphseparator") before 
@@ -2225,10 +2225,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagr
 FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<div><b>foo</b></div><div><b>bar</b>baz</div>" but got "<b>foo</b><div><b>bar</b>baz</div>"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandValue("defaultparagraphseparator") before 
@@ -2248,10 +2248,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparag
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<div><b>foo</b></div><div><b>bar</b>baz</div>" but got "<b>foo</b><div><b>bar</b>baz</div>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandValue("defaultparagraphseparator") before 
@@ -2271,10 +2271,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagrap
 FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><b>foo</b></p><p><b>bar</b>baz</p>" but got "<b>foo</b><p><b>bar</b>baz</p>"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandValue("defaultparagraphseparator") before 
@@ -2294,10 +2294,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagra
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><b>foo</b></p><p><b>bar</b>baz</p>" but got "<b>foo</b><p><b>bar</b>baz</p>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b>foo[]bar</b>baz" queryCommandValue("defaultparagraphseparator") before 
@@ -2413,10 +2413,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagr
 FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<div><b id=\"x\" class=\"y\">foo</b></div><div><b class=\"y\">bar</b></div>" but got "<b id=\"x\" class=\"y\">foo</b><div><b class=\"y\">bar</b></div>"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandValue("defaultparagraphseparator") before 
@@ -2436,10 +2436,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparag
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<div><b id=\"x\" class=\"y\">foo</b></div><div><b class=\"y\">bar</b></div>" but got "<b id=\"x\" class=\"y\">foo</b><div><b class=\"y\">bar</b></div>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandValue("defaultparagraphseparator") before 
@@ -2459,10 +2459,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagrap
 FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><b id=\"x\" class=\"y\">foo</b></p><p><b class=\"y\">bar</b></p>" but got "<b id=\"x\" class=\"y\">foo</b><p><b class=\"y\">bar</b></p>"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandValue("defaultparagraphseparator") before 
@@ -2482,10 +2482,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagra
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><b id=\"x\" class=\"y\">foo</b></p><p><b class=\"y\">bar</b></p>" but got "<b id=\"x\" class=\"y\">foo</b><p><b class=\"y\">bar</b></p>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<b id=x class=y>foo[]bar</b>" queryCommandValue("defaultparagraphseparator") before 
@@ -2505,10 +2505,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagr
 FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<div><i><b>foo</b></i></div><div><i><b>bar</b>baz</i></div>" but got "<i><b>foo</b></i><div><i><b>bar</b>baz</i></div>"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandValue("defaultparagraphseparator") before 
@@ -2528,10 +2528,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparag
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<div><i><b>foo</b></i></div><div><i><b>bar</b>baz</i></div>" but got "<i><b>foo</b></i><div><i><b>bar</b>baz</i></div>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandValue("defaultparagraphseparator") before 
@@ -2551,10 +2551,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagrap
 FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><i><b>foo</b></i></p><p><i><b>bar</b>baz</i></p>" but got "<i><b>foo</b></i><p><i><b>bar</b>baz</i></p>"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandValue("defaultparagraphseparator") before 
@@ -2574,10 +2574,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagra
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><i><b>foo</b></i></p><p><i><b>bar</b>baz</i></p>" but got "<i><b>foo</b></i><p><i><b>bar</b>baz</i></p>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<i><b>foo[]bar</b>baz</i>" queryCommandValue("defaultparagraphseparator") before 
@@ -2597,10 +2597,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagr
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandValue("defaultparagraphseparator") before 
@@ -2620,10 +2620,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparag
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" compare innerHTML 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandValue("defaultparagraphseparator") before 
@@ -2643,10 +2643,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagrap
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandValue("defaultparagraphseparator") before 
@@ -2666,10 +2666,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagra
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" compare innerHTML 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b>foo[]bar</b></p>" queryCommandValue("defaultparagraphseparator") before 
@@ -2721,10 +2721,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagr
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandValue("defaultparagraphseparator") before 
@@ -2744,10 +2744,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparag
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" compare innerHTML 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandValue("defaultparagraphseparator") before 
@@ -2767,10 +2767,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagrap
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandValue("defaultparagraphseparator") before 
@@ -2790,10 +2790,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagra
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" compare innerHTML 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p><b id=x class=y>foo[]bar</b></p>" queryCommandValue("defaultparagraphseparator") before 
@@ -2813,10 +2813,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagr
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandValue("defaultparagraphseparator") before 
@@ -2836,10 +2836,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparag
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" compare innerHTML 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandValue("defaultparagraphseparator") before 
@@ -2859,10 +2859,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagrap
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandValue("defaultparagraphseparator") before 
@@ -2882,10 +2882,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagra
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" compare innerHTML 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<div><b>foo[]bar</b></div>" queryCommandValue("defaultparagraphseparator") before 
@@ -3097,10 +3097,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagr
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("defaultparagraphseparator") before 
@@ -3120,10 +3120,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparag
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("defaultparagraphseparator") before 
@@ -3143,10 +3143,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagrap
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("defaultparagraphseparator") before 
@@ -3166,10 +3166,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagra
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("defaultparagraphseparator") before 
@@ -3189,10 +3189,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagr
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("defaultparagraphseparator") before 
@@ -3212,10 +3212,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparag
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("defaultparagraphseparator") before 
@@ -3235,10 +3235,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagrap
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("defaultparagraphseparator") before 
@@ -3258,10 +3258,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagra
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("defaultparagraphseparator") before 
@@ -3281,10 +3281,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagr
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("defaultparagraphseparator") before 
@@ -3304,10 +3304,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparag
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" compare innerHTML 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("defaultparagraphseparator") before 
@@ -3327,10 +3327,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagrap
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("defaultparagraphseparator") before 
@@ -3350,10 +3350,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagra
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" compare innerHTML 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("defaultparagraphseparator") before 
@@ -3373,10 +3373,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagr
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("defaultparagraphseparator") before 
@@ -3396,10 +3396,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparag
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("defaultparagraphseparator") before 
@@ -3419,10 +3419,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagrap
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("defaultparagraphseparator") before 
@@ -3442,10 +3442,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagra
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("defaultparagraphseparator") before 
@@ -3465,10 +3465,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagr
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("defaultparagraphseparator") before 
@@ -3488,10 +3488,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparag
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("defaultparagraphseparator") before 
@@ -3511,10 +3511,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagrap
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("defaultparagraphseparator") before 
@@ -3534,10 +3534,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagra
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("defaultparagraphseparator") before 
@@ -3557,10 +3557,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagr
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("defaultparagraphseparator") before 
@@ -3580,10 +3580,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparag
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" compare innerHTML 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("defaultparagraphseparator") before 
@@ -3603,10 +3603,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagrap
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("defaultparagraphseparator") before 
@@ -3626,10 +3626,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagra
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" compare innerHTML 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("defaultparagraphseparator") before 
@@ -3649,10 +3649,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagr
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("defaultparagraphseparator") before 
@@ -3672,10 +3672,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparag
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" compare innerHTML 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("defaultparagraphseparator") before 
@@ -3695,10 +3695,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagrap
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("defaultparagraphseparator") before 
@@ -3718,10 +3718,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagra
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" compare innerHTML 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("defaultparagraphseparator") before 
@@ -3741,10 +3741,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagr
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("defaultparagraphseparator") before 
@@ -3764,10 +3764,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparag
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" compare innerHTML 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("defaultparagraphseparator") before 
@@ -3787,10 +3787,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagrap
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("defaultparagraphseparator") before 
@@ -3810,10 +3810,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagra
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" compare innerHTML 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertparagraph",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("defaultparagraphseparator") before 

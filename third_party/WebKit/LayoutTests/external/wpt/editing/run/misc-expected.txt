@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 423 tests; 374 PASS, 49 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 423 tests; 408 PASS, 15 FAIL, 0 TIMEOUT, 0 NOTRUN.
 FAIL [["defaultparagraphseparator",""]] "foo[bar]baz": execCommand("defaultparagraphseparator", false, "") return value assert_equals: expected false but got true
 PASS [["defaultparagraphseparator",""]] "foo[bar]baz" checks for modifications to non-editable content 
 PASS [["defaultparagraphseparator",""]] "foo[bar]baz" compare innerHTML 
@@ -113,154 +113,154 @@ PASS [["stylewithcss","true"]] "foo[bar]baz" checks for modifications to non-edi
 PASS [["stylewithcss","true"]] "foo[bar]baz" compare innerHTML 
 PASS [["stylewithcss","true"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") before 
 FAIL [["stylewithcss","true"]] "foo[bar]baz" queryCommandState("stylewithcss") before assert_equals: Wrong result returned expected false but got true
-FAIL [["stylewithcss","true"]] "foo[bar]baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"]] "foo[bar]baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"]] "foo[bar]baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"]] "foo[bar]baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"]] "foo[bar]baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","TRUE"]] "foo[bar]baz": execCommand("stylewithcss", false, "TRUE") return value 
 PASS [["stylewithcss","TRUE"]] "foo[bar]baz" checks for modifications to non-editable content 
 PASS [["stylewithcss","TRUE"]] "foo[bar]baz" compare innerHTML 
 PASS [["stylewithcss","TRUE"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","TRUE"]] "foo[bar]baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","TRUE"]] "foo[bar]baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","TRUE"]] "foo[bar]baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","TRUE"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","TRUE"]] "foo[bar]baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","TRUE"]] "foo[bar]baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","TRUE"]] "foo[bar]baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","TrUe"]] "foo[bar]baz": execCommand("stylewithcss", false, "TrUe") return value 
 PASS [["stylewithcss","TrUe"]] "foo[bar]baz" checks for modifications to non-editable content 
 PASS [["stylewithcss","TrUe"]] "foo[bar]baz" compare innerHTML 
 PASS [["stylewithcss","TrUe"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","TrUe"]] "foo[bar]baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","TrUe"]] "foo[bar]baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","TrUe"]] "foo[bar]baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","TrUe"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","TrUe"]] "foo[bar]baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","TrUe"]] "foo[bar]baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","TrUe"]] "foo[bar]baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true "]] "foo[bar]baz": execCommand("stylewithcss", false, "true ") return value 
 PASS [["stylewithcss","true "]] "foo[bar]baz" checks for modifications to non-editable content 
 PASS [["stylewithcss","true "]] "foo[bar]baz" compare innerHTML 
 PASS [["stylewithcss","true "]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true "]] "foo[bar]baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true "]] "foo[bar]baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true "]] "foo[bar]baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true "]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true "]] "foo[bar]baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true "]] "foo[bar]baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true "]] "foo[bar]baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss"," true"]] "foo[bar]baz": execCommand("stylewithcss", false, " true") return value 
 PASS [["stylewithcss"," true"]] "foo[bar]baz" checks for modifications to non-editable content 
 PASS [["stylewithcss"," true"]] "foo[bar]baz" compare innerHTML 
 PASS [["stylewithcss"," true"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss"," true"]] "foo[bar]baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss"," true"]] "foo[bar]baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss"," true"]] "foo[bar]baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss"," true"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss"," true"]] "foo[bar]baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss"," true"]] "foo[bar]baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss"," true"]] "foo[bar]baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","truer"]] "foo[bar]baz": execCommand("stylewithcss", false, "truer") return value 
 PASS [["stylewithcss","truer"]] "foo[bar]baz" checks for modifications to non-editable content 
 PASS [["stylewithcss","truer"]] "foo[bar]baz" compare innerHTML 
 PASS [["stylewithcss","truer"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","truer"]] "foo[bar]baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","truer"]] "foo[bar]baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","truer"]] "foo[bar]baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","truer"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","truer"]] "foo[bar]baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","truer"]] "foo[bar]baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","truer"]] "foo[bar]baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss"," true "]] "foo[bar]baz": execCommand("stylewithcss", false, " true ") return value 
 PASS [["stylewithcss"," true "]] "foo[bar]baz" checks for modifications to non-editable content 
 PASS [["stylewithcss"," true "]] "foo[bar]baz" compare innerHTML 
 PASS [["stylewithcss"," true "]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss"," true "]] "foo[bar]baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss"," true "]] "foo[bar]baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss"," true "]] "foo[bar]baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss"," true "]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss"," true "]] "foo[bar]baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss"," true "]] "foo[bar]baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss"," true "]] "foo[bar]baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss"," TrUe"]] "foo[bar]baz": execCommand("stylewithcss", false, " TrUe") return value 
 PASS [["stylewithcss"," TrUe"]] "foo[bar]baz" checks for modifications to non-editable content 
 PASS [["stylewithcss"," TrUe"]] "foo[bar]baz" compare innerHTML 
 PASS [["stylewithcss"," TrUe"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss"," TrUe"]] "foo[bar]baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss"," TrUe"]] "foo[bar]baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss"," TrUe"]] "foo[bar]baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss"," TrUe"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss"," TrUe"]] "foo[bar]baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss"," TrUe"]] "foo[bar]baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss"," TrUe"]] "foo[bar]baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss",""]] "foo[bar]baz": execCommand("stylewithcss", false, "") return value 
 PASS [["stylewithcss",""]] "foo[bar]baz" checks for modifications to non-editable content 
 PASS [["stylewithcss",""]] "foo[bar]baz" compare innerHTML 
 PASS [["stylewithcss",""]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss",""]] "foo[bar]baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss",""]] "foo[bar]baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss",""]] "foo[bar]baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss",""]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss",""]] "foo[bar]baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss",""]] "foo[bar]baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss",""]] "foo[bar]baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss"," "]] "foo[bar]baz": execCommand("stylewithcss", false, " ") return value 
 PASS [["stylewithcss"," "]] "foo[bar]baz" checks for modifications to non-editable content 
 PASS [["stylewithcss"," "]] "foo[bar]baz" compare innerHTML 
 PASS [["stylewithcss"," "]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss"," "]] "foo[bar]baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss"," "]] "foo[bar]baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss"," "]] "foo[bar]baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss"," "]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss"," "]] "foo[bar]baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss"," "]] "foo[bar]baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss"," "]] "foo[bar]baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"]] "foo[bar]baz": execCommand("stylewithcss", false, "false") return value 
 PASS [["stylewithcss","false"]] "foo[bar]baz" checks for modifications to non-editable content 
 PASS [["stylewithcss","false"]] "foo[bar]baz" compare innerHTML 
 PASS [["stylewithcss","false"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"]] "foo[bar]baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"]] "foo[bar]baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"]] "foo[bar]baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"]] "foo[bar]baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"]] "foo[bar]baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"]] "foo[bar]baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","FALSE"]] "foo[bar]baz": execCommand("stylewithcss", false, "FALSE") return value 
 PASS [["stylewithcss","FALSE"]] "foo[bar]baz" checks for modifications to non-editable content 
 PASS [["stylewithcss","FALSE"]] "foo[bar]baz" compare innerHTML 
 PASS [["stylewithcss","FALSE"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","FALSE"]] "foo[bar]baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","FALSE"]] "foo[bar]baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","FALSE"]] "foo[bar]baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","FALSE"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","FALSE"]] "foo[bar]baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","FALSE"]] "foo[bar]baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","FALSE"]] "foo[bar]baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","FaLsE"]] "foo[bar]baz": execCommand("stylewithcss", false, "FaLsE") return value 
 PASS [["stylewithcss","FaLsE"]] "foo[bar]baz" checks for modifications to non-editable content 
 PASS [["stylewithcss","FaLsE"]] "foo[bar]baz" compare innerHTML 
 PASS [["stylewithcss","FaLsE"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","FaLsE"]] "foo[bar]baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","FaLsE"]] "foo[bar]baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","FaLsE"]] "foo[bar]baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","FaLsE"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","FaLsE"]] "foo[bar]baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","FaLsE"]] "foo[bar]baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","FaLsE"]] "foo[bar]baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss"," false"]] "foo[bar]baz": execCommand("stylewithcss", false, " false") return value 
 PASS [["stylewithcss"," false"]] "foo[bar]baz" checks for modifications to non-editable content 
 PASS [["stylewithcss"," false"]] "foo[bar]baz" compare innerHTML 
 PASS [["stylewithcss"," false"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss"," false"]] "foo[bar]baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss"," false"]] "foo[bar]baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss"," false"]] "foo[bar]baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss"," false"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss"," false"]] "foo[bar]baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss"," false"]] "foo[bar]baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss"," false"]] "foo[bar]baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false "]] "foo[bar]baz": execCommand("stylewithcss", false, "false ") return value 
 PASS [["stylewithcss","false "]] "foo[bar]baz" checks for modifications to non-editable content 
 PASS [["stylewithcss","false "]] "foo[bar]baz" compare innerHTML 
 PASS [["stylewithcss","false "]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false "]] "foo[bar]baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false "]] "foo[bar]baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false "]] "foo[bar]baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false "]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false "]] "foo[bar]baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false "]] "foo[bar]baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false "]] "foo[bar]baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","falser"]] "foo[bar]baz": execCommand("stylewithcss", false, "falser") return value 
 PASS [["stylewithcss","falser"]] "foo[bar]baz" checks for modifications to non-editable content 
 PASS [["stylewithcss","falser"]] "foo[bar]baz" compare innerHTML 
 PASS [["stylewithcss","falser"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","falser"]] "foo[bar]baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","falser"]] "foo[bar]baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","falser"]] "foo[bar]baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","falser"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","falser"]] "foo[bar]baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","falser"]] "foo[bar]baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","falser"]] "foo[bar]baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","falsé"]] "foo[bar]baz": execCommand("stylewithcss", false, "falsé") return value 
 PASS [["stylewithcss","falsé"]] "foo[bar]baz" checks for modifications to non-editable content 
 PASS [["stylewithcss","falsé"]] "foo[bar]baz" compare innerHTML 
 PASS [["stylewithcss","falsé"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","falsé"]] "foo[bar]baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","falsé"]] "foo[bar]baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","falsé"]] "foo[bar]baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","falsé"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","falsé"]] "foo[bar]baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","falsé"]] "foo[bar]baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","falsé"]] "foo[bar]baz" queryCommandValue("stylewithcss") after 
 PASS [["usecss","true"]] "foo[bar]baz": execCommand("usecss", false, "true") return value 
 PASS [["usecss","true"]] "foo[bar]baz" checks for modifications to non-editable content 
 PASS [["usecss","true"]] "foo[bar]baz" compare innerHTML 

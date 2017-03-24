@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1704 tests; 1540 PASS, 164 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1704 tests; 1672 PASS, 32 FAIL, 0 TIMEOUT, 0 NOTRUN.
 FAIL [["removeformat",""]] "foo[]bar": execCommand("removeformat", false, "") return value assert_equals: expected true but got false
 PASS [["removeformat",""]] "foo[]bar" checks for modifications to non-editable content 
 PASS [["removeformat",""]] "foo[]bar" compare innerHTML 
@@ -33,10 +33,10 @@ PASS [["stylewithcss","true"],["removeformat",""]] "[foo<b>bar</b>baz]" checks f
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<b>bar</b>baz]" compare innerHTML 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<b>bar</b>baz]" queryCommandIndeterm("stylewithcss") before 
 FAIL [["stylewithcss","true"],["removeformat",""]] "[foo<b>bar</b>baz]" queryCommandState("stylewithcss") before assert_equals: Wrong result returned expected false but got true
-FAIL [["stylewithcss","true"],["removeformat",""]] "[foo<b>bar</b>baz]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["removeformat",""]] "[foo<b>bar</b>baz]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<b>bar</b>baz]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<b>bar</b>baz]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["removeformat",""]] "[foo<b>bar</b>baz]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["removeformat",""]] "[foo<b>bar</b>baz]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<b>bar</b>baz]" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<b>bar</b>baz]" queryCommandState("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<b>bar</b>baz]" queryCommandValue("removeformat") before 
@@ -49,10 +49,10 @@ PASS [["stylewithcss","false"],["removeformat",""]] "[foo<b>bar</b>baz]" checks 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<b>bar</b>baz]" compare innerHTML 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<b>bar</b>baz]" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<b>bar</b>baz]" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["removeformat",""]] "[foo<b>bar</b>baz]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["removeformat",""]] "[foo<b>bar</b>baz]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<b>bar</b>baz]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<b>bar</b>baz]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["removeformat",""]] "[foo<b>bar</b>baz]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["removeformat",""]] "[foo<b>bar</b>baz]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<b>bar</b>baz]" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<b>bar</b>baz]" queryCommandState("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<b>bar</b>baz]" queryCommandValue("removeformat") before 
@@ -65,10 +65,10 @@ PASS [["stylewithcss","true"],["removeformat",""]] "foo[<b>bar</b>baz]" checks f
 PASS [["stylewithcss","true"],["removeformat",""]] "foo[<b>bar</b>baz]" compare innerHTML 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo[<b>bar</b>baz]" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo[<b>bar</b>baz]" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["removeformat",""]] "foo[<b>bar</b>baz]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["removeformat",""]] "foo[<b>bar</b>baz]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo[<b>bar</b>baz]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo[<b>bar</b>baz]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["removeformat",""]] "foo[<b>bar</b>baz]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["removeformat",""]] "foo[<b>bar</b>baz]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo[<b>bar</b>baz]" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo[<b>bar</b>baz]" queryCommandState("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo[<b>bar</b>baz]" queryCommandValue("removeformat") before 
@@ -81,10 +81,10 @@ PASS [["stylewithcss","false"],["removeformat",""]] "foo[<b>bar</b>baz]" checks 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo[<b>bar</b>baz]" compare innerHTML 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo[<b>bar</b>baz]" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo[<b>bar</b>baz]" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["removeformat",""]] "foo[<b>bar</b>baz]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["removeformat",""]] "foo[<b>bar</b>baz]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo[<b>bar</b>baz]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo[<b>bar</b>baz]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["removeformat",""]] "foo[<b>bar</b>baz]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["removeformat",""]] "foo[<b>bar</b>baz]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo[<b>bar</b>baz]" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo[<b>bar</b>baz]" queryCommandState("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo[<b>bar</b>baz]" queryCommandValue("removeformat") before 
@@ -97,10 +97,10 @@ PASS [["stylewithcss","true"],["removeformat",""]] "foo[<b>bar</b>]baz" checks f
 PASS [["stylewithcss","true"],["removeformat",""]] "foo[<b>bar</b>]baz" compare innerHTML 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo[<b>bar</b>]baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo[<b>bar</b>]baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["removeformat",""]] "foo[<b>bar</b>]baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["removeformat",""]] "foo[<b>bar</b>]baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo[<b>bar</b>]baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo[<b>bar</b>]baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["removeformat",""]] "foo[<b>bar</b>]baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["removeformat",""]] "foo[<b>bar</b>]baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo[<b>bar</b>]baz" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo[<b>bar</b>]baz" queryCommandState("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo[<b>bar</b>]baz" queryCommandValue("removeformat") before 
@@ -113,10 +113,10 @@ PASS [["stylewithcss","false"],["removeformat",""]] "foo[<b>bar</b>]baz" checks 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo[<b>bar</b>]baz" compare innerHTML 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo[<b>bar</b>]baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo[<b>bar</b>]baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["removeformat",""]] "foo[<b>bar</b>]baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["removeformat",""]] "foo[<b>bar</b>]baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo[<b>bar</b>]baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo[<b>bar</b>]baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["removeformat",""]] "foo[<b>bar</b>]baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["removeformat",""]] "foo[<b>bar</b>]baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo[<b>bar</b>]baz" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo[<b>bar</b>]baz" queryCommandState("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo[<b>bar</b>]baz" queryCommandValue("removeformat") before 
@@ -129,10 +129,10 @@ PASS [["stylewithcss","true"],["removeformat",""]] "foo<b>[bar]</b>baz" checks f
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<b>[bar]</b>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<b>[bar]</b>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<b>[bar]</b>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["removeformat",""]] "foo<b>[bar]</b>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["removeformat",""]] "foo<b>[bar]</b>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<b>[bar]</b>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<b>[bar]</b>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["removeformat",""]] "foo<b>[bar]</b>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["removeformat",""]] "foo<b>[bar]</b>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<b>[bar]</b>baz" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<b>[bar]</b>baz" queryCommandState("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<b>[bar]</b>baz" queryCommandValue("removeformat") before 
@@ -145,10 +145,10 @@ PASS [["stylewithcss","false"],["removeformat",""]] "foo<b>[bar]</b>baz" checks 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<b>[bar]</b>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<b>[bar]</b>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<b>[bar]</b>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["removeformat",""]] "foo<b>[bar]</b>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["removeformat",""]] "foo<b>[bar]</b>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<b>[bar]</b>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<b>[bar]</b>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["removeformat",""]] "foo<b>[bar]</b>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["removeformat",""]] "foo<b>[bar]</b>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<b>[bar]</b>baz" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<b>[bar]</b>baz" queryCommandState("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<b>[bar]</b>baz" queryCommandValue("removeformat") before 
@@ -161,10 +161,10 @@ PASS [["stylewithcss","true"],["removeformat",""]] "foo<b>b[a]r</b>baz" checks f
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<b>b[a]r</b>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<b>b[a]r</b>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<b>b[a]r</b>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["removeformat",""]] "foo<b>b[a]r</b>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["removeformat",""]] "foo<b>b[a]r</b>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<b>b[a]r</b>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<b>b[a]r</b>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["removeformat",""]] "foo<b>b[a]r</b>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["removeformat",""]] "foo<b>b[a]r</b>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<b>b[a]r</b>baz" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<b>b[a]r</b>baz" queryCommandState("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<b>b[a]r</b>baz" queryCommandValue("removeformat") before 
@@ -177,10 +177,10 @@ PASS [["stylewithcss","false"],["removeformat",""]] "foo<b>b[a]r</b>baz" checks 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<b>b[a]r</b>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<b>b[a]r</b>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<b>b[a]r</b>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["removeformat",""]] "foo<b>b[a]r</b>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["removeformat",""]] "foo<b>b[a]r</b>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<b>b[a]r</b>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<b>b[a]r</b>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["removeformat",""]] "foo<b>b[a]r</b>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["removeformat",""]] "foo<b>b[a]r</b>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<b>b[a]r</b>baz" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<b>b[a]r</b>baz" queryCommandState("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<b>b[a]r</b>baz" queryCommandValue("removeformat") before 
@@ -193,10 +193,10 @@ PASS [["stylewithcss","true"],["removeformat",""]] "[foo<span style=\"font-weigh
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<span style=\"font-weight: bold\">bar</span>baz]" compare innerHTML 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<span style=\"font-weight: bold\">bar</span>baz]" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<span style=\"font-weight: bold\">bar</span>baz]" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["removeformat",""]] "[foo<span style=\"font-weight: bold\">bar</span>baz]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["removeformat",""]] "[foo<span style=\"font-weight: bold\">bar</span>baz]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<span style=\"font-weight: bold\">bar</span>baz]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<span style=\"font-weight: bold\">bar</span>baz]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["removeformat",""]] "[foo<span style=\"font-weight: bold\">bar</span>baz]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["removeformat",""]] "[foo<span style=\"font-weight: bold\">bar</span>baz]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<span style=\"font-weight: bold\">bar</span>baz]" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<span style=\"font-weight: bold\">bar</span>baz]" queryCommandState("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<span style=\"font-weight: bold\">bar</span>baz]" queryCommandValue("removeformat") before 
@@ -209,10 +209,10 @@ PASS [["stylewithcss","false"],["removeformat",""]] "[foo<span style=\"font-weig
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<span style=\"font-weight: bold\">bar</span>baz]" compare innerHTML 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<span style=\"font-weight: bold\">bar</span>baz]" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<span style=\"font-weight: bold\">bar</span>baz]" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["removeformat",""]] "[foo<span style=\"font-weight: bold\">bar</span>baz]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["removeformat",""]] "[foo<span style=\"font-weight: bold\">bar</span>baz]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<span style=\"font-weight: bold\">bar</span>baz]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<span style=\"font-weight: bold\">bar</span>baz]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["removeformat",""]] "[foo<span style=\"font-weight: bold\">bar</span>baz]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["removeformat",""]] "[foo<span style=\"font-weight: bold\">bar</span>baz]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<span style=\"font-weight: bold\">bar</span>baz]" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<span style=\"font-weight: bold\">bar</span>baz]" queryCommandState("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<span style=\"font-weight: bold\">bar</span>baz]" queryCommandValue("removeformat") before 
@@ -225,10 +225,10 @@ PASS [["stylewithcss","true"],["removeformat",""]] "foo<span style=\"font-weight
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<span style=\"font-weight: bold\">b[a]r</span>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<span style=\"font-weight: bold\">b[a]r</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<span style=\"font-weight: bold\">b[a]r</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["removeformat",""]] "foo<span style=\"font-weight: bold\">b[a]r</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["removeformat",""]] "foo<span style=\"font-weight: bold\">b[a]r</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<span style=\"font-weight: bold\">b[a]r</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<span style=\"font-weight: bold\">b[a]r</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["removeformat",""]] "foo<span style=\"font-weight: bold\">b[a]r</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["removeformat",""]] "foo<span style=\"font-weight: bold\">b[a]r</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<span style=\"font-weight: bold\">b[a]r</span>baz" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<span style=\"font-weight: bold\">b[a]r</span>baz" queryCommandState("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<span style=\"font-weight: bold\">b[a]r</span>baz" queryCommandValue("removeformat") before 
@@ -241,10 +241,10 @@ PASS [["stylewithcss","false"],["removeformat",""]] "foo<span style=\"font-weigh
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<span style=\"font-weight: bold\">b[a]r</span>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<span style=\"font-weight: bold\">b[a]r</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<span style=\"font-weight: bold\">b[a]r</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["removeformat",""]] "foo<span style=\"font-weight: bold\">b[a]r</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["removeformat",""]] "foo<span style=\"font-weight: bold\">b[a]r</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<span style=\"font-weight: bold\">b[a]r</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<span style=\"font-weight: bold\">b[a]r</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["removeformat",""]] "foo<span style=\"font-weight: bold\">b[a]r</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["removeformat",""]] "foo<span style=\"font-weight: bold\">b[a]r</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<span style=\"font-weight: bold\">b[a]r</span>baz" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<span style=\"font-weight: bold\">b[a]r</span>baz" queryCommandState("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<span style=\"font-weight: bold\">b[a]r</span>baz" queryCommandValue("removeformat") before 
@@ -257,10 +257,10 @@ PASS [["stylewithcss","true"],["removeformat",""]] "[foo<span style=\"font-varia
 FAIL [["stylewithcss","true"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foobarbaz" but got "foo<span style=\"font-variant-numeric:normal\">bar</span>baz"
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]" queryCommandState("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]" queryCommandValue("removeformat") before 
@@ -273,10 +273,10 @@ PASS [["stylewithcss","false"],["removeformat",""]] "[foo<span style=\"font-vari
 FAIL [["stylewithcss","false"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foobarbaz" but got "foo<span style=\"font-variant-numeric:normal\">bar</span>baz"
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]" queryCommandState("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]" queryCommandValue("removeformat") before 
@@ -289,10 +289,10 @@ PASS [["stylewithcss","true"],["removeformat",""]] "foo<span style=\"font-varian
 FAIL [["stylewithcss","true"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span style=\"font-variant:small-caps\">b</span>a<span style=\"font-variant:small-caps\">r</span>baz" but got "foo<span style=\"font-variant:small-caps\">b</span><span style=\"font-variant-numeric:normal\">a</span><span style=\"font-variant:small-caps\">r</span>baz"
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz" queryCommandState("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz" queryCommandValue("removeformat") before 
@@ -305,10 +305,10 @@ PASS [["stylewithcss","false"],["removeformat",""]] "foo<span style=\"font-varia
 FAIL [["stylewithcss","false"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span style=\"font-variant:small-caps\">b</span>a<span style=\"font-variant:small-caps\">r</span>baz" but got "foo<span style=\"font-variant:small-caps\">b</span><span style=\"font-variant-numeric:normal\">a</span><span style=\"font-variant:small-caps\">r</span>baz"
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz" queryCommandState("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz" queryCommandValue("removeformat") before 
@@ -321,10 +321,10 @@ PASS [["stylewithcss","true"],["removeformat",""]] "[foo<b id=foo>bar</b>baz]" c
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<b id=foo>bar</b>baz]" compare innerHTML 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<b id=foo>bar</b>baz]" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<b id=foo>bar</b>baz]" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["removeformat",""]] "[foo<b id=foo>bar</b>baz]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["removeformat",""]] "[foo<b id=foo>bar</b>baz]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<b id=foo>bar</b>baz]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<b id=foo>bar</b>baz]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["removeformat",""]] "[foo<b id=foo>bar</b>baz]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["removeformat",""]] "[foo<b id=foo>bar</b>baz]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<b id=foo>bar</b>baz]" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<b id=foo>bar</b>baz]" queryCommandState("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<b id=foo>bar</b>baz]" queryCommandValue("removeformat") before 
@@ -337,10 +337,10 @@ PASS [["stylewithcss","false"],["removeformat",""]] "[foo<b id=foo>bar</b>baz]" 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<b id=foo>bar</b>baz]" compare innerHTML 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<b id=foo>bar</b>baz]" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<b id=foo>bar</b>baz]" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["removeformat",""]] "[foo<b id=foo>bar</b>baz]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["removeformat",""]] "[foo<b id=foo>bar</b>baz]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<b id=foo>bar</b>baz]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<b id=foo>bar</b>baz]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["removeformat",""]] "[foo<b id=foo>bar</b>baz]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["removeformat",""]] "[foo<b id=foo>bar</b>baz]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<b id=foo>bar</b>baz]" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<b id=foo>bar</b>baz]" queryCommandState("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<b id=foo>bar</b>baz]" queryCommandValue("removeformat") before 
@@ -353,10 +353,10 @@ PASS [["stylewithcss","true"],["removeformat",""]] "foo<b id=foo>b[a]r</b>baz" c
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<b id=foo>b[a]r</b>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<b id=foo>b[a]r</b>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<b id=foo>b[a]r</b>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["removeformat",""]] "foo<b id=foo>b[a]r</b>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["removeformat",""]] "foo<b id=foo>b[a]r</b>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<b id=foo>b[a]r</b>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<b id=foo>b[a]r</b>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["removeformat",""]] "foo<b id=foo>b[a]r</b>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["removeformat",""]] "foo<b id=foo>b[a]r</b>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<b id=foo>b[a]r</b>baz" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<b id=foo>b[a]r</b>baz" queryCommandState("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<b id=foo>b[a]r</b>baz" queryCommandValue("removeformat") before 
@@ -369,10 +369,10 @@ PASS [["stylewithcss","false"],["removeformat",""]] "foo<b id=foo>b[a]r</b>baz" 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<b id=foo>b[a]r</b>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<b id=foo>b[a]r</b>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<b id=foo>b[a]r</b>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["removeformat",""]] "foo<b id=foo>b[a]r</b>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["removeformat",""]] "foo<b id=foo>b[a]r</b>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<b id=foo>b[a]r</b>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<b id=foo>b[a]r</b>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["removeformat",""]] "foo<b id=foo>b[a]r</b>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["removeformat",""]] "foo<b id=foo>b[a]r</b>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<b id=foo>b[a]r</b>baz" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<b id=foo>b[a]r</b>baz" queryCommandState("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<b id=foo>b[a]r</b>baz" queryCommandValue("removeformat") before 
@@ -619,10 +619,10 @@ PASS [["stylewithcss","true"],["removeformat",""]] "[foo<font>bar</font>baz]" ch
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<font>bar</font>baz]" compare innerHTML 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<font>bar</font>baz]" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<font>bar</font>baz]" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["removeformat",""]] "[foo<font>bar</font>baz]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["removeformat",""]] "[foo<font>bar</font>baz]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<font>bar</font>baz]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<font>bar</font>baz]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["removeformat",""]] "[foo<font>bar</font>baz]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["removeformat",""]] "[foo<font>bar</font>baz]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<font>bar</font>baz]" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<font>bar</font>baz]" queryCommandState("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<font>bar</font>baz]" queryCommandValue("removeformat") before 
@@ -635,10 +635,10 @@ PASS [["stylewithcss","false"],["removeformat",""]] "[foo<font>bar</font>baz]" c
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<font>bar</font>baz]" compare innerHTML 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<font>bar</font>baz]" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<font>bar</font>baz]" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["removeformat",""]] "[foo<font>bar</font>baz]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["removeformat",""]] "[foo<font>bar</font>baz]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<font>bar</font>baz]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<font>bar</font>baz]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["removeformat",""]] "[foo<font>bar</font>baz]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["removeformat",""]] "[foo<font>bar</font>baz]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<font>bar</font>baz]" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<font>bar</font>baz]" queryCommandState("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<font>bar</font>baz]" queryCommandValue("removeformat") before 
@@ -651,10 +651,10 @@ PASS [["stylewithcss","true"],["removeformat",""]] "foo<font>b[a]r</font>baz" ch
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<font>b[a]r</font>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<font>b[a]r</font>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<font>b[a]r</font>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["removeformat",""]] "foo<font>b[a]r</font>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["removeformat",""]] "foo<font>b[a]r</font>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<font>b[a]r</font>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<font>b[a]r</font>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["removeformat",""]] "foo<font>b[a]r</font>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["removeformat",""]] "foo<font>b[a]r</font>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<font>b[a]r</font>baz" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<font>b[a]r</font>baz" queryCommandState("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<font>b[a]r</font>baz" queryCommandValue("removeformat") before 
@@ -667,10 +667,10 @@ PASS [["stylewithcss","false"],["removeformat",""]] "foo<font>b[a]r</font>baz" c
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<font>b[a]r</font>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<font>b[a]r</font>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<font>b[a]r</font>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["removeformat",""]] "foo<font>b[a]r</font>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["removeformat",""]] "foo<font>b[a]r</font>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<font>b[a]r</font>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<font>b[a]r</font>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["removeformat",""]] "foo<font>b[a]r</font>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["removeformat",""]] "foo<font>b[a]r</font>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<font>b[a]r</font>baz" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<font>b[a]r</font>baz" queryCommandState("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<font>b[a]r</font>baz" queryCommandValue("removeformat") before 
@@ -683,10 +683,10 @@ PASS [["stylewithcss","true"],["removeformat",""]] "[foo<font color=blue>bar</fo
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<font color=blue>bar</font>baz]" compare innerHTML 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<font color=blue>bar</font>baz]" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<font color=blue>bar</font>baz]" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["removeformat",""]] "[foo<font color=blue>bar</font>baz]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["removeformat",""]] "[foo<font color=blue>bar</font>baz]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<font color=blue>bar</font>baz]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<font color=blue>bar</font>baz]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["removeformat",""]] "[foo<font color=blue>bar</font>baz]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["removeformat",""]] "[foo<font color=blue>bar</font>baz]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<font color=blue>bar</font>baz]" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<font color=blue>bar</font>baz]" queryCommandState("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<font color=blue>bar</font>baz]" queryCommandValue("removeformat") before 
@@ -699,10 +699,10 @@ PASS [["stylewithcss","false"],["removeformat",""]] "[foo<font color=blue>bar</f
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<font color=blue>bar</font>baz]" compare innerHTML 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<font color=blue>bar</font>baz]" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<font color=blue>bar</font>baz]" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["removeformat",""]] "[foo<font color=blue>bar</font>baz]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["removeformat",""]] "[foo<font color=blue>bar</font>baz]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<font color=blue>bar</font>baz]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<font color=blue>bar</font>baz]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["removeformat",""]] "[foo<font color=blue>bar</font>baz]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["removeformat",""]] "[foo<font color=blue>bar</font>baz]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<font color=blue>bar</font>baz]" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<font color=blue>bar</font>baz]" queryCommandState("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<font color=blue>bar</font>baz]" queryCommandValue("removeformat") before 
@@ -715,10 +715,10 @@ PASS [["stylewithcss","true"],["removeformat",""]] "foo<font color=blue>b[a]r</f
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<font color=blue>b[a]r</font>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<font color=blue>b[a]r</font>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<font color=blue>b[a]r</font>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["removeformat",""]] "foo<font color=blue>b[a]r</font>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["removeformat",""]] "foo<font color=blue>b[a]r</font>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<font color=blue>b[a]r</font>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<font color=blue>b[a]r</font>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["removeformat",""]] "foo<font color=blue>b[a]r</font>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["removeformat",""]] "foo<font color=blue>b[a]r</font>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<font color=blue>b[a]r</font>baz" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<font color=blue>b[a]r</font>baz" queryCommandState("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<font color=blue>b[a]r</font>baz" queryCommandValue("removeformat") before 
@@ -731,10 +731,10 @@ PASS [["stylewithcss","false"],["removeformat",""]] "foo<font color=blue>b[a]r</
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<font color=blue>b[a]r</font>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<font color=blue>b[a]r</font>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<font color=blue>b[a]r</font>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["removeformat",""]] "foo<font color=blue>b[a]r</font>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["removeformat",""]] "foo<font color=blue>b[a]r</font>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<font color=blue>b[a]r</font>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<font color=blue>b[a]r</font>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["removeformat",""]] "foo<font color=blue>b[a]r</font>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["removeformat",""]] "foo<font color=blue>b[a]r</font>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<font color=blue>b[a]r</font>baz" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<font color=blue>b[a]r</font>baz" queryCommandState("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<font color=blue>b[a]r</font>baz" queryCommandValue("removeformat") before 
@@ -747,10 +747,10 @@ PASS [["stylewithcss","true"],["removeformat",""]] "[foo<i>bar</i>baz]" checks f
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<i>bar</i>baz]" compare innerHTML 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<i>bar</i>baz]" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<i>bar</i>baz]" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["removeformat",""]] "[foo<i>bar</i>baz]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["removeformat",""]] "[foo<i>bar</i>baz]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<i>bar</i>baz]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<i>bar</i>baz]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["removeformat",""]] "[foo<i>bar</i>baz]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["removeformat",""]] "[foo<i>bar</i>baz]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<i>bar</i>baz]" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<i>bar</i>baz]" queryCommandState("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<i>bar</i>baz]" queryCommandValue("removeformat") before 
@@ -763,10 +763,10 @@ PASS [["stylewithcss","false"],["removeformat",""]] "[foo<i>bar</i>baz]" checks 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<i>bar</i>baz]" compare innerHTML 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<i>bar</i>baz]" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<i>bar</i>baz]" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["removeformat",""]] "[foo<i>bar</i>baz]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["removeformat",""]] "[foo<i>bar</i>baz]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<i>bar</i>baz]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<i>bar</i>baz]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["removeformat",""]] "[foo<i>bar</i>baz]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["removeformat",""]] "[foo<i>bar</i>baz]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<i>bar</i>baz]" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<i>bar</i>baz]" queryCommandState("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<i>bar</i>baz]" queryCommandValue("removeformat") before 
@@ -779,10 +779,10 @@ PASS [["stylewithcss","true"],["removeformat",""]] "foo<i>b[a]r</i>baz" checks f
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<i>b[a]r</i>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<i>b[a]r</i>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<i>b[a]r</i>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["removeformat",""]] "foo<i>b[a]r</i>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["removeformat",""]] "foo<i>b[a]r</i>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<i>b[a]r</i>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<i>b[a]r</i>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["removeformat",""]] "foo<i>b[a]r</i>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["removeformat",""]] "foo<i>b[a]r</i>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<i>b[a]r</i>baz" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<i>b[a]r</i>baz" queryCommandState("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<i>b[a]r</i>baz" queryCommandValue("removeformat") before 
@@ -795,10 +795,10 @@ PASS [["stylewithcss","false"],["removeformat",""]] "foo<i>b[a]r</i>baz" checks 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<i>b[a]r</i>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<i>b[a]r</i>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<i>b[a]r</i>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["removeformat",""]] "foo<i>b[a]r</i>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["removeformat",""]] "foo<i>b[a]r</i>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<i>b[a]r</i>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<i>b[a]r</i>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["removeformat",""]] "foo<i>b[a]r</i>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["removeformat",""]] "foo<i>b[a]r</i>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<i>b[a]r</i>baz" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<i>b[a]r</i>baz" queryCommandState("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<i>b[a]r</i>baz" queryCommandValue("removeformat") before 
@@ -919,10 +919,10 @@ PASS [["stylewithcss","true"],["removeformat",""]] "[foo<s>bar</s>baz]" checks f
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<s>bar</s>baz]" compare innerHTML 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<s>bar</s>baz]" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<s>bar</s>baz]" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["removeformat",""]] "[foo<s>bar</s>baz]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["removeformat",""]] "[foo<s>bar</s>baz]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<s>bar</s>baz]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<s>bar</s>baz]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["removeformat",""]] "[foo<s>bar</s>baz]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["removeformat",""]] "[foo<s>bar</s>baz]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<s>bar</s>baz]" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<s>bar</s>baz]" queryCommandState("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<s>bar</s>baz]" queryCommandValue("removeformat") before 
@@ -935,10 +935,10 @@ PASS [["stylewithcss","false"],["removeformat",""]] "[foo<s>bar</s>baz]" checks 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<s>bar</s>baz]" compare innerHTML 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<s>bar</s>baz]" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<s>bar</s>baz]" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["removeformat",""]] "[foo<s>bar</s>baz]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["removeformat",""]] "[foo<s>bar</s>baz]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<s>bar</s>baz]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<s>bar</s>baz]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["removeformat",""]] "[foo<s>bar</s>baz]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["removeformat",""]] "[foo<s>bar</s>baz]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<s>bar</s>baz]" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<s>bar</s>baz]" queryCommandState("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<s>bar</s>baz]" queryCommandValue("removeformat") before 
@@ -951,10 +951,10 @@ PASS [["stylewithcss","true"],["removeformat",""]] "foo<s>b[a]r</s>baz" checks f
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<s>b[a]r</s>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<s>b[a]r</s>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<s>b[a]r</s>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["removeformat",""]] "foo<s>b[a]r</s>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["removeformat",""]] "foo<s>b[a]r</s>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<s>b[a]r</s>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<s>b[a]r</s>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["removeformat",""]] "foo<s>b[a]r</s>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["removeformat",""]] "foo<s>b[a]r</s>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<s>b[a]r</s>baz" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<s>b[a]r</s>baz" queryCommandState("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<s>b[a]r</s>baz" queryCommandValue("removeformat") before 
@@ -967,10 +967,10 @@ PASS [["stylewithcss","false"],["removeformat",""]] "foo<s>b[a]r</s>baz" checks 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<s>b[a]r</s>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<s>b[a]r</s>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<s>b[a]r</s>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["removeformat",""]] "foo<s>b[a]r</s>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["removeformat",""]] "foo<s>b[a]r</s>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<s>b[a]r</s>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<s>b[a]r</s>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["removeformat",""]] "foo<s>b[a]r</s>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["removeformat",""]] "foo<s>b[a]r</s>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<s>b[a]r</s>baz" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<s>b[a]r</s>baz" queryCommandState("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<s>b[a]r</s>baz" queryCommandValue("removeformat") before 
@@ -1019,10 +1019,10 @@ PASS [["stylewithcss","true"],["removeformat",""]] "[foo<strike>bar</strike>baz]
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<strike>bar</strike>baz]" compare innerHTML 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<strike>bar</strike>baz]" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<strike>bar</strike>baz]" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["removeformat",""]] "[foo<strike>bar</strike>baz]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["removeformat",""]] "[foo<strike>bar</strike>baz]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<strike>bar</strike>baz]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<strike>bar</strike>baz]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["removeformat",""]] "[foo<strike>bar</strike>baz]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["removeformat",""]] "[foo<strike>bar</strike>baz]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<strike>bar</strike>baz]" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<strike>bar</strike>baz]" queryCommandState("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<strike>bar</strike>baz]" queryCommandValue("removeformat") before 
@@ -1035,10 +1035,10 @@ PASS [["stylewithcss","false"],["removeformat",""]] "[foo<strike>bar</strike>baz
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<strike>bar</strike>baz]" compare innerHTML 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<strike>bar</strike>baz]" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<strike>bar</strike>baz]" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["removeformat",""]] "[foo<strike>bar</strike>baz]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["removeformat",""]] "[foo<strike>bar</strike>baz]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<strike>bar</strike>baz]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<strike>bar</strike>baz]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["removeformat",""]] "[foo<strike>bar</strike>baz]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["removeformat",""]] "[foo<strike>bar</strike>baz]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<strike>bar</strike>baz]" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<strike>bar</strike>baz]" queryCommandState("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<strike>bar</strike>baz]" queryCommandValue("removeformat") before 
@@ -1051,10 +1051,10 @@ PASS [["stylewithcss","true"],["removeformat",""]] "foo<strike>b[a]r</strike>baz
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<strike>b[a]r</strike>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<strike>b[a]r</strike>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<strike>b[a]r</strike>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["removeformat",""]] "foo<strike>b[a]r</strike>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["removeformat",""]] "foo<strike>b[a]r</strike>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<strike>b[a]r</strike>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<strike>b[a]r</strike>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["removeformat",""]] "foo<strike>b[a]r</strike>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["removeformat",""]] "foo<strike>b[a]r</strike>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<strike>b[a]r</strike>baz" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<strike>b[a]r</strike>baz" queryCommandState("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<strike>b[a]r</strike>baz" queryCommandValue("removeformat") before 
@@ -1067,10 +1067,10 @@ PASS [["stylewithcss","false"],["removeformat",""]] "foo<strike>b[a]r</strike>ba
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<strike>b[a]r</strike>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<strike>b[a]r</strike>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<strike>b[a]r</strike>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["removeformat",""]] "foo<strike>b[a]r</strike>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["removeformat",""]] "foo<strike>b[a]r</strike>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<strike>b[a]r</strike>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<strike>b[a]r</strike>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["removeformat",""]] "foo<strike>b[a]r</strike>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["removeformat",""]] "foo<strike>b[a]r</strike>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<strike>b[a]r</strike>baz" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<strike>b[a]r</strike>baz" queryCommandState("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<strike>b[a]r</strike>baz" queryCommandValue("removeformat") before 
@@ -1101,10 +1101,10 @@ PASS [["stylewithcss","true"],["removeformat",""]] "[foo<sub>bar</sub>baz]" chec
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<sub>bar</sub>baz]" compare innerHTML 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<sub>bar</sub>baz]" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<sub>bar</sub>baz]" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["removeformat",""]] "[foo<sub>bar</sub>baz]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["removeformat",""]] "[foo<sub>bar</sub>baz]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<sub>bar</sub>baz]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<sub>bar</sub>baz]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["removeformat",""]] "[foo<sub>bar</sub>baz]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["removeformat",""]] "[foo<sub>bar</sub>baz]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<sub>bar</sub>baz]" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<sub>bar</sub>baz]" queryCommandState("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<sub>bar</sub>baz]" queryCommandValue("removeformat") before 
@@ -1117,10 +1117,10 @@ PASS [["stylewithcss","false"],["removeformat",""]] "[foo<sub>bar</sub>baz]" che
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<sub>bar</sub>baz]" compare innerHTML 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<sub>bar</sub>baz]" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<sub>bar</sub>baz]" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["removeformat",""]] "[foo<sub>bar</sub>baz]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["removeformat",""]] "[foo<sub>bar</sub>baz]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<sub>bar</sub>baz]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<sub>bar</sub>baz]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["removeformat",""]] "[foo<sub>bar</sub>baz]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["removeformat",""]] "[foo<sub>bar</sub>baz]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<sub>bar</sub>baz]" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<sub>bar</sub>baz]" queryCommandState("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<sub>bar</sub>baz]" queryCommandValue("removeformat") before 
@@ -1133,10 +1133,10 @@ PASS [["stylewithcss","true"],["removeformat",""]] "foo<sub>b[a]r</sub>baz" chec
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<sub>b[a]r</sub>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<sub>b[a]r</sub>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<sub>b[a]r</sub>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["removeformat",""]] "foo<sub>b[a]r</sub>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["removeformat",""]] "foo<sub>b[a]r</sub>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<sub>b[a]r</sub>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<sub>b[a]r</sub>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["removeformat",""]] "foo<sub>b[a]r</sub>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["removeformat",""]] "foo<sub>b[a]r</sub>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<sub>b[a]r</sub>baz" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<sub>b[a]r</sub>baz" queryCommandState("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<sub>b[a]r</sub>baz" queryCommandValue("removeformat") before 
@@ -1149,10 +1149,10 @@ PASS [["stylewithcss","false"],["removeformat",""]] "foo<sub>b[a]r</sub>baz" che
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<sub>b[a]r</sub>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<sub>b[a]r</sub>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<sub>b[a]r</sub>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["removeformat",""]] "foo<sub>b[a]r</sub>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["removeformat",""]] "foo<sub>b[a]r</sub>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<sub>b[a]r</sub>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<sub>b[a]r</sub>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["removeformat",""]] "foo<sub>b[a]r</sub>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["removeformat",""]] "foo<sub>b[a]r</sub>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<sub>b[a]r</sub>baz" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<sub>b[a]r</sub>baz" queryCommandState("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<sub>b[a]r</sub>baz" queryCommandValue("removeformat") before 
@@ -1165,10 +1165,10 @@ PASS [["stylewithcss","true"],["removeformat",""]] "[foo<sup>bar</sup>baz]" chec
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<sup>bar</sup>baz]" compare innerHTML 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<sup>bar</sup>baz]" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<sup>bar</sup>baz]" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["removeformat",""]] "[foo<sup>bar</sup>baz]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["removeformat",""]] "[foo<sup>bar</sup>baz]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<sup>bar</sup>baz]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<sup>bar</sup>baz]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["removeformat",""]] "[foo<sup>bar</sup>baz]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["removeformat",""]] "[foo<sup>bar</sup>baz]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<sup>bar</sup>baz]" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<sup>bar</sup>baz]" queryCommandState("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<sup>bar</sup>baz]" queryCommandValue("removeformat") before 
@@ -1181,10 +1181,10 @@ PASS [["stylewithcss","false"],["removeformat",""]] "[foo<sup>bar</sup>baz]" che
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<sup>bar</sup>baz]" compare innerHTML 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<sup>bar</sup>baz]" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<sup>bar</sup>baz]" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["removeformat",""]] "[foo<sup>bar</sup>baz]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["removeformat",""]] "[foo<sup>bar</sup>baz]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<sup>bar</sup>baz]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<sup>bar</sup>baz]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["removeformat",""]] "[foo<sup>bar</sup>baz]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["removeformat",""]] "[foo<sup>bar</sup>baz]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<sup>bar</sup>baz]" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<sup>bar</sup>baz]" queryCommandState("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<sup>bar</sup>baz]" queryCommandValue("removeformat") before 
@@ -1197,10 +1197,10 @@ PASS [["stylewithcss","true"],["removeformat",""]] "foo<sup>b[a]r</sup>baz" chec
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<sup>b[a]r</sup>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<sup>b[a]r</sup>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<sup>b[a]r</sup>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["removeformat",""]] "foo<sup>b[a]r</sup>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["removeformat",""]] "foo<sup>b[a]r</sup>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<sup>b[a]r</sup>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<sup>b[a]r</sup>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["removeformat",""]] "foo<sup>b[a]r</sup>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["removeformat",""]] "foo<sup>b[a]r</sup>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<sup>b[a]r</sup>baz" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<sup>b[a]r</sup>baz" queryCommandState("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<sup>b[a]r</sup>baz" queryCommandValue("removeformat") before 
@@ -1213,10 +1213,10 @@ PASS [["stylewithcss","false"],["removeformat",""]] "foo<sup>b[a]r</sup>baz" che
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<sup>b[a]r</sup>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<sup>b[a]r</sup>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<sup>b[a]r</sup>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["removeformat",""]] "foo<sup>b[a]r</sup>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["removeformat",""]] "foo<sup>b[a]r</sup>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<sup>b[a]r</sup>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<sup>b[a]r</sup>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["removeformat",""]] "foo<sup>b[a]r</sup>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["removeformat",""]] "foo<sup>b[a]r</sup>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<sup>b[a]r</sup>baz" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<sup>b[a]r</sup>baz" queryCommandState("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<sup>b[a]r</sup>baz" queryCommandValue("removeformat") before 
@@ -1247,10 +1247,10 @@ PASS [["stylewithcss","true"],["removeformat",""]] "[foo<u>bar</u>baz]" checks f
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<u>bar</u>baz]" compare innerHTML 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<u>bar</u>baz]" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<u>bar</u>baz]" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["removeformat",""]] "[foo<u>bar</u>baz]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["removeformat",""]] "[foo<u>bar</u>baz]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<u>bar</u>baz]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<u>bar</u>baz]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["removeformat",""]] "[foo<u>bar</u>baz]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["removeformat",""]] "[foo<u>bar</u>baz]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<u>bar</u>baz]" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<u>bar</u>baz]" queryCommandState("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<u>bar</u>baz]" queryCommandValue("removeformat") before 
@@ -1263,10 +1263,10 @@ PASS [["stylewithcss","false"],["removeformat",""]] "[foo<u>bar</u>baz]" checks 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<u>bar</u>baz]" compare innerHTML 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<u>bar</u>baz]" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<u>bar</u>baz]" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["removeformat",""]] "[foo<u>bar</u>baz]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["removeformat",""]] "[foo<u>bar</u>baz]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<u>bar</u>baz]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<u>bar</u>baz]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["removeformat",""]] "[foo<u>bar</u>baz]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["removeformat",""]] "[foo<u>bar</u>baz]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<u>bar</u>baz]" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<u>bar</u>baz]" queryCommandState("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<u>bar</u>baz]" queryCommandValue("removeformat") before 
@@ -1279,10 +1279,10 @@ PASS [["stylewithcss","true"],["removeformat",""]] "foo<u>b[a]r</u>baz" checks f
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<u>b[a]r</u>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<u>b[a]r</u>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<u>b[a]r</u>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["removeformat",""]] "foo<u>b[a]r</u>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["removeformat",""]] "foo<u>b[a]r</u>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<u>b[a]r</u>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<u>b[a]r</u>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["removeformat",""]] "foo<u>b[a]r</u>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["removeformat",""]] "foo<u>b[a]r</u>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<u>b[a]r</u>baz" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<u>b[a]r</u>baz" queryCommandState("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<u>b[a]r</u>baz" queryCommandValue("removeformat") before 
@@ -1295,10 +1295,10 @@ PASS [["stylewithcss","false"],["removeformat",""]] "foo<u>b[a]r</u>baz" checks 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<u>b[a]r</u>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<u>b[a]r</u>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<u>b[a]r</u>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["removeformat",""]] "foo<u>b[a]r</u>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["removeformat",""]] "foo<u>b[a]r</u>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<u>b[a]r</u>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<u>b[a]r</u>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["removeformat",""]] "foo<u>b[a]r</u>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["removeformat",""]] "foo<u>b[a]r</u>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<u>b[a]r</u>baz" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<u>b[a]r</u>baz" queryCommandState("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<u>b[a]r</u>baz" queryCommandValue("removeformat") before 
@@ -1473,10 +1473,10 @@ PASS [["stylewithcss","true"],["removeformat",""]] "[foo<b style=\"font-weight: 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<b style=\"font-weight: normal\">bar</b>baz]" compare innerHTML 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<b style=\"font-weight: normal\">bar</b>baz]" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<b style=\"font-weight: normal\">bar</b>baz]" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["removeformat",""]] "[foo<b style=\"font-weight: normal\">bar</b>baz]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["removeformat",""]] "[foo<b style=\"font-weight: normal\">bar</b>baz]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<b style=\"font-weight: normal\">bar</b>baz]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<b style=\"font-weight: normal\">bar</b>baz]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["removeformat",""]] "[foo<b style=\"font-weight: normal\">bar</b>baz]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["removeformat",""]] "[foo<b style=\"font-weight: normal\">bar</b>baz]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<b style=\"font-weight: normal\">bar</b>baz]" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<b style=\"font-weight: normal\">bar</b>baz]" queryCommandState("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<b style=\"font-weight: normal\">bar</b>baz]" queryCommandValue("removeformat") before 
@@ -1489,10 +1489,10 @@ PASS [["stylewithcss","false"],["removeformat",""]] "[foo<b style=\"font-weight:
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<b style=\"font-weight: normal\">bar</b>baz]" compare innerHTML 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<b style=\"font-weight: normal\">bar</b>baz]" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<b style=\"font-weight: normal\">bar</b>baz]" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["removeformat",""]] "[foo<b style=\"font-weight: normal\">bar</b>baz]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["removeformat",""]] "[foo<b style=\"font-weight: normal\">bar</b>baz]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<b style=\"font-weight: normal\">bar</b>baz]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<b style=\"font-weight: normal\">bar</b>baz]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["removeformat",""]] "[foo<b style=\"font-weight: normal\">bar</b>baz]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["removeformat",""]] "[foo<b style=\"font-weight: normal\">bar</b>baz]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<b style=\"font-weight: normal\">bar</b>baz]" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<b style=\"font-weight: normal\">bar</b>baz]" queryCommandState("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<b style=\"font-weight: normal\">bar</b>baz]" queryCommandValue("removeformat") before 
@@ -1505,10 +1505,10 @@ PASS [["stylewithcss","true"],["removeformat",""]] "foo<b style=\"font-weight: n
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<b style=\"font-weight: normal\">b[a]r</b>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<b style=\"font-weight: normal\">b[a]r</b>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<b style=\"font-weight: normal\">b[a]r</b>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["removeformat",""]] "foo<b style=\"font-weight: normal\">b[a]r</b>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["removeformat",""]] "foo<b style=\"font-weight: normal\">b[a]r</b>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<b style=\"font-weight: normal\">b[a]r</b>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<b style=\"font-weight: normal\">b[a]r</b>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["removeformat",""]] "foo<b style=\"font-weight: normal\">b[a]r</b>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["removeformat",""]] "foo<b style=\"font-weight: normal\">b[a]r</b>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<b style=\"font-weight: normal\">b[a]r</b>baz" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<b style=\"font-weight: normal\">b[a]r</b>baz" queryCommandState("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<b style=\"font-weight: normal\">b[a]r</b>baz" queryCommandValue("removeformat") before 
@@ -1521,10 +1521,10 @@ PASS [["stylewithcss","false"],["removeformat",""]] "foo<b style=\"font-weight: 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<b style=\"font-weight: normal\">b[a]r</b>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<b style=\"font-weight: normal\">b[a]r</b>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<b style=\"font-weight: normal\">b[a]r</b>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["removeformat",""]] "foo<b style=\"font-weight: normal\">b[a]r</b>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["removeformat",""]] "foo<b style=\"font-weight: normal\">b[a]r</b>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<b style=\"font-weight: normal\">b[a]r</b>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<b style=\"font-weight: normal\">b[a]r</b>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["removeformat",""]] "foo<b style=\"font-weight: normal\">b[a]r</b>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["removeformat",""]] "foo<b style=\"font-weight: normal\">b[a]r</b>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<b style=\"font-weight: normal\">b[a]r</b>baz" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<b style=\"font-weight: normal\">b[a]r</b>baz" queryCommandState("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<b style=\"font-weight: normal\">b[a]r</b>baz" queryCommandValue("removeformat") before 
@@ -1546,10 +1546,10 @@ PASS [["stylewithcss","true"],["removeformat",""]] "<p><span style=\"background-
 PASS [["stylewithcss","true"],["removeformat",""]] "<p><span style=\"background-color: aqua\">foo[bar]baz</span></p>" compare innerHTML 
 PASS [["stylewithcss","true"],["removeformat",""]] "<p><span style=\"background-color: aqua\">foo[bar]baz</span></p>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "<p><span style=\"background-color: aqua\">foo[bar]baz</span></p>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["removeformat",""]] "<p><span style=\"background-color: aqua\">foo[bar]baz</span></p>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["removeformat",""]] "<p><span style=\"background-color: aqua\">foo[bar]baz</span></p>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "<p><span style=\"background-color: aqua\">foo[bar]baz</span></p>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "<p><span style=\"background-color: aqua\">foo[bar]baz</span></p>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["removeformat",""]] "<p><span style=\"background-color: aqua\">foo[bar]baz</span></p>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["removeformat",""]] "<p><span style=\"background-color: aqua\">foo[bar]baz</span></p>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "<p><span style=\"background-color: aqua\">foo[bar]baz</span></p>" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "<p><span style=\"background-color: aqua\">foo[bar]baz</span></p>" queryCommandState("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "<p><span style=\"background-color: aqua\">foo[bar]baz</span></p>" queryCommandValue("removeformat") before 
@@ -1562,10 +1562,10 @@ PASS [["stylewithcss","false"],["removeformat",""]] "<p><span style=\"background
 PASS [["stylewithcss","false"],["removeformat",""]] "<p><span style=\"background-color: aqua\">foo[bar]baz</span></p>" compare innerHTML 
 PASS [["stylewithcss","false"],["removeformat",""]] "<p><span style=\"background-color: aqua\">foo[bar]baz</span></p>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "<p><span style=\"background-color: aqua\">foo[bar]baz</span></p>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["removeformat",""]] "<p><span style=\"background-color: aqua\">foo[bar]baz</span></p>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["removeformat",""]] "<p><span style=\"background-color: aqua\">foo[bar]baz</span></p>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "<p><span style=\"background-color: aqua\">foo[bar]baz</span></p>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "<p><span style=\"background-color: aqua\">foo[bar]baz</span></p>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["removeformat",""]] "<p><span style=\"background-color: aqua\">foo[bar]baz</span></p>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["removeformat",""]] "<p><span style=\"background-color: aqua\">foo[bar]baz</span></p>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "<p><span style=\"background-color: aqua\">foo[bar]baz</span></p>" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "<p><span style=\"background-color: aqua\">foo[bar]baz</span></p>" queryCommandState("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "<p><span style=\"background-color: aqua\">foo[bar]baz</span></p>" queryCommandValue("removeformat") before 
@@ -1578,10 +1578,10 @@ PASS [["stylewithcss","true"],["removeformat",""]] "<p style=\"font-weight: bold
 PASS [["stylewithcss","true"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>" compare innerHTML 
 PASS [["stylewithcss","true"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>" queryCommandState("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>" queryCommandValue("removeformat") before 
@@ -1594,10 +1594,10 @@ PASS [["stylewithcss","false"],["removeformat",""]] "<p style=\"font-weight: bol
 FAIL [["stylewithcss","false"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><b>foo</b>bar<b>baz</b></p>" but got "<p><span style=\"font-weight:bold\">foo</span>bar<b>baz</b></p>"
 PASS [["stylewithcss","false"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>" queryCommandState("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>" queryCommandValue("removeformat") before 
@@ -1610,10 +1610,10 @@ PASS [["stylewithcss","true"],["removeformat",""]] "<b><p style=\"font-weight: b
 FAIL [["stylewithcss","true"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><span style=\"font-weight:bold\">foo</span>bar<span style=\"font-weight:bold\">baz</span></p>" but got "<p><b><span style=\"font-weight:bold\">foo</span></b>bar<b>baz</b></p>"
 PASS [["stylewithcss","true"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>" queryCommandState("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>" queryCommandValue("removeformat") before 
@@ -1626,10 +1626,10 @@ PASS [["stylewithcss","false"],["removeformat",""]] "<b><p style=\"font-weight: 
 FAIL [["stylewithcss","false"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><b>foo</b>bar<b>baz</b></p>" but got "<p><b><span style=\"font-weight:bold\">foo</span></b>bar<b>baz</b></p>"
 PASS [["stylewithcss","false"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>" queryCommandState("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>" queryCommandValue("removeformat") before 
@@ -1678,10 +1678,10 @@ PASS [["stylewithcss","true"],["removeformat",""]] "<table data-start=0 data-end
 FAIL [["stylewithcss","true"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<table><tbody><tr><td>foo</td></tr></tbody></table>" but got "<table><tbody><tr><td><b>foo</b></td></tr></tbody></table>"
 PASS [["stylewithcss","true"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>" queryCommandState("removeformat") before 
 PASS [["stylewithcss","true"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>" queryCommandValue("removeformat") before 
@@ -1694,10 +1694,10 @@ PASS [["stylewithcss","false"],["removeformat",""]] "<table data-start=0 data-en
 FAIL [["stylewithcss","false"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<table><tbody><tr><td>foo</td></tr></tbody></table>" but got "<table><tbody><tr><td><b>foo</b></td></tr></tbody></table>"
 PASS [["stylewithcss","false"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>" queryCommandIndeterm("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>" queryCommandState("removeformat") before 
 PASS [["stylewithcss","false"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>" queryCommandValue("removeformat") before 

@@ -1,15 +1,15 @@
 This is a testharness.js-based test.
-Found 1426 tests; 1280 PASS, 146 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1426 tests; 1368 PASS, 58 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo[]bar": execCommand("stylewithcss", false, "true") return value 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo[]bar": execCommand("inserthtml", false, "ab<b>c</b>d") return value 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo[]bar" checks for modifications to non-editable content 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo[]bar" compare innerHTML 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo[]bar" queryCommandIndeterm("stylewithcss") before 
 FAIL [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo[]bar" queryCommandState("stylewithcss") before assert_equals: Wrong result returned expected false but got true
-FAIL [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo[]bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo[]bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo[]bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo[]bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo[]bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo[]bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo[]bar" queryCommandIndeterm("inserthtml") before 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo[]bar" queryCommandState("inserthtml") before 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo[]bar" queryCommandValue("inserthtml") before 
@@ -22,10 +22,10 @@ PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo[]bar" checks f
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo[]bar" compare innerHTML 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo[]bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo[]bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo[]bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo[]bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo[]bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo[]bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo[]bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo[]bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo[]bar" queryCommandIndeterm("inserthtml") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo[]bar" queryCommandState("inserthtml") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo[]bar" queryCommandValue("inserthtml") before 
@@ -38,10 +38,10 @@ PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo[bar]baz" checks
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo[bar]baz" compare innerHTML 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo[bar]baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo[bar]baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo[bar]baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo[bar]baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo[bar]baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo[bar]baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo[bar]baz" queryCommandIndeterm("inserthtml") before 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo[bar]baz" queryCommandState("inserthtml") before 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo[bar]baz" queryCommandValue("inserthtml") before 
@@ -54,10 +54,10 @@ PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo[bar]baz" check
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo[bar]baz" compare innerHTML 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo[bar]baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo[bar]baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo[bar]baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo[bar]baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo[bar]baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo[bar]baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo[bar]baz" queryCommandIndeterm("inserthtml") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo[bar]baz" queryCommandState("inserthtml") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo[bar]baz" queryCommandValue("inserthtml") before 
@@ -70,10 +70,10 @@ PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=colo
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar]</span>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandIndeterm("inserthtml") before 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandState("inserthtml") before 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("inserthtml") before 
@@ -86,10 +86,10 @@ PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=col
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar]</span>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandIndeterm("inserthtml") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandState("inserthtml") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("inserthtml") before 
@@ -102,10 +102,10 @@ PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=colo
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar}</span>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandIndeterm("inserthtml") before 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandState("inserthtml") before 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("inserthtml") before 
@@ -118,10 +118,10 @@ PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=col
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar}</span>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandIndeterm("inserthtml") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandState("inserthtml") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("inserthtml") before 
@@ -134,10 +134,10 @@ PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo{<span style=col
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo{<span style=color:#aBcDeF>bar</span>}baz" compare innerHTML 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandIndeterm("inserthtml") before 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandState("inserthtml") before 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("inserthtml") before 
@@ -150,10 +150,10 @@ PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo{<span style=co
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo{<span style=color:#aBcDeF>bar</span>}baz" compare innerHTML 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandIndeterm("inserthtml") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandState("inserthtml") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("inserthtml") before 
@@ -166,10 +166,10 @@ PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "[foo<span style=col
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandIndeterm("inserthtml") before 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandState("inserthtml") before 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("inserthtml") before 
@@ -182,10 +182,10 @@ PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "[foo<span style=co
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandIndeterm("inserthtml") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandState("inserthtml") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("inserthtml") before 
@@ -198,10 +198,10 @@ PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "{foo<span style=col
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandIndeterm("inserthtml") before 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandState("inserthtml") before 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("inserthtml") before 
@@ -214,10 +214,10 @@ PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "{foo<span style=co
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandIndeterm("inserthtml") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandState("inserthtml") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("inserthtml") before 
@@ -230,10 +230,10 @@ PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=colo
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span>baz]" compare innerHTML 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandIndeterm("inserthtml") before 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandState("inserthtml") before 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("inserthtml") before 
@@ -246,10 +246,10 @@ PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=col
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span>baz]" compare innerHTML 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandIndeterm("inserthtml") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandState("inserthtml") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("inserthtml") before 
@@ -262,10 +262,10 @@ PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=colo
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar</span>baz}" compare innerHTML 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandIndeterm("inserthtml") before 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandState("inserthtml") before 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("inserthtml") before 
@@ -278,10 +278,10 @@ PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=col
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar</span>baz}" compare innerHTML 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandIndeterm("inserthtml") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandState("inserthtml") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("inserthtml") before 
@@ -294,10 +294,10 @@ PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=colo
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" compare innerHTML 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandIndeterm("inserthtml") before 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandState("inserthtml") before 
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("inserthtml") before 
@@ -310,10 +310,10 @@ PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=col
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" compare innerHTML 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandIndeterm("inserthtml") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandState("inserthtml") before 
 PASS [["stylewithcss","false"],["inserthtml","ab<b>c</b>d"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("inserthtml") before 
@@ -353,10 +353,10 @@ PASS [["stylewithcss","true"],["inserthtml","<b>"]] "foo[bar]baz" checks for mod
 PASS [["stylewithcss","true"],["inserthtml","<b>"]] "foo[bar]baz" compare innerHTML 
 PASS [["stylewithcss","true"],["inserthtml","<b>"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthtml","<b>"]] "foo[bar]baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["inserthtml","<b>"]] "foo[bar]baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["inserthtml","<b>"]] "foo[bar]baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthtml","<b>"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthtml","<b>"]] "foo[bar]baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["inserthtml","<b>"]] "foo[bar]baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["inserthtml","<b>"]] "foo[bar]baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthtml","<b>"]] "foo[bar]baz" queryCommandIndeterm("inserthtml") before 
 PASS [["stylewithcss","true"],["inserthtml","<b>"]] "foo[bar]baz" queryCommandState("inserthtml") before 
 PASS [["stylewithcss","true"],["inserthtml","<b>"]] "foo[bar]baz" queryCommandValue("inserthtml") before 
@@ -369,10 +369,10 @@ PASS [["stylewithcss","false"],["inserthtml","<b>"]] "foo[bar]baz" checks for mo
 PASS [["stylewithcss","false"],["inserthtml","<b>"]] "foo[bar]baz" compare innerHTML 
 PASS [["stylewithcss","false"],["inserthtml","<b>"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthtml","<b>"]] "foo[bar]baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["inserthtml","<b>"]] "foo[bar]baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["inserthtml","<b>"]] "foo[bar]baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthtml","<b>"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthtml","<b>"]] "foo[bar]baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["inserthtml","<b>"]] "foo[bar]baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["inserthtml","<b>"]] "foo[bar]baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthtml","<b>"]] "foo[bar]baz" queryCommandIndeterm("inserthtml") before 
 PASS [["stylewithcss","false"],["inserthtml","<b>"]] "foo[bar]baz" queryCommandState("inserthtml") before 
 PASS [["stylewithcss","false"],["inserthtml","<b>"]] "foo[bar]baz" queryCommandValue("inserthtml") before 
@@ -385,10 +385,10 @@ PASS [["stylewithcss","true"],["inserthtml","<b>abc"]] "foo[bar]baz" checks for 
 PASS [["stylewithcss","true"],["inserthtml","<b>abc"]] "foo[bar]baz" compare innerHTML 
 PASS [["stylewithcss","true"],["inserthtml","<b>abc"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthtml","<b>abc"]] "foo[bar]baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["inserthtml","<b>abc"]] "foo[bar]baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["inserthtml","<b>abc"]] "foo[bar]baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthtml","<b>abc"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthtml","<b>abc"]] "foo[bar]baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["inserthtml","<b>abc"]] "foo[bar]baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["inserthtml","<b>abc"]] "foo[bar]baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthtml","<b>abc"]] "foo[bar]baz" queryCommandIndeterm("inserthtml") before 
 PASS [["stylewithcss","true"],["inserthtml","<b>abc"]] "foo[bar]baz" queryCommandState("inserthtml") before 
 PASS [["stylewithcss","true"],["inserthtml","<b>abc"]] "foo[bar]baz" queryCommandValue("inserthtml") before 
@@ -401,10 +401,10 @@ PASS [["stylewithcss","false"],["inserthtml","<b>abc"]] "foo[bar]baz" checks for
 PASS [["stylewithcss","false"],["inserthtml","<b>abc"]] "foo[bar]baz" compare innerHTML 
 PASS [["stylewithcss","false"],["inserthtml","<b>abc"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthtml","<b>abc"]] "foo[bar]baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["inserthtml","<b>abc"]] "foo[bar]baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["inserthtml","<b>abc"]] "foo[bar]baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthtml","<b>abc"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthtml","<b>abc"]] "foo[bar]baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["inserthtml","<b>abc"]] "foo[bar]baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["inserthtml","<b>abc"]] "foo[bar]baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthtml","<b>abc"]] "foo[bar]baz" queryCommandIndeterm("inserthtml") before 
 PASS [["stylewithcss","false"],["inserthtml","<b>abc"]] "foo[bar]baz" queryCommandState("inserthtml") before 
 PASS [["stylewithcss","false"],["inserthtml","<b>abc"]] "foo[bar]baz" queryCommandValue("inserthtml") before 
@@ -586,10 +586,10 @@ PASS [["stylewithcss","true"],["inserthtml","<b>abc</b>"]] "<xmp>f[o]o</xmp>" ch
 PASS [["stylewithcss","true"],["inserthtml","<b>abc</b>"]] "<xmp>f[o]o</xmp>" compare innerHTML 
 PASS [["stylewithcss","true"],["inserthtml","<b>abc</b>"]] "<xmp>f[o]o</xmp>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthtml","<b>abc</b>"]] "<xmp>f[o]o</xmp>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["inserthtml","<b>abc</b>"]] "<xmp>f[o]o</xmp>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["inserthtml","<b>abc</b>"]] "<xmp>f[o]o</xmp>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthtml","<b>abc</b>"]] "<xmp>f[o]o</xmp>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthtml","<b>abc</b>"]] "<xmp>f[o]o</xmp>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["inserthtml","<b>abc</b>"]] "<xmp>f[o]o</xmp>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["inserthtml","<b>abc</b>"]] "<xmp>f[o]o</xmp>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthtml","<b>abc</b>"]] "<xmp>f[o]o</xmp>" queryCommandIndeterm("inserthtml") before 
 PASS [["stylewithcss","true"],["inserthtml","<b>abc</b>"]] "<xmp>f[o]o</xmp>" queryCommandState("inserthtml") before 
 PASS [["stylewithcss","true"],["inserthtml","<b>abc</b>"]] "<xmp>f[o]o</xmp>" queryCommandValue("inserthtml") before 
@@ -602,10 +602,10 @@ PASS [["stylewithcss","false"],["inserthtml","<b>abc</b>"]] "<xmp>f[o]o</xmp>" c
 PASS [["stylewithcss","false"],["inserthtml","<b>abc</b>"]] "<xmp>f[o]o</xmp>" compare innerHTML 
 PASS [["stylewithcss","false"],["inserthtml","<b>abc</b>"]] "<xmp>f[o]o</xmp>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthtml","<b>abc</b>"]] "<xmp>f[o]o</xmp>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["inserthtml","<b>abc</b>"]] "<xmp>f[o]o</xmp>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["inserthtml","<b>abc</b>"]] "<xmp>f[o]o</xmp>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthtml","<b>abc</b>"]] "<xmp>f[o]o</xmp>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthtml","<b>abc</b>"]] "<xmp>f[o]o</xmp>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["inserthtml","<b>abc</b>"]] "<xmp>f[o]o</xmp>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["inserthtml","<b>abc</b>"]] "<xmp>f[o]o</xmp>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthtml","<b>abc</b>"]] "<xmp>f[o]o</xmp>" queryCommandIndeterm("inserthtml") before 
 PASS [["stylewithcss","false"],["inserthtml","<b>abc</b>"]] "<xmp>f[o]o</xmp>" queryCommandState("inserthtml") before 
 PASS [["stylewithcss","false"],["inserthtml","<b>abc</b>"]] "<xmp>f[o]o</xmp>" queryCommandValue("inserthtml") before 
@@ -627,10 +627,10 @@ PASS [["stylewithcss","true"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</scrip
 FAIL [["stylewithcss","true"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<script>f<b>abc</b>o</script>bar" but got "<script>foo</script><b>abc</b>bar"
 PASS [["stylewithcss","true"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar" queryCommandIndeterm("inserthtml") before 
 PASS [["stylewithcss","true"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar" queryCommandState("inserthtml") before 
 PASS [["stylewithcss","true"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar" queryCommandValue("inserthtml") before 
@@ -643,10 +643,10 @@ PASS [["stylewithcss","false"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</scri
 FAIL [["stylewithcss","false"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<script>f<b>abc</b>o</script>bar" but got "<script>foo</script><b>abc</b>bar"
 PASS [["stylewithcss","false"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar" queryCommandIndeterm("inserthtml") before 
 PASS [["stylewithcss","false"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar" queryCommandState("inserthtml") before 
 PASS [["stylewithcss","false"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar" queryCommandValue("inserthtml") before 
@@ -709,10 +709,10 @@ PASS [["stylewithcss","true"],["inserthtml","<hr>"]] "<b>f[o]o</b>" checks for m
 PASS [["stylewithcss","true"],["inserthtml","<hr>"]] "<b>f[o]o</b>" compare innerHTML 
 PASS [["stylewithcss","true"],["inserthtml","<hr>"]] "<b>f[o]o</b>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthtml","<hr>"]] "<b>f[o]o</b>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["inserthtml","<hr>"]] "<b>f[o]o</b>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["inserthtml","<hr>"]] "<b>f[o]o</b>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthtml","<hr>"]] "<b>f[o]o</b>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthtml","<hr>"]] "<b>f[o]o</b>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["inserthtml","<hr>"]] "<b>f[o]o</b>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["inserthtml","<hr>"]] "<b>f[o]o</b>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthtml","<hr>"]] "<b>f[o]o</b>" queryCommandIndeterm("inserthtml") before 
 PASS [["stylewithcss","true"],["inserthtml","<hr>"]] "<b>f[o]o</b>" queryCommandState("inserthtml") before 
 PASS [["stylewithcss","true"],["inserthtml","<hr>"]] "<b>f[o]o</b>" queryCommandValue("inserthtml") before 
@@ -725,10 +725,10 @@ PASS [["stylewithcss","false"],["inserthtml","<hr>"]] "<b>f[o]o</b>" checks for 
 PASS [["stylewithcss","false"],["inserthtml","<hr>"]] "<b>f[o]o</b>" compare innerHTML 
 PASS [["stylewithcss","false"],["inserthtml","<hr>"]] "<b>f[o]o</b>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthtml","<hr>"]] "<b>f[o]o</b>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["inserthtml","<hr>"]] "<b>f[o]o</b>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["inserthtml","<hr>"]] "<b>f[o]o</b>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthtml","<hr>"]] "<b>f[o]o</b>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthtml","<hr>"]] "<b>f[o]o</b>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["inserthtml","<hr>"]] "<b>f[o]o</b>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["inserthtml","<hr>"]] "<b>f[o]o</b>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthtml","<hr>"]] "<b>f[o]o</b>" queryCommandIndeterm("inserthtml") before 
 PASS [["stylewithcss","false"],["inserthtml","<hr>"]] "<b>f[o]o</b>" queryCommandState("inserthtml") before 
 PASS [["stylewithcss","false"],["inserthtml","<hr>"]] "<b>f[o]o</b>" queryCommandValue("inserthtml") before 
@@ -999,10 +999,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml",
 FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font color=\"blue\">foo</font><p><span style=\"color:rgb(0, 0, 255)\">abc</span></p><font color=\"blue\">bar</font>" but got "<font color=\"blue\">foo</font>abc<span style=\"color:rgb(0, 0, 255)\">bar</span><br>"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandValue("defaultparagraphseparator") before 
@@ -1022,10 +1022,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml"
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font color=\"blue\">foo</font><p><font color=\"#0000ff\">abc</font></p><font color=\"blue\">bar</font>" but got "<font color=\"blue\">foo</font>abc<span style=\"color:rgb(0, 0, 255)\">bar</span><br>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandValue("defaultparagraphseparator") before 
@@ -1045,10 +1045,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<
 FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font color=\"blue\">foo</font><p><span style=\"color:rgb(0, 0, 255)\">abc</span></p><font color=\"blue\">bar</font>" but got "<font color=\"blue\">foo</font>abc<span style=\"color:rgb(0, 0, 255)\">bar</span><br>"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandValue("defaultparagraphseparator") before 
@@ -1068,10 +1068,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font color=\"blue\">foo</font><p><font color=\"#0000ff\">abc</font></p><font color=\"blue\">bar</font>" but got "<font color=\"blue\">foo</font>abc<span style=\"color:rgb(0, 0, 255)\">bar</span><br>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandValue("defaultparagraphseparator") before 
@@ -1091,10 +1091,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml",
 FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"color:rgb(0, 0, 255)\">foo</span><p><span style=\"color:rgb(0, 0, 255)\">abc</span></p><span style=\"color:rgb(0, 0, 255)\">bar</span>" but got "<span style=\"color:rgb(0, 0, 255)\">foo</span>abc<span style=\"color:rgb(0, 0, 255)\">bar</span><br>"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandValue("defaultparagraphseparator") before 
@@ -1114,10 +1114,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml"
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"color:rgb(0, 0, 255)\">foo</span><p><font color=\"#0000ff\">abc</font></p><span style=\"color:rgb(0, 0, 255)\">bar</span>" but got "<span style=\"color:rgb(0, 0, 255)\">foo</span>abc<span style=\"color:rgb(0, 0, 255)\">bar</span><br>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandValue("defaultparagraphseparator") before 
@@ -1137,10 +1137,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<
 FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"color:rgb(0, 0, 255)\">foo</span><p><span style=\"color:rgb(0, 0, 255)\">abc</span></p><span style=\"color:rgb(0, 0, 255)\">bar</span>" but got "<span style=\"color:rgb(0, 0, 255)\">foo</span>abc<span style=\"color:rgb(0, 0, 255)\">bar</span><br>"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandValue("defaultparagraphseparator") before 
@@ -1160,10 +1160,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"color:rgb(0, 0, 255)\">foo</span><p><font color=\"#0000ff\">abc</font></p><span style=\"color:rgb(0, 0, 255)\">bar</span>" but got "<span style=\"color:rgb(0, 0, 255)\">foo</span>abc<span style=\"color:rgb(0, 0, 255)\">bar</span><br>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandValue("defaultparagraphseparator") before 
@@ -1183,10 +1183,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml",
 FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"font-variant:small-caps\">foo</span><p>abc</p><span style=\"font-variant:small-caps\">bar</span>" but got "<span style=\"font-variant:small-caps\">fooabcbar<br></span>"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandValue("defaultparagraphseparator") before 
@@ -1206,10 +1206,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml"
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"font-variant:small-caps\">foo</span><p>abc</p><span style=\"font-variant:small-caps\">bar</span>" but got "<span style=\"font-variant:small-caps\">fooabcbar<br></span>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandValue("defaultparagraphseparator") before 
@@ -1229,10 +1229,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<
 FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"font-variant:small-caps\">foo</span><p>abc</p><span style=\"font-variant:small-caps\">bar</span>" but got "<span style=\"font-variant:small-caps\">fooabcbar<br></span>"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandValue("defaultparagraphseparator") before 
@@ -1252,10 +1252,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"font-variant:small-caps\">foo</span><p>abc</p><span style=\"font-variant:small-caps\">bar</span>" but got "<span style=\"font-variant:small-caps\">fooabcbar<br></span>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandValue("defaultparagraphseparator") before 
@@ -1283,10 +1283,10 @@ PASS [["stylewithcss","true"],["inserthtml","<span style=display:none></span>"]]
 PASS [["stylewithcss","true"],["inserthtml","<span style=display:none></span>"]] "<p>[foo]</p>" compare innerHTML 
 PASS [["stylewithcss","true"],["inserthtml","<span style=display:none></span>"]] "<p>[foo]</p>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthtml","<span style=display:none></span>"]] "<p>[foo]</p>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["inserthtml","<span style=display:none></span>"]] "<p>[foo]</p>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["inserthtml","<span style=display:none></span>"]] "<p>[foo]</p>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthtml","<span style=display:none></span>"]] "<p>[foo]</p>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthtml","<span style=display:none></span>"]] "<p>[foo]</p>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["inserthtml","<span style=display:none></span>"]] "<p>[foo]</p>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["inserthtml","<span style=display:none></span>"]] "<p>[foo]</p>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthtml","<span style=display:none></span>"]] "<p>[foo]</p>" queryCommandIndeterm("inserthtml") before 
 PASS [["stylewithcss","true"],["inserthtml","<span style=display:none></span>"]] "<p>[foo]</p>" queryCommandState("inserthtml") before 
 PASS [["stylewithcss","true"],["inserthtml","<span style=display:none></span>"]] "<p>[foo]</p>" queryCommandValue("inserthtml") before 
@@ -1299,10 +1299,10 @@ PASS [["stylewithcss","false"],["inserthtml","<span style=display:none></span>"]
 PASS [["stylewithcss","false"],["inserthtml","<span style=display:none></span>"]] "<p>[foo]</p>" compare innerHTML 
 PASS [["stylewithcss","false"],["inserthtml","<span style=display:none></span>"]] "<p>[foo]</p>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthtml","<span style=display:none></span>"]] "<p>[foo]</p>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["inserthtml","<span style=display:none></span>"]] "<p>[foo]</p>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["inserthtml","<span style=display:none></span>"]] "<p>[foo]</p>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthtml","<span style=display:none></span>"]] "<p>[foo]</p>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthtml","<span style=display:none></span>"]] "<p>[foo]</p>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["inserthtml","<span style=display:none></span>"]] "<p>[foo]</p>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["inserthtml","<span style=display:none></span>"]] "<p>[foo]</p>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthtml","<span style=display:none></span>"]] "<p>[foo]</p>" queryCommandIndeterm("inserthtml") before 
 PASS [["stylewithcss","false"],["inserthtml","<span style=display:none></span>"]] "<p>[foo]</p>" queryCommandState("inserthtml") before 
 PASS [["stylewithcss","false"],["inserthtml","<span style=display:none></span>"]] "<p>[foo]</p>" queryCommandValue("inserthtml") before 

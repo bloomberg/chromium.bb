@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 6409 tests; 6110 PASS, 299 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 6409 tests; 6274 PASS, 135 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS [["forwarddelete",""]] "foo[]": execCommand("forwarddelete", false, "") return value 
 PASS [["forwarddelete",""]] "foo[]" checks for modifications to non-editable content 
 PASS [["forwarddelete",""]] "foo[]" compare innerHTML 
@@ -60,10 +60,10 @@ PASS [["stylewithcss","true"],["forwarddelete",""]] "foo[]<span style=display:no
 PASS [["stylewithcss","true"],["forwarddelete",""]] "foo[]<span style=display:none>bar</span>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "foo[]<span style=display:none>bar</span>baz" queryCommandIndeterm("stylewithcss") before 
 FAIL [["stylewithcss","true"],["forwarddelete",""]] "foo[]<span style=display:none>bar</span>baz" queryCommandState("stylewithcss") before assert_equals: Wrong result returned expected false but got true
-FAIL [["stylewithcss","true"],["forwarddelete",""]] "foo[]<span style=display:none>bar</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["forwarddelete",""]] "foo[]<span style=display:none>bar</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "foo[]<span style=display:none>bar</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "foo[]<span style=display:none>bar</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["forwarddelete",""]] "foo[]<span style=display:none>bar</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["forwarddelete",""]] "foo[]<span style=display:none>bar</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "foo[]<span style=display:none>bar</span>baz" queryCommandIndeterm("forwarddelete") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "foo[]<span style=display:none>bar</span>baz" queryCommandState("forwarddelete") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "foo[]<span style=display:none>bar</span>baz" queryCommandValue("forwarddelete") before 
@@ -76,10 +76,10 @@ PASS [["stylewithcss","false"],["forwarddelete",""]] "foo[]<span style=display:n
 PASS [["stylewithcss","false"],["forwarddelete",""]] "foo[]<span style=display:none>bar</span>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "foo[]<span style=display:none>bar</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "foo[]<span style=display:none>bar</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["forwarddelete",""]] "foo[]<span style=display:none>bar</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["forwarddelete",""]] "foo[]<span style=display:none>bar</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "foo[]<span style=display:none>bar</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "foo[]<span style=display:none>bar</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["forwarddelete",""]] "foo[]<span style=display:none>bar</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["forwarddelete",""]] "foo[]<span style=display:none>bar</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "foo[]<span style=display:none>bar</span>baz" queryCommandIndeterm("forwarddelete") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "foo[]<span style=display:none>bar</span>baz" queryCommandState("forwarddelete") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "foo[]<span style=display:none>bar</span>baz" queryCommandValue("forwarddelete") before 
@@ -2041,10 +2041,10 @@ PASS [["stylewithcss","true"],["forwarddelete",""]] "foo[]<blockquote style=\"co
 PASS [["stylewithcss","true"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\">bar</blockquote>" compare innerHTML 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\">bar</blockquote>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\">bar</blockquote>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\">bar</blockquote>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\">bar</blockquote>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\">bar</blockquote>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\">bar</blockquote>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\">bar</blockquote>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\">bar</blockquote>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\">bar</blockquote>" queryCommandIndeterm("forwarddelete") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\">bar</blockquote>" queryCommandState("forwarddelete") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\">bar</blockquote>" queryCommandValue("forwarddelete") before 
@@ -2057,10 +2057,10 @@ PASS [["stylewithcss","false"],["forwarddelete",""]] "foo[]<blockquote style=\"c
 FAIL [["stylewithcss","false"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\">bar</blockquote>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<font color=\"#0000ff\">bar</font>" but got "foo<span style=\"color:rgb(0, 0, 255)\">bar</span>"
 PASS [["stylewithcss","false"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\">bar</blockquote>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\">bar</blockquote>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\">bar</blockquote>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\">bar</blockquote>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\">bar</blockquote>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\">bar</blockquote>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\">bar</blockquote>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\">bar</blockquote>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\">bar</blockquote>" queryCommandIndeterm("forwarddelete") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\">bar</blockquote>" queryCommandState("forwarddelete") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\">bar</blockquote>" queryCommandValue("forwarddelete") before 
@@ -2138,10 +2138,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelet
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandValue("defaultparagraphseparator") before 
@@ -2161,10 +2161,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddele
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<font color=\"#0000ff\">bar</font><blockquote style=\"color:rgb(0, 0, 255)\"><p>baz</p></blockquote>" but got "foo<span style=\"color:rgb(0, 0, 255)\">bar</span><blockquote style=\"color:rgb(0, 0, 255)\"><p>baz</p></blockquote>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandValue("defaultparagraphseparator") before 
@@ -2184,10 +2184,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandValue("defaultparagraphseparator") before 
@@ -2207,10 +2207,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<font color=\"#0000ff\">bar</font><blockquote style=\"color:rgb(0, 0, 255)\"><p>baz</p></blockquote>" but got "foo<span style=\"color:rgb(0, 0, 255)\">bar</span><blockquote style=\"color:rgb(0, 0, 255)\"><p>baz</p></blockquote>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<blockquote style=\"color: blue\"><p>bar<p>baz</blockquote>" queryCommandValue("defaultparagraphseparator") before 
@@ -2868,10 +2868,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelet
 FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><span style=\"color:rgb(0, 0, 255)\">foo</span>bar</p>" but got "<p style=\"color:rgb(0, 0, 255)\">foobar</p>"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -2891,10 +2891,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddele
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><font color=\"#0000ff\">foo</font>bar</p>" but got "<p style=\"color:rgb(0, 0, 255)\">foobar</p>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -2914,10 +2914,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete"
 FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><span style=\"color:rgb(0, 0, 255)\">foo</span>bar</p>" but got "<p style=\"color:rgb(0, 0, 255)\">foobar</p>"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -2937,10 +2937,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><font color=\"#0000ff\">foo</font>bar</p>" but got "<p style=\"color:rgb(0, 0, 255)\">foobar</p>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -2960,10 +2960,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelet
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -2983,10 +2983,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddele
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p style=\"color:rgb(0, 0, 255)\">foo<font color=\"#a52a2a\">bar</font></p>" but got "<p style=\"color:rgb(0, 0, 255)\">foo<span style=\"color:rgb(165, 42, 42)\">bar</span></p>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -3006,10 +3006,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -3029,10 +3029,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p style=\"color:rgb(0, 0, 255)\">foo<font color=\"#a52a2a\">bar</font></p>" but got "<p style=\"color:rgb(0, 0, 255)\">foo<span style=\"color:rgb(165, 42, 42)\">bar</span></p>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<p style=color:brown>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -3052,10 +3052,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelet
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -3075,10 +3075,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddele
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo<font color=\"#a52a2a\">bar</font></p>" but got "<p>foo<span style=\"color:rgb(165, 42, 42)\">bar</span></p>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -3098,10 +3098,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -3121,10 +3121,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo<font color=\"#a52a2a\">bar</font></p>" but got "<p>foo<span style=\"color:rgb(165, 42, 42)\">bar</span></p>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=color:brown>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -3368,10 +3368,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelet
 FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p style=\"background-color:rgb(0, 255, 255)\">foobar</p>" but got "<p style=\"background-color:rgb(0, 255, 255)\">foo<span style=\"background-color:rgb(210, 180, 140)\">bar</span></p>"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -3391,10 +3391,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddele
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p style=\"background-color:rgb(0, 255, 255)\">foobar</p>" but got "<p style=\"background-color:rgb(0, 255, 255)\">foo<span style=\"background-color:rgb(210, 180, 140)\">bar</span></p>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -3414,10 +3414,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete"
 FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p style=\"background-color:rgb(0, 255, 255)\">foobar</p>" but got "<p style=\"background-color:rgb(0, 255, 255)\">foo<span style=\"background-color:rgb(210, 180, 140)\">bar</span></p>"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -3437,10 +3437,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p style=\"background-color:rgb(0, 255, 255)\">foobar</p>" but got "<p style=\"background-color:rgb(0, 255, 255)\">foo<span style=\"background-color:rgb(210, 180, 140)\">bar</span></p>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=background-color:aqua>foo[]<p style=background-color:tan>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -3460,10 +3460,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelet
 FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foobar</p>" but got "<p>foo<span style=\"background-color:rgb(210, 180, 140)\">bar</span></p>"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -3483,10 +3483,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddele
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foobar</p>" but got "<p>foo<span style=\"background-color:rgb(210, 180, 140)\">bar</span></p>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -3506,10 +3506,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete"
 FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foobar</p>" but got "<p>foo<span style=\"background-color:rgb(210, 180, 140)\">bar</span></p>"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -3529,10 +3529,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foobar</p>" but got "<p>foo<span style=\"background-color:rgb(210, 180, 140)\">bar</span></p>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=background-color:tan>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -3648,10 +3648,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelet
 FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><span style=\"text-decoration:underline\">foo</span>bar</p>" but got "<p style=\"text-decoration:underline\">foobar</p>"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -3671,10 +3671,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddele
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><u>foo</u>bar</p>" but got "<p style=\"text-decoration:underline\">foobar</p>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -3694,10 +3694,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete"
 FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><span style=\"text-decoration:underline\">foo</span>bar</p>" but got "<p style=\"text-decoration:underline\">foobar</p>"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -3717,10 +3717,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><u>foo</u>bar</p>" but got "<p style=\"text-decoration:underline\">foobar</p>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -3740,10 +3740,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelet
 FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><span style=\"text-decoration:underline\">foo</span><span style=\"text-decoration:line-through\">bar</span></p>" but got "<p style=\"text-decoration:underline\">foo<span style=\"text-decoration-line:line-through\">bar</span></p>"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -3763,10 +3763,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddele
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><u>foo</u><s>bar</s></p>" but got "<p style=\"text-decoration:underline\">foo<span style=\"text-decoration-line:line-through\">bar</span></p>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -3786,10 +3786,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete"
 FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><span style=\"text-decoration:underline\">foo</span><span style=\"text-decoration:line-through\">bar</span></p>" but got "<p style=\"text-decoration:underline\">foo<span style=\"text-decoration-line:line-through\">bar</span></p>"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -3809,10 +3809,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><u>foo</u><s>bar</s></p>" but got "<p style=\"text-decoration:underline\">foo<span style=\"text-decoration-line:line-through\">bar</span></p>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=text-decoration:underline>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -3832,10 +3832,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelet
 FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo<span style=\"text-decoration:line-through\">bar</span></p>" but got "<p>foo<span style=\"text-decoration-line:line-through\">bar</span></p>"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -3855,10 +3855,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddele
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo<s>bar</s></p>" but got "<p>foo<span style=\"text-decoration-line:line-through\">bar</span></p>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -3878,10 +3878,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete"
 FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo<span style=\"text-decoration:line-through\">bar</span></p>" but got "<p>foo<span style=\"text-decoration-line:line-through\">bar</span></p>"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -3901,10 +3901,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo<s>bar</s></p>" but got "<p>foo<span style=\"text-decoration-line:line-through\">bar</span></p>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[]<p style=text-decoration:line-through>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -4019,10 +4019,10 @@ PASS [["stylewithcss","true"],["forwarddelete",""]] "<p style=color:blue>foo[]</
 FAIL [["stylewithcss","true"],["forwarddelete",""]] "<p style=color:blue>foo[]</p>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><span style=\"color:rgb(0, 0, 255)\">foo</span>bar</p>" but got "<p style=\"color:rgb(0, 0, 255)\">foobar</p>"
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p style=color:blue>foo[]</p>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p style=color:blue>foo[]</p>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["forwarddelete",""]] "<p style=color:blue>foo[]</p>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["forwarddelete",""]] "<p style=color:blue>foo[]</p>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p style=color:blue>foo[]</p>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p style=color:blue>foo[]</p>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["forwarddelete",""]] "<p style=color:blue>foo[]</p>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["forwarddelete",""]] "<p style=color:blue>foo[]</p>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p style=color:blue>foo[]</p>bar" queryCommandIndeterm("forwarddelete") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p style=color:blue>foo[]</p>bar" queryCommandState("forwarddelete") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p style=color:blue>foo[]</p>bar" queryCommandValue("forwarddelete") before 
@@ -4035,10 +4035,10 @@ PASS [["stylewithcss","false"],["forwarddelete",""]] "<p style=color:blue>foo[]<
 FAIL [["stylewithcss","false"],["forwarddelete",""]] "<p style=color:blue>foo[]</p>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><font color=\"#0000ff\">foo</font>bar</p>" but got "<p style=\"color:rgb(0, 0, 255)\">foobar</p>"
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p style=color:blue>foo[]</p>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p style=color:blue>foo[]</p>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["forwarddelete",""]] "<p style=color:blue>foo[]</p>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["forwarddelete",""]] "<p style=color:blue>foo[]</p>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p style=color:blue>foo[]</p>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p style=color:blue>foo[]</p>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["forwarddelete",""]] "<p style=color:blue>foo[]</p>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["forwarddelete",""]] "<p style=color:blue>foo[]</p>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p style=color:blue>foo[]</p>bar" queryCommandIndeterm("forwarddelete") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p style=color:blue>foo[]</p>bar" queryCommandState("forwarddelete") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p style=color:blue>foo[]</p>bar" queryCommandValue("forwarddelete") before 
@@ -4052,10 +4052,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelet
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -4075,10 +4075,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddele
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<font color=\"#a52a2a\">bar</font>" but got "foo<span style=\"color:rgb(165, 42, 42)\">bar</span>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -4098,10 +4098,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -4121,10 +4121,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<font color=\"#a52a2a\">bar</font>" but got "foo<span style=\"color:rgb(165, 42, 42)\">bar</span>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "foo[]<p style=color:brown>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -4143,10 +4143,10 @@ PASS [["stylewithcss","true"],["forwarddelete",""]] "<div style=color:blue><p st
 FAIL [["stylewithcss","true"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<div><p><span style=\"color:rgb(0, 128, 0)\">foo</span>bar</p></div>" but got "<div style=\"color:rgb(0, 0, 255)\"><p style=\"color:rgb(0, 128, 0)\">foobar</p></div>"
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div>bar" queryCommandIndeterm("forwarddelete") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div>bar" queryCommandState("forwarddelete") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div>bar" queryCommandValue("forwarddelete") before 
@@ -4159,10 +4159,10 @@ PASS [["stylewithcss","false"],["forwarddelete",""]] "<div style=color:blue><p s
 FAIL [["stylewithcss","false"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<div><p><font color=\"#008000\">foo</font>bar</p></div>" but got "<div style=\"color:rgb(0, 0, 255)\"><p style=\"color:rgb(0, 128, 0)\">foobar</p></div>"
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div>bar" queryCommandIndeterm("forwarddelete") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div>bar" queryCommandState("forwarddelete") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div>bar" queryCommandValue("forwarddelete") before 
@@ -4176,10 +4176,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelet
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -4199,10 +4199,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddele
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<div style=\"color:rgb(0, 0, 255)\"><p style=\"color:rgb(0, 128, 0)\">foo<font color=\"#a52a2a\">bar</font></p></div>" but got "<div style=\"color:rgb(0, 0, 255)\"><p style=\"color:rgb(0, 128, 0)\">foo<span style=\"color:rgb(165, 42, 42)\">bar</span></p></div>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -4222,10 +4222,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -4245,10 +4245,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<div style=\"color:rgb(0, 0, 255)\"><p style=\"color:rgb(0, 128, 0)\">foo<font color=\"#a52a2a\">bar</font></p></div>" but got "<div style=\"color:rgb(0, 0, 255)\"><p style=\"color:rgb(0, 128, 0)\">foo<span style=\"color:rgb(165, 42, 42)\">bar</span></p></div>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<div style=color:blue><p style=color:green>foo[]</div><p style=color:brown>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -4268,10 +4268,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelet
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -4291,10 +4291,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddele
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p style=\"color:rgb(0, 0, 255)\">foo<font color=\"#008000\">bar</font></p>" but got "<p style=\"color:rgb(0, 0, 255)\">foo<span style=\"color:rgb(0, 128, 0)\">bar</span></p>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -4314,10 +4314,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -4337,10 +4337,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p style=\"color:rgb(0, 0, 255)\">foo<font color=\"#008000\">bar</font></p>" but got "<p style=\"color:rgb(0, 0, 255)\">foo<span style=\"color:rgb(0, 128, 0)\">bar</span></p>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p style=color:blue>foo[]<div style=color:brown><p style=color:green>bar" queryCommandValue("defaultparagraphseparator") before 
@@ -4368,10 +4368,10 @@ PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aB
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandIndeterm("forwarddelete") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandState("forwarddelete") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("forwarddelete") before 
@@ -4384,10 +4384,10 @@ PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#a
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandIndeterm("forwarddelete") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandState("forwarddelete") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("forwarddelete") before 
@@ -4400,10 +4400,10 @@ PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aB
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandIndeterm("forwarddelete") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandState("forwarddelete") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("forwarddelete") before 
@@ -4416,10 +4416,10 @@ PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#a
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandIndeterm("forwarddelete") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandState("forwarddelete") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("forwarddelete") before 
@@ -4432,10 +4432,10 @@ PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo{<span style=color:#a
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" compare innerHTML 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["forwarddelete",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["forwarddelete",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandIndeterm("forwarddelete") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandState("forwarddelete") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("forwarddelete") before 
@@ -4448,10 +4448,10 @@ PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo{<span style=color:#
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" compare innerHTML 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["forwarddelete",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["forwarddelete",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandIndeterm("forwarddelete") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandState("forwarddelete") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("forwarddelete") before 
@@ -4464,10 +4464,10 @@ PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>[foo<span style=color:#a
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["forwarddelete",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["forwarddelete",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandIndeterm("forwarddelete") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandState("forwarddelete") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("forwarddelete") before 
@@ -4480,10 +4480,10 @@ PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>[foo<span style=color:#
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["forwarddelete",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["forwarddelete",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandIndeterm("forwarddelete") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandState("forwarddelete") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("forwarddelete") before 
@@ -4496,10 +4496,10 @@ PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>{foo<span style=color:#a
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["forwarddelete",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["forwarddelete",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandIndeterm("forwarddelete") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandState("forwarddelete") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("forwarddelete") before 
@@ -4512,10 +4512,10 @@ PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>{foo<span style=color:#
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["forwarddelete",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["forwarddelete",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandIndeterm("forwarddelete") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandState("forwarddelete") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("forwarddelete") before 
@@ -4528,10 +4528,10 @@ PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aB
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" compare innerHTML 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandIndeterm("forwarddelete") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandState("forwarddelete") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("forwarddelete") before 
@@ -4544,10 +4544,10 @@ PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#a
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" compare innerHTML 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandIndeterm("forwarddelete") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandState("forwarddelete") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("forwarddelete") before 
@@ -4560,10 +4560,10 @@ PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aB
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" compare innerHTML 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandIndeterm("forwarddelete") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandState("forwarddelete") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("forwarddelete") before 
@@ -4576,10 +4576,10 @@ PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#a
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" compare innerHTML 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandIndeterm("forwarddelete") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandState("forwarddelete") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("forwarddelete") before 
@@ -4592,10 +4592,10 @@ PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aB
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" compare innerHTML 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandIndeterm("forwarddelete") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandState("forwarddelete") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("forwarddelete") before 
@@ -4608,10 +4608,10 @@ PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#a
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" compare innerHTML 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandIndeterm("forwarddelete") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandState("forwarddelete") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "<p>foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("forwarddelete") before 
@@ -4624,10 +4624,10 @@ PASS [["stylewithcss","true"],["forwarddelete",""]] "foo<b>[bar]</b>baz" checks 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "foo<b>[bar]</b>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "foo<b>[bar]</b>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "foo<b>[bar]</b>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["forwarddelete",""]] "foo<b>[bar]</b>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["forwarddelete",""]] "foo<b>[bar]</b>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "foo<b>[bar]</b>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "foo<b>[bar]</b>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["forwarddelete",""]] "foo<b>[bar]</b>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["forwarddelete",""]] "foo<b>[bar]</b>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "foo<b>[bar]</b>baz" queryCommandIndeterm("forwarddelete") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "foo<b>[bar]</b>baz" queryCommandState("forwarddelete") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "foo<b>[bar]</b>baz" queryCommandValue("forwarddelete") before 
@@ -4640,10 +4640,10 @@ PASS [["stylewithcss","false"],["forwarddelete",""]] "foo<b>[bar]</b>baz" checks
 PASS [["stylewithcss","false"],["forwarddelete",""]] "foo<b>[bar]</b>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "foo<b>[bar]</b>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "foo<b>[bar]</b>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["forwarddelete",""]] "foo<b>[bar]</b>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["forwarddelete",""]] "foo<b>[bar]</b>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "foo<b>[bar]</b>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "foo<b>[bar]</b>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["forwarddelete",""]] "foo<b>[bar]</b>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["forwarddelete",""]] "foo<b>[bar]</b>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "foo<b>[bar]</b>baz" queryCommandIndeterm("forwarddelete") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "foo<b>[bar]</b>baz" queryCommandState("forwarddelete") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "foo<b>[bar]</b>baz" queryCommandValue("forwarddelete") before 
@@ -4656,10 +4656,10 @@ PASS [["stylewithcss","true"],["forwarddelete",""]] "foo<b>{bar}</b>baz" checks 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "foo<b>{bar}</b>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "foo<b>{bar}</b>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "foo<b>{bar}</b>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["forwarddelete",""]] "foo<b>{bar}</b>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["forwarddelete",""]] "foo<b>{bar}</b>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "foo<b>{bar}</b>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "foo<b>{bar}</b>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["forwarddelete",""]] "foo<b>{bar}</b>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["forwarddelete",""]] "foo<b>{bar}</b>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "foo<b>{bar}</b>baz" queryCommandIndeterm("forwarddelete") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "foo<b>{bar}</b>baz" queryCommandState("forwarddelete") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "foo<b>{bar}</b>baz" queryCommandValue("forwarddelete") before 
@@ -4672,10 +4672,10 @@ PASS [["stylewithcss","false"],["forwarddelete",""]] "foo<b>{bar}</b>baz" checks
 PASS [["stylewithcss","false"],["forwarddelete",""]] "foo<b>{bar}</b>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "foo<b>{bar}</b>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "foo<b>{bar}</b>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["forwarddelete",""]] "foo<b>{bar}</b>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["forwarddelete",""]] "foo<b>{bar}</b>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "foo<b>{bar}</b>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "foo<b>{bar}</b>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["forwarddelete",""]] "foo<b>{bar}</b>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["forwarddelete",""]] "foo<b>{bar}</b>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "foo<b>{bar}</b>baz" queryCommandIndeterm("forwarddelete") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "foo<b>{bar}</b>baz" queryCommandState("forwarddelete") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "foo<b>{bar}</b>baz" queryCommandValue("forwarddelete") before 
@@ -4688,10 +4688,10 @@ PASS [["stylewithcss","true"],["forwarddelete",""]] "foo{<b>bar</b>}baz" checks 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "foo{<b>bar</b>}baz" compare innerHTML 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "foo{<b>bar</b>}baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "foo{<b>bar</b>}baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["forwarddelete",""]] "foo{<b>bar</b>}baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["forwarddelete",""]] "foo{<b>bar</b>}baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "foo{<b>bar</b>}baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "foo{<b>bar</b>}baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["forwarddelete",""]] "foo{<b>bar</b>}baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["forwarddelete",""]] "foo{<b>bar</b>}baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "foo{<b>bar</b>}baz" queryCommandIndeterm("forwarddelete") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "foo{<b>bar</b>}baz" queryCommandState("forwarddelete") before 
 PASS [["stylewithcss","true"],["forwarddelete",""]] "foo{<b>bar</b>}baz" queryCommandValue("forwarddelete") before 
@@ -4704,10 +4704,10 @@ PASS [["stylewithcss","false"],["forwarddelete",""]] "foo{<b>bar</b>}baz" checks
 PASS [["stylewithcss","false"],["forwarddelete",""]] "foo{<b>bar</b>}baz" compare innerHTML 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "foo{<b>bar</b>}baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "foo{<b>bar</b>}baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["forwarddelete",""]] "foo{<b>bar</b>}baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["forwarddelete",""]] "foo{<b>bar</b>}baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "foo{<b>bar</b>}baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "foo{<b>bar</b>}baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["forwarddelete",""]] "foo{<b>bar</b>}baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["forwarddelete",""]] "foo{<b>bar</b>}baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "foo{<b>bar</b>}baz" queryCommandIndeterm("forwarddelete") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "foo{<b>bar</b>}baz" queryCommandState("forwarddelete") before 
 PASS [["stylewithcss","false"],["forwarddelete",""]] "foo{<b>bar</b>}baz" queryCommandValue("forwarddelete") before 
@@ -5058,10 +5058,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelet
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("defaultparagraphseparator") before 
@@ -5081,10 +5081,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddele
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo<font color=\"#0000ff\">quz</font></p>" but got "<p>foo<span style=\"color:rgb(0, 0, 255)\">quz</span></p>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("defaultparagraphseparator") before 
@@ -5104,10 +5104,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("defaultparagraphseparator") before 
@@ -5127,10 +5127,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo<font color=\"#0000ff\">quz</font></p>" but got "<p>foo<span style=\"color:rgb(0, 0, 255)\">quz</span></p>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["forwarddelete",""]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("defaultparagraphseparator") before 

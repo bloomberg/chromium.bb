@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1022 tests; 868 PASS, 154 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1022 tests; 980 PASS, 42 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS [["backcolor","#00FFFF"]] "foo[]bar": execCommand("backcolor", false, "#00FFFF") return value 
 PASS [["backcolor","#00FFFF"]] "foo[]bar" checks for modifications to non-editable content 
 PASS [["backcolor","#00FFFF"]] "foo[]bar" compare innerHTML 
@@ -15,10 +15,10 @@ PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<p>[foo</p> <p>bar]</p>"
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<p>[foo</p> <p>bar]</p>" compare innerHTML 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<p>[foo</p> <p>bar]</p>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<p>[foo</p> <p>bar]</p>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<p>[foo</p> <p>bar]</p>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<p>[foo</p> <p>bar]</p>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<p>[foo</p> <p>bar]</p>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<p>[foo</p> <p>bar]</p>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<p>[foo</p> <p>bar]</p>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<p>[foo</p> <p>bar]</p>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<p>[foo</p> <p>bar]</p>" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<p>[foo</p> <p>bar]</p>" queryCommandState("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<p>[foo</p> <p>bar]</p>" queryCommandValue("backcolor") before 
@@ -31,10 +31,10 @@ PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<p>[foo</p> <p>bar]</p>
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<p>[foo</p> <p>bar]</p>" compare innerHTML 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<p>[foo</p> <p>bar]</p>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<p>[foo</p> <p>bar]</p>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<p>[foo</p> <p>bar]</p>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<p>[foo</p> <p>bar]</p>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<p>[foo</p> <p>bar]</p>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<p>[foo</p> <p>bar]</p>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<p>[foo</p> <p>bar]</p>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<p>[foo</p> <p>bar]</p>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<p>[foo</p> <p>bar]</p>" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<p>[foo</p> <p>bar]</p>" queryCommandState("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<p>[foo</p> <p>bar]</p>" queryCommandValue("backcolor") before 
@@ -47,10 +47,10 @@ PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span>[foo</span> <span>
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span>[foo</span> <span>bar]</span>" compare innerHTML 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span>[foo</span> <span>bar]</span>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span>[foo</span> <span>bar]</span>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span>[foo</span> <span>bar]</span>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span>[foo</span> <span>bar]</span>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span>[foo</span> <span>bar]</span>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span>[foo</span> <span>bar]</span>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span>[foo</span> <span>bar]</span>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span>[foo</span> <span>bar]</span>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span>[foo</span> <span>bar]</span>" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span>[foo</span> <span>bar]</span>" queryCommandState("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span>[foo</span> <span>bar]</span>" queryCommandValue("backcolor") before 
@@ -63,10 +63,10 @@ PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span>[foo</span> <span
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span>[foo</span> <span>bar]</span>" compare innerHTML 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span>[foo</span> <span>bar]</span>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span>[foo</span> <span>bar]</span>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span>[foo</span> <span>bar]</span>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span>[foo</span> <span>bar]</span>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span>[foo</span> <span>bar]</span>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span>[foo</span> <span>bar]</span>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span>[foo</span> <span>bar]</span>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span>[foo</span> <span>bar]</span>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span>[foo</span> <span>bar]</span>" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span>[foo</span> <span>bar]</span>" queryCommandState("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span>[foo</span> <span>bar]</span>" queryCommandValue("backcolor") before 
@@ -79,10 +79,10 @@ PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<p>[foo</p><p> <span>bar
 FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><span style=\"background-color:rgb(0, 255, 255)\">foo</span></p><p> <span style=\"background-color:rgb(0, 255, 255)\"><span>bar</span></span> </p><p><span style=\"background-color:rgb(0, 255, 255)\">baz</span></p>" but got "<p><span style=\"background-color:rgb(0, 255, 255)\">foo</span></p><p> <span style=\"background-color:rgb(0, 255, 255)\"><span>bar</span> </span></p><p><span style=\"background-color:rgb(0, 255, 255)\">baz</span></p>"
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandState("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandValue("backcolor") before 
@@ -95,10 +95,10 @@ PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<p>[foo</p><p> <span>ba
 FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><span style=\"background-color:rgb(0, 255, 255)\">foo</span></p><p> <span style=\"background-color:rgb(0, 255, 255)\"><span>bar</span></span> </p><p><span style=\"background-color:rgb(0, 255, 255)\">baz</span></p>" but got "<p><span style=\"background-color:rgb(0, 255, 255)\">foo</span></p><p> <span style=\"background-color:rgb(0, 255, 255)\"><span>bar</span> </span></p><p><span style=\"background-color:rgb(0, 255, 255)\">baz</span></p>"
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandState("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandValue("backcolor") before 
@@ -111,10 +111,10 @@ PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<p>[foo<p><br><p>bar]" c
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<p>[foo<p><br><p>bar]" compare innerHTML 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<p>[foo<p><br><p>bar]" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<p>[foo<p><br><p>bar]" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<p>[foo<p><br><p>bar]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<p>[foo<p><br><p>bar]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<p>[foo<p><br><p>bar]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<p>[foo<p><br><p>bar]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<p>[foo<p><br><p>bar]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<p>[foo<p><br><p>bar]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<p>[foo<p><br><p>bar]" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<p>[foo<p><br><p>bar]" queryCommandState("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<p>[foo<p><br><p>bar]" queryCommandValue("backcolor") before 
@@ -127,10 +127,10 @@ PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<p>[foo<p><br><p>bar]" 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<p>[foo<p><br><p>bar]" compare innerHTML 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<p>[foo<p><br><p>bar]" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<p>[foo<p><br><p>bar]" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<p>[foo<p><br><p>bar]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<p>[foo<p><br><p>bar]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<p>[foo<p><br><p>bar]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<p>[foo<p><br><p>bar]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<p>[foo<p><br><p>bar]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<p>[foo<p><br><p>bar]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<p>[foo<p><br><p>bar]" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<p>[foo<p><br><p>bar]" queryCommandState("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<p>[foo<p><br><p>bar]" queryCommandValue("backcolor") before 
@@ -179,10 +179,10 @@ PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[bar]baz" checks for 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[bar]baz" compare innerHTML 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[bar]baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[bar]baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[bar]baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[bar]baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[bar]baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[bar]baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[bar]baz" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[bar]baz" queryCommandState("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[bar]baz" queryCommandValue("backcolor") before 
@@ -195,10 +195,10 @@ PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[bar]baz" checks for
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[bar]baz" compare innerHTML 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[bar]baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[bar]baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[bar]baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[bar]baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[bar]baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[bar]baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[bar]baz" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[bar]baz" queryCommandState("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[bar]baz" queryCommandValue("backcolor") before 
@@ -211,10 +211,10 @@ PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[bar<b>baz]qoz</b>quz
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[bar<b>baz]qoz</b>quz" compare innerHTML 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[bar<b>baz]qoz</b>quz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[bar<b>baz]qoz</b>quz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[bar<b>baz]qoz</b>quz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[bar<b>baz]qoz</b>quz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[bar<b>baz]qoz</b>quz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[bar<b>baz]qoz</b>quz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[bar<b>baz]qoz</b>quz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[bar<b>baz]qoz</b>quz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[bar<b>baz]qoz</b>quz" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[bar<b>baz]qoz</b>quz" queryCommandState("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[bar<b>baz]qoz</b>quz" queryCommandValue("backcolor") before 
@@ -227,10 +227,10 @@ PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[bar<b>baz]qoz</b>qu
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[bar<b>baz]qoz</b>quz" compare innerHTML 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[bar<b>baz]qoz</b>quz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[bar<b>baz]qoz</b>quz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[bar<b>baz]qoz</b>quz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[bar<b>baz]qoz</b>quz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[bar<b>baz]qoz</b>quz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[bar<b>baz]qoz</b>quz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[bar<b>baz]qoz</b>quz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[bar<b>baz]qoz</b>quz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[bar<b>baz]qoz</b>quz" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[bar<b>baz]qoz</b>quz" queryCommandState("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[bar<b>baz]qoz</b>quz" queryCommandValue("backcolor") before 
@@ -243,10 +243,10 @@ PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[bar<i>baz]qoz</i>quz
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[bar<i>baz]qoz</i>quz" compare innerHTML 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[bar<i>baz]qoz</i>quz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[bar<i>baz]qoz</i>quz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[bar<i>baz]qoz</i>quz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[bar<i>baz]qoz</i>quz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[bar<i>baz]qoz</i>quz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[bar<i>baz]qoz</i>quz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[bar<i>baz]qoz</i>quz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[bar<i>baz]qoz</i>quz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[bar<i>baz]qoz</i>quz" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[bar<i>baz]qoz</i>quz" queryCommandState("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[bar<i>baz]qoz</i>quz" queryCommandValue("backcolor") before 
@@ -259,10 +259,10 @@ PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[bar<i>baz]qoz</i>qu
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[bar<i>baz]qoz</i>quz" compare innerHTML 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[bar<i>baz]qoz</i>quz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[bar<i>baz]qoz</i>quz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[bar<i>baz]qoz</i>quz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[bar<i>baz]qoz</i>quz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[bar<i>baz]qoz</i>quz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[bar<i>baz]qoz</i>quz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[bar<i>baz]qoz</i>quz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[bar<i>baz]qoz</i>quz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[bar<i>baz]qoz</i>quz" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[bar<i>baz]qoz</i>quz" queryCommandState("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[bar<i>baz]qoz</i>quz" queryCommandValue("backcolor") before 
@@ -275,10 +275,10 @@ PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "{<p><p> <p>foo</p>}" che
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "{<p><p> <p>foo</p>}" compare innerHTML 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "{<p><p> <p>foo</p>}" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "{<p><p> <p>foo</p>}" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "{<p><p> <p>foo</p>}" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "{<p><p> <p>foo</p>}" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "{<p><p> <p>foo</p>}" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "{<p><p> <p>foo</p>}" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "{<p><p> <p>foo</p>}" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "{<p><p> <p>foo</p>}" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "{<p><p> <p>foo</p>}" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "{<p><p> <p>foo</p>}" queryCommandState("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "{<p><p> <p>foo</p>}" queryCommandValue("backcolor") before 
@@ -291,10 +291,10 @@ PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "{<p><p> <p>foo</p>}" ch
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "{<p><p> <p>foo</p>}" compare innerHTML 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "{<p><p> <p>foo</p>}" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "{<p><p> <p>foo</p>}" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "{<p><p> <p>foo</p>}" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "{<p><p> <p>foo</p>}" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "{<p><p> <p>foo</p>}" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "{<p><p> <p>foo</p>}" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "{<p><p> <p>foo</p>}" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "{<p><p> <p>foo</p>}" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "{<p><p> <p>foo</p>}" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "{<p><p> <p>foo</p>}" queryCommandState("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "{<p><p> <p>foo</p>}" queryCommandValue("backcolor") before 
@@ -307,10 +307,10 @@ PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody><tr><td>fo
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" compare innerHTML 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandState("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandValue("backcolor") before 
@@ -323,10 +323,10 @@ PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody><tr><td>f
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" compare innerHTML 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandState("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandValue("backcolor") before 
@@ -339,10 +339,10 @@ PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody><tr data-s
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" compare innerHTML 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandState("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("backcolor") before 
@@ -355,10 +355,10 @@ PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody><tr data-
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" compare innerHTML 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandState("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("backcolor") before 
@@ -371,10 +371,10 @@ PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody><tr data-s
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" compare innerHTML 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandState("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("backcolor") before 
@@ -387,10 +387,10 @@ PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody><tr data-
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" compare innerHTML 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandState("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("backcolor") before 
@@ -403,10 +403,10 @@ PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody data-start
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" compare innerHTML 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandState("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("backcolor") before 
@@ -419,10 +419,10 @@ PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody data-star
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" compare innerHTML 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandState("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("backcolor") before 
@@ -435,10 +435,10 @@ PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table data-start=0 data
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" compare innerHTML 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandState("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("backcolor") before 
@@ -451,10 +451,10 @@ PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table data-start=0 dat
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" compare innerHTML 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandState("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("backcolor") before 
@@ -467,10 +467,10 @@ PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "{<table><tr><td>foo<td>b
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "{<table><tr><td>foo<td>bar<td>baz</table>}" compare innerHTML 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandState("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandValue("backcolor") before 
@@ -483,10 +483,10 @@ PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "{<table><tr><td>foo<td>
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "{<table><tr><td>foo<td>bar<td>baz</table>}" compare innerHTML 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandState("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandValue("backcolor") before 
@@ -526,10 +526,10 @@ PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "{<p style=\"background-c
 FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "{<p style=\"background-color: aqua\">foo</p><p>bar</p>}" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p style=\"background-color:rgb(0, 255, 255)\">foo</p><p><span style=\"background-color:rgb(0, 255, 255)\">bar</span></p>" but got "<p><span style=\"background-color:rgb(0, 255, 255)\">foo</span></p><p><span style=\"background-color:rgb(0, 255, 255)\">bar</span></p>"
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "{<p style=\"background-color: aqua\">foo</p><p>bar</p>}" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "{<p style=\"background-color: aqua\">foo</p><p>bar</p>}" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "{<p style=\"background-color: aqua\">foo</p><p>bar</p>}" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "{<p style=\"background-color: aqua\">foo</p><p>bar</p>}" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "{<p style=\"background-color: aqua\">foo</p><p>bar</p>}" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "{<p style=\"background-color: aqua\">foo</p><p>bar</p>}" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "{<p style=\"background-color: aqua\">foo</p><p>bar</p>}" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "{<p style=\"background-color: aqua\">foo</p><p>bar</p>}" queryCommandValue("stylewithcss") after 
 FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "{<p style=\"background-color: aqua\">foo</p><p>bar</p>}" queryCommandIndeterm("backcolor") before assert_equals: Wrong result returned expected true but got false
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "{<p style=\"background-color: aqua\">foo</p><p>bar</p>}" queryCommandState("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "{<p style=\"background-color: aqua\">foo</p><p>bar</p>}" queryCommandValue("backcolor") before 
@@ -542,10 +542,10 @@ PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "{<p style=\"background-
 FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "{<p style=\"background-color: aqua\">foo</p><p>bar</p>}" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p style=\"background-color:rgb(0, 255, 255)\">foo</p><p><span style=\"background-color:rgb(0, 255, 255)\">bar</span></p>" but got "<p><span style=\"background-color:rgb(0, 255, 255)\">foo</span></p><p><span style=\"background-color:rgb(0, 255, 255)\">bar</span></p>"
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "{<p style=\"background-color: aqua\">foo</p><p>bar</p>}" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "{<p style=\"background-color: aqua\">foo</p><p>bar</p>}" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "{<p style=\"background-color: aqua\">foo</p><p>bar</p>}" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "{<p style=\"background-color: aqua\">foo</p><p>bar</p>}" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "{<p style=\"background-color: aqua\">foo</p><p>bar</p>}" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "{<p style=\"background-color: aqua\">foo</p><p>bar</p>}" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "{<p style=\"background-color: aqua\">foo</p><p>bar</p>}" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "{<p style=\"background-color: aqua\">foo</p><p>bar</p>}" queryCommandValue("stylewithcss") after 
 FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "{<p style=\"background-color: aqua\">foo</p><p>bar</p>}" queryCommandIndeterm("backcolor") before assert_equals: Wrong result returned expected true but got false
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "{<p style=\"background-color: aqua\">foo</p><p>bar</p>}" queryCommandState("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "{<p style=\"background-color: aqua\">foo</p><p>bar</p>}" queryCommandValue("backcolor") before 
@@ -558,10 +558,10 @@ PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background
 FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: aqua\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"background-color:rgb(0, 255, 255)\">foobarbaz</span>" but got "<span style=\"background-color:rgb(0, 255, 255)\">foo</span><span style=\"background-color:rgb(0, 255, 255)\">bar</span><span style=\"background-color:rgb(0, 255, 255)\">baz</span>"
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: aqua\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: aqua\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: aqua\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: aqua\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: aqua\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: aqua\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: aqua\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: aqua\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: aqua\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: aqua\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandState("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: aqua\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("backcolor") before 
@@ -574,10 +574,10 @@ PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"backgroun
 FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: aqua\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"background-color:rgb(0, 255, 255)\">foobarbaz</span>" but got "<span style=\"background-color:rgb(0, 255, 255)\">foo</span><span style=\"background-color:rgb(0, 255, 255)\">bar</span><span style=\"background-color:rgb(0, 255, 255)\">baz</span>"
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: aqua\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: aqua\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: aqua\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: aqua\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: aqua\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: aqua\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: aqua\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: aqua\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: aqua\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: aqua\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandState("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: aqua\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("backcolor") before 
@@ -590,10 +590,10 @@ PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: #00ffff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" compare innerHTML 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: #00ffff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: #00ffff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: #00ffff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: #00ffff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: #00ffff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: #00ffff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: #00ffff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: #00ffff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: #00ffff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: #00ffff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandState("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: #00ffff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("backcolor") before 
@@ -606,10 +606,10 @@ PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"backgroun
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: #00ffff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" compare innerHTML 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: #00ffff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: #00ffff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: #00ffff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: #00ffff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: #00ffff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: #00ffff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: #00ffff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: #00ffff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: #00ffff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: #00ffff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandState("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: #00ffff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("backcolor") before 
@@ -622,10 +622,10 @@ PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: #0ff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" compare innerHTML 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: #0ff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: #0ff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: #0ff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: #0ff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: #0ff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: #0ff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: #0ff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: #0ff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: #0ff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: #0ff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandState("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: #0ff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("backcolor") before 
@@ -638,10 +638,10 @@ PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"backgroun
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: #0ff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" compare innerHTML 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: #0ff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: #0ff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: #0ff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: #0ff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: #0ff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: #0ff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: #0ff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: #0ff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: #0ff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: #0ff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandState("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: #0ff\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("backcolor") before 
@@ -654,10 +654,10 @@ PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: rgb(0, 255, 255)\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" compare innerHTML 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: rgb(0, 255, 255)\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: rgb(0, 255, 255)\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: rgb(0, 255, 255)\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: rgb(0, 255, 255)\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: rgb(0, 255, 255)\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: rgb(0, 255, 255)\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: rgb(0, 255, 255)\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: rgb(0, 255, 255)\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: rgb(0, 255, 255)\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: rgb(0, 255, 255)\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandState("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"background-color: rgb(0, 255, 255)\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("backcolor") before 
@@ -670,10 +670,10 @@ PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"backgroun
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: rgb(0, 255, 255)\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" compare innerHTML 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: rgb(0, 255, 255)\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: rgb(0, 255, 255)\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: rgb(0, 255, 255)\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: rgb(0, 255, 255)\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: rgb(0, 255, 255)\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: rgb(0, 255, 255)\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: rgb(0, 255, 255)\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: rgb(0, 255, 255)\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: rgb(0, 255, 255)\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: rgb(0, 255, 255)\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandState("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"background-color: rgb(0, 255, 255)\">foo<span style=\"background-color: tan\">[bar]</span>baz</span>" queryCommandValue("backcolor") before 
@@ -704,10 +704,10 @@ PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<div style=\"background-
 FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<div style=\"background-color: aqua\"><p style=\"background-color: tan\">b[ar]</p></div>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<div style=\"background-color:rgb(0, 255, 255)\"><p style=\"background-color:rgb(210, 180, 140)\">b<span style=\"background-color:rgb(0, 255, 255)\">ar</span></p></div>" but got "<div><p><span style=\"background-color:rgb(210, 180, 140)\">b</span><span style=\"background-color:rgb(0, 255, 255)\">ar</span></p></div>"
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<div style=\"background-color: aqua\"><p style=\"background-color: tan\">b[ar]</p></div>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<div style=\"background-color: aqua\"><p style=\"background-color: tan\">b[ar]</p></div>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<div style=\"background-color: aqua\"><p style=\"background-color: tan\">b[ar]</p></div>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<div style=\"background-color: aqua\"><p style=\"background-color: tan\">b[ar]</p></div>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<div style=\"background-color: aqua\"><p style=\"background-color: tan\">b[ar]</p></div>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<div style=\"background-color: aqua\"><p style=\"background-color: tan\">b[ar]</p></div>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<div style=\"background-color: aqua\"><p style=\"background-color: tan\">b[ar]</p></div>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<div style=\"background-color: aqua\"><p style=\"background-color: tan\">b[ar]</p></div>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<div style=\"background-color: aqua\"><p style=\"background-color: tan\">b[ar]</p></div>" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<div style=\"background-color: aqua\"><p style=\"background-color: tan\">b[ar]</p></div>" queryCommandState("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<div style=\"background-color: aqua\"><p style=\"background-color: tan\">b[ar]</p></div>" queryCommandValue("backcolor") before 
@@ -720,10 +720,10 @@ PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<div style=\"background
 FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<div style=\"background-color: aqua\"><p style=\"background-color: tan\">b[ar]</p></div>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<div style=\"background-color:rgb(0, 255, 255)\"><p style=\"background-color:rgb(210, 180, 140)\">b<span style=\"background-color:rgb(0, 255, 255)\">ar</span></p></div>" but got "<div><p><span style=\"background-color:rgb(210, 180, 140)\">b</span><span style=\"background-color:rgb(0, 255, 255)\">ar</span></p></div>"
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<div style=\"background-color: aqua\"><p style=\"background-color: tan\">b[ar]</p></div>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<div style=\"background-color: aqua\"><p style=\"background-color: tan\">b[ar]</p></div>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<div style=\"background-color: aqua\"><p style=\"background-color: tan\">b[ar]</p></div>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<div style=\"background-color: aqua\"><p style=\"background-color: tan\">b[ar]</p></div>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<div style=\"background-color: aqua\"><p style=\"background-color: tan\">b[ar]</p></div>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<div style=\"background-color: aqua\"><p style=\"background-color: tan\">b[ar]</p></div>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<div style=\"background-color: aqua\"><p style=\"background-color: tan\">b[ar]</p></div>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<div style=\"background-color: aqua\"><p style=\"background-color: tan\">b[ar]</p></div>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<div style=\"background-color: aqua\"><p style=\"background-color: tan\">b[ar]</p></div>" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<div style=\"background-color: aqua\"><p style=\"background-color: tan\">b[ar]</p></div>" queryCommandState("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<div style=\"background-color: aqua\"><p style=\"background-color: tan\">b[ar]</p></div>" queryCommandValue("backcolor") before 
@@ -736,10 +736,10 @@ PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"display: b
 FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"display: block; background-color: aqua\"><span style=\"display: block; background-color: tan\">b[ar]</span></span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"display:block; background-color:rgb(0, 255, 255)\"><span style=\"display:block; background-color:rgb(210, 180, 140)\">b<span style=\"background-color:rgb(0, 255, 255)\">ar</span></span></span>" but got "<span style=\"display:block\"><span style=\"display:block\"><span style=\"background-color:rgb(210, 180, 140)\">b</span><span style=\"background-color:rgb(0, 255, 255)\">ar</span></span></span>"
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"display: block; background-color: aqua\"><span style=\"display: block; background-color: tan\">b[ar]</span></span>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"display: block; background-color: aqua\"><span style=\"display: block; background-color: tan\">b[ar]</span></span>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"display: block; background-color: aqua\"><span style=\"display: block; background-color: tan\">b[ar]</span></span>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"display: block; background-color: aqua\"><span style=\"display: block; background-color: tan\">b[ar]</span></span>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"display: block; background-color: aqua\"><span style=\"display: block; background-color: tan\">b[ar]</span></span>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"display: block; background-color: aqua\"><span style=\"display: block; background-color: tan\">b[ar]</span></span>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"display: block; background-color: aqua\"><span style=\"display: block; background-color: tan\">b[ar]</span></span>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"display: block; background-color: aqua\"><span style=\"display: block; background-color: tan\">b[ar]</span></span>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"display: block; background-color: aqua\"><span style=\"display: block; background-color: tan\">b[ar]</span></span>" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"display: block; background-color: aqua\"><span style=\"display: block; background-color: tan\">b[ar]</span></span>" queryCommandState("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=\"display: block; background-color: aqua\"><span style=\"display: block; background-color: tan\">b[ar]</span></span>" queryCommandValue("backcolor") before 
@@ -752,10 +752,10 @@ PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"display: 
 FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"display: block; background-color: aqua\"><span style=\"display: block; background-color: tan\">b[ar]</span></span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"display:block; background-color:rgb(0, 255, 255)\"><span style=\"display:block; background-color:rgb(210, 180, 140)\">b<span style=\"background-color:rgb(0, 255, 255)\">ar</span></span></span>" but got "<span style=\"display:block\"><span style=\"display:block\"><span style=\"background-color:rgb(210, 180, 140)\">b</span><span style=\"background-color:rgb(0, 255, 255)\">ar</span></span></span>"
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"display: block; background-color: aqua\"><span style=\"display: block; background-color: tan\">b[ar]</span></span>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"display: block; background-color: aqua\"><span style=\"display: block; background-color: tan\">b[ar]</span></span>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"display: block; background-color: aqua\"><span style=\"display: block; background-color: tan\">b[ar]</span></span>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"display: block; background-color: aqua\"><span style=\"display: block; background-color: tan\">b[ar]</span></span>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"display: block; background-color: aqua\"><span style=\"display: block; background-color: tan\">b[ar]</span></span>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"display: block; background-color: aqua\"><span style=\"display: block; background-color: tan\">b[ar]</span></span>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"display: block; background-color: aqua\"><span style=\"display: block; background-color: tan\">b[ar]</span></span>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"display: block; background-color: aqua\"><span style=\"display: block; background-color: tan\">b[ar]</span></span>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"display: block; background-color: aqua\"><span style=\"display: block; background-color: tan\">b[ar]</span></span>" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"display: block; background-color: aqua\"><span style=\"display: block; background-color: tan\">b[ar]</span></span>" queryCommandState("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=\"display: block; background-color: aqua\"><span style=\"display: block; background-color: tan\">b[ar]</span></span>" queryCommandValue("backcolor") before 
@@ -768,10 +768,10 @@ PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "fo[o<span style=backgrou
 FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "fo[o<span style=background-color:tan>b]ar</span>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "fo<span style=\"background-color:rgb(0, 255, 255)\">o</span><span style=\"background-color:rgb(210, 180, 140)\"><span style=\"background-color:rgb(0, 255, 255)\">b</span>ar</span>baz" but got "fo<span style=\"background-color:rgb(0, 255, 255)\">ob</span><span style=\"background-color:rgb(210, 180, 140)\">ar</span>baz"
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "fo[o<span style=background-color:tan>b]ar</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "fo[o<span style=background-color:tan>b]ar</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "fo[o<span style=background-color:tan>b]ar</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "fo[o<span style=background-color:tan>b]ar</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "fo[o<span style=background-color:tan>b]ar</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "fo[o<span style=background-color:tan>b]ar</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "fo[o<span style=background-color:tan>b]ar</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "fo[o<span style=background-color:tan>b]ar</span>baz" queryCommandValue("stylewithcss") after 
 FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "fo[o<span style=background-color:tan>b]ar</span>baz" queryCommandIndeterm("backcolor") before assert_equals: Wrong result returned expected true but got false
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "fo[o<span style=background-color:tan>b]ar</span>baz" queryCommandState("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "fo[o<span style=background-color:tan>b]ar</span>baz" queryCommandValue("backcolor") before 
@@ -784,10 +784,10 @@ PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "fo[o<span style=backgro
 FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "fo[o<span style=background-color:tan>b]ar</span>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "fo<span style=\"background-color:rgb(0, 255, 255)\">o</span><span style=\"background-color:rgb(210, 180, 140)\"><span style=\"background-color:rgb(0, 255, 255)\">b</span>ar</span>baz" but got "fo<span style=\"background-color:rgb(0, 255, 255)\">ob</span><span style=\"background-color:rgb(210, 180, 140)\">ar</span>baz"
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "fo[o<span style=background-color:tan>b]ar</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "fo[o<span style=background-color:tan>b]ar</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "fo[o<span style=background-color:tan>b]ar</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "fo[o<span style=background-color:tan>b]ar</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "fo[o<span style=background-color:tan>b]ar</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "fo[o<span style=background-color:tan>b]ar</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "fo[o<span style=background-color:tan>b]ar</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "fo[o<span style=background-color:tan>b]ar</span>baz" queryCommandValue("stylewithcss") after 
 FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "fo[o<span style=background-color:tan>b]ar</span>baz" queryCommandIndeterm("backcolor") before assert_equals: Wrong result returned expected true but got false
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "fo[o<span style=background-color:tan>b]ar</span>baz" queryCommandState("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "fo[o<span style=background-color:tan>b]ar</span>baz" queryCommandValue("backcolor") before 
@@ -800,10 +800,10 @@ PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo<span style=backgroun
 FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>b]az" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span style=\"background-color:rgb(210, 180, 140)\">ba<span style=\"background-color:rgb(0, 255, 255)\">r</span></span><span style=\"background-color:rgb(0, 255, 255)\">b</span>az" but got "foo<span style=\"background-color:rgb(210, 180, 140)\">ba</span><span style=\"background-color:rgb(0, 255, 255)\">rb</span>az"
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>b]az" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>b]az" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>b]az" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>b]az" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>b]az" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>b]az" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>b]az" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>b]az" queryCommandValue("stylewithcss") after 
 FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>b]az" queryCommandIndeterm("backcolor") before assert_equals: Wrong result returned expected true but got false
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>b]az" queryCommandState("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>b]az" queryCommandValue("backcolor") before 
@@ -816,10 +816,10 @@ PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo<span style=backgrou
 FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>b]az" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span style=\"background-color:rgb(210, 180, 140)\">ba<span style=\"background-color:rgb(0, 255, 255)\">r</span></span><span style=\"background-color:rgb(0, 255, 255)\">b</span>az" but got "foo<span style=\"background-color:rgb(210, 180, 140)\">ba</span><span style=\"background-color:rgb(0, 255, 255)\">rb</span>az"
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>b]az" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>b]az" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>b]az" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>b]az" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>b]az" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>b]az" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>b]az" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>b]az" queryCommandValue("stylewithcss") after 
 FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>b]az" queryCommandIndeterm("backcolor") before assert_equals: Wrong result returned expected true but got false
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>b]az" queryCommandState("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>b]az" queryCommandValue("backcolor") before 
@@ -841,10 +841,10 @@ PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[<span style=backgrou
 FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[<span style=background-color:tan>b]ar</span>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span style=\"background-color:rgb(210, 180, 140)\"><span style=\"background-color:rgb(0, 255, 255)\">b</span>ar</span>baz" but got "foo<span style=\"background-color:rgb(0, 255, 255)\">b</span><span style=\"background-color:rgb(210, 180, 140)\">ar</span>baz"
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[<span style=background-color:tan>b]ar</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[<span style=background-color:tan>b]ar</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[<span style=background-color:tan>b]ar</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[<span style=background-color:tan>b]ar</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[<span style=background-color:tan>b]ar</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[<span style=background-color:tan>b]ar</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[<span style=background-color:tan>b]ar</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[<span style=background-color:tan>b]ar</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[<span style=background-color:tan>b]ar</span>baz" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[<span style=background-color:tan>b]ar</span>baz" queryCommandState("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo[<span style=background-color:tan>b]ar</span>baz" queryCommandValue("backcolor") before 
@@ -857,10 +857,10 @@ PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[<span style=backgro
 FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[<span style=background-color:tan>b]ar</span>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span style=\"background-color:rgb(210, 180, 140)\"><span style=\"background-color:rgb(0, 255, 255)\">b</span>ar</span>baz" but got "foo<span style=\"background-color:rgb(0, 255, 255)\">b</span><span style=\"background-color:rgb(210, 180, 140)\">ar</span>baz"
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[<span style=background-color:tan>b]ar</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[<span style=background-color:tan>b]ar</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[<span style=background-color:tan>b]ar</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[<span style=background-color:tan>b]ar</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[<span style=background-color:tan>b]ar</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[<span style=background-color:tan>b]ar</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[<span style=background-color:tan>b]ar</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[<span style=background-color:tan>b]ar</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[<span style=background-color:tan>b]ar</span>baz" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[<span style=background-color:tan>b]ar</span>baz" queryCommandState("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo[<span style=background-color:tan>b]ar</span>baz" queryCommandValue("backcolor") before 
@@ -873,10 +873,10 @@ PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo<span style=backgroun
 FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>]baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span style=\"background-color:rgb(210, 180, 140)\">ba<span style=\"background-color:rgb(0, 255, 255)\">r</span></span>baz" but got "foo<span style=\"background-color:rgb(210, 180, 140)\">ba</span><span style=\"background-color:rgb(0, 255, 255)\">r</span>baz"
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>]baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>]baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>]baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>]baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>]baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>]baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>]baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>]baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>]baz" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>]baz" queryCommandState("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>]baz" queryCommandValue("backcolor") before 
@@ -889,10 +889,10 @@ PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo<span style=backgrou
 FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>]baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span style=\"background-color:rgb(210, 180, 140)\">ba<span style=\"background-color:rgb(0, 255, 255)\">r</span></span>baz" but got "foo<span style=\"background-color:rgb(210, 180, 140)\">ba</span><span style=\"background-color:rgb(0, 255, 255)\">r</span>baz"
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>]baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>]baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>]baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>]baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>]baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>]baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>]baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>]baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>]baz" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>]baz" queryCommandState("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "foo<span style=background-color:tan>ba[r</span>]baz" queryCommandValue("backcolor") before 
@@ -932,10 +932,10 @@ PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=background-c
 FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:yellow>b]ar</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"background-color:rgb(210, 180, 140)\">fo<span style=\"background-color:rgb(0, 255, 255)\">o</span></span><span style=\"background-color:rgb(255, 255, 0)\"><span style=\"background-color:rgb(0, 255, 255)\">b</span>ar</span>" but got "<span style=\"background-color:rgb(210, 180, 140)\">fo</span><span style=\"background-color:rgb(0, 255, 255)\">ob</span><span style=\"background-color:rgb(255, 255, 0)\">ar</span>"
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:yellow>b]ar</span>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:yellow>b]ar</span>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:yellow>b]ar</span>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:yellow>b]ar</span>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:yellow>b]ar</span>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:yellow>b]ar</span>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:yellow>b]ar</span>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:yellow>b]ar</span>" queryCommandValue("stylewithcss") after 
 FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:yellow>b]ar</span>" queryCommandIndeterm("backcolor") before assert_equals: Wrong result returned expected true but got false
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:yellow>b]ar</span>" queryCommandState("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:yellow>b]ar</span>" queryCommandValue("backcolor") before 
@@ -948,10 +948,10 @@ PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=background-
 FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:yellow>b]ar</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"background-color:rgb(210, 180, 140)\">fo<span style=\"background-color:rgb(0, 255, 255)\">o</span></span><span style=\"background-color:rgb(255, 255, 0)\"><span style=\"background-color:rgb(0, 255, 255)\">b</span>ar</span>" but got "<span style=\"background-color:rgb(210, 180, 140)\">fo</span><span style=\"background-color:rgb(0, 255, 255)\">ob</span><span style=\"background-color:rgb(255, 255, 0)\">ar</span>"
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:yellow>b]ar</span>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:yellow>b]ar</span>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:yellow>b]ar</span>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:yellow>b]ar</span>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:yellow>b]ar</span>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:yellow>b]ar</span>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:yellow>b]ar</span>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:yellow>b]ar</span>" queryCommandValue("stylewithcss") after 
 FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:yellow>b]ar</span>" queryCommandIndeterm("backcolor") before assert_equals: Wrong result returned expected true but got false
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:yellow>b]ar</span>" queryCommandState("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:yellow>b]ar</span>" queryCommandValue("backcolor") before 
@@ -964,10 +964,10 @@ PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=background-c
 FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:tan>b]ar</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"background-color:rgb(210, 180, 140)\">fo<span style=\"background-color:rgb(0, 255, 255)\">o</span></span><span style=\"background-color:rgb(210, 180, 140)\"><span style=\"background-color:rgb(0, 255, 255)\">b</span>ar</span>" but got "<span style=\"background-color:rgb(210, 180, 140)\">fo</span><span style=\"background-color:rgb(0, 255, 255)\">ob</span><span style=\"background-color:rgb(210, 180, 140)\">ar</span>"
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:tan>b]ar</span>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:tan>b]ar</span>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:tan>b]ar</span>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:tan>b]ar</span>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:tan>b]ar</span>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:tan>b]ar</span>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:tan>b]ar</span>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:tan>b]ar</span>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:tan>b]ar</span>" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:tan>b]ar</span>" queryCommandState("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:tan>b]ar</span>" queryCommandValue("backcolor") before 
@@ -980,10 +980,10 @@ PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=background-
 FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:tan>b]ar</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"background-color:rgb(210, 180, 140)\">fo<span style=\"background-color:rgb(0, 255, 255)\">o</span></span><span style=\"background-color:rgb(210, 180, 140)\"><span style=\"background-color:rgb(0, 255, 255)\">b</span>ar</span>" but got "<span style=\"background-color:rgb(210, 180, 140)\">fo</span><span style=\"background-color:rgb(0, 255, 255)\">ob</span><span style=\"background-color:rgb(210, 180, 140)\">ar</span>"
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:tan>b]ar</span>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:tan>b]ar</span>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:tan>b]ar</span>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:tan>b]ar</span>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:tan>b]ar</span>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:tan>b]ar</span>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:tan>b]ar</span>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:tan>b]ar</span>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:tan>b]ar</span>" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:tan>b]ar</span>" queryCommandState("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o</span><span style=background-color:tan>b]ar</span>" queryCommandValue("backcolor") before 
@@ -996,10 +996,10 @@ PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=background-c
 FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o<span style=background-color:transparent>b]ar</span></span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"background-color:rgb(210, 180, 140)\">fo<span style=\"background-color:rgb(0, 255, 255)\">o</span><span style=\"background-color:rgba(0, 0, 0, 0)\"><span style=\"background-color:rgb(0, 255, 255)\">b</span>ar</span></span>" but got "<span style=\"background-color:rgb(210, 180, 140)\">fo</span><span style=\"background-color:rgb(0, 255, 255)\">ob</span><span style=\"background-color:rgba(0, 0, 0, 0)\">ar</span>"
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o<span style=background-color:transparent>b]ar</span></span>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o<span style=background-color:transparent>b]ar</span></span>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o<span style=background-color:transparent>b]ar</span></span>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o<span style=background-color:transparent>b]ar</span></span>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o<span style=background-color:transparent>b]ar</span></span>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o<span style=background-color:transparent>b]ar</span></span>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o<span style=background-color:transparent>b]ar</span></span>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o<span style=background-color:transparent>b]ar</span></span>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o<span style=background-color:transparent>b]ar</span></span>" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o<span style=background-color:transparent>b]ar</span></span>" queryCommandState("backcolor") before 
 PASS [["stylewithcss","true"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o<span style=background-color:transparent>b]ar</span></span>" queryCommandValue("backcolor") before 
@@ -1012,10 +1012,10 @@ PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=background-
 FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o<span style=background-color:transparent>b]ar</span></span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"background-color:rgb(210, 180, 140)\">fo<span style=\"background-color:rgb(0, 255, 255)\">o</span><span style=\"background-color:rgba(0, 0, 0, 0)\"><span style=\"background-color:rgb(0, 255, 255)\">b</span>ar</span></span>" but got "<span style=\"background-color:rgb(210, 180, 140)\">fo</span><span style=\"background-color:rgb(0, 255, 255)\">ob</span><span style=\"background-color:rgba(0, 0, 0, 0)\">ar</span>"
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o<span style=background-color:transparent>b]ar</span></span>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o<span style=background-color:transparent>b]ar</span></span>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o<span style=background-color:transparent>b]ar</span></span>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o<span style=background-color:transparent>b]ar</span></span>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o<span style=background-color:transparent>b]ar</span></span>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o<span style=background-color:transparent>b]ar</span></span>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o<span style=background-color:transparent>b]ar</span></span>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o<span style=background-color:transparent>b]ar</span></span>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o<span style=background-color:transparent>b]ar</span></span>" queryCommandIndeterm("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o<span style=background-color:transparent>b]ar</span></span>" queryCommandState("backcolor") before 
 PASS [["stylewithcss","false"],["backcolor","#00FFFF"]] "<span style=background-color:tan>fo[o<span style=background-color:transparent>b]ar</span></span>" queryCommandValue("backcolor") before 

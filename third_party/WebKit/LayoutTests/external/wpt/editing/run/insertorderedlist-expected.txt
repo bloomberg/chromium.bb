@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1663 tests; 1223 PASS, 440 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1663 tests; 1239 PASS, 424 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS [["insertorderedlist",""]] "foo[]bar": execCommand("insertorderedlist", false, "") return value 
 PASS [["insertorderedlist",""]] "foo[]bar" checks for modifications to non-editable content 
 FAIL [["insertorderedlist",""]] "foo[]bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<ol><li>foobar</li></ol>" but got "<ol><li>foobar<br></li></ol>"
@@ -1409,10 +1409,10 @@ PASS [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=color:blue><l
 FAIL [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>[bar]<li>baz</ul>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<ul style=\"color:rgb(0, 0, 255)\"><li>foo</li></ul><ol><li><span style=\"color:rgb(0, 0, 255)\">bar</span></li></ol><ul style=\"color:rgb(0, 0, 255)\"><li>baz</li></ul>" but got "<ul style=\"color:rgb(0, 0, 255)\"><li>foo</li></ul><span style=\"color:rgb(0, 0, 255)\"><ol><li>bar<br></li></ol></span><ul style=\"color:rgb(0, 0, 255)\"><li>baz</li></ul>"
 PASS [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>[bar]<li>baz</ul>" queryCommandIndeterm("stylewithcss") before 
 FAIL [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>[bar]<li>baz</ul>" queryCommandState("stylewithcss") before assert_equals: Wrong result returned expected false but got true
-FAIL [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>[bar]<li>baz</ul>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>[bar]<li>baz</ul>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>[bar]<li>baz</ul>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>[bar]<li>baz</ul>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>[bar]<li>baz</ul>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>[bar]<li>baz</ul>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>[bar]<li>baz</ul>" queryCommandIndeterm("insertorderedlist") before 
 PASS [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>[bar]<li>baz</ul>" queryCommandState("insertorderedlist") before 
 FAIL [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>[bar]<li>baz</ul>" queryCommandValue("insertorderedlist") before assert_equals: Wrong result returned expected "" but got "false"
@@ -1425,10 +1425,10 @@ PASS [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=color:blue><
 FAIL [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>[bar]<li>baz</ul>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<ul style=\"color:rgb(0, 0, 255)\"><li>foo</li></ul><ol><li><font color=\"#0000ff\">bar</font></li></ol><ul style=\"color:rgb(0, 0, 255)\"><li>baz</li></ul>" but got "<ul style=\"color:rgb(0, 0, 255)\"><li>foo</li></ul><span style=\"color:rgb(0, 0, 255)\"><ol><li>bar<br></li></ol></span><ul style=\"color:rgb(0, 0, 255)\"><li>baz</li></ul>"
 PASS [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>[bar]<li>baz</ul>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>[bar]<li>baz</ul>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>[bar]<li>baz</ul>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>[bar]<li>baz</ul>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>[bar]<li>baz</ul>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>[bar]<li>baz</ul>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>[bar]<li>baz</ul>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>[bar]<li>baz</ul>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>[bar]<li>baz</ul>" queryCommandIndeterm("insertorderedlist") before 
 PASS [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>[bar]<li>baz</ul>" queryCommandState("insertorderedlist") before 
 FAIL [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>[bar]<li>baz</ul>" queryCommandValue("insertorderedlist") before assert_equals: Wrong result returned expected "" but got "false"
@@ -1441,10 +1441,10 @@ PASS [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=text-indent:1
 FAIL [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=text-indent:1em><li>foo<li>[bar]<li>baz</ul>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<ul style=\"text-indent:1em\"><li>foo</li></ul><ol><li>bar</li></ol><ul style=\"text-indent:1em\"><li>baz</li></ul>" but got "<ul style=\"text-indent:1em\"><li>foo</li></ul><span style=\"text-indent:1em\"><ol><li>bar<br></li></ol></span><ul style=\"text-indent:1em\"><li>baz</li></ul>"
 PASS [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=text-indent:1em><li>foo<li>[bar]<li>baz</ul>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=text-indent:1em><li>foo<li>[bar]<li>baz</ul>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=text-indent:1em><li>foo<li>[bar]<li>baz</ul>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=text-indent:1em><li>foo<li>[bar]<li>baz</ul>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=text-indent:1em><li>foo<li>[bar]<li>baz</ul>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=text-indent:1em><li>foo<li>[bar]<li>baz</ul>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=text-indent:1em><li>foo<li>[bar]<li>baz</ul>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=text-indent:1em><li>foo<li>[bar]<li>baz</ul>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=text-indent:1em><li>foo<li>[bar]<li>baz</ul>" queryCommandIndeterm("insertorderedlist") before 
 PASS [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=text-indent:1em><li>foo<li>[bar]<li>baz</ul>" queryCommandState("insertorderedlist") before 
 FAIL [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=text-indent:1em><li>foo<li>[bar]<li>baz</ul>" queryCommandValue("insertorderedlist") before assert_equals: Wrong result returned expected "" but got "false"
@@ -1457,10 +1457,10 @@ PASS [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=text-indent:
 FAIL [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=text-indent:1em><li>foo<li>[bar]<li>baz</ul>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<ul style=\"text-indent:1em\"><li>foo</li></ul><ol><li>bar</li></ol><ul style=\"text-indent:1em\"><li>baz</li></ul>" but got "<ul style=\"text-indent:1em\"><li>foo</li></ul><span style=\"text-indent:1em\"><ol><li>bar<br></li></ol></span><ul style=\"text-indent:1em\"><li>baz</li></ul>"
 PASS [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=text-indent:1em><li>foo<li>[bar]<li>baz</ul>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=text-indent:1em><li>foo<li>[bar]<li>baz</ul>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=text-indent:1em><li>foo<li>[bar]<li>baz</ul>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=text-indent:1em><li>foo<li>[bar]<li>baz</ul>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=text-indent:1em><li>foo<li>[bar]<li>baz</ul>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=text-indent:1em><li>foo<li>[bar]<li>baz</ul>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=text-indent:1em><li>foo<li>[bar]<li>baz</ul>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=text-indent:1em><li>foo<li>[bar]<li>baz</ul>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=text-indent:1em><li>foo<li>[bar]<li>baz</ul>" queryCommandIndeterm("insertorderedlist") before 
 PASS [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=text-indent:1em><li>foo<li>[bar]<li>baz</ul>" queryCommandState("insertorderedlist") before 
 FAIL [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=text-indent:1em><li>foo<li>[bar]<li>baz</ul>" queryCommandValue("insertorderedlist") before assert_equals: Wrong result returned expected "" but got "false"
@@ -1482,10 +1482,10 @@ PASS [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=color:blue><l
 FAIL [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=color:blue><li>[foo]<li>bar<li>baz</ul>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<ol><li><span style=\"color:rgb(0, 0, 255)\">foo</span></li></ol><ul style=\"color:rgb(0, 0, 255)\"><li>bar</li><li>baz</li></ul>" but got "<ol><li>foo<br></li></ol><ul style=\"color:rgb(0, 0, 255)\"><li>bar</li><li>baz</li></ul>"
 PASS [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=color:blue><li>[foo]<li>bar<li>baz</ul>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=color:blue><li>[foo]<li>bar<li>baz</ul>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=color:blue><li>[foo]<li>bar<li>baz</ul>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=color:blue><li>[foo]<li>bar<li>baz</ul>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=color:blue><li>[foo]<li>bar<li>baz</ul>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=color:blue><li>[foo]<li>bar<li>baz</ul>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=color:blue><li>[foo]<li>bar<li>baz</ul>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=color:blue><li>[foo]<li>bar<li>baz</ul>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=color:blue><li>[foo]<li>bar<li>baz</ul>" queryCommandIndeterm("insertorderedlist") before 
 PASS [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=color:blue><li>[foo]<li>bar<li>baz</ul>" queryCommandState("insertorderedlist") before 
 FAIL [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=color:blue><li>[foo]<li>bar<li>baz</ul>" queryCommandValue("insertorderedlist") before assert_equals: Wrong result returned expected "" but got "false"
@@ -1498,10 +1498,10 @@ PASS [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=color:blue><
 FAIL [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=color:blue><li>[foo]<li>bar<li>baz</ul>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<ol><li><font color=\"#0000ff\">foo</font></li></ol><ul style=\"color:rgb(0, 0, 255)\"><li>bar</li><li>baz</li></ul>" but got "<ol><li>foo<br></li></ol><ul style=\"color:rgb(0, 0, 255)\"><li>bar</li><li>baz</li></ul>"
 PASS [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=color:blue><li>[foo]<li>bar<li>baz</ul>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=color:blue><li>[foo]<li>bar<li>baz</ul>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=color:blue><li>[foo]<li>bar<li>baz</ul>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=color:blue><li>[foo]<li>bar<li>baz</ul>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=color:blue><li>[foo]<li>bar<li>baz</ul>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=color:blue><li>[foo]<li>bar<li>baz</ul>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=color:blue><li>[foo]<li>bar<li>baz</ul>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=color:blue><li>[foo]<li>bar<li>baz</ul>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=color:blue><li>[foo]<li>bar<li>baz</ul>" queryCommandIndeterm("insertorderedlist") before 
 PASS [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=color:blue><li>[foo]<li>bar<li>baz</ul>" queryCommandState("insertorderedlist") before 
 FAIL [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=color:blue><li>[foo]<li>bar<li>baz</ul>" queryCommandValue("insertorderedlist") before assert_equals: Wrong result returned expected "" but got "false"
@@ -1532,10 +1532,10 @@ PASS [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=color:blue><l
 FAIL [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>bar<li>[baz]</ul>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<ul style=\"color:rgb(0, 0, 255)\"><li>foo</li><li>bar</li></ul><ol><li><span style=\"color:rgb(0, 0, 255)\">baz</span></li></ol>" but got "<ul style=\"color:rgb(0, 0, 255)\"><li>foo</li><li>bar</li></ul><span style=\"color:rgb(0, 0, 255)\"><ol><li>baz<br></li></ol></span>"
 PASS [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>bar<li>[baz]</ul>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>bar<li>[baz]</ul>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>bar<li>[baz]</ul>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>bar<li>[baz]</ul>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>bar<li>[baz]</ul>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>bar<li>[baz]</ul>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>bar<li>[baz]</ul>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>bar<li>[baz]</ul>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>bar<li>[baz]</ul>" queryCommandIndeterm("insertorderedlist") before 
 PASS [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>bar<li>[baz]</ul>" queryCommandState("insertorderedlist") before 
 FAIL [["stylewithcss","true"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>bar<li>[baz]</ul>" queryCommandValue("insertorderedlist") before assert_equals: Wrong result returned expected "" but got "false"
@@ -1548,10 +1548,10 @@ PASS [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=color:blue><
 FAIL [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>bar<li>[baz]</ul>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<ul style=\"color:rgb(0, 0, 255)\"><li>foo</li><li>bar</li></ul><ol><li><font color=\"#0000ff\">baz</font></li></ol>" but got "<ul style=\"color:rgb(0, 0, 255)\"><li>foo</li><li>bar</li></ul><span style=\"color:rgb(0, 0, 255)\"><ol><li>baz<br></li></ol></span>"
 PASS [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>bar<li>[baz]</ul>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>bar<li>[baz]</ul>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>bar<li>[baz]</ul>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>bar<li>[baz]</ul>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>bar<li>[baz]</ul>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>bar<li>[baz]</ul>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>bar<li>[baz]</ul>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>bar<li>[baz]</ul>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>bar<li>[baz]</ul>" queryCommandIndeterm("insertorderedlist") before 
 PASS [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>bar<li>[baz]</ul>" queryCommandState("insertorderedlist") before 
 FAIL [["stylewithcss","false"],["insertorderedlist",""]] "<ul style=color:blue><li>foo<li>bar<li>[baz]</ul>" queryCommandValue("insertorderedlist") before assert_equals: Wrong result returned expected "" but got "false"

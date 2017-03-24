@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1269 tests; 858 PASS, 411 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1269 tests; 1002 PASS, 267 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS [["superscript",""]] "foo[]bar": execCommand("superscript", false, "") return value 
 PASS [["superscript",""]] "foo[]bar" checks for modifications to non-editable content 
 PASS [["superscript",""]] "foo[]bar" compare innerHTML 
@@ -15,10 +15,10 @@ PASS [["stylewithcss","true"],["superscript",""]] "<p>[foo</p> <p>bar]</p>" chec
 FAIL [["stylewithcss","true"],["superscript",""]] "<p>[foo</p> <p>bar]</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><sup>foo</sup></p> <p><sup>bar</sup></p>" but got "<p><span style=\"vertical-align:super\">foo</span></p> <p><span style=\"vertical-align:super\">bar</span></p>"
 PASS [["stylewithcss","true"],["superscript",""]] "<p>[foo</p> <p>bar]</p>" queryCommandIndeterm("stylewithcss") before 
 FAIL [["stylewithcss","true"],["superscript",""]] "<p>[foo</p> <p>bar]</p>" queryCommandState("stylewithcss") before assert_equals: Wrong result returned expected false but got true
-FAIL [["stylewithcss","true"],["superscript",""]] "<p>[foo</p> <p>bar]</p>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["superscript",""]] "<p>[foo</p> <p>bar]</p>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "<p>[foo</p> <p>bar]</p>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "<p>[foo</p> <p>bar]</p>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["superscript",""]] "<p>[foo</p> <p>bar]</p>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["superscript",""]] "<p>[foo</p> <p>bar]</p>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "<p>[foo</p> <p>bar]</p>" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","true"],["superscript",""]] "<p>[foo</p> <p>bar]</p>" queryCommandState("superscript") before 
 FAIL [["stylewithcss","true"],["superscript",""]] "<p>[foo</p> <p>bar]</p>" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -31,10 +31,10 @@ PASS [["stylewithcss","false"],["superscript",""]] "<p>[foo</p> <p>bar]</p>" che
 PASS [["stylewithcss","false"],["superscript",""]] "<p>[foo</p> <p>bar]</p>" compare innerHTML 
 PASS [["stylewithcss","false"],["superscript",""]] "<p>[foo</p> <p>bar]</p>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "<p>[foo</p> <p>bar]</p>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["superscript",""]] "<p>[foo</p> <p>bar]</p>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["superscript",""]] "<p>[foo</p> <p>bar]</p>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "<p>[foo</p> <p>bar]</p>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "<p>[foo</p> <p>bar]</p>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["superscript",""]] "<p>[foo</p> <p>bar]</p>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["superscript",""]] "<p>[foo</p> <p>bar]</p>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "<p>[foo</p> <p>bar]</p>" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","false"],["superscript",""]] "<p>[foo</p> <p>bar]</p>" queryCommandState("superscript") before 
 FAIL [["stylewithcss","false"],["superscript",""]] "<p>[foo</p> <p>bar]</p>" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -47,10 +47,10 @@ PASS [["stylewithcss","true"],["superscript",""]] "<span>[foo</span> <span>bar]<
 FAIL [["stylewithcss","true"],["superscript",""]] "<span>[foo</span> <span>bar]</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<sup><span>foo</span> <span>bar</span></sup>" but got "<span style=\"vertical-align:super\"><span>foo</span> <span>bar</span></span>"
 PASS [["stylewithcss","true"],["superscript",""]] "<span>[foo</span> <span>bar]</span>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "<span>[foo</span> <span>bar]</span>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["superscript",""]] "<span>[foo</span> <span>bar]</span>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["superscript",""]] "<span>[foo</span> <span>bar]</span>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "<span>[foo</span> <span>bar]</span>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "<span>[foo</span> <span>bar]</span>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["superscript",""]] "<span>[foo</span> <span>bar]</span>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["superscript",""]] "<span>[foo</span> <span>bar]</span>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "<span>[foo</span> <span>bar]</span>" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","true"],["superscript",""]] "<span>[foo</span> <span>bar]</span>" queryCommandState("superscript") before 
 FAIL [["stylewithcss","true"],["superscript",""]] "<span>[foo</span> <span>bar]</span>" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -63,10 +63,10 @@ PASS [["stylewithcss","false"],["superscript",""]] "<span>[foo</span> <span>bar]
 PASS [["stylewithcss","false"],["superscript",""]] "<span>[foo</span> <span>bar]</span>" compare innerHTML 
 PASS [["stylewithcss","false"],["superscript",""]] "<span>[foo</span> <span>bar]</span>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "<span>[foo</span> <span>bar]</span>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["superscript",""]] "<span>[foo</span> <span>bar]</span>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["superscript",""]] "<span>[foo</span> <span>bar]</span>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "<span>[foo</span> <span>bar]</span>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "<span>[foo</span> <span>bar]</span>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["superscript",""]] "<span>[foo</span> <span>bar]</span>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["superscript",""]] "<span>[foo</span> <span>bar]</span>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "<span>[foo</span> <span>bar]</span>" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","false"],["superscript",""]] "<span>[foo</span> <span>bar]</span>" queryCommandState("superscript") before 
 FAIL [["stylewithcss","false"],["superscript",""]] "<span>[foo</span> <span>bar]</span>" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -79,10 +79,10 @@ PASS [["stylewithcss","true"],["superscript",""]] "<p>[foo</p><p> <span>bar</spa
 FAIL [["stylewithcss","true"],["superscript",""]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><sup>foo</sup></p><p> <sup><span>bar</span></sup> </p><p><sup>baz</sup></p>" but got "<p><span style=\"vertical-align:super\">foo</span></p><p> <span style=\"vertical-align:super\"><span>bar</span> </span></p><p><span style=\"vertical-align:super\">baz</span></p>"
 PASS [["stylewithcss","true"],["superscript",""]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["superscript",""]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["superscript",""]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["superscript",""]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["superscript",""]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","true"],["superscript",""]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandState("superscript") before 
 FAIL [["stylewithcss","true"],["superscript",""]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -95,10 +95,10 @@ PASS [["stylewithcss","false"],["superscript",""]] "<p>[foo</p><p> <span>bar</sp
 FAIL [["stylewithcss","false"],["superscript",""]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><sup>foo</sup></p><p> <sup><span>bar</span></sup> </p><p><sup>baz</sup></p>" but got "<p><sup>foo</sup></p><p> <sup><span>bar</span> </sup></p><p><sup>baz</sup></p>"
 PASS [["stylewithcss","false"],["superscript",""]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["superscript",""]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["superscript",""]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["superscript",""]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["superscript",""]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","false"],["superscript",""]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandState("superscript") before 
 FAIL [["stylewithcss","false"],["superscript",""]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -111,10 +111,10 @@ PASS [["stylewithcss","true"],["superscript",""]] "<p>[foo<p><br><p>bar]" checks
 FAIL [["stylewithcss","true"],["superscript",""]] "<p>[foo<p><br><p>bar]" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><sup>foo</sup></p><p><sup><br></sup></p><p><sup>bar</sup></p>" but got "<p><span style=\"vertical-align:super\">foo</span></p><p><span style=\"vertical-align:super\"><br></span></p><p><span style=\"vertical-align:super\">bar</span></p>"
 PASS [["stylewithcss","true"],["superscript",""]] "<p>[foo<p><br><p>bar]" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "<p>[foo<p><br><p>bar]" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["superscript",""]] "<p>[foo<p><br><p>bar]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["superscript",""]] "<p>[foo<p><br><p>bar]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "<p>[foo<p><br><p>bar]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "<p>[foo<p><br><p>bar]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["superscript",""]] "<p>[foo<p><br><p>bar]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["superscript",""]] "<p>[foo<p><br><p>bar]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "<p>[foo<p><br><p>bar]" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","true"],["superscript",""]] "<p>[foo<p><br><p>bar]" queryCommandState("superscript") before 
 FAIL [["stylewithcss","true"],["superscript",""]] "<p>[foo<p><br><p>bar]" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -127,10 +127,10 @@ PASS [["stylewithcss","false"],["superscript",""]] "<p>[foo<p><br><p>bar]" check
 PASS [["stylewithcss","false"],["superscript",""]] "<p>[foo<p><br><p>bar]" compare innerHTML 
 PASS [["stylewithcss","false"],["superscript",""]] "<p>[foo<p><br><p>bar]" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "<p>[foo<p><br><p>bar]" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["superscript",""]] "<p>[foo<p><br><p>bar]" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["superscript",""]] "<p>[foo<p><br><p>bar]" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "<p>[foo<p><br><p>bar]" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "<p>[foo<p><br><p>bar]" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["superscript",""]] "<p>[foo<p><br><p>bar]" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["superscript",""]] "<p>[foo<p><br><p>bar]" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "<p>[foo<p><br><p>bar]" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","false"],["superscript",""]] "<p>[foo<p><br><p>bar]" queryCommandState("superscript") before 
 FAIL [["stylewithcss","false"],["superscript",""]] "<p>[foo<p><br><p>bar]" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -179,10 +179,10 @@ PASS [["stylewithcss","true"],["superscript",""]] "foo[bar]baz" checks for modif
 FAIL [["stylewithcss","true"],["superscript",""]] "foo[bar]baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<sup>bar</sup>baz" but got "foo<span style=\"vertical-align:super\">bar</span>baz"
 PASS [["stylewithcss","true"],["superscript",""]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo[bar]baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo[bar]baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["superscript",""]] "foo[bar]baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo[bar]baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo[bar]baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["superscript",""]] "foo[bar]baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo[bar]baz" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo[bar]baz" queryCommandState("superscript") before 
 FAIL [["stylewithcss","true"],["superscript",""]] "foo[bar]baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -195,10 +195,10 @@ PASS [["stylewithcss","false"],["superscript",""]] "foo[bar]baz" checks for modi
 PASS [["stylewithcss","false"],["superscript",""]] "foo[bar]baz" compare innerHTML 
 PASS [["stylewithcss","false"],["superscript",""]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo[bar]baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo[bar]baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["superscript",""]] "foo[bar]baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo[bar]baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo[bar]baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["superscript",""]] "foo[bar]baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo[bar]baz" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo[bar]baz" queryCommandState("superscript") before 
 FAIL [["stylewithcss","false"],["superscript",""]] "foo[bar]baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -211,10 +211,10 @@ PASS [["stylewithcss","true"],["superscript",""]] "foo[bar<b>baz]qoz</b>quz" che
 FAIL [["stylewithcss","true"],["superscript",""]] "foo[bar<b>baz]qoz</b>quz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<sup>bar</sup><b><sup>baz</sup>qoz</b>quz" but got "foo<span style=\"vertical-align:super\">bar</span><b><span style=\"vertical-align:super\">baz</span>qoz</b>quz"
 PASS [["stylewithcss","true"],["superscript",""]] "foo[bar<b>baz]qoz</b>quz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo[bar<b>baz]qoz</b>quz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo[bar<b>baz]qoz</b>quz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["superscript",""]] "foo[bar<b>baz]qoz</b>quz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo[bar<b>baz]qoz</b>quz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo[bar<b>baz]qoz</b>quz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo[bar<b>baz]qoz</b>quz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["superscript",""]] "foo[bar<b>baz]qoz</b>quz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo[bar<b>baz]qoz</b>quz" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo[bar<b>baz]qoz</b>quz" queryCommandState("superscript") before 
 FAIL [["stylewithcss","true"],["superscript",""]] "foo[bar<b>baz]qoz</b>quz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -227,10 +227,10 @@ PASS [["stylewithcss","false"],["superscript",""]] "foo[bar<b>baz]qoz</b>quz" ch
 PASS [["stylewithcss","false"],["superscript",""]] "foo[bar<b>baz]qoz</b>quz" compare innerHTML 
 PASS [["stylewithcss","false"],["superscript",""]] "foo[bar<b>baz]qoz</b>quz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo[bar<b>baz]qoz</b>quz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo[bar<b>baz]qoz</b>quz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["superscript",""]] "foo[bar<b>baz]qoz</b>quz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo[bar<b>baz]qoz</b>quz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo[bar<b>baz]qoz</b>quz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo[bar<b>baz]qoz</b>quz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["superscript",""]] "foo[bar<b>baz]qoz</b>quz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo[bar<b>baz]qoz</b>quz" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo[bar<b>baz]qoz</b>quz" queryCommandState("superscript") before 
 FAIL [["stylewithcss","false"],["superscript",""]] "foo[bar<b>baz]qoz</b>quz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -243,10 +243,10 @@ PASS [["stylewithcss","true"],["superscript",""]] "foo[bar<i>baz]qoz</i>quz" che
 FAIL [["stylewithcss","true"],["superscript",""]] "foo[bar<i>baz]qoz</i>quz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<sup>bar</sup><i><sup>baz</sup>qoz</i>quz" but got "foo<span style=\"vertical-align:super\">bar</span><i><span style=\"vertical-align:super\">baz</span>qoz</i>quz"
 PASS [["stylewithcss","true"],["superscript",""]] "foo[bar<i>baz]qoz</i>quz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo[bar<i>baz]qoz</i>quz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo[bar<i>baz]qoz</i>quz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["superscript",""]] "foo[bar<i>baz]qoz</i>quz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo[bar<i>baz]qoz</i>quz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo[bar<i>baz]qoz</i>quz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo[bar<i>baz]qoz</i>quz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["superscript",""]] "foo[bar<i>baz]qoz</i>quz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo[bar<i>baz]qoz</i>quz" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo[bar<i>baz]qoz</i>quz" queryCommandState("superscript") before 
 FAIL [["stylewithcss","true"],["superscript",""]] "foo[bar<i>baz]qoz</i>quz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -259,10 +259,10 @@ PASS [["stylewithcss","false"],["superscript",""]] "foo[bar<i>baz]qoz</i>quz" ch
 PASS [["stylewithcss","false"],["superscript",""]] "foo[bar<i>baz]qoz</i>quz" compare innerHTML 
 PASS [["stylewithcss","false"],["superscript",""]] "foo[bar<i>baz]qoz</i>quz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo[bar<i>baz]qoz</i>quz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo[bar<i>baz]qoz</i>quz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["superscript",""]] "foo[bar<i>baz]qoz</i>quz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo[bar<i>baz]qoz</i>quz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo[bar<i>baz]qoz</i>quz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo[bar<i>baz]qoz</i>quz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["superscript",""]] "foo[bar<i>baz]qoz</i>quz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo[bar<i>baz]qoz</i>quz" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo[bar<i>baz]qoz</i>quz" queryCommandState("superscript") before 
 FAIL [["stylewithcss","false"],["superscript",""]] "foo[bar<i>baz]qoz</i>quz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -275,10 +275,10 @@ PASS [["stylewithcss","true"],["superscript",""]] "{<p><p> <p>foo</p>}" checks f
 FAIL [["stylewithcss","true"],["superscript",""]] "{<p><p> <p>foo</p>}" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p></p><p> </p><p><sup>foo</sup></p>" but got "<p></p><p> </p><p><span style=\"vertical-align:super\">foo</span></p>"
 PASS [["stylewithcss","true"],["superscript",""]] "{<p><p> <p>foo</p>}" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "{<p><p> <p>foo</p>}" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["superscript",""]] "{<p><p> <p>foo</p>}" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["superscript",""]] "{<p><p> <p>foo</p>}" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "{<p><p> <p>foo</p>}" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "{<p><p> <p>foo</p>}" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["superscript",""]] "{<p><p> <p>foo</p>}" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["superscript",""]] "{<p><p> <p>foo</p>}" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "{<p><p> <p>foo</p>}" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","true"],["superscript",""]] "{<p><p> <p>foo</p>}" queryCommandState("superscript") before 
 FAIL [["stylewithcss","true"],["superscript",""]] "{<p><p> <p>foo</p>}" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -291,10 +291,10 @@ PASS [["stylewithcss","false"],["superscript",""]] "{<p><p> <p>foo</p>}" checks 
 PASS [["stylewithcss","false"],["superscript",""]] "{<p><p> <p>foo</p>}" compare innerHTML 
 PASS [["stylewithcss","false"],["superscript",""]] "{<p><p> <p>foo</p>}" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "{<p><p> <p>foo</p>}" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["superscript",""]] "{<p><p> <p>foo</p>}" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["superscript",""]] "{<p><p> <p>foo</p>}" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "{<p><p> <p>foo</p>}" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "{<p><p> <p>foo</p>}" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["superscript",""]] "{<p><p> <p>foo</p>}" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["superscript",""]] "{<p><p> <p>foo</p>}" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "{<p><p> <p>foo</p>}" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","false"],["superscript",""]] "{<p><p> <p>foo</p>}" queryCommandState("superscript") before 
 FAIL [["stylewithcss","false"],["superscript",""]] "{<p><p> <p>foo</p>}" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -307,10 +307,10 @@ PASS [["stylewithcss","true"],["superscript",""]] "<table><tbody><tr><td>foo<td>
 FAIL [["stylewithcss","true"],["superscript",""]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<table><tbody><tr><td>foo</td><td>b<sup>a</sup>r</td><td>baz</td></tr></tbody></table>" but got "<table><tbody><tr><td>foo</td><td>b<span style=\"vertical-align:super\">a</span>r</td><td>baz</td></tr></tbody></table>"
 PASS [["stylewithcss","true"],["superscript",""]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["superscript",""]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["superscript",""]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["superscript",""]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["superscript",""]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","true"],["superscript",""]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandState("superscript") before 
 FAIL [["stylewithcss","true"],["superscript",""]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -323,10 +323,10 @@ PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody><tr><td>foo<td
 PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" compare innerHTML 
 PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["superscript",""]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["superscript",""]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandState("superscript") before 
 FAIL [["stylewithcss","false"],["superscript",""]] "<table><tbody><tr><td>foo<td>b[a]r<td>baz</table>" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -339,10 +339,10 @@ PASS [["stylewithcss","true"],["superscript",""]] "<table><tbody><tr data-start=
 FAIL [["stylewithcss","true"],["superscript",""]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<table><tbody><tr><td>foo</td><td><sup>bar</sup></td><td>baz</td></tr></tbody></table>" but got "<table><tbody><tr><td>foo</td><td><span style=\"vertical-align:super\">bar</span></td><td>baz</td></tr></tbody></table>"
 PASS [["stylewithcss","true"],["superscript",""]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["superscript",""]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["superscript",""]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["superscript",""]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["superscript",""]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","true"],["superscript",""]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandState("superscript") before 
 FAIL [["stylewithcss","true"],["superscript",""]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -355,10 +355,10 @@ PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody><tr data-start
 PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" compare innerHTML 
 PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["superscript",""]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["superscript",""]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandState("superscript") before 
 FAIL [["stylewithcss","false"],["superscript",""]] "<table><tbody><tr data-start=1 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -371,10 +371,10 @@ PASS [["stylewithcss","true"],["superscript",""]] "<table><tbody><tr data-start=
 FAIL [["stylewithcss","true"],["superscript",""]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<table><tbody><tr><td><sup>foo</sup></td><td><sup>bar</sup></td><td>baz</td></tr></tbody></table>" but got "<table><tbody><tr><td><span style=\"vertical-align:super\">foo</span></td><td><span style=\"vertical-align:super\">bar</span></td><td>baz</td></tr></tbody></table>"
 PASS [["stylewithcss","true"],["superscript",""]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["superscript",""]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["superscript",""]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["superscript",""]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["superscript",""]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","true"],["superscript",""]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandState("superscript") before 
 FAIL [["stylewithcss","true"],["superscript",""]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -387,10 +387,10 @@ PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody><tr data-start
 PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" compare innerHTML 
 PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["superscript",""]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["superscript",""]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandState("superscript") before 
 FAIL [["stylewithcss","false"],["superscript",""]] "<table><tbody><tr data-start=0 data-end=2><td>foo<td>bar<td>baz</table>" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -403,10 +403,10 @@ PASS [["stylewithcss","true"],["superscript",""]] "<table><tbody data-start=0 da
 FAIL [["stylewithcss","true"],["superscript",""]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<table><tbody><tr><td><sup>foo</sup></td><td><sup>bar</sup></td><td><sup>baz</sup></td></tr></tbody></table>" but got "<table><tbody><tr><td><span style=\"vertical-align:super\">foo</span></td><td><span style=\"vertical-align:super\">bar</span></td><td><span style=\"vertical-align:super\">baz</span></td></tr></tbody></table>"
 PASS [["stylewithcss","true"],["superscript",""]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["superscript",""]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["superscript",""]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["superscript",""]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["superscript",""]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","true"],["superscript",""]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandState("superscript") before 
 FAIL [["stylewithcss","true"],["superscript",""]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -419,10 +419,10 @@ PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody data-start=0 d
 PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" compare innerHTML 
 PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["superscript",""]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["superscript",""]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","false"],["superscript",""]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandState("superscript") before 
 FAIL [["stylewithcss","false"],["superscript",""]] "<table><tbody data-start=0 data-end=1><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -435,10 +435,10 @@ PASS [["stylewithcss","true"],["superscript",""]] "<table data-start=0 data-end=
 FAIL [["stylewithcss","true"],["superscript",""]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<table><tbody><tr><td><sup>foo</sup></td><td><sup>bar</sup></td><td><sup>baz</sup></td></tr></tbody></table>" but got "<table><tbody><tr><td><span style=\"vertical-align:super\">foo</span></td><td><span style=\"vertical-align:super\">bar</span></td><td><span style=\"vertical-align:super\">baz</span></td></tr></tbody></table>"
 PASS [["stylewithcss","true"],["superscript",""]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["superscript",""]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["superscript",""]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["superscript",""]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["superscript",""]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","true"],["superscript",""]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandState("superscript") before 
 FAIL [["stylewithcss","true"],["superscript",""]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -451,10 +451,10 @@ PASS [["stylewithcss","false"],["superscript",""]] "<table data-start=0 data-end
 PASS [["stylewithcss","false"],["superscript",""]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" compare innerHTML 
 PASS [["stylewithcss","false"],["superscript",""]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["superscript",""]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["superscript",""]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["superscript",""]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["superscript",""]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","false"],["superscript",""]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandState("superscript") before 
 FAIL [["stylewithcss","false"],["superscript",""]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -467,10 +467,10 @@ PASS [["stylewithcss","true"],["superscript",""]] "{<table><tr><td>foo<td>bar<td
 FAIL [["stylewithcss","true"],["superscript",""]] "{<table><tr><td>foo<td>bar<td>baz</table>}" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<table><tbody><tr><td><sup>foo</sup></td><td><sup>bar</sup></td><td><sup>baz</sup></td></tr></tbody></table>" but got "<table><tbody><tr><td><span style=\"vertical-align:super\">foo</span></td><td><span style=\"vertical-align:super\">bar</span></td><td><span style=\"vertical-align:super\">baz</span></td></tr></tbody></table>"
 PASS [["stylewithcss","true"],["superscript",""]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["superscript",""]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["superscript",""]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["superscript",""]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["superscript",""]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","true"],["superscript",""]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandState("superscript") before 
 FAIL [["stylewithcss","true"],["superscript",""]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -483,10 +483,10 @@ PASS [["stylewithcss","false"],["superscript",""]] "{<table><tr><td>foo<td>bar<t
 PASS [["stylewithcss","false"],["superscript",""]] "{<table><tr><td>foo<td>bar<td>baz</table>}" compare innerHTML 
 PASS [["stylewithcss","false"],["superscript",""]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["superscript",""]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["superscript",""]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["superscript",""]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["superscript",""]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","false"],["superscript",""]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandState("superscript") before 
 FAIL [["stylewithcss","false"],["superscript",""]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -499,10 +499,10 @@ PASS [["stylewithcss","true"],["superscript",""]] "foo<sub>[bar]</sub>baz" check
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<sub>[bar]</sub>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<sup>bar</sup>baz" but got "foo<span style=\"vertical-align:super\">bar</span>baz"
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub>[bar]</sub>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub>[bar]</sub>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo<sub>[bar]</sub>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["superscript",""]] "foo<sub>[bar]</sub>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub>[bar]</sub>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub>[bar]</sub>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo<sub>[bar]</sub>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["superscript",""]] "foo<sub>[bar]</sub>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub>[bar]</sub>baz" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub>[bar]</sub>baz" queryCommandState("superscript") before 
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<sub>[bar]</sub>baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -515,10 +515,10 @@ PASS [["stylewithcss","false"],["superscript",""]] "foo<sub>[bar]</sub>baz" chec
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub>[bar]</sub>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub>[bar]</sub>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub>[bar]</sub>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo<sub>[bar]</sub>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["superscript",""]] "foo<sub>[bar]</sub>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub>[bar]</sub>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub>[bar]</sub>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo<sub>[bar]</sub>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["superscript",""]] "foo<sub>[bar]</sub>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub>[bar]</sub>baz" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub>[bar]</sub>baz" queryCommandState("superscript") before 
 FAIL [["stylewithcss","false"],["superscript",""]] "foo<sub>[bar]</sub>baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -531,10 +531,10 @@ PASS [["stylewithcss","true"],["superscript",""]] "foo<sub>b[a]r</sub>baz" check
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<sub>b[a]r</sub>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<sub>b</sub><sup>a</sup><sub>r</sub>baz" but got "foo<sub>b</sub><span style=\"vertical-align:super\">a</span><sub>r</sub>baz"
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub>b[a]r</sub>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub>b[a]r</sub>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo<sub>b[a]r</sub>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["superscript",""]] "foo<sub>b[a]r</sub>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub>b[a]r</sub>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub>b[a]r</sub>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo<sub>b[a]r</sub>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["superscript",""]] "foo<sub>b[a]r</sub>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub>b[a]r</sub>baz" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub>b[a]r</sub>baz" queryCommandState("superscript") before 
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<sub>b[a]r</sub>baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -547,10 +547,10 @@ PASS [["stylewithcss","false"],["superscript",""]] "foo<sub>b[a]r</sub>baz" chec
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub>b[a]r</sub>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub>b[a]r</sub>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub>b[a]r</sub>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo<sub>b[a]r</sub>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["superscript",""]] "foo<sub>b[a]r</sub>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub>b[a]r</sub>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub>b[a]r</sub>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo<sub>b[a]r</sub>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["superscript",""]] "foo<sub>b[a]r</sub>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub>b[a]r</sub>baz" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub>b[a]r</sub>baz" queryCommandState("superscript") before 
 FAIL [["stylewithcss","false"],["superscript",""]] "foo<sub>b[a]r</sub>baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -563,10 +563,10 @@ PASS [["stylewithcss","true"],["superscript",""]] "foo<sup>b[a]r</sup>baz" check
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup>b[a]r</sup>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup>b[a]r</sup>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup>b[a]r</sup>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo<sup>b[a]r</sup>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["superscript",""]] "foo<sup>b[a]r</sup>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup>b[a]r</sup>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup>b[a]r</sup>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo<sup>b[a]r</sup>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["superscript",""]] "foo<sup>b[a]r</sup>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup>b[a]r</sup>baz" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup>b[a]r</sup>baz" queryCommandState("superscript") before 
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<sup>b[a]r</sup>baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "true"
@@ -579,10 +579,10 @@ PASS [["stylewithcss","false"],["superscript",""]] "foo<sup>b[a]r</sup>baz" chec
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup>b[a]r</sup>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup>b[a]r</sup>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup>b[a]r</sup>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo<sup>b[a]r</sup>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["superscript",""]] "foo<sup>b[a]r</sup>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup>b[a]r</sup>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup>b[a]r</sup>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo<sup>b[a]r</sup>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["superscript",""]] "foo<sup>b[a]r</sup>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup>b[a]r</sup>baz" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup>b[a]r</sup>baz" queryCommandState("superscript") before 
 FAIL [["stylewithcss","false"],["superscript",""]] "foo<sup>b[a]r</sup>baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "true"
@@ -595,10 +595,10 @@ PASS [["stylewithcss","true"],["superscript",""]] "foo<span style=vertical-align
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<span style=vertical-align:sub>[bar]</span>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<sup><span style=\"vertical-align:sub\">bar</span></sup>baz" but got "foo<span style=\"vertical-align:super\">bar</span>baz"
 PASS [["stylewithcss","true"],["superscript",""]] "foo<span style=vertical-align:sub>[bar]</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<span style=vertical-align:sub>[bar]</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo<span style=vertical-align:sub>[bar]</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["superscript",""]] "foo<span style=vertical-align:sub>[bar]</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<span style=vertical-align:sub>[bar]</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<span style=vertical-align:sub>[bar]</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo<span style=vertical-align:sub>[bar]</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["superscript",""]] "foo<span style=vertical-align:sub>[bar]</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<span style=vertical-align:sub>[bar]</span>baz" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<span style=vertical-align:sub>[bar]</span>baz" queryCommandState("superscript") before 
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<span style=vertical-align:sub>[bar]</span>baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -611,10 +611,10 @@ PASS [["stylewithcss","false"],["superscript",""]] "foo<span style=vertical-alig
 FAIL [["stylewithcss","false"],["superscript",""]] "foo<span style=vertical-align:sub>[bar]</span>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<sup><span style=\"vertical-align:sub\">bar</span></sup>baz" but got "foo<sup>bar</sup>baz"
 PASS [["stylewithcss","false"],["superscript",""]] "foo<span style=vertical-align:sub>[bar]</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<span style=vertical-align:sub>[bar]</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo<span style=vertical-align:sub>[bar]</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["superscript",""]] "foo<span style=vertical-align:sub>[bar]</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<span style=vertical-align:sub>[bar]</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<span style=vertical-align:sub>[bar]</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo<span style=vertical-align:sub>[bar]</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["superscript",""]] "foo<span style=vertical-align:sub>[bar]</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<span style=vertical-align:sub>[bar]</span>baz" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<span style=vertical-align:sub>[bar]</span>baz" queryCommandState("superscript") before 
 FAIL [["stylewithcss","false"],["superscript",""]] "foo<span style=vertical-align:sub>[bar]</span>baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -627,10 +627,10 @@ PASS [["stylewithcss","true"],["superscript",""]] "foo<span style=vertical-align
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<span style=vertical-align:super>[bar]</span>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<sup><span style=\"vertical-align:super\">bar</span></sup>baz" but got "foobarbaz"
 PASS [["stylewithcss","true"],["superscript",""]] "foo<span style=vertical-align:super>[bar]</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<span style=vertical-align:super>[bar]</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo<span style=vertical-align:super>[bar]</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["superscript",""]] "foo<span style=vertical-align:super>[bar]</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<span style=vertical-align:super>[bar]</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<span style=vertical-align:super>[bar]</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo<span style=vertical-align:super>[bar]</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["superscript",""]] "foo<span style=vertical-align:super>[bar]</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<span style=vertical-align:super>[bar]</span>baz" queryCommandIndeterm("superscript") before 
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<span style=vertical-align:super>[bar]</span>baz" queryCommandState("superscript") before assert_equals: Wrong result returned expected false but got true
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<span style=vertical-align:super>[bar]</span>baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "true"
@@ -643,10 +643,10 @@ PASS [["stylewithcss","false"],["superscript",""]] "foo<span style=vertical-alig
 FAIL [["stylewithcss","false"],["superscript",""]] "foo<span style=vertical-align:super>[bar]</span>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<sup><span style=\"vertical-align:super\">bar</span></sup>baz" but got "foobarbaz"
 PASS [["stylewithcss","false"],["superscript",""]] "foo<span style=vertical-align:super>[bar]</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<span style=vertical-align:super>[bar]</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo<span style=vertical-align:super>[bar]</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["superscript",""]] "foo<span style=vertical-align:super>[bar]</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<span style=vertical-align:super>[bar]</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<span style=vertical-align:super>[bar]</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo<span style=vertical-align:super>[bar]</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["superscript",""]] "foo<span style=vertical-align:super>[bar]</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<span style=vertical-align:super>[bar]</span>baz" queryCommandIndeterm("superscript") before 
 FAIL [["stylewithcss","false"],["superscript",""]] "foo<span style=vertical-align:super>[bar]</span>baz" queryCommandState("superscript") before assert_equals: Wrong result returned expected false but got true
 FAIL [["stylewithcss","false"],["superscript",""]] "foo<span style=vertical-align:super>[bar]</span>baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "true"
@@ -659,10 +659,10 @@ PASS [["stylewithcss","true"],["superscript",""]] "foo<sub><sub>[bar]</sub></sub
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<sub><sub>[bar]</sub></sub>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<sup>bar</sup>baz" but got "foo<span style=\"vertical-align:super\">bar</span>baz"
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub><sub>[bar]</sub></sub>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub><sub>[bar]</sub></sub>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo<sub><sub>[bar]</sub></sub>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["superscript",""]] "foo<sub><sub>[bar]</sub></sub>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub><sub>[bar]</sub></sub>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub><sub>[bar]</sub></sub>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo<sub><sub>[bar]</sub></sub>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["superscript",""]] "foo<sub><sub>[bar]</sub></sub>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub><sub>[bar]</sub></sub>baz" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub><sub>[bar]</sub></sub>baz" queryCommandState("superscript") before 
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<sub><sub>[bar]</sub></sub>baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -675,10 +675,10 @@ PASS [["stylewithcss","false"],["superscript",""]] "foo<sub><sub>[bar]</sub></su
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub><sub>[bar]</sub></sub>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub><sub>[bar]</sub></sub>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub><sub>[bar]</sub></sub>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo<sub><sub>[bar]</sub></sub>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["superscript",""]] "foo<sub><sub>[bar]</sub></sub>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub><sub>[bar]</sub></sub>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub><sub>[bar]</sub></sub>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo<sub><sub>[bar]</sub></sub>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["superscript",""]] "foo<sub><sub>[bar]</sub></sub>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub><sub>[bar]</sub></sub>baz" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub><sub>[bar]</sub></sub>baz" queryCommandState("superscript") before 
 FAIL [["stylewithcss","false"],["superscript",""]] "foo<sub><sub>[bar]</sub></sub>baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -691,10 +691,10 @@ PASS [["stylewithcss","true"],["superscript",""]] "foo<sub><sub>b[a]r</sub></sub
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<sub><sub>b[a]r</sub></sub>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<sub>b</sub><sup>a</sup><sub>r</sub>baz" but got "foo<sub style=\"vertical-align:sub\">b</sub><span style=\"vertical-align:super\">a</span><sub style=\"vertical-align:sub\">r</sub>baz"
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub><sub>b[a]r</sub></sub>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub><sub>b[a]r</sub></sub>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo<sub><sub>b[a]r</sub></sub>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["superscript",""]] "foo<sub><sub>b[a]r</sub></sub>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub><sub>b[a]r</sub></sub>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub><sub>b[a]r</sub></sub>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo<sub><sub>b[a]r</sub></sub>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["superscript",""]] "foo<sub><sub>b[a]r</sub></sub>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub><sub>b[a]r</sub></sub>baz" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub><sub>b[a]r</sub></sub>baz" queryCommandState("superscript") before 
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<sub><sub>b[a]r</sub></sub>baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -707,10 +707,10 @@ PASS [["stylewithcss","false"],["superscript",""]] "foo<sub><sub>b[a]r</sub></su
 FAIL [["stylewithcss","false"],["superscript",""]] "foo<sub><sub>b[a]r</sub></sub>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<sub>b</sub><sup>a</sup><sub>r</sub>baz" but got "foo<sub style=\"vertical-align:sub\">b</sub><sup>a</sup><sub style=\"vertical-align:sub\">r</sub>baz"
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub><sub>b[a]r</sub></sub>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub><sub>b[a]r</sub></sub>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo<sub><sub>b[a]r</sub></sub>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["superscript",""]] "foo<sub><sub>b[a]r</sub></sub>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub><sub>b[a]r</sub></sub>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub><sub>b[a]r</sub></sub>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo<sub><sub>b[a]r</sub></sub>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["superscript",""]] "foo<sub><sub>b[a]r</sub></sub>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub><sub>b[a]r</sub></sub>baz" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub><sub>b[a]r</sub></sub>baz" queryCommandState("superscript") before 
 FAIL [["stylewithcss","false"],["superscript",""]] "foo<sub><sub>b[a]r</sub></sub>baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -723,10 +723,10 @@ PASS [["stylewithcss","true"],["superscript",""]] "foo<sub>b<sub>[a]</sub>r</sub
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<sub>b<sub>[a]</sub>r</sub>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<sub>b</sub><sup>a</sup><sub>r</sub>baz" but got "foo<span style=\"vertical-align:sub\">b</span><span style=\"vertical-align:super\">a</span><span style=\"vertical-align:sub\">r</span>baz"
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub>b<sub>[a]</sub>r</sub>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub>b<sub>[a]</sub>r</sub>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo<sub>b<sub>[a]</sub>r</sub>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["superscript",""]] "foo<sub>b<sub>[a]</sub>r</sub>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub>b<sub>[a]</sub>r</sub>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub>b<sub>[a]</sub>r</sub>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo<sub>b<sub>[a]</sub>r</sub>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["superscript",""]] "foo<sub>b<sub>[a]</sub>r</sub>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub>b<sub>[a]</sub>r</sub>baz" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub>b<sub>[a]</sub>r</sub>baz" queryCommandState("superscript") before 
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<sub>b<sub>[a]</sub>r</sub>baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -739,10 +739,10 @@ PASS [["stylewithcss","false"],["superscript",""]] "foo<sub>b<sub>[a]</sub>r</su
 FAIL [["stylewithcss","false"],["superscript",""]] "foo<sub>b<sub>[a]</sub>r</sub>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<sub>b</sub><sup>a</sup><sub>r</sub>baz" but got "foo<sub style=\"vertical-align:sub\">b</sub><sup>a</sup><sub>r</sub>baz"
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub>b<sub>[a]</sub>r</sub>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub>b<sub>[a]</sub>r</sub>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo<sub>b<sub>[a]</sub>r</sub>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["superscript",""]] "foo<sub>b<sub>[a]</sub>r</sub>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub>b<sub>[a]</sub>r</sub>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub>b<sub>[a]</sub>r</sub>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo<sub>b<sub>[a]</sub>r</sub>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["superscript",""]] "foo<sub>b<sub>[a]</sub>r</sub>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub>b<sub>[a]</sub>r</sub>baz" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub>b<sub>[a]</sub>r</sub>baz" queryCommandState("superscript") before 
 FAIL [["stylewithcss","false"],["superscript",""]] "foo<sub>b<sub>[a]</sub>r</sub>baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -755,10 +755,10 @@ PASS [["stylewithcss","true"],["superscript",""]] "foo<sup><sup>[bar]</sup></sup
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup><sup>[bar]</sup></sup>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup><sup>[bar]</sup></sup>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup><sup>[bar]</sup></sup>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo<sup><sup>[bar]</sup></sup>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["superscript",""]] "foo<sup><sup>[bar]</sup></sup>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup><sup>[bar]</sup></sup>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup><sup>[bar]</sup></sup>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo<sup><sup>[bar]</sup></sup>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["superscript",""]] "foo<sup><sup>[bar]</sup></sup>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup><sup>[bar]</sup></sup>baz" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup><sup>[bar]</sup></sup>baz" queryCommandState("superscript") before 
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<sup><sup>[bar]</sup></sup>baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "true"
@@ -771,10 +771,10 @@ PASS [["stylewithcss","false"],["superscript",""]] "foo<sup><sup>[bar]</sup></su
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup><sup>[bar]</sup></sup>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup><sup>[bar]</sup></sup>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup><sup>[bar]</sup></sup>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo<sup><sup>[bar]</sup></sup>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["superscript",""]] "foo<sup><sup>[bar]</sup></sup>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup><sup>[bar]</sup></sup>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup><sup>[bar]</sup></sup>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo<sup><sup>[bar]</sup></sup>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["superscript",""]] "foo<sup><sup>[bar]</sup></sup>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup><sup>[bar]</sup></sup>baz" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup><sup>[bar]</sup></sup>baz" queryCommandState("superscript") before 
 FAIL [["stylewithcss","false"],["superscript",""]] "foo<sup><sup>[bar]</sup></sup>baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "true"
@@ -805,10 +805,10 @@ PASS [["stylewithcss","true"],["superscript",""]] "foo<sub><sup>[bar]</sup></sub
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<sub><sup>[bar]</sup></sub>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<sup>bar</sup>baz" but got "foobarbaz"
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub><sup>[bar]</sup></sub>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub><sup>[bar]</sup></sub>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo<sub><sup>[bar]</sup></sub>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["superscript",""]] "foo<sub><sup>[bar]</sup></sub>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub><sup>[bar]</sup></sub>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub><sup>[bar]</sup></sub>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo<sub><sup>[bar]</sup></sub>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["superscript",""]] "foo<sub><sup>[bar]</sup></sub>baz" queryCommandValue("stylewithcss") after 
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<sub><sup>[bar]</sup></sub>baz" queryCommandIndeterm("superscript") before assert_equals: Wrong result returned expected true but got false
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<sub><sup>[bar]</sup></sub>baz" queryCommandState("superscript") before assert_equals: Wrong result returned expected false but got true
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<sub><sup>[bar]</sup></sub>baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "true"
@@ -821,10 +821,10 @@ PASS [["stylewithcss","false"],["superscript",""]] "foo<sub><sup>[bar]</sup></su
 FAIL [["stylewithcss","false"],["superscript",""]] "foo<sub><sup>[bar]</sup></sub>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<sup>bar</sup>baz" but got "foobarbaz"
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub><sup>[bar]</sup></sub>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub><sup>[bar]</sup></sub>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo<sub><sup>[bar]</sup></sub>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["superscript",""]] "foo<sub><sup>[bar]</sup></sub>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub><sup>[bar]</sup></sub>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub><sup>[bar]</sup></sub>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo<sub><sup>[bar]</sup></sub>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["superscript",""]] "foo<sub><sup>[bar]</sup></sub>baz" queryCommandValue("stylewithcss") after 
 FAIL [["stylewithcss","false"],["superscript",""]] "foo<sub><sup>[bar]</sup></sub>baz" queryCommandIndeterm("superscript") before assert_equals: Wrong result returned expected true but got false
 FAIL [["stylewithcss","false"],["superscript",""]] "foo<sub><sup>[bar]</sup></sub>baz" queryCommandState("superscript") before assert_equals: Wrong result returned expected false but got true
 FAIL [["stylewithcss","false"],["superscript",""]] "foo<sub><sup>[bar]</sup></sub>baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "true"
@@ -837,10 +837,10 @@ PASS [["stylewithcss","true"],["superscript",""]] "foo<sub><sup>b[a]r</sup></sub
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<sub><sup>b[a]r</sup></sub>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<sup>bar</sup>baz" but got "foo<sup style=\"vertical-align:sub\">b</sup>a<sup style=\"vertical-align:sub\">r</sup>baz"
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub><sup>b[a]r</sup></sub>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub><sup>b[a]r</sup></sub>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo<sub><sup>b[a]r</sup></sub>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["superscript",""]] "foo<sub><sup>b[a]r</sup></sub>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub><sup>b[a]r</sup></sub>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub><sup>b[a]r</sup></sub>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo<sub><sup>b[a]r</sup></sub>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["superscript",""]] "foo<sub><sup>b[a]r</sup></sub>baz" queryCommandValue("stylewithcss") after 
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<sub><sup>b[a]r</sup></sub>baz" queryCommandIndeterm("superscript") before assert_equals: Wrong result returned expected true but got false
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<sub><sup>b[a]r</sup></sub>baz" queryCommandState("superscript") before assert_equals: Wrong result returned expected false but got true
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<sub><sup>b[a]r</sup></sub>baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "true"
@@ -853,10 +853,10 @@ PASS [["stylewithcss","false"],["superscript",""]] "foo<sub><sup>b[a]r</sup></su
 FAIL [["stylewithcss","false"],["superscript",""]] "foo<sub><sup>b[a]r</sup></sub>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<sup>bar</sup>baz" but got "foo<sup style=\"vertical-align:sub\">b</sup>a<sup style=\"vertical-align:sub\">r</sup>baz"
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub><sup>b[a]r</sup></sub>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub><sup>b[a]r</sup></sub>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo<sub><sup>b[a]r</sup></sub>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["superscript",""]] "foo<sub><sup>b[a]r</sup></sub>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub><sup>b[a]r</sup></sub>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub><sup>b[a]r</sup></sub>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo<sub><sup>b[a]r</sup></sub>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["superscript",""]] "foo<sub><sup>b[a]r</sup></sub>baz" queryCommandValue("stylewithcss") after 
 FAIL [["stylewithcss","false"],["superscript",""]] "foo<sub><sup>b[a]r</sup></sub>baz" queryCommandIndeterm("superscript") before assert_equals: Wrong result returned expected true but got false
 FAIL [["stylewithcss","false"],["superscript",""]] "foo<sub><sup>b[a]r</sup></sub>baz" queryCommandState("superscript") before assert_equals: Wrong result returned expected false but got true
 FAIL [["stylewithcss","false"],["superscript",""]] "foo<sub><sup>b[a]r</sup></sub>baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "true"
@@ -869,10 +869,10 @@ PASS [["stylewithcss","true"],["superscript",""]] "foo<sub>b<sup>[a]</sup>r</sub
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<sub>b<sup>[a]</sup>r</sub>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<sub>b</sub><sup>a</sup><sub>r</sub>baz" but got "foo<span style=\"vertical-align:sub\">b</span>a<span style=\"vertical-align:sub\">r</span>baz"
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub>b<sup>[a]</sup>r</sub>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub>b<sup>[a]</sup>r</sub>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo<sub>b<sup>[a]</sup>r</sub>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["superscript",""]] "foo<sub>b<sup>[a]</sup>r</sub>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub>b<sup>[a]</sup>r</sub>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sub>b<sup>[a]</sup>r</sub>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo<sub>b<sup>[a]</sup>r</sub>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["superscript",""]] "foo<sub>b<sup>[a]</sup>r</sub>baz" queryCommandValue("stylewithcss") after 
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<sub>b<sup>[a]</sup>r</sub>baz" queryCommandIndeterm("superscript") before assert_equals: Wrong result returned expected true but got false
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<sub>b<sup>[a]</sup>r</sub>baz" queryCommandState("superscript") before assert_equals: Wrong result returned expected false but got true
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<sub>b<sup>[a]</sup>r</sub>baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "true"
@@ -885,10 +885,10 @@ PASS [["stylewithcss","false"],["superscript",""]] "foo<sub>b<sup>[a]</sup>r</su
 FAIL [["stylewithcss","false"],["superscript",""]] "foo<sub>b<sup>[a]</sup>r</sub>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<sub>b</sub><sup>a</sup><sub>r</sub>baz" but got "foo<sub>b</sub>a<sub>r</sub>baz"
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub>b<sup>[a]</sup>r</sub>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub>b<sup>[a]</sup>r</sub>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo<sub>b<sup>[a]</sup>r</sub>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["superscript",""]] "foo<sub>b<sup>[a]</sup>r</sub>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub>b<sup>[a]</sup>r</sub>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sub>b<sup>[a]</sup>r</sub>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo<sub>b<sup>[a]</sup>r</sub>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["superscript",""]] "foo<sub>b<sup>[a]</sup>r</sub>baz" queryCommandValue("stylewithcss") after 
 FAIL [["stylewithcss","false"],["superscript",""]] "foo<sub>b<sup>[a]</sup>r</sub>baz" queryCommandIndeterm("superscript") before assert_equals: Wrong result returned expected true but got false
 FAIL [["stylewithcss","false"],["superscript",""]] "foo<sub>b<sup>[a]</sup>r</sub>baz" queryCommandState("superscript") before assert_equals: Wrong result returned expected false but got true
 FAIL [["stylewithcss","false"],["superscript",""]] "foo<sub>b<sup>[a]</sup>r</sub>baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "true"
@@ -901,10 +901,10 @@ PASS [["stylewithcss","true"],["superscript",""]] "foo<sup><sub>[bar]</sub></sup
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup><sub>[bar]</sub></sup>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup><sub>[bar]</sub></sup>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup><sub>[bar]</sub></sup>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo<sup><sub>[bar]</sub></sup>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["superscript",""]] "foo<sup><sub>[bar]</sub></sup>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup><sub>[bar]</sub></sup>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup><sub>[bar]</sub></sup>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo<sup><sub>[bar]</sub></sup>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["superscript",""]] "foo<sup><sub>[bar]</sub></sup>baz" queryCommandValue("stylewithcss") after 
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<sup><sub>[bar]</sub></sup>baz" queryCommandIndeterm("superscript") before assert_equals: Wrong result returned expected true but got false
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup><sub>[bar]</sub></sup>baz" queryCommandState("superscript") before 
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<sup><sub>[bar]</sub></sup>baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -917,10 +917,10 @@ PASS [["stylewithcss","false"],["superscript",""]] "foo<sup><sub>[bar]</sub></su
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup><sub>[bar]</sub></sup>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup><sub>[bar]</sub></sup>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup><sub>[bar]</sub></sup>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo<sup><sub>[bar]</sub></sup>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["superscript",""]] "foo<sup><sub>[bar]</sub></sup>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup><sub>[bar]</sub></sup>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup><sub>[bar]</sub></sup>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo<sup><sub>[bar]</sub></sup>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["superscript",""]] "foo<sup><sub>[bar]</sub></sup>baz" queryCommandValue("stylewithcss") after 
 FAIL [["stylewithcss","false"],["superscript",""]] "foo<sup><sub>[bar]</sub></sup>baz" queryCommandIndeterm("superscript") before assert_equals: Wrong result returned expected true but got false
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup><sub>[bar]</sub></sup>baz" queryCommandState("superscript") before 
 FAIL [["stylewithcss","false"],["superscript",""]] "foo<sup><sub>[bar]</sub></sup>baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -933,10 +933,10 @@ PASS [["stylewithcss","true"],["superscript",""]] "foo<sup><sub>b[a]r</sub></sup
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<sup><sub>b[a]r</sub></sup>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<sub>b</sub><sup>a</sup><sub>r</sub>baz" but got "foo<sup><sub>b</sub>a<sub>r</sub></sup>baz"
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup><sub>b[a]r</sub></sup>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup><sub>b[a]r</sub></sup>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo<sup><sub>b[a]r</sub></sup>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["superscript",""]] "foo<sup><sub>b[a]r</sub></sup>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup><sub>b[a]r</sub></sup>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup><sub>b[a]r</sub></sup>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo<sup><sub>b[a]r</sub></sup>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["superscript",""]] "foo<sup><sub>b[a]r</sub></sup>baz" queryCommandValue("stylewithcss") after 
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<sup><sub>b[a]r</sub></sup>baz" queryCommandIndeterm("superscript") before assert_equals: Wrong result returned expected true but got false
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup><sub>b[a]r</sub></sup>baz" queryCommandState("superscript") before 
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<sup><sub>b[a]r</sub></sup>baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -949,10 +949,10 @@ PASS [["stylewithcss","false"],["superscript",""]] "foo<sup><sub>b[a]r</sub></su
 FAIL [["stylewithcss","false"],["superscript",""]] "foo<sup><sub>b[a]r</sub></sup>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<sub>b</sub><sup>a</sup><sub>r</sub>baz" but got "foo<sup><sub>b</sub>a<sub>r</sub></sup>baz"
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup><sub>b[a]r</sub></sup>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup><sub>b[a]r</sub></sup>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo<sup><sub>b[a]r</sub></sup>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["superscript",""]] "foo<sup><sub>b[a]r</sub></sup>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup><sub>b[a]r</sub></sup>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup><sub>b[a]r</sub></sup>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo<sup><sub>b[a]r</sub></sup>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["superscript",""]] "foo<sup><sub>b[a]r</sub></sup>baz" queryCommandValue("stylewithcss") after 
 FAIL [["stylewithcss","false"],["superscript",""]] "foo<sup><sub>b[a]r</sub></sup>baz" queryCommandIndeterm("superscript") before assert_equals: Wrong result returned expected true but got false
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup><sub>b[a]r</sub></sup>baz" queryCommandState("superscript") before 
 FAIL [["stylewithcss","false"],["superscript",""]] "foo<sup><sub>b[a]r</sub></sup>baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -965,10 +965,10 @@ PASS [["stylewithcss","true"],["superscript",""]] "foo<sup>b<sub>[a]</sub>r</sup
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup>b<sub>[a]</sub>r</sup>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup>b<sub>[a]</sub>r</sup>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup>b<sub>[a]</sub>r</sup>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo<sup>b<sub>[a]</sub>r</sup>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["superscript",""]] "foo<sup>b<sub>[a]</sub>r</sup>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup>b<sub>[a]</sub>r</sup>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup>b<sub>[a]</sub>r</sup>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo<sup>b<sub>[a]</sub>r</sup>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["superscript",""]] "foo<sup>b<sub>[a]</sub>r</sup>baz" queryCommandValue("stylewithcss") after 
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<sup>b<sub>[a]</sub>r</sup>baz" queryCommandIndeterm("superscript") before assert_equals: Wrong result returned expected true but got false
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup>b<sub>[a]</sub>r</sup>baz" queryCommandState("superscript") before 
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<sup>b<sub>[a]</sub>r</sup>baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -981,10 +981,10 @@ PASS [["stylewithcss","false"],["superscript",""]] "foo<sup>b<sub>[a]</sub>r</su
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup>b<sub>[a]</sub>r</sup>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup>b<sub>[a]</sub>r</sup>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup>b<sub>[a]</sub>r</sup>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo<sup>b<sub>[a]</sub>r</sup>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["superscript",""]] "foo<sup>b<sub>[a]</sub>r</sup>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup>b<sub>[a]</sub>r</sup>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup>b<sub>[a]</sub>r</sup>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo<sup>b<sub>[a]</sub>r</sup>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["superscript",""]] "foo<sup>b<sub>[a]</sub>r</sup>baz" queryCommandValue("stylewithcss") after 
 FAIL [["stylewithcss","false"],["superscript",""]] "foo<sup>b<sub>[a]</sub>r</sup>baz" queryCommandIndeterm("superscript") before assert_equals: Wrong result returned expected true but got false
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup>b<sub>[a]</sub>r</sup>baz" queryCommandState("superscript") before 
 FAIL [["stylewithcss","false"],["superscript",""]] "foo<sup>b<sub>[a]</sub>r</sup>baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -1042,10 +1042,10 @@ PASS [["stylewithcss","true"],["superscript",""]] "foo[<sup>bar</sup>]baz" check
 PASS [["stylewithcss","true"],["superscript",""]] "foo[<sup>bar</sup>]baz" compare innerHTML 
 PASS [["stylewithcss","true"],["superscript",""]] "foo[<sup>bar</sup>]baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo[<sup>bar</sup>]baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo[<sup>bar</sup>]baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["superscript",""]] "foo[<sup>bar</sup>]baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo[<sup>bar</sup>]baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo[<sup>bar</sup>]baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo[<sup>bar</sup>]baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["superscript",""]] "foo[<sup>bar</sup>]baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo[<sup>bar</sup>]baz" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo[<sup>bar</sup>]baz" queryCommandState("superscript") before 
 FAIL [["stylewithcss","true"],["superscript",""]] "foo[<sup>bar</sup>]baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "true"
@@ -1058,10 +1058,10 @@ PASS [["stylewithcss","false"],["superscript",""]] "foo[<sup>bar</sup>]baz" chec
 PASS [["stylewithcss","false"],["superscript",""]] "foo[<sup>bar</sup>]baz" compare innerHTML 
 PASS [["stylewithcss","false"],["superscript",""]] "foo[<sup>bar</sup>]baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo[<sup>bar</sup>]baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo[<sup>bar</sup>]baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["superscript",""]] "foo[<sup>bar</sup>]baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo[<sup>bar</sup>]baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo[<sup>bar</sup>]baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo[<sup>bar</sup>]baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["superscript",""]] "foo[<sup>bar</sup>]baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo[<sup>bar</sup>]baz" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo[<sup>bar</sup>]baz" queryCommandState("superscript") before 
 FAIL [["stylewithcss","false"],["superscript",""]] "foo[<sup>bar</sup>]baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "true"
@@ -1074,10 +1074,10 @@ PASS [["stylewithcss","true"],["superscript",""]] "foo<sup>[bar]</sup>baz" check
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup>[bar]</sup>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup>[bar]</sup>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup>[bar]</sup>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo<sup>[bar]</sup>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["superscript",""]] "foo<sup>[bar]</sup>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup>[bar]</sup>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup>[bar]</sup>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo<sup>[bar]</sup>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["superscript",""]] "foo<sup>[bar]</sup>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup>[bar]</sup>baz" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup>[bar]</sup>baz" queryCommandState("superscript") before 
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<sup>[bar]</sup>baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "true"
@@ -1090,10 +1090,10 @@ PASS [["stylewithcss","false"],["superscript",""]] "foo<sup>[bar]</sup>baz" chec
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup>[bar]</sup>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup>[bar]</sup>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup>[bar]</sup>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo<sup>[bar]</sup>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["superscript",""]] "foo<sup>[bar]</sup>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup>[bar]</sup>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup>[bar]</sup>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo<sup>[bar]</sup>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["superscript",""]] "foo<sup>[bar]</sup>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup>[bar]</sup>baz" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup>[bar]</sup>baz" queryCommandState("superscript") before 
 FAIL [["stylewithcss","false"],["superscript",""]] "foo<sup>[bar]</sup>baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "true"
@@ -1106,10 +1106,10 @@ PASS [["stylewithcss","true"],["superscript",""]] "foo{<sup>bar</sup>}baz" check
 PASS [["stylewithcss","true"],["superscript",""]] "foo{<sup>bar</sup>}baz" compare innerHTML 
 PASS [["stylewithcss","true"],["superscript",""]] "foo{<sup>bar</sup>}baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo{<sup>bar</sup>}baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo{<sup>bar</sup>}baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["superscript",""]] "foo{<sup>bar</sup>}baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo{<sup>bar</sup>}baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo{<sup>bar</sup>}baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo{<sup>bar</sup>}baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["superscript",""]] "foo{<sup>bar</sup>}baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo{<sup>bar</sup>}baz" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo{<sup>bar</sup>}baz" queryCommandState("superscript") before 
 FAIL [["stylewithcss","true"],["superscript",""]] "foo{<sup>bar</sup>}baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "true"
@@ -1122,10 +1122,10 @@ PASS [["stylewithcss","false"],["superscript",""]] "foo{<sup>bar</sup>}baz" chec
 PASS [["stylewithcss","false"],["superscript",""]] "foo{<sup>bar</sup>}baz" compare innerHTML 
 PASS [["stylewithcss","false"],["superscript",""]] "foo{<sup>bar</sup>}baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo{<sup>bar</sup>}baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo{<sup>bar</sup>}baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["superscript",""]] "foo{<sup>bar</sup>}baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo{<sup>bar</sup>}baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo{<sup>bar</sup>}baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo{<sup>bar</sup>}baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["superscript",""]] "foo{<sup>bar</sup>}baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo{<sup>bar</sup>}baz" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo{<sup>bar</sup>}baz" queryCommandState("superscript") before 
 FAIL [["stylewithcss","false"],["superscript",""]] "foo{<sup>bar</sup>}baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "true"
@@ -1147,10 +1147,10 @@ PASS [["stylewithcss","true"],["superscript",""]] "<sup>fo[o</sup><span style=ve
 FAIL [["stylewithcss","true"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:super>b]ar</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<sup>foo</sup><span style=\"vertical-align:super\"><sup>b</sup>ar</span>" but got "<sup>fo</sup>ob<span style=\"vertical-align:super\">ar</span>"
 PASS [["stylewithcss","true"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:super>b]ar</span>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:super>b]ar</span>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:super>b]ar</span>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:super>b]ar</span>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:super>b]ar</span>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:super>b]ar</span>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:super>b]ar</span>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:super>b]ar</span>" queryCommandValue("stylewithcss") after 
 FAIL [["stylewithcss","true"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:super>b]ar</span>" queryCommandIndeterm("superscript") before assert_equals: Wrong result returned expected true but got false
 FAIL [["stylewithcss","true"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:super>b]ar</span>" queryCommandState("superscript") before assert_equals: Wrong result returned expected false but got true
 FAIL [["stylewithcss","true"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:super>b]ar</span>" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "true"
@@ -1163,10 +1163,10 @@ PASS [["stylewithcss","false"],["superscript",""]] "<sup>fo[o</sup><span style=v
 FAIL [["stylewithcss","false"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:super>b]ar</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<sup>foo</sup><span style=\"vertical-align:super\"><sup>b</sup>ar</span>" but got "<sup>fo</sup>ob<span style=\"vertical-align:super\">ar</span>"
 PASS [["stylewithcss","false"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:super>b]ar</span>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:super>b]ar</span>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:super>b]ar</span>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:super>b]ar</span>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:super>b]ar</span>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:super>b]ar</span>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:super>b]ar</span>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:super>b]ar</span>" queryCommandValue("stylewithcss") after 
 FAIL [["stylewithcss","false"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:super>b]ar</span>" queryCommandIndeterm("superscript") before assert_equals: Wrong result returned expected true but got false
 FAIL [["stylewithcss","false"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:super>b]ar</span>" queryCommandState("superscript") before assert_equals: Wrong result returned expected false but got true
 FAIL [["stylewithcss","false"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:super>b]ar</span>" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "true"
@@ -1179,10 +1179,10 @@ PASS [["stylewithcss","true"],["superscript",""]] "foo<span style=vertical-align
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<span style=vertical-align:bottom>[bar]</span>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<sup><span style=\"vertical-align:bottom\">bar</span></sup>baz" but got "foo<span style=\"vertical-align:super\">bar</span>baz"
 PASS [["stylewithcss","true"],["superscript",""]] "foo<span style=vertical-align:bottom>[bar]</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<span style=vertical-align:bottom>[bar]</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo<span style=vertical-align:bottom>[bar]</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["superscript",""]] "foo<span style=vertical-align:bottom>[bar]</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<span style=vertical-align:bottom>[bar]</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<span style=vertical-align:bottom>[bar]</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo<span style=vertical-align:bottom>[bar]</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["superscript",""]] "foo<span style=vertical-align:bottom>[bar]</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<span style=vertical-align:bottom>[bar]</span>baz" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<span style=vertical-align:bottom>[bar]</span>baz" queryCommandState("superscript") before 
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<span style=vertical-align:bottom>[bar]</span>baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -1195,10 +1195,10 @@ PASS [["stylewithcss","false"],["superscript",""]] "foo<span style=vertical-alig
 FAIL [["stylewithcss","false"],["superscript",""]] "foo<span style=vertical-align:bottom>[bar]</span>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<sup><span style=\"vertical-align:bottom\">bar</span></sup>baz" but got "foo<sup>bar</sup>baz"
 PASS [["stylewithcss","false"],["superscript",""]] "foo<span style=vertical-align:bottom>[bar]</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<span style=vertical-align:bottom>[bar]</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo<span style=vertical-align:bottom>[bar]</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["superscript",""]] "foo<span style=vertical-align:bottom>[bar]</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<span style=vertical-align:bottom>[bar]</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<span style=vertical-align:bottom>[bar]</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo<span style=vertical-align:bottom>[bar]</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["superscript",""]] "foo<span style=vertical-align:bottom>[bar]</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<span style=vertical-align:bottom>[bar]</span>baz" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<span style=vertical-align:bottom>[bar]</span>baz" queryCommandState("superscript") before 
 FAIL [["stylewithcss","false"],["superscript",""]] "foo<span style=vertical-align:bottom>[bar]</span>baz" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "false"
@@ -1211,10 +1211,10 @@ PASS [["stylewithcss","true"],["superscript",""]] "<sup>fo[o</sup><span style=ve
 FAIL [["stylewithcss","true"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:bottom>b]ar</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<sup>foo</sup><span style=\"vertical-align:bottom\"><sup>b</sup>ar</span>" but got "<sup>fo</sup>ob<span style=\"vertical-align:bottom\">ar</span>"
 PASS [["stylewithcss","true"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:bottom>b]ar</span>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:bottom>b]ar</span>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:bottom>b]ar</span>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:bottom>b]ar</span>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:bottom>b]ar</span>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:bottom>b]ar</span>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:bottom>b]ar</span>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:bottom>b]ar</span>" queryCommandValue("stylewithcss") after 
 FAIL [["stylewithcss","true"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:bottom>b]ar</span>" queryCommandIndeterm("superscript") before assert_equals: Wrong result returned expected true but got false
 FAIL [["stylewithcss","true"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:bottom>b]ar</span>" queryCommandState("superscript") before assert_equals: Wrong result returned expected false but got true
 FAIL [["stylewithcss","true"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:bottom>b]ar</span>" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "true"
@@ -1227,10 +1227,10 @@ PASS [["stylewithcss","false"],["superscript",""]] "<sup>fo[o</sup><span style=v
 FAIL [["stylewithcss","false"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:bottom>b]ar</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<sup>foo</sup><span style=\"vertical-align:bottom\"><sup>b</sup>ar</span>" but got "<sup>fo</sup>ob<span style=\"vertical-align:bottom\">ar</span>"
 PASS [["stylewithcss","false"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:bottom>b]ar</span>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:bottom>b]ar</span>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:bottom>b]ar</span>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:bottom>b]ar</span>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:bottom>b]ar</span>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:bottom>b]ar</span>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:bottom>b]ar</span>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:bottom>b]ar</span>" queryCommandValue("stylewithcss") after 
 FAIL [["stylewithcss","false"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:bottom>b]ar</span>" queryCommandIndeterm("superscript") before assert_equals: Wrong result returned expected true but got false
 FAIL [["stylewithcss","false"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:bottom>b]ar</span>" queryCommandState("superscript") before assert_equals: Wrong result returned expected false but got true
 FAIL [["stylewithcss","false"],["superscript",""]] "<sup>fo[o</sup><span style=vertical-align:bottom>b]ar</span>" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "true"
@@ -1243,10 +1243,10 @@ PASS [["stylewithcss","true"],["superscript",""]] "foo<sup>[bar]<br></sup>" chec
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup>[bar]<br></sup>" compare innerHTML 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup>[bar]<br></sup>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup>[bar]<br></sup>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo<sup>[bar]<br></sup>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["superscript",""]] "foo<sup>[bar]<br></sup>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup>[bar]<br></sup>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup>[bar]<br></sup>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["superscript",""]] "foo<sup>[bar]<br></sup>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["superscript",""]] "foo<sup>[bar]<br></sup>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup>[bar]<br></sup>" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","true"],["superscript",""]] "foo<sup>[bar]<br></sup>" queryCommandState("superscript") before 
 FAIL [["stylewithcss","true"],["superscript",""]] "foo<sup>[bar]<br></sup>" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "true"
@@ -1259,10 +1259,10 @@ PASS [["stylewithcss","false"],["superscript",""]] "foo<sup>[bar]<br></sup>" che
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup>[bar]<br></sup>" compare innerHTML 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup>[bar]<br></sup>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup>[bar]<br></sup>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo<sup>[bar]<br></sup>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["superscript",""]] "foo<sup>[bar]<br></sup>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup>[bar]<br></sup>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup>[bar]<br></sup>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["superscript",""]] "foo<sup>[bar]<br></sup>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["superscript",""]] "foo<sup>[bar]<br></sup>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup>[bar]<br></sup>" queryCommandIndeterm("superscript") before 
 PASS [["stylewithcss","false"],["superscript",""]] "foo<sup>[bar]<br></sup>" queryCommandState("superscript") before 
 FAIL [["stylewithcss","false"],["superscript",""]] "foo<sup>[bar]<br></sup>" queryCommandValue("superscript") before assert_equals: Wrong result returned expected "" but got "true"

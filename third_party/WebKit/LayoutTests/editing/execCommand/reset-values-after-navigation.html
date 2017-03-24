@@ -8,7 +8,7 @@
         if (e.origin == location.protocol + "//" + location.host) {
             queryCommandValues = JSON.parse(e.data);
             shouldBeEqualToString('queryCommandValues["DefaultParagraphSeparator"]', "div");
-            shouldBeEqualToString('queryCommandValues["StyleWithCSS"]', "false");
+            shouldBeEqualToString('queryCommandValues["StyleWithCSS"]', "");
             finishJSTest();
         }
     }

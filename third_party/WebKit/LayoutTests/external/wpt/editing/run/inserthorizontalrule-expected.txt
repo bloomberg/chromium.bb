@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1348 tests; 1238 PASS, 110 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1348 tests; 1302 PASS, 46 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS [["inserthorizontalrule",""]] "foo[]bar": execCommand("inserthorizontalrule", false, "") return value 
 PASS [["inserthorizontalrule",""]] "foo[]bar" checks for modifications to non-editable content 
 PASS [["inserthorizontalrule",""]] "foo[]bar" compare innerHTML 
@@ -60,10 +60,10 @@ PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<div><b>foo</b>{<b>b
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<div><b>foo</b>{<b>bar</b>}<b>baz</b></div>" compare innerHTML 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<div><b>foo</b>{<b>bar</b>}<b>baz</b></div>" queryCommandIndeterm("stylewithcss") before 
 FAIL [["stylewithcss","true"],["inserthorizontalrule",""]] "<div><b>foo</b>{<b>bar</b>}<b>baz</b></div>" queryCommandState("stylewithcss") before assert_equals: Wrong result returned expected false but got true
-FAIL [["stylewithcss","true"],["inserthorizontalrule",""]] "<div><b>foo</b>{<b>bar</b>}<b>baz</b></div>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<div><b>foo</b>{<b>bar</b>}<b>baz</b></div>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<div><b>foo</b>{<b>bar</b>}<b>baz</b></div>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<div><b>foo</b>{<b>bar</b>}<b>baz</b></div>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["inserthorizontalrule",""]] "<div><b>foo</b>{<b>bar</b>}<b>baz</b></div>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<div><b>foo</b>{<b>bar</b>}<b>baz</b></div>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<div><b>foo</b>{<b>bar</b>}<b>baz</b></div>" queryCommandIndeterm("inserthorizontalrule") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<div><b>foo</b>{<b>bar</b>}<b>baz</b></div>" queryCommandState("inserthorizontalrule") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<div><b>foo</b>{<b>bar</b>}<b>baz</b></div>" queryCommandValue("inserthorizontalrule") before 
@@ -76,10 +76,10 @@ PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<div><b>foo</b>{<b>
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<div><b>foo</b>{<b>bar</b>}<b>baz</b></div>" compare innerHTML 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<div><b>foo</b>{<b>bar</b>}<b>baz</b></div>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<div><b>foo</b>{<b>bar</b>}<b>baz</b></div>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["inserthorizontalrule",""]] "<div><b>foo</b>{<b>bar</b>}<b>baz</b></div>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<div><b>foo</b>{<b>bar</b>}<b>baz</b></div>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<div><b>foo</b>{<b>bar</b>}<b>baz</b></div>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<div><b>foo</b>{<b>bar</b>}<b>baz</b></div>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["inserthorizontalrule",""]] "<div><b>foo</b>{<b>bar</b>}<b>baz</b></div>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<div><b>foo</b>{<b>bar</b>}<b>baz</b></div>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<div><b>foo</b>{<b>bar</b>}<b>baz</b></div>" queryCommandIndeterm("inserthorizontalrule") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<div><b>foo</b>{<b>bar</b>}<b>baz</b></div>" queryCommandState("inserthorizontalrule") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<div><b>foo</b>{<b>bar</b>}<b>baz</b></div>" queryCommandValue("inserthorizontalrule") before 
@@ -92,10 +92,10 @@ PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<b>foo[]bar</b>" che
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<b>foo[]bar</b>" compare innerHTML 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<b>foo[]bar</b>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<b>foo[]bar</b>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["inserthorizontalrule",""]] "<b>foo[]bar</b>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<b>foo[]bar</b>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<b>foo[]bar</b>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<b>foo[]bar</b>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["inserthorizontalrule",""]] "<b>foo[]bar</b>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<b>foo[]bar</b>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<b>foo[]bar</b>" queryCommandIndeterm("inserthorizontalrule") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<b>foo[]bar</b>" queryCommandState("inserthorizontalrule") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<b>foo[]bar</b>" queryCommandValue("inserthorizontalrule") before 
@@ -108,10 +108,10 @@ PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<b>foo[]bar</b>" ch
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<b>foo[]bar</b>" compare innerHTML 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<b>foo[]bar</b>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<b>foo[]bar</b>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["inserthorizontalrule",""]] "<b>foo[]bar</b>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<b>foo[]bar</b>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<b>foo[]bar</b>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<b>foo[]bar</b>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["inserthorizontalrule",""]] "<b>foo[]bar</b>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<b>foo[]bar</b>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<b>foo[]bar</b>" queryCommandIndeterm("inserthorizontalrule") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<b>foo[]bar</b>" queryCommandState("inserthorizontalrule") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<b>foo[]bar</b>" queryCommandValue("inserthorizontalrule") before 
@@ -124,10 +124,10 @@ PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<b id=abc>foo[]bar</
 FAIL [["stylewithcss","true"],["inserthorizontalrule",""]] "<b id=abc>foo[]bar</b>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<b id=\"abc\">foo</b><hr><b>bar</b>" but got "<b id=\"abc\">foo<hr>bar</b>"
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<b id=abc>foo[]bar</b>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<b id=abc>foo[]bar</b>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["inserthorizontalrule",""]] "<b id=abc>foo[]bar</b>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<b id=abc>foo[]bar</b>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<b id=abc>foo[]bar</b>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<b id=abc>foo[]bar</b>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["inserthorizontalrule",""]] "<b id=abc>foo[]bar</b>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<b id=abc>foo[]bar</b>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<b id=abc>foo[]bar</b>" queryCommandIndeterm("inserthorizontalrule") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<b id=abc>foo[]bar</b>" queryCommandState("inserthorizontalrule") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<b id=abc>foo[]bar</b>" queryCommandValue("inserthorizontalrule") before 
@@ -140,10 +140,10 @@ PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<b id=abc>foo[]bar<
 FAIL [["stylewithcss","false"],["inserthorizontalrule",""]] "<b id=abc>foo[]bar</b>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<b id=\"abc\">foo</b><hr><b>bar</b>" but got "<b id=\"abc\">foo<hr>bar</b>"
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<b id=abc>foo[]bar</b>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<b id=abc>foo[]bar</b>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["inserthorizontalrule",""]] "<b id=abc>foo[]bar</b>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<b id=abc>foo[]bar</b>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<b id=abc>foo[]bar</b>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<b id=abc>foo[]bar</b>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["inserthorizontalrule",""]] "<b id=abc>foo[]bar</b>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<b id=abc>foo[]bar</b>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<b id=abc>foo[]bar</b>" queryCommandIndeterm("inserthorizontalrule") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<b id=abc>foo[]bar</b>" queryCommandState("inserthorizontalrule") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<b id=abc>foo[]bar</b>" queryCommandValue("inserthorizontalrule") before 
@@ -174,10 +174,10 @@ PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "foo<b>[bar]</b>baz" 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "foo<b>[bar]</b>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "foo<b>[bar]</b>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "foo<b>[bar]</b>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["inserthorizontalrule",""]] "foo<b>[bar]</b>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "foo<b>[bar]</b>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "foo<b>[bar]</b>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "foo<b>[bar]</b>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["inserthorizontalrule",""]] "foo<b>[bar]</b>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "foo<b>[bar]</b>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "foo<b>[bar]</b>baz" queryCommandIndeterm("inserthorizontalrule") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "foo<b>[bar]</b>baz" queryCommandState("inserthorizontalrule") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "foo<b>[bar]</b>baz" queryCommandValue("inserthorizontalrule") before 
@@ -190,10 +190,10 @@ PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "foo<b>[bar]</b>baz"
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "foo<b>[bar]</b>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "foo<b>[bar]</b>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "foo<b>[bar]</b>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["inserthorizontalrule",""]] "foo<b>[bar]</b>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "foo<b>[bar]</b>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "foo<b>[bar]</b>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "foo<b>[bar]</b>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["inserthorizontalrule",""]] "foo<b>[bar]</b>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "foo<b>[bar]</b>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "foo<b>[bar]</b>baz" queryCommandIndeterm("inserthorizontalrule") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "foo<b>[bar]</b>baz" queryCommandState("inserthorizontalrule") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "foo<b>[bar]</b>baz" queryCommandValue("inserthorizontalrule") before 
@@ -206,10 +206,10 @@ PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "foo<b>{bar}</b>baz" 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "foo<b>{bar}</b>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "foo<b>{bar}</b>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "foo<b>{bar}</b>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["inserthorizontalrule",""]] "foo<b>{bar}</b>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "foo<b>{bar}</b>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "foo<b>{bar}</b>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "foo<b>{bar}</b>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["inserthorizontalrule",""]] "foo<b>{bar}</b>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "foo<b>{bar}</b>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "foo<b>{bar}</b>baz" queryCommandIndeterm("inserthorizontalrule") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "foo<b>{bar}</b>baz" queryCommandState("inserthorizontalrule") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "foo<b>{bar}</b>baz" queryCommandValue("inserthorizontalrule") before 
@@ -222,10 +222,10 @@ PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "foo<b>{bar}</b>baz"
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "foo<b>{bar}</b>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "foo<b>{bar}</b>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "foo<b>{bar}</b>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["inserthorizontalrule",""]] "foo<b>{bar}</b>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "foo<b>{bar}</b>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "foo<b>{bar}</b>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "foo<b>{bar}</b>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["inserthorizontalrule",""]] "foo<b>{bar}</b>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "foo<b>{bar}</b>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "foo<b>{bar}</b>baz" queryCommandIndeterm("inserthorizontalrule") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "foo<b>{bar}</b>baz" queryCommandState("inserthorizontalrule") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "foo<b>{bar}</b>baz" queryCommandValue("inserthorizontalrule") before 
@@ -238,10 +238,10 @@ PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "foo{<b>bar</b>}baz" 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "foo{<b>bar</b>}baz" compare innerHTML 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "foo{<b>bar</b>}baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "foo{<b>bar</b>}baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["inserthorizontalrule",""]] "foo{<b>bar</b>}baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "foo{<b>bar</b>}baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "foo{<b>bar</b>}baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "foo{<b>bar</b>}baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["inserthorizontalrule",""]] "foo{<b>bar</b>}baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "foo{<b>bar</b>}baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "foo{<b>bar</b>}baz" queryCommandIndeterm("inserthorizontalrule") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "foo{<b>bar</b>}baz" queryCommandState("inserthorizontalrule") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "foo{<b>bar</b>}baz" queryCommandValue("inserthorizontalrule") before 
@@ -254,10 +254,10 @@ PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "foo{<b>bar</b>}baz"
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "foo{<b>bar</b>}baz" compare innerHTML 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "foo{<b>bar</b>}baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "foo{<b>bar</b>}baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["inserthorizontalrule",""]] "foo{<b>bar</b>}baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "foo{<b>bar</b>}baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "foo{<b>bar</b>}baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "foo{<b>bar</b>}baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["inserthorizontalrule",""]] "foo{<b>bar</b>}baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "foo{<b>bar</b>}baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "foo{<b>bar</b>}baz" queryCommandIndeterm("inserthorizontalrule") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "foo{<b>bar</b>}baz" queryCommandState("inserthorizontalrule") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "foo{<b>bar</b>}baz" queryCommandValue("inserthorizontalrule") before 
@@ -431,10 +431,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthorizo
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandValue("defaultparagraphseparator") before 
@@ -454,10 +454,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthoriz
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" compare innerHTML 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandValue("defaultparagraphseparator") before 
@@ -477,10 +477,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthorizont
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandValue("defaultparagraphseparator") before 
@@ -500,10 +500,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthorizon
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" compare innerHTML 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>" queryCommandValue("defaultparagraphseparator") before 
@@ -576,10 +576,10 @@ PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<b>foo[bar]baz</b>" 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<b>foo[bar]baz</b>" compare innerHTML 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<b>foo[bar]baz</b>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<b>foo[bar]baz</b>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["inserthorizontalrule",""]] "<b>foo[bar]baz</b>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<b>foo[bar]baz</b>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<b>foo[bar]baz</b>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<b>foo[bar]baz</b>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["inserthorizontalrule",""]] "<b>foo[bar]baz</b>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<b>foo[bar]baz</b>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<b>foo[bar]baz</b>" queryCommandIndeterm("inserthorizontalrule") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<b>foo[bar]baz</b>" queryCommandState("inserthorizontalrule") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<b>foo[bar]baz</b>" queryCommandValue("inserthorizontalrule") before 
@@ -592,10 +592,10 @@ PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<b>foo[bar]baz</b>"
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<b>foo[bar]baz</b>" compare innerHTML 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<b>foo[bar]baz</b>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<b>foo[bar]baz</b>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["inserthorizontalrule",""]] "<b>foo[bar]baz</b>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<b>foo[bar]baz</b>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<b>foo[bar]baz</b>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<b>foo[bar]baz</b>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["inserthorizontalrule",""]] "<b>foo[bar]baz</b>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<b>foo[bar]baz</b>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<b>foo[bar]baz</b>" queryCommandIndeterm("inserthorizontalrule") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<b>foo[bar]baz</b>" queryCommandState("inserthorizontalrule") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<b>foo[bar]baz</b>" queryCommandValue("inserthorizontalrule") before 
@@ -833,10 +833,10 @@ PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<i>foo[bar]baz</i>" 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<i>foo[bar]baz</i>" compare innerHTML 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<i>foo[bar]baz</i>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<i>foo[bar]baz</i>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["inserthorizontalrule",""]] "<i>foo[bar]baz</i>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<i>foo[bar]baz</i>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<i>foo[bar]baz</i>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<i>foo[bar]baz</i>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["inserthorizontalrule",""]] "<i>foo[bar]baz</i>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<i>foo[bar]baz</i>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<i>foo[bar]baz</i>" queryCommandIndeterm("inserthorizontalrule") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<i>foo[bar]baz</i>" queryCommandState("inserthorizontalrule") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<i>foo[bar]baz</i>" queryCommandValue("inserthorizontalrule") before 
@@ -849,10 +849,10 @@ PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<i>foo[bar]baz</i>"
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<i>foo[bar]baz</i>" compare innerHTML 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<i>foo[bar]baz</i>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<i>foo[bar]baz</i>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["inserthorizontalrule",""]] "<i>foo[bar]baz</i>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<i>foo[bar]baz</i>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<i>foo[bar]baz</i>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<i>foo[bar]baz</i>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["inserthorizontalrule",""]] "<i>foo[bar]baz</i>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<i>foo[bar]baz</i>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<i>foo[bar]baz</i>" queryCommandIndeterm("inserthorizontalrule") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<i>foo[bar]baz</i>" queryCommandState("inserthorizontalrule") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<i>foo[bar]baz</i>" queryCommandValue("inserthorizontalrule") before 
@@ -955,10 +955,10 @@ PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<s>foo[bar]baz</s>" 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<s>foo[bar]baz</s>" compare innerHTML 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<s>foo[bar]baz</s>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<s>foo[bar]baz</s>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["inserthorizontalrule",""]] "<s>foo[bar]baz</s>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<s>foo[bar]baz</s>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<s>foo[bar]baz</s>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<s>foo[bar]baz</s>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["inserthorizontalrule",""]] "<s>foo[bar]baz</s>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<s>foo[bar]baz</s>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<s>foo[bar]baz</s>" queryCommandIndeterm("inserthorizontalrule") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<s>foo[bar]baz</s>" queryCommandState("inserthorizontalrule") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<s>foo[bar]baz</s>" queryCommandValue("inserthorizontalrule") before 
@@ -971,10 +971,10 @@ PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<s>foo[bar]baz</s>"
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<s>foo[bar]baz</s>" compare innerHTML 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<s>foo[bar]baz</s>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<s>foo[bar]baz</s>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["inserthorizontalrule",""]] "<s>foo[bar]baz</s>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<s>foo[bar]baz</s>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<s>foo[bar]baz</s>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<s>foo[bar]baz</s>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["inserthorizontalrule",""]] "<s>foo[bar]baz</s>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<s>foo[bar]baz</s>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<s>foo[bar]baz</s>" queryCommandIndeterm("inserthorizontalrule") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<s>foo[bar]baz</s>" queryCommandState("inserthorizontalrule") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<s>foo[bar]baz</s>" queryCommandValue("inserthorizontalrule") before 
@@ -1032,10 +1032,10 @@ PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<sub>foo[bar]baz</su
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<sub>foo[bar]baz</sub>" compare innerHTML 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<sub>foo[bar]baz</sub>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<sub>foo[bar]baz</sub>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["inserthorizontalrule",""]] "<sub>foo[bar]baz</sub>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<sub>foo[bar]baz</sub>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<sub>foo[bar]baz</sub>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<sub>foo[bar]baz</sub>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["inserthorizontalrule",""]] "<sub>foo[bar]baz</sub>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<sub>foo[bar]baz</sub>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<sub>foo[bar]baz</sub>" queryCommandIndeterm("inserthorizontalrule") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<sub>foo[bar]baz</sub>" queryCommandState("inserthorizontalrule") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<sub>foo[bar]baz</sub>" queryCommandValue("inserthorizontalrule") before 
@@ -1048,10 +1048,10 @@ PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<sub>foo[bar]baz</s
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<sub>foo[bar]baz</sub>" compare innerHTML 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<sub>foo[bar]baz</sub>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<sub>foo[bar]baz</sub>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["inserthorizontalrule",""]] "<sub>foo[bar]baz</sub>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<sub>foo[bar]baz</sub>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<sub>foo[bar]baz</sub>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<sub>foo[bar]baz</sub>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["inserthorizontalrule",""]] "<sub>foo[bar]baz</sub>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<sub>foo[bar]baz</sub>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<sub>foo[bar]baz</sub>" queryCommandIndeterm("inserthorizontalrule") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<sub>foo[bar]baz</sub>" queryCommandState("inserthorizontalrule") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<sub>foo[bar]baz</sub>" queryCommandValue("inserthorizontalrule") before 
@@ -1064,10 +1064,10 @@ PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<sup>foo[bar]baz</su
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<sup>foo[bar]baz</sup>" compare innerHTML 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<sup>foo[bar]baz</sup>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<sup>foo[bar]baz</sup>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["inserthorizontalrule",""]] "<sup>foo[bar]baz</sup>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<sup>foo[bar]baz</sup>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<sup>foo[bar]baz</sup>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<sup>foo[bar]baz</sup>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["inserthorizontalrule",""]] "<sup>foo[bar]baz</sup>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<sup>foo[bar]baz</sup>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<sup>foo[bar]baz</sup>" queryCommandIndeterm("inserthorizontalrule") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<sup>foo[bar]baz</sup>" queryCommandState("inserthorizontalrule") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<sup>foo[bar]baz</sup>" queryCommandValue("inserthorizontalrule") before 
@@ -1080,10 +1080,10 @@ PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<sup>foo[bar]baz</s
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<sup>foo[bar]baz</sup>" compare innerHTML 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<sup>foo[bar]baz</sup>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<sup>foo[bar]baz</sup>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["inserthorizontalrule",""]] "<sup>foo[bar]baz</sup>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<sup>foo[bar]baz</sup>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<sup>foo[bar]baz</sup>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<sup>foo[bar]baz</sup>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["inserthorizontalrule",""]] "<sup>foo[bar]baz</sup>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<sup>foo[bar]baz</sup>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<sup>foo[bar]baz</sup>" queryCommandIndeterm("inserthorizontalrule") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<sup>foo[bar]baz</sup>" queryCommandState("inserthorizontalrule") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<sup>foo[bar]baz</sup>" queryCommandValue("inserthorizontalrule") before 
@@ -1114,10 +1114,10 @@ PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<u>foo[bar]baz</u>" 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<u>foo[bar]baz</u>" compare innerHTML 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<u>foo[bar]baz</u>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<u>foo[bar]baz</u>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["inserthorizontalrule",""]] "<u>foo[bar]baz</u>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<u>foo[bar]baz</u>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<u>foo[bar]baz</u>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<u>foo[bar]baz</u>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["inserthorizontalrule",""]] "<u>foo[bar]baz</u>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<u>foo[bar]baz</u>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<u>foo[bar]baz</u>" queryCommandIndeterm("inserthorizontalrule") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<u>foo[bar]baz</u>" queryCommandState("inserthorizontalrule") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<u>foo[bar]baz</u>" queryCommandValue("inserthorizontalrule") before 
@@ -1130,10 +1130,10 @@ PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<u>foo[bar]baz</u>"
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<u>foo[bar]baz</u>" compare innerHTML 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<u>foo[bar]baz</u>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<u>foo[bar]baz</u>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["inserthorizontalrule",""]] "<u>foo[bar]baz</u>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<u>foo[bar]baz</u>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<u>foo[bar]baz</u>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<u>foo[bar]baz</u>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["inserthorizontalrule",""]] "<u>foo[bar]baz</u>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<u>foo[bar]baz</u>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<u>foo[bar]baz</u>" queryCommandIndeterm("inserthorizontalrule") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<u>foo[bar]baz</u>" queryCommandState("inserthorizontalrule") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<u>foo[bar]baz</u>" queryCommandValue("inserthorizontalrule") before 
@@ -1218,10 +1218,10 @@ PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<font>foo[bar]baz</f
 FAIL [["stylewithcss","true"],["inserthorizontalrule",""]] "<font>foo[bar]baz</font>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font>foo</font><hr><font>baz</font>" but got "<font>foo<hr>baz</font>"
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<font>foo[bar]baz</font>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<font>foo[bar]baz</font>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["inserthorizontalrule",""]] "<font>foo[bar]baz</font>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<font>foo[bar]baz</font>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<font>foo[bar]baz</font>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<font>foo[bar]baz</font>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["inserthorizontalrule",""]] "<font>foo[bar]baz</font>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<font>foo[bar]baz</font>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<font>foo[bar]baz</font>" queryCommandIndeterm("inserthorizontalrule") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<font>foo[bar]baz</font>" queryCommandState("inserthorizontalrule") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<font>foo[bar]baz</font>" queryCommandValue("inserthorizontalrule") before 
@@ -1234,10 +1234,10 @@ PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<font>foo[bar]baz</
 FAIL [["stylewithcss","false"],["inserthorizontalrule",""]] "<font>foo[bar]baz</font>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font>foo</font><hr><font>baz</font>" but got "<font>foo<hr>baz</font>"
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<font>foo[bar]baz</font>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<font>foo[bar]baz</font>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["inserthorizontalrule",""]] "<font>foo[bar]baz</font>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<font>foo[bar]baz</font>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<font>foo[bar]baz</font>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<font>foo[bar]baz</font>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["inserthorizontalrule",""]] "<font>foo[bar]baz</font>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<font>foo[bar]baz</font>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<font>foo[bar]baz</font>" queryCommandIndeterm("inserthorizontalrule") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<font>foo[bar]baz</font>" queryCommandState("inserthorizontalrule") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<font>foo[bar]baz</font>" queryCommandValue("inserthorizontalrule") before 
@@ -1277,10 +1277,10 @@ PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<strike>foo[bar]baz<
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<strike>foo[bar]baz</strike>" compare innerHTML 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<strike>foo[bar]baz</strike>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<strike>foo[bar]baz</strike>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["inserthorizontalrule",""]] "<strike>foo[bar]baz</strike>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<strike>foo[bar]baz</strike>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<strike>foo[bar]baz</strike>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<strike>foo[bar]baz</strike>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["inserthorizontalrule",""]] "<strike>foo[bar]baz</strike>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<strike>foo[bar]baz</strike>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<strike>foo[bar]baz</strike>" queryCommandIndeterm("inserthorizontalrule") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<strike>foo[bar]baz</strike>" queryCommandState("inserthorizontalrule") before 
 PASS [["stylewithcss","true"],["inserthorizontalrule",""]] "<strike>foo[bar]baz</strike>" queryCommandValue("inserthorizontalrule") before 
@@ -1293,10 +1293,10 @@ PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<strike>foo[bar]baz
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<strike>foo[bar]baz</strike>" compare innerHTML 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<strike>foo[bar]baz</strike>" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<strike>foo[bar]baz</strike>" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["inserthorizontalrule",""]] "<strike>foo[bar]baz</strike>" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<strike>foo[bar]baz</strike>" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<strike>foo[bar]baz</strike>" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<strike>foo[bar]baz</strike>" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["inserthorizontalrule",""]] "<strike>foo[bar]baz</strike>" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<strike>foo[bar]baz</strike>" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<strike>foo[bar]baz</strike>" queryCommandIndeterm("inserthorizontalrule") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<strike>foo[bar]baz</strike>" queryCommandState("inserthorizontalrule") before 
 PASS [["stylewithcss","false"],["inserthorizontalrule",""]] "<strike>foo[bar]baz</strike>" queryCommandValue("inserthorizontalrule") before 

@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 938 tests; 886 PASS, 52 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 938 tests; 906 PASS, 32 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS [["insertimage","/img/lion.svg"]] "foo[]bar": execCommand("insertimage", false, "/img/lion.svg") return value 
 PASS [["insertimage","/img/lion.svg"]] "foo[]bar" checks for modifications to non-editable content 
 PASS [["insertimage","/img/lion.svg"]] "foo[]bar" compare innerHTML 
@@ -78,10 +78,10 @@ PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "[foo<span style=
 PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandIndeterm("stylewithcss") before 
 FAIL [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandState("stylewithcss") before assert_equals: Wrong result returned expected false but got true
-FAIL [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandIndeterm("insertimage") before 
 PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandState("insertimage") before 
 PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("insertimage") before 
@@ -94,10 +94,10 @@ PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "[foo<span style
 PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandIndeterm("insertimage") before 
 PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandState("insertimage") before 
 PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("insertimage") before 
@@ -110,10 +110,10 @@ PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "{foo<span style=
 PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" compare innerHTML 
 PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandIndeterm("insertimage") before 
 PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandState("insertimage") before 
 PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("insertimage") before 
@@ -126,10 +126,10 @@ PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "{foo<span style
 PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" compare innerHTML 
 PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandIndeterm("insertimage") before 
 PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandState("insertimage") before 
 PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("insertimage") before 
@@ -160,10 +160,10 @@ PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "foo<span style=c
 FAIL [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span style=\"color:rgb(171, 205, 239)\"><img src=\"/img/lion.svg\"></span>quz" but got "foo<img src=\"/img/lion.svg\">quz"
 PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandIndeterm("insertimage") before 
 PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandState("insertimage") before 
 PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("insertimage") before 
@@ -176,10 +176,10 @@ PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "foo<span style=
 FAIL [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span style=\"color:rgb(171, 205, 239)\"><img src=\"/img/lion.svg\"></span>quz" but got "foo<img src=\"/img/lion.svg\">quz"
 PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandIndeterm("insertimage") before 
 PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandState("insertimage") before 
 PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("insertimage") before 
@@ -516,10 +516,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertimage"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("defaultparagraphseparator") before 
@@ -539,10 +539,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertimage
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo<img src=\"/img/lion.svg\"><font color=\"#0000ff\">quz</font></p>" but got "<p>foo<img src=\"/img/lion.svg\"><span style=\"color:rgb(0, 0, 255)\">quz</span></p>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("defaultparagraphseparator") before 
@@ -562,10 +562,10 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertimage","
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" compare innerHTML 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("defaultparagraphseparator") before 
@@ -585,10 +585,10 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertimage",
 FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo<img src=\"/img/lion.svg\"><font color=\"#0000ff\">quz</font></p>" but got "<p>foo<img src=\"/img/lion.svg\"><span style=\"color:rgb(0, 0, 255)\">quz</span></p>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandIndeterm("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandState("stylewithcss") before 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("stylewithcss") before assert_equals: Wrong result returned expected "" but got "true"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("stylewithcss") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandIndeterm("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandState("stylewithcss") after 
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("stylewithcss") after assert_equals: Wrong result returned expected "" but got "false"
+PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("stylewithcss") after 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandState("defaultparagraphseparator") before 
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("defaultparagraphseparator") before 

@@ -2203,6 +2203,13 @@ static String valueNull(LocalFrame&, Event*) {
   return String();
 }
 
+// The command has no value.
+// https://w3c.github.io/editing/execCommand.html#querycommandvalue()
+// > ... or has no value, return the empty string.
+static String valueNo(LocalFrame&, Event*) {
+  return emptyString;
+}
+
 static String valueBackColor(LocalFrame& frame, Event*) {
   return valueStyle(frame, CSSPropertyBackgroundColor);
 }
@@ -2657,7 +2664,7 @@ static const EditorInternalCommand* internalCommand(const String& commandName) {
        enabledInRichlyEditableText, stateStrikethrough, valueNull,
        notTextInsertion, doNotAllowExecutionWhenDisabled},
       {WebEditingCommandType::StyleWithCSS, executeStyleWithCSS, supported,
-       enabled, stateStyleWithCSS, valueNull, notTextInsertion,
+       enabled, stateStyleWithCSS, valueNo, notTextInsertion,
        doNotAllowExecutionWhenDisabled},
       {WebEditingCommandType::Subscript, executeSubscript, supported,
        enabledInRichlyEditableText, stateSubscript, valueNull, notTextInsertion,
