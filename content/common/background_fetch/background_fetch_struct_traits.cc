@@ -4,6 +4,8 @@
 
 #include "content/common/background_fetch/background_fetch_struct_traits.h"
 
+#include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
+#include "content/common/service_worker/service_worker_messages.h"
 #include "mojo/public/cpp/bindings/array_data_view.h"
 
 namespace mojo {
@@ -33,6 +35,15 @@ bool StructTraits<blink::mojom::BackgroundFetchRegistrationDataView,
 
   registration->total_download_size = data.total_download_size();
   return true;
+}
+
+// static
+bool StructTraits<content::mojom::BackgroundFetchSettledFetchDataView,
+                  content::BackgroundFetchSettledFetch>::
+    Read(content::mojom::BackgroundFetchSettledFetchDataView data,
+         content::BackgroundFetchSettledFetch* fetch) {
+  return data.ReadRequest(&fetch->request) &&
+         data.ReadResponse(&fetch->response);
 }
 
 // static

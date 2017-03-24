@@ -57,6 +57,7 @@
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
+#include "third_party/WebKit/public/platform/modules/background_fetch/WebBackgroundFetchSettledFetch.h"
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationData.h"
 #include "third_party/WebKit/public/platform/modules/payments/WebPaymentAppRequest.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerClientQueryOptions.h"
@@ -162,6 +163,76 @@ ToWebServiceWorkerClientInfo(const ServiceWorkerClientInfo& client_info) {
   return web_client_info;
 }
 
+// Converts the |request| to its equivalent type in the Blink API.
+// TODO(peter): Remove this when the Mojo FetchAPIRequest type exists.
+void ToWebServiceWorkerRequest(const ServiceWorkerFetchRequest& request,
+                               blink::WebServiceWorkerRequest* web_request) {
+  DCHECK(web_request);
+
+  web_request->setURL(blink::WebURL(request.url));
+  web_request->setMethod(blink::WebString::fromUTF8(request.method));
+  for (const auto& pair : request.headers) {
+    web_request->setHeader(blink::WebString::fromUTF8(pair.first),
+                           blink::WebString::fromUTF8(pair.second));
+  }
+  if (!request.blob_uuid.empty()) {
+    web_request->setBlob(blink::WebString::fromASCII(request.blob_uuid),
+                         request.blob_size);
+  }
+  web_request->setReferrer(
+      blink::WebString::fromUTF8(request.referrer.url.spec()),
+      request.referrer.policy);
+  web_request->setMode(GetBlinkFetchRequestMode(request.mode));
+  web_request->setIsMainResourceLoad(request.is_main_resource_load);
+  web_request->setCredentialsMode(
+      GetBlinkFetchCredentialsMode(request.credentials_mode));
+  web_request->setRedirectMode(
+      GetBlinkFetchRedirectMode(request.redirect_mode));
+  web_request->setRequestContext(
+      GetBlinkRequestContext(request.request_context_type));
+  web_request->setFrameType(GetBlinkFrameType(request.frame_type));
+  web_request->setClientId(blink::WebString::fromUTF8(request.client_id));
+  web_request->setIsReload(request.is_reload);
+}
+
+// Converts |response| to its equivalent type in the Blink API.
+// TODO(peter): Remove this when the Mojo FetchAPIResponse type exists.
+void ToWebServiceWorkerResponse(const ServiceWorkerResponse& response,
+                                blink::WebServiceWorkerResponse* web_response) {
+  DCHECK(web_response);
+
+  std::vector<blink::WebURL> url_list;
+  for (const GURL& url : response.url_list)
+    url_list.push_back(blink::WebURL(url));
+
+  web_response->setURLList(blink::WebVector<blink::WebURL>(url_list));
+  web_response->setStatus(static_cast<unsigned short>(response.status_code));
+  web_response->setStatusText(blink::WebString::fromUTF8(response.status_text));
+  web_response->setResponseType(response.response_type);
+  for (const auto& pair : response.headers) {
+    web_response->setHeader(blink::WebString::fromUTF8(pair.first),
+                            blink::WebString::fromUTF8(pair.second));
+  }
+  if (!response.blob_uuid.empty()) {
+    web_response->setBlob(blink::WebString::fromASCII(response.blob_uuid),
+                          response.blob_size);
+  }
+  web_response->setStreamURL(blink::WebURL(response.stream_url));
+  web_response->setError(response.error);
+  web_response->setResponseTime(response.response_time.ToInternalValue());
+  if (response.is_in_cache_storage) {
+    web_response->setCacheStorageCacheName(
+        blink::WebString::fromUTF8(response.cache_storage_cache_name));
+  }
+
+  std::vector<blink::WebString> cors_exposed_header_names;
+  for (const auto& name : response.cors_exposed_header_names)
+    cors_exposed_header_names.push_back(blink::WebString::fromUTF8(name));
+
+  web_response->setCorsExposedHeaderNames(
+      blink::WebVector<blink::WebString>(cors_exposed_header_names));
+}
+
 // Use this template in willDestroyWorkerContext to abort all the pending
 // events callbacks.
 template <typename T>
@@ -190,6 +261,10 @@ struct ServiceWorkerContextClient::WorkerContextData {
       IDMap<std::unique_ptr<const DispatchBackgroundFetchAbortEventCallback>>;
   using BackgroundFetchClickEventCallbacksMap =
       IDMap<std::unique_ptr<const DispatchBackgroundFetchClickEventCallback>>;
+  using BackgroundFetchFailEventCallbacksMap =
+      IDMap<std::unique_ptr<const DispatchBackgroundFetchFailEventCallback>>;
+  using BackgroundFetchedEventCallbacksMap =
+      IDMap<std::unique_ptr<const DispatchBackgroundFetchedEventCallback>>;
   using SyncEventCallbacksMap = IDMap<std::unique_ptr<const SyncCallback>>;
   using PaymentRequestEventCallbacksMap =
       IDMap<std::unique_ptr<const PaymentRequestEventCallback>>;
@@ -236,6 +311,12 @@ struct ServiceWorkerContextClient::WorkerContextData {
 
   // Pending callbacks for Background Fetch Click Events.
   BackgroundFetchClickEventCallbacksMap background_fetch_click_event_callbacks;
+
+  // Pending callbacks for Background Fetch Fail Events.
+  BackgroundFetchFailEventCallbacksMap background_fetch_fail_event_callbacks;
+
+  // Pending callbacks for Background Fetched Events.
+  BackgroundFetchedEventCallbacksMap background_fetched_event_callbacks;
 
   // Pending callbacks for Background Sync Events.
   SyncEventCallbacksMap sync_event_callbacks;
@@ -578,6 +659,8 @@ void ServiceWorkerContextClient::willDestroyWorkerContext(
   AbortPendingEventCallbacks(context_->activate_event_callbacks);
   AbortPendingEventCallbacks(context_->background_fetch_abort_event_callbacks);
   AbortPendingEventCallbacks(context_->background_fetch_click_event_callbacks);
+  AbortPendingEventCallbacks(context_->background_fetch_fail_event_callbacks);
+  AbortPendingEventCallbacks(context_->background_fetched_event_callbacks);
   AbortPendingEventCallbacks(context_->sync_event_callbacks);
   AbortPendingEventCallbacks(context_->notification_click_event_callbacks);
   AbortPendingEventCallbacks(context_->notification_close_event_callbacks);
@@ -701,6 +784,30 @@ void ServiceWorkerContextClient::didHandleBackgroundFetchClickEvent(
   callback->Run(EventResultToStatus(result),
                 base::Time::FromDoubleT(event_dispatch_time));
   context_->background_fetch_click_event_callbacks.Remove(request_id);
+}
+
+void ServiceWorkerContextClient::didHandleBackgroundFetchFailEvent(
+    int request_id,
+    blink::WebServiceWorkerEventResult result,
+    double event_dispatch_time) {
+  const DispatchBackgroundFetchFailEventCallback* callback =
+      context_->background_fetch_fail_event_callbacks.Lookup(request_id);
+  DCHECK(callback);
+  callback->Run(EventResultToStatus(result),
+                base::Time::FromDoubleT(event_dispatch_time));
+  context_->background_fetch_fail_event_callbacks.Remove(request_id);
+}
+
+void ServiceWorkerContextClient::didHandleBackgroundFetchedEvent(
+    int request_id,
+    blink::WebServiceWorkerEventResult result,
+    double event_dispatch_time) {
+  const DispatchBackgroundFetchedEventCallback* callback =
+      context_->background_fetched_event_callbacks.Lookup(request_id);
+  DCHECK(callback);
+  callback->Run(EventResultToStatus(result),
+                base::Time::FromDoubleT(event_dispatch_time));
+  context_->background_fetched_event_callbacks.Remove(request_id);
 }
 
 void ServiceWorkerContextClient::didHandleExtendableMessageEvent(
@@ -998,6 +1105,46 @@ void ServiceWorkerContextClient::DispatchBackgroundFetchClickEvent(
       request_id, blink::WebString::fromUTF8(tag), web_state);
 }
 
+void ServiceWorkerContextClient::DispatchBackgroundFetchFailEvent(
+    const std::string& tag,
+    const std::vector<BackgroundFetchSettledFetch>& fetches,
+    const DispatchBackgroundFetchFailEventCallback& callback) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerContextClient::DispatchBackgroundFetchFailEvent");
+  int request_id = context_->background_fetch_fail_event_callbacks.Add(
+      base::MakeUnique<DispatchBackgroundFetchFailEventCallback>(callback));
+
+  blink::WebVector<blink::WebBackgroundFetchSettledFetch> web_fetches(
+      fetches.size());
+  for (size_t i = 0; i < fetches.size(); ++i) {
+    ToWebServiceWorkerRequest(fetches[i].request, &web_fetches[i].request);
+    ToWebServiceWorkerResponse(fetches[i].response, &web_fetches[i].response);
+  }
+
+  proxy_->dispatchBackgroundFetchFailEvent(
+      request_id, blink::WebString::fromUTF8(tag), web_fetches);
+}
+
+void ServiceWorkerContextClient::DispatchBackgroundFetchedEvent(
+    const std::string& tag,
+    const std::vector<BackgroundFetchSettledFetch>& fetches,
+    const DispatchBackgroundFetchedEventCallback& callback) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerContextClient::DispatchBackgroundFetchedEvent");
+  int request_id = context_->background_fetched_event_callbacks.Add(
+      base::MakeUnique<DispatchBackgroundFetchedEventCallback>(callback));
+
+  blink::WebVector<blink::WebBackgroundFetchSettledFetch> web_fetches(
+      fetches.size());
+  for (size_t i = 0; i < fetches.size(); ++i) {
+    ToWebServiceWorkerRequest(fetches[i].request, &web_fetches[i].request);
+    ToWebServiceWorkerResponse(fetches[i].response, &web_fetches[i].response);
+  }
+
+  proxy_->dispatchBackgroundFetchedEvent(
+      request_id, blink::WebString::fromUTF8(tag), web_fetches);
+}
+
 void ServiceWorkerContextClient::DispatchExtendableMessageEvent(
     mojom::ExtendableMessageEventPtr event,
     const DispatchExtendableMessageEventCallback& callback) {
@@ -1050,7 +1197,6 @@ void ServiceWorkerContextClient::DispatchFetchEvent(
                 fetch_event_id, request.url, std::move(preload_handle))
           : nullptr;
   const bool navigation_preload_sent = !!preload_request;
-  blink::WebServiceWorkerRequest webRequest;
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::DispatchFetchEvent");
   context_->fetch_event_callbacks.AddWithID(
@@ -1060,35 +1206,13 @@ void ServiceWorkerContextClient::DispatchFetchEvent(
                                          fetch_event_id);
   }
 
-  webRequest.setURL(blink::WebURL(request.url));
-  webRequest.setMethod(blink::WebString::fromUTF8(request.method));
-  for (ServiceWorkerHeaderMap::const_iterator it = request.headers.begin();
-       it != request.headers.end();
-       ++it) {
-    webRequest.setHeader(blink::WebString::fromUTF8(it->first),
-                         blink::WebString::fromUTF8(it->second));
-  }
-  if (!request.blob_uuid.empty()) {
-    webRequest.setBlob(blink::WebString::fromASCII(request.blob_uuid),
-                       request.blob_size);
-  }
-  webRequest.setReferrer(
-      blink::WebString::fromUTF8(request.referrer.url.spec()),
-      request.referrer.policy);
-  webRequest.setMode(GetBlinkFetchRequestMode(request.mode));
-  webRequest.setIsMainResourceLoad(request.is_main_resource_load);
-  webRequest.setCredentialsMode(
-      GetBlinkFetchCredentialsMode(request.credentials_mode));
-  webRequest.setRedirectMode(GetBlinkFetchRedirectMode(request.redirect_mode));
-  webRequest.setRequestContext(
-      GetBlinkRequestContext(request.request_context_type));
-  webRequest.setFrameType(GetBlinkFrameType(request.frame_type));
-  webRequest.setClientId(blink::WebString::fromUTF8(request.client_id));
-  webRequest.setIsReload(request.is_reload);
+  blink::WebServiceWorkerRequest web_request;
+  ToWebServiceWorkerRequest(request, &web_request);
+
   if (request.fetch_type == ServiceWorkerFetchType::FOREIGN_FETCH) {
-    proxy_->dispatchForeignFetchEvent(fetch_event_id, webRequest);
+    proxy_->dispatchForeignFetchEvent(fetch_event_id, web_request);
   } else {
-    proxy_->dispatchFetchEvent(fetch_event_id, webRequest,
+    proxy_->dispatchFetchEvent(fetch_event_id, web_request,
                                navigation_preload_sent);
   }
 }

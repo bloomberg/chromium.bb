@@ -72,6 +72,12 @@ class ServiceWorkerGlobalScopeClientImpl final
   void didHandleBackgroundFetchClickEvent(int eventID,
                                           WebServiceWorkerEventResult,
                                           double eventDispatchTime) override;
+  void didHandleBackgroundFetchFailEvent(int eventID,
+                                         WebServiceWorkerEventResult,
+                                         double eventDispatchTime) override;
+  void didHandleBackgroundFetchedEvent(int eventID,
+                                       WebServiceWorkerEventResult,
+                                       double eventDispatchTime) override;
   void didHandleExtendableMessageEvent(int eventID,
                                        WebServiceWorkerEventResult,
                                        double eventDispatchTime) override;

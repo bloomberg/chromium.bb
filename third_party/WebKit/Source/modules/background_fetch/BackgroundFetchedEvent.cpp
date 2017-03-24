@@ -11,16 +11,37 @@
 #include "modules/background_fetch/BackgroundFetchBridge.h"
 #include "modules/background_fetch/BackgroundFetchSettledFetch.h"
 #include "modules/background_fetch/BackgroundFetchedEventInit.h"
+#include "modules/fetch/Request.h"
+#include "modules/fetch/Response.h"
+#include "public/platform/modules/background_fetch/WebBackgroundFetchSettledFetch.h"
 
 namespace blink {
 
 BackgroundFetchedEvent::BackgroundFetchedEvent(
     const AtomicString& type,
-    const BackgroundFetchedEventInit& init,
+    const BackgroundFetchedEventInit& initializer)
+    : BackgroundFetchEvent(type, initializer, nullptr /* observer */),
+      m_fetches(initializer.fetches()) {}
+
+BackgroundFetchedEvent::BackgroundFetchedEvent(
+    const AtomicString& type,
+    const BackgroundFetchedEventInit& initializer,
+    const WebVector<WebBackgroundFetchSettledFetch>& fetches,
+    ScriptState* scriptState,
+    WaitUntilObserver* observer,
     ServiceWorkerRegistration* registration)
-    : BackgroundFetchEvent(type, init, nullptr /* observer */),
-      m_fetches(init.fetches()),
-      m_registration(registration) {}
+    : BackgroundFetchEvent(type, initializer, observer),
+      m_fetches(initializer.fetches()),
+      m_registration(registration) {
+  m_fetches.reserveInitialCapacity(fetches.size());
+  for (const WebBackgroundFetchSettledFetch& fetch : fetches) {
+    auto* settledFetch = BackgroundFetchSettledFetch::create(
+        Request::create(scriptState, fetch.request),
+        Response::create(scriptState, fetch.response));
+
+    m_fetches.push_back(settledFetch);
+  }
+}
 
 BackgroundFetchedEvent::~BackgroundFetchedEvent() = default;
 

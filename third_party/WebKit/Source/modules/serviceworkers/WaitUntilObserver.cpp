@@ -205,6 +205,14 @@ void WaitUntilObserver::decrementPendingActivity() {
       client->didHandleBackgroundFetchClickEvent(m_eventID, result,
                                                  m_eventDispatchTime);
       break;
+    case BackgroundFetchFail:
+      client->didHandleBackgroundFetchFailEvent(m_eventID, result,
+                                                m_eventDispatchTime);
+      break;
+    case BackgroundFetched:
+      client->didHandleBackgroundFetchedEvent(m_eventID, result,
+                                              m_eventDispatchTime);
+      break;
   }
   m_executionContext = nullptr;
 }

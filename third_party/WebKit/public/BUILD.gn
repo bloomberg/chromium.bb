@@ -347,6 +347,7 @@ source_set("blink_headers") {
     "platform/linux/WebFontRenderStyle.h",
     "platform/linux/WebSandboxSupport.h",
     "platform/mac/WebSandboxSupport.h",
+    "platform/modules/background_fetch/WebBackgroundFetchSettledFetch.h",
     "platform/modules/device_orientation/WebDeviceMotionListener.h",
     "platform/modules/device_orientation/WebDeviceOrientationListener.h",
     "platform/modules/indexeddb/WebIDBCallbacks.h",

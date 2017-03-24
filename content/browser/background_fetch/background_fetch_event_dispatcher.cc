@@ -24,6 +24,10 @@ std::string HistogramSuffixForEventType(ServiceWorkerMetrics::EventType event) {
       return "AbortEvent";
     case ServiceWorkerMetrics::EventType::BACKGROUND_FETCH_CLICK:
       return "ClickEvent";
+    case ServiceWorkerMetrics::EventType::BACKGROUND_FETCH_FAIL:
+      return "FailEvent";
+    case ServiceWorkerMetrics::EventType::BACKGROUND_FETCHED:
+      return "FetchedEvent";
     default:
       NOTREACHED();
       return std::string();
@@ -110,6 +114,58 @@ void BackgroundFetchEventDispatcher::DoDispatchBackgroundFetchClickEvent(
   DCHECK(service_worker_version);
   service_worker_version->event_dispatcher()->DispatchBackgroundFetchClickEvent(
       tag, state,
+      service_worker_version->CreateSimpleEventCallback(request_id));
+}
+
+void BackgroundFetchEventDispatcher::DispatchBackgroundFetchFailEvent(
+    int64_t service_worker_registration_id,
+    const GURL& origin,
+    const std::string& tag,
+    const std::vector<BackgroundFetchSettledFetch>& fetches,
+    base::Closure finished_closure) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  LoadServiceWorkerRegistrationForDispatch(
+      ServiceWorkerMetrics::EventType::BACKGROUND_FETCH_FAIL,
+      service_worker_registration_id, origin, std::move(finished_closure),
+      base::Bind(
+          &BackgroundFetchEventDispatcher::DoDispatchBackgroundFetchFailEvent,
+          tag, fetches));
+}
+
+void BackgroundFetchEventDispatcher::DoDispatchBackgroundFetchFailEvent(
+    const std::string& tag,
+    const std::vector<BackgroundFetchSettledFetch>& fetches,
+    scoped_refptr<ServiceWorkerVersion> service_worker_version,
+    int request_id) {
+  DCHECK(service_worker_version);
+  service_worker_version->event_dispatcher()->DispatchBackgroundFetchFailEvent(
+      tag, fetches,
+      service_worker_version->CreateSimpleEventCallback(request_id));
+}
+
+void BackgroundFetchEventDispatcher::DispatchBackgroundFetchedEvent(
+    int64_t service_worker_registration_id,
+    const GURL& origin,
+    const std::string& tag,
+    const std::vector<BackgroundFetchSettledFetch>& fetches,
+    base::Closure finished_closure) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  LoadServiceWorkerRegistrationForDispatch(
+      ServiceWorkerMetrics::EventType::BACKGROUND_FETCHED,
+      service_worker_registration_id, origin, std::move(finished_closure),
+      base::Bind(
+          &BackgroundFetchEventDispatcher::DoDispatchBackgroundFetchedEvent,
+          tag, fetches));
+}
+
+void BackgroundFetchEventDispatcher::DoDispatchBackgroundFetchedEvent(
+    const std::string& tag,
+    const std::vector<BackgroundFetchSettledFetch>& fetches,
+    scoped_refptr<ServiceWorkerVersion> service_worker_version,
+    int request_id) {
+  DCHECK(service_worker_version);
+  service_worker_version->event_dispatcher()->DispatchBackgroundFetchedEvent(
+      tag, fetches,
       service_worker_version->CreateSimpleEventCallback(request_id));
 }
 

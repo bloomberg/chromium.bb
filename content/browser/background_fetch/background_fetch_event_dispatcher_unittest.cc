@@ -16,6 +16,7 @@
 #include "base/test/histogram_tester.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/common/background_fetch/background_fetch_types.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -43,9 +44,17 @@ class BackgroundFetchEmbeddedWorkerTestHelper
 
   void set_fail_click_event(bool fail) { fail_click_event_ = fail; }
 
+  void set_fail_fail_event(bool fail) { fail_fail_event_ = fail; }
+
+  void set_fail_fetched_event(bool fail) { fail_fetched_event_ = fail; }
+
   const base::Optional<std::string>& last_tag() const { return last_tag_; }
   const base::Optional<mojom::BackgroundFetchState>& last_state() const {
     return last_state_;
+  }
+  const base::Optional<std::vector<BackgroundFetchSettledFetch>> last_fetches()
+      const {
+    return last_fetches_;
   }
 
  protected:
@@ -79,12 +88,47 @@ class BackgroundFetchEmbeddedWorkerTestHelper
     }
   }
 
+  void OnBackgroundFetchFailEvent(
+      const std::string& tag,
+      const std::vector<BackgroundFetchSettledFetch>& fetches,
+      const mojom::ServiceWorkerEventDispatcher::
+          DispatchBackgroundFetchFailEventCallback& callback) override {
+    last_tag_ = tag;
+    last_fetches_ = fetches;
+
+    if (fail_fail_event_) {
+      callback.Run(SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED,
+                   base::Time::Now());
+    } else {
+      callback.Run(SERVICE_WORKER_OK, base::Time::Now());
+    }
+  }
+
+  void OnBackgroundFetchedEvent(
+      const std::string& tag,
+      const std::vector<BackgroundFetchSettledFetch>& fetches,
+      const mojom::ServiceWorkerEventDispatcher::
+          DispatchBackgroundFetchedEventCallback& callback) override {
+    last_tag_ = tag;
+    last_fetches_ = fetches;
+
+    if (fail_fetched_event_) {
+      callback.Run(SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED,
+                   base::Time::Now());
+    } else {
+      callback.Run(SERVICE_WORKER_OK, base::Time::Now());
+    }
+  }
+
  private:
   bool fail_abort_event_ = false;
   bool fail_click_event_ = false;
+  bool fail_fail_event_ = false;
+  bool fail_fetched_event_ = false;
 
   base::Optional<std::string> last_tag_;
   base::Optional<mojom::BackgroundFetchState> last_state_;
+  base::Optional<std::vector<BackgroundFetchSettledFetch>> last_fetches_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchEmbeddedWorkerTestHelper);
 };
@@ -309,6 +353,124 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchClickEvent) {
       BackgroundFetchEventDispatcher::DISPATCH_RESULT_CANNOT_DISPATCH_EVENT, 1);
   histogram_tester()->ExpectUniqueSample(
       "BackgroundFetch.EventDispatchFailure.Dispatch.ClickEvent",
+      SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED, 1);
+}
+
+TEST_F(BackgroundFetchEventDispatcherTest, DispatchFailEvent) {
+  auto service_worker_registration = RegisterServiceWorker();
+  ASSERT_TRUE(service_worker_registration);
+  ASSERT_TRUE(service_worker_registration->active_version());
+
+  GURL origin(kExampleOrigin);
+
+  std::vector<BackgroundFetchSettledFetch> fetches;
+  fetches.push_back(BackgroundFetchSettledFetch());
+
+  {
+    base::RunLoop run_loop;
+    dispatcher()->DispatchBackgroundFetchFailEvent(
+        service_worker_registration->id(), origin, kExampleTag, fetches,
+        run_loop.QuitClosure());
+
+    run_loop.Run();
+  }
+
+  ASSERT_TRUE(test_helpers()->last_tag().has_value());
+  EXPECT_EQ(kExampleTag, test_helpers()->last_tag().value());
+
+  ASSERT_TRUE(test_helpers()->last_fetches().has_value());
+  EXPECT_EQ(fetches.size(), test_helpers()->last_fetches()->size());
+
+  histogram_tester()->ExpectUniqueSample(
+      "BackgroundFetch.EventDispatchResult.FailEvent",
+      BackgroundFetchEventDispatcher::DISPATCH_RESULT_SUCCESS, 1);
+
+  fetches.push_back(BackgroundFetchSettledFetch());
+
+  test_helpers()->set_fail_fail_event(true);
+
+  {
+    base::RunLoop run_loop;
+    dispatcher()->DispatchBackgroundFetchFailEvent(
+        service_worker_registration->id(), origin, kExampleTag2, fetches,
+        run_loop.QuitClosure());
+
+    run_loop.Run();
+  }
+
+  ASSERT_TRUE(test_helpers()->last_tag().has_value());
+  EXPECT_EQ(kExampleTag2, test_helpers()->last_tag().value());
+
+  ASSERT_TRUE(test_helpers()->last_fetches().has_value());
+  EXPECT_EQ(fetches.size(), test_helpers()->last_fetches()->size());
+
+  histogram_tester()->ExpectBucketCount(
+      "BackgroundFetch.EventDispatchResult.FailEvent",
+      BackgroundFetchEventDispatcher::DISPATCH_RESULT_SUCCESS, 1);
+  histogram_tester()->ExpectBucketCount(
+      "BackgroundFetch.EventDispatchResult.FailEvent",
+      BackgroundFetchEventDispatcher::DISPATCH_RESULT_CANNOT_DISPATCH_EVENT, 1);
+  histogram_tester()->ExpectUniqueSample(
+      "BackgroundFetch.EventDispatchFailure.Dispatch.FailEvent",
+      SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED, 1);
+}
+
+TEST_F(BackgroundFetchEventDispatcherTest, DispatchFetchedEvent) {
+  auto service_worker_registration = RegisterServiceWorker();
+  ASSERT_TRUE(service_worker_registration);
+  ASSERT_TRUE(service_worker_registration->active_version());
+
+  GURL origin(kExampleOrigin);
+
+  std::vector<BackgroundFetchSettledFetch> fetches;
+  fetches.push_back(BackgroundFetchSettledFetch());
+
+  {
+    base::RunLoop run_loop;
+    dispatcher()->DispatchBackgroundFetchedEvent(
+        service_worker_registration->id(), origin, kExampleTag, fetches,
+        run_loop.QuitClosure());
+
+    run_loop.Run();
+  }
+
+  ASSERT_TRUE(test_helpers()->last_tag().has_value());
+  EXPECT_EQ(kExampleTag, test_helpers()->last_tag().value());
+
+  ASSERT_TRUE(test_helpers()->last_fetches().has_value());
+  EXPECT_EQ(fetches.size(), test_helpers()->last_fetches()->size());
+
+  histogram_tester()->ExpectUniqueSample(
+      "BackgroundFetch.EventDispatchResult.FetchedEvent",
+      BackgroundFetchEventDispatcher::DISPATCH_RESULT_SUCCESS, 1);
+
+  fetches.push_back(BackgroundFetchSettledFetch());
+
+  test_helpers()->set_fail_fetched_event(true);
+
+  {
+    base::RunLoop run_loop;
+    dispatcher()->DispatchBackgroundFetchedEvent(
+        service_worker_registration->id(), origin, kExampleTag2, fetches,
+        run_loop.QuitClosure());
+
+    run_loop.Run();
+  }
+
+  ASSERT_TRUE(test_helpers()->last_tag().has_value());
+  EXPECT_EQ(kExampleTag2, test_helpers()->last_tag().value());
+
+  ASSERT_TRUE(test_helpers()->last_fetches().has_value());
+  EXPECT_EQ(fetches.size(), test_helpers()->last_fetches()->size());
+
+  histogram_tester()->ExpectBucketCount(
+      "BackgroundFetch.EventDispatchResult.FetchedEvent",
+      BackgroundFetchEventDispatcher::DISPATCH_RESULT_SUCCESS, 1);
+  histogram_tester()->ExpectBucketCount(
+      "BackgroundFetch.EventDispatchResult.FetchedEvent",
+      BackgroundFetchEventDispatcher::DISPATCH_RESULT_CANNOT_DISPATCH_EVENT, 1);
+  histogram_tester()->ExpectUniqueSample(
+      "BackgroundFetch.EventDispatchFailure.Dispatch.FetchedEvent",
       SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED, 1);
 }
 

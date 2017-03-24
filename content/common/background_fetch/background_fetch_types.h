@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "content/common/content_export.h"
+#include "content/common/service_worker/service_worker_types.h"
 
 namespace content {
 
@@ -57,6 +58,18 @@ struct CONTENT_EXPORT BackgroundFetchRegistration {
   int64_t total_download_size = 0;
 
   // TODO(peter): Support the `activeFetches` member of the specification.
+};
+
+// Represents a request/response pair for a settled Background Fetch fetch.
+// Analogous to the following structure in the spec:
+// http://wicg.github.io/background-fetch/#backgroundfetchsettledfetch
+struct CONTENT_EXPORT BackgroundFetchSettledFetch {
+  BackgroundFetchSettledFetch();
+  BackgroundFetchSettledFetch(const BackgroundFetchSettledFetch& other);
+  ~BackgroundFetchSettledFetch();
+
+  ServiceWorkerFetchRequest request;
+  ServiceWorkerResponse response;
 };
 
 }  // namespace content

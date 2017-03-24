@@ -84,6 +84,12 @@ class MODULES_EXPORT ServiceWorkerGlobalScopeClient
   virtual void didHandleBackgroundFetchClickEvent(int eventID,
                                                   WebServiceWorkerEventResult,
                                                   double eventDispatchTime) = 0;
+  virtual void didHandleBackgroundFetchFailEvent(int eventID,
+                                                 WebServiceWorkerEventResult,
+                                                 double eventDispatchTime) = 0;
+  virtual void didHandleBackgroundFetchedEvent(int eventID,
+                                               WebServiceWorkerEventResult,
+                                               double eventDispatchTime) = 0;
   virtual void didHandleExtendableMessageEvent(int eventID,
                                                WebServiceWorkerEventResult,
                                                double eventDispatchTime) = 0;

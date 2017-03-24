@@ -5,16 +5,21 @@
 #ifndef BackgroundFetchFailEvent_h
 #define BackgroundFetchFailEvent_h
 
+#include "modules/ModulesExport.h"
 #include "modules/background_fetch/BackgroundFetchEvent.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/WebVector.h"
 #include "wtf/text/AtomicString.h"
 
 namespace blink {
 
 class BackgroundFetchFailEventInit;
 class BackgroundFetchSettledFetch;
+class ScriptState;
+struct WebBackgroundFetchSettledFetch;
 
-class BackgroundFetchFailEvent final : public BackgroundFetchEvent {
+class MODULES_EXPORT BackgroundFetchFailEvent final
+    : public BackgroundFetchEvent {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -22,6 +27,16 @@ class BackgroundFetchFailEvent final : public BackgroundFetchEvent {
       const AtomicString& type,
       const BackgroundFetchFailEventInit& initializer) {
     return new BackgroundFetchFailEvent(type, initializer);
+  }
+
+  static BackgroundFetchFailEvent* create(
+      const AtomicString& type,
+      const BackgroundFetchFailEventInit& initializer,
+      const WebVector<WebBackgroundFetchSettledFetch>& fetches,
+      ScriptState* scriptState,
+      WaitUntilObserver* observer) {
+    return new BackgroundFetchFailEvent(type, initializer, fetches, scriptState,
+                                        observer);
   }
 
   ~BackgroundFetchFailEvent() override;
@@ -37,6 +52,12 @@ class BackgroundFetchFailEvent final : public BackgroundFetchEvent {
  private:
   BackgroundFetchFailEvent(const AtomicString& type,
                            const BackgroundFetchFailEventInit&);
+  BackgroundFetchFailEvent(
+      const AtomicString& type,
+      const BackgroundFetchFailEventInit&,
+      const WebVector<WebBackgroundFetchSettledFetch>& fetches,
+      ScriptState*,
+      WaitUntilObserver*);
 
   HeapVector<Member<BackgroundFetchSettledFetch>> m_fetches;
 };

@@ -35,6 +35,7 @@ class InterfaceRegistry;
 
 namespace content {
 
+struct BackgroundFetchSettledFetch;
 class EmbeddedWorkerRegistry;
 class EmbeddedWorkerTestHelper;
 class MockRenderProcessHost;
@@ -198,6 +199,16 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
       mojom::BackgroundFetchState state,
       const mojom::ServiceWorkerEventDispatcher::
           DispatchBackgroundFetchClickEventCallback& callback);
+  virtual void OnBackgroundFetchFailEvent(
+      const std::string& tag,
+      const std::vector<BackgroundFetchSettledFetch>& fetches,
+      const mojom::ServiceWorkerEventDispatcher::
+          DispatchBackgroundFetchFailEventCallback& callback);
+  virtual void OnBackgroundFetchedEvent(
+      const std::string& tag,
+      const std::vector<BackgroundFetchSettledFetch>& fetches,
+      const mojom::ServiceWorkerEventDispatcher::
+          DispatchBackgroundFetchedEventCallback& callback);
   virtual void OnExtendableMessageEvent(
       mojom::ExtendableMessageEventPtr event,
       const mojom::ServiceWorkerEventDispatcher::
@@ -265,6 +276,16 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
       mojom::BackgroundFetchState state,
       const mojom::ServiceWorkerEventDispatcher::
           DispatchBackgroundFetchClickEventCallback& callback);
+  void OnBackgroundFetchFailEventStub(
+      const std::string& tag,
+      const std::vector<BackgroundFetchSettledFetch>& fetches,
+      const mojom::ServiceWorkerEventDispatcher::
+          DispatchBackgroundFetchFailEventCallback& callback);
+  void OnBackgroundFetchedEventStub(
+      const std::string& tag,
+      const std::vector<BackgroundFetchSettledFetch>& fetches,
+      const mojom::ServiceWorkerEventDispatcher::
+          DispatchBackgroundFetchedEventCallback& callback);
   void OnExtendableMessageEventStub(
       mojom::ExtendableMessageEventPtr event,
       const mojom::ServiceWorkerEventDispatcher::

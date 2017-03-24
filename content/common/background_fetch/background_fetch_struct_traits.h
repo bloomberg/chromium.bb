@@ -13,6 +13,12 @@
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "third_party/WebKit/public/platform/modules/background_fetch/background_fetch.mojom.h"
 
+namespace content {
+namespace mojom {
+class BackgroundFetchSettledFetchDataView;
+}
+}
+
 namespace mojo {
 
 template <>
@@ -58,6 +64,23 @@ struct CONTENT_EXPORT
 
   static bool Read(blink::mojom::BackgroundFetchRegistrationDataView data,
                    content::BackgroundFetchRegistration* registration);
+};
+
+template <>
+struct CONTENT_EXPORT
+    StructTraits<content::mojom::BackgroundFetchSettledFetchDataView,
+                 content::BackgroundFetchSettledFetch> {
+  static const content::ServiceWorkerFetchRequest& request(
+      const content::BackgroundFetchSettledFetch& fetch) {
+    return fetch.request;
+  }
+  static const content::ServiceWorkerResponse& response(
+      const content::BackgroundFetchSettledFetch& fetch) {
+    return fetch.response;
+  }
+
+  static bool Read(content::mojom::BackgroundFetchSettledFetchDataView data,
+                   content::BackgroundFetchSettledFetch* definition);
 };
 
 template <>

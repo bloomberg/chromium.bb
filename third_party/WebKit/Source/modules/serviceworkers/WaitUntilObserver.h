@@ -33,7 +33,9 @@ class MODULES_EXPORT WaitUntilObserver final
     Push,
     Sync,
     BackgroundFetchAbort,
-    BackgroundFetchClick
+    BackgroundFetchClick,
+    BackgroundFetchFail,
+    BackgroundFetched
   };
 
   static WaitUntilObserver* create(ExecutionContext*, EventType, int eventID);

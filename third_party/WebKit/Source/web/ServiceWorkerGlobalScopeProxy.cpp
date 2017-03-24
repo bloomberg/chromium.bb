@@ -46,6 +46,10 @@
 #include "modules/background_fetch/BackgroundFetchClickEventInit.h"
 #include "modules/background_fetch/BackgroundFetchEvent.h"
 #include "modules/background_fetch/BackgroundFetchEventInit.h"
+#include "modules/background_fetch/BackgroundFetchFailEvent.h"
+#include "modules/background_fetch/BackgroundFetchFailEventInit.h"
+#include "modules/background_fetch/BackgroundFetchedEvent.h"
+#include "modules/background_fetch/BackgroundFetchedEventInit.h"
 #include "modules/background_sync/SyncEvent.h"
 #include "modules/fetch/Headers.h"
 #include "modules/notifications/Notification.h"
@@ -141,6 +145,48 @@ void ServiceWorkerGlobalScopeProxy::dispatchBackgroundFetchClickEvent(
 
   BackgroundFetchClickEvent* event = BackgroundFetchClickEvent::create(
       EventTypeNames::backgroundfetchclick, init, observer);
+
+  workerGlobalScope()->dispatchExtendableEvent(event, observer);
+}
+
+void ServiceWorkerGlobalScopeProxy::dispatchBackgroundFetchFailEvent(
+    int eventID,
+    const WebString& tag,
+    const WebVector<WebBackgroundFetchSettledFetch>& fetches) {
+  WaitUntilObserver* observer = WaitUntilObserver::create(
+      workerGlobalScope(), WaitUntilObserver::BackgroundFetchFail, eventID);
+
+  BackgroundFetchFailEventInit init;
+  init.setTag(tag);
+
+  ScriptState* scriptState =
+      workerGlobalScope()->scriptController()->getScriptState();
+  ScriptState::Scope scope(scriptState);
+
+  BackgroundFetchFailEvent* event =
+      BackgroundFetchFailEvent::create(EventTypeNames::backgroundfetchfail,
+                                       init, fetches, scriptState, observer);
+
+  workerGlobalScope()->dispatchExtendableEvent(event, observer);
+}
+
+void ServiceWorkerGlobalScopeProxy::dispatchBackgroundFetchedEvent(
+    int eventID,
+    const WebString& tag,
+    const WebVector<WebBackgroundFetchSettledFetch>& fetches) {
+  WaitUntilObserver* observer = WaitUntilObserver::create(
+      workerGlobalScope(), WaitUntilObserver::BackgroundFetched, eventID);
+
+  BackgroundFetchedEventInit init;
+  init.setTag(tag);
+
+  ScriptState* scriptState =
+      workerGlobalScope()->scriptController()->getScriptState();
+  ScriptState::Scope scope(scriptState);
+
+  BackgroundFetchedEvent* event = BackgroundFetchedEvent::create(
+      EventTypeNames::backgroundfetched, init, fetches, scriptState, observer,
+      m_workerGlobalScope->registration());
 
   workerGlobalScope()->dispatchExtendableEvent(event, observer);
 }

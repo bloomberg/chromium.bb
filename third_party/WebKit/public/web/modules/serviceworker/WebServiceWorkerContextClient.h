@@ -146,6 +146,14 @@ class WebServiceWorkerContextClient {
       int eventID,
       WebServiceWorkerEventResult result,
       double eventDispatchTime) {}
+  virtual void didHandleBackgroundFetchFailEvent(
+      int eventID,
+      WebServiceWorkerEventResult result,
+      double eventDispatchTime) {}
+  virtual void didHandleBackgroundFetchedEvent(
+      int eventID,
+      WebServiceWorkerEventResult result,
+      double eventDispatchTime) {}
 
   // Called after ExtendableMessageEvent is handled by the ServiceWorker's
   // script context.

@@ -86,6 +86,10 @@ std::string EventTypeToSuffix(ServiceWorkerMetrics::EventType event_type) {
       return "_BACKGROUND_FETCH_ABORT";
     case ServiceWorkerMetrics::EventType::BACKGROUND_FETCH_CLICK:
       return "_BACKGROUND_FETCH_CLICK";
+    case ServiceWorkerMetrics::EventType::BACKGROUND_FETCH_FAIL:
+      return "_BACKGROUND_FETCH_FAIL";
+    case ServiceWorkerMetrics::EventType::BACKGROUND_FETCHED:
+      return "_BACKGROUND_FETCHED";
     case ServiceWorkerMetrics::EventType::NUM_TYPES:
       NOTREACHED() << static_cast<int>(event_type);
   }
@@ -365,6 +369,10 @@ const char* ServiceWorkerMetrics::EventTypeToString(EventType event_type) {
       return "Background Fetch Abort";
     case EventType::BACKGROUND_FETCH_CLICK:
       return "Background Fetch Click";
+    case EventType::BACKGROUND_FETCH_FAIL:
+      return "Background Fetch Fail";
+    case EventType::BACKGROUND_FETCHED:
+      return "Background Fetched";
     case EventType::NUM_TYPES:
       break;
   }
@@ -701,6 +709,14 @@ void ServiceWorkerMetrics::RecordEventDuration(EventType event,
       break;
     case EventType::BACKGROUND_FETCH_CLICK:
       UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.BackgroundFetchClickEvent.Time",
+                                 time);
+      break;
+    case EventType::BACKGROUND_FETCH_FAIL:
+      UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.BackgroundFetchFailEvent.Time",
+                                 time);
+      break;
+    case EventType::BACKGROUND_FETCHED:
+      UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.BackgroundFetchedEvent.Time",
                                  time);
       break;
     // Those navigation hints should not be sent as request events.

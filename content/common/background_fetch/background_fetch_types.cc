@@ -26,4 +26,11 @@ BackgroundFetchRegistration::BackgroundFetchRegistration(
 
 BackgroundFetchRegistration::~BackgroundFetchRegistration() = default;
 
+BackgroundFetchSettledFetch::BackgroundFetchSettledFetch() = default;
+
+BackgroundFetchSettledFetch::BackgroundFetchSettledFetch(
+    const BackgroundFetchSettledFetch& other) = default;
+
+BackgroundFetchSettledFetch::~BackgroundFetchSettledFetch() = default;
+
 }  // namespace content

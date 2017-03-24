@@ -6,6 +6,7 @@
 #define BackgroundFetchedEvent_h
 
 #include "bindings/core/v8/ScriptPromise.h"
+#include "modules/ModulesExport.h"
 #include "modules/background_fetch/BackgroundFetchEvent.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/background_fetch/background_fetch.mojom-blink.h"
@@ -15,24 +16,30 @@ namespace blink {
 
 class BackgroundFetchSettledFetch;
 class BackgroundFetchedEventInit;
+class ScriptState;
 class ServiceWorkerRegistration;
+struct WebBackgroundFetchSettledFetch;
 
-class BackgroundFetchedEvent final : public BackgroundFetchEvent {
+class MODULES_EXPORT BackgroundFetchedEvent final
+    : public BackgroundFetchEvent {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   static BackgroundFetchedEvent* create(
       const AtomicString& type,
       const BackgroundFetchedEventInit& initializer) {
-    return new BackgroundFetchedEvent(type, initializer,
-                                      nullptr /* registration */);
+    return new BackgroundFetchedEvent(type, initializer);
   }
 
   static BackgroundFetchedEvent* create(
       const AtomicString& type,
       const BackgroundFetchedEventInit& initializer,
+      const WebVector<WebBackgroundFetchSettledFetch>& fetches,
+      ScriptState* scriptState,
+      WaitUntilObserver* observer,
       ServiceWorkerRegistration* registration) {
-    return new BackgroundFetchedEvent(type, initializer, registration);
+    return new BackgroundFetchedEvent(type, initializer, fetches, scriptState,
+                                      observer, registration);
   }
 
   ~BackgroundFetchedEvent() override;
@@ -50,8 +57,14 @@ class BackgroundFetchedEvent final : public BackgroundFetchEvent {
 
  private:
   BackgroundFetchedEvent(const AtomicString& type,
-                         const BackgroundFetchedEventInit&,
-                         ServiceWorkerRegistration*);
+                         const BackgroundFetchedEventInit&);
+  BackgroundFetchedEvent(
+      const AtomicString& type,
+      const BackgroundFetchedEventInit&,
+      const WebVector<WebBackgroundFetchSettledFetch>& fetches,
+      ScriptState*,
+      WaitUntilObserver*,
+      ServiceWorkerRegistration*);
 
   void didUpdateUI(ScriptPromiseResolver*, mojom::blink::BackgroundFetchError);
 

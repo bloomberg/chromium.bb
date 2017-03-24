@@ -85,6 +85,14 @@ class ServiceWorkerGlobalScopeProxy final
   void dispatchBackgroundFetchClickEvent(int,
                                          const WebString& tag,
                                          BackgroundFetchState) override;
+  void dispatchBackgroundFetchFailEvent(
+      int,
+      const WebString& tag,
+      const WebVector<WebBackgroundFetchSettledFetch>& fetches) override;
+  void dispatchBackgroundFetchedEvent(
+      int,
+      const WebString& tag,
+      const WebVector<WebBackgroundFetchSettledFetch>& fetches) override;
   void dispatchExtendableMessageEvent(
       int eventID,
       const WebString& message,

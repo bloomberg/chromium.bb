@@ -22,7 +22,17 @@ struct PushEventPayload;
 struct ServiceWorkerFetchRequest;
 
 [Native]
+struct ServiceWorkerResponse;
+
+[Native]
 struct ExtendableMessageEventSource;
+
+// TODO(peter): Move this to Blink when both ServiceWorkerFetchRequest and
+// ServiceWorkerResponse have Mojo counterparts.
+struct BackgroundFetchSettledFetch {
+  ServiceWorkerFetchRequest request;
+  ServiceWorkerResponse response;
+};
 
 enum BackgroundFetchState {
   PENDING,
@@ -52,6 +62,14 @@ interface ServiceWorkerEventDispatcher {
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo.common.mojom.Time dispatch_event_time);
   DispatchBackgroundFetchClickEvent(string tag, BackgroundFetchState state)
+      => (blink.mojom.ServiceWorkerEventStatus status,
+          mojo.common.mojom.Time dispatch_event_time);
+  DispatchBackgroundFetchFailEvent(string tag,
+                                   array<BackgroundFetchSettledFetch> fetches)
+      => (blink.mojom.ServiceWorkerEventStatus status,
+          mojo.common.mojom.Time dispatch_event_time);
+  DispatchBackgroundFetchedEvent(string tag,
+                                 array<BackgroundFetchSettledFetch> fetches)
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo.common.mojom.Time dispatch_event_time);
   // |fetch_event_id| is used internally when sending the response back to the

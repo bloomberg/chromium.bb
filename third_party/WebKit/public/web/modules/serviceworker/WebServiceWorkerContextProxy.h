@@ -39,6 +39,7 @@
 
 namespace blink {
 
+struct WebBackgroundFetchSettledFetch;
 class WebDataConsumerHandle;
 class WebServiceWorkerRequest;
 class WebString;
@@ -67,7 +68,14 @@ class WebServiceWorkerContextProxy {
       int eventID,
       const WebString& tag,
       BackgroundFetchState status) = 0;
-
+  virtual void dispatchBackgroundFetchFailEvent(
+      int eventID,
+      const WebString& tag,
+      const WebVector<WebBackgroundFetchSettledFetch>& fetches) = 0;
+  virtual void dispatchBackgroundFetchedEvent(
+      int eventID,
+      const WebString& tag,
+      const WebVector<WebBackgroundFetchSettledFetch>& fetches) = 0;
   virtual void dispatchExtendableMessageEvent(
       int eventID,
       const WebString& message,

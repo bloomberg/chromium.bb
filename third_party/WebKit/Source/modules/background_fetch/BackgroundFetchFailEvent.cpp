@@ -7,14 +7,34 @@
 #include "modules/EventModulesNames.h"
 #include "modules/background_fetch/BackgroundFetchFailEventInit.h"
 #include "modules/background_fetch/BackgroundFetchSettledFetch.h"
+#include "modules/fetch/Request.h"
+#include "modules/fetch/Response.h"
+#include "public/platform/modules/background_fetch/WebBackgroundFetchSettledFetch.h"
 
 namespace blink {
 
 BackgroundFetchFailEvent::BackgroundFetchFailEvent(
     const AtomicString& type,
-    const BackgroundFetchFailEventInit& init)
-    : BackgroundFetchEvent(type, init, nullptr /* observer */),
-      m_fetches(init.fetches()) {}
+    const BackgroundFetchFailEventInit& initializer)
+    : BackgroundFetchEvent(type, initializer, nullptr /* observer */),
+      m_fetches(initializer.fetches()) {}
+
+BackgroundFetchFailEvent::BackgroundFetchFailEvent(
+    const AtomicString& type,
+    const BackgroundFetchFailEventInit& initializer,
+    const WebVector<WebBackgroundFetchSettledFetch>& fetches,
+    ScriptState* scriptState,
+    WaitUntilObserver* observer)
+    : BackgroundFetchEvent(type, initializer, observer) {
+  m_fetches.reserveInitialCapacity(fetches.size());
+  for (const WebBackgroundFetchSettledFetch& fetch : fetches) {
+    auto* settledFetch = BackgroundFetchSettledFetch::create(
+        Request::create(scriptState, fetch.request),
+        Response::create(scriptState, fetch.response));
+
+    m_fetches.push_back(settledFetch);
+  }
+}
 
 BackgroundFetchFailEvent::~BackgroundFetchFailEvent() = default;
 

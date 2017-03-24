@@ -120,6 +120,8 @@ class ServiceWorkerMetrics {
     PAYMENT_REQUEST = 22,
     BACKGROUND_FETCH_ABORT = 23,
     BACKGROUND_FETCH_CLICK = 24,
+    BACKGROUND_FETCH_FAIL = 25,
+    BACKGROUND_FETCHED = 26,
     // Add new events to record here.
     NUM_TYPES
   };
