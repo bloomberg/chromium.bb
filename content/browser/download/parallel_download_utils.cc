@@ -162,4 +162,12 @@ base::TimeDelta GetParallelRequestDelayConfig() {
              : base::TimeDelta::FromMilliseconds(0);
 }
 
+void DebugSlicesInfo(const DownloadItem::ReceivedSlices& slices) {
+  DVLOG(1) << "Received slices size : " << slices.size();
+  for (const auto& it : slices) {
+    DVLOG(1) << "Slice offset = " << it.offset
+             << " , received_bytes = " << it.received_bytes;
+  }
+}
+
 }  // namespace content

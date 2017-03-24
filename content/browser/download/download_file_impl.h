@@ -221,6 +221,9 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   // SourceStreams are ordered by their offsets
   SourceStream* FindPrecedingNeighbor(SourceStream* source_stream);
 
+  // Print the internal states for debugging.
+  void DebugStates() const;
+
   net::NetLogWithSource net_log_;
 
   // The base file instance.

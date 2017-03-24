@@ -637,6 +637,19 @@ DownloadFileImpl::SourceStream* DownloadFileImpl::FindPrecedingNeighbor(
   return ret;
 }
 
+void DownloadFileImpl::DebugStates() const {
+  DVLOG(1) << "### Debugging DownloadFile states:";
+  DVLOG(1) << "Total source stream count = " << source_streams_.size();
+  for (const auto& stream : source_streams_) {
+    DVLOG(1) << "Source stream, offset = " << stream.second->offset()
+             << " , bytes_written = " << stream.second->bytes_written()
+             << " , is_finished = " << stream.second->is_finished()
+             << " , length = " << stream.second->length();
+  }
+
+  DebugSlicesInfo(received_slices_);
+}
+
 DownloadFileImpl::RenameParameters::RenameParameters(
     RenameOption option,
     const base::FilePath& new_path,

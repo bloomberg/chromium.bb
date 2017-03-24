@@ -51,6 +51,9 @@ CONTENT_EXPORT int GetParallelRequestCountConfig();
 // request is handled.
 CONTENT_EXPORT base::TimeDelta GetParallelRequestDelayConfig();
 
+// Print the states of received slices for debugging.
+CONTENT_EXPORT void DebugSlicesInfo(const DownloadItem::ReceivedSlices& slices);
+
 }  //  namespace content
 
 #endif  // CONTENT_BROWSER_DOWNLOAD_PARALLEL_DOWNLOAD_UTILS_H_
