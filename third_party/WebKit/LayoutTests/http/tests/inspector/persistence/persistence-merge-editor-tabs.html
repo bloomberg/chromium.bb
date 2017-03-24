@@ -28,7 +28,7 @@ function test()
             function onNetworkTab(sourceFrame)
             {
                 networkSourceFrame = sourceFrame;
-                networkSourceFrame.setSelection(new Common.TextRange(2, 0, 2, 5));
+                networkSourceFrame.setSelection(new TextUtils.TextRange(2, 0, 2, 5));
                 networkSourceFrame.scrollToLine(2);
                 dumpSourceFrame(networkSourceFrame);
                 next();
@@ -44,7 +44,7 @@ function test()
             function onFileSystemTab(sourceFrame)
             {
                 fileSystemSourceFrame = sourceFrame;
-                fileSystemSourceFrame.setSelection(new Common.TextRange(1, 0, 2, 5));
+                fileSystemSourceFrame.setSelection(new TextUtils.TextRange(1, 0, 2, 5));
                 fileSystemSourceFrame.scrollToLine(1);
                 dumpSourceFrame(fileSystemSourceFrame);
                 dumpEditorTabs();

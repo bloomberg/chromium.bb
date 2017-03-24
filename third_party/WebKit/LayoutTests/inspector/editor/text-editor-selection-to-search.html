@@ -36,7 +36,7 @@ function test()
             var column = line.indexOf(string);
             if (column === -1)
                 continue;
-            return new Common.TextRange(i, column, i, column + string.length);
+            return new TextUtils.TextRange(i, column, i, column + string.length);
         }
     }
 }

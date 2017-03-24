@@ -26,7 +26,7 @@ function test()
         {
             textEditor.setText(result.value);
             var indent = textEditor.indent();
-            var description = indent === Common.TextUtils.Indent.TabCharacter ? "Tab" : indent.length + " spaces";
+            var description = indent === TextUtils.TextUtils.Indent.TabCharacter ? "Tab" : indent.length + " spaces";
             InspectorTest.addResult("Autodetected indentation for " + snippetName + ": " +
                 description);
             next();

@@ -706,7 +706,7 @@ InspectorTest.dumpJavaScriptSourceFrameBreakpoints = function(sourceFrame)
         var conditional = textEditor.hasLineClass(lineNumber, "cm-breakpoint-conditional")
         InspectorTest.addResult("breakpoint at " + lineNumber + (disabled ? " disabled" : "") + (conditional ? " conditional" : ""));
 
-        var range = new Common.TextRange(lineNumber, 0, lineNumber, textEditor.line(lineNumber).length);
+        var range = new TextUtils.TextRange(lineNumber, 0, lineNumber, textEditor.line(lineNumber).length);
         var bookmarks = textEditor.bookmarks(range, Sources.JavaScriptSourceFrame.BreakpointDecoration._bookmarkSymbol);
         bookmarks = bookmarks.filter(bookmark => !!bookmark.position());
         bookmarks.sort((bookmark1, bookmark2) => bookmark1.position().startColumn - bookmark2.position().startColumn);
@@ -724,7 +724,7 @@ InspectorTest.clickJavaScriptSourceFrameBreakpoint = function(sourceFrame, lineN
 {
     var textEditor = sourceFrame._textEditor;
     var lineLength = textEditor.line(lineNumber).length;
-    var lineRange = new Common.TextRange(lineNumber, 0, lineNumber, lineLength);
+    var lineRange = new TextUtils.TextRange(lineNumber, 0, lineNumber, lineLength);
     var bookmarks = textEditor.bookmarks(lineRange, Sources.JavaScriptSourceFrame.BreakpointDecoration._bookmarkSymbol);
     bookmarks.sort((bookmark1, bookmark2) => bookmark1.position().startColumn - bookmark2.position().startColumn);
     var bookmark = bookmarks[index];

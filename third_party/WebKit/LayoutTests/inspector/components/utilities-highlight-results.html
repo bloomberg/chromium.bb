@@ -61,7 +61,7 @@ function test()
 
     function range(offset, length)
     {
-        return new Common.SourceRange(offset, length);
+        return new TextUtils.SourceRange(offset, length);
     }
 
     performTestForElement(textElement(["function"]), [range(0, 8)]); // Highlight whole text node.

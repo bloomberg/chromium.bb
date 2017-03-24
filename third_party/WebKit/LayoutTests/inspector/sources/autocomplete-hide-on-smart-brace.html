@@ -24,7 +24,7 @@ function test()
             InspectorTest.addSniffer(TextEditor.TextEditorAutocompleteController.prototype, "_onSuggestionsShownForTest", onSuggestionsShown);
 
             textEditor.setText("one\n()");
-            textEditor.setSelection(Common.TextRange.createFromLocation(1,1));
+            textEditor.setSelection(TextUtils.TextRange.createFromLocation(1,1));
             InspectorTest.typeIn(textEditor, "o", function() { });
 
             function onSuggestionsShown()

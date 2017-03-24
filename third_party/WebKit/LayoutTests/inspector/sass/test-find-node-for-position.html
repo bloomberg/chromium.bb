@@ -33,7 +33,7 @@ function test()
                 offsetToNode.set(i, node);
         }
 
-        var cursor = new Common.TextCursor(text.lineEndings());
+        var cursor = new TextUtils.TextCursor(text.lineEndings());
         for (var i = 0; i < text.value().length; ++i) {
             var canonical = offsetToNode.get(i) || null;
             cursor.advance(i);

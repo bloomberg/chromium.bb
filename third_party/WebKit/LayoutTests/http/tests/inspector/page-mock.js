@@ -71,7 +71,7 @@ InspectorTest.PageMock = class {
             this._fireEvent('Runtime.executionContextCreated', {context: context});
         }
 
-        var text = new Common.Text(content);
+        var text = new TextUtils.Text(content);
         var script = {
             scriptId: id,
             url: url,

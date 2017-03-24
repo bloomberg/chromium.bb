@@ -21,6 +21,7 @@ Loaded modules:
     protocol
     sdk
     services
+    text_utils
     ui
     workspace
 
@@ -48,6 +49,7 @@ Loaded modules:
     protocol
     sdk
     services
+    text_utils
     ui
     workspace
 
@@ -84,6 +86,7 @@ Loaded modules:
     services
     source_frame
     text_editor
+    text_utils
     ui
     workspace
     workspace_diff
@@ -124,6 +127,7 @@ Loaded modules:
     source_frame
     sources
     text_editor
+    text_utils
     ui
     workspace
     workspace_diff
@@ -164,6 +168,7 @@ Loaded modules:
     source_frame
     sources
     text_editor
+    text_utils
     ui
     workspace
     workspace_diff

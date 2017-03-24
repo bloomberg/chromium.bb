@@ -31,7 +31,7 @@ function test()
         if (cursorPosition < 0)
             cursorPosition = Infinity;
         consoleEditor.setText(text.replace('|', ''));
-        consoleEditor.setSelection(Common.TextRange.createFromLocation(0, cursorPosition));
+        consoleEditor.setSelection(TextUtils.TextRange.createFromLocation(0, cursorPosition));
         consoleEditor._autocompleteController.autocomplete(force);
         return InspectorTest.addSnifferPromise(consoleEditor._autocompleteController, "_onSuggestionsShownForTest").then(checkExpected);
 

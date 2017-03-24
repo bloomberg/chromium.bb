@@ -44,14 +44,14 @@ function testMyCamelMove(foo, bar)
 
     function setCursorAtBeginning()
     {
-        textEditor.setSelection(Common.TextRange.createFromLocation(0, 0));
+        textEditor.setSelection(TextUtils.TextRange.createFromLocation(0, 0));
     }
 
     function setCursorAtEnd()
     {
         var lastLine = textEditor.linesCount - 1;
         var lastColumn = textEditor.line(lastLine).length;
-        textEditor.setSelection(Common.TextRange.createFromLocation(lastLine, lastColumn));
+        textEditor.setSelection(TextUtils.TextRange.createFromLocation(lastLine, lastColumn));
     }
 
     function fireEventWhileSelectionChanges(eventType, modifiers, callback)

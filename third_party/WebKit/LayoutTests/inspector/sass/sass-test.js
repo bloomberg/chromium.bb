@@ -286,7 +286,7 @@ InspectorTest.runCSSEditTests = function(header, tests)
             var edit = edits[i];
             var range = edit.oldRange;
             var line = String.sprintf("{%d, %d, %d, %d}", range.startLine, range.startColumn, range.endLine, range.endColumn);
-            line += String.sprintf(" '%s' => '%s'", (new Common.Text(text)).extract(range), edit.newText);
+            line += String.sprintf(" '%s' => '%s'", (new TextUtils.Text(text)).extract(range), edit.newText);
             lines.push(line);
         }
         lines = indent(lines);
@@ -305,9 +305,9 @@ InspectorTest.createEdit = function(source, pattern, newText, matchNumber)
     }
     if (!match)
         return null;
-    var sourceRange = new Common.SourceRange(match.index, match[0].length);
-    var textRange = new Common.Text(source).toTextRange(sourceRange);
-    return new Common.SourceEdit("", textRange, newText);
+    var sourceRange = new TextUtils.SourceRange(match.index, match[0].length);
+    var textRange = new TextUtils.Text(source).toTextRange(sourceRange);
+    return new TextUtils.SourceEdit("", textRange, newText);
 }
 
 }

@@ -22,7 +22,7 @@ function textWithSelection(text, selections)
     }
 
     var lines = text.split("\n");
-    selections.sort(Common.TextRange.comparator);
+    selections.sort(TextUtils.TextRange.comparator);
     for (var i = selections.length - 1; i >= 0; --i) {
         var selection = selections[i];
         selection = selection.normalize();
@@ -52,7 +52,7 @@ InspectorTest.setLineSelections = function(editor, selections)
             selection.from = selection.column;
             selection.to = selection.column;
         }
-        coords.push(new Common.TextRange(selection.line, selection.from, selection.line, selection.to));
+        coords.push(new TextUtils.TextRange(selection.line, selection.from, selection.line, selection.to));
     }
     editor.setSelections(coords);
 }

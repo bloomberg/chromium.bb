@@ -22,8 +22,8 @@ function test()
         var searchResults = sourceFrame._searchResults;
         for (var i = 0; i < searchResults.length; ++i) {
             var range = searchResults[i];
-            var prefixRange = new Common.TextRange(range.startLine, 0, range.startLine, range.startColumn);
-            var postfixRange = new Common.TextRange(range.endLine, range.endColumn, range.endLine, sourceFrame._textEditor.line(range.endLine).length);
+            var prefixRange = new TextUtils.TextRange(range.startLine, 0, range.startLine, range.startColumn);
+            var postfixRange = new TextUtils.TextRange(range.endLine, range.endColumn, range.endLine, sourceFrame._textEditor.line(range.endLine).length);
             var prefix = sourceFrame._textEditor.text(prefixRange);
             var result = sourceFrame._textEditor.text(range);
             var postfix = sourceFrame._textEditor.text(postfixRange);

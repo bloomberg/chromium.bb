@@ -13,7 +13,7 @@ function test()
     function onSourceFrame(sourceFrame)
     {
         InspectorTest.addSniffer(Sources.JavaScriptCompiler.prototype, "_compilationFinishedForTest", onCompilationFinished.bind(null, sourceFrame));
-        sourceFrame.textEditor.setSelection(Common.TextRange.createFromLocation(0, 0));
+        sourceFrame.textEditor.setSelection(TextUtils.TextRange.createFromLocation(0, 0));
         InspectorTest.typeIn(sourceFrame.textEditor, "test!");
     }
 
