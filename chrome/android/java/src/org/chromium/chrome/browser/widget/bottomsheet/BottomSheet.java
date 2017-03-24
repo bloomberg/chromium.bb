@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.widget.bottomsheet;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Region;
@@ -148,9 +149,6 @@ public class BottomSheet
      * its own toolbar and when the bottom sheet is closed.
      */
     private View mDefaultToolbarView;
-
-    /** The last non-default toolbar view that was attached to mToolbarHolder. */
-    private View mLastToolbarView;
 
     /** Whether the sheet is currently open. */
     private boolean mIsSheetOpen;
@@ -483,6 +481,8 @@ public class BottomSheet
         return mContainerHeight - getTranslationY();
     }
 
+    private ValueAnimator mToolbarFadeAnimator;
+
     /**
      * Show content in the bottom sheet's content area.
      * @param content The {@link BottomSheetContent} to show.
@@ -491,36 +491,78 @@ public class BottomSheet
         // If the desired content is already showing, do nothing.
         if (mSheetContent == content) return;
 
+        View newToolbar = content.getToolbarView();
+        View oldToolbar = null;
+
         if (mSheetContent != null) {
+            oldToolbar = mSheetContent.getToolbarView();
             mBottomSheetContentContainer.removeView(mSheetContent.getContentView());
             mSheetContent = null;
-        }
-
-        if (content == null) {
-            mBottomSheetContentContainer.addView(mPlaceholder);
-            return;
         }
 
         mBottomSheetContentContainer.removeView(mPlaceholder);
         mSheetContent = content;
         mBottomSheetContentContainer.addView(mSheetContent.getContentView());
 
-        if (mLastToolbarView != null) {
-            mToolbarHolder.removeView(mLastToolbarView);
-            mLastToolbarView = null;
-        }
-
-        if (mSheetContent.getToolbarView() != null) {
-            mLastToolbarView = mSheetContent.getToolbarView();
-            mToolbarHolder.addView(mSheetContent.getToolbarView());
-            mDefaultToolbarView.setVisibility(View.GONE);
-        } else {
-            mDefaultToolbarView.setVisibility(View.VISIBLE);
-        }
+        doToolbarSwap(newToolbar, oldToolbar);
 
         for (BottomSheetObserver o : mObservers) {
             o.onSheetContentChanged(mSheetContent);
         }
+    }
+
+    /**
+     * Fade between a new toolbar and the old toolbar to be shown. A null parameter can be used to
+     * refer to the default omnibox toolbar. Normally, the new toolbar is attached to the toolbar
+     * container and faded in. In the case of the default toolbar, the old toolbar is faded out.
+     * This is because the default toolbar it is always attached to the view hierarchy and sits
+     * behind the attach point for the other toolbars.
+     * @param newToolbar The toolbar that will be shown.
+     * @param oldToolbar The toolbar being replaced.
+     */
+    private void doToolbarSwap(View newToolbar, View oldToolbar) {
+        if (mToolbarFadeAnimator != null) mToolbarFadeAnimator.end();
+
+        final View targetToolbar = newToolbar != null ? newToolbar : mDefaultToolbarView;
+        final View currentToolbar = oldToolbar != null ? oldToolbar : mDefaultToolbarView;
+
+        if (targetToolbar == currentToolbar) return;
+
+        if (targetToolbar != mDefaultToolbarView) {
+            mToolbarHolder.addView(targetToolbar);
+            targetToolbar.setAlpha(0f);
+        } else {
+            targetToolbar.setVisibility(View.VISIBLE);
+            targetToolbar.setAlpha(1f);
+        }
+
+        mToolbarFadeAnimator = ObjectAnimator.ofFloat(0, 1);
+        mToolbarFadeAnimator.setDuration(BASE_ANIMATION_DURATION_MS);
+        mToolbarFadeAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animator) {
+                if (targetToolbar == mDefaultToolbarView) {
+                    currentToolbar.setAlpha(1f - animator.getAnimatedFraction());
+                } else {
+                    targetToolbar.setAlpha(animator.getAnimatedFraction());
+                }
+            }
+        });
+        mToolbarFadeAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                targetToolbar.setAlpha(1f);
+                currentToolbar.setAlpha(0f);
+                if (currentToolbar != mDefaultToolbarView) {
+                    mToolbarHolder.removeView(currentToolbar);
+                } else {
+                    currentToolbar.setVisibility(View.GONE);
+                }
+                mToolbarFadeAnimator = null;
+            }
+        });
+
+        mToolbarFadeAnimator.start();
     }
 
     /**
