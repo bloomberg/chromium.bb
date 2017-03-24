@@ -1,0 +1,18 @@
+<!DOCTYPE HTML>
+<script src="/js-test-resources/testharness.js"></script>
+<script src="/js-test-resources/testharnessreport.js"></script>
+<script>
+test(() => {
+  if (!window.internals)
+    return;
+
+  // Any negative value will do to disable limit checks.
+  internals.settings.setMaxBeaconTransmission(-2);
+
+  let payload = new Uint8Array(128 * 1024);
+  assert_true(navigator.sendBeacon("resources/blank.txt", payload));
+  assert_true(navigator.sendBeacon("resources/blank.txt", payload));
+}, "If no beacon transmission limit is in effect, then navigator.sendBeacon()" +
+   " should succeed.");
+</script>
+</html>

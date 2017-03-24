@@ -65,20 +65,29 @@ bool NavigatorBeacon::canSendBeacon(ExecutionContext* context,
   return true;
 }
 
+// Determine the remaining size allowance for Beacon transmissions.
+// If (-1) is returned, a no limit policy is in place, otherwise
+// it is the max size (in bytes) of a beacon request.
+//
+// The loader takes the allowance into account once the Beacon
+// payload size has been determined, deciding if the transmission
+// will be allowed to go ahead or not.
 int NavigatorBeacon::maxAllowance() const {
   DCHECK(supplementable()->frame());
   const Settings* settings = supplementable()->frame()->settings();
   if (settings) {
     int maxAllowed = settings->getMaxBeaconTransmission();
-    if (maxAllowed < m_transmittedBytes)
+    // Any negative value represent no max limit.
+    if (maxAllowed < 0)
+      return -1;
+    if (static_cast<size_t>(maxAllowed) <= m_transmittedBytes)
       return 0;
-    return maxAllowed - m_transmittedBytes;
+    return maxAllowed - static_cast<int>(m_transmittedBytes);
   }
-  return m_transmittedBytes;
+  return -1;
 }
 
-void NavigatorBeacon::addTransmittedBytes(int sentBytes) {
-  DCHECK_GE(sentBytes, 0);
+void NavigatorBeacon::addTransmittedBytes(size_t sentBytes) {
   m_transmittedBytes += sentBytes;
 }
 
@@ -103,12 +112,12 @@ bool NavigatorBeacon::sendBeaconImpl(
     return false;
 
   int allowance = maxAllowance();
-  int bytes = 0;
+  size_t beaconSize = 0;
   bool allowed;
 
   if (data.isArrayBufferView()) {
     allowed = PingLoader::sendBeacon(supplementable()->frame(), allowance, url,
-                                     data.getAsArrayBufferView(), bytes);
+                                     data.getAsArrayBufferView(), beaconSize);
   } else if (data.isBlob()) {
     Blob* blob = data.getAsBlob();
     if (!FetchUtils::isSimpleContentType(AtomicString(blob->type()))) {
@@ -124,25 +133,27 @@ bool NavigatorBeacon::sendBeaconImpl(
       }
     }
     allowed = PingLoader::sendBeacon(supplementable()->frame(), allowance, url,
-                                     blob, bytes);
+                                     blob, beaconSize);
   } else if (data.isString()) {
     allowed = PingLoader::sendBeacon(supplementable()->frame(), allowance, url,
-                                     data.getAsString(), bytes);
+                                     data.getAsString(), beaconSize);
   } else if (data.isFormData()) {
     allowed = PingLoader::sendBeacon(supplementable()->frame(), allowance, url,
-                                     data.getAsFormData(), bytes);
+                                     data.getAsFormData(), beaconSize);
   } else {
     allowed = PingLoader::sendBeacon(supplementable()->frame(), allowance, url,
-                                     String(), bytes);
+                                     String(), beaconSize);
   }
 
-  if (allowed) {
-    addTransmittedBytes(bytes);
-    return true;
+  if (!allowed) {
+    UseCounter::count(context, UseCounter::SendBeaconQuotaExceeded);
+    return false;
   }
 
-  UseCounter::count(context, UseCounter::SendBeaconQuotaExceeded);
-  return false;
+  // Only accumulate transmission size if a limit is imposed.
+  if (allowance >= 0)
+    addTransmittedBytes(beaconSize);
+  return true;
 }
 
 }  // namespace blink

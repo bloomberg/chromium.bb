@@ -420,11 +420,24 @@ bool sendPingCommon(LocalFrame* frame,
   return true;
 }
 
+// Decide if a beacon with the given size is allowed to go ahead
+// given some overall allowance limit.
+bool allowBeaconWithSize(int allowance, unsigned long long size) {
+  // If a negative allowance is supplied, no size constraint is imposed.
+  if (allowance < 0)
+    return true;
+
+  if (static_cast<unsigned long long>(allowance) < size)
+    return false;
+
+  return true;
+}
+
 bool sendBeaconCommon(LocalFrame* frame,
                       int allowance,
                       const KURL& url,
                       const Beacon& beacon,
-                      int& payloadLength) {
+                      size_t& beaconSize) {
   if (!frame->document())
     return false;
 
@@ -435,11 +448,11 @@ bool sendBeaconCommon(LocalFrame* frame,
     return true;
   }
 
-  unsigned long long entitySize = beacon.size();
-  if (allowance < 0 || static_cast<unsigned long long>(allowance) < entitySize)
+  unsigned long long size = beacon.size();
+  if (!allowBeaconWithSize(allowance, size))
     return false;
 
-  payloadLength = entitySize;
+  beaconSize = size;
 
   ResourceRequest request(url);
   request.setHTTPMethod(HTTPNames::POST);
@@ -541,36 +554,36 @@ bool PingLoader::sendBeacon(LocalFrame* frame,
                             int allowance,
                             const KURL& beaconURL,
                             const String& data,
-                            int& payloadLength) {
+                            size_t& beaconSize) {
   BeaconString beacon(data);
-  return sendBeaconCommon(frame, allowance, beaconURL, beacon, payloadLength);
+  return sendBeaconCommon(frame, allowance, beaconURL, beacon, beaconSize);
 }
 
 bool PingLoader::sendBeacon(LocalFrame* frame,
                             int allowance,
                             const KURL& beaconURL,
                             DOMArrayBufferView* data,
-                            int& payloadLength) {
+                            size_t& beaconSize) {
   BeaconDOMArrayBufferView beacon(data);
-  return sendBeaconCommon(frame, allowance, beaconURL, beacon, payloadLength);
+  return sendBeaconCommon(frame, allowance, beaconURL, beacon, beaconSize);
 }
 
 bool PingLoader::sendBeacon(LocalFrame* frame,
                             int allowance,
                             const KURL& beaconURL,
                             FormData* data,
-                            int& payloadLength) {
+                            size_t& beaconSize) {
   BeaconFormData beacon(data);
-  return sendBeaconCommon(frame, allowance, beaconURL, beacon, payloadLength);
+  return sendBeaconCommon(frame, allowance, beaconURL, beacon, beaconSize);
 }
 
 bool PingLoader::sendBeacon(LocalFrame* frame,
                             int allowance,
                             const KURL& beaconURL,
                             Blob* data,
-                            int& payloadLength) {
+                            size_t& beaconSize) {
   BeaconBlob beacon(data);
-  return sendBeaconCommon(frame, allowance, beaconURL, beacon, payloadLength);
+  return sendBeaconCommon(frame, allowance, beaconURL, beacon, beaconSize);
 }
 
 }  // namespace blink

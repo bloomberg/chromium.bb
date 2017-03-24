@@ -611,7 +611,8 @@
     // smaller payloads transmitted as a page is unloading, not a general (one-way)
     // network transmission API. The spec <https://w3c.github.io/beacon/> does not
     // proscribe an upper limit, but allows for it -- the underlying API will return
-    // 'false' in that case.
+    // 'false' in that case. If the value is set to a negative value, no limit
+    // will be imposed.
     {
       name: "maxBeaconTransmission",
       initial: 65536,
