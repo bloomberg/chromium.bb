@@ -4315,6 +4315,7 @@ bind_output(struct wl_client *client,
 	struct weston_output *output = data;
 	struct weston_mode *mode;
 	struct wl_resource *resource;
+	struct weston_head *head = &output->head;
 
 	resource = wl_resource_create(client, &wl_output_interface,
 				      version, id);
@@ -4329,10 +4330,10 @@ bind_output(struct wl_client *client,
 	wl_output_send_geometry(resource,
 				output->x,
 				output->y,
-				output->mm_width,
-				output->mm_height,
-				output->subpixel,
-				output->make, output->model,
+				head->mm_width,
+				head->mm_height,
+				head->subpixel,
+				head->make, head->model,
 				output->transform);
 	if (version >= WL_OUTPUT_SCALE_SINCE_VERSION)
 		wl_output_send_scale(resource,
@@ -4365,6 +4366,85 @@ weston_output_from_resource(struct wl_resource *resource)
 	return wl_resource_get_user_data(resource);
 }
 
+/** Store monitor make, model and serial number
+ *
+ * \param head The head to modify.
+ * \param make The monitor make. If EDID is available, the PNP ID. Otherwise
+ * any string, or NULL for none.
+ * \param model The monitor model or name, or a made-up string, or NULL for
+ * none.
+ * \param serialno The monitor serial number, a made-up string, or NULL for
+ * none.
+ *
+ * \memberof weston_head
+ * \internal
+ */
+WL_EXPORT void
+weston_head_set_monitor_strings(struct weston_head *head,
+				const char *make,
+				const char *model,
+				const char *serialno)
+{
+	head->make = (char *)make;
+	head->model = (char *)model;
+	head->serial_number = (char *)serialno;
+}
+
+/** Store physical image size
+ *
+ * \param head The head to modify.
+ * \param mm_width Image area width in millimeters.
+ * \param mm_height Image area height in millimeters.
+ *
+ * \memberof weston_head
+ * \internal
+ */
+WL_EXPORT void
+weston_head_set_physical_size(struct weston_head *head,
+			      int32_t mm_width, int32_t mm_height)
+{
+	head->mm_width = mm_width;
+	head->mm_height = mm_height;
+}
+
+/** Store monitor sub-pixel layout
+ *
+ * \param head The head to modify.
+ * \param sp Sub-pixel layout. The possible values are:
+ * - WL_OUTPUT_SUBPIXEL_UNKNOWN,
+ * - WL_OUTPUT_SUBPIXEL_NONE,
+ * - WL_OUTPUT_SUBPIXEL_HORIZONTAL_RGB,
+ * - WL_OUTPUT_SUBPIXEL_HORIZONTAL_BGR,
+ * - WL_OUTPUT_SUBPIXEL_VERTICAL_RGB,
+ * - WL_OUTPUT_SUBPIXEL_VERTICAL_BGR
+ *
+ * \memberof weston_head
+ * \internal
+ */
+WL_EXPORT void
+weston_head_set_subpixel(struct weston_head *head,
+			 enum wl_output_subpixel sp)
+{
+	head->subpixel = sp;
+}
+
+/** Mark the monitor as internal
+ *
+ * This is used for embedded screens, like laptop panels.
+ *
+ * \param head The head to mark as internal.
+ *
+ * By default a head is external. The type is often inferred from the physical
+ * connector type.
+ *
+ * \memberof weston_head
+ * \internal
+ */
+WL_EXPORT void
+weston_head_set_internal(struct weston_head *head)
+{
+	head->connection_internal = true;
+}
 
 /* Move other outputs when one is resized so the space remains contiguous. */
 static void
@@ -4481,6 +4561,7 @@ weston_output_init_geometry(struct weston_output *output, int x, int y)
 WL_EXPORT void
 weston_output_move(struct weston_output *output, int x, int y)
 {
+	struct weston_head *head = &output->head;
 	struct wl_resource *resource;
 
 	output->move_x = x - output->x;
@@ -4501,11 +4582,11 @@ weston_output_move(struct weston_output *output, int x, int y)
 		wl_output_send_geometry(resource,
 					output->x,
 					output->y,
-					output->mm_width,
-					output->mm_height,
-					output->subpixel,
-					output->make,
-					output->model,
+					head->mm_width,
+					head->mm_height,
+					head->subpixel,
+					head->make,
+					head->model,
 					output->transform);
 
 		if (wl_resource_get_version(resource) >= WL_OUTPUT_DONE_SINCE_VERSION)
@@ -4695,6 +4776,7 @@ weston_output_set_transform(struct weston_output *output,
 	struct weston_seat *seat;
 	pixman_region32_t old_region;
 	int mid_x, mid_y;
+	struct weston_head *head = &output->head;
 
 	if (!output->enabled && output->transform == UINT32_MAX) {
 		output->transform = transform;
@@ -4715,11 +4797,11 @@ weston_output_set_transform(struct weston_output *output,
 		wl_output_send_geometry(resource,
 					output->x,
 					output->y,
-					output->mm_width,
-					output->mm_height,
-					output->subpixel,
-					output->make,
-					output->model,
+					head->mm_width,
+					head->mm_height,
+					head->subpixel,
+					head->make,
+					head->model,
 					output->transform);
 
 		if (wl_resource_get_version(resource) >= WL_OUTPUT_DONE_SINCE_VERSION)
@@ -4766,6 +4848,8 @@ weston_output_init(struct weston_output *output,
 		   struct weston_compositor *compositor,
 		   const char *name)
 {
+	struct weston_head *head = &output->head;
+
 	output->compositor = compositor;
 	output->destroying = 0;
 	output->name = strdup(name);
@@ -4775,8 +4859,8 @@ weston_output_init(struct weston_output *output,
 	/* Add some (in)sane defaults which can be used
 	 * for checking if an output was properly configured
 	 */
-	output->mm_width = 0;
-	output->mm_height = 0;
+	head->mm_width = 0;
+	head->mm_height = 0;
 	output->scale = 0;
 	/* Can't use -1 on uint32_t and 0 is valid enum value */
 	output->transform = UINT32_MAX;

@@ -147,6 +147,21 @@ enum dpms_enum {
 	WESTON_DPMS_OFF
 };
 
+/** Represents a monitor
+ *
+ * This object represents a monitor (hardware backends like DRM) or a window
+ * (windowed nested backends).
+ */
+struct weston_head {
+	int32_t mm_width;		/**< physical image width in mm */
+	int32_t mm_height;		/**< physical image height in mm */
+	char *make;			/**< monitor manufacturer (PNP ID) */
+	char *model;			/**< monitor model */
+	char *serial_number;		/**< monitor serial */
+	uint32_t subpixel;		/**< enum wl_output_subpixel */
+	bool connection_internal;	/**< embedded monitor (e.g. laptop) */
+};
+
 struct weston_output {
 	uint32_t id;
 	char *name;
@@ -165,7 +180,6 @@ struct weston_output {
 
 	struct wl_list animation_list;
 	int32_t x, y, width, height;
-	int32_t mm_width, mm_height;
 
 	/** Output area in global coordinates, simple rect */
 	pixman_region32_t region;
@@ -199,8 +213,6 @@ struct weston_output {
 	int destroying;
 	struct wl_list feedback_list;
 
-	char *make, *model, *serial_number;
-	uint32_t subpixel;
 	uint32_t transform;
 	int32_t native_scale;
 	int32_t current_scale;
@@ -210,6 +222,8 @@ struct weston_output {
 	struct weston_mode *current_mode;
 	struct weston_mode *original_mode;
 	struct wl_list mode_list;
+
+	struct weston_head head;
 
 	void (*start_repaint_loop)(struct weston_output *output);
 	int (*repaint)(struct weston_output *output,
@@ -224,7 +238,6 @@ struct weston_output {
 	void (*set_backlight)(struct weston_output *output, uint32_t value);
 	void (*set_dpms)(struct weston_output *output, enum dpms_enum level);
 
-	bool connection_internal;
 	uint16_t gamma_size;
 	void (*set_gamma)(struct weston_output *output,
 			  uint16_t size,
@@ -1935,6 +1948,23 @@ weston_seat_set_keyboard_focus(struct weston_seat *seat,
 
 int
 weston_compositor_load_xwayland(struct weston_compositor *compositor);
+
+void
+weston_head_set_monitor_strings(struct weston_head *head,
+				const char *make,
+				const char *model,
+				const char *serialno);
+
+void
+weston_head_set_physical_size(struct weston_head *head,
+			      int32_t mm_width, int32_t mm_height);
+
+void
+weston_head_set_subpixel(struct weston_head *head,
+			 enum wl_output_subpixel sp);
+
+void
+weston_head_set_internal(struct weston_head *head);
 
 void
 weston_output_set_scale(struct weston_output *output,

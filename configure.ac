@@ -3,9 +3,9 @@ m4_define([weston_minor_version], [0])
 m4_define([weston_micro_version], [90])
 m4_define([weston_version],
           [weston_major_version.weston_minor_version.weston_micro_version])
-m4_define([libweston_major_version], [4])
+m4_define([libweston_major_version], [5])
 m4_define([libweston_minor_version], [0])
-m4_define([libweston_patch_version], [90])
+m4_define([libweston_patch_version], [0])
 
 AC_PREREQ([2.64])
 AC_INIT([weston],

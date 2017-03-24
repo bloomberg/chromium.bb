@@ -1313,6 +1313,7 @@ static int
 wayland_output_set_size(struct weston_output *base, int width, int height)
 {
 	struct wayland_output *output = to_wayland_output(base);
+	struct weston_head *head = &output->base.head;
 	int output_width, output_height;
 
 	/* We can only be called once. */
@@ -1345,12 +1346,11 @@ wayland_output_set_size(struct weston_output *base, int width, int height)
 	wl_list_insert(&output->base.mode_list, &output->mode.link);
 
 	output->base.current_mode = &output->mode;
-	output->base.make = "wayland";
-	output->base.model = "none";
+
+	weston_head_set_monitor_strings(head, "wayland", "none", NULL);
 
 	/* XXX: Calculate proper size. */
-	output->base.mm_width = width;
-	output->base.mm_height = height;
+	weston_head_set_physical_size(head, width, height);
 
 	return 0;
 }
@@ -1383,10 +1383,12 @@ wayland_output_create_for_parent_output(struct wayland_backend *b,
 
 	output->parent.output = poutput->global;
 
-	output->base.make = poutput->physical.make;
-	output->base.model = poutput->physical.model;
-	output->base.mm_width = poutput->physical.width;
-	output->base.mm_height = poutput->physical.height;
+	weston_head_set_monitor_strings(&output->base.head,
+					poutput->physical.make,
+					poutput->physical.model, NULL);
+	weston_head_set_physical_size(&output->base.head,
+				      poutput->physical.width,
+				      poutput->physical.height);
 
 	wl_list_insert_list(&output->base.mode_list, &poutput->mode_list);
 	wl_list_init(&poutput->mode_list);

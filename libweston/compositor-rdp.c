@@ -482,6 +482,7 @@ rdp_output_set_size(struct weston_output *base,
 		    int width, int height)
 {
 	struct rdp_output *output = to_rdp_output(base);
+	struct weston_head *head = &output->base.head;
 	struct weston_mode *currentMode;
 	struct weston_mode initMode;
 
@@ -500,12 +501,11 @@ rdp_output_set_size(struct weston_output *base,
 		return -1;
 
 	output->base.current_mode = output->base.native_mode = currentMode;
-	output->base.make = "weston";
-	output->base.model = "rdp";
+
+	weston_head_set_monitor_strings(head, "weston", "rdp", NULL);
 
 	/* XXX: Calculate proper size. */
-	output->base.mm_width = width;
-	output->base.mm_height = height;
+	weston_head_set_physical_size(head, width, height);
 
 	output->base.start_repaint_loop = rdp_output_start_repaint_loop;
 	output->base.repaint = rdp_output_repaint;

@@ -102,22 +102,23 @@ edid_value_valid(const char *str)
 static gchar *
 get_output_id(struct cms_colord *cms, struct weston_output *o)
 {
+	struct weston_head *head = &o->head;
 	const gchar *tmp;
 	GString *device_id;
 
 	/* see https://github.com/hughsie/colord/blob/master/doc/device-and-profile-naming-spec.txt
 	 * for format and allowed values */
 	device_id = g_string_new("xrandr");
-	if (edid_value_valid(o->make)) {
-		tmp = g_hash_table_lookup(cms->pnp_ids, o->make);
+	if (edid_value_valid(head->make)) {
+		tmp = g_hash_table_lookup(cms->pnp_ids, head->make);
 		if (tmp == NULL)
-			tmp = o->make;
+			tmp = head->make;
 		g_string_append_printf(device_id, "-%s", tmp);
 	}
-	if (edid_value_valid(o->model))
-		g_string_append_printf(device_id, "-%s", o->model);
-	if (edid_value_valid(o->serial_number))
-		g_string_append_printf(device_id, "-%s", o->serial_number);
+	if (edid_value_valid(head->model))
+		g_string_append_printf(device_id, "-%s", head->model);
+	if (edid_value_valid(head->serial_number))
+		g_string_append_printf(device_id, "-%s", head->serial_number);
 
 	/* no EDID data, so use fallback */
 	if (strcmp(device_id->str, "xrandr") == 0)
@@ -230,6 +231,7 @@ colord_notifier_output_destroy(struct wl_listener *listener, void *data)
 static void
 colord_output_created(struct cms_colord *cms, struct weston_output *o)
 {
+	struct weston_head *head = &o->head;
 	CdDevice *device;
 	const gchar *tmp;
 	gchar *device_id;
@@ -251,25 +253,25 @@ colord_output_created(struct cms_colord *cms, struct weston_output *o)
 	g_hash_table_insert (device_props,
 			     g_strdup(CD_DEVICE_PROPERTY_COLORSPACE),
 			     g_strdup(cd_colorspace_to_string(CD_COLORSPACE_RGB)));
-	if (edid_value_valid(o->make)) {
-		tmp = g_hash_table_lookup(cms->pnp_ids, o->make);
+	if (edid_value_valid(head->make)) {
+		tmp = g_hash_table_lookup(cms->pnp_ids, head->make);
 		if (tmp == NULL)
-			tmp = o->make;
+			tmp = head->make;
 		g_hash_table_insert (device_props,
 				     g_strdup(CD_DEVICE_PROPERTY_VENDOR),
 				     g_strdup(tmp));
 	}
-	if (edid_value_valid(o->model)) {
+	if (edid_value_valid(head->model)) {
 		g_hash_table_insert (device_props,
 				     g_strdup(CD_DEVICE_PROPERTY_MODEL),
-				     g_strdup(o->model));
+				     g_strdup(head->model));
 	}
-	if (edid_value_valid(o->serial_number)) {
+	if (edid_value_valid(head->serial_number)) {
 		g_hash_table_insert (device_props,
 				     g_strdup(CD_DEVICE_PROPERTY_SERIAL),
-				     g_strdup(o->serial_number));
+				     g_strdup(head->serial_number));
 	}
-	if (o->connection_internal) {
+	if (head->connection_internal) {
 		g_hash_table_insert (device_props,
 				     g_strdup (CD_DEVICE_PROPERTY_EMBEDDED),
 				     NULL);

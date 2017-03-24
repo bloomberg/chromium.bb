@@ -499,6 +499,7 @@ fbdev_output_create(struct fbdev_backend *backend,
                     const char *device)
 {
 	struct fbdev_output *output;
+	struct weston_head *head;
 	int fb_fd;
 
 	weston_log("Creating fbdev output.\n");
@@ -532,12 +533,13 @@ fbdev_output_create(struct fbdev_backend *backend,
 	wl_list_insert(&output->base.mode_list, &output->mode.link);
 
 	output->base.current_mode = &output->mode;
-	output->base.subpixel = WL_OUTPUT_SUBPIXEL_UNKNOWN;
-	output->base.make = "unknown";
-	output->base.model = output->fb_info.id;
 
-	output->base.mm_width = output->fb_info.width_mm;
-	output->base.mm_height = output->fb_info.height_mm;
+	head = &output->base.head;
+	weston_head_set_monitor_strings(head, "unknown", output->fb_info.id,
+					NULL);
+	weston_head_set_subpixel(head, WL_OUTPUT_SUBPIXEL_UNKNOWN);
+	weston_head_set_physical_size(head, output->fb_info.width_mm,
+				      output->fb_info.height_mm);
 
 	close(fb_fd);
 

@@ -185,6 +185,7 @@ headless_output_set_size(struct weston_output *base,
 			 int width, int height)
 {
 	struct headless_output *output = to_headless_output(base);
+	struct weston_head *head = &output->base.head;
 	int output_width, output_height;
 
 	/* We can only be called once. */
@@ -204,12 +205,11 @@ headless_output_set_size(struct weston_output *base,
 	wl_list_insert(&output->base.mode_list, &output->mode.link);
 
 	output->base.current_mode = &output->mode;
-	output->base.make = "weston";
-	output->base.model = "headless";
+
+	weston_head_set_monitor_strings(head, "weston", "headless", NULL);
 
 	/* XXX: Calculate proper size. */
-	output->base.mm_width = width;
-	output->base.mm_height = height;
+	weston_head_set_physical_size(head, width, height);
 
 	output->base.start_repaint_loop = headless_output_start_repaint_loop;
 	output->base.repaint = headless_output_repaint;

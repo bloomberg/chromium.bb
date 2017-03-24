@@ -1065,6 +1065,8 @@ x11_output_set_size(struct weston_output *base, int width, int height)
 {
 	struct x11_output *output = to_x11_output(base);
 	struct x11_backend *b = to_x11_backend(base->compositor);
+	struct weston_head *head = &output->base.head;
+	xcb_screen_t *scrn = b->screen;
 	int output_width, output_height;
 
 	/* We can only be called once. */
@@ -1099,16 +1101,13 @@ x11_output_set_size(struct weston_output *base, int width, int height)
 	wl_list_insert(&output->base.mode_list, &output->mode.link);
 
 	output->base.current_mode = &output->mode;
-	output->base.make = "weston-X11";
-	output->base.model = "none";
-
 	output->base.native_mode = &output->native;
 	output->base.native_scale = output->base.scale;
 
-	output->base.mm_width = width * b->screen->width_in_millimeters /
-		b->screen->width_in_pixels;
-	output->base.mm_height = height * b->screen->height_in_millimeters /
-		b->screen->height_in_pixels;
+	weston_head_set_monitor_strings(head, "weston-X11", "none", NULL);
+	weston_head_set_physical_size(head,
+		width * scrn->width_in_millimeters / scrn->width_in_pixels,
+		height * scrn->height_in_millimeters / scrn->height_in_pixels);
 
 	return 0;
 }

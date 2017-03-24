@@ -4933,6 +4933,7 @@ create_output_for_connector(struct drm_backend *b,
 			    struct udev_device *drm_device)
 {
 	struct drm_output *output;
+	struct weston_head *head;
 	drmModeObjectPropertiesPtr props;
 	struct drm_mode *drm_mode;
 	char *name;
@@ -4973,26 +4974,26 @@ create_output_for_connector(struct drm_backend *b,
 	}
 	drm_property_info_populate(b, connector_props, output->props_conn,
 				   WDRM_CONNECTOR__COUNT, props);
+	head = &output->base.head;
 	find_and_parse_output_edid(b, output, props,
 				   &make, &model, &serial_number);
-	output->base.make = (char *)make;
-	output->base.model = (char *)model;
-	output->base.serial_number = (char *)serial_number;
-	output->base.subpixel = drm_subpixel_to_wayland(output->connector->subpixel);
+	weston_head_set_monitor_strings(head, make, model, serial_number);
+	weston_head_set_subpixel(head,
+		drm_subpixel_to_wayland(output->connector->subpixel));
 
 	drmModeFreeObjectProperties(props);
 
 	if (output->connector->connector_type == DRM_MODE_CONNECTOR_LVDS ||
 	    output->connector->connector_type == DRM_MODE_CONNECTOR_eDP)
-		output->base.connection_internal = true;
+		weston_head_set_internal(head);
 
 	if (drm_output_init_gamma_size(output) < 0)
 		goto err_output;
 
-	output->state_cur = drm_output_state_alloc(output, NULL);
+	weston_head_set_physical_size(head, output->connector->mmWidth,
+				      output->connector->mmHeight);
 
-	output->base.mm_width = output->connector->mmWidth;
-	output->base.mm_height = output->connector->mmHeight;
+	output->state_cur = drm_output_state_alloc(output, NULL);
 
 	for (i = 0; i < output->connector->count_modes; i++) {
 		drm_mode = drm_output_add_mode(output, &output->connector->modes[i]);
