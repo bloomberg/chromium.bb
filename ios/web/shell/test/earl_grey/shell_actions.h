@@ -17,7 +17,7 @@ namespace web {
 // in the webview. If |triggers_context_menu| is false, the converse is true.
 // This action doesn't fail if the context menu isn't displayed; calling code
 // should check for that separately with a matcher.
-id<GREYAction> longPressElementForContextMenu(const std::string& element_id,
+id<GREYAction> LongPressElementForContextMenu(const std::string& element_id,
                                               bool triggers_context_menu);
 
 }  // namespace web

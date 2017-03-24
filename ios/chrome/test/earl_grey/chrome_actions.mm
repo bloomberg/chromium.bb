@@ -15,14 +15,19 @@
 
 namespace chrome_test_util {
 
-id<GREYAction> longPressElementForContextMenu(const std::string& element_id,
+id<GREYAction> LongPressElementForContextMenu(const std::string& element_id,
                                               bool triggers_context_menu) {
-  return webViewLongPressElementForContextMenu(
+  return WebViewLongPressElementForContextMenu(
       chrome_test_util::GetCurrentWebState(), element_id,
       triggers_context_menu);
 }
 
-id<GREYAction> turnCollectionViewSwitchOn(BOOL on) {
+id<GREYAction> longPressElementForContextMenu(const std::string& element_id,
+                                              bool triggers_context_menu) {
+  return LongPressElementForContextMenu(element_id, triggers_context_menu);
+}
+
+id<GREYAction> TurnCollectionViewSwitchOn(BOOL on) {
   id<GREYMatcher> constraints = grey_not(grey_systemAlertViewShown());
   NSString* actionName =
       [NSString stringWithFormat:@"Turn collection view switch to %@ state",

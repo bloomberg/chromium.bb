@@ -97,7 +97,7 @@ void AssertElementIsFocused(const std::string& element_id) {
   [[EarlGrey
       selectElementWithMatcher:web::WebViewInWebState(
                                    chrome_test_util::GetCurrentWebState())]
-      performAction:web::webViewTapElement(
+      performAction:web::WebViewTapElement(
                         chrome_test_util::GetCurrentWebState(),
                         kFormElementId1)];
 

@@ -56,7 +56,7 @@ using web::WebViewContainingText;
       assertWithMatcher:grey_notNil()];
 
   [[EarlGrey selectElementWithMatcher:web::WebView()]
-      performAction:web::longPressElementForContextMenu(
+      performAction:web::LongPressElementForContextMenu(
                         linkID, true /* menu should appear */)];
 
   id<GREYMatcher> copyItem = ContextMenuItemWithText(@"Copy Link");
@@ -96,7 +96,7 @@ using web::WebViewContainingText;
       assertWithMatcher:grey_notNil()];
 
   [[EarlGrey selectElementWithMatcher:web::WebView()]
-      performAction:web::longPressElementForContextMenu(
+      performAction:web::LongPressElementForContextMenu(
                         linkID, false /* menu shouldn't appear */)];
 
   id<GREYMatcher> copyItem = ContextMenuItemWithText(@"Copy Link");
@@ -130,7 +130,7 @@ using web::WebViewContainingText;
       assertWithMatcher:grey_notNil()];
 
   [[EarlGrey selectElementWithMatcher:web::WebView()]
-      performAction:web::longPressElementForContextMenu(
+      performAction:web::LongPressElementForContextMenu(
                         linkID, false /* menu shouldn't appear */)];
 
   id<GREYMatcher> copyItem = ContextMenuItemWithText(@"Copy Link");
@@ -165,7 +165,7 @@ using web::WebViewContainingText;
       assertWithMatcher:grey_notNil()];
 
   [[EarlGrey selectElementWithMatcher:web::WebView()]
-      performAction:web::longPressElementForContextMenu(
+      performAction:web::LongPressElementForContextMenu(
                         linkID, true /* menu should appear */)];
 
   id<GREYMatcher> copyItem = ContextMenuItemWithText(@"Copy Link");

@@ -59,34 +59,35 @@ id<GREYMatcher> OpenImageInNewTabButton() {
 
 // Waits for the context menu item to disappear. TODO(crbug.com/682871): Remove
 // this once EarlGrey is synchronized with context menu.
-void WaitForContextMenuItemDisappeared(id<GREYMatcher> contextMenuItemButton) {
+void WaitForContextMenuItemDisappeared(
+    id<GREYMatcher> context_menu_item_button) {
   ConditionBlock condition = ^{
     NSError* error = nil;
-    [[EarlGrey selectElementWithMatcher:contextMenuItemButton]
+    [[EarlGrey selectElementWithMatcher:context_menu_item_button]
         assertWithMatcher:grey_nil()
                     error:&error];
     return error == nil;
   };
   GREYAssert(testing::WaitUntilConditionOrTimeout(
                  testing::kWaitForUIElementTimeout, condition),
-             @"Waiting for matcher %@ failed.", contextMenuItemButton);
+             @"Waiting for matcher %@ failed.", context_menu_item_button);
 }
 
-// Long press on |elementId| to trigger context menu and then tap on
+// Long press on |element_id| to trigger context menu and then tap on
 // |contextMenuItemButton| item.
-void LongPressElementAndTapOnButton(const char* elementId,
-                                    id<GREYMatcher> contextMenuItemButton) {
-  id<GREYMatcher> webViewMatcher =
+void LongPressElementAndTapOnButton(const char* element_id,
+                                    id<GREYMatcher> context_menu_item_button) {
+  id<GREYMatcher> web_view_matcher =
       web::WebViewInWebState(chrome_test_util::GetCurrentWebState());
-  [[EarlGrey selectElementWithMatcher:webViewMatcher]
-      performAction:chrome_test_util::longPressElementForContextMenu(elementId,
-                                                                     true)];
+  [[EarlGrey selectElementWithMatcher:web_view_matcher]
+      performAction:chrome_test_util::LongPressElementForContextMenu(
+                        element_id, true /* menu should appear */)];
 
-  [[EarlGrey selectElementWithMatcher:contextMenuItemButton]
+  [[EarlGrey selectElementWithMatcher:context_menu_item_button]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey selectElementWithMatcher:contextMenuItemButton]
+  [[EarlGrey selectElementWithMatcher:context_menu_item_button]
       performAction:grey_tap()];
-  WaitForContextMenuItemDisappeared(contextMenuItemButton);
+  WaitForContextMenuItemDisappeared(context_menu_item_button);
 }
 
 // A simple wrapper that sleeps for 1s to wait for the animation, triggered from

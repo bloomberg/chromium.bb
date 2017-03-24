@@ -17,12 +17,17 @@ namespace chrome_test_util {
 // in the webview. If |triggers_context_menu| is false, the converse is true.
 // This action doesn't fail if the context menu isn't displayed; calling code
 // should check for that separately with a matcher.
+id<GREYAction> LongPressElementForContextMenu(const std::string& element_id,
+                                              bool triggers_context_menu);
+
+// TODO(crbug.com/683432): Delete this once downstream code uses the correct
+// format.
 id<GREYAction> longPressElementForContextMenu(const std::string& element_id,
                                               bool triggers_context_menu);
 
 // Action to turn the switch of a CollectionViewSwitchCell to the given |on|
 // state.
-id<GREYAction> turnCollectionViewSwitchOn(BOOL on);
+id<GREYAction> TurnCollectionViewSwitchOn(BOOL on);
 
 }  // namespace chrome_test_util
 

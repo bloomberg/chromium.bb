@@ -17,7 +17,7 @@ namespace web {
 // The action will fail (in addition to its own failure modes) if |element_id|
 // can't be located, or if it doesn't trigger a mousedown event on |element_id|
 // inside the webview.
-id<GREYAction> webViewVerifiedActionOnElement(WebState* state,
+id<GREYAction> WebViewVerifiedActionOnElement(WebState* state,
                                               id<GREYAction> action,
                                               const std::string& element_id);
 
@@ -27,13 +27,13 @@ id<GREYAction> webViewVerifiedActionOnElement(WebState* state,
 // in the webview. If |triggers_context_menu| is false, the converse is true.
 // This action doesn't fail if the context menu isn't displayed; calling code
 // should check for that separately with a matcher.
-id<GREYAction> webViewLongPressElementForContextMenu(
+id<GREYAction> WebViewLongPressElementForContextMenu(
     WebState* state,
     const std::string& element_id,
     bool triggers_context_menu);
 
 // Taps on element |element_id| in the webview of |state|.
-id<GREYAction> webViewTapElement(WebState* state,
+id<GREYAction> WebViewTapElement(WebState* state,
                                  const std::string& element_id);
 
 }  // namespace web

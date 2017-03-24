@@ -110,7 +110,7 @@ void RemoveVerifierForElementWithId(web::WebState* web_state,
 }
 
 // Returns a no element found error.
-id<GREYAction> webViewElementNotFound(const std::string& element_id) {
+id<GREYAction> WebViewElementNotFound(const std::string& element_id) {
   NSString* description = [NSString
       stringWithFormat:@"Couldn't locate a bounding rect for element_id %s; "
                        @"either it isn't there or it has no area.",
@@ -131,7 +131,7 @@ id<GREYAction> webViewElementNotFound(const std::string& element_id) {
 
 namespace web {
 
-id<GREYAction> webViewVerifiedActionOnElement(WebState* state,
+id<GREYAction> WebViewVerifiedActionOnElement(WebState* state,
                                               id<GREYAction> action,
                                               const std::string& element_id) {
   NSString* action_name =
@@ -198,13 +198,13 @@ id<GREYAction> webViewVerifiedActionOnElement(WebState* state,
                             performBlock:verified_tap];
 }
 
-id<GREYAction> webViewLongPressElementForContextMenu(
+id<GREYAction> WebViewLongPressElementForContextMenu(
     WebState* state,
     const std::string& element_id,
     bool triggers_context_menu) {
   CGRect rect = web::test::GetBoundingRectOfElementWithId(state, element_id);
   if (CGRectIsEmpty(rect)) {
-    return webViewElementNotFound(element_id);
+    return WebViewElementNotFound(element_id);
   }
   CGPoint point = CGPointMake(CGRectGetMidX(rect), CGRectGetMidY(rect));
   id<GREYAction> longpress =
@@ -212,15 +212,15 @@ id<GREYAction> webViewLongPressElementForContextMenu(
   if (triggers_context_menu) {
     return longpress;
   }
-  return webViewVerifiedActionOnElement(state, longpress, element_id);
+  return WebViewVerifiedActionOnElement(state, longpress, element_id);
 }
 
-id<GREYAction> webViewTapElement(WebState* state,
+id<GREYAction> WebViewTapElement(WebState* state,
                                  const std::string& element_id) {
   CGRect rect = web::test::GetBoundingRectOfElementWithId(state, element_id);
   CGPoint point = CGPointMake(CGRectGetMidX(rect), CGRectGetMidY(rect));
-  return CGRectIsEmpty(rect) ? webViewElementNotFound(element_id)
-                             : webViewVerifiedActionOnElement(
+  return CGRectIsEmpty(rect) ? WebViewElementNotFound(element_id)
+                             : WebViewVerifiedActionOnElement(
                                    state, grey_tapAtPoint(point), element_id);
 }
 

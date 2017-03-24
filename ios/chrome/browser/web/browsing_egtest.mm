@@ -605,7 +605,7 @@ id<GREYMatcher> GoButtonMatcher() {
 
   web::WebState* currentWebState = chrome_test_util::GetCurrentWebState();
   [[EarlGrey selectElementWithMatcher:web::WebViewInWebState(currentWebState)]
-      performAction:web::webViewTapElement(currentWebState, ID)];
+      performAction:web::WebViewTapElement(currentWebState, ID)];
 
   // Wait until the keyboard shows up before tapping.
   GREYCondition* condition = [GREYCondition
