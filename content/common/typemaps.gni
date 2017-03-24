@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 typemaps = [
+  "//content/common/background_fetch/background_fetch_types.typemap",
   "//content/common/native_types.typemap",
   "//content/common/media/media_devices.typemap",
   "//content/common/push_messaging.typemap",

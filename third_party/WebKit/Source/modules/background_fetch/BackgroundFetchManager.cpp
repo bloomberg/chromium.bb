@@ -7,6 +7,8 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8ThrowException.h"
+#include "core/dom/DOMException.h"
+#include "core/dom/ExceptionCode.h"
 #include "modules/background_fetch/BackgroundFetchBridge.h"
 #include "modules/background_fetch/BackgroundFetchOptions.h"
 #include "modules/background_fetch/BackgroundFetchRegistration.h"
@@ -37,16 +39,36 @@ ScriptPromise BackgroundFetchManager::fetch(
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
 
-  // TODO(peter): Register the fetch() with the browser process. The reject
-  // cases there are storage errors and duplicated registrations for the `tag`
-  // given the `m_registration`.
-  BackgroundFetchRegistration* registration = new BackgroundFetchRegistration(
-      m_registration.get(), tag, options.icons(), options.totalDownloadSize(),
-      options.title());
+  // TODO(peter): Include the |requests| in the Mojo call.
 
-  resolver->resolve(registration);
+  m_bridge->fetch(tag, options,
+                  WTF::bind(&BackgroundFetchManager::didFetch,
+                            wrapPersistent(this), wrapPersistent(resolver)));
 
   return promise;
+}
+
+void BackgroundFetchManager::didFetch(
+    ScriptPromiseResolver* resolver,
+    mojom::blink::BackgroundFetchError error,
+    BackgroundFetchRegistration* registration) {
+  switch (error) {
+    case mojom::blink::BackgroundFetchError::NONE:
+      DCHECK(registration);
+      resolver->resolve(registration);
+      return;
+    case mojom::blink::BackgroundFetchError::DUPLICATED_TAG:
+      DCHECK(!registration);
+      resolver->reject(DOMException::create(
+          InvalidStateError,
+          "There already is a registration for the given tag."));
+      return;
+    case mojom::blink::BackgroundFetchError::INVALID_TAG:
+      // Not applicable for this callback.
+      break;
+  }
+
+  NOTREACHED();
 }
 
 ScriptPromise BackgroundFetchManager::get(ScriptState* scriptState,

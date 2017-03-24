@@ -12,18 +12,21 @@
 namespace blink {
 
 BackgroundFetchRegistration::BackgroundFetchRegistration(
-    ServiceWorkerRegistration* registration,
     String tag,
     HeapVector<IconDefinition> icons,
     long long totalDownloadSize,
     String title)
-    : m_registration(registration),
-      m_tag(tag),
+    : m_tag(tag),
       m_icons(icons),
       m_totalDownloadSize(totalDownloadSize),
       m_title(title) {}
 
 BackgroundFetchRegistration::~BackgroundFetchRegistration() = default;
+
+void BackgroundFetchRegistration::setServiceWorkerRegistration(
+    ServiceWorkerRegistration* registration) {
+  m_registration = registration;
+}
 
 String BackgroundFetchRegistration::tag() const {
   return m_tag;
@@ -45,6 +48,7 @@ ScriptPromise BackgroundFetchRegistration::abort(ScriptState* scriptState) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
 
+  DCHECK(m_registration);
   BackgroundFetchBridge::from(m_registration)
       ->abort(m_tag, WTF::bind(&BackgroundFetchRegistration::didAbort,
                                wrapPersistent(this), wrapPersistent(resolver)));

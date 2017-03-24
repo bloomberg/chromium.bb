@@ -16,6 +16,7 @@
 
 namespace blink {
 
+class BackgroundFetchOptions;
 class BackgroundFetchRegistration;
 
 // The bridge is responsible for establishing and maintaining the Mojo
@@ -29,11 +30,10 @@ class BackgroundFetchBridge final
 
  public:
   using AbortCallback = Function<void(mojom::blink::BackgroundFetchError)>;
-  using GetRegistrationCallback =
-      Function<void(mojom::blink::BackgroundFetchError,
-                    BackgroundFetchRegistration*)>;
   using GetTagsCallback =
       Function<void(mojom::blink::BackgroundFetchError, const Vector<String>&)>;
+  using RegistrationCallback = Function<void(mojom::blink::BackgroundFetchError,
+                                             BackgroundFetchRegistration*)>;
   using UpdateUICallback = Function<void(mojom::blink::BackgroundFetchError)>;
 
   static BackgroundFetchBridge* from(ServiceWorkerRegistration*);
@@ -41,7 +41,12 @@ class BackgroundFetchBridge final
 
   virtual ~BackgroundFetchBridge();
 
-  // TODO(peter): Implement support for the `fetch()` function in the bridge.
+  // Creates a new Background Fetch registration identified by |tag| with the
+  // given |options| for the sequence of |requests|. The |callback| will be
+  // invoked when the registration has been created.
+  void fetch(const String& tag,
+             const BackgroundFetchOptions&,
+             std::unique_ptr<RegistrationCallback>);
 
   // Updates the user interface for the Background Fetch identified by |tag|
   // with the updated |title|. Will invoke the |callback| when the interface
@@ -59,7 +64,7 @@ class BackgroundFetchBridge final
   // |callback| with the Background Fetch registration, which may be a nullptr
   // if the |tag| does not exist, when the Mojo call has completed.
   void getRegistration(const String& tag,
-                       std::unique_ptr<GetRegistrationCallback>);
+                       std::unique_ptr<RegistrationCallback>);
 
   // Gets the sequence of tags for active Background Fetch registrations. Will
   // invoke the |callback| with the tags when the Mojo call has completed.
@@ -72,7 +77,7 @@ class BackgroundFetchBridge final
   // established after the first call to this method.
   mojom::blink::BackgroundFetchServicePtr& getService();
 
-  void didGetRegistration(std::unique_ptr<GetRegistrationCallback>,
+  void didGetRegistration(std::unique_ptr<RegistrationCallback>,
                           mojom::blink::BackgroundFetchError,
                           mojom::blink::BackgroundFetchRegistrationPtr);
 

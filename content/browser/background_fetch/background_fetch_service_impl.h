@@ -7,6 +7,7 @@
 
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -15,6 +16,7 @@
 namespace content {
 
 class BackgroundFetchContext;
+struct BackgroundFetchOptions;
 class ServiceWorkerContextWrapper;
 
 class BackgroundFetchServiceImpl : public blink::mojom::BackgroundFetchService {
@@ -30,6 +32,10 @@ class BackgroundFetchServiceImpl : public blink::mojom::BackgroundFetchService {
       blink::mojom::BackgroundFetchServiceRequest request);
 
   // blink::mojom::BackgroundFetchService implementation.
+  void Fetch(int64_t service_worker_registration_id,
+             const std::string& tag,
+             const BackgroundFetchOptions& options,
+             const FetchCallback& callback) override;
   void UpdateUI(int64_t service_worker_registration_id,
                 const std::string& tag,
                 const std::string& title,

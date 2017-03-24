@@ -48,6 +48,9 @@ class BackgroundFetchManager final
  private:
   explicit BackgroundFetchManager(ServiceWorkerRegistration*);
 
+  void didFetch(ScriptPromiseResolver*,
+                mojom::blink::BackgroundFetchError,
+                BackgroundFetchRegistration*);
   void didGetRegistration(ScriptPromiseResolver*,
                           mojom::blink::BackgroundFetchError,
                           BackgroundFetchRegistration*);

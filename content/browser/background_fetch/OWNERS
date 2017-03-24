@@ -1,3 +1,7 @@
+# This OWNERS file also covers:
+#
+# //content/common/background_fetch/
+
 peter@chromium.org
 harkness@chromium.org
 

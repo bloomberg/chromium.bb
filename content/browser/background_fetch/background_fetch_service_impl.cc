@@ -6,8 +6,10 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/common/background_fetch/background_fetch_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
@@ -35,6 +37,25 @@ BackgroundFetchServiceImpl::BackgroundFetchServiceImpl(
 }
 
 BackgroundFetchServiceImpl::~BackgroundFetchServiceImpl() = default;
+
+void BackgroundFetchServiceImpl::Fetch(int64_t service_worker_registration_id,
+                                       const std::string& tag,
+                                       const BackgroundFetchOptions& options,
+                                       const FetchCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  // TODO(peter): Create a new job with the BackgroundFetchContext for the
+  // given tag, requests and options. For now we return a registration that's
+  // based on the given |options|, to make sure round-trip is covered.
+
+  BackgroundFetchRegistration registration;
+  registration.tag = tag;
+  registration.icons = options.icons;
+  registration.title = options.title;
+  registration.total_download_size = options.total_download_size;
+
+  callback.Run(blink::mojom::BackgroundFetchError::NONE, registration);
+}
 
 void BackgroundFetchServiceImpl::UpdateUI(
     int64_t service_worker_registration_id,
@@ -70,7 +91,7 @@ void BackgroundFetchServiceImpl::GetRegistration(
   // and construct a BackgroundFetchRegistrationPtr for it.
 
   callback.Run(blink::mojom::BackgroundFetchError::NONE,
-               nullptr /* registration */);
+               base::nullopt /* registration */);
 }
 
 void BackgroundFetchServiceImpl::GetTags(int64_t service_worker_registration_id,

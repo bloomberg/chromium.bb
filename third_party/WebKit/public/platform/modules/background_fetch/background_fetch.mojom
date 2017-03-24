@@ -10,21 +10,42 @@ enum BackgroundFetchError {
   INVALID_TAG
 };
 
+// Represents the definition of an icon developers can optionally provide with a
+// Background Fetch fetch. Analogous to the following structure in the spec:
+// https://wicg.github.io/background-fetch/#background-fetch-manager
 struct IconDefinition {
   string src;
   string sizes;
   string type;
 };
 
+// Represents the optional options a developer can provide when starting a new
+// Background Fetch fetch. Analogous to the following structure in the spec:
+// https://wicg.github.io/background-fetch/#background-fetch-manager
+struct BackgroundFetchOptions {
+  array<IconDefinition> icons;
+  int64 total_download_size;
+  string title;
+};
+
+// Represents the information associated with a Background Fetch registration.
+// Analogous to the following structure in the spec:
+// https://wicg.github.io/background-fetch/#background-fetch-registration
 struct BackgroundFetchRegistration {
   string tag;
   array<IconDefinition> icons;
-  int64 total_download_size = 0;
-  string title = "";
+  int64 total_download_size;
+  string title;
 };
 
 interface BackgroundFetchService {
-  // TODO(peter): Implement support for the `fetch()` function in Mojo.
+  // Creates a new Background Fetch registration identified by |tag| with the
+  // given |options| for the sequence of |requests|.
+  Fetch(int64 service_worker_registration_id,
+        string tag,
+        BackgroundFetchOptions options)
+      => (BackgroundFetchError error,
+          BackgroundFetchRegistration? registration);
 
   // Updates the user interface for the Background Fetch identified by the
   // |service_worker_registration_id| and the |tag|.

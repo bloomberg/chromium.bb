@@ -22,6 +22,8 @@ blink_modules_sources("background_fetch") {
     "BackgroundFetchRegistration.h",
     "BackgroundFetchSettledFetch.cpp",
     "BackgroundFetchSettledFetch.h",
+    "BackgroundFetchTypeConverters.cpp",
+    "BackgroundFetchTypeConverters.h",
     "BackgroundFetchedEvent.cpp",
     "BackgroundFetchedEvent.h",
     "ServiceWorkerGlobalScopeBackgroundFetch.h",
