@@ -382,83 +382,8 @@ body .hidden {
   display: none;
 }
 
-/* Footer feedback form. */
-#contentWrap {
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  overflow: auto;
-  position: relative;
-  z-index: 1;
-}
-
-.footerFeedback {
-  display: flex;
-  flex-direction: column;
-  font-size: 14px;
-  z-index: 2;
-  background-color: #4285F4;
-  color: #fff;
-  width: 100%;
-}
-
-.feedbackContent {
-  font-size: 14px;
-  font-family: sans-serif;
-  background-color: #4285F4;
-  clear: both;
-  padding: 14px;
-}
-
-#feedbackQuestion {
-  font-size: 1.4em;
-  font-weight: 700;
-  text-align: center;
-  width: 100%;
-}
-
-.feedbackButtonWrap {
-  margin-top: 14px;
-  text-align: center;
-  width: 100%;
-}
-
-.feedbackButton {
-  -webkit-user-select: none;
-  background-color: #FFFFFF;
-  border-radius: 3px;
-  color: #4285F4;
-  display: inline-block;
-  font-weight: 900;
-  height: 35px;
-  margin: 0px 4% 0px 4%;
-  padding-top: 8px;
-  text-align: center;
-  text-transform: uppercase;
-  user-select: none;
-  width: 40%;
-}
-
 .clear {
   clear: both;
-}
-
-/* Feedback fade out */
-.fadeOut {
-  animation-duration: 0.5s;
-  animation-name: fadeOutAndSwipeAnimation;
-}
-
-@keyframes fadeOutAndSwipeAnimation {
-  from {
-    margin-left: 0%;
-    opacity: 1;
-  }
-
-  to {
-    margin-left: -100%;
-    opacity: 0;
-  }
 }
 
 /* Iframe sizing. */

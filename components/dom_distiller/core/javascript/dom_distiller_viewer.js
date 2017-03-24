@@ -111,65 +111,12 @@ function useFontScaling(scaling) {
   pincher.useFontScaling(scaling);
 }
 
-/**
- * Show the distiller feedback form.
- * @param questionText The i18n text for the feedback question.
- * @param yesText The i18n text for the feedback answer 'YES'.
- * @param noText The i18n text for the feedback answer 'NO'.
- */
-function showFeedbackForm(questionText, yesText, noText) {
-  // If the distiller is running on iOS, do not show the feedback form. This
-  // variable is set in distiller_viewer.cc before this function is run.
-  if (distiller_on_ios) return;
-
-  document.getElementById('feedbackYes').innerText = yesText;
-  document.getElementById('feedbackNo').innerText = noText;
-  document.getElementById('feedbackQuestion').innerText = questionText;
-
-  document.getElementById('feedbackContainer').classList.remove("hidden");
-}
-
 // Add a listener to the "View Original" link to report opt-outs.
 document.getElementById('closeReaderView').addEventListener('click',
     function(e) {
       if (distiller) {
         distiller.closePanel(true);
       }
-    }, true);
-
-document.getElementById('feedbackYes').addEventListener('click', function(e) {
-  if (distiller) {
-    distiller.sendFeedback(true);
-  }
-  document.getElementById('feedbackContainer').className += " fadeOut";
-}, true);
-
-document.getElementById('feedbackNo').addEventListener('click', function(e) {
-  if (distiller) {
-    distiller.sendFeedback(false);
-  }
-  document.getElementById('feedbackContainer').className += " fadeOut";
-}, true);
-
-document.getElementById('feedbackContainer').addEventListener('animationend',
-    function(e) {
-      var feedbackContainer = document.getElementById('feedbackContainer');
-      feedbackContainer.classList.remove("fadeOut");
-      document.getElementById('contentWrap').style.paddingBottom =
-        window.getComputedStyle(feedbackContainer).height;
-      feedbackContainer.className += " hidden";
-      setTimeout(function() {
-        // Close the gap where the feedback form was.
-        var contentWrap = document.getElementById('contentWrap');
-        contentWrap.style.transition = '0.5s';
-        contentWrap.style.paddingBottom = '';
-      }, 0);
-    }, true);
-
-document.getElementById('contentWrap').addEventListener('transitionend',
-    function(e) {
-      var contentWrap = document.getElementById('contentWrap');
-      contentWrap.style.transition = '';
     }, true);
 
 updateToolbarColor();

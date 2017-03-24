@@ -56,10 +56,6 @@ void DomDistillerRequestViewBase::OnArticleReady(
     SendJavaScript(viewer::GetSetTitleJs(article_proto->title()));
     SendJavaScript(viewer::GetSetTextDirectionJs(text_direction));
     SendJavaScript(viewer::GetUnsafeArticleContentJs(article_proto));
-    // If any content was loaded, show the feedback form.
-    if (ShouldShowFeedbackForm()) {
-      SendJavaScript(viewer::GetShowFeedbackFormJs());
-    }
   } else {
     // It's possible that we didn't get some incremental updates from the
     // distiller. Ensure all remaining pages are flushed to the viewer.
@@ -91,10 +87,6 @@ void DomDistillerRequestViewBase::OnArticleUpdated(
       // client.
       SendJavaScript(viewer::GetSetTitleJs(page.title()));
       SendJavaScript(viewer::GetSetTextDirectionJs(page.text_direction()));
-      // If any content was loaded, show the feedback form.
-      if (ShouldShowFeedbackForm()) {
-        SendJavaScript(viewer::GetShowFeedbackFormJs());
-      }
     }
   }
 }

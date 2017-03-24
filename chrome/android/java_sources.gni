@@ -124,7 +124,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/browsing_data/UrlFilters.java",
   "java/src/org/chromium/chrome/browser/childaccounts/ChildAccountFeedbackReporter.java",
   "java/src/org/chromium/chrome/browser/childaccounts/ChildAccountService.java",
-  "java/src/org/chromium/chrome/browser/childaccounts/ExternalFeedbackReporter.java",
   "java/src/org/chromium/chrome/browser/compositor/CompositorSurfaceManager.java",
   "java/src/org/chromium/chrome/browser/compositor/CompositorView.java",
   "java/src/org/chromium/chrome/browser/compositor/CompositorViewHolder.java",

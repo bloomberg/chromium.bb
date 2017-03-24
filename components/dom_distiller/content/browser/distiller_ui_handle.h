@@ -18,11 +18,6 @@ class DistillerUIHandle {
   DistillerUIHandle() {}
   virtual ~DistillerUIHandle() {}
 
-  // Start an external form to record user feedback.
-  virtual void ReportExternalFeedback(content::WebContents* web_contents,
-                                      const GURL& url,
-                                      const bool good) = 0;
-
   // Open the UI settings for dom distiller.
   virtual void OpenSettings(content::WebContents* web_contents) = 0;
 

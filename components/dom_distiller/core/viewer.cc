@@ -149,25 +149,6 @@ std::string ReplaceHtmlTemplateValues(
 
 namespace viewer {
 
-const std::string GetShowFeedbackFormJs() {
-  base::Value question_val(
-      l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_QUALITY_QUESTION));
-  base::Value no_val(
-      l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_QUALITY_ANSWER_NO));
-  base::Value yes_val(
-      l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_QUALITY_ANSWER_YES));
-
-  std::string question;
-  std::string yes;
-  std::string no;
-
-  base::JSONWriter::Write(question_val, &question);
-  base::JSONWriter::Write(yes_val, &yes);
-  base::JSONWriter::Write(no_val, &no);
-
-  return "showFeedbackForm(" + question + ", " + yes + ", " + no + ");";
-}
-
 const std::string GetUnsafeIncrementalDistilledPageJs(
     const DistilledPageProto* page_proto,
     const bool is_last_page) {
@@ -194,9 +175,6 @@ const std::string GetErrorPageJs() {
   page_update += "addToPage(" + output + ");";
   page_update += GetSetTextDirectionJs(std::string("auto"));
   page_update += GetToggleLoadingIndicatorJs(true);
-  if (ShouldShowFeedbackForm()) {
-    page_update += GetShowFeedbackFormJs();
-  }
   return page_update;
 }
 

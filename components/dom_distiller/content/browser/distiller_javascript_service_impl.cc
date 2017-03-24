@@ -22,24 +22,6 @@ DistillerJavaScriptServiceImpl::DistillerJavaScriptServiceImpl(
 
 DistillerJavaScriptServiceImpl::~DistillerJavaScriptServiceImpl() {}
 
-void DistillerJavaScriptServiceImpl::HandleDistillerFeedbackCall(
-    bool good) {
-  FeedbackReporter::ReportQuality(good);
-  if (good) {
-    return;
-  }
-
-  // If feedback is bad try to start up external feedback.
-  if (!distiller_ui_handle_) {
-    return;
-  }
-  content::WebContents* contents =
-      content::WebContents::FromRenderFrameHost(render_frame_host_);
-  distiller_ui_handle_->ReportExternalFeedback(
-      contents, contents->GetURL(), false);
-  return;
-}
-
 void DistillerJavaScriptServiceImpl::HandleDistillerClosePanelCall(
     bool animate) {
   content::RecordAction(base::UserMetricsAction("DomDistiller_ViewOriginal"));
