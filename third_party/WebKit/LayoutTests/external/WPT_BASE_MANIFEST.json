@@ -6825,6 +6825,11 @@
      {}
     ]
    ],
+   "IndexedDB/idbobjectstore_createIndex15-autoincrement-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "IndexedDB/idbworker.js": [
     [
      {}
@@ -16625,6 +16630,11 @@
      {}
     ]
    ],
+   "html/rendering/non-replaced-elements/flow-content-0/support/dialog-framed.html": [
+    [
+     {}
+    ]
+   ],
    "html/rendering/non-replaced-elements/lists/TODO-lists.html": [
     [
      {}
@@ -22990,7 +23000,42 @@
      {}
     ]
    ],
+   "service-workers/service-worker/ServiceWorkerGlobalScope/extendable-message-event-constructor.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "service-workers/service-worker/ServiceWorkerGlobalScope/resources/close-worker.js": [
+    [
+     {}
+    ]
+   ],
+   "service-workers/service-worker/ServiceWorkerGlobalScope/resources/extendable-message-event-constructor-worker.js": [
+    [
+     {}
+    ]
+   ],
+   "service-workers/service-worker/ServiceWorkerGlobalScope/resources/extendable-message-event-loopback-worker.js": [
+    [
+     {}
+    ]
+   ],
+   "service-workers/service-worker/ServiceWorkerGlobalScope/resources/extendable-message-event-ping-worker.js": [
+    [
+     {}
+    ]
+   ],
+   "service-workers/service-worker/ServiceWorkerGlobalScope/resources/extendable-message-event-pong-worker.js": [
+    [
+     {}
+    ]
+   ],
+   "service-workers/service-worker/ServiceWorkerGlobalScope/resources/extendable-message-event-utils.js": [
+    [
+     {}
+    ]
+   ],
+   "service-workers/service-worker/ServiceWorkerGlobalScope/resources/extendable-message-event-worker.js": [
     [
      {}
     ]
@@ -25251,6 +25296,16 @@
     ]
    ],
    "webrtc/promises-call-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "webrtc/rtcpeerconnection/iceGatheringState-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "webrtc/rtcpeerconnection/rtcconfiguration-icecandidatepoolsize-expected.txt": [
     [
      {}
     ]
@@ -34847,15 +34902,13 @@
      {}
     ]
    ],
-   "hr-time/basic.html": [
+   "hr-time/basic.any.js": [
     [
-     "/hr-time/basic.html",
+     "/hr-time/basic.any.html",
      {}
-    ]
-   ],
-   "hr-time/basic.worker.js": [
+    ],
     [
-     "/hr-time/basic.worker.html",
+     "/hr-time/basic.any.worker.html",
      {}
     ]
    ],
@@ -34865,9 +34918,13 @@
      {}
     ]
    ],
-   "hr-time/monotonic-clock.html": [
+   "hr-time/monotonic-clock.any.js": [
     [
-     "/hr-time/monotonic-clock.html",
+     "/hr-time/monotonic-clock.any.html",
+     {}
+    ],
+    [
+     "/hr-time/monotonic-clock.any.worker.html",
      {}
     ]
    ],
@@ -37766,6 +37823,18 @@
    "html/obsolete/requirements-for-implementations/the-marquee-element-0/marquee-scrolldelay.html": [
     [
      "/html/obsolete/requirements-for-implementations/the-marquee-element-0/marquee-scrolldelay.html",
+     {}
+    ]
+   ],
+   "html/rendering/non-replaced-elements/flow-content-0/dialog-display.html": [
+    [
+     "/html/rendering/non-replaced-elements/flow-content-0/dialog-display.html",
+     {}
+    ]
+   ],
+   "html/rendering/non-replaced-elements/flow-content-0/dialog.html": [
+    [
+     "/html/rendering/non-replaced-elements/flow-content-0/dialog.html",
      {}
     ]
    ],
@@ -53085,6 +53154,18 @@
      {}
     ]
    ],
+   "service-workers/service-worker/ServiceWorkerGlobalScope/extendable-message-event-constructor.https.html": [
+    [
+     "/service-workers/service-worker/ServiceWorkerGlobalScope/extendable-message-event-constructor.https.html",
+     {}
+    ]
+   ],
+   "service-workers/service-worker/ServiceWorkerGlobalScope/extendable-message-event.https.html": [
+    [
+     "/service-workers/service-worker/ServiceWorkerGlobalScope/extendable-message-event.https.html",
+     {}
+    ]
+   ],
    "service-workers/service-worker/ServiceWorkerGlobalScope/postmessage.https.html": [
     [
      "/service-workers/service-worker/ServiceWorkerGlobalScope/postmessage.https.html",
@@ -59314,6 +59395,10 @@
    "5710bdf50b039cb1a3ea56242394fb4f71cd1113",
    "testharness"
   ],
+  "IndexedDB/idbobjectstore_createIndex15-autoincrement-expected.txt": [
+   "5df768893c4e8901d1c3b5b757cef62f353fe1f9",
+   "support"
+  ],
   "IndexedDB/idbobjectstore_createIndex15-autoincrement.htm": [
    "1a876f45abcc038941833a489eb7d2fe916fd233",
    "testharness"
@@ -63119,7 +63204,7 @@
    "support"
   ],
   "dom/nodes/Document-createEvent-expected.txt": [
-   "0925fa9229faa99d72aa432b1fca6e321f814a51",
+   "08e4df5f4a8728e697b4b128a65c86824910536e",
    "support"
   ],
   "dom/nodes/Document-createEvent.html": [
@@ -64447,7 +64532,7 @@
    "testharness"
   ],
   "editing/run/backcolor-expected.txt": [
-   "6db848a0cbdd9c3a20841060b28826d044f689d0",
+   "290a29950ec3506ba374ee5b4324d54a473c8b82",
    "support"
   ],
   "editing/run/backcolor.html": [
@@ -64455,7 +64540,7 @@
    "testharness"
   ],
   "editing/run/bold-expected.txt": [
-   "62e92d7096dcc4efe1dd09c348289be0d3d34452",
+   "8523edde1c352ca2cf1df036e2497407aea465f9",
    "support"
   ],
   "editing/run/bold.html": [
@@ -64479,7 +64564,7 @@
    "testharness"
   ],
   "editing/run/fontname-expected.txt": [
-   "9d85af786d1b7e6837276a586852b022008ae70b",
+   "13c09d23afe68f9ac08240bf0a469eea1a35fb69",
    "support"
   ],
   "editing/run/fontname.html": [
@@ -64487,7 +64572,7 @@
    "testharness"
   ],
   "editing/run/fontsize-expected.txt": [
-   "21549190395e8771956c6ac1d09a7097eb4794aa",
+   "3a1f269384cc7fedf672bbe6309c19e3ca775219",
    "support"
   ],
   "editing/run/fontsize.html": [
@@ -64495,7 +64580,7 @@
    "testharness"
   ],
   "editing/run/forecolor-expected.txt": [
-   "9a01307055af93761b90ef8203d7d06e8f4c988e",
+   "feb85e1b410ac5cc789b57b498a7988c9f695190",
    "support"
   ],
   "editing/run/forecolor.html": [
@@ -64503,7 +64588,7 @@
    "testharness"
   ],
   "editing/run/formatblock-expected.txt": [
-   "43b5b385837b21859b3ffb43dce5a12b75f3f34d",
+   "2676955c52ae6709bf285ad1e50fcc55a89f6e8f",
    "support"
   ],
   "editing/run/formatblock.html": [
@@ -64511,7 +64596,7 @@
    "testharness"
   ],
   "editing/run/forwarddelete-expected.txt": [
-   "25cd7e50a10ce2b54240b3806fbc85085862fdca",
+   "6c39317abcb1aea04251ac8c16a78ffd3509909b",
    "support"
   ],
   "editing/run/forwarddelete.html": [
@@ -64519,7 +64604,7 @@
    "testharness"
   ],
   "editing/run/hilitecolor-expected.txt": [
-   "6ed6fea5e8e7e95fdd5507dec9cf146d4d3869c3",
+   "8db6c739cc8f74a5c9ca2d922b8cf49e85670739",
    "support"
   ],
   "editing/run/hilitecolor.html": [
@@ -64527,7 +64612,7 @@
    "testharness"
   ],
   "editing/run/indent-expected.txt": [
-   "f895cf8194134186abe4cafe14c093fb551976fe",
+   "1b43c0d32118d8f16f5ad29c35f1a6e741f7847a",
    "support"
   ],
   "editing/run/indent.html": [
@@ -64535,7 +64620,7 @@
    "testharness"
   ],
   "editing/run/inserthorizontalrule-expected.txt": [
-   "c0568e98b468ce44604df280f7bb93730f076bfa",
+   "6535eed7f208b2eca892bdec4e712c240db6a9f5",
    "support"
   ],
   "editing/run/inserthorizontalrule.html": [
@@ -64543,7 +64628,7 @@
    "testharness"
   ],
   "editing/run/inserthtml-expected.txt": [
-   "abaa4e5c3b25ff5527264686ccf983b6496a80d5",
+   "39705a5d19e186229398407b1824c8e36216c8d4",
    "support"
   ],
   "editing/run/inserthtml.html": [
@@ -64551,7 +64636,7 @@
    "testharness"
   ],
   "editing/run/insertimage-expected.txt": [
-   "7f9708745189ec549f4fc6cefb6cb3bb8765cf74",
+   "5a9b457b241357df320ba6c734be5ea2a5de7f0d",
    "support"
   ],
   "editing/run/insertimage.html": [
@@ -64559,7 +64644,7 @@
    "testharness"
   ],
   "editing/run/insertlinebreak-expected.txt": [
-   "0499f6848246afb3698c6c9b0c4295662d8baa4f",
+   "f3fdc4e7955f1718aaba71d4c4254fc361aadc95",
    "support"
   ],
   "editing/run/insertlinebreak.html": [
@@ -64567,7 +64652,7 @@
    "testharness"
   ],
   "editing/run/insertorderedlist-expected.txt": [
-   "6a15e382f43703f5086c69aec2af70c22bb14632",
+   "8421f3b234a00a458393363edf70e958052cc069",
    "support"
   ],
   "editing/run/insertorderedlist.html": [
@@ -64575,7 +64660,7 @@
    "testharness"
   ],
   "editing/run/insertparagraph-expected.txt": [
-   "cdc50139687a32be4866575c810b1790478b1eaf",
+   "e0510a5bfecd1f87ca1497f58942b7b3f99bb0a4",
    "support"
   ],
   "editing/run/insertparagraph.html": [
@@ -64583,7 +64668,7 @@
    "testharness"
   ],
   "editing/run/inserttext-expected.txt": [
-   "5f197813f424bc1abb308ce6e8e2459de0f9d3df",
+   "80987301db3e09deb030c045e225bd250bb59ad1",
    "support"
   ],
   "editing/run/inserttext.html": [
@@ -64591,7 +64676,7 @@
    "testharness"
   ],
   "editing/run/insertunorderedlist-expected.txt": [
-   "238a3e32f880ab9a480b933ed2cef39c04ecde7a",
+   "c0833090093422f85da0fb1a098a1e4f15057386",
    "support"
   ],
   "editing/run/insertunorderedlist.html": [
@@ -64603,7 +64688,7 @@
    "testharness"
   ],
   "editing/run/justifycenter-expected.txt": [
-   "55ab8bf1f428bcb16d6f7e635461fc58fc4e40cd",
+   "34386a044c514d33fca6f39fe7f8db0229febf22",
    "support"
   ],
   "editing/run/justifycenter.html": [
@@ -64611,7 +64696,7 @@
    "testharness"
   ],
   "editing/run/justifyfull-expected.txt": [
-   "71cfbe2894a934a7dbe755f96be22ae3cfd76ff5",
+   "1c0a838a1aeaa868666b46036786aa5c75cf0694",
    "support"
   ],
   "editing/run/justifyfull.html": [
@@ -64619,7 +64704,7 @@
    "testharness"
   ],
   "editing/run/justifyleft-expected.txt": [
-   "f24ed43ba14adc0b230f97fbb1da1ad7484d9857",
+   "90068f2fc7fdf72f659c7a20c93e8dab47626ec7",
    "support"
   ],
   "editing/run/justifyleft.html": [
@@ -64627,7 +64712,7 @@
    "testharness"
   ],
   "editing/run/justifyright-expected.txt": [
-   "77f076f3a55d44ec69fd16a8671500e729e78242",
+   "23e3af866fcd43154f3c21ad6be2b6add58a560b",
    "support"
   ],
   "editing/run/justifyright.html": [
@@ -64635,7 +64720,7 @@
    "testharness"
   ],
   "editing/run/misc-expected.txt": [
-   "d6ca3ff4f6d5ba3ec0c992141b277db0c2c4fe66",
+   "80914621b15c6bde00a6920ff1d755bfe1a5209c",
    "support"
   ],
   "editing/run/misc.html": [
@@ -64651,7 +64736,7 @@
    "testharness"
   ],
   "editing/run/outdent-expected.txt": [
-   "6bc2b5bc64e244f405fef10491ff488fde49f4dc",
+   "24f540e109e5a9c4de1c5b95cded6f7c68789de8",
    "support"
   ],
   "editing/run/outdent.html": [
@@ -64659,7 +64744,7 @@
    "testharness"
   ],
   "editing/run/removeformat-expected.txt": [
-   "fd8f69ff1cfd6c0cd5f0a4f0ebf29288d3e9ae28",
+   "c0281af06ff6f77b3032fe82f091ae149a29f8d5",
    "support"
   ],
   "editing/run/removeformat.html": [
@@ -65710,12 +65795,8 @@
    "2a2de0a720181358749232ce7a5301d79eb120d1",
    "testharness"
   ],
-  "hr-time/basic.html": [
-   "b89ada0b18149d7582d22c8971ea558f5971a96c",
-   "testharness"
-  ],
-  "hr-time/basic.worker.js": [
-   "eb69640c9494c235140aafe3d9a57bb26edb20bf",
+  "hr-time/basic.any.js": [
+   "5c727eed4efd84b4b280b2584b7338217971a9e7",
    "testharness"
   ],
   "hr-time/idlharness-expected.txt": [
@@ -65726,8 +65807,8 @@
    "b56993b32650d40226e08beee147bc28c76cfa22",
    "testharness"
   ],
-  "hr-time/monotonic-clock.html": [
-   "8e8d3240236a50a4a38aba083e5e8c59383a4dcb",
+  "hr-time/monotonic-clock.any.js": [
+   "4aef47650d5cbc750393c3ac9423dbff24a15917",
    "testharness"
   ],
   "hr-time/resources/now_frame.html": [
@@ -73134,6 +73215,14 @@
    "f4ec57281d8f32a4931599edc65941ea0db78d5f",
    "support"
   ],
+  "html/rendering/non-replaced-elements/flow-content-0/dialog-display.html": [
+   "3adb7bbb575c26d03909a6fa105a9c035fcac801",
+   "testharness"
+  ],
+  "html/rendering/non-replaced-elements/flow-content-0/dialog.html": [
+   "66dd51545e8ab48d683f4d496c26b9b3a4cad03e",
+   "testharness"
+  ],
   "html/rendering/non-replaced-elements/flow-content-0/div-align-ref.html": [
    "e29cbaaf20761847d68e8c75d1516e25dee0d02a",
    "support"
@@ -73149,6 +73238,10 @@
   "html/rendering/non-replaced-elements/flow-content-0/figure.html": [
    "b570feaa43c3640548addc556bb78c2210230596",
    "reftest"
+  ],
+  "html/rendering/non-replaced-elements/flow-content-0/support/dialog-framed.html": [
+   "59a05101c1cdcb345ce992b63de40077abb2a564",
+   "support"
   ],
   "html/rendering/non-replaced-elements/lists/TODO-lists.html": [
    "1993a0736f73b9ac2916f89de4fa34fdab90cca9",
@@ -78563,7 +78656,7 @@
    "testharness"
   ],
   "mediacapture-streams/MediaStreamTrack-init.https-expected.txt": [
-   "72eff44313d8fb45278de4da064eaa322ff63074",
+   "455efb59deadb14445173e666a8b941c6869bef2",
    "support"
   ],
   "mediacapture-streams/MediaStreamTrack-init.https.html": [
@@ -80471,11 +80564,11 @@
    "manual"
   ],
   "orientation-event/idlharness-expected.txt": [
-   "adc83b19e793491b1c6ea0fd8b46cd9f32e592fc",
+   "403db3c048083e01063e8da5babae300c35e9df0",
    "support"
   ],
   "orientation-event/idlharness.html": [
-   "82c25a0555fcf9c95fd98c4c6210a05c2a0e01ce",
+   "0e9e6441b4ccbf7618b21fdb5a02f9fa8fab87dd",
    "testharness"
   ],
   "orientation-event/screen-upmost-manual.html": [
@@ -88746,6 +88839,18 @@
    "5037b0f564f3d23c0733ae7b4d59b5353eca8d45",
    "testharness"
   ],
+  "service-workers/service-worker/ServiceWorkerGlobalScope/extendable-message-event-constructor.https-expected.txt": [
+   "95bbc500ff690b8fd60a8488bf9883133e322bdd",
+   "support"
+  ],
+  "service-workers/service-worker/ServiceWorkerGlobalScope/extendable-message-event-constructor.https.html": [
+   "8885728d0bf1fb912ecad87d238257f68d71a7b3",
+   "testharness"
+  ],
+  "service-workers/service-worker/ServiceWorkerGlobalScope/extendable-message-event.https.html": [
+   "43bdaf1a6bbcd07d7f351c7f46da8452ce0b6d59",
+   "testharness"
+  ],
   "service-workers/service-worker/ServiceWorkerGlobalScope/postmessage.https.html": [
    "590ee3c06c61aa6788a40a79c2d14fe813da11fe",
    "testharness"
@@ -88756,6 +88861,30 @@
   ],
   "service-workers/service-worker/ServiceWorkerGlobalScope/resources/close-worker.js": [
    "559815205e99f825fdc0a0f2564e7e25586f3c05",
+   "support"
+  ],
+  "service-workers/service-worker/ServiceWorkerGlobalScope/resources/extendable-message-event-constructor-worker.js": [
+   "1ac8fb8c675c398257be0be676872b2944418aa8",
+   "support"
+  ],
+  "service-workers/service-worker/ServiceWorkerGlobalScope/resources/extendable-message-event-loopback-worker.js": [
+   "8be28d814b32c2e735dbde88b8692beb56735dbd",
+   "support"
+  ],
+  "service-workers/service-worker/ServiceWorkerGlobalScope/resources/extendable-message-event-ping-worker.js": [
+   "9caa0e4556601eefdac4220c37bb5afafd2873f1",
+   "support"
+  ],
+  "service-workers/service-worker/ServiceWorkerGlobalScope/resources/extendable-message-event-pong-worker.js": [
+   "1d34a2e3f502e13fbf0f0c81fd203e5fd696e20e",
+   "support"
+  ],
+  "service-workers/service-worker/ServiceWorkerGlobalScope/resources/extendable-message-event-utils.js": [
+   "24115469ab2a7f9072843688c96cabb979c3126b",
+   "support"
+  ],
+  "service-workers/service-worker/ServiceWorkerGlobalScope/resources/extendable-message-event-worker.js": [
+   "0dabcecff606e7c4832c7b5bcb416f8d27625838",
    "support"
   ],
   "service-workers/service-worker/ServiceWorkerGlobalScope/resources/postmessage-loopback-worker.js": [
@@ -93050,9 +93179,17 @@
    "392d4975b232b9003a75d3771ba5c6f2e992849e",
    "testharness"
   ],
+  "webrtc/rtcpeerconnection/iceGatheringState-expected.txt": [
+   "6be33b9fb07075dfc81993ff1753e48a86f295b4",
+   "support"
+  ],
   "webrtc/rtcpeerconnection/iceGatheringState.html": [
    "4f752838326116e65543a10e023a0cbe9c07e9e8",
    "testharness"
+  ],
+  "webrtc/rtcpeerconnection/rtcconfiguration-icecandidatepoolsize-expected.txt": [
+   "6a8a8a37f23934a864d8480f3dfa39424240b843",
+   "support"
   ],
   "webrtc/rtcpeerconnection/rtcconfiguration-icecandidatepoolsize.html": [
    "9551402aed448bf6abde4aa815d174ba321cc655",

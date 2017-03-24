@@ -20,8 +20,6 @@ PASS MediaStreamTrack interface: attribute enabled
 PASS MediaStreamTrack interface: attribute muted 
 PASS MediaStreamTrack interface: attribute onmute 
 PASS MediaStreamTrack interface: attribute onunmute 
-FAIL MediaStreamTrack interface: attribute readonly assert_true: The prototype object must have a property "readonly" expected true got false
-PASS MediaStreamTrack interface: attribute remote 
 PASS MediaStreamTrack interface: attribute readyState 
 PASS MediaStreamTrack interface: attribute onended 
 FAIL MediaStreamTrack interface: attribute onoverconstrained assert_true: The prototype object must have a property "onoverconstrained" expected true got false
@@ -40,17 +38,15 @@ PASS MediaStreamTrack interface: track must inherit property "enabled" with the 
 PASS MediaStreamTrack interface: track must inherit property "muted" with the proper type (4) 
 FAIL MediaStreamTrack interface: track must inherit property "onmute" with the proper type (5) Unrecognized type EventHandler
 FAIL MediaStreamTrack interface: track must inherit property "onunmute" with the proper type (6) Unrecognized type EventHandler
-FAIL MediaStreamTrack interface: track must inherit property "readonly" with the proper type (7) assert_inherits: property "readonly" not found in prototype chain
-PASS MediaStreamTrack interface: track must inherit property "remote" with the proper type (8) 
-FAIL MediaStreamTrack interface: track must inherit property "readyState" with the proper type (9) Unrecognized type MediaStreamTrackState
-FAIL MediaStreamTrack interface: track must inherit property "onended" with the proper type (10) Unrecognized type EventHandler
-FAIL MediaStreamTrack interface: track must inherit property "onoverconstrained" with the proper type (11) assert_inherits: property "onoverconstrained" not found in prototype chain
-PASS MediaStreamTrack interface: track must inherit property "clone" with the proper type (12) 
-PASS MediaStreamTrack interface: track must inherit property "stop" with the proper type (13) 
-PASS MediaStreamTrack interface: track must inherit property "getCapabilities" with the proper type (14) 
-PASS MediaStreamTrack interface: track must inherit property "getConstraints" with the proper type (15) 
-PASS MediaStreamTrack interface: track must inherit property "getSettings" with the proper type (16) 
-PASS MediaStreamTrack interface: track must inherit property "applyConstraints" with the proper type (17) 
+FAIL MediaStreamTrack interface: track must inherit property "readyState" with the proper type (7) Unrecognized type MediaStreamTrackState
+FAIL MediaStreamTrack interface: track must inherit property "onended" with the proper type (8) Unrecognized type EventHandler
+FAIL MediaStreamTrack interface: track must inherit property "onoverconstrained" with the proper type (9) assert_inherits: property "onoverconstrained" not found in prototype chain
+PASS MediaStreamTrack interface: track must inherit property "clone" with the proper type (10) 
+PASS MediaStreamTrack interface: track must inherit property "stop" with the proper type (11) 
+PASS MediaStreamTrack interface: track must inherit property "getCapabilities" with the proper type (12) 
+PASS MediaStreamTrack interface: track must inherit property "getConstraints" with the proper type (13) 
+PASS MediaStreamTrack interface: track must inherit property "getSettings" with the proper type (14) 
+PASS MediaStreamTrack interface: track must inherit property "applyConstraints" with the proper type (15) 
 PASS MediaStreamTrack interface: calling applyConstraints(MediaTrackConstraints) on track with too few arguments must throw TypeError 
 PASS EventTarget interface: track must inherit property "addEventListener" with the proper type (0) 
 PASS EventTarget interface: calling addEventListener(DOMString,EventListener,boolean) on track with too few arguments must throw TypeError 
