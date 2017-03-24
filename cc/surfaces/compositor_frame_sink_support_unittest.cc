@@ -71,9 +71,16 @@ SurfaceId MakeSurfaceId(const FrameSinkId& frame_sink_id, uint32_t local_id) {
       LocalSurfaceId(local_id, base::UnguessableToken::Deserialize(0, 1u)));
 }
 
+CompositorFrame MakeCompositorFrame() {
+  CompositorFrame compositor_frame;
+  compositor_frame.metadata.begin_frame_ack = BeginFrameAck(0, 1, 1, 0, true);
+  return compositor_frame;
+}
+
 CompositorFrame MakeCompositorFrame(
     std::vector<SurfaceId> referenced_surfaces) {
   CompositorFrame compositor_frame;
+  compositor_frame.metadata.begin_frame_ack = BeginFrameAck(0, 1, 1, 0, true);
   compositor_frame.metadata.referenced_surfaces =
       std::move(referenced_surfaces);
   return compositor_frame;
@@ -83,6 +90,7 @@ CompositorFrame MakeCompositorFrameWithResources(
     std::vector<SurfaceId> referenced_surfaces,
     TransferableResourceArray resource_list) {
   CompositorFrame compositor_frame;
+  compositor_frame.metadata.begin_frame_ack = BeginFrameAck(0, 1, 1, 0, true);
   compositor_frame.metadata.referenced_surfaces =
       std::move(referenced_surfaces);
   compositor_frame.resource_list = std::move(resource_list);
@@ -766,7 +774,7 @@ TEST_F(CompositorFrameSinkSupportTest,
   ui::LatencyInfo info;
   info.AddLatencyNumber(latency_type1, latency_id1, latency_sequence_number1);
 
-  CompositorFrame frame;
+  CompositorFrame frame = MakeCompositorFrame();
   frame.metadata.latency_info.push_back(info);
 
   parent_support().SubmitCompositorFrame(parent_id1.local_surface_id(),
@@ -783,7 +791,7 @@ TEST_F(CompositorFrameSinkSupportTest,
   ui::LatencyInfo info2;
   info2.AddLatencyNumber(latency_type2, latency_id2, latency_sequence_number2);
 
-  CompositorFrame frame2;
+  CompositorFrame frame2 = MakeCompositorFrame();
   frame2.metadata.latency_info.push_back(info2);
 
   parent_support().SubmitCompositorFrame(parent_id2.local_surface_id(),
@@ -830,7 +838,7 @@ TEST_F(CompositorFrameSinkSupportTest,
   ui::LatencyInfo info;
   info.AddLatencyNumber(latency_type1, latency_id1, latency_sequence_number1);
 
-  CompositorFrame frame;
+  CompositorFrame frame = MakeCompositorFrame();
   frame.metadata.latency_info.push_back(info);
 
   parent_support().SubmitCompositorFrame(parent_id1.local_surface_id(),
@@ -854,7 +862,7 @@ TEST_F(CompositorFrameSinkSupportTest,
 
   // Submit a frame with a new local surface id.
   parent_support().SubmitCompositorFrame(parent_id2.local_surface_id(),
-                                         CompositorFrame());
+                                         MakeCompositorFrame());
 
   // Verify that the new surface has an active frame only.
   Surface* surface = surface_manager().GetSurfaceForId(parent_id2);
@@ -898,7 +906,7 @@ TEST_F(CompositorFrameSinkSupportTest,
   ui::LatencyInfo info;
   info.AddLatencyNumber(latency_type1, latency_id1, latency_sequence_number1);
 
-  CompositorFrame frame;
+  CompositorFrame frame = MakeCompositorFrame();
   frame.metadata.latency_info.push_back(info);
 
   parent_support().SubmitCompositorFrame(parent_id1.local_surface_id(),
@@ -929,7 +937,7 @@ TEST_F(CompositorFrameSinkSupportTest,
 
   // Resolve the dependencies. The frame in parent's surface must become active.
   child_support1().SubmitCompositorFrame(child_id.local_surface_id(),
-                                         CompositorFrame());
+                                         MakeCompositorFrame());
   EXPECT_FALSE(surface->HasPendingFrame());
   EXPECT_TRUE(surface->HasActiveFrame());
 
@@ -958,10 +966,14 @@ TEST_F(CompositorFrameSinkSupportTest, PassesOnBeginFrameAcks) {
       CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
   begin_frame_source()->TestOnBeginFrame(args);
 
-  // Check that the support forwards our ack to the BeginFrameSource.
+  // Check that the support forwards a BeginFrameDidNotSwap ack to the
+  // BeginFrameSource.
   BeginFrameAck ack(0, 1, 1, 0, false);
-  display_support().DidFinishFrame(ack);
+  display_support().BeginFrameDidNotSwap(ack);
   EXPECT_EQ(ack, begin_frame_source()->LastAckForObserver(&display_support()));
+
+  // TODO(eseckler): Check that the support forwards the BeginFrameAck attached
+  // to a CompositorFrame to the BeginFrameSource.
 }
 
 // Checks whether the resources are returned before we send an ack.
@@ -978,7 +990,7 @@ TEST_F(CompositorFrameSinkSupportTest, ReturnResourcesBeforeAck) {
     EXPECT_CALL(support_client_, DidReceiveCompositorFrameAck());
   }
   parent_support().SubmitCompositorFrame(parent_id.local_surface_id(),
-                                         CompositorFrame());
+                                         MakeCompositorFrame());
 }
 
 // Verifies that if a surface is marked destroyed and a new frame arrives for
@@ -994,7 +1006,7 @@ TEST_F(CompositorFrameSinkSupportTest, SurfaceResurrection) {
   // Create the child surface by submitting a frame to it.
   EXPECT_EQ(nullptr, surface_manager().GetSurfaceForId(child_id));
   child_support1().SubmitCompositorFrame(child_id.local_surface_id(),
-                                         CompositorFrame());
+                                         MakeCompositorFrame());
 
   // Verify that the child surface is created.
   Surface* surface = surface_manager().GetSurfaceForId(child_id);
@@ -1010,7 +1022,7 @@ TEST_F(CompositorFrameSinkSupportTest, SurfaceResurrection) {
   // Child submits another frame to the same local surface id that is marked
   // destroyed.
   child_support1().SubmitCompositorFrame(child_id.local_surface_id(),
-                                         CompositorFrame());
+                                         MakeCompositorFrame());
 
   // Verify that the surface that was marked destroyed is recovered and is being
   // used again.
@@ -1031,12 +1043,12 @@ TEST_F(CompositorFrameSinkSupportTest, LocalSurfaceIdIsReusable) {
 
   // Submit the first frame. Creates the surface.
   child_support1().SubmitCompositorFrame(child_id.local_surface_id(),
-                                         CompositorFrame());
+                                         MakeCompositorFrame());
   EXPECT_NE(nullptr, surface_manager().GetSurfaceForId(child_id));
 
   // Remove the reference from parant. This allows us to destroy the surface.
   parent_support().SubmitCompositorFrame(parent_id.local_surface_id(),
-                                         CompositorFrame());
+                                         MakeCompositorFrame());
 
   // Destroy the surface.
   child_support1().EvictFrame();
@@ -1045,7 +1057,7 @@ TEST_F(CompositorFrameSinkSupportTest, LocalSurfaceIdIsReusable) {
   // Submit another frame with the same local surface id. This should work fine
   // and a new surface must be created.
   child_support1().SubmitCompositorFrame(child_id.local_surface_id(),
-                                         CompositorFrame());
+                                         MakeCompositorFrame());
   EXPECT_NE(nullptr, surface_manager().GetSurfaceForId(child_id));
 }
 

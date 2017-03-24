@@ -838,7 +838,14 @@ void Surface::UpdateSurface(bool full_damage) {
   quad_state->opacity = state_.alpha;
 
   cc::CompositorFrame frame;
-  current_begin_frame_ack_.has_damage = true;
+  // If we commit while we don't have an active BeginFrame, we acknowledge a
+  // manual one.
+  if (current_begin_frame_ack_.sequence_number ==
+      cc::BeginFrameArgs::kInvalidFrameNumber) {
+    current_begin_frame_ack_ = cc::BeginFrameAck::CreateManualAckWithDamage();
+  } else {
+    current_begin_frame_ack_.has_damage = true;
+  }
   frame.metadata.begin_frame_ack = current_begin_frame_ack_;
 
   if (current_resource_.id) {

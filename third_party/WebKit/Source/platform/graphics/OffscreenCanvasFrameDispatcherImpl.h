@@ -80,6 +80,8 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
 
   int m_placeholderCanvasId;
 
+  cc::BeginFrameAck m_currentBeginFrameAck;
+
   void setTransferableResourceToSharedBitmap(cc::TransferableResource&,
                                              RefPtr<StaticBitmapImage>);
   void setTransferableResourceToSharedGPUContext(cc::TransferableResource&,

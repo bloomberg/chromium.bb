@@ -246,6 +246,8 @@ ScriptPromise OffscreenCanvas::commit(RefPtr<StaticBitmapImage> image,
     m_overdrawFrame = nullptr;
     m_commitPromiseResolver = ScriptPromiseResolver::create(scriptState);
     m_commitPromiseResolver->keepAliveWhilePending();
+    // TODO(eseckler): OffscreenCanvas shouldn't dispatch CompositorFrames
+    // without a prior BeginFrame.
     doCommit(std::move(image), isWebGLSoftwareRendering);
   }
   return m_commitPromiseResolver->promise();
@@ -259,6 +261,8 @@ void OffscreenCanvas::doCommit(RefPtr<StaticBitmapImage> image,
 }
 
 void OffscreenCanvas::beginFrame() {
+  // TODO(eseckler): beginFrame() shouldn't be used as confirmation of
+  // CompositorFrame activation.
   if (m_overdrawFrame) {
     // if we have an overdraw backlog, push the frame from the backlog
     // first and save the promise resolution for later.

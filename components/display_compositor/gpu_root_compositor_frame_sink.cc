@@ -89,6 +89,11 @@ void GpuRootCompositorFrameSink::SubmitCompositorFrame(
   support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
 }
 
+void GpuRootCompositorFrameSink::BeginFrameDidNotSwap(
+    const cc::BeginFrameAck& begin_frame_ack) {
+  support_->BeginFrameDidNotSwap(begin_frame_ack);
+}
+
 void GpuRootCompositorFrameSink::ClaimTemporaryReference(
     const cc::SurfaceId& surface_id) {
   support_->ClaimTemporaryReference(surface_id);

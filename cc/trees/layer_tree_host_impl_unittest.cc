@@ -95,8 +95,8 @@ namespace {
 
 struct TestFrameData : public LayerTreeHostImpl::FrameData {
   TestFrameData() {
-    // Set sequence number to something valid, so DCHECKs don't complain.
-    begin_frame_ack.sequence_number = 1;
+    // Set ack to something valid, so DCHECKs don't complain.
+    begin_frame_ack = BeginFrameAck(0, 1, 1, 0, true);
   }
 };
 

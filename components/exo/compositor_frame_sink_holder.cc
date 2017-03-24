@@ -75,7 +75,9 @@ void CompositorFrameSinkHolder::OnNeedsBeginFrames(bool needs_begin_frames) {
 }
 
 void CompositorFrameSinkHolder::OnDidFinishFrame(const cc::BeginFrameAck& ack) {
-  // TODO(eseckler): Pass on the ack to frame_sink_.
+  // If there was damage, the submitted CompositorFrame includes the ack.
+  if (!ack.has_damage)
+    frame_sink_->BeginFrameDidNotSwap(ack);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

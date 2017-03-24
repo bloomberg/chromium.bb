@@ -49,7 +49,7 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
 
   void EvictFrame();
   void SetNeedsBeginFrame(bool needs_begin_frame);
-  void DidFinishFrame(const BeginFrameAck& ack);
+  void BeginFrameDidNotSwap(const BeginFrameAck& ack);
   void SubmitCompositorFrame(const LocalSurfaceId& local_surface_id,
                              CompositorFrame frame);
   void RequestCopyOfSurface(std::unique_ptr<CopyOutputRequest> request);

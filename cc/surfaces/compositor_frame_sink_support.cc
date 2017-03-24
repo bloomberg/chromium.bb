@@ -67,7 +67,16 @@ void CompositorFrameSinkSupport::SetNeedsBeginFrame(bool needs_begin_frame) {
   UpdateNeedsBeginFramesInternal();
 }
 
-void CompositorFrameSinkSupport::DidFinishFrame(const BeginFrameAck& ack) {
+void CompositorFrameSinkSupport::BeginFrameDidNotSwap(
+    const BeginFrameAck& ack) {
+  // TODO(eseckler): While a pending CompositorFrame exists (see TODO below), we
+  // should not acknowledge immediately. Instead, we should update the ack that
+  // will be sent to DisplayScheduler when the pending frame is activated.
+  DCHECK_LE(BeginFrameArgs::kStartingFrameNumber, ack.sequence_number);
+  // |has_damage| is not transmitted, but false by default.
+  DCHECK(!ack.has_damage);
+  // |remaining_frames| is not transmitted, but 0 by default.
+  DCHECK_EQ(0u, ack.remaining_frames);
   if (begin_frame_source_)
     begin_frame_source_->DidFinishFrame(this, ack);
 }
@@ -77,10 +86,29 @@ void CompositorFrameSinkSupport::SubmitCompositorFrame(
     CompositorFrame frame) {
   ++ack_pending_count_;
 
+  if (frame.metadata.begin_frame_ack.sequence_number <
+      BeginFrameArgs::kStartingFrameNumber) {
+    DLOG(ERROR) << "Received CompositorFrame with invalid BeginFrameAck.";
+    frame.metadata.begin_frame_ack.source_id = BeginFrameArgs::kManualSourceId;
+    frame.metadata.begin_frame_ack.sequence_number =
+        BeginFrameArgs::kStartingFrameNumber;
+  }
+  // |has_damage| and |remaining_frames| are not transmitted.
+  frame.metadata.begin_frame_ack.has_damage = true;
+  frame.metadata.begin_frame_ack.remaining_frames = 0;
+
   surface_factory_.SubmitCompositorFrame(
       local_surface_id, std::move(frame),
       base::Bind(&CompositorFrameSinkSupport::DidReceiveCompositorFrameAck,
                  weak_factory_.GetWeakPtr()));
+
+  // TODO(eseckler): The CompositorFrame submitted below might not be activated
+  // right away b/c of surface synchronization. We should only send the
+  // BeginFrameAck to DisplayScheduler when it is activated. This also means
+  // that we need to stay an active BFO while a CompositorFrame is pending.
+  // See https://crbug.com/703079.
+  if (begin_frame_source_)
+    begin_frame_source_->DidFinishFrame(this, frame.metadata.begin_frame_ack);
 }
 
 void CompositorFrameSinkSupport::UpdateSurfaceReferences(

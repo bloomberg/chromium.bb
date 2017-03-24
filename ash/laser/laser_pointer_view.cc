@@ -21,6 +21,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "base/trace_event/trace_event.h"
+#include "cc/output/begin_frame_args.h"
 #include "cc/output/context_provider.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/transferable_resource.h"
@@ -389,6 +390,11 @@ void LaserPointerView::SubmitCompositorFrame(
   frame_sink_support_.SubmitCompositorFrame(local_surface_id, std::move(frame));
 }
 
+void LaserPointerView::BeginFrameDidNotSwap(
+    const cc::BeginFrameAck& begin_frame_ack) {
+  frame_sink_support_.BeginFrameDidNotSwap(begin_frame_ack);
+}
+
 void LaserPointerView::EvictFrame() {
   frame_sink_support_.EvictFrame();
 }
@@ -679,6 +685,10 @@ void LaserPointerView::UpdateSurface() {
   quad_state->opacity = 1.0f;
 
   cc::CompositorFrame frame;
+  // TODO(eseckler): LaserPointerView should use BeginFrames and set the ack
+  // accordingly.
+  frame.metadata.begin_frame_ack =
+      cc::BeginFrameAck::CreateManualAckWithDamage();
   cc::TextureDrawQuad* texture_quad =
       render_pass->CreateAndAppendDrawQuad<cc::TextureDrawQuad>();
   float vertex_opacity[4] = {1.0, 1.0, 1.0, 1.0};

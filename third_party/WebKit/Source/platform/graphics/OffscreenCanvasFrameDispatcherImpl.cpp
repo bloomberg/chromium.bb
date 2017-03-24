@@ -210,6 +210,15 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
   cc::CompositorFrame frame;
   // TODO(crbug.com/652931): update the device_scale_factor
   frame.metadata.device_scale_factor = 1.0f;
+  if (m_currentBeginFrameAck.sequence_number ==
+      cc::BeginFrameArgs::kInvalidFrameNumber) {
+    // TODO(eseckler): This shouldn't be necessary when OffscreenCanvas no
+    // longer submits CompositorFrames without prior BeginFrame.
+    m_currentBeginFrameAck = cc::BeginFrameAck::CreateManualAckWithDamage();
+  } else {
+    m_currentBeginFrameAck.has_damage = true;
+  }
+  frame.metadata.begin_frame_ack = m_currentBeginFrameAck;
 
   const gfx::Rect bounds(m_width, m_height);
   const int renderPassId = 1;
@@ -393,7 +402,14 @@ void OffscreenCanvasFrameDispatcherImpl::setNeedsBeginFrame(
 void OffscreenCanvasFrameDispatcherImpl::OnBeginFrame(
     const cc::BeginFrameArgs& beginFrameArgs) {
   DCHECK(client());
+  // TODO(eseckler): Set correct |latest_confirmed_sequence_number|.
+  m_currentBeginFrameAck = cc::BeginFrameAck(
+      beginFrameArgs.source_id, beginFrameArgs.sequence_number,
+      beginFrameArgs.sequence_number, 0, false);
   client()->beginFrame();
+  // TODO(eseckler): Tell |m_sink| if we did not draw during the BeginFrame.
+  m_currentBeginFrameAck.sequence_number =
+      cc::BeginFrameArgs::kInvalidFrameNumber;
 }
 
 void OffscreenCanvasFrameDispatcherImpl::ReclaimResources(

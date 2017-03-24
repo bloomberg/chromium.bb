@@ -167,7 +167,11 @@ void HardwareRenderer::DestroySurface() {
   DCHECK(child_id_.is_valid());
 
   // Submit an empty frame to force any existing resources to be returned.
-  support_->SubmitCompositorFrame(child_id_, cc::CompositorFrame());
+  cc::CompositorFrame frame;
+  // We submit without a prior BeginFrame, so acknowledge a manual BeginFrame.
+  frame.metadata.begin_frame_ack =
+      cc::BeginFrameAck::CreateManualAckWithDamage();
+  support_->SubmitCompositorFrame(child_id_, std::move(frame));
   surfaces_->RemoveChildId(cc::SurfaceId(frame_sink_id_, child_id_));
   support_->EvictFrame();
   child_id_ = cc::LocalSurfaceId();

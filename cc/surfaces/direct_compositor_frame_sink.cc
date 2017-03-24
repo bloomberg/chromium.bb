@@ -94,6 +94,10 @@ void DirectCompositorFrameSink::DetachFromClient() {
 }
 
 void DirectCompositorFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
+  DCHECK(frame.metadata.begin_frame_ack.has_damage);
+  DCHECK_LE(BeginFrameArgs::kStartingFrameNumber,
+            frame.metadata.begin_frame_ack.sequence_number);
+
   gfx::Size frame_size = frame.render_pass_list.back()->output_rect.size();
   if (frame_size.IsEmpty() || frame_size != last_swap_frame_size_) {
     delegated_local_surface_id_ = local_surface_id_allocator_.GenerateId();
@@ -151,7 +155,9 @@ void DirectCompositorFrameSink::OnNeedsBeginFrames(bool needs_begin_frame) {
 }
 
 void DirectCompositorFrameSink::OnDidFinishFrame(const BeginFrameAck& ack) {
-  support_->DidFinishFrame(ack);
+  // If there was damage, SubmitCompositorFrame includes the ack.
+  if (!ack.has_damage)
+    support_->BeginFrameDidNotSwap(ack);
 }
 
 }  // namespace cc

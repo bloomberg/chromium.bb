@@ -125,6 +125,10 @@ struct CC_EXPORT BeginFrameAck {
                 uint32_t remaining_frames,
                 bool has_damage);
 
+  // Creates a BeginFrameAck for a manual BeginFrame. Used when clients produce
+  // a CompositorFrame without prior BeginFrame, e.g. for synchronous drawing.
+  static BeginFrameAck CreateManualAckWithDamage();
+
   // Sequence number of the BeginFrame that is acknowledged.
   uint64_t sequence_number;
 

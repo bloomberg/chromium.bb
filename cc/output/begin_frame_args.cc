@@ -127,4 +127,11 @@ BeginFrameAck::BeginFrameAck(uint32_t source_id,
   DCHECK_LT(BeginFrameArgs::kInvalidFrameNumber, sequence_number);
 }
 
+// static
+BeginFrameAck BeginFrameAck::CreateManualAckWithDamage() {
+  return BeginFrameAck(BeginFrameArgs::kManualSourceId,
+                       BeginFrameArgs::kStartingFrameNumber,
+                       BeginFrameArgs::kInvalidFrameNumber, 0, true);
+}
+
 }  // namespace cc

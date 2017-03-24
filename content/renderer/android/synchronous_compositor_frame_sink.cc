@@ -273,6 +273,7 @@ void SynchronousCompositorFrameSink::SubmitCompositorFrame(
     // the CompositorFrameSink client too? (We'd have to do the same for
     // hardware frames in SurfacesInstance?)
     cc::CompositorFrame embed_frame;
+    embed_frame.metadata.begin_frame_ack = frame.metadata.begin_frame_ack;
     embed_frame.render_pass_list.push_back(cc::RenderPass::Create());
 
     // The embedding RenderPass covers the entire Display's area.

@@ -118,6 +118,8 @@ content::SynchronousCompositor* RenderingTest::ActiveCompositor() const {
 std::unique_ptr<cc::CompositorFrame> RenderingTest::ConstructEmptyFrame() {
   std::unique_ptr<cc::CompositorFrame> compositor_frame(
       new cc::CompositorFrame);
+  compositor_frame->metadata.begin_frame_ack =
+      cc::BeginFrameAck(0, 1, 1, 0, true);
   std::unique_ptr<cc::RenderPass> root_pass(cc::RenderPass::Create());
   gfx::Rect viewport(browser_view_renderer_->size());
   root_pass->SetNew(1, viewport, viewport, gfx::Transform());

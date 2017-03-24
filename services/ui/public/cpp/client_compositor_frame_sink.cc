@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "cc/base/switches.h"
+#include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_sink_client.h"
 
@@ -77,6 +78,9 @@ void ClientCompositorFrameSink::SubmitCompositorFrame(
   if (!compositor_frame_sink_)
     return;
 
+  DCHECK_LE(cc::BeginFrameArgs::kStartingFrameNumber,
+            frame.metadata.begin_frame_ack.sequence_number);
+
   gfx::Size frame_size = last_submitted_frame_size_;
   if (!frame.render_pass_list.empty())
     frame_size = frame.render_pass_list.back()->output_rect.size();
@@ -141,7 +145,9 @@ void ClientCompositorFrameSink::OnNeedsBeginFrames(bool needs_begin_frames) {
 }
 
 void ClientCompositorFrameSink::OnDidFinishFrame(const cc::BeginFrameAck& ack) {
-  // TODO(eseckler): Pass on the ack to compositor_frame_sink_.
+  // If there was damage, the submitted CompositorFrame includes the ack.
+  if (!ack.has_damage)
+    compositor_frame_sink_->BeginFrameDidNotSwap(ack);
 }
 
 ClientCompositorFrameSinkBinding::~ClientCompositorFrameSinkBinding() {}

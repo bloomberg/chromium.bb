@@ -848,9 +848,9 @@ void DelegatedFrameHost::OnDidFinishFrame(const cc::BeginFrameAck& ack) {
         modified_ack.latest_confirmed_sequence_number;
   }
 
-  // TODO(eseckler): The interface to CompositorFrameSinkSupport should use
-  // SubmitCompositorFrame and BeginFrameDidNotSwap instead of DidFinishFrame.
-  support_->DidFinishFrame(modified_ack);
+  // If there was damage, the unmodified ack was sent with the CompositorFrame.
+  if (!modified_ack.has_damage)
+    support_->BeginFrameDidNotSwap(modified_ack);
 }
 
 void DelegatedFrameHost::CreateCompositorFrameSinkSupport() {

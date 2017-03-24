@@ -41,6 +41,11 @@ void CompositorFrameSink::SubmitCompositorFrame(
   support_.SubmitCompositorFrame(local_surface_id, std::move(frame));
 }
 
+void CompositorFrameSink::BeginFrameDidNotSwap(
+    const cc::BeginFrameAck& begin_frame_ack) {
+  support_.BeginFrameDidNotSwap(begin_frame_ack);
+}
+
 void CompositorFrameSink::EvictFrame() {
   support_.EvictFrame();
 }
