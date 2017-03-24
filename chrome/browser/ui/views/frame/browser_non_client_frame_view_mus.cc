@@ -368,6 +368,16 @@ void BrowserNonClientFrameViewMus::UpdateProfileIcons() {
     return;
   }
 #endif
+  Browser* browser = browser_view()->browser();
+
+  // Similar logic as in BrowserNonClientFrameViewAsh::UpdateProfileIcons (minus
+  // the multi-profile part). That is, no profile indicator for non-tabbed and
+  // non-app browser window, or regular/guest user browser window.
+  if (!browser->is_type_tabbed() && !browser->is_app())
+    return;
+  if (browser_view()->IsRegularOrGuestSession())
+    return;
+
   UpdateProfileIndicatorIcon();
 }
 
