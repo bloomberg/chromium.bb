@@ -8,11 +8,11 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_bar_bubble_delegate.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
 
-class ToolbarActionsBarBubbleDelegate;
 class ToolbarActionsBarBubbleViewsTest;
 
 namespace views {
@@ -55,6 +55,7 @@ class ToolbarActionsBarBubbleViews : public views::BubbleDialogDelegateView,
   void LinkClicked(views::Link* source, int event_flags) override;
 
   std::unique_ptr<ToolbarActionsBarBubbleDelegate> delegate_;
+  ToolbarActionsBarBubbleDelegate::CloseAction close_reason_;
   views::Label* item_list_;
   views::Link* link_;
   const bool anchored_to_action_;

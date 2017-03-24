@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/toolbar/toolbar_actions_bar_bubble_views.h"
 
-#include "chrome/browser/ui/toolbar/toolbar_actions_bar_bubble_delegate.h"
 #include "chrome/browser/ui/views/harmony/layout_delegate.h"
 #include "chrome/grit/locale_settings.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -28,6 +27,8 @@ ToolbarActionsBarBubbleViews::ToolbarActionsBarBubbleViews(
     : views::BubbleDialogDelegateView(anchor_view,
                                       views::BubbleBorder::TOP_RIGHT),
       delegate_(std::move(delegate)),
+      close_reason_(
+          ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_DEACTIVATION),
       item_list_(nullptr),
       link_(nullptr),
       anchored_to_action_(anchored_to_action) {
@@ -100,10 +101,7 @@ bool ToolbarActionsBarBubbleViews::Accept() {
 }
 
 bool ToolbarActionsBarBubbleViews::Close() {
-  if (delegate_) {
-    delegate_->OnBubbleClosed(
-        ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_DEACTIVATION);
-  }
+  delegate_->OnBubbleClosed(close_reason_);
   return true;
 }
 
@@ -163,8 +161,6 @@ base::string16 ToolbarActionsBarBubbleViews::GetDialogButtonLabel(
 
 void ToolbarActionsBarBubbleViews::LinkClicked(views::Link* link,
                                                int event_flags) {
-  delegate_->OnBubbleClosed(ToolbarActionsBarBubbleDelegate::CLOSE_LEARN_MORE);
-  // Reset delegate so we don't send extra OnBubbleClosed()s.
-  delegate_.reset();
+  close_reason_ = ToolbarActionsBarBubbleDelegate::CLOSE_LEARN_MORE;
   GetWidget()->Close();
 }

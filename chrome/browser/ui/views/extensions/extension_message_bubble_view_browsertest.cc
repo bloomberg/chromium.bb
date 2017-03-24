@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/extensions/extension_message_bubble_browsertest.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_actions_bar_bubble_views.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/link.h"
@@ -131,6 +132,13 @@ void ExtensionMessageBubbleViewBrowserTest::ClickLearnMoreButton(
   ToolbarActionsBarBubbleViews* bubble = GetViewsBubbleForBrowser(browser);
   static_cast<views::LinkListener*>(bubble)->LinkClicked(
       const_cast<views::Link*>(bubble->learn_more_button()), 0);
+
+  // Clicking a button closes asynchronously. Since the close is asynchronous,
+  // platform events may happen before the close completes and the dialog needs
+  // to report a valid state.
+  ui::AXNodeData node_data;
+  bubble->GetAccessibleNodeData(&node_data);
+  EXPECT_EQ(ui::AX_ROLE_DIALOG, node_data.role);
 }
 
 void ExtensionMessageBubbleViewBrowserTest::ClickActionButton(
@@ -225,14 +233,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
   TestBubbleWithMultipleWindows();
 }
 
-// Crashes on Mac only.  http://crbug.com/702554
-#if defined(OS_MACOSX)
-#define MAYBE_TestClickingLearnMoreButton DISABLED_TestClickingLearnMoreButton
-#else
-#define MAYBE_TestClickingLearnMoreButton TestClickingLearnMoreButton
-#endif
 IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
-                       MAYBE_TestClickingLearnMoreButton) {
+                       TestClickingLearnMoreButton) {
   TestClickingLearnMoreButton();
 }
 
