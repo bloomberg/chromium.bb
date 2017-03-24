@@ -702,16 +702,16 @@ class Sample {
     document.body.appendChild(this.iframe_);
     /** @const @type {!HTMLDocument} */
     this.document_ = this.iframe_.contentDocument;
+
+    // Set focus to sample IFRAME to make |eventSender| and
+    // |testRunner.execCommand()| to work on sample rather than main frame.
+    this.iframe_.focus();
     /** @const @type {!Selection} */
     this.selection_ = this.iframe_.contentWindow.getSelection();
     this.selection_.document = this.document_;
     this.selection_.document.offsetLeft = this.iframe_.offsetLeft;
     this.selection_.document.offsetTop = this.iframe_.offsetTop;
     this.selection_.setClipboardData = setClipboardData;
-
-    // Set focus to sample IFRAME to make |eventSender| and
-    // |testRunner.execCommand()| to work on sample rather than main frame.
-    this.iframe_.focus();
     this.load(sampleText);
   }
 
