@@ -35,7 +35,6 @@ PaymentRequestState::PaymentRequestState(
 }
 
 bool PaymentRequestState::CanMakePayment() const {
-  // TODO(crbug.com/704675): Handle incognito mode when replying to this method.
   for (const std::unique_ptr<PaymentInstrument>& instrument :
        available_instruments_) {
     if (instrument.get()->IsValid() &&

@@ -41,4 +41,10 @@ const std::string& ChromePaymentRequestDelegate::GetApplicationLocale() const {
   return g_browser_process->GetApplicationLocale();
 }
 
+bool ChromePaymentRequestDelegate::IsIncognito() const {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+  return profile && profile->GetProfileType() == Profile::INCOGNITO_PROFILE;
+}
+
 }  // namespace payments

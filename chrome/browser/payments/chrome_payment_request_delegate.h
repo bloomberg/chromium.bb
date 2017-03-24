@@ -26,6 +26,7 @@ class ChromePaymentRequestDelegate : public PaymentRequestDelegate {
   void CloseDialog() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   const std::string& GetApplicationLocale() const override;
+  bool IsIncognito() const override;
 
  protected:
   // Reference to the dialog so that we can satisfy calls to CloseDialog(). This

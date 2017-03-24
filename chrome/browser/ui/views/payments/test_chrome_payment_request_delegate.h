@@ -27,9 +27,11 @@ class TestChromePaymentRequestDelegate : public ChromePaymentRequestDelegate {
   TestChromePaymentRequestDelegate(
       content::WebContents* web_contents,
       PaymentRequestDialogView::ObserverForTest* observer,
-      views::WidgetObserver* widget_observer);
+      views::WidgetObserver* widget_observer,
+      bool is_incognito);
 
   void ShowDialog(PaymentRequest* request) override;
+  bool IsIncognito() const override;
 
   PaymentRequestDialogView* dialog_view() {
     return static_cast<PaymentRequestDialogView*>(dialog_);
@@ -38,6 +40,7 @@ class TestChromePaymentRequestDelegate : public ChromePaymentRequestDelegate {
  private:
   PaymentRequestDialogView::ObserverForTest* observer_;
   views::WidgetObserver* widget_observer_;
+  bool is_incognito_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(TestChromePaymentRequestDelegate);
 };

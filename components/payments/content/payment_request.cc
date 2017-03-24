@@ -85,8 +85,9 @@ void PaymentRequest::Complete(payments::mojom::PaymentComplete result) {
 
 void PaymentRequest::CanMakePayment() {
   // TODO(crbug.com/704676): Implement a quota policy for this method.
+  // PaymentRequest.canMakePayments() never returns false in incognito mode.
   client_->OnCanMakePayment(
-      state()->CanMakePayment()
+      delegate_->IsIncognito() || state()->CanMakePayment()
           ? mojom::CanMakePaymentQueryResult::CAN_MAKE_PAYMENT
           : mojom::CanMakePaymentQueryResult::CANNOT_MAKE_PAYMENT);
 }

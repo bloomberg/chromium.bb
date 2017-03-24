@@ -69,6 +69,8 @@ class PaymentRequestBrowserTestBase
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpOnMainThread() override;
 
+  void SetIncognitoForTesting();
+
   // PaymentRequestDialogView::ObserverForTest
   void OnDialogOpened() override;
   void OnOrderSummaryOpened() override;
@@ -207,6 +209,7 @@ class PaymentRequestBrowserTestBase
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
   // Weak, owned by the PaymentRequest object.
   TestChromePaymentRequestDelegate* delegate_;
+  bool incognito_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestBrowserTestBase);
 };

@@ -52,7 +52,9 @@ PersonalDataLoadedObserverMock::~PersonalDataLoadedObserverMock() {}
 
 PaymentRequestBrowserTestBase::PaymentRequestBrowserTestBase(
     const std::string& test_file_path)
-    : test_file_path_(test_file_path), delegate_(nullptr) {}
+    : test_file_path_(test_file_path),
+      delegate_(nullptr),
+      incognito_for_testing_(false) {}
 PaymentRequestBrowserTestBase::~PaymentRequestBrowserTestBase() {}
 
 void PaymentRequestBrowserTestBase::SetUpCommandLine(
@@ -83,6 +85,10 @@ void PaymentRequestBrowserTestBase::SetUpOnMainThread() {
   registry->AddInterface(
       base::Bind(&PaymentRequestBrowserTestBase::CreatePaymentRequestForTest,
                  base::Unretained(this), web_contents));
+}
+
+void PaymentRequestBrowserTestBase::SetIncognitoForTesting() {
+  incognito_for_testing_ = true;
 }
 
 void PaymentRequestBrowserTestBase::OnDialogOpened() {
@@ -261,7 +267,8 @@ void PaymentRequestBrowserTestBase::CreatePaymentRequestForTest(
   DCHECK(web_contents);
   std::unique_ptr<TestChromePaymentRequestDelegate> delegate =
       base::MakeUnique<TestChromePaymentRequestDelegate>(
-          web_contents, this /* observer */, this /* widget_observer */);
+          web_contents, this /* observer */, this /* widget_observer */,
+          incognito_for_testing_);
   delegate_ = delegate.get();
   PaymentRequestWebContentsManager::GetOrCreateForWebContents(web_contents)
       ->CreatePaymentRequest(web_contents, std::move(delegate),

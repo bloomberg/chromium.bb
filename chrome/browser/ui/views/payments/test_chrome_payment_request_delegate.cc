@@ -15,10 +15,12 @@ namespace payments {
 TestChromePaymentRequestDelegate::TestChromePaymentRequestDelegate(
     content::WebContents* web_contents,
     PaymentRequestDialogView::ObserverForTest* observer,
-    views::WidgetObserver* widget_observer)
+    views::WidgetObserver* widget_observer,
+    bool is_incognito)
     : ChromePaymentRequestDelegate(web_contents),
       observer_(observer),
-      widget_observer_(widget_observer) {}
+      widget_observer_(widget_observer),
+      is_incognito_for_testing_(is_incognito) {}
 
 void TestChromePaymentRequestDelegate::ShowDialog(PaymentRequest* request) {
   PaymentRequestDialogView* dialog_view =
@@ -30,6 +32,10 @@ void TestChromePaymentRequestDelegate::ShowDialog(PaymentRequest* request) {
   widget->AddObserver(widget_observer_);
 
   dialog_ = std::move(dialog_view);
+}
+
+bool TestChromePaymentRequestDelegate::IsIncognito() const {
+  return is_incognito_for_testing_;
 }
 
 }  // namespace payments
