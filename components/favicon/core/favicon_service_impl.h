@@ -102,6 +102,11 @@ class FaviconServiceImpl : public FaviconService {
                    const GURL& icon_url,
                    favicon_base::IconType icon_type,
                    const gfx::Image& image) override;
+  void SetLastResortFavicons(const GURL& page_url,
+                             const GURL& icon_url,
+                             favicon_base::IconType icon_type,
+                             const gfx::Image& image,
+                             base::Callback<void(bool)> callback) override;
   void UnableToDownloadFavicon(const GURL& icon_url) override;
   bool WasUnableToDownloadFavicon(const GURL& icon_url) const override;
   void ClearUnableToDownloadFavicons() override;

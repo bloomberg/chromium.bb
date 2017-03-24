@@ -102,6 +102,12 @@ class MockFaviconService : public FaviconService {
                     const GURL& icon_url,
                     favicon_base::IconType icon_type,
                     const gfx::Image& image));
+  MOCK_METHOD5(SetLastResortFavicons,
+               void(const GURL& page_url,
+                    const GURL& icon_url,
+                    favicon_base::IconType icon_type,
+                    const gfx::Image& image,
+                    base::Callback<void(bool)> callback));
   MOCK_METHOD1(UnableToDownloadFavicon, void(const GURL& icon_url));
   MOCK_CONST_METHOD1(WasUnableToDownloadFavicon, bool(const GURL& icon_url));
   MOCK_METHOD0(ClearUnableToDownloadFavicons, void());

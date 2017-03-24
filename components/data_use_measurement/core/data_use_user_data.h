@@ -65,6 +65,7 @@ class DataUseUserData : public base::SupportsUserData::Data {
     DOODLE,
     UKM,
     PAYMENTS,
+    LARGE_ICON_SERVICE,
   };
 
   // Data use broken by content type. This enum must remain synchronized

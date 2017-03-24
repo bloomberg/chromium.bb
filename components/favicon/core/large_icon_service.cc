@@ -10,17 +10,51 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/strings/stringprintf.h"
 #include "base/task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/fallback_icon_style.h"
 #include "components/favicon_base/favicon_types.h"
+#include "components/favicon_base/favicon_util.h"
 #include "skia/ext/image_operations.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/geometry/size.h"
+#include "url/url_canon.h"
 
+namespace favicon {
 namespace {
+
+const char kGoogleServerV2RequestFormat[] =
+    "https://t0.gstatic.com/"
+    "faviconV2?user=chrome&drop_404_icon=true&size=%d&min_size=%d&max_size=%d&"
+    "fallback_opts=TYPE&url=%s";
+const int kGoogleServerV2MaxSizeInPixel = 256;
+const int kGoogleServerV2DesiredSizeInPixel = 192;
+
+GURL TrimPageUrlForGoogleServer(const GURL& page_url) {
+  if (!page_url.SchemeIsHTTPOrHTTPS() || page_url.HostIsIPAddress())
+    return GURL();
+
+  url::Replacements<char> replacements;
+  replacements.ClearUsername();
+  replacements.ClearPassword();
+  replacements.ClearQuery();
+  replacements.ClearRef();
+  return page_url.ReplaceComponents(replacements);
+}
+
+GURL GetIconUrlForGoogleServerV2(const GURL& page_url,
+                                 int min_source_size_in_pixel) {
+  return GURL(base::StringPrintf(
+      kGoogleServerV2RequestFormat, kGoogleServerV2DesiredSizeInPixel,
+      min_source_size_in_pixel, kGoogleServerV2MaxSizeInPixel,
+      page_url.spec().c_str()));
+}
 
 // Processes the bitmap data returned from the FaviconService as part of a
 // LargeIconService request.
@@ -160,15 +194,45 @@ void LargeIconWorker::OnIconProcessingComplete() {
   callback_.Run(*result_);
 }
 
-}  // namespace
+void OnFetchIconFromGoogleServerComplete(
+    FaviconService* favicon_service,
+    const GURL& page_url,
+    const base::Callback<void(bool success)>& callback,
+    const std::string& icon_url,
+    const gfx::Image& image,
+    const image_fetcher::RequestMetadata& metadata) {
+  if (image.IsEmpty()) {
+    DLOG(WARNING) << "large icon server fetch empty " << icon_url;
+    favicon_service->UnableToDownloadFavicon(GURL(icon_url));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  base::Bind(callback, false));
+    return;
+  }
 
-namespace favicon {
+  // TODO(crbug.com/699542): Extract the original icon url from the response
+  // headers if available and use it instead of |icon_url|. Possibly the type
+  // too, because using TOUCH_ICON is a hacky way that allows us to not
+  // interfere with sync.
+
+  // Write fetched icons to FaviconService's cache, but only if no icon was
+  // available (clients are encouraged to do this in advance, but meanwhile
+  // something else could've been written). By marking the icons initially
+  // expired (out-of-date), they will be refetched when we visit the original
+  // page any time in the future.
+  favicon_service->SetLastResortFavicons(page_url, GURL(icon_url),
+                                         favicon_base::IconType::TOUCH_ICON,
+                                         image, callback);
+}
+
+}  // namespace
 
 LargeIconService::LargeIconService(
     FaviconService* favicon_service,
-    const scoped_refptr<base::TaskRunner>& background_task_runner)
+    const scoped_refptr<base::TaskRunner>& background_task_runner,
+    std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher)
     : favicon_service_(favicon_service),
-      background_task_runner_(background_task_runner) {
+      background_task_runner_(background_task_runner),
+      image_fetcher_(std::move(image_fetcher)) {
   large_icon_types_.push_back(favicon_base::IconType::FAVICON);
   large_icon_types_.push_back(favicon_base::IconType::TOUCH_ICON);
   large_icon_types_.push_back(favicon_base::IconType::TOUCH_PRECOMPOSED_ICON);
@@ -199,6 +263,34 @@ base::CancelableTaskTracker::TaskId
       page_url, large_icon_types_, min_source_size_in_pixel,
       base::Bind(&LargeIconWorker::OnIconLookupComplete, worker),
       tracker);
+}
+
+void LargeIconService::
+    GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
+        const GURL& page_url,
+        int min_source_size_in_pixel,
+        const base::Callback<void(bool success)>& callback) {
+  DCHECK_LE(0, min_source_size_in_pixel);
+
+  const GURL trimmed_page_url = TrimPageUrlForGoogleServer(page_url);
+  const GURL icon_url =
+      GetIconUrlForGoogleServerV2(trimmed_page_url, min_source_size_in_pixel);
+
+  // Do not download if the URL is invalid after trimming, or there is a
+  // previous cache miss recorded for |icon_url|.
+  if (!trimmed_page_url.is_valid() || !image_fetcher_ ||
+      favicon_service_->WasUnableToDownloadFavicon(icon_url)) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  base::Bind(callback, false));
+    return;
+  }
+
+  image_fetcher_->SetDataUseServiceName(
+      data_use_measurement::DataUseUserData::LARGE_ICON_SERVICE);
+  image_fetcher_->StartOrQueueNetworkRequest(
+      icon_url.spec(), icon_url,
+      base::Bind(&OnFetchIconFromGoogleServerComplete, favicon_service_,
+                 page_url, callback));
 }
 
 }  // namespace favicon

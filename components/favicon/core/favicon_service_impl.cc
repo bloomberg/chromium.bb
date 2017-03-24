@@ -36,6 +36,23 @@ std::vector<int> GetPixelSizesForFaviconScales(int size_in_dip) {
   return sizes_in_pixel;
 }
 
+std::vector<SkBitmap> ExtractSkBitmapsToStore(const gfx::Image& image) {
+  gfx::ImageSkia image_skia = image.AsImageSkia();
+  image_skia.EnsureRepsForSupportedScales();
+  const std::vector<gfx::ImageSkiaRep>& image_reps = image_skia.image_reps();
+  std::vector<SkBitmap> bitmaps;
+  const std::vector<float> favicon_scales = favicon_base::GetFaviconScales();
+  for (size_t i = 0; i < image_reps.size(); ++i) {
+    // Don't save if the scale isn't one of supported favicon scales.
+    if (std::find(favicon_scales.begin(), favicon_scales.end(),
+                  image_reps[i].scale()) == favicon_scales.end()) {
+      continue;
+    }
+    bitmaps.push_back(image_reps[i].sk_bitmap());
+  }
+  return bitmaps;
+}
+
 }  // namespace
 
 FaviconServiceImpl::FaviconServiceImpl(
@@ -215,20 +232,18 @@ void FaviconServiceImpl::SetFavicons(const GURL& page_url,
                                      const GURL& icon_url,
                                      favicon_base::IconType icon_type,
                                      const gfx::Image& image) {
-  gfx::ImageSkia image_skia = image.AsImageSkia();
-  image_skia.EnsureRepsForSupportedScales();
-  const std::vector<gfx::ImageSkiaRep>& image_reps = image_skia.image_reps();
-  std::vector<SkBitmap> bitmaps;
-  const std::vector<float> favicon_scales = favicon_base::GetFaviconScales();
-  for (size_t i = 0; i < image_reps.size(); ++i) {
-    // Don't save if the scale isn't one of supported favicon scales.
-    if (std::find(favicon_scales.begin(), favicon_scales.end(),
-                  image_reps[i].scale()) == favicon_scales.end()) {
-      continue;
-    }
-    bitmaps.push_back(image_reps[i].sk_bitmap());
-  }
-  history_service_->SetFavicons(page_url, icon_type, icon_url, bitmaps);
+  history_service_->SetFavicons(page_url, icon_type, icon_url,
+                                ExtractSkBitmapsToStore(image));
+}
+
+void FaviconServiceImpl::SetLastResortFavicons(
+    const GURL& page_url,
+    const GURL& icon_url,
+    favicon_base::IconType icon_type,
+    const gfx::Image& image,
+    base::Callback<void(bool)> callback) {
+  history_service_->SetLastResortFavicons(
+      page_url, icon_type, icon_url, ExtractSkBitmapsToStore(image), callback);
 }
 
 void FaviconServiceImpl::UnableToDownloadFavicon(const GURL& icon_url) {

@@ -60,7 +60,8 @@ class ReadingListCollectionViewControllerTest : public testing::Test {
     reading_list_model_.reset(new ReadingListModelImpl(
         nullptr, nullptr, base::MakeUnique<base::DefaultClock>()));
     large_icon_service_.reset(new favicon::LargeIconService(
-        &mock_favicon_service_, base::ThreadTaskRunnerHandle::Get()));
+        &mock_favicon_service_, base::ThreadTaskRunnerHandle::Get(),
+        /*image_fetcher=*/nullptr));
     reading_list_view_controller_.reset(
         [[ReadingListCollectionViewController alloc]
                          initWithModel:reading_list_model_.get()

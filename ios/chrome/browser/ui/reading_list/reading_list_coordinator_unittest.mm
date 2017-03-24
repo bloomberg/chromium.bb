@@ -98,7 +98,8 @@ class ReadingListCoordinatorTest : public web::WebTestWithWebState {
     reading_list_model_.reset(new ReadingListModelImpl(
         nullptr, nullptr, base::MakeUnique<base::DefaultClock>()));
     large_icon_service_.reset(new favicon::LargeIconService(
-        &mock_favicon_service_, base::ThreadTaskRunnerHandle::Get()));
+        &mock_favicon_service_, base::ThreadTaskRunnerHandle::Get(),
+        /*image_fetcher=*/nullptr));
     coordinator_.reset([[ReadingListCoordinator alloc]
         initWithBaseViewController:nil
                       browserState:browser_state_.get()

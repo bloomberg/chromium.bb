@@ -128,6 +128,8 @@ std::string DataUseUserData::GetServiceNameAsString(ServiceName service_name) {
       return "UKM";
     case PAYMENTS:
       return "Payments";
+    case LARGE_ICON_SERVICE:
+      return "LargeIconService";
   }
   return "INVALID";
 }

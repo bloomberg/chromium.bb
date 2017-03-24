@@ -80,7 +80,8 @@ class FaviconViewProviderTest : public PlatformTest {
     DCHECK_CURRENTLY_ON(web::WebThread::UI);
     PlatformTest::SetUp();
     large_icon_service_.reset(new favicon::LargeIconService(
-        &mock_favicon_service_, base::ThreadTaskRunnerHandle::Get()));
+        &mock_favicon_service_, base::ThreadTaskRunnerHandle::Get(),
+        /*image_fetcher=*/nullptr));
 
     EXPECT_CALL(mock_favicon_service_, GetLargestRawFaviconForPageURL(
                                            GURL(kTestFaviconURL), _, _, _, _))
