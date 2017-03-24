@@ -120,9 +120,7 @@ class CORE_EXPORT InspectorCSSAgent final
   void activeStyleSheetsUpdated(Document*);
   void documentDetached(Document*);
   void fontsUpdated();
-  void getUnusedRules(
-      std::unique_ptr<protocol::Array<protocol::CSS::RuleUsage>>*);
-  void setUsageTrackerStatus(bool enabled);
+  void setCoverageEnabled(bool);
 
   void enable(std::unique_ptr<EnableCallback>) override;
   protocol::Response disable() override;
@@ -197,7 +195,9 @@ class CORE_EXPORT InspectorCSSAgent final
       protocol::Maybe<protocol::Array<String>>* backgroundColors) override;
 
   protocol::Response startRuleUsageTracking() override;
-
+  protocol::Response takeCoverageDelta(
+      std::unique_ptr<protocol::Array<protocol::CSS::RuleUsage>>* result)
+      override;
   protocol::Response stopRuleUsageTracking(
       std::unique_ptr<protocol::Array<protocol::CSS::RuleUsage>>* result)
       override;
@@ -287,9 +287,8 @@ class CORE_EXPORT InspectorCSSAgent final
   String detectOrigin(CSSStyleSheet* pageStyleSheet, Document* ownerDocument);
 
   std::unique_ptr<protocol::CSS::CSSRule> buildObjectForRule(CSSStyleRule*);
-  std::unique_ptr<protocol::CSS::RuleUsage> buildObjectForRuleUsage(
-      CSSStyleRule*,
-      bool);
+  std::unique_ptr<protocol::CSS::RuleUsage> buildCoverageInfo(CSSStyleRule*,
+                                                              bool);
   std::unique_ptr<protocol::Array<protocol::CSS::RuleMatch>>
   buildArrayForMatchedRuleList(CSSRuleList*, Element*, PseudoId);
   std::unique_ptr<protocol::CSS::CSSStyle> buildObjectForAttributesStyle(

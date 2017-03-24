@@ -378,8 +378,10 @@ bool ElementRuleCollector::hasAnyMatchingRules(RuleSet* ruleSet) {
 
 void ElementRuleCollector::addMatchedRulesToTracker(
     StyleRuleUsageTracker* tracker) const {
-  for (auto matchedRule : m_matchedRules)
-    tracker->track(matchedRule.ruleData()->rule());
+  for (auto matchedRule : m_matchedRules) {
+    tracker->track(matchedRule.parentStyleSheet(),
+                   matchedRule.ruleData()->rule());
+  }
 }
 
 }  // namespace blink

@@ -690,7 +690,7 @@ void InspectorCSSAgent::restore() {
   if (m_state->booleanProperty(CSSAgentState::cssAgentEnabled, false))
     wasEnabled();
   if (m_state->booleanProperty(CSSAgentState::ruleRecordingEnabled, false))
-    setUsageTrackerStatus(true);
+    setCoverageEnabled(true);
 }
 
 void InspectorCSSAgent::flushPendingProtocolNotifications() {
@@ -755,7 +755,7 @@ Response InspectorCSSAgent::disable() {
   m_state->setBoolean(CSSAgentState::cssAgentEnabled, false);
   m_resourceContentLoader->cancel(m_resourceContentLoaderClientId);
   m_state->setBoolean(CSSAgentState::ruleRecordingEnabled, false);
-  setUsageTrackerStatus(false);
+  setCoverageEnabled(false);
   return Response::OK();
 }
 
@@ -2414,81 +2414,69 @@ void InspectorCSSAgent::visitLayoutTreeNodes(
   }
 }
 
-void InspectorCSSAgent::setUsageTrackerStatus(bool enabled) {
-  if (enabled) {
-    if (!m_tracker)
-      m_tracker = new StyleRuleUsageTracker();
-  } else {
-    m_tracker = nullptr;
-  }
+void InspectorCSSAgent::setCoverageEnabled(bool enabled) {
+  if (enabled == !!m_tracker)
+    return;
+  m_tracker = enabled ? new StyleRuleUsageTracker() : nullptr;
 
-  HeapVector<Member<Document>> documents = m_domAgent->documents();
-  for (Document* document : documents) {
+  for (Document* document : m_domAgent->documents())
     document->styleEngine().setRuleUsageTracker(m_tracker);
-
-    document->setNeedsStyleRecalc(
-        SubtreeStyleChange,
-        StyleChangeReasonForTracing::create(StyleChangeReason::Inspector));
-  }
 }
 
 Response InspectorCSSAgent::startRuleUsageTracking() {
   m_state->setBoolean(CSSAgentState::ruleRecordingEnabled, true);
-  setUsageTrackerStatus(true);
+  setCoverageEnabled(true);
+
+  for (Document* document : m_domAgent->documents()) {
+    document->setNeedsStyleRecalc(
+        SubtreeStyleChange,
+        StyleChangeReasonForTracing::create(StyleChangeReason::Inspector));
+    document->updateStyleAndLayoutTree();
+  }
+
   return Response::OK();
-}
-
-std::unique_ptr<protocol::CSS::RuleUsage>
-InspectorCSSAgent::buildObjectForRuleUsage(CSSStyleRule* rule, bool used) {
-  InspectorStyleSheet* inspectorStyleSheet = inspectorStyleSheetForRule(rule);
-  if (!inspectorStyleSheet)
-    return nullptr;
-
-  std::unique_ptr<protocol::CSS::RuleUsage> result =
-      inspectorStyleSheet->buildObjectForRuleUsage(rule, used);
-
-  return result;
 }
 
 Response InspectorCSSAgent::stopRuleUsageTracking(
     std::unique_ptr<protocol::Array<protocol::CSS::RuleUsage>>* result) {
-  if (!m_tracker) {
+  Response response = takeCoverageDelta(result);
+  setCoverageEnabled(false);
+  return response;
+}
+
+Response InspectorCSSAgent::takeCoverageDelta(
+    std::unique_ptr<protocol::Array<protocol::CSS::RuleUsage>>* result) {
+  if (!m_tracker)
     return Response::Error("CSS rule usage tracking is not enabled");
-  }
+
+  StyleRuleUsageTracker::RuleListByStyleSheet coverageDelta =
+      m_tracker->takeDelta();
 
   *result = protocol::Array<protocol::CSS::RuleUsage>::create();
 
-  HeapVector<Member<Document>> documents = m_domAgent->documents();
-  for (Document* document : documents) {
-    HeapHashSet<Member<CSSStyleSheet>>* newSheetsVector =
-        m_documentToCSSStyleSheets.at(document);
-
-    if (!newSheetsVector)
+  for (const auto& entry : coverageDelta) {
+    const CSSStyleSheet* cssStyleSheet = entry.key.get();
+    InspectorStyleSheet* styleSheet = m_cssStyleSheetToInspectorStyleSheet.at(
+        const_cast<CSSStyleSheet*>(cssStyleSheet));
+    if (!styleSheet)
       continue;
 
-    for (auto sheet : *newSheetsVector) {
-      InspectorStyleSheet* styleSheet =
-          m_cssStyleSheetToInspectorStyleSheet.at(sheet);
-      const CSSRuleVector ruleVector = styleSheet->flatRules();
-      for (auto rule : ruleVector) {
-        if (rule->type() != CSSRule::kStyleRule)
-          continue;
-
-        CSSStyleRule* cssRule = static_cast<CSSStyleRule*>(rule.get());
-
-        StyleRule* styleRule = cssRule->styleRule();
-
-        std::unique_ptr<protocol::CSS::RuleUsage> protocolRule =
-            buildObjectForRuleUsage(cssRule, m_tracker->contains(styleRule));
-        if (!protocolRule)
-          continue;
-
-        result->get()->addItem(std::move(protocolRule));
+    HeapHashMap<Member<const StyleRule>, Member<CSSStyleRule>> ruleToCSSRule;
+    const CSSRuleVector& cssRules = styleSheet->flatRules();
+    for (auto cssRule : cssRules) {
+      if (cssRule->type() != CSSRule::kStyleRule)
+        continue;
+      CSSStyleRule* cssStyleRule = asCSSStyleRule(cssRule);
+      ruleToCSSRule.set(cssStyleRule->styleRule(), cssStyleRule);
+    }
+    for (auto usedRule : entry.value) {
+      CSSStyleRule* cssStyleRule = ruleToCSSRule.at(usedRule);
+      if (std::unique_ptr<protocol::CSS::RuleUsage> ruleUsageObject =
+              styleSheet->buildObjectForRuleUsage(cssStyleRule, true)) {
+        (*result)->addItem(std::move(ruleUsageObject));
       }
     }
   }
-
-  setUsageTrackerStatus(false);
 
   return Response::OK();
 }

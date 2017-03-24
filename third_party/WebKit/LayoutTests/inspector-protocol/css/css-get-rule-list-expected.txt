@@ -8,6 +8,5 @@ Used rules offsets: 5
 57
 141
 327
-Unused rules offsets: 1
-75
+Unused rules offsets: 0
 

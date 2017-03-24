@@ -1514,10 +1514,6 @@ static bool canBind(const String& origin) {
 
 std::unique_ptr<protocol::CSS::CSSRule>
 InspectorStyleSheet::buildObjectForRuleWithoutMedia(CSSStyleRule* rule) {
-  CSSStyleSheet* styleSheet = pageStyleSheet();
-  if (!styleSheet)
-    return nullptr;
-
   std::unique_ptr<protocol::CSS::CSSRule> result =
       protocol::CSS::CSSRule::create()
           .setSelectorList(buildObjectForSelectorList(rule))
@@ -1535,10 +1531,6 @@ InspectorStyleSheet::buildObjectForRuleWithoutMedia(CSSStyleRule* rule) {
 
 std::unique_ptr<protocol::CSS::RuleUsage>
 InspectorStyleSheet::buildObjectForRuleUsage(CSSRule* rule, bool wasUsed) {
-  CSSStyleSheet* styleSheet = pageStyleSheet();
-  if (!styleSheet)
-    return nullptr;
-
   CSSRuleSourceData* sourceData = sourceDataForRule(rule);
 
   if (!sourceData)
@@ -1559,10 +1551,6 @@ InspectorStyleSheet::buildObjectForRuleUsage(CSSRule* rule, bool wasUsed) {
 
 std::unique_ptr<protocol::CSS::CSSKeyframeRule>
 InspectorStyleSheet::buildObjectForKeyframeRule(CSSKeyframeRule* keyframeRule) {
-  CSSStyleSheet* styleSheet = pageStyleSheet();
-  if (!styleSheet)
-    return nullptr;
-
   std::unique_ptr<protocol::CSS::Value> keyText =
       protocol::CSS::Value::create().setText(keyframeRule->keyText()).build();
   CSSRuleSourceData* sourceData = sourceDataForRule(keyframeRule);
@@ -1759,7 +1747,6 @@ CSSRuleSourceData* InspectorStyleSheet::sourceDataForRule(CSSRule* rule) {
   CSSRule* parsedRule = m_parsedFlatRules.at(it->value);
   if (canonicalCSSText(rule) != canonicalCSSText(parsedRule))
     return nullptr;
-
   return m_sourceData->at(it->value).get();
 }
 
