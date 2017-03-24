@@ -233,8 +233,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
           m_originalDisplay(static_cast<unsigned>(initialDisplay())),
           m_verticalAlign(static_cast<unsigned>(initialVerticalAlign())),
           m_hasViewportUnits(false),
-          m_styleType(PseudoIdNone),
-          m_pseudoBits(0),
           m_hasRemUnits(false) {}
 
     // Compare computed styles, differences in inherited bits or other flags
@@ -271,13 +269,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     // It is mutable so we can pass around const ComputedStyles to resolve
     // lengths.
     mutable unsigned m_hasViewportUnits : 1;
-
-    // 32 bits
-
-    unsigned m_styleType : 6;  // PseudoId
-    unsigned m_pseudoBits : 8;
-
-    // 64 bits
 
     mutable unsigned m_hasRemUnits : 1;
 
@@ -344,12 +335,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
                    IsAtShadowBoundary = NotAtShadowBoundary);
   void copyNonInheritedFromCached(const ComputedStyle&);
 
-  PseudoId styleType() const {
-    return static_cast<PseudoId>(m_nonInheritedData.m_styleType);
-  }
-  void setStyleType(PseudoId styleType) {
-    m_nonInheritedData.m_styleType = styleType;
-  }
+  PseudoId styleType() const { return static_cast<PseudoId>(m_styleType); }
+  void setStyleType(PseudoId styleType) { m_styleType = styleType; }
 
   ComputedStyle* getCachedPseudoStyle(PseudoId) const;
   ComputedStyle* addCachedPseudoStyle(PassRefPtr<ComputedStyle>);
@@ -3777,24 +3764,23 @@ inline bool ComputedStyle::setTextOrientation(TextOrientation textOrientation) {
 }
 
 inline bool ComputedStyle::hasAnyPublicPseudoStyles() const {
-  return m_nonInheritedData.m_pseudoBits;
+  return m_pseudoBits;
 }
 
 inline bool ComputedStyle::hasPseudoStyle(PseudoId pseudo) const {
   DCHECK(pseudo >= FirstPublicPseudoId);
   DCHECK(pseudo < FirstInternalPseudoId);
-  return (1 << (pseudo - FirstPublicPseudoId)) &
-         m_nonInheritedData.m_pseudoBits;
+  return (1 << (pseudo - FirstPublicPseudoId)) & m_pseudoBits;
 }
 
 inline void ComputedStyle::setHasPseudoStyle(PseudoId pseudo) {
   DCHECK(pseudo >= FirstPublicPseudoId);
   DCHECK(pseudo < FirstInternalPseudoId);
-  m_nonInheritedData.m_pseudoBits |= 1 << (pseudo - FirstPublicPseudoId);
+  m_pseudoBits |= 1 << (pseudo - FirstPublicPseudoId);
 }
 
 inline bool ComputedStyle::hasPseudoElementStyle() const {
-  return m_nonInheritedData.m_pseudoBits & ElementPseudoIdMask;
+  return m_pseudoBits & ElementPseudoIdMask;
 }
 
 }  // namespace blink

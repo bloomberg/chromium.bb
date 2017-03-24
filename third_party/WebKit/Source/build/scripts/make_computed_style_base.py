@@ -42,6 +42,10 @@ NONPROPERTIES = [
     # TODO(shend): Remove these fields and delete the 'storage_only' template.
     {'name': 'EmptyState', 'field_template': 'storage_only', 'size': 1, 'default_value': 'false',
      'type_name': 'bool', 'inherited': False, 'independent': False},
+    {'name': 'StyleType', 'field_template': 'storage_only', 'size': 6, 'default_value': '0',
+     'type_name': 'PseudoId', 'inherited': False, 'independent': False},
+    {'name': 'PseudoBits', 'field_template': 'storage_only', 'size': 8, 'default_value': 'PseudoIdNone',
+     'type_name': 'PseudoId', 'inherited': False, 'independent': False},
 ]
 
 
