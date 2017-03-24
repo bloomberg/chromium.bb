@@ -27,6 +27,7 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "chrome/browser/ntp_snippets/ntp_snippets_features.h"
+#include "chrome/browser/page_load_metrics/experiments/delay_navigation_throttle.h"
 #include "chrome/browser/predictors/resource_prefetch_common.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/common/channel_info.h"
@@ -755,6 +756,27 @@ const FeatureEntry::FeatureVariation
          kAutofillCreditCardLastUsedDateFeatureVariationExpDate,
          arraysize(kAutofillCreditCardLastUsedDateFeatureVariationExpDate),
          nullptr}};
+
+const FeatureEntry::FeatureParam kDelayNavigation5SecondDelay[] = {
+    {DelayNavigationThrottle::kParamDelayNavigationDurationMillis, "5000"},
+    {DelayNavigationThrottle::kParamDelayNavigationProbability, "1"}};
+
+const FeatureEntry::FeatureParam kDelayNavigation5SecondDelay25Percent[] = {
+    {DelayNavigationThrottle::kParamDelayNavigationDurationMillis, "5000"},
+    {DelayNavigationThrottle::kParamDelayNavigationProbability, "0.25"}};
+
+const FeatureEntry::FeatureParam kDelayNavigation5SecondDelayRandomize[] = {
+    {DelayNavigationThrottle::kParamDelayNavigationDurationMillis, "5000"},
+    {DelayNavigationThrottle::kParamDelayNavigationProbability, "1"},
+    {DelayNavigationThrottle::kParamDelayNavigationRandomize, "true"}};
+
+const FeatureEntry::FeatureVariation kDelayNavigationFeatureVariations[] = {
+    {"(5 second delay, 100% probability)", kDelayNavigation5SecondDelay,
+     arraysize(kDelayNavigation5SecondDelay), nullptr},
+    {"(5 second delay, 25% probability)", kDelayNavigation5SecondDelay25Percent,
+     arraysize(kDelayNavigation5SecondDelay25Percent), nullptr},
+    {"(0-5 second randomized delay)", kDelayNavigation5SecondDelayRandomize,
+     arraysize(kDelayNavigation5SecondDelayRandomize), nullptr}};
 
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
@@ -2396,6 +2418,12 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_USE_NEW_DOODLE_API_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kUseNewDoodleApi)},
 #endif  // OS_ANDROID
+
+    {"delay-navigation", IDS_FLAGS_DELAY_NAVIGATION_NAME,
+     IDS_FLAGS_DELAY_NAVIGATION_DESCRIPTION, kOsAll,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kDelayNavigationFeature,
+                                    kDelayNavigationFeatureVariations,
+                                    "DelayNavigation")},
 
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in

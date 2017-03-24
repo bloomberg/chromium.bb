@@ -53,6 +53,7 @@
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
 #include "chrome/browser/net_benchmarking.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
+#include "chrome/browser/page_load_metrics/experiments/delay_navigation_throttle.h"
 #include "chrome/browser/page_load_metrics/metrics_navigation_throttle.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/permissions/permission_context_base.h"
@@ -3359,17 +3360,22 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
     content::NavigationHandle* handle) {
   std::vector<std::unique_ptr<content::NavigationThrottle>> throttles;
 
+  // MetricsNavigationThrottle requires that it runs before NavigationThrottles
+  // that may delay or cancel navigations, so only NavigationThrottles that
+  // don't delay or cancel navigations (e.g. throttles that are only observing
+  // callbacks without affecting navigation behavior) should be added before
+  // MetricsNavigationThrottle.
+  if (handle->IsInMainFrame()) {
+    throttles.push_back(
+        page_load_metrics::MetricsNavigationThrottle::Create(handle));
+  }
+
 #if BUILDFLAG(ENABLE_PLUGINS)
   std::unique_ptr<content::NavigationThrottle> flash_url_throttle =
       FlashDownloadInterception::MaybeCreateThrottleFor(handle);
   if (flash_url_throttle)
     throttles.push_back(std::move(flash_url_throttle));
 #endif
-
-  if (handle->IsInMainFrame()) {
-    throttles.push_back(
-        page_load_metrics::MetricsNavigationThrottle::Create(handle));
-  }
 
 #if defined(OS_ANDROID)
   // TODO(davidben): This is insufficient to integrate with prerender properly.
@@ -3425,6 +3431,11 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
   throttles.push_back(
       base::MakeUnique<extensions::ExtensionNavigationThrottle>(handle));
 #endif
+
+  std::unique_ptr<content::NavigationThrottle> delay_navigation_throttle =
+      DelayNavigationThrottle::MaybeCreateThrottleFor(handle);
+  if (delay_navigation_throttle)
+    throttles.push_back(std::move(delay_navigation_throttle));
 
   return throttles;
 }
