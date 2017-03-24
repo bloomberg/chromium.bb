@@ -1588,6 +1588,7 @@ split_static_library("browser") {
     "//ppapi/features",
     "//printing/features",
     "//rlz/features",
+    "//services/identity:lib",
     "//services/image_decoder/public/cpp",
     "//services/preferences/public/cpp",
     "//services/preferences/public/cpp:service_main",

@@ -100,6 +100,10 @@ struct StructTraits<signin::mojom::AccountIdDataView, AccountId> {
 
     return out->is_valid();
   }
+
+  static bool IsNull(const AccountId& input) { return !input.is_valid(); }
+
+  static void SetToNull(AccountId* output) { *output = EmptyAccountId(); }
 };
 
 }  // namespace mojo

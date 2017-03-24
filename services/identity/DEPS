@@ -1,0 +1,6 @@
+include_rules = [
+  "+components/signin/core/account_id",
+  "+components/signin/core/browser/account_info.h",
+  "+components/signin/core/browser/signin_manager_base.h",
+  "+components/signin/public",
+]

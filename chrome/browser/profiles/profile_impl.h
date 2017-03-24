@@ -196,6 +196,10 @@ class ProfileImpl : public Profile {
   std::unique_ptr<domain_reliability::DomainReliabilityMonitor>
   CreateDomainReliabilityMonitor(PrefService* local_state);
 
+  // Creates an instance of the Identity Service for this Profile, populating it
+  // with the appropriate instances of its dependencies.
+  std::unique_ptr<service_manager::Service> CreateIdentityService();
+
   PrefChangeRegistrar pref_change_registrar_;
 
   base::FilePath path_;

@@ -19,6 +19,7 @@
 #include "services/device/time_zone_monitor/time_zone_monitor.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/service_info.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/context_utils.h"

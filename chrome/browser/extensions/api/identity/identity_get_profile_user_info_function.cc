@@ -6,11 +6,12 @@
 
 #include "chrome/browser/extensions/api/identity/identity_constants.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/extensions/api/identity.h"
-#include "components/signin/core/browser/signin_manager.h"
+#include "content/public/common/service_manager_connection.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "services/identity/public/interfaces/constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace extensions {
 
@@ -25,16 +26,35 @@ ExtensionFunction::ResponseAction IdentityGetProfileUserInfoFunction::Run() {
     return RespondNow(Error(identity_constants::kOffTheRecord));
   }
 
-  AccountInfo account = SigninManagerFactory::GetForProfile(
-      GetProfile())->GetAuthenticatedAccountInfo();
-  api::identity::ProfileUserInfo profile_user_info;
-  if (extension()->permissions_data()->HasAPIPermission(
+  if (!extension()->permissions_data()->HasAPIPermission(
           APIPermission::kIdentityEmail)) {
-    profile_user_info.email = account.email;
-    profile_user_info.id = account.gaia;
+    api::identity::ProfileUserInfo profile_user_info;
+    return RespondNow(OneArgument(profile_user_info.ToValue()));
   }
 
-  return RespondNow(OneArgument(profile_user_info.ToValue()));
+  content::BrowserContext::GetConnectorFor(GetProfile())
+      ->BindInterface(identity::mojom::kServiceName,
+                      mojo::MakeRequest(&identity_manager_));
+
+  identity_manager_->GetPrimaryAccountId(base::Bind(
+      &IdentityGetProfileUserInfoFunction::OnReceivedPrimaryAccountId, this));
+
+  return RespondLater();
+}
+
+void IdentityGetProfileUserInfoFunction::OnReceivedPrimaryAccountId(
+    const base::Optional<AccountId>& account_id) {
+  DCHECK(extension()->permissions_data()->HasAPIPermission(
+      APIPermission::kIdentityEmail));
+
+  api::identity::ProfileUserInfo profile_user_info;
+
+  if (account_id) {
+    profile_user_info.email = account_id->GetUserEmail();
+    profile_user_info.id = account_id->GetGaiaId();
+  }
+
+  Respond(OneArgument(profile_user_info.ToValue()));
 }
 
 }  // namespace extensions

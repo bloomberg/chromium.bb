@@ -1,0 +1,17 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module identity.mojom;
+
+// TODO(blundell): Move account_id.mojom to
+// //services/identity/public/interfaces.
+import "components/signin/public/interfaces/account_id.mojom";
+
+// Gives access to information about the user's Google accounts.
+interface IdentityManager {
+  // Returns the AccountId for the Google account that serves as the user's
+  // primary account, or null if the user has no primary account (e.g., if they
+  // are not signed in).
+  GetPrimaryAccountId() => (signin.mojom.AccountId? account_id);
+};
