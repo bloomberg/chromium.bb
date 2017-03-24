@@ -176,6 +176,14 @@ bool TransformTree::ComputeTranslation(int source_id,
   return true;
 }
 
+TransformNode* TransformTree::FindNodeFromElementId(ElementId id) {
+  auto iterator = property_trees()->element_id_to_transform_node_index.find(id);
+  if (iterator == property_trees()->element_id_to_transform_node_index.end())
+    return nullptr;
+
+  return Node(iterator->second);
+}
+
 void TransformTree::OnTransformAnimated(const gfx::Transform& transform,
                                         int id,
                                         LayerTreeImpl* layer_tree_impl) {
@@ -845,6 +853,14 @@ void EffectTree::UpdateSurfaceContentsScale(EffectNode* effect_node) {
   effect_node->surface_contents_scale =
       MathUtil::ComputeTransform2dScaleComponents(
           transform_tree.ToScreen(transform_node->id), layer_scale_factor);
+}
+
+EffectNode* EffectTree::FindNodeFromElementId(ElementId id) {
+  auto iterator = property_trees()->element_id_to_effect_node_index.find(id);
+  if (iterator == property_trees()->element_id_to_effect_node_index.end())
+    return nullptr;
+
+  return Node(iterator->second);
 }
 
 void EffectTree::OnOpacityAnimated(float opacity,

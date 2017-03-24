@@ -104,7 +104,8 @@ class CC_EXPORT PropertyTree {
   }
   T* UpdateNodeFromOwningLayerId(int id) {
     int index = FindNodeIndexFromOwningLayerId(id);
-    if (index == kInvalidNodeId && property_trees()->is_main_thread) {
+    if (index == kInvalidNodeId) {
+      DCHECK(property_trees()->is_main_thread);
       property_trees()->needs_rebuild = true;
     }
 
@@ -161,6 +162,7 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
 
   void clear();
 
+  TransformNode* FindNodeFromElementId(ElementId id);
   void OnTransformAnimated(const gfx::Transform& transform,
                            int id,
                            LayerTreeImpl* layer_tree_impl);
@@ -358,6 +360,7 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
 
   void UpdateSurfaceContentsScale(EffectNode* node);
 
+  EffectNode* FindNodeFromElementId(ElementId id);
   void OnOpacityAnimated(float opacity, int id, LayerTreeImpl* layer_tree_impl);
   void OnFilterAnimated(const FilterOperations& filters,
                         int id,

@@ -85,8 +85,6 @@ class CC_EXPORT LayerImpl {
 
   // Interactions with attached animations.
   gfx::ScrollOffset ScrollOffsetForAnimation() const;
-  void OnIsAnimatingChanged(const PropertyAnimationState& mask,
-                            const PropertyAnimationState& state);
   bool IsActive() const;
 
   void set_property_tree_sequence_number(int sequence_number) {}
@@ -120,7 +118,6 @@ class CC_EXPORT LayerImpl {
 
   bool is_clipped() const { return draw_properties_.is_clipped; }
 
-  void UpdatePropertyTreeTransformIsAnimated(bool is_animated);
   void UpdatePropertyTreeScrollOffset();
 
   LayerTreeImpl* layer_tree_impl() const { return layer_tree_impl_; }

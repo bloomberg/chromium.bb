@@ -903,7 +903,6 @@ class LayerTreeHostTestPushElementIdToNodeIdMap : public LayerTreeHostTest {
   void SetupTree() override {
     root_ = Layer::Create();
     child_ = Layer::Create();
-    child_->SetElementId(kTestElementId);
     root_->AddChild(child_);
     layer_tree_host()->SetRootLayer(root_);
     LayerTreeHostTest::SetupTree();
@@ -941,13 +940,13 @@ class LayerTreeHostTestPushElementIdToNodeIdMap : public LayerTreeHostTest {
                           ->property_trees()
                           ->scroll_tree.size());
         EXPECT_TRUE(property_trees->element_id_to_transform_node_index.find(
-                        kTestElementId) ==
+                        child_->element_id()) ==
                     property_trees->element_id_to_transform_node_index.end());
         EXPECT_TRUE(property_trees->element_id_to_effect_node_index.find(
-                        kTestElementId) ==
+                        child_->element_id()) ==
                     property_trees->element_id_to_effect_node_index.end());
         EXPECT_TRUE(property_trees->element_id_to_scroll_node_index.find(
-                        kTestElementId) ==
+                        child_->element_id()) ==
                     property_trees->element_id_to_scroll_node_index.end());
         break;
       case 1:
@@ -961,12 +960,14 @@ class LayerTreeHostTestPushElementIdToNodeIdMap : public LayerTreeHostTest {
                           ->property_trees()
                           ->scroll_tree.size());
         EXPECT_EQ(
-            2,
-            property_trees->element_id_to_transform_node_index[kTestElementId]);
-        EXPECT_EQ(
-            2, property_trees->element_id_to_effect_node_index[kTestElementId]);
-        EXPECT_EQ(
-            2, property_trees->element_id_to_scroll_node_index[kTestElementId]);
+            2, property_trees
+                   ->element_id_to_transform_node_index[child_->element_id()]);
+        EXPECT_EQ(2,
+                  property_trees
+                      ->element_id_to_effect_node_index[child_->element_id()]);
+        EXPECT_EQ(2,
+                  property_trees
+                      ->element_id_to_scroll_node_index[child_->element_id()]);
         break;
       case 2:
         EXPECT_EQ(2U, child_impl_->layer_tree_impl()
@@ -976,13 +977,13 @@ class LayerTreeHostTestPushElementIdToNodeIdMap : public LayerTreeHostTest {
                           ->property_trees()
                           ->effect_tree.size());
         EXPECT_TRUE(property_trees->element_id_to_transform_node_index.find(
-                        kTestElementId) ==
+                        child_->element_id()) ==
                     property_trees->element_id_to_transform_node_index.end());
         EXPECT_TRUE(property_trees->element_id_to_effect_node_index.find(
-                        kTestElementId) ==
+                        child_->element_id()) ==
                     property_trees->element_id_to_effect_node_index.end());
         EXPECT_TRUE(property_trees->element_id_to_scroll_node_index.find(
-                        kTestElementId) ==
+                        child_->element_id()) ==
                     property_trees->element_id_to_scroll_node_index.end());
         break;
     }
@@ -992,8 +993,6 @@ class LayerTreeHostTestPushElementIdToNodeIdMap : public LayerTreeHostTest {
   void AfterTest() override {}
 
  private:
-  const ElementId kTestElementId = ElementId(42, 8118);
-
   scoped_refptr<Layer> root_;
   scoped_refptr<Layer> child_;
 };

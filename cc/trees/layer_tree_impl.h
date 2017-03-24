@@ -514,9 +514,12 @@ class CC_EXPORT LayerTreeImpl {
 
   std::unordered_map<ElementId, int, ElementIdHash> element_layers_map_;
 
-  std::unordered_map<int, float> opacity_animations_map_;
-  std::unordered_map<int, gfx::Transform> transform_animations_map_;
-  std::unordered_map<int, FilterOperations> filter_animations_map_;
+  std::unordered_map<ElementId, float, ElementIdHash>
+      element_id_to_opacity_animations_;
+  std::unordered_map<ElementId, gfx::Transform, ElementIdHash>
+      element_id_to_transform_animations_;
+  std::unordered_map<ElementId, FilterOperations, ElementIdHash>
+      element_id_to_filter_animations_;
 
   // Maps from clip layer ids to scroll layer ids.  Note that this only includes
   // the subset of clip layers that act as scrolling containers.  (This is

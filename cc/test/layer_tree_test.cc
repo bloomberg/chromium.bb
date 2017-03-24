@@ -690,6 +690,7 @@ void LayerTreeTest::SetupTree() {
       root_bounds, layer_tree_host()->device_scale_factor());
   layer_tree_host()->SetViewportSize(device_root_bounds);
   layer_tree_host()->root_layer()->SetIsDrawable(true);
+  layer_tree_host()->SetElementIdsForTesting();
 }
 
 void LayerTreeTest::Timeout() {

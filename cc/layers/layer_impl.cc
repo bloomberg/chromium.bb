@@ -475,98 +475,26 @@ int LayerImpl::num_copy_requests_in_target_subtree() {
       ->num_copy_requests_in_subtree;
 }
 
-void LayerImpl::UpdatePropertyTreeTransformIsAnimated(bool is_animated) {
-  if (TransformNode* node =
-          GetTransformTree().UpdateNodeFromOwningLayerId(id())) {
-    // A LayerImpl's own current state is insufficient for determining whether
-    // it owns a TransformNode, since this depends on the state of the
-    // corresponding Layer at the time of the last commit. For example, if
-    // |is_animated| is false, this might mean a transform animation just ticked
-    // past its finish point (so the LayerImpl still owns a TransformNode) or it
-    // might mean that a transform animation was removed during commit or
-    // activation (and, in that case, the LayerImpl will no longer own a
-    // TransformNode, unless it has non-animation-related reasons for owning a
-    // node).
-    if (node->has_potential_animation != is_animated) {
-      node->has_potential_animation = is_animated;
-      if (is_animated) {
-        node->has_only_translation_animations = HasOnlyTranslationTransforms();
-      } else {
-        node->has_only_translation_animations = true;
-      }
-
-      GetTransformTree().set_needs_update(true);
-      layer_tree_impl()->set_needs_update_draw_properties();
-    }
-  }
-}
-
 void LayerImpl::UpdatePropertyTreeForScrollingAndAnimationIfNeeded() {
   if (scrollable())
     UpdatePropertyTreeScrollOffset();
 
   if (HasAnyAnimationTargetingProperty(TargetProperty::TRANSFORM)) {
-    UpdatePropertyTreeTransformIsAnimated(
-        HasPotentiallyRunningTransformAnimation());
+    if (TransformNode* node =
+            GetTransformTree().FindNodeFromElementId(element_id())) {
+      bool has_potential_animation = HasPotentiallyRunningTransformAnimation();
+      if (node->has_potential_animation != has_potential_animation) {
+        node->has_potential_animation = has_potential_animation;
+        node->has_only_translation_animations = HasOnlyTranslationTransforms();
+        GetTransformTree().set_needs_update(true);
+        layer_tree_impl()->set_needs_update_draw_properties();
+      }
+    }
   }
 }
 
 gfx::ScrollOffset LayerImpl::ScrollOffsetForAnimation() const {
   return CurrentScrollOffset();
-}
-
-void LayerImpl::OnIsAnimatingChanged(const PropertyAnimationState& mask,
-                                     const PropertyAnimationState& state) {
-  DCHECK(layer_tree_impl_);
-
-  for (int property = TargetProperty::FIRST_TARGET_PROPERTY;
-       property <= TargetProperty::LAST_TARGET_PROPERTY; ++property) {
-    if (!mask.currently_running[property] &&
-        !mask.potentially_animating[property])
-      continue;
-
-    switch (property) {
-      case TargetProperty::TRANSFORM:
-        if (TransformNode* transform_node =
-                GetTransformTree().UpdateNodeFromOwningLayerId(id())) {
-          if (mask.currently_running[property])
-            transform_node->is_currently_animating =
-                state.currently_running[property];
-          if (mask.potentially_animating[property]) {
-            UpdatePropertyTreeTransformIsAnimated(
-                state.potentially_animating[property]);
-            was_ever_ready_since_last_transform_animation_ = false;
-          }
-        }
-        break;
-      case TargetProperty::OPACITY:
-        if (EffectNode* effect_node =
-                GetEffectTree().UpdateNodeFromOwningLayerId(id())) {
-          if (mask.currently_running[property])
-            effect_node->is_currently_animating_opacity =
-                state.currently_running[property];
-          if (mask.potentially_animating[property]) {
-            effect_node->has_potential_opacity_animation =
-                state.potentially_animating[property];
-            GetEffectTree().set_needs_update(true);
-          }
-        }
-        break;
-      case TargetProperty::FILTER:
-        if (EffectNode* effect_node =
-                GetEffectTree().UpdateNodeFromOwningLayerId(id())) {
-          if (mask.currently_running[property])
-            effect_node->is_currently_animating_filter =
-                state.currently_running[property];
-          if (mask.potentially_animating[property])
-            effect_node->has_potential_filter_animation =
-                state.potentially_animating[property];
-        }
-        break;
-      default:
-        break;
-    }
-  }
 }
 
 bool LayerImpl::IsActive() const {

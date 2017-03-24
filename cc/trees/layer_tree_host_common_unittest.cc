@@ -2540,7 +2540,6 @@ TEST_F(LayerTreeHostCommonTest, AnimationsForRenderSurfaceHierarchy) {
       gfx::Point3F(0.25f, 0.f, 0.f);
 
   root->layer_tree_impl()->BuildLayerListAndPropertyTreesForTesting();
-  SetElementIdsForTesting();
 
   // Put an animated opacity on the render surface.
   AddOpacityTransitionToElementWithPlayer(
@@ -5082,7 +5081,6 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
   scoped_refptr<AnimationTimeline> timeline =
       AnimationTimeline::Create(AnimationIdProvider::NextTimelineId());
   host_impl.animation_host()->AddAnimationTimeline(timeline);
-  host_impl.pending_tree()->SetElementIdsForTesting();
 
   ElementId child_element_id =
       host_impl.pending_tree()->LayerById(child_id)->element_id();

@@ -486,9 +486,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void OnTransformAnimated(const gfx::Transform& transform);
   void OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset);
 
-  void OnIsAnimatingChanged(const PropertyAnimationState& mask,
-                            const PropertyAnimationState& state);
-
   bool FilterIsAnimating() const;
   bool TransformIsAnimating() const;
   bool ScrollOffsetAnimationWasInterrupted() const;
