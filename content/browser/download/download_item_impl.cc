@@ -1990,7 +1990,6 @@ void DownloadItemImpl::ResumeInterruptedDownload(
     std::vector<DownloadItem::ReceivedSlice> slices_to_download
         = FindSlicesToDownload(received_slices_);
     download_params->set_offset(slices_to_download[0].offset);
-    download_params->set_length(slices_to_download[0].received_bytes);
   } else {
     download_params->set_offset(GetReceivedBytes());
   }

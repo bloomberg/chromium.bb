@@ -31,6 +31,8 @@
 
 namespace content {
 
+namespace {
+
 const int kUpdatePeriodMs = 500;
 const int kMaxTimeBlockingFileThreadMs = 1000;
 
@@ -41,6 +43,12 @@ const int kInitialRenameRetryDelayMs = 200;
 
 // Number of times a failing rename is retried before giving up.
 const int kMaxRenameRetries = 3;
+
+// Because DownloadSaveInfo::kLengthFullContent is 0, we should avoid using
+// 0 for length if we found that a stream can no longer write any data.
+const int kNoBytesToWrite = -1;
+
+}  // namespace
 
 DownloadFileImpl::SourceStream::SourceStream(
     int64_t offset,
@@ -57,6 +65,25 @@ DownloadFileImpl::SourceStream::~SourceStream() = default;
 
 void DownloadFileImpl::SourceStream::OnWriteBytesToDisk(int64_t bytes_write) {
   bytes_written_ += bytes_write;
+}
+
+void DownloadFileImpl::SourceStream::TruncateLengthWithWrittenDataBlock(
+    int64_t offset,
+    int64_t bytes_written) {
+  DCHECK_GT(bytes_written, 0);
+  if (length_ == kNoBytesToWrite)
+    return;
+
+  if (offset <= offset_) {
+    if (offset + bytes_written > offset_)
+      length_ = kNoBytesToWrite;
+    return;
+  }
+
+  if (length_ == DownloadSaveInfo::kLengthFullContent ||
+      length_ > offset - offset_) {
+    length_ = offset - offset_;
+  }
 }
 
 DownloadFileImpl::DownloadFileImpl(
@@ -161,6 +188,11 @@ DownloadInterruptReason DownloadFileImpl::WriteDataToFile(int64_t offset,
 bool DownloadFileImpl::CalculateBytesToWrite(SourceStream* source_stream,
                                              size_t bytes_available_to_write,
                                              size_t* bytes_to_write) {
+  if (source_stream->length() == kNoBytesToWrite) {
+    *bytes_to_write = 0;
+    return true;
+  }
+
   // If a new slice finds that its target position has already been written,
   // terminate the stream.
   if (source_stream->bytes_written() == 0) {
@@ -448,6 +480,11 @@ void DownloadFileImpl::RegisterAndActivateStream(SourceStream* source_stream) {
     stream_reader->RegisterCallback(base::Bind(&DownloadFileImpl::StreamActive,
                                                weak_factory_.GetWeakPtr(),
                                                source_stream));
+    // Truncate |source_stream|'s length if necessary.
+    for (const auto& received_slice : received_slices_) {
+      source_stream->TruncateLengthWithWrittenDataBlock(
+          received_slice.offset, received_slice.received_bytes);
+    }
     StreamActive(source_stream);
     num_active_streams_++;
   }
@@ -503,12 +540,8 @@ void DownloadFileImpl::AddNewSlice(int64_t offset, int64_t length) {
         source_stream->set_index(source_stream->index() + 1);
     } else if (source_stream->offset() == offset) {
       source_stream->set_index(index);
-    } else if (source_stream->length() ==
-                   DownloadSaveInfo::kLengthFullContent ||
-               source_stream->length() > offset - source_stream->offset()) {
-      // The newly introduced slice will impact the length of the SourceStreams
-      // preceding it.
-      source_stream->set_length(offset - source_stream->offset());
+    } else {
+      source_stream->TruncateLengthWithWrittenDataBlock(offset, length);
     }
   }
 }
@@ -564,7 +597,7 @@ void DownloadFileImpl::HandleStreamError(SourceStream* source_stream,
 
   bool can_recover_from_error = false;
 
-  if (is_sparse_file_) {
+  if (is_sparse_file_ && source_stream->length() != kNoBytesToWrite) {
     // If a neighboring stream request is available, check if it can help
     // download all the data left by |source stream| or has already done so. We
     // want to avoid the situation that a server always fail additional requests

@@ -106,6 +106,11 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
     // Called after successfully writing a buffer to disk.
     void OnWriteBytesToDisk(int64_t bytes_write);
 
+    // Given a data block that is already written, truncate the length of this
+    // object to avoid overwriting that block.
+    void TruncateLengthWithWrittenDataBlock(int64_t offset,
+                                            int64_t bytes_written);
+
     ByteStreamReader* stream_reader() const { return stream_reader_.get(); }
     int64_t offset() const { return offset_; }
     int64_t length() const { return length_; }
