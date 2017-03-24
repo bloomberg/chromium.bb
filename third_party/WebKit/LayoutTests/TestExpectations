@@ -1875,6 +1875,7 @@ crbug.com/698077 inspector/sources/debugger/debug-inlined-scripts.html [ NeedsMa
 crbug.com/694525 external/wpt/content-security-policy [ Skip ]
 crbug.com/694525 external/wpt/content-security-policy/connect-src [ Pass ]
 crbug.com/694525 external/wpt/content-security-policy/inside-worker [ Pass ]
+crbug.com/694525 external/wpt/content-security-policy/media-src [ Pass ]
 crbug.com/694525 external/wpt/content-security-policy/securitypolicyviolation [ Pass ]
 crbug.com/694525 external/wpt/content-security-policy/worker-src [ Pass ]
 
