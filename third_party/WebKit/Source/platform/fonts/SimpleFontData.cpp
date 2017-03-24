@@ -75,16 +75,12 @@ SimpleFontData::SimpleFontData(const FontPlatformData& platformData,
   }
 }
 
-SimpleFontData::SimpleFontData(PassRefPtr<CustomFontData> customData,
-                               float fontSize,
-                               bool syntheticBold,
-                               bool syntheticItalic)
-    : m_platformData(
-          FontPlatformData(fontSize, syntheticBold, syntheticItalic)),
+SimpleFontData::SimpleFontData(const FontPlatformData& platformData,
+                               PassRefPtr<OpenTypeVerticalData> verticalData)
+    : m_platformData(platformData),
       m_isTextOrientationFallback(false),
-      m_verticalData(nullptr),
-      m_hasVerticalGlyphs(false),
-      m_customFontData(std::move(customData)) {}
+      m_verticalData(verticalData),
+      m_hasVerticalGlyphs(false) {}
 
 void SimpleFontData::platformInit(bool subpixelAscentDescent) {
   if (!m_platformData.size()) {

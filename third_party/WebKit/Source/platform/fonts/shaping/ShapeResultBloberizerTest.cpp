@@ -6,6 +6,7 @@
 
 #include "platform/fonts/Font.h"
 #include "platform/fonts/SimpleFontData.h"
+#include "platform/fonts/opentype/OpenTypeVerticalData.h"
 #include "platform/fonts/shaping/ShapeResultTestInfo.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/Optional.h"
@@ -18,12 +19,21 @@ namespace {
 // Font has no glyphs, but that's okay.
 class TestSimpleFontData : public SimpleFontData {
  public:
-  static PassRefPtr<TestSimpleFontData> create() {
-    return adoptRef(new TestSimpleFontData);
+  static PassRefPtr<TestSimpleFontData> create(bool forceRotation = false) {
+    FontPlatformData platformData(
+        SkTypeface::MakeDefault(), nullptr, 10, false, false,
+        forceRotation ? FontOrientation::VerticalUpright
+                      : FontOrientation::Horizontal);
+    RefPtr<OpenTypeVerticalData> verticalData(
+        forceRotation ? OpenTypeVerticalData::create(platformData) : nullptr);
+    return adoptRef(
+        new TestSimpleFontData(platformData, std::move(verticalData)));
   }
 
  private:
-  TestSimpleFontData() : SimpleFontData(nullptr, 10, false, false) {}
+  TestSimpleFontData(const FontPlatformData& platformData,
+                     PassRefPtr<OpenTypeVerticalData> verticalData)
+      : SimpleFontData(platformData, std::move(verticalData)) {}
 };
 
 }  // anonymous namespace
@@ -168,6 +178,61 @@ TEST(ShapeResultBloberizerTest, StoresGlyphsVerticalOffsets) {
 
   // flush everything (1 blob w/ 2 runs)
   EXPECT_EQ(bloberizer.blobs().size(), 1ul);
+}
+
+TEST(ShapeResultBloberizerTest, MixedBlobRotation) {
+  Font font;
+  ShapeResultBloberizer bloberizer(font, 1);
+
+  // Normal (horizontal) font.
+  RefPtr<SimpleFontData> fontNormal = TestSimpleFontData::create();
+  ASSERT_FALSE(fontNormal->platformData().isVerticalAnyUpright());
+  ASSERT_EQ(fontNormal->verticalData(), nullptr);
+
+  // Rotated (vertical upright) font.
+  RefPtr<SimpleFontData> fontRotated = TestSimpleFontData::create(true);
+  ASSERT_TRUE(fontRotated->platformData().isVerticalAnyUpright());
+  ASSERT_NE(fontRotated->verticalData(), nullptr);
+
+  struct {
+    const SimpleFontData* fontData;
+    size_t expectedPendingGlyphs;
+    size_t expectedPendingRuns;
+    size_t expectedCommittedBlobs;
+  } appendOps[] = {
+      // append 2 horizontal glyphs -> these go into the pending glyph buffer
+      {fontNormal.get(), 1u, 0u, 0u},
+      {fontNormal.get(), 2u, 0u, 0u},
+
+      // append 3 vertical rotated glyphs -> push the prev pending (horizontal)
+      // glyphs into a new run in the current (horizontal) blob
+      {fontRotated.get(), 1u, 1u, 0u},
+      {fontRotated.get(), 2u, 1u, 0u},
+      {fontRotated.get(), 3u, 1u, 0u},
+
+      // append 2 more horizontal glyphs -> flush the current (horizontal) blob,
+      // push prev (vertical) pending glyphs into new vertical blob run
+      {fontNormal.get(), 1u, 1u, 1u},
+      {fontNormal.get(), 2u, 1u, 1u},
+
+      // append 1 more vertical glyph -> flush current (vertical) blob, push
+      // prev (horizontal) pending glyphs into a new horizontal blob run
+      {fontRotated.get(), 1u, 1u, 2u},
+  };
+
+  for (const auto& op : appendOps) {
+    bloberizer.add(42, op.fontData, FloatPoint());
+    EXPECT_EQ(
+        op.expectedPendingGlyphs,
+        ShapeResultBloberizerTestInfo::pendingRunGlyphs(bloberizer).size());
+    EXPECT_EQ(op.expectedPendingRuns,
+              ShapeResultBloberizerTestInfo::pendingBlobRunCount(bloberizer));
+    EXPECT_EQ(op.expectedCommittedBlobs,
+              ShapeResultBloberizerTestInfo::committedBlobCount(bloberizer));
+  }
+
+  // flush everything -> 4 blobs total
+  EXPECT_EQ(4u, bloberizer.blobs().size());
 }
 
 }  // namespace blink

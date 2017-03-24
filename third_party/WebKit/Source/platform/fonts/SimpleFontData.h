@@ -164,10 +164,8 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
                  bool isTextOrientationFallback = false,
                  bool subpixelAscentDescent = false);
 
-  SimpleFontData(PassRefPtr<CustomFontData> customData,
-                 float fontSize,
-                 bool syntheticBold,
-                 bool syntheticItalic);
+  // Only used for testing.
+  SimpleFontData(const FontPlatformData&, PassRefPtr<OpenTypeVerticalData>);
 
  private:
   void platformInit(bool subpixelAscentDescent);
