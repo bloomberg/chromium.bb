@@ -14,13 +14,14 @@ _log = logging.getLogger(__name__)
 
 class OptimizeBaselines(AbstractRebaseliningCommand):
     name = 'optimize-baselines'
-    help_text = 'Reshuffles the baselines for the given tests to use as litte space on disk as possible.'
+    help_text = 'Reshuffles the baselines for the given tests to use as little space on disk as possible.'
     show_in_main_help = True
     argument_names = 'TEST_NAMES'
 
     def __init__(self):
         super(OptimizeBaselines, self).__init__(options=[
             self.suffixes_option,
+            self.port_name_option,
         ] + self.platform_options)
 
     def _optimize_baseline(self, optimizer, test_name):

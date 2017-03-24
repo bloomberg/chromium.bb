@@ -228,22 +228,46 @@ crbug.com/24182 path/to/locally-changed-lined.html [ NeedsRebaseline ]
 
         self.assertEqual(self.tool.executive.calls, [
             [
-                ['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'png',
-                 '--builder', 'MOCK Mac10.11', '--test', 'fast/dom/prototype-strawberry.html'],
-                ['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt',
-                 '--builder', 'MOCK Mac10.11', '--test', 'fast/dom/prototype-taco.html'],
+                [
+                    'python', 'echo', 'copy-existing-baselines-internal',
+                    '--test', 'fast/dom/prototype-strawberry.html',
+                    '--suffixes', 'png',
+                    '--port-name', 'test-mac-mac10.11',
+                ],
+                [
+                    'python', 'echo', 'copy-existing-baselines-internal',
+                    '--test', 'fast/dom/prototype-taco.html',
+                    '--suffixes', 'txt',
+                    '--port-name', 'test-mac-mac10.11',
+                ],
             ],
             [
-                ['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'png',
-                 '--builder', 'MOCK Mac10.11', '--test', 'fast/dom/prototype-strawberry.html'],
-                ['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt',
-                 '--builder', 'MOCK Mac10.11', '--test', 'fast/dom/prototype-taco.html'],
+                [
+                    'python', 'echo', 'rebaseline-test-internal',
+                    '--test', 'fast/dom/prototype-strawberry.html',
+                    '--suffixes', 'png',
+                    '--port-name', 'test-mac-mac10.11',
+                    '--builder', 'MOCK Mac10.11',
+                ],
+                [
+                    'python', 'echo', 'rebaseline-test-internal',
+                    '--test', 'fast/dom/prototype-taco.html',
+                    '--suffixes', 'txt',
+                    '--port-name', 'test-mac-mac10.11',
+                    '--builder', 'MOCK Mac10.11',
+                ],
             ],
             [
-                ['python', 'echo', 'optimize-baselines',
-                 '--suffixes', 'png', 'fast/dom/prototype-strawberry.html'],
-                ['python', 'echo', 'optimize-baselines',
-                 '--suffixes', 'txt', 'fast/dom/prototype-taco.html'],
+                [
+                    'python', 'echo', 'optimize-baselines',
+                    '--suffixes', 'png',
+                    'fast/dom/prototype-strawberry.html',
+                ],
+                [
+                    'python', 'echo', 'optimize-baselines',
+                    '--suffixes', 'txt',
+                    'fast/dom/prototype-taco.html',
+                ],
             ],
             ['git', 'cl', 'upload', '-f'],
             ['git', 'pull'],
@@ -302,11 +326,24 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
         self._execute_with_mock_options()
 
         self.assertEqual(self.tool.executive.calls, [
-            [['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt',
-              '--builder', 'MOCK Mac10.11', '--test', 'fast/dom/prototype-taco.html']],
-            [['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt',
-              '--builder', 'MOCK Mac10.11', '--test', 'fast/dom/prototype-taco.html']],
-            [['python', 'echo', 'optimize-baselines', '--suffixes', 'txt', 'fast/dom/prototype-taco.html']],
+            [[
+                'python', 'echo', 'copy-existing-baselines-internal',
+                '--test', 'fast/dom/prototype-taco.html',
+                '--suffixes', 'txt',
+                '--port-name', 'test-mac-mac10.11',
+            ]],
+            [[
+                'python', 'echo', 'rebaseline-test-internal',
+                '--test', 'fast/dom/prototype-taco.html',
+                '--suffixes', 'txt',
+                '--port-name', 'test-mac-mac10.11',
+                '--builder', 'MOCK Mac10.11',
+            ]],
+            [[
+                'python', 'echo', 'optimize-baselines',
+                '--suffixes', 'txt',
+                'fast/dom/prototype-taco.html',
+            ]],
             ['git', 'cl', 'upload', '-f'],
         ])
 

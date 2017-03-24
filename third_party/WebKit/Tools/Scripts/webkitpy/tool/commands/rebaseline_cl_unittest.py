@@ -272,11 +272,25 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         self.assertEqual(
             self.tool.executive.calls,
             [
-                [['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt',
-                  '--builder', 'MOCK Try Win', '--test', 'fast/dom/prototype-taco.html']],
-                [['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt',
-                  '--builder', 'MOCK Try Win', '--test', 'fast/dom/prototype-taco.html', '--build-number', '5000']],
-                [['python', 'echo', 'optimize-baselines', '--suffixes', 'txt', 'fast/dom/prototype-taco.html']]
+                [[
+                    'python', 'echo', 'copy-existing-baselines-internal',
+                    '--test', 'fast/dom/prototype-taco.html',
+                    '--suffixes', 'txt',
+                    '--port-name', 'test-win-win7',
+                ]],
+                [[
+                    'python', 'echo', 'rebaseline-test-internal',
+                    '--test', 'fast/dom/prototype-taco.html',
+                    '--suffixes', 'txt',
+                    '--port-name', 'test-win-win7',
+                    '--builder', 'MOCK Try Win',
+                    '--build-number', '5000',
+                ]],
+                [[
+                    'python', 'echo', 'optimize-baselines',
+                    '--suffixes', 'txt',
+                    'fast/dom/prototype-taco.html',
+                ]]
             ])
 
     def test_trigger_builds(self):

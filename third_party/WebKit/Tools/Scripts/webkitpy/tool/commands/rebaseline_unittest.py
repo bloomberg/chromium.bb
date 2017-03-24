@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import json
 import optparse
 import unittest
 
@@ -115,6 +116,7 @@ class TestCopyExistingBaselinesInternal(BaseTestCase):
             'results_directory': None,
             'suffixes': 'txt',
             'verbose': False,
+            'port_name': None,
         }
         options_dict.update(kwargs)
         return optparse.Values(options_dict)
@@ -136,7 +138,7 @@ class TestCopyExistingBaselinesInternal(BaseTestCase):
         self.assertFalse(self.tool.filesystem.exists(
             self.baseline_path('platform/test-mac-mac10.10/failures/expected/image-expected.txt')))
 
-        self.command.execute(self.options(builder='MOCK Mac10.11', test='failures/expected/image.html'), [], self.tool)
+        self.command.execute(self.options(port_name='test-mac-mac10.11', test='failures/expected/image.html'), [], self.tool)
 
         self.assertEqual(
             self._read(self.baseline_path('platform/test-mac-mac10.11/failures/expected/image-expected.txt')),
@@ -145,7 +147,7 @@ class TestCopyExistingBaselinesInternal(BaseTestCase):
             self._read(self.baseline_path('platform/test-mac-mac10.10/failures/expected/image-expected.txt')),
             'original test-mac-mac10.11 result')
 
-    def test_copy_baseline_win10_to_linux_trusty_and_win7(self):
+    def test_copy_baseline_to_multiple_immediate_predecessors(self):
         # The test-win-win10 baseline is copied over to the test-linux-trusty
         # and test-win-win7 baseline paths, since both of these are "immediate
         # predecessors".
@@ -155,7 +157,7 @@ class TestCopyExistingBaselinesInternal(BaseTestCase):
         self.assertFalse(self.tool.filesystem.exists(
             self.baseline_path('platform/test-linux-trusty/failures/expected/image-expected.txt')))
 
-        self.command.execute(self.options(builder='MOCK Win10', test='failures/expected/image.html'), [], self.tool)
+        self.command.execute(self.options(port_name='test-win-win10', test='failures/expected/image.html'), [], self.tool)
 
         self.assertEqual(
             self._read(self.baseline_path('platform/test-win-win10/failures/expected/image-expected.txt')),
@@ -178,7 +180,7 @@ class TestCopyExistingBaselinesInternal(BaseTestCase):
             self.baseline_path('platform/test-linux-trusty/failures/expected/image-expected.txt'),
             'original test-linux-trusty result')
 
-        self.command.execute(self.options(builder='MOCK Win10', test='failures/expected/image.html'), [], self.tool)
+        self.command.execute(self.options(port_name='test-win-win10', test='failures/expected/image.html'), [], self.tool)
 
         self.assertEqual(
             self._read(self.baseline_path('platform/test-win-win10/failures/expected/image-expected.txt')),
@@ -200,7 +202,7 @@ class TestCopyExistingBaselinesInternal(BaseTestCase):
             ('[ Win ] failures/expected/image.html [ Failure ]\n'
              '[ Linux ] failures/expected/image.html [ Skip ]\n'))
 
-        self.command.execute(self.options(builder='MOCK Win10', test='failures/expected/image.html'), [], self.tool)
+        self.command.execute(self.options(port_name='test-win-win10', test='failures/expected/image.html'), [], self.tool)
 
         self.assertFalse(
             self.tool.filesystem.exists(self.baseline_path('platform/test-linux-trusty/failures/expected/image-expected.txt')))
@@ -224,6 +226,7 @@ class TestRebaselineTest(BaseTestCase):
     def options(**kwargs):
         return optparse.Values(dict({
             'builder': 'MOCK Mac10.11',
+            'port_name': None,
             'test': 'userscripts/another-test.html',
             'suffixes': 'txt',
             'results_directory': None,
@@ -264,7 +267,7 @@ class TestRebaselineTest(BaseTestCase):
              'Bug(A) [ Debug ] : fast/css/large-list-of-rules-crash.html [ Failure ]\n'))
 
     def test_rebaseline_test(self):
-        self.command._rebaseline_test('MOCK Trusty', 'userscripts/another-test.html', 'txt', self.WEB_PREFIX)
+        self.command._rebaseline_test('test-linux-trusty', 'userscripts/another-test.html', 'txt', self.WEB_PREFIX)
         self.assertItemsEqual(self.tool.web.urls_fetched, [self.WEB_PREFIX + '/userscripts/another-test-actual.txt'])
 
     def test_rebaseline_test_with_results_directory(self):
@@ -299,6 +302,7 @@ class TestRebaselineTest(BaseTestCase):
             options = optparse.Values({
                 'optimize': True,
                 'builder': 'MOCK Win10',
+                'port_name': None,
                 'suffixes': 'txt',
                 'verbose': True,
                 'test': 'failures/expected/image.html',
@@ -318,7 +322,7 @@ class TestRebaselineTest(BaseTestCase):
         self.assertFalse(self.tool.filesystem.exists(self.tool.filesystem.join(
             port.layout_tests_dir(), 'platform/test-win-win7/failures/expected/image-expected.txt')))
         self.assertMultiLineEqual(
-            out, '{"remove-lines": [{"test": "failures/expected/image.html", "builder": "MOCK Win10"}]}\n')
+            out, '{"remove-lines": [{"test": "failures/expected/image.html", "port_name": "test-win-win10"}]}\n')
 
 
 class TestAbstractParallelRebaselineCommand(BaseTestCase):
@@ -415,12 +419,27 @@ class TestRebaseline(BaseTestCase):
         self.assertEqual(
             self.tool.executive.calls,
             [
-                [['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt,png',
-                  '--builder', 'MOCK Win7', '--test', 'userscripts/first-test.html', '--verbose']],
-                [['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt,png',
-                  '--builder', 'MOCK Win7', '--test', 'userscripts/first-test.html', '--verbose']],
-                [['python', 'echo', 'optimize-baselines', '--suffixes', 'txt,png',
-                  'userscripts/first-test.html', '--verbose']]
+                [[
+                    'python', 'echo', 'copy-existing-baselines-internal',
+                    '--verbose',
+                    '--test', 'userscripts/first-test.html',
+                    '--suffixes', 'txt,png',
+                    '--port-name', 'test-win-win7',
+                ]],
+                [[
+                    'python', 'echo', 'rebaseline-test-internal',
+                    '--verbose',
+                    '--test', 'userscripts/first-test.html',
+                    '--suffixes', 'txt,png',
+                    '--port-name', 'test-win-win7',
+                    '--builder', 'MOCK Win7',
+                ]],
+                [[
+                    'python', 'echo', 'optimize-baselines',
+                    '--verbose',
+                    '--suffixes', 'txt,png',
+                    'userscripts/first-test.html',
+                ]]
             ])
 
     def test_rebaseline_debug(self):
@@ -434,12 +453,27 @@ class TestRebaseline(BaseTestCase):
         self.assertEqual(
             self.tool.executive.calls,
             [
-                [['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt,png',
-                  '--builder', 'MOCK Win7 (dbg)', '--test', 'userscripts/first-test.html', '--verbose']],
-                [['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt,png', '--builder',
-                  'MOCK Win7 (dbg)', '--test', 'userscripts/first-test.html', '--verbose']],
-                [['python', 'echo', 'optimize-baselines', '--suffixes', 'txt,png',
-                  'userscripts/first-test.html', '--verbose']]
+                [[
+                    'python', 'echo', 'copy-existing-baselines-internal',
+                    '--verbose',
+                    '--test', 'userscripts/first-test.html',
+                    '--suffixes', 'txt,png',
+                    '--port-name', 'test-win-win7',
+                ]],
+                [[
+                    'python', 'echo', 'rebaseline-test-internal',
+                    '--verbose',
+                    '--test', 'userscripts/first-test.html',
+                    '--suffixes', 'txt,png',
+                    '--port-name', 'test-win-win7',
+                    '--builder', 'MOCK Win7 (dbg)',
+                ]],
+                [[
+                    'python', 'echo', 'optimize-baselines',
+                    '--verbose',
+                    '--suffixes', 'txt,png',
+                    'userscripts/first-test.html',
+                ]]
             ])
 
     def test_no_optimize(self):
@@ -452,10 +486,22 @@ class TestRebaseline(BaseTestCase):
         self.assertEqual(
             self.tool.executive.calls,
             [
-                [['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt,png',
-                  '--builder', 'MOCK Win7', '--test', 'userscripts/first-test.html', '--verbose']],
-                [['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt,png',
-                  '--builder', 'MOCK Win7', '--test', 'userscripts/first-test.html', '--verbose']]
+                [[
+                    'python', 'echo', 'copy-existing-baselines-internal',
+                    '--verbose',
+                    '--test', 'userscripts/first-test.html',
+                    '--suffixes', 'txt,png',
+                    '--port-name', 'test-win-win7',
+
+                ]],
+                [[
+                    'python', 'echo', 'rebaseline-test-internal',
+                    '--verbose',
+                    '--test', 'userscripts/first-test.html',
+                    '--suffixes', 'txt,png',
+                    '--port-name', 'test-win-win7',
+                    '--builder', 'MOCK Win7',
+                ]]
             ])
 
     def test_results_directory(self):
@@ -468,10 +514,21 @@ class TestRebaseline(BaseTestCase):
         self.assertEqual(
             self.tool.executive.calls,
             [
-                [['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt,png',
-                  '--builder', 'MOCK Win7', '--test', 'userscripts/first-test.html', '--verbose']],
-                [['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt,png',
-                  '--builder', 'MOCK Win7', '--test', 'userscripts/first-test.html', '--verbose', '--results-directory', '/tmp']]
+                [[
+                    'python', 'echo', 'copy-existing-baselines-internal',
+                    '--verbose',
+                    '--test', 'userscripts/first-test.html',
+                    '--suffixes', 'txt,png',
+                    '--port-name', 'test-win-win7',
+                ]],
+                [[
+                    'python', 'echo', 'rebaseline-test-internal',
+                    '--verbose',
+                    '--test', 'userscripts/first-test.html',
+                    '--suffixes', 'txt,png',
+                    '--port-name', 'test-win-win7',
+                    '--builder', 'MOCK Win7',
+                    '--results-directory', '/tmp']]
             ])
 
     def test_unstaged_baselines(self):
@@ -500,7 +557,7 @@ class TestRebaselineUpdatesExpectationsFiles(BaseTestCase):
         self.tool.executive = MockExecutive()
 
         def mock_run_command(*args, **kwargs):  # pylint: disable=unused-argument
-            return '{"add": [], "remove-lines": [{"test": "userscripts/first-test.html", "builder": "MOCK Mac10.11"}]}\n'
+            return '{"add": [], "remove-lines": [{"test": "userscripts/first-test.html", "port_name": "test-mac-mac10.11"}]}\n'
         self.tool.executive.run_command = mock_run_command
 
     @staticmethod
@@ -624,10 +681,21 @@ class TestRebaselineExecute(BaseTestCase):
         self.assertEqual(
             self.tool.executive.calls,
             [
-                [['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt,png',
-                  '--builder', 'MOCK Win7', '--test', 'userscripts/first-test.html', '--verbose']],
-                [['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt,png',
-                  '--builder', 'MOCK Win7', '--test', 'userscripts/first-test.html', '--verbose']]
+                [[
+                    'python', 'echo', 'copy-existing-baselines-internal',
+                    '--verbose',
+                    '--test', 'userscripts/first-test.html',
+                    '--suffixes', 'txt,png',
+                    '--port-name', 'test-win-win7',
+                ]],
+                [[
+                    'python', 'echo', 'rebaseline-test-internal',
+                    '--verbose',
+                    '--test', 'userscripts/first-test.html',
+                    '--suffixes', 'txt,png',
+                    '--port-name', 'test-win-win7',
+                    '--builder', 'MOCK Win7',
+                ]]
             ])
 
     def test_rebaseline_directory(self):
@@ -650,16 +718,38 @@ class TestRebaselineExecute(BaseTestCase):
             self.tool.executive.calls,
             [
                 [
-                    ['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt,png',
-                     '--builder', 'MOCK Win7', '--test', 'userscripts/first-test.html', '--verbose'],
-                    ['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt,png',
-                     '--builder', 'MOCK Win7', '--test', 'userscripts/second-test.html', '--verbose']
+                    [
+                        'python', 'echo', 'copy-existing-baselines-internal',
+                        '--verbose',
+                        '--test', 'userscripts/first-test.html',
+                        '--suffixes', 'txt,png',
+                        '--port-name', 'test-win-win7',
+                    ],
+                    [
+                        'python', 'echo', 'copy-existing-baselines-internal',
+                        '--verbose',
+                        '--test', 'userscripts/second-test.html',
+                        '--suffixes', 'txt,png',
+                        '--port-name', 'test-win-win7',
+                    ]
                 ],
                 [
-                    ['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt,png',
-                     '--builder', 'MOCK Win7', '--test', 'userscripts/first-test.html', '--verbose'],
-                    ['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt,png',
-                     '--builder', 'MOCK Win7', '--test', 'userscripts/second-test.html', '--verbose']
+                    [
+                        'python', 'echo', 'rebaseline-test-internal',
+                        '--verbose',
+                        '--test', 'userscripts/first-test.html',
+                        '--suffixes', 'txt,png',
+                        '--port-name', 'test-win-win7',
+                        '--builder', 'MOCK Win7',
+                    ],
+                    [
+                        'python', 'echo', 'rebaseline-test-internal',
+                        '--verbose',
+                        '--test', 'userscripts/second-test.html',
+                        '--suffixes', 'txt,png',
+                        '--port-name', 'test-win-win7',
+                        '--builder', 'MOCK Win7',
+                    ]
                 ]
             ])
 
@@ -718,24 +808,60 @@ class TestRebaselineExpectations(BaseTestCase):
 
         self.assertEqual(self.tool.executive.calls, [
             [
-                ['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt',
-                 '--builder', 'MOCK Mac10.10', '--test', 'userscripts/another-test.html'],
-                ['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt',
-                 '--builder', 'MOCK Mac10.11', '--test', 'userscripts/another-test.html'],
-                ['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt,png',
-                 '--builder', 'MOCK Mac10.10', '--test', 'userscripts/images.svg'],
-                ['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt,png',
-                 '--builder', 'MOCK Mac10.11', '--test', 'userscripts/images.svg'],
+                [
+                    'python', 'echo', 'copy-existing-baselines-internal',
+                    '--test', 'userscripts/another-test.html',
+                    '--suffixes', 'txt',
+                    '--port-name', 'test-mac-mac10.10',
+                ],
+                [
+                    'python', 'echo', 'copy-existing-baselines-internal',
+                    '--test', 'userscripts/another-test.html',
+                    '--suffixes', 'txt',
+                    '--port-name', 'test-mac-mac10.11',
+                ],
+                [
+                    'python', 'echo', 'copy-existing-baselines-internal',
+                    '--test', 'userscripts/images.svg',
+                    '--suffixes', 'txt,png',
+                    '--port-name', 'test-mac-mac10.10',
+                ],
+                [
+                    'python', 'echo', 'copy-existing-baselines-internal',
+                    '--test', 'userscripts/images.svg',
+                    '--suffixes', 'txt,png',
+                    '--port-name', 'test-mac-mac10.11',
+                ],
             ],
             [
-                ['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt',
-                 '--builder', 'MOCK Mac10.10', '--test', 'userscripts/another-test.html'],
-                ['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt',
-                 '--builder', 'MOCK Mac10.11', '--test', 'userscripts/another-test.html'],
-                ['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt,png',
-                 '--builder', 'MOCK Mac10.10', '--test', 'userscripts/images.svg'],
-                ['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt,png',
-                 '--builder', 'MOCK Mac10.11', '--test', 'userscripts/images.svg'],
+                [
+                    'python', 'echo', 'rebaseline-test-internal',
+                    '--test', 'userscripts/another-test.html',
+                    '--suffixes', 'txt',
+                    '--port-name', 'test-mac-mac10.10',
+                    '--builder', 'MOCK Mac10.10',
+                ],
+                [
+                    'python', 'echo', 'rebaseline-test-internal',
+                    '--test', 'userscripts/another-test.html',
+                    '--suffixes', 'txt',
+                    '--port-name', 'test-mac-mac10.11',
+                    '--builder', 'MOCK Mac10.11',
+                ],
+                [
+                    'python', 'echo', 'rebaseline-test-internal',
+                    '--test', 'userscripts/images.svg',
+                    '--suffixes', 'txt,png',
+                    '--port-name', 'test-mac-mac10.10',
+                    '--builder', 'MOCK Mac10.10',
+                ],
+                [
+                    'python', 'echo', 'rebaseline-test-internal',
+                    '--test', 'userscripts/images.svg',
+                    '--suffixes', 'txt,png',
+                    '--port-name', 'test-mac-mac10.11',
+                    '--builder', 'MOCK Mac10.11',
+                ],
             ],
         ])
 
@@ -777,16 +903,34 @@ class TestRebaselineExpectations(BaseTestCase):
 
         self.assertEqual(self.tool.executive.calls, [
             [
-                ['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt',
-                 '--builder', 'MOCK Mac10.10', '--test', 'userscripts/reftest-text.html'],
-                ['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt',
-                 '--builder', 'MOCK Mac10.11', '--test', 'userscripts/reftest-text.html'],
+                [
+                    'python', 'echo', 'copy-existing-baselines-internal',
+                    '--test', 'userscripts/reftest-text.html',
+                    '--suffixes', 'txt',
+                    '--port-name', 'test-mac-mac10.10',
+                ],
+                [
+                    'python', 'echo', 'copy-existing-baselines-internal',
+                    '--test', 'userscripts/reftest-text.html',
+                    '--suffixes', 'txt',
+                    '--port-name', 'test-mac-mac10.11',
+                ],
             ],
             [
-                ['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt',
-                 '--builder', 'MOCK Mac10.10', '--test', 'userscripts/reftest-text.html'],
-                ['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt',
-                 '--builder', 'MOCK Mac10.11', '--test', 'userscripts/reftest-text.html'],
+                [
+                    'python', 'echo', 'rebaseline-test-internal',
+                    '--test', 'userscripts/reftest-text.html',
+                    '--suffixes', 'txt',
+                    '--port-name', 'test-mac-mac10.10',
+                    '--builder', 'MOCK Mac10.10',
+                ],
+                [
+                    'python', 'echo', 'rebaseline-test-internal',
+                    '--test', 'userscripts/reftest-text.html',
+                    '--suffixes', 'txt',
+                    '--port-name', 'test-mac-mac10.11',
+                    '--builder', 'MOCK Mac10.11',
+                ],
             ],
         ])
 
@@ -899,20 +1043,47 @@ class TestRebaselineExpectations(BaseTestCase):
 
         self.assertEqual(self.tool.executive.calls, [
             [
-                ['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt',
-                 '--builder', 'MOCK Mac10.10', '--test', 'fast/dom/missing-text.html'],
-                ['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt,png',
-                 '--builder', 'MOCK Mac10.10', '--test', 'fast/dom/missing-text-and-image.html'],
-                ['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'png',
-                 '--builder', 'MOCK Mac10.10', '--test', 'fast/dom/missing-image.html'],
+                [
+                    'python', 'echo', 'copy-existing-baselines-internal',
+                    '--test', 'fast/dom/missing-text.html',
+                    '--suffixes', 'txt',
+                    '--port-name', 'test-mac-mac10.10',
+                ],
+                [
+                    'python', 'echo', 'copy-existing-baselines-internal',
+                    '--test', 'fast/dom/missing-text-and-image.html',
+                    '--suffixes', 'txt,png',
+                    '--port-name', 'test-mac-mac10.10',
+                ],
+                [
+                    'python', 'echo', 'copy-existing-baselines-internal',
+                    '--test', 'fast/dom/missing-image.html',
+                    '--suffixes', 'png',
+                    '--port-name', 'test-mac-mac10.10',
+                ],
             ],
             [
-                ['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt',
-                 '--builder', 'MOCK Mac10.10', '--test', 'fast/dom/missing-text.html'],
-                ['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt,png',
-                 '--builder', 'MOCK Mac10.10', '--test', 'fast/dom/missing-text-and-image.html'],
-                ['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'png',
-                 '--builder', 'MOCK Mac10.10', '--test', 'fast/dom/missing-image.html'],
+                [
+                    'python', 'echo', 'rebaseline-test-internal',
+                    '--test', 'fast/dom/missing-text.html',
+                    '--suffixes', 'txt',
+                    '--port-name', 'test-mac-mac10.10',
+                    '--builder', 'MOCK Mac10.10',
+                ],
+                [
+                    'python', 'echo', 'rebaseline-test-internal',
+                    '--test', 'fast/dom/missing-text-and-image.html',
+                    '--suffixes', 'txt,png',
+                    '--port-name', 'test-mac-mac10.10',
+                    '--builder', 'MOCK Mac10.10',
+                ],
+                [
+                    'python', 'echo', 'rebaseline-test-internal',
+                    '--test', 'fast/dom/missing-image.html',
+                    '--suffixes', 'png',
+                    '--port-name', 'test-mac-mac10.10',
+                    '--builder', 'MOCK Mac10.10',
+                ],
             ]
         ])
 
@@ -927,7 +1098,9 @@ class MockLineRemovingExecutive(MockExecutive):
         for cmd_line, cwd in commands:
             out = self.run_command(cmd_line, cwd=cwd)
             if 'rebaseline-test-internal' in cmd_line:
-                out = '{"remove-lines": [{"test": "%s", "builder": "%s"}]}\n' % (cmd_line[8], cmd_line[6])
+                test = cmd_line[cmd_line.index('--test') + 1]
+                port_name = cmd_line[cmd_line.index('--port-name') + 1]
+                out = json.dumps({'remove-lines': [{'test': test, 'port_name': port_name}]})
             command_outputs.append([0, out, ''])
 
         new_calls = self.calls[num_previous_calls:]
