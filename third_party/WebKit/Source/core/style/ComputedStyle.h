@@ -203,29 +203,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // !START SYNC!: Keep this in sync with the copy constructor in
   // ComputedStyle.cpp.
 
-  // inherit
-  struct InheritedData {
-    InheritedData()
-        : m_hasSimpleUnderline(false),
-          m_insideLink(static_cast<unsigned>(EInsideLink::kNotInsideLink)) {}
-
-    bool operator==(const InheritedData& other) const {
-      // Generated properties are compared in ComputedStyleBase
-      return (m_hasSimpleUnderline == other.m_hasSimpleUnderline) &&
-             (m_insideLink == other.m_insideLink);
-    }
-
-    bool operator!=(const InheritedData& other) const {
-      return !(*this == other);
-    }
-
-    unsigned m_hasSimpleUnderline : 1;  // True if 'underline solid' is the only
-                                        // text decoration on this element.
-
-    // non CSS2 inherited
-    unsigned m_insideLink : 2;     // EInsideLink
-  } m_inheritedData;
-
   // don't inherit
   struct NonInheritedData {
     NonInheritedData()
@@ -2416,13 +2393,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
   void setHasCompositorProxy(bool b) {
     SET_VAR(m_rareNonInheritedData, m_hasCompositorProxy, b);
-  }
-
-  EInsideLink insideLink() const {
-    return static_cast<EInsideLink>(m_inheritedData.m_insideLink);
-  }
-  void setInsideLink(EInsideLink insideLink) {
-    m_inheritedData.m_insideLink = static_cast<unsigned>(insideLink);
   }
 
   bool requiresAcceleratedCompositingForExternalReasons(bool b) {

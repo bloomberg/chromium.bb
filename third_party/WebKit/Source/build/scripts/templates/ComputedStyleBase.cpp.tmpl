@@ -16,7 +16,7 @@ ASSERT_SIZE(ComputedStyleBase, SameSizeAsComputedStyleBase);
 
 void ComputedStyleBase::inheritFrom(const ComputedStyleBase& inheritParent,
                                     IsAtShadowBoundary isAtShadowBoundary) {
-  {% for field in fields if field.is_property and field.is_inherited %}
+  {% for field in fields if field.is_inherited %}
   {{field.name}} = inheritParent.{{field.name}};
   {% endfor %}
 }

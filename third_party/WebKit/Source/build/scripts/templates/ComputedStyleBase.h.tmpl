@@ -29,7 +29,7 @@ class CORE_EXPORT ComputedStyleBase {
  public:
   inline bool independentInheritedEqual(const ComputedStyleBase& o) const {
     return (
-    {% for field in fields if field.is_property and field.is_inherited and field.is_independent %}
+    {% for field in fields if field.is_inherited and field.is_independent %}
         {{field.name}} == o.{{field.name}}{{print_if(not loop.last, ' &&')}}
     {% endfor %}
     );
@@ -37,7 +37,7 @@ class CORE_EXPORT ComputedStyleBase {
 
   inline bool nonIndependentInheritedEqual(const ComputedStyleBase& o) const {
     return (
-    {% for field in fields if field.is_property and field.is_inherited and not field.is_independent %}
+    {% for field in fields if field.is_inherited and not field.is_independent %}
         {{field.name}} == o.{{field.name}}{{print_if(not loop.last, ' &&')}}
     {% endfor %}
     );

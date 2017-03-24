@@ -20,6 +20,9 @@ from name_utilities import (
 NONPROPERTIES = [
     {'name': 'IsLink', 'field_template': 'monotonic_flag',
      'inherited': False, 'independent': False},
+    {'name': 'InsideLink', 'field_template': 'keyword', 'initial_keyword': 'not-inside-link',
+     'keywords': ['not-inside-link', 'inside-unvisited-link', 'inside-visited-link'],
+     'inherited': True, 'independent': False},
     # Style can not be shared.
     {'name': 'Unique', 'field_template': 'monotonic_flag',
      'inherited': False, 'independent': False},
@@ -46,6 +49,9 @@ NONPROPERTIES = [
      'type_name': 'PseudoId', 'inherited': False, 'independent': False},
     {'name': 'PseudoBits', 'field_template': 'storage_only', 'size': 8, 'default_value': 'PseudoIdNone',
      'type_name': 'PseudoId', 'inherited': False, 'independent': False},
+    # True if 'underline solid' is the only text decoration on this element.
+    {'name': 'HasSimpleUnderline', 'field_template': 'storage_only', 'size': 1, 'default_value': 'false',
+     'type_name': 'bool', 'inherited': True, 'independent': False},
 ]
 
 

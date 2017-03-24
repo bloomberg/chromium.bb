@@ -321,12 +321,6 @@ enum class EDisplay : unsigned {
   kNone
 };
 
-enum class EInsideLink : unsigned {
-  kNotInsideLink,
-  kInsideUnvisitedLink,
-  kInsideVisitedLink
-};
-
 enum ETransformStyle3D { TransformStyle3DFlat, TransformStyle3DPreserve3D };
 
 enum OffsetRotationType { OffsetRotationAuto, OffsetRotationFixed };
