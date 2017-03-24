@@ -223,9 +223,7 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
 
 namespace vr_shell {
 
-BaseRenderer::BaseRenderer(ShaderID vertex_id,
-                           ShaderID fragment_id,
-                           bool setup_vertex_buffer = true) {
+BaseRenderer::BaseRenderer(ShaderID vertex_id, ShaderID fragment_id) {
   std::string error;
   GLuint vertex_shader_handle =
       CompileShader(GL_VERTEX_SHADER, GetShaderSource(vertex_id), error);
@@ -245,16 +243,6 @@ BaseRenderer::BaseRenderer(ShaderID vertex_id,
 
   position_handle_ = glGetAttribLocation(program_handle_, "a_Position");
   tex_coord_handle_ = glGetAttribLocation(program_handle_, "a_TexCoordinate");
-
-  if (setup_vertex_buffer) {
-    // Generate the vertex buffer
-    glGenBuffersARB(1, &vertex_buffer_);
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
-    glBufferData(GL_ARRAY_BUFFER, kTextureQuadVerticesSize,
-                 kTextureQuadVertices, GL_STATIC_DRAW);
-  } else {
-    vertex_buffer_ = 0;
-  }
 }
 
 BaseRenderer::~BaseRenderer() = default;
@@ -285,8 +273,19 @@ void BaseRenderer::PrepareToDraw(GLuint view_proj_matrix_handle,
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
+BaseQuadRenderer::BaseQuadRenderer(ShaderID vertex_id, ShaderID fragment_id)
+    : BaseRenderer(vertex_id, fragment_id) {
+  glGenBuffersARB(1, &vertex_buffer_);
+  glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
+  glBufferData(GL_ARRAY_BUFFER, kTextureQuadVerticesSize, kTextureQuadVertices,
+               GL_STATIC_DRAW);
+}
+
+BaseQuadRenderer::~BaseQuadRenderer() = default;
+
 TexturedQuadRenderer::TexturedQuadRenderer()
-    : BaseRenderer(TEXTURE_QUAD_VERTEX_SHADER, TEXTURE_QUAD_FRAGMENT_SHADER) {
+    : BaseQuadRenderer(TEXTURE_QUAD_VERTEX_SHADER,
+                       TEXTURE_QUAD_FRAGMENT_SHADER) {
   model_view_proj_matrix_handle_ =
       glGetUniformLocation(program_handle_, "u_ModelViewProjMatrix");
   tex_uniform_handle_ = glGetUniformLocation(program_handle_, "u_Texture");
@@ -383,7 +382,7 @@ void TexturedQuadRenderer::Flush() {
 TexturedQuadRenderer::~TexturedQuadRenderer() = default;
 
 WebVrRenderer::WebVrRenderer()
-    : BaseRenderer(WEBVR_VERTEX_SHADER, WEBVR_FRAGMENT_SHADER) {
+    : BaseQuadRenderer(WEBVR_VERTEX_SHADER, WEBVR_FRAGMENT_SHADER) {
   tex_uniform_handle_ = glGetUniformLocation(program_handle_, "u_Texture");
 }
 
@@ -430,7 +429,7 @@ void WebVrRenderer::Draw(int texture_handle) {
 WebVrRenderer::~WebVrRenderer() = default;
 
 ReticleRenderer::ReticleRenderer()
-    : BaseRenderer(RETICLE_VERTEX_SHADER, RETICLE_FRAGMENT_SHADER) {
+    : BaseQuadRenderer(RETICLE_VERTEX_SHADER, RETICLE_FRAGMENT_SHADER) {
   model_view_proj_matrix_handle_ =
       glGetUniformLocation(program_handle_, "u_ModelViewProjMatrix");
   color_handle_ = glGetUniformLocation(program_handle_, "color");
@@ -467,7 +466,7 @@ void ReticleRenderer::Draw(const gvr::Mat4f& view_proj_matrix) {
 ReticleRenderer::~ReticleRenderer() = default;
 
 LaserRenderer::LaserRenderer()
-    : BaseRenderer(LASER_VERTEX_SHADER, LASER_FRAGMENT_SHADER) {
+    : BaseQuadRenderer(LASER_VERTEX_SHADER, LASER_FRAGMENT_SHADER) {
   model_view_proj_matrix_handle_ =
       glGetUniformLocation(program_handle_, "u_ModelViewProjMatrix");
   texture_unit_handle_ = glGetUniformLocation(program_handle_, "texture_unit");
@@ -509,7 +508,8 @@ void LaserRenderer::Draw(const gvr::Mat4f& view_proj_matrix) {
 LaserRenderer::~LaserRenderer() = default;
 
 GradientQuadRenderer::GradientQuadRenderer()
-    : BaseRenderer(GRADIENT_QUAD_VERTEX_SHADER, GRADIENT_QUAD_FRAGMENT_SHADER) {
+    : BaseQuadRenderer(GRADIENT_QUAD_VERTEX_SHADER,
+                       GRADIENT_QUAD_FRAGMENT_SHADER) {
   model_view_proj_matrix_handle_ =
       glGetUniformLocation(program_handle_, "u_ModelViewProjMatrix");
   scene_radius_handle_ = glGetUniformLocation(program_handle_, "u_SceneRadius");
@@ -543,9 +543,7 @@ void GradientQuadRenderer::Draw(const gvr::Mat4f& view_proj_matrix,
 GradientQuadRenderer::~GradientQuadRenderer() = default;
 
 GradientGridRenderer::GradientGridRenderer()
-    : BaseRenderer(GRADIENT_QUAD_VERTEX_SHADER,
-                   GRADIENT_QUAD_FRAGMENT_SHADER,
-                   false) {
+    : BaseRenderer(GRADIENT_QUAD_VERTEX_SHADER, GRADIENT_QUAD_FRAGMENT_SHADER) {
   model_view_proj_matrix_handle_ =
       glGetUniformLocation(program_handle_, "u_ModelViewProjMatrix");
   scene_radius_handle_ = glGetUniformLocation(program_handle_, "u_SceneRadius");

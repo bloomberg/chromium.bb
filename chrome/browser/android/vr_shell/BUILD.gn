@@ -20,6 +20,10 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
       "animation.h",
       "easing.cc",
       "easing.h",
+      "gltf_asset.cc",
+      "gltf_asset.h",
+      "gltf_parser.cc",
+      "gltf_parser.h",
       "mailbox_to_surface_bridge.cc",
       "mailbox_to_surface_bridge.h",
       "non_presenting_gvr_delegate.cc",
@@ -102,6 +106,9 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
 if (enable_vr) {
   test("vr_shell_unittests") {
     sources = [
+      "gltf_parser_unittest.cc",
+      "test/paths.cc",
+      "test/paths.h",
       "ui_elements_unittest.cc",
       "ui_scene_unittest.cc",
     ]
@@ -114,6 +121,10 @@ if (enable_vr) {
       "//testing/gtest",
       "//third_party/WebKit/public:blink",
       "//ui/gfx/geometry",
+    ]
+
+    data = [
+      "test/data/sample_inline.gltf",
     ]
   }
 }

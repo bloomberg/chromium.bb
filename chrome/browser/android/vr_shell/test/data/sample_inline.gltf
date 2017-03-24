@@ -1,0 +1,56 @@
+{
+  "asset": {
+    "version": "1.0"
+  },
+  "buffers": {
+    "dummyBuffer": {
+      "uri": "data:application/octet-stream;base64,SEVMTE8gV09STEQh",
+      "byteLength": 12
+    }
+  },
+  "bufferViews": {
+    "dummyBufferView": {
+      "buffer": "dummyBuffer",
+      "byteLength": 20,
+      "byteOffset": 10,
+      "target": 1
+    }
+  },
+  "accessors": {
+    "dummyAccessor": {
+      "bufferView": "dummyBufferView",
+      "byteOffset": 10,
+      "byteStride": 16,
+      "componentType": 5,
+      "count": 24,
+      "type": "VEC3"
+    }
+  },
+  "meshes": {
+    "dummyMesh": {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": "dummyAccessor"
+          },
+          "indices": "dummyAccessor",
+          "mode": 4
+        }
+      ]
+    }
+  },
+  "nodes": {
+    "dummyNode1": {
+      "children": ["dummyNode2"]
+    },
+    "dummyNode2": {
+      "meshes": ["dummyMesh"]
+    }
+  },
+  "scenes": {
+    "dummyScene": {
+      "nodes": ["dummyNode1"]
+    }
+  },
+  "scene": "dummyScene"
+}

@@ -61,9 +61,7 @@ class BaseRenderer {
   virtual ~BaseRenderer();
 
  protected:
-  BaseRenderer(ShaderID vertex_id,
-               ShaderID fragment_id,
-               bool setup_vertex_buffer);
+  BaseRenderer(ShaderID vertex_id, ShaderID fragment_id);
 
   void PrepareToDraw(GLuint view_proj_matrix_handle,
                      const gvr::Mat4f& view_proj_matrix);
@@ -71,12 +69,20 @@ class BaseRenderer {
   GLuint program_handle_;
   GLuint position_handle_;
   GLuint tex_coord_handle_;
-  GLuint vertex_buffer_;
+  GLuint vertex_buffer_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(BaseRenderer);
 };
 
-class TexturedQuadRenderer : public BaseRenderer {
+class BaseQuadRenderer : public BaseRenderer {
+ public:
+  BaseQuadRenderer(ShaderID vertex_id, ShaderID fragment_id);
+  ~BaseQuadRenderer() override;
+
+  DISALLOW_COPY_AND_ASSIGN(BaseQuadRenderer);
+};
+
+class TexturedQuadRenderer : public BaseQuadRenderer {
  public:
   TexturedQuadRenderer();
   ~TexturedQuadRenderer() override;
@@ -101,7 +107,7 @@ class TexturedQuadRenderer : public BaseRenderer {
 };
 
 // Renders a page-generated stereo VR view.
-class WebVrRenderer : public BaseRenderer {
+class WebVrRenderer : public BaseQuadRenderer {
  public:
   WebVrRenderer();
   ~WebVrRenderer() override;
@@ -114,7 +120,7 @@ class WebVrRenderer : public BaseRenderer {
   DISALLOW_COPY_AND_ASSIGN(WebVrRenderer);
 };
 
-class ReticleRenderer : public BaseRenderer {
+class ReticleRenderer : public BaseQuadRenderer {
  public:
   ReticleRenderer();
   ~ReticleRenderer() override;
@@ -134,7 +140,7 @@ class ReticleRenderer : public BaseRenderer {
   DISALLOW_COPY_AND_ASSIGN(ReticleRenderer);
 };
 
-class LaserRenderer : public BaseRenderer {
+class LaserRenderer : public BaseQuadRenderer {
  public:
   LaserRenderer();
   ~LaserRenderer() override;
@@ -152,7 +158,7 @@ class LaserRenderer : public BaseRenderer {
   DISALLOW_COPY_AND_ASSIGN(LaserRenderer);
 };
 
-class GradientQuadRenderer : public BaseRenderer {
+class GradientQuadRenderer : public BaseQuadRenderer {
  public:
   GradientQuadRenderer();
   ~GradientQuadRenderer() override;

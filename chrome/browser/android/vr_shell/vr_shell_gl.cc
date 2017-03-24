@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/vr_shell/vr_shell_gl.h"
 
+#include <chrono>
 #include <limits>
 #include <utility>
 
@@ -180,7 +181,7 @@ VrShellGl::~VrShellGl() {
 }
 
 void VrShellGl::Initialize() {
-  scene_.reset(new UiScene);
+  scene_ = base::MakeUnique<UiScene>();
 
   if (surfaceless_rendering_) {
     // If we're rendering surfaceless, we'll never get a java surface to render

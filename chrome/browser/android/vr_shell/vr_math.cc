@@ -6,6 +6,8 @@
 
 #include <cmath>
 
+#include "base/logging.h"
+
 namespace vr_shell {
 
 // Internal matrix layout:
@@ -106,7 +108,7 @@ gvr::Mat4f PerspectiveMatrixFromView(const gvr::Rectf& fov,
   const float y_bottom = -std::tan(fov.bottom * M_PI / 180.0f) * z_near;
   const float y_top = std::tan(fov.top * M_PI / 180.0f) * z_near;
 
-  assert(x_left < x_right && y_bottom < y_top && z_near < z_far &&
+  DCHECK(x_left < x_right && y_bottom < y_top && z_near < z_far &&
          z_near > 0.0f && z_far > 0.0f);
   const float X = (2 * z_near) / (x_right - x_left);
   const float Y = (2 * z_near) / (y_top - y_bottom);
