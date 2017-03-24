@@ -12,8 +12,12 @@
   <template>
     <style include="cr-shared-style">
       :host {
-        display: inline-block;
+        display: inline-flex;
         outline: none;
+      }
+
+      #divOuter {
+        -webkit-padding-end: var(--cr-icon-ripple-padding);
       }
 
       #divDetail {
@@ -22,37 +26,20 @@
         flex-direction: row;
       }
 
-      #divOuter {
-        -webkit-margin-after: 4px;
-        -webkit-margin-before: 4px;
-        -webkit-margin-end: 12px;
-        -webkit-margin-start: 4px;
-        align-items: center;
-        border-style: none;
-        display: flex;
-        flex-direction: row;
-        min-height: 32px;
-      }
-
       #divText {
-        -webkit-padding-end: 8px;
+        -webkit-margin-start: 20px;
         display: flex;
         flex: 1 0 auto;
         flex-direction: column;
         justify-content: center;
       }
 
-      #itemName {
-        -webkit-margin-start: 8px;
-        font-size: inherit;
-      }
-
-      #itemName[connected] {
-        font-weight: bold;
+      #itemName:not([is-list-item]) {
+        font-weight: 500;
+        color: #333;
       }
 
       #networkStateText {
-        -webkit-margin-start: 8px;
         color: var(--paper-grey-600);
         font-size: inherit;
         font-weight: 400;
@@ -67,10 +54,6 @@
         -webkit-padding-start: 4px;
       }
 
-      #subpageDiv > button {
-        margin: -8px 0;
-      }
-
       :host-context([dir=rtl]) #subpageDiv > button {
         transform: scaleX(-1);  /* Flip on the X axis (aka mirror). */
       }
@@ -80,16 +63,12 @@
         width: 24px;
       }
 
-      cr-network-icon,
-      iron-icon {
-        -webkit-margin-end: 8px;
-      }
-
       cr-policy-indicator {
-        padding: 0 var(--cr-icon-padding);
+        padding: 0 var(--cr-control-spacing);
       }
     </style>
-    <div id="divOuter" actionable$="[[isListItem]]">
+    <div id="divOuter"
+        class="layout horizontal center flex" actionable$="[[isListItem]]">
       <template is="dom-if" if="[[networkState]]">
         <cr-network-icon is-list-item="[[isListItem]]"
             network-state="[[networkState]]">
@@ -99,7 +78,7 @@
         <iron-icon icon="[[item.polymerIcon]]"></iron-icon>
       </template>
       <div id="divText" class="layout horizontal flex">
-        <div id="itemName" connected$="[[isConnected_(networkState)]]">
+        <div id="itemName" is-list-item$="[[isListItem]]">
           [[itemName]]
         </div>
         <div id="networkStateText"

@@ -126,7 +126,7 @@
 
       :host([narrow][showing-search]) #icon,
       :host([narrow][showing-search]) paper-spinner-lite {
-        -webkit-margin-start: 18px;
+        -webkit-margin-start: var(--cr-control-spacing);
       }
     </style>
     <template is="dom-if" if="[[isSpinnerShown_]]">

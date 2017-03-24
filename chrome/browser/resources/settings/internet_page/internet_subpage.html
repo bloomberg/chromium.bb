@@ -11,13 +11,16 @@
   <template>
     <style include="settings-shared">
       #networkListDiv {
+        /* cr-network-list is padded to the right to allow space for a ripple */
+        -webkit-padding-end: calc(var(--settings-box-row-padding) -
+            var(--cr-icon-ripple-padding));
         -webkit-padding-start: var(--settings-box-row-padding);
         margin-top: var(--settings-page-vertical-margin);
         min-height: var(--settings-box-min-height);
      }
 
       #addButton {
-        -webkit-margin-end: var(--cr-icon-padding);
+        -webkit-margin-end: var(--settings-control-spacing);
       }
 
       #onoff[on] {
