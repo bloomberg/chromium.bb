@@ -12,6 +12,10 @@ Polymer({
 
   behaviors: [CrSearchFieldBehavior],
 
+  properties: {
+    autofocus: Boolean,
+  },
+
   /** @return {!HTMLInputElement} */
   getSearchInput: function() {
     return this.$.searchInput;

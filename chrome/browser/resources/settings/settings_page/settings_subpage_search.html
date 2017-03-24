@@ -88,8 +88,8 @@
     <paper-input-container no-label-float>
       <label id="prompt">[[label]]</label>
       <input id="searchInput" type="search" on-search="onSearchTermSearch"
-          on-input="onSearchTermInput" aria-labelledby="prompt" incremental>
-      </input>
+          on-input="onSearchTermInput" aria-labelledby="prompt" incremental
+          autofocus$="[[autofocus]]">
       <paper-icon-button suffix icon="cr:cancel" id="clearSearch"
           on-tap="onTapClear_" title="[[clearLabel]]"
           hidden$="[[!hasSearchText]]">

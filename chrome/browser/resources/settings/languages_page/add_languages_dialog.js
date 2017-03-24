@@ -30,48 +30,51 @@ Polymer({
       type: Boolean,
       value: true,
     },
+
+    /** @private */
+    filterValue_: {
+      type: String,
+      value: '',
+    },
   },
 
+  /** @override */
   attached: function() {
     this.$.dialog.showModal();
-
-    // Prevent flashing the Cancel button's focus state.
-    this.$$('.cancel-button').blur();
-    setTimeout(this.afterShown_.bind(this));
   },
 
   /**
-   * Re-initializes the dialog after it is shown.
+   * @param {!CustomEvent} e
    * @private
    */
-  afterShown_: function() {
-    // Only fire iron-resize after the list displayed to prevent flickering.
-    this.$$('iron-list').fire('iron-resize');
-
-    // Focus the top checkbox, assuming there are languages left to enable.
-    var firstCheckbox = this.$$('iron-list paper-checkbox');
-    if (firstCheckbox)
-      firstCheckbox.focus();
+  onSearchChanged_: function(e) {
+    this.filterValue_ = /** @type {string} */ (e.detail);
   },
 
   /**
-   * Returns the supported languages that are not yet enabled, based on
-   * the LanguageHelper's enabled languages list.
-   * @param {!Array<!chrome.languageSettingsPrivate.Language>}
-   *     supportedLanguages
-   * @param {!Object} enabledLanguagesChange Polymer change record for
-   *     |enabledLanguages|.
-   * @return {!Array<!chrome.languageSettingsPrivate.Language>}
+   * @return {!Array<!chrome.languageSettingsPrivate.Language>} A list of
+   *     languages to be displayed.
    * @private
    */
-  getAvailableLanguages_: function(supportedLanguages, enabledLanguagesChange) {
-    return supportedLanguages.filter(function(language) {
-      return !this.languageHelper.isLanguageEnabled(language.code);
+  getLanguages_: function() {
+    return this.languages.supported.filter(function(language) {
+      var isAvailableLanguage =
+          !this.languageHelper.isLanguageEnabled(language.code);
+
+      if (!isAvailableLanguage)
+        return false;
+
+      if (!this.filterValue_)
+        return isAvailableLanguage;
+
+      return language.displayName.toLowerCase().includes(
+          this.filterValue_.toLowerCase());
     }.bind(this));
   },
 
   /**
    * True if the user has chosen to add this language (checked its checkbox).
+   * @param {string} languageCode
    * @return {boolean}
    * @private
    */
@@ -90,11 +93,11 @@ Polymer({
     // willAdd_ is called to initialize the checkbox state (in case the
     // iron-list re-uses a previous checkbox), and the checkbox can only be
     // changed after that by user action.
-    var code = e.model.item.code;
+    var language = e.model.item;
     if (e.target.checked)
-      this.languagesToAdd_.add(code);
+      this.languagesToAdd_.add(language.code);
     else
-      this.languagesToAdd_.delete(code);
+      this.languagesToAdd_.delete(language.code);
 
     this.disableActionButton_ = !this.languagesToAdd_.size;
   },
@@ -110,8 +113,8 @@ Polymer({
    */
   onActionButtonTap_: function() {
     this.$.dialog.close();
-    this.languagesToAdd_.forEach(function(language) {
-      this.languageHelper.enableLanguage(language);
+    this.languagesToAdd_.forEach(function(languageCode) {
+      this.languageHelper.enableLanguage(languageCode);
     }.bind(this));
   },
 });

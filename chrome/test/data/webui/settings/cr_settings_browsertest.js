@@ -993,7 +993,6 @@ CrSettingsSubpageTest.prototype = {
 };
 
 TEST_F('CrSettingsSubpageTest', 'SettingsSubpage', function() {
-  settings_subpage.registerTests();
   mocha.run();
 });
 

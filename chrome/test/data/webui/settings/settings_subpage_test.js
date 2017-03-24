@@ -3,45 +3,53 @@
 // found in the LICENSE file.
 
 cr.define('settings_subpage', function() {
-  function registerTests() {
-    suite('SettingsSubpage', function() {
-      test('navigates to parent when there is no history', function() {
-        PolymerTest.clearBody();
+  suite('SettingsSubpage', function() {
+    test('navigates to parent when there is no history', function() {
+      PolymerTest.clearBody();
 
-        // Pretend that we initially started on the CERTIFICATES route.
-        window.history.replaceState(
-            undefined, '', settings.Route.CERTIFICATES.path);
-        settings.initializeRouteFromUrl();
-        assertEquals(settings.Route.CERTIFICATES, settings.getCurrentRoute());
+      // Pretend that we initially started on the CERTIFICATES route.
+      window.history.replaceState(
+          undefined, '', settings.Route.CERTIFICATES.path);
+      settings.initializeRouteFromUrl();
+      assertEquals(settings.Route.CERTIFICATES, settings.getCurrentRoute());
 
-        var subpage = document.createElement('settings-subpage');
-        document.body.appendChild(subpage);
+      var subpage = document.createElement('settings-subpage');
+      document.body.appendChild(subpage);
 
-        MockInteractions.tap(subpage.$$('paper-icon-button'));
-        assertEquals(settings.Route.PRIVACY, settings.getCurrentRoute());
-      });
+      MockInteractions.tap(subpage.$$('paper-icon-button'));
+      assertEquals(settings.Route.PRIVACY, settings.getCurrentRoute());
+    });
 
-      test('navigates to any route via window.back()', function(done) {
-        PolymerTest.clearBody();
+    test('navigates to any route via window.back()', function(done) {
+      PolymerTest.clearBody();
 
-        settings.navigateTo(settings.Route.BASIC);
-        settings.navigateTo(settings.Route.SYNC);
-        assertEquals(settings.Route.SYNC, settings.getCurrentRoute());
+      settings.navigateTo(settings.Route.BASIC);
+      settings.navigateTo(settings.Route.SYNC);
+      assertEquals(settings.Route.SYNC, settings.getCurrentRoute());
 
-        var subpage = document.createElement('settings-subpage');
-        document.body.appendChild(subpage);
+      var subpage = document.createElement('settings-subpage');
+      document.body.appendChild(subpage);
 
-        MockInteractions.tap(subpage.$$('paper-icon-button'));
+      MockInteractions.tap(subpage.$$('paper-icon-button'));
 
-        window.addEventListener('popstate', function(event) {
-          assertEquals(settings.Route.BASIC, settings.getCurrentRoute());
-          done();
-        });
+      window.addEventListener('popstate', function(event) {
+        assertEquals(settings.Route.BASIC, settings.getCurrentRoute());
+        done();
       });
     });
-  }
+  });
 
-  return {
-    registerTests: registerTests,
-  };
+  suite('SettingsSubpageSearch', function() {
+    test('host autofocus propagates to <input>', function() {
+      PolymerTest.clearBody();
+      var element = document.createElement('settings-subpage-search');
+      element.setAttribute('autofocus', true);
+      document.body.appendChild(element);
+
+      assertTrue(element.$$('input').hasAttribute('autofocus'));
+
+      element.removeAttribute('autofocus');
+      assertFalse(element.$$('input').hasAttribute('autofocus'));
+    });
+  });
 });
