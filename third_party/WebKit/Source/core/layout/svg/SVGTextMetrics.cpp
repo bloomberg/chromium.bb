@@ -37,7 +37,7 @@ float SVGTextMetrics::advance(FontOrientation orientation) const {
     case FontOrientation::VerticalUpright:
       return height();
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return width();
   }
 }

@@ -93,7 +93,7 @@ class LayoutTableCol final : public LayoutTableBoxComponent {
     return type == LayoutObjectLayoutTableCol || LayoutBox::isOfType(type);
   }
   void updateFromElement() override;
-  void computePreferredLogicalWidths() override { ASSERT_NOT_REACHED(); }
+  void computePreferredLogicalWidths() override { NOTREACHED(); }
 
   void insertedIntoTree() override;
   void willBeRemovedFromTree() override;

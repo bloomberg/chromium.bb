@@ -26,7 +26,7 @@ NGTextLayoutAlgorithm::NGTextLayoutAlgorithm(
 }
 
 RefPtr<NGLayoutResult> NGTextLayoutAlgorithm::Layout() {
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return nullptr;
 }
 

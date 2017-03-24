@@ -2749,7 +2749,7 @@ LayoutUnit LayoutBlockFlow::getClearDelta(LayoutBox* child,
       if (newLogicalTop < logicalTop)
         break;
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
   }
   return result;
 }
@@ -3071,7 +3071,7 @@ void LayoutBlockFlow::removeChild(LayoutObject* oldChild) {
         else if (curr->isLayoutBlockFlow())
           toLayoutBlockFlow(curr)->setContinuation(nextContinuation);
         else
-          ASSERT_NOT_REACHED();
+          NOTREACHED();
 
         break;
       }
@@ -4237,7 +4237,7 @@ LayoutMultiColumnFlowThread* LayoutBlockFlow::createMultiColumnFlowThread(
       UseCounter::count(document(), UseCounter::CSSOverflowPaged);
       return LayoutPagedFlowThread::createAnonymous(document(), styleRef());
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return nullptr;
   }
 }
@@ -4519,7 +4519,7 @@ PositionWithAffinity LayoutBlockFlow::positionForPoint(
   }
 
   // Can't reach this. We have a root line box, but it has no kids.
-  // FIXME: This should ASSERT_NOT_REACHED(), but clicking on placeholder text
+  // FIXME: This should NOTREACHED(), but clicking on placeholder text
   // seems to hit this code path.
   return createPositionWithAffinity(0);
 }

@@ -214,7 +214,7 @@ LayoutObject* LayoutObject::createObject(Element* element,
       return new LayoutGrid(element);
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return nullptr;
 }
 
@@ -652,7 +652,7 @@ LayoutBox* LayoutObject::enclosingBox() const {
     curr = curr->parent();
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return nullptr;
 }
 
@@ -664,7 +664,7 @@ LayoutBoxModelObject* LayoutObject::enclosingBoxModelObject() const {
     curr = curr->parent();
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return nullptr;
 }
 
@@ -2194,7 +2194,7 @@ void LayoutObject::mapLocalToAncestor(const LayoutBoxModelObject* ancestor,
 const LayoutObject* LayoutObject::pushMappingToContainer(
     const LayoutBoxModelObject* ancestorToStopAt,
     LayoutGeometryMap& geometryMap) const {
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return nullptr;
 }
 
@@ -3392,7 +3392,7 @@ AffineTransform LayoutObject::localSVGTransform() const {
 bool LayoutObject::nodeAtFloatPoint(HitTestResult&,
                                     const FloatPoint&,
                                     HitTestAction) {
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return false;
 }
 

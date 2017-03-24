@@ -47,7 +47,7 @@ LayoutDetailsMarker::Orientation LayoutDetailsMarker::getOrientation() const {
         return isOpen() ? Right : Down;
       return isOpen() ? Right : Up;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return Right;
 }
 

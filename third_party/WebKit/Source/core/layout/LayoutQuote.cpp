@@ -294,7 +294,7 @@ String LayoutQuote::computeText() const {
     case OPEN_QUOTE:
       return quotesData()->getOpenQuote(m_depth).impl();
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return emptyString;
 }
 

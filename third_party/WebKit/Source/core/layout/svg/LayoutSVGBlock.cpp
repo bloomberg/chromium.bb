@@ -62,7 +62,7 @@ bool LayoutSVGBlock::allowsOverflowClip() const {
 void LayoutSVGBlock::absoluteRects(Vector<IntRect>&, const LayoutPoint&) const {
   // This code path should never be taken for SVG, as we're assuming
   // useTransforms=true everywhere, absoluteQuads should be used.
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 void LayoutSVGBlock::willBeDestroyed() {
@@ -138,7 +138,7 @@ bool LayoutSVGBlock::nodeAtPoint(HitTestResult&,
                                  const HitTestLocation&,
                                  const LayoutPoint&,
                                  HitTestAction) {
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return false;
 }
 

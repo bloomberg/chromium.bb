@@ -64,7 +64,7 @@ static LayoutPoint cornerPointOfRect(LayoutRect rect, Corner whichCorner) {
     case Corner::TopRight:
       return rect.maxXMinYCorner();
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return LayoutPoint();
 }
 
@@ -95,7 +95,7 @@ static LayoutRect relativeBounds(const LayoutObject* layoutObject,
       localBounds.unite(box->frameRect());
   } else {
     // Only LayoutBox and LayoutText are supported.
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
   }
 
   LayoutRect relativeBounds = LayoutRect(

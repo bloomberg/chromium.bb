@@ -96,9 +96,7 @@ class LayoutRubyAsBlock final : public LayoutBlockFlow {
     return type == LayoutObjectRuby || LayoutBlockFlow::isOfType(type);
   }
   bool createsAnonymousWrapper() const override { return true; }
-  void removeLeftoverAnonymousBlock(LayoutBlock*) override {
-    ASSERT_NOT_REACHED();
-  }
+  void removeLeftoverAnonymousBlock(LayoutBlock*) override { NOTREACHED(); }
 };
 
 }  // namespace blink

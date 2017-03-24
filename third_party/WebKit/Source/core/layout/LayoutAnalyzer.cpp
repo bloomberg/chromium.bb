@@ -152,7 +152,7 @@ const char* LayoutAnalyzer::nameForCounter(Counter counter) const {
     case TotalLayoutObjectsThatWereLaidOut:
       return "TotalLayoutObjectsThatWereLaidOut";
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return "";
 }
 

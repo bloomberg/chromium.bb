@@ -429,7 +429,7 @@ LayoutListMarker::ListStyleCategory LayoutListMarker::getListStyleCategory()
     case EListStyleType::kUrdu:
       return ListStyleCategory::Language;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return ListStyleCategory::Language;
   }
 }

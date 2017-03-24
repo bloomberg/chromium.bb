@@ -169,7 +169,7 @@ String SVGEnumerationToString(Enum value) {
       return it->second;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return String();
 }
 
@@ -390,7 +390,7 @@ static TextStream& operator<<(TextStream& ts, const LayoutSVGShape& shape) {
         ts, "data",
         toSVGPathElement(*svgElement).path()->currentValue()->valueAsString());
   } else {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
   }
   return ts;
 }

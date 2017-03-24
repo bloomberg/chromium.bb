@@ -625,7 +625,7 @@ void PaintInvalidationState::assertFastPathAndSlowPathRectsEqual(
              << " vs slow: " << slowPathRect.toString();
   showLayoutTree(&m_currentObject);
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 #endif  // CHECK_FAST_PATH_SLOW_PATH_EQUALITY

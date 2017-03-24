@@ -46,7 +46,7 @@ NGPhysicalOffset NGLogicalOffset::ConvertToPhysical(
       else
         return NGPhysicalOffset(block_offset, inline_offset);
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return NGPhysicalOffset();
   }
 }

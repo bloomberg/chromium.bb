@@ -157,7 +157,7 @@ void SVGResourcesCycleSolver::breakCycle(
       m_resources->resetClipper();
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       break;
   }
 }

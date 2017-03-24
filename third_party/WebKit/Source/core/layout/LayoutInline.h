@@ -272,7 +272,7 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
                  LayoutObject* newChild,
                  LayoutBoxModelObject* oldCont);
 
-  void layout() final { ASSERT_NOT_REACHED(); }  // Do nothing for layout()
+  void layout() final { NOTREACHED(); }  // Do nothing for layout()
 
   void paint(const PaintInfo&, const LayoutPoint&) const final;
 

@@ -74,7 +74,7 @@ class SVGMarkerData {
         return markerEnd;
     }
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return nullptr;
   }
 
@@ -102,7 +102,7 @@ class SVGMarkerData {
         return clampTo<float>(inAngle);
     }
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return 0;
   }
 

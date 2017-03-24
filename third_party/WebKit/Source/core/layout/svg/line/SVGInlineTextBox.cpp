@@ -61,7 +61,7 @@ int SVGInlineTextBox::offsetForPosition(LayoutUnit, bool) const {
   // SVG doesn't use the standard offset <-> position selection system, as it's
   // not suitable for SVGs complex needs. Vertical text selection, inline boxes
   // spanning multiple lines (contrary to HTML, etc.)
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return 0;
 }
 
@@ -94,7 +94,7 @@ int SVGInlineTextBox::offsetForPositionInFragment(
 
 LayoutUnit SVGInlineTextBox::positionForOffset(int) const {
   // SVG doesn't use the offset <-> position selection system.
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return LayoutUnit();
 }
 

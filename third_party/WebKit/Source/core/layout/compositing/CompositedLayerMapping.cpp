@@ -3498,7 +3498,7 @@ String CompositedLayerMapping::debugName(
   } else if (graphicsLayer == m_decorationOutlineLayer.get()) {
     name = "Decoration Layer";
   } else {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
   }
 
   return name;

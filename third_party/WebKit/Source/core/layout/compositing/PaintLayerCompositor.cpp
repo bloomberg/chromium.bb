@@ -1315,7 +1315,7 @@ String PaintLayerCompositor::debugName(
   } else if (graphicsLayer == m_scrollLayer.get()) {
     name = "Frame Scrolling Layer";
   } else {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
   }
 
   return name;

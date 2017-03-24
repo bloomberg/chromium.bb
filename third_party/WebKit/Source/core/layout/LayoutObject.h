@@ -326,7 +326,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 #ifndef NDEBUG
     if (paintInvalidationStateIsDirty()) {
       showLayoutTreeForThis();
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
     }
 #endif
   }
@@ -603,7 +603,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   // FIXME: Until all SVG layoutObjects can be subclasses of
   // LayoutSVGModelObject we have to add SVG layoutObject methods to
-  // LayoutObject with an ASSERT_NOT_REACHED() default implementation.
+  // LayoutObject with an NOTREACHED() default implementation.
   bool isSVG() const { return isOfType(LayoutObjectSVG); }
   bool isSVGRoot() const { return isOfType(LayoutObjectSVGRoot); }
   bool isSVGChild() const { return isSVG() && !isSVGRoot(); }

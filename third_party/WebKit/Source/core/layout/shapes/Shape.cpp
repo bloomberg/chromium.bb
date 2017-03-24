@@ -201,7 +201,7 @@ std::unique_ptr<Shape> Shape::createShape(const BasicShape* basicShape,
     }
 
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 
   shape->m_writingMode = writingMode;

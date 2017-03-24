@@ -213,7 +213,7 @@ static PseudoId pseudoForScrollbarPart(ScrollbarPart part) {
     case AllParts:
       break;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return PseudoIdScrollbar;
 }
 

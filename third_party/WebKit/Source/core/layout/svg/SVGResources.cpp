@@ -114,7 +114,7 @@ static inline AtomicString targetReferenceFromResource(SVGElement& element) {
   else if (isSVGGradientElement(element))
     target = toSVGGradientElement(element).href()->currentValue()->value();
   else
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 
   return SVGURIReference::fragmentIdentifierFromIRIString(target,
                                                           element.treeScope());
@@ -403,7 +403,7 @@ void SVGResources::resourceDestroyed(LayoutSVGResourceContainer* resource) {
         m_clipperFilterMaskerData->clipper = nullptr;
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 }
 

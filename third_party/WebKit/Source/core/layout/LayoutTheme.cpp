@@ -691,7 +691,7 @@ static FontDescription& getCachedFontDescription(CSSValueID systemFontID) {
     case CSSValueNone:
       return defaultDescription;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return defaultDescription;
   }
 }
@@ -786,7 +786,7 @@ Color LayoutTheme::systemColor(CSSValueID cssValueId) const {
     default:
       break;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return Color();
 }
 

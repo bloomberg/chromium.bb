@@ -142,7 +142,7 @@ void LayoutObjectChildList::insertChildNode(LayoutObject* owner,
   // where child->parent() ends up being owner but
   // child->nextSibling()->parent() is not owner.
   if (beforeChild && beforeChild->parent() != owner) {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return;
   }
 

@@ -153,7 +153,7 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
     m_bitfields.setHasVirtualLogicalHeight(true);
   }
   virtual LayoutUnit virtualLogicalHeight() const {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return LayoutUnit();
   }
 

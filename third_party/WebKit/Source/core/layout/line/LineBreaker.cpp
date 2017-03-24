@@ -98,7 +98,7 @@ InlineIterator LineBreaker::nextLineBreak(InlineBidiResolver& resolver,
         return context.lineBreak();
       }
     } else {
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
     }
 
     if (context.atEnd())

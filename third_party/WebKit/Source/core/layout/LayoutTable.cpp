@@ -161,7 +161,7 @@ void LayoutTable::addChild(LayoutObject* child, LayoutObject* beforeChild) {
         wrapInAnonymousSection = false;
         break;
       default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
   } else {
     wrapInAnonymousSection = true;
@@ -407,7 +407,7 @@ LayoutUnit LayoutTable::convertStyleLogicalHeightToComputedHeight(
         styleLogicalHeight, logicalHeight() - borderAndPadding,
         borderAndPadding);
   } else {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
   }
   return computedLogicalHeight.clampNegativeToZero();
 }

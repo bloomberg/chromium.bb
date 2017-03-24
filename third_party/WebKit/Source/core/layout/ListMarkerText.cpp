@@ -526,7 +526,7 @@ static EListStyleType effectiveListMarkerType(EListStyleType type, int count) {
       return (count < 1) ? EListStyleType::kDecimal : type;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return type;
 }
 
@@ -601,7 +601,7 @@ UChar suffix(EListStyleType type, int count) {
       return 0x3001;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return '.';
 }
 
@@ -934,7 +934,7 @@ String text(EListStyleType type, int count) {
       return toHebrew(count);
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return "";
 }
 

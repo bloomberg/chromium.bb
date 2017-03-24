@@ -604,7 +604,7 @@ LayoutRect LayoutReplaced::computeObjectFit(
     case ObjectFitFill:
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 
   LayoutUnit xOffset = minimumValueForLength(

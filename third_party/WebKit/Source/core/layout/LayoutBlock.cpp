@@ -461,7 +461,7 @@ bool LayoutBlock::updateLogicalWidthAndColumnWidth() {
 }
 
 void LayoutBlock::layoutBlock(bool) {
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   clearNeedsLayout();
 }
 
@@ -1941,7 +1941,7 @@ bool LayoutBlock::hasMarginAfterQuirk(const LayoutBox* child) const {
 }
 
 const char* LayoutBlock::name() const {
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return "LayoutBlock";
 }
 

@@ -123,7 +123,7 @@ GradientSpreadMethod LayoutSVGResourceGradient::platformSpreadMethodFromSVGType(
       return SpreadMethodRepeat;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return SpreadMethodPad;
 }
 

@@ -84,8 +84,8 @@ void LayoutRubyAsInline::addChild(LayoutObject* child,
       run->addChild(child, beforeChild);
       return;
     }
-    ASSERT_NOT_REACHED();  // beforeChild should always have a run as parent!
-                           // Emergency fallback: fall through and just append.
+    NOTREACHED();  // beforeChild should always have a run as parent!
+                   // Emergency fallback: fall through and just append.
   }
 
   // If the new child would be appended, try to add the child to the previous
@@ -149,8 +149,8 @@ void LayoutRubyAsBlock::addChild(LayoutObject* child,
       run->addChild(child, beforeChild);
       return;
     }
-    ASSERT_NOT_REACHED();  // beforeChild should always have a run as parent!
-                           // Emergency fallback: fall through and just append.
+    NOTREACHED();  // beforeChild should always have a run as parent!
+                   // Emergency fallback: fall through and just append.
   }
 
   // If the new child would be appended, try to add the child to the previous

@@ -151,18 +151,18 @@ int CounterNode::computeCountInParent() const {
 
 void CounterNode::addLayoutObject(LayoutCounter* value) {
   if (!value) {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return;
   }
   if (value->m_counterNode) {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     value->m_counterNode->removeLayoutObject(value);
   }
   ASSERT(!value->m_nextForSameCounter);
   for (LayoutCounter* iterator = m_rootLayoutObject; iterator;
        iterator = iterator->m_nextForSameCounter) {
     if (iterator == value) {
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return;
     }
   }
@@ -170,7 +170,7 @@ void CounterNode::addLayoutObject(LayoutCounter* value) {
   m_rootLayoutObject = value;
   if (value->m_counterNode != this) {
     if (value->m_counterNode) {
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       value->m_counterNode->removeLayoutObject(value);
     }
     value->m_counterNode = this;
@@ -179,11 +179,11 @@ void CounterNode::addLayoutObject(LayoutCounter* value) {
 
 void CounterNode::removeLayoutObject(LayoutCounter* value) {
   if (!value) {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return;
   }
   if (value->m_counterNode && value->m_counterNode != this) {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     value->m_counterNode->removeLayoutObject(value);
   }
   LayoutCounter* previous = nullptr;
@@ -200,7 +200,7 @@ void CounterNode::removeLayoutObject(LayoutCounter* value) {
     }
     previous = iterator;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 void CounterNode::resetLayoutObjects() {

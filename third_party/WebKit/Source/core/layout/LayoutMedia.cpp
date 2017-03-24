@@ -68,7 +68,7 @@ void LayoutMedia::layout() {
     else if (child->node()->isTextTrackContainer())
       seenTextTrackContainer = true;
     else
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
 #endif
 
     // TODO(mlamouri): we miss some layouts because needsLayout returns false in

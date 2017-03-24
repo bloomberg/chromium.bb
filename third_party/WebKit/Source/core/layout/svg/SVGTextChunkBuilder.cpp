@@ -32,7 +32,7 @@ float calculateTextAnchorShift(const ComputedStyle& style, float length) {
   bool isLTR = style.isLeftToRightDirection();
   switch (style.svgStyle().textAnchor()) {
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
     case TA_START:
       return isLTR ? 0 : -length;
     case TA_MIDDLE:
@@ -46,7 +46,7 @@ bool needsTextAnchorAdjustment(const ComputedStyle& style) {
   bool isLTR = style.isLeftToRightDirection();
   switch (style.svgStyle().textAnchor()) {
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
     case TA_START:
       return !isLTR;
     case TA_MIDDLE:

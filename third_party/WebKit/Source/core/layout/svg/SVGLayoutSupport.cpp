@@ -280,7 +280,7 @@ bool SVGLayoutSupport::layoutSizeOfNearestViewportChanged(
     if (start->isSVGViewportContainer())
       return toLayoutSVGViewportContainer(start)->isLayoutSizeChanged();
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return false;
 }
 
@@ -295,7 +295,7 @@ bool SVGLayoutSupport::screenScaleFactorChanged(const LayoutObject* ancestor) {
       return toLayoutSVGViewportContainer(ancestor)
           ->didScreenScaleFactorChange();
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return false;
 }
 

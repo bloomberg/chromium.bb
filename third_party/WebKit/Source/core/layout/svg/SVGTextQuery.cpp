@@ -74,7 +74,7 @@ static inline InlineFlowBox* flowBoxForLayoutObject(
     return flowBox;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return nullptr;
 }
 

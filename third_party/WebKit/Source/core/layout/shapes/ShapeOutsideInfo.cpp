@@ -80,7 +80,7 @@ void ShapeOutsideInfo::setReferenceBoxLogicalSize(
                                           m_layoutBox.borderAndPaddingWidth());
       break;
     case BoxMissing:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       break;
   }
 
@@ -234,7 +234,7 @@ inline LayoutUnit borderBeforeInWritingMode(const LayoutBox& layoutBox,
       return LayoutUnit(layoutBox.borderRight());
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return LayoutUnit(layoutBox.borderBefore());
 }
 
@@ -250,7 +250,7 @@ inline LayoutUnit borderAndPaddingBeforeInWritingMode(
       return layoutBox.borderRight() + layoutBox.paddingRight();
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return layoutBox.borderAndPaddingBefore();
 }
 
@@ -272,7 +272,7 @@ LayoutUnit ShapeOutsideInfo::logicalTopOffset() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return LayoutUnit();
 }
 
@@ -322,7 +322,7 @@ LayoutUnit ShapeOutsideInfo::logicalLeftOffset() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return LayoutUnit();
 }
 

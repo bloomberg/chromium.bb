@@ -50,7 +50,7 @@ float SVGTextLayoutEngineBaseline::calculateBaselineShift(
     case BS_SUPER:
       return fontData->getFontMetrics().floatHeight() / 2 / m_effectiveZoom;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return 0;
   }
 }
@@ -103,7 +103,7 @@ SVGTextLayoutEngineBaseline::dominantBaselineToAlignmentBaseline(
     case DB_TEXT_BEFORE_EDGE:
       return AB_TEXT_BEFORE_EDGE;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return AB_AUTO;
   }
 }
@@ -157,7 +157,7 @@ float SVGTextLayoutEngineBaseline::calculateAlignmentBaselineShift(
       return ascent / 2;
     case AB_BASELINE:
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return 0;
   }
 }

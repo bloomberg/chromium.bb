@@ -53,7 +53,7 @@ static const PaintLayer* findParentLayerOnClippingContainerChain(
     DCHECK(!current->hasClipRelatedProperty() ||
            current->styleRef().containsPaint());
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return nullptr;
 }
 
@@ -64,7 +64,7 @@ static const PaintLayer* findParentLayerOnContainingBlockChain(
     if (current->hasLayer())
       return static_cast<const LayoutBoxModelObject*>(current)->layer();
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return nullptr;
 }
 

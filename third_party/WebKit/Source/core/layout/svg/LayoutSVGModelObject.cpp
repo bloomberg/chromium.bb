@@ -139,7 +139,7 @@ bool LayoutSVGModelObject::nodeAtPoint(HitTestResult&,
                                        const HitTestLocation&,
                                        const LayoutPoint&,
                                        HitTestAction) {
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return false;
 }
 

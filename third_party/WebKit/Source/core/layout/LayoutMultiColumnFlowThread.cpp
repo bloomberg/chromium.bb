@@ -875,7 +875,7 @@ bool LayoutMultiColumnFlowThread::descendantIsValidColumnSpanner(
     if (!canContainSpannerInParentFragmentationContext(*ancestor))
       return false;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return false;
 }
 

@@ -2156,7 +2156,7 @@ bool LayoutBox::isBreakBetweenControllable(EBreakBetween breakValue) const {
       return false;
     curr = curr->containingBlock();
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return false;
 }
 
@@ -2229,7 +2229,7 @@ static inline int fragmentainerBreakPrecedence(EBreakBetween breakValue) {
 
   switch (breakValue) {
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
     // fall-through
     case EBreakBetween::kAuto:
       return 0;
@@ -2685,7 +2685,7 @@ LayoutUnit LayoutBox::computeIntrinsicLogicalWidthUsing(
         std::min(maxLogicalWidth, fillAvailableMeasure(availableLogicalWidth)));
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return LayoutUnit();
 }
 
@@ -3162,7 +3162,7 @@ LayoutUnit LayoutBox::computeIntrinsicLogicalContentHeightUsing(
     return containingBlock()->availableLogicalHeight(
                ExcludeMarginBorderPadding) -
            borderAndPadding;
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return LayoutUnit();
 }
 
@@ -3382,7 +3382,7 @@ LayoutUnit LayoutBox::computeReplacedLogicalWidthUsing(
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return LayoutUnit();
 }
 
