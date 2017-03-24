@@ -67,6 +67,9 @@ void WallpaperColorCalculator::NotifyCalculationComplete(
   UMA_HISTOGRAM_MEDIUM_TIMES("Ash.Wallpaper.TimeSpentExtractingColors",
                              base::Time::Now() - start_calculation_time_);
 
+  UMA_HISTOGRAM_BOOLEAN("Ash.Wallpaper.ColorExtractionResult",
+                        prominent_color != SK_ColorTRANSPARENT);
+
   prominent_color_ = prominent_color;
   for (auto& observer : observers_)
     observer.OnColorCalculationComplete();
