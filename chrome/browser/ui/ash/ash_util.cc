@@ -6,6 +6,7 @@
 
 #include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/mojo_interface_factory.h"
+#include "ash/public/interfaces/event_properties.mojom.h"
 #include "ash/shell.h"
 #include "base/macros.h"
 #include "build/build_config.h"
@@ -68,6 +69,12 @@ bool IsAcceleratorDeprecated(const ui::Accelerator& accelerator) {
     return false;
 
   return ash::Shell::Get()->accelerator_controller()->IsDeprecated(accelerator);
+}
+
+bool WillAshProcessAcceleratorForEvent(const ui::KeyEvent& key_event) {
+  return key_event.properties() &&
+         key_event.properties()->count(
+             ash::mojom::kWillProcessAccelerator_KeyEventProperty);
 }
 
 }  // namespace ash_util

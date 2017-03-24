@@ -1353,6 +1353,14 @@ content::KeyboardEventProcessingResult BrowserView::PreHandleKeyboardEvent(
   if (frame_->PreHandleKeyboardEvent(event))
     return content::KeyboardEventProcessingResult::HANDLED;
 
+#if defined(OS_CHROMEOS)
+  if (event.os_event && event.os_event->IsKeyEvent() &&
+      ash_util::WillAshProcessAcceleratorForEvent(
+          *event.os_event->AsKeyEvent())) {
+    return content::KeyboardEventProcessingResult::HANDLED_DONT_UPDATE_EVENT;
+  }
+#endif
+
   chrome::BrowserCommandController* controller = browser_->command_controller();
 
   // Here we need to retrieve the command id (if any) associated to the

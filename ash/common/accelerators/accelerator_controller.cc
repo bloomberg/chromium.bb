@@ -680,6 +680,13 @@ void AcceleratorController::UnregisterAll(ui::AcceleratorTarget* target) {
   accelerator_manager_->UnregisterAll(target);
 }
 
+bool AcceleratorController::IsActionForAcceleratorEnabled(
+    const ui::Accelerator& accelerator) const {
+  std::map<ui::Accelerator, AcceleratorAction>::const_iterator it =
+      accelerators_.find(accelerator);
+  return it != accelerators_.end() && CanPerformAction(it->second, accelerator);
+}
+
 bool AcceleratorController::Process(const ui::Accelerator& accelerator) {
   return accelerator_manager_->Process(accelerator);
 }
@@ -868,7 +875,7 @@ void AcceleratorController::RegisterDeprecatedAccelerators() {
 
 bool AcceleratorController::CanPerformAction(
     AcceleratorAction action,
-    const ui::Accelerator& accelerator) {
+    const ui::Accelerator& accelerator) const {
   if (accelerator.IsRepeat() && !repeatable_actions_.count(action))
     return false;
 
@@ -1218,7 +1225,7 @@ bool AcceleratorController::ShouldActionConsumeKeyEvent(
 }
 
 AcceleratorController::AcceleratorProcessingRestriction
-AcceleratorController::GetAcceleratorProcessingRestriction(int action) {
+AcceleratorController::GetAcceleratorProcessingRestriction(int action) const {
   WmShell* wm_shell = WmShell::Get();
   if (wm_shell->IsPinned() &&
       actions_allowed_in_pinned_mode_.find(action) ==

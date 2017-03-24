@@ -74,6 +74,9 @@ class ASH_EXPORT AcceleratorController
   // Unregisters all keyboard accelerators for the specified target.
   void UnregisterAll(ui::AcceleratorTarget* target);
 
+  // Returns true if there is an action for |accelerator| and it is enabled.
+  bool IsActionForAcceleratorEnabled(const ui::Accelerator& accelerator) const;
+
   // Activates the target associated with the specified accelerator.
   // First, AcceleratorPressed handler of the most recently registered target
   // is called, and if that handler processes the event (i.e. returns true),
@@ -151,7 +154,7 @@ class ASH_EXPORT AcceleratorController
   // Returns whether |action| can be performed. The |accelerator| may provide
   // additional data the action needs.
   bool CanPerformAction(AcceleratorAction action,
-                        const ui::Accelerator& accelerator);
+                        const ui::Accelerator& accelerator) const;
 
   // Performs the specified action. The |accelerator| may provide additional
   // data the action needs.
@@ -164,7 +167,7 @@ class ASH_EXPORT AcceleratorController
   // Get the accelerator restriction for the given action. Supply an |action|
   // of -1 to get restrictions that apply for the current context.
   AcceleratorProcessingRestriction GetAcceleratorProcessingRestriction(
-      int action);
+      int action) const;
 
   // If |accelerator| is a deprecated accelerator, it performs the appropriate
   // deprecated accelerator pre-handling.

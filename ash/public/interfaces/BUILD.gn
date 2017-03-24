@@ -15,6 +15,7 @@ mojom("interfaces_internal") {
     "accelerator_controller.mojom",
     "cast_config.mojom",
     "constants.mojom",
+    "event_properties.mojom",
     "locale.mojom",
     "media.mojom",
     "new_window.mojom",

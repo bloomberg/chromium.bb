@@ -11,9 +11,11 @@
 #include "ash/common/wm_shell.h"
 #include "ash/mus/accelerators/accelerator_ids.h"
 #include "ash/mus/window_manager.h"
+#include "ash/public/interfaces/event_properties.mojom.h"
 #include "ash/shell.h"
 #include "base/logging.h"
 #include "services/ui/common/accelerator_util.h"
+#include "services/ui/public/cpp/property_type_converters.h"
 #include "ui/base/accelerators/accelerator_history.h"
 
 namespace ash {
@@ -84,10 +86,17 @@ ui::mojom::EventResult AcceleratorControllerRegistrar::OnAccelerator(
     if (!target_window)
       target_window = Shell::GetWmRootWindowForNewWindows();
     DCHECK(target_window);
-    return router_->ProcessAccelerator(target_window, *(event.AsKeyEvent()),
-                                       accelerator)
-               ? ui::mojom::EventResult::HANDLED
-               : ui::mojom::EventResult::UNHANDLED;
+    if (router_->ProcessAccelerator(target_window, *(event.AsKeyEvent()),
+                                    accelerator)) {
+      return ui::mojom::EventResult::HANDLED;
+    }
+    if (accelerator_controller->IsActionForAcceleratorEnabled(accelerator)) {
+      // We do have an accelerator for the key. Set a property so that the real
+      // target knows we have an accelerator.
+      (*properties)[mojom::kWillProcessAccelerator_KeyEventProperty] =
+          std::vector<uint8_t>();
+    }
+    return ui::mojom::EventResult::UNHANDLED;
   }
   DCHECK_EQ(GetAcceleratorLocalId(id), ids.post_id);
   // NOTE: for post return value doesn't really matter.
