@@ -47,7 +47,7 @@
 @end
 @implementation CardSetTestTabMock
 
-typedef const GURL& (^CardSetTestTabMock_url)(void);
+using CardSetTestTabMock_url = const GURL& (^)();
 
 - (const GURL&)url {
   return static_cast<CardSetTestTabMock_url>([self blockForSelector:_cmd])();
