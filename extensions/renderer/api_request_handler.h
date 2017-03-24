@@ -74,6 +74,8 @@ class APIRequestHandler {
   // Invalidates any requests that are associated with |context|.
   void InvalidateContext(v8::Local<v8::Context> context);
 
+  APILastError* last_error() { return &last_error_; }
+
   std::set<int> GetPendingRequestIdsForTesting() const;
 
  private:

@@ -33,6 +33,9 @@ class APILastError {
   // true and the developer didn't check the error, this throws an exception.
   void ClearError(v8::Local<v8::Context> context, bool report_if_unchecked);
 
+  // Returns true if the given context has an active error.
+  bool HasError(v8::Local<v8::Context> context);
+
  private:
   GetParent get_parent_;
 

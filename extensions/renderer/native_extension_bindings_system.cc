@@ -647,11 +647,11 @@ void NativeExtensionBindingsSystem::OnEventListenerChanged(
 void NativeExtensionBindingsSystem::GetJSBindingUtil(
     v8::Local<v8::Context> context,
     v8::Local<v8::Value>* binding_util_out) {
-  gin::Handle<APIBindingJSUtil> handle =
-      gin::CreateHandle(context->GetIsolate(),
-                        new APIBindingJSUtil(api_system_.type_reference_map(),
-                                             api_system_.request_handler(),
-                                             api_system_.event_handler()));
+  gin::Handle<APIBindingJSUtil> handle = gin::CreateHandle(
+      context->GetIsolate(),
+      new APIBindingJSUtil(
+          api_system_.type_reference_map(), api_system_.request_handler(),
+          api_system_.event_handler(), base::Bind(&CallJsFunction)));
   *binding_util_out = handle.ToV8();
 }
 

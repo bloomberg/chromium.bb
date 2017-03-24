@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "extensions/renderer/api_binding_types.h"
 #include "gin/wrappable.h"
 #include "v8/include/v8.h"
 
@@ -27,7 +28,8 @@ class APIBindingJSUtil final : public gin::Wrappable<APIBindingJSUtil> {
  public:
   APIBindingJSUtil(const APITypeReferenceMap* type_refs,
                    APIRequestHandler* request_handler,
-                   APIEventHandler* event_handler);
+                   APIEventHandler* event_handler,
+                   const binding::RunJSFunction& run_js);
   ~APIBindingJSUtil() override;
 
   static gin::WrapperInfo kWrapperInfo;
@@ -64,6 +66,21 @@ class APIBindingJSUtil final : public gin::Wrappable<APIBindingJSUtil> {
   // being added.
   void InvalidateEvent(gin::Arguments* arguments, v8::Local<v8::Object> event);
 
+  // Sets the last error in the context.
+  void SetLastError(gin::Arguments* arguments, const std::string& error);
+
+  // Clears the last error in the context.
+  void ClearLastError(gin::Arguments* arguments);
+
+  // Returns true if there is a set lastError in the given context.
+  void HasLastError(gin::Arguments* arguments);
+
+  // Sets the lastError in the given context, runs the provided callback, and
+  // then clears the last error.
+  void RunCallbackWithLastError(gin::Arguments* arguments,
+                                const std::string& error,
+                                v8::Local<v8::Function> callback);
+
   // Type references. Guaranteed to outlive this object.
   const APITypeReferenceMap* type_refs_;
 
@@ -72,6 +89,8 @@ class APIBindingJSUtil final : public gin::Wrappable<APIBindingJSUtil> {
 
   // The event handler. Guaranteed to outlive this object.
   APIEventHandler* event_handler_;
+
+  binding::RunJSFunction run_js_;
 
   DISALLOW_COPY_AND_ASSIGN(APIBindingJSUtil);
 };

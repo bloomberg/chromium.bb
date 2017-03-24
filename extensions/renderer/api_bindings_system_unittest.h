@@ -71,10 +71,11 @@ class APIBindingsSystemTest : public APIBindingTest {
                            const std::string& expected_arguments);
 
   // Wraps the given |script source| in (function(obj) { ... }) and executes
-  // the result function, passing in |object| for an argument.
-  void CallFunctionOnObject(v8::Local<v8::Context> context,
-                            v8::Local<v8::Object> object,
-                            const std::string& script_source);
+  // the result function, passing in |object| for an argument. Returns the
+  // result of calling the function.
+  v8::Local<v8::Value> CallFunctionOnObject(v8::Local<v8::Context> context,
+                                            v8::Local<v8::Object> object,
+                                            const std::string& script_source);
 
   const APIRequestHandler::Request* last_request() const {
     return last_request_.get();

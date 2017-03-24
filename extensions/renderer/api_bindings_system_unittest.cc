@@ -174,7 +174,7 @@ void APIBindingsSystemTest::ValidateLastRequest(
             ValueToString(*last_request()->arguments));
 }
 
-void APIBindingsSystemTest::CallFunctionOnObject(
+v8::Local<v8::Value> APIBindingsSystemTest::CallFunctionOnObject(
     v8::Local<v8::Context> context,
     v8::Local<v8::Object> object,
     const std::string& script_source) {
@@ -183,10 +183,14 @@ void APIBindingsSystemTest::CallFunctionOnObject(
 
   v8::Local<v8::Function> func =
       FunctionFromString(context, wrapped_script_source);
-  ASSERT_FALSE(func.IsEmpty());
+  // Use ADD_FAILURE() to avoid messing up the return type with ASSERT.
+  if (func.IsEmpty()) {
+    ADD_FAILURE() << script_source;
+    return v8::Local<v8::Value>();
+  }
 
   v8::Local<v8::Value> argv[] = {object};
-  RunFunction(func, context, 1, argv);
+  return RunFunction(func, context, 1, argv);
 }
 
 // Tests API object initialization, calling a method on the supplied APIs, and
