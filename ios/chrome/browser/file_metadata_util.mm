@@ -27,7 +27,7 @@ void SetSkipSystemBackupAttributeToItem(const base::FilePath& path,
                                      forKey:NSURLIsExcludedFromBackupKey
                                       error:&error];
   if (!success) {
-    LOG(ERROR) << [[error description] UTF8String];
+    LOG(ERROR) << base::SysNSStringToUTF8([error description]);
   }
 }
 

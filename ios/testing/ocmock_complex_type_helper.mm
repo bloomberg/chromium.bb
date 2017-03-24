@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #import "base/mac/scoped_nsobject.h"
+#import "base/strings/sys_string_conversions.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -38,8 +39,8 @@
 
 - (void)removeBlockExpectationOnSelector:(SEL)selector {
   NSString* key = NSStringFromSelector(selector);
-  DCHECK([_blocks objectForKey:key]) << "No expectation for selector "
-                                     << [key UTF8String];
+  DCHECK([_blocks objectForKey:key])
+      << "No expectation for selector " << base::SysNSStringToUTF8(key);
   [_blocks removeObjectForKey:key];
 }
 
@@ -47,7 +48,7 @@
   NSString* key = NSStringFromSelector(selector);
   id block = [_blocks objectForKey:key];
   DCHECK(block) << "Missing block expectation for selector "
-                << [key UTF8String];
+                << base::SysNSStringToUTF8(key);
   return block;
 }
 

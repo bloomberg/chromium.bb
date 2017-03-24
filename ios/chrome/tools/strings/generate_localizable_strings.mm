@@ -124,7 +124,7 @@ NSDictionary* GenerateLocalizableStringsDictionary(
       [dictionary setObject:string forKey:resource_output_name];
     } else {
       fprintf(stderr, "ERROR: fail to load string '%s' for locale '%s'\n",
-              [resource_name UTF8String], locale);
+              base::SysNSStringToUTF8(resource_name).c_str(), locale);
       return nil;
     }
   }
@@ -145,7 +145,7 @@ NSDictionary* LoadResourcesListFromHeaders(NSArray* header_list,
         [root_header_dir stringByAppendingPathComponent:header];
     if (![[NSFileManager defaultManager] isReadableFileAtPath:header_file]) {
       fprintf(stderr, "ERROR: header file %s not readable.\n",
-              [header_file UTF8String]);
+              base::SysNSStringToUTF8(header_file).c_str());
       return nil;
     }
     NSString* header_content =
@@ -154,7 +154,7 @@ NSDictionary* LoadResourcesListFromHeaders(NSArray* header_list,
                                      error:nil];
     if (!header_content) {
       fprintf(stderr, "ERROR: header file %s contains non-ASCII chars.\n",
-              [header_file UTF8String]);
+              base::SysNSStringToUTF8(header_file).c_str());
       return nil;
     }
     NSCharacterSet* separator = [NSCharacterSet newlineCharacterSet];
@@ -167,19 +167,21 @@ NSDictionary* LoadResourcesListFromHeaders(NSArray* header_list,
       NSArray* define_string_id = [define componentsSeparatedByString:@" "];
       if ([define_string_id count] != 3) {
         fprintf(stderr, "ERROR: header %s contains invalid entry: %s.\n",
-                [header_file UTF8String], [define UTF8String]);
+                base::SysNSStringToUTF8(header_file).c_str(),
+                base::SysNSStringToUTF8(define).c_str());
         return nil;
       }
       NSString* string_name = [define_string_id objectAtIndex:1];
       NSInteger string_id = [[define_string_id objectAtIndex:2] integerValue];
       if (!string_id) {
         fprintf(stderr, "ERROR: header %s contains invalid entry: %s.\n",
-                [header_file UTF8String], [define UTF8String]);
+                base::SysNSStringToUTF8(header_file).c_str(),
+                base::SysNSStringToUTF8(define).c_str());
         return nil;
       }
       if ([resources_ids valueForKey:string_name]) {
         fprintf(stderr, "ERROR: duplicate entry for key %s.\n",
-                [string_name UTF8String]);
+                base::SysNSStringToUTF8(string_name).c_str());
         return nil;
       }
       [resources_ids setValue:[NSNumber numberWithInteger:string_id]
@@ -208,7 +210,7 @@ bool SavePropertyList(NSDictionary* dictionary,
                                 attributes:nil
                                      error:nil]) {
     fprintf(stderr, "ERROR: '%s' didn't exist or failed to create it\n",
-            [output_path UTF8String]);
+            base::SysNSStringToUTF8(output_path).c_str());
     return false;
   }
 
@@ -221,7 +223,7 @@ bool SavePropertyList(NSDictionary* dictionary,
                      error:&error];
   if (!data) {
     fprintf(stderr, "ERROR: conversion to property list failed: %s\n",
-            [[error localizedDescription] UTF8String]);
+            base::SysNSStringToUTF8([error localizedDescription]).c_str());
     return false;
   }
 
@@ -229,7 +231,7 @@ bool SavePropertyList(NSDictionary* dictionary,
   output_path = [output_path stringByAppendingPathComponent:output_filename];
   if (![data writeToFile:output_path atomically:YES]) {
     fprintf(stderr, "ERROR: Failed to write out '%s'\n",
-            [output_filename UTF8String]);
+            base::SysNSStringToUTF8(output_filename).c_str());
     return false;
   }
 
@@ -341,7 +343,7 @@ int main(int argc, char* const argv[]) {
         LoadResourceDataPack(data_pack_dir, locale);
     if (!data_pack) {
       fprintf(stderr, "ERROR: Failed to load branded pak for language: %s\n",
-              [locale UTF8String]);
+              base::SysNSStringToUTF8(locale).c_str());
       exit(1);
     }
 
@@ -354,17 +356,18 @@ int main(int argc, char* const argv[]) {
       NSArray* output_strings = [output objectForKey:@"strings"];
       if (![output_strings count]) {
         fprintf(stderr, "ERROR: Output without strings: %s.\n",
-                [output_name UTF8String]);
+                base::SysNSStringToUTF8(output_name).c_str());
         exit(1);
       }
 
       NSDictionary* dictionary = GenerateLocalizableStringsDictionary(
-          *data_pack, [locale UTF8String], output_strings, resources_ids);
+          *data_pack, base::SysNSStringToUTF8(locale).c_str(), output_strings,
+          resources_ids);
       if (dictionary) {
         SavePropertyList(dictionary, locale, output_dir, output_name);
       } else {
         fprintf(stderr, "ERROR: Unable to create %s.\n",
-                [output_name UTF8String]);
+                base::SysNSStringToUTF8(output_name).c_str());
         exit(1);
       }
     }

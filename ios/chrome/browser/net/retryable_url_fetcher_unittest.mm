@@ -6,6 +6,7 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/message_loop/message_loop.h"
+#import "base/strings/sys_string_conversions.h"
 #include "ios/web/public/test/test_web_thread.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -97,7 +98,7 @@ TEST_F(RetryableURLFetcherTest, TestResponse200) {
   DCHECK(fetcher->delegate());
   [test_delegate_ setResponsesProcessed:0U];
   fetcher->set_response_code(200);
-  fetcher->SetResponseString([kFakeResponseString UTF8String]);
+  fetcher->SetResponseString(base::SysNSStringToUTF8(kFakeResponseString));
   fetcher->delegate()->OnURLFetchComplete(fetcher);
   EXPECT_EQ(1U, [test_delegate_ responsesProcessed]);
 }

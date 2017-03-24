@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
+#import "base/strings/sys_string_conversions.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -57,8 +58,9 @@ class CoreJsTest : public web::WebTestWithWebState {
       TestScriptAndExpectedValue& data = test_data[i];
       LoadHtml(page_content);
       id result = ExecuteJavaScript(data.test_script);
-      EXPECT_NSEQ(data.expected_value, result) << " in test " << i << ": "
-                                               << [data.test_script UTF8String];
+      EXPECT_NSEQ(data.expected_value, result)
+          << " in test " << i << ": "
+          << base::SysNSStringToUTF8(data.test_script);
     }
   }
 };
@@ -127,8 +129,9 @@ TEST_F(CoreJsTest, TextAreaStopsProximity) {
     TestScriptAndExpectedValue& data = test_data[i];
     LoadHtml(html);
     id result = ExecuteJavaScript(data.test_script);
-    EXPECT_NSEQ(data.expected_value, result) << " in test " << i << ": "
-                                             << [data.test_script UTF8String];
+    EXPECT_NSEQ(data.expected_value, result)
+        << " in test " << i << ": "
+        << base::SysNSStringToUTF8(data.test_script);
   }
 }
 
@@ -147,8 +150,9 @@ TEST_F(CoreJsTest, HasPasswordField) {
     TestDataForPasswordFormDetection& data = testData[i];
     LoadHtml(data.pageContent);
     id result = ExecuteJavaScript(@"__gCrWeb.hasPasswordField()");
-    EXPECT_NSEQ(data.containsPassword, result) <<
-        " in test " << i << ": " << [data.pageContent UTF8String];
+    EXPECT_NSEQ(data.containsPassword, result)
+        << " in test " << i << ": "
+        << base::SysNSStringToUTF8(data.pageContent);
   }
 }
 
@@ -165,7 +169,8 @@ TEST_F(CoreJsTest, HasPasswordFieldinFrame) {
   };
   LoadHtml(data.pageContent);
   id result = ExecuteJavaScript(@"__gCrWeb.hasPasswordField()");
-  EXPECT_NSEQ(data.containsPassword, result) << [data.pageContent UTF8String];
+  EXPECT_NSEQ(data.containsPassword, result)
+      << base::SysNSStringToUTF8(data.pageContent);
 }
 
 TEST_F(CoreJsTest, Stringify) {
@@ -225,8 +230,9 @@ TEST_F(CoreJsTest, Stringify) {
     // |webController_| will also inject core.js.
     LoadHtml(@"<p>");
     id result = ExecuteJavaScript(data.test_script);
-    EXPECT_NSEQ(data.expected_value, result) << " in test " << i << ": "
-                                             << [data.test_script UTF8String];
+    EXPECT_NSEQ(data.expected_value, result)
+        << " in test " << i << ": "
+        << base::SysNSStringToUTF8(data.test_script);
   }
 }
 

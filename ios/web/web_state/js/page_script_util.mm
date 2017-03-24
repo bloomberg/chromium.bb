@@ -27,7 +27,8 @@ NSString* GetPageScript(NSString* script_file_name) {
   NSString* content = [NSString stringWithContentsOfFile:path
                                                 encoding:NSUTF8StringEncoding
                                                    error:&error];
-  DCHECK(!error) << "Error fetching script: " << [error.description UTF8String];
+  DCHECK(!error) << "Error fetching script: "
+                 << base::SysNSStringToUTF8(error.description);
   DCHECK(content);
   return content;
 }

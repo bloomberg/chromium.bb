@@ -4834,7 +4834,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
            if (!_webView || ![result isKindOfClass:[NSString class]]) {
              return;
            }
-           GURL JSURL([result UTF8String]);
+           GURL JSURL(base::SysNSStringToUTF8(result));
            // Check that window.location matches the new URL. If
            // it does not, this is a document-changing URL change as
            // the window location would not have changed to the new

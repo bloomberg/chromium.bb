@@ -6,6 +6,7 @@
 
 #import <Foundation/Foundation.h>
 
+#import "base/strings/sys_string_conversions.h"
 #import "ios/web/public/url_scheme_util.h"
 #import "ios/web/public/web_client.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -23,7 +24,7 @@ bool IsAppSpecificScheme(NSURL* url) {
     return false;
   // Use the GURL implementation, but with a scheme-only URL to avoid
   // unnecessary parsing in GURL construction.
-  GURL gurl([[scheme stringByAppendingString:@":"] UTF8String]);
+  GURL gurl(base::SysNSStringToUTF8([scheme stringByAppendingString:@":"]));
   return web::GetWebClient()->IsAppSpecificURL(gurl);
 }
 
