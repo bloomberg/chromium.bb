@@ -7,6 +7,10 @@ package org.chromium.chrome.browser.offlinepages;
 import android.content.Context;
 
 import org.chromium.base.Callback;
+import org.chromium.base.Log;
+import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.offlinepages.interfaces.BackgroundSchedulerProcessor;
 import org.chromium.components.background_task_scheduler.BackgroundTask;
 import org.chromium.components.background_task_scheduler.BackgroundTask.TaskFinishedCallback;
@@ -17,6 +21,8 @@ import org.chromium.components.background_task_scheduler.TaskParameters;
  * Handles servicing background offlining requests coming via background_task_scheduler component.
  */
 public class OfflineBackgroundTask implements BackgroundTask {
+    private static final String TAG = "OPBackgroundTask";
+
     BackgroundSchedulerProcessor mBackgroundProcessor;
 
     public OfflineBackgroundTask() {
@@ -27,6 +33,10 @@ public class OfflineBackgroundTask implements BackgroundTask {
     public boolean onStartTask(
             Context context, TaskParameters taskParameters, TaskFinishedCallback callback) {
         assert taskParameters.getTaskId() == TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID;
+
+        // Ensuring that native potion of the browser is launched.
+        launchBrowserIfNecessary(context);
+
         return BackgroundOfflinerTask.startBackgroundRequestsImpl(
                 mBackgroundProcessor, context, taskParameters.getExtras(), wrapCallback(callback));
     }
@@ -44,5 +54,20 @@ public class OfflineBackgroundTask implements BackgroundTask {
                 callback.taskFinished(result);
             }
         };
+    }
+
+    private static void launchBrowserIfNecessary(Context context) {
+        if (LibraryLoader.isInitialized()) return;
+
+        // TODO(fgorski): This method is taken from ChromeBackgroundService as a local fix and will
+        // be removed with BackgroundTaskScheduler supporting GcmNetworkManager scheduling.
+        try {
+            ChromeBrowserInitializer.getInstance(context).handleSynchronousStartup();
+        } catch (ProcessInitException e) {
+            Log.e(TAG, "ProcessInitException while starting the browser process.");
+            // Since the library failed to initialize nothing in the application can work, so kill
+            // the whole application not just the activity.
+            System.exit(-1);
+        }
     }
 }
