@@ -37,6 +37,12 @@ class CORE_EXPORT CSSParserContext
   static CSSParserContext* create(const CSSParserContext* other,
                                   const Document* useCounterDocument);
 
+  static CSSParserContext* create(const CSSParserContext* other,
+                                  const KURL& baseURLOverride,
+                                  const String& charsetOverride,
+                                  const Referrer& referrerOverride,
+                                  const Document* useCounterDocument);
+
   static CSSParserContext* create(CSSParserMode,
                                   SelectorProfile = DynamicProfile,
                                   const Document* useCounterDocument = nullptr);
@@ -69,13 +75,10 @@ class CORE_EXPORT CSSParserContext
     return m_useLegacyBackgroundSizeShorthandBehavior;
   }
 
-  // FIXME: These setters shouldn't exist, however the current lifetime of
+  // FIXME: This setter shouldn't exist, however the current lifetime of
   // CSSParserContext is not well understood and thus we sometimes need to
-  // override these fields.
+  // override this field.
   void setMode(CSSParserMode mode) { m_mode = mode; }
-  void setBaseURL(const KURL& baseURL) { m_baseURL = baseURL; }
-  void setCharset(const String& charset) { m_charset = charset; }
-  void setReferrer(const Referrer& referrer) { m_referrer = referrer; }
 
   KURL completeURL(const String& url) const;
 

@@ -72,20 +72,19 @@ void StyleRuleImport::setCSSStyleSheet(
   if (m_styleSheet)
     m_styleSheet->clearOwnerRule();
 
-  CSSParserContext* context = CSSParserContext::create(
-      m_parentStyleSheet ? m_parentStyleSheet->parserContext()
-                         : strictCSSParserContext(),
-      nullptr);
-  context->setCharset(charset);
-  Document* document =
-      m_parentStyleSheet ? m_parentStyleSheet->singleOwnerDocument() : nullptr;
-  if (!baseURL.isNull()) {
-    context->setBaseURL(baseURL);
-    if (document) {
-      context->setReferrer(Referrer(baseURL.strippedForUseAsReferrer(),
-                                    document->getReferrerPolicy()));
-    }
+  Document* document = nullptr;
+  const CSSParserContext* context = strictCSSParserContext();
+  if (m_parentStyleSheet) {
+    document = m_parentStyleSheet->singleOwnerDocument();
+    context = m_parentStyleSheet->parserContext();
   }
+  context = CSSParserContext::create(
+      context, baseURL, charset,
+      (!baseURL.isNull() && document)
+          ? Referrer(baseURL.strippedForUseAsReferrer(),
+                     document->getReferrerPolicy())
+          : context->referrer(),
+      document);
 
   m_styleSheet = StyleSheetContents::create(this, href, context);
 

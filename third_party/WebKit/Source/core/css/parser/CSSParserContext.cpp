@@ -41,6 +41,19 @@ CSSParserContext* CSSParserContext::create(const CSSParserContext* other,
 }
 
 // static
+CSSParserContext* CSSParserContext::create(const CSSParserContext* other,
+                                           const KURL& baseURL,
+                                           const String& charset,
+                                           const Referrer& referrer,
+                                           const Document* useCounterDocument) {
+  return new CSSParserContext(
+      baseURL, charset, other->m_mode, other->m_matchMode, other->m_profile,
+      referrer, other->m_isHTMLDocument,
+      other->m_useLegacyBackgroundSizeShorthandBehavior,
+      other->m_shouldCheckContentSecurityPolicy, useCounterDocument);
+}
+
+// static
 CSSParserContext* CSSParserContext::create(CSSParserMode mode,
                                            SelectorProfile profile,
                                            const Document* useCounterDocument) {
