@@ -994,8 +994,8 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // Modify or take an action on an object.
   virtual void increment() {}
   virtual void decrement() {}
-  bool performDefaultAction() const { return press(); }
-  virtual bool press() const;
+  bool performDefaultAction() { return press(); }
+  virtual bool press();
   // Make this object visible by scrolling as many nested scrollable views as
   // needed.
   void scrollToMakeVisible() const;

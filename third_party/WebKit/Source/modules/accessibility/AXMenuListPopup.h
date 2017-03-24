@@ -58,7 +58,7 @@ class AXMenuListPopup final : public AXMockObject {
   AccessibilityRole roleValue() const override { return MenuListPopupRole; }
 
   bool isVisible() const override;
-  bool press() const override;
+  bool press() override;
   void addChildren() override;
   void updateChildrenIfNecessary() override;
   bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;

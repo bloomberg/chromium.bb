@@ -70,7 +70,7 @@ class AXSpinButtonPart final : public AXMockObject {
   explicit AXSpinButtonPart(AXObjectCacheImpl&);
   bool m_isIncrementor : 1;
 
-  bool press() const override;
+  bool press() override;
   AccessibilityRole roleValue() const override { return ButtonRole; }
   bool isSpinButtonPart() const override { return true; }
   void getRelativeBounds(AXObject** outContainer,

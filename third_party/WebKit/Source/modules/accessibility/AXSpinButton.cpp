@@ -128,7 +128,7 @@ void AXSpinButtonPart::getRelativeBounds(
   *outContainer = parentObject();
 }
 
-bool AXSpinButtonPart::press() const {
+bool AXSpinButtonPart::press() {
   if (!m_parent || !m_parent->isSpinButton())
     return false;
 

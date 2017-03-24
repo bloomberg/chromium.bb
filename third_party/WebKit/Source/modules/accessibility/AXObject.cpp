@@ -1351,14 +1351,25 @@ LayoutRect AXObject::getBoundsInFrameCoordinates() const {
 // Modify or take an action on an object.
 //
 
-bool AXObject::press() const {
-  Element* actionElem = actionElement();
-  if (!actionElem)
+bool AXObject::press() {
+  Document* document = getDocument();
+  if (!document)
     return false;
-  UserGestureIndicator gestureIndicator(DocumentUserGestureToken::create(
-      &actionElem->document(), UserGestureToken::NewGesture));
-  actionElem->accessKeyAction(true);
-  return true;
+
+  UserGestureIndicator gestureIndicator(
+      DocumentUserGestureToken::create(document, UserGestureToken::NewGesture));
+  Element* actionElem = actionElement();
+  if (actionElem) {
+    actionElem->accessKeyAction(true);
+    return true;
+  }
+
+  if (canSetFocusAttribute()) {
+    setFocused(true);
+    return true;
+  }
+
+  return false;
 }
 
 void AXObject::scrollToMakeVisible() const {

@@ -84,7 +84,7 @@ int AXMenuListPopup::getSelectedIndex() const {
   return htmlSelectElement->selectedIndex();
 }
 
-bool AXMenuListPopup::press() const {
+bool AXMenuListPopup::press() {
   if (!m_parent)
     return false;
 

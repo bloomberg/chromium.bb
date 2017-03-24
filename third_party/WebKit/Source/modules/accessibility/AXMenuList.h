@@ -41,7 +41,7 @@ class AXMenuList final : public AXLayoutObject {
 
   bool isCollapsed() const override;
   AccessibilityExpanded isExpanded() const final;
-  bool press() const override;
+  bool press() override;
   void clearChildren() override;
   bool nameFromContents() const override;
 
