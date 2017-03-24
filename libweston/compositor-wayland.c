@@ -1261,6 +1261,9 @@ wayland_output_create(struct weston_compositor *compositor, const char *name)
 {
 	struct wayland_output *output = wayland_output_create_common(name);
 
+	if (!output)
+		return -1;
+
 	weston_output_init(&output->base, compositor);
 	weston_compositor_add_pending_output(&output->base, compositor);
 
@@ -1319,8 +1322,12 @@ static int
 wayland_output_create_for_parent_output(struct wayland_backend *b,
 					struct wayland_parent_output *poutput)
 {
-	struct wayland_output *output = wayland_output_create_common("wlparent");
+	struct wayland_output *output;
 	struct weston_mode *mode;
+
+	output = wayland_output_create_common("wlparent");
+	if (!output)
+		return -1;
 
 	if (poutput->current_mode) {
 		mode = poutput->current_mode;
@@ -1367,8 +1374,12 @@ out:
 static int
 wayland_output_create_fullscreen(struct wayland_backend *b)
 {
-	struct wayland_output *output = wayland_output_create_common("wayland-fullscreen");
+	struct wayland_output *output;
 	int width = 0, height = 0;
+
+	output = wayland_output_create_common("wayland-fullscreen");
+	if (!output)
+		return -1;
 
 	weston_output_init(&output->base, b->compositor);
 
