@@ -17,6 +17,7 @@
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 
 namespace payments {
@@ -95,7 +96,9 @@ class ShippingProfileViewController : public ProfileListViewController {
   ShippingProfileViewController(PaymentRequestSpec* spec,
                                 PaymentRequestState* state,
                                 PaymentRequestDialogView* dialog)
-      : ProfileListViewController(spec, state, dialog) {}
+      : ProfileListViewController(spec, state, dialog) {
+    PopulateList();
+  }
   ~ShippingProfileViewController() override {}
 
  protected:
@@ -118,7 +121,7 @@ class ShippingProfileViewController : public ProfileListViewController {
     return state()->shipping_profiles();
   }
 
-  base::string16 GetHeaderString() override {
+  base::string16 GetSheetTitle() override {
     return GetShippingAddressSectionString(spec()->options().shipping_type);
   }
 
@@ -148,7 +151,9 @@ class ContactProfileViewController : public ProfileListViewController {
   ContactProfileViewController(PaymentRequestSpec* spec,
                                PaymentRequestState* state,
                                PaymentRequestDialogView* dialog)
-      : ProfileListViewController(spec, state, dialog) {}
+      : ProfileListViewController(spec, state, dialog) {
+    PopulateList();
+  }
   ~ContactProfileViewController() override {}
 
  protected:
@@ -173,7 +178,7 @@ class ContactProfileViewController : public ProfileListViewController {
     return state()->contact_profiles();
   }
 
-  base::string16 GetHeaderString() override {
+  base::string16 GetSheetTitle() override {
     return l10n_util::GetStringUTF16(
         IDS_PAYMENT_REQUEST_CONTACT_INFO_SECTION_NAME);
   }
@@ -227,7 +232,7 @@ ProfileListViewController::ProfileListViewController(
 
 ProfileListViewController::~ProfileListViewController() {}
 
-std::unique_ptr<views::View> ProfileListViewController::CreateView() {
+void ProfileListViewController::PopulateList() {
   autofill::AutofillProfile* selected_profile = GetSelectedProfile();
 
   // This must be done at Create-time, rather than construct-time, because
@@ -237,11 +242,11 @@ std::unique_ptr<views::View> ProfileListViewController::CreateView() {
                                                 &list_, this, dialog(),
                                                 profile == selected_profile));
   }
+}
 
-  return CreatePaymentView(
-      CreateSheetHeaderView(
-          /* show_back_arrow = */ true, GetHeaderString(), this),
-      list_.CreateListView());
+void ProfileListViewController::FillContentView(views::View* content_view) {
+  content_view->SetLayoutManager(new views::FillLayout);
+  content_view->AddChildView(list_.CreateListView().release());
 }
 
 std::unique_ptr<views::View>

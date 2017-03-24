@@ -25,11 +25,10 @@ class PaymentMethodViewController : public PaymentRequestSheetController {
                               PaymentRequestDialogView* dialog);
   ~PaymentMethodViewController() override;
 
-  // PaymentRequestSheetController:
-  std::unique_ptr<views::View> CreateView() override;
-
  private:
   // PaymentRequestSheetController:
+  base::string16 GetSheetTitle() override;
+  void FillContentView(views::View* content_view) override;
   std::unique_ptr<views::View> CreateExtraFooterView() override;
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 

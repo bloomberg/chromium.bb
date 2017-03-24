@@ -21,11 +21,10 @@ class ShippingOptionViewController : public PaymentRequestSheetController {
                                PaymentRequestDialogView* dialog);
   ~ShippingOptionViewController() override;
 
-  // PaymentRequestSheetController:
-  std::unique_ptr<views::View> CreateView() override;
-
  private:
   // PaymentRequestSheetController:
+  base::string16 GetSheetTitle() override;
+  void FillContentView(views::View* content_view) override;
   std::unique_ptr<views::View> CreateExtraFooterView() override;
 
   PaymentRequestItemList shipping_option_list_;

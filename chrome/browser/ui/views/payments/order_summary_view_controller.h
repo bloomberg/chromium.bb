@@ -9,6 +9,10 @@
 #include "chrome/browser/ui/views/payments/payment_request_sheet_controller.h"
 #include "components/payments/content/payment_request_state.h"
 
+namespace views {
+class Button;
+}
+
 namespace payments {
 
 class PaymentRequestSpec;
@@ -26,14 +30,14 @@ class OrderSummaryViewController : public PaymentRequestSheetController,
                              PaymentRequestDialogView* dialog);
   ~OrderSummaryViewController() override;
 
-  // PaymentRequestSheetController:
-  std::unique_ptr<views::View> CreateView() override;
-  std::unique_ptr<views::Button> CreatePrimaryButton() override;
-
   // PaymentRequestState::Observer:
   void OnSelectedInformationChanged() override;
 
  private:
+  // PaymentRequestSheetController:
+  std::unique_ptr<views::Button> CreatePrimaryButton() override;
+  base::string16 GetSheetTitle() override;
+  void FillContentView(views::View* content_view) override;
   void UpdatePayButtonState(bool enabled);
 
   views::Button* pay_button_;

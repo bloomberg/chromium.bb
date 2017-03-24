@@ -30,7 +30,6 @@ class ShippingAddressEditorViewController : public EditorViewController {
 
   // EditorViewController:
   std::unique_ptr<views::View> CreateHeaderView() override;
-  int GetViewHeaderTitleId() const override;
   std::vector<EditorField> GetFieldDefinitions() override;
   bool ValidateModelAndSave() override;
   std::unique_ptr<ValidationDelegate> CreateValidationDelegate(
@@ -39,6 +38,9 @@ class ShippingAddressEditorViewController : public EditorViewController {
       const autofill::ServerFieldType& type) override;
   void OnPerformAction(views::Combobox* combobox) override;
   void UpdateEditorView() override;
+
+  // PaymentRequestSheetController:
+  base::string16 GetSheetTitle() override;
 
  private:
   class ShippingAddressValidationDelegate : public ValidationDelegate {

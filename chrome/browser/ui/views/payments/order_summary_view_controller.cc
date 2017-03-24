@@ -95,9 +95,23 @@ OrderSummaryViewController::~OrderSummaryViewController() {
   state()->RemoveObserver(this);
 }
 
-std::unique_ptr<views::View> OrderSummaryViewController::CreateView() {
-  std::unique_ptr<views::View> content_view = base::MakeUnique<views::View>();
+std::unique_ptr<views::Button>
+OrderSummaryViewController::CreatePrimaryButton() {
+  std::unique_ptr<views::Button> button(
+      views::MdTextButton::CreateSecondaryUiBlueButton(
+          this, l10n_util::GetStringUTF16(IDS_PAYMENTS_PAY_BUTTON)));
+  button->set_tag(static_cast<int>(PaymentRequestCommonTags::PAY_BUTTON_TAG));
+  button->set_id(static_cast<int>(DialogViewID::PAY_BUTTON));
+  pay_button_ = button.get();
+  UpdatePayButtonState(state()->is_ready_to_pay());
+  return button;
+}
 
+base::string16 OrderSummaryViewController::GetSheetTitle() {
+  return l10n_util::GetStringUTF16(IDS_PAYMENT_REQUEST_ORDER_SUMMARY_TITLE);
+}
+
+void OrderSummaryViewController::FillContentView(views::View* content_view) {
   views::BoxLayout* layout = new views::BoxLayout(
       views::BoxLayout::kVertical, 0, 0, 0);
   layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
@@ -133,25 +147,6 @@ std::unique_ptr<views::View> OrderSummaryViewController::CreateView() {
                          total_label_value, true,
                          DialogViewID::ORDER_SUMMARY_TOTAL_AMOUNT_LABEL)
           .release());
-
-  return CreatePaymentView(
-      CreateSheetHeaderView(
-          true,
-          l10n_util::GetStringUTF16(IDS_PAYMENT_REQUEST_ORDER_SUMMARY_TITLE),
-          this),
-      std::move(content_view));
-}
-
-std::unique_ptr<views::Button>
-OrderSummaryViewController::CreatePrimaryButton() {
-  std::unique_ptr<views::Button> button(
-      views::MdTextButton::CreateSecondaryUiBlueButton(
-          this, l10n_util::GetStringUTF16(IDS_PAYMENTS_PAY_BUTTON)));
-  button->set_tag(static_cast<int>(PaymentRequestCommonTags::PAY_BUTTON_TAG));
-  button->set_id(static_cast<int>(DialogViewID::PAY_BUTTON));
-  pay_button_ = button.get();
-  UpdatePayButtonState(state()->is_ready_to_pay());
-  return button;
 }
 
 void OrderSummaryViewController::OnSelectedInformationChanged() {

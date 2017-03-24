@@ -48,7 +48,6 @@ class ProfileListViewController : public PaymentRequestSheetController {
                                   PaymentRequestDialogView* dialog);
 
   // PaymentRequestSheetController:
-  std::unique_ptr<views::View> CreateView() override;
   std::unique_ptr<views::View> CreateExtraFooterView() override;
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
@@ -71,8 +70,10 @@ class ProfileListViewController : public PaymentRequestSheetController {
   // in this context.
   virtual std::vector<autofill::AutofillProfile*> GetProfiles() = 0;
 
-  // Returns the string displayed at the top of the view.
-  virtual base::string16 GetHeaderString() = 0;
+  void PopulateList();
+
+  // PaymentRequestSheetController:
+  void FillContentView(views::View* content_view) override;
 
   // Settings and events related to the secondary button in the footer area.
   virtual int GetSecondaryButtonTextId() = 0;

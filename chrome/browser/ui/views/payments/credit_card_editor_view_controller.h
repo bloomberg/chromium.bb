@@ -32,13 +32,16 @@ class CreditCardEditorViewController : public EditorViewController {
 
   // EditorViewController:
   std::unique_ptr<views::View> CreateHeaderView() override;
-  int GetViewHeaderTitleId() const override;
   std::vector<EditorField> GetFieldDefinitions() override;
   bool ValidateModelAndSave() override;
   std::unique_ptr<ValidationDelegate> CreateValidationDelegate(
       const EditorField& field) override;
   std::unique_ptr<ui::ComboboxModel> GetComboboxModelForType(
       const autofill::ServerFieldType& type) override;
+
+ protected:
+  // PaymentRequestSheetController:
+  base::string16 GetSheetTitle() override;
 
  private:
   class CreditCardValidationDelegate : public ValidationDelegate {

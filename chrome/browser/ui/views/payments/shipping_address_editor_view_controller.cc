@@ -87,10 +87,6 @@ ShippingAddressEditorViewController::CreateHeaderView() {
   return base::MakeUnique<views::View>();
 }
 
-int ShippingAddressEditorViewController::GetViewHeaderTitleId() const {
-  return IDS_PAYMENT_REQUEST_ADDRESS_EDITOR_ADD_TITLE;
-}
-
 std::vector<EditorField>
 ShippingAddressEditorViewController::GetFieldDefinitions() {
   return editor_fields_;
@@ -194,6 +190,11 @@ void ShippingAddressEditorViewController::UpdateEditorView() {
     DCHECK(country_combo_box);
     country_combo_box->SetSelectedIndex(chosen_country_index_);
   }
+}
+
+base::string16 ShippingAddressEditorViewController::GetSheetTitle() {
+  return l10n_util::GetStringUTF16(
+      IDS_PAYMENT_REQUEST_ADDRESS_EDITOR_ADD_TITLE);
 }
 
 void ShippingAddressEditorViewController::UpdateEditorFields() {

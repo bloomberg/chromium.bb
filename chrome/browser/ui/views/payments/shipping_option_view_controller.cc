@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/payment_request_state.h"
+#include "ui/views/layout/fill_layout.h"
 
 namespace payments {
 
@@ -73,14 +74,13 @@ ShippingOptionViewController::ShippingOptionViewController(
 
 ShippingOptionViewController::~ShippingOptionViewController() {}
 
-std::unique_ptr<views::View> ShippingOptionViewController::CreateView() {
-  std::unique_ptr<views::View> list_view =
-      shipping_option_list_.CreateListView();
-  return CreatePaymentView(
-      CreateSheetHeaderView(
-          true, GetShippingOptionSectionString(spec()->options().shipping_type),
-          this),
-      std::move(list_view));
+base::string16 ShippingOptionViewController::GetSheetTitle() {
+  return GetShippingOptionSectionString(spec()->options().shipping_type);
+}
+
+void ShippingOptionViewController::FillContentView(views::View* content_view) {
+  content_view->SetLayoutManager(new views::FillLayout);
+  content_view->AddChildView(shipping_option_list_.CreateListView().release());
 }
 
 std::unique_ptr<views::View>

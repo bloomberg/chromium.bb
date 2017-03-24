@@ -94,9 +94,6 @@ class EditorViewController : public PaymentRequestSheetController,
                        PaymentRequestDialogView* dialog);
   ~EditorViewController() override;
 
-  // PaymentRequestSheetController:
-  std::unique_ptr<views::View> CreateView() override;
-
   // Will display |error_message| alongside the input field represented by
   // |field|.
   void DisplayErrorMessageForField(const EditorField& field,
@@ -107,8 +104,6 @@ class EditorViewController : public PaymentRequestSheetController,
 
  protected:
   virtual std::unique_ptr<views::View> CreateHeaderView() = 0;
-  // Returns the resource id of the view header title.
-  virtual int GetViewHeaderTitleId() const = 0;
   // Returns the field definitions used to build the UI.
   virtual std::vector<EditorField> GetFieldDefinitions() = 0;
   // Validates the data entered and attempts to save; returns true on success.
@@ -122,6 +117,7 @@ class EditorViewController : public PaymentRequestSheetController,
 
   // PaymentRequestSheetController;
   std::unique_ptr<views::Button> CreatePrimaryButton() override;
+  void FillContentView(views::View* content_view) override;
   std::unique_ptr<views::View> CreateExtraFooterView() override;
 
   // views::ComboboxListener:
@@ -143,22 +139,13 @@ class EditorViewController : public PaymentRequestSheetController,
 
   // Creates the whole editor view to go within the editor dialog. It
   // encompasses all the input fields created by CreateInputField().
-  void CreateEditorView();
+  std::unique_ptr<views::View> CreateEditorView();
 
   // Adds some views to |layout|, to represent an input field and its labels.
   // |field| is the field definition, which contains the label and the hint
   // about the length of the input field. A placeholder error label is also
   // added (see implementation).
   void CreateInputField(views::GridLayout* layout, const EditorField& field);
-
-  // The implementation of UpdateEditorView which is also called from
-  // CreateEditorView.
-  void UpdateEditorViewImpl();
-
-  // The editor content view, owned by the client so the derived classes can
-  // refresh it when some user interactions cause layout changes by calling
-  // UpdateEditorView().
-  std::unique_ptr<views::View> editor_view_;
 
   // Used to remember the association between the input field UI element and the
   // original field definition. The ValidatingTextfield* and ValidatingCombobox*

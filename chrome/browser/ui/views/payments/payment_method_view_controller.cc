@@ -24,6 +24,7 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/vector_icons.h"
 
@@ -129,18 +130,18 @@ PaymentMethodViewController::PaymentMethodViewController(
 
 PaymentMethodViewController::~PaymentMethodViewController() {}
 
-std::unique_ptr<views::View> PaymentMethodViewController::CreateView() {
+base::string16 PaymentMethodViewController::GetSheetTitle() {
+  return l10n_util::GetStringUTF16(
+      IDS_PAYMENT_REQUEST_PAYMENT_METHOD_SECTION_NAME);
+}
+
+void PaymentMethodViewController::FillContentView(views::View* content_view) {
+  content_view->SetLayoutManager(new views::FillLayout);
   std::unique_ptr<views::View> list_view =
       payment_method_list_.CreateListView();
   list_view->set_id(
       static_cast<int>(DialogViewID::PAYMENT_METHOD_SHEET_LIST_VIEW));
-  return CreatePaymentView(
-      CreateSheetHeaderView(
-          true,
-          l10n_util::GetStringUTF16(
-              IDS_PAYMENT_REQUEST_PAYMENT_METHOD_SECTION_NAME),
-          this),
-      std::move(list_view));
+  content_view->AddChildView(list_view.release());
 }
 
 std::unique_ptr<views::View>

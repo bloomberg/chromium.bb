@@ -31,9 +31,9 @@ class PaymentRequestSheetController : public views::ButtonListener {
   PaymentRequestSheetController(PaymentRequestSpec* spec,
                                 PaymentRequestState* state,
                                 PaymentRequestDialogView* dialog);
-  ~PaymentRequestSheetController() override {}
+  ~PaymentRequestSheetController() override;
 
-  virtual std::unique_ptr<views::View> CreateView() = 0;
+  std::unique_ptr<views::View> CreateView();
 
   PaymentRequestSpec* spec() { return spec_; }
   PaymentRequestState* state() { return state_; }
@@ -43,6 +43,10 @@ class PaymentRequestSheetController : public views::ButtonListener {
   PaymentRequestDialogView* dialog() { return dialog_; }
 
  protected:
+  // Clears the content part of the view represented by this view controller and
+  // calls FillContentView again to re-populate it with updated views.
+  void UpdateContentView();
+
   // Creates and returns the primary action button for this sheet. It's
   // typically a blue button with the "Pay" or "Done" labels. Subclasses may
   // return an empty std::unique_ptr (nullptr) to indicate that no primary
@@ -51,6 +55,19 @@ class PaymentRequestSheetController : public views::ButtonListener {
   // retain a raw pointer to the returned button (for example to control its
   // enabled state).
   virtual std::unique_ptr<views::Button> CreatePrimaryButton();
+
+  // Returns whether this sheet should display a back arrow in the header next
+  // to the title.
+  virtual bool ShouldShowHeaderBackArrow();
+
+  // Returns the title to be displayed in this sheet's header.
+  virtual base::string16 GetSheetTitle() = 0;
+
+  // Implemented by subclasses to populate |content_view| with the views that
+  // should be displayed in their content area (between the header and the
+  // footer). This may be called at view creation time as well as anytime
+  // UpdateContentView is called.
+  virtual void FillContentView(views::View* content_view) = 0;
 
   // Creates and returns the view to be displayed next to the "Pay" and "Cancel"
   // buttons. May return an empty std::unique_ptr (nullptr) to indicate that no
@@ -67,6 +84,11 @@ class PaymentRequestSheetController : public views::ButtonListener {
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  // Creates the row of button containing the Pay, cancel, and extra buttons.
+  // |controller| is installed as the listener for button events.
+  std::unique_ptr<views::View> CreateFooterView();
+
+ private:
   // Creates a view to be displayed in the PaymentRequestDialog.
   // |header_view| is the view displayed on top of the dialog, containing title,
   // (optional) back button, and close buttons.
@@ -82,19 +104,15 @@ class PaymentRequestSheetController : public views::ButtonListener {
   // +---------------------------+
   // | EXTRA VIEW | PAY | CANCEL | <-- footer
   // +---------------------------+
-  std::unique_ptr<views::View> CreatePaymentView(
-      std::unique_ptr<views::View> header_view,
-      std::unique_ptr<views::View> content_view);
+  std::unique_ptr<views::View> CreatePaymentView();
 
-  // Creates the row of button containing the Pay, cancel, and extra buttons.
-  // |controller| is installed as the listener for button events.
-  std::unique_ptr<views::View> CreateFooterView();
-
- private:
   // All these are not owned. Will outlive this.
   PaymentRequestSpec* spec_;
   PaymentRequestState* state_;
   PaymentRequestDialogView* dialog_;
+
+  // This view is owned by its encompassing ScrollView.
+  views::View* content_view_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestSheetController);
 };

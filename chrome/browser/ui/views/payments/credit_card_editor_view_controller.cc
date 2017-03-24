@@ -142,10 +142,6 @@ CreditCardEditorViewController::CreateHeaderView() {
   return view;
 }
 
-int CreditCardEditorViewController::GetViewHeaderTitleId() const {
-  return IDS_PAYMENT_REQUEST_CREDIT_CARD_EDITOR_ADD_TITLE;
-}
-
 std::vector<EditorField> CreditCardEditorViewController::GetFieldDefinitions() {
   return std::vector<EditorField>{
       {autofill::CREDIT_CARD_NUMBER,
@@ -230,6 +226,11 @@ CreditCardEditorViewController::GetComboboxModelForType(
       break;
   }
   return std::unique_ptr<ui::ComboboxModel>();
+}
+
+base::string16 CreditCardEditorViewController::GetSheetTitle() {
+  return l10n_util::GetStringUTF16(
+      IDS_PAYMENT_REQUEST_CREDIT_CARD_EDITOR_ADD_TITLE);
 }
 
 CreditCardEditorViewController::CreditCardValidationDelegate::

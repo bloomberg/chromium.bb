@@ -53,30 +53,6 @@ EditorViewController::EditorViewController(PaymentRequestSpec* spec,
 
 EditorViewController::~EditorViewController() {}
 
-std::unique_ptr<views::View> EditorViewController::CreateView() {
-  std::unique_ptr<views::View> content_view = base::MakeUnique<views::View>();
-
-  views::BoxLayout* layout =
-      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0);
-  layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
-  layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
-  content_view->SetLayoutManager(layout);
-  // No insets. Child views below are responsible for their padding.
-
-  // An editor can optionally have a header view specific to it.
-  content_view->AddChildView(CreateHeaderView().release());
-
-  // The heart of the editor dialog: all the input fields with their labels.
-  CreateEditorView();
-  content_view->AddChildView(editor_view_.get());
-
-  return CreatePaymentView(
-      CreateSheetHeaderView(
-          true, l10n_util::GetStringUTF16(GetViewHeaderTitleId()), this),
-      std::move(content_view));
-}
-
 void EditorViewController::DisplayErrorMessageForField(
     const EditorField& field,
     const base::string16& error_message) {
@@ -94,6 +70,22 @@ std::unique_ptr<views::Button> EditorViewController::CreatePrimaryButton() {
   button->set_tag(static_cast<int>(EditorViewControllerTags::SAVE_BUTTON));
   button->set_id(static_cast<int>(DialogViewID::EDITOR_SAVE_BUTTON));
   return button;
+}
+
+void EditorViewController::FillContentView(views::View* content_view) {
+  views::BoxLayout* layout =
+      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0);
+  layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+  layout->set_cross_axis_alignment(
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
+  content_view->SetLayoutManager(layout);
+  // No insets. Child views below are responsible for their padding.
+
+  // An editor can optionally have a header view specific to it.
+  content_view->AddChildView(CreateHeaderView().release());
+
+  // The heart of the editor dialog: all the input fields with their labels.
+  content_view->AddChildView(CreateEditorView().release());
 }
 
 // Adds the "required fields" label in disabled text, to obtain this result.
@@ -121,7 +113,7 @@ std::unique_ptr<views::View> EditorViewController::CreateExtraFooterView() {
 }
 
 void EditorViewController::UpdateEditorView() {
-  UpdateEditorViewImpl();
+  UpdateContentView();
   // TODO(crbug.com/704254): Find how to update the parent view bounds so that
   // the vertical scrollbar size gets updated.
   dialog()->EditorViewUpdated();
@@ -149,11 +141,43 @@ void EditorViewController::OnPerformAction(views::Combobox* sender) {
   static_cast<ValidatingCombobox*>(sender)->OnContentsChanged();
 }
 
-void EditorViewController::CreateEditorView() {
-  editor_view_ = base::MakeUnique<views::View>();
-  editor_view_->set_owned_by_client();
+std::unique_ptr<views::View> EditorViewController::CreateEditorView() {
+  std::unique_ptr<views::View> editor_view = base::MakeUnique<views::View>();
+  text_fields_.clear();
+  comboboxes_.clear();
 
-  UpdateEditorViewImpl();
+  std::unique_ptr<views::GridLayout> editor_layout =
+      base::MakeUnique<views::GridLayout>(editor_view.get());
+
+  // The editor grid layout is padded vertically from the top and bottom, and
+  // horizontally inset like other content views. The top padding needs to be
+  // added to the top padding of the first row.
+  constexpr int kEditorVerticalInset = 16;
+  editor_layout->SetInsets(
+      kEditorVerticalInset, payments::kPaymentRequestRowHorizontalInsets,
+      kEditorVerticalInset, payments::kPaymentRequestRowHorizontalInsets);
+
+  views::ColumnSet* columns = editor_layout->AddColumnSet(0);
+  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0,
+                     views::GridLayout::USE_PREF, 0, 0);
+
+  // This is the horizontal padding between the label and the input field.
+  constexpr int kLabelInputFieldHorizontalPadding = 16;
+  columns->AddPaddingColumn(0, kLabelInputFieldHorizontalPadding);
+
+  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0,
+                     views::GridLayout::USE_PREF, 0, 0);
+
+  // The LayoutManager needs to be set before input fields are created, so we
+  // keep a handle to it before we release it to the view.
+  views::GridLayout* layout_handle = editor_layout.get();
+  editor_view->SetLayoutManager(editor_layout.release());
+  std::vector<EditorField> fields = GetFieldDefinitions();
+  for (const auto& field : fields) {
+    CreateInputField(layout_handle, field);
+  }
+
+  return editor_view;
 }
 
 // Each input field is a 4-quadrant grid.
@@ -222,42 +246,4 @@ void EditorViewController::CreateInputField(views::GridLayout* layout,
   layout->AddView(error_label.release());
 }
 
-void EditorViewController::UpdateEditorViewImpl() {
-  DCHECK_NE(nullptr, editor_view_.get());
-  text_fields_.clear();
-  comboboxes_.clear();
-  editor_view_->RemoveAllChildViews(true);
-
-  std::unique_ptr<views::GridLayout> editor_layout =
-      base::MakeUnique<views::GridLayout>(editor_view_.get());
-
-  // The editor grid layout is padded vertically from the top and bottom, and
-  // horizontally inset like other content views. The top padding needs to be
-  // added to the top padding of the first row.
-  constexpr int kEditorVerticalInset = 16;
-  editor_layout->SetInsets(
-      kEditorVerticalInset, payments::kPaymentRequestRowHorizontalInsets,
-      kEditorVerticalInset, payments::kPaymentRequestRowHorizontalInsets);
-
-  views::ColumnSet* columns = editor_layout->AddColumnSet(0);
-  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0,
-                     views::GridLayout::USE_PREF, 0, 0);
-
-  // This is the horizontal padding between the label and the input field.
-  constexpr int kLabelInputFieldHorizontalPadding = 16;
-  columns->AddPaddingColumn(0, kLabelInputFieldHorizontalPadding);
-
-  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0,
-                     views::GridLayout::USE_PREF, 0, 0);
-
-  // The LayoutManager needs to be set before input fields are created, so we
-  // keep a handle to it before we release it to the view.
-  views::GridLayout* layout_handle = editor_layout.get();
-  editor_view_->SetLayoutManager(editor_layout.release());
-  std::vector<EditorField> fields = GetFieldDefinitions();
-  for (const auto& field : fields) {
-    CreateInputField(layout_handle, field);
-  }
-  editor_view_->Layout();
-}
 }  // namespace payments

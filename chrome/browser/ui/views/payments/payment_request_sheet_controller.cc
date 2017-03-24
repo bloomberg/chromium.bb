@@ -13,6 +13,7 @@
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 
 namespace payments {
@@ -23,9 +24,30 @@ PaymentRequestSheetController::PaymentRequestSheetController(
     PaymentRequestDialogView* dialog)
     : spec_(spec), state_(state), dialog_(dialog) {}
 
+PaymentRequestSheetController::~PaymentRequestSheetController() {}
+
+std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
+  // This will be owned by its encompassing ScrollView.
+  content_view_ = new views::View;
+
+  FillContentView(content_view_);
+
+  return CreatePaymentView();
+}
+
+void PaymentRequestSheetController::UpdateContentView() {
+  content_view_->RemoveAllChildViews(true);
+  FillContentView(content_view_);
+  content_view_->Layout();
+}
+
 std::unique_ptr<views::Button>
 PaymentRequestSheetController::CreatePrimaryButton() {
   return nullptr;
+}
+
+bool PaymentRequestSheetController::ShouldShowHeaderBackArrow() {
+  return true;
 }
 
 std::unique_ptr<views::View>
@@ -51,9 +73,8 @@ void PaymentRequestSheetController::ButtonPressed(
   }
 }
 
-std::unique_ptr<views::View> PaymentRequestSheetController::CreatePaymentView(
-    std::unique_ptr<views::View> header_view,
-    std::unique_ptr<views::View> content_view) {
+std::unique_ptr<views::View>
+PaymentRequestSheetController::CreatePaymentView() {
   std::unique_ptr<views::View> view = base::MakeUnique<views::View>();
   view->set_background(views::Background::CreateSolidBackground(SK_ColorWHITE));
 
@@ -71,19 +92,21 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreatePaymentView(
 
   layout->StartRow(0, 0);
   // |header_view| will be deleted when |view| is.
-  layout->AddView(header_view.release());
+  layout->AddView(
+      CreateSheetHeaderView(ShouldShowHeaderBackArrow(), GetSheetTitle(), this)
+          .release());
 
   layout->StartRow(1, 0);
   // |content_view| will go into a views::ScrollView so it needs to be sized now
   // otherwise it'll be sized to the ScrollView's viewport height, preventing
   // the scroll bar from ever being shown.
-  content_view->SizeToPreferredSize();
+  content_view_->SizeToPreferredSize();
 
   std::unique_ptr<views::ScrollView> scroll =
       base::MakeUnique<views::ScrollView>();
   scroll->EnableViewPortLayer();
   scroll->set_hide_horizontal_scrollbar(true);
-  scroll->SetContents(content_view.release());
+  scroll->SetContents(content_view_);
   layout->AddView(scroll.release());
 
   layout->StartRow(0, 0);
