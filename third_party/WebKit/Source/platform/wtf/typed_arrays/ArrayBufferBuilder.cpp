@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "wtf/typed_arrays/ArrayBufferBuilder.h"
+#include "platform/wtf/typed_arrays/ArrayBufferBuilder.h"
 
-#include "wtf/Assertions.h"
+#include "platform/wtf/Assertions.h"
 #include <limits>
 
 namespace WTF {

@@ -24,11 +24,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "wtf/typed_arrays/ArrayBufferContents.h"
+#include "platform/wtf/typed_arrays/ArrayBufferContents.h"
 
 #include "base/allocator/partition_allocator/partition_alloc.h"
-#include "wtf/Assertions.h"
-#include "wtf/allocator/Partitions.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/allocator/Partitions.h"
 #include <string.h>
 
 namespace WTF {

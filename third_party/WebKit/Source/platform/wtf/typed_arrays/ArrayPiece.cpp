@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "wtf/typed_arrays/ArrayPiece.h"
+#include "platform/wtf/typed_arrays/ArrayPiece.h"
 
-#include "wtf/Assertions.h"
-#include "wtf/typed_arrays/ArrayBuffer.h"
-#include "wtf/typed_arrays/ArrayBufferView.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/typed_arrays/ArrayBuffer.h"
+#include "platform/wtf/typed_arrays/ArrayBufferView.h"
 
 namespace WTF {
 
