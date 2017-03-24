@@ -163,7 +163,7 @@ TEST_F(ServiceProcessStateTest, AutoRun) {
 #endif  // defined(OS_WIN)
   if (autorun_command_line.get()) {
     EXPECT_EQ(autorun_command_line->GetSwitchValueASCII(switches::kProcessType),
-              std::string(switches::kServiceProcess));
+              std::string(switches::kCloudPrintServiceProcess));
   }
   ASSERT_TRUE(state.RemoveFromAutoRun());
 #if defined(OS_WIN)

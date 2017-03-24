@@ -12,8 +12,9 @@
 #include "content/public/common/main_function_params.h"
 #include "net/url_request/url_request.h"
 
-// Mainline routine for running as the service process.
-int ServiceProcessMain(const content::MainFunctionParams& parameters) {
+// Mainline routine for running as the Cloud Print service process.
+int CloudPrintServiceProcessMain(
+    const content::MainFunctionParams& parameters) {
   // Chrome disallows cookies by default. All code paths that want to use
   // cookies should go through the browser process.
   net::URLRequest::SetDefaultCookiePolicyToBlock();

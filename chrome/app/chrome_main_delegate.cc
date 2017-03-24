@@ -170,7 +170,7 @@ base::LazyInstance<ChromeCrashReporterClient>::Leaky g_chrome_crash_client =
 #endif
 
 extern int NaClMain(const content::MainFunctionParams&);
-extern int ServiceProcessMain(const content::MainFunctionParams&);
+extern int CloudPrintServiceProcessMain(const content::MainFunctionParams&);
 
 namespace {
 
@@ -250,7 +250,7 @@ void AdjustLinuxOOMScore(const std::string& process_type) {
     score = kPluginScore + kScoreBump;
   } else if (process_type == switches::kUtilityProcess ||
              process_type == switches::kGpuProcess ||
-             process_type == switches::kServiceProcess) {
+             process_type == switches::kCloudPrintServiceProcess) {
     score = kMiscScore;
 #ifndef DISABLE_NACL
   } else if (process_type == switches::kNaClLoaderProcess ||
@@ -940,24 +940,24 @@ void ChromeMainDelegate::SandboxInitialized(const std::string& process_type) {
 int ChromeMainDelegate::RunProcess(
     const std::string& process_type,
     const content::MainFunctionParams& main_function_params) {
-  // ANDROID doesn't support "service", so no ServiceProcessMain, and arraysize
-  // doesn't support empty array. So we comment out the block for Android.
+// ANDROID doesn't support "cloud-print-service", so no
+// CloudPrintServiceProcessMain, and arraysize doesn't support empty array. So
+// we comment out the block for Android.
 #if !defined(OS_ANDROID)
   static const MainFunction kMainFunctions[] = {
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(CHROME_MULTIPLE_DLL_CHILD)
-    { switches::kServiceProcess,     ServiceProcessMain },
+    {switches::kCloudPrintServiceProcess, CloudPrintServiceProcessMain},
 #endif
 
 #if defined(OS_MACOSX)
-    { switches::kRelauncherProcess,
-      mac_relauncher::internal::RelauncherMain },
+    {switches::kRelauncherProcess, mac_relauncher::internal::RelauncherMain},
 #endif
 
     // This entry is not needed on Linux, where the NaCl loader
     // process is launched via nacl_helper instead.
 #if !defined(DISABLE_NACL) && !defined(CHROME_MULTIPLE_DLL_BROWSER) && \
     !defined(OS_LINUX)
-    { switches::kNaClLoaderProcess,  NaClMain },
+    {switches::kNaClLoaderProcess, NaClMain},
 #else
     { "<invalid>", NULL },  // To avoid constant array of size 0
                             // when DISABLE_NACL and CHROME_MULTIPLE_DLL_CHILD
@@ -996,7 +996,7 @@ bool ChromeMainDelegate::ProcessRegistersWithSystemProcess(
 
 bool ChromeMainDelegate::ShouldSendMachPort(const std::string& process_type) {
   return process_type != switches::kRelauncherProcess &&
-      process_type != switches::kServiceProcess;
+         process_type != switches::kCloudPrintServiceProcess;
 }
 
 bool ChromeMainDelegate::DelaySandboxInitialization(

@@ -162,7 +162,7 @@ std::unique_ptr<base::CommandLine> CreateServiceProcessCommandLine() {
   std::unique_ptr<base::CommandLine> command_line(
       new base::CommandLine(exe_path));
   command_line->AppendSwitchASCII(switches::kProcessType,
-                                  switches::kServiceProcess);
+                                  switches::kCloudPrintServiceProcess);
 
 #if defined(OS_WIN)
   command_line->AppendArg(switches::kPrefetchArgumentOther);

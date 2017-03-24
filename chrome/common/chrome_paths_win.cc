@@ -113,7 +113,8 @@ bool ProcessNeedsProfileDir(const std::string& process_type) {
   // service processes to be able to use the profile directory because if it
   // lies on a network share the sandbox will prevent us from accessing it.
 
-  if (process_type.empty() || process_type == switches::kServiceProcess)
+  if (process_type.empty() ||
+      process_type == switches::kCloudPrintServiceProcess)
     return true;
 
 #if !defined(DISABLE_NACL)

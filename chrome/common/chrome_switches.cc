@@ -117,6 +117,9 @@ const char kCloudPrintJobTitle[]            = "cloud-print-job-title";
 // print job. Defaults to null if unspecified.
 const char kCloudPrintPrintTicket[]         = "cloud-print-print-ticket";
 
+// Causes the process to run as a cloud print service process.
+const char kCloudPrintServiceProcess[]      = "cloud-print-service";
+
 // Setup cloud print proxy for provided printers. This does not start
 // service or register proxy for autostart.
 const char kCloudPrintSetupProxy[]          = "cloud-print-setup-proxy";
@@ -318,8 +321,8 @@ const char kEnableBookmarkUndo[]            = "enable-bookmark-undo";
 const char kEnableClearBrowsingDataCounters[] =
     "enable-clear-browsing-data-counters";
 
-// This applies only when the process type is "service". Enables the Cloud
-// Print Proxy component within the service process.
+// This applies only when the process type is "cloud-print-service". Enables the
+// Cloud Print Proxy component within the service process.
 const char kEnableCloudPrintProxy[]         = "enable-cloud-print-proxy";
 
 // Enable device discovery notifications.
@@ -762,9 +765,6 @@ const char kRestoreLastSession[]            = "restore-last-session";
 // (with a directory of sub-resources). Enable only saving pages as MHTML.
 // See http://crbug.com/120416 for how to remove this switch.
 const char kSavePageAsMHTML[]               = "save-page-as-mhtml";
-
-// Causes the process to run as a service process.
-const char kServiceProcess[]                = "service";
 
 // If true the app list will be shown.
 const char kShowAppList[]                   = "show-app-list";

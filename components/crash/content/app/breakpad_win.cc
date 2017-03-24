@@ -290,10 +290,10 @@ long WINAPI ChromeExceptionFilter(EXCEPTION_POINTERS* info) {
   return EXCEPTION_EXECUTE_HANDLER;
 }
 
-// Exception filter for the service process used when breakpad is not enabled.
-// We just display the "Do you want to restart" message and then die
-// (without calling the previous filter).
-long WINAPI ServiceExceptionFilter(EXCEPTION_POINTERS* info) {
+// Exception filter for the Cloud Print service process used when breakpad is
+// not enabled. We just display the "Do you want to restart" message and then
+// die (without calling the previous filter).
+long WINAPI CloudPrintServiceExceptionFilter(EXCEPTION_POINTERS* info) {
   DumpDoneCallback(NULL, NULL, NULL, info, NULL, false);
   return EXCEPTION_EXECUTE_HANDLER;
 }
@@ -581,9 +581,9 @@ void InitCrashReporter(const std::string& process_type_switch) {
   if (process_type == L"browser") {
     callback = &DumpDoneCallback;
     default_filter = &ChromeExceptionFilter;
-  } else if (process_type == L"service") {
+  } else if (process_type == L"cloud-print-service") {
     callback = &DumpDoneCallback;
-    default_filter = &ServiceExceptionFilter;
+    default_filter = &CloudPrintServiceExceptionFilter;
   }
 
   if (GetCrashReporterClient()->ShouldCreatePipeName(process_type))

@@ -69,7 +69,8 @@ void ClearDidRun(const base::FilePath& dll_path) {
 }
 
 bool ProcessTypeUsesMainDll(const std::string& process_type) {
-  return process_type.empty() || process_type == switches::kServiceProcess;
+  return process_type.empty() ||
+         process_type == switches::kCloudPrintServiceProcess;
 }
 
 // Indicates whether a file can be opened using the same flags that
