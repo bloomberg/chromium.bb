@@ -338,27 +338,27 @@
   {
     "prefix": "layout_ng",
     "base": "fast/block/basic",
-    "args": ["--enable-blink-features=LayoutNG, LayoutNGInline"]
+    "args": ["--enable-blink-features=LayoutNG"]
   },
   {
     "prefix": "layout_ng",
     "base": "fast/block/margin-collapse",
-    "args": ["--enable-blink-features=LayoutNG, LayoutNGInline"]
+    "args": ["--enable-blink-features=LayoutNG"]
   },
   {
     "prefix": "layout_ng",
     "base": "css2.1/20110323",
-    "args": ["--enable-blink-features=LayoutNG, LayoutNGInline"]
+    "args": ["--enable-blink-features=LayoutNG"]
   },
   {
     "prefix": "layout_ng",
     "base": "fast/block/float",
-    "args": ["--enable-blink-features=LayoutNG, LayoutNGInline"]
+    "args": ["--enable-blink-features=LayoutNG"]
   },
   {
     "prefix": "layout_ng",
     "base": "external/csswg-test/css21/linebox",
-    "args": ["--enable-blink-features=LayoutNG, LayoutNGInline"]
+    "args": ["--enable-blink-features=LayoutNG"]
   },
   {
     "prefix": "feature-policy",
