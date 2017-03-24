@@ -123,24 +123,23 @@ void CheckBrokenSecurityStyle(const SecurityStyleTestObserver& observer,
                               int error,
                               Browser* browser,
                               net::X509Certificate* expected_cert) {
-  EXPECT_EQ(blink::WebSecurityStyleAuthenticationBroken,
-            observer.latest_security_style());
+  EXPECT_EQ(blink::WebSecurityStyleInsecure, observer.latest_security_style());
 
   const content::SecurityStyleExplanations& expired_explanation =
       observer.latest_explanations();
-  EXPECT_EQ(0u, expired_explanation.unauthenticated_explanations.size());
-  ASSERT_EQ(1u, expired_explanation.broken_explanations.size());
+  EXPECT_EQ(0u, expired_explanation.neutral_explanations.size());
+  ASSERT_EQ(1u, expired_explanation.insecure_explanations.size());
   EXPECT_FALSE(expired_explanation.pkp_bypassed);
   EXPECT_TRUE(expired_explanation.info_explanations.empty());
 
   // Check that the summary and description are as expected.
   EXPECT_EQ(l10n_util::GetStringUTF8(IDS_CERTIFICATE_CHAIN_ERROR),
-            expired_explanation.broken_explanations[0].summary);
+            expired_explanation.insecure_explanations[0].summary);
 
   base::string16 error_string = base::UTF8ToUTF16(net::ErrorToString(error));
   EXPECT_EQ(l10n_util::GetStringFUTF8(
                 IDS_CERTIFICATE_CHAIN_ERROR_DESCRIPTION_FORMAT, error_string),
-            expired_explanation.broken_explanations[0].description);
+            expired_explanation.insecure_explanations[0].description);
 
   // Check the associated certificate.
   net::X509Certificate* cert = browser->tab_strip_model()
@@ -150,7 +149,7 @@ void CheckBrokenSecurityStyle(const SecurityStyleTestObserver& observer,
                                    ->GetSSL()
                                    .certificate.get();
   EXPECT_TRUE(cert->Equals(expected_cert));
-  EXPECT_TRUE(expired_explanation.broken_explanations[0].has_certificate);
+  EXPECT_TRUE(expired_explanation.insecure_explanations[0].has_certificate);
 }
 
 // Checks that the given |secure_explanations| contains an appropriate
@@ -449,10 +448,10 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, SHA1CertificateBlocked) {
 
   const content::SecurityStyleExplanations& interstitial_explanation =
       observer.latest_explanations();
-  ASSERT_EQ(1u, interstitial_explanation.broken_explanations.size());
-  ASSERT_EQ(1u, interstitial_explanation.unauthenticated_explanations.size());
+  ASSERT_EQ(1u, interstitial_explanation.insecure_explanations.size());
+  ASSERT_EQ(1u, interstitial_explanation.neutral_explanations.size());
   EXPECT_EQ(l10n_util::GetStringUTF8(IDS_SHA1),
-            interstitial_explanation.unauthenticated_explanations[0].summary);
+            interstitial_explanation.neutral_explanations[0].summary);
 
   ProceedThroughInterstitial(
       browser()->tab_strip_model()->GetActiveWebContents());
@@ -464,10 +463,10 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, SHA1CertificateBlocked) {
 
   const content::SecurityStyleExplanations& page_explanation =
       observer.latest_explanations();
-  ASSERT_EQ(1u, page_explanation.broken_explanations.size());
-  ASSERT_EQ(1u, page_explanation.unauthenticated_explanations.size());
+  ASSERT_EQ(1u, page_explanation.insecure_explanations.size());
+  ASSERT_EQ(1u, page_explanation.neutral_explanations.size());
   EXPECT_EQ(l10n_util::GetStringUTF8(IDS_SHA1),
-            page_explanation.unauthenticated_explanations[0].summary);
+            page_explanation.neutral_explanations[0].summary);
 }
 
 // Test security state for a SHA-1 certificate that is allowed by policy.
@@ -488,10 +487,10 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, SHA1CertificateWarning) {
   const content::SecurityStyleExplanations& explanation =
       observer.latest_explanations();
 
-  ASSERT_EQ(0u, explanation.broken_explanations.size());
-  ASSERT_EQ(1u, explanation.unauthenticated_explanations.size());
+  ASSERT_EQ(0u, explanation.insecure_explanations.size());
+  ASSERT_EQ(1u, explanation.neutral_explanations.size());
   EXPECT_EQ(l10n_util::GetStringUTF8(IDS_SHA1),
-            explanation.unauthenticated_explanations[0].summary);
+            explanation.neutral_explanations[0].summary);
 }
 
 IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, MixedContent) {
@@ -809,10 +808,8 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
 
   // Ensure that WebContentsObservers don't show an incorrect Form Not Secure
   // explanation. Regression test for https://crbug.com/691412.
-  EXPECT_EQ(0u,
-            observer.latest_explanations().unauthenticated_explanations.size());
-  EXPECT_EQ(blink::WebSecurityStyleUnauthenticated,
-            observer.latest_security_style());
+  EXPECT_EQ(0u, observer.latest_explanations().neutral_explanations.size());
+  EXPECT_EQ(blink::WebSecurityStyleNeutral, observer.latest_security_style());
 
   content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
   ASSERT_TRUE(entry);
@@ -1513,11 +1510,9 @@ IN_PROC_BROWSER_TEST_F(DidChangeVisibleSecurityStateTest,
   // Visit an HTTP url.
   GURL http_url(embedded_test_server()->GetURL("/title1.html"));
   ui_test_utils::NavigateToURL(browser(), http_url);
-  EXPECT_EQ(blink::WebSecurityStyleUnauthenticated,
-            observer.latest_security_style());
-  EXPECT_EQ(0u,
-            observer.latest_explanations().unauthenticated_explanations.size());
-  EXPECT_EQ(0u, observer.latest_explanations().broken_explanations.size());
+  EXPECT_EQ(blink::WebSecurityStyleNeutral, observer.latest_security_style());
+  EXPECT_EQ(0u, observer.latest_explanations().neutral_explanations.size());
+  EXPECT_EQ(0u, observer.latest_explanations().insecure_explanations.size());
   EXPECT_EQ(0u, observer.latest_explanations().secure_explanations.size());
   EXPECT_FALSE(observer.latest_explanations().scheme_is_cryptographic);
   EXPECT_FALSE(observer.latest_explanations().pkp_bypassed);
@@ -1534,13 +1529,12 @@ IN_PROC_BROWSER_TEST_F(DidChangeVisibleSecurityStateTest,
 
   GURL mixed_content_url(https_server_.GetURL(replacement_path));
   ui_test_utils::NavigateToURL(browser(), mixed_content_url);
-  EXPECT_EQ(blink::WebSecurityStyleUnauthenticated,
-            observer.latest_security_style());
+  EXPECT_EQ(blink::WebSecurityStyleNeutral, observer.latest_security_style());
 
   const content::SecurityStyleExplanations& mixed_content_explanation =
       observer.latest_explanations();
-  ASSERT_EQ(0u, mixed_content_explanation.unauthenticated_explanations.size());
-  ASSERT_EQ(0u, mixed_content_explanation.broken_explanations.size());
+  ASSERT_EQ(0u, mixed_content_explanation.neutral_explanations.size());
+  ASSERT_EQ(0u, mixed_content_explanation.insecure_explanations.size());
   CheckSecureExplanations(mixed_content_explanation.secure_explanations,
                           VALID_CERTIFICATE, browser(),
                           https_server_.GetCertificate().get());
@@ -1550,9 +1544,9 @@ IN_PROC_BROWSER_TEST_F(DidChangeVisibleSecurityStateTest,
   EXPECT_TRUE(observer.latest_explanations().summary.empty());
   EXPECT_TRUE(mixed_content_explanation.displayed_mixed_content);
   EXPECT_FALSE(mixed_content_explanation.ran_mixed_content);
-  EXPECT_EQ(blink::WebSecurityStyleUnauthenticated,
+  EXPECT_EQ(blink::WebSecurityStyleNeutral,
             mixed_content_explanation.displayed_insecure_content_style);
-  EXPECT_EQ(blink::WebSecurityStyleAuthenticationBroken,
+  EXPECT_EQ(blink::WebSecurityStyleInsecure,
             mixed_content_explanation.ran_insecure_content_style);
 
   // Visit a broken HTTPS url.
@@ -1579,11 +1573,9 @@ IN_PROC_BROWSER_TEST_F(DidChangeVisibleSecurityStateTest,
   // back to the interstitial.
   GURL valid_https_url(https_server_.GetURL("/title1.html"));
   ui_test_utils::NavigateToURL(browser(), valid_https_url);
-  EXPECT_EQ(blink::WebSecurityStyleAuthenticated,
-            observer.latest_security_style());
-  EXPECT_EQ(0u,
-            observer.latest_explanations().unauthenticated_explanations.size());
-  EXPECT_EQ(0u, observer.latest_explanations().broken_explanations.size());
+  EXPECT_EQ(blink::WebSecurityStyleSecure, observer.latest_security_style());
+  EXPECT_EQ(0u, observer.latest_explanations().neutral_explanations.size());
+  EXPECT_EQ(0u, observer.latest_explanations().insecure_explanations.size());
   CheckSecureExplanations(observer.latest_explanations().secure_explanations,
                           VALID_CERTIFICATE, browser(),
                           https_server_.GetCertificate().get());
@@ -1661,11 +1653,9 @@ IN_PROC_BROWSER_TEST_F(DidChangeVisibleSecurityStateTest,
   // Visit a valid HTTPS url.
   GURL valid_https_url(https_server_.GetURL("/title1.html"));
   ui_test_utils::NavigateToURL(browser(), valid_https_url);
-  EXPECT_EQ(blink::WebSecurityStyleAuthenticated,
-            observer.latest_security_style());
-  EXPECT_EQ(0u,
-            observer.latest_explanations().unauthenticated_explanations.size());
-  EXPECT_EQ(0u, observer.latest_explanations().broken_explanations.size());
+  EXPECT_EQ(blink::WebSecurityStyleSecure, observer.latest_security_style());
+  EXPECT_EQ(0u, observer.latest_explanations().neutral_explanations.size());
+  EXPECT_EQ(0u, observer.latest_explanations().insecure_explanations.size());
   CheckSecureExplanations(observer.latest_explanations().secure_explanations,
                           VALID_CERTIFICATE, browser(),
                           https_server_.GetCertificate().get());
@@ -1711,11 +1701,9 @@ IN_PROC_BROWSER_TEST_F(DidChangeVisibleSecurityStateTest,
   chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
   back_nav_load_observer.Wait();
 
-  EXPECT_EQ(blink::WebSecurityStyleAuthenticated,
-            observer.latest_security_style());
-  EXPECT_EQ(0u,
-            observer.latest_explanations().unauthenticated_explanations.size());
-  EXPECT_EQ(0u, observer.latest_explanations().broken_explanations.size());
+  EXPECT_EQ(blink::WebSecurityStyleSecure, observer.latest_security_style());
+  EXPECT_EQ(0u, observer.latest_explanations().neutral_explanations.size());
+  EXPECT_EQ(0u, observer.latest_explanations().insecure_explanations.size());
   CheckSecureExplanations(observer.latest_explanations().secure_explanations,
                           VALID_CERTIFICATE, browser(),
                           https_server_.GetCertificate().get());
@@ -1842,8 +1830,9 @@ class BrowserTestNonsecureURLRequest : public InProcessBrowserTest {
 
 // Tests that a connection with obsolete TLS settings does not get a
 // secure connection explanation.
-IN_PROC_BROWSER_TEST_F(BrowserTestNonsecureURLRequest,
-                       DidChangeVisibleSecurityStateObserverNonsecureConnection) {
+IN_PROC_BROWSER_TEST_F(
+    BrowserTestNonsecureURLRequest,
+    DidChangeVisibleSecurityStateObserverObsoleteTLSSettings) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   SecurityStyleTestObserver observer(web_contents);
@@ -1852,9 +1841,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTestNonsecureURLRequest,
       browser(), GURL(std::string("https://") + kMockNonsecureHostname));
 
   // The security style of the page doesn't get downgraded for obsolete
-  // TLS settings, so it should remain at WebSecurityStyleAuthenticated.
-  EXPECT_EQ(blink::WebSecurityStyleAuthenticated,
-            observer.latest_security_style());
+  // TLS settings, so it should remain at WebSecurityStyleSecure.
+  EXPECT_EQ(blink::WebSecurityStyleSecure, observer.latest_security_style());
 
   // The messages explaining the security style do, however, get
   // downgraded: SECURE_PROTOCOL_AND_CIPHERSUITE should not show up when

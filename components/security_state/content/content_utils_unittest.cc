@@ -205,33 +205,33 @@ TEST(SecurityStateContentUtilsTest, ConnectionExplanation) {
 }
 
 // Tests that a security level of HTTP_SHOW_WARNING produces
-// blink::WebSecurityStyleUnauthenticated and an explanation if appropriate.
+// blink::WebSecurityStyleNeutral and an explanation if appropriate.
 TEST(SecurityStateContentUtilsTest, HTTPWarning) {
   security_state::SecurityInfo security_info;
   content::SecurityStyleExplanations explanations;
   security_info.security_level = security_state::HTTP_SHOW_WARNING;
   blink::WebSecurityStyle security_style =
       GetSecurityStyle(security_info, &explanations);
-  EXPECT_EQ(blink::WebSecurityStyleUnauthenticated, security_style);
+  EXPECT_EQ(blink::WebSecurityStyleNeutral, security_style);
   // Verify no explanation was shown, because Form Not Secure was not triggered.
-  EXPECT_EQ(0u, explanations.unauthenticated_explanations.size());
+  EXPECT_EQ(0u, explanations.neutral_explanations.size());
 
-  explanations.unauthenticated_explanations.clear();
+  explanations.neutral_explanations.clear();
   security_info.displayed_credit_card_field_on_http = true;
   security_style = GetSecurityStyle(security_info, &explanations);
-  EXPECT_EQ(blink::WebSecurityStyleUnauthenticated, security_style);
+  EXPECT_EQ(blink::WebSecurityStyleNeutral, security_style);
   // Verify one explanation was shown, because Form Not Secure was triggered.
-  EXPECT_EQ(1u, explanations.unauthenticated_explanations.size());
+  EXPECT_EQ(1u, explanations.neutral_explanations.size());
 
   // Check that when both password and credit card fields get displayed, only
   // one explanation is added.
-  explanations.unauthenticated_explanations.clear();
+  explanations.neutral_explanations.clear();
   security_info.displayed_credit_card_field_on_http = true;
   security_info.displayed_password_field_on_http = true;
   security_style = GetSecurityStyle(security_info, &explanations);
-  EXPECT_EQ(blink::WebSecurityStyleUnauthenticated, security_style);
+  EXPECT_EQ(blink::WebSecurityStyleNeutral, security_style);
   // Verify only one explanation was shown when Form Not Secure is triggered.
-  EXPECT_EQ(1u, explanations.unauthenticated_explanations.size());
+  EXPECT_EQ(1u, explanations.neutral_explanations.size());
 }
 
 // Tests that an explanation is provided if a certificate is missing a
@@ -249,13 +249,13 @@ TEST(SecurityStateContentUtilsTest, SubjectAltNameWarning) {
   security_info.cert_missing_subject_alt_name = true;
   GetSecurityStyle(security_info, &explanations);
   // Verify that an explanation was shown for a missing subjectAltName.
-  EXPECT_EQ(1u, explanations.broken_explanations.size());
+  EXPECT_EQ(1u, explanations.insecure_explanations.size());
 
-  explanations.broken_explanations.clear();
+  explanations.insecure_explanations.clear();
   security_info.cert_missing_subject_alt_name = false;
   GetSecurityStyle(security_info, &explanations);
   // Verify that no explanation is shown if the subjectAltName is present.
-  EXPECT_EQ(0u, explanations.broken_explanations.size());
+  EXPECT_EQ(0u, explanations.insecure_explanations.size());
 }
 
 }  // namespace

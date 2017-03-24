@@ -13,18 +13,18 @@
 
 namespace content {
 
-// SecurityStyleExplanations contains information about why a particular
-// SecurityStyle was chosen for a page. This information includes the
-// mixed content status of the page and whether the page was loaded over
-// a cryptographically secure transport. Additionally,
-// SecurityStyleExplanations contains human-readable
-// SecurityStyleExplanation objects that the embedder can use to
-// describe embedder-specific security policies. Each
-// SecurityStyleExplanation is a single security property of a page (for
-// example, an expired certificate, a valid certificate, or the presence
-// of a deprecated crypto algorithm). A single site may have multiple
-// different explanations of "secure", "warning", "broken", and "info" severity
-// levels.
+// SecurityStyleExplanations provide context for why the specific security style
+// was chosen for the page.
+//
+// Each page has a single security style, which is chosen based on factors like
+// whether the page was delivered over HTTPS with a valid certificate, is free
+// of mixed content, does not use a deprecated protocol, and is not flagged as
+// dangerous.
+//
+// Each factor that impacts the SecurityStyle has an accompanying
+// SecurityStyleExplanation that contains a human-readable explanation of the
+// factor. A single page may contain multiple explanations, each of which may
+// have a different severity level ("secure", "warning", "insecure" and "info").
 struct SecurityStyleExplanations {
   CONTENT_EXPORT SecurityStyleExplanations();
   CONTENT_EXPORT SecurityStyleExplanations(
@@ -69,11 +69,21 @@ struct SecurityStyleExplanations {
   // the style cannot be determined from HTTPS status alone.
   std::string summary;
 
-  // Explanations corresponding to each security level. The embedder should
-  // display explanations in the order: broken, unauthenticated, secure, info.
+  // Explanations corresponding to each security level.
+
+  // |secure_explanations| explains why the page was marked secure.
   std::vector<SecurityStyleExplanation> secure_explanations;
-  std::vector<SecurityStyleExplanation> unauthenticated_explanations;
-  std::vector<SecurityStyleExplanation> broken_explanations;
+  // |neutral_explanations| explains why the page was marked neutrally: for
+  // example, the page's lock icon was taken away due to mixed content, or the
+  // page was not loaded over HTTPS.
+  std::vector<SecurityStyleExplanation> neutral_explanations;
+  // |insecure_explanations| explains why the page was marked as insecure or
+  // dangerous: for example, the page was loaded with a certificate error.
+  std::vector<SecurityStyleExplanation> insecure_explanations;
+  // |info_explanations| contains information that did not affect the page's
+  // security style, but is still relevant to the page's security state: for
+  // example, an upcoming deprecation that will affect the security style in
+  // future.
   std::vector<SecurityStyleExplanation> info_explanations;
 };
 

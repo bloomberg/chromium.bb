@@ -101,16 +101,16 @@ blink::WebSecurityStyle GetSecurityStyleForResource(
     const GURL& url,
     net::CertStatus cert_status) {
   if (!url.SchemeIsCryptographic())
-    return blink::WebSecurityStyleUnauthenticated;
+    return blink::WebSecurityStyleNeutral;
 
   // Minor errors don't lower the security style to
   // WebSecurityStyleAuthenticationBroken.
   if (net::IsCertStatusError(cert_status) &&
       !net::IsCertStatusMinorError(cert_status)) {
-    return blink::WebSecurityStyleAuthenticationBroken;
+    return blink::WebSecurityStyleInsecure;
   }
 
-  return blink::WebSecurityStyleAuthenticated;
+  return blink::WebSecurityStyleSecure;
 }
 
 // Converts timing data from |load_timing| to the format used by WebKit.
@@ -259,12 +259,13 @@ void SetSecurityStyleAndDetails(const GURL& url,
     return;
   }
   if (!url.SchemeIsCryptographic()) {
-    response->setSecurityStyle(blink::WebSecurityStyleUnauthenticated);
+    response->setSecurityStyle(blink::WebSecurityStyleNeutral);
     return;
   }
 
-  // There are cases where an HTTPS request can come in without security
-  // info attached (such as a redirect response).
+  // The resource loader does not provide a guarantee that requests always have
+  // security info (such as a certificate) attached. Use WebSecurityStyleUnknown
+  // in this case where there isn't enough information to be useful.
   if (info.certificate.empty()) {
     response->setSecurityStyle(blink::WebSecurityStyleUnknown);
     return;

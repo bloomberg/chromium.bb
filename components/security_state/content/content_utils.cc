@@ -37,15 +37,15 @@ blink::WebSecurityStyle SecurityLevelToSecurityStyle(
   switch (security_level) {
     case security_state::NONE:
     case security_state::HTTP_SHOW_WARNING:
-      return blink::WebSecurityStyleUnauthenticated;
+      return blink::WebSecurityStyleNeutral;
     case security_state::SECURITY_WARNING:
     case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
       return blink::WebSecurityStyleWarning;
     case security_state::EV_SECURE:
     case security_state::SECURE:
-      return blink::WebSecurityStyleAuthenticated;
+      return blink::WebSecurityStyleSecure;
     case security_state::DANGEROUS:
-      return blink::WebSecurityStyleAuthenticationBroken;
+      return blink::WebSecurityStyleInsecure;
   }
 
   NOTREACHED();
@@ -188,7 +188,7 @@ blink::WebSecurityStyle GetSecurityStyle(
   if (security_info.security_level == security_state::HTTP_SHOW_WARNING &&
       (security_info.displayed_password_field_on_http ||
        security_info.displayed_credit_card_field_on_http)) {
-    security_style_explanations->unauthenticated_explanations.push_back(
+    security_style_explanations->neutral_explanations.push_back(
         content::SecurityStyleExplanation(
             l10n_util::GetStringUTF8(IDS_PRIVATE_USER_DATA_INPUT),
             l10n_util::GetStringUTF8(IDS_PRIVATE_USER_DATA_INPUT_DESCRIPTION)));
@@ -219,7 +219,7 @@ blink::WebSecurityStyle GetSecurityStyle(
   }
 
   if (security_info.sha1_in_chain) {
-    security_style_explanations->unauthenticated_explanations.push_back(
+    security_style_explanations->neutral_explanations.push_back(
         content::SecurityStyleExplanation(
             l10n_util::GetStringUTF8(IDS_SHA1),
             l10n_util::GetStringUTF8(IDS_SHA1_DESCRIPTION),
@@ -227,7 +227,7 @@ blink::WebSecurityStyle GetSecurityStyle(
   }
 
   if (security_info.cert_missing_subject_alt_name) {
-    security_style_explanations->broken_explanations.push_back(
+    security_style_explanations->insecure_explanations.push_back(
         content::SecurityStyleExplanation(
             l10n_util::GetStringUTF8(IDS_SUBJECT_ALT_NAME_MISSING),
             l10n_util::GetStringUTF8(IDS_SUBJECT_ALT_NAME_MISSING_DESCRIPTION),
@@ -281,10 +281,9 @@ blink::WebSecurityStyle GetSecurityStyle(
         !!security_info.certificate);
 
     if (is_cert_status_minor_error) {
-      security_style_explanations->unauthenticated_explanations.push_back(
-          explanation);
+      security_style_explanations->neutral_explanations.push_back(explanation);
     } else {
-      security_style_explanations->broken_explanations.push_back(explanation);
+      security_style_explanations->insecure_explanations.push_back(explanation);
     }
   } else {
     // If the certificate does not have errors and is not using SHA1, then add

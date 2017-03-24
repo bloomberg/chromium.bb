@@ -27,13 +27,13 @@ std::string SecurityStyleToProtocolSecurityState(
   switch (security_style) {
     case blink::WebSecurityStyleUnknown:
       return Security::SecurityStateEnum::Unknown;
-    case blink::WebSecurityStyleUnauthenticated:
+    case blink::WebSecurityStyleNeutral:
       return Security::SecurityStateEnum::Neutral;
-    case blink::WebSecurityStyleAuthenticationBroken:
+    case blink::WebSecurityStyleInsecure:
       return Security::SecurityStateEnum::Insecure;
     case blink::WebSecurityStyleWarning:
       return Security::SecurityStateEnum::Warning;
-    case blink::WebSecurityStyleAuthenticated:
+    case blink::WebSecurityStyleSecure:
       return Security::SecurityStateEnum::Secure;
     default:
       NOTREACHED();
@@ -109,10 +109,10 @@ void SecurityHandler::DidChangeVisibleSecurityState() {
 
   std::unique_ptr<Explanations> explanations = Explanations::create();
   AddExplanations(Security::SecurityStateEnum::Insecure,
-                  security_style_explanations.broken_explanations,
+                  security_style_explanations.insecure_explanations,
                   explanations.get());
   AddExplanations(Security::SecurityStateEnum::Neutral,
-                  security_style_explanations.unauthenticated_explanations,
+                  security_style_explanations.neutral_explanations,
                   explanations.get());
   AddExplanations(Security::SecurityStateEnum::Secure,
                   security_style_explanations.secure_explanations,
