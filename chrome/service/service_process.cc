@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <utility>
+#include <vector>
 
 #include "base/base_switches.h"
 #include "base/callback.h"
@@ -21,6 +22,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task_scheduler/scheduler_worker_pool_params.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -145,7 +147,7 @@ bool ServiceProcess::Initialize(base::MessageLoopForUI* message_loop,
   // GLib type system initialization is needed for gconf.
   g_type_init();
 #endif
-#endif // defined(OS_LINUX) || defined(OS_OPENBSD)
+#endif  // defined(OS_LINUX) || defined(OS_OPENBSD)
   main_message_loop_ = message_loop;
   service_process_state_.reset(state);
   network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
@@ -161,12 +163,21 @@ bool ServiceProcess::Initialize(base::MessageLoopForUI* message_loop,
   }
 
   // Initialize TaskScheduler and redirect SequencedWorkerPool tasks to it.
-  base::TaskScheduler::CreateAndSetSimpleTaskScheduler(
-      "CloudPrintServiceProcess");
+  constexpr int kMaxTaskSchedulerThreads = 3;
+  std::vector<base::SchedulerWorkerPoolParams> worker_pool_params_vector;
+  worker_pool_params_vector.emplace_back(
+      "CloudPrintServiceProcess", base::ThreadPriority::NORMAL,
+      base::SchedulerWorkerPoolParams::StandbyThreadPolicy::LAZY,
+      kMaxTaskSchedulerThreads, base::TimeDelta::FromSeconds(30),
+      base::SchedulerBackwardCompatibility::INIT_COM_STA);
+  base::TaskScheduler::CreateAndSetDefaultTaskScheduler(
+      worker_pool_params_vector,
+      base::Bind([](const base::TaskTraits&) -> size_t { return 0; }));
   base::SequencedWorkerPool::EnableWithRedirectionToTaskSchedulerForProcess();
 
-  blocking_pool_ = new base::SequencedWorkerPool(
-      3, "ServiceBlocking", base::TaskPriority::USER_VISIBLE);
+  blocking_pool_ =
+      new base::SequencedWorkerPool(kMaxTaskSchedulerThreads, "ServiceBlocking",
+                                    base::TaskPriority::USER_VISIBLE);
 
   // Initialize Mojo early so things can use it.
   mojo::edk::Init();
