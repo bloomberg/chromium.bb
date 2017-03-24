@@ -10,6 +10,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <initializer_list>
 #include <iterator>
 #include <limits>
 #include <set>
@@ -33,6 +34,7 @@
 #include "base/win/windows_version.h"
 #include "chrome/install_static/install_details.h"
 #include "chrome/install_static/install_modes.h"
+#include "chrome/install_static/install_util.h"
 #include "chrome/installer/setup/installer_state.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/setup/user_hive_visitor.h"
@@ -86,6 +88,34 @@ bool OnUserHive(const base::string16& client_state_path,
   // Stop the iteration.
   *is_used = true;
   return false;
+}
+
+// Remove the registration of the browser's DelegateExecute verb handler class.
+// This was once registered in support of "metro" mode on Windows 8.
+void RemoveLegacyIExecuteCommandKey(const InstallerState& installer_state) {
+  const base::string16 handler_class_uuid =
+      install_static::GetLegacyCommandExecuteImplClsid();
+
+  // No work to do if this mode of install never registered a DelegateExecute
+  // verb handler.
+  if (handler_class_uuid.empty())
+    return;
+
+  const HKEY root = installer_state.root_key();
+  base::string16 delegate_execute_path(L"Software\\Classes\\CLSID\\");
+  delegate_execute_path.append(handler_class_uuid);
+
+  // Delete both 64 and 32 keys to handle 32->64 or 64->32 migration.
+  for (REGSAM bitness : {KEY_WOW64_32KEY, KEY_WOW64_64KEY}) {
+    if (base::win::RegKey(root, delegate_execute_path.c_str(),
+                          KEY_QUERY_VALUE | bitness)
+            .Valid()) {
+      const bool success =
+          InstallUtil::DeleteRegistryKey(root, delegate_execute_path, bitness);
+      UMA_HISTOGRAM_BOOLEAN("Setup.Install.DeleteIExecuteCommandClassKey",
+                            success);
+    }
+  }
 }
 
 // "The binaries" once referred to the on-disk footprint of Chrome and/or Chrome
@@ -765,6 +795,9 @@ void DoLegacyCleanups(const InstallerState& installer_state,
   // Do no harm if the install didn't succeed.
   if (InstallUtil::GetInstallReturnCode(install_status))
     return;
+
+  // Cleanups that apply to any install mode.
+  RemoveLegacyIExecuteCommandKey(installer_state);
 
   // The cleanups below only apply to normal Chrome, not side-by-side (canary).
   if (!install_static::InstallDetails::Get().is_primary_mode())

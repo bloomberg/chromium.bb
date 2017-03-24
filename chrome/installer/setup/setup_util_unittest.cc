@@ -644,6 +644,9 @@ class LegacyCleanupsTest : public ::testing::Test {
     ASSERT_TRUE(base::win::RegKey(HKEY_CURRENT_USER, kBinariesClientsKeyPath,
                                   KEY_WRITE | KEY_WOW64_32KEY)
                     .Valid());
+    ASSERT_TRUE(base::win::RegKey(HKEY_CURRENT_USER, kCommandExecuteImplClsid,
+                                  KEY_WRITE)
+                    .Valid());
 #if defined(GOOGLE_CHROME_BUILD)
     ASSERT_TRUE(base::win::RegKey(HKEY_CURRENT_USER, kGCFClientsKeyPath,
                                   KEY_WRITE | KEY_WOW64_32KEY)
@@ -665,6 +668,12 @@ class LegacyCleanupsTest : public ::testing::Test {
   bool HasBinariesVersionKey() const {
     return base::win::RegKey(HKEY_CURRENT_USER, kBinariesClientsKeyPath,
                              KEY_QUERY_VALUE | KEY_WOW64_32KEY)
+        .Valid();
+  }
+
+  bool HasCommandExecuteImplClassKey() const {
+    return base::win::RegKey(HKEY_CURRENT_USER, kCommandExecuteImplClsid,
+                             KEY_QUERY_VALUE)
         .Valid();
   }
 
@@ -721,6 +730,7 @@ class LegacyCleanupsTest : public ::testing::Test {
 #endif  // GOOGLE_CHROME_BUILD
 
   static const wchar_t kBinariesClientsKeyPath[];
+  static const wchar_t kCommandExecuteImplClsid[];
 #if defined(GOOGLE_CHROME_BUILD)
   static const wchar_t kGCFClientsKeyPath[];
   static const wchar_t kAppLauncherClientsKeyPath[];
@@ -736,6 +746,8 @@ class LegacyCleanupsTest : public ::testing::Test {
 const wchar_t LegacyCleanupsTest::kBinariesClientsKeyPath[] =
     L"SOFTWARE\\Google\\Update\\Clients\\"
     L"{4DC8B4CA-1BDA-483e-B5FA-D3C12E15B62D}";
+const wchar_t LegacyCleanupsTest::kCommandExecuteImplClsid[] =
+    L"Software\\Classes\\CLSID\\{5C65F4B0-3651-4514-B207-D10CB699B14B}";
 const wchar_t LegacyCleanupsTest::kGCFClientsKeyPath[] =
     L"SOFTWARE\\Google\\Update\\Clients\\"
     L"{8BA986DA-5100-405E-AA35-86F34A02ACBF}";
@@ -745,11 +757,14 @@ const wchar_t LegacyCleanupsTest::kAppLauncherClientsKeyPath[] =
 #else   // GOOGLE_CHROME_BUILD
 const wchar_t LegacyCleanupsTest::kBinariesClientsKeyPath[] =
     L"SOFTWARE\\Chromium Binaries";
+const wchar_t LegacyCleanupsTest::kCommandExecuteImplClsid[] =
+    L"Software\\Classes\\CLSID\\{A2DF06F9-A21A-44A8-8A99-8B9C84F29160}";
 #endif  // !GOOGLE_CHROME_BUILD
 
 TEST_F(LegacyCleanupsTest, NoOpOnFailedUpdate) {
   DoLegacyCleanups(installer_state(), INSTALL_FAILED);
   EXPECT_TRUE(HasBinariesVersionKey());
+  EXPECT_TRUE(HasCommandExecuteImplClassKey());
 #if defined(GOOGLE_CHROME_BUILD)
   EXPECT_TRUE(HasMultiGCFVersionKey());
   EXPECT_TRUE(HasAppLauncherVersionKey());
@@ -761,6 +776,7 @@ TEST_F(LegacyCleanupsTest, NoOpOnFailedUpdate) {
 TEST_F(LegacyCleanupsTest, Do) {
   DoLegacyCleanups(installer_state(), NEW_VERSION_UPDATED);
   EXPECT_FALSE(HasBinariesVersionKey());
+  EXPECT_FALSE(HasCommandExecuteImplClassKey());
 #if defined(GOOGLE_CHROME_BUILD)
   EXPECT_FALSE(HasMultiGCFVersionKey());
   EXPECT_FALSE(HasAppLauncherVersionKey());

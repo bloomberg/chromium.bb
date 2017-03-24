@@ -373,8 +373,7 @@ void GetChromeProgIdEntries(BrowserDistribution* dist,
   app_info.application_icon_index = chrome_icon_index;
   app_info.application_description = dist->GetAppDescription();
   app_info.publisher_name = dist->GetPublisherName();
-
-  app_info.delegate_clsid = dist->GetCommandExecuteImplClsid();
+  app_info.delegate_clsid = install_static::GetLegacyCommandExecuteImplClsid();
 
   GetProgIdEntries(app_info, entries);
 

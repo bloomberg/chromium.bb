@@ -33,9 +33,6 @@ using installer::MasterPreferences;
 
 namespace {
 
-const wchar_t kCommandExecuteImplUuid[] =
-    L"{A2DF06F9-A21A-44A8-8A99-8B9C84F29160}";
-
 // The BrowserDistribution objects are never freed.
 BrowserDistribution* g_browser_distribution = NULL;
 
@@ -170,10 +167,6 @@ BrowserDistribution::DefaultBrowserControlPolicy
 
 bool BrowserDistribution::CanCreateDesktopShortcuts() {
   return true;
-}
-
-base::string16 BrowserDistribution::GetCommandExecuteImplClsid() {
-  return kCommandExecuteImplUuid;
 }
 
 void BrowserDistribution::UpdateInstallStatus(bool system_install,

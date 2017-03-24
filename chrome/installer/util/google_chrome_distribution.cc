@@ -41,8 +41,6 @@
 namespace {
 
 const wchar_t kChromeGuid[] = L"{8A69D345-D564-463c-AFF1-A69D9E530F96}";
-const wchar_t kCommandExecuteImplUuid[] =
-    L"{5C65F4B0-3651-4514-B207-D10CB699B14B}";
 
 // Substitute the locale parameter in uninstall URL with whatever
 // Google Update tells us is the locale. In case we fail to find
@@ -238,10 +236,6 @@ base::string16 GoogleChromeDistribution::GetUninstallRegPath() {
 
 base::string16 GoogleChromeDistribution::GetIconFilename() {
   return installer::kChromeExe;
-}
-
-base::string16 GoogleChromeDistribution::GetCommandExecuteImplClsid() {
-  return kCommandExecuteImplUuid;
 }
 
 // This method checks if we need to change "ap" key in Google Update to try

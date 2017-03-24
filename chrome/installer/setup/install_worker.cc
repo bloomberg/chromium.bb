@@ -266,24 +266,6 @@ void AddChromeWorkItems(const InstallationState& original_state,
       ->set_best_effort(true);
 }
 
-// Adds work items to remove COM registration for |product|'s deprecated
-// DelegateExecute verb handler.
-void AddCleanupDelegateExecuteWorkItems(const InstallerState& installer_state,
-                                        const Product& product,
-                                        WorkItemList* list) {
-  VLOG(1) << "Adding unregistration items for DelegateExecute verb handler.";
-  const base::string16 handler_class_uuid =
-      product.distribution()->GetCommandExecuteImplClsid();
-  DCHECK(!handler_class_uuid.empty());
-
-  const HKEY root = installer_state.root_key();
-  base::string16 delegate_execute_path(L"Software\\Classes\\CLSID\\");
-  delegate_execute_path.append(handler_class_uuid);
-  // Delete both 64 and 32 keys to handle 32->64 or 64->32 migration.
-  list->AddDeleteRegKeyWorkItem(root, delegate_execute_path, KEY_WOW64_32KEY);
-  list->AddDeleteRegKeyWorkItem(root, delegate_execute_path, KEY_WOW64_64KEY);
-}
-
 // Add to the ACL of an object on disk. This follows the method from MSDN:
 // https://msdn.microsoft.com/en-us/library/windows/desktop/aa379283.aspx
 // This is done using explicit flags rather than the "security string" format
@@ -733,7 +715,6 @@ void AddInstallWorkItems(const InstallationState& original_state,
   AddVersionKeyWorkItems(root, dist->GetVersionKey(), dist->GetDisplayName(),
                          new_version, add_language_identifier, install_list);
 
-  AddCleanupDelegateExecuteWorkItems(installer_state, product, install_list);
   AddCleanupDeprecatedPerUserRegistrationsWorkItems(product, install_list);
 
   AddActiveSetupWorkItems(installer_state, new_version, product, install_list);

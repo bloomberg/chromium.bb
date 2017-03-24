@@ -338,6 +338,10 @@ std::wstring GetActiveSetupPath() {
       .append(InstallDetails::Get().mode().active_setup_guid);
 }
 
+std::wstring GetLegacyCommandExecuteImplClsid() {
+  return InstallDetails::Get().mode().legacy_command_execute_clsid;
+}
+
 bool GetCollectStatsConsent() {
   bool enabled = true;
 

@@ -26,7 +26,6 @@ class GoogleChromeSxSDistribution : public GoogleChromeDistribution {
       Subfolder subfolder_type) override;
   base::string16 GetUninstallRegPath() override;
   DefaultBrowserControlPolicy GetDefaultBrowserControlPolicy() override;
-  base::string16 GetCommandExecuteImplClsid() override;
   bool ShouldSetExperimentLabels() override;
   bool HasUserExperiments() override;
 

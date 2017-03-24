@@ -97,10 +97,6 @@ class BrowserDistribution {
 
   virtual bool CanCreateDesktopShortcuts();
 
-  // Returns the CommandExecuteImpl class UUID (or empty string if this
-  // distribution doesn't include a DelegateExecute verb handler).
-  virtual base::string16 GetCommandExecuteImplClsid();
-
   virtual void UpdateInstallStatus(bool system_install,
       installer::ArchiveType archive_type,
       installer::InstallStatus install_status);

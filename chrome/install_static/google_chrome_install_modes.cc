@@ -36,6 +36,7 @@ const InstallConstants kInstallModes[] = {
         L"ChromeHTML",  // ProgID prefix.
         L"Chrome HTML Document",  // ProgID description.
         L"{8A69D345-D564-463c-AFF1-A69D9E530F96}",  // Active Setup GUID.
+        L"{5C65F4B0-3651-4514-B207-D10CB699B14B}",  // CommandExecuteImpl CLSID.
         L"",  // The empty string means "stable".
         ChannelStrategy::ADDITIONAL_PARAMETERS,
         true,  // Supports system-level installs.
@@ -54,6 +55,7 @@ const InstallConstants kInstallModes[] = {
         L"ChromeSSHTM",  // ProgID prefix.
         L"Chrome Canary HTML Document",  // ProgID description.
         L"{4ea16ac7-fd5a-47c3-875b-dbf4a2008c20}",  // Active Setup GUID.
+        L"{1BEAC3E3-B852-44F4-B468-8906C062422E}",  // CommandExecuteImpl CLSID.
         L"canary",
         ChannelStrategy::FIXED,
         false,  // Does not support system-level installs.

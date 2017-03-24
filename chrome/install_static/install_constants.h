@@ -82,6 +82,10 @@ struct InstallConstants {
   // system-level installs.
   const wchar_t* active_setup_guid;
 
+  // The legacy CommandExecuteImpl CLSID, or an empty string if this install
+  // mode never included a DelegateExecute verb handler.
+  const wchar_t* legacy_command_execute_clsid;
+
   // The default name for this mode's update channel.
   const wchar_t* default_channel_name;
 

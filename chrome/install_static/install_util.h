@@ -96,6 +96,10 @@ const wchar_t* GetProgIdDescription();
 // (e.g., Software\Microsoft\Active Setup\Installed Components\[guid]).
 std::wstring GetActiveSetupPath();
 
+// Returns the legacy CommandExecuteImpl CLSID, or an empty string if the
+// install mode never included a DelegateExecute verb handler.
+std::wstring GetLegacyCommandExecuteImplClsid();
+
 // Returns true if usage stats collecting is enabled for this user for the
 // current executable.
 bool GetCollectStatsConsent();
