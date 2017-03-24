@@ -2,6 +2,7 @@ include_rules = [
   "+third_party/skia",
   "+ui/accelerated_widget_mac",
   "+ui/base",
+  "+ui/display",
   "+ui/events",
   "+ui/ozone",
 ]

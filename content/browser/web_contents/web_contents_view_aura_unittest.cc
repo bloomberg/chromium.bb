@@ -4,16 +4,19 @@
 
 #include "content/browser/web_contents/web_contents_view_aura.h"
 
+#include "base/command_line.h"
+#include "base/test/scoped_command_line.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/display_switches.h"
 
 namespace content {
 
 class WebContentsViewAuraTest : public RenderViewHostTestHarness {
  public:
-  WebContentsViewAuraTest() {}
-  ~WebContentsViewAuraTest() override {}
+  WebContentsViewAuraTest() = default;
+  ~WebContentsViewAuraTest() override = default;
 
   WebContentsViewAura* view() {
     WebContentsImpl* contents = static_cast<WebContentsImpl*>(web_contents());
@@ -27,6 +30,41 @@ TEST_F(WebContentsViewAuraTest, EnableDisableOverscroll) {
   EXPECT_FALSE(wcva->navigation_overlay_);
   wcva->SetOverscrollControllerEnabled(true);
   EXPECT_TRUE(wcva->navigation_overlay_);
+}
+
+TEST_F(WebContentsViewAuraTest, ScreenInfoColorDepth) {
+  WebContentsView* web_contents_view = view();
+
+  ScreenInfo screen_info;
+  web_contents_view->GetScreenInfo(&screen_info);
+  EXPECT_EQ(24u, screen_info.depth);
+  EXPECT_EQ(8u, screen_info.depth_per_component);
+}
+
+// This test class is used when we want to have the kEnableHDROutput flag on.
+class WebContentsViewAuraHDRTest : public WebContentsViewAuraTest {
+ public:
+  WebContentsViewAuraHDRTest() = default;
+  ~WebContentsViewAuraHDRTest() override = default;
+
+  void SetUp() override {
+    base::CommandLine* command_line =
+        scoped_command_line_.GetProcessCommandLine();
+    command_line->AppendSwitch(switches::kEnableHDR);
+    WebContentsViewAuraTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedCommandLine scoped_command_line_;
+};
+
+TEST_F(WebContentsViewAuraHDRTest, ScreenInfoColorDepth) {
+  WebContentsView* web_contents_view = view();
+
+  ScreenInfo screen_info;
+  web_contents_view->GetScreenInfo(&screen_info);
+  EXPECT_EQ(48u, screen_info.depth);
+  EXPECT_EQ(16u, screen_info.depth_per_component);
 }
 
 }  // namespace content

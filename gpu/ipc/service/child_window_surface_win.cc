@@ -11,7 +11,7 @@
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
-#include "ui/base/ui_base_switches.h"
+#include "ui/display/display_switches.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_context.h"

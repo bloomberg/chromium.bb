@@ -14,7 +14,7 @@
 #include "content/shell/browser/shell.h"
 #include "media/base/media_switches.h"
 #include "media/media_features.h"
-#include "ui/base/ui_base_switches.h"
+#include "ui/display/display_switches.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"

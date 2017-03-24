@@ -86,6 +86,7 @@
 #include "ui/base/device_form_factor.h"
 #include "ui/base/touch/touch_device.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/display/display_switches.h"
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/image/image_skia.h"

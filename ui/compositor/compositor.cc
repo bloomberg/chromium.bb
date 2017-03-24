@@ -33,7 +33,6 @@
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/ui_base_switches.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/compositor_vsync_manager.h"
@@ -41,6 +40,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator_collection.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/display/display_switches.h"
 #include "ui/gfx/icc_profile.h"
 #include "ui/gl/gl_switches.h"
 

@@ -61,6 +61,7 @@ target(link_target_type, "ipc_service_sources") {
     "//base",
     "//ipc",
     "//ui/base",
+    "//ui/display",
     "//ui/events:events_base",
     "//ui/gfx",
     "//ui/gfx/geometry",

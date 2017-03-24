@@ -11,7 +11,7 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_color_space.h"
-#include "ui/base/ui_base_switches.h"
+#include "ui/display/display_switches.h"
 
 namespace content {
 

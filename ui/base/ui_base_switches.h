@@ -40,7 +40,6 @@ UI_BASE_EXPORT extern const char kTopChromeMDMaterialHybrid[];
 UI_BASE_EXPORT extern const char kTopChromeMDNonMaterial[];
 UI_BASE_EXPORT extern const char kUseNewVirtualKeyboardBehavior[];
 UI_BASE_EXPORT extern const char kExtendMdToSecondaryUi[];
-UI_BASE_EXPORT extern const char kEnableHDR[];
 
 }  // namespace switches
 

@@ -336,6 +336,7 @@ component("gpu") {
     deps += [
       "//third_party/angle:includes",
       "//third_party/libyuv",
+      "//ui/display",
     ]
     libs += [
       "d3d9.lib",

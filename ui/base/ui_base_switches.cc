@@ -79,7 +79,4 @@ const char kUseNewVirtualKeyboardBehavior[] =
 // throughout Chrome (not just top Chrome).
 const char kExtendMdToSecondaryUi[] = "secondary-ui-md";
 
-// Use an fp16 scRGB swap chain compatible with HDR output.
-const char kEnableHDR[] = "enable-hdr";
-
 }  // namespace switches

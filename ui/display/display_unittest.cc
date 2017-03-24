@@ -5,6 +5,7 @@
 #include "ui/display/display.h"
 
 #include "base/command_line.h"
+#include "base/test/scoped_command_line.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/display_switches.h"
 #include "ui/gfx/geometry/insets.h"
@@ -52,14 +53,32 @@ TEST(DisplayTest, Scale) {
 
 // https://crbug.com/517944
 TEST(DisplayTest, ForcedDeviceScaleFactorByCommandLine) {
+  base::test::ScopedCommandLine scoped_command_line;
+  base::CommandLine* command_line = scoped_command_line.GetProcessCommandLine();
+
   Display::ResetForceDeviceScaleFactorForTesting();
 
-  // Look ma, no value!
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kForceDeviceScaleFactor);
+  command_line->AppendSwitch(switches::kForceDeviceScaleFactor);
 
   EXPECT_EQ(1, Display::GetForcedDeviceScaleFactor());
   Display::ResetForceDeviceScaleFactorForTesting();
+}
+
+TEST(DisplayTest, DisplayHDRValues) {
+  base::test::ScopedCommandLine scoped_command_line;
+  base::CommandLine* command_line = scoped_command_line.GetProcessCommandLine();
+  {
+    Display display;
+    EXPECT_EQ(24, display.color_depth());
+    EXPECT_EQ(8, display.depth_per_component());
+  }
+
+  command_line->AppendSwitch(switches::kEnableHDR);
+  {
+    Display display;
+    EXPECT_EQ(48, display.color_depth());
+    EXPECT_EQ(16, display.depth_per_component());
+  }
 }
 
 }  // namespace display

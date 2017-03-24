@@ -20,6 +20,12 @@
 namespace display {
 namespace {
 
+constexpr int DEFAULT_BITS_PER_PIXEL = 24;
+constexpr int DEFAULT_BITS_PER_COMPONENT = 8;
+
+constexpr int HDR_BITS_PER_PIXEL = 48;
+constexpr int HDR_BITS_PER_COMPONENT = 16;
+
 // This variable tracks whether the forced device scale factor switch needs to
 // be read from the command line, i.e. if it is set to -1 then the command line
 // is checked.
@@ -73,9 +79,6 @@ void Display::ResetForceDeviceScaleFactorForTesting() {
   g_forced_device_scale_factor = -1.0;
 }
 
-constexpr int DEFAULT_BITS_PER_PIXEL = 24;
-constexpr int DEFAULT_BITS_PER_COMPONENT = 8;
-
 Display::Display() : Display(kInvalidDisplayId) {}
 
 Display::Display(int64_t id) : Display(id, gfx::Rect()) {}
@@ -87,6 +90,10 @@ Display::Display(int64_t id, const gfx::Rect& bounds)
       device_scale_factor_(GetForcedDeviceScaleFactor()),
       color_depth_(DEFAULT_BITS_PER_PIXEL),
       depth_per_component_(DEFAULT_BITS_PER_COMPONENT) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableHDR)) {
+    color_depth_ = HDR_BITS_PER_PIXEL;
+    depth_per_component_ = HDR_BITS_PER_COMPONENT;
+  }
 #if defined(USE_AURA)
   SetScaleAndBounds(device_scale_factor_, bounds);
 #endif

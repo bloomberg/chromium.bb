@@ -7,6 +7,7 @@ include_rules = [
   "+third_party/webrtc/common_video",
   "+third_party/webrtc/system_wrappers",
   "+ui/base",
+  "+ui/display/display_switches.h",
   "+ui/display/manager/chromeos",
   "+ui/display/types",
   "+ui/platform_window",

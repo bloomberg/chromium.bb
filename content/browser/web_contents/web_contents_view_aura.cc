@@ -703,10 +703,9 @@ void GetScreenInfoForWindow(ScreenInfo* results,
                                        : screen->GetPrimaryDisplay();
   results->rect = display.bounds();
   results->available_rect = display.work_area();
-  // TODO(derat|oshima): Don't hardcode this. Get this from display object.
-  results->depth = 24;
-  results->depth_per_component = 8;
-  results->is_monochrome = false;
+  results->depth = display.color_depth();
+  results->depth_per_component = display.depth_per_component();
+  results->is_monochrome = display.is_monochrome();
   results->device_scale_factor = display.device_scale_factor();
   results->icc_profile = gfx::ICCProfile::FromBestMonitor();
   if (!results->icc_profile.IsValid())
