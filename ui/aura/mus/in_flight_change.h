@@ -13,6 +13,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
+#include "cc/surfaces/local_surface_id.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/geometry/rect.h"
@@ -139,9 +141,12 @@ class InFlightChange {
 
 class InFlightBoundsChange : public InFlightChange {
  public:
-  InFlightBoundsChange(WindowTreeClient* window_tree_client,
-                       WindowMus* window,
-                       const gfx::Rect& revert_bounds);
+  InFlightBoundsChange(
+      WindowTreeClient* window_tree_client,
+      WindowMus* window,
+      const gfx::Rect& revert_bounds,
+      const base::Optional<cc::LocalSurfaceId>& local_surface_id);
+  ~InFlightBoundsChange() override;
 
   // InFlightChange:
   void SetRevertValueFrom(const InFlightChange& change) override;
@@ -150,6 +155,7 @@ class InFlightBoundsChange : public InFlightChange {
  private:
   WindowTreeClient* window_tree_client_;
   gfx::Rect revert_bounds_;
+  base::Optional<cc::LocalSurfaceId> revert_local_surface_id_;
 
   DISALLOW_COPY_AND_ASSIGN(InFlightBoundsChange);
 };

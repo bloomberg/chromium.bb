@@ -455,7 +455,7 @@ std::unique_ptr<WindowTreeHostMus> WindowTreeClient::CreateWindowTreeHost(
                                true);
   }
   SetWindowBoundsFromServer(WindowMus::Get(window_tree_host->window()),
-                            window_data.bounds);
+                            window_data.bounds, base::nullopt);
   return window_tree_host;
 }
 
@@ -579,10 +579,12 @@ void WindowTreeClient::OnReceivedCursorLocationMemory(
 
 void WindowTreeClient::SetWindowBoundsFromServer(
     WindowMus* window,
-    const gfx::Rect& revert_bounds_in_pixels) {
+    const gfx::Rect& revert_bounds_in_pixels,
+    const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
   if (IsRoot(window)) {
     // WindowTreeHost expects bounds to be in pixels.
     GetWindowTreeHostMus(window)->SetBoundsFromServer(revert_bounds_in_pixels);
+    // TODO(fsamuel): Propagate |local_surface_id| to ui::Compositor.
     return;
   }
 
@@ -610,9 +612,10 @@ void WindowTreeClient::ScheduleInFlightBoundsChange(
     WindowMus* window,
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds) {
-  const uint32_t change_id = ScheduleInFlightChange(
-      base::MakeUnique<InFlightBoundsChange>(this, window, old_bounds));
   // TODO(fsamuel): Allocate a new LocalSurfaceId on size change.
+  const uint32_t change_id =
+      ScheduleInFlightChange(base::MakeUnique<InFlightBoundsChange>(
+          this, window, old_bounds, base::nullopt));
   tree_->SetWindowBounds(change_id, window->server_id(), new_bounds,
                          base::nullopt);
 }
@@ -970,14 +973,15 @@ void WindowTreeClient::OnTopLevelCreated(uint32_t change_id,
 
   const gfx::Rect bounds(data->bounds);
   {
-    InFlightBoundsChange bounds_change(this, window, bounds);
+    // TODO(fsamuel): Propagate a cc::LocalSurfaceId through here.
+    InFlightBoundsChange bounds_change(this, window, bounds, base::nullopt);
     InFlightChange* current_change =
         GetOldestInFlightChangeMatching(bounds_change);
     if (current_change)
       current_change->SetRevertValueFrom(bounds_change);
     else if (gfx::ConvertRectToPixel(ScaleFactorForDisplay(window->GetWindow()),
                                      window->GetWindow()->bounds()) != bounds)
-      SetWindowBoundsFromServer(window, bounds);
+      SetWindowBoundsFromServer(window, bounds, base::nullopt);
   }
 
   // There is currently no API to bulk set properties, so we iterate over each
@@ -1011,11 +1015,11 @@ void WindowTreeClient::OnWindowBoundsChanged(
   if (!window)
     return;
 
-  InFlightBoundsChange new_change(this, window, new_bounds);
+  InFlightBoundsChange new_change(this, window, new_bounds, local_surface_id);
   if (ApplyServerChangeToExistingInFlightChange(new_change))
     return;
 
-  SetWindowBoundsFromServer(window, new_bounds);
+  SetWindowBoundsFromServer(window, new_bounds, local_surface_id);
 }
 
 void WindowTreeClient::OnClientAreaChanged(

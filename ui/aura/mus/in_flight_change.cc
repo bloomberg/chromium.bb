@@ -31,20 +31,28 @@ void InFlightChange::ChangeFailed() {}
 
 // InFlightBoundsChange -------------------------------------------------------
 
-InFlightBoundsChange::InFlightBoundsChange(WindowTreeClient* window_tree_client,
-                                           WindowMus* window,
-                                           const gfx::Rect& revert_bounds)
+InFlightBoundsChange::InFlightBoundsChange(
+    WindowTreeClient* window_tree_client,
+    WindowMus* window,
+    const gfx::Rect& revert_bounds,
+    const base::Optional<cc::LocalSurfaceId>& revert_local_surface_id)
     : InFlightChange(window, ChangeType::BOUNDS),
       window_tree_client_(window_tree_client),
-      revert_bounds_(revert_bounds) {}
+      revert_bounds_(revert_bounds),
+      revert_local_surface_id_(revert_local_surface_id) {}
+
+InFlightBoundsChange::~InFlightBoundsChange() {}
 
 void InFlightBoundsChange::SetRevertValueFrom(const InFlightChange& change) {
   revert_bounds_ =
       static_cast<const InFlightBoundsChange&>(change).revert_bounds_;
+  revert_local_surface_id_ =
+      static_cast<const InFlightBoundsChange&>(change).revert_local_surface_id_;
 }
 
 void InFlightBoundsChange::Revert() {
-  window_tree_client_->SetWindowBoundsFromServer(window(), revert_bounds_);
+  window_tree_client_->SetWindowBoundsFromServer(window(), revert_bounds_,
+                                                 revert_local_surface_id_);
 }
 
 // InFlightDragChange -----------------------------------------------------

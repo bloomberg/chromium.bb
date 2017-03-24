@@ -3,6 +3,7 @@ include_rules = [
   "+cc/output/compositor_frame_sink_client.h",
   "+cc/output/compositor_frame_sink.h",
   "+cc/scheduler/begin_frame_source.h",
+  "+cc/surfaces/local_surface_id.h",
   "+cc/surfaces/local_surface_id_allocator.h",
   "+cc/surfaces/surface_info.h",
   "+cc/surfaces/surface_manager.h",

@@ -275,8 +275,10 @@ class AURA_EXPORT WindowTreeClient
 
   // Called when a property needs to change as the result of a change in the
   // server, or the server failing to accept a change.
-  void SetWindowBoundsFromServer(WindowMus* window,
-                                 const gfx::Rect& revert_bounds_in_pixels);
+  void SetWindowBoundsFromServer(
+      WindowMus* window,
+      const gfx::Rect& revert_bounds_in_pixels,
+      const base::Optional<cc::LocalSurfaceId>& local_surface_id);
   void SetWindowVisibleFromServer(WindowMus* window, bool visible);
 
   // Called from OnWindowMusBoundsChanged() and SetRootWindowBounds().
