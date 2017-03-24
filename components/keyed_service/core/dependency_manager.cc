@@ -5,6 +5,7 @@
 #include "components/keyed_service/core/dependency_manager.h"
 
 #include "base/bind.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/supports_user_data.h"
 #include "components/keyed_service/core/keyed_service_base_factory.h"
@@ -50,9 +51,7 @@ void DependencyManager::RegisterPrefsForServices(
 
 void DependencyManager::CreateContextServices(base::SupportsUserData* context,
                                               bool is_testing_context) {
-#ifndef NDEBUG
-  MarkContextLiveForTesting(context);
-#endif
+  MarkContextLive(context);
 
   std::vector<DependencyNode*> construction_order;
   if (!dependency_graph_.GetConstructionOrder(&construction_order)) {
@@ -92,10 +91,8 @@ void DependencyManager::DestroyContextServices(
     factory->ContextShutdown(context);
   }
 
-#ifndef NDEBUG
   // The context is now dead to the rest of the program.
   dead_context_pointers_.insert(context);
-#endif
 
   for (auto* dependency_node : destruction_order) {
     KeyedServiceBaseFactory* factory =
@@ -104,22 +101,26 @@ void DependencyManager::DestroyContextServices(
   }
 }
 
-#ifndef NDEBUG
 void DependencyManager::AssertContextWasntDestroyed(
-    base::SupportsUserData* context) {
+    base::SupportsUserData* context) const {
   if (dead_context_pointers_.find(context) != dead_context_pointers_.end()) {
+#if DCHECK_IS_ON()
     NOTREACHED() << "Attempted to access a context that was ShutDown(). "
                  << "This is most likely a heap smasher in progress. After "
                  << "KeyedService::Shutdown() completes, your service MUST "
                  << "NOT refer to depended services again.";
+#else   // DCHECK_IS_ON()
+    // We want to see all possible use-after-destroy in production environment.
+    base::debug::DumpWithoutCrashing();
+#endif  // DCHECK_IS_ON()
   }
 }
 
-void DependencyManager::MarkContextLiveForTesting(
-    base::SupportsUserData* context) {
+void DependencyManager::MarkContextLive(base::SupportsUserData* context) {
   dead_context_pointers_.erase(context);
 }
 
+#ifndef NDEBUG
 namespace {
 
 std::string KeyedServiceBaseFactoryGetNodeName(DependencyNode* node) {

@@ -72,6 +72,7 @@ class WebRequestAPI : public BrowserContextKeyedAPI,
 
   // BrowserContextKeyedAPI support:
   static BrowserContextKeyedAPIFactory<WebRequestAPI>* GetFactoryInstance();
+  void Shutdown() override;
 
   // EventRouter::Observer overrides:
   void OnListenerRemoved(const EventListenerInfo& details) override;

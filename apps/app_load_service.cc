@@ -40,7 +40,9 @@ AppLoadService::AppLoadService(Profile* profile)
   extensions::ExtensionRegistry::Get(profile_)->AddObserver(this);
 }
 
-AppLoadService::~AppLoadService() {
+AppLoadService::~AppLoadService() = default;
+
+void AppLoadService::Shutdown() {
   extensions::ExtensionRegistry::Get(profile_)->RemoveObserver(this);
 }
 

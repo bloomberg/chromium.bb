@@ -416,7 +416,9 @@ void InputImeAPI::Observe(int type,
       content::Source<Profile>(source).ptr());
 }
 
-InputImeAPI::~InputImeAPI() {
+InputImeAPI::~InputImeAPI() = default;
+
+void InputImeAPI::Shutdown() {
   EventRouter::Get(browser_context_)->UnregisterObserver(this);
   registrar_.RemoveAll();
 }

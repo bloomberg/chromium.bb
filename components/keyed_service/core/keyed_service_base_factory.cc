@@ -79,19 +79,18 @@ KeyedServiceBaseFactory::GetAssociatedPrefRegistry(
   return registry;
 }
 
-#ifndef NDEBUG
 void KeyedServiceBaseFactory::AssertContextWasntDestroyed(
     base::SupportsUserData* context) const {
-  DCHECK(CalledOnValidThread());
+  // TODO(crbug.com/701326): We should DCHECK(CalledOnValidThread()) here, but
+  // currently some code doesn't do service getting on the main thread.
+  // This needs to be fixed and DCHECK should be restored here.
   dependency_manager_->AssertContextWasntDestroyed(context);
 }
 
-void KeyedServiceBaseFactory::MarkContextLiveForTesting(
-    base::SupportsUserData* context) {
+void KeyedServiceBaseFactory::MarkContextLive(base::SupportsUserData* context) {
   DCHECK(CalledOnValidThread());
-  dependency_manager_->MarkContextLiveForTesting(context);
+  dependency_manager_->MarkContextLive(context);
 }
-#endif
 
 bool KeyedServiceBaseFactory::ServiceIsCreatedWithContext() const {
   return false;

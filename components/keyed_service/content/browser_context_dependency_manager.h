@@ -68,19 +68,18 @@ class KEYED_SERVICE_EXPORT BrowserContextDependencyManager
   RegisterWillCreateBrowserContextServicesCallbackForTesting(
       const base::Callback<void(content::BrowserContext*)>& callback);
 
-#ifndef NDEBUG
-  // Debugging assertion called as part of GetServiceForBrowserContext in debug
-  // mode. This will NOTREACHED() whenever the user is trying to access a stale
-  // BrowserContext*.
-  void AssertBrowserContextWasntDestroyed(content::BrowserContext* context);
+  // Runtime assertion called as a part of GetServiceForBrowserContext() to
+  // check if |context| is considered stale. This will NOTREACHED() or
+  // base::debug::DumpWithoutCrashing() depending on the DCHECK_IS_ON() value.
+  void AssertBrowserContextWasntDestroyed(
+      content::BrowserContext* context) const;
 
   // Marks |context| as live (i.e., not stale). This method can be called as a
   // safeguard against |AssertBrowserContextWasntDestroyed()| checks going off
-  // due to |context| aliasing a BrowserContext instance from a prior test
-  // (i.e., 0xWhatever might be created, be destroyed, and then a new
-  // BrowserContext object might be created at 0xWhatever).
-  void MarkBrowserContextLiveForTesting(content::BrowserContext* context);
-#endif  // NDEBUG
+  // due to |context| aliasing a BrowserContext instance from a prior
+  // construction (i.e., 0xWhatever might be created, be destroyed, and then a
+  // new BrowserContext object might be created at 0xWhatever).
+  void MarkBrowserContextLive(content::BrowserContext* context);
 
   static BrowserContextDependencyManager* GetInstance();
 

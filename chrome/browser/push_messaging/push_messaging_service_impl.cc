@@ -163,9 +163,7 @@ PushMessagingServiceImpl::PushMessagingServiceImpl(Profile* profile)
   HostContentSettingsMapFactory::GetForProfile(profile_)->AddObserver(this);
 }
 
-PushMessagingServiceImpl::~PushMessagingServiceImpl() {
-  HostContentSettingsMapFactory::GetForProfile(profile_)->RemoveObserver(this);
-}
+PushMessagingServiceImpl::~PushMessagingServiceImpl() = default;
 
 void PushMessagingServiceImpl::IncreasePushSubscriptionCount(int add,
                                                              bool is_pending) {
@@ -926,6 +924,7 @@ void PushMessagingServiceImpl::SetContentSettingChangedCallbackForTesting(
 
 void PushMessagingServiceImpl::Shutdown() {
   GetGCMDriver()->RemoveAppHandler(kPushMessagingAppIdentifierPrefix);
+  HostContentSettingsMapFactory::GetForProfile(profile_)->RemoveObserver(this);
 }
 
 // BackgroundTrigger methods ---------------------------------------------------

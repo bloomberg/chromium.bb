@@ -427,6 +427,8 @@ void TestingProfile::Init() {
 
   BrowserContext::Initialize(this, profile_path_);
 
+  browser_context_dependency_manager_->MarkBrowserContextLive(this);
+
 #if defined(OS_ANDROID)
   // Make sure token service knows its running in tests.
   OAuth2TokenServiceDelegateAndroid::set_is_testing_profile();

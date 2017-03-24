@@ -54,18 +54,16 @@ class KEYED_SERVICE_EXPORT KeyedServiceBaseFactory
   // created by factories.
   void DependsOn(KeyedServiceBaseFactory* rhs);
 
-#ifndef NDEBUG
-  // Debugging assertion that will NOTREACHED() is |context| is considered
-  // stale. Should be used by subclasses when accessing |context|.
+  // Runtime assertion to check if |context| is considered stale. Should be used
+  // by subclasses when accessing |context|.
   void AssertContextWasntDestroyed(base::SupportsUserData* context) const;
 
   // Marks |context| as live (i.e., not stale). This method can be called as a
   // safeguard against |AssertContextWasntDestroyed()| checks going off due to
-  // |context| aliasing am instance from a prior test (i.e., 0xWhatever might
-  // be created, be destroyed, and then a new object might be created at
+  // |context| aliasing an instance from a prior construction (i.e., 0xWhatever
+  // might be created, be destroyed, and then a new object might be created at
   // 0xWhatever).
-  void MarkContextLiveForTesting(base::SupportsUserData* context);
-#endif
+  void MarkContextLive(base::SupportsUserData* context);
 
   // Calls RegisterProfilePrefs() after doing house keeping required to work
   // alongside RegisterUserPrefsOnContextForTest().

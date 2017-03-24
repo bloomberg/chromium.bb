@@ -49,11 +49,8 @@ RefcountedBrowserContextKeyedServiceFactory::GetServiceForBrowserContext(
 content::BrowserContext*
 RefcountedBrowserContextKeyedServiceFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
+  // TODO(crbug.com/701326): This DCHECK should be moved to GetContextToUse().
   DCHECK(CalledOnValidThread());
-
-#ifndef NDEBUG
-  AssertContextWasntDestroyed(context);
-#endif
 
   // Safe default for Incognito mode: no service.
   if (context->IsOffTheRecord())
@@ -97,6 +94,7 @@ bool RefcountedBrowserContextKeyedServiceFactory::IsOffTheRecord(
 base::SupportsUserData*
 RefcountedBrowserContextKeyedServiceFactory::GetContextToUse(
     base::SupportsUserData* context) const {
+  AssertContextWasntDestroyed(context);
   return GetBrowserContextToUse(static_cast<content::BrowserContext*>(context));
 }
 

@@ -179,6 +179,7 @@ class InputImeAPI : public BrowserContextKeyedAPI,
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<InputImeAPI>* GetFactoryInstance();
+  void Shutdown() override;
 
   // ExtensionRegistryObserver implementation.
   void OnExtensionLoaded(content::BrowserContext* browser_context,

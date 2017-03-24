@@ -60,17 +60,15 @@ BrowserContextDependencyManager::
   return will_create_browser_context_services_callbacks_.Add(callback);
 }
 
-#ifndef NDEBUG
 void BrowserContextDependencyManager::AssertBrowserContextWasntDestroyed(
-    content::BrowserContext* context) {
+    content::BrowserContext* context) const {
   DependencyManager::AssertContextWasntDestroyed(context);
 }
 
-void BrowserContextDependencyManager::MarkBrowserContextLiveForTesting(
+void BrowserContextDependencyManager::MarkBrowserContextLive(
     content::BrowserContext* context) {
-  DependencyManager::MarkContextLiveForTesting(context);
+  DependencyManager::MarkContextLive(context);
 }
-#endif  // NDEBUG
 
 // static
 BrowserContextDependencyManager*

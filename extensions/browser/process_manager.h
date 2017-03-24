@@ -57,6 +57,9 @@ class ProcessManager : public KeyedService,
   static ProcessManager* Get(content::BrowserContext* context);
   ~ProcessManager() override;
 
+  // KeyedService support:
+  void Shutdown() override;
+
   void RegisterRenderFrameHost(content::WebContents* web_contents,
                                content::RenderFrameHost* render_frame_host,
                                const Extension* extension);

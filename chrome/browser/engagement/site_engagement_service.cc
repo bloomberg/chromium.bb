@@ -122,7 +122,9 @@ SiteEngagementService::SiteEngagementService(Profile* profile)
   }
 }
 
-SiteEngagementService::~SiteEngagementService() {
+SiteEngagementService::~SiteEngagementService() = default;
+
+void SiteEngagementService::Shutdown() {
   history::HistoryService* history = HistoryServiceFactory::GetForProfile(
       profile_, ServiceAccessType::IMPLICIT_ACCESS);
   if (history)

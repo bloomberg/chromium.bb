@@ -53,7 +53,9 @@ ExtensionGCMAppHandler::ExtensionGCMAppHandler(content::BrowserContext* context)
   js_event_router_.reset(new extensions::GcmJsEventRouter(profile_));
 }
 
-ExtensionGCMAppHandler::~ExtensionGCMAppHandler() {
+ExtensionGCMAppHandler::~ExtensionGCMAppHandler() = default;
+
+void ExtensionGCMAppHandler::Shutdown() {
   const ExtensionSet& enabled_extensions =
       ExtensionRegistry::Get(profile_)->enabled_extensions();
   for (ExtensionSet::const_iterator extension = enabled_extensions.begin();

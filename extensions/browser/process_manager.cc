@@ -266,11 +266,14 @@ ProcessManager::ProcessManager(BrowserContext* context,
   OnKeepaliveImpulseCheck();
 }
 
-ProcessManager::~ProcessManager() {
+ProcessManager::~ProcessManager() = default;
+
+void ProcessManager::Shutdown() {
   extension_registry_->RemoveObserver(this);
   CloseBackgroundHosts();
   DCHECK(background_hosts_.empty());
   content::DevToolsAgentHost::RemoveObserver(this);
+  site_instance_ = nullptr;
 }
 
 void ProcessManager::RegisterRenderFrameHost(

@@ -68,6 +68,7 @@ class SignedInDevicesManager : public BrowserContextKeyedAPI,
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<SignedInDevicesManager>*
       GetFactoryInstance();
+  void Shutdown() override;
 
   // ExtensionRegistryObserver implementation.
   void OnExtensionUnloaded(content::BrowserContext* browser_context,

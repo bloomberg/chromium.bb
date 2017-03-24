@@ -30,19 +30,7 @@ enum ProfileType { NORMAL_PROFILE, INCOGNITO_PROFILE };
 
 std::unique_ptr<TestingProfile> CreateProfile(ProfileType type) {
   TestingProfile::Builder builder;
-  std::unique_ptr<TestingProfile> profile(builder.Build());
-#if !defined(NDEBUG)
-  // During the test cases, the profiles may get created on the same address. To
-  // avoid over-zealous asserts we need to mark the newly created one as "live".
-  // See declaration of MarkBrowserContextLiveForTesting for more details.
-  BrowserContextDependencyManager::GetInstance()
-      ->MarkBrowserContextLiveForTesting(profile.get());
-  if (type == INCOGNITO_PROFILE) {
-    BrowserContextDependencyManager::GetInstance()
-        ->MarkBrowserContextLiveForTesting(profile->GetOffTheRecordProfile());
-  }
-#endif
-  return profile;
+  return builder.Build();
 }
 
 }  // namespace

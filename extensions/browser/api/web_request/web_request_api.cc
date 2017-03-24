@@ -395,7 +395,9 @@ WebRequestAPI::WebRequestAPI(content::BrowserContext* context)
   }
 }
 
-WebRequestAPI::~WebRequestAPI() {
+WebRequestAPI::~WebRequestAPI() = default;
+
+void WebRequestAPI::Shutdown() {
   EventRouter::Get(browser_context_)->UnregisterObserver(this);
 }
 

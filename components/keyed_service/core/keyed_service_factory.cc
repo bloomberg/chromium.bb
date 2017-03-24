@@ -30,13 +30,11 @@ void KeyedServiceFactory::SetTestingFactory(
   // destruction.
   bool add_context = ArePreferencesSetOn(context);
 
-#ifndef NDEBUG
   // Ensure that |context| is not marked as stale (e.g., due to it aliasing an
   // instance that was destroyed in an earlier test) in order to avoid accesses
   // to |context| in |BrowserContextShutdown| from causing
   // |AssertBrowserContextWasntDestroyed| to raise an error.
-  MarkContextLiveForTesting(context);
-#endif
+  MarkContextLive(context);
 
   // We have to go through the shutdown and destroy mechanisms because there
   // are unit tests that create a service on a context and then change the

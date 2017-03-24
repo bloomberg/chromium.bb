@@ -154,6 +154,15 @@ class SiteEngagementServiceTest : public ChromeRenderViewHostTestHarness {
     HistoryServiceFactory::GetInstance()->SetTestingFactory(
         profile(), &BuildTestHistoryService);
     SiteEngagementScore::SetParamValuesForTesting();
+    clock_ = new base::SimpleTestClock();
+    service_ = base::WrapUnique(
+        new SiteEngagementService(profile(), base::WrapUnique(clock_)));
+  }
+
+  void TearDown() override {
+    service_->Shutdown();
+    service_.reset();
+    ChromeRenderViewHostTestHarness::TearDown();
   }
 
   void NavigateWithTransitionAndExpectHigherScore(
@@ -205,7 +214,7 @@ class SiteEngagementServiceTest : public ChromeRenderViewHostTestHarness {
     return score;
   }
 
- private:
+ protected:
   void CheckScoreFromSettings(HostContentSettingsMap* settings_map,
                               const GURL& url,
                               double *score) {
@@ -213,6 +222,8 @@ class SiteEngagementServiceTest : public ChromeRenderViewHostTestHarness {
   }
 
   base::ScopedTempDir temp_dir_;
+  std::unique_ptr<SiteEngagementService> service_;
+  base::SimpleTestClock* clock_ = nullptr;  // Owned by the service.
 };
 
 TEST_F(SiteEngagementServiceTest, GetMedianEngagement) {
@@ -464,14 +475,10 @@ TEST_F(SiteEngagementServiceTest, RestrictedToHTTPAndHTTPS) {
 }
 
 TEST_F(SiteEngagementServiceTest, LastShortcutLaunch) {
-  base::SimpleTestClock* clock = new base::SimpleTestClock();
-  std::unique_ptr<SiteEngagementService> service(
-      new SiteEngagementService(profile(), base::WrapUnique(clock)));
-
   base::HistogramTester histograms;
 
   base::Time current_day = GetReferenceTime();
-  clock->SetNow(current_day - base::TimeDelta::FromDays(5));
+  clock_->SetNow(current_day - base::TimeDelta::FromDays(5));
 
   // The https and http versions of www.google.com should be separate. But
   // different paths on the same origin should be treated the same.
@@ -479,21 +486,21 @@ TEST_F(SiteEngagementServiceTest, LastShortcutLaunch) {
   GURL url2("http://www.google.com/");
   GURL url3("http://www.google.com/maps");
 
-  EXPECT_EQ(0, service->GetScore(url1));
-  EXPECT_EQ(0, service->GetScore(url2));
-  EXPECT_EQ(0, service->GetScore(url3));
+  EXPECT_EQ(0, service_->GetScore(url1));
+  EXPECT_EQ(0, service_->GetScore(url2));
+  EXPECT_EQ(0, service_->GetScore(url3));
 
-  service->SetLastShortcutLaunchTime(url2);
+  service_->SetLastShortcutLaunchTime(url2);
   histograms.ExpectTotalCount(
       SiteEngagementMetrics::kDaysSinceLastShortcutLaunchHistogram, 0);
   histograms.ExpectUniqueSample(
       SiteEngagementMetrics::kEngagementTypeHistogram,
       SiteEngagementMetrics::ENGAGEMENT_WEBAPP_SHORTCUT_LAUNCH, 1);
 
-  service->AddPoints(url1, 2.0);
-  service->AddPoints(url2, 2.0);
-  clock->SetNow(current_day);
-  service->SetLastShortcutLaunchTime(url2);
+  service_->AddPoints(url1, 2.0);
+  service_->AddPoints(url2, 2.0);
+  clock_->SetNow(current_day);
+  service_->SetLastShortcutLaunchTime(url2);
 
   histograms.ExpectTotalCount(
       SiteEngagementMetrics::kDaysSinceLastShortcutLaunchHistogram, 1);
@@ -506,40 +513,36 @@ TEST_F(SiteEngagementServiceTest, LastShortcutLaunch) {
       SiteEngagementMetrics::kEngagementTypeHistogram,
       SiteEngagementMetrics::ENGAGEMENT_FIRST_DAILY_ENGAGEMENT, 2);
 
-  EXPECT_DOUBLE_EQ(2.0, service->GetScore(url1));
-  EXPECT_DOUBLE_EQ(7.0, service->GetScore(url2));
+  EXPECT_DOUBLE_EQ(2.0, service_->GetScore(url1));
+  EXPECT_DOUBLE_EQ(7.0, service_->GetScore(url2));
 
-  clock->SetNow(GetReferenceTime() + base::TimeDelta::FromDays(1));
-  EXPECT_DOUBLE_EQ(2.0, service->GetScore(url1));
-  EXPECT_DOUBLE_EQ(7.0, service->GetScore(url2));
+  clock_->SetNow(GetReferenceTime() + base::TimeDelta::FromDays(1));
+  EXPECT_DOUBLE_EQ(2.0, service_->GetScore(url1));
+  EXPECT_DOUBLE_EQ(7.0, service_->GetScore(url2));
 
-  clock->SetNow(GetReferenceTime() + base::TimeDelta::FromDays(7));
-  EXPECT_DOUBLE_EQ(0.0, service->GetScore(url1));
-  EXPECT_DOUBLE_EQ(5.0, service->GetScore(url2));
+  clock_->SetNow(GetReferenceTime() + base::TimeDelta::FromDays(7));
+  EXPECT_DOUBLE_EQ(0.0, service_->GetScore(url1));
+  EXPECT_DOUBLE_EQ(5.0, service_->GetScore(url2));
 
-  service->AddPoints(url1, 1.0);
-  clock->SetNow(GetReferenceTime() + base::TimeDelta::FromDays(10));
-  EXPECT_DOUBLE_EQ(1.0, service->GetScore(url1));
-  EXPECT_DOUBLE_EQ(5.0, service->GetScore(url2));
+  service_->AddPoints(url1, 1.0);
+  clock_->SetNow(GetReferenceTime() + base::TimeDelta::FromDays(10));
+  EXPECT_DOUBLE_EQ(1.0, service_->GetScore(url1));
+  EXPECT_DOUBLE_EQ(5.0, service_->GetScore(url2));
 
-  clock->SetNow(GetReferenceTime() + base::TimeDelta::FromDays(11));
-  EXPECT_DOUBLE_EQ(1.0, service->GetScore(url1));
-  EXPECT_DOUBLE_EQ(0.0, service->GetScore(url2));
+  clock_->SetNow(GetReferenceTime() + base::TimeDelta::FromDays(11));
+  EXPECT_DOUBLE_EQ(1.0, service_->GetScore(url1));
+  EXPECT_DOUBLE_EQ(0.0, service_->GetScore(url2));
 }
 
 TEST_F(SiteEngagementServiceTest, NotificationPermission) {
-  base::SimpleTestClock* clock = new base::SimpleTestClock();
-  std::unique_ptr<SiteEngagementService> service(
-      new SiteEngagementService(profile(), base::WrapUnique(clock)));
-
   GURL url1("https://www.google.com/");
   GURL url2("http://www.google.com/");
   GURL url3("https://drive.google.com/");
-  clock->SetNow(GetReferenceTime());
+  clock_->SetNow(GetReferenceTime());
 
-  EXPECT_EQ(0, service->GetScore(url1));
-  EXPECT_EQ(0, service->GetScore(url2));
-  EXPECT_EQ(0, service->GetScore(url3));
+  EXPECT_EQ(0, service_->GetScore(url1));
+  EXPECT_EQ(0, service_->GetScore(url2));
+  EXPECT_EQ(0, service_->GetScore(url3));
 
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(profile());
@@ -556,31 +559,27 @@ TEST_F(SiteEngagementServiceTest, NotificationPermission) {
       url3, url3, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string(),
       CONTENT_SETTING_ASK);
 
-  EXPECT_EQ(5, service->GetScore(url1));
-  EXPECT_EQ(0, service->GetScore(url2));
-  EXPECT_EQ(0, service->GetScore(url3));
+  EXPECT_EQ(5, service_->GetScore(url1));
+  EXPECT_EQ(0, service_->GetScore(url2));
+  EXPECT_EQ(0, service_->GetScore(url3));
 
-  service->AddPoints(url1, 1.0);
-  service->AddPoints(url2, 3.0);
-  EXPECT_EQ(6, service->GetScore(url1));
-  EXPECT_EQ(3, service->GetScore(url2));
+  service_->AddPoints(url1, 1.0);
+  service_->AddPoints(url2, 3.0);
+  EXPECT_EQ(6, service_->GetScore(url1));
+  EXPECT_EQ(3, service_->GetScore(url2));
 
   settings_map->SetContentSettingDefaultScope(
       url1, url1, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string(),
       CONTENT_SETTING_BLOCK);
 
-  EXPECT_EQ(1, service->GetScore(url1));
+  EXPECT_EQ(1, service_->GetScore(url1));
 }
 
 TEST_F(SiteEngagementServiceTest, CheckHistograms) {
   base::HistogramTester histograms;
 
-  base::SimpleTestClock* clock = new base::SimpleTestClock();
-  std::unique_ptr<SiteEngagementService> service(
-      new SiteEngagementService(profile(), base::WrapUnique(clock)));
-
   base::Time current_day = GetReferenceTime();
-  clock->SetNow(current_day);
+  clock_->SetNow(current_day);
 
   // Histograms should start empty as the testing SiteEngagementService
   // constructor does not record metrics.
@@ -607,7 +606,7 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
                               0);
 
   // Record metrics for an empty engagement system.
-  service->RecordMetrics();
+  service_->RecordMetrics();
 
   histograms.ExpectUniqueSample(
       SiteEngagementMetrics::kTotalEngagementHistogram, 0, 1);
@@ -638,7 +637,7 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
   for (const std::string& histogram_name : engagement_bucket_histogram_names)
     histograms.ExpectTotalCount(histogram_name, 0);
 
-  clock->SetNow(clock->Now() + base::TimeDelta::FromMinutes(60));
+  clock_->SetNow(clock_->Now() + base::TimeDelta::FromMinutes(60));
 
   // The https and http versions of www.google.com should be separate.
   GURL url1("https://www.google.com/");
@@ -646,13 +645,13 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
   GURL url3("http://drive.google.com/");
 
   NavigateAndCommit(url1);
-  service->HandleNavigation(web_contents(), ui::PAGE_TRANSITION_TYPED);
-  service->HandleUserInput(web_contents(),
-                           SiteEngagementMetrics::ENGAGEMENT_KEYPRESS);
-  service->HandleUserInput(web_contents(),
-                           SiteEngagementMetrics::ENGAGEMENT_MOUSE);
+  service_->HandleNavigation(web_contents(), ui::PAGE_TRANSITION_TYPED);
+  service_->HandleUserInput(web_contents(),
+                            SiteEngagementMetrics::ENGAGEMENT_KEYPRESS);
+  service_->HandleUserInput(web_contents(),
+                            SiteEngagementMetrics::ENGAGEMENT_MOUSE);
   NavigateAndCommit(url2);
-  service->HandleMediaPlaying(web_contents(), true);
+  service_->HandleMediaPlaying(web_contents(), true);
 
   histograms.ExpectTotalCount(SiteEngagementMetrics::kTotalEngagementHistogram,
                               2);
@@ -696,11 +695,11 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
       SiteEngagementMetrics::ENGAGEMENT_FIRST_DAILY_ENGAGEMENT, 2);
 
   // Navigations are still logged within the 1 hour refresh period
-  clock->SetNow(clock->Now() + base::TimeDelta::FromMinutes(59));
+  clock_->SetNow(clock_->Now() + base::TimeDelta::FromMinutes(59));
 
   NavigateAndCommit(url2);
-  service->HandleNavigation(web_contents(), ui::PAGE_TRANSITION_GENERATED);
-  service->HandleNavigation(web_contents(), ui::PAGE_TRANSITION_AUTO_BOOKMARK);
+  service_->HandleNavigation(web_contents(), ui::PAGE_TRANSITION_GENERATED);
+  service_->HandleNavigation(web_contents(), ui::PAGE_TRANSITION_AUTO_BOOKMARK);
 
   histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementTypeHistogram,
                               8);
@@ -718,14 +717,14 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
       SiteEngagementMetrics::ENGAGEMENT_FIRST_DAILY_ENGAGEMENT, 2);
 
   // Update the hourly histograms again.
-  clock->SetNow(clock->Now() + base::TimeDelta::FromMinutes(1));
+  clock_->SetNow(clock_->Now() + base::TimeDelta::FromMinutes(1));
 
   NavigateAndCommit(url3);
-  service->HandleNavigation(web_contents(), ui::PAGE_TRANSITION_TYPED);
-  service->HandleMediaPlaying(web_contents(), false);
+  service_->HandleNavigation(web_contents(), ui::PAGE_TRANSITION_TYPED);
+  service_->HandleMediaPlaying(web_contents(), false);
   NavigateAndCommit(url2);
-  service->HandleUserInput(web_contents(),
-                           SiteEngagementMetrics::ENGAGEMENT_TOUCH_GESTURE);
+  service_->HandleUserInput(web_contents(),
+                            SiteEngagementMetrics::ENGAGEMENT_TOUCH_GESTURE);
 
   histograms.ExpectTotalCount(SiteEngagementMetrics::kTotalEngagementHistogram,
                               3);
@@ -776,17 +775,17 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
       SiteEngagementMetrics::ENGAGEMENT_FIRST_DAILY_ENGAGEMENT, 3);
 
   NavigateAndCommit(url1);
-  service->HandleNavigation(web_contents(), ui::PAGE_TRANSITION_GENERATED);
-  service->HandleNavigation(web_contents(), ui::PAGE_TRANSITION_TYPED);
+  service_->HandleNavigation(web_contents(), ui::PAGE_TRANSITION_GENERATED);
+  service_->HandleNavigation(web_contents(), ui::PAGE_TRANSITION_TYPED);
   NavigateAndCommit(url2);
-  service->HandleUserInput(web_contents(),
-                           SiteEngagementMetrics::ENGAGEMENT_SCROLL);
+  service_->HandleUserInput(web_contents(),
+                            SiteEngagementMetrics::ENGAGEMENT_SCROLL);
   NavigateAndCommit(url1);
-  service->HandleUserInput(web_contents(),
-                           SiteEngagementMetrics::ENGAGEMENT_KEYPRESS);
+  service_->HandleUserInput(web_contents(),
+                            SiteEngagementMetrics::ENGAGEMENT_KEYPRESS);
   NavigateAndCommit(url3);
-  service->HandleUserInput(web_contents(),
-                           SiteEngagementMetrics::ENGAGEMENT_MOUSE);
+  service_->HandleUserInput(web_contents(),
+                            SiteEngagementMetrics::ENGAGEMENT_MOUSE);
 
   histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementTypeHistogram,
                               17);
@@ -809,10 +808,10 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
   // the last increment before max. Expect the histogram to be updated.
   NavigateAndCommit(url1);
   for (int i = 0; i < 6; ++i)
-    service->HandleNavigation(web_contents(), ui::PAGE_TRANSITION_TYPED);
+    service_->HandleNavigation(web_contents(), ui::PAGE_TRANSITION_TYPED);
 
-  clock->SetNow(clock->Now() + base::TimeDelta::FromMinutes(60));
-  service->HandleNavigation(web_contents(), ui::PAGE_TRANSITION_TYPED);
+  clock_->SetNow(clock_->Now() + base::TimeDelta::FromMinutes(60));
+  service_->HandleNavigation(web_contents(), ui::PAGE_TRANSITION_TYPED);
 
   histograms.ExpectTotalCount(SiteEngagementMetrics::kTotalEngagementHistogram,
                               4);
@@ -865,10 +864,6 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
 // engagement times to be reset if too much time has passed since the last
 // engagement.
 TEST_F(SiteEngagementServiceTest, CleanupEngagementScores) {
-  base::SimpleTestClock* clock = new base::SimpleTestClock();
-  std::unique_ptr<SiteEngagementService> service(
-      new SiteEngagementService(profile(), base::WrapUnique(clock)));
-
   // Set the base time to be 3 weeks past the stale period in the past.
   // Use a 1 second offset to make sure scores don't yet decay.
   base::TimeDelta one_second = base::TimeDelta::FromSeconds(1);
@@ -877,10 +872,11 @@ TEST_F(SiteEngagementServiceTest, CleanupEngagementScores) {
       base::TimeDelta::FromHours(SiteEngagementScore::GetDecayPeriodInHours());
   base::TimeDelta shorter_than_decay_period = decay_period - one_second;
 
-  base::Time max_decay_time = GetReferenceTime() - service->GetMaxDecayPeriod();
-  base::Time stale_time = GetReferenceTime() - service->GetStalePeriod();
+  base::Time max_decay_time =
+      GetReferenceTime() - service_->GetMaxDecayPeriod();
+  base::Time stale_time = GetReferenceTime() - service_->GetStalePeriod();
   base::Time base_time = stale_time - shorter_than_decay_period * 4;
-  clock->SetNow(base_time);
+  clock_->SetNow(base_time);
 
   // The https and http versions of www.google.com should be separate.
   GURL url1("https://www.google.com/");
@@ -888,195 +884,195 @@ TEST_F(SiteEngagementServiceTest, CleanupEngagementScores) {
   GURL url3("http://maps.google.com/");
   GURL url4("http://drive.google.com/");
 
-  EXPECT_EQ(0, service->GetScore(url1));
-  EXPECT_EQ(0, service->GetScore(url2));
-  EXPECT_EQ(0, service->GetScore(url3));
-  EXPECT_EQ(0, service->GetScore(url4));
+  EXPECT_EQ(0, service_->GetScore(url1));
+  EXPECT_EQ(0, service_->GetScore(url2));
+  EXPECT_EQ(0, service_->GetScore(url3));
+  EXPECT_EQ(0, service_->GetScore(url4));
 
   // Add some points
-  service->AddPoints(url1, 1.0);
-  service->AddPoints(url2, 5.0);
-  EXPECT_EQ(1.0, service->GetScore(url1));
-  EXPECT_EQ(5.0, service->GetScore(url2));
+  service_->AddPoints(url1, 1.0);
+  service_->AddPoints(url2, 5.0);
+  EXPECT_EQ(1.0, service_->GetScore(url1));
+  EXPECT_EQ(5.0, service_->GetScore(url2));
 
   // Add more to url2 over the next few days. Leave it completely alone after
   // this.
-  clock->SetNow(base_time + one_day);
-  service->AddPoints(url2, 5.0);
-  EXPECT_EQ(10.0, service->GetScore(url2));
+  clock_->SetNow(base_time + one_day);
+  service_->AddPoints(url2, 5.0);
+  EXPECT_EQ(10.0, service_->GetScore(url2));
 
-  clock->SetNow(base_time + 2 * one_day);
-  service->AddPoints(url2, 5.0);
-  EXPECT_EQ(15.0, service->GetScore(url2));
+  clock_->SetNow(base_time + 2 * one_day);
+  service_->AddPoints(url2, 5.0);
+  EXPECT_EQ(15.0, service_->GetScore(url2));
 
-  clock->SetNow(base_time + 3 * one_day);
-  service->AddPoints(url2, 2.0);
-  EXPECT_EQ(17.0, service->GetScore(url2));
-  base::Time url2_last_modified = clock->Now();
+  clock_->SetNow(base_time + 3 * one_day);
+  service_->AddPoints(url2, 2.0);
+  EXPECT_EQ(17.0, service_->GetScore(url2));
+  base::Time url2_last_modified = clock_->Now();
 
   // Move to (3 * shorter_than_decay_period) before the stale period.
   base_time += shorter_than_decay_period;
-  clock->SetNow(base_time);
-  service->AddPoints(url1, 1.0);
-  service->AddPoints(url3, 5.0);
-  EXPECT_EQ(2.0, service->GetScore(url1));
-  EXPECT_EQ(5.0, service->GetScore(url3));
+  clock_->SetNow(base_time);
+  service_->AddPoints(url1, 1.0);
+  service_->AddPoints(url3, 5.0);
+  EXPECT_EQ(2.0, service_->GetScore(url1));
+  EXPECT_EQ(5.0, service_->GetScore(url3));
 
   // Add more to url3, and then leave it alone.
-  clock->SetNow(base_time + one_day);
-  service->AddPoints(url1, 5.0);
-  service->AddPoints(url3, 5.0);
-  EXPECT_EQ(7.0, service->GetScore(url1));
-  EXPECT_EQ(10.0, service->GetScore(url3));
+  clock_->SetNow(base_time + one_day);
+  service_->AddPoints(url1, 5.0);
+  service_->AddPoints(url3, 5.0);
+  EXPECT_EQ(7.0, service_->GetScore(url1));
+  EXPECT_EQ(10.0, service_->GetScore(url3));
 
   // Move to (2 * shorter_than_decay_period) before the stale period.
   base_time += shorter_than_decay_period;
-  clock->SetNow(base_time);
-  service->AddPoints(url1, 5.0);
-  service->AddPoints(url4, 5.0);
-  EXPECT_EQ(12.0, service->GetScore(url1));
-  EXPECT_EQ(5.0, service->GetScore(url4));
+  clock_->SetNow(base_time);
+  service_->AddPoints(url1, 5.0);
+  service_->AddPoints(url4, 5.0);
+  EXPECT_EQ(12.0, service_->GetScore(url1));
+  EXPECT_EQ(5.0, service_->GetScore(url4));
 
   // Move to shorter_than_decay_period before the stale period.
   base_time += shorter_than_decay_period;
-  clock->SetNow(base_time);
-  service->AddPoints(url1, 1.5);
-  service->AddPoints(url4, 2.0);
-  EXPECT_EQ(13.5, service->GetScore(url1));
-  EXPECT_EQ(7.0, service->GetScore(url4));
+  clock_->SetNow(base_time);
+  service_->AddPoints(url1, 1.5);
+  service_->AddPoints(url4, 2.0);
+  EXPECT_EQ(13.5, service_->GetScore(url1));
+  EXPECT_EQ(7.0, service_->GetScore(url4));
 
   // After cleanup, url2 should be last modified offset to max_decay_time by the
   // current offset to now.
-  url2_last_modified = max_decay_time - (clock->Now() - url2_last_modified);
+  url2_last_modified = max_decay_time - (clock_->Now() - url2_last_modified);
   base_time = GetReferenceTime();
 
   {
-    clock->SetNow(base_time);
-    ASSERT_TRUE(service->IsLastEngagementStale());
+    clock_->SetNow(base_time);
+    ASSERT_TRUE(service_->IsLastEngagementStale());
 
     // Run a cleanup. Last engagement times will be reset relative to
     // max_decay_time. After the reset, url2 will go through 3 decays, url3
     // will go through 2 decays, and url1/url4 will go through 1 decay. This
     // decay is uncommitted!
-    service->CleanupEngagementScores(true);
-    ASSERT_FALSE(service->IsLastEngagementStale());
+    service_->CleanupEngagementScores(true);
+    ASSERT_FALSE(service_->IsLastEngagementStale());
 
-    std::map<GURL, double> score_map = service->GetScoreMap();
+    std::map<GURL, double> score_map = service_->GetScoreMap();
     EXPECT_EQ(3u, score_map.size());
     EXPECT_EQ(8.5, score_map[url1]);
     EXPECT_EQ(2.0, score_map[url2]);
     EXPECT_EQ(2.0, score_map[url4]);
-    EXPECT_EQ(0, service->GetScore(url3));
+    EXPECT_EQ(0, service_->GetScore(url3));
 
     EXPECT_EQ(max_decay_time,
-              service->CreateEngagementScore(url1).last_engagement_time());
+              service_->CreateEngagementScore(url1).last_engagement_time());
     EXPECT_EQ(url2_last_modified,
-              service->CreateEngagementScore(url2).last_engagement_time());
+              service_->CreateEngagementScore(url2).last_engagement_time());
     EXPECT_EQ(max_decay_time,
-              service->CreateEngagementScore(url4).last_engagement_time());
-    EXPECT_EQ(max_decay_time, service->GetLastEngagementTime());
+              service_->CreateEngagementScore(url4).last_engagement_time());
+    EXPECT_EQ(max_decay_time, service_->GetLastEngagementTime());
   }
 
   {
     // Advance time by the stale period. Nothing should happen in the cleanup.
     // Last engagement times are now relative to max_decay_time + stale period
-    base_time += service->GetStalePeriod();
-    clock->SetNow(base_time);
-    ASSERT_TRUE(service->IsLastEngagementStale());
+    base_time += service_->GetStalePeriod();
+    clock_->SetNow(base_time);
+    ASSERT_TRUE(service_->IsLastEngagementStale());
 
-    std::map<GURL, double> score_map = service->GetScoreMap();
+    std::map<GURL, double> score_map = service_->GetScoreMap();
     EXPECT_EQ(3u, score_map.size());
     EXPECT_EQ(8.5, score_map[url1]);
     EXPECT_EQ(2.0, score_map[url2]);
     EXPECT_EQ(2.0, score_map[url4]);
 
-    EXPECT_EQ(max_decay_time + service->GetStalePeriod(),
-              service->CreateEngagementScore(url1).last_engagement_time());
-    EXPECT_EQ(url2_last_modified + service->GetStalePeriod(),
-              service->CreateEngagementScore(url2).last_engagement_time());
-    EXPECT_EQ(max_decay_time + service->GetStalePeriod(),
-              service->CreateEngagementScore(url4).last_engagement_time());
-    EXPECT_EQ(max_decay_time + service->GetStalePeriod(),
-              service->GetLastEngagementTime());
+    EXPECT_EQ(max_decay_time + service_->GetStalePeriod(),
+              service_->CreateEngagementScore(url1).last_engagement_time());
+    EXPECT_EQ(url2_last_modified + service_->GetStalePeriod(),
+              service_->CreateEngagementScore(url2).last_engagement_time());
+    EXPECT_EQ(max_decay_time + service_->GetStalePeriod(),
+              service_->CreateEngagementScore(url4).last_engagement_time());
+    EXPECT_EQ(max_decay_time + service_->GetStalePeriod(),
+              service_->GetLastEngagementTime());
   }
 
   {
     // Add points to commit the decay.
-    service->AddPoints(url1, 0.5);
-    service->AddPoints(url2, 0.5);
-    service->AddPoints(url4, 1);
+    service_->AddPoints(url1, 0.5);
+    service_->AddPoints(url2, 0.5);
+    service_->AddPoints(url4, 1);
 
-    std::map<GURL, double> score_map = service->GetScoreMap();
+    std::map<GURL, double> score_map = service_->GetScoreMap();
     EXPECT_EQ(3u, score_map.size());
     EXPECT_EQ(9.0, score_map[url1]);
     EXPECT_EQ(2.5, score_map[url2]);
     EXPECT_EQ(3.0, score_map[url4]);
-    EXPECT_EQ(clock->Now(),
-              service->CreateEngagementScore(url1).last_engagement_time());
-    EXPECT_EQ(clock->Now(),
-              service->CreateEngagementScore(url2).last_engagement_time());
-    EXPECT_EQ(clock->Now(),
-              service->CreateEngagementScore(url4).last_engagement_time());
-    EXPECT_EQ(clock->Now(), service->GetLastEngagementTime());
+    EXPECT_EQ(clock_->Now(),
+              service_->CreateEngagementScore(url1).last_engagement_time());
+    EXPECT_EQ(clock_->Now(),
+              service_->CreateEngagementScore(url2).last_engagement_time());
+    EXPECT_EQ(clock_->Now(),
+              service_->CreateEngagementScore(url4).last_engagement_time());
+    EXPECT_EQ(clock_->Now(), service_->GetLastEngagementTime());
   }
 
   {
     // Advance time by a decay period after the current last engagement time.
     // Expect url2/url4 to be decayed to zero and url1 to decay once.
-    base_time = clock->Now() + decay_period;
-    clock->SetNow(base_time);
-    ASSERT_FALSE(service->IsLastEngagementStale());
+    base_time = clock_->Now() + decay_period;
+    clock_->SetNow(base_time);
+    ASSERT_FALSE(service_->IsLastEngagementStale());
 
-    std::map<GURL, double> score_map = service->GetScoreMap();
+    std::map<GURL, double> score_map = service_->GetScoreMap();
     EXPECT_EQ(3u, score_map.size());
     EXPECT_EQ(4, score_map[url1]);
     EXPECT_EQ(0, score_map[url2]);
     EXPECT_EQ(0, score_map[url4]);
 
-    service->CleanupEngagementScores(false);
-    ASSERT_FALSE(service->IsLastEngagementStale());
+    service_->CleanupEngagementScores(false);
+    ASSERT_FALSE(service_->IsLastEngagementStale());
 
-    score_map = service->GetScoreMap();
+    score_map = service_->GetScoreMap();
     EXPECT_EQ(1u, score_map.size());
     EXPECT_EQ(4, score_map[url1]);
-    EXPECT_EQ(0, service->GetScore(url2));
-    EXPECT_EQ(0, service->GetScore(url4));
-    EXPECT_EQ(clock->Now() - decay_period,
-              service->CreateEngagementScore(url1).last_engagement_time());
-    EXPECT_EQ(clock->Now() - decay_period, service->GetLastEngagementTime());
+    EXPECT_EQ(0, service_->GetScore(url2));
+    EXPECT_EQ(0, service_->GetScore(url4));
+    EXPECT_EQ(clock_->Now() - decay_period,
+              service_->CreateEngagementScore(url1).last_engagement_time());
+    EXPECT_EQ(clock_->Now() - decay_period, service_->GetLastEngagementTime());
   }
 
   {
     // Add points to commit the decay.
-    service->AddPoints(url1, 0.5);
+    service_->AddPoints(url1, 0.5);
 
-    std::map<GURL, double> score_map = service->GetScoreMap();
+    std::map<GURL, double> score_map = service_->GetScoreMap();
     EXPECT_EQ(1u, score_map.size());
     EXPECT_EQ(4.5, score_map[url1]);
-    EXPECT_EQ(clock->Now(),
-              service->CreateEngagementScore(url1).last_engagement_time());
-    EXPECT_EQ(clock->Now(), service->GetLastEngagementTime());
+    EXPECT_EQ(clock_->Now(),
+              service_->CreateEngagementScore(url1).last_engagement_time());
+    EXPECT_EQ(clock_->Now(), service_->GetLastEngagementTime());
   }
 
   {
     // Another decay period will decay url1 to zero.
-    clock->SetNow(clock->Now() + decay_period);
-    ASSERT_FALSE(service->IsLastEngagementStale());
+    clock_->SetNow(clock_->Now() + decay_period);
+    ASSERT_FALSE(service_->IsLastEngagementStale());
 
-    std::map<GURL, double> score_map = service->GetScoreMap();
+    std::map<GURL, double> score_map = service_->GetScoreMap();
     EXPECT_EQ(1u, score_map.size());
     EXPECT_EQ(0, score_map[url1]);
-    EXPECT_EQ(clock->Now() - decay_period,
-              service->CreateEngagementScore(url1).last_engagement_time());
-    EXPECT_EQ(clock->Now() - decay_period, service->GetLastEngagementTime());
+    EXPECT_EQ(clock_->Now() - decay_period,
+              service_->CreateEngagementScore(url1).last_engagement_time());
+    EXPECT_EQ(clock_->Now() - decay_period, service_->GetLastEngagementTime());
 
-    service->CleanupEngagementScores(false);
-    ASSERT_FALSE(service->IsLastEngagementStale());
+    service_->CleanupEngagementScores(false);
+    ASSERT_FALSE(service_->IsLastEngagementStale());
 
-    score_map = service->GetScoreMap();
+    score_map = service_->GetScoreMap();
     EXPECT_EQ(0u, score_map.size());
-    EXPECT_EQ(0, service->GetScore(url1));
-    EXPECT_EQ(clock->Now() - decay_period, service->GetLastEngagementTime());
+    EXPECT_EQ(0, service_->GetScore(url1));
+    EXPECT_EQ(clock_->Now() - decay_period, service_->GetLastEngagementTime());
   }
 }
 
@@ -1085,31 +1081,27 @@ TEST_F(SiteEngagementServiceTest, CleanupEngagementScoresProportional) {
   SetParamValue(SiteEngagementScore::DECAY_POINTS, 0);
   SetParamValue(SiteEngagementScore::SCORE_CLEANUP_THRESHOLD, 0.5);
 
-  base::SimpleTestClock* clock = new base::SimpleTestClock();
-  std::unique_ptr<SiteEngagementService> service(
-      new SiteEngagementService(profile(), base::WrapUnique(clock)));
-
   base::Time current_day = GetReferenceTime();
-  clock->SetNow(current_day);
+  clock_->SetNow(current_day);
 
   GURL url1("https://www.google.com/");
   GURL url2("https://www.somewhereelse.com/");
 
-  service->AddPoints(url1, 1.0);
-  service->AddPoints(url2, 1.2);
+  service_->AddPoints(url1, 1.0);
+  service_->AddPoints(url2, 1.2);
 
   current_day += base::TimeDelta::FromDays(7);
-  clock->SetNow(current_day);
-  std::map<GURL, double> score_map = service->GetScoreMap();
+  clock_->SetNow(current_day);
+  std::map<GURL, double> score_map = service_->GetScoreMap();
   EXPECT_EQ(2u, score_map.size());
-  AssertInRange(0.5, service->GetScore(url1));
-  AssertInRange(0.6, service->GetScore(url2));
+  AssertInRange(0.5, service_->GetScore(url1));
+  AssertInRange(0.6, service_->GetScore(url2));
 
-  service->CleanupEngagementScores(false);
-  score_map = service->GetScoreMap();
+  service_->CleanupEngagementScores(false);
+  score_map = service_->GetScoreMap();
   EXPECT_EQ(1u, score_map.size());
-  EXPECT_EQ(0, service->GetScore(url1));
-  AssertInRange(0.6, service->GetScore(url2));
+  EXPECT_EQ(0, service_->GetScore(url1));
+  AssertInRange(0.6, service_->GetScore(url2));
 }
 
 TEST_F(SiteEngagementServiceTest, NavigationAccumulation) {
@@ -1143,37 +1135,28 @@ TEST_F(SiteEngagementServiceTest, NavigationAccumulation) {
 }
 
 TEST_F(SiteEngagementServiceTest, IsBootstrapped) {
-  base::SimpleTestClock* clock = new base::SimpleTestClock();
-  std::unique_ptr<SiteEngagementService> service(
-      new SiteEngagementService(profile(), base::WrapUnique(clock)));
-
   base::Time current_day = GetReferenceTime();
-  clock->SetNow(current_day);
+  clock_->SetNow(current_day);
 
   GURL url1("https://www.google.com/");
   GURL url2("https://www.somewhereelse.com/");
 
-  EXPECT_FALSE(service->IsBootstrapped());
+  EXPECT_FALSE(service_->IsBootstrapped());
 
-  service->AddPoints(url1, 5.0);
-  EXPECT_FALSE(service->IsBootstrapped());
+  service_->AddPoints(url1, 5.0);
+  EXPECT_FALSE(service_->IsBootstrapped());
 
-  service->AddPoints(url2, 5.0);
-  EXPECT_TRUE(service->IsBootstrapped());
+  service_->AddPoints(url2, 5.0);
+  EXPECT_TRUE(service_->IsBootstrapped());
 
-  clock->SetNow(current_day + base::TimeDelta::FromDays(8));
-  EXPECT_FALSE(service->IsBootstrapped());
+  clock_->SetNow(current_day + base::TimeDelta::FromDays(8));
+  EXPECT_FALSE(service_->IsBootstrapped());
 }
 
 TEST_F(SiteEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
   // Enable proportional decay to ensure that the undecay that happens to
   // balance out history deletion also accounts for the proportional decay.
   SetParamValue(SiteEngagementScore::DECAY_PROPORTION, 0.5);
-
-  base::SimpleTestClock* clock = new base::SimpleTestClock();
-  std::unique_ptr<SiteEngagementService> engagement(
-      new SiteEngagementService(profile(), base::WrapUnique(clock)));
-  ASSERT_TRUE(engagement.get());
 
   GURL origin1("http://www.google.com/");
   GURL origin1a("http://www.google.com/search?q=asdf");
@@ -1190,7 +1173,7 @@ TEST_F(SiteEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
                                    base::TimeDelta::FromDays(1) +
                                    base::TimeDelta::FromHours(4);
   base::Time yesterday_week = GetReferenceTime() - base::TimeDelta::FromDays(8);
-  clock->SetNow(today);
+  clock_->SetNow(today);
 
   history::HistoryService* history = HistoryServiceFactory::GetForProfile(
       profile(), ServiceAccessType::IMPLICIT_ACCESS);
@@ -1198,23 +1181,23 @@ TEST_F(SiteEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
   history->AddPage(origin1, yesterday_afternoon, history::SOURCE_BROWSED);
   history->AddPage(origin1a, yesterday_week, history::SOURCE_BROWSED);
   history->AddPage(origin1b, today, history::SOURCE_BROWSED);
-  engagement->AddPoints(origin1, 3.0);
+  service_->AddPoints(origin1, 3.0);
 
   history->AddPage(origin2, yesterday_afternoon, history::SOURCE_BROWSED);
   history->AddPage(origin2a, yesterday_afternoon, history::SOURCE_BROWSED);
-  engagement->AddPoints(origin2, 5.0);
+  service_->AddPoints(origin2, 5.0);
 
   history->AddPage(origin3, today, history::SOURCE_BROWSED);
-  engagement->AddPoints(origin3, 5.0);
+  service_->AddPoints(origin3, 5.0);
 
   history->AddPage(origin4, yesterday_week, history::SOURCE_BROWSED);
   history->AddPage(origin4a, yesterday_afternoon, history::SOURCE_BROWSED);
-  engagement->AddPoints(origin4, 5.0);
+  service_->AddPoints(origin4, 5.0);
 
-  AssertInRange(3.0, engagement->GetScore(origin1));
-  AssertInRange(5.0, engagement->GetScore(origin2));
-  AssertInRange(5.0, engagement->GetScore(origin3));
-  AssertInRange(5.0, engagement->GetScore(origin4));
+  AssertInRange(3.0, service_->GetScore(origin1));
+  AssertInRange(5.0, service_->GetScore(origin2));
+  AssertInRange(5.0, service_->GetScore(origin3));
+  AssertInRange(5.0, service_->GetScore(origin4));
 
   {
     SiteEngagementChangeWaiter waiter(profile());
@@ -1230,11 +1213,11 @@ TEST_F(SiteEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     // cutting origin1's score by 1/3. origin3 is untouched. origin4 has 1 URL
     // deleted and 1 remaining, but its most recent visit is more than 1 week in
     // the past. Ensure that its scored is halved, and not decayed further.
-    AssertInRange(2, engagement->GetScore(origin1));
-    EXPECT_EQ(0, engagement->GetScore(origin2));
-    AssertInRange(5.0, engagement->GetScore(origin3));
-    AssertInRange(2.5, engagement->GetScore(origin4));
-    AssertInRange(9.5, engagement->GetTotalEngagementPoints());
+    AssertInRange(2, service_->GetScore(origin1));
+    EXPECT_EQ(0, service_->GetScore(origin2));
+    AssertInRange(5.0, service_->GetScore(origin3));
+    AssertInRange(2.5, service_->GetScore(origin4));
+    AssertInRange(9.5, service_->GetTotalEngagementPoints());
   }
 
   {
@@ -1254,11 +1237,11 @@ TEST_F(SiteEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
 
     // origin1's score should be halved again. origin3 and origin4 remain
     // untouched.
-    AssertInRange(1, engagement->GetScore(origin1));
-    EXPECT_EQ(0, engagement->GetScore(origin2));
-    AssertInRange(5.0, engagement->GetScore(origin3));
-    AssertInRange(2.5, engagement->GetScore(origin4));
-    AssertInRange(8.5, engagement->GetTotalEngagementPoints());
+    AssertInRange(1, service_->GetScore(origin1));
+    EXPECT_EQ(0, service_->GetScore(origin2));
+    AssertInRange(5.0, service_->GetScore(origin3));
+    AssertInRange(2.5, service_->GetScore(origin4));
+    AssertInRange(8.5, service_->GetTotalEngagementPoints());
   }
 
   {
@@ -1277,11 +1260,11 @@ TEST_F(SiteEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     waiter.Wait();
 
     // origin1 should be removed. origin3 and origin4 remain untouched.
-    EXPECT_EQ(0, engagement->GetScore(origin1));
-    EXPECT_EQ(0, engagement->GetScore(origin2));
-    AssertInRange(5.0, engagement->GetScore(origin3));
-    AssertInRange(2.5, engagement->GetScore(origin4));
-    AssertInRange(7.5, engagement->GetTotalEngagementPoints());
+    EXPECT_EQ(0, service_->GetScore(origin1));
+    EXPECT_EQ(0, service_->GetScore(origin2));
+    AssertInRange(5.0, service_->GetScore(origin3));
+    AssertInRange(2.5, service_->GetScore(origin4));
+    AssertInRange(7.5, service_->GetTotalEngagementPoints());
   }
 }
 
@@ -1299,132 +1282,128 @@ TEST_F(SiteEngagementServiceTest, EngagementLevel) {
                     blink::mojom::EngagementLevel::MAX,
                 "enum values should not be equal");
 
-  base::SimpleTestClock* clock = new base::SimpleTestClock();
-  std::unique_ptr<SiteEngagementService> service(
-      new SiteEngagementService(profile(), base::WrapUnique(clock)));
-
   base::Time current_day = GetReferenceTime();
-  clock->SetNow(current_day);
+  clock_->SetNow(current_day);
 
   GURL url1("https://www.google.com/");
   GURL url2("http://www.google.com/");
 
   EXPECT_EQ(blink::mojom::EngagementLevel::NONE,
-            service->GetEngagementLevel(url1));
+            service_->GetEngagementLevel(url1));
   EXPECT_EQ(blink::mojom::EngagementLevel::NONE,
-            service->GetEngagementLevel(url2));
+            service_->GetEngagementLevel(url2));
   EXPECT_TRUE(
-      service->IsEngagementAtLeast(url1, blink::mojom::EngagementLevel::NONE));
-  EXPECT_FALSE(service->IsEngagementAtLeast(
+      service_->IsEngagementAtLeast(url1, blink::mojom::EngagementLevel::NONE));
+  EXPECT_FALSE(service_->IsEngagementAtLeast(
       url1, blink::mojom::EngagementLevel::MINIMAL));
   EXPECT_FALSE(
-      service->IsEngagementAtLeast(url1, blink::mojom::EngagementLevel::LOW));
-  EXPECT_FALSE(service->IsEngagementAtLeast(
+      service_->IsEngagementAtLeast(url1, blink::mojom::EngagementLevel::LOW));
+  EXPECT_FALSE(service_->IsEngagementAtLeast(
       url1, blink::mojom::EngagementLevel::MEDIUM));
   EXPECT_FALSE(
-      service->IsEngagementAtLeast(url1, blink::mojom::EngagementLevel::HIGH));
+      service_->IsEngagementAtLeast(url1, blink::mojom::EngagementLevel::HIGH));
   EXPECT_FALSE(
-      service->IsEngagementAtLeast(url1, blink::mojom::EngagementLevel::MAX));
+      service_->IsEngagementAtLeast(url1, blink::mojom::EngagementLevel::MAX));
 
   // Bring url2 to MINIMAL engagement.
-  service->AddPoints(url2, 0.5);
+  service_->AddPoints(url2, 0.5);
   EXPECT_EQ(blink::mojom::EngagementLevel::NONE,
-            service->GetEngagementLevel(url1));
+            service_->GetEngagementLevel(url1));
   EXPECT_EQ(blink::mojom::EngagementLevel::MINIMAL,
-            service->GetEngagementLevel(url2));
+            service_->GetEngagementLevel(url2));
   EXPECT_TRUE(
-      service->IsEngagementAtLeast(url2, blink::mojom::EngagementLevel::NONE));
-  EXPECT_TRUE(service->IsEngagementAtLeast(
+      service_->IsEngagementAtLeast(url2, blink::mojom::EngagementLevel::NONE));
+  EXPECT_TRUE(service_->IsEngagementAtLeast(
       url2, blink::mojom::EngagementLevel::MINIMAL));
   EXPECT_FALSE(
-      service->IsEngagementAtLeast(url2, blink::mojom::EngagementLevel::LOW));
-  EXPECT_FALSE(service->IsEngagementAtLeast(
+      service_->IsEngagementAtLeast(url2, blink::mojom::EngagementLevel::LOW));
+  EXPECT_FALSE(service_->IsEngagementAtLeast(
       url2, blink::mojom::EngagementLevel::MEDIUM));
   EXPECT_FALSE(
-      service->IsEngagementAtLeast(url2, blink::mojom::EngagementLevel::HIGH));
+      service_->IsEngagementAtLeast(url2, blink::mojom::EngagementLevel::HIGH));
   EXPECT_FALSE(
-      service->IsEngagementAtLeast(url2, blink::mojom::EngagementLevel::MAX));
+      service_->IsEngagementAtLeast(url2, blink::mojom::EngagementLevel::MAX));
 
   // Bring url1 to LOW engagement.
-  service->AddPoints(url1, 1.0);
+  service_->AddPoints(url1, 1.0);
   EXPECT_EQ(blink::mojom::EngagementLevel::LOW,
-            service->GetEngagementLevel(url1));
+            service_->GetEngagementLevel(url1));
   EXPECT_EQ(blink::mojom::EngagementLevel::MINIMAL,
-            service->GetEngagementLevel(url2));
+            service_->GetEngagementLevel(url2));
   EXPECT_TRUE(
-      service->IsEngagementAtLeast(url1, blink::mojom::EngagementLevel::NONE));
-  EXPECT_TRUE(service->IsEngagementAtLeast(
+      service_->IsEngagementAtLeast(url1, blink::mojom::EngagementLevel::NONE));
+  EXPECT_TRUE(service_->IsEngagementAtLeast(
       url1, blink::mojom::EngagementLevel::MINIMAL));
   EXPECT_TRUE(
-      service->IsEngagementAtLeast(url1, blink::mojom::EngagementLevel::LOW));
-  EXPECT_FALSE(service->IsEngagementAtLeast(
+      service_->IsEngagementAtLeast(url1, blink::mojom::EngagementLevel::LOW));
+  EXPECT_FALSE(service_->IsEngagementAtLeast(
       url1, blink::mojom::EngagementLevel::MEDIUM));
   EXPECT_FALSE(
-      service->IsEngagementAtLeast(url1, blink::mojom::EngagementLevel::HIGH));
+      service_->IsEngagementAtLeast(url1, blink::mojom::EngagementLevel::HIGH));
   EXPECT_FALSE(
-      service->IsEngagementAtLeast(url1, blink::mojom::EngagementLevel::MAX));
+      service_->IsEngagementAtLeast(url1, blink::mojom::EngagementLevel::MAX));
 
   // Bring url2 to MEDIUM engagement.
-  service->AddPoints(url2, 4.5);
+  service_->AddPoints(url2, 4.5);
   EXPECT_EQ(blink::mojom::EngagementLevel::LOW,
-            service->GetEngagementLevel(url1));
+            service_->GetEngagementLevel(url1));
   EXPECT_EQ(blink::mojom::EngagementLevel::MEDIUM,
-            service->GetEngagementLevel(url2));
+            service_->GetEngagementLevel(url2));
   EXPECT_TRUE(
-      service->IsEngagementAtLeast(url2, blink::mojom::EngagementLevel::NONE));
-  EXPECT_TRUE(service->IsEngagementAtLeast(
+      service_->IsEngagementAtLeast(url2, blink::mojom::EngagementLevel::NONE));
+  EXPECT_TRUE(service_->IsEngagementAtLeast(
       url2, blink::mojom::EngagementLevel::MINIMAL));
   EXPECT_TRUE(
-      service->IsEngagementAtLeast(url2, blink::mojom::EngagementLevel::LOW));
-  EXPECT_TRUE(service->IsEngagementAtLeast(
+      service_->IsEngagementAtLeast(url2, blink::mojom::EngagementLevel::LOW));
+  EXPECT_TRUE(service_->IsEngagementAtLeast(
       url2, blink::mojom::EngagementLevel::MEDIUM));
   EXPECT_FALSE(
-      service->IsEngagementAtLeast(url2, blink::mojom::EngagementLevel::HIGH));
+      service_->IsEngagementAtLeast(url2, blink::mojom::EngagementLevel::HIGH));
   EXPECT_FALSE(
-      service->IsEngagementAtLeast(url2, blink::mojom::EngagementLevel::MAX));
+      service_->IsEngagementAtLeast(url2, blink::mojom::EngagementLevel::MAX));
 
   // Bring url2 to HIGH engagement.
   for (int i = 0; i < 9; ++i) {
     current_day += base::TimeDelta::FromDays(1);
-    clock->SetNow(current_day);
-    service->AddPoints(url2, 5.0);
+    clock_->SetNow(current_day);
+    service_->AddPoints(url2, 5.0);
   }
   EXPECT_EQ(blink::mojom::EngagementLevel::HIGH,
-            service->GetEngagementLevel(url2));
+            service_->GetEngagementLevel(url2));
 
   EXPECT_TRUE(
-      service->IsEngagementAtLeast(url2, blink::mojom::EngagementLevel::NONE));
-  EXPECT_TRUE(service->IsEngagementAtLeast(
+      service_->IsEngagementAtLeast(url2, blink::mojom::EngagementLevel::NONE));
+  EXPECT_TRUE(service_->IsEngagementAtLeast(
       url2, blink::mojom::EngagementLevel::MINIMAL));
   EXPECT_TRUE(
-      service->IsEngagementAtLeast(url2, blink::mojom::EngagementLevel::LOW));
-  EXPECT_TRUE(service->IsEngagementAtLeast(
+      service_->IsEngagementAtLeast(url2, blink::mojom::EngagementLevel::LOW));
+  EXPECT_TRUE(service_->IsEngagementAtLeast(
       url2, blink::mojom::EngagementLevel::MEDIUM));
   EXPECT_TRUE(
-      service->IsEngagementAtLeast(url2, blink::mojom::EngagementLevel::HIGH));
+      service_->IsEngagementAtLeast(url2, blink::mojom::EngagementLevel::HIGH));
   EXPECT_FALSE(
-      service->IsEngagementAtLeast(url2, blink::mojom::EngagementLevel::MAX));
+      service_->IsEngagementAtLeast(url2, blink::mojom::EngagementLevel::MAX));
 
   // Bring url2 to MAX engagement.
   for (int i = 0; i < 10; ++i) {
     current_day += base::TimeDelta::FromDays(1);
-    clock->SetNow(current_day);
-    service->AddPoints(url2, 5.0);
+    clock_->SetNow(current_day);
+    service_->AddPoints(url2, 5.0);
   }
   EXPECT_EQ(blink::mojom::EngagementLevel::MAX,
-            service->GetEngagementLevel(url2));
+            service_->GetEngagementLevel(url2));
   EXPECT_TRUE(
-      service->IsEngagementAtLeast(url2, blink::mojom::EngagementLevel::NONE));
-  EXPECT_TRUE(service->IsEngagementAtLeast(
+      service_->IsEngagementAtLeast(url2, blink::mojom::EngagementLevel::NONE));
+  EXPECT_TRUE(service_->IsEngagementAtLeast(
       url2, blink::mojom::EngagementLevel::MINIMAL));
   EXPECT_TRUE(
-      service->IsEngagementAtLeast(url2, blink::mojom::EngagementLevel::LOW));
-  EXPECT_TRUE(service->IsEngagementAtLeast(
+      service_->IsEngagementAtLeast(url2, blink::mojom::EngagementLevel::LOW));
+  EXPECT_TRUE(service_->IsEngagementAtLeast(
       url2, blink::mojom::EngagementLevel::MEDIUM));
   EXPECT_TRUE(
-      service->IsEngagementAtLeast(url2, blink::mojom::EngagementLevel::HIGH));
+      service_->IsEngagementAtLeast(url2, blink::mojom::EngagementLevel::HIGH));
   EXPECT_TRUE(
-      service->IsEngagementAtLeast(url2, blink::mojom::EngagementLevel::MAX));
+      service_->IsEngagementAtLeast(url2, blink::mojom::EngagementLevel::MAX));
 }
 
 TEST_F(SiteEngagementServiceTest, Observers) {
@@ -1503,12 +1482,8 @@ TEST_F(SiteEngagementServiceTest, Observers) {
 }
 
 TEST_F(SiteEngagementServiceTest, ScoreDecayHistograms) {
-  base::SimpleTestClock* clock = new base::SimpleTestClock();
-  std::unique_ptr<SiteEngagementService> service(
-      new SiteEngagementService(profile(), base::WrapUnique(clock)));
-
   base::Time current_day = GetReferenceTime();
-  clock->SetNow(current_day);
+  clock_->SetNow(current_day);
   base::HistogramTester histograms;
   GURL origin1("http://www.google.com/");
   GURL origin2("http://drive.google.com/");
@@ -1518,30 +1493,30 @@ TEST_F(SiteEngagementServiceTest, ScoreDecayHistograms) {
   histograms.ExpectTotalCount(SiteEngagementMetrics::kScoreDecayedToHistogram,
                               0);
 
-  service->AddPoints(origin2, SiteEngagementScore::GetNavigationPoints());
+  service_->AddPoints(origin2, SiteEngagementScore::GetNavigationPoints());
 
   // Max the score for origin1.
   for (int i = 0; i < kMoreDaysThanNeededToMaxTotalEngagement; ++i) {
     current_day += base::TimeDelta::FromDays(1);
-    clock->SetNow(current_day);
+    clock_->SetNow(current_day);
 
     for (int j = 0; j < kMoreAccumulationsThanNeededToMaxDailyEngagement; ++j)
-      service->AddPoints(origin1, SiteEngagementScore::GetNavigationPoints());
+      service_->AddPoints(origin1, SiteEngagementScore::GetNavigationPoints());
   }
 
-  EXPECT_EQ(SiteEngagementScore::kMaxPoints, service->GetScore(origin1));
+  EXPECT_EQ(SiteEngagementScore::kMaxPoints, service_->GetScore(origin1));
   histograms.ExpectTotalCount(SiteEngagementMetrics::kScoreDecayedFromHistogram,
                               0);
   histograms.ExpectTotalCount(SiteEngagementMetrics::kScoreDecayedToHistogram,
                               0);
 
   // Check histograms after one decay period.
-  clock->SetNow(
+  clock_->SetNow(
       current_day +
       base::TimeDelta::FromHours(SiteEngagementScore::GetDecayPeriodInHours()));
 
   // Trigger decay and histogram hit.
-  service->AddPoints(origin1, 0.01);
+  service_->AddPoints(origin1, 0.01);
   histograms.ExpectUniqueSample(
       SiteEngagementMetrics::kScoreDecayedFromHistogram,
       SiteEngagementScore::kMaxPoints, 1);
@@ -1551,11 +1526,11 @@ TEST_F(SiteEngagementServiceTest, ScoreDecayHistograms) {
       1);
 
   // Check histograms after another decay period.
-  clock->SetNow(current_day +
-                base::TimeDelta::FromHours(
-                    2 * SiteEngagementScore::GetDecayPeriodInHours()));
+  clock_->SetNow(current_day +
+                 base::TimeDelta::FromHours(
+                     2 * SiteEngagementScore::GetDecayPeriodInHours()));
   // Trigger decay and histogram hit.
-  service->AddPoints(origin1, 0.01);
+  service_->AddPoints(origin1, 0.01);
   histograms.ExpectTotalCount(SiteEngagementMetrics::kScoreDecayedFromHistogram,
                               2);
   histograms.ExpectTotalCount(SiteEngagementMetrics::kScoreDecayedToHistogram,
@@ -1564,11 +1539,11 @@ TEST_F(SiteEngagementServiceTest, ScoreDecayHistograms) {
   // Check decay to zero. Start at the 3rd decay period (we have had two
   // already). This will be 40 decays in total.
   for (int i = 3; i <= kMorePeriodsThanNeededToDecayMaxScore; ++i) {
-    clock->SetNow(current_day +
-                  base::TimeDelta::FromHours(
-                      i * SiteEngagementScore::GetDecayPeriodInHours()));
+    clock_->SetNow(current_day +
+                   base::TimeDelta::FromHours(
+                       i * SiteEngagementScore::GetDecayPeriodInHours()));
     // Trigger decay and histogram hit.
-    service->AddPoints(origin1, 0.01);
+    service_->AddPoints(origin1, 0.01);
   }
   histograms.ExpectTotalCount(SiteEngagementMetrics::kScoreDecayedFromHistogram,
                               kMorePeriodsThanNeededToDecayMaxScore);
@@ -1582,7 +1557,7 @@ TEST_F(SiteEngagementServiceTest, ScoreDecayHistograms) {
   histograms.ExpectBucketCount(SiteEngagementMetrics::kScoreDecayedToHistogram,
                                0, 21);
   // Trigger decay and histogram hit for origin2, checking an independent decay.
-  service->AddPoints(origin2, 0.01);
+  service_->AddPoints(origin2, 0.01);
   histograms.ExpectTotalCount(SiteEngagementMetrics::kScoreDecayedFromHistogram,
                               kMorePeriodsThanNeededToDecayMaxScore + 1);
   histograms.ExpectTotalCount(SiteEngagementMetrics::kScoreDecayedToHistogram,
@@ -1593,8 +1568,8 @@ TEST_F(SiteEngagementServiceTest, ScoreDecayHistograms) {
                                0, 22);
 
   // Add more points and ensure no more samples are present.
-  service->AddPoints(origin1, 0.01);
-  service->AddPoints(origin2, 0.01);
+  service_->AddPoints(origin1, 0.01);
+  service_->AddPoints(origin2, 0.01);
   histograms.ExpectTotalCount(SiteEngagementMetrics::kScoreDecayedFromHistogram,
                               kMorePeriodsThanNeededToDecayMaxScore + 1);
   histograms.ExpectTotalCount(SiteEngagementMetrics::kScoreDecayedToHistogram,
@@ -1607,171 +1582,160 @@ TEST_F(SiteEngagementServiceTest, LastEngagementTime) {
       profile()->GetPrefs()->GetInt64(prefs::kSiteEngagementLastUpdateTime));
 
   ASSERT_TRUE(last_engagement_time.is_null());
-
-  base::SimpleTestClock* clock = new base::SimpleTestClock();
-  std::unique_ptr<SiteEngagementService> service(
-      new SiteEngagementService(profile(), base::WrapUnique(clock)));
-
-  ASSERT_TRUE(service->GetLastEngagementTime().is_null());
+  ASSERT_TRUE(service_->GetLastEngagementTime().is_null());
 
   base::Time current_day = GetReferenceTime();
-  clock->SetNow(current_day);
+  clock_->SetNow(current_day);
 
   // Add points should set the last engagement time in the service, and persist
   // it to disk.
   GURL origin("http://www.google.com/");
-  service->AddPoints(origin, 1);
+  service_->AddPoints(origin, 1);
 
   last_engagement_time = base::Time::FromInternalValue(
       profile()->GetPrefs()->GetInt64(prefs::kSiteEngagementLastUpdateTime));
 
-  EXPECT_EQ(current_day, service->GetLastEngagementTime());
+  EXPECT_EQ(current_day, service_->GetLastEngagementTime());
   EXPECT_EQ(current_day, last_engagement_time);
 
   // Running a cleanup and updating last engagement times should persist the
   // last engagement time to disk.
-  current_day += service->GetStalePeriod();
-  base::Time rebased_time = current_day - service->GetMaxDecayPeriod();
-  clock->SetNow(current_day);
-  service->CleanupEngagementScores(true);
+  current_day += service_->GetStalePeriod();
+  base::Time rebased_time = current_day - service_->GetMaxDecayPeriod();
+  clock_->SetNow(current_day);
+  service_->CleanupEngagementScores(true);
 
   last_engagement_time = base::Time::FromInternalValue(
       profile()->GetPrefs()->GetInt64(prefs::kSiteEngagementLastUpdateTime));
 
   EXPECT_EQ(rebased_time, last_engagement_time);
-  EXPECT_EQ(rebased_time, service->GetLastEngagementTime());
+  EXPECT_EQ(rebased_time, service_->GetLastEngagementTime());
 
   // Adding 0 points shouldn't update the last engagement time.
   base::Time later_in_day = current_day + base::TimeDelta::FromSeconds(30);
-  clock->SetNow(later_in_day);
-  service->AddPoints(origin, 0);
+  clock_->SetNow(later_in_day);
+  service_->AddPoints(origin, 0);
 
   last_engagement_time = base::Time::FromInternalValue(
       profile()->GetPrefs()->GetInt64(prefs::kSiteEngagementLastUpdateTime));
   EXPECT_EQ(rebased_time, last_engagement_time);
-  EXPECT_EQ(rebased_time, service->GetLastEngagementTime());
+  EXPECT_EQ(rebased_time, service_->GetLastEngagementTime());
 
   // Add some more points and ensure the value is persisted.
-  service->AddPoints(origin, 3);
+  service_->AddPoints(origin, 3);
 
   last_engagement_time = base::Time::FromInternalValue(
       profile()->GetPrefs()->GetInt64(prefs::kSiteEngagementLastUpdateTime));
 
   EXPECT_EQ(later_in_day, last_engagement_time);
-  EXPECT_EQ(later_in_day, service->GetLastEngagementTime());
+  EXPECT_EQ(later_in_day, service_->GetLastEngagementTime());
 }
 
 TEST_F(SiteEngagementServiceTest, CleanupMovesScoreBackToNow) {
-  base::SimpleTestClock* clock = new base::SimpleTestClock();
-  std::unique_ptr<SiteEngagementService> service(
-      new SiteEngagementService(profile(), base::WrapUnique(clock)));
   base::Time last_engagement_time;
 
   base::Time current_day = GetReferenceTime();
-  clock->SetNow(current_day);
+  clock_->SetNow(current_day);
 
   GURL origin("http://www.google.com/");
-  service->AddPoints(origin, 1);
-  EXPECT_EQ(1, service->GetScore(origin));
-  EXPECT_EQ(current_day, service->GetLastEngagementTime());
+  service_->AddPoints(origin, 1);
+  EXPECT_EQ(1, service_->GetScore(origin));
+  EXPECT_EQ(current_day, service_->GetLastEngagementTime());
 
   // Send the clock back in time before the stale period and add engagement for
   // a new origin. Ensure that the original origin has its last engagement time
   // updated to now as a result.
-  base::Time before_stale_period =
-      clock->Now() - service->GetStalePeriod() - service->GetMaxDecayPeriod();
-  clock->SetNow(before_stale_period);
+  base::Time before_stale_period = clock_->Now() - service_->GetStalePeriod() -
+                                   service_->GetMaxDecayPeriod();
+  clock_->SetNow(before_stale_period);
 
   GURL origin1("http://maps.google.com/");
-  service->AddPoints(origin1, 1);
+  service_->AddPoints(origin1, 1);
 
   EXPECT_EQ(before_stale_period,
-            service->CreateEngagementScore(origin).last_engagement_time());
-  EXPECT_EQ(before_stale_period, service->GetLastEngagementTime());
-  EXPECT_EQ(1, service->GetScore(origin));
-  EXPECT_EQ(1, service->GetScore(origin1));
+            service_->CreateEngagementScore(origin).last_engagement_time());
+  EXPECT_EQ(before_stale_period, service_->GetLastEngagementTime());
+  EXPECT_EQ(1, service_->GetScore(origin));
+  EXPECT_EQ(1, service_->GetScore(origin1));
 
   // Advance within a decay period and add points.
   base::TimeDelta less_than_decay_period =
       base::TimeDelta::FromHours(SiteEngagementScore::GetDecayPeriodInHours()) -
       base::TimeDelta::FromSeconds(30);
-  base::Time origin1_last_updated = clock->Now() + less_than_decay_period;
-  clock->SetNow(origin1_last_updated);
-  service->AddPoints(origin, 1);
-  service->AddPoints(origin1, 5);
-  EXPECT_EQ(2, service->GetScore(origin));
-  EXPECT_EQ(6, service->GetScore(origin1));
+  base::Time origin1_last_updated = clock_->Now() + less_than_decay_period;
+  clock_->SetNow(origin1_last_updated);
+  service_->AddPoints(origin, 1);
+  service_->AddPoints(origin1, 5);
+  EXPECT_EQ(2, service_->GetScore(origin));
+  EXPECT_EQ(6, service_->GetScore(origin1));
 
-  clock->SetNow(clock->Now() + less_than_decay_period);
-  service->AddPoints(origin, 5);
-  EXPECT_EQ(7, service->GetScore(origin));
+  clock_->SetNow(clock_->Now() + less_than_decay_period);
+  service_->AddPoints(origin, 5);
+  EXPECT_EQ(7, service_->GetScore(origin));
 
   // Move forward to the max number of decays per score. This is within the
   // stale period so no cleanup should be run.
   for (int i = 0; i < SiteEngagementScore::GetMaxDecaysPerScore(); ++i) {
-    clock->SetNow(clock->Now() + less_than_decay_period);
-    service->AddPoints(origin, 5);
-    EXPECT_EQ(clock->Now(), service->GetLastEngagementTime());
+    clock_->SetNow(clock_->Now() + less_than_decay_period);
+    service_->AddPoints(origin, 5);
+    EXPECT_EQ(clock_->Now(), service_->GetLastEngagementTime());
   }
-  EXPECT_EQ(12, service->GetScore(origin));
-  EXPECT_EQ(clock->Now(), service->GetLastEngagementTime());
+  EXPECT_EQ(12, service_->GetScore(origin));
+  EXPECT_EQ(clock_->Now(), service_->GetLastEngagementTime());
 
   // Move the clock back to precisely 1 decay period after origin1's last
   // updated time. |last_engagement_time| is in the future, so AddPoints
   // triggers a cleanup. Ensure that |last_engagement_time| is moved back
   // appropriately, while origin1 is decayed correctly (once).
-  clock->SetNow(origin1_last_updated + less_than_decay_period +
-                base::TimeDelta::FromSeconds(30));
-  service->AddPoints(origin1, 1);
+  clock_->SetNow(origin1_last_updated + less_than_decay_period +
+                 base::TimeDelta::FromSeconds(30));
+  service_->AddPoints(origin1, 1);
 
-  EXPECT_EQ(clock->Now(),
-            service->CreateEngagementScore(origin).last_engagement_time());
-  EXPECT_EQ(clock->Now(), service->GetLastEngagementTime());
-  EXPECT_EQ(12, service->GetScore(origin));
-  EXPECT_EQ(1, service->GetScore(origin1));
+  EXPECT_EQ(clock_->Now(),
+            service_->CreateEngagementScore(origin).last_engagement_time());
+  EXPECT_EQ(clock_->Now(), service_->GetLastEngagementTime());
+  EXPECT_EQ(12, service_->GetScore(origin));
+  EXPECT_EQ(1, service_->GetScore(origin1));
 }
 
 TEST_F(SiteEngagementServiceTest, CleanupMovesScoreBackToRebase) {
-  base::SimpleTestClock* clock = new base::SimpleTestClock();
-  std::unique_ptr<SiteEngagementService> service(
-      new SiteEngagementService(profile(), base::WrapUnique(clock)));
   base::Time last_engagement_time;
 
   base::Time current_day = GetReferenceTime();
-  clock->SetNow(current_day);
+  clock_->SetNow(current_day);
 
   GURL origin("http://www.google.com/");
-  service->ResetBaseScoreForURL(origin, 5);
-  service->AddPoints(origin, 5);
-  EXPECT_EQ(10, service->GetScore(origin));
-  EXPECT_EQ(current_day, service->GetLastEngagementTime());
+  service_->ResetBaseScoreForURL(origin, 5);
+  service_->AddPoints(origin, 5);
+  EXPECT_EQ(10, service_->GetScore(origin));
+  EXPECT_EQ(current_day, service_->GetLastEngagementTime());
 
   // Send the clock back in time before the stale period and add engagement for
   // a new origin.
-  base::Time before_stale_period =
-      clock->Now() - service->GetStalePeriod() - service->GetMaxDecayPeriod();
-  clock->SetNow(before_stale_period);
+  base::Time before_stale_period = clock_->Now() - service_->GetStalePeriod() -
+                                   service_->GetMaxDecayPeriod();
+  clock_->SetNow(before_stale_period);
 
   GURL origin1("http://maps.google.com/");
-  service->AddPoints(origin1, 1);
+  service_->AddPoints(origin1, 1);
 
-  EXPECT_EQ(before_stale_period, service->GetLastEngagementTime());
+  EXPECT_EQ(before_stale_period, service_->GetLastEngagementTime());
 
   // Set the clock such that |origin|'s last engagement time is between
   // last_engagement_time and rebase_time.
-  clock->SetNow(current_day + service->GetStalePeriod() +
-                service->GetMaxDecayPeriod() -
-                base::TimeDelta::FromSeconds((30)));
-  base::Time rebased_time = clock->Now() - service->GetMaxDecayPeriod();
-  service->CleanupEngagementScores(true);
+  clock_->SetNow(current_day + service_->GetStalePeriod() +
+                 service_->GetMaxDecayPeriod() -
+                 base::TimeDelta::FromSeconds((30)));
+  base::Time rebased_time = clock_->Now() - service_->GetMaxDecayPeriod();
+  service_->CleanupEngagementScores(true);
 
   // Ensure that the original origin has its last engagement time updated to
   // rebase_time, and it has decayed when we access the score.
   EXPECT_EQ(rebased_time,
-            service->CreateEngagementScore(origin).last_engagement_time());
-  EXPECT_EQ(rebased_time, service->GetLastEngagementTime());
-  EXPECT_EQ(5, service->GetScore(origin));
-  EXPECT_EQ(0, service->GetScore(origin1));
+            service_->CreateEngagementScore(origin).last_engagement_time());
+  EXPECT_EQ(rebased_time, service_->GetLastEngagementTime());
+  EXPECT_EQ(5, service_->GetScore(origin));
+  EXPECT_EQ(0, service_->GetScore(origin1));
 }
 
 TEST_F(SiteEngagementServiceTest, IncognitoEngagementService) {

@@ -34,17 +34,15 @@ void BrowserStateDependencyManager::DestroyBrowserStateServices(
   DependencyManager::DestroyContextServices(context);
 }
 
-#ifndef NDEBUG
 void BrowserStateDependencyManager::AssertBrowserStateWasntDestroyed(
-    web::BrowserState* context) {
+    web::BrowserState* context) const {
   DependencyManager::AssertContextWasntDestroyed(context);
 }
 
-void BrowserStateDependencyManager::MarkBrowserStateLiveForTesting(
+void BrowserStateDependencyManager::MarkBrowserStateLive(
     web::BrowserState* context) {
-  DependencyManager::MarkContextLiveForTesting(context);
+  DependencyManager::MarkContextLive(context);
 }
-#endif  // NDEBUG
 
 BrowserStateDependencyManager::BrowserStateDependencyManager() {
 }

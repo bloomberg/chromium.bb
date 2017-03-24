@@ -42,11 +42,8 @@ KeyedService* BrowserStateKeyedServiceFactory::GetServiceForBrowserState(
 
 web::BrowserState* BrowserStateKeyedServiceFactory::GetBrowserStateToUse(
     web::BrowserState* context) const {
+  // TODO(crbug.com/701326): This DCHECK should be moved to GetContextToUse().
   DCHECK(CalledOnValidThread());
-
-#ifndef NDEBUG
-  AssertContextWasntDestroyed(context);
-#endif
 
   // Safe default for Incognito mode: no service.
   if (context->IsOffTheRecord())
@@ -86,6 +83,7 @@ bool BrowserStateKeyedServiceFactory::IsOffTheRecord(
 
 base::SupportsUserData* BrowserStateKeyedServiceFactory::GetContextToUse(
     base::SupportsUserData* context) const {
+  AssertContextWasntDestroyed(context);
   return GetBrowserStateToUse(static_cast<web::BrowserState*>(context));
 }
 

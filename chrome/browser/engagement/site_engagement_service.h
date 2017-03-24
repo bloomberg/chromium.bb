@@ -105,6 +105,9 @@ class SiteEngagementService : public KeyedService,
   explicit SiteEngagementService(Profile* profile);
   ~SiteEngagementService() override;
 
+  // KeyedService support:
+  void Shutdown() override;
+
   // Returns the engagement level of |url|.
   blink::mojom::EngagementLevel GetEngagementLevel(const GURL& url) const;
 
@@ -142,6 +145,7 @@ class SiteEngagementService : public KeyedService,
  private:
   friend class SiteEngagementObserver;
   friend class SiteEngagementServiceAndroid;
+  friend class SiteEngagementServiceTest;
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, CheckHistograms);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, CleanupEngagementScores);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest,

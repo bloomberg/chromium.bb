@@ -29,6 +29,12 @@ class TestDownloadService : public DownloadServiceImpl {
       : DownloadServiceImpl(profile), profile_(profile) {}
   ~TestDownloadService() override {}
 
+  void Shutdown() override {
+    DownloadServiceImpl::Shutdown();
+    download_history_.reset();
+    router_.reset();
+  }
+
   void set_download_history(std::unique_ptr<DownloadHistory> download_history) {
     download_history_.swap(download_history);
   }

@@ -5,14 +5,11 @@
 #ifndef COMPONENTS_KEYED_SERVICE_CORE_DEPENDENCY_MANAGER_H_
 #define COMPONENTS_KEYED_SERVICE_CORE_DEPENDENCY_MANAGER_H_
 
+#include <set>
 #include <string>
 
 #include "components/keyed_service/core/dependency_graph.h"
 #include "components/keyed_service/core/keyed_service_export.h"
-
-#ifndef NDEBUG
-#include <set>
-#endif
 
 class KeyedServiceBaseFactory;
 
@@ -65,18 +62,19 @@ class KEYED_SERVICE_EXPORT DependencyManager {
   // with it.
   void DestroyContextServices(base::SupportsUserData* context);
 
-#ifndef NDEBUG
-  // Debugging assertion called as part of GetServiceForContext() in debug
-  // mode. This will NOTREACHED() whenever the |context| is considered stale.
-  void AssertContextWasntDestroyed(base::SupportsUserData* context);
+  // Runtime assertion called as a part of GetServiceForContext() to check if
+  // |context| is considered stale. This will NOTREACHED() or
+  // base::debug::DumpWithoutCrashing() depending on the DCHECK_IS_ON() value.
+  void AssertContextWasntDestroyed(base::SupportsUserData* context) const;
 
   // Marks |context| as live (i.e., not stale). This method can be called as a
   // safeguard against |AssertContextWasntDestroyed()| checks going off due to
-  // |context| aliasing am instance from a prior test (i.e., 0xWhatever might
-  // be created, be destroyed, and then a new object might be created at
+  // |context| aliasing an instance from a prior construction (i.e., 0xWhatever
+  // might be created, be destroyed, and then a new object might be created at
   // 0xWhatever).
-  void MarkContextLiveForTesting(base::SupportsUserData* context);
+  void MarkContextLive(base::SupportsUserData* context);
 
+#ifndef NDEBUG
   // Dumps service dependency graph as a Graphviz dot file |dot_file| with a
   // title |top_level_name|. Helper for |DumpContextDependencies|.
   void DumpDependenciesAsGraphviz(const std::string& top_level_name,
@@ -94,13 +92,11 @@ class KEYED_SERVICE_EXPORT DependencyManager {
 
   DependencyGraph dependency_graph_;
 
-#ifndef NDEBUG
   // A list of context objects that have gone through the Shutdown() phase.
   // These pointers are most likely invalid, but we keep track of their
   // locations in memory so we can nicely assert if we're asked to do anything
   // with them.
   std::set<base::SupportsUserData*> dead_context_pointers_;
-#endif  // NDEBUG
 };
 
 #endif  // COMPONENTS_KEYED_SERVICE_CORE_DEPENDENCY_MANAGER_H_

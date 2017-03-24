@@ -114,7 +114,9 @@ SignedInDevicesManager::SignedInDevicesManager(content::BrowserContext* context)
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
 }
 
-SignedInDevicesManager::~SignedInDevicesManager() {
+SignedInDevicesManager::~SignedInDevicesManager() = default;
+
+void SignedInDevicesManager::Shutdown() {
   if (profile_) {
     EventRouter* router = EventRouter::Get(profile_);
     if (router)

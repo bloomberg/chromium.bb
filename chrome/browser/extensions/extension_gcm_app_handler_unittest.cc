@@ -280,6 +280,7 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
 #endif
 
     waiter_.PumpUILoop();
+    gcm_app_handler_->Shutdown();
   }
 
   // Returns a barebones test extension.

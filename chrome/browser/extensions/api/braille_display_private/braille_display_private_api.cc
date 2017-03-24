@@ -51,6 +51,7 @@ BrailleDisplayPrivateAPI::~BrailleDisplayPrivateAPI() {
 }
 
 void BrailleDisplayPrivateAPI::Shutdown() {
+  event_delegate_.reset();
 }
 
 static base::LazyInstance<

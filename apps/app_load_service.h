@@ -46,6 +46,9 @@ class AppLoadService : public KeyedService,
   explicit AppLoadService(Profile* profile);
   ~AppLoadService() override;
 
+  // KeyedService support:
+  void Shutdown() override;
+
   // Reload the application with the given id and then send it the OnRestarted
   // event.
   void RestartApplication(const std::string& extension_id);

@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "components/guest_view/browser/guest_view_message_filter.h"
+#include "content/public/browser/browser_main_runner.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
@@ -179,6 +180,10 @@ void ShellContentBrowserClient::SiteInstanceGotProcess(
 
 void ShellContentBrowserClient::SiteInstanceDeleting(
     content::SiteInstance* site_instance) {
+  // Don't do anything if we're shutting down.
+  if (content::BrowserMainRunner::ExitedMainMessageLoop())
+    return;
+
   // If this isn't an extension renderer there's nothing to do.
   const Extension* extension = GetExtension(site_instance);
   if (!extension)

@@ -56,19 +56,17 @@ class KEYED_SERVICE_EXPORT BrowserStateDependencyManager
   // associated with it.
   void DestroyBrowserStateServices(web::BrowserState* context);
 
-#ifndef NDEBUG
-  // Debugging assertion called as part of GetServiceForBrowserState in debug
-  // mode. This will NOTREACHED() whenever the user is trying to access a stale
-  // BrowserState*.
-  void AssertBrowserStateWasntDestroyed(web::BrowserState* context);
+  // Runtime assertion called as a part of GetServiceForBrowserState() to check
+  // if |context| is considered stale. This will NOTREACHED() or
+  // base::debug::DumpWithoutCrashing() depending on the DCHECK_IS_ON() value.
+  void AssertBrowserStateWasntDestroyed(web::BrowserState* context) const;
 
   // Marks |context| as live (i.e., not stale). This method can be called as a
   // safeguard against |AssertBrowserStateWasntDestroyed()| checks going off
-  // due to |context| aliasing a BrowserState instance from a prior test
+  // due to |context| aliasing a BrowserState instance from a prior construction
   // (i.e., 0xWhatever might be created, be destroyed, and then a new
   // BrowserState object might be created at 0xWhatever).
-  void MarkBrowserStateLiveForTesting(web::BrowserState* context);
-#endif  // NDEBUG
+  void MarkBrowserStateLive(web::BrowserState* context);
 
  private:
   friend struct base::DefaultSingletonTraits<BrowserStateDependencyManager>;

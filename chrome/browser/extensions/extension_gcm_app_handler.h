@@ -48,6 +48,7 @@ class ExtensionGCMAppHandler : public gcm::GCMAppHandler,
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<ExtensionGCMAppHandler>*
   GetFactoryInstance();
+  void Shutdown() override;
 
   // gcm::GCMAppHandler implementation.
   void ShutdownHandler() override;
