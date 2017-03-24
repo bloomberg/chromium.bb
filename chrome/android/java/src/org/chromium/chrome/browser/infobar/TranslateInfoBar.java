@@ -23,7 +23,7 @@ import java.util.ArrayList;
  * Java version of the translate infobar
  */
 public class TranslateInfoBar extends InfoBar implements SubPanelListener {
-    // Needs to be kept in sync with the Type enum in translate_infobar_delegate.h.
+    // Needs to be kept in sync with the TranslateStep enum in translate_step.h.
     public static final int BEFORE_TRANSLATE_INFOBAR = 0;
     public static final int TRANSLATING_INFOBAR = 1;
     public static final int AFTER_TRANSLATE_INFOBAR = 2;

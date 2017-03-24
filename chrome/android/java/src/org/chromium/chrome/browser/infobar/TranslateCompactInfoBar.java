@@ -1,8 +1,13 @@
 // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
+
 package org.chromium.chrome.browser.infobar;
+
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
@@ -22,9 +27,20 @@ class TranslateCompactInfoBar extends InfoBar {
         super(R.drawable.infobar_translate, null, null);
     }
 
+    /**
+     * Provide a custom view as infobar content to replace a standard infobar layout.
+     */
+    protected View createCustomContent(ViewGroup parent) {
+        LinearLayout content =
+                (LinearLayout) LayoutInflater.from(getContext())
+                        .inflate(R.layout.infobar_translate_compact_content, parent, false);
+        return content;
+    }
+
     @Override
     public void createContent(InfoBarLayout layout) {
-        // TODO(googleo): Add custom view later.
+        // TODO(googleo): Draw custom view created by createCustomContent when it's ready.
+        // Eg. layout.setCustomView(createCustomContent(layout));
         layout.setMessage("Compact Translate Infobar Testing...");
     }
 
