@@ -24,7 +24,7 @@ import os
 
 #### PER-REPO CONFIGURATION (editable) ####
 # The root of the repository relative to the directory of this file.
-REPO_ROOT = ''
+REPO_ROOT = os.path.join(os.pardir)
 # The path of the recipes.cfg file relative to the root of the repository.
 RECIPES_CFG = os.path.join('infra', 'config', 'recipes.cfg')
 #### END PER-REPO CONFIGURATION ####
