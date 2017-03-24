@@ -30,10 +30,6 @@
 #include "third_party/libyuv/include/libyuv.h"
 #include "ui/gfx/geometry/size.h"
 
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
-
 #if BUILDFLAG(RTC_USE_H264)
 #include "third_party/openh264/src/codec/api/svc/codec_api.h"
 #include "third_party/openh264/src/codec/api/svc/codec_app_def.h"
@@ -119,12 +115,6 @@ CodecEnumerator::CodecEnumerator() {
 #if defined(OS_ANDROID)
   // See https://crbug.com/653864.
   return;
-#endif
-
-#if defined(OS_WIN)
-  // See https://crbug.com/698441.
-  if (base::win::GetVersion() < base::win::VERSION_WIN10)
-    return;
 #endif
 
   content::RenderThreadImpl* const render_thread_impl =
@@ -1302,6 +1292,11 @@ void VideoTrackRecorder::InitializeEncoder(
     base::TimeTicks capture_time) {
   DVLOG(3) << __func__ << frame->visible_rect().size().ToString();
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
+
+  // Avoid reinitializing |encoder_| when there are multiple frames sent to the
+  // sink to initialize, https://crbug.com/698441.
+  if (encoder_)
+    return;
 
   MediaStreamVideoSink::DisconnectFromTrack();
 
