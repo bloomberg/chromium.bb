@@ -2,7 +2,7 @@ Name: gestures
 URL: https://chromium.googlesource.com/chromiumos/platform/gestures
 Version: 5a656849c7d2b0d0ddbe0ac6d300c1e2fada0bb4
 License: MIT
-License File: src/LICENSE
+License File: LICENSE
 Security Critical: yes
 
 Description:
