@@ -174,7 +174,9 @@ cr.define('print_preview', function() {
         this.appState_,
         this.documentInfo_,
         this.marginsType_,
-        this.customMargins_);
+        this.customMargins_,
+        this.mediaSize_,
+        this.landscape_);
 
     /**
      * Fit-to-page ticket item.

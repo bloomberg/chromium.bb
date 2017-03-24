@@ -148,16 +148,14 @@ cr.define('print_preview.ticket_items', function() {
      * @private
      */
     getMarginMax_: function(orientation, oppositeMargin) {
-      var max;
-      if (orientation == CustomMargins.Orientation.TOP ||
-          orientation == CustomMargins.Orientation.BOTTOM) {
-        max = this.getDocumentInfoInternal().pageSize.height - oppositeMargin -
-            CustomMargins.MINIMUM_MARGINS_DISTANCE_;
-      } else {
-        max = this.getDocumentInfoInternal().pageSize.width - oppositeMargin -
-            CustomMargins.MINIMUM_MARGINS_DISTANCE_;
-      }
-      return Math.round(max);
+      var dimensionLength = (orientation == CustomMargins.Orientation.TOP ||
+                             orientation == CustomMargins.Orientation.BOTTOM) ?
+                            this.getDocumentInfoInternal().pageSize.height :
+                            this.getDocumentInfoInternal().pageSize.width;
+
+      var totalMargin = dimensionLength -
+                        CustomMargins.MINIMUM_MARGINS_DISTANCE_;
+      return Math.round(totalMargin > 0 ? totalMargin - oppositeMargin : 0);
     }
   };
 

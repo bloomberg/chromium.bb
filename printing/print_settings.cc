@@ -197,17 +197,33 @@ void PrintSettings::SetPrinterPrintableArea(
   }
 
   PageMargins margins;
+  bool small_paper_size = false;
   switch (margin_type_) {
     case DEFAULT_MARGINS: {
-      // Default margins 1.0cm = ~2/5 of an inch.
+      // Default margins 1.0cm = ~2/5 of an inch, unless a page dimension is
+      // less than 2.54 cm = ~1 inch, in which case set the margins in that
+      // dimension to 0.
       int margin_printer_units = ConvertUnit(1000, kHundrethsMMPerInch,
                                              units_per_inch);
+      int min_size_printer_units = units_per_inch;
       margins.header = header_footer_text_height;
       margins.footer = header_footer_text_height;
-      margins.top = margin_printer_units;
-      margins.bottom = margin_printer_units;
-      margins.left = margin_printer_units;
-      margins.right = margin_printer_units;
+      if (physical_size_device_units.height() > min_size_printer_units) {
+        margins.top = margin_printer_units;
+        margins.bottom = margin_printer_units;
+      } else {
+        margins.top = 0;
+        margins.bottom = 0;
+        small_paper_size = true;
+      }
+      if (physical_size_device_units.width() > min_size_printer_units) {
+        margins.left = margin_printer_units;
+        margins.right = margin_printer_units;
+      } else {
+        margins.left = 0;
+        margins.right = 0;
+        small_paper_size = true;
+      }
       break;
     }
     case NO_MARGINS:
@@ -246,11 +262,13 @@ void PrintSettings::SetPrinterPrintableArea(
     }
   }
 
-  if (margin_type_ == DEFAULT_MARGINS || margin_type_ == PRINTABLE_AREA_MARGINS)
+  if ((margin_type_ == DEFAULT_MARGINS ||
+       margin_type_ == PRINTABLE_AREA_MARGINS) &&
+      !small_paper_size) {
     page_setup_device_units_.SetRequestedMargins(margins);
-  else
+  } else {
     page_setup_device_units_.ForceRequestedMargins(margins);
-
+  }
   page_setup_device_units_.Init(physical_size_device_units,
                                 printable_area_device_units,
                                 header_footer_text_height);

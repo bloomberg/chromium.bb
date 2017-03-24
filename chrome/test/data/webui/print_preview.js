@@ -871,6 +871,46 @@ TEST_F('PrintPreviewWebUITest',
   this.waitForAnimationToEnd('more-settings');
 });
 
+// Check header footer availability with small (label) page size.
+TEST_F('PrintPreviewWebUITest', 'SmallPaperSizeHeaderFooter', function() {
+  this.setInitialSettings();
+  this.setLocalDestinations();
+  var device = getCddTemplate("FooDevice");
+  device.capabilities.printer.media_size = {
+    "option": [
+      {"name": "SmallLabel", "width_microns": 38100, "height_microns": 12700,
+        "is_default": false},
+      {"name": "BigLabel", "width_microns": 50800, "height_microns": 76200,
+        "is_default": true}
+    ]
+  };
+  this.setCapabilities(device);
+
+  var otherOptions = $('other-options-settings');
+  var headerFooter = otherOptions.querySelector('#header-footer-container');
+
+  // Check that options are collapsed (section is visible, because duplex is
+  // available).
+  checkSectionVisible(otherOptions, true);
+  checkElementDisplayed(headerFooter, false);
+
+  this.expandMoreSettings();
+
+  // Big label should have header/footer
+  checkElementDisplayed(headerFooter, true);
+
+  // Small label should not
+  printPreview.printTicketStore_.mediaSize.updateValue(
+      device.capabilities.printer.media_size.option[0]);
+  checkElementDisplayed(headerFooter, false);
+
+  // Oriented in landscape, there should be enough space for header/footer.
+  printPreview.printTicketStore_.landscape.updateValue(true);
+  checkElementDisplayed(headerFooter, true);
+
+  this.waitForAnimationToEnd('more-settings');
+});
+
 // Test that the color settings, one option, standard monochrome.
 TEST_F('PrintPreviewWebUITest', 'TestColorSettingsMonochrome', function() {
   this.setInitialSettings();
@@ -1064,7 +1104,7 @@ TEST_F('PrintPreviewWebUITest', 'TestPrinterChangeUpdatesPreview', function() {
 
   // The number of settings that can change due to a change in the destination
   // that will therefore dispatch ticket item change events.
-  previewGenerator.expects(exactly(7)).requestPreview();
+  previewGenerator.expects(exactly(9)).requestPreview();
 
   var barDestination;
   var destinations = printPreview.destinationStore_.destinations();

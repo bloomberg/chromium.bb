@@ -16,10 +16,15 @@ cr.define('print_preview.ticket_items', function() {
    *     that stores which predefined margins to print with.
    * @param {!print_preview.ticket_items.CustomMargins} customMargins Ticket
    *     item that stores custom margin values.
+   * @param {!print_preview.ticket_items.MediaSize} mediaSize Ticket item that
+   *     stores media size values.
+   * @param {!print_preview.ticket_items.Landscape} landscape Ticket item that
+   *     stores landscape values.
    * @constructor
    * @extends {print_preview.ticket_items.TicketItem}
    */
-  function HeaderFooter(appState, documentInfo, marginsType, customMargins) {
+  function HeaderFooter(appState, documentInfo, marginsType, customMargins,
+      mediaSize, landscape) {
     print_preview.ticket_items.TicketItem.call(
         this,
         appState,
@@ -29,20 +34,39 @@ cr.define('print_preview.ticket_items', function() {
 
     /**
      * Ticket item that stores which predefined margins to print with.
-     * @type {!print_preview.ticket_items.MarginsType}
-     * @private
+     * @private {!print_preview.ticket_items.MarginsType}
      */
     this.marginsType_ = marginsType;
 
     /**
      * Ticket item that stores custom margin values.
-     * @type {!print_preview.ticket_items.CustomMargins}
-     * @private
+     * @private {!print_preview.ticket_items.CustomMargins}
      */
     this.customMargins_ = customMargins;
 
+    /**
+     * Ticket item that stores media size values.
+     * @private {!print_preview.ticket_items.MediaSize}
+     */
+    this.mediaSize_ = mediaSize;
+
+    /**
+     * Ticket item that stores landscape values.
+     * @private {!print_preview.ticket_items.Landscape}
+     */
+    this.landscape_ = landscape;
+
     this.addEventListeners_();
   };
+
+  /**
+   * Minimum height of page in microns to allow headers and footers. Should
+   * match the value for min_size_printer_units in printing/print_settings.cc
+   * so that we do not request header/footer for margins that will be zero.
+   * @private {number}
+   * @const
+   */
+  HeaderFooter.MINIMUM_HEIGHT_MICRONS_ = 25400;
 
   HeaderFooter.prototype = {
     __proto__: print_preview.ticket_items.TicketItem.prototype,
@@ -56,10 +80,20 @@ cr.define('print_preview.ticket_items', function() {
     isCapabilityAvailable: function() {
       if (!this.getDocumentInfoInternal().isModifiable) {
         return false;
-      } else if (this.marginsType_.getValue() ==
+      }
+      if (this.marginsType_.getValue() ==
           print_preview.ticket_items.MarginsType.Value.NO_MARGINS) {
         return false;
-      } else if (this.marginsType_.getValue() ==
+      }
+      var microns = this.landscape_.getValue() ?
+                    this.mediaSize_.getValue().width_microns :
+                    this.mediaSize_.getValue().height_microns;
+      if (microns < HeaderFooter.MINIMUM_HEIGHT_MICRONS_) {
+        // If this is a small paper size, there is not space for headers
+        // and footers regardless of the margins.
+        return false;
+      }
+      if (this.marginsType_.getValue() ==
           print_preview.ticket_items.MarginsType.Value.MINIMUM) {
         return true;
       }
@@ -100,6 +134,14 @@ cr.define('print_preview.ticket_items', function() {
           this.dispatchChangeEventInternal.bind(this));
       this.getTrackerInternal().add(
           this.customMargins_,
+          print_preview.ticket_items.TicketItem.EventType.CHANGE,
+          this.dispatchChangeEventInternal.bind(this));
+      this.getTrackerInternal().add(
+          this.mediaSize_,
+          print_preview.ticket_items.TicketItem.EventType.CHANGE,
+          this.dispatchChangeEventInternal.bind(this));
+      this.getTrackerInternal().add(
+          this.landscape_,
           print_preview.ticket_items.TicketItem.EventType.CHANGE,
           this.dispatchChangeEventInternal.bind(this));
     }
