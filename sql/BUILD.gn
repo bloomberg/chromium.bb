@@ -17,6 +17,7 @@ component("sql") {
     "meta_table.h",
     "recovery.cc",
     "recovery.h",
+    "sql_export.h",
     "sql_memory_dump_provider.cc",
     "sql_memory_dump_provider.h",
     "statement.cc",
