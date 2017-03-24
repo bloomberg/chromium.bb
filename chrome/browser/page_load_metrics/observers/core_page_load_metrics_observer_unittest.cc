@@ -322,6 +322,11 @@ TEST_F(CorePageLoadMetricsObserverTest, FailedProvisionalLoad) {
   histogram_tester().ExpectTotalCount(internal::kHistogramFirstTextPaint, 0);
   histogram_tester().ExpectTotalCount(internal::kHistogramFailedProvisionalLoad,
                                       1);
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramPageTimingForegroundDuration, 0);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramPageTimingForegroundDurationNoCommit, 1);
 }
 
 TEST_F(CorePageLoadMetricsObserverTest, FailedBackgroundProvisionalLoad) {

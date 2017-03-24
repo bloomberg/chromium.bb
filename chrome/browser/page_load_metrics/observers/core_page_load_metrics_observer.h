@@ -42,6 +42,7 @@ extern const char kHistogramLoadTypeParseStartNewNavigation[];
 extern const char kHistogramFailedProvisionalLoad[];
 
 extern const char kHistogramPageTimingForegroundDuration[];
+extern const char kHistogramPageTimingForegroundDurationNoCommit[];
 
 extern const char kRapporMetricsNameCoarseTiming[];
 extern const char kHistogramFirstMeaningfulPaintStatus[];
@@ -135,13 +136,16 @@ class CorePageLoadMetricsObserver
 
  private:
   void RecordTimingHistograms(const page_load_metrics::PageLoadTiming& timing,
-                              const page_load_metrics::PageLoadExtraInfo& info,
-                              base::TimeTicks app_background_time);
+                              const page_load_metrics::PageLoadExtraInfo& info);
   void RecordByteAndResourceHistograms(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info);
   void RecordRappor(const page_load_metrics::PageLoadTiming& timing,
                     const page_load_metrics::PageLoadExtraInfo& info);
+  void RecordForegroundDurationHistograms(
+      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& info,
+      base::TimeTicks app_background_time);
 
   ui::PageTransition transition_;
   bool was_no_store_main_resource_;
