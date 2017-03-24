@@ -74,7 +74,7 @@ class BASE_EXPORT Value {
                                                              size_t size);
 
   Value(const Value& that);
-  Value(Value&& that);
+  Value(Value&& that) noexcept;
   Value();  // A null value.
   explicit Value(Type type);
   explicit Value(bool in_bool);
