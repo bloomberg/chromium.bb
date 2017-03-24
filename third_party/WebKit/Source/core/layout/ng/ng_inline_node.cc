@@ -354,7 +354,7 @@ void NGInlineNode::GetLayoutTextOffsets(
       if (current_text &&
           current_text->textLength() != item.StartOffset() - current_offset) {
         current_text->setTextInternal(
-            Text(current_offset, item.StartOffset()).impl());
+            Text(current_offset, item.StartOffset()).toString().impl());
       }
       current_text = next_text;
       current_offset = item.StartOffset();
@@ -364,7 +364,7 @@ void NGInlineNode::GetLayoutTextOffsets(
   if (current_text &&
       current_text->textLength() != text_content_.length() - current_offset) {
     current_text->setTextInternal(
-        Text(current_offset, text_content_.length()).impl());
+        Text(current_offset, text_content_.length()).toString().impl());
   }
 }
 

@@ -30,6 +30,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
         end_offset_(end_offset) {}
 
   const NGInlineNode* Node() const { return node_; }
+  StringView Text() const { return node_->Text(start_offset_, end_offset_); }
 
   // The range of NGLayoutInlineItem.
   unsigned ItemIndex() const { return item_index_; }

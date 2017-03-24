@@ -54,8 +54,8 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   void InvalidatePrepareLayout();
 
   const String& Text() const { return text_content_; }
-  String Text(unsigned start_offset, unsigned end_offset) const {
-    return text_content_.substring(start_offset, end_offset);
+  StringView Text(unsigned start_offset, unsigned end_offset) const {
+    return StringView(text_content_, start_offset, end_offset - start_offset);
   }
 
   Vector<NGLayoutInlineItem>& Items() { return items_; }
