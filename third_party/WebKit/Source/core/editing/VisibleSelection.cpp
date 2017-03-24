@@ -180,23 +180,6 @@ VisibleSelectionTemplate<Strategy>::toNormalizedEphemeralRange() const {
 }
 
 template <typename Strategy>
-static EphemeralRangeTemplate<Strategy> makeSearchRange(
-    const PositionTemplate<Strategy>& pos) {
-  Node* node = pos.computeContainerNode();
-  if (!node)
-    return EphemeralRangeTemplate<Strategy>();
-  Document& document = node->document();
-  if (!document.documentElement())
-    return EphemeralRangeTemplate<Strategy>();
-  Element* boundary = enclosingBlockFlowElement(*node);
-  if (!boundary)
-    return EphemeralRangeTemplate<Strategy>();
-
-  return EphemeralRangeTemplate<Strategy>(
-      pos, PositionTemplate<Strategy>::lastPositionInNode(boundary));
-}
-
-template <typename Strategy>
 void VisibleSelectionTemplate<Strategy>::appendTrailingWhitespace() {
   if (isNone())
     return;
@@ -208,40 +191,6 @@ void VisibleSelectionTemplate<Strategy>::appendTrailingWhitespace() {
     return;
   m_hasTrailingWhitespace = true;
   m_end = newEnd;
-}
-
-// TODO(yosin): We should move |skipWhitespaceAlgorithm| to "VisibleUnits.cpp"
-template <typename Strategy>
-static PositionTemplate<Strategy> skipWhitespaceAlgorithm(
-    const PositionTemplate<Strategy>& position) {
-  const EphemeralRangeTemplate<Strategy>& searchRange =
-      makeSearchRange(position);
-  if (searchRange.isNull())
-    return position;
-
-  CharacterIteratorAlgorithm<Strategy> charIt(
-      searchRange.startPosition(), searchRange.endPosition(),
-      TextIteratorBehavior::Builder()
-          .setEmitsCharactersBetweenAllVisiblePositions(true)
-          .build());
-  PositionTemplate<Strategy> runner = position;
-  for (; charIt.length(); charIt.advance(1)) {
-    UChar c = charIt.characterAt(0);
-    if ((!isSpaceOrNewline(c) && c != noBreakSpaceCharacter) || c == '\n')
-      return runner;
-    runner = charIt.endPosition();
-  }
-  return runner;
-}
-
-// TODO(yosin): We should move |skipWhitespace| to "VisibleUnits.cpp"
-Position skipWhitespace(const Position& position) {
-  return skipWhitespaceAlgorithm(position);
-}
-
-// TODO(yosin): We should move |skipWhitespace| to "VisibleUnits.cpp"
-PositionInFlatTree skipWhitespace(const PositionInFlatTree& position) {
-  return skipWhitespaceAlgorithm(position);
 }
 
 template <typename Strategy>
