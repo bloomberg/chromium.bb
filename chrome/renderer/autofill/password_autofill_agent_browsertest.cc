@@ -2578,4 +2578,29 @@ TEST_F(PasswordAutofillAgentTest, SuggestWhenJavaScriptUpdatesFieldNames) {
   CheckSuggestions("", false);
 }
 
+// Checks that an in-page navigation form submission could have an empty
+// username.
+TEST_F(PasswordAutofillAgentTest, InPageNavigationSubmissionUsernameIsEmpty) {
+  username_element_.setValue(WebString());
+  SimulatePasswordChange("random");
+
+  // Simulate that JavaScript removes the submitted form from DOM. That means
+  // that a submission was successful.
+  std::string remove_form =
+      "var form = document.getElementById('LoginTestForm');"
+      "form.parentNode.removeChild(form);";
+  ExecuteJavaScriptForTests(remove_form.c_str());
+
+  static_cast<content::RenderFrameObserver*>(password_autofill_agent_)
+      ->DidCommitProvisionalLoad(false, true);
+  base::RunLoop().RunUntilIdle();
+
+  // Chect that the form was submitted with in-page navigation.
+  EXPECT_TRUE(fake_driver_.called_inpage_navigation());
+  EXPECT_EQ(base::string16(),
+            fake_driver_.password_form_inpage_navigation()->username_value);
+  EXPECT_EQ(ASCIIToUTF16("random"),
+            fake_driver_.password_form_inpage_navigation()->password_value);
+}
+
 }  // namespace autofill

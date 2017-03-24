@@ -34,9 +34,8 @@ bool ProvisionallySavedPasswordForm::IsSet() const {
 }
 
 bool ProvisionallySavedPasswordForm::IsPasswordValid() const {
-  return IsSet() && !password_form_->username_value.empty() &&
-         !(password_form_->password_value.empty() &&
-           password_form_->new_password_value.empty());
+  return IsSet() && !(password_form_->password_value.empty() &&
+                      password_form_->new_password_value.empty());
 }
 
 }  // namespace autofill
