@@ -21,10 +21,15 @@ import java.nio.ByteOrder;
 import java.util.concurrent.Callable;
 
 /**
- * Class containing static functions that are useful for VR instrumentation
- * testing.
+ * Class containing static functions and constants that are useful for VR
+ * instrumentation testing.
  */
 public class VrUtils {
+    public static final int POLL_CHECK_INTERVAL_SHORT_MS = 50;
+    public static final int POLL_CHECK_INTERVAL_LONG_MS = 100;
+    public static final int POLL_TIMEOUT_SHORT_MS = 1000;
+    public static final int POLL_TIMEOUT_LONG_MS = 10000;
+
     private static final String DETECTION_ACTIVITY =
             ".nfc.ViewerDetectionActivity";
     // TODO(bsheedy): Use constants from VrCore if ever exposed
@@ -105,8 +110,9 @@ public class VrUtils {
     /**
      * Waits until the given VrShellDelegate's isInVR() returns true. Should
      * only be used when VR Shell support is expected.
+     * @param timeout How long to wait before giving up, in milliseconds
      */
-    public static void waitForVrSupported() {
+    public static void waitForVrSupported(final int timeout) {
         // If VR Shell is supported, mInVr should eventually go to true
         // Relatively long timeout because sometimes GVR takes a while to enter VR
         CriteriaHelper.pollUiThread(Criteria.equals(true, new Callable<Boolean>() {
@@ -114,6 +120,6 @@ public class VrUtils {
             public Boolean call() {
                 return VrShellDelegate.isInVR();
             }
-        }), 10000, 50);
+        }), timeout, POLL_CHECK_INTERVAL_SHORT_MS);
     }
 }

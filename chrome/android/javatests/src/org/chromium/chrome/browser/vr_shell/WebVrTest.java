@@ -4,6 +4,10 @@
 
 package org.chromium.chrome.browser.vr_shell;
 
+import static org.chromium.chrome.browser.vr_shell.VrUtils.POLL_CHECK_INTERVAL_LONG_MS;
+import static org.chromium.chrome.browser.vr_shell.VrUtils.POLL_CHECK_INTERVAL_SHORT_MS;
+import static org.chromium.chrome.browser.vr_shell.VrUtils.POLL_TIMEOUT_LONG_MS;
+import static org.chromium.chrome.browser.vr_shell.VrUtils.POLL_TIMEOUT_SHORT_MS;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_NON_DAYDREAM;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_WEBVR_SUPPORTED;
@@ -50,8 +54,7 @@ import java.util.concurrent.TimeoutException;
 public class WebVrTest extends ChromeTabbedActivityTestBase {
     private static final String TAG = "WebVrTest";
     private static final String TEST_DIR = "chrome/test/data/android/webvr_instrumentation";
-    private static final int POLL_TIMEOUT_SHORT = 1000;
-    private static final int POLL_TIMEOUT_LONG = 10000;
+    private static final int PAGE_LOAD_TIMEOUT_S = 10;
 
     private WebContents mWebContents;
 
@@ -83,11 +86,11 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
      * @return Whether a VRDisplay was found
      */
     private boolean vrDisplayFound(WebContents webContents) {
-        pollJavascriptBoolean(POLL_TIMEOUT_SHORT, "vrDisplayPromiseDone", webContents);
+        pollJavascriptBoolean(POLL_TIMEOUT_SHORT_MS, "vrDisplayPromiseDone", webContents);
         String result = "null";
         try {
             result = JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                    webContents, "vrDisplay", POLL_TIMEOUT_SHORT, TimeUnit.MILLISECONDS);
+                    webContents, "vrDisplay", POLL_TIMEOUT_SHORT_MS, TimeUnit.MILLISECONDS);
         } catch (InterruptedException | TimeoutException e) {
             return false;
         }
@@ -138,7 +141,7 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
         String result = "false";
         try {
             result = JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                    webContents, "testPassed", 1000, TimeUnit.MILLISECONDS);
+                    webContents, "testPassed", POLL_TIMEOUT_SHORT_MS, TimeUnit.MILLISECONDS);
         } catch (InterruptedException | TimeoutException e) {
             // Do nothing - if it times out, the test will be marked as failed
         }
@@ -148,7 +151,7 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
 
         try {
             result = JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                    webContents, "resultString", 1000, TimeUnit.MILLISECONDS);
+                    webContents, "resultString", POLL_TIMEOUT_SHORT_MS, TimeUnit.MILLISECONDS);
         } catch (InterruptedException | TimeoutException e) {
             result = "Unable to retrieve failure reason";
         }
@@ -181,14 +184,14 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
                 public Boolean call() {
                     String result = "false";
                     try {
-                        result = JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                                webContents, boolName, 50, TimeUnit.MILLISECONDS);
+                        result = JavaScriptUtils.executeJavaScriptAndWaitForResult(webContents,
+                                boolName, POLL_CHECK_INTERVAL_SHORT_MS, TimeUnit.MILLISECONDS);
                     } catch (InterruptedException | TimeoutException e) {
                         // Expected to happen regularly, do nothing
                     }
                     return Boolean.parseBoolean(result);
                 }
-            }), timeoutMs, 100);
+            }), timeoutMs, POLL_CHECK_INTERVAL_LONG_MS);
         } catch (AssertionError e) {
             Log.d(TAG, "pollJavascriptBoolean() timed out");
             return false;
@@ -203,7 +206,7 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
      */
     private void waitOnJavascriptStep(WebContents webContents) {
         assertTrue("Polling Javascript boolean javascriptDone succeeded",
-                pollJavascriptBoolean(POLL_TIMEOUT_LONG, "javascriptDone", webContents));
+                pollJavascriptBoolean(POLL_TIMEOUT_LONG_MS, "javascriptDone", webContents));
         // Reset the synchronization boolean
         JavaScriptUtils.executeJavaScript(webContents, "javascriptDone = false");
     }
@@ -225,7 +228,7 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
     @SmallTest
     public void testRequestPresentEntersVr() throws InterruptedException {
         String testName = "test_requestPresent_enters_vr";
-        loadUrl(getHtmlTestFile(testName), 10);
+        loadUrl(getHtmlTestFile(testName), PAGE_LOAD_TIMEOUT_S);
         assertTrue("VRDisplay found", vrDisplayFound(mWebContents));
         enterVrTapAndWait(mWebContents);
         assertTrue("VrShellDelegate is in VR", VrShellDelegate.isInVR());
@@ -240,7 +243,7 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testNfcFiresVrdisplayactivate() throws InterruptedException {
         String testName = "test_nfc_fires_vrdisplayactivate";
-        loadUrl(getHtmlTestFile(testName), 10);
+        loadUrl(getHtmlTestFile(testName), PAGE_LOAD_TIMEOUT_S);
         simNfcScanAndWait(mWebContents);
         endTest(mWebContents);
     }
@@ -253,7 +256,7 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testScreenTapsNotRegisteredOnDaydream() throws InterruptedException {
         String testName = "test_screen_taps_not_registered_on_daydream";
-        loadUrl(getHtmlTestFile(testName), 10);
+        loadUrl(getHtmlTestFile(testName), PAGE_LOAD_TIMEOUT_S);
         assertTrue("VRDisplay found", vrDisplayFound(mWebContents));
         executeStepAndWait("stepVerifyNoInitialTaps()", mWebContents);
         enterVrTapAndWait(mWebContents);
@@ -270,7 +273,7 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
     @Restriction(RESTRICTION_TYPE_VIEWER_NON_DAYDREAM)
     public void testScreenTapsRegisteredOnCardboard() throws InterruptedException {
         String testName = "test_screen_taps_registered_on_cardboard";
-        loadUrl(getHtmlTestFile(testName), 10);
+        loadUrl(getHtmlTestFile(testName), PAGE_LOAD_TIMEOUT_S);
         assertTrue("VRDisplay found", vrDisplayFound(mWebContents));
         executeStepAndWait("stepVerifyNoInitialTaps()", mWebContents);
         enterVrTapAndWait(mWebContents);
@@ -285,7 +288,7 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
     @SmallTest
     public void testPoseDataUnfocusedTab() throws InterruptedException {
         String testName = "test_pose_data_unfocused_tab";
-        loadUrl(getHtmlTestFile(testName), 10);
+        loadUrl(getHtmlTestFile(testName), PAGE_LOAD_TIMEOUT_S);
         assertTrue("VRDisplay found", vrDisplayFound(mWebContents));
         executeStepAndWait("stepCheckFrameDataWhileFocusedTab()", mWebContents);
 

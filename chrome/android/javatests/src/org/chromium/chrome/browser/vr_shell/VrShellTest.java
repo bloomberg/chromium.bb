@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.vr_shell;
 
+import static org.chromium.chrome.browser.vr_shell.VrUtils.POLL_TIMEOUT_LONG_MS;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_DEVICE_DAYDREAM;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_DEVICE_NON_DAYDREAM;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
@@ -63,7 +64,7 @@ public class VrShellTest extends ChromeTabbedActivityTestBase {
         }
         VrUtils.forceEnterVr();
         if (supported) {
-            VrUtils.waitForVrSupported();
+            VrUtils.waitForVrSupported(POLL_TIMEOUT_LONG_MS);
             assertTrue(VrShellDelegate.isInVR());
         } else {
             assertFalse(mockApi.getLaunchInVrCalled());
@@ -89,7 +90,7 @@ public class VrShellTest extends ChromeTabbedActivityTestBase {
         // assuming that if the UI overlay is visible, then the device has
         // successfully entered VR mode.
         if (supported) {
-            VrUtils.waitForVrSupported();
+            VrUtils.waitForVrSupported(POLL_TIMEOUT_LONG_MS);
             mViewRenderer.renderAndCompare(
                     getActivity().getWindow().getDecorView().getRootView(),
                     "vr_entered");
@@ -115,7 +116,7 @@ public class VrShellTest extends ChromeTabbedActivityTestBase {
         getInstrumentation().waitForIdleSync();
         VrUtils.simNfc(getActivity());
         if (supported) {
-            VrUtils.waitForVrSupported();
+            VrUtils.waitForVrSupported(POLL_TIMEOUT_LONG_MS);
             assertTrue(VrShellDelegate.isInVR());
         } else {
             assertFalse(VrShellDelegate.isInVR());
