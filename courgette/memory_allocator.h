@@ -236,6 +236,10 @@ class MemoryAllocator {
         }
       }
     }
+    // If the above fails (e.g. because we are in a sandbox), just try the heap.
+    if (!mem && base::UncheckedMalloc(bytes, reinterpret_cast<void**>(&mem))) {
+      mem[0] = static_cast<uint8_t>(HEAP_ALLOCATION);
+    }
     return mem ? reinterpret_cast<pointer>(mem + sizeof(T)) : NULL;
   }
 
