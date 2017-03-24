@@ -21,8 +21,13 @@ const char kAutomationExtensionBackgroundPage[] =
     "_generated_background_page.html";
 
 Status MakeNavigationCheckFailedStatus(Status command_status) {
-  return Status(command_status.code() == kTimeout ? kTimeout : kUnknownError,
-                "cannot determine loading status", command_status);
+  if (command_status.code() == kUnexpectedAlertOpen)
+    return Status(kUnexpectedAlertOpen);
+  else if (command_status.code() == kTimeout)
+    return Status(kTimeout);
+  else
+    return Status(kUnknownError, "cannot determine loading status",
+                  command_status);
 }
 
 }  // namespace

@@ -671,6 +671,14 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self.assertEquals(self.GetHttpUrlForFile('/chromedriver/link_nav.html'),
                       self._driver.GetCurrentUrl())
 
+  def testAlertHandlingOnPageUnload(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    self._driver.ExecuteScript('window.onbeforeunload=function(){return true}')
+    self._driver.GoBack()
+    self.assertTrue(self._driver.IsAlertOpen())
+    self._driver.HandleAlert(True)
+    self.assertFalse(self._driver.IsAlertOpen())
+
   def testRefresh(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     self._driver.Refresh()
