@@ -38,7 +38,7 @@ BUILDER_DIR = path.dirname(CURRENT_DIR)
 # Relative to this script's filesystem path.
 THIS_DIR = path.dirname(path.abspath(__file__))
 
-DEPOT_TOOLS_DIR = path.abspath(path.join(THIS_DIR, '..', '..', '..'))
+DEPOT_TOOLS_DIR = path.abspath(path.join(THIS_DIR, '..', '..', '..', '..'))
 
 CHROMIUM_GIT_HOST = 'https://chromium.googlesource.com'
 CHROMIUM_SRC_URL = CHROMIUM_GIT_HOST + '/chromium/src.git'
