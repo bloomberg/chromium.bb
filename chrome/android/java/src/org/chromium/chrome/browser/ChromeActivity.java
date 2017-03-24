@@ -1429,6 +1429,13 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     }
 
     /**
+     * @return Whether the tab models have been fully initialized.
+     */
+    public boolean areTabModelsInitialized() {
+        return mTabModelsInitialized;
+    }
+
+    /**
      * {@link TabModelSelector} no longer implements TabModel.  Use getTabModelSelector() or
      * getCurrentTabModel() depending on your needs.
      * @return The {@link TabModelSelector}, possibly null.

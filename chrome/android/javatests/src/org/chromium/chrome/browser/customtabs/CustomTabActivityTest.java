@@ -32,6 +32,7 @@ import android.support.customtabs.CustomTabsService;
 import android.support.customtabs.CustomTabsServiceConnection;
 import android.support.customtabs.CustomTabsSession;
 import android.support.customtabs.CustomTabsSessionToken;
+import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 import android.text.TextUtils;
 import android.view.Menu;
@@ -41,6 +42,9 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
 
+import org.chromium.base.ActivityState;
+import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
@@ -86,6 +90,7 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.util.TestWebServer;
+import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
@@ -1864,6 +1869,74 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         // The Referrer is correctly set.
         CriteriaHelper.pollInstrumentationThread(
                 new TabsOpenedFromExternalAppTest.ReferrerCriteria(tab, referrerUrl), 2000, 200);
+    }
+
+    @MediumTest
+    public void testLaunchIncognitoURL() throws Exception {
+        Intent intent = createMinimalCustomTabIntent();
+        startCustomTabActivityWithIntent(intent);
+
+        final CustomTabActivity cctActivity = getActivity();
+        final CallbackHelper mCctHiddenCallback = new CallbackHelper();
+        final CallbackHelper mTabbedModeShownCallback = new CallbackHelper();
+        final AtomicReference<ChromeTabbedActivity> tabbedActivity = new AtomicReference<>();
+
+        ActivityStateListener listener = new ActivityStateListener() {
+            @Override
+            public void onActivityStateChange(Activity activity, int newState) {
+                if (activity == cctActivity
+                        && (newState == ActivityState.STOPPED
+                                   || newState == ActivityState.DESTROYED)) {
+                    mCctHiddenCallback.notifyCalled();
+                }
+
+                if (activity instanceof ChromeTabbedActivity && newState == ActivityState.RESUMED) {
+                    mTabbedModeShownCallback.notifyCalled();
+                    tabbedActivity.set((ChromeTabbedActivity) activity);
+                }
+            }
+        };
+        ApplicationStatus.registerStateListenerForAllActivities(listener);
+
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                cctActivity.getActivityTab().getTabWebContentsDelegateAndroid().openNewTab(
+                        "about:blank", null, null, WindowOpenDisposition.OFF_THE_RECORD, false);
+            }
+        });
+
+        mCctHiddenCallback.waitForCallback("CCT not hidden.", 0);
+        mTabbedModeShownCallback.waitForCallback("Tabbed mode not shown.", 0);
+
+        CriteriaHelper.pollUiThread(Criteria.equals(true, new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return tabbedActivity.get().areTabModelsInitialized();
+            }
+        }));
+
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                Tab tab = tabbedActivity.get().getActivityTab();
+                if (tab == null) {
+                    updateFailureReason("Tab is null");
+                    return false;
+                }
+                if (!tab.isIncognito()) {
+                    updateFailureReason("Incognito tab not selected");
+                    return false;
+                }
+                if (!TextUtils.equals(tab.getUrl(), "about:blank")) {
+                    updateFailureReason("Wrong URL loaded in incognito tab");
+                    return false;
+                }
+                return true;
+            }
+        });
+
+        ApplicationStatus.unregisterActivityStateListener(listener);
     }
 
     /**

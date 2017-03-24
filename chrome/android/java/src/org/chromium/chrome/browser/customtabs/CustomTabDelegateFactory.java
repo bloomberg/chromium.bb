@@ -5,18 +5,22 @@
 package org.chromium.chrome.browser.customtabs;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.text.TextUtils;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
 import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.fullscreen.ComposedBrowserControlsVisibilityDelegate;
+import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
@@ -24,8 +28,15 @@ import org.chromium.chrome.browser.tab.TabContextMenuItemDelegate;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
+import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
+import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.common.ResourceRequestBody;
+import org.chromium.ui.mojom.WindowOpenDisposition;
 
 /**
  * A {@link TabDelegateFactory} class to be used in all {@link Tab} owned
@@ -136,6 +147,33 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
         @Override
         protected void bringActivityToForeground() {
             // No-op here. If client's task is in background Chrome is unable to foreground it.
+        }
+
+        @Override
+        public void openNewTab(String url, String extraHeaders, ResourceRequestBody postData,
+                int disposition, boolean isRendererInitiated) {
+            // If attempting to open an incognito tab, always send the user to tabbed mode.
+            if (disposition == WindowOpenDisposition.OFF_THE_RECORD) {
+                if (isRendererInitiated) {
+                    throw new IllegalStateException(
+                            "Invalid attempt to open an incognito tab from the renderer");
+                }
+                LoadUrlParams loadUrlParams = new LoadUrlParams(url);
+                loadUrlParams.setVerbatimHeaders(extraHeaders);
+                loadUrlParams.setPostData(postData);
+                loadUrlParams.setIsRendererInitiated(isRendererInitiated);
+
+                Class<? extends ChromeTabbedActivity> tabbedClass =
+                        MultiWindowUtils.getInstance().getTabbedActivityForIntent(
+                                null, ContextUtils.getApplicationContext());
+                AsyncTabCreationParams tabParams = new AsyncTabCreationParams(loadUrlParams,
+                        new ComponentName(ContextUtils.getApplicationContext(), tabbedClass));
+                new TabDelegate(true).createNewTab(tabParams,
+                        TabLaunchType.FROM_LONGPRESS_FOREGROUND, TabModel.INVALID_TAB_INDEX);
+                return;
+            }
+
+            super.openNewTab(url, extraHeaders, postData, disposition, isRendererInitiated);
         }
     }
 
