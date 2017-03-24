@@ -86,7 +86,7 @@ class PrerenderHistograms {
   void RecordFinalStatus(Origin origin, FinalStatus final_status) const;
 
   // To be called when a new prerender is added.
-  void RecordPrerender(Origin origin, const GURL& url);
+  void RecordPrerender();
 
   // To be called when a new prerender is started.
   void RecordPrerenderStarted(Origin origin) const;
@@ -145,16 +145,6 @@ class PrerenderHistograms {
   // window - effectively, up to 30 seconds after a prerender tag has been
   // observed.
   bool WithinWindow() const;
-
-  // Returns whether or not there is currently an origin wash.
-  bool IsOriginWash() const;
-
-  // Origin of the last prerender seen.
-  Origin last_origin_;
-
-  // A boolean indicating that we have recently encountered a combination of
-  // different origins, making an attribution of PPLT's to origins impossible.
-  bool origin_wash_;
 
   // The time when we last saw a prerender request coming from a renderer.
   // This is used to record perceived PLT's for a certain amount of time

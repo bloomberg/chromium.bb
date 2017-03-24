@@ -944,7 +944,7 @@ std::unique_ptr<PrerenderHandle> PrerenderManager::AddPrerender(
 
   // From here on, we will record a FinalStatus so we need to register with the
   // histogram tracking.
-  histograms_->RecordPrerender(origin, url_arg);
+  histograms_->RecordPrerender();
 
   if (profile_->GetPrefs()->GetBoolean(prefs::kBlockThirdPartyCookies) &&
       origin != ORIGIN_OFFLINE) {

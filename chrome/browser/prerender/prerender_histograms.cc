@@ -49,11 +49,7 @@ std::string ComposeHistogramName(const std::string& prefix_type,
   return std::string("Prerender.") + prefix_type + std::string("_") + name;
 }
 
-std::string GetHistogramName(Origin origin, bool is_wash,
-                             const std::string& name) {
-  if (is_wash)
-    return ComposeHistogramName("wash", name);
-
+std::string GetHistogramName(Origin origin, const std::string& name) {
   switch (origin) {
     case ORIGIN_OMNIBOX:
       return ComposeHistogramName("omnibox", name);
@@ -82,7 +78,7 @@ std::string GetHistogramName(Origin origin, bool is_wash,
 
   // Dummy return value to make the compiler happy.
   NOTREACHED();
-  return ComposeHistogramName("wash", name);
+  return ComposeHistogramName("none", name);
 }
 
 bool OriginIsOmnibox(Origin origin) {
@@ -95,17 +91,10 @@ const char* FirstContentfulPaintHiddenName(bool was_hidden) {
 
 }  // namespace
 
-// Helper macros for origin-based histogram reporting. All HISTOGRAM arguments
-// must be UMA_HISTOGRAM... macros that contain an argument "name" which these
-// macros will eventually substitute for the actual name used.
-#define PREFIXED_HISTOGRAM(histogram_name, origin, HISTOGRAM)           \
-  PREFIXED_HISTOGRAM_INTERNAL(origin, IsOriginWash(), HISTOGRAM, histogram_name)
-
-#define PREFIXED_HISTOGRAM_ORIGIN_EXPERIMENT(histogram_name, origin, \
-                                             HISTOGRAM) \
-  PREFIXED_HISTOGRAM_INTERNAL(origin, false, HISTOGRAM, histogram_name)
-
-#define PREFIXED_HISTOGRAM_INTERNAL(origin, wash, HISTOGRAM, histogram_name)  \
+// Helper macro for origin-based histogram reporting. All HISTOGRAM arguments
+// must be UMA_HISTOGRAM... macros that contain an argument "name" which this
+// macro will eventually substitute for the actual name used.
+#define PREFIXED_HISTOGRAM(histogram_name, origin, HISTOGRAM)                 \
   do {                                                                        \
     {                                                                         \
       /* Do not rename.  HISTOGRAM expects a local variable "name". */        \
@@ -113,11 +102,9 @@ const char* FirstContentfulPaintHiddenName(bool was_hidden) {
       HISTOGRAM;                                                              \
     }                                                                         \
     /* Do not rename.  HISTOGRAM expects a local variable "name". */          \
-    std::string name = GetHistogramName(origin, wash, histogram_name);        \
+    std::string name = GetHistogramName(origin, histogram_name);              \
     /* Branching because HISTOGRAM is caching the histogram into a static. */ \
-    if (wash) {                                                               \
-      HISTOGRAM;                                                              \
-    } else if (origin == ORIGIN_OMNIBOX) {                                    \
+    if (origin == ORIGIN_OMNIBOX) {                                           \
       HISTOGRAM;                                                              \
     } else if (origin == ORIGIN_NONE) {                                       \
       HISTOGRAM;                                                              \
@@ -141,28 +128,9 @@ const char* FirstContentfulPaintHiddenName(bool was_hidden) {
   } while (0)
 
 PrerenderHistograms::PrerenderHistograms()
-    : last_origin_(ORIGIN_MAX),
-      origin_wash_(false),
-      seen_any_pageload_(true),
-      seen_pageload_started_after_prerender_(true) {
-}
+    : seen_any_pageload_(true), seen_pageload_started_after_prerender_(true) {}
 
-void PrerenderHistograms::RecordPrerender(Origin origin, const GURL& url) {
-  // We need to update last_origin_ and origin_wash_.
-  if (!WithinWindow()) {
-    // If we are outside a window, this is a fresh start and we are fine,
-    // and there is no mix.
-    origin_wash_ = false;
-  } else {
-    // If we are inside the last window, there is a mish mash of origins if
-    // either there was a mish mash before, or the current origin does not match
-    // the previous one.
-    if (origin != last_origin_)
-      origin_wash_ = true;
-  }
-
-  last_origin_ = origin;
-
+void PrerenderHistograms::RecordPrerender() {
   // If we observe multiple tags within the 30 second window, we will still
   // reset the window to begin at the most recent occurrence, so that we will
   // always be in a window in the 30 seconds from each occurrence.
@@ -287,10 +255,9 @@ void PrerenderHistograms::RecordPerceivedFirstContentfulPaintStatus(
     Origin origin,
     bool successful,
     bool was_hidden) {
-  base::UmaHistogramBoolean(
-      GetHistogramName(origin, IsOriginWash(), "PerceivedTTFCPRecorded") +
-          FirstContentfulPaintHiddenName(was_hidden),
-      successful);
+  base::UmaHistogramBoolean(GetHistogramName(origin, "PerceivedTTFCPRecorded") +
+                                FirstContentfulPaintHiddenName(was_hidden),
+                            successful);
 }
 
 void PrerenderHistograms::RecordPageLoadTimeNotSwappedIn(
@@ -373,7 +340,7 @@ void PrerenderHistograms::RecordFinalStatus(
     Origin origin,
     FinalStatus final_status) const {
   DCHECK(final_status != FINAL_STATUS_MAX);
-  PREFIXED_HISTOGRAM_ORIGIN_EXPERIMENT(
+  PREFIXED_HISTOGRAM(
       "FinalStatus", origin,
       UMA_HISTOGRAM_ENUMERATION(name, final_status, FINAL_STATUS_MAX));
 }
@@ -419,7 +386,7 @@ void PrerenderHistograms::RecordPrefetchResponseReceived(
 
   int sample = GetResourceType(is_main_resource, is_redirect, is_no_store);
   std::string histogram_name =
-      GetHistogramName(origin, IsOriginWash(), "NoStatePrefetchResponseTypes");
+      GetHistogramName(origin, "NoStatePrefetchResponseTypes");
   base::UmaHistogramExactLinear(histogram_name, sample,
                                 NO_STATE_PREFETCH_RESPONSE_TYPE_COUNT);
 }
@@ -433,8 +400,7 @@ void PrerenderHistograms::RecordPrefetchRedirectCount(
   const int kMaxRedirectCount = 10;
   std::string histogram_base_name = base::StringPrintf(
       "NoStatePrefetch%sResourceRedirects", is_main_resource ? "Main" : "Sub");
-  std::string histogram_name =
-      GetHistogramName(origin, IsOriginWash(), histogram_base_name);
+  std::string histogram_name = GetHistogramName(origin, histogram_base_name);
   base::UmaHistogramExactLinear(histogram_name, redirect_count,
                                 kMaxRedirectCount);
 }
@@ -449,10 +415,10 @@ void PrerenderHistograms::RecordPrefetchFirstContentfulPaintTime(
 
   if (!prefetch_age.is_zero()) {
     DCHECK_NE(origin, ORIGIN_NONE);
-    base::UmaHistogramCustomTimes(
-        GetHistogramName(origin, IsOriginWash(), "PrefetchAge"), prefetch_age,
-        base::TimeDelta::FromMilliseconds(10), base::TimeDelta::FromMinutes(30),
-        50);
+    base::UmaHistogramCustomTimes(GetHistogramName(origin, "PrefetchAge"),
+                                  prefetch_age,
+                                  base::TimeDelta::FromMilliseconds(10),
+                                  base::TimeDelta::FromMinutes(30), 50);
   }
 
   std::string histogram_base_name;
@@ -467,18 +433,11 @@ void PrerenderHistograms::RecordPrefetchFirstContentfulPaintTime(
 
   histogram_base_name += is_no_store ? ".NoStore" : ".Cacheable";
   histogram_base_name += FirstContentfulPaintHiddenName(was_hidden);
-  std::string histogram_name =
-      GetHistogramName(origin, IsOriginWash(), histogram_base_name);
+  std::string histogram_name = GetHistogramName(origin, histogram_base_name);
 
   base::UmaHistogramCustomTimes(histogram_name, time,
                                 base::TimeDelta::FromMilliseconds(10),
                                 base::TimeDelta::FromMinutes(2), 50);
-}
-
-bool PrerenderHistograms::IsOriginWash() const {
-  if (!WithinWindow())
-    return false;
-  return origin_wash_;
 }
 
 }  // namespace prerender
