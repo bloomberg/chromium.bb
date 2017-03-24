@@ -559,6 +559,7 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   int16_t *src_int16;
   const int src_stride = p->src.stride;
 
+  (void)ctx;
   (void)scan_order;
   (void)qcoeff;
 
@@ -693,7 +694,9 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   struct macroblockd_plane *const pd = &xd->plane[plane];
   tran_low_t *const dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
   uint8_t *dst;
+#if !CONFIG_PVQ
   ENTROPY_CONTEXT *a, *l;
+#endif
   INV_TXFM_PARAM inv_txfm_param;
   const int block_raster_idx = av1_block_index_to_raster_order(tx_size, block);
 #if CONFIG_PVQ
@@ -705,6 +708,8 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
 #endif
   dst = &pd->dst
              .buf[(blk_row * pd->dst.stride + blk_col) << tx_size_wide_log2[0]];
+
+#if !CONFIG_PVQ
   a = &args->ta[blk_col];
   l = &args->tl[blk_row];
 #if CONFIG_VAR_TX
@@ -712,6 +717,9 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
 #else
   ctx = combine_entropy_contexts(*a, *l);
 #endif
+#else
+  ctx = 0;
+#endif  // CONFIG_PVQ
 
 #if CONFIG_VAR_TX
   // Assert not magic number (uninitialized).
@@ -734,14 +742,13 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
     p->eobs[block] = 0;
   }
 #endif
+
 #if !CONFIG_PVQ
   if (p->eobs[block] && !xd->lossless[xd->mi[0]->mbmi.segment_id])
     av1_optimize_b(cm, x, plane, block, tx_size, ctx);
-#endif
 
   av1_set_txb_context(x, plane, block, tx_size, a, l);
 
-#if !CONFIG_PVQ
   if (p->eobs[block]) *(args->skip) = 0;
 
   if (p->eobs[block] == 0) return;
@@ -1002,16 +1009,13 @@ void av1_encode_sb_supertx(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize) {
 }
 #endif  // CONFIG_SUPERTX
 
+#if !CONFIG_PVQ
 void av1_set_txb_context(MACROBLOCK *x, int plane, int block, TX_SIZE tx_size,
                          ENTROPY_CONTEXT *a, ENTROPY_CONTEXT *l) {
   (void)tx_size;
-#if !CONFIG_PVQ
   struct macroblock_plane *p = &x->plane[plane];
+
   *a = *l = p->eobs[block] > 0;
-#else   // !CONFIG_PVQ
-  (void)block;
-  *a = *l = !x->pvq_skip[plane];
-#endif  // !CONFIG_PVQ
 
 #if CONFIG_VAR_TX || CONFIG_LV_MAP
   int i;
@@ -1020,6 +1024,7 @@ void av1_set_txb_context(MACROBLOCK *x, int plane, int block, TX_SIZE tx_size,
   for (i = 0; i < tx_size_high_unit[tx_size]; ++i) l[i] = l[0];
 #endif
 }
+#endif
 
 static void encode_block_intra_and_set_context(int plane, int block,
                                                int blk_row, int blk_col,
@@ -1027,12 +1032,13 @@ static void encode_block_intra_and_set_context(int plane, int block,
                                                TX_SIZE tx_size, void *arg) {
   av1_encode_block_intra(plane, block, blk_row, blk_col, plane_bsize, tx_size,
                          arg);
-
+#if !CONFIG_PVQ
   struct encode_b_args *const args = arg;
   MACROBLOCK *x = args->x;
   ENTROPY_CONTEXT *a = &args->ta[blk_col];
   ENTROPY_CONTEXT *l = &args->tl[blk_row];
   av1_set_txb_context(x, plane, block, tx_size, a, l);
+#endif
 }
 
 void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,

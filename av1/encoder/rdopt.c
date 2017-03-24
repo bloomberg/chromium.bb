@@ -1465,8 +1465,11 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   use_activity_masking = x->daala_enc.use_activity_masking;
 #endif  // CONFIG_PVQ
 #endif  // CONFIG_DAALA_DIST
+
+#if !CONFIG_PVQ
   ENTROPY_CONTEXT *a = args->t_above + blk_col;
   ENTROPY_CONTEXT *l = args->t_left + blk_row;
+#endif  // CONFIG_PVQ
 
   av1_init_rd_stats(&this_rd_stats);
 
@@ -1580,11 +1583,10 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   av1_update_txb_coeff_cost(&this_rd_stats, plane, tx_size, blk_row, blk_col,
                             this_rd_stats.rate);
 #endif  // CONFIG_RD_DEBUG
-
+  av1_set_txb_context(x, plane, block, tx_size, a, l);
 #else
   this_rd_stats.rate = x->rate;
 #endif  // !CONFIG_PVQ
-  av1_set_txb_context(x, plane, block, tx_size, a, l);
 
   rd1 = RDCOST(x->rdmult, x->rddiv, this_rd_stats.rate, this_rd_stats.dist);
   rd2 = RDCOST(x->rdmult, x->rddiv, 0, this_rd_stats.sse);
@@ -5388,8 +5390,6 @@ static int64_t encode_inter_mb_segment_sub8x8(
       *(tl + (k >> 1)) = !(p->eobs[block] == 0);
 #else
       thisrate += x->rate;
-      *(ta + (k & 1)) = !x->pvq_skip[0];
-      *(tl + (k >> 1)) = !x->pvq_skip[0];
 #endif  // !CONFIG_PVQ
 #if CONFIG_EXT_TX
       if (tx_size == TX_8X4) {
