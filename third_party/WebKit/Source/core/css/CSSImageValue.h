@@ -37,17 +37,19 @@ class LayoutObject;
 class CORE_EXPORT CSSImageValue : public CSSValue {
  public:
   static CSSImageValue* create(const KURL& url, StyleImage* image = 0) {
-    return create(url.getString(), url, image);
+    return create(url.getString(), url, Referrer(), image);
   }
   static CSSImageValue* create(const String& rawValue,
                                const KURL& url,
+                               const Referrer& referrer,
                                StyleImage* image = 0) {
-    return create(AtomicString(rawValue), url, image);
+    return create(AtomicString(rawValue), url, referrer, image);
   }
   static CSSImageValue* create(const AtomicString& rawValue,
                                const KURL& url,
+                               const Referrer& referrer,
                                StyleImage* image = 0) {
-    return new CSSImageValue(rawValue, url, image);
+    return new CSSImageValue(rawValue, url, referrer, image);
   }
   static CSSImageValue* create(const AtomicString& absoluteURL) {
     return new CSSImageValue(absoluteURL);
@@ -65,7 +67,6 @@ class CORE_EXPORT CSSImageValue : public CSSValue {
 
   const String& url() const { return m_absoluteURL; }
 
-  void setReferrer(const Referrer& referrer) { m_referrer = referrer; }
   const Referrer& referrer() const { return m_referrer; }
 
   void reResolveURL(const Document&) const;
@@ -88,7 +89,10 @@ class CORE_EXPORT CSSImageValue : public CSSValue {
   void restoreCachedResourceIfNeeded(const Document&) const;
 
  private:
-  CSSImageValue(const AtomicString& rawValue, const KURL&, StyleImage*);
+  CSSImageValue(const AtomicString& rawValue,
+                const KURL&,
+                const Referrer&,
+                StyleImage*);
   CSSImageValue(const AtomicString& absoluteURL);
 
   AtomicString m_relativeURL;

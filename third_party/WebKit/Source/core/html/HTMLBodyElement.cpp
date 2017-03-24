@@ -65,10 +65,10 @@ void HTMLBodyElement::collectStyleForPresentationAttribute(
     String url = stripLeadingAndTrailingHTMLSpaces(value);
     if (!url.isEmpty()) {
       CSSImageValue* imageValue =
-          CSSImageValue::create(url, document().completeURL(url));
+          CSSImageValue::create(url, document().completeURL(url),
+                                Referrer(document().outgoingReferrer(),
+                                         document().getReferrerPolicy()));
       imageValue->setInitiator(localName());
-      imageValue->setReferrer(Referrer(document().outgoingReferrer(),
-                                       document().getReferrerPolicy()));
       style->setProperty(CSSProperty(CSSPropertyBackgroundImage, *imageValue));
     }
   } else if (name == marginwidthAttr || name == leftmarginAttr) {

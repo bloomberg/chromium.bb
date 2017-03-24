@@ -37,9 +37,11 @@ namespace blink {
 
 CSSImageValue::CSSImageValue(const AtomicString& rawValue,
                              const KURL& url,
+                             const Referrer& referrer,
                              StyleImage* image)
     : CSSValue(ImageClass),
       m_relativeURL(rawValue),
+      m_referrer(referrer),
       m_absoluteURL(url.getString()),
       m_cachedImage(image) {}
 

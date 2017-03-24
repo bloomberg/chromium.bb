@@ -61,9 +61,9 @@ void HTMLTablePartElement::collectStyleForPresentationAttribute(
           document(),
           UseCounter::HTMLTableElementPresentationAttributeBackground);
       CSSImageValue* imageValue =
-          CSSImageValue::create(url, document().completeURL(url));
-      imageValue->setReferrer(Referrer(document().outgoingReferrer(),
-                                       document().getReferrerPolicy()));
+          CSSImageValue::create(url, document().completeURL(url),
+                                Referrer(document().outgoingReferrer(),
+                                         document().getReferrerPolicy()));
       style->setProperty(CSSProperty(CSSPropertyBackgroundImage, *imageValue));
     }
   } else if (name == valignAttr) {

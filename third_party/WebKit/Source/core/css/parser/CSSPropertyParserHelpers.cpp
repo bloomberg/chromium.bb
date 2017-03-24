@@ -1266,9 +1266,8 @@ static CSSValue* consumeGeneratedImage(CSSParserTokenRange& range,
 static CSSValue* createCSSImageValueWithReferrer(
     const AtomicString& rawValue,
     const CSSParserContext* context) {
-  CSSValue* imageValue =
-      CSSImageValue::create(rawValue, context->completeURL(rawValue));
-  toCSSImageValue(imageValue)->setReferrer(context->referrer());
+  CSSValue* imageValue = CSSImageValue::create(
+      rawValue, context->completeURL(rawValue), context->referrer());
   return imageValue;
 }
 
