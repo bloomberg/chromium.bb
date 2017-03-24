@@ -35,14 +35,20 @@
 #      'target_name': 'drag_selector',
 #      'includes': ['../../../../compile_js2.gypi'],
 #    },
-#    {
-#      'target_name': 'empty_folder',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'error_dialog',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'empty_folder',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:util',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'error_dialog',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:dialogs',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
 #    {
 #      'target_name': 'file_grid',
 #      'includes': ['../../../../compile_js2.gypi'],
@@ -87,8 +93,6 @@
     {
       'target_name': 'files_confirm_dialog',
       'dependencies': [
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
-        '<(DEPTH)/ui/webui/resources/js/cr/compiled_resources2.gyp:ui',
         '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:dialogs',
       ],
       'includes': ['../../../../compile_js2.gypi'],
