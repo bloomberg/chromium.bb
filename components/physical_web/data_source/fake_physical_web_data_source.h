@@ -42,7 +42,8 @@ class FakePhysicalWebDataSource : public PhysicalWebDataSource {
 
   bool HasUnresolvedDiscoveries() override;
 
-  void RegisterListener(PhysicalWebListener* physical_web_listener) override;
+  void RegisterListener(PhysicalWebListener* physical_web_listener,
+      ScanMode scan_mode) override;
   void UnregisterListener(PhysicalWebListener* physical_web_listener) override;
 
   // for testing

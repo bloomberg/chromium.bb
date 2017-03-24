@@ -14,13 +14,19 @@ PhysicalWebDataSourceImpl::PhysicalWebDataSourceImpl() {}
 PhysicalWebDataSourceImpl::~PhysicalWebDataSourceImpl() {}
 
 void PhysicalWebDataSourceImpl::RegisterListener(
-    PhysicalWebListener* physical_web_listener) {
-  observer_list_.AddObserver(physical_web_listener);
+    PhysicalWebListener* physical_web_listener, ScanMode scan_mode) {
+  if (!observer_list_.HasObserver(physical_web_listener)) {
+    observer_list_.AddObserver(physical_web_listener);
+  }
+  scan_modes_[physical_web_listener] = scan_mode;
 }
 
 void PhysicalWebDataSourceImpl::UnregisterListener(
     PhysicalWebListener* physical_web_listener) {
+  if (!observer_list_.HasObserver(physical_web_listener)) return;
+
   observer_list_.RemoveObserver(physical_web_listener);
+  scan_modes_.erase(physical_web_listener);
 }
 
 void PhysicalWebDataSourceImpl::NotifyOnFound(const GURL& url) {

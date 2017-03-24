@@ -98,7 +98,8 @@ PhysicalWebPageSuggestionsProvider::PhysicalWebPageSuggestionsProvider(
       physical_web_data_source_(physical_web_data_source),
       pref_service_(pref_service) {
   observer->OnCategoryStatusChanged(this, provided_category_, category_status_);
-  physical_web_data_source_->RegisterListener(this);
+  physical_web_data_source_->RegisterListener(this,
+      physical_web::BACKGROUND_INTERMITTENT);
   // TODO(vitaliii): Rewrite initial fetch once crbug.com/667754 is resolved.
   FetchPhysicalWebPages();
 }

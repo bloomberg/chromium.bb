@@ -95,7 +95,7 @@ class PhysicalWebDataSourceImplTest : public ::testing::Test {
 };
 
 void PhysicalWebDataSourceImplTest::SetUp() {
-  data_source_.RegisterListener(&listener_);
+  data_source_.RegisterListener(&listener_, physical_web::OPPORTUNISTIC);
 }
 
 void PhysicalWebDataSourceImplTest::TearDown() {

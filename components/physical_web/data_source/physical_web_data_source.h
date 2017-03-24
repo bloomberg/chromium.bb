@@ -16,6 +16,16 @@ namespace physical_web {
 
 class PhysicalWebListener;
 
+// Enum describing scan policies.
+enum ScanMode {
+  // Request no particular scan policy.  Opportunistic listeners will receive
+  // notifications when any other listener requests a scan.
+  OPPORTUNISTIC = 0,
+  // Request a scan that runs occassionally, even when Chrome is not in the
+  // foreground.  Android only.
+  BACKGROUND_INTERMITTENT = 1 << 0,
+};
+
 // Metadata struct for associating data with Physical Web URLs.
 struct Metadata {
   Metadata();
@@ -89,7 +99,10 @@ class PhysicalWebDataSource {
   virtual bool HasUnresolvedDiscoveries() = 0;
 
   // Register for changes to Physical Web URLs and associated page metadata.
-  virtual void RegisterListener(PhysicalWebListener* physical_web_listener) = 0;
+  // This may be called multiple times in order to change the associated scan
+  // mode.
+  virtual void RegisterListener(PhysicalWebListener* physical_web_listener,
+      ScanMode scan_mode) = 0;
 
   // Unregister for changes to Physical Web URLs and associated page metadata.
   virtual void UnregisterListener(

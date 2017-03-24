@@ -19,7 +19,8 @@ class PhysicalWebDataSourceImpl : public PhysicalWebDataSource {
   ~PhysicalWebDataSourceImpl() override;
 
   // Register for changes to Physical Web URLs and associated page metadata.
-  void RegisterListener(PhysicalWebListener* physical_web_listener) override;
+  void RegisterListener(PhysicalWebListener* physical_web_listener,
+      ScanMode scan_mode) override;
 
   // Unregister for changes to Physical Web URLs and associated page metadata.
   void UnregisterListener(PhysicalWebListener* physical_web_listener) override;
@@ -31,11 +32,11 @@ class PhysicalWebDataSourceImpl : public PhysicalWebDataSource {
   void NotifyOnLost(const GURL& url);
 
   // Notify all registered listeners that a distance has changed for a URL.
-  void NotifyOnDistanceChanged(const GURL& url,
-                               double distance_estimate);
+  void NotifyOnDistanceChanged(const GURL& url, double distance_estimate);
 
  private:
   base::ObserverList<PhysicalWebListener> observer_list_;
+  std::unordered_map<PhysicalWebListener*, ScanMode> scan_modes_;
 };
 
 }  // namespace physical_web

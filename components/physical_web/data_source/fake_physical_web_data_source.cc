@@ -75,7 +75,7 @@ bool FakePhysicalWebDataSource::HasUnresolvedDiscoveries() {
 }
 
 void FakePhysicalWebDataSource::RegisterListener(
-    PhysicalWebListener* physical_web_listener) {
+    PhysicalWebListener* physical_web_listener, ScanMode scan_mode) {
   observer_list_.AddObserver(physical_web_listener);
 }
 
