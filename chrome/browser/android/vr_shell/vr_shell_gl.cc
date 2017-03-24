@@ -493,8 +493,6 @@ void VrShellGl::HandleControllerInput(const gvr::Vec3f& forward_vector) {
       SendGesture(InputTarget::CONTENT, std::move(gesture));
       DVLOG(1) << __FUNCTION__ << ": sent CLICK gesture";
     }
-
-    return;
   }
 
   gvr::Vec3f ergo_neutral_pose;
@@ -510,6 +508,12 @@ void VrShellGl::HandleControllerInput(const gvr::Vec3f& forward_vector) {
 
   gvr::Mat4f mat = QuatToMatrix(controller_quat_);
   gvr::Vec3f controller_direction = MatrixVectorMul(mat, ergo_neutral_pose);
+
+  HandleControllerAppButtonActivity(controller_direction);
+
+  if (ShouldDrawWebVr()) {
+    return;
+  }
 
   // If we place the reticle based on elements intersecting the controller beam,
   // we can end up with the reticle hiding behind elements, or jumping laterally
@@ -529,36 +533,6 @@ void VrShellGl::HandleControllerInput(const gvr::Vec3f& forward_vector) {
   target_point_ = GetRayPoint(kHandPosition, controller_direction, distance);
   gvr::Vec3f eye_to_target = target_point_;
   NormalizeVector(eye_to_target);
-
-  // Note that button up/down state is transient, so ButtonDownHappened only
-  // returns true for a single frame (and we're guaranteed not to miss it).
-  if (controller_->ButtonDownHappened(
-          gvr::ControllerButton::GVR_CONTROLLER_BUTTON_APP)) {
-    controller_start_direction_ = controller_direction;
-  }
-  if (controller_->ButtonUpHappened(
-          gvr::ControllerButton::GVR_CONTROLLER_BUTTON_APP)) {
-    // A gesture is a movement of the controller while holding the App button.
-    // If the angle of the movement is within a threshold, the action is
-    // considered a regular click
-    // TODO(asimjour1): We need to refactor the gesture recognition outside of
-    // VrShellGl.
-    UiInterface::Direction direction = UiInterface::NONE;
-    float gesture_xz_angle;
-    bool valid_angle = XZAngle(controller_start_direction_,
-                               controller_direction, &gesture_xz_angle);
-    DCHECK(valid_angle);
-    if (fabs(gesture_xz_angle) > kMinAppButtonGestureAngleRad) {
-      direction = gesture_xz_angle < 0 ? UiInterface::LEFT : UiInterface::RIGHT;
-      main_thread_task_runner_->PostTask(
-          FROM_HERE, base::Bind(&VrShell::AppButtonGesturePerformed,
-                                weak_vr_shell_, direction));
-    }
-    if (direction == UiInterface::NONE) {
-      main_thread_task_runner_->PostTask(
-          FROM_HERE, base::Bind(&VrShell::AppButtonPressed, weak_vr_shell_));
-    }
-  }
 
   // Determine which UI element (if any) intersects the line between the eyes
   // and the controller target position.
@@ -625,6 +599,40 @@ void VrShellGl::HandleControllerInput(const gvr::Vec3f& forward_vector) {
     }
   }
   SendEventsToTarget(input_target, pixel_x, pixel_y);
+}
+
+void VrShellGl::HandleControllerAppButtonActivity(
+    const gvr::Vec3f& controller_direction) {
+  // Note that button up/down state is transient, so ButtonDownHappened only
+  // returns true for a single frame (and we're guaranteed not to miss it).
+  if (controller_->ButtonDownHappened(
+          gvr::ControllerButton::GVR_CONTROLLER_BUTTON_APP)) {
+    controller_start_direction_ = controller_direction;
+  }
+  if (controller_->ButtonUpHappened(
+          gvr::ControllerButton::GVR_CONTROLLER_BUTTON_APP)) {
+    // A gesture is a movement of the controller while holding the App button.
+    // If the angle of the movement is within a threshold, the action is
+    // considered a regular click
+    // TODO(asimjour1): We need to refactor the gesture recognition outside of
+    // VrShellGl.
+    UiInterface::Direction direction = UiInterface::NONE;
+    float gesture_xz_angle;
+    if (XZAngle(controller_start_direction_, controller_direction,
+                &gesture_xz_angle)) {
+      if (fabs(gesture_xz_angle) > kMinAppButtonGestureAngleRad) {
+        direction =
+            gesture_xz_angle < 0 ? UiInterface::LEFT : UiInterface::RIGHT;
+        main_thread_task_runner_->PostTask(
+            FROM_HERE, base::Bind(&VrShell::AppButtonGesturePerformed,
+                                  weak_vr_shell_, direction));
+      }
+    }
+    if (direction == UiInterface::NONE) {
+      main_thread_task_runner_->PostTask(
+          FROM_HERE, base::Bind(&VrShell::AppButtonPressed, weak_vr_shell_));
+    }
+  }
 }
 
 void VrShellGl::SendEventsToTarget(InputTarget input_target,
@@ -817,7 +825,10 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
   scene_->UpdateTransforms(TimeInMicroseconds());
 
   {
+    // TODO(crbug.com/704690): Acquire controller state in a way that's timely
+    // for both the gamepad API and UI input handling.
     TRACE_EVENT0("gpu", "VrShellGl::UpdateController");
+    UpdateController();
     HandleControllerInput(GetForwardVector(head_pose));
   }
 
@@ -1195,10 +1206,6 @@ void VrShellGl::OnVSync() {
   target = vsync_timebase_ + intervals * vsync_interval_;
   task_runner_->PostDelayedTask(FROM_HERE, vsync_task_.callback(),
                                 target - now);
-
-  // Get controller data now so that it's ready for both WebVR's
-  // gamepad API input and VrShell's own processing.
-  UpdateController();
 
   base::TimeDelta time = intervals * vsync_interval_;
   if (!callback_.is_null()) {
