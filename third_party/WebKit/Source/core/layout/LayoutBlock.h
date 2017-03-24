@@ -40,7 +40,7 @@ typedef WTF::HashMap<const LayoutBlock*,
                      std::unique_ptr<TrackedLayoutBoxListHashSet>>
     TrackedDescendantsMap;
 typedef WTF::HashMap<const LayoutBox*, LayoutBlock*> TrackedContainerMap;
-typedef Vector<WordMeasurement, 64> WordMeasurements;
+typedef Vector<WordMeasurement> WordMeasurements;
 
 enum ContainingBlockState { NewContainingBlock, SameContainingBlock };
 

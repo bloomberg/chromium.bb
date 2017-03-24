@@ -1087,6 +1087,10 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(
 
   LineBreaker lineBreaker(LineLayoutBlockFlow(this));
 
+  // We avoid inline capacity to save the stack space.
+  WordMeasurements wordMeasurements;
+  wordMeasurements.reserveInitialCapacity(64);
+
   while (!endOfLine.atEnd()) {
     // The runs from the previous line should have been cleaned up.
     ASSERT(!resolver.runs().runCount());
@@ -1115,7 +1119,7 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(
     FloatingObject* lastFloatFromPreviousLine =
         (containsFloats()) ? m_floatingObjects->set().back().get() : 0;
 
-    WordMeasurements wordMeasurements;
+    wordMeasurements.clear();
     endOfLine = lineBreaker.nextLineBreak(resolver, layoutState.lineInfo(),
                                           layoutTextInfo, wordMeasurements);
     layoutTextInfo.m_lineBreakIterator.resetPriorContext();
