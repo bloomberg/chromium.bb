@@ -1719,7 +1719,8 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   }
 
   // Create the toolbar model and controller.
-  _toolbarModelDelegate.reset(new ToolbarModelDelegateIOS(_model));
+  _toolbarModelDelegate.reset(
+      new ToolbarModelDelegateIOS([_model webStateList]));
   _toolbarModelIOS.reset([_dependencyFactory
       newToolbarModelIOSWithDelegate:_toolbarModelDelegate.get()]);
   _toolbarController.reset([_dependencyFactory
