@@ -144,7 +144,9 @@ var MainPageBehaviorImpl = {
         promise = this.expandSection_(currentSection);
       else if (scrollToSection)
         currentSection.scrollIntoView();
-    } else if (settings.Route.ADVANCED.contains(currentRoute) &&
+    } else if (
+        this.tagName == 'SETTINGS-BASIC-PAGE' &&
+        settings.Route.ADVANCED.contains(currentRoute) &&
         // Need to exclude routes that correspond to 'non-sectioned' children of
         // ADVANCED, otherwise tryTransitionToSection_ will recurse endlessly.
         !currentRoute.isNavigableDialog) {
