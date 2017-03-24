@@ -648,6 +648,7 @@ def write_gn_ninja(path, root_gen_dir, options):
         'base/message_loop/message_pump_mac.mm',
         'base/metrics/field_trial.cc',
         'base/process/process_handle_mac.cc',
+        'base/process/process_info_mac.cc',
         'base/process/process_iterator_mac.cc',
         'base/process/process_metrics_mac.cc',
         'base/strings/sys_string_conversions_mac.mm',
