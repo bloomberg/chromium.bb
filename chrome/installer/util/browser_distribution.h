@@ -88,8 +88,6 @@ class BrowserDistribution {
   // is allowed to be set as default.
   virtual DefaultBrowserControlPolicy GetDefaultBrowserControlPolicy();
 
-  virtual bool CanCreateDesktopShortcuts();
-
   virtual void UpdateInstallStatus(bool system_install,
       installer::ArchiveType archive_type,
       installer::InstallStatus install_status);

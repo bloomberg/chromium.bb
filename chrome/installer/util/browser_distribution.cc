@@ -156,10 +156,6 @@ BrowserDistribution::DefaultBrowserControlPolicy
   return DEFAULT_BROWSER_FULL_CONTROL;
 }
 
-bool BrowserDistribution::CanCreateDesktopShortcuts() {
-  return true;
-}
-
 void BrowserDistribution::UpdateInstallStatus(bool system_install,
     installer::ArchiveType archive_type,
     installer::InstallStatus install_status) {
