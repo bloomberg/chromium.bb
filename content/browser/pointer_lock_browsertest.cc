@@ -272,17 +272,9 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockEventRouting) {
   EXPECT_EQ(17, movementY);
 }
 
-// Flaky on Mac. See comment on https://codereview.chromium.org/2760343002.
-#if defined(OS_MACOSX)
-#define MAYBE_PointerLockChildFrameDetached \
-  DISABLED_PointerLockChildFrameDetached
-#else
-#define MAYBE_PointerLockChildFrameDetached PointerLockChildFrameDetached
-#endif
 // Tests that the browser will not unlock the pointer if a RenderWidgetHostView
 // that doesn't hold the pointer lock is destroyed.
-IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest,
-                       MAYBE_PointerLockChildFrameDetached) {
+IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockChildFrameDetached) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));

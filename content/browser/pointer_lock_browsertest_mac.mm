@@ -15,8 +15,7 @@ namespace {
 class MockRenderWidgetHostView : public RenderWidgetHostViewMac {
  public:
   MockRenderWidgetHostView(RenderWidgetHost* host, bool is_guest_view_hack)
-      : RenderWidgetHostViewMac(host, is_guest_view_hack),
-        host_(RenderWidgetHostImpl::From(host)) {}
+      : RenderWidgetHostViewMac(host, is_guest_view_hack) {}
   ~MockRenderWidgetHostView() override {
     if (mouse_locked_)
       UnlockMouse();
@@ -29,15 +28,16 @@ class MockRenderWidgetHostView : public RenderWidgetHostViewMac {
   }
 
   void UnlockMouse() override {
-    host_->LostMouseLock();
+    if (RenderWidgetHostImpl* host =
+            RenderWidgetHostImpl::From(GetRenderWidgetHost())) {
+      host->LostMouseLock();
+    }
     mouse_locked_ = false;
   }
 
   bool IsMouseLocked() override { return mouse_locked_; }
 
   bool HasFocus() const override { return true; }
-
-  RenderWidgetHostImpl* host_;
 };
 
 }  // namespace
