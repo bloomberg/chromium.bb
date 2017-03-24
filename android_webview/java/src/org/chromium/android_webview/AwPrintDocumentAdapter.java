@@ -14,6 +14,7 @@ import android.print.PrintDocumentAdapter;
 import android.print.PrintDocumentInfo;
 import android.webkit.ValueCallback;
 
+import java.util.ArrayList;
 
 /**
  * Adapter for printing Webview. This class implements the abstract
@@ -65,19 +66,38 @@ public class AwPrintDocumentAdapter extends PrintDocumentAdapter {
     }
 
     @Override
-    public void onWrite(PageRange[] pages, ParcelFileDescriptor destination,
+    public void onWrite(final PageRange[] pages, ParcelFileDescriptor destination,
             CancellationSignal cancellationSignal, final WriteResultCallback callback) {
-        mPdfExporter.exportToPdf(destination, mAttributes, new ValueCallback<Boolean>() {
-            @Override
-            public void onReceiveValue(Boolean value) {
-                if (value) {
-                    callback.onWriteFinished(new PageRange[] { PageRange.ALL_PAGES });
-                } else {
-                    // TODO(sgurun) provide a localized error message
-                    callback.onWriteFailed(null);
-                }
+        mPdfExporter.exportToPdf(
+                destination, mAttributes, normalizeRanges(pages), new ValueCallback<Boolean>() {
+                    @Override
+                    public void onReceiveValue(Boolean value) {
+                        if (value) {
+                            callback.onWriteFinished(pages);
+                        } else {
+                            // TODO(sgurun) provide a localized error message
+                            callback.onWriteFailed(null);
+                        }
+                    }
+                }, cancellationSignal);
+    }
+
+    private int[] normalizeRanges(final PageRange[] ranges) {
+        if (ranges.length == 1 && PageRange.ALL_PAGES.equals(ranges[0])) {
+            return new int[0];
+        }
+        ArrayList<Integer> pages = new ArrayList<Integer>();
+        for (PageRange range : ranges) {
+            for (int i = range.getStart(); i <= range.getEnd(); ++i) {
+                pages.add(i);
             }
-        }, cancellationSignal);
+        }
+
+        int[] ret = new int[pages.size()];
+        for (int i = 0; i < pages.size(); ++i) {
+            ret[i] = pages.get(i).intValue();
+        }
+        return ret;
     }
 }
 

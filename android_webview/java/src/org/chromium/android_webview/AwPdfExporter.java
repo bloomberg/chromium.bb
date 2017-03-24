@@ -46,9 +46,8 @@ public class AwPdfExporter {
         mContainerView = containerView;
     }
 
-    public void exportToPdf(final ParcelFileDescriptor fd, PrintAttributes attributes,
+    public void exportToPdf(final ParcelFileDescriptor fd, PrintAttributes attributes, int[] pages,
             ValueCallback<Boolean> resultCallback, CancellationSignal cancellationSignal) {
-
         if (fd == null) {
             throw new IllegalArgumentException("fd cannot be null");
         }
@@ -74,7 +73,7 @@ public class AwPdfExporter {
         mResultCallback = resultCallback;
         mAttributes = attributes;
         mFd = fd;
-        nativeExportToPdf(mNativeAwPdfExporter, mFd.getFd(), cancellationSignal);
+        nativeExportToPdf(mNativeAwPdfExporter, mFd.getFd(), pages, cancellationSignal);
     }
 
     @CalledByNative
@@ -149,6 +148,6 @@ public class AwPdfExporter {
         return mAttributes.getMinMargins().getBottomMils();
     }
 
-    private native void nativeExportToPdf(long nativeAwPdfExporter, int fd,
-            CancellationSignal cancellationSignal);
+    private native void nativeExportToPdf(
+            long nativeAwPdfExporter, int fd, int[] pages, CancellationSignal cancellationSignal);
 }

@@ -24,10 +24,6 @@ bool AwPrintWebViewHelperDelegate::IsPrintPreviewEnabled() {
   return false;
 }
 
-bool AwPrintWebViewHelperDelegate::IsAskPrintSettingsEnabled() {
-  return false;
-}
-
 bool AwPrintWebViewHelperDelegate::IsScriptedPrintEnabled() {
   return false;
 }

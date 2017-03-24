@@ -6,6 +6,7 @@
 
 #include "android_webview/browser/aw_print_manager.h"
 #include "base/android/jni_android.h"
+#include "base/android/jni_array.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/AwPdfExporter_jni.h"
 #include "printing/print_settings.h"
@@ -16,6 +17,23 @@ using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace android_webview {
+
+namespace {
+
+void GetPageRanges(JNIEnv* env,
+                   jintArray int_arr,
+                   printing::PageRanges* range_vector) {
+  std::vector<int> pages;
+  base::android::JavaIntArrayToIntVector(env, int_arr, &pages);
+  for (int page : pages) {
+    printing::PageRange range;
+    range.from = page;
+    range.to = page;
+    range_vector->push_back(range);
+  }
+}
+
+}  // namespace
 
 AwPdfExporter::AwPdfExporter(JNIEnv* env,
                              const JavaRef<jobject>& obj,
@@ -38,10 +56,13 @@ AwPdfExporter::~AwPdfExporter() {
 void AwPdfExporter::ExportToPdf(JNIEnv* env,
                                 const JavaParamRef<jobject>& obj,
                                 int fd,
+                                jintArray pages,
                                 const JavaParamRef<jobject>& cancel_signal) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   printing::PrintSettings print_settings;
-  InitPdfSettings(env, obj, print_settings);
+  printing::PageRanges page_ranges;
+  GetPageRanges(env, pages, &page_ranges);
+  InitPdfSettings(env, obj, page_ranges, print_settings);
   AwPrintManager* print_manager =
       AwPrintManager::CreateForWebContents(
           web_contents_, print_settings, base::FileDescriptor(fd, false),
@@ -56,10 +77,11 @@ namespace {
 int MilsToDots(int val, int dpi) {
   return static_cast<int>(printing::ConvertUnitDouble(val, 1000.0, dpi));
 }
-}  // anonymous namespace
+}  // namespace
 
 void AwPdfExporter::InitPdfSettings(JNIEnv* env,
                                     const JavaRef<jobject>& obj,
+                                    const printing::PageRanges& page_ranges,
                                     printing::PrintSettings& settings) {
   int dpi = Java_AwPdfExporter_getDpi(env, obj);
   int width = Java_AwPdfExporter_getPageWidth(env, obj);
@@ -72,6 +94,9 @@ void AwPdfExporter::InitPdfSettings(JNIEnv* env,
   gfx::Rect printable_area_device_units;
   // Assume full page is printable for now.
   printable_area_device_units.SetRect(0, 0, width_in_dots, height_in_dots);
+
+  if (!page_ranges.empty())
+    settings.set_ranges(page_ranges);
 
   settings.set_dpi(dpi);
   // TODO(sgurun) verify that the value for newly added parameter for

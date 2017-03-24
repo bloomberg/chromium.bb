@@ -19,7 +19,6 @@ class AwPrintWebViewHelperDelegate
   bool CancelPrerender(content::RenderFrame* render_frame) override;
   blink::WebElement GetPdfElement(blink::WebLocalFrame* frame) override;
   bool IsPrintPreviewEnabled() override;
-  bool IsAskPrintSettingsEnabled() override;
   bool IsScriptedPrintEnabled() override;
   bool OverridePrint(blink::WebLocalFrame* frame) override;
 };

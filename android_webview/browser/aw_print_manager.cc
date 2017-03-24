@@ -5,7 +5,6 @@
 #include "android_webview/browser/aw_print_manager.h"
 
 #include "components/printing/browser/print_manager_utils.h"
-#include "components/printing/common/print_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 
@@ -53,6 +52,8 @@ bool AwPrintManager::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(AwPrintManager, message, render_frame_host)
     IPC_MESSAGE_HANDLER_WITH_PARAM_DELAY_REPLY(
         PrintHostMsg_GetDefaultPrintSettings, OnGetDefaultPrintSettings)
+    IPC_MESSAGE_HANDLER_WITH_PARAM_DELAY_REPLY(PrintHostMsg_ScriptedPrint,
+                                               OnScriptedPrint)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled ? true
@@ -68,6 +69,19 @@ void AwPrintManager::OnGetDefaultPrintSettings(
   printing::RenderParamsFromPrintSettings(settings_, &params);
   params.document_cookie = cookie_;
   PrintHostMsg_GetDefaultPrintSettings::WriteReplyParams(reply_msg, params);
+  render_frame_host->Send(reply_msg);
+}
+
+void AwPrintManager::OnScriptedPrint(
+    content::RenderFrameHost* render_frame_host,
+    const PrintHostMsg_ScriptedPrint_Params& scripted_params,
+    IPC::Message* reply_msg) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  PrintMsg_PrintPages_Params params;
+  printing::RenderParamsFromPrintSettings(settings_, &params.params);
+  params.params.document_cookie = scripted_params.cookie;
+  params.pages = printing::PageRange::GetPages(settings_.ranges());
+  PrintHostMsg_ScriptedPrint::WriteReplyParams(reply_msg, params);
   render_frame_host->Send(reply_msg);
 }
 

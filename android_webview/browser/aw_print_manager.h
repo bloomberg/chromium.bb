@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "components/printing/browser/print_manager.h"
+#include "components/printing/common/print_messages.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "printing/print_settings.h"
 
@@ -42,6 +43,10 @@ class AwPrintManager : public printing::PrintManager,
   // IPC Handlers
   void OnGetDefaultPrintSettings(content::RenderFrameHost* render_frame_host,
                                  IPC::Message* reply_msg);
+
+  void OnScriptedPrint(content::RenderFrameHost* render_frame_host,
+                       const PrintHostMsg_ScriptedPrint_Params& params,
+                       IPC::Message* reply_msg);
 
   printing::PrintSettings settings_;
 
