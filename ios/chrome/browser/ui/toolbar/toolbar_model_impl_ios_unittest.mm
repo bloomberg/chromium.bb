@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -15,13 +14,12 @@
 #include "components/toolbar/test_toolbar_model.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/tabs/tab.h"
+#import "ios/chrome/browser/tabs/tab_model.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_delegate_ios.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_impl_ios.h"
 #import "ios/chrome/browser/xcallback_parameters.h"
-#include "ios/shared/chrome/browser/tabs/fake_web_state_list_delegate.h"
-#include "ios/shared/chrome/browser/tabs/web_state_list.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
-#import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
@@ -30,47 +28,34 @@
 #include "third_party/ocmock/gtest_support.h"
 #include "third_party/ocmock/ocmock_extensions.h"
 
+@interface TMITestTabMock : OCMockComplexTypeHelper {
+  GURL url_;
+  web::WebState* web_state_;
+}
+
+@property(nonatomic, assign) const GURL& url;
+@property(nonatomic, assign) web::WebState* webState;
+@end
+
+@implementation TMITestTabMock
+- (const GURL&)url {
+  return url_;
+}
+- (void)setUrl:(const GURL&)url {
+  url_ = url;
+}
+- (web::WebState*)webState {
+  return web_state_;
+}
+- (void)setWebState:(web::WebState*)web_state {
+  web_state_ = web_state;
+}
+@end
+
 namespace {
 
 static const char kWebUrl[] = "http://www.chromium.org";
 static const char kNativeUrl[] = "chrome://version";
-
-namespace {
-
-class ToolbarTestWebState : public web::TestWebState {
- public:
-  ToolbarTestWebState() : loading_progress_(0) {}
-
-  double GetLoadingProgress() const override { return loading_progress_; }
-  void set_loading_progress(double loading_progress) {
-    loading_progress_ = loading_progress;
-  }
-
- private:
-  double loading_progress_;
-
-  DISALLOW_COPY_AND_ASSIGN(ToolbarTestWebState);
-};
-
-class ToolbarTestNavigationManager : public web::TestNavigationManager {
- public:
-  ToolbarTestNavigationManager()
-      : can_go_back_(false), can_go_forward_(false) {}
-
-  bool CanGoBack() const override { return can_go_back_; }
-  bool CanGoForward() const override { return can_go_forward_; }
-
-  void set_can_go_back(bool can_go_back) { can_go_back_ = can_go_back; }
-  void set_can_go_forward(bool can_go_forward) {
-    can_go_forward_ = can_go_forward;
-  }
-
- private:
-  bool can_go_back_;
-  bool can_go_forward_;
-};
-
-}  // namespace
 
 class ToolbarModelImplIOSTest : public PlatformTest {
  protected:
@@ -82,38 +67,41 @@ class ToolbarModelImplIOSTest : public PlatformTest {
         ios::BookmarkModelFactory::GetForBrowserState(
             chrome_browser_state_.get()));
 
-    // Create a WebStateList that will always return the test WebState as
-    // the active WebState.
-    web_state_list_ = base::MakeUnique<WebStateList>(
-        &web_state_list_delegate_, WebStateList::WebStateOwned);
-    std::unique_ptr<ToolbarTestWebState> web_state =
-        base::MakeUnique<ToolbarTestWebState>();
-    web_state->SetBrowserState(chrome_browser_state_.get());
-    web_state_ = web_state.get();
-    web_state_list_->InsertWebState(0, web_state.release());
-    web_state_list_->ActivateWebStateAt(0);
+    tabModel_.reset([[OCMockObject niceMockForClass:[TabModel class]] retain]);
 
-    toolbarModelDelegate_.reset(
-        new ToolbarModelDelegateIOS(web_state_list_.get()));
+    toolbarModelDelegate_.reset(new ToolbarModelDelegateIOS(tabModel_.get()));
     toolbarModel_.reset(new ToolbarModelImplIOS(toolbarModelDelegate_.get()));
   }
 
   web::TestWebThreadBundle thread_bundle_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  FakeWebStateListDelegate web_state_list_delegate_;
-  std::unique_ptr<WebStateList> web_state_list_;
-  ToolbarTestWebState* web_state_;
+  base::scoped_nsobject<TabModel> tabModel_;
   std::unique_ptr<ToolbarModelDelegateIOS> toolbarModelDelegate_;
   std::unique_ptr<ToolbarModelIOS> toolbarModel_;
 };
 
-TEST_F(ToolbarModelImplIOSTest, TestWhenCurrentWebStateIsNull) {
-  // The test fixture adds one WebState to the WebStateList, so remove it before
-  // running this test.
-  ASSERT_EQ(1, web_state_list_->count());
-  std::unique_ptr<web::WebState> closed_web_state(
-      web_state_list_->DetachWebStateAt(0));
-  ASSERT_TRUE(web_state_list_->empty());
+class ToolbarModelImplIOSTestWebState : public web::TestWebState {
+ public:
+  explicit ToolbarModelImplIOSTestWebState(web::BrowserState* browser_state)
+      : browser_state_(browser_state) {}
+
+  web::BrowserState* GetBrowserState() const override { return browser_state_; }
+  double GetLoadingProgress() const override { return loading_progress_; }
+  void SetLoadingProgress(double loading_progress) {
+    loading_progress_ = loading_progress;
+  }
+
+ private:
+  web::BrowserState* browser_state_;
+  double loading_progress_;
+
+  DISALLOW_COPY_AND_ASSIGN(ToolbarModelImplIOSTestWebState);
+};
+
+TEST_F(ToolbarModelImplIOSTest, TestWhenCurrentTabIsNull) {
+  // Make a mock to always return NULL for the current tab.
+  OCMockObject* tabModelMock = static_cast<OCMockObject*>(tabModel_.get());
+  [[[tabModelMock stub] andReturn:NULL] currentTab];
 
   EXPECT_FALSE(toolbarModel_->IsLoading());
   EXPECT_EQ(0, toolbarModel_->GetLoadProgressFraction());
@@ -124,66 +112,95 @@ TEST_F(ToolbarModelImplIOSTest, TestWhenCurrentWebStateIsNull) {
 }
 
 TEST_F(ToolbarModelImplIOSTest, TestIsLoading) {
-  // An active webstate that is loading.
-  web_state_->SetLoading(true);
-  EXPECT_TRUE(toolbarModel_->IsLoading());
+  OCMockObject* tabModelMock = static_cast<OCMockObject*>(tabModel_.get());
+  id tabMock = [[TMITestTabMock alloc]
+      initWithRepresentedObject:[OCMockObject mockForClass:[Tab class]]];
 
-  // An active webstate that is not loading.
-  web_state_->SetLoading(false);
+  // Make mocks return a current tab with a null web state.
+  [[[tabModelMock stub] andReturn:tabMock] currentTab];
+  [tabMock setWebState:nullptr];
+  [static_cast<TMITestTabMock*>(tabMock) setUrl:GURL(kWebUrl)];
   EXPECT_FALSE(toolbarModel_->IsLoading());
 
-  // An active webstate that is pointing at a native URL.
-  web_state_->SetLoading(true);
-  web_state_->SetCurrentURL(GURL(kNativeUrl));
+  // Make mocks return a current tab that is loading.
+  web::TestWebState webState;
+  [tabMock setWebState:&webState];
+  webState.SetLoading(true);
+  EXPECT_TRUE(toolbarModel_->IsLoading());
+
+  // Make mocks return a current tab that is not loading.
+  webState.SetLoading(false);
+  EXPECT_FALSE(toolbarModel_->IsLoading());
+
+  // Make mocks return a current tab that is pointing at a native URL.
+  webState.SetLoading(true);
+  [static_cast<TMITestTabMock*>(tabMock) setUrl:GURL(kNativeUrl)];
   EXPECT_FALSE(toolbarModel_->IsLoading());
 }
 
 TEST_F(ToolbarModelImplIOSTest, TestGetLoadProgressFraction) {
+  ToolbarModelImplIOSTestWebState web_state(chrome_browser_state_.get());
+  OCMockObject* tabModelMock = static_cast<OCMockObject*>(tabModel_.get());
+  id tabMock = [[TMITestTabMock alloc]
+      initWithRepresentedObject:[OCMockObject mockForClass:[Tab class]]];
+  [static_cast<TMITestTabMock*>(tabMock) setWebState:&web_state];
+  [[[tabModelMock stub] andReturn:tabMock] currentTab];
+
   const CGFloat kExpectedProgress = 0.42;
-  web_state_->set_loading_progress(kExpectedProgress);
+  web_state.SetLoadingProgress(kExpectedProgress);
   EXPECT_FLOAT_EQ(kExpectedProgress, toolbarModel_->GetLoadProgressFraction());
 }
 
 TEST_F(ToolbarModelImplIOSTest, TestCanGoBack) {
-  web_state_->SetNavigationManager(
-      base::MakeUnique<ToolbarTestNavigationManager>());
-  ToolbarTestNavigationManager* manager =
-      static_cast<ToolbarTestNavigationManager*>(
-          web_state_->GetNavigationManager());
+  OCMockObject* tabModelMock = static_cast<OCMockObject*>(tabModel_.get());
+  id tabMock = [[TMITestTabMock alloc]
+      initWithRepresentedObject:[OCMockObject mockForClass:[Tab class]]];
+  [[[tabModelMock stub] andReturn:tabMock] currentTab];
 
-  manager->set_can_go_back(true);
+  [[[tabMock expect] andReturnBool:true] canGoBack];
   EXPECT_TRUE(toolbarModel_->CanGoBack());
 
-  manager->set_can_go_back(false);
+  [[[tabMock expect] andReturnBool:false] canGoBack];
   EXPECT_FALSE(toolbarModel_->CanGoBack());
 }
 
 TEST_F(ToolbarModelImplIOSTest, TestCanGoForward) {
-  web_state_->SetNavigationManager(
-      base::MakeUnique<ToolbarTestNavigationManager>());
-  ToolbarTestNavigationManager* manager =
-      static_cast<ToolbarTestNavigationManager*>(
-          web_state_->GetNavigationManager());
+  OCMockObject* tabModelMock = static_cast<OCMockObject*>(tabModel_.get());
+  id tabMock = [[TMITestTabMock alloc]
+      initWithRepresentedObject:[OCMockObject mockForClass:[Tab class]]];
+  [[[tabModelMock stub] andReturn:tabMock] currentTab];
 
-  manager->set_can_go_forward(true);
+  [[[tabMock expect] andReturnBool:true] canGoForward];
   EXPECT_TRUE(toolbarModel_->CanGoForward());
 
-  manager->set_can_go_forward(false);
+  [[[tabMock expect] andReturnBool:false] canGoForward];
   EXPECT_FALSE(toolbarModel_->CanGoForward());
 }
 
 TEST_F(ToolbarModelImplIOSTest, TestIsCurrentTabNativePage) {
-  web_state_->SetCurrentURL(GURL(kNativeUrl));
+  OCMockObject* tabModelMock = static_cast<OCMockObject*>(tabModel_.get());
+  id tabMock = [[TMITestTabMock alloc]
+      initWithRepresentedObject:[OCMockObject mockForClass:[Tab class]]];
+  [[[tabModelMock stub] andReturn:tabMock] currentTab];
+
+  [tabMock setUrl:GURL(kNativeUrl)];
   EXPECT_TRUE(toolbarModel_->IsCurrentTabNativePage());
 
-  web_state_->SetCurrentURL(GURL(kWebUrl));
+  [tabMock setUrl:GURL(kWebUrl)];
   EXPECT_FALSE(toolbarModel_->IsCurrentTabNativePage());
 }
 
 TEST_F(ToolbarModelImplIOSTest, TestIsCurrentTabBookmarked) {
+  ToolbarModelImplIOSTestWebState web_state(chrome_browser_state_.get());
+  OCMockObject* tabModelMock = static_cast<OCMockObject*>(tabModel_.get());
+  id tabMock = [[TMITestTabMock alloc]
+      initWithRepresentedObject:[OCMockObject mockForClass:[Tab class]]];
+  [[[tabModelMock stub] andReturn:tabMock] currentTab];
+
   // Set the curent tab to |kWebUrl| and create a bookmark for |kWebUrl|, then
   // verify that the toolbar model indicates that the URL is bookmarked.
-  web_state_->SetCurrentURL(GURL(kWebUrl));
+  [static_cast<TMITestTabMock*>(tabMock) setWebState:&web_state];
+  [static_cast<TMITestTabMock*>(tabMock) setUrl:GURL(kWebUrl)];
   bookmarks::BookmarkModel* bookmark_model =
       ios::BookmarkModelFactory::GetForBrowserState(
           chrome_browser_state_.get());
