@@ -22,11 +22,11 @@
 
 /* We need to buffer three vertical lines. */
 #define OD_FILT_VBORDER (3)
-/* We only need to buffer three horizontal lines too, but let's make it four
-   to make vectorization easier. */
-#define OD_FILT_HBORDER (32)
+/* We only need to buffer three horizontal pixels too, but let's align to
+   16 bytes (8 x 16 bits) to make vectorization easier. */
+#define OD_FILT_HBORDER (8)
 #define OD_FILT_BSTRIDE \
-  ALIGN_POWER_OF_TWO(OD_BSIZE_MAX + 2 * OD_FILT_HBORDER, 5)
+  ALIGN_POWER_OF_TWO(OD_BSIZE_MAX + 2 * OD_FILT_HBORDER, 3)
 
 #define OD_DERING_VERY_LARGE (30000)
 #define OD_DERING_INBUF_SIZE \
