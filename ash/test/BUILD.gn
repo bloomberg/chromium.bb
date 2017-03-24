@@ -115,6 +115,8 @@ static_library("test_support_common") {
     "mirror_window_test_api.h",
     "overflow_bubble_view_test_api.cc",
     "overflow_bubble_view_test_api.h",
+    "screen_orientation_controller_test_api.cc",
+    "screen_orientation_controller_test_api.h",
     "shelf_button_pressed_metric_tracker_test_api.cc",
     "shelf_button_pressed_metric_tracker_test_api.h",
     "shelf_view_test_api.cc",
@@ -157,6 +159,7 @@ static_library("test_support_common") {
   public_deps = [
     "//ash",
     "//testing/gtest",
+    "//third_party/WebKit/public:blink_headers",
     "//ui/display:display_manager_test_api",
   ]
   deps = [

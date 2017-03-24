@@ -1000,8 +1000,9 @@ TEST_F(DisplayPreferencesTest, RotationLockTriggersStore) {
       display::Screen::GetScreen()->GetPrimaryDisplay().id());
   ASSERT_FALSE(local_state()->HasPrefPath(prefs::kDisplayRotationLock));
 
-  ash::Shell::GetInstance()->screen_orientation_controller()->SetRotationLocked(
-      true);
+  ash::Shell::GetInstance()
+      ->screen_orientation_controller()
+      ->ToggleUserRotationLock();
 
   EXPECT_TRUE(local_state()->HasPrefPath(prefs::kDisplayRotationLock));
 

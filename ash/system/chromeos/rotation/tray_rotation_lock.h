@@ -26,7 +26,7 @@ class ASH_EXPORT TrayRotationLock
   ~TrayRotationLock() override;
 
   // ScreenOrientationController::Observer:
-  void OnRotationLockChanged(bool rotation_locked) override;
+  void OnUserRotationLockChanged() override;
 
   // SystemTrayItem:
   views::View* CreateDefaultView(LoginStatus status) override;

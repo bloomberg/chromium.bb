@@ -10,6 +10,7 @@
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/screen_orientation_controller_test_api.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -928,8 +929,10 @@ TEST_F(DisplayInfoProviderChromeosTest, SetRotationBeforeMaximizeMode) {
   EXPECT_FALSE(screen_orientation_controller->rotation_locked());
 
   // ScreenOrientationController rotations override display info.
-  screen_orientation_controller->SetDisplayRotation(
-      display::Display::ROTATE_0, display::Display::ROTATION_SOURCE_ACTIVE);
+  ash::test::ScreenOrientationControllerTestApi test_api(
+      screen_orientation_controller);
+  test_api.SetDisplayRotation(display::Display::ROTATE_0,
+                              display::Display::ROTATION_SOURCE_ACTIVE);
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
 
   // Exiting maximize mode should restore the initial rotation

@@ -20,6 +20,9 @@
 #include "ui/wm/public/activation_change_observer.h"
 
 namespace ash {
+namespace test {
+class ScreenOrientationControllerTestApi;
+}
 
 // Implements ChromeOS specific functionality for ScreenOrientationProvider.
 class ASH_EXPORT ScreenOrientationController
@@ -33,8 +36,8 @@ class ASH_EXPORT ScreenOrientationController
   // rotation lock.
   class Observer {
    public:
-    // Invoked when rotation is locked or unlocked.
-    virtual void OnRotationLockChanged(bool rotation_locked) {}
+    // Invoked when rotation is locked or unlocked by a user.
+    virtual void OnUserRotationLockChanged() {}
 
    protected:
     virtual ~Observer() {}
@@ -66,15 +69,15 @@ class ASH_EXPORT ScreenOrientationController
   // rotate the display.
   bool rotation_locked() const { return rotation_locked_; }
 
-  // If |rotation_locked| future accelerometer updates should not change the
-  // display rotation.
-  void SetRotationLocked(bool rotation_locked);
+  bool user_rotation_locked() const {
+    return user_locked_orientation_ != blink::WebScreenOrientationLockAny;
+  }
 
-  // Sets the display rotation for the given |source|. The new |rotation| will
-  // also become active. Display changed notifications are surpressed for this
-  // change.
-  void SetDisplayRotation(display::Display::Rotation rotation,
-                          display::Display::RotationSource source);
+  // Trun on/off the user rotation lock. When turned on, it will lock
+  // the orientation to the current orientation.
+  // |user_rotation_locked()| method returns the current state of the
+  // user rotation lock.
+  void ToggleUserRotationLock();
 
   // aura::client::ActivationChangeObserver:
   void OnWindowActivated(ActivationReason reason,
@@ -97,6 +100,16 @@ class ASH_EXPORT ScreenOrientationController
   void OnMaximizeModeEnded() override;
 
  private:
+  friend class test::ScreenOrientationControllerTestApi;
+
+  // Sets the display rotation for the given |source|. The new |rotation| will
+  // also become active. Display changed notifications are surpressed for this
+  // change.
+  void SetDisplayRotation(display::Display::Rotation rotation,
+                          display::Display::RotationSource source);
+
+  void SetRotationLockedInternal(bool rotation_locked);
+
   // Sets the display rotation to |rotation|. Future accelerometer updates
   // should not be used to change the rotation. SetRotationLocked(false) removes
   // the rotation lock.
@@ -165,6 +178,10 @@ class ASH_EXPORT ScreenOrientationController
   // The rotation of the display set by the user. This rotation will be
   // restored upon exiting maximize mode.
   display::Display::Rotation user_rotation_;
+
+  // The orientation of the device locked by the user.
+  blink::WebScreenOrientationLockType user_locked_orientation_ =
+      blink::WebScreenOrientationLockAny;
 
   // The current rotation set by ScreenOrientationController for the internal
   // display.

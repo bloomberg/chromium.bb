@@ -17,4 +17,7 @@ specific_include_rules = {
   "mirror_window_test_api\.cc": [
     "+ash/host"
   ],
+  "screen_orientation_controller_test_api.h": [
+    "+third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h",
+  ],
 }
