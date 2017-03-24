@@ -270,38 +270,6 @@ TEST_F(CCSerializationPerfTest, DelegatedFrame_ManyQuads_1_4000) {
                          UseSingleSharedQuadState::NO);
 }
 
-// Test for compositor frames with one render pass and 100000 quads.
-TEST_F(CCSerializationPerfTest, DelegatedFrame_ManyQuads_1_100000) {
-  // Case 1: One shared quad state for all quads in one render pass.
-  RunCompositorFrameTest("DelegatedFrame_ManyQuads_1_100000", 100000, 1,
-                         UseSingleSharedQuadState::YES);
-  // Case 2: One shared quad state for each quad.
-  RunCompositorFrameTest("DelegatedFrame_ManyQuads_1_100000", 100000, 1,
-                         UseSingleSharedQuadState::NO);
-}
-
-// Test for compositor frames with 100 render pass and each with 4000 quads.
-TEST_F(CCSerializationPerfTest, DelegatedFrame_ManyQuads_100_4000) {
-  // One shared quad state for all quads in one render pass.
-  RunCompositorFrameTest("DelegatedFrame_ManyQuads_100_4000", 4000, 100,
-                         UseSingleSharedQuadState::YES);
-}
-
-// Done for https://crbug.com/691730. Test is too slow as is.
-#if defined(OS_ANDROID)
-#define MAYBE_DelegatedFrame_ManyQuads_10_100000 \
-  DISABLED_DelegatedFrame_ManyQuads_10_100000
-#else
-#define MAYBE_DelegatedFrame_ManyQuads_10_100000 \
-  DelegatedFrame_ManyQuads_10_100000
-#endif
-// Test for compositor frames with 10 render pass and each with 100000 quads.
-TEST_F(CCSerializationPerfTest, MAYBE_DelegatedFrame_ManyQuads_10_100000) {
-  // One shared quad state for all quads in one render pass.
-  RunCompositorFrameTest("DelegatedFrame_ManyQuads_10_100000", 100000, 10,
-                         UseSingleSharedQuadState::YES);
-}
-
 // Test for compositor frames with 5 render pass and each with 100 quads.
 TEST_F(CCSerializationPerfTest, DelegatedFrame_ManyRenderPasses_5_100) {
   // Case 1: One shared quad state for all quads in one render pass.
@@ -319,16 +287,6 @@ TEST_F(CCSerializationPerfTest, DelegatedFrame_ManyRenderPasses_10_500) {
                          UseSingleSharedQuadState::YES);
   // Case 2: One shared quad state for each quad.
   RunCompositorFrameTest("DelegatedFrame_ManyRenderPasses_10_500", 500, 10,
-                         UseSingleSharedQuadState::NO);
-}
-
-// Test for compositor frames with 1000 render pass and each with 100 quads.
-TEST_F(CCSerializationPerfTest, DelegatedFrame_ManyRenderPasses_1000_100) {
-  // Case 1: One shared quad state for all quads in one render pass.
-  RunCompositorFrameTest("DelegatedFrame_ManyRenderPasses_1000_100", 100, 1000,
-                         UseSingleSharedQuadState::YES);
-  // Case 2: One shared quad state for each quad.
-  RunCompositorFrameTest("DelegatedFrame_ManyRenderPasses_1000_100", 100, 1000,
                          UseSingleSharedQuadState::NO);
 }
 
