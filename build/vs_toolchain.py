@@ -352,6 +352,9 @@ def _GetDesiredVsToolchainHashes():
   if env_version == '2015':
     # Update 3 final with patches with 10.0.14393.0 SDK.
     return ['d3cb0e37bdd120ad0ac4650b674b09e81be45616']
+  if env_version == '2017':
+    # VS 2017 RTM with 10.0.14393.0 SDK.
+    return ['716b3fda0f857c3dc24d795d1a4d74e1e740face']
   raise Exception('Unsupported VS version %s' % env_version)
 
 
