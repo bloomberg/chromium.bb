@@ -329,8 +329,9 @@ WindowOpenDisposition RenderViewImpl::NavigationPolicyToDisposition(
 // Returns true if the device scale is high enough that losing subpixel
 // antialiasing won't have a noticeable effect on text quality.
 static bool DeviceScaleEnsuresTextQuality(float device_scale_factor) {
-#if defined(OS_ANDROID)
-  // On Android, we never have subpixel antialiasing.
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+  // On Android, we never have subpixel antialiasing. On Chrome OS we prefer to
+  // composite all scrollers so that we get animated overlay scrollbars.
   return true;
 #else
   // 1.5 is a common touchscreen tablet device scale factor. For such
