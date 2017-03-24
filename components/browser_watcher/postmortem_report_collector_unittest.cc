@@ -341,7 +341,7 @@ TEST(PostmortemReportCollectorTest, CollectRandomFile) {
 namespace {
 
 // Parameters for the activity tracking.
-const size_t kFileSize = 2 * 1024;
+const size_t kFileSize = 64 << 10;  // 64 KiB
 const int kStackDepth = 6;
 const uint64_t kAllocatorId = 0;
 const char kAllocatorName[] = "PostmortemReportCollectorCollectionTest";
