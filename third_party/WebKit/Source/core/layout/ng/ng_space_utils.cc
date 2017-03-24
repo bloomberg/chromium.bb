@@ -79,4 +79,17 @@ WTF::Optional<LayoutUnit> GetClearanceOffset(
   return WTF::nullopt;
 }
 
+bool ShouldShrinkToFit(const NGConstraintSpace& parent_space,
+                       const ComputedStyle& style) {
+  NGWritingMode child_writing_mode =
+      FromPlatformWritingMode(style.getWritingMode());
+  // Whether the child and the containing block are parallel to each other.
+  // Example: vertical-rl and vertical-lr
+  bool is_in_parallel_flow =
+      IsParallelWritingMode(parent_space.WritingMode(), child_writing_mode);
+
+  return style.display() == EDisplay::kInlineBlock || style.isFloating() ||
+         !is_in_parallel_flow;
+}
+
 }  // namespace blink

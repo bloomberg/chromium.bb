@@ -97,5 +97,119 @@ TEST_F(NGTextLayoutAlgorithmTest, TextFloatsAroundFloatsBefore) {
   EXPECT_EQ(LayoutUnit(), inline_text_box3->x());
 }
 
+// Verifies that text correctly flows around the inline float that fits on
+// the same text line.
+TEST_F(NGTextLayoutAlgorithmTest, TextFloatsAroundInlineFloatThatFitsOnLine) {
+  setBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      * {
+        font-family: "Arial", sans-serif;
+        font-size: 19px;
+      }
+      #container {
+        height: 200px; width: 200px; outline: solid orange;
+      }
+      #narrow-float {
+        float: left; width: 30px; height: 30px; background-color: blue;
+      }
+    </style>
+    <div id="container">
+      <span id="text">
+        The quick <div id="narrow-float"></div> brown fox jumps over the lazy
+      </span>
+    </div>
+  )HTML");
+  LayoutText* layout_text =
+      toLayoutText(getLayoutObjectByElementId("text")->slowFirstChild());
+  ASSERT(layout_text->hasTextBoxes());
+
+  InlineTextBox* inline_text_box1 = layout_text->firstTextBox();
+  // 30 == narrow-float's width.
+  EXPECT_EQ(LayoutUnit(30), inline_text_box1->x());
+
+  Element* narrow_float = document().getElementById("narrow-float");
+  // 8 == body's margin.
+  EXPECT_EQ(8, narrow_float->offsetLeft());
+  EXPECT_EQ(8, narrow_float->offsetTop());
+}
+
+// Verifies that the inline float got pushed to the next line if it doesn't
+// fit the current line.
+TEST_F(NGTextLayoutAlgorithmTest,
+       TextFloatsAroundInlineFloatThatDoesNotFitOnLine) {
+  setBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      * {
+        font-family: "Arial", sans-serif;
+        font-size: 19px;
+      }
+      #container {
+        height: 200px; width: 200px; outline: solid orange;
+      }
+      #wide-float {
+        float: left; width: 160px; height: 30px; background-color: red;
+      }
+    </style>
+    <div id="container">
+      <span id="text">
+        The quick <div id="wide-float"></div> brown fox jumps over the lazy dog
+      </span>
+    </div>
+  )HTML");
+  LayoutText* layout_text =
+      toLayoutText(getLayoutObjectByElementId("text")->slowFirstChild());
+  ASSERT(layout_text->hasTextBoxes());
+
+  InlineTextBox* inline_text_box1 = layout_text->firstTextBox();
+  EXPECT_EQ(LayoutUnit(), inline_text_box1->x());
+
+  Element* wide_float = document().getElementById("wide-float");
+  // 8 == body's margin.
+  EXPECT_EQ(8, wide_float->offsetLeft());
+}
+
+// Verifies that if an inline float pushed to the next line then all others
+// following inline floats positioned with respect to the float's top edge
+// alignment rule.
+TEST_F(NGTextLayoutAlgorithmTest,
+       FloatsArePositionedWithRespectToTopEdgeAlignmentRule) {
+  setBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      * {
+        font-family: "Arial", sans-serif;
+        font-size: 19px;
+      }
+      #container {
+        height: 200px; width: 200px; outline: solid orange;
+      }
+      #left-narrow {
+        float: left; width: 5px; height: 30px; background-color: blue;
+      }
+      #left-wide {
+        float: left; width: 160px; height: 30px; background-color: red;
+      }
+    </style>
+    <div id="container">
+      <span id="text">
+        The quick <div id="left-wide"></div> brown <div id="left-narrow"></div>
+        fox jumps over the lazy dog
+      </span>
+    </div>
+  )HTML");
+  Element* wide_float = document().getElementById("left-wide");
+  // 8 == body's margin.
+  EXPECT_EQ(8, wide_float->offsetLeft());
+
+  Element* narrow_float = document().getElementById("left-narrow");
+  // 160 float-wide's width + 8 body's margin.
+  EXPECT_EQ(160 + 8, narrow_float->offsetLeft());
+
+  // On the same line.
+  EXPECT_EQ(wide_float->offsetTop(), narrow_float->offsetTop());
+}
+
 }  // namespace
 }  // namespace blink

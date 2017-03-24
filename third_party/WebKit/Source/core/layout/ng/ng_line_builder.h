@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/geometry/ng_logical_offset.h"
+#include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_layout_opportunity_iterator.h"
 #include "core/layout/ng/ng_physical_fragment.h"
@@ -111,6 +112,14 @@ class CORE_EXPORT NGLineBuilder final {
 
   void BidiReorder(Vector<LineItemChunk, 32>*);
 
+  // Lays out the inline float.
+  // List of actions:
+  // - tries to position the float right away if we have enough space.
+  // - updates the current_opportunity if we actually place the float.
+  // - if it's too wide then we add the float to the unpositioned list so it can
+  //   be positioned after we're done with the current line.
+  void LayoutAndPositionFloat(LayoutUnit end_position, LayoutObject*);
+
   // Represents block-direction metrics for an |NGLayoutInlineItem|.
   struct InlineItemMetrics {
     float ascent;
@@ -181,6 +190,8 @@ class CORE_EXPORT NGLineBuilder final {
   NGLogicalRect current_opportunity_;
 
   unsigned is_horizontal_writing_mode_ : 1;
+
+  NGConstraintSpaceBuilder space_builder_;
 #if DCHECK_IS_ON()
   unsigned is_bidi_reordered_ : 1;
 #endif

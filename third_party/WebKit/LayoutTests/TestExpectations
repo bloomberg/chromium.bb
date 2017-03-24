@@ -433,8 +433,10 @@ crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/webkit-margin-coll
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/webkit-margin-collapse-floats.html [ Skip ]
 
 #### fast/block/float
-#### Passed: 35
-#### Skipped: 172
+#### Total: 209
+#### Passed: 21
+#### Skipped: 185
+#### Failed: 3
 crbug.com/635619 virtual/layout_ng/fast/block/float/001.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/002.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/003.html [ Skip ]
@@ -620,6 +622,11 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/floats-not-cleared-from-gran
 crbug.com/635619 virtual/layout_ng/fast/block/float/line-break-after-white-space-crash.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/max-width-clear-float-with-overflow-hidden.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/trailing-float-with-content.html [ Skip ]
+# ng_floats_utils.cc(144)] Check failed: !opportunity.IsEmpty(). Opportunity is empty but it shouldn't be
+crbug.com/635619 virtual/layout_ng/fast/block/float/float-not-removed-crash2.html [ Failure Crash ]
+# layout_ng_block_flow.h(28)] Security DCHECK failed: !object || (object->isLayoutNGBlockFlow())
+crbug.com/635619 virtual/layout_ng/fast/block/float/intruding-float-not-removed-writing-mode.xhtml [ Failure Crash ]
+crbug.com/635619 virtual/layout_ng/fast/block/float/overhanging-float-crashes-when-sibling-becomes-formatting-context.html [ Failure Crash ]
 
 #### external/csswg-test/css21/linebox
 #### Passed: 39

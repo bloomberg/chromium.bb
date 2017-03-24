@@ -108,10 +108,8 @@ class FloatingObject {
     return m_frameRect;
   }
 
-#if DCHECK_IS_ON()
   bool isInPlacedTree() const { return m_isInPlacedTree; }
   void setIsInPlacedTree(bool value) { m_isInPlacedTree = value; }
-#endif
 
   bool shouldPaint() const { return m_shouldPaint; }
   void setShouldPaint(bool shouldPaint) { m_shouldPaint = shouldPaint; }
@@ -148,9 +146,7 @@ class FloatingObject {
   unsigned m_isDescendant : 1;
   unsigned m_isPlaced : 1;
   unsigned m_isLowestNonOverhangingFloatInChild : 1;
-#if DCHECK_IS_ON()
   unsigned m_isInPlacedTree : 1;
-#endif
 };
 
 struct FloatingObjectHashFunctions {

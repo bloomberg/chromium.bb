@@ -26,22 +26,6 @@
 namespace blink {
 namespace {
 
-// Whether child's constraint space should shrink to its intrinsic width.
-// This is needed for buttons, select, input, floats and orthogonal children.
-// See LayoutBox::sizesLogicalWidthToFitContent for the rationale behind this.
-bool ShouldShrinkToFit(const NGConstraintSpace& parent_space,
-                       const ComputedStyle& child_style) {
-  NGWritingMode child_writing_mode =
-      FromPlatformWritingMode(child_style.getWritingMode());
-  // Whether the child and the containing block are parallel to each other.
-  // Example: vertical-rl and vertical-lr
-  bool is_in_parallel_flow =
-      IsParallelWritingMode(parent_space.WritingMode(), child_writing_mode);
-
-  return child_style.display() == EDisplay::kInlineBlock ||
-         child_style.isFloating() || !is_in_parallel_flow;
-}
-
 // Positions pending floats stored on the fragment builder starting from
 // {@code origin_point_block_offset}.
 void PositionPendingFloats(const LayoutUnit origin_point_block_offset,

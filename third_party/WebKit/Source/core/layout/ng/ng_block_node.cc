@@ -62,9 +62,11 @@ void FloatingObjectPositionedUpdated(NGFloatingObject* ng_floating_object,
   if (parent && parent->isLayoutBlockFlow()) {
     FloatingObject* floating_object =
         toLayoutBlockFlow(parent)->insertFloatingObject(*layout_box);
+    floating_object->setIsInPlacedTree(false);
     floating_object->setX(ng_floating_object->left_offset);
     floating_object->setY(box_fragment->TopOffset());
     floating_object->setIsPlaced(true);
+    floating_object->setIsInPlacedTree(true);
   }
 }
 

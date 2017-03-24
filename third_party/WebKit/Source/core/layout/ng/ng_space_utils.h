@@ -28,6 +28,12 @@ CORE_EXPORT WTF::Optional<LayoutUnit> GetClearanceOffset(
     const std::shared_ptr<NGExclusions>& exclusions,
     const ComputedStyle& style);
 
+// Whether child's constraint space should shrink to its intrinsic width.
+// This is needed for buttons, select, input, floats and orthogonal children.
+// See LayoutBox::sizesLogicalWidthToFitContent for the rationale behind this.
+bool ShouldShrinkToFit(const NGConstraintSpace& parent_space,
+                       const ComputedStyle& style);
+
 }  // namespace blink
 
 #endif  // NGSpaceUtils_h

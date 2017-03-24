@@ -8,18 +8,59 @@
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/line/LineInfo.h"
 #include "core/layout/line/RootInlineBox.h"
+#include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/layout/ng/ng_bidi_paragraph.h"
+#include "core/layout/ng/ng_block_layout_algorithm.h"
 #include "core/layout/ng/ng_box_fragment.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
+#include "core/layout/ng/ng_floating_object.h"
+#include "core/layout/ng/ng_floats_utils.h"
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_inline_node.h"
 #include "core/layout/ng/ng_length_utils.h"
+#include "core/layout/ng/ng_space_utils.h"
 #include "core/layout/ng/ng_text_fragment.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/text/BidiRunList.h"
 
 namespace blink {
+namespace {
+
+RefPtr<NGConstraintSpace> CreateConstraintSpaceForFloat(
+    const ComputedStyle& style,
+    const NGConstraintSpace& parent_space,
+    NGConstraintSpaceBuilder* space_builder) {
+  DCHECK(space_builder) << "space_builder cannot be null here";
+  bool is_new_bfc =
+      IsNewFormattingContextForInFlowBlockLevelChild(parent_space, style);
+  return space_builder->SetIsNewFormattingContext(is_new_bfc)
+      .SetTextDirection(style.direction())
+      .SetIsShrinkToFit(ShouldShrinkToFit(parent_space, style))
+      .ToConstraintSpace(FromPlatformWritingMode(style.getWritingMode()));
+}
+
+NGLogicalOffset GetOriginPointForFloats(const NGConstraintSpace& space,
+                                        LayoutUnit content_size) {
+  NGLogicalOffset origin_point = space.BfcOffset();
+  origin_point.block_offset += content_size;
+  return origin_point;
+}
+
+void PositionPendingFloats(const NGLogicalOffset& origin_point,
+                           NGConstraintSpace* space,
+                           NGFragmentBuilder* builder) {
+  DCHECK(builder) << "Builder cannot be null here";
+
+  for (auto& floating_object : builder->UnpositionedFloats()) {
+    NGLogicalOffset offset = PositionFloat(origin_point, space->BfcOffset(),
+                                           floating_object.get(), space);
+    builder->AddFloatingObject(floating_object, offset);
+  }
+  builder->MutableUnpositionedFloats().clear();
+}
+
+}  // namespace
 
 NGLineBuilder::NGLineBuilder(NGInlineNode* inline_box,
                              NGConstraintSpace* constraint_space)
@@ -28,7 +69,8 @@ NGLineBuilder::NGLineBuilder(NGInlineNode* inline_box,
       container_builder_(NGPhysicalFragment::kFragmentBox, inline_box_),
       container_layout_result_(nullptr),
       is_horizontal_writing_mode_(
-          blink::IsHorizontalWritingMode(constraint_space->WritingMode()))
+          blink::IsHorizontalWritingMode(constraint_space->WritingMode())),
+      space_builder_(constraint_space)
 #if DCHECK_IS_ON()
       ,
       is_bidi_reordered_(false)
@@ -114,9 +156,9 @@ void NGLineBuilder::SetEnd(unsigned index,
   item.AssertEndOffset(new_end_offset);
 
   if (item.Type() == NGLayoutInlineItem::kFloating) {
-    // Floats can affect the position and available width of the current line
-    // if it fits.
-    // TODO(kojii): Implement.
+    LayoutAndPositionFloat(
+        LayoutUnit(end_position_) + inline_size_since_current_end,
+        item.GetLayoutObject());
   }
 
   last_index_ = index;
@@ -221,6 +263,9 @@ void NGLineBuilder::CreateLineUpToLastBreakOpportunity() {
   is_bidi_reordered_ = false;
 #endif
 
+  NGLogicalOffset origin_point =
+      GetOriginPointForFloats(ConstraintSpace(), content_size_);
+  PositionPendingFloats(origin_point, constraint_space_, &container_builder_);
   FindNextLayoutOpportunity();
 }
 
@@ -256,6 +301,47 @@ void NGLineBuilder::BidiReorder(Vector<LineItemChunk, 32>* line_item_chunks) {
         (*line_item_chunks)[logical_index];
   }
   line_item_chunks->swap(line_item_chunks_in_visual_order);
+}
+
+// TODO(glebl): Add the support of clearance for inline floats.
+void NGLineBuilder::LayoutAndPositionFloat(LayoutUnit end_position,
+                                           LayoutObject* layout_object) {
+  LayoutNGBlockFlow* block_flow = toLayoutNGBlockFlow(layout_object);
+  NGBlockNode* node = new NGBlockNode(block_flow);
+
+  RefPtr<NGConstraintSpace> float_space = CreateConstraintSpaceForFloat(
+      node->Style(), ConstraintSpace(), &space_builder_);
+  // TODO(glebl): add the fragmentation support:
+  // same writing mode - get the inline size ComputeInlineSizeForFragment to
+  // determine if it fits on this line, then perform layout with the correct
+  // fragmentation line.
+  // diff writing mode - get the inline size from performing layout.
+  RefPtr<NGLayoutResult> layout_result = node->Layout(float_space.get());
+
+  NGBoxFragment float_fragment(
+      float_space->WritingMode(),
+      toNGPhysicalBoxFragment(layout_result->PhysicalFragment().get()));
+
+  RefPtr<NGFloatingObject> floating_object = NGFloatingObject::Create(
+      float_space.get(), constraint_space_, node->Style(), NGBoxStrut(),
+      layout_result->PhysicalFragment().get());
+
+  bool float_does_not_fit = end_position + float_fragment.InlineSize() >
+                            current_opportunity_.InlineSize();
+  // Check if we already have a pending float. That's because a float cannot be
+  // higher than any block or floated box generated before.
+  if (!container_builder_.UnpositionedFloats().isEmpty() ||
+      float_does_not_fit) {
+    container_builder_.AddUnpositionedFloat(floating_object);
+  } else {
+    NGLogicalOffset origin_point =
+        GetOriginPointForFloats(ConstraintSpace(), content_size_);
+    NGLogicalOffset offset =
+        PositionFloat(origin_point, constraint_space_->BfcOffset(),
+                      floating_object.get(), constraint_space_);
+    container_builder_.AddFloatingObject(floating_object, offset);
+    FindNextLayoutOpportunity();
+  }
 }
 
 void NGLineBuilder::PlaceItems(
@@ -324,12 +410,6 @@ void NGLineBuilder::PlaceItems(
           NGStaticPosition::Create(ConstraintSpace().WritingMode(),
                                    ConstraintSpace().Direction(),
                                    NGPhysicalOffset()));
-      continue;
-    } else if (item.Type() == NGLayoutInlineItem::kFloating) {
-      // TODO(kojii): Implement float.
-      DLOG(ERROR) << "Floats in inline not implemented yet.";
-      // TODO(kojii): Temporarily clearNeedsLayout() for not to assert.
-      item.GetLayoutObject()->clearNeedsLayout();
       continue;
     } else {
       continue;
