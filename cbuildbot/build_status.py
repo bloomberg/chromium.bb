@@ -20,7 +20,7 @@ from chromite.lib import metrics
 # Namedtupe to store CIDB status info.
 CIDBStatusInfo = collections.namedtuple(
     'CIDBStatusInfo',
-    ['build_id', 'status'])
+    ['build_id', 'status', 'build_number'])
 
 
 class SlaveStatus(object):
@@ -118,7 +118,8 @@ class SlaveStatus(object):
           master_build_id, buildbucket_ids=buildbucket_ids)
 
       all_cidb_status_dict = {
-          s['build_config']: CIDBStatusInfo(s['id'], s['status'])
+          s['build_config']: CIDBStatusInfo(
+              s['id'], s['status'], s['build_number'])
           for s in slave_statuses}
 
     return all_cidb_status_dict

@@ -365,15 +365,15 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
     """Tests GetBuilderStatus where both builds have finished."""
     self.manager = self.BuildManager()
     status_runs = [{
-        'build1': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_INFLIGHT),
-        'build2': build_status.CIDBStatusInfo(
-            2, constants.BUILDER_STATUS_INFLIGHT)
+        'build1': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
+            build_id=1),
+        'build2': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
+            build_id=2)
     }, {
-        'build1': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_FAILED),
-        'build2': build_status.CIDBStatusInfo(
-            2, constants.BUILDER_STATUS_PASSED)
+        'build1': build_status_unittest.CIDBStatusInfos.GetFailedBuild(
+            build_id=1),
+        'build2': build_status_unittest.CIDBStatusInfos.GetPassedBuild(
+            build_id=2)
     }]
     statuses = self._GetBuildersStatus(['build1', 'build2'], status_runs)
 
@@ -384,25 +384,25 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
     """Tests GetBuilderStatus where builds are inflight."""
     self.manager = self.BuildManager()
     status_runs = [{
-        'build1': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_INFLIGHT),
-        'build2': build_status.CIDBStatusInfo(
-            2, constants.BUILDER_STATUS_MISSING)
+        'build1': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
+            build_id=1),
+        'build2': build_status_unittest.CIDBStatusInfos.GetMissingBuild(
+            build_id=2)
     }, {
-        'build1': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_INFLIGHT),
-        'build2': build_status.CIDBStatusInfo(
-            2, constants.BUILDER_STATUS_MISSING)
+        'build1': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
+            build_id=1),
+        'build2': build_status_unittest.CIDBStatusInfos.GetMissingBuild(
+            build_id=2)
     }, {
-        'build1': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_FAILED),
-        'build2': build_status.CIDBStatusInfo(
-            2, constants.BUILDER_STATUS_INFLIGHT)
+        'build1': build_status_unittest.CIDBStatusInfos.GetFailedBuild(
+            build_id=1),
+        'build2': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
+            build_id=2),
     }, {
-        'build1': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_FAILED),
-        'build2': build_status.CIDBStatusInfo(
-            2, constants.BUILDER_STATUS_PASSED)
+        'build1': build_status_unittest.CIDBStatusInfos.GetFailedBuild(
+            build_id=1),
+        'build2': build_status_unittest.CIDBStatusInfos.GetPassedBuild(
+            build_id=2),
     }]
     statuses = self._GetBuildersStatus(['build1', 'build2'], status_runs)
     self.assertTrue(statuses['build1'].Failed())
@@ -462,15 +462,15 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
     self.manager = self._CreateCanaryMasterManager()
 
     status_runs = [{
-        'build1': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_INFLIGHT),
-        'build2': build_status.CIDBStatusInfo(
-            2, constants.BUILDER_STATUS_INFLIGHT)
+        'build1': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
+            build_id=1),
+        'build2': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
+            build_id=2),
     }, {
-        'build1': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_FAILED),
-        'build2': build_status.CIDBStatusInfo(
-            2, constants.BUILDER_STATUS_PASSED)
+        'build1': build_status_unittest.CIDBStatusInfos.GetFailedBuild(
+            build_id=1),
+        'build2': build_status_unittest.CIDBStatusInfos.GetPassedBuild(
+            build_id=2)
     }]
 
     buildbucket_info_dicts = [{
@@ -494,25 +494,25 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
                                    '_RetryBuilds')
 
     status_runs = [{
-        'build1': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_INFLIGHT),
-        'build2': build_status.CIDBStatusInfo(
-            2, constants.BUILDER_STATUS_INFLIGHT)
+        'build1': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
+            build_id=1),
+        'build2': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
+            build_id=2)
     }, {
-        'build1': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_INFLIGHT),
-        'build2': build_status.CIDBStatusInfo(
-            2, constants.BUILDER_STATUS_MISSING)
+        'build1': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
+            build_id=1),
+        'build2': build_status_unittest.CIDBStatusInfos.GetMissingBuild(
+            build_id=2)
     }, {
-        'build1': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_FAILED),
-        'build2': build_status.CIDBStatusInfo(
-            2, constants.BUILDER_STATUS_INFLIGHT)
+        'build1': build_status_unittest.CIDBStatusInfos.GetFailedBuild(
+            build_id=1),
+        'build2': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
+            build_id=2)
     }, {
-        'build1': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_FAILED),
-        'build2': build_status.CIDBStatusInfo(
-            2, constants.BUILDER_STATUS_PASSED)
+        'build1': build_status_unittest.CIDBStatusInfos.GetFailedBuild(
+            build_id=1),
+        'build2': build_status_unittest.CIDBStatusInfos.GetPassedBuild(
+            build_id=2)
     }]
 
     buildbucket_info_dict = [{
@@ -542,21 +542,21 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
                                    '_RetryBuilds')
 
     status_runs = [{
-        'build1': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_INFLIGHT)
+        'build1': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
+            build_id=1)
     }, {
-        'build1': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_INFLIGHT)
+        'build1': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
+            build_id=1)
     }, {
-        'build1': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_FAILED),
-        'build2': build_status.CIDBStatusInfo(
-            2, constants.BUILDER_STATUS_INFLIGHT)
+        'build1': build_status_unittest.CIDBStatusInfos.GetFailedBuild(
+            build_id=1),
+        'build2': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
+            build_id=2)
     }, {
-        'build1': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_FAILED),
-        'build2': build_status.CIDBStatusInfo(
-            2, constants.BUILDER_STATUS_PASSED)
+        'build1': build_status_unittest.CIDBStatusInfos.GetFailedBuild(
+            build_id=1),
+        'build2': build_status_unittest.CIDBStatusInfos.GetPassedBuild(
+            build_id=2)
     }]
 
     buildbucket_info_dict = [{
@@ -586,22 +586,22 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
                                    '_RetryBuilds')
 
     status_runs = [{
-        'build1': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_INFLIGHT)
+        'build1': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
+            build_id=1)
     }, {
-        'build1': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_INFLIGHT)
+        'build1': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
+            build_id=1)
     }, {
-        'build1': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_FAILED)
+        'build1': build_status_unittest.CIDBStatusInfos.GetFailedBuild(
+            build_id=1)
     }, {
-        'build1': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_FAILED)
+        'build1': build_status_unittest.CIDBStatusInfos.GetFailedBuild(
+            build_id=1)
     }, {
-        'build1': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_FAILED),
-        'build2': build_status.CIDBStatusInfo(
-            2, constants.BUILDER_STATUS_FAILED)
+        'build1': build_status_unittest.CIDBStatusInfos.GetFailedBuild(
+            build_id=1),
+        'build2': build_status_unittest.CIDBStatusInfos.GetFailedBuild(
+            build_id=2)
     }]
 
     buildbucket_info_dict = [{

@@ -92,6 +92,66 @@ class BuildbucketInfos(object):
     )
 
 
+class CIDBStatusInfos(object):
+  """Helper methods to build CIDBStatusInfo."""
+
+  @staticmethod
+  def GetInflightBuild(build_id=1, build_number=1):
+    return build_status.CIDBStatusInfo(
+        build_id=build_id,
+        status=constants.BUILDER_STATUS_INFLIGHT,
+        build_number=build_number)
+
+  @staticmethod
+  def GetPassedBuild(build_id=2, build_number=2):
+    return build_status.CIDBStatusInfo(
+        build_id=build_id,
+        status=constants.BUILDER_STATUS_PASSED,
+        build_number=build_number)
+
+  @staticmethod
+  def GetFailedBuild(build_id=3, build_number=3):
+    return build_status.CIDBStatusInfo(
+        build_id=build_id,
+        status=constants.BUILDER_STATUS_FAILED,
+        build_number=build_number)
+
+  @staticmethod
+  def GetPlannedBuild(build_id=4, build_number=4):
+    return build_status.CIDBStatusInfo(
+        build_id=build_id,
+        status=constants.BUILDER_STATUS_PLANNED,
+        build_number=build_number)
+
+  @staticmethod
+  def GetForgivenBuild(build_id=5, build_number=5):
+    return build_status.CIDBStatusInfo(
+        build_id=build_id,
+        status=constants.BUILDER_STATUS_FORGIVEN,
+        build_number=build_number)
+
+  @staticmethod
+  def GetAbortedBuild(build_id=6, build_number=6):
+    return build_status.CIDBStatusInfo(
+        build_id=build_id,
+        status=constants.BUILDER_STATUS_ABORTED,
+        build_number=build_number)
+
+  @staticmethod
+  def GetMissingBuild(build_id=7, build_number=7):
+    return build_status.CIDBStatusInfo(
+        build_id=build_id,
+        status=constants.BUILDER_STATUS_MISSING,
+        build_number=build_number)
+
+  @staticmethod
+  def GetSkippedBuild(build_id=8, build_number=8):
+    return build_status.CIDBStatusInfo(
+        build_id=build_id,
+        status=constants.BUILDER_STATUS_SKIPPED,
+        build_number=build_number)
+
+
 class SlaveStatusTest(patch_unittest.MockPatchBase):
   """Test methods testing methods in SalveStatus class."""
 
@@ -201,14 +261,10 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
 
   def _GetFullCIDBStatusInfo(self, exclude_builds=None):
     cidb_status = {
-        'started': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_INFLIGHT),
-        'completed_success': build_status.CIDBStatusInfo(
-            2, constants.BUILDER_STATUS_PASSED),
-        'completed_failure': build_status.CIDBStatusInfo(
-            3, constants.BUILDER_STATUS_FAILED),
-        'completed_canceled': build_status.CIDBStatusInfo(
-            4, constants.BUILDER_STATUS_INFLIGHT)
+        'started': CIDBStatusInfos.GetInflightBuild(build_id=1),
+        'completed_success': CIDBStatusInfos.GetPassedBuild(build_id=2),
+        'completed_failure': CIDBStatusInfos.GetFailedBuild(build_id=3),
+        'completed_canceled': CIDBStatusInfos.GetInflightBuild(build_id=4)
     }
 
     if exclude_builds:
@@ -245,10 +301,8 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
   def testGetMissingBuilds(self):
     """Tests GetMissingBuilds returns the missing builders."""
     cidb_status = {
-        'build1': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_FAILED),
-        'build2': build_status.CIDBStatusInfo(
-            2, constants.BUILDER_STATUS_INFLIGHT)
+        'build1': CIDBStatusInfos.GetFailedBuild(),
+        'build2': CIDBStatusInfos.GetInflightBuild()
     }
     self._Mock_GetSlaveStatusesFromCIDB(cidb_status)
 
@@ -260,8 +314,7 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
   def testGetMissingBuildsWithBuildbucket(self):
     """Tests GetMissingBuilds returns the missing builders with Buildbucket."""
     cidb_status = {
-        'started':  build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_INFLIGHT)
+        'started': CIDBStatusInfos.GetInflightBuild()
     }
     self._Mock_GetSlaveStatusesFromCIDB(cidb_status)
 
@@ -280,10 +333,8 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
   def testGetMissingBuildsNone(self):
     """Tests GetMissingBuilds returns None."""
     cidb_status = {
-        'build1': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_FAILED),
-        'build2': build_status.CIDBStatusInfo(
-            2, constants.BUILDER_STATUS_INFLIGHT)
+        'build1': CIDBStatusInfos.GetFailedBuild(),
+        'build2': CIDBStatusInfos.GetInflightBuild()
     }
     self._Mock_GetSlaveStatusesFromCIDB(cidb_status)
 
@@ -295,8 +346,8 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
   def testGetMissingBuildsNoneWithBuildbucket(self):
     """Tests GetMissing returns None with Buildbucket."""
     cidb_status = {
-        'started': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_INFLIGHT)}
+        'started': CIDBStatusInfos.GetInflightBuild()
+    }
     self._Mock_GetSlaveStatusesFromCIDB(cidb_status)
 
     buildbucket_info_dict = {
@@ -314,22 +365,14 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
   def testGetCompletedBuilds(self):
     """Tests GetCompletedBuilds returns the completed builds."""
     cidb_status = {
-        'passed': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_PASSED),
-        'failed': build_status.CIDBStatusInfo(
-            2, constants.BUILDER_STATUS_FAILED),
-        'aborted': build_status.CIDBStatusInfo(
-            3, constants.BUILDER_STATUS_ABORTED),
-        'skipped': build_status.CIDBStatusInfo(
-            4, constants.BUILDER_STATUS_SKIPPED),
-        'forgiven': build_status.CIDBStatusInfo(
-            5, constants.BUILDER_STATUS_FORGIVEN),
-        'inflight': build_status.CIDBStatusInfo(
-            6, constants.BUILDER_STATUS_INFLIGHT),
-        'missing': build_status.CIDBStatusInfo(
-            7, constants.BUILDER_STATUS_MISSING),
-        'planned': build_status.CIDBStatusInfo(
-            8, constants.BUILDER_STATUS_PLANNED)
+        'passed': CIDBStatusInfos.GetPassedBuild(),
+        'failed': CIDBStatusInfos.GetFailedBuild(),
+        'aborted': CIDBStatusInfos.GetAbortedBuild(),
+        'skipped': CIDBStatusInfos.GetSkippedBuild(),
+        'forgiven': CIDBStatusInfos.GetForgivenBuild(),
+        'inflight': CIDBStatusInfos.GetInflightBuild(),
+        'missing': CIDBStatusInfos.GetMissingBuild(),
+        'planned': CIDBStatusInfos.GetPlannedBuild(),
     }
     self._Mock_GetSlaveStatusesFromCIDB(cidb_status)
 
@@ -431,10 +474,8 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
   def testGetRetriableBuildsExceedsLimit(self):
     """Do not return builds which have exceeded the retry_limit."""
     cidb_status = {
-        'started': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_INFLIGHT),
-        'completed_success': build_status.CIDBStatusInfo(
-            2, constants.BUILDER_STATUS_PASSED)
+        'started': CIDBStatusInfos.GetInflightBuild(),
+        'completed_success': CIDBStatusInfos.GetPassedBuild()
     }
     self._Mock_GetSlaveStatusesFromCIDB(cidb_status)
 
@@ -482,12 +523,9 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
   def testGetBuildsToRetry(self):
     """Test GetBuildsToRetry."""
     cidb_status = {
-        'started': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_INFLIGHT),
-        'completed_success': build_status.CIDBStatusInfo(
-            2, constants.BUILDER_STATUS_PASSED),
-        'completed_canceled': build_status.CIDBStatusInfo(
-            3, constants.BUILDER_STATUS_INFLIGHT)
+        'started': CIDBStatusInfos.GetInflightBuild(),
+        'completed_success': CIDBStatusInfos.GetPassedBuild(),
+        'completed_canceled': CIDBStatusInfos.GetInflightBuild()
     }
     self._Mock_GetSlaveStatusesFromCIDB(cidb_status)
 
@@ -514,10 +552,8 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
     """Tests Completed returns proper bool."""
     builders_array = ['build1', 'build2']
     statusNotCompleted = {
-        'build1': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_FAILED),
-        'build2': build_status.CIDBStatusInfo(
-            2, constants.BUILDER_STATUS_INFLIGHT)
+        'build1': CIDBStatusInfos.GetFailedBuild(),
+        'build2': CIDBStatusInfos.GetInflightBuild()
     }
     self._Mock_GetSlaveStatusesFromCIDB(statusNotCompleted)
     slaveStatusNotCompleted = self._GetSlaveStatus(
@@ -525,10 +561,8 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
     self.assertFalse(slaveStatusNotCompleted._Completed())
 
     statusCompleted = {
-        'build1': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_FAILED),
-        'build2': build_status.CIDBStatusInfo(
-            2, constants.BUILDER_STATUS_PASSED)
+        'build1': CIDBStatusInfos.GetFailedBuild(),
+        'build2': CIDBStatusInfos.GetPassedBuild()
     }
     self._Mock_GetSlaveStatusesFromCIDB(statusCompleted)
     slaveStatusCompleted = self._GetSlaveStatus(
@@ -539,10 +573,8 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
     """Tests Completed returns proper bool with Buildbucket."""
     builders_array = ['started', 'failure', 'missing']
     status_not_completed = {
-        'started': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_INFLIGHT),
-        'failure': build_status.CIDBStatusInfo(
-            2, constants.BUILDER_STATUS_FAILED)
+        'started': CIDBStatusInfos.GetInflightBuild(),
+        'failure': CIDBStatusInfos.GetFailedBuild()
     }
     self._Mock_GetSlaveStatusesFromCIDB(status_not_completed)
 
@@ -560,10 +592,8 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
     self.assertFalse(slaveStatusNotCompleted._Completed())
 
     status_completed = {
-        'success': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_PASSED),
-        'failure': build_status.CIDBStatusInfo(
-            2, constants.BUILDER_STATUS_FAILED)
+        'success': CIDBStatusInfos.GetPassedBuild(),
+        'failure': CIDBStatusInfos.GetFailedBuild(),
     }
     self._Mock_GetSlaveStatusesFromCIDB(status_completed)
 
@@ -597,8 +627,7 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
   def testShouldFailForBuilderStartTimeoutTrue(self):
     """Tests that ShouldFailForBuilderStartTimeout says fail when it should."""
     cidb_status = {
-        'build1': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_FAILED)
+        'build1': CIDBStatusInfos.GetFailedBuild()
     }
     self._Mock_GetSlaveStatusesFromCIDB(cidb_status)
 
@@ -613,8 +642,7 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
   def testShouldFailForBuilderStartTimeoutTrueWithBuildbucket(self):
     """Tests that ShouldFailForBuilderStartTimeout says fail when it should."""
     cidb_status = {
-        'success': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_PASSED)
+        'success': CIDBStatusInfos.GetPassedBuild()
     }
     self._Mock_GetSlaveStatusesFromCIDB(cidb_status)
 
@@ -641,8 +669,7 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
     checking before the timeout and the other builders have completed.
     """
     cidb_status = {
-        'build1': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_FAILED)
+        'build1': CIDBStatusInfos.GetFailedBuild()
     }
     self._Mock_GetSlaveStatusesFromCIDB(cidb_status)
 
@@ -661,8 +688,7 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
     have completed.
     """
     cidb_status = {
-        'success': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_PASSED)
+        'success': CIDBStatusInfos.GetPassedBuild()
     }
     self._Mock_GetSlaveStatusesFromCIDB(cidb_status)
 
@@ -685,8 +711,7 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
     checking after the timeout but the other builders haven't completed.
     """
     cidb_status = {
-        'build1': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_INFLIGHT)
+        'build1': CIDBStatusInfos.GetInflightBuild()
     }
     self._Mock_GetSlaveStatusesFromCIDB(cidb_status)
 
@@ -710,8 +735,7 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
     completed.
     """
     cidb_status = {
-        'started': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_INFLIGHT)
+        'started': CIDBStatusInfos.GetInflightBuild()
     }
     self._Mock_GetSlaveStatusesFromCIDB(cidb_status)
 
@@ -733,10 +757,8 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
   def testShouldWaitAllBuildersCompleted(self):
     """Tests that ShouldWait says no waiting because all builders finished."""
     cidb_status = {
-        'build1': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_FAILED),
-        'build2': build_status.CIDBStatusInfo(
-            2, constants.BUILDER_STATUS_PASSED)
+        'build1': CIDBStatusInfos.GetFailedBuild(),
+        'build2': CIDBStatusInfos.GetPassedBuild()
     }
     self._Mock_GetSlaveStatusesFromCIDB(cidb_status)
 
@@ -748,10 +770,8 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
   def testShouldWaitAllBuildersCompletedWithBuildbucket(self):
     """ShouldWait says no because all builders finished with Buildbucket."""
     cidb_status = {
-        'failure': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_FAILED),
-        'success': build_status.CIDBStatusInfo(
-            2, constants.BUILDER_STATUS_PASSED)
+        'failure': CIDBStatusInfos.GetFailedBuild(),
+        'success': CIDBStatusInfos.GetPassedBuild()
     }
     self._Mock_GetSlaveStatusesFromCIDB(cidb_status)
 
@@ -769,8 +789,7 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
   def testShouldWaitMissingBuilder(self):
     """Tests that ShouldWait says no waiting because a builder is missing."""
     cidb_status = {
-        'build1': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_FAILED)
+        'build1': CIDBStatusInfos.GetFailedBuild()
     }
     self._Mock_GetSlaveStatusesFromCIDB(cidb_status)
 
@@ -783,8 +802,7 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
   def testShouldWaitScheduledBuilderWithBuildbucket(self):
     """Test ShouldWait on canary-master with scheduled builds."""
     cidb_status = {
-        'failure': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_FAILED)
+        'failure': CIDBStatusInfos.GetFailedBuild()
     }
     self._Mock_GetSlaveStatusesFromCIDB(cidb_status)
 
@@ -802,8 +820,7 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
   def testShouldWaitScheduledBuilderWithBuildbucket_2(self):
     """Test ShouldWait on CQ-master with scheduled builds."""
     cidb_status = {
-        'failure': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_FAILED)
+        'failure': CIDBStatusInfos.GetFailedBuild()
     }
     self._Mock_GetSlaveStatusesFromCIDB(cidb_status)
 
@@ -830,10 +847,8 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
   def testShouldWaitNoScheduledBuilderWithBuildbucket(self):
     """Test ShouldWait on canary-master without scheduled builds."""
     cidb_status = {
-        'failure': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_FAILED),
-        'success': build_status.CIDBStatusInfo(
-            2, constants.BUILDER_STATUS_PASSED)
+        'failure': CIDBStatusInfos.GetFailedBuild(),
+        'success': CIDBStatusInfos.GetPassedBuild()
     }
     self._Mock_GetSlaveStatusesFromCIDB(cidb_status)
 
@@ -852,10 +867,8 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
   def testShouldWaitNoScheduledBuilderWithBuildbucket_2(self):
     """Test ShouldWait on cq-master without scheduled builds."""
     cidb_status = {
-        'failure': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_FAILED),
-        'success':  build_status.CIDBStatusInfo(
-            2, constants.BUILDER_STATUS_PASSED)
+        'failure': CIDBStatusInfos.GetFailedBuild(),
+        'success': CIDBStatusInfos.GetPassedBuild()
     }
     self._Mock_GetSlaveStatusesFromCIDB(cidb_status)
 
@@ -882,8 +895,7 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
   def testShouldWaitMissingBuilderWithBuildbucket(self):
     """Test ShouldWait says yes waiting because one build status is missing."""
     cidb_status = {
-        'failure': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_FAILED)
+        'failure': CIDBStatusInfos.GetFailedBuild()
     }
     self._Mock_GetSlaveStatusesFromCIDB(cidb_status)
 
@@ -902,10 +914,8 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
   def testShouldWaitBuildersStillBuilding(self):
     """Tests that ShouldWait says to wait because builders still building."""
     cidb_status = {
-        'build1': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_INFLIGHT),
-        'build2': build_status.CIDBStatusInfo(
-            2, constants.BUILDER_STATUS_FAILED)
+        'build1': CIDBStatusInfos.GetInflightBuild(),
+        'build2': CIDBStatusInfos.GetFailedBuild()
     }
     self._Mock_GetSlaveStatusesFromCIDB(cidb_status)
 
@@ -917,10 +927,8 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
   def testShouldWaitBuildersStillBuildingWithBuildbucket(self):
     """ShouldWait says yes because builders still in started status."""
     cidb_status = {
-        'started': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_INFLIGHT),
-        'failure': build_status.CIDBStatusInfo(
-            2, constants.BUILDER_STATUS_FAILED)
+        'started': CIDBStatusInfos.GetInflightBuild(),
+        'failure': CIDBStatusInfos.GetFailedBuild()
     }
     self._Mock_GetSlaveStatusesFromCIDB(cidb_status)
 
@@ -940,10 +948,8 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
   def testShouldWaitBuildersStillBuildingWithBuildbucket_2(self):
     """ShouldWait says yes because builders still in started status."""
     cidb_status = {
-        'started': build_status.CIDBStatusInfo(
-            1, constants.BUILDER_STATUS_INFLIGHT),
-        'failure':  build_status.CIDBStatusInfo(
-            2, constants.BUILDER_STATUS_FAILED)
+        'started': CIDBStatusInfos.GetInflightBuild(),
+        'failure': CIDBStatusInfos.GetFailedBuild()
     }
     self._Mock_GetSlaveStatusesFromCIDB(cidb_status)
 
@@ -1191,8 +1197,8 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
     slave_status = self._GetSlaveStatus(builders_array=['slave1', 'slave2'])
 
     expected_status = {
-        'slave1': build_status.CIDBStatusInfo(slave1_id, 'fail'),
-        'slave2': build_status.CIDBStatusInfo(slave2_id, 'fail')
+        'slave1': build_status.CIDBStatusInfo(slave1_id, 'fail', 2),
+        'slave2': build_status.CIDBStatusInfo(slave2_id, 'fail', 3)
     }
 
     cidb_status = slave_status.GetAllSlaveCIDBStatusInfo(
@@ -1218,8 +1224,8 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
     }
 
     expected_status = {
-        'slave1': build_status.CIDBStatusInfo(slave1_id, 'fail'),
-        'slave2': build_status.CIDBStatusInfo(slave2_id, 'fail')
+        'slave1': build_status.CIDBStatusInfo(slave1_id, 'fail', 2),
+        'slave2': build_status.CIDBStatusInfo(slave2_id, 'fail', 3)
     }
 
     cidb_status = slave_status.GetAllSlaveCIDBStatusInfo(
