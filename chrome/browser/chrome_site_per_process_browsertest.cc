@@ -7,31 +7,21 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/loader/chrome_resource_dispatcher_host_delegate.h"
-#include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/autofill/core/browser/autofill_client.h"
-#include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/guest_view/browser/guest_view_manager_delegate.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
-#include "components/security_state/core/security_state.h"
-#include "content/public/browser/focused_node_details.h"
 #include "content/public/browser/interstitial_page.h"
-#include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
@@ -41,15 +31,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/display/display_switches.h"
-#include "ui/gfx/geometry/point.h"
-#include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/vector2d.h"
 #include "url/gurl.h"
-
-namespace autofill {
-class AutofillPopupDelegate;
-struct Suggestion;
-}
 
 class ChromeSitePerProcessTest : public InProcessBrowserTest {
  public:
@@ -525,199 +507,4 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   // The popup shouldn't be blocked.
   EXPECT_TRUE(popup_handle_is_valid);
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
-}
-
-class ChromeSitePerProcessAutofillTest : public ChromeSitePerProcessTest {
- public:
-  ChromeSitePerProcessAutofillTest() : ChromeSitePerProcessTest() {}
-  ~ChromeSitePerProcessAutofillTest() override{};
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ChromeSitePerProcessTest::SetUpCommandLine(command_line);
-    // We need to set the feature state before the render process is created,
-    // in order for it to inherit the feature state from the browser process.
-    // SetUp() runs too early, and SetUpOnMainThread() runs too late.
-    scoped_feature_list_.InitAndEnableFeature(
-        security_state::kHttpFormWarningFeature);
-  }
-
-  void SetUpOnMainThread() override {
-    ChromeSitePerProcessTest::SetUpOnMainThread();
-  }
-
- protected:
-  class TestAutofillClient : public autofill::TestAutofillClient {
-   public:
-    TestAutofillClient() : popup_shown_(false){};
-    ~TestAutofillClient() override {}
-
-    void WaitForNextPopup() {
-      if (popup_shown_)
-        return;
-      loop_runner_ = new content::MessageLoopRunner();
-      loop_runner_->Run();
-    }
-
-    void ShowAutofillPopup(
-        const gfx::RectF& element_bounds,
-        base::i18n::TextDirection text_direction,
-        const std::vector<autofill::Suggestion>& suggestions,
-        base::WeakPtr<autofill::AutofillPopupDelegate> delegate) override {
-      element_bounds_ = element_bounds;
-      popup_shown_ = true;
-      if (loop_runner_)
-        loop_runner_->Quit();
-    }
-
-    const gfx::RectF& last_element_bounds() const { return element_bounds_; }
-
-   private:
-    gfx::RectF element_bounds_;
-    bool popup_shown_;
-    scoped_refptr<content::MessageLoopRunner> loop_runner_;
-
-    DISALLOW_COPY_AND_ASSIGN(TestAutofillClient);
-  };
-
-  const int kIframeTopDisplacement = 150;
-  const int kIframeLeftDisplacement = 200;
-
-  void SetupMainTab() {
-    // Add a fresh new WebContents for which we add our own version of the
-    // ChromePasswordManagerClient that uses a custom TestAutofillClient.
-    content::WebContents* new_contents = content::WebContents::Create(
-        content::WebContents::CreateParams(browser()
-                                               ->tab_strip_model()
-                                               ->GetActiveWebContents()
-                                               ->GetBrowserContext()));
-    ASSERT_TRUE(new_contents);
-    ASSERT_FALSE(ChromePasswordManagerClient::FromWebContents(new_contents));
-
-    // Create ChromePasswordManagerClient and verify it exists for the new
-    // WebContents.
-    ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
-        new_contents, &test_autofill_client_);
-    ASSERT_TRUE(ChromePasswordManagerClient::FromWebContents(new_contents));
-
-    browser()->tab_strip_model()->AppendWebContents(new_contents, true);
-  }
-
-  TestAutofillClient& autofill_client() { return test_autofill_client_; }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-  TestAutofillClient test_autofill_client_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeSitePerProcessAutofillTest);
-};
-
-// Observes the notifications for changes in focused node/element in the page.
-// The notification contains
-class FocusedEditableNodeChangedObserver : content::NotificationObserver {
- public:
-  FocusedEditableNodeChangedObserver() : observed_(false) {
-    registrar_.Add(this, content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
-                   content::NotificationService::AllSources());
-  }
-  ~FocusedEditableNodeChangedObserver() override {}
-
-  void WaitForFocusChangeInPage() {
-    if (observed_)
-      return;
-    loop_runner_ = new content::MessageLoopRunner();
-    loop_runner_->Run();
-  }
-
-  // content::NotificationObserver override.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
-    auto focused_node_details =
-        content::Details<content::FocusedNodeDetails>(details);
-    if (!focused_node_details->is_editable_node)
-      return;
-    focused_node_bounds_in_screen_ =
-        focused_node_details->node_bounds_in_screen.origin();
-    observed_ = true;
-    if (loop_runner_)
-      loop_runner_->Quit();
-  }
-
-  const gfx::Point& focused_node_bounds_in_screen() const {
-    return focused_node_bounds_in_screen_;
-  }
-
- private:
-  content::NotificationRegistrar registrar_;
-  bool observed_;
-  gfx::Point focused_node_bounds_in_screen_;
-  scoped_refptr<content::MessageLoopRunner> loop_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(FocusedEditableNodeChangedObserver);
-};
-
-// This test verifies that displacements (margin, etc) in the position of an
-// OOPIF is considered when showing an AutofillClient warning pop-up for
-// unsecure web sites.
-IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessAutofillTest,
-                       AutofillClientPositionWhenInsideOOPIF) {
-  SetupMainTab();
-  ASSERT_TRUE(
-      base::FeatureList::IsEnabled(security_state::kHttpFormWarningFeature));
-
-  GURL main_url(embedded_test_server()->GetURL("a.com", "/iframe.html"));
-  ui_test_utils::NavigateToURL(browser(), main_url);
-  content::WebContents* active_web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  // Add some displacement for <iframe>.
-  ASSERT_TRUE(content::ExecuteScript(
-      active_web_contents,
-      base::StringPrintf("var iframe = document.querySelector('iframe');"
-                         "iframe.style.marginTop = '%dpx';"
-                         "iframe.style.marginLeft = '%dpx';",
-                         kIframeTopDisplacement, kIframeLeftDisplacement)));
-
-  // Navigate the <iframe> to a simple page.
-  GURL frame_url = embedded_test_server()->GetURL("b.com", "/title1.html");
-  EXPECT_TRUE(NavigateIframeToURL(active_web_contents, "test", frame_url));
-  content::RenderFrameHost* child_frame = content::FrameMatchingPredicate(
-      active_web_contents, base::Bind(&content::FrameIsChildOfMainFrame));
-
-  // We will need to listen to focus changes to find out about the container
-  // bounds of any focused <input> elements on the page.
-  FocusedEditableNodeChangedObserver focus_observer;
-
-  // Focus the child frame, add an <input> with type "password", and focus it.
-  ASSERT_TRUE(ExecuteScript(child_frame,
-                            "window.focus();"
-                            "var input = document.createElement('input');"
-                            "input.type = 'password';"
-                            "document.body.appendChild(input);"
-                            "input.focus();"));
-  focus_observer.WaitForFocusChangeInPage();
-
-  // The user gesture (input) should lead to a security warning.
-  content::SimulateKeyPress(active_web_contents, ui::DomKey::FromCharacter('A'),
-                            ui::DomCode::US_A, ui::VKEY_A, false, false, false,
-                            false);
-  autofill_client().WaitForNextPopup();
-
-  gfx::Point bounds_origin(
-      static_cast<int>(autofill_client().last_element_bounds().origin().x()),
-      static_cast<int>(autofill_client().last_element_bounds().origin().y()));
-
-  // Convert the bounds to screen coordinates (to then compare against the ones
-  // reported by focus change observer).
-  bounds_origin += active_web_contents->GetRenderWidgetHostView()
-                       ->GetViewBounds()
-                       .OffsetFromOrigin();
-
-  gfx::Vector2d error =
-      bounds_origin - focus_observer.focused_node_bounds_in_screen();
-
-  // Ideally, the length of the error vector should be 0.0f. But due to
-  // potential rounding errors, we assume a larger limit (which is slightly
-  // larger than square root of 2).
-  EXPECT_LT(error.Length(), 1.4143f);
 }
