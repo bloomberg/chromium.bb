@@ -426,6 +426,7 @@ _arm_internal_release_boards = frozenset([
     'scarlet',
     'smaug',
     'smaug-cheets',
+    'tael',
     'veyron_fievel',
     'veyron_jaq',
     'veyron_jerry',
@@ -531,6 +532,7 @@ _x86_internal_release_boards = frozenset([
     'stumpy',
     'sumo',
     'swanky',
+    'tatl',
     'terra',
     'tidus',
     'tricky',
@@ -627,7 +629,12 @@ _moblab_boards = frozenset([
     'guado_moblab',
 ])
 
-_nofactory_boards = _lakitu_boards | frozenset([
+_termina_boards = frozenset([
+    'tatl',
+    'tael',
+])
+
+_nofactory_boards = _lakitu_boards | _termina_boards | frozenset([
     'smaug',
 ])
 
@@ -635,14 +642,14 @@ _toolchains_from_source = frozenset([
     'x32-generic',
 ])
 
-_noimagetest_boards = _lakitu_boards | _loonix_boards
+_noimagetest_boards = _lakitu_boards | _loonix_boards | _termina_boards
 
-_nohwqual_boards = _lakitu_boards | _loonix_boards
+_nohwqual_boards = _lakitu_boards | _loonix_boards | _termina_boards
 
 _norootfs_verification_boards = frozenset([
 ])
 
-_base_layout_boards = _lakitu_boards
+_base_layout_boards = _lakitu_boards | _termina_boards
 
 _no_unittest_boards = frozenset((
 ))
@@ -1064,6 +1071,26 @@ def GeneralTemplates(site_config, ge_build_config):
       afdo_use=False,
       dev_installer_prebuilts=False,
       hw_tests=[],
+  )
+
+  site_config.AddTemplate(
+      'termina',
+      sync_chrome=False,
+      chrome_sdk=False,
+      afdo_use=False,
+      dev_installer_prebuilts=False,
+      vm_tests=[],
+      vm_tests_override=None,
+      hw_tests=[],
+      signer_tests=False,
+      sign_types=None,
+      paygen=False,
+      upload_hw_test_artifacts=False,
+      image_test=False,
+      images=['base'],
+      packages=['virtual/target-os',
+                'virtual/target-os-dev',
+                'virtual/target-os-test'],
   )
 
   site_config.AddTemplate(
@@ -1559,6 +1586,8 @@ def CreateBoardConfigs(site_config, boards_dict, ge_build_config):
       board_config.apply(site_config.templates.loonix)
     if board in _moblab_boards:
       board_config.apply(site_config.templates.moblab)
+    if board in _termina_boards:
+      board_config.apply(site_config.templates.termina)
     if board in _nofactory_boards:
       board_config.apply(factory=False,
                          factory_toolkit=False,
@@ -2148,6 +2177,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'loonix',
       'poppy',
       'scarlet',
+      'tatl',
       'whirlwind',
   ])
 
