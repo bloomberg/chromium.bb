@@ -395,10 +395,6 @@ class PLATFORM_EXPORT ThreadHeap {
   void postMarkingProcessing(Visitor*);
   void weakProcessing(Visitor*);
 
-  void preGC();
-  void postGC(BlinkGC::GCType);
-  void preSweep(BlinkGC::GCType);
-
   // Conservatively checks whether an address is a pointer in any of the
   // thread heaps.  If so marks the object pointed to as live.
   Address checkAndMarkPointer(Visitor*, Address);

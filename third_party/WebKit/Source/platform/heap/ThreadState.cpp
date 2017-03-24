@@ -1468,7 +1468,7 @@ void ThreadState::collectGarbage(BlinkGC::StackState stackState,
       NoAllocationScope noAllocationScope(this);
 
       heap().commitCallbackStacks();
-      heap().preGC();
+      preGC();
 
       StackFrameDepthScope stackDepthScope(&heap().stackFrameDepth());
 
@@ -1534,10 +1534,10 @@ void ThreadState::collectGarbage(BlinkGC::StackState stackState,
       ThreadHeap::reportMemoryUsageHistogram();
       WTF::Partitions::reportMemoryUsageHistogram();
     }
-    heap().postGC(gcType);
+    postGC(gcType);
   }
 
-  heap().preSweep(gcType);
+  preSweep(gcType);
   heap().decommitCallbackStacks();
 }
 

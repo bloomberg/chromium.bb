@@ -280,12 +280,12 @@ class TestGCScope {
   explicit TestGCScope(BlinkGC::StackState state)
       : m_state(ThreadState::current()), m_safePointScope(state) {
     ASSERT(m_state->checkThread());
-    m_state->heap().preGC();
+    m_state->preGC();
   }
 
   ~TestGCScope() {
-    m_state->heap().postGC(BlinkGC::GCWithSweep);
-    m_state->heap().preSweep(BlinkGC::GCWithSweep);
+    m_state->postGC(BlinkGC::GCWithSweep);
+    m_state->preSweep(BlinkGC::GCWithSweep);
   }
 
  private:

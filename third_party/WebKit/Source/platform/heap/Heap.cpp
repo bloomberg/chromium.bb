@@ -313,20 +313,6 @@ void ThreadHeap::decommitCallbackStacks() {
   m_ephemeronStack->decommit();
 }
 
-void ThreadHeap::preGC() {
-  ASSERT(!ThreadState::current()->isInGC());
-  m_threadState->preGC();
-}
-
-void ThreadHeap::postGC(BlinkGC::GCType gcType) {
-  ASSERT(ThreadState::current()->isInGC());
-  m_threadState->postGC(gcType);
-}
-
-void ThreadHeap::preSweep(BlinkGC::GCType gcType) {
-  m_threadState->preSweep(gcType);
-}
-
 void ThreadHeap::processMarkingStack(Visitor* visitor) {
   // Ephemeron fixed point loop.
   do {
