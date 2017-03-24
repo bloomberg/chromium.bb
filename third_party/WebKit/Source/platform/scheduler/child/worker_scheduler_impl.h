@@ -53,6 +53,7 @@ class BLINK_PLATFORM_EXPORT WorkerSchedulerImpl : public WorkerScheduler,
   IdleHelper idle_helper_;
   IdleCanceledDelayedTaskSweeper idle_canceled_delayed_task_sweeper_;
   bool initialized_;
+  base::TimeTicks thread_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerSchedulerImpl);
 };

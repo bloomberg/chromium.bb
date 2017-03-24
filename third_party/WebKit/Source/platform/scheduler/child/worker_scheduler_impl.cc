@@ -5,10 +5,11 @@
 #include "platform/scheduler/child/worker_scheduler_impl.h"
 
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "public/platform/scheduler/base/task_queue.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate.h"
+#include "public/platform/scheduler/base/task_queue.h"
 
 namespace blink {
 namespace scheduler {
@@ -29,6 +30,7 @@ WorkerSchedulerImpl::WorkerSchedulerImpl(
                                           &helper_,
                                           idle_helper_.IdleTaskRunner()) {
   initialized_ = false;
+  thread_start_time_ = helper_.scheduler_tqm_delegate()->NowTicks();
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("worker.scheduler"), "WorkerScheduler", this);
 }
@@ -78,6 +80,15 @@ void WorkerSchedulerImpl::RemoveTaskObserver(
 
 void WorkerSchedulerImpl::Shutdown() {
   DCHECK(initialized_);
+  base::TimeTicks end_time = helper_.scheduler_tqm_delegate()->NowTicks();
+  base::TimeDelta delta = thread_start_time_ - end_time;
+
+  // The lifetime could be radically different for different workers,
+  // some workers could be short-lived (but last at least 1 sec in
+  // Service Workers case) or could be around as long as the tab is open.
+  UMA_HISTOGRAM_CUSTOM_TIMES(
+      "WorkerThread.Runtime", delta, base::TimeDelta::FromSeconds(1),
+      base::TimeDelta::FromDays(1), 50 /* bucket count */);
   helper_.Shutdown();
 }
 
