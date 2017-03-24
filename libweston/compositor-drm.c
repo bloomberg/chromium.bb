@@ -2653,7 +2653,7 @@ drm_output_enable(struct weston_output *base)
 	find_and_parse_output_edid(b, output, output->connector);
 	if (output->connector->connector_type == DRM_MODE_CONNECTOR_LVDS ||
 	    output->connector->connector_type == DRM_MODE_CONNECTOR_eDP)
-		output->base.connection_internal = 1;
+		output->base.connection_internal = true;
 
 	weston_plane_init(&output->cursor_plane, b->compositor,
 			  INT32_MIN, INT32_MIN);
