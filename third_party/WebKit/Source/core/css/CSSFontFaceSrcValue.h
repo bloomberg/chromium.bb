@@ -42,15 +42,17 @@ class CSSFontFaceSrcValue : public CSSValue {
   static CSSFontFaceSrcValue* create(
       const String& specifiedResource,
       const String& absoluteResource,
+      const Referrer& referrer,
       ContentSecurityPolicyDisposition shouldCheckContentSecurityPolicy) {
-    return new CSSFontFaceSrcValue(specifiedResource, absoluteResource, false,
+    return new CSSFontFaceSrcValue(specifiedResource, absoluteResource,
+                                   referrer, false,
                                    shouldCheckContentSecurityPolicy);
   }
   static CSSFontFaceSrcValue* createLocal(
       const String& absoluteResource,
       ContentSecurityPolicyDisposition shouldCheckContentSecurityPolicy) {
-    return new CSSFontFaceSrcValue(emptyString, absoluteResource, true,
-                                   shouldCheckContentSecurityPolicy);
+    return new CSSFontFaceSrcValue(emptyString, absoluteResource, Referrer(),
+                                   true, shouldCheckContentSecurityPolicy);
   }
 
   const String& resource() const { return m_absoluteResource; }
@@ -58,7 +60,6 @@ class CSSFontFaceSrcValue : public CSSValue {
   bool isLocal() const { return m_isLocal; }
 
   void setFormat(const String& format) { m_format = format; }
-  void setReferrer(const Referrer& referrer) { m_referrer = referrer; }
 
   bool isSupportedFormat() const;
 
@@ -79,11 +80,13 @@ class CSSFontFaceSrcValue : public CSSValue {
   CSSFontFaceSrcValue(
       const String& specifiedResource,
       const String& absoluteResource,
+      const Referrer& referrer,
       bool local,
       ContentSecurityPolicyDisposition shouldCheckContentSecurityPolicy)
       : CSSValue(FontFaceSrcClass),
         m_absoluteResource(absoluteResource),
         m_specifiedResource(specifiedResource),
+        m_referrer(referrer),
         m_isLocal(local),
         m_shouldCheckContentSecurityPolicy(shouldCheckContentSecurityPolicy) {}
 

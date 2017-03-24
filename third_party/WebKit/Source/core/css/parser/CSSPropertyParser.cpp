@@ -2093,10 +2093,9 @@ static CSSValue* consumeFontFaceSrcURI(CSSParserTokenRange& range,
   String url = consumeUrlAsStringView(range).toString();
   if (url.isNull())
     return nullptr;
-  CSSFontFaceSrcValue* uriValue(
-      CSSFontFaceSrcValue::create(url, context->completeURL(url),
-                                  context->shouldCheckContentSecurityPolicy()));
-  uriValue->setReferrer(context->referrer());
+  CSSFontFaceSrcValue* uriValue(CSSFontFaceSrcValue::create(
+      url, context->completeURL(url), context->referrer(),
+      context->shouldCheckContentSecurityPolicy()));
 
   if (range.peek().functionId() != CSSValueFormat)
     return uriValue;
