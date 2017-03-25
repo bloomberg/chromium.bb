@@ -15,13 +15,10 @@
       }
     </style>
     <div id="outerDiv" class="layout horizontal center">
-      <paper-input id="input" auto-validate value="{{value}}"
-          error-message="[[errorMessage]]" label="[[label]]"
-          no-label-float="[[noLabelFloat]]" pattern="[[pattern]]"
-          readonly$="[[readonly]]" required="[[required]]" type="[[type]]"
-          on-change="onChange_" on-keydown="onKeydown_"
-          disabled="[[isDisabled_(disabled, pref.*)]]"
-          stop-keyboard-event-propagation$="[[stopKeyboardEventPropagation]]"
+      <paper-input id="input" value="{{value}}" no-label-float label="[[label]]"
+          error-message="[[errorMessage]]" on-change="onChange_"
+          on-keydown="onKeydown_" disabled="[[isDisabled_(disabled, pref.*)]]"
+          stop-keyboard-event-propagation invalid="{{invalid}}"
           tabindex$="[[getTabindex_(canTab)]]">
       </paper-input>
       <template is="dom-if" if="[[hasPrefPolicyIndicator(pref.*)]]">

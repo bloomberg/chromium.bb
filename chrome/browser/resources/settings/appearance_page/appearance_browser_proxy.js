@@ -28,6 +28,12 @@ cr.define('settings', function() {
 // <if expr="is_linux and not chromeos">
     useSystemTheme: assertNotReached,
 // </if>
+
+    /**
+     * @param {string} url The url of which to check validity.
+     * @return {!Promise<boolean>}
+     */
+    validateStartupPage: assertNotReached,
   };
 
   /**
@@ -76,6 +82,11 @@ cr.define('settings', function() {
       chrome.send('useSystemTheme');
     },
 // </if>
+
+    /** @override */
+    validateStartupPage: function(url) {
+      return cr.sendWithPromise('validateStartupPage', url);
+    },
   };
 
   return {

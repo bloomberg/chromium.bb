@@ -52,6 +52,9 @@ Polymer({
       },
     },
 
+    /** @private */
+    isHomeUrlInvalid_: Boolean,
+
     /**
      * List of options for the page zoom drop-down menu.
      * @type {!Array<number>}
@@ -158,7 +161,7 @@ Polymer({
     window.open(this.themeUrl_ || loadTimeData.getString('themesGalleryUrl'));
   },
 
-// <if expr="chromeos">
+  // <if expr="chromeos">
   /**
    * ChromeOS only.
    * @private
@@ -166,14 +169,14 @@ Polymer({
   openWallpaperManager_: function() {
     this.browserProxy_.openWallpaperManager();
   },
-// </if>
+  // </if>
 
   /** @private */
   onUseDefaultTap_: function() {
     this.browserProxy_.useDefaultTheme();
   },
 
-// <if expr="is_linux and not chromeos">
+  // <if expr="is_linux and not chromeos">
   /**
    * @param {boolean} useSystemTheme
    * @private
@@ -218,7 +221,7 @@ Polymer({
   onUseSystemTap_: function() {
     this.browserProxy_.useSystemTheme();
   },
-// </if>
+  // </if>
 
   /**
    * @param {string} themeId
@@ -271,5 +274,23 @@ Polymer({
    */
   zoomValuesEqual_: function(zoom1, zoom2) {
     return Math.abs(zoom1 - zoom2) <= 0.001;
+  },
+
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  validate_: function(event) {
+    var inputElement = Polymer.dom(event).localTarget;
+
+    if (inputElement.value == '') {
+      this.isHomeUrlInvalid_ = false;
+      return;
+    }
+
+    this.browserProxy_.validateStartupPage(inputElement.value)
+        .then(function(isValid) {
+          this.isHomeUrlInvalid_ = !isValid;
+        }.bind(this));
   },
 });

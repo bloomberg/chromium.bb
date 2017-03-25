@@ -23,18 +23,18 @@
       <div class="body" on-keypress="onKeypress_">
         <paper-input always-float-label id="searchEngine"
             label="$i18n{searchEnginesSearchEngine}"
-            error-message="$i18n{searchEnginesNotValid}"
+            error-message="$i18n{notValid}"
             value="{{searchEngine_}}" on-input="validate_"
             autofocus>
         </paper-input>
         <paper-input always-float-label id="keyword"
             label="$i18n{searchEnginesKeyword}"
-            error-message="$i18n{searchEnginesNotValid}"
+            error-message="$i18n{notValid}"
             value="{{keyword_}}" on-focus="validate_" on-input="validate_">
         </paper-input>
         <paper-input always-float-label id="queryUrl"
             label="$i18n{searchEnginesQueryURLExplanation}"
-            error-message="$i18n{searchEnginesNotValid}"
+            error-message="$i18n{notValid}"
             value="{{queryUrl_}}" on-focus="validate_" on-input="validate_"
             disabled$="[[model.urlLocked]]">
         </paper-input>

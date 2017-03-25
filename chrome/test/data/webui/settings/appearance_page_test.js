@@ -15,6 +15,7 @@ var TestAppearanceBrowserProxy = function() {
     'openWallpaperManager',
     'useDefaultTheme',
     'useSystemTheme',
+    'validateStartupPage',
   ]);
 
   /** @private */
@@ -22,6 +23,9 @@ var TestAppearanceBrowserProxy = function() {
 
   /** @private */
   this.isSupervised_ = false;
+
+  /** @private */
+  this.isHomeUrlValid_ = true;
 };
 
 TestAppearanceBrowserProxy.prototype = {
@@ -69,6 +73,19 @@ TestAppearanceBrowserProxy.prototype = {
   setIsSupervised: function(isSupervised) {
     this.isSupervised_ = isSupervised;
   },
+
+  /** @override */
+  validateStartupPage: function(value) {
+    this.methodCalled('validateStartupPage');
+    return Promise.resolve(this.isHomeUrlValid_);
+  },
+
+  /**
+   * @param {boolean} isValid
+   */
+   setValidStartupPageResponse: function(isValid) {
+     this.isHomeUrlValid_ = isValid;
+   }
 };
 
 var appearancePage = null;
@@ -223,5 +240,44 @@ suite('AppearanceHandler', function() {
     }).then(function() {
       assertEquals('175%', getDefaultZoomText());
     });
+  });
+
+  test('show home button toggling', function() {
+    assertFalse(!!appearancePage.$$('.list-frame'));
+    appearancePage.set('prefs', {browser: {show_home_button: {value: true}}});
+
+    Polymer.dom.flush();
+
+    assertTrue(!!appearancePage.$$('.list-frame'));
+  });
+
+  test('home button urls', function() {
+    appearancePage.set('prefs', {
+      browser: {show_home_button: {value: true}},
+      homepage: {type: chrome.settingsPrivate.PrefType.URL, value: 'test'}
+    });
+
+    Polymer.dom.flush();
+
+    var input = appearancePage.$$('#customHomePage');
+    assertTrue(!!input);
+    assertFalse(input.invalid);
+    assertEquals(input.value, 'test');
+
+    input.value = '@@@';
+    appearanceBrowserProxy.setValidStartupPageResponse(false);
+    input.fire('input');
+
+    return appearanceBrowserProxy.whenCalled('validateStartupPage')
+        .then(function() {
+          Polymer.dom.flush();
+          assertEquals(input.value, '@@@');
+          assertTrue(input.invalid);
+
+          // Should reset to default value on change event.
+          input.$$('paper-input').fire('change');
+          Polymer.dom.flush();
+          assertEquals(input.value, 'test');
+        });
   });
 });

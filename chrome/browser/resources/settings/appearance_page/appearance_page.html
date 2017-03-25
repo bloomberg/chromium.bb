@@ -26,8 +26,14 @@
         -webkit-margin-start: 12px;
       }
 
+      #custom-input {
+        margin-bottom: 1rem;
+      }
+
       #customHomePage {
-        width: 200px;
+        --paper-input-container: {
+          width: 200px;
+        };
       }
     </style>
     <settings-animated-pages id="pages" section="appearance">
@@ -112,17 +118,18 @@
                   pref="[[prefs.homepage_is_newtabpage]]"
                   label="$i18n{homePageNtp}" no-extension-indicator>
               </controlled-radio-button>
-              <controlled-radio-button class="list-item" name="false"
-                  pref="[[prefs.homepage_is_newtabpage]]"
+              <controlled-radio-button id="custom-input" class="list-item"
+                  name="false" pref="[[prefs.homepage_is_newtabpage]]"
                   no-extension-indicator>
                 <!-- TODO(dbeam): this can show double indicators when both
                      homepage and whether to use the NTP as the homepage are
                      managed. -->
-                <settings-input id="customHomePage"
-                    no-label-float pref="{{prefs.homepage}}"
+                <settings-input id="customHomePage" pref="{{prefs.homepage}}"
                     label="$i18n{enterCustomWebAddress}"
                     can-tab="[[!prefs.homepage_is_newtabpage.value]]"
-                    stop-keyboard-event-propagation no-extension-indicator>
+                    no-extension-indicator
+                    error-message="$i18n{notValid}"
+                    on-input="validate_" invalid="{{isHomeUrlInvalid_}}">
                 </settings-input>
               </controlled-radio-button>
               <template is="dom-if" if="[[prefs.homepage.extensionId]]">

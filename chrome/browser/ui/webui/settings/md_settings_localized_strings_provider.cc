@@ -97,6 +97,7 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"settings", IDS_SETTINGS_SETTINGS},
     {"toggleOn", IDS_SETTINGS_TOGGLE_ON},
     {"toggleOff", IDS_SETTINGS_TOGGLE_OFF},
+    {"notValid", IDS_SETTINGS_NOT_VALID},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
@@ -1558,7 +1559,6 @@ void AddSearchEnginesStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_SEARCH_ENGINES_ADD_SEARCH_ENGINE},
       {"searchEnginesEditSearchEngine",
        IDS_SETTINGS_SEARCH_ENGINES_EDIT_SEARCH_ENGINE},
-      {"searchEnginesNotValid", IDS_SETTINGS_SEARCH_ENGINES_NOT_VALID},
       {"searchEngines", IDS_SETTINGS_SEARCH_ENGINES},
       {"searchEnginesDefault", IDS_SETTINGS_SEARCH_ENGINES_DEFAULT_ENGINES},
       {"searchEnginesOther", IDS_SETTINGS_SEARCH_ENGINES_OTHER_ENGINES},

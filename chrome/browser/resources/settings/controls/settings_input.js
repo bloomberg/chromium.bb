@@ -18,9 +18,7 @@ Polymer({
      * @type {!chrome.settingsPrivate.PrefObject|undefined}
      * @override
      */
-    pref: {
-      observer: 'prefChanged_'
-    },
+    pref: {observer: 'prefChanged_'},
 
     /* The current value of the input, reflected to/from |pref|. */
     value: {
@@ -30,24 +28,20 @@ Polymer({
     },
 
     /* Set to true to disable editing the input. */
-    disabled: {
-      type: Boolean,
-      value: false,
-      reflectToAttribute: true
-    },
+    disabled: {type: Boolean, value: false, reflectToAttribute: true},
 
     canTab: Boolean,
 
+    invalid: {
+      type: Boolean,
+      value: false,
+      notify: true,
+    },
+
     /* Properties for paper-input. This is not strictly necessary.
      * Though it does define the types for the closure compiler. */
-    errorMessage: { type: String },
-    label: { type: String },
-    noLabelFloat: { type: Boolean, value: false },
-    pattern: { type: String },
-    readonly: { type: Boolean, value: false },
-    required: { type: Boolean, value: false },
-    stopKeyboardEventPropagation: { type: Boolean, value: false },
-    type: { type: String },
+    errorMessage: {type: String},
+    label: {type: String},
   },
 
   /**
@@ -75,13 +69,8 @@ Polymer({
 
   /** @private */
   setInputValueFromPref_: function() {
-    if (this.pref.type == chrome.settingsPrivate.PrefType.NUMBER) {
-      this.value = this.pref.value.toString();
-    } else {
-      assert(this.pref.type == chrome.settingsPrivate.PrefType.STRING ||
-             this.pref.type == chrome.settingsPrivate.PrefType.URL);
-      this.value = /** @type {string} */(this.pref.value);
-    }
+    assert(this.pref.type == chrome.settingsPrivate.PrefType.URL);
+    this.value = /** @type {string} */ (this.pref.value);
   },
 
   /**
@@ -100,39 +89,38 @@ Polymer({
    * @private
    */
   onChange_: function() {
-    if (!this.pref)
+    if (this.invalid) {
+      this.resetValue_();
       return;
-
-    if (this.pref.type == chrome.settingsPrivate.PrefType.NUMBER) {
-      if (!this.value) {
-        // Ignore empty input field and restore value.
-        this.value = this.pref.value.toString();
-        return;
-      }
-      var n = parseInt(this.value, 10);
-      if (isNaN(n)) {
-        console.error('Bad value for numerical pref: ' + this.value);
-        return;
-      }
-      this.set('pref.value', n);
-    } else {
-      assert(this.pref.type == chrome.settingsPrivate.PrefType.STRING ||
-             this.pref.type == chrome.settingsPrivate.PrefType.URL);
-      this.set('pref.value', this.value);
     }
+
+    assert(this.pref.type == chrome.settingsPrivate.PrefType.URL);
+    this.set('pref.value', this.value);
+  },
+
+  /** @private */
+  resetValue_: function() {
+    this.invalid = false;
+    this.setInputValueFromPref_();
+    this.$.input.blur();
   },
 
   /**
-   * Handler for profile name keydowns.
+   * Keydown handler to specify enter-key and escape-key interactions.
    * @param {!Event} event
    * @private
    */
   onKeydown_: function(event) {
+    // If pressed enter when input is invalid, do not trigger on-change.
+    if (event.key == 'Enter' && this.invalid) {
+      event.preventDefault();
+      return;
+    }
+
     if (event.key != 'Escape')
       return;
 
-    this.setInputValueFromPref_();
-    this.$.input.blur();
+    this.resetValue_();
   },
 
   /**
