@@ -38,10 +38,14 @@ void EnableStartupTracingIfNeeded(bool can_access_file_system) {
         trace_config, base::trace_event::TraceLog::RECORDING_MODE);
   } else if (can_access_file_system &&
              tracing::TraceConfigFile::GetInstance()->IsEnabled()) {
+    const base::trace_event::TraceConfig& trace_config =
+        tracing::TraceConfigFile::GetInstance()->GetTraceConfig();
+    uint8_t modes = base::trace_event::TraceLog::RECORDING_MODE;
+    if (!trace_config.event_filters().empty())
+      modes |= base::trace_event::TraceLog::FILTERING_MODE;
     // This checks kTraceConfigFile switch.
     base::trace_event::TraceLog::GetInstance()->SetEnabled(
-        tracing::TraceConfigFile::GetInstance()->GetTraceConfig(),
-        base::trace_event::TraceLog::RECORDING_MODE);
+        tracing::TraceConfigFile::GetInstance()->GetTraceConfig(), modes);
   }
 }
 

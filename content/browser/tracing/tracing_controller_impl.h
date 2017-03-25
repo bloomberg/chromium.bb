@@ -102,12 +102,10 @@ class TracingControllerImpl
   TracingControllerImpl();
   ~TracingControllerImpl() override;
 
-  bool can_start_tracing() const {
-    return !is_tracing_;
-  }
+  bool can_start_tracing() const { return !enabled_tracing_modes_; }
 
   bool can_stop_tracing() const {
-    return is_tracing_ && !trace_data_sink_.get();
+    return enabled_tracing_modes_ && !trace_data_sink_.get();
   }
 
   bool can_start_monitoring() const {
@@ -154,7 +152,6 @@ class TracingControllerImpl
 
   void SetEnabledOnFileThread(
       const base::trace_event::TraceConfig& trace_config,
-      int mode,
       const base::Closure& callback);
   void SetDisabledOnFileThread(const base::Closure& callback);
   void OnAllTracingAgentsStarted();
@@ -195,7 +192,7 @@ class TracingControllerImpl
   int pending_clock_sync_ack_count_;
   base::OneShotTimer clock_sync_timer_;
 
-  bool is_tracing_;
+  uint8_t enabled_tracing_modes_;
   bool is_monitoring_;
 
   GetCategoriesDoneCallback pending_get_categories_done_callback_;

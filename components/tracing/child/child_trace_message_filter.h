@@ -73,6 +73,8 @@ class TRACING_EXPORT ChildTraceMessageFilter : public IPC::MessageFilter {
 
   void SetSenderForTesting(IPC::Sender* sender);
 
+  uint8_t enabled_tracing_modes_;
+
   IPC::Sender* sender_;
   base::SingleThreadTaskRunner* ipc_task_runner_;
 

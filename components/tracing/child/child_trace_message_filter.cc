@@ -27,7 +27,9 @@ const int kMinTimeBetweenHistogramChangesInSeconds = 10;
 
 ChildTraceMessageFilter::ChildTraceMessageFilter(
     base::SingleThreadTaskRunner* ipc_task_runner)
-    : sender_(NULL), ipc_task_runner_(ipc_task_runner) {}
+    : enabled_tracing_modes_(0),
+      sender_(NULL),
+      ipc_task_runner_(ipc_task_runner) {}
 
 void ChildTraceMessageFilter::OnFilterAdded(IPC::Channel* channel) {
   sender_ = channel;
@@ -77,13 +79,17 @@ void ChildTraceMessageFilter::OnBeginTracing(
   TraceLog::GetInstance()->SetTimeOffset(time_offset);
 #endif
   MemoryDumpManager::GetInstance()->set_tracing_process_id(tracing_process_id);
-  TraceLog::GetInstance()->SetEnabled(
-      base::trace_event::TraceConfig(trace_config_str),
-      base::trace_event::TraceLog::RECORDING_MODE);
+  const base::trace_event::TraceConfig trace_config(trace_config_str);
+  enabled_tracing_modes_ = base::trace_event::TraceLog::RECORDING_MODE;
+  if (!trace_config.event_filters().empty())
+    enabled_tracing_modes_ |= base::trace_event::TraceLog::FILTERING_MODE;
+  TraceLog::GetInstance()->SetEnabled(trace_config, enabled_tracing_modes_);
 }
 
 void ChildTraceMessageFilter::OnEndTracing() {
-  TraceLog::GetInstance()->SetDisabled();
+  DCHECK(enabled_tracing_modes_);
+  TraceLog::GetInstance()->SetDisabled(enabled_tracing_modes_);
+  enabled_tracing_modes_ = 0;
 
   // Flush will generate one or more callbacks to OnTraceDataCollected
   // synchronously or asynchronously. EndTracingAck will be sent in the last

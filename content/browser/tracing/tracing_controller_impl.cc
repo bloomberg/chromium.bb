@@ -200,7 +200,7 @@ TracingControllerImpl::TracingControllerImpl()
       maximum_trace_buffer_usage_(0),
       approximate_event_count_(0),
       pending_clock_sync_ack_count_(0),
-      is_tracing_(false) {
+      enabled_tracing_modes_(0) {
   // Deliberately leaked, like this class.
   base::FileTracing::SetProvider(new FileTracingProviderImpl);
 }
@@ -234,12 +234,10 @@ bool TracingControllerImpl::GetCategories(
 
 void TracingControllerImpl::SetEnabledOnFileThread(
     const TraceConfig& trace_config,
-    int mode,
     const base::Closure& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
-  TraceLog::GetInstance()->SetEnabled(
-      trace_config, static_cast<TraceLog::Mode>(mode));
+  TraceLog::GetInstance()->SetEnabled(trace_config, enabled_tracing_modes_);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback);
 }
 
@@ -247,7 +245,8 @@ void TracingControllerImpl::SetDisabledOnFileThread(
     const base::Closure& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
-  TraceLog::GetInstance()->SetDisabled();
+  DCHECK(enabled_tracing_modes_);
+  TraceLog::GetInstance()->SetDisabled(enabled_tracing_modes_);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback);
 }
 
@@ -257,12 +256,16 @@ bool TracingControllerImpl::StartTracing(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(additional_tracing_agents_.empty());
 
+  // TODO(ssid): Introduce a priority for tracing agents to handle multiple
+  // start and stop requests, crbug.com/705087.
   if (!can_start_tracing())
     return false;
-  is_tracing_ = true;
   start_tracing_done_callback_ = callback;
   start_tracing_trace_config_.reset(
       new base::trace_event::TraceConfig(trace_config));
+  enabled_tracing_modes_ = TraceLog::RECORDING_MODE;
+  if (!start_tracing_trace_config_->event_filters().empty())
+    enabled_tracing_modes_ |= TraceLog::FILTERING_MODE;
   metadata_.reset(new base::DictionaryValue());
   pending_start_tracing_ack_count_ = 0;
 
@@ -469,7 +472,7 @@ bool TracingControllerImpl::GetTraceBufferUsage(
 }
 
 bool TracingControllerImpl::IsTracing() const {
-  return is_tracing_;
+  return !!enabled_tracing_modes_;
 }
 
 void TracingControllerImpl::AddTraceMessageFilter(
@@ -645,7 +648,7 @@ void TracingControllerImpl::OnStopTracingAcked(
 
   // All acks (including from the subprocesses and the local trace) have been
   // received.
-  is_tracing_ = false;
+  enabled_tracing_modes_ = 0;
 
   // Trigger callback if one is set.
   if (!pending_get_categories_done_callback_.is_null()) {
@@ -776,12 +779,10 @@ void TracingControllerImpl::StartAgentTracing(
           BrowserThread::FILE, FROM_HERE,
           base::Bind(&TracingControllerImpl::SetEnabledOnFileThread,
                      base::Unretained(this), trace_config,
-                     base::trace_event::TraceLog::RECORDING_MODE,
                      on_agent_started))) {
     // BrowserThread::PostTask fails if the threads haven't been created yet,
     // so it should be safe to just use TraceLog::SetEnabled directly.
-    base::trace_event::TraceLog::GetInstance()->SetEnabled(
-        trace_config, base::trace_event::TraceLog::RECORDING_MODE);
+    TraceLog::GetInstance()->SetEnabled(trace_config, enabled_tracing_modes_);
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, on_agent_started);
   }
 }
