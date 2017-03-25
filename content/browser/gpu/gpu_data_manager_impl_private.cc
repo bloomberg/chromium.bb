@@ -447,11 +447,9 @@ void GpuDataManagerImplPrivate::RequestCompleteGpuInfoIfNeeded() {
 }
 
 bool GpuDataManagerImplPrivate::IsEssentialGpuInfoAvailable() const {
-  if (gpu_info_.basic_info_state == gpu::kCollectInfoNone ||
-      gpu_info_.context_info_state == gpu::kCollectInfoNone) {
-    return false;
-  }
-  return true;
+  return (gpu_info_.basic_info_state != gpu::kCollectInfoNone &&
+          gpu_info_.context_info_state != gpu::kCollectInfoNone) ||
+         use_swiftshader_;
 }
 
 bool GpuDataManagerImplPrivate::IsCompleteGpuInfoAvailable() const {
