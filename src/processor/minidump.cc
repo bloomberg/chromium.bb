@@ -1202,7 +1202,7 @@ MinidumpMemoryRegion::MinidumpMemoryRegion(Minidump* minidump)
     : MinidumpObject(minidump),
       descriptor_(NULL),
       memory_(NULL) {
-  hexdump_width_ = minidump->HexdumpMode();
+  hexdump_width_ = minidump_ ? minidump_->HexdumpMode() : 0;
   hexdump_ = hexdump_width_ != 0;
 }
 
@@ -4773,7 +4773,9 @@ Minidump::Minidump(istream& stream)
       path_(),
       stream_(&stream),
       swap_(false),
-      valid_(false) {
+      valid_(false),
+      hexdump_(false),
+      hexdump_width_(0) {
 }
 
 Minidump::~Minidump() {

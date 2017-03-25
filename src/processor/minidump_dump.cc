@@ -55,7 +55,7 @@ using google_breakpad::MinidumpBreakpadInfo;
 
 struct Options {
   Options()
-      : minidumpPath(), hexdump(false), hexdump_width(hexdump_width) {}
+      : minidumpPath(), hexdump(false), hexdump_width(16) {}
 
   string minidumpPath;
   bool hexdump;
