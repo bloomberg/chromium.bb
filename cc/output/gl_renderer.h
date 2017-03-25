@@ -55,6 +55,8 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
              int highp_threshold_min);
   ~GLRenderer() override;
 
+  bool use_swap_with_bounds() const { return use_swap_with_bounds_; }
+
   void SwapBuffers(std::vector<ui::LatencyInfo> latency_info) override;
   void SwapBuffersComplete() override;
 
@@ -313,6 +315,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   TextureMailboxDeleter* texture_mailbox_deleter_;
 
   gfx::Rect swap_buffer_rect_;
+  std::vector<gfx::Rect> swap_content_bounds_;
   gfx::Rect scissor_rect_;
   bool is_scissor_enabled_ = false;
   bool stencil_shadow_ = false;

@@ -314,6 +314,9 @@ class TestWebGraphicsContext3D {
   void set_have_post_sub_buffer(bool have) {
     test_capabilities_.post_sub_buffer = have;
   }
+  void set_have_swap_buffers_with_bounds(bool have) {
+    test_capabilities_.swap_buffers_with_bounds = have;
+  }
   void set_have_commit_overlay_planes(bool have) {
     test_capabilities_.commit_overlay_planes = have;
   }

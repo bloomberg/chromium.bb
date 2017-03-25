@@ -2161,5 +2161,105 @@ TEST_F(GLRendererWithMockContextTest,
   Mock::VerifyAndClearExpectations(context_support_ptr_);
 }
 
+class SwapWithBoundsMockGLES2Interface : public TestGLES2Interface {
+ public:
+  void InitializeTestContext(TestWebGraphicsContext3D* context) override {
+    context->set_have_swap_buffers_with_bounds(true);
+  }
+};
+
+class ContentBoundsOverlayProcessor : public OverlayProcessor {
+ public:
+  class Strategy : public OverlayProcessor::Strategy {
+   public:
+    explicit Strategy(const std::vector<gfx::Rect>& content_bounds)
+        : content_bounds_(content_bounds) {}
+    ~Strategy() override {}
+    bool Attempt(ResourceProvider* resource_provider,
+                 RenderPass* render_pass,
+                 OverlayCandidateList* candidates,
+                 std::vector<gfx::Rect>* content_bounds) override {
+      content_bounds->insert(content_bounds->end(), content_bounds_.begin(),
+                             content_bounds_.end());
+      return true;
+    }
+
+    const std::vector<gfx::Rect> content_bounds_;
+  };
+
+  ContentBoundsOverlayProcessor(OutputSurface* surface,
+                                const std::vector<gfx::Rect>& content_bounds)
+      : OverlayProcessor(surface), content_bounds_(content_bounds) {}
+
+  void Initialize() override {
+    strategy_ = new Strategy(content_bounds_);
+    strategies_.push_back(base::WrapUnique(strategy_));
+  }
+
+  Strategy* strategy_;
+  const std::vector<gfx::Rect> content_bounds_;
+};
+
+class GLRendererSwapWithBoundsTest : public GLRendererTest {
+ protected:
+  void RunTest(const std::vector<gfx::Rect>& content_bounds) {
+    auto gl_owned = base::MakeUnique<SwapWithBoundsMockGLES2Interface>();
+
+    auto provider = TestContextProvider::Create(std::move(gl_owned));
+    provider->BindToCurrentThread();
+
+    FakeOutputSurfaceClient output_surface_client;
+    std::unique_ptr<FakeOutputSurface> output_surface(
+        FakeOutputSurface::Create3d(std::move(provider)));
+    output_surface->BindToClient(&output_surface_client);
+
+    std::unique_ptr<ResourceProvider> resource_provider =
+        FakeResourceProvider::Create(output_surface->context_provider(),
+                                     nullptr);
+
+    RendererSettings settings;
+    FakeRendererGL renderer(&settings, output_surface.get(),
+                            resource_provider.get());
+    renderer.Initialize();
+    EXPECT_EQ(true, renderer.use_swap_with_bounds());
+    renderer.SetVisible(true);
+
+    OverlayProcessor* processor =
+        new ContentBoundsOverlayProcessor(output_surface.get(), content_bounds);
+    processor->Initialize();
+    renderer.SetOverlayProcessor(processor);
+
+    gfx::Size viewport_size(100, 100);
+
+    {
+      int root_pass_id = 1;
+      AddRenderPass(&render_passes_in_draw_order_, root_pass_id,
+                    gfx::Rect(viewport_size), gfx::Transform(),
+                    FilterOperations());
+
+      renderer.DecideRenderPassAllocationsForFrame(
+          render_passes_in_draw_order_);
+      DrawFrame(&renderer, viewport_size);
+      renderer.SwapBuffers(std::vector<ui::LatencyInfo>());
+
+      std::vector<gfx::Rect> expected_content_bounds;
+      EXPECT_EQ(content_bounds,
+                output_surface->last_sent_frame()->content_bounds);
+    }
+  }
+};
+
+TEST_F(GLRendererSwapWithBoundsTest, EmptyContent) {
+  std::vector<gfx::Rect> content_bounds;
+  RunTest(content_bounds);
+}
+
+TEST_F(GLRendererSwapWithBoundsTest, NonEmpty) {
+  std::vector<gfx::Rect> content_bounds;
+  content_bounds.push_back(gfx::Rect(0, 0, 10, 10));
+  content_bounds.push_back(gfx::Rect(20, 20, 30, 30));
+  RunTest(content_bounds);
+}
+
 }  // namespace
 }  // namespace cc
