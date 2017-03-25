@@ -282,6 +282,20 @@ void RequestVideoMemoryUsageStats(GpuProcessHost* host) {
       base::Bind(&OnVideoMemoryUsageStats));
 }
 
+void UpdateGpuInfoOnIO(const gpu::GPUInfo& gpu_info) {
+  // This function is called on the IO thread, but GPUInfo on GpuDataManagerImpl
+  // should be updated on the UI thread (since it can call into functions that
+  // expect to run in the UI thread, e.g. ContentClient::SetGpuInfo()).
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(
+          [](const gpu::GPUInfo& gpu_info) {
+            TRACE_EVENT0("test_gpu", "OnGraphicsInfoCollected");
+            GpuDataManagerImpl::GetInstance()->UpdateGpuInfo(gpu_info);
+          },
+          gpu_info));
+}
+
 }  // namespace anonymous
 
 void GpuDataManagerImplPrivate::InitializeForTesting(
@@ -418,13 +432,18 @@ void GpuDataManagerImplPrivate::RequestCompleteGpuInfoIfNeeded() {
 
   complete_gpu_info_already_requested_ = true;
 
-  GpuProcessHost::SendOnIO(
+  GpuProcessHost::CallOnIO(
 #if defined(OS_WIN)
       GpuProcessHost::GPU_PROCESS_KIND_UNSANDBOXED,
 #else
       GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
 #endif
-      true /* force_create */, new GpuMsg_CollectGraphicsInfo());
+      true /* force_create */, base::Bind([](GpuProcessHost* host) {
+        if (!host)
+          return;
+        host->gpu_service()->RequestCompleteGpuInfo(
+            base::Bind(&UpdateGpuInfoOnIO));
+      }));
 }
 
 bool GpuDataManagerImplPrivate::IsEssentialGpuInfoAvailable() const {

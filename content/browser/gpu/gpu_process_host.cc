@@ -1241,6 +1241,11 @@ void GpuProcessHost::LoadedShader(const std::string& key,
     gpu_service_ptr_->LoadedShader(data);
 }
 
+ui::mojom::GpuService* GpuProcessHost::gpu_service() {
+  DCHECK(gpu_service_ptr_.is_bound());
+  return gpu_service_ptr_.get();
+}
+
 void GpuProcessHost::CreateChannelCache(int32_t client_id) {
   TRACE_EVENT0("gpu", "GpuProcessHost::CreateChannelCache");
 

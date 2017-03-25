@@ -8,6 +8,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/lazy_instance.h"
 #include "base/memory/shared_memory.h"
+#include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "cc/output/in_process_context_provider.h"
@@ -188,6 +189,62 @@ void GpuService::GetVideoMemoryUsageStats(
   }
   callback.Run(video_memory_usage_stats);
 }
+
+void GpuService::RequestCompleteGpuInfo(
+    const RequestCompleteGpuInfoCallback& callback) {
+  UpdateGpuInfoPlatform();
+  callback.Run(gpu_info_);
+#if defined(OS_WIN)
+  if (!in_host_process_) {
+    // The unsandboxed GPU process fulfilled its duty. Rest in peace.
+    base::MessageLoop::current()->QuitWhenIdle();
+  }
+#endif
+}
+
+#if defined(OS_MACOSX)
+void GpuService::UpdateGpuInfoPlatform() {
+  // gpu::CollectContextGraphicsInfo() is already called during gpu process
+  // initialization (see GpuInit::InitializeAndStartSandbox()) on non-mac
+  // platforms, and during in-browser gpu thread initialization on all platforms
+  // (See InProcessGpuThread::Init()).
+  if (in_host_process_)
+    return;
+
+  DCHECK_EQ(gpu::kCollectInfoNone, gpu_info_.context_info_state);
+  gpu::CollectInfoResult result = gpu::CollectContextGraphicsInfo(&gpu_info_);
+  switch (result) {
+    case gpu::kCollectInfoFatalFailure:
+      LOG(ERROR) << "gpu::CollectGraphicsInfo failed (fatal).";
+      // TODO(piman): can we signal overall failure?
+      break;
+    case gpu::kCollectInfoNonFatalFailure:
+      DVLOG(1) << "gpu::CollectGraphicsInfo failed (non-fatal).";
+      break;
+    case gpu::kCollectInfoNone:
+      NOTREACHED();
+      break;
+    case gpu::kCollectInfoSuccess:
+      break;
+  }
+  gpu::SetKeysForCrashLogging(gpu_info_);
+}
+#elif defined(OS_WIN)
+void GpuService::UpdateGpuInfoPlatform() {
+  // GPU full info collection should only happen on un-sandboxed GPU process
+  // or single process/in-process gpu mode on Windows.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  DCHECK(command_line->HasSwitch("disable-gpu-sandbox") || in_host_process_);
+
+  // This is slow, but it's the only thing the unsandboxed GPU process does,
+  // and GpuDataManager prevents us from sending multiple collecting requests,
+  // so it's OK to be blocking.
+  gpu::GetDxDiagnostics(&gpu_info_.dx_diagnostics);
+  gpu_info_.dx_diagnostics_info_state = gpu::kCollectInfoSuccess;
+}
+#else
+void GpuService::UpdateGpuInfoPlatform() {}
+#endif
 
 void GpuService::DidCreateOffscreenContext(const GURL& active_url) {
   (*gpu_host_)->DidCreateOffscreenContext(active_url);

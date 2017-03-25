@@ -45,10 +45,6 @@ IPC_MESSAGE_CONTROL3(GpuMsg_DestroyGpuMemoryBuffer,
                      int32_t,                /* client_id */
                      gpu::SyncToken /* sync_token */)
 
-// Tells the GPU process to create a context for collecting graphics card
-// information.
-IPC_MESSAGE_CONTROL0(GpuMsg_CollectGraphicsInfo)
-
 // Tells the GPU process that the browser has seen a GPU switch.
 IPC_MESSAGE_CONTROL0(GpuMsg_GpuSwitched)
 
@@ -65,10 +61,6 @@ IPC_MESSAGE_CONTROL3(GpuHostMsg_Initialized,
 // Response from GPU to a GpuMsg_CreateGpuMemoryBuffer message.
 IPC_MESSAGE_CONTROL1(GpuHostMsg_GpuMemoryBufferCreated,
                      gfx::GpuMemoryBufferHandle /* handle */)
-
-// Response from GPU to a GpuMsg_CollectGraphicsInfo.
-IPC_MESSAGE_CONTROL1(GpuHostMsg_GraphicsInfoCollected,
-                     gpu::GPUInfo /* GPU logging stats */)
 
 // Sent by the GPU process to indicate that a fields trial has been activated.
 IPC_MESSAGE_CONTROL1(GpuHostMsg_FieldTrialActivated, std::string /* name */)

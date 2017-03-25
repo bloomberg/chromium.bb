@@ -111,8 +111,6 @@ class GpuChildThread : public ChildThreadImpl,
                                   const std::string& group_name) override;
 
   // Message handlers.
-  void OnCollectGraphicsInfo();
-
   void OnGpuSwitched();
 
   void OnDestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,

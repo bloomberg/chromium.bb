@@ -234,7 +234,6 @@ bool GpuChildThread::Send(IPC::Message* msg) {
 bool GpuChildThread::OnControlMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GpuChildThread, msg)
-    IPC_MESSAGE_HANDLER(GpuMsg_CollectGraphicsInfo, OnCollectGraphicsInfo)
     IPC_MESSAGE_HANDLER(GpuMsg_GpuSwitched, OnGpuSwitched)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -315,62 +314,6 @@ void GpuChildThread::CreateDisplayCompositor(
     cc::mojom::DisplayCompositorRequest request,
     cc::mojom::DisplayCompositorClientPtr client) {
   NOTREACHED();
-}
-
-void GpuChildThread::OnCollectGraphicsInfo() {
-  if (dead_on_arrival_)
-    return;
-
-  gpu::GPUInfo gpu_info(gpu_service_->gpu_info());
-#if defined(OS_MACOSX)
-  // gpu::CollectContextGraphicsInfo() is already called during gpu process
-  // initialization (see GpuInit::InitializeAndStartSandbox()) on non-mac
-  // platforms, and during in-browser gpu thread initialization on all platforms
-  // (See InProcessGpuThread::Init()).
-  if (!in_browser_process_) {
-    DCHECK_EQ(gpu::kCollectInfoNone, gpu_info.context_info_state);
-    gpu::CollectInfoResult result = gpu::CollectContextGraphicsInfo(&gpu_info);
-    switch (result) {
-      case gpu::kCollectInfoFatalFailure:
-        LOG(ERROR) << "gpu::CollectGraphicsInfo failed (fatal).";
-        // TODO(piman): can we signal overall failure?
-        break;
-      case gpu::kCollectInfoNonFatalFailure:
-        DVLOG(1) << "gpu::CollectGraphicsInfo failed (non-fatal).";
-        break;
-      case gpu::kCollectInfoNone:
-        NOTREACHED();
-        break;
-      case gpu::kCollectInfoSuccess:
-        break;
-    }
-    GetContentClient()->SetGpuInfo(gpu_info);
-  }
-#endif
-
-#if defined(OS_WIN)
-  // GPU full info collection should only happen on un-sandboxed GPU process
-  // or single process/in-process gpu mode on Windows.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  DCHECK(command_line->HasSwitch(switches::kDisableGpuSandbox) ||
-         in_browser_process_);
-
-  // This is slow, but it's the only thing the unsandboxed GPU process does,
-  // and GpuDataManager prevents us from sending multiple collecting requests,
-  // so it's OK to be blocking.
-  gpu::GetDxDiagnostics(&gpu_info.dx_diagnostics);
-  gpu_info.dx_diagnostics_info_state = gpu::kCollectInfoSuccess;
-#endif  // OS_WIN
-
-  gpu_service_->set_gpu_info(gpu_info);
-  Send(new GpuHostMsg_GraphicsInfoCollected(gpu_info));
-
-#if defined(OS_WIN)
-  if (!in_browser_process_) {
-    // The unsandboxed GPU process fulfilled its duty.  Rest in peace.
-    base::MessageLoop::current()->QuitWhenIdle();
-  }
-#endif  // OS_WIN
 }
 
 void GpuChildThread::OnGpuSwitched() {

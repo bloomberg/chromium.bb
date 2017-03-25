@@ -71,10 +71,6 @@ class GpuProcessHostUIShim : public IPC::Listener,
   explicit GpuProcessHostUIShim(int host_id);
   ~GpuProcessHostUIShim() override;
 
-  // Message handlers.
-  bool OnControlMessageReceived(const IPC::Message& message);
-  void OnGraphicsInfoCollected(const gpu::GPUInfo& gpu_info);
-
   // The serial number of the GpuProcessHost / GpuProcessHostUIShim pair.
   int host_id_;
 };

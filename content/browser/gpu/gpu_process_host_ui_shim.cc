@@ -135,34 +135,13 @@ bool GpuProcessHostUIShim::OnMessageReceived(const IPC::Message& message) {
   if (message.routing_id() != MSG_ROUTING_CONTROL)
     return false;
 
-  return OnControlMessageReceived(message);
+  NOTREACHED() << "Invalid message with type = " << message.type();
+  return true;
 }
 
 GpuProcessHostUIShim::~GpuProcessHostUIShim() {
   DCHECK(CalledOnValidThread());
   g_hosts_by_id.Pointer()->Remove(host_id_);
-}
-
-bool GpuProcessHostUIShim::OnControlMessageReceived(
-    const IPC::Message& message) {
-  DCHECK(CalledOnValidThread());
-
-  IPC_BEGIN_MESSAGE_MAP(GpuProcessHostUIShim, message)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_GraphicsInfoCollected,
-                        OnGraphicsInfoCollected)
-    IPC_MESSAGE_UNHANDLED_ERROR()
-  IPC_END_MESSAGE_MAP()
-
-  return true;
-}
-
-void GpuProcessHostUIShim::OnGraphicsInfoCollected(
-    const gpu::GPUInfo& gpu_info) {
-  // OnGraphicsInfoCollected is sent back after the GPU process successfully
-  // initializes GL.
-  TRACE_EVENT0("test_gpu", "OnGraphicsInfoCollected");
-
-  GpuDataManagerImpl::GetInstance()->UpdateGpuInfo(gpu_info);
 }
 
 #if defined(OS_ANDROID)

@@ -84,7 +84,6 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
   void set_start_time(base::Time start_time) { start_time_ = start_time; }
 
   const gpu::GPUInfo& gpu_info() const { return gpu_info_; }
-  void set_gpu_info(const gpu::GPUInfo& gpu_info) { gpu_info_ = gpu_info; }
 
  private:
   friend class GpuMain;
@@ -102,6 +101,8 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
   gl::GLShareGroup* share_group() {
     return gpu_channel_manager_->share_group();
   }
+
+  void UpdateGpuInfoPlatform();
 
   // gpu::GpuChannelManagerDelegate:
   void DidCreateOffscreenContext(const GURL& active_url) override;
@@ -140,6 +141,8 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
                               const gpu::SyncToken& sync_token) override;
   void GetVideoMemoryUsageStats(
       const GetVideoMemoryUsageStatsCallback& callback) override;
+  void RequestCompleteGpuInfo(
+      const RequestCompleteGpuInfoCallback& callback) override;
   void LoadedShader(const std::string& data) override;
   void DestroyingVideoSurface(
       int32_t surface_id,

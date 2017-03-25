@@ -39,6 +39,8 @@ interface GpuService {
 
   GetVideoMemoryUsageStats() => (gpu.mojom.VideoMemoryUsageStats stats);
 
+  RequestCompleteGpuInfo() => (gpu.mojom.GpuInfo gpu_info);
+
   // Notify GPU that a shader was loaded from disk.
   LoadedShader(string data);
 

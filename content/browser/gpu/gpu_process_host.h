@@ -161,7 +161,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   void LoadedShader(const std::string& key, const std::string& data);
 
-  ui::mojom::GpuService* gpu_service() { return gpu_service_ptr_.get(); }
+  CONTENT_EXPORT ui::mojom::GpuService* gpu_service();
 
  private:
   class ConnectionFilterImpl;
