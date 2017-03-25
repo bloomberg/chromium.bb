@@ -134,6 +134,13 @@ if (enable_mojom_typemapping) {
 #   cpp_only (optional)
 #       If set to true, only the C++ bindings targets will be generated.
 #
+#   use_new_js_bindings (optional)
+#       If set to true, the generated JS code will use the new module loading
+#       approach and the core API exposed by Web IDL.
+#
+#       TODO(yzshen): Switch all existing users to use_new_js_bindings=true and
+#       remove the old mode.
+#
 # The following parameters are used to support the component build. They are
 # needed so that bindings which are linked with a component can use the same
 # export settings for classes. The first three are for the chromium variant, and
@@ -433,6 +440,11 @@ template("mojom") {
 
         if (defined(invoker.use_once_callback) && invoker.use_once_callback) {
           args += [ "--use_once_callback" ]
+        }
+
+        if (defined(invoker.use_new_js_bindings) &&
+            invoker.use_new_js_bindings) {
+          args += [ "--use_new_js_bindings" ]
         }
       }
     }
