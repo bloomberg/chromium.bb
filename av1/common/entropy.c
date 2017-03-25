@@ -5454,9 +5454,10 @@ static void build_head_cdfs(const aom_prob *pdf_model,
   }
 
   for (i = 0; i < last_head_val; ++i) {
-    p = AOMMAX(1, AOMMIN(CDF_PROB_TOP - (last_head_val - i) - cdf_head[i - 1],
-                         phead[i]));
-    cdf_head[i] = (i > 0 ? cdf_head[i - 1] : 0) + p;
+    int c0;
+    c0 = i > 0 ? cdf_head[i - 1] : 0;
+    p = AOMMAX(1, AOMMIN(CDF_PROB_TOP - (last_head_val - i) - c0, phead[i]));
+    cdf_head[i] = c0 + p;
   }
   cdf_head[last_head_val] = CDF_PROB_TOP;
 }
