@@ -15,6 +15,9 @@ struct ShellTestConfiguration {
   // The temporary directory of the system.
   mojo.common.mojom.FilePath temp_path;
 
+  // The build directory.
+  mojo.common.mojom.FilePath build_directory;
+
   // The URL of the current layout test.
   url.mojom.Url test_url;
 

@@ -16,6 +16,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -55,12 +56,31 @@
 #include "content/shell/renderer/layout_test/blink_test_helpers.h"
 #include "ui/gfx/codec/png_codec.h"
 
+#if defined(OS_MACOSX)
+#include "base/mac/foundation_util.h"
+#endif
+
 namespace content {
 
 namespace {
 
 const int kTestSVGWindowWidthDip = 480;
 const int kTestSVGWindowHeightDip = 360;
+
+base::FilePath GetBuildDirectory() {
+  base::FilePath result;
+  base::PathService::Get(base::DIR_EXE, &result);
+
+#if defined(OS_MACOSX)
+  if (base::mac::AmIBundled()) {
+    // The bundled app executables (Chromium, TestShell, etc) live three
+    // levels down from the build directory, eg:
+    // Chromium.app/Contents/MacOS/Chromium
+    result = result.DirName().DirName().DirName();
+  }
+#endif
+  return result;
+}
 
 }  // namespace
 
@@ -617,6 +637,7 @@ void BlinkTestController::HandleNewRenderFrameHost(RenderFrameHost* frame) {
     params->allow_external_pages = false;
     params->current_working_directory = current_working_directory_;
     params->temp_path = temp_path_;
+    params->build_directory = GetBuildDirectory();
     params->test_url = test_url_;
     params->enable_pixel_dumping = enable_pixel_dumping_;
     params->allow_external_pages =

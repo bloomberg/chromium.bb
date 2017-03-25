@@ -368,6 +368,19 @@ WebURL BlinkTestRunner::RewriteLayoutTestsURL(const std::string& utf8_url,
     return WebURL(GURL(utf8_url));
   }
 
+  const char kGenPrefix[] = "file:///gen/";
+  const int kGenPrefixLen = arraysize(kGenPrefix) - 1;
+
+  // Map "file:///gen/" to "file://<build directory>/gen/".
+  if (!utf8_url.compare(0, kGenPrefixLen, kGenPrefix, kGenPrefixLen)) {
+    base::FilePath gen_directory_path =
+        test_config_->build_directory.Append(FILE_PATH_LITERAL("gen/"));
+    std::string new_url = std::string("file://") +
+                          gen_directory_path.AsUTF8Unsafe() +
+                          utf8_url.substr(kGenPrefixLen);
+    return WebURL(GURL(new_url));
+  }
+
   const char kPrefix[] = "file:///tmp/LayoutTests/";
   const int kPrefixLen = arraysize(kPrefix) - 1;
 
