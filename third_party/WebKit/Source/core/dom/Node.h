@@ -772,8 +772,6 @@ class CORE_EXPORT Node : public EventTarget {
 
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
-  unsigned lengthOfContents() const;
-
  private:
   enum NodeFlags {
     HasRareDataFlag = 1,

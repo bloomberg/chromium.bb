@@ -26,8 +26,10 @@
 #include "core/dom/Range.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/dom/CharacterData.h"
 #include "core/dom/ClientRect.h"
 #include "core/dom/ClientRectList.h"
+#include "core/dom/ContainerNode.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/Node.h"
@@ -528,6 +530,27 @@ static inline Node* childOfCommonRootBeforeOffset(Node* container,
   return container;
 }
 
+static unsigned lengthOfContents(const Node* node) {
+  // This switch statement must be consistent with that of
+  // Range::processContentsBetweenOffsets.
+  switch (node->getNodeType()) {
+    case Node::kTextNode:
+    case Node::kCdataSectionNode:
+    case Node::kCommentNode:
+    case Node::kProcessingInstructionNode:
+      return toCharacterData(node)->length();
+    case Node::kElementNode:
+    case Node::kDocumentNode:
+    case Node::kDocumentFragmentNode:
+      return toContainerNode(node)->countChildren();
+    case Node::kAttributeNode:
+    case Node::kDocumentTypeNode:
+      return 0;
+  }
+  NOTREACHED();
+  return 0;
+}
+
 DocumentFragment* Range::processContents(ActionType action,
                                          ExceptionState& exceptionState) {
   typedef HeapVector<Member<Node>> NodeVector;
@@ -587,7 +610,7 @@ DocumentFragment* Range::processContents(ActionType action,
       commonRoot->contains(originalStart.container())) {
     leftContents = processContentsBetweenOffsets(
         action, nullptr, originalStart.container(), originalStart.offset(),
-        originalStart.container()->lengthOfContents(), exceptionState);
+        lengthOfContents(originalStart.container()), exceptionState);
     leftContents = processAncestorsAndTheirSiblings(
         action, originalStart.container(), ProcessContentsForward, leftContents,
         commonRoot, exceptionState);
@@ -675,7 +698,7 @@ Node* Range::processContentsBetweenOffsets(ActionType action,
   DCHECK_LE(startOffset, endOffset);
 
   // This switch statement must be consistent with that of
-  // Node::lengthOfContents.
+  // lengthOfContents.
   Node* result = nullptr;
   switch (container->getNodeType()) {
     case Node::kTextNode:

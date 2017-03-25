@@ -62,11 +62,4 @@ TEST_F(AttrTest, SetTextContent) {
   EXPECT_EQ(value(), attr->textContent());
 }
 
-TEST_F(AttrTest, LengthOfContents) {
-  Attr* attr = createAttribute();
-  EXPECT_EQ(0u, attr->lengthOfContents());
-  attr->setValue(value());
-  EXPECT_EQ(0u, attr->lengthOfContents());
-}
-
 }  // namespace blink

@@ -2493,27 +2493,6 @@ DEFINE_TRACE_WRAPPERS(Node) {
   EventTarget::traceWrappers(visitor);
 }
 
-unsigned Node::lengthOfContents() const {
-  // This switch statement must be consistent with that of
-  // Range::processContentsBetweenOffsets.
-  switch (getNodeType()) {
-    case Node::kTextNode:
-    case Node::kCdataSectionNode:
-    case Node::kCommentNode:
-    case Node::kProcessingInstructionNode:
-      return toCharacterData(this)->length();
-    case Node::kElementNode:
-    case Node::kDocumentNode:
-    case Node::kDocumentFragmentNode:
-      return toContainerNode(this)->countChildren();
-    case Node::kAttributeNode:
-    case Node::kDocumentTypeNode:
-      return 0;
-  }
-  NOTREACHED();
-  return 0;
-}
-
 }  // namespace blink
 
 #ifndef NDEBUG
