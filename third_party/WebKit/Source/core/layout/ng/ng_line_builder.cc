@@ -309,11 +309,10 @@ void NGLineBuilder::BidiReorder(Vector<LineItemChunk, 32>* line_item_chunks) {
 // TODO(glebl): Add the support of clearance for inline floats.
 void NGLineBuilder::LayoutAndPositionFloat(LayoutUnit end_position,
                                            LayoutObject* layout_object) {
-  LayoutNGBlockFlow* block_flow = toLayoutNGBlockFlow(layout_object);
-  NGBlockNode* node = new NGBlockNode(block_flow);
-
+  NGBlockNode* node = new NGBlockNode(layout_object);
   RefPtr<NGConstraintSpace> float_space = CreateConstraintSpaceForFloat(
       node->Style(), ConstraintSpace(), &space_builder_);
+
   // TODO(glebl): add the fragmentation support:
   // same writing mode - get the inline size ComputeInlineSizeForFragment to
   // determine if it fits on this line, then perform layout with the correct
