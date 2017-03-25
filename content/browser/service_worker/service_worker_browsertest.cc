@@ -1483,7 +1483,7 @@ class ServiceWorkerNavigationPreloadTest : public ServiceWorkerBrowserTest {
       content::ResourceContext* resource_context,
       OnHeaderProcessedCallback callback) {
     DCHECK_EQ(kNavigationPreloadHeaderName, header);
-    callback.Run(false, 0);
+    callback.Run(HeaderInterceptorResult::KILL);
   }
 
   void SetupForNavigationPreloadTest(const GURL& scope,

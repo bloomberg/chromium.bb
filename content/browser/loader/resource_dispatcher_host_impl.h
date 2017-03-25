@@ -560,9 +560,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // decisions which could be time consuming. We allow for these decisions
   // to be made asynchronously. The request proceeds when we hear back from
   // the interceptors about whether to continue or not.
-  // The |continue_request| parameter in the function indicates whether the
-  // request should be continued or aborted. The |error_code| parameter is set
-  // if |continue_request| is false.
+  // The |interceptor_result| indicates whether the request should be continued
+  // or aborted, and in the latter case whether the renderer should be killed.
   void ContinuePendingBeginRequest(
       scoped_refptr<ResourceRequesterInfo> requester_info,
       int request_id,
@@ -572,8 +571,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       const net::HttpRequestHeaders& headers,
       mojom::URLLoaderAssociatedRequest mojo_request,
       mojom::URLLoaderClientPtr url_loader_client,
-      bool continue_request,
-      int error_code);
+      HeaderInterceptorResult interceptor_result);
 
   // Creates a ResourceHandler to be used by BeginRequest() for normal resource
   // loading.

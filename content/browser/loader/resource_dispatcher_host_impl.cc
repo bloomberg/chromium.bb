@@ -1167,7 +1167,8 @@ void ResourceDispatcherHostImpl::BeginRequest(
   }
   ContinuePendingBeginRequest(
       requester_info, request_id, request_data, sync_result_handler, route_id,
-      headers, std::move(mojo_request), std::move(url_loader_client), true, 0);
+      headers, std::move(mojo_request), std::move(url_loader_client),
+      HeaderInterceptorResult::CONTINUE);
 }
 
 void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
@@ -1179,13 +1180,14 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
     const net::HttpRequestHeaders& headers,
     mojom::URLLoaderAssociatedRequest mojo_request,
     mojom::URLLoaderClientPtr url_loader_client,
-    bool continue_request,
-    int error_code) {
+    HeaderInterceptorResult interceptor_result) {
   DCHECK(requester_info->IsRenderer() || requester_info->IsNavigationPreload());
-  if (!continue_request) {
-    if (requester_info->IsRenderer()) {
+  if (interceptor_result != HeaderInterceptorResult::CONTINUE) {
+    if (requester_info->IsRenderer() &&
+        interceptor_result == HeaderInterceptorResult::KILL) {
       // TODO(ananta): Find a way to specify the right error code here. Passing
-      // in a non-content error code is not safe.
+      // in a non-content error code is not safe, but future header interceptors
+      // might say to kill for reasons other than illegal origins.
       bad_message::ReceivedBadMessage(requester_info->filter(),
                                       bad_message::RDH_ILLEGAL_ORIGIN);
     }

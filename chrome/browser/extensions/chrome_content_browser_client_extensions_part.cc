@@ -151,36 +151,45 @@ RenderProcessHostPrivilege GetProcessPrivilege(
   return PRIV_EXTENSION;
 }
 
-// Determines whether the extension |origin| passed in can be committed by
-// the process identified by |child_id| and returns true or false
-// accordingly. Please refer to the implementation for more information.
-bool IsIllegalOrigin(content::ResourceContext* resource_context,
-                     int child_id,
-                     const GURL& origin) {
+// Determines whether the extension |origin| is legal to use in an Origin header
+// from the process identified by |child_id|.  Returns CONTINUE if so, FAIL if
+// the extension is not recognized (and may recently have been uninstalled), and
+// KILL if the origin is from a platform app but the request does not come from
+// that app.
+content::HeaderInterceptorResult CheckOriginHeader(
+    content::ResourceContext* resource_context,
+    int child_id,
+    const GURL& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Consider non-extension URLs safe; they will be checked elsewhere.
   if (!origin.SchemeIs(kExtensionScheme))
-    return false;
+    return content::HeaderInterceptorResult::CONTINUE;
 
-  // If there is no extension installed for the URL, it couldn't have committed.
-  // (If the extension was recently uninstalled, the tab would have closed.)
+  // If there is no extension installed for the origin, it may be from a
+  // recently uninstalled extension.  The tabs of such extensions are
+  // automatically closed, but subframes and content scripts may stick around.
+  // Fail such requests without killing the process.
+  // TODO(rdevlin.cronin, creis): Track which extensions have been uninstalled
+  // and use HeaderInterceptorResult::KILL for anything not on the list.
+  // See https://crbug.com/705128.
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
   InfoMap* extension_info_map = io_data->GetExtensionInfoMap();
   const Extension* extension =
       extension_info_map->extensions().GetExtensionOrAppByURL(origin);
   if (!extension)
-    return true;
+    return content::HeaderInterceptorResult::FAIL;
 
   // Check for platform app origins.  These can only be committed by the app
   // itself, or by one if its guests if there are accessible_resources.
+  // Processes that incorrectly claim to be an app should be killed.
   const ProcessMap& process_map = extension_info_map->process_map();
   if (extension->is_platform_app() &&
       !process_map.Contains(extension->id(), child_id)) {
     // This is a platform app origin not in the app's own process.  If there
     // are no accessible resources, this is illegal.
     if (!extension->GetManifestData(manifest_keys::kWebviewAccessibleResources))
-      return true;
+      return content::HeaderInterceptorResult::KILL;
 
     // If there are accessible resources, the origin is only legal if the
     // given process is a guest of the app.
@@ -190,18 +199,22 @@ bool IsIllegalOrigin(content::ResourceContext* resource_context,
         child_id, &owner_process_id, &owner_extension_id);
     const Extension* owner_extension =
         extension_info_map->extensions().GetByID(owner_extension_id);
-    return !owner_extension || owner_extension != extension;
+    if (!owner_extension || owner_extension != extension)
+      return content::HeaderInterceptorResult::KILL;
+
+    // It's a valid guest of the app, so allow it to proceed.
+    return content::HeaderInterceptorResult::CONTINUE;
   }
 
   // With only the origin and not the full URL, we don't have enough
   // information to validate hosted apps or web_accessible_resources in normal
   // extensions. Assume they're legal.
-  return false;
+  return content::HeaderInterceptorResult::CONTINUE;
 }
 
 // This callback is registered on the ResourceDispatcherHost for the chrome
 // extension Origin scheme. We determine whether the extension origin is
-// valid. Please see the IsIllegalOrigin() function.
+// valid. Please see the CheckOriginHeader() function.
 void OnHttpHeaderReceived(const std::string& header,
                           const std::string& value,
                           int child_id,
@@ -212,12 +225,7 @@ void OnHttpHeaderReceived(const std::string& header,
   GURL origin(value);
   DCHECK(origin.SchemeIs(extensions::kExtensionScheme));
 
-  if (IsIllegalOrigin(resource_context, child_id, origin)) {
-    // TODO(ananta): Find a way to specify the right error code here.
-    callback.Run(false, 0);
-  } else {
-    callback.Run(true, 0);
-  }
+  callback.Run(CheckOriginHeader(resource_context, child_id, origin));
 }
 
 void RecordShowAllowOpenURLFailure(ShouldAllowOpenURLFailureReason reason) {

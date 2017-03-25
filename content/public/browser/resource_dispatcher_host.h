@@ -22,11 +22,25 @@ namespace content {
 class ResourceContext;
 class ResourceDispatcherHostDelegate;
 
+// This value is returned by header interceptors below, to determine if a
+// request should proceed based on the values of HTTP headers.
+enum class HeaderInterceptorResult {
+  // Allow the request to proceed with the given headers.
+  CONTINUE,
+
+  // Force the request to fail, since the headers were not supported values.
+  FAIL,
+
+  // Force the request to fail and kill the renderer process, since it attempted
+  // to use an illegal header value that could pose a security risk.
+  KILL,
+};
+
 // This callback is invoked when the interceptor finishes processing the
 // header.
-// Parameter 1 is a bool indicating success or failure.
-// Parameter 2 contains the error code in case of failure, else 0.
-typedef base::Callback<void(bool, int)> OnHeaderProcessedCallback;
+// Parameter 1 indicates whether to continue the request, fail it, or kill the
+// renderer process (and fail it).
+typedef base::Callback<void(HeaderInterceptorResult)> OnHeaderProcessedCallback;
 
 // This callback is registered by interceptors who are interested in being
 // notified of certain HTTP headers in outgoing requests. For e.g. Origin.
