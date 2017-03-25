@@ -133,6 +133,9 @@ void HostFrameStats::ToFrameStatsMessage(FrameStatsMessage* message_out) const {
   if (bandwidth_estimate_kbps >= 0) {
     message_out->set_bandwidth_estimate_kbps(bandwidth_estimate_kbps);
   }
+  if (capturer_id != webrtc::DesktopCapturerId::kUnknown) {
+    message_out->set_capturer_id(capturer_id);
+  }
 }
 
 FrameStats::FrameStats() = default;

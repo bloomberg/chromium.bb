@@ -6,6 +6,7 @@
 #define REMOTING_PROTOCOL_FRAME_STATS_H_
 
 #include "base/time/time.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_capture_types.h"
 
 namespace remoting {
 
@@ -41,6 +42,7 @@ struct HostFrameStats {
   base::TimeDelta send_pending_delay = base::TimeDelta::Max();
   base::TimeDelta rtt_estimate = base::TimeDelta::Max();
   int bandwidth_estimate_kbps = -1;
+  uint32_t capturer_id = webrtc::DesktopCapturerId::kUnknown;
 };
 
 struct ClientFrameStats {
