@@ -25,17 +25,6 @@
           /* Required to align the icon in |clearSearch| vertically. */
           line-height: 0;
         };
-
-        /**
-         * Kind of suck to have to hardcode these, but its necessary to
-         * make sure the conditional clear-icon will fit within input's height.
-         */
-        --paper-input-container-input: {
-          line-height: 24px;
-        };
-        --paper-input-container-label: {
-          line-height: 24px;
-        };
       }
 
       paper-icon-button {
@@ -62,17 +51,9 @@
         -webkit-appearance: none;
       }
 
-      #prompt,
       #searchInput {
         font-size: 92.3076923%;  /* To 12px from 13px. */
-      }
-
-      #prompt {
-        color: var(--paper-grey-600);
-      }
-
-      :host([has-search-text]) #prompt {
-        visibility: hidden;
+        min-height: 24px;
       }
 
       #searchInput {
@@ -86,10 +67,9 @@
     </style>
     <iron-icon id="searchIcon" icon="cr:search"></iron-icon>
     <paper-input-container no-label-float>
-      <label id="prompt">[[label]]</label>
       <input id="searchInput" type="search" on-search="onSearchTermSearch"
           on-input="onSearchTermInput" aria-labelledby="prompt" incremental
-          autofocus$="[[autofocus]]">
+          autofocus$="[[autofocus]]" placeholder="[[label]]">
       <paper-icon-button suffix icon="cr:cancel" id="clearSearch"
           on-tap="onTapClear_" title="[[clearLabel]]"
           hidden$="[[!hasSearchText]]">
