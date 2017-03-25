@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/image_decoder/image_decoder_service.h"
+#include "services/data_decoder/data_decoder_service.h"
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/image_decoder/image_decoder_impl.h"
-#include "services/image_decoder/public/interfaces/image_decoder.mojom.h"
+#include "services/data_decoder/image_decoder_impl.h"
+#include "services/data_decoder/public/interfaces/image_decoder.mojom.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
-namespace image_decoder {
+namespace data_decoder {
 
 namespace {
 
@@ -33,22 +33,21 @@ void OnImageDecoderRequest(
 
 }  // namespace
 
-ImageDecoderService::ImageDecoderService() : weak_factory_(this) {}
+DataDecoderService::DataDecoderService() : weak_factory_(this) {}
 
-ImageDecoderService::~ImageDecoderService() = default;
+DataDecoderService::~DataDecoderService() = default;
 
 // static
-std::unique_ptr<service_manager::Service> ImageDecoderService::Create() {
-  return base::MakeUnique<ImageDecoderService>();
+std::unique_ptr<service_manager::Service> DataDecoderService::Create() {
+  return base::MakeUnique<DataDecoderService>();
 }
 
-void ImageDecoderService::OnStart() {
-  ref_factory_.reset(new service_manager::ServiceContextRefFactory(
-      base::Bind(&ImageDecoderService::MaybeRequestQuitDelayed,
-                 base::Unretained(this))));
+void DataDecoderService::OnStart() {
+  ref_factory_.reset(new service_manager::ServiceContextRefFactory(base::Bind(
+      &DataDecoderService::MaybeRequestQuitDelayed, base::Unretained(this))));
 }
 
-bool ImageDecoderService::OnConnect(
+bool DataDecoderService::OnConnect(
     const service_manager::ServiceInfo& remote_info,
     service_manager::InterfaceRegistry* registry) {
   // Add a reference to the service and tie it to the lifetime of the
@@ -62,18 +61,18 @@ bool ImageDecoderService::OnConnect(
   return true;
 }
 
-void ImageDecoderService::MaybeRequestQuitDelayed() {
+void DataDecoderService::MaybeRequestQuitDelayed() {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&ImageDecoderService::MaybeRequestQuit,
+      base::Bind(&DataDecoderService::MaybeRequestQuit,
                  weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(5));
 }
 
-void ImageDecoderService::MaybeRequestQuit() {
+void DataDecoderService::MaybeRequestQuit() {
   DCHECK(ref_factory_);
   if (ref_factory_->HasNoRefs())
     context()->RequestQuit();
 }
 
-}  // namespace image_decoder
+}  // namespace data_decoder

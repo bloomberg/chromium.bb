@@ -34,6 +34,7 @@
 #include "services/catalog/public/cpp/manifest_parsing_util.h"
 #include "services/catalog/public/interfaces/constants.mojom.h"
 #include "services/catalog/store.h"
+#include "services/data_decoder/public/interfaces/constants.mojom.h"
 #include "services/device/device_service.h"
 #include "services/device/public/interfaces/constants.mojom.h"
 #include "services/service_manager/connect_params.h"
@@ -308,6 +309,9 @@ ServiceManagerContext::ServiceManagerContext() {
   GetContentClient()
       ->browser()
       ->RegisterOutOfProcessServices(&sandboxed_services);
+  sandboxed_services.insert(
+      std::make_pair(data_decoder::mojom::kServiceName,
+                     base::ASCIIToUTF16("Data Decoder Service")));
   for (const auto& service : sandboxed_services) {
     packaged_services_connection_->AddServiceRequestHandler(
         service.first, base::Bind(&StartServiceInUtilityProcess, service.first,

@@ -1,5 +1,4 @@
 include_rules = [
-  "+content/public/child",
   "+gin",
   "+skia",
   "+third_party/WebKit/public",

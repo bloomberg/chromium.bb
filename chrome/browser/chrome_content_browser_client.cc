@@ -196,7 +196,6 @@
 #include "ppapi/features/features.h"
 #include "ppapi/host/ppapi_host.h"
 #include "printing/features/features.h"
-#include "services/image_decoder/public/interfaces/constants.mojom.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
@@ -3255,8 +3254,6 @@ void ChromeContentBrowserClient::RegisterOutOfProcessServices(
   services->insert(std::make_pair("media",
                                   base::ASCIIToUTF16("Media Service")));
 #endif
-  services->insert(std::make_pair(image_decoder::mojom::kServiceName,
-                                  base::ASCIIToUTF16("Image Decoder Service")));
 }
 
 std::unique_ptr<base::Value>

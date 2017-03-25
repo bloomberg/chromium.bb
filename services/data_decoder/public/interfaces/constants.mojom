@@ -2,6 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module image_decoder.mojom;
+module data_decoder.mojom;
 
-const string kServiceName = "image_decoder";
+const string kServiceName = "data_decoder";

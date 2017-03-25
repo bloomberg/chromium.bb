@@ -37,6 +37,8 @@ source_set("utility") {
     "//mojo/public/cpp/bindings",
     "//ppapi/features",
     "//sandbox",
+    "//services/data_decoder:lib",
+    "//services/data_decoder/public/cpp",
     "//services/service_manager",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",

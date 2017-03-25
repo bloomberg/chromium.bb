@@ -21,7 +21,6 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
   bool OnMessageReceived(const IPC::Message& message) override;
   void ExposeInterfacesToBrowser(
       service_manager::InterfaceRegistry* registry) override;
-  void RegisterServices(StaticServiceMap* services) override;
 
   static void PreSandboxStartup();
 

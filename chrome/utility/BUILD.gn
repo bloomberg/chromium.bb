@@ -51,8 +51,6 @@ static_library("utility") {
     "//media",
     "//net:net_with_v8",
     "//printing/features",
-    "//services/image_decoder:lib",
-    "//services/image_decoder/public/cpp",
     "//services/service_manager/public/cpp",
     "//skia",
     "//sql",
@@ -96,6 +94,7 @@ static_library("utility") {
       "//chrome/common:mojo_bindings",
       "//chrome/common/importer:interfaces",
       "//net:net_utility_services",
+      "//services/data_decoder:lib",
     ]
   }
 

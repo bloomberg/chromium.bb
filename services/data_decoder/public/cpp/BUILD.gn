@@ -6,12 +6,12 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 source_set("cpp") {
   sources = [
-    "decode.cc",
-    "decode.h",
+    "decode_image.cc",
+    "decode_image.h",
   ]
 
   public_deps = [
-    "//services/image_decoder/public/interfaces",
+    "//services/data_decoder/public/interfaces",
     "//services/service_manager/public/cpp",
   ]
 }

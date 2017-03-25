@@ -10,7 +10,6 @@ include_rules = [
   "+extensions/common",
   "+extensions/features",
   "+media",
-  "+services/image_decoder",
   "+services/service_manager/public/cpp",
   "+skia/ext",
   "+third_party/libxml",

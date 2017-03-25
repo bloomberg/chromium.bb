@@ -9,6 +9,8 @@
 #include "content/public/utility/content_utility_client.h"
 #include "content/public/utility/utility_thread.h"
 #include "content/utility/utility_thread_impl.h"
+#include "services/data_decoder/data_decoder_service.h"
+#include "services/data_decoder/public/interfaces/constants.mojom.h"
 #include "services/shape_detection/public/interfaces/constants.mojom.h"
 #include "services/shape_detection/shape_detection_service.h"
 
@@ -17,6 +19,15 @@
 #endif
 
 namespace content {
+
+namespace {
+
+std::unique_ptr<service_manager::Service> CreateDataDecoderService() {
+  content::UtilityThread::Get()->EnsureBlinkInitialized();
+  return data_decoder::DataDecoderService::Create();
+}
+
+}  // namespace
 
 UtilityServiceFactory::UtilityServiceFactory() {}
 
@@ -35,6 +46,11 @@ void UtilityServiceFactory::RegisterServices(ServiceMap* services) {
       base::Bind(&shape_detection::ShapeDetectionService::Create);
   services->insert(std::make_pair(shape_detection::mojom::kServiceName,
                                   shape_detection_info));
+
+  ServiceInfo data_decoder_info;
+  data_decoder_info.factory = base::Bind(&CreateDataDecoderService);
+  services->insert(
+      std::make_pair(data_decoder::mojom::kServiceName, data_decoder_info));
 }
 
 void UtilityServiceFactory::OnServiceQuit() {

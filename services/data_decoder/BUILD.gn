@@ -7,23 +7,23 @@ import("//services/service_manager/public/service_manifest.gni")
 
 source_set("lib") {
   sources = [
+    "data_decoder_service.cc",
+    "data_decoder_service.h",
     "image_decoder_impl.cc",
     "image_decoder_impl.h",
-    "image_decoder_service.cc",
-    "image_decoder_service.h",
   ]
 
   deps = [
     "//base",
-    "//content/public/child",
     "//mojo/public/cpp/bindings",
     "//skia",
+    "//third_party/WebKit/public:blink",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
 
   public_deps = [
-    "//services/image_decoder/public/interfaces",
+    "//services/data_decoder/public/interfaces",
     "//services/service_manager/public/cpp",
   ]
 }
@@ -50,6 +50,6 @@ source_set("tests") {
 }
 
 service_manifest("manifest") {
-  name = "image_decoder"
+  name = "data_decoder"
   source = "manifest.json"
 }

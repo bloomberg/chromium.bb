@@ -16,7 +16,6 @@
 #include "chrome/common/file_patcher.mojom.h"
 #include "chrome/utility/utility_message_handler.h"
 #include "components/safe_json/utility/safe_json_parser_mojo_impl.h"
-#include "content/public/child/image_decoder_utils.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_info.h"
 #include "content/public/utility/utility_thread.h"
@@ -25,8 +24,6 @@
 #include "extensions/features/features.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "printing/features/features.h"
-#include "services/image_decoder/image_decoder_service.h"
-#include "services/image_decoder/public/interfaces/constants.mojom.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "third_party/zlib/google/zip.h"
 
@@ -220,11 +217,6 @@ void CreateResourceUsageReporter(
 }
 #endif  // !defined(OS_ANDROID)
 
-std::unique_ptr<service_manager::Service> CreateImageDecoderService() {
-  content::UtilityThread::Get()->EnsureBlinkInitialized();
-  return image_decoder::ImageDecoderService::Create();
-}
-
 }  // namespace
 
 ChromeContentUtilityClient::ChromeContentUtilityClient()
@@ -301,13 +293,6 @@ void ChromeContentUtilityClient::ExposeInterfacesToBrowser(
 #if defined(FULL_SAFE_BROWSING)
   registry->AddInterface(base::Bind(&SafeArchiveAnalyzerImpl::Create));
 #endif
-}
-
-void ChromeContentUtilityClient::RegisterServices(StaticServiceMap* services) {
-  content::ServiceInfo image_decoder_info;
-  image_decoder_info.factory = base::Bind(&CreateImageDecoderService);
-  services->insert(
-      std::make_pair(image_decoder::mojom::kServiceName, image_decoder_info));
 }
 
 // static

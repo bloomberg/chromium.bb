@@ -10,7 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "gin/array_buffer.h"
 #include "gin/public/isolate_holder.h"
-#include "services/image_decoder/image_decoder_impl.h"
+#include "services/data_decoder/image_decoder_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/scheduler/utility/webthread_impl_for_utility_thread.h"
 #include "third_party/WebKit/public/web/WebKit.h"
@@ -21,7 +21,7 @@
 #include "gin/v8_initializer.h"
 #endif
 
-namespace image_decoder {
+namespace data_decoder {
 
 namespace {
 
@@ -118,8 +118,7 @@ TEST_F(ImageDecoderImplTest, DecodeImageSizeLimit) {
   int base_msg_size = sizeof(skia::mojom::Bitmap::Data_);
 
   // Sizes which should trigger dimension-halving 0, 1 and 2 times
-  int heights[] = {max_height_for_msg - 10,
-                   max_height_for_msg + 10,
+  int heights[] = {max_height_for_msg - 10, max_height_for_msg + 10,
                    2 * max_height_for_msg + 10};
   int widths[] = {heights[0] * 3 / 2, heights[1] * 3 / 2, heights[2] * 3 / 2};
   for (size_t i = 0; i < arraysize(heights); i++) {
@@ -161,4 +160,4 @@ TEST_F(ImageDecoderImplTest, DecodeImageFailed) {
   EXPECT_TRUE(request.bitmap().isNull());
 }
 
-}  // namespace image_decoder
+}  // namespace data_decoder

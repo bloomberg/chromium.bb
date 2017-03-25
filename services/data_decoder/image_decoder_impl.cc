@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/image_decoder/image_decoder_impl.h"
+#include "services/data_decoder/image_decoder_impl.h"
 
 #include <string.h>
 
 #include <utility>
 
 #include "base/logging.h"
-#include "content/public/child/image_decoder_utils.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "skia/ext/image_operations.h"
+#include "third_party/WebKit/public/platform/WebData.h"
+#include "third_party/WebKit/public/platform/WebImage.h"
+#include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 #if defined(OS_CHROMEOS)
@@ -19,7 +21,7 @@
 #include "ui/gfx/codec/png_codec.h"
 #endif
 
-namespace image_decoder {
+namespace data_decoder {
 
 namespace {
 
@@ -58,16 +60,20 @@ void ImageDecoderImpl::DecodeImage(const std::vector<uint8_t>& encoded_data,
     // Our robust PNG decoding is using libpng.
     if (encoded_data.size()) {
       SkBitmap decoded_png;
-      if (gfx::PNGCodec::Decode(
-            encoded_data.data(), encoded_data.size(), &decoded_png)) {
+      if (gfx::PNGCodec::Decode(encoded_data.data(), encoded_data.size(),
+                                &decoded_png)) {
         decoded_image = decoded_png;
       }
     }
   }
 #endif  // defined(OS_CHROMEOS)
   if (codec == mojom::ImageCodec::DEFAULT) {
-    decoded_image = content::DecodeImage(
-        encoded_data.data(), desired_image_frame_size, encoded_data.size());
+    decoded_image =
+        blink::WebImage::fromData(
+            blink::WebData(reinterpret_cast<const char*>(encoded_data.data()),
+                           encoded_data.size()),
+            desired_image_frame_size)
+            .getSkBitmap();
   }
 
   if (!decoded_image.isNull()) {
@@ -100,4 +106,4 @@ void ImageDecoderImpl::DecodeImage(const std::vector<uint8_t>& encoded_data,
   callback.Run(decoded_image);
 }
 
-}  // namespace image_decoder
+}  // namespace data_decoder

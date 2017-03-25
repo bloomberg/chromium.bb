@@ -366,7 +366,6 @@ static_library("test_support") {
 chrome_packaged_services = [
   ":chrome_manifest",
   "//chrome/browser:preferences_manifest",
-  "//services/image_decoder:manifest",
 ]
 
 service_manifest("chrome_manifest") {

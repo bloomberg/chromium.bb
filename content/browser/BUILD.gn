@@ -103,6 +103,7 @@ source_set("browser") {
     "//services/catalog:constants",
     "//services/catalog/public/cpp",
     "//services/catalog/public/interfaces:constants",
+    "//services/data_decoder/public/interfaces",
     "//services/device:lib",
     "//services/device/public/interfaces:constants",
     "//services/file:lib",

@@ -15,8 +15,8 @@ import("//testing/test.gni")
 # entries in the "service_unittests_catalog" target below.
 service_test("service_unittests") {
   deps = [
+    "//services/data_decoder:tests",
     "//services/device:tests",
-    "//services/image_decoder:tests",
     "//services/preferences:tests",
     "//services/resource_coordinator:tests",
     "//services/shape_detection:tests",

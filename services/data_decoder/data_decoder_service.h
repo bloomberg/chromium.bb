@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_IMAGE_DECODER_IMAGE_DECODER_SERVICE_H_
-#define SERVICES_IMAGE_DECODER_IMAGE_DECODER_SERVICE_H_
+#ifndef SERVICES_DATA_DECODER_DATA_DECODER_SERVICE_H_
+#define SERVICES_DATA_DECODER_DATA_DECODER_SERVICE_H_
 
 #include <memory>
 
@@ -13,12 +13,12 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 
-namespace image_decoder {
+namespace data_decoder {
 
-class ImageDecoderService : public service_manager::Service {
+class DataDecoderService : public service_manager::Service {
  public:
-  ImageDecoderService();
-  ~ImageDecoderService() override;
+  DataDecoderService();
+  ~DataDecoderService() override;
 
   // Factory function for use as an embedded service.
   static std::unique_ptr<service_manager::Service> Create();
@@ -33,11 +33,11 @@ class ImageDecoderService : public service_manager::Service {
   void MaybeRequestQuit();
 
   std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
-  base::WeakPtrFactory<ImageDecoderService> weak_factory_;
+  base::WeakPtrFactory<DataDecoderService> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ImageDecoderService);
+  DISALLOW_COPY_AND_ASSIGN(DataDecoderService);
 };
 
-}  // namespace image_decoder
+}  // namespace data_decoder
 
-#endif  // SERVICES_IMAGE_DECODER_IMAGE_DECODER_SERVICE_H_
+#endif  // SERVICES_DATA_DECODER_DATA_DECODER_SERVICE_H_

@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_UTILITY_IMAGE_DECODER_IMPL_H_
-#define CHROME_UTILITY_IMAGE_DECODER_IMPL_H_
+#ifndef SERVICES_DATA_DECODER_IMAGE_DECODER_IMPL_H_
+#define SERVICES_DATA_DECODER_IMAGE_DECODER_IMPL_H_
 
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "services/image_decoder/public/interfaces/image_decoder.mojom.h"
+#include "services/data_decoder/public/interfaces/image_decoder.mojom.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace image_decoder {
+namespace data_decoder {
 
 class ImageDecoderImpl : public mojom::ImageDecoder {
  public:
@@ -34,6 +34,6 @@ class ImageDecoderImpl : public mojom::ImageDecoder {
   DISALLOW_COPY_AND_ASSIGN(ImageDecoderImpl);
 };
 
-}  // namespace image_decoder
+}  // namespace data_decoder
 
-#endif  // CHROME_UTILITY_IMAGE_DECODER_IMPL_H_
+#endif  // SERVICES_DATA_DECODER_IMAGE_DECODER_IMPL_H_

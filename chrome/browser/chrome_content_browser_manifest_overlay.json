@@ -24,7 +24,6 @@
         "accessibility_autoclick": [ "ash:autoclick" ],
         "ash": [ "ash" ],
         "identity": [ "identity_manager" ],
-        "image_decoder": [ "decode" ],
         "nacl_broker": [ "browser" ],
         "nacl_loader": [ "browser" ],
         "preferences": [ "preferences_manager" ],
