@@ -76,8 +76,6 @@ class BrowserDistribution {
   virtual base::string16 GetDistributionData(HKEY root_key);
 #endif
 
-  virtual base::string16 GetUninstallRegPath();
-
   virtual void UpdateInstallStatus(bool system_install,
       installer::ArchiveType archive_type,
       installer::InstallStatus install_status);

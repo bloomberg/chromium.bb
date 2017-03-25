@@ -66,6 +66,13 @@ std::wstring GetChromeInstallSubDirectory();
 // their browsing data.
 std::wstring GetRegistryPath();
 
+// Returns the path
+// "Software\Microsoft\Windows\CurrentVersion\Uninstall\[kCompanyPathName ]
+// kProductPathName[install_suffix]. This is the key used for the browser's
+// "Programs and Features" control panel entry for non-MSI installs (the entry
+// for MSI installs is created and owned by Windows Installer).
+std::wstring GetUninstallRegistryPath();
+
 // Returns the app GUID with which Chrome is registered with Google Update, or
 // an empty string if this brand does not integrate with Google Update. This is
 // a simple convenience wrapper around InstallDetails.

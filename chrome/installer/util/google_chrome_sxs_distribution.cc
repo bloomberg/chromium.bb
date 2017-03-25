@@ -41,11 +41,6 @@ base::string16 GoogleChromeSxSDistribution::GetStartMenuShortcutSubfolder(
   }
 }
 
-base::string16 GoogleChromeSxSDistribution::GetUninstallRegPath() {
-  return GoogleChromeDistribution::GetUninstallRegPath().append(
-      installer::kSxSSuffix);
-}
-
 bool GoogleChromeSxSDistribution::ShouldSetExperimentLabels() {
   return true;
 }

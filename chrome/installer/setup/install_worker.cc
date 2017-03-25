@@ -177,7 +177,10 @@ void AddDeleteUninstallEntryForMSIWorkItems(
       << "This must only be called for MSI installations!";
 
   HKEY reg_root = installer_state.root_key();
-  base::string16 uninstall_reg(product.distribution()->GetUninstallRegPath());
+  // Assert that this is only called with the one relevant distribution.
+  // TODO(grt): Remove this when BrowserDistribution goes away.
+  DCHECK_EQ(BrowserDistribution::GetDistribution(), product.distribution());
+  base::string16 uninstall_reg = install_static::GetUninstallRegistryPath();
 
   WorkItem* delete_reg_key = work_item_list->AddDeleteRegKeyWorkItem(
       reg_root, uninstall_reg, KEY_WOW64_32KEY);
@@ -417,7 +420,10 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
     DCHECK_EQ(quoted_uninstall_cmd.GetCommandLineString()[0], '"');
     quoted_uninstall_cmd.AppendArguments(uninstall_arguments, false);
 
-    base::string16 uninstall_reg = browser_dist->GetUninstallRegPath();
+    // Assert that this is only called with the one relevant distribution.
+    // TODO(grt): Remove this when BrowserDistribution goes away.
+    DCHECK_EQ(BrowserDistribution::GetDistribution(), browser_dist);
+    base::string16 uninstall_reg = install_static::GetUninstallRegistryPath();
     install_list->AddCreateRegKeyWorkItem(
         reg_root, uninstall_reg, KEY_WOW64_32KEY);
     install_list->AddSetRegValueWorkItem(reg_root,

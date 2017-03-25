@@ -60,10 +60,6 @@ base::string16 GoogleChromeDistribution::GetDistributionData(HKEY root_key) {
   return base::string16();
 }
 
-base::string16 GoogleChromeDistribution::GetUninstallRegPath() {
-  return base::string16();
-}
-
 void GoogleChromeDistribution::UpdateInstallStatus(bool system_install,
     installer::ArchiveType archive_type,
     installer::InstallStatus install_status) {

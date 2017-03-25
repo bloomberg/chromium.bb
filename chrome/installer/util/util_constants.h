@@ -211,7 +211,6 @@ extern const wchar_t kInstallTempDir[];
 extern const wchar_t kLnkExt[];
 extern const wchar_t kNaClExe[];
 extern const wchar_t kSetupExe[];
-extern const wchar_t kSxSSuffix[];
 extern const wchar_t kUninstallArgumentsField[];
 extern const wchar_t kUninstallDisplayNameField[];
 extern const wchar_t kUninstallInstallationDate[];

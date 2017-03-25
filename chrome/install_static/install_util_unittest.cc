@@ -383,6 +383,28 @@ TEST_P(InstallStaticUtilTest, GetRegistryPath) {
               StrCaseEq(kRegistryPaths[std::get<0>(GetParam())]));
 }
 
+TEST_P(InstallStaticUtilTest, GetUninstallRegistryPath) {
+#if defined(GOOGLE_CHROME_BUILD)
+  // The uninstall registry path strings for the brand's install modes; parallel
+  // to kInstallModes.
+  static constexpr const wchar_t* kUninstallRegistryPaths[] = {
+      L"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Google Chrome",
+      L"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\"  // (cont'd)
+      L"Google Chrome SxS",
+  };
+#else
+  // The registry path strings for the brand's install modes; parallel to
+  // kInstallModes.
+  static constexpr const wchar_t* kUninstallRegistryPaths[] = {
+      L"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Chromium",
+  };
+#endif
+  static_assert(arraysize(kUninstallRegistryPaths) == NUM_INSTALL_MODES,
+                "kUninstallRegistryPaths out of date.");
+  EXPECT_THAT(GetUninstallRegistryPath(),
+              StrCaseEq(kUninstallRegistryPaths[std::get<0>(GetParam())]));
+}
+
 TEST_P(InstallStaticUtilTest, GetAppGuid) {
   // For brands that do not integrate with Omaha/Google Update, the app guid is
   // an empty string.

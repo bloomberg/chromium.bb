@@ -224,11 +224,6 @@ base::string16 GoogleChromeDistribution::GetDistributionData(HKEY root_key) {
   return result;
 }
 
-base::string16 GoogleChromeDistribution::GetUninstallRegPath() {
-  return L"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\"
-         L"Google Chrome";
-}
-
 // This method checks if we need to change "ap" key in Google Update to try
 // full installer as fall back method in case incremental installer fails.
 // - If incremental installer fails we append a magic string ("-full"), if

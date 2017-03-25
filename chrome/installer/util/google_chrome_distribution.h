@@ -50,8 +50,6 @@ class GoogleChromeDistribution : public BrowserDistribution {
   // key returned by GetVersionKey() is deleted.
   base::string16 GetDistributionData(HKEY root_key) override;
 
-  base::string16 GetUninstallRegPath() override;
-
   void UpdateInstallStatus(
       bool system_install,
       installer::ArchiveType archive_type,
