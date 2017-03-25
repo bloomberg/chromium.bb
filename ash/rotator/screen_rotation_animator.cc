@@ -14,9 +14,11 @@
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
@@ -143,7 +145,7 @@ LayerCleanupObserver::~LayerCleanupObserver() {
 void LayerCleanupObserver::OnLayerAnimationEnded(
     ui::LayerAnimationSequence* sequence) {
   if (animator_)
-    animator_->OnLayerAnimationEnded();
+    animator_->ProcessAnimationQueue();
 
   delete this;
 }
@@ -151,7 +153,7 @@ void LayerCleanupObserver::OnLayerAnimationEnded(
 void LayerCleanupObserver::OnLayerAnimationAborted(
     ui::LayerAnimationSequence* sequence) {
   if (animator_)
-    animator_->OnLayerAnimationAborted();
+    animator_->ProcessAnimationQueue();
 
   delete this;
 }
@@ -167,6 +169,20 @@ void LayerCleanupObserver::OnDetachedFromSequence(
   sequence_ = nullptr;
 }
 
+class ScreenRotationAnimationMetricsReporter
+    : public ui::AnimationMetricsReporter {
+ public:
+  ScreenRotationAnimationMetricsReporter() {}
+  ~ScreenRotationAnimationMetricsReporter() override {}
+
+  void Report(int value) override {
+    UMA_HISTOGRAM_PERCENTAGE("Ash.Rotation.AnimationSmoothness", value);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScreenRotationAnimationMetricsReporter);
+};
+
 }  // namespace
 
 struct ScreenRotationAnimator::ScreenRotationRequest {
@@ -180,10 +196,22 @@ struct ScreenRotationAnimator::ScreenRotationRequest {
 ScreenRotationAnimator::ScreenRotationAnimator(int64_t display_id)
     : display_id_(display_id),
       is_rotating_(false),
+      metrics_reporter_(
+          base::MakeUnique<ScreenRotationAnimationMetricsReporter>()),
       disable_animation_timers_for_test_(false),
       weak_factory_(this) {}
 
-ScreenRotationAnimator::~ScreenRotationAnimator() {}
+ScreenRotationAnimator::~ScreenRotationAnimator() {
+  // To prevent a call to |LayerCleanupObserver::OnLayerAnimationAborted()| from
+  // calling a method on the |animator_|.
+  weak_factory_.InvalidateWeakPtrs();
+
+  // Explicitly reset the |old_layer_tree_owner_| and |metrics_reporter_| in
+  // order to make sure |metrics_reporter_| outlives the attached animation
+  // sequence.
+  old_layer_tree_owner_.reset();
+  metrics_reporter_.reset();
+}
 
 void ScreenRotationAnimator::AnimateRotation(
     std::unique_ptr<ScreenRotationRequest> rotation_request) {
@@ -278,6 +306,7 @@ void ScreenRotationAnimator::AnimateRotation(
   // control the animation.
   if (disable_animation_timers_for_test_)
     animator->set_disable_timer_for_test(true);
+  animation_sequence->SetAnimationMetricsReporter(metrics_reporter_.get());
   animator->StartAnimation(animation_sequence.release());
 
   rotation_request.reset();
@@ -311,15 +340,6 @@ void ScreenRotationAnimator::AddScreenRotationAnimatorObserver(
 void ScreenRotationAnimator::RemoveScreenRotationAnimatorObserver(
     ScreenRotationAnimatorObserver* observer) {
   screen_rotation_animator_observers_.RemoveObserver(observer);
-}
-
-void ScreenRotationAnimator::OnLayerAnimationEnded() {
-  ProcessAnimationQueue();
-}
-
-void ScreenRotationAnimator::OnLayerAnimationAborted() {
-  AbortAnimations(old_layer_tree_owner_->root());
-  ProcessAnimationQueue();
 }
 
 void ScreenRotationAnimator::ProcessAnimationQueue() {

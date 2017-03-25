@@ -14,6 +14,7 @@
 #include "ui/display/display.h"
 
 namespace ui {
+class AnimationMetricsReporter;
 class Layer;
 class LayerTreeOwner;
 }  // namespace ui
@@ -49,9 +50,10 @@ class ASH_EXPORT ScreenRotationAnimator {
   void RemoveScreenRotationAnimatorObserver(
       ScreenRotationAnimatorObserver* observer);
 
-  void OnLayerAnimationEnded();
-
-  void OnLayerAnimationAborted();
+  // When screen rotation animation is ended or aborted, calls |Rotate()| with
+  // the pending rotation request if the request queue is not empty. Otherwise
+  // notifies |screen_rotation_animator_observer_|.
+  void ProcessAnimationQueue();
 
  private:
   friend class ash::test::ScreenRotationAnimatorTestApi;
@@ -64,11 +66,6 @@ class ASH_EXPORT ScreenRotationAnimator {
   // |rotation_degrees| arc.
   void AnimateRotation(std::unique_ptr<ScreenRotationRequest> rotation_request);
 
-  // When screen rotation animation is ended or aborted, if the request queue is
-  // not empty, it will call |Rotate()| with the pending rotation request.
-  // Otherwise it will notify |screen_rotation_animator_observer_|.
-  void ProcessAnimationQueue();
-
   void set_disable_animation_timers_for_test(bool disable_timers);
 
   void StopAnimating();
@@ -76,6 +73,7 @@ class ASH_EXPORT ScreenRotationAnimator {
   // The id of the display to rotate.
   int64_t display_id_;
   bool is_rotating_;
+  std::unique_ptr<ui::AnimationMetricsReporter> metrics_reporter_;
   // Only set in unittest to disable animation timers.
   bool disable_animation_timers_for_test_;
   base::ObserverList<ScreenRotationAnimatorObserver>
