@@ -253,7 +253,7 @@ class PLATFORM_EXPORT ThreadState {
   }
   void enterGCForbiddenScope() { m_gcForbiddenCount++; }
   void leaveGCForbiddenScope() {
-    DCHECK_GE(m_gcForbiddenCount, 0u);
+    DCHECK_GT(m_gcForbiddenCount, 0u);
     m_gcForbiddenCount--;
   }
   bool isMixinInConstruction() const { return m_mixinsBeingConstructedCount; }

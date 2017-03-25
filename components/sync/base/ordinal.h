@@ -405,7 +405,6 @@ template <typename Traits>
 int Ordinal<Traits>::AddDigitValue(std::string* bytes,
                                    size_t i,
                                    int digit_value) {
-  DCHECK_GE(i, 0U);
   DCHECK_LT(i, bytes->length());
 
   for (int j = static_cast<int>(i); j >= 0 && digit_value > 0; --j) {
