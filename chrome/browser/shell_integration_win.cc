@@ -558,9 +558,7 @@ bool SetAsDefaultProtocolClient(const std::string& protocol) {
 }
 
 DefaultWebClientSetPermission GetDefaultWebClientSetPermission() {
-  BrowserDistribution* distribution = BrowserDistribution::GetDistribution();
-  if (distribution->GetDefaultBrowserControlPolicy() !=
-          BrowserDistribution::DEFAULT_BROWSER_FULL_CONTROL)
+  if (!install_static::SupportsSetAsDefaultBrowser())
     return SET_DEFAULT_NOT_ALLOWED;
   if (ShellUtil::CanMakeChromeDefaultUnattended())
     return SET_DEFAULT_UNATTENDED;

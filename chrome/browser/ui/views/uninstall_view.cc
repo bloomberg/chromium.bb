@@ -77,13 +77,11 @@ void UninstallView::SetupControls() {
   // changed, widgets are not shown. We assume here that if Chrome cannot
   // be set programatically as default, neither can any other browser (for
   // instance because the OS doesn't permit that).
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  if (dist->GetDefaultBrowserControlPolicy() !=
-          BrowserDistribution::DEFAULT_BROWSER_UNSUPPORTED &&
-      ShellUtil::CanMakeChromeDefaultUnattended() &&
+  if (ShellUtil::CanMakeChromeDefaultUnattended() &&
       shell_integration::GetDefaultBrowser() == shell_integration::IS_DEFAULT) {
     browsers_.reset(new BrowsersMap());
-    ShellUtil::GetRegisteredBrowsers(dist, browsers_.get());
+    ShellUtil::GetRegisteredBrowsers(BrowserDistribution::GetDistribution(),
+                                     browsers_.get());
     if (!browsers_->empty()) {
       layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 

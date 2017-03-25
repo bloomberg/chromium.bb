@@ -100,6 +100,10 @@ std::wstring GetActiveSetupPath();
 // install mode never included a DelegateExecute verb handler.
 std::wstring GetLegacyCommandExecuteImplClsid();
 
+// Returns true if this mode supports in-product mechanisms to make the browser
+// the user's chosen default browser.
+bool SupportsSetAsDefaultBrowser();
+
 // Returns the index of the icon resource in the main executable for the mode.
 int GetIconResourceIndex();
 

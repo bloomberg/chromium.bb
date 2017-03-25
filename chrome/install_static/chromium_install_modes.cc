@@ -41,6 +41,7 @@ const InstallConstants kInstallModes[] = {
         L"",  // Empty default channel name since no update integration.
         ChannelStrategy::UNSUPPORTED,
         true,  // Supports system-level installs.
+        true,  // Supports in-product set as default browser UX.
         true,  // Supported multi-install.
         icon_resources::kApplicationIndex,
         IDR_MAINFRAME,

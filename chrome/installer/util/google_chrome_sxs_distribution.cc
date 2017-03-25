@@ -46,11 +46,6 @@ base::string16 GoogleChromeSxSDistribution::GetUninstallRegPath() {
       installer::kSxSSuffix);
 }
 
-BrowserDistribution::DefaultBrowserControlPolicy
-    GoogleChromeSxSDistribution::GetDefaultBrowserControlPolicy() {
-  return DEFAULT_BROWSER_OS_CONTROL_ONLY;
-}
-
 bool GoogleChromeSxSDistribution::ShouldSetExperimentLabels() {
   return true;
 }

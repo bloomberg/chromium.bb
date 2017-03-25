@@ -41,6 +41,7 @@ const InstallConstants kInstallModes[] = {
         L"",  // The empty string means "stable".
         ChannelStrategy::ADDITIONAL_PARAMETERS,
         true,  // Supports system-level installs.
+        true,  // Supports in-product set as default browser UX.
         true,  // Supported multi-install.
         icon_resources::kApplicationIndex,
         IDR_MAINFRAME,
@@ -61,6 +62,7 @@ const InstallConstants kInstallModes[] = {
         L"canary",
         ChannelStrategy::FIXED,
         false,  // Does not support system-level installs.
+        false,  // Does not support in-product set as default browser UX.
         false,  // Did not support multi-install.
         icon_resources::kSxSApplicationIndex,
         IDR_SXS,

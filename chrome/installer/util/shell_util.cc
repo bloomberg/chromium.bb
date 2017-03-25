@@ -1789,11 +1789,6 @@ ShellUtil::DefaultState ShellUtil::GetChromeDefaultState() {
 
 ShellUtil::DefaultState ShellUtil::GetChromeDefaultStateFromPath(
     const base::FilePath& chrome_exe) {
-  BrowserDistribution* distribution = BrowserDistribution::GetDistribution();
-  if (distribution->GetDefaultBrowserControlPolicy() ==
-      BrowserDistribution::DEFAULT_BROWSER_UNSUPPORTED) {
-    return NOT_DEFAULT;
-  }
   // When we check for default browser we don't necessarily want to count file
   // type handlers and icons as having changed the default browser status,
   // since the user may have changed their shell settings to cause HTML files
@@ -1806,18 +1801,13 @@ ShellUtil::DefaultState ShellUtil::GetChromeDefaultStateFromPath(
   static const wchar_t* const kChromeProtocols[] = { L"http", L"https" };
   DefaultState default_state = ProbeProtocolHandlers(
       chrome_exe, kChromeProtocols, arraysize(kChromeProtocols));
-  UpdateDefaultBrowserBeaconWithState(distribution, default_state);
+  UpdateDefaultBrowserBeaconWithState(BrowserDistribution::GetDistribution(),
+                                      default_state);
   return default_state;
 }
 
 ShellUtil::DefaultState ShellUtil::GetChromeDefaultProtocolClientState(
     const base::string16& protocol) {
-  BrowserDistribution* distribution = BrowserDistribution::GetDistribution();
-  if (distribution->GetDefaultBrowserControlPolicy() ==
-      BrowserDistribution::DEFAULT_BROWSER_UNSUPPORTED) {
-    return NOT_DEFAULT;
-  }
-
   if (protocol.empty())
     return UNKNOWN_DEFAULT;
 
@@ -1854,11 +1844,11 @@ bool ShellUtil::MakeChromeDefault(BrowserDistribution* dist,
                                   bool elevate_if_not_admin) {
   DCHECK(!(shell_change & SYSTEM_LEVEL) || IsUserAnAdmin());
 
-  BrowserDistribution* distribution = BrowserDistribution::GetDistribution();
-  if (distribution->GetDefaultBrowserControlPolicy() !=
-      BrowserDistribution::DEFAULT_BROWSER_FULL_CONTROL) {
+  // Assert that this is only called with the one relevant distribution.
+  // TODO(grt): Remove this when BrowserDistribution goes away.
+  DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
+  if (!install_static::SupportsSetAsDefaultBrowser())
     return false;
-  }
 
   // Windows 8 does not permit making a browser default just like that.
   // This process needs to be routed through the system's UI. Use
@@ -1922,10 +1912,12 @@ bool ShellUtil::ShowMakeChromeDefaultSystemUI(
     BrowserDistribution* dist,
     const base::FilePath& chrome_exe) {
   DCHECK(!CanMakeChromeDefaultUnattended());
-  if (dist->GetDefaultBrowserControlPolicy() !=
-      BrowserDistribution::DEFAULT_BROWSER_FULL_CONTROL) {
+
+  // Assert that this is only called with the one relevant distribution.
+  // TODO(grt): Remove this when BrowserDistribution goes away.
+  DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
+  if (!install_static::SupportsSetAsDefaultBrowser())
     return false;
-  }
 
   if (!RegisterChromeBrowser(dist, chrome_exe, base::string16(), true))
       return false;
@@ -1964,10 +1956,11 @@ bool ShellUtil::MakeChromeDefaultProtocolClient(
     BrowserDistribution* dist,
     const base::FilePath& chrome_exe,
     const base::string16& protocol) {
-  if (dist->GetDefaultBrowserControlPolicy() !=
-      BrowserDistribution::DEFAULT_BROWSER_FULL_CONTROL) {
+  // Assert that this is only called with the one relevant distribution.
+  // TODO(grt): Remove this when BrowserDistribution goes away.
+  DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
+  if (!install_static::SupportsSetAsDefaultBrowser())
     return false;
-  }
 
   if (!RegisterChromeForProtocol(
            dist, chrome_exe, base::string16(), protocol, true))
@@ -2014,10 +2007,12 @@ bool ShellUtil::ShowMakeChromeDefaultProtocolClientSystemUI(
     const base::FilePath& chrome_exe,
     const base::string16& protocol) {
   DCHECK(!CanMakeChromeDefaultUnattended());
-  if (dist->GetDefaultBrowserControlPolicy() !=
-      BrowserDistribution::DEFAULT_BROWSER_FULL_CONTROL) {
+
+  // Assert that this is only called with the one relevant distribution.
+  // TODO(grt): Remove this when BrowserDistribution goes away.
+  DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
+  if (!install_static::SupportsSetAsDefaultBrowser())
     return false;
-  }
 
   if (!RegisterChromeForProtocol(
            dist, chrome_exe, base::string16(), protocol, true))
@@ -2058,11 +2053,6 @@ bool ShellUtil::RegisterChromeBrowser(BrowserDistribution* dist,
                                       const base::string16& unique_suffix,
                                       bool elevate_if_not_admin) {
   DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
-  if (dist->GetDefaultBrowserControlPolicy() ==
-      BrowserDistribution::DEFAULT_BROWSER_UNSUPPORTED) {
-    return false;
-  }
-
   base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
 
   base::string16 suffix;
@@ -2148,11 +2138,6 @@ bool ShellUtil::RegisterChromeForProtocol(BrowserDistribution* dist,
                                           const base::string16& unique_suffix,
                                           const base::string16& protocol,
                                           bool elevate_if_not_admin) {
-  if (dist->GetDefaultBrowserControlPolicy() ==
-      BrowserDistribution::DEFAULT_BROWSER_UNSUPPORTED) {
-    return false;
-  }
-
   base::string16 suffix;
   if (!unique_suffix.empty()) {
     suffix = unique_suffix;

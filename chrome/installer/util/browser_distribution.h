@@ -30,12 +30,6 @@ class BrowserDistribution {
     SUBFOLDER_APPS,
   };
 
-  enum DefaultBrowserControlPolicy {
-    DEFAULT_BROWSER_UNSUPPORTED,
-    DEFAULT_BROWSER_OS_CONTROL_ONLY,
-    DEFAULT_BROWSER_FULL_CONTROL
-  };
-
   virtual ~BrowserDistribution();
 
   static BrowserDistribution* GetDistribution();
@@ -83,10 +77,6 @@ class BrowserDistribution {
 #endif
 
   virtual base::string16 GetUninstallRegPath();
-
-  // Returns an enum specifying the different ways in which this distribution
-  // is allowed to be set as default.
-  virtual DefaultBrowserControlPolicy GetDefaultBrowserControlPolicy();
 
   virtual void UpdateInstallStatus(bool system_install,
       installer::ArchiveType archive_type,

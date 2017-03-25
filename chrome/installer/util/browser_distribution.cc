@@ -151,11 +151,6 @@ base::string16 BrowserDistribution::GetUninstallRegPath() {
   return L"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Chromium";
 }
 
-BrowserDistribution::DefaultBrowserControlPolicy
-    BrowserDistribution::GetDefaultBrowserControlPolicy() {
-  return DEFAULT_BROWSER_FULL_CONTROL;
-}
-
 void BrowserDistribution::UpdateInstallStatus(bool system_install,
     installer::ArchiveType archive_type,
     installer::InstallStatus install_status) {

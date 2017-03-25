@@ -625,12 +625,6 @@ bool DeleteChromeRegistrationKeys(const InstallerState& installer_state,
                                   const base::string16& browser_entry_suffix,
                                   InstallStatus* exit_code) {
   DCHECK(exit_code);
-  if (dist->GetDefaultBrowserControlPolicy() ==
-      BrowserDistribution::DEFAULT_BROWSER_UNSUPPORTED) {
-    // We should have never set those keys.
-    return true;
-  }
-
   base::FilePath chrome_exe(installer_state.target_path().Append(kChromeExe));
 
   // Delete Software\Classes\ChromeHTML.

@@ -342,6 +342,10 @@ std::wstring GetLegacyCommandExecuteImplClsid() {
   return InstallDetails::Get().mode().legacy_command_execute_clsid;
 }
 
+bool SupportsSetAsDefaultBrowser() {
+  return InstallDetails::Get().mode().supports_set_as_default_browser;
+}
+
 int GetIconResourceIndex() {
   return InstallDetails::Get().mode().app_icon_resource_index;
 }
