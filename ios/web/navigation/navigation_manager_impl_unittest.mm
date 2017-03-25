@@ -254,7 +254,7 @@ TEST_F(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   [session_controller() commitPendingItem];
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com/redirect"), Referrer(),
-      ui::PAGE_TRANSITION_IS_REDIRECT_MASK,
+      ui::PAGE_TRANSITION_CLIENT_REDIRECT,
       web::NavigationInitiationType::USER_INITIATED);
   [session_controller() commitPendingItem];
   navigation_manager()->AddPendingItem(
@@ -267,7 +267,7 @@ TEST_F(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   [session_controller() commitPendingItem];
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com/redirect"), Referrer(),
-      ui::PAGE_TRANSITION_IS_REDIRECT_MASK,
+      ui::PAGE_TRANSITION_CLIENT_REDIRECT,
       web::NavigationInitiationType::USER_INITIATED);
   [session_controller() commitPendingItem];
   ASSERT_EQ(5, navigation_manager()->GetItemCount());

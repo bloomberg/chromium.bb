@@ -57,15 +57,14 @@ TEST_F(NavigationManagerUtilTest, TestLastNonRedirectedItemLinkMultiRedirects) {
 // Tests that when all items are redirects, the first one is returned.
 TEST_F(NavigationManagerUtilTest, TestLastNonRedirectedItemAllRedirects) {
   nav_manager_.AddItem(GURL("http://bar.com/redir0"),
-                       ui::PAGE_TRANSITION_SERVER_REDIRECT);
+                       ui::PAGE_TRANSITION_CLIENT_REDIRECT);
   nav_manager_.AddItem(GURL("http://bar.com/redir1"),
                        ui::PAGE_TRANSITION_CLIENT_REDIRECT);
   nav_manager_.AddItem(GURL("http://bar.com/redir2"),
                        ui::PAGE_TRANSITION_CLIENT_REDIRECT);
   web::NavigationItem* item = GetLastNonRedirectedItem(&nav_manager_);
   ASSERT_TRUE(item);
-  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
-      item->GetTransitionType(), ui::PAGE_TRANSITION_SERVER_REDIRECT));
+  EXPECT_EQ(GURL("http://bar.com/redir0"), item->GetURL());
 }
 
 // Tests that earlier redirects are not found.

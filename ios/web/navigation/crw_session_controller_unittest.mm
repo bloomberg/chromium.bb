@@ -927,7 +927,7 @@ TEST_F(CRWSessionControllerTest, TestBackwardForwardItems) {
   [session_controller_
       addPendingItem:GURL("http://www.example.com/redirect")
             referrer:MakeReferrer("http://www.example.com/r")
-          transition:ui::PAGE_TRANSITION_IS_REDIRECT_MASK
+          transition:ui::PAGE_TRANSITION_CLIENT_REDIRECT
       initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
   [session_controller_
@@ -971,7 +971,7 @@ TEST_F(CRWSessionControllerTest, GoToItemAtIndex) {
   [session_controller_
       addPendingItem:GURL("http://www.example.com/redirect")
             referrer:MakeReferrer("http://www.example.com/r")
-          transition:ui::PAGE_TRANSITION_IS_REDIRECT_MASK
+          transition:ui::PAGE_TRANSITION_CLIENT_REDIRECT
       initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
   [session_controller_

@@ -285,6 +285,10 @@ initiationType:(web::NavigationInitiationType)initiationType;
               referrer:(const web::Referrer&)ref
             transition:(ui::PageTransition)trans
         initiationType:(web::NavigationInitiationType)initiationType {
+  // Server side redirects are handled by updating existing pending item instead
+  // of adding a new item.
+  DCHECK((trans & ui::PAGE_TRANSITION_SERVER_REDIRECT) == 0);
+
   [self discardTransientItem];
   self.pendingItemIndex = -1;
 
