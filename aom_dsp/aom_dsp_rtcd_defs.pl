@@ -851,22 +851,6 @@ specialize qw/aom_lpf_horizontal_4 sse2 neon dspr2 msa/;
 add_proto qw/void aom_lpf_horizontal_4_dual/, "uint8_t *s, int pitch, const uint8_t *blimit0, const uint8_t *limit0, const uint8_t *thresh0, const uint8_t *blimit1, const uint8_t *limit1, const uint8_t *thresh1";
 specialize qw/aom_lpf_horizontal_4_dual sse2 neon dspr2 msa/;
 
-if (aom_config("CONFIG_CDEF") eq "yes") {
-  add_proto qw/void aom_clpf_block_hbd/, "uint16_t *dst, const uint16_t *src, int dstride, int sstride, int sizex, int sizey, unsigned int strength, unsigned int bd";
-  add_proto qw/void aom_clpf_hblock_hbd/, "uint16_t *dst, const uint16_t *src, int dstride, int sstride, int sizex, int sizey, unsigned int strength, unsigned int bd";
-  add_proto qw/void aom_clpf_block/, "uint8_t *dst, const uint16_t *src, int dstride, int sstride, int sizex, int sizey, unsigned int strength, unsigned int bd";
-  add_proto qw/void aom_clpf_hblock/, "uint8_t *dst, const uint16_t *src, int dstride, int sstride, int sizex, int sizey, unsigned int strength, unsigned int bd";
-  # VS compiling for 32 bit targets does not support vector types in
-  # structs as arguments, which makes the v256 type of the intrinsics
-  # hard to support, so optimizations for this target are disabled.
-  if ($opts{config} !~ /libs-x86-win32-vs.*/) {
-    specialize qw/aom_clpf_block_hbd sse2 ssse3 sse4_1 neon/;
-    specialize qw/aom_clpf_hblock_hbd sse2 ssse3 sse4_1 neon/;
-    specialize qw/aom_clpf_block sse2 ssse3 sse4_1 neon/;
-    specialize qw/aom_clpf_hblock sse2 ssse3 sse4_1 neon/;
-  }
-}
-
 if (aom_config("CONFIG_AOM_HIGHBITDEPTH") eq "yes") {
   add_proto qw/void aom_highbd_lpf_vertical_16/, "uint16_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh, int bd";
   specialize qw/aom_highbd_lpf_vertical_16 sse2/;

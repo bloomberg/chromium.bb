@@ -10,7 +10,7 @@
  */
 
 #include "av1/common/clpf.h"
-#include "./aom_dsp_rtcd.h"
+#include "./av1_rtcd.h"
 #include "aom/aom_image.h"
 #include "aom_dsp/aom_dsp_common.h"
 

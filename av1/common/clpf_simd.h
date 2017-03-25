@@ -9,7 +9,7 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include "./aom_dsp_rtcd.h"
+#include "./av1_rtcd.h"
 #include "aom_ports/mem.h"
 #include "aom_ports/bitops.h"
 #include "av1/common/clpf_simd_kernel.h"

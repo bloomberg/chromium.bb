@@ -94,10 +94,13 @@ AV1_COMMON_SRCS-$(HAVE_SSE2) += common/clpf_sse2.c
 AV1_COMMON_SRCS-$(HAVE_SSSE3) += common/clpf_ssse3.c
 AV1_COMMON_SRCS-$(HAVE_SSE4_1) += common/clpf_sse4.c
 AV1_COMMON_SRCS-$(HAVE_NEON) += common/clpf_neon.c
+AV1_COMMON_SRCS-$(HAVE_SSE2) += common/od_dering_sse2.c
+AV1_COMMON_SRCS-$(HAVE_SSSE3) += common/od_dering_ssse3.c
+AV1_COMMON_SRCS-$(HAVE_SSE4_1) += common/od_dering_sse4.c
+AV1_COMMON_SRCS-$(HAVE_NEON) += common/od_dering_neon.c
 AV1_COMMON_SRCS-yes += common/od_dering.c
 AV1_COMMON_SRCS-yes += common/od_dering.h
-AV1_COMMON_SRCS-$(HAVE_SSE4_1) += common/x86/od_dering_sse4.c
-AV1_COMMON_SRCS-$(HAVE_SSE4_1) += common/x86/od_dering_sse4.h
+AV1_COMMON_SRCS-yes += common/od_dering_simd.h
 AV1_COMMON_SRCS-yes += common/cdef.c
 AV1_COMMON_SRCS-yes += common/cdef.h
 endif

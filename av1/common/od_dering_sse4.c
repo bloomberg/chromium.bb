@@ -8,7 +8,7 @@
  * Media Patent License 1.0 was not distributed with this source code in the
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
-#include "av1/common/od_dering.h"
-#ifndef AOM_COMMON_OD_DERING_X86_SSE4_H_
-#define AOM_COMMON_OD_DERING_X86_SSE4_H_
-#endif  // AOM_COMMON_OD_DERING_X86_SSE4_H_
+
+#include "aom_dsp/aom_simd.h"
+#define SIMD_FUNC(name) name##_sse4_1
+#include "./od_dering_simd.h"

@@ -753,14 +753,25 @@ if (aom_config("CONFIG_AOM_HIGHBITDEPTH") eq "yes") {
 # Deringing Functions
 
 if (aom_config("CONFIG_CDEF") eq "yes") {
+  add_proto qw/void aom_clpf_block_hbd/, "uint16_t *dst, const uint16_t *src, int dstride, int sstride, int sizex, int sizey, unsigned int strength, unsigned int bd";
+  add_proto qw/void aom_clpf_hblock_hbd/, "uint16_t *dst, const uint16_t *src, int dstride, int sstride, int sizex, int sizey, unsigned int strength, unsigned int bd";
+  add_proto qw/void aom_clpf_block/, "uint8_t *dst, const uint16_t *src, int dstride, int sstride, int sizex, int sizey, unsigned int strength, unsigned int bd";
+  add_proto qw/void aom_clpf_hblock/, "uint8_t *dst, const uint16_t *src, int dstride, int sstride, int sizex, int sizey, unsigned int strength, unsigned int bd";
   add_proto qw/int od_dir_find8/, "const od_dering_in *img, int stride, int32_t *var, int coeff_shift";
-  specialize qw/od_dir_find8 sse4_1/;
-
   add_proto qw/int od_filter_dering_direction_4x4/, "uint16_t *y, int ystride, const uint16_t *in, int threshold, int dir";
-  specialize qw/od_filter_dering_direction_4x4 sse4_1/;
-
   add_proto qw/int od_filter_dering_direction_8x8/, "uint16_t *y, int ystride, const uint16_t *in, int threshold, int dir";
-  specialize qw/od_filter_dering_direction_8x8 sse4_1/;
+  # VS compiling for 32 bit targets does not support vector types in
+  # structs as arguments, which makes the v256 type of the intrinsics
+  # hard to support, so optimizations for this target are disabled.
+  if ($opts{config} !~ /libs-x86-win32-vs.*/) {
+    specialize qw/aom_clpf_block_hbd sse2 ssse3 sse4_1 neon/;
+    specialize qw/aom_clpf_hblock_hbd sse2 ssse3 sse4_1 neon/;
+    specialize qw/aom_clpf_block sse2 ssse3 sse4_1 neon/;
+    specialize qw/aom_clpf_hblock sse2 ssse3 sse4_1 neon/;
+    specialize qw/od_dir_find8 sse2 ssse3 sse4_1 neon/;
+    specialize qw/od_filter_dering_direction_4x4 sse2 ssse3 sse4_1 neon/;
+    specialize qw/od_filter_dering_direction_8x8 sse2 ssse3 sse4_1 neon/;
+  }
 }
 
 # PVQ Functions
