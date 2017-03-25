@@ -729,6 +729,13 @@ class ValidationPool(object):
     fail_streak = self._GetFailStreak()
     test_pool_size = max(1, int(len(self.candidates) / (1.5**fail_streak)))
     random.shuffle(self.candidates)
+
+    removed = self.candidates[test_pool_size:]
+    if removed:
+      logging.info('As the tree is throttled, it only picks a random subset of '
+                   'candidate changes. Changes not picked up in this run: %s ',
+                   cros_patch.GetChangesAsString(removed))
+
     self.candidates = self.candidates[:test_pool_size]
 
   def ApplyPoolIntoRepo(self, manifest=None, filter_fn=lambda p: True):
