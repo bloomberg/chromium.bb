@@ -58,6 +58,8 @@
 #include "chrome/grit/browser_resources.h"
 #include "chromeos/audio/audio_a11y_controller.h"
 #include "chromeos/audio/chromeos_sounds.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
@@ -1380,6 +1382,11 @@ void AccessibilityManager::PostUnloadChromeVox() {
     chromevox_panel_->Close();
     chromevox_panel_ = nullptr;
   }
+
+  // In case the user darkened the screen, undarken it now.
+  chromeos::DBusThreadManager::Get()
+      ->GetPowerManagerClient()
+      ->SetBacklightsForcedOff(false);
 }
 
 void AccessibilityManager::PostSwitchChromeVoxProfile() {

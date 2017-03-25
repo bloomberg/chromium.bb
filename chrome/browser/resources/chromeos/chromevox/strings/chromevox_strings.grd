@@ -2708,6 +2708,12 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="Describes an audio clip that gets played for a specific event or control type. Use the default string as a guide to what the audio clip represents or conveys." name="IDS_CHROMEVOX_WRAP_EARCON_DESCRIPTION">
         Wrap from beginning to end or end to beginning inside of a page, dialog, or other container
       </message>
+      <message desc="Describes a command to turn off the visual display for accessibility without impacting usage of the machine." name="IDS_CHROMEVOX_DARKEN_SCREEN">
+        Darken screen
+      </message>
+      <message desc="Describes a command to turn the visual display on for accessibility undoing any previous request to turn off the visual display." name="IDS_CHROMEVOX_UNDARKEN_SCREEN">
+        Undarken screen
+      </message>
     </messages>
   </release>
 </grit>

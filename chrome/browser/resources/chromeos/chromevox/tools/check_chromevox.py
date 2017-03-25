@@ -41,6 +41,11 @@ def ChromeRootPath(path='.'):
   return os.path.relpath(os.path.join(_CHROME_SOURCE_DIR, path))
 
 
+# AccessibilityPrivate externs file.
+_ACCESSIBILITY_PRIVATE_EXTERNS = (
+    ChromeRootPath(
+        'third_party/closure_compiler/externs/accessibility_private.js'))
+
 # Automation API externs file.
 _AUTOMATION_EXTERNS = (
     ChromeRootPath('third_party/closure_compiler/externs/automation.js'))
@@ -61,6 +66,7 @@ _COMMON_EXTERNS = [
     CVoxPath('chromevox/background/externs.js'),
     CVoxPath('chromevox/injected/externs.js'),
     CVoxPath('host/chrome/externs.js'),
+    _ACCESSIBILITY_PRIVATE_EXTERNS,
     _AUTOMATION_EXTERNS,
     _CHROME_EXTENSIONS_EXTERNS,
     _METRICS_PRIVATE_EXTERNS]

@@ -69,8 +69,6 @@ cvox.KeySequence = function(originalEvent, opt_cvoxModifier, opt_doubleTap,
     throw 'Prefix key and sticky mode cannot both be enabled: ' + originalEvent;
   }
 
-  var event = this.resolveChromeOSSpecialKeys_(originalEvent);
-
   // TODO (rshearer): We should take the user out of sticky mode if they
   // try to use the CVox modifier or prefix key.
 
@@ -98,7 +96,7 @@ cvox.KeySequence = function(originalEvent, opt_cvoxModifier, opt_doubleTap,
     keyCode: []
   };
 
-  this.extractKey_(event);
+  this.extractKey_(originalEvent);
 };
 
 
@@ -569,81 +567,4 @@ cvox.KeySequence.setModifiersOnEvent_ = function(keyName, seqEvent) {
   } else if (keyName == 'Insert') {
     seqEvent['keyCode'] = 45;
   }
-};
-
-
-/**
- * Used to resolve special ChromeOS keys (see link for more detail).
- * http://crbug.com/162268
- * @param {Object} originalEvent The event.
- * @return {Object} The resolved event.
- * @private
- */
-cvox.KeySequence.prototype.resolveChromeOSSpecialKeys_ =
-    function(originalEvent) {
-  if (!this.cvoxModifier || this.stickyMode || this.prefixKey ||
-      !cvox.ChromeVox.isChromeOS) {
-    return originalEvent;
-  }
-  var evt = {};
-  for (var key in originalEvent) {
-    evt[key] = originalEvent[key];
-  }
-  switch (evt['keyCode']) {
-    case 33:  // Page up.
-      evt['keyCode'] = 38;  // Up arrow.
-      break;
-    case 34:  // Page down.
-      evt['keyCode'] = 40;  // Down arrow.
-      break;
-    case 35:  // End.
-      evt['keyCode'] = 39;  // Right arrow.
-      break;
-    case 36:  // Home.
-      evt['keyCode'] = 37;  // Left arrow.
-      break;
-    case 45:  // Insert.
-      evt['keyCode'] = 190;  // Period.
-      break;
-    case 46:  // Delete.
-      evt['keyCode'] = 8;  // Backspace.
-      break;
-    case 112:  // F1.
-      evt['keyCode'] = 49;  // 1.
-      break;
-    case 113:  // F2.
-      evt['keyCode'] = 50;  // 2.
-      break;
-    case 114:  // F3.
-      evt['keyCode'] = 51;  // 3.
-      break;
-    case 115:  // F4.
-      evt['keyCode'] = 52;  // 4.
-      break;
-    case 116:  // F5.
-      evt['keyCode'] = 53;  // 5.
-      break;
-    case 117:  // F6.
-      evt['keyCode'] = 54;  // 6.
-      break;
-    case 118:  // F7.
-      evt['keyCode'] = 55;  // 7.
-      break;
-    case 119:  // F8.
-      evt['keyCode'] = 56;  // 8.
-      break;
-    case 120:  // F9.
-      evt['keyCode'] = 57;  // 9.
-      break;
-    case 121:  // F10.
-      evt['keyCode'] = 48;  // 0.
-      break;
-    case 122:  // F11
-      evt['keyCode'] = 189;  // Hyphen.
-      break;
-    case 123:  // F12
-      evt['keyCode'] = 187;  // Equals.
-      break;
-  }
-  return evt;
 };

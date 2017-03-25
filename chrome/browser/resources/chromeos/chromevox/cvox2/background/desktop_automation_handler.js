@@ -12,7 +12,6 @@ goog.require('AutomationObjectConstructorInstaller');
 goog.require('BaseAutomationHandler');
 goog.require('ChromeVoxState');
 goog.require('CustomAutomationEvent');
-goog.require('Stubs');
 goog.require('editing.TextEditHandler');
 
 goog.scope(function() {

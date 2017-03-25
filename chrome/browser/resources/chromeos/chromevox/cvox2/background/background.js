@@ -23,7 +23,6 @@ goog.require('Notifications');
 goog.require('Output');
 goog.require('Output.EventType');
 goog.require('PanelCommand');
-goog.require('Stubs');
 goog.require('constants');
 goog.require('cursors.Cursor');
 goog.require('cvox.BrailleKeyCommand');

@@ -895,6 +895,25 @@
           "ctrlKey": [true]
         }
       }
+    },
+    {
+      "command": "darkenScreen",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [118],
+          "shiftKey": [true]
+        }
+      }
+    },
+        {
+      "command": "undarkenScreen",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [118]
+        }
+      }
     }
   ]
 }

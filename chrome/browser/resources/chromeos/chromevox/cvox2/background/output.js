@@ -12,7 +12,6 @@ goog.provide('Output.EventType');
 goog.require('AutomationTreeWalker');
 goog.require('EarconEngine');
 goog.require('Spannable');
-goog.require('Stubs');
 goog.require('constants');
 goog.require('cursors.Cursor');
 goog.require('cursors.Range');

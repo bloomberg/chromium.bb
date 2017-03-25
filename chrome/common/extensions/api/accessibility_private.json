@@ -82,6 +82,18 @@
             "description": "True if key events should be swallowed natively and not propagated if preventDefault() gets called by the extension's background page."
           }
         ]
+      },
+      {
+        "name": "darkenScreen",
+        "type": "function",
+        "description": "Darkens or undarkens the screen.",
+        "parameters": [
+          {
+            "type": "boolean",
+            "name": "enabled",
+            "description": "True to darken screen; false to undarken screen."
+          }
+        ]
       }
     ],
     "events": [

@@ -339,6 +339,16 @@ cvox.CommandStore.CMD_WHITELIST = {
                          msgId: 'toggle_search_widget',
                          category: 'information'},
 
+  'undarkenScreen': {
+    msgId: 'undarken_screen',
+    category: 'help_commands'
+  },
+
+  'darkenScreen': {
+    msgId: 'darken_screen',
+    category: 'help_commands'
+},
+
   'toggleKeyboardHelp': {announce: false,
                          disallowContinuation: true,
                          msgId: 'show_power_key',

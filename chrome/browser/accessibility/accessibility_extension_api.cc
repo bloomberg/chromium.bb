@@ -30,6 +30,9 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/ui/accessibility_focus_ring_controller.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager_client.h"
+
 using chromeos::AccessibilityFocusRingController;
 #endif
 
@@ -124,6 +127,27 @@ AccessibilityPrivateSetKeyboardListenerFunction::Run() {
                                             details.GetProfile());
     manager->set_keyboard_listener_capture(false);
   }
+  return RespondNow(NoArguments());
+#endif  // defined OS_CHROMEOS
+
+  return RespondNow(Error(kErrorNotSupported));
+}
+
+ExtensionFunction::ResponseAction
+AccessibilityPrivateDarkenScreenFunction::Run() {
+  ChromeExtensionFunctionDetails details(this);
+  CHECK(extension());
+
+#if defined(OS_CHROMEOS)
+  bool darken;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(0, &darken));
+  chromeos::PowerManagerClient* client =
+      chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+
+  // Called twice to ensure the cros end of the dbus message is in a good
+  // state.
+  client->SetBacklightsForcedOff(!darken);
+  client->SetBacklightsForcedOff(darken);
   return RespondNow(NoArguments());
 #endif  // defined OS_CHROMEOS
 

@@ -41,4 +41,13 @@ class AccessibilityPrivateSetKeyboardListenerFunction
                              ACCESSIBILITY_PRIVATE_SETKEYBOARDLISTENER)
 };
 
+// API function that darkens or undarkens the screen.
+class AccessibilityPrivateDarkenScreenFunction
+    : public UIThreadExtensionFunction {
+  ~AccessibilityPrivateDarkenScreenFunction() override {}
+  ResponseAction Run() override;
+  DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.darkenScreen",
+                             ACCESSIBILITY_PRIVATE_DARKENSCREEN)
+};
+
 #endif  // CHROME_BROWSER_ACCESSIBILITY_ACCESSIBILITY_EXTENSION_API_H_

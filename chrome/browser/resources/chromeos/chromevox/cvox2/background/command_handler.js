@@ -192,6 +192,14 @@ CommandHandler.onCommand = function(command) {
     case 'showNextUpdatePage':
       (new PanelCommand(PanelCommandType.UPDATE_NOTES)).send();
       return false;
+    case 'darkenScreen':
+      chrome.accessibilityPrivate.darkenScreen(true);
+      new Output().format('@darken_screen').go();
+      break;
+    case 'undarkenScreen':
+      chrome.accessibilityPrivate.darkenScreen(false);
+      new Output().format('@undarken_screen').go();
+      break;
     default:
       break;
   }

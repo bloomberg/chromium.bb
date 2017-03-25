@@ -9,7 +9,6 @@
 
 goog.provide('cvox.TabsApiHandler');
 
-goog.require('Stubs');
 goog.require('TabsAutomationHandler');
 goog.require('cvox.AbstractEarcons');
 goog.require('cvox.AbstractTts');
