@@ -16,6 +16,7 @@ from chromite.lib import constants
 from chromite.lib import cidb
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.cli.cros import cros_cidbcreds  # TODO: Move into lib???
 from chromite.lib import cros_logging as logging
 
 
@@ -747,7 +748,7 @@ def GetParser():
   ex_group.add_argument('--past-day', action='store_true', default=False,
                         help='Limit scope to the past day up to now.')
 
-  parser.add_argument('--cred-dir', action='store', required=True,
+  parser.add_argument('--cred-dir', action='store',
                       metavar='CIDB_CREDENTIALS_DIR',
                       help='Database credentials directory with certificates '
                            'and other connection information. Obtain your '
@@ -780,7 +781,11 @@ def main(argv):
   if not _CheckOptions(options):
     sys.exit(1)
 
-  db = cidb.CIDBConnection(options.cred_dir)
+  credentials = options.cred_dir
+  if not credentials:
+    credentials = cros_cidbcreds.CheckAndGetCIDBCreds()
+
+  db = cidb.CIDBConnection(credentials)
 
   if options.end_date:
     end_date = options.end_date
