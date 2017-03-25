@@ -42,7 +42,7 @@ void aom_encode_cdf_adapt_q15(aom_writer *w, int val, uint16_t *cdf, int n,
     int ft;
     ft = cdf[n - 1];
     for (i = 0; i < n; i++) {
-      cdf[i] = cdf[i]*32768/ft;
+      cdf[i] = AOM_ICDF(cdf[i]*32768/ft);
     }
   }
   aom_write_cdf(w, val, cdf, n);

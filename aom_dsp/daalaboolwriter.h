@@ -77,16 +77,7 @@ static INLINE void daala_write_symbol(daala_writer *w, int symb,
   bitstream_queue_push(symb, cdf, nsymbs);
 #endif
 
-#if CONFIG_EC_SMALLMUL
-  {
-    aom_cdf_prob icdf[16];
-    int i;
-    for (i = 0; i < nsymbs; i++) icdf[i] = OD_ICDF(cdf[i]);
-    od_ec_encode_cdf_q15(&w->ec, symb, icdf, nsymbs);
-  }
-#else
   od_ec_encode_cdf_q15(&w->ec, symb, cdf, nsymbs);
-#endif
 }
 
 #ifdef __cplusplus

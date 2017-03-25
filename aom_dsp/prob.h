@@ -20,6 +20,10 @@
 #include "aom_ports/bitops.h"
 #include "aom_ports/mem.h"
 
+#if CONFIG_DAALA_EC
+#include "aom_dsp/entcode.h"
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -35,6 +39,12 @@ typedef uint16_t aom_cdf_prob;
 
 #define CDF_PROB_BITS 15
 #define CDF_PROB_TOP (1 << CDF_PROB_BITS)
+
+#if CONFIG_DAALA_EC
+#define AOM_ICDF OD_ICDF
+#else
+#define AOM_ICDF(x) (x)
+#endif
 
 #define MAX_PROB 255
 
@@ -152,13 +162,20 @@ static INLINE void update_cdf(aom_cdf_prob *cdf, int val, int nsymbs) {
   int diff;
 #if 1
   const int tmp0 = 1 << rate2;
-  tmp = tmp0;
+  tmp = AOM_ICDF(tmp0);
   diff = ((CDF_PROB_TOP - (nsymbs << rate2)) >> rate) << rate;
-  // Single loop (faster)
+// Single loop (faster)
+#if CONFIG_DAALA_EC && CONFIG_EC_SMALLMUL
+  for (i = 0; i < nsymbs - 1; ++i, tmp -= tmp0) {
+    tmp -= (i == val ? diff : 0);
+    cdf[i] += ((tmp - cdf[i]) >> rate);
+  }
+#else
   for (i = 0; i < nsymbs - 1; ++i, tmp += tmp0) {
     tmp += (i == val ? diff : 0);
     cdf[i] -= ((cdf[i] - tmp) >> rate);
   }
+#endif
 #else
   for (i = 0; i < nsymbs; ++i) {
     tmp = (i + 1) << rate2;

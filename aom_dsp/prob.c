@@ -17,10 +17,6 @@
 
 #include "aom_dsp/prob.h"
 
-#if CONFIG_DAALA_EC
-#include "aom_dsp/entcode.h"
-#endif
-
 const uint8_t aom_norm[256] = {
   0, 7, 6, 6, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
   3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
@@ -202,8 +198,9 @@ int tree_to_cdf(const aom_tree_index *tree, const aom_prob *probs,
   /* Extract the cdf, index, path and length */
   tree_node_extract(symb, 0, 0, cdf, index, path, len);
   /* Convert to CDF */
+  cdf[0] = AOM_ICDF(cdf[0]);
   for (i = 1; i < nsymbs; i++) {
-    cdf[i] = cdf[i - 1] + cdf[i];
+    cdf[i] = AOM_ICDF(AOM_ICDF(cdf[i - 1]) + cdf[i]);
   }
 // Store symbol count at the end of the CDF
 #if CONFIG_EC_ADAPT

@@ -40,7 +40,7 @@ int aom_decode_cdf_adapt_q15_(aom_reader *r, uint16_t *cdf, int n,
     int ft;
     ft = cdf[n - 1];
     for (i = 0; i < n; i++) {
-      cdf[i] = cdf[i]*32768/ft;
+      cdf[i] = AOM_ICDF(cdf[i]*32768/ft);
     }
   }
   val = aom_read_cdf(r, cdf, n, ACCT_STR_NAME);

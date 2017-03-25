@@ -20,7 +20,7 @@
 void aom_cdf_init_q15_1D(uint16_t *cdf, int nsyms, int cdf_size) {
   int i;
   for (i = 0; i < nsyms; i++)
-    cdf[i] = (i + 1)*CDF_PROB_TOP/nsyms;
+    cdf[i] = AOM_ICDF((i + 1)*CDF_PROB_TOP/nsyms);
 
 #if CONFIG_EC_ADAPT
   cdf[cdf_size - 1] = 0;
@@ -31,7 +31,7 @@ void aom_cdf_init_q15_1D(uint16_t *cdf, int nsyms, int cdf_size) {
 void aom_cdf_adapt_q15(int val, uint16_t *cdf, int n, int *count, int rate) {
   int i;
   *count = OD_MINI(*count + 1, 1 << rate);
-  OD_ASSERT(cdf[n - 1] == 32768);
+  OD_ASSERT(AOM_ICDF(cdf[n - 1]) == 32768);
   if (*count >= 1 << rate) {
     /* Steady-state adaptation based on a simple IIR with dyadic rate. */
     for (i = 0; i < n; i++) {
@@ -55,7 +55,7 @@ void aom_cdf_adapt_q15(int val, uint16_t *cdf, int n, int *count, int rate) {
          stored in a lookup table indexed by n and rate to avoid the
          arithmetic. */
       tmp = 2 - (1<<rate) + i + (32767 + (1<<rate) - n)*(i >= val);
-      cdf[i] -= (cdf[i] - tmp) >> rate;
+      cdf[i] = AOM_ICDF(AOM_ICDF(cdf[i]) - ((AOM_ICDF(cdf[i]) - tmp) >> rate));
     }
   }
   else {
@@ -67,10 +67,11 @@ void aom_cdf_adapt_q15(int val, uint16_t *cdf, int n, int *count, int rate) {
     for (i = 0; i < n; i++) {
       int tmp;
       tmp = (32768 - n)*(i >= val) + i + 1;
-      cdf[i] -= ((cdf[i] - tmp)*alpha) >> 15;
+      cdf[i] = AOM_ICDF(AOM_ICDF(cdf[i])
+          - (((AOM_ICDF(cdf[i]) - tmp)*alpha) >> 15));
     }
   }
-  OD_ASSERT(cdf[n - 1] == 32768);
+  OD_ASSERT(AOM_ICDF(cdf[n - 1]) == 32768);
 }
 
 /** Takes the base-2 log of E(x) in Q1.
