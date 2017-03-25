@@ -12,6 +12,8 @@ let TestableSwitchAccess = function() {
 TestableSwitchAccess.prototype = {
   __proto__: SwitchAccess.prototype,
 
+  init_: function() {},
+
   getNextNode: function(node) {
     return this.getNextNode_(node);
   },

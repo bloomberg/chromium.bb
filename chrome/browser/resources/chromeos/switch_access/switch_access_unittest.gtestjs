@@ -17,6 +17,7 @@ SwitchAccessUnitTest.prototype = {
   /** @override */
   extraLibraries: [
     'test_support.js',
+    'prefs.js',
     'switch_access.js',
     'testable_switch_access.js',
   ],

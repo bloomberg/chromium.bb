@@ -3063,6 +3063,7 @@ js2gtest("unit_tests_js") {
       "../browser/resources/chromeos/braille_ime/braille_ime.js",
       "../browser/resources/chromeos/select_to_speak/select_to_speak.js",
       "../browser/resources/chromeos/select_to_speak/test_support.js",
+      "../browser/resources/chromeos/switch_access/prefs.js",
       "../browser/resources/chromeos/switch_access/switch_access.js",
       "../browser/resources/chromeos/switch_access/test_support.js",
       "../browser/resources/chromeos/switch_access/testable_switch_access.js",

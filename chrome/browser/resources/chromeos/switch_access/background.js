@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 /**
- * Stubs out extension API types and functions, and DOM elements, so
- * SwitchAccessUnitTest can load.
+ * Initializes SwitchAccess and adds it to the extension's background page.
+ *
+ * @type {SwitchAccess}
  */
-chrome.automation = {};
+window.switchAccess = new SwitchAccess();

@@ -11,11 +11,15 @@
 {% endif %}
   "background": {
     "scripts": [
-      "switch_access.js"
+      "prefs.js",
+      "switch_access.js",
+      "background.js"
     ]
   },
   "permissions": [
-    "accessibilityPrivate"
+    "accessibilityPrivate",
+    "storage",
+    "tabs"
   ],
   "automation": {
     "desktop": true

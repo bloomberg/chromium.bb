@@ -5,72 +5,99 @@
 let AutomationNode = chrome.automation.AutomationNode;
 
 let debuggingEnabled = true;
+
 /**
  * @constructor
  */
 let SwitchAccess = function() {
   console.log('Switch access is enabled');
 
-  // Currently selected node.
-  /** @private {AutomationNode} */
+  /**
+   * User preferences.
+   *
+   * @type {SwitchAccessPrefs}
+   */
+  this.switchAccessPrefs = null;
+
+  /**
+   * Currently selected node.
+   *
+   * @private {AutomationNode}
+   */
   this.node_ = null;
 
-  // Root node (i.e., the desktop).
-  /** @private {AutomationNode} */
+  /**
+   * Root node (i.e., the desktop).
+   *
+   * @private {AutomationNode}
+   */
   this.root_ = null;
 
-  // List of nodes to push to / pop from in case this.node_ is lost.
-  /** @private {!Array<!AutomationNode>} */
-  this.ancestorList_ = [];
-
-  chrome.automation.getDesktop(function(desktop) {
-    this.node_ = desktop;
-    this.root_ = desktop;
-    console.log('AutomationNode for desktop is loaded');
-    this.printDetails_();
-
-    document.addEventListener('keyup', function(event) {
-      switch (event.key) {
-        case '1':
-          console.log('1 = go to previous element');
-          this.moveToPrevious_();
-          break;
-        case '2':
-          console.log('2 = go to next element');
-          this.moveToNext_();
-          break;
-        case '3':
-          console.log('3 = do default on element');
-          this.doDefault_();
-          break;
-      }
-      if (debuggingEnabled) {
-        switch (event.key) {
-          case '6':
-            console.log('6 = go to previous element (debug mode)');
-            this.debugMoveToPrevious_();
-            break;
-          case '7':
-            console.log('7 = go to next element (debug mode)');
-            this.debugMoveToNext_();
-            break;
-          case '8':
-            console.log('8 = go to child element (debug mode)');
-            this.debugMoveToFirstChild_();
-            break;
-          case '9':
-            console.log('9 = go to parent element (debug mode)');
-            this.debugMoveToParent_();
-            break;
-        }
-      }
-      if (this.node_)
-        chrome.accessibilityPrivate.setFocusRing([this.node_.location]);
-    }.bind(this));
-  }.bind(this));
+  this.init_();
 };
 
 SwitchAccess.prototype = {
+  /**
+   * Set this.node_ and this.root_ to the desktop node, and set up preferences
+   * and event listeners.
+   *
+   * @private
+   */
+  init_: function() {
+    this.switchAccessPrefs = new SwitchAccessPrefs();
+
+    chrome.automation.getDesktop(function(desktop) {
+      this.node_ = desktop;
+      this.root_ = desktop;
+      console.log('AutomationNode for desktop is loaded');
+      this.printNode_(this.node_);
+
+      document.addEventListener('keyup', function(event) {
+        switch (event.key) {
+          case '1':
+            console.log('1 = go to previous element');
+            this.moveToPrevious_();
+            break;
+          case '2':
+            console.log('2 = go to next element');
+            this.moveToNext_();
+            break;
+          case '3':
+            console.log('3 = do default on element');
+            this.doDefault_();
+            break;
+          case '4':
+            this.showOptionsPage_();
+            break;
+        }
+        if (debuggingEnabled) {
+          switch (event.key) {
+            case '6':
+              console.log('6 = go to previous element (debug mode)');
+              this.debugMoveToPrevious_();
+              break;
+            case '7':
+              console.log('7 = go to next element (debug mode)');
+              this.debugMoveToNext_();
+              break;
+            case '8':
+              console.log('8 = go to child element (debug mode)');
+              this.debugMoveToFirstChild_();
+              break;
+            case '9':
+              console.log('9 = go to parent element (debug mode)');
+              this.debugMoveToParent_();
+              break;
+          }
+        }
+        if (this.node_)
+          chrome.accessibilityPrivate.setFocusRing([this.node_.location]);
+      }.bind(this));
+    }.bind(this));
+
+    document.addEventListener('prefsUpdate', this.handlePrefsUpdate_);
+  },
+
   /**
    * Set this.node_ to the previous interesting node. If no interesting node
    * comes before this.node_, set this.node_ to the last interesting node.
@@ -227,79 +254,6 @@ SwitchAccess.prototype = {
     return node.state && node.state.focusable;
   },
 
-  /**
-   * Move to the previous sibling of this.node_ if it has one.
-   *
-   * @private
-   */
-  debugMoveToPrevious_: function() {
-    let previous = this.node_.previousSibling;
-    if (previous) {
-      this.node_ = previous;
-      this.printDetails_();
-    } else {
-      console.log('Node is first of siblings');
-      console.log('\n');
-    }
-  },
-
-  /**
-   * Move to the next sibling of this.node_ if it has one.
-   *
-   * @private
-   */
-  debugMoveToNext_: function() {
-    let next = this.node_.nextSibling;
-    if (next) {
-      this.node_ = next;
-      this.printDetails_();
-    } else {
-      console.log('Node is last of siblings');
-      console.log('\n');
-    }
-  },
-
-  /**
-   * Move to the first child of this.node_ if it has one.
-   *
-   * @private
-   */
-  debugMoveToFirstChild_: function() {
-    let child = this.node_.firstChild;
-    if (child) {
-      this.ancestorList_.push(this.node_);
-      this.node_ = child;
-      this.printDetails_();
-    } else {
-      console.log('Node has no children');
-      console.log('\n');
-    }
-  },
-
-  /**
-   * Move to the parent of this.node_ if it has one. If it does not have a
-   * parent but it is not the top level root node, then this.node_ lost track of
-   * its neighbors, and we move to an ancestor node.
-   *
-   * @private
-   */
-  debugMoveToParent_: function() {
-    let parent = this.node_.parent;
-    if (parent) {
-      this.ancestorList_.pop();
-      this.node_ = parent;
-      this.printDetails_();
-    } else if (this.ancestorList_.length === 0) {
-      console.log('Node has no parent');
-      console.log('\n');
-    } else {
-      console.log(
-          'Node could not find its parent, so moved to recent ancestor');
-      let ancestor = this.ancestorList_.pop();
-      this.node_ = ancestor;
-      this.printDetails_();
-    }
-  },
 
   /**
    * Perform the default action on the currently selected node.
@@ -318,20 +272,39 @@ SwitchAccess.prototype = {
     this.node_.doDefault();
   },
 
-  // TODO(elichtenberg): Move print functions to a custom logger class. Only
-  // log when debuggingEnabled is true.
   /**
-   * Print out details about the currently selected node and the list of
-   * ancestors.
+   * Open the options page in a new tab.
    *
    * @private
    */
-  printDetails_: function() {
-    this.printNode_(this.node_);
-    console.log(this.ancestorList_);
-    console.log('\n');
+  showOptionsPage_: function() {
+    let optionsPage = {url: 'options.html'};
+    chrome.tabs.create(optionsPage);
   },
 
+  /**
+   * Handle a change in user preferences.
+   *
+   * @param {!Event} event
+   * @private
+   */
+  handlePrefsUpdate_: function(event) {
+    let updatedPrefs = event.detail;
+    for (let key of Object.keys(updatedPrefs)) {
+      switch (key) {
+        case 'enableAutoScan':
+          console.log('Auto-scan enabled set to: ' + updatedPrefs[key]);
+          break;
+        case 'autoScanTime':
+          console.log(
+              'Auto-scan time set to: ' + updatedPrefs[key] + " seconds");
+          break;
+      }
+    }
+  },
+
+  // TODO(elichtenberg): Move print functions to a custom logger class. Only
+  // log when debuggingEnabled is true.
   /**
    * Print out details about a node.
    *
@@ -356,7 +329,69 @@ SwitchAccess.prototype = {
     }
     console.log(node);
     console.log('\n');
+  },
+
+  /**
+   * Move to the previous sibling of this.node_ if it has one.
+   *
+   * @private
+   */
+  debugMoveToPrevious_: function() {
+    let previous = this.node_.previousSibling;
+    if (previous) {
+      this.node_ = previous;
+      this.printNode_(this.node_);
+    } else {
+      console.log('Node is first of siblings');
+      console.log('\n');
+    }
+  },
+
+  /**
+   * Move to the next sibling of this.node_ if it has one.
+   *
+   * @private
+   */
+  debugMoveToNext_: function() {
+    let next = this.node_.nextSibling;
+    if (next) {
+      this.node_ = next;
+      this.printNode_(this.node_);
+    } else {
+      console.log('Node is last of siblings');
+      console.log('\n');
+    }
+  },
+
+  /**
+   * Move to the first child of this.node_ if it has one.
+   *
+   * @private
+   */
+  debugMoveToFirstChild_: function() {
+    let child = this.node_.firstChild;
+    if (child) {
+      this.node_ = child;
+      this.printNode_(this.node_);
+    } else {
+      console.log('Node has no children');
+      console.log('\n');
+    }
+  },
+
+  /**
+   * Move to the parent of this.node_ if it has one.
+   *
+   * @private
+   */
+  debugMoveToParent_: function() {
+    let parent = this.node_.parent;
+    if (parent) {
+      this.node_ = parent;
+      this.printNode_(this.node_);
+    } else {
+      console.log('Node has no parent');
+      console.log('\n');
+    }
   }
 };
-
-window.switchAccess = new SwitchAccess();

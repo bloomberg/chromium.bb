@@ -25,6 +25,11 @@ run_jsbundler("switch_access_copied_files") {
   mode = "copy"
   dest_dir = switch_access_dir
   sources = [
+    "background.js",
+    "options.css",
+    "options.html",
+    "options.js",
+    "prefs.js",
     "switch_access.js",
   ]
   rewrite_rules = [
