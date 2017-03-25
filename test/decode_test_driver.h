@@ -39,17 +39,13 @@ class DxDataIterator {
 // as more tests are added.
 class Decoder {
  public:
-  Decoder(aom_codec_dec_cfg_t cfg, unsigned long deadline)
-      : cfg_(cfg), flags_(0), deadline_(deadline), init_done_(false) {
+  explicit Decoder(aom_codec_dec_cfg_t cfg)
+      : cfg_(cfg), flags_(0), init_done_(false) {
     memset(&decoder_, 0, sizeof(decoder_));
   }
 
-  Decoder(aom_codec_dec_cfg_t cfg, const aom_codec_flags_t flag,
-          unsigned long deadline)  // NOLINT
-      : cfg_(cfg),
-        flags_(flag),
-        deadline_(deadline),
-        init_done_(false) {
+  Decoder(aom_codec_dec_cfg_t cfg, const aom_codec_flags_t flag)
+      : cfg_(cfg), flags_(flag), init_done_(false) {
     memset(&decoder_, 0, sizeof(decoder_));
   }
 
@@ -64,8 +60,6 @@ class Decoder {
                               void *user_priv);
 
   DxDataIterator GetDxData() { return DxDataIterator(&decoder_); }
-
-  void set_deadline(unsigned long deadline) { deadline_ = deadline; }
 
   void Control(int ctrl_id, int arg) { Control(ctrl_id, arg, AOM_CODEC_OK); }
 
@@ -120,7 +114,6 @@ class Decoder {
   aom_codec_ctx_t decoder_;
   aom_codec_dec_cfg_t cfg_;
   aom_codec_flags_t flags_;
-  unsigned int deadline_;
   bool init_done_;
 };
 

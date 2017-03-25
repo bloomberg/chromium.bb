@@ -33,13 +33,10 @@ class CodecFactory {
 
   virtual ~CodecFactory() {}
 
-  virtual Decoder *CreateDecoder(aom_codec_dec_cfg_t cfg,
-                                 unsigned long deadline) const = 0;
+  virtual Decoder *CreateDecoder(aom_codec_dec_cfg_t cfg) const = 0;
 
   virtual Decoder *CreateDecoder(aom_codec_dec_cfg_t cfg,
-                                 const aom_codec_flags_t flags,
-                                 unsigned long deadline)  // NOLINT(runtime/int)
-      const = 0;
+                                 const aom_codec_flags_t flags) const = 0;
 
   virtual Encoder *CreateEncoder(aom_codec_enc_cfg_t cfg,
                                  unsigned long deadline,
@@ -75,12 +72,10 @@ class CodecTestWith3Params
 #if CONFIG_AV1
 class AV1Decoder : public Decoder {
  public:
-  AV1Decoder(aom_codec_dec_cfg_t cfg, unsigned long deadline)
-      : Decoder(cfg, deadline) {}
+  explicit AV1Decoder(aom_codec_dec_cfg_t cfg) : Decoder(cfg) {}
 
-  AV1Decoder(aom_codec_dec_cfg_t cfg, const aom_codec_flags_t flag,
-             unsigned long deadline)  // NOLINT
-      : Decoder(cfg, flag, deadline) {}
+  AV1Decoder(aom_codec_dec_cfg_t cfg, const aom_codec_flags_t flag)
+      : Decoder(cfg, flag) {}
 
  protected:
   virtual aom_codec_iface_t *CodecInterface() const {
@@ -112,20 +107,17 @@ class AV1CodecFactory : public CodecFactory {
  public:
   AV1CodecFactory() : CodecFactory() {}
 
-  virtual Decoder *CreateDecoder(aom_codec_dec_cfg_t cfg,
-                                 unsigned long deadline) const {
-    return CreateDecoder(cfg, 0, deadline);
+  virtual Decoder *CreateDecoder(aom_codec_dec_cfg_t cfg) const {
+    return CreateDecoder(cfg, 0);
   }
 
   virtual Decoder *CreateDecoder(aom_codec_dec_cfg_t cfg,
-                                 const aom_codec_flags_t flags,
-                                 unsigned long deadline) const {  // NOLINT
+                                 const aom_codec_flags_t flags) const {
 #if CONFIG_AV1_DECODER
-    return new AV1Decoder(cfg, flags, deadline);
+    return new AV1Decoder(cfg, flags);
 #else
     (void)cfg;
     (void)flags;
-    (void)deadline;
     return NULL;
 #endif
   }
