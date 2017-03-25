@@ -295,5 +295,91 @@ var WGLUDebugGeometry = (function() {
     gl.drawElements(gl.TRIANGLES, this.coneIndexCount, gl.UNSIGNED_SHORT, this.coneIndexOffset * 2.0);
   };
 
+  var arrowMat = mat4.create();
+  var arrowMatTemp = mat4.create();
+  var arrowVecA = vec3.create();
+  var arrowVecB = vec3.create();
+  var arrowVecC = vec3.create();
+
+  // Draw an arrow for visualizing a vector. Unit length is 10cm,
+  // you can apply an additional length scale on top of that to resize
+  // vector length while keeping the thickness/arrow head unchanged.
+  DebugGeometry.prototype.drawArrow = function(mat, v, color, opt_lenScale) {
+    // Find the largest component of the input vector.
+    var maxIdx = -1;
+    var maxLen = 0;
+    if (Math.abs(v[0]) > maxLen) { maxLen = Math.abs(v[0]); maxIdx = 0; }
+    if (Math.abs(v[1]) > maxLen) { maxLen = Math.abs(v[1]); maxIdx = 1; }
+    if (Math.abs(v[2]) > maxLen) { maxLen = Math.abs(v[2]); maxIdx = 2; }
+
+    // If the vector is all zero, can't draw the arrow.
+    if (maxIdx < 0) return;
+
+    // Build rotation matrix by computing three orthonormal base vectors.
+    var a = arrowVecA;
+    var b = arrowVecB;
+    var c = arrowVecC;
+
+    // New "Z" axis points in direction of the supplied vector.
+    vec3.normalize(c, v);
+
+    // Find an arbitrary vector orthogonal to vector c. Use the largest
+    // component index computed above to ensure it's nonzero.
+    var i = maxIdx;
+    var j = (maxIdx + 1) % 3;
+    var k = (maxIdx + 2) % 3;
+    a[i] = -c[j] - c[k];
+    a[j] = c[i];
+    a[k] = c[i];
+
+    // For the third base vector, just use the cross product of the two
+    // found so far.
+    vec3.cross(b, c, a);
+
+    // Now we're ready to set up the rotation matrix.
+    mat4.set(arrowMatTemp,
+             a[0], a[1], a[2], 0,
+             b[0], b[1], b[2], 0,
+             c[0], c[1], c[2], 0,
+             0, 0, 0, 1);
+
+    // Apply this rotation to the supplied base transform matrix,
+    // add a scale factor so that a unit vector will show as 10cm instead
+    // of 1m size.
+    mat4.multiply(arrowMat, mat, arrowMatTemp);
+    mat4.scale(arrowMat, arrowMat, [0.1, 0.1, 0.1]);
+
+    var arrowLen = vec3.length(v);
+    if (opt_lenScale) arrowLen *= opt_lenScale;
+
+    // Cone arrow head
+    mat4.translate(arrowMatTemp, arrowMat, [0, 0, arrowLen]);
+    mat4.rotateX(arrowMatTemp, arrowMatTemp, Math.PI * 0.5);
+    mat4.scale(arrowMatTemp, arrowMatTemp, [0.3, 0.3, 0.3]);
+    this.drawConeWithMatrix(arrowMatTemp, color);
+
+    // Arrow stem quadrilateral
+    mat4.translate(arrowMatTemp, arrowMat, [0, 0, arrowLen / 2]);
+    mat4.scale(arrowMatTemp, arrowMatTemp, [0.05, 0.05, arrowLen]);
+    this.drawBoxWithMatrix(arrowMatTemp, color);
+  };
+
+  var arrowColor = vec4.create();
+  var axisVec = vec3.create();
+
+  // Draws coordinate axis vectors from the matrix's transform
+  // origin. x=red, y=green, z=blue, unit length is 10cm.
+  DebugGeometry.prototype.drawCoordinateAxes = function(mat) {
+    vec4.set(arrowColor, 1, 0, 0, 1);
+    vec3.set(axisVec, 1, 0, 0);
+    this.drawArrow(mat, axisVec, arrowColor);
+    vec4.set(arrowColor, 0, 1, 0, 1);
+    vec3.set(axisVec, 0, 1, 0);
+    this.drawArrow(mat, axisVec, arrowColor);
+    vec4.set(arrowColor, 0, 0, 1, 1);
+    vec3.set(axisVec, 0, 0, 1);
+    this.drawArrow(mat, axisVec, arrowColor);
+  };
+
   return DebugGeometry;
 })();

@@ -89,7 +89,8 @@ found in the LICENSE file.
       var viewMat = mat4.create();
       var poseMat = mat4.create();
       var gamepadMat = mat4.create();
-      var gamepadMat2 = mat4.create();
+      var gamepadMatTemp = mat4.create();
+      var gamepadMatHandle = mat4.create();
       var gamepadColor = vec4.create();
       var standingPosition = vec3.create();
       var vrPresentButton = null;
@@ -274,8 +275,38 @@ found in the LICENSE file.
         }
       }
 
-      function renderSceneView (projection, view, gamepads) {
+      var hmdDebugMat = mat4.create();
+      var hmdDebugOrigin = vec4.create();
+      var hmdDebugCounterRotation = vec4.create();
+      var controllerDebugMat = mat4.create();
+      var controllerDebugOrigin = vec4.create();
+      var controllerDebugCounterRotation = vec4.create();
+
+      function renderSceneView (projection, view, hmdPose, gamepads) {
         cubeIsland.render(projection, view, stats);
+
+        // Draw head-locked standing HMD coordinate system for debugging.
+        mat4.identity(hmdDebugMat);
+        debugGeom.bind(projection, hmdDebugMat);
+
+        quat.invert(hmdDebugCounterRotation,
+                    hmdPose.orientation || [0, 0, 0, 1]);
+        mat4.fromRotationTranslation(hmdDebugMat,
+                                     hmdDebugCounterRotation,
+                                     [-0.1, 0.17, -0.5]);
+        debugGeom.drawCoordinateAxes(hmdDebugMat);
+        // Show angular velocity from gyro if available
+        if (hmdPose.angularVelocity) {
+          vec4.set(arrowColor, 0.7, 0.5, 0.3, 1);
+          debugGeom.drawArrow(hmdDebugMat, hmdPose.angularVelocity, arrowColor);
+        }
+        // Show linear acceleration if available
+        if (hmdPose.linearAcceleration) {
+          vec4.set(arrowColor, 0.3, 0.2, 0.7, 1);
+          // Linear acceleration is large since it contains 9.81 m/s^2 gravity,
+          // scale it down so that it's more visible.
+          debugGeom.drawArrow(hmdDebugMat, hmdPose.linearAcceleration, arrowColor, 0.15);
+        }
 
         debugGeom.bind(projection, view);
 
@@ -283,10 +314,27 @@ found in the LICENSE file.
         for (var i = 0; i < gamepads.length; ++i) {
           var gamepad = gamepads[i];
 
-          // Because this sample is done in standing space we need to apply
-          // the same transformation to the gamepad pose as we did the
-          // VRDisplay's pose.
-          getPoseMatrix(gamepadMat, gamepad.pose, true);
+          // Draw X/Y/Z axes for un-rotated controller standing coordinate system.
+          getPoseMatrix(controllerDebugMat, {
+            position: gamepad.pose.position,
+            orientation: [0, 0, 0, 1]},
+            true);
+          debugGeom.drawCoordinateAxes(controllerDebugMat);
+
+          // Show angular velocity from gyro if available
+          if (gamepad.pose.angularVelocity) {
+            vec4.set(arrowColor, 0.7, 0.5, 0.3, 1);
+            debugGeom.drawArrow(controllerDebugMat, gamepad.pose.angularVelocity, arrowColor);
+          }
+
+          // Show linear acceleration if available
+          if (gamepad.pose.linearAcceleration) {
+            //console.log('accel', gamepad.pose.linearAcceleration);
+            vec4.set(arrowColor, 0.3, 0.2, 0.7, 1);
+            // Linear acceleration is large since it contains 9.81 m/s^2 gravity,
+            // scale it down so that it's more visible.
+            debugGeom.drawArrow(controllerDebugMat, gamepad.pose.linearAcceleration, arrowColor, 0.15);
+          }
 
           // Loop through all the gamepad's axes and scale the gamepad geometry
           // by their value.
@@ -305,6 +353,11 @@ found in the LICENSE file.
             }
           }
 
+          // Because this sample is done in standing space we need to apply
+          // the same transformation to the gamepad pose as we did the
+          // VRDisplay's pose.
+          getPoseMatrix(gamepadMat, gamepad.pose, true);
+
           // Scaled down to from 1 meter to be something closer to the size of
           // a hand.
           mat4.scale(gamepadMat, gamepadMat, scale);
@@ -312,9 +365,9 @@ found in the LICENSE file.
           // Rotate -90 deg so the point of the cone faces "forward"
           mat4.rotateX(gamepadMat, gamepadMat, -Math.PI * 0.5);
 
-          // Show the gamepad's cube as red if any buttons are pressed, blue
+          // Show the gamepad's cube as red if any buttons are pressed, gray
           // otherwise.
-          vec4.set(gamepadColor, 0, 0, 1, 1);
+          vec4.set(gamepadColor, 0.7, 0.7, 0.7, 1);
           for (var j = 0; j < gamepad.buttons.length; ++j) {
             if (gamepad.buttons[j].pressed) {
               vec4.set(gamepadColor, gamepad.buttons[j].value, 0, 0, 1);
@@ -325,14 +378,15 @@ found in the LICENSE file.
           debugGeom.drawConeWithMatrix(gamepadMat, gamepadColor);
 
           // Draw a "handle" for the gamepad
-          mat4.identity(gamepadMat2);
-          mat4.translate(gamepadMat2, gamepadMat2, [0, -0.5, -0.3]);
-          mat4.rotateX(gamepadMat2, gamepadMat2, -Math.PI * 0.2);
-          mat4.scale(gamepadMat2, gamepadMat2, [0.25, 0.25, 0.5]);
+          mat4.identity(gamepadMatTemp);
+          mat4.translate(gamepadMatTemp, gamepadMatTemp, [0, -0.5, -0.3]);
+          mat4.rotateX(gamepadMatTemp, gamepadMatTemp, -Math.PI * 0.2);
+          mat4.scale(gamepadMatTemp, gamepadMatTemp, [0.25, 0.25, 0.5]);
 
-          mat4.multiply(gamepadMat, gamepadMat, gamepadMat2);
+          mat4.multiply(gamepadMatHandle, gamepadMat, gamepadMatTemp);
 
-          debugGeom.drawBoxWithMatrix(gamepadMat, gamepadColor);
+          debugGeom.drawBoxWithMatrix(gamepadMatHandle, gamepadColor);
+
         }
       }
 
@@ -374,18 +428,18 @@ found in the LICENSE file.
           if (vrDisplay.isPresenting) {
             gl.viewport(0, 0, webglCanvas.width * 0.5, webglCanvas.height);
             getStandingViewMatrix(viewMat, frameData.leftViewMatrix);
-            renderSceneView(frameData.leftProjectionMatrix, viewMat, vrGamepads);
+            renderSceneView(frameData.leftProjectionMatrix, viewMat, frameData.pose, vrGamepads);
 
             gl.viewport(webglCanvas.width * 0.5, 0, webglCanvas.width * 0.5, webglCanvas.height);
             getStandingViewMatrix(viewMat, frameData.rightViewMatrix);
-            renderSceneView(frameData.rightProjectionMatrix, viewMat, vrGamepads);
+            renderSceneView(frameData.rightProjectionMatrix, viewMat, frameData.pose, vrGamepads);
 
             vrDisplay.submitFrame();
           } else {
             gl.viewport(0, 0, webglCanvas.width, webglCanvas.height);
             mat4.perspective(projectionMat, Math.PI*0.4, webglCanvas.width / webglCanvas.height, 0.1, 1024.0);
             getStandingViewMatrix(viewMat, frameData.leftViewMatrix);
-            renderSceneView(projectionMat, viewMat, vrGamepads);
+            renderSceneView(projectionMat, viewMat, frameData.pose, vrGamepads);
             stats.renderOrtho();
           }
         } else {
