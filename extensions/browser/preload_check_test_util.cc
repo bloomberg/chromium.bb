@@ -9,10 +9,14 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
 
+// PreloadCheckRunner:
 PreloadCheckRunner::PreloadCheckRunner() : called_(false) {}
 PreloadCheckRunner::~PreloadCheckRunner() {}
 
@@ -45,6 +49,38 @@ PreloadCheck::ResultCallback PreloadCheckRunner::GetCallback() {
 void PreloadCheckRunner::WaitForIdle() {
   run_loop_ = base::MakeUnique<base::RunLoop>();
   run_loop_->RunUntilIdle();
+}
+
+// PreloadCheckStub:
+PreloadCheckStub::PreloadCheckStub()
+    : PreloadCheck(nullptr), is_async_(false), weak_ptr_factory_(this) {}
+
+PreloadCheckStub::~PreloadCheckStub() {}
+
+void PreloadCheckStub::AddError(Error error) {
+  errors_.insert(error);
+}
+
+void PreloadCheckStub::Start(ResultCallback callback) {
+  DCHECK(!callback.is_null());
+  if (is_async_) {
+    // TODO(michaelpg): Bind the callback directly and remove RunCallback
+    // once crbug.com/704027 is addressed.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(&PreloadCheckStub::RunCallback,
+                   weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
+  } else {
+    std::move(callback).Run(errors_);
+  }
+}
+
+void PreloadCheckStub::RunCallback(ResultCallback callback) {
+  std::move(callback).Run(errors_);
+}
+
+base::string16 PreloadCheckStub::GetErrorMessage() const {
+  return message_;
 }
 
 }  // namespace extensions

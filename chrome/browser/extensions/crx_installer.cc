@@ -49,6 +49,7 @@
 #include "extensions/browser/install/extension_install_ui.h"
 #include "extensions/browser/install_flag.h"
 #include "extensions/browser/notification_types.h"
+#include "extensions/browser/preload_check.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest.h"
@@ -539,12 +540,13 @@ void CrxInstaller::OnInstallChecksComplete(int failed_checks) {
   }
 
   // Check the blacklist state.
-  if (install_checker_->blacklist_state() == BLACKLISTED_MALWARE) {
+  if (install_checker_->blacklist_error() == PreloadCheck::BLACKLISTED_ID) {
     install_flags_ |= kInstallFlagIsBlacklistedForMalware;
   }
 
-  if ((install_checker_->blacklist_state() == BLACKLISTED_MALWARE ||
-       install_checker_->blacklist_state() == BLACKLISTED_UNKNOWN) &&
+  if ((install_checker_->blacklist_error() == PreloadCheck::BLACKLISTED_ID ||
+       install_checker_->blacklist_error() ==
+           PreloadCheck::BLACKLISTED_UNKNOWN) &&
       !allow_silent_install_) {
     // User tried to install a blacklisted extension. Show an error and
     // refuse to install it.

@@ -243,10 +243,6 @@ class CrxInstaller : public SandboxedUnpackerClient {
   // Runs on the UI thread. Callback from ExtensionInstallChecker.
   void OnInstallChecksComplete(int failed_checks);
 
-  // Runs on the UI thread. Callback from Blacklist.
-  void OnBlacklistChecked(
-      extensions::BlacklistState blacklist_state);
-
   // Runs on the UI thread. Confirms the installation to the ExtensionService.
   void ConfirmInstall();
 

@@ -7,6 +7,9 @@
 
 #include <memory>
 
+#include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "base/strings/string16.h"
 #include "extensions/browser/preload_check.h"
 
 namespace base {
@@ -49,6 +52,34 @@ class PreloadCheckRunner {
   std::unique_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(PreloadCheckRunner);
+};
+
+// Stub for a PreloadCheck that returns the desired error(s).
+class PreloadCheckStub : public PreloadCheck {
+ public:
+  PreloadCheckStub();
+  ~PreloadCheckStub() override;
+
+  void AddError(Error error);
+  void set_error_message(const base::string16& message) { message_ = message; }
+
+  bool is_async() const { return is_async_; }
+  void set_is_async(bool is_async) { is_async_ = is_async; }
+
+  // PreloadCheck:
+  void Start(ResultCallback callback) override;
+  base::string16 GetErrorMessage() const override;
+
+ private:
+  void RunCallback(ResultCallback callback);
+
+  bool is_async_ = false;
+  Errors errors_;
+  base::string16 message_;
+
+  base::WeakPtrFactory<PreloadCheckStub> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(PreloadCheckStub);
 };
 
 }  // namespace extensions

@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "extensions/browser/blacklist_state.h"
+#include "extensions/browser/preload_check.h"
 #include "extensions/common/extension.h"
 
 class Profile;
@@ -66,28 +66,32 @@ class ExtensionInstallChecker {
     return requirement_errors_;
   }
 
-  // Returns the blacklist state of the extension. A blacklist state of
-  // BLACKLISTED_MALWARE is considered to be a check failure.
-  BlacklistState blacklist_state() const { return blacklist_state_; }
+  // Returns the blacklist error of the extension. Note that there is only an
+  // error if the BlacklistState is BLACKLISTED_MALWARE or BLACKLISTED_UNKNOWN.
+  PreloadCheck::Error blacklist_error() const { return blacklist_error_; }
 
   // Returns whether management policy permits installation of the extension.
-  bool policy_allows_load() const { return policy_allows_load_; }
   const std::string& policy_error() const { return policy_error_; }
+
+  void SetBlacklistCheckForTesting(std::unique_ptr<PreloadCheck> policy_check) {
+    blacklist_check_ = std::move(policy_check);
+  }
+  void SetPolicyCheckForTesting(std::unique_ptr<PreloadCheck> policy_check) {
+    policy_check_ = std::move(policy_check);
+  }
 
  protected:
   virtual void CheckManagementPolicy();
-  void OnManagementPolicyCheckDone(bool allows_load, const std::string& error);
+  void OnManagementPolicyCheckDone(PreloadCheck::Errors errors);
 
   virtual void CheckRequirements();
   void OnRequirementsCheckDone(const std::vector<std::string>& errors);
 
   virtual void CheckBlacklistState();
-  void OnBlacklistStateCheckDone(BlacklistState state);
+  void OnBlacklistStateCheckDone(PreloadCheck::Errors errors);
 
  private:
   void MaybeInvokeCallback();
-
-  std::unique_ptr<RequirementsChecker> requirements_checker_;
 
   // The Profile where the extension is being installed in.
   Profile* profile_;
@@ -95,14 +99,16 @@ class ExtensionInstallChecker {
   // The extension to run checks for.
   scoped_refptr<const Extension> extension_;
 
-  // Requirement violations.
+  // Checks requirements specified in the manifest.
+  std::unique_ptr<RequirementsChecker> requirements_checker_;
   std::vector<std::string> requirement_errors_;
 
-  // Result of the blacklist state check.
-  BlacklistState blacklist_state_;
+  // Checks if the extension is blacklisted.
+  std::unique_ptr<PreloadCheck> blacklist_check_;
+  PreloadCheck::Error blacklist_error_ = PreloadCheck::NONE;
 
-  // Whether the extension can be installed, according to management policies.
-  bool policy_allows_load_;
+  // Checks whether management policies allow the extension to be installed.
+  std::unique_ptr<PreloadCheck> policy_check_;
   std::string policy_error_;
 
   // Bitmask of enabled checks.
