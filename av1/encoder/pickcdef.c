@@ -77,21 +77,6 @@ static uint64_t joint_strength_search(int *best_lev, int nb_strengths,
   return best_tot_mse;
 }
 
-static double compute_dist(uint16_t *x, int xstride, uint16_t *y, int ystride,
-                           int nhb, int nvb, int coeff_shift, int bsize) {
-  int i, j;
-  double sum;
-  sum = 0;
-  for (i = 0; i < nvb << bsize; i++) {
-    for (j = 0; j < nhb << bsize; j++) {
-      double tmp;
-      tmp = x[i * xstride + j] - y[i * ystride + j];
-      sum += tmp * tmp;
-    }
-  }
-  return sum / (double)(1 << 2 * coeff_shift);
-}
-
 /* FIXME: SSE-optimize this. */
 static void copy_sb16_16(uint16_t *dst, int dstride, const uint16_t *src,
                          int src_voffset, int src_hoffset, int sstride,
@@ -103,6 +88,56 @@ static void copy_sb16_16(uint16_t *dst, int dstride, const uint16_t *src,
       dst[r * dstride + c] = base[r * sstride + c];
     }
   }
+}
+
+static INLINE uint64_t mse_8x8_16bit(uint16_t *dst, int dstride, uint16_t *src,
+                                     int sstride) {
+  uint64_t sum = 0;
+  int i, j;
+  for (i = 0; i < 8; i++) {
+    for (j = 0; j < 8; j++) {
+      int e = dst[i * dstride + j] - src[i * sstride + j];
+      sum += e * e;
+    }
+  }
+  return sum;
+}
+
+static INLINE uint64_t mse_4x4_16bit(uint16_t *dst, int dstride, uint16_t *src,
+                                     int sstride) {
+  uint64_t sum = 0;
+  int i, j;
+  for (i = 0; i < 4; i++) {
+    for (j = 0; j < 4; j++) {
+      int e = dst[i * dstride + j] - src[i * sstride + j];
+      sum += e * e;
+    }
+  }
+  return sum;
+}
+
+/* Compute MSE only on the blocks we filtered. */
+uint64_t compute_dering_mse(uint16_t *dst, int dstride, uint16_t *src,
+                            dering_list *dlist, int dering_count, int bsize,
+                            int coeff_shift) {
+  uint64_t sum = 0;
+  int bi, bx, by;
+  if (bsize == 3) {
+    for (bi = 0; bi < dering_count; bi++) {
+      by = dlist[bi].by;
+      bx = dlist[bi].bx;
+      sum += mse_8x8_16bit(&dst[(by << 3) * dstride + (bx << 3)], dstride,
+                           &src[bi << 2 * bsize], 1 << bsize);
+    }
+  } else {
+    for (bi = 0; bi < dering_count; bi++) {
+      by = dlist[bi].by;
+      bx = dlist[bi].bx;
+      sum += mse_4x4_16bit(&dst[(by << 2) * dstride + (bx << 2)], dstride,
+                           &src[bi << 2 * bsize], 1 << bsize);
+    }
+  }
+  return sum >> 2 * coeff_shift;
 }
 
 void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
@@ -139,7 +174,6 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
   int nplanes = 3;
   DECLARE_ALIGNED(32, uint16_t, inbuf[OD_DERING_INBUF_SIZE]);
   uint16_t *in;
-  DECLARE_ALIGNED(32, uint16_t, dst[MAX_MIB_SIZE * MAX_MIB_SIZE * 8 * 8]);
   DECLARE_ALIGNED(32, uint16_t, tmp_dst[MAX_MIB_SIZE * MAX_MIB_SIZE * 8 * 8]);
   int chroma_dering =
       xd->plane[1].subsampling_x == xd->plane[1].subsampling_y &&
@@ -205,12 +239,6 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
                                             sbc * MAX_MIB_SIZE, dlist);
       if (dering_count == 0) continue;
       for (pli = 0; pli < nplanes; pli++) {
-        /* Copy the dst buffer only once since it will always be written at
-           the same place. */
-        copy_sb16_16(dst, MAX_MIB_SIZE << bsize[pli], src[pli],
-                     sbr * MAX_MIB_SIZE << bsize[pli],
-                     sbc * MAX_MIB_SIZE << bsize[pli], stride[pli],
-                     nvb << bsize[pli], nhb << bsize[pli]);
         for (i = 0; i < OD_DERING_INBUF_SIZE; i++)
           inbuf[i] = OD_DERING_VERY_LARGE;
         for (gi = 0; gi < TOTAL_STRENGTHS; gi++) {
@@ -238,13 +266,12 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
                     dering_count, threshold,
                     clpf_strength + (clpf_strength == 3), clpf_damping,
                     coeff_shift);
-          copy_dering_16bit_to_16bit(dst, MAX_MIB_SIZE << bsize[pli], tmp_dst,
-                                     dlist, dering_count, bsize[pli]);
-          mse[pli][sb_count][gi] = (int)compute_dist(
-              dst, MAX_MIB_SIZE << bsize[pli],
-              &ref_coeff[pli][(sbr * stride[pli] * MAX_MIB_SIZE << bsize[pli]) +
-                              (sbc * MAX_MIB_SIZE << bsize[pli])],
-              stride[pli], nhb, nvb, coeff_shift, bsize[pli]);
+          mse[pli][sb_count][gi] = compute_dering_mse(
+              ref_coeff[pli] +
+                  (sbr * MAX_MIB_SIZE << bsize[pli]) * stride[pli] +
+                  (sbc * MAX_MIB_SIZE << bsize[pli]),
+              stride[pli], tmp_dst, dlist, dering_count, bsize[pli],
+              coeff_shift);
           sb_index[sb_count] =
               MAX_MIB_SIZE * sbr * cm->mi_stride + MAX_MIB_SIZE * sbc;
         }
