@@ -1967,8 +1967,7 @@ void LayoutObject::applyFirstLineChanges(const ComputedStyle& oldStyle) {
     RefPtr<ComputedStyle> oldPseudoStyle =
         oldStyle.getCachedPseudoStyle(PseudoIdFirstLine);
     if (styleRef().hasPseudoStyle(PseudoIdFirstLine) && oldPseudoStyle) {
-      RefPtr<ComputedStyle> newPseudoStyle =
-          uncachedFirstLineStyle(mutableStyle());
+      RefPtr<ComputedStyle> newPseudoStyle = uncachedFirstLineStyle();
       if (newPseudoStyle) {
         firstLineStyleDidChange(*oldPseudoStyle, *newPseudoStyle);
         return;
@@ -3039,8 +3038,7 @@ static PassRefPtr<ComputedStyle> firstLineStyleForCachedUncachedType(
       if (type == Cached)
         return firstLineBlock->getCachedPseudoStyle(PseudoIdFirstLine, style);
       return firstLineBlock->getUncachedPseudoStyle(
-          PseudoStyleRequest(PseudoIdFirstLine), style,
-          firstLineBlock == layoutObject ? style : 0);
+          PseudoStyleRequest(PseudoIdFirstLine), style);
     }
   } else if (!layoutObjectForFirstLineStyle->isAnonymous() &&
              layoutObjectForFirstLineStyle->isLayoutInline() &&
@@ -3058,20 +3056,19 @@ static PassRefPtr<ComputedStyle> firstLineStyleForCachedUncachedType(
             PseudoIdFirstLineInherited, parentStyle);
       }
       return layoutObjectForFirstLineStyle->getUncachedPseudoStyle(
-          PseudoStyleRequest(PseudoIdFirstLineInherited), parentStyle, style);
+          PseudoStyleRequest(PseudoIdFirstLineInherited), parentStyle);
     }
   }
   return nullptr;
 }
 
-PassRefPtr<ComputedStyle> LayoutObject::uncachedFirstLineStyle(
-    ComputedStyle* style) const {
+PassRefPtr<ComputedStyle> LayoutObject::uncachedFirstLineStyle() const {
   if (!document().styleEngine().usesFirstLineRules())
     return nullptr;
 
   ASSERT(!isText());
 
-  return firstLineStyleForCachedUncachedType(Uncached, this, style);
+  return firstLineStyleForCachedUncachedType(Uncached, this, m_style.get());
 }
 
 ComputedStyle* LayoutObject::cachedFirstLineStyle() const {
@@ -3103,16 +3100,13 @@ ComputedStyle* LayoutObject::getCachedPseudoStyle(
 
 PassRefPtr<ComputedStyle> LayoutObject::getUncachedPseudoStyle(
     const PseudoStyleRequest& pseudoStyleRequest,
-    const ComputedStyle* parentStyle,
-    const ComputedStyle* ownStyle) const {
-  if (pseudoStyleRequest.pseudoId < FirstInternalPseudoId && !ownStyle &&
+    const ComputedStyle* parentStyle) const {
+  if (pseudoStyleRequest.pseudoId < FirstInternalPseudoId &&
       !style()->hasPseudoStyle(pseudoStyleRequest.pseudoId))
     return nullptr;
 
-  if (!parentStyle) {
-    ASSERT(!ownStyle);
+  if (!parentStyle)
     parentStyle = style();
-  }
 
   if (!node())
     return nullptr;

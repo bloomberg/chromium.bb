@@ -858,8 +858,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       const ComputedStyle* parentStyle = nullptr) const;
   PassRefPtr<ComputedStyle> getUncachedPseudoStyle(
       const PseudoStyleRequest&,
-      const ComputedStyle* parentStyle = nullptr,
-      const ComputedStyle* ownStyle = nullptr) const;
+      const ComputedStyle* parentStyle = nullptr) const;
 
   LayoutView* view() const { return document().layoutView(); }
   FrameView* frameView() const { return document().view(); }
@@ -1341,10 +1340,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   inline Color resolveColor(int colorProperty) const {
     return style()->visitedDependentColor(colorProperty);
   }
-
-  // Used only by Element::pseudoStyleCacheIsInvalid to get a first line style
-  // based off of a given new style, without accessing the cache.
-  PassRefPtr<ComputedStyle> uncachedFirstLineStyle(ComputedStyle*) const;
 
   virtual CursorDirective getCursor(const LayoutPoint&, Cursor&) const;
 
@@ -2070,6 +2065,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
 
  private:
+  // Used only by applyFirstLineChanges to get a first line style based off of a
+  // given new style, without accessing the cache.
+  PassRefPtr<ComputedStyle> uncachedFirstLineStyle() const;
+
   // Adjusts a visual rect in the space of |m_visualRect| to be in the
   // space of the |paintInvalidationContainer|, if needed. They can be different
   // only if |paintInvalidationContainer| is a composited scroller.

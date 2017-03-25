@@ -229,10 +229,9 @@ class LayoutItem {
 
   PassRefPtr<ComputedStyle> getUncachedPseudoStyle(
       const PseudoStyleRequest& pseudoStyleRequest,
-      const ComputedStyle* parentStyle = nullptr,
-      const ComputedStyle* ownStyle = nullptr) const {
+      const ComputedStyle* parentStyle = nullptr) const {
     return m_layoutObject->getUncachedPseudoStyle(pseudoStyleRequest,
-                                                  parentStyle, ownStyle);
+                                                  parentStyle);
   }
 
  protected:
