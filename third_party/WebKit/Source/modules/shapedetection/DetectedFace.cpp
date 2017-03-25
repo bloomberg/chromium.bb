@@ -4,7 +4,7 @@
 
 #include "modules/shapedetection/DetectedFace.h"
 
-#include "core/dom/DOMRect.h"
+#include "core/geometry/DOMRect.h"
 
 namespace blink {
 

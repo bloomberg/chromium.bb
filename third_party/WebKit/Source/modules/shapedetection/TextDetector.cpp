@@ -5,7 +5,7 @@
 #include "modules/shapedetection/TextDetector.h"
 
 #include "core/dom/DOMException.h"
-#include "core/dom/DOMRect.h"
+#include "core/geometry/DOMRect.h"
 #include "core/html/canvas/CanvasImageSource.h"
 #include "modules/shapedetection/DetectedText.h"
 #include "public/platform/InterfaceProvider.h"

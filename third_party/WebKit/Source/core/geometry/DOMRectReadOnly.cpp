@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/DOMRectReadOnly.h"
+#include "core/geometry/DOMRectReadOnly.h"
 
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8ObjectBuilder.h"
-#include "core/dom/DOMRectInit.h"
+#include "core/geometry/DOMRectInit.h"
 
 namespace blink {
 
@@ -31,7 +31,8 @@ ScriptValue DOMRectReadOnly::toJSONForBinding(ScriptState* scriptState) const {
 }
 
 DOMRectReadOnly* DOMRectReadOnly::fromRect(const DOMRectInit& other) {
-  return new DOMRectReadOnly(other.x(), other.y(), other.width(), other.height());
+  return new DOMRectReadOnly(other.x(), other.y(), other.width(),
+                             other.height());
 }
 
 DOMRectReadOnly::DOMRectReadOnly(double x,

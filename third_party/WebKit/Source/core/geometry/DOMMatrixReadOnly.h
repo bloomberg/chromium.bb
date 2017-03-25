@@ -5,12 +5,12 @@
 #ifndef DOMMatrixReadOnly_h
 #define DOMMatrixReadOnly_h
 
+#include <memory>
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/DOMTypedArray.h"
 #include "platform/heap/Handle.h"
 #include "platform/transforms/TransformationMatrix.h"
-#include <memory>
 
 namespace blink {
 

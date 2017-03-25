@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/DOMMatrixReadOnly.h"
+#include "core/geometry/DOMMatrixReadOnly.h"
 
 #include "bindings/core/v8/V8ObjectBuilder.h"
 #include "core/css/CSSIdentifierValue.h"
@@ -10,10 +10,10 @@
 #include "core/css/CSSValueList.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/css/resolver/TransformBuilder.h"
-#include "core/dom/DOMMatrix.h"
-#include "core/dom/DOMMatrixInit.h"
-#include "core/dom/DOMPoint.h"
-#include "core/dom/DOMPointInit.h"
+#include "core/geometry/DOMMatrix.h"
+#include "core/geometry/DOMMatrixInit.h"
+#include "core/geometry/DOMPoint.h"
+#include "core/geometry/DOMPointInit.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/style/ComputedStyle.h"
 
