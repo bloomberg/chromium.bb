@@ -882,13 +882,6 @@ class CORE_EXPORT Node : public EventTarget {
 
   void setTreeScope(TreeScope* scope) { m_treeScope = scope; }
 
-  // isTreeScopeInitialized() can be false
-  // - in the destruction of Document or ShadowRoot where m_treeScope is set to
-  //   null or
-  // - in the Node constructor called by these two classes where m_treeScope is
-  //   set by TreeScope ctor.
-  bool isTreeScopeInitialized() const { return m_treeScope; }
-
   void markAncestorsWithChildNeedsStyleRecalc();
 
   void setIsFinishedParsingChildren(bool value) {
