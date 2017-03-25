@@ -593,8 +593,13 @@ class CORE_EXPORT Document : public ContainerNode,
 
   bool wellFormed() const { return m_wellFormed; }
 
+  // Return the document URL, or an empty URL if it's unavailable.
+  // This is not an implementation of web-exposed Document.prototype.URL.
   const KURL& url() const { return m_url; }
   void setURL(const KURL&);
+
+  // Bind the url to document.url, if unavailable bind to about:blank.
+  KURL urlForBinding();
 
   // To understand how these concepts relate to one another, please see the
   // comments surrounding their declaration.

@@ -3305,6 +3305,13 @@ void Document::exceptionThrown(ErrorEvent* event) {
   MainThreadDebugger::instance()->exceptionThrown(this, event);
 }
 
+KURL Document::urlForBinding() {
+  if (!url().isNull()) {
+    return url();
+  }
+  return blankURL();
+}
+
 void Document::setURL(const KURL& url) {
   const KURL& newURL = url.isEmpty() ? blankURL() : url;
   if (newURL == m_url)
