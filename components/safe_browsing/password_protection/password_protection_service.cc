@@ -11,9 +11,12 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "components/safe_browsing/password_protection/password_protection_request.h"
 #include "components/safe_browsing_db/database_manager.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "google_apis/google_api_keys.h"
+#include "net/base/escape.h"
 
 using content::BrowserThread;
 
@@ -22,8 +25,11 @@ namespace safe_browsing {
 namespace {
 
 // Keys for storing password protection verdict into a DictionaryValue.
-static const char kCacheCreationTime[] = "cache_creation_time";
-static const char kVerdictProto[] = "verdict_proto";
+const char kCacheCreationTime[] = "cache_creation_time";
+const char kVerdictProto[] = "verdict_proto";
+const int kRequestTimeoutMs = 10000;
+const char kPasswordProtectionRequestUrl[] =
+    "https://sb-ssl.google.com/safebrowsing/clientreport/login";
 
 // Helper function to determine if the given origin matches content settings
 // map's patterns.
@@ -55,12 +61,16 @@ GURL GetHostNameWithHTTPScheme(const GURL& url) {
 }  // namespace
 
 PasswordProtectionService::PasswordProtectionService(
-    const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager)
-    : database_manager_(database_manager), weak_factory_(this) {
+    const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter)
+    : request_context_getter_(request_context_getter),
+      database_manager_(database_manager),
+      weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 PasswordProtectionService::~PasswordProtectionService() {
+  CancelPendingRequests();
   weak_factory_.InvalidateWeakPtrs();
 }
 
@@ -70,20 +80,31 @@ void PasswordProtectionService::RecordPasswordReuse(const GURL& url) {
   if (!url.is_valid())
     return;
 
-  BrowserThread::PostTaskAndReplyWithResult(
+  BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&SafeBrowsingDatabaseManager::MatchCsdWhitelistUrl,
-                 database_manager_, url),
-      base::Bind(&PasswordProtectionService::OnMatchCsdWhiteListResult,
-                 GetWeakPtr()));
+      base::Bind(
+          &PasswordProtectionService::CheckCsdWhitelistOnIOThread, GetWeakPtr(),
+          url,
+          base::Bind(&PasswordProtectionService::OnMatchCsdWhiteListResult,
+                     GetWeakPtr())));
+}
+
+void PasswordProtectionService::CheckCsdWhitelistOnIOThread(
+    const GURL& url,
+    const CheckCsdWhitelistCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(database_manager_);
+  bool check_result = database_manager_->MatchCsdWhitelistUrl(url);
+  DCHECK(callback);
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(callback, check_result));
 }
 
 LoginReputationClientResponse::VerdictType
 PasswordProtectionService::GetCachedVerdict(
     const HostContentSettingsMap* settings,
-    const GURL& url) {
-  // TODO(jialiul): Add UMA metrics to track if verdict is available, not
-  // available, or expired.
+    const GURL& url,
+    LoginReputationClientResponse* out_response) {
   DCHECK(settings);
   if (!url.is_valid()) {
     return LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED;
@@ -95,9 +116,8 @@ PasswordProtectionService::GetCachedVerdict(
           hostname, GURL(), CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION,
           std::string(), nullptr));
   // Return early if there is no verdict cached for this origin.
-  if (!verdict_dictionary.get() || verdict_dictionary->empty()) {
+  if (!verdict_dictionary.get() || verdict_dictionary->empty())
     return LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED;
-  }
 
   std::vector<std::string> paths;
   GeneratePathVariantsWithoutQuery(url, &paths);
@@ -122,13 +142,16 @@ PasswordProtectionService::GetCachedVerdict(
 
     if (verdict.cache_expression_exact_match()) {
       if (PathMatchCacheExpressionExactly(paths, cache_expression_path)) {
-        return IsCacheExpired(verdict_received_time,
-                              verdict.cache_duration_sec())
-                   ? LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED
-                   : verdict.verdict_type();
+        if (!IsCacheExpired(verdict_received_time,
+                            verdict.cache_duration_sec())) {
+          out_response->CopyFrom(verdict);
+          return verdict.verdict_type();
+        } else {  // verdict expired
+          return LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED;
+        }
       }
     } else {
-      // If it doesn't require exact match, we need to fine the most specific
+      // If it doesn't require exact match, we need to find the most specific
       // match.
       size_t path_depth = GetPathDepth(cache_expression_path);
       if (path_depth > max_path_depth &&
@@ -137,6 +160,7 @@ PasswordProtectionService::GetCachedVerdict(
                           verdict.cache_duration_sec())) {
         max_path_depth = path_depth;
         most_matching_verdict = verdict.verdict_type();
+        out_response->CopyFrom(verdict);
       }
     }
   }
@@ -161,6 +185,11 @@ void PasswordProtectionService::CacheVerdict(
 
   std::unique_ptr<base::DictionaryValue> verdict_entry =
       CreateDictionaryFromVerdict(verdict, receive_time);
+
+  // Increases stored verdict count if we haven't seen this cache expression
+  // before.
+  if (!verdict_dictionary->HasKey(verdict->cache_expression()))
+    stored_verdict_counts_[settings] = GetStoredVerdictCount() + 1U;
   // If same cache_expression is already in this verdict_dictionary, we simply
   // override it.
   verdict_dictionary->SetWithoutPathExpansion(verdict->cache_expression(),
@@ -170,9 +199,94 @@ void PasswordProtectionService::CacheVerdict(
       std::string(), std::move(verdict_dictionary));
 }
 
+void PasswordProtectionService::StartRequest(
+    const GURL& main_frame_url,
+    LoginReputationClientRequest::TriggerType type,
+    bool is_extended_reporting,
+    bool is_incognito) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  std::unique_ptr<PasswordProtectionRequest> request =
+      base::MakeUnique<PasswordProtectionRequest>(
+          main_frame_url, type, is_extended_reporting, is_incognito,
+          GetWeakPtr(), GetRequestTimeoutInMS());
+  DCHECK(request);
+  request->Start();
+  requests_.insert(std::move(request));
+}
+
+void PasswordProtectionService::RequestFinished(
+    PasswordProtectionRequest* request,
+    std::unique_ptr<LoginReputationClientResponse> response) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  DCHECK(request);
+  // TODO(jialiul): We don't cache verdict for incognito mode for now.
+  // Later we may consider temporarily caching verdict.
+  if (!request->is_incognito() && response) {
+    CacheVerdict(request->main_frame_url(), response.get(), base::Time::Now(),
+                 GetSettingMapForActiveProfile());
+  }
+  // Finished processing this request. Remove it from pending list.
+  for (auto it = requests_.begin(); it != requests_.end(); it++) {
+    if (it->get() == request) {
+      requests_.erase(it);
+      break;
+    }
+  }
+}
+
+void PasswordProtectionService::CancelPendingRequests() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  for (auto it = requests_.begin(); it != requests_.end();) {
+    // We need to advance the iterator before we cancel because canceling
+    // the request will invalidate it when RequestFinished is called.
+    PasswordProtectionRequest* request = it->get();
+    it++;
+    request->Cancel(false);
+  }
+  DCHECK(requests_.empty());
+}
+
+GURL PasswordProtectionService::GetPasswordProtectionRequestUrl() {
+  GURL url(kPasswordProtectionRequestUrl);
+  std::string api_key = google_apis::GetAPIKey();
+  DCHECK(!api_key.empty());
+  return url.Resolve("?key=" + net::EscapeQueryParamValue(api_key, true));
+}
+
+size_t PasswordProtectionService::GetStoredVerdictCount() {
+  HostContentSettingsMap* content_setting_map = GetSettingMapForActiveProfile();
+  DCHECK(content_setting_map);
+  auto it = stored_verdict_counts_.find(content_setting_map);
+  // If we have already computed this, return its value.
+  if (it != stored_verdict_counts_.end())
+    return it->second;
+
+  ContentSettingsForOneType password_protection_settings;
+  content_setting_map->GetSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, std::string(),
+      &password_protection_settings);
+  stored_verdict_counts_[content_setting_map] = 0U;
+  if (password_protection_settings.empty())
+    return 0U;
+
+  for (const ContentSettingPatternSource& source :
+       password_protection_settings) {
+    std::unique_ptr<base::DictionaryValue> verdict_dictionary =
+        base::DictionaryValue::From(content_setting_map->GetWebsiteSetting(
+            GURL(source.primary_pattern.ToString()), GURL(),
+            CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, std::string(), nullptr));
+    stored_verdict_counts_[content_setting_map] += verdict_dictionary->size();
+  }
+  return stored_verdict_counts_[content_setting_map];
+}
+
+int PasswordProtectionService::GetRequestTimeoutInMS() {
+  return kRequestTimeoutMs;
+}
+
 void PasswordProtectionService::OnMatchCsdWhiteListResult(
     bool match_whitelist) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   UMA_HISTOGRAM_BOOLEAN(
       "PasswordManager.PasswordReuse.MainFrameMatchCsdWhitelist",
       match_whitelist);
@@ -209,6 +323,7 @@ void PasswordProtectionService::RemoveContentSettingsOnURLsDeleted(
   if (all_history) {
     setting_map->ClearSettingsForOneType(
         CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION);
+    stored_verdict_counts_[setting_map] = 0U;
     return;
   }
 
@@ -217,9 +332,17 @@ void PasswordProtectionService::RemoveContentSettingsOnURLsDeleted(
   // We might revisit this logic later to decide if we want to only delete the
   // cached verdict whose cache expression matches this URL.
   for (const history::URLRow& row : deleted_rows) {
+    GURL url_key = GetHostNameWithHTTPScheme(row.url());
+    std::unique_ptr<base::DictionaryValue> verdict_dictionary =
+        base::DictionaryValue::From(setting_map->GetWebsiteSetting(
+            url_key, GURL(), CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION,
+            std::string(), nullptr));
+    size_t verdict_count = verdict_dictionary->size();
+    stored_verdict_counts_[setting_map] =
+        GetStoredVerdictCount() - verdict_count;
     setting_map->ClearSettingsForOneTypeWithPredicate(
         CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION,
-        base::Bind(&OriginMatchPrimaryPattern, row.url().GetOrigin()));
+        base::Bind(&OriginMatchPrimaryPattern, url_key));
   }
 }
 

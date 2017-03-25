@@ -334,8 +334,8 @@ void SafeBrowsingService::Initialize() {
 
   // TODO(jialiul): When PasswordProtectionService does more than reporting UMA,
   // we need to add finch trial to gate its functionality.
-  password_protection_service_ =
-      base::MakeUnique<PasswordProtectionService>(database_manager());
+  password_protection_service_ = base::MakeUnique<PasswordProtectionService>(
+      database_manager(), url_request_context());
 
   // Track the safe browsing preference of existing profiles.
   // The SafeBrowsingService will be started if any existing profile has the
@@ -375,6 +375,8 @@ void SafeBrowsingService::ShutDown() {
   prefs_registrar_.RemoveAll();
 
   Stop(true);
+
+  password_protection_service_.reset();
 
   services_delegate_->ShutdownServices();
 

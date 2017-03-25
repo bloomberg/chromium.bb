@@ -7,5 +7,6 @@ include_rules = [
   "+components/sync_preferences/testing_pref_service_syncable.h",
   "+content/public/browser",
   "+content/public/test",
+  "+net",
 ]
 
