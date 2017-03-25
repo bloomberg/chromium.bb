@@ -5,12 +5,19 @@ Running: testAsyncFunction
 Text:
     async function foo() { }
 Outline:
-    foo():0:15
+    async foo():0:15
+
+Running: testAsyncArrowFunction
+Text:
+    var sum = async (x, y) => x + y;
+Outline:
+    async sum(x, y):0:4
 
 Running: testGeneratorFunction
 Text:
     function* foo() { }
 Outline:
+    *foo():0:10
 
 Running: testMismatchBrackets
 Text:

@@ -47,7 +47,7 @@ InspectorTest.testJavascriptOutline = function(text) {
         InspectorTest.addResult(text.split('\n').map(line => '    ' + line).join('\n'));
         InspectorTest.addResult('Outline:');
         for (var item of items)
-            InspectorTest.addResult('    ' + item.name + item.arguments + ':' + item.line + ':' + item.column);
+            InspectorTest.addResult('    ' + item.name + (item.arguments || '') + ':' + item.line + ':' + item.column);
         fulfill();
     }
 }

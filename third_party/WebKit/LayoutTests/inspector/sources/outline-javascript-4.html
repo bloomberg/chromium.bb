@@ -12,6 +12,9 @@ async function test()
     InspectorTest.markStep('testAsyncFunction');
     await test('async function foo() { }');
 
+    InspectorTest.markStep('testAsyncArrowFunction');
+    await test('var sum = async (x, y) => x + y;');
+
     InspectorTest.markStep('testGeneratorFunction');
     await test('function* foo() { }');
 
