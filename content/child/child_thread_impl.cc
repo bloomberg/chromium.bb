@@ -503,13 +503,14 @@ void ChildThreadImpl::Init(const Options& options) {
         ChildProcess::current()->io_task_runner()));
     channel_->AddFilter(new ChildMemoryMessageFilter());
 
-    memory_instrumentation::MemoryDumpManagerDelegateImpl::Config config(
-        GetConnector(), mojom::kBrowserServiceName);
-    auto delegate =
-        base::MakeUnique<memory_instrumentation::MemoryDumpManagerDelegateImpl>(
-            config);
-    base::trace_event::MemoryDumpManager::GetInstance()->Initialize(
-        std::move(delegate));
+    if (service_manager_connection_) {
+      memory_instrumentation::MemoryDumpManagerDelegateImpl::Config config(
+          GetConnector(), mojom::kBrowserServiceName);
+      auto delegate = base::MakeUnique<
+          memory_instrumentation::MemoryDumpManagerDelegateImpl>(config);
+      base::trace_event::MemoryDumpManager::GetInstance()->Initialize(
+          std::move(delegate));
+    }
   }
 
   // In single process mode we may already have a power monitor,
