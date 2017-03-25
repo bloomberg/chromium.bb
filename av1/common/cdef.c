@@ -382,7 +382,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
         od_dering(dst,
                   &src[OD_FILT_VBORDER * OD_FILT_BSTRIDE + OD_FILT_HBORDER],
                   dec[pli], dir, NULL, var, pli, dlist, dering_count, threshold,
-                  clpf_strength, clpf_damping, coeff_shift);
+                  clpf_strength, clpf_damping, coeff_shift, 0);
 #if CONFIG_AOM_HIGHBITDEPTH
         if (cm->use_highbitdepth) {
           copy_dering_16bit_to_16bit(

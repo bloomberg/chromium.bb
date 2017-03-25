@@ -243,7 +243,8 @@ void od_dering(uint16_t *y, uint16_t *in, int xdec,
                int dir[OD_DERING_NBLOCKS][OD_DERING_NBLOCKS], int *dirinit,
                int var[OD_DERING_NBLOCKS][OD_DERING_NBLOCKS], int pli,
                dering_list *dlist, int dering_count, int threshold,
-               int clpf_strength, int clpf_damping, int coeff_shift) {
+               int clpf_strength, int clpf_damping, int coeff_shift,
+               int skip_dering) {
   int bi;
   int bx;
   int by;
@@ -252,45 +253,49 @@ void od_dering(uint16_t *y, uint16_t *in, int xdec,
     od_filter_dering_direction_4x4, od_filter_dering_direction_8x8
   };
   bsize = OD_DERING_SIZE_LOG2 - xdec;
-  if (pli == 0) {
-    if (!dirinit || !*dirinit) {
+  if (!skip_dering) {
+    if (pli == 0) {
+      if (!dirinit || !*dirinit) {
+        for (bi = 0; bi < dering_count; bi++) {
+          by = dlist[bi].by;
+          bx = dlist[bi].bx;
+          dir[by][bx] =
+              od_dir_find8(&in[8 * by * OD_FILT_BSTRIDE + 8 * bx],
+                           OD_FILT_BSTRIDE, &var[by][bx], coeff_shift);
+        }
+        if (dirinit) *dirinit = 1;
+      }
       for (bi = 0; bi < dering_count; bi++) {
         by = dlist[bi].by;
         bx = dlist[bi].bx;
-        dir[by][bx] = od_dir_find8(&in[8 * by * OD_FILT_BSTRIDE + 8 * bx],
-                                   OD_FILT_BSTRIDE, &var[by][bx], coeff_shift);
+        /* Deringing orthogonal to the direction uses a tighter threshold
+           because we want to be conservative. We've presumably already
+           achieved some deringing, so the amount of change is expected
+           to be low. Also, since we might be filtering across an edge, we
+           want to make sure not to blur it. That being said, we might want
+           to be a little bit more aggressive on pure horizontal/vertical
+           since the ringing there tends to be directional, so it doesn't
+           get removed by the directional filtering. */
+        (filter_dering_direction[bsize - OD_LOG_BSIZE0])(
+            &y[bi << 2 * bsize], 1 << bsize,
+            &in[(by * OD_FILT_BSTRIDE << bsize) + (bx << bsize)],
+            od_adjust_thresh(threshold, var[by][bx]), dir[by][bx]);
       }
-      if (dirinit) *dirinit = 1;
-    }
-    for (bi = 0; bi < dering_count; bi++) {
-      by = dlist[bi].by;
-      bx = dlist[bi].bx;
-      /* Deringing orthogonal to the direction uses a tighter threshold
-         because we want to be conservative. We've presumably already
-         achieved some deringing, so the amount of change is expected
-         to be low. Also, since we might be filtering across an edge, we
-         want to make sure not to blur it. That being said, we might want
-         to be a little bit more aggressive on pure horizontal/vertical
-         since the ringing there tends to be directional, so it doesn't
-         get removed by the directional filtering. */
-      (filter_dering_direction[bsize - OD_LOG_BSIZE0])(
-          &y[bi << 2 * bsize], 1 << bsize,
-          &in[(by * OD_FILT_BSTRIDE << bsize) + (bx << bsize)],
-          od_adjust_thresh(threshold, var[by][bx]), dir[by][bx]);
-    }
-  } else {
-    for (bi = 0; bi < dering_count; bi++) {
-      by = dlist[bi].by;
-      bx = dlist[bi].bx;
-      (filter_dering_direction[bsize - OD_LOG_BSIZE0])(
-          &y[bi << 2 * bsize], 1 << bsize,
-          &in[(by * OD_FILT_BSTRIDE << bsize) + (bx << bsize)], threshold,
-          dir[by][bx]);
+    } else {
+      for (bi = 0; bi < dering_count; bi++) {
+        by = dlist[bi].by;
+        bx = dlist[bi].bx;
+        (filter_dering_direction[bsize - OD_LOG_BSIZE0])(
+            &y[bi << 2 * bsize], 1 << bsize,
+            &in[(by * OD_FILT_BSTRIDE << bsize) + (bx << bsize)], threshold,
+            dir[by][bx]);
+      }
     }
   }
   if (!clpf_strength) return;
-  copy_dering_16bit_to_16bit(in, OD_FILT_BSTRIDE, y, dlist, dering_count,
-                             bsize);
+  if (threshold && !skip_dering)
+    copy_dering_16bit_to_16bit(in, OD_FILT_BSTRIDE, y, dlist, dering_count,
+                               bsize);
   for (bi = 0; bi < dering_count; bi++) {
     by = dlist[bi].by;
     bx = dlist[bi].bx;
