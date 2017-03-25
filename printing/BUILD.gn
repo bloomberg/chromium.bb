@@ -54,6 +54,7 @@ component("printing") {
     "pdf_metafile_cg_mac.h",
     "pdf_metafile_skia.cc",
     "pdf_metafile_skia.h",
+    "pdf_render_settings.h",
     "print_dialog_gtk_interface.h",
     "print_job_constants.cc",
     "print_job_constants.h",
@@ -74,8 +75,10 @@ component("printing") {
     "printed_pages_source.h",
     "printing_context.cc",
     "printing_context.h",
+    "printing_export.h",
     "printing_utils.cc",
     "printing_utils.h",
+    "pwg_raster_settings.h",
     "units.cc",
     "units.h",
   ]
