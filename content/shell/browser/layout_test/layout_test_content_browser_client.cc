@@ -132,7 +132,9 @@ void LayoutTestContentBrowserClient::GetQuotaSettings(
     BrowserContext* context,
     StoragePartition* partition,
     const storage::OptionalQuotaSettingsCallback& callback) {
-  callback.Run(storage::GetHardCodedSettings(5 * 1024 * 1024));
+  // The 1GB limit is intended to give a large headroom to tests that need to
+  // build up a large data set and issue many concurrent reads or writes.
+  callback.Run(storage::GetHardCodedSettings(1024 * 1024 * 1024));
 }
 
 PlatformNotificationService*
