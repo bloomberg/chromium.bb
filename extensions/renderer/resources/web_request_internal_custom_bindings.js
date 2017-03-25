@@ -5,11 +5,12 @@
 // Custom binding for the webRequestInternal API.
 
 var binding = require('binding').Binding.create('webRequestInternal');
+var CHECK = requireNative('logging').CHECK;
 var eventBindings = require('event_bindings');
-var sendRequest = require('sendRequest').sendRequest;
-var validate = require('schemaUtils').validate;
-var utils = require('utils');
 var idGeneratorNatives = requireNative('id_generator');
+var sendRequest = require('sendRequest').sendRequest;
+var utils = require('utils');
+var validate = require('schemaUtils').validate;
 
 var webRequestInternal;
 
@@ -38,25 +39,19 @@ function WebRequestEventImpl(eventName, opt_argSchemas, opt_extraArgSchemas,
   this.webViewInstanceId = opt_webViewInstanceId || 0;
   this.subEvents = [];
   this.eventOptions = eventBindings.parseEventOptions(opt_eventOptions);
-  if (this.eventOptions.supportsRules) {
-    this.eventForRules =
-        new eventBindings.Event(eventName, opt_argSchemas, opt_eventOptions,
-                                opt_webViewInstanceId);
-  }
+  CHECK(!this.eventOptions.supportsRules, eventName + ' supports rules');
+  CHECK(this.eventOptions.supportsListeners,
+        eventName + ' does not support listeners');
 }
 $Object.setPrototypeOf(WebRequestEventImpl.prototype, null);
 
 // Test if the given callback is registered for this event.
 WebRequestEventImpl.prototype.hasListener = function(cb) {
-  if (!this.eventOptions.supportsListeners)
-    throw new Error('This event does not support listeners.');
   return this.findListener_(cb) > -1;
 };
 
 // Test if any callbacks are registered fur thus event.
 WebRequestEventImpl.prototype.hasListeners = function() {
-  if (!this.eventOptions.supportsListeners)
-    throw new Error('This event does not support listeners.');
   return this.subEvents.length > 0;
 };
 
@@ -66,8 +61,6 @@ WebRequestEventImpl.prototype.hasListeners = function() {
 // info is sent to the callback.
 WebRequestEventImpl.prototype.addListener =
     function(cb, opt_filter, opt_extraInfo) {
-  if (!this.eventOptions.supportsListeners)
-    throw new Error('This event does not support listeners.');
   // NOTE(benjhayden) New APIs should not use this subEventName trick! It does
   // not play well with event pages. See downloads.onDeterminingFilename and
   // ExtensionDownloadsEventRouter for an alternative approach.
@@ -114,8 +107,6 @@ WebRequestEventImpl.prototype.addListener =
 
 // Unregisters a callback.
 WebRequestEventImpl.prototype.removeListener = function(cb) {
-  if (!this.eventOptions.supportsListeners)
-    throw new Error('This event does not support listeners.');
   var idx;
   while ((idx = this.findListener_(cb)) >= 0) {
     var e = this.subEvents[idx];
@@ -142,22 +133,16 @@ WebRequestEventImpl.prototype.findListener_ = function(cb) {
 };
 
 WebRequestEventImpl.prototype.addRules = function(rules, opt_cb) {
-  if (!this.eventOptions.supportsRules)
-    throw new Error('This event does not support rules.');
-  this.eventForRules.addRules(rules, opt_cb);
+  throw new Error('This event does not support rules.');
 };
 
 WebRequestEventImpl.prototype.removeRules =
     function(ruleIdentifiers, opt_cb) {
-  if (!this.eventOptions.supportsRules)
-    throw new Error('This event does not support rules.');
-  this.eventForRules.removeRules(ruleIdentifiers, opt_cb);
+  throw new Error('This event does not support rules.');
 };
 
 WebRequestEventImpl.prototype.getRules = function(ruleIdentifiers, cb) {
-  if (!this.eventOptions.supportsRules)
-    throw new Error('This event does not support rules.');
-  this.eventForRules.getRules(ruleIdentifiers, cb);
+  throw new Error('This event does not support rules.');
 };
 
 binding.registerCustomHook(function(api) {
