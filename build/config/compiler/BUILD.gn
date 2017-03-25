@@ -4,6 +4,7 @@
 
 import("//build/config/android/config.gni")
 import("//build/config/chrome_build.gni")
+import("//build/config/chromecast_build.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/nacl/config.gni")
 import("//build/toolchain/cc_wrapper.gni")
@@ -61,7 +62,8 @@ declare_args() {
 
   # Omit unwind support in official builds to save space.
   # We can use breakpad for these builds.
-  exclude_unwind_tables = is_chrome_branded && is_official_build
+  exclude_unwind_tables = (is_chrome_branded && is_official_build) ||
+                          (is_chromecast && !is_cast_desktop_build && !is_debug)
 
   # If true, gold linker will save symbol table inside object files.
   # This speeds up gdb startup by 60%
