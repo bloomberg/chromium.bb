@@ -591,7 +591,6 @@ panel_create(struct desktop *desktop)
 {
 	struct panel *panel;
 	struct weston_config_section *s;
-	char *clock_format_option = NULL;
 
 	panel = xzalloc(sizeof *panel);
 
@@ -610,8 +609,6 @@ panel_create(struct desktop *desktop)
 	panel->clock_format = desktop->clock_format;
 	if (panel->clock_format != CLOCK_FORMAT_NONE)
 		panel_add_clock(panel);
-
-	free (clock_format_option);
 
 	s = weston_config_get_section(desktop->config, "shell", NULL, NULL);
 	weston_config_section_get_color(s, "panel-color",
