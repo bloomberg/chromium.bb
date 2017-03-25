@@ -1178,6 +1178,12 @@ TEST_F(AssociatedInterfaceTest, CloseWithoutBindingAssociatedRequest) {
   run_loop.Run();
 }
 
+TEST_F(AssociatedInterfaceTest, GetIsolatedInterface) {
+  IntegerSenderAssociatedPtr sender;
+  GetIsolatedInterface(MakeRequest(&sender).PassHandle());
+  sender->Send(42);
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace mojo

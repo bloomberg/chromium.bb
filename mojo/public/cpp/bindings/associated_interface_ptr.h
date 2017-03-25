@@ -18,6 +18,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
+#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/lib/associated_interface_ptr_state.h"
 #include "mojo/public/cpp/bindings/lib/multiplex_router.h"
@@ -269,6 +270,13 @@ AssociatedInterfaceRequest<Interface> MakeIsolatedRequest(
   request.Bind(std::move(endpoint1));
   return request;
 }
+
+// |handle| is supposed to be the request of an associated interface. This
+// method associates the interface with a dedicated, disconnected message pipe.
+// That way, the corresponding associated interface pointer of |handle| can
+// safely make calls (although those calls are silently dropped).
+MOJO_CPP_BINDINGS_EXPORT void GetIsolatedInterface(
+    ScopedInterfaceEndpointHandle handle);
 
 }  // namespace mojo
 

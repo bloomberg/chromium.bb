@@ -180,8 +180,13 @@ void SyncMessageFilter::GetGenericRemoteAssociatedInterface(
     mojo::ScopedInterfaceEndpointHandle handle) {
   base::AutoLock auto_lock(lock_);
   DCHECK(io_task_runner_ && io_task_runner_->BelongsToCurrentThread());
-  if (!channel_)
+  if (!channel_) {
+    // Attach the associated interface to a disconnected pipe, so that the
+    // associated interface pointer can be used to make calls (which are
+    // dropped).
+    mojo::GetIsolatedInterface(std::move(handle));
     return;
+  }
 
   Channel::AssociatedInterfaceSupport* support =
       channel_->GetAssociatedInterfaceSupport();

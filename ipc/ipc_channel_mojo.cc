@@ -479,8 +479,14 @@ void ChannelMojo::AddGenericAssociatedInterface(
 void ChannelMojo::GetGenericRemoteAssociatedInterface(
     const std::string& name,
     mojo::ScopedInterfaceEndpointHandle handle) {
-  if (message_reader_)
+  if (message_reader_) {
     message_reader_->GetRemoteInterface(name, std::move(handle));
+  } else {
+    // Attach the associated interface to a disconnected pipe, so that the
+    // associated interface pointer can be used to make calls (which are
+    // dropped).
+    mojo::GetIsolatedInterface(std::move(handle));
+  }
 }
 
 }  // namespace IPC
