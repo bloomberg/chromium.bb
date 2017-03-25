@@ -22,11 +22,6 @@ id<GREYAction> LongPressElementForContextMenu(const std::string& element_id,
       triggers_context_menu);
 }
 
-id<GREYAction> longPressElementForContextMenu(const std::string& element_id,
-                                              bool triggers_context_menu) {
-  return LongPressElementForContextMenu(element_id, triggers_context_menu);
-}
-
 id<GREYAction> TurnCollectionViewSwitchOn(BOOL on) {
   id<GREYMatcher> constraints = grey_not(grey_systemAlertViewShown());
   NSString* actionName =

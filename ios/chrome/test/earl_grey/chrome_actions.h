@@ -20,11 +20,6 @@ namespace chrome_test_util {
 id<GREYAction> LongPressElementForContextMenu(const std::string& element_id,
                                               bool triggers_context_menu);
 
-// TODO(crbug.com/683432): Delete this once downstream code uses the correct
-// format.
-id<GREYAction> longPressElementForContextMenu(const std::string& element_id,
-                                              bool triggers_context_menu);
-
 // Action to turn the switch of a CollectionViewSwitchCell to the given |on|
 // state.
 id<GREYAction> TurnCollectionViewSwitchOn(BOOL on);
