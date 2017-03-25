@@ -5,6 +5,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/shadow.html">
+<link rel="import" href="chrome://extensions/code_section.html">
 
 <dom-module id="extensions-load-error">
   <template>
@@ -93,14 +94,16 @@
         <div id="info">
           <div id="file" class="description-row">
             <span class="row-label">$i18n{loadErrorFileLabel}</span>
-            <span class="row-value">[[filePath]]</span>
+            <span class="row-value">[[loadError.path]]</span>
           </div>
           <div id="error" class="description-row">
             <span class="row-label">$i18n{loadErrorErrorLabel}</span>
-            <span class="row-value">[[error]]</span>
+            <span class="row-value">[[loadError.error]]</span>
           </div>
         </div>
-        <div id="extension-code"></div>
+        <extensions-code-section id="code"
+            could-not-display-code="$i18n{loadErrorCouldNotLoadManifest}">
+        </extensions-code-section>
       </div>
       <div id="buttons-container">
         <paper-button id="dismiss" on-tap="close">

@@ -40,7 +40,7 @@
         text-align: center;
       }
     </style>
-    <div id="main" hidden$="[[isMainHidden_(code)]]">
+    <div id="main" hidden$="[[isEmpty(code)]]">
       <div id="line-numbers">
         <span>[[computeLineNumbersContent_(code.*)]]</span>
       </div>
@@ -51,7 +51,7 @@
      --></span>[[code.afterHighlight]]</span>
       </div>
     </div>
-    <div id="no-code" hidden$="[[!isMainHidden_(code)]]">[[noCodeError]]</div>
+    <div id="no-code" hidden$="[[!isEmpty(code)]]">[[couldNotDisplayCode]]</div>
   </template>
   <script src="chrome://extensions/code_section.js"></script>
 </dom-module>

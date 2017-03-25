@@ -21,10 +21,22 @@ cr.define('extensions', function() {
       },
 
       /**
-       * The string to display if no code is set.
+       * The string to display if no |code| is set (e.g. because we couldn't
+       * load the relevant source file).
        * @type {string}
        */
-      noCodeError: String,
+      couldNotDisplayCode: String,
+    },
+
+    /**
+     * Returns true if no code could be displayed (e.g. because the file could
+     * not be loaded).
+     * @return {boolean}
+     */
+    isEmpty: function() {
+      return !this.code ||
+             (!this.code.beforeHighlight && !this.code.highlight &&
+              !this.code.afterHighlight);
     },
 
     /**
@@ -45,14 +57,6 @@ cr.define('extensions', function() {
       for (var i = 1; i <= lineCount; ++i)
         textContent += i + '\n';
       return textContent;
-    },
-
-    /**
-     * @return {boolean}
-     * @private
-     */
-    isMainHidden_: function() {
-      return !this.code;
     },
   });
 

@@ -7,6 +7,7 @@ cr.define('extension_load_error_tests', function() {
   /** @enum {string} */
   var TestNames = {
     Interaction: 'Interaction',
+    CodeSection: 'Code Section',
   };
 
   /**
@@ -57,6 +58,22 @@ cr.define('extension_load_error_tests', function() {
         loadError.show();
         MockInteractions.tap(loadError.$$('#dismiss'));
         expectFalse(isDialogVisible());
+      });
+
+      test(assert(TestNames.CodeSection), function() {
+        expectTrue(loadError.$.code.isEmpty());
+        var loadErrorProperties = {
+          error: 'Some error',
+          path: '/some/path',
+          source: {
+            beforeHighlight: 'before',
+            highlight: 'highlight',
+            afterHighlight: 'after',
+          },
+        };
+
+        loadError.set('loadError', loadErrorProperties);
+        expectFalse(loadError.$.code.isEmpty());
       });
     });
   }

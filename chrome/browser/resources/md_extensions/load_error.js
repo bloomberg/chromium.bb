@@ -19,10 +19,13 @@ cr.define('extensions', function() {
       /** @type {extensions.LoadErrorDelegate} */
       delegate: Object,
 
-      error: String,
-
-      filePath: String,
+      /** @type {chrome.developerPrivate.LoadError} */
+      loadError: Object,
     },
+
+    observers: [
+      'observeLoadErrorChanges_(loadError)',
+    ],
 
     show: function() {
       this.$$('dialog').showModal();
@@ -36,6 +39,25 @@ cr.define('extensions', function() {
     onRetryTap_: function() {
       this.delegate.retryLoadUnpacked();
       this.close();
+    },
+
+    /** @private */
+    observeLoadErrorChanges_: function() {
+      assert(this.loadError);
+      var source = this.loadError.source;
+      // CodeSection expects a RequestFileSourceResponse, rather than an
+      // ErrorFileSource. Massage into place.
+      // TODO(devlin): Make RequestFileSourceResponse use ErrorFileSource.
+      /** @type {!chrome.developerPrivate.RequestFileSourceResponse} */
+      var codeSectionProperties = {
+        beforeHighlight: source ? source.beforeHighlight : '',
+        highlight: source ? source.highlight : '',
+        afterHighlight: source ? source.afterHighlight : '',
+        title: '',
+        message: this.loadError.error,
+      };
+
+      this.$.code.code = codeSectionProperties;
     },
   });
 

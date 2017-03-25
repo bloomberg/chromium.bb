@@ -202,6 +202,12 @@ TEST_F('CrExtensionsBrowserTest', 'ExtensionLoadErrorInteractionTest',
   mocha.grep(assert(extension_load_error_tests.TestNames.Interaction)).run();
 });
 
+TEST_F('CrExtensionsBrowserTest', 'ExtensionLoadErrorCodeSectionTest',
+       function() {
+  extension_load_error_tests.registerTests();
+  mocha.grep(assert(extension_load_error_tests.TestNames.CodeSection)).run();
+});
+
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Service Tests
 

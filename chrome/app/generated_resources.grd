@@ -4443,6 +4443,9 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
         <message name="IDS_MD_EXTENSIONS_LOAD_ERROR_FILE_LABEL" desc="The label next to the file path of an unpacked extension that failed to load.">
           File
         </message>
+        <message name="IDS_MD_EXTENSIONS_LOAD_ERROR_COULD_NOT_LOAD_MANIFEST" desc="The text to indicate that an extension's manifest could not be loaded.">
+          Could not load manifest.
+        </message>
         <message name="IDS_MD_EXTENSIONS_LOAD_ERROR_CANCEL" desc="The text on the button to close the dialog when an unpacked extension failed to load.">
           Cancel
         </message>

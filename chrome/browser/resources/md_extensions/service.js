@@ -253,8 +253,18 @@ cr.define('extensions', function() {
 
     /** @override */
     loadUnpacked: function() {
-      chrome.developerPrivate.loadUnpacked({failQuietly: true}, () => {
-        // TODO(devlin): Show the load error dialog if something went wrong.
+      chrome.developerPrivate.loadUnpacked(
+          {failQuietly: true, populateError: true},
+          (loadError) => {
+        if (chrome.runtime.lastError &&
+            chrome.runtime.lastError.message !=
+                'File selection was canceled.') {
+          throw new Error(chrome.runtime.lastError.message);
+        }
+        if (loadError) {
+          this.manager_.loadError.set('loadError', loadError);
+          this.manager_.loadError.show();
+        }
       });
     },
 

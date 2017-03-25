@@ -22,7 +22,7 @@ cr.define('extension_code_section_tests', function() {
       /** @type {extensions.CodeSection} */
       var codeSection;
 
-      var noCodeError = 'No code here';
+      var couldNotDisplayCode = 'No code here';
 
       suiteSetup(function() {
         return PolymerTest.importHtml('chrome://extensions/code_section.html');
@@ -32,7 +32,7 @@ cr.define('extension_code_section_tests', function() {
       setup(function() {
         PolymerTest.clearBody();
         codeSection = new extensions.CodeSection();
-        codeSection.noCodeError = noCodeError;
+        codeSection.couldNotDisplayCode = couldNotDisplayCode;
         document.body.appendChild(codeSection);
       });
 
@@ -42,7 +42,7 @@ cr.define('extension_code_section_tests', function() {
         var testIsVisible =
             extension_test_util.isVisible.bind(null, codeSection);
         expectFalse(!!codeSection.code);
-        expectTrue(codeSection.isMainHidden_());
+        expectTrue(codeSection.isEmpty());
         expectTrue(codeSection.$$('#main').hidden);
         expectFalse(testIsVisible('#main'));
         expectTrue(testIsVisible('#no-code'));
