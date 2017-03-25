@@ -3493,7 +3493,7 @@ TEST_P(ColorTransformPixelTest, Basic) {
   // and 4 bytes for LUT-based transforms (determined empirically).
   FuzzyPixelComparator comparator(false, 100.f, 0.f, 2.f, 2, 0);
   if (!transform->CanGetShaderSource())
-    comparator = FuzzyPixelComparator(false, 100.f, 0.f, 4.f, 4, 0);
+    comparator = FuzzyPixelComparator(false, 100.f, 0.f, 6.f, 6, 0);
   EXPECT_TRUE(RunPixelTest(&pass_list, &expected_output_colors, comparator));
 }
 

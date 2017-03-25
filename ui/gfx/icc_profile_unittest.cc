@@ -93,13 +93,11 @@ TEST(ICCProfile, ParametricVersusExact) {
       &accurate_parametric_color_space));
   EXPECT_EQ(accurate_parametric_color_space, accurate);
 
-  // This ICC profile has only an A2B representation. For now, this means that
-  // the parametric representation will be sRGB. We will eventually want to get
-  // some sense of the gamut.
+  // This ICC profile has only an A2B representation. We cannot create an
+  // SkColorSpaceXform to A2B only ICC profiles, so this should be marked
+  // as invalid.
   ICCProfile a2b = ICCProfileForTestingA2BOnly();
-  EXPECT_TRUE(a2b.GetColorSpace().IsValid());
-  EXPECT_NE(a2b.GetColorSpace(), a2b.GetParametricColorSpace());
-  EXPECT_EQ(ColorSpace::CreateSRGB(), a2b.GetParametricColorSpace());
+  EXPECT_FALSE(a2b.GetColorSpace().IsValid());
 }
 
 TEST(ICCProfile, GarbageData) {

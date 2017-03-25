@@ -9,6 +9,7 @@
 #include "base/containers/mru_cache.h"
 #include "base/lazy_instance.h"
 #include "base/synchronization/lock.h"
+#include "third_party/skia/include/core/SkColorSpaceXform.h"
 #include "third_party/skia/include/core/SkICC.h"
 #include "ui/gfx/color_transform.h"
 #include "ui/gfx/skia_color_space_util.h"
@@ -71,10 +72,8 @@ ICCProfile ICCProfile::FromData(const void* data, size_t size) {
 ICCProfile ICCProfile::FromDataWithId(const void* data,
                                       size_t size,
                                       uint64_t new_profile_id) {
-  if (!size) {
-    DLOG(ERROR) << "Invalid empty ICC profile.";
+  if (!size)
     return ICCProfile();
-  }
 
   const char* data_as_char = reinterpret_cast<const char*>(data);
   {
@@ -176,8 +175,20 @@ void ICCProfile::ComputeColorSpaceAndCache() {
     }
   }
 
+  // Parse the profile and attempt to create a SkColorSpaceXform out of it.
+  sk_sp<SkColorSpace> sk_srgb_color_space = SkColorSpace::MakeSRGB();
   sk_sp<SkICC> sk_icc = SkICC::Make(data_.data(), data_.size());
-  if (sk_icc) {
+  sk_sp<SkColorSpace> sk_icc_color_space;
+  std::unique_ptr<SkColorSpaceXform> sk_color_space_xform;
+  if (sk_icc)
+    sk_icc_color_space = SkColorSpace::MakeICC(data_.data(), data_.size());
+  if (sk_icc_color_space) {
+    sk_color_space_xform = SkColorSpaceXform::New(sk_srgb_color_space.get(),
+                                                  sk_icc_color_space.get());
+  }
+
+  // Attempt to extract a parametric represetation for this space.
+  if (sk_color_space_xform) {
     bool parametric_color_space_is_accurate = false;
     successfully_parsed_by_sk_icc_ = true;
 
@@ -226,11 +237,14 @@ void ICCProfile::ComputeColorSpaceAndCache() {
       color_space_ = ColorSpace(ColorSpace::PrimaryID::ICC_BASED,
                                 ColorSpace::TransferID::ICC_BASED);
       color_space_.icc_profile_id_ = id_;
-      color_space_.icc_profile_sk_color_space_ =
-          SkColorSpace::MakeICC(data_.data(), data_.size());
+      color_space_.icc_profile_sk_color_space_ = sk_icc_color_space;
     }
+  } else if (sk_icc_color_space) {
+    DLOG(ERROR) << "Parsed ICCProfile, but unable to create an "
+                   "SkColorSpaceXform from it.";
+    successfully_parsed_by_sk_icc_ = false;
   } else {
-    DLOG(ERROR) << "Unable parse ICCProfile.";
+    DLOG(ERROR) << "Unable to parse ICCProfile.";
     successfully_parsed_by_sk_icc_ = false;
   }
 

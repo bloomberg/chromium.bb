@@ -407,11 +407,11 @@ sk_sp<SkColorSpace> ColorSpace::ToSkColorSpace() const {
 
   // Use the named sRGB and linear transfer functions.
   if (transfer_ == TransferID::IEC61966_2_1) {
-    return SkColorSpace::MakeRGB(SkColorSpace::kLinear_RenderTargetGamma,
+    return SkColorSpace::MakeRGB(SkColorSpace::kSRGB_RenderTargetGamma,
                                  to_xyz_d50);
   }
   if (transfer_ == TransferID::LINEAR || transfer_ == TransferID::LINEAR_HDR) {
-    return SkColorSpace::MakeRGB(SkColorSpace::kSRGB_RenderTargetGamma,
+    return SkColorSpace::MakeRGB(SkColorSpace::kLinear_RenderTargetGamma,
                                  to_xyz_d50);
   }
 

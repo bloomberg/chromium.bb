@@ -260,7 +260,6 @@ component("gfx") {
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
     "//skia",
-    "//third_party/qcms",
     "//third_party/zlib",
   ]
 

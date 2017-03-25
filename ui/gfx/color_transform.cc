@@ -13,17 +13,12 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
-#include "third_party/qcms/src/qcms.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkColorSpaceXform.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/icc_profile.h"
 #include "ui/gfx/skia_color_space_util.h"
 #include "ui/gfx/transform.h"
-
-#ifndef THIS_MUST_BE_INCLUDED_AFTER_QCMS_H
-extern "C" {
-#include "third_party/qcms/src/chain.h"
-};
-#endif
 
 using std::abs;
 using std::copysign;
@@ -51,16 +46,6 @@ std::string Str(float f) {
   ss << f;
   return ss.str();
 }
-
-// Helper for scoped QCMS profiles.
-struct QcmsProfileDeleter {
-  void operator()(qcms_profile* p) {
-    if (p) {
-      qcms_profile_release(p);
-    }
-  }
-};
-using ScopedQcmsProfile = std::unique_ptr<qcms_profile, QcmsProfileDeleter>;
 
 Transform Invert(const Transform& t) {
   Transform ret = t;
@@ -242,7 +227,7 @@ class ColorTransformFromLinear;
 class ColorTransformToBT2020CL;
 class ColorTransformFromBT2020CL;
 class ColorTransformNull;
-class QCMSColorTransform;
+class SkiaColorTransform;
 
 class ColorTransformStep {
  public:
@@ -254,7 +239,7 @@ class ColorTransformStep {
   virtual ColorTransformSkTransferFn* GetSkTransferFn() { return nullptr; }
   virtual ColorTransformMatrix* GetMatrix() { return nullptr; }
   virtual ColorTransformNull* GetNull() { return nullptr; }
-  virtual QCMSColorTransform* GetQCMS() { return nullptr; }
+  virtual SkiaColorTransform* GetSkia() { return nullptr; }
 
   // Join methods, returns true if the |next| transform was successfully
   // assimilated into |this|.
@@ -281,8 +266,8 @@ class ColorTransformStep {
 
 class ColorTransformInternal : public ColorTransform {
  public:
-  ColorTransformInternal(const ColorSpace& from,
-                         const ColorSpace& to,
+  ColorTransformInternal(const ColorSpace& src,
+                         const ColorSpace& dst,
                          Intent intent);
   ~ColorTransformInternal() override;
 
@@ -299,15 +284,14 @@ class ColorTransformInternal : public ColorTransform {
   size_t NumberOfStepsForTesting() const override { return steps_.size(); }
 
  private:
-  void AppendColorSpaceToColorSpaceTransform(ColorSpace from,
-                                             const ColorSpace& to,
+  void AppendColorSpaceToColorSpaceTransform(ColorSpace src,
+                                             const ColorSpace& dst,
                                              ColorTransform::Intent intent);
   void Simplify();
 
-  // Retrieve the ICC profile from which |color_space| was created, only if that
-  // is a more precise representation of the color space than the primaries and
-  // transfer function in |color_space|.
-  ScopedQcmsProfile GetQCMSProfileIfNecessary(const ColorSpace& color_space);
+  // Retrieve the SkColorSpace for the ICC profile from which |color_space| was
+  // created, only if that is a more precise than the parametric representation.
+  sk_sp<SkColorSpace> GetSkColorSpaceIfNecessary(const ColorSpace& color_space);
 
   std::list<std::unique_ptr<ColorTransformStep>> steps_;
   gfx::ColorSpace src_;
@@ -817,11 +801,11 @@ class ColorTransformFromBT2020CL : public ColorTransformStep {
 };
 
 void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
-    ColorSpace from,
-    const ColorSpace& to,
+    ColorSpace src,
+    const ColorSpace& dst,
     ColorTransform::Intent intent) {
   if (intent == ColorTransform::Intent::INTENT_PERCEPTUAL) {
-    switch (from.transfer_) {
+    switch (src.transfer_) {
       case ColorSpace::TransferID::BT709:
       case ColorSpace::TransferID::SMPTE170M:
         // SMPTE 1886 suggests that we should be using gamma 2.4 for BT709
@@ -829,23 +813,23 @@ void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
         // user studies shows that users don't really care. Using the same
         // gamma as the display will let us optimize a lot more, so lets stick
         // with using the SRGB transfer function.
-        from.transfer_ = ColorSpace::TransferID::IEC61966_2_1;
+        src.transfer_ = ColorSpace::TransferID::IEC61966_2_1;
         break;
 
       case ColorSpace::TransferID::SMPTEST2084:
-        if (!to.IsHDR()) {
+        if (!dst.IsHDR()) {
           // We don't have an HDR display, so replace SMPTE 2084 with
           // something that returns ranges more or less suitable for a normal
           // display.
-          from.transfer_ = ColorSpace::TransferID::SMPTEST2084_NON_HDR;
+          src.transfer_ = ColorSpace::TransferID::SMPTEST2084_NON_HDR;
         }
         break;
 
       case ColorSpace::TransferID::ARIB_STD_B67:
-        if (!to.IsHDR()) {
+        if (!dst.IsHDR()) {
           // Interpreting HLG using a gamma 2.4 works reasonably well for SDR
           // displays.
-          from.transfer_ = ColorSpace::TransferID::GAMMA24;
+          src.transfer_ = ColorSpace::TransferID::GAMMA24;
         }
         break;
 
@@ -857,140 +841,132 @@ void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
   }
 
   steps_.push_back(
-      base::MakeUnique<ColorTransformMatrix>(GetRangeAdjustMatrix(from)));
+      base::MakeUnique<ColorTransformMatrix>(GetRangeAdjustMatrix(src)));
 
   steps_.push_back(
-      base::MakeUnique<ColorTransformMatrix>(Invert(GetTransferMatrix(from))));
+      base::MakeUnique<ColorTransformMatrix>(Invert(GetTransferMatrix(src))));
 
   // If the target color space is not defined, just apply the adjust and
   // tranfer matrices. This path is used by YUV to RGB color conversion
   // when full color conversion is not enabled.
-  if (!to.IsValid())
+  if (!dst.IsValid())
     return;
 
-  SkColorSpaceTransferFn to_linear_fn;
-  if (from.GetTransferFunction(&to_linear_fn)) {
+  SkColorSpaceTransferFn src_to_linear_fn;
+  if (src.GetTransferFunction(&src_to_linear_fn)) {
     steps_.push_back(base::MakeUnique<ColorTransformSkTransferFn>(
-        to_linear_fn, from.HasExtendedSkTransferFn()));
-  } else if (from.transfer_ == ColorSpace::TransferID::SMPTEST2084_NON_HDR) {
+        src_to_linear_fn, src.HasExtendedSkTransferFn()));
+  } else if (src.transfer_ == ColorSpace::TransferID::SMPTEST2084_NON_HDR) {
     steps_.push_back(
         base::MakeUnique<ColorTransformSMPTEST2048NonHdrToLinear>());
   } else {
-    steps_.push_back(base::MakeUnique<ColorTransformToLinear>(from.transfer_));
+    steps_.push_back(base::MakeUnique<ColorTransformToLinear>(src.transfer_));
   }
 
-  if (from.matrix_ == ColorSpace::MatrixID::BT2020_CL) {
+  if (src.matrix_ == ColorSpace::MatrixID::BT2020_CL) {
     // BT2020 CL is a special case.
     steps_.push_back(base::MakeUnique<ColorTransformFromBT2020CL>());
   }
   steps_.push_back(
-      base::MakeUnique<ColorTransformMatrix>(GetPrimaryTransform(from)));
+      base::MakeUnique<ColorTransformMatrix>(GetPrimaryTransform(src)));
 
   steps_.push_back(
-      base::MakeUnique<ColorTransformMatrix>(Invert(GetPrimaryTransform(to))));
-  if (to.matrix_ == ColorSpace::MatrixID::BT2020_CL) {
+      base::MakeUnique<ColorTransformMatrix>(Invert(GetPrimaryTransform(dst))));
+  if (dst.matrix_ == ColorSpace::MatrixID::BT2020_CL) {
     // BT2020 CL is a special case.
     steps_.push_back(base::MakeUnique<ColorTransformToBT2020CL>());
   }
 
-  SkColorSpaceTransferFn from_linear_fn;
-  if (to.GetInverseTransferFunction(&from_linear_fn)) {
+  SkColorSpaceTransferFn dst_from_linear_fn;
+  if (dst.GetInverseTransferFunction(&dst_from_linear_fn)) {
     steps_.push_back(base::MakeUnique<ColorTransformSkTransferFn>(
-        from_linear_fn, to.HasExtendedSkTransferFn()));
+        dst_from_linear_fn, dst.HasExtendedSkTransferFn()));
   } else {
-    steps_.push_back(base::MakeUnique<ColorTransformFromLinear>(to.transfer_));
+    steps_.push_back(base::MakeUnique<ColorTransformFromLinear>(dst.transfer_));
   }
 
   steps_.push_back(
-      base::MakeUnique<ColorTransformMatrix>(GetTransferMatrix(to)));
+      base::MakeUnique<ColorTransformMatrix>(GetTransferMatrix(dst)));
 
-  steps_.push_back(
-      base::MakeUnique<ColorTransformMatrix>(Invert(GetRangeAdjustMatrix(to))));
+  steps_.push_back(base::MakeUnique<ColorTransformMatrix>(
+      Invert(GetRangeAdjustMatrix(dst))));
 }
 
-// TODO(ccameron): Change this to SkColorSpaceXform.
-class QCMSColorTransform : public ColorTransformStep {
+class SkiaColorTransform : public ColorTransformStep {
  public:
   // Takes ownership of the profiles
-  QCMSColorTransform(ScopedQcmsProfile from, ScopedQcmsProfile to)
-      : from_(std::move(from)), to_(std::move(to)) {}
-  ~QCMSColorTransform() override {}
-  QCMSColorTransform* GetQCMS() override { return this; }
+  SkiaColorTransform(sk_sp<SkColorSpace> src, sk_sp<SkColorSpace> dst)
+      : src_(src), dst_(dst) {}
+  ~SkiaColorTransform() override {
+    src_ = nullptr;
+    dst_ = nullptr;
+  }
+  SkiaColorTransform* GetSkia() override { return this; }
   bool Join(ColorTransformStep* next_untyped) override {
-    QCMSColorTransform* next = next_untyped->GetQCMS();
+    SkiaColorTransform* next = next_untyped->GetSkia();
     if (!next)
       return false;
-    if (qcms_profile_match(to_.get(), next->from_.get())) {
-      to_ = std::move(next->to_);
+    if (SkColorSpace::Equals(dst_.get(), next->src_.get())) {
+      dst_ = next->dst_;
       return true;
     }
     return false;
   }
   bool IsNull() override {
-    if (qcms_profile_match(from_.get(), to_.get()))
+    if (SkColorSpace::Equals(src_.get(), dst_.get()))
       return true;
     return false;
   }
   void Transform(ColorTransform::TriStim* colors, size_t num) const override {
-    CHECK(sizeof(ColorTransform::TriStim) == sizeof(float[3]));
-    // QCMS doesn't like numbers outside 0..1
-    for (size_t i = 0; i < num; i++) {
-      colors[i].set_x(min(1.0f, max(0.0f, colors[i].x())));
-      colors[i].set_y(min(1.0f, max(0.0f, colors[i].y())));
-      colors[i].set_z(min(1.0f, max(0.0f, colors[i].z())));
+    // Transform to SkColors.
+    std::vector<uint8_t> sk_colors(4 * num);
+    for (size_t i = 0; i < num; ++i) {
+      float rgb[3] = {colors[i].x(), colors[i].y(), colors[i].z()};
+      for (size_t c = 0; c < 3; ++c) {
+        int value_int = static_cast<int>(255.f * rgb[c] + 0.5f);
+        value_int = min(value_int, 255);
+        value_int = max(value_int, 0);
+        sk_colors[4 * i + c] = value_int;
+      }
+      sk_colors[4 * i + 3] = 255;
     }
-    qcms_chain_transform(from_.get(), to_.get(),
-                         reinterpret_cast<float*>(colors),
-                         reinterpret_cast<float*>(colors), num * 3);
+
+    // Perform the transform.
+    std::unique_ptr<SkColorSpaceXform> xform =
+        SkColorSpaceXform::New(src_.get(), dst_.get());
+    DCHECK(xform);
+    if (!xform)
+      return;
+    std::vector<uint8_t> sk_colors_transformed(4 * num);
+    bool xform_apply_result = xform->apply(
+        SkColorSpaceXform::kRGBA_8888_ColorFormat, sk_colors_transformed.data(),
+        SkColorSpaceXform::kRGBA_8888_ColorFormat, sk_colors.data(), num,
+        kOpaque_SkAlphaType);
+    DCHECK(xform_apply_result);
+    sk_colors = sk_colors_transformed;
+
+    // Convert back to TriStim.
+    for (size_t i = 0; i < num; ++i) {
+      colors[i].set_x(sk_colors[4 * i + 0] / 255.f);
+      colors[i].set_y(sk_colors[4 * i + 1] / 255.f);
+      colors[i].set_z(sk_colors[4 * i + 2] / 255.f);
+    }
   }
 
  private:
-  ScopedQcmsProfile from_;
-  ScopedQcmsProfile to_;
+  sk_sp<SkColorSpace> src_;
+  sk_sp<SkColorSpace> dst_;
 };
 
-ScopedQcmsProfile ColorTransformInternal::GetQCMSProfileIfNecessary(
+sk_sp<SkColorSpace> ColorTransformInternal::GetSkColorSpaceIfNecessary(
     const ColorSpace& color_space) {
   if (color_space.primaries_ != ColorSpace::PrimaryID::ICC_BASED &&
       color_space.transfer_ != ColorSpace::TransferID::ICC_BASED) {
     return nullptr;
   }
-  // TODO(ccameron): Use SkColorSpaceXform here to avoid looking up the
-  // ICCProfile.
-  ICCProfile icc_profile;
-  if (!ICCProfile::FromId(color_space.icc_profile_id_, &icc_profile)) {
-    // We needed the original ICC profile to construct this transform, but it
-    // has been flushed from our cache. Fall back to using the ICC profile's
-    // inaccurate, so spam the console.
-    // TODO(ccameron): This will go away when we switch to SkColorSpaceXform.
-    LOG(ERROR) << "Failed to retrieve original ICC profile, using sRGB";
-    return ScopedQcmsProfile(qcms_profile_sRGB());
-  }
-  return ScopedQcmsProfile(qcms_profile_from_memory(
-      icc_profile.GetData().data(), icc_profile.GetData().size()));
+  DCHECK(color_space.icc_profile_sk_color_space_);
+  return color_space.icc_profile_sk_color_space_;
 }
-
-ScopedQcmsProfile GetXYZD50Profile() {
-  // QCMS is trixy, it has a datatype called qcms_CIE_xyY, but what it expects
-  // is in fact not xyY color coordinates, it just wants the x/y values of the
-  // primaries with Y equal to 1.0.
-  qcms_CIE_xyYTRIPLE xyz;
-  qcms_CIE_xyY w;
-  xyz.red.x = 1.0f;
-  xyz.red.y = 0.0f;
-  xyz.red.Y = 1.0f;
-  xyz.green.x = 0.0f;
-  xyz.green.y = 1.0f;
-  xyz.green.Y = 1.0f;
-  xyz.blue.x = 0.0f;
-  xyz.blue.y = 0.0f;
-  xyz.blue.Y = 1.0f;
-  w.x = 0.34567f;
-  w.y = 0.35850f;
-  w.Y = 1.0f;
-  return ScopedQcmsProfile(qcms_profile_create_rgb_with_gamma(w, xyz, 1.0f));
-}
-
 ColorTransformInternal::ColorTransformInternal(const ColorSpace& src,
                                                const ColorSpace& dst,
                                                Intent intent)
@@ -1003,27 +979,30 @@ ColorTransformInternal::ColorTransformInternal(const ColorSpace& src,
   // If the target color space is not defined, just apply the adjust and
   // tranfer matrices. This path is used by YUV to RGB color conversion
   // when full color conversion is not enabled.
-  ScopedQcmsProfile src_profile;
-  ScopedQcmsProfile dst_profile;
+  sk_sp<SkColorSpace> src_sk_color_space;
+  sk_sp<SkColorSpace> dst_sk_color_space;
+
+  bool has_src_profile = false;
+  bool has_dst_profile = false;
   if (dst.IsValid()) {
-    src_profile = GetQCMSProfileIfNecessary(src_);
-    dst_profile = GetQCMSProfileIfNecessary(dst_);
+    src_sk_color_space = GetSkColorSpaceIfNecessary(src_);
+    dst_sk_color_space = GetSkColorSpaceIfNecessary(dst_);
   }
-  bool has_src_profile = !!src_profile;
-  bool has_dst_profile = !!dst_profile;
+  has_src_profile = !!src_sk_color_space;
+  has_dst_profile = !!dst_sk_color_space;
 
-  if (src_profile) {
-    steps_.push_back(base::MakeUnique<QCMSColorTransform>(
-        std::move(src_profile), GetXYZD50Profile()));
+  if (has_src_profile) {
+    steps_.push_back(base::MakeUnique<SkiaColorTransform>(
+        std::move(src_sk_color_space),
+        ColorSpace::CreateXYZD50().ToSkColorSpace()));
   }
-
   AppendColorSpaceToColorSpaceTransform(
       has_src_profile ? ColorSpace::CreateXYZD50() : src_,
       has_dst_profile ? ColorSpace::CreateXYZD50() : dst_, intent);
-
-  if (dst_profile) {
-    steps_.push_back(base::MakeUnique<QCMSColorTransform>(
-        GetXYZD50Profile(), std::move(dst_profile)));
+  if (has_dst_profile) {
+    steps_.push_back(base::MakeUnique<SkiaColorTransform>(
+        ColorSpace::CreateXYZD50().ToSkColorSpace(),
+        std::move(dst_sk_color_space)));
   }
 
   if (intent != Intent::TEST_NO_OPT)
@@ -1087,11 +1066,11 @@ void ColorTransformInternal::Simplify() {
 
 // static
 std::unique_ptr<ColorTransform> ColorTransform::NewColorTransform(
-    const ColorSpace& from,
-    const ColorSpace& to,
+    const ColorSpace& src,
+    const ColorSpace& dst,
     Intent intent) {
   return std::unique_ptr<ColorTransform>(
-      new ColorTransformInternal(from, to, intent));
+      new ColorTransformInternal(src, dst, intent));
 }
 
 ColorTransform::ColorTransform() {}
