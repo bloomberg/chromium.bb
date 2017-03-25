@@ -187,12 +187,8 @@ bool BrowserCommandController::IsReservedCommandOrKey(
   }
 #endif
 
-  if (window()->IsFullscreen()) {
-    // In fullscreen, all commands except for IDC_FULLSCREEN and IDC_EXIT should
-    // be delivered to the web page. See, intent to implement,
-    // https://goo.gl/4tJ32G.
-    return command_id == IDC_EXIT || command_id == IDC_FULLSCREEN;
-  }
+  if (window()->IsFullscreen() && command_id == IDC_FULLSCREEN)
+    return true;
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // If this key was registered by the user as a content editing hotkey, then
