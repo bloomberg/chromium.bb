@@ -269,7 +269,7 @@ void TracingHandler::OnBufferUsage(float percent_full,
                                    size_t approximate_event_count) {
   // TODO(crbug426117): remove set_value once all clients have switched to
   // the new interface of the event.
-  frontend_->BufferUsage(percent_full, percent_full, approximate_event_count);
+  frontend_->BufferUsage(percent_full, approximate_event_count, percent_full);
 }
 
 void TracingHandler::OnCategoriesReceived(
