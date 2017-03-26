@@ -35,8 +35,6 @@ class PrefStoreManagerImpl
       public mojom::PrefStoreConnector,
       public service_manager::InterfaceFactory<mojom::PrefStoreConnector>,
       public service_manager::InterfaceFactory<mojom::PrefStoreRegistry>,
-      public service_manager::InterfaceFactory<
-          mojom::PersistentPrefStoreConnector>,
       public mojom::PrefServiceControl,
       public service_manager::InterfaceFactory<mojom::PrefServiceControl>,
       public service_manager::Service {
@@ -67,11 +65,6 @@ class PrefStoreManagerImpl
   void Create(const service_manager::Identity& remote_identity,
               prefs::mojom::PrefStoreRegistryRequest request) override;
 
-  // service_manager::InterfaceFactory<PersistentPrefStoreConnector>:
-  void Create(
-      const service_manager::Identity& remote_identity,
-      prefs::mojom::PersistentPrefStoreConnectorRequest request) override;
-
   // service_manager::InterfaceFactory<PrefServiceControl>:
   void Create(const service_manager::Identity& remote_identity,
               prefs::mojom::PrefServiceControlRequest request) override;
@@ -90,6 +83,12 @@ class PrefStoreManagerImpl
   // Have all the expected PrefStores connected?
   bool AllConnected() const;
 
+  void ProcessPendingConnects();
+
+  void ConnectImpl(const ConnectCallback& callback);
+
+  void OnPersistentPrefStoreReady();
+
   // PrefStores that need to register before replying to any Connect calls.
   std::set<PrefValueStore::PrefStoreType> expected_pref_stores_;
 
@@ -103,14 +102,7 @@ class PrefStoreManagerImpl
   mojo::BindingSet<mojom::PrefStoreConnector> connector_bindings_;
   mojo::BindingSet<mojom::PrefStoreRegistry> registry_bindings_;
   std::unique_ptr<PersistentPrefStoreImpl> persistent_pref_store_;
-  mojo::BindingSet<mojom::PersistentPrefStoreConnector>
-      persistent_pref_store_bindings_;
   mojo::Binding<mojom::PrefServiceControl> init_binding_;
-
-  // Requests made to connect to the service before it has been initialized.
-  // These will be handled when initialization completes.
-  std::vector<mojom::PersistentPrefStoreConnectorRequest>
-      pending_persistent_pref_store_requests_;
 
   scoped_refptr<base::SequencedWorkerPool> worker_pool_;
 

@@ -20,7 +20,8 @@ class PersistentPrefStoreImpl;
 // configured by |configuration|.
 std::unique_ptr<PersistentPrefStoreImpl> CreatePersistentPrefStore(
     mojom::PersistentPrefStoreConfigurationPtr configuration,
-    base::SequencedWorkerPool* worker_pool);
+    base::SequencedWorkerPool* worker_pool,
+    base::Closure on_initialized);
 
 }  // namespace prefs
 

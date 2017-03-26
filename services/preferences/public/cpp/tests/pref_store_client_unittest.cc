@@ -28,11 +28,6 @@ class PrefStoreObserverMock : public PrefStore::Observer {
   MOCK_METHOD1(OnInitializationCompleted, void(bool succeeded));
 };
 
-class PrefStoreConnectorMock : public mojom::PrefStoreConnector {
- public:
-  MOCK_METHOD1(Connect, void(const ConnectCallback&));
-};
-
 }  // namespace
 
 class PrefStoreClientTest : public testing::Test {

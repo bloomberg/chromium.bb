@@ -15,7 +15,6 @@
 
 namespace base {
 class Value;
-class DictionaryValue;
 }
 
 namespace prefs {
@@ -25,8 +24,10 @@ namespace prefs {
 class PersistentPrefStoreClient
     : public PrefStoreClientMixin<PersistentPrefStore> {
  public:
+  explicit PersistentPrefStoreClient(mojom::PrefStoreConnectorPtr connector);
+
   explicit PersistentPrefStoreClient(
-      mojom::PersistentPrefStoreConnectorPtr connector);
+      mojom::PersistentPrefStoreConnectionPtr connection);
 
   // WriteablePrefStore:
   void SetValue(const std::string& key,
@@ -53,13 +54,12 @@ class PersistentPrefStoreClient
   ~PersistentPrefStoreClient() override;
 
  private:
-  void OnCreateComplete(PrefReadError read_error,
-                        bool read_only,
-                        std::unique_ptr<base::DictionaryValue> cached_prefs,
-                        mojom::PersistentPrefStorePtr pref_store,
-                        mojom::PrefStoreObserverRequest observer_request);
+  void OnConnect(mojom::PersistentPrefStoreConnectionPtr connection,
+                 std::unordered_map<PrefValueStore::PrefStoreType,
+                                    prefs::mojom::PrefStoreConnectionPtr>
+                     other_pref_stores);
 
-  mojom::PersistentPrefStoreConnectorPtr connector_;
+  mojom::PrefStoreConnectorPtr connector_;
   bool read_only_ = false;
   PrefReadError read_error_ = PersistentPrefStore::PREF_READ_ERROR_NONE;
   mojom::PersistentPrefStorePtr pref_store_;

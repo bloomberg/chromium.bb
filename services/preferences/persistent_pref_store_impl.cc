@@ -70,11 +70,13 @@ class PersistentPrefStoreImpl::Connection : public mojom::PersistentPrefStore {
 
 PersistentPrefStoreImpl::PersistentPrefStoreImpl(
     scoped_refptr<PersistentPrefStore> backing_pref_store,
-    mojom::TrackedPreferenceValidationDelegatePtr validation_delegate)
+    mojom::TrackedPreferenceValidationDelegatePtr validation_delegate,
+    base::OnceClosure on_initialized)
     : backing_pref_store_(backing_pref_store),
       validation_delegate_(std::move(validation_delegate)) {
   backing_pref_store_->AddObserver(this);
   if (!backing_pref_store_->IsInitializationComplete()) {
+    on_initialized_ = std::move(on_initialized);
     initializing_ = true;
     backing_pref_store_->ReadPrefsAsync(nullptr);
   }
@@ -84,13 +86,28 @@ PersistentPrefStoreImpl::~PersistentPrefStoreImpl() {
   backing_pref_store_->RemoveObserver(this);
 }
 
-// mojom::PersistentPrefStoreConnector override:
-void PersistentPrefStoreImpl::Connect(const ConnectCallback& callback) {
-  if (initializing_) {
-    pending_connect_callbacks_.push_back(callback);
-    return;
+mojom::PersistentPrefStoreConnectionPtr
+PersistentPrefStoreImpl::CreateConnection() {
+  DCHECK(!initializing_);
+  if (!backing_pref_store_->IsInitializationComplete()) {
+    // |backing_pref_store_| initialization failed.
+    return mojom::PersistentPrefStoreConnection::New(
+        nullptr, nullptr, backing_pref_store_->GetReadError(),
+        backing_pref_store_->ReadOnly());
   }
-  CallConnectCallback(callback);
+  mojom::PersistentPrefStorePtr pref_store_ptr;
+  mojom::PrefStoreObserverPtr observer;
+  mojom::PrefStoreObserverRequest observer_request =
+      mojo::MakeRequest(&observer);
+  auto connection = base::MakeUnique<Connection>(
+      this, mojo::MakeRequest(&pref_store_ptr), std::move(observer));
+  auto* connection_ptr = connection.get();
+  connections_.insert(std::make_pair(connection_ptr, std::move(connection)));
+  return mojom::PersistentPrefStoreConnection::New(
+      mojom::PrefStoreConnection::New(std::move(observer_request),
+                                      backing_pref_store_->GetValues(), true),
+      std::move(pref_store_ptr), backing_pref_store_->GetReadError(),
+      backing_pref_store_->ReadOnly());
 }
 
 void PersistentPrefStoreImpl::OnPrefValueChanged(const std::string& key) {
@@ -109,32 +126,7 @@ void PersistentPrefStoreImpl::OnPrefValueChanged(const std::string& key) {
 void PersistentPrefStoreImpl::OnInitializationCompleted(bool succeeded) {
   DCHECK(initializing_);
   initializing_ = false;
-  for (const auto& callback : pending_connect_callbacks_) {
-    CallConnectCallback(callback);
-  }
-  pending_connect_callbacks_.clear();
-}
-
-void PersistentPrefStoreImpl::CallConnectCallback(
-    const mojom::PersistentPrefStoreConnector::ConnectCallback& callback) {
-  DCHECK(!initializing_);
-  if (!backing_pref_store_->IsInitializationComplete()) {
-    callback.Run(backing_pref_store_->GetReadError(),
-                 backing_pref_store_->ReadOnly(), nullptr, nullptr, nullptr);
-    return;
-  }
-  mojom::PersistentPrefStorePtr pref_store_ptr;
-  mojom::PrefStoreObserverPtr observer;
-  mojom::PrefStoreObserverRequest observer_request =
-      mojo::MakeRequest(&observer);
-  auto connection = base::MakeUnique<Connection>(
-      this, mojo::MakeRequest(&pref_store_ptr), std::move(observer));
-  auto* connection_ptr = connection.get();
-  connections_.insert(std::make_pair(connection_ptr, std::move(connection)));
-  callback.Run(backing_pref_store_->GetReadError(),
-               backing_pref_store_->ReadOnly(),
-               backing_pref_store_->GetValues(), std::move(pref_store_ptr),
-               std::move(observer_request));
+  std::move(on_initialized_).Run();
 }
 
 void PersistentPrefStoreImpl::SetValue(const std::string& key,

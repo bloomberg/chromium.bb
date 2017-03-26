@@ -17,6 +17,6 @@ deps = [
 ]
 
 type_mappings = [
-  "prefs.mojom.PersistentPrefStoreConnector.ReadError=::PersistentPrefStore::PrefReadError",
+  "prefs.mojom.PersistentPrefStoreConnection.ReadError=::PersistentPrefStore::PrefReadError",
   "prefs.mojom.PrefStoreType=::PrefValueStore::PrefStoreType",
 ]

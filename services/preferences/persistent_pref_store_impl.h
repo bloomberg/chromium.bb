@@ -20,17 +20,20 @@ class Value;
 
 namespace prefs {
 
-class PersistentPrefStoreImpl : public mojom::PersistentPrefStoreConnector,
-                                public PrefStore::Observer {
+class PersistentPrefStoreImpl : public PrefStore::Observer {
  public:
+  // If |initialized()| is false after construction, |on_initialized| will be
+  // called when it becomes true.
   PersistentPrefStoreImpl(
       scoped_refptr<PersistentPrefStore> backing_pref_store,
-      mojom::TrackedPreferenceValidationDelegatePtr validation_delegate);
+      mojom::TrackedPreferenceValidationDelegatePtr validation_delegate,
+      base::OnceClosure on_initialized);
 
   ~PersistentPrefStoreImpl() override;
 
-  // mojom::PersistentPrefStoreConnector override:
-  void Connect(const ConnectCallback& callback) override;
+  mojom::PersistentPrefStoreConnectionPtr CreateConnection();
+
+  bool initialized() { return !initializing_; }
 
  private:
   class Connection;
@@ -47,17 +50,16 @@ class PersistentPrefStoreImpl : public mojom::PersistentPrefStoreConnector,
   void OnPrefValueChanged(const std::string& key) override;
   void OnInitializationCompleted(bool succeeded) override;
 
-  void CallConnectCallback(
-      const mojom::PersistentPrefStoreConnector::ConnectCallback& callback);
   void OnConnectionError(Connection* connection);
 
   scoped_refptr<PersistentPrefStore> backing_pref_store_;
   mojom::TrackedPreferenceValidationDelegatePtr validation_delegate_;
 
   bool initializing_ = false;
-  std::vector<ConnectCallback> pending_connect_callbacks_;
 
   std::unordered_map<Connection*, std::unique_ptr<Connection>> connections_;
+
+  base::OnceClosure on_initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(PersistentPrefStoreImpl);
 };

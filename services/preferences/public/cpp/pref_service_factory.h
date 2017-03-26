@@ -36,7 +36,7 @@ using ConnectCallback = base::Callback<void(std::unique_ptr<::PrefService>)>;
 // first.
 void ConnectToPrefService(service_manager::Connector* connector,
                           scoped_refptr<PrefRegistry> pref_registry,
-                          const ConnectCallback& callback);
+                          ConnectCallback callback);
 
 }  // namespace prefs
 

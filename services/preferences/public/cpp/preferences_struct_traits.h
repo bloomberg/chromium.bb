@@ -23,13 +23,13 @@ struct EnumTraits<::prefs::mojom::PrefStoreType,
 };
 
 template <>
-struct EnumTraits<::prefs::mojom::PersistentPrefStoreConnector_ReadError,
+struct EnumTraits<::prefs::mojom::PersistentPrefStoreConnection_ReadError,
                   ::PersistentPrefStore::PrefReadError> {
-  static prefs::mojom::PersistentPrefStoreConnector_ReadError ToMojom(
+  static prefs::mojom::PersistentPrefStoreConnection_ReadError ToMojom(
       PersistentPrefStore::PrefReadError input);
 
   static bool FromMojom(
-      prefs::mojom::PersistentPrefStoreConnector_ReadError input,
+      prefs::mojom::PersistentPrefStoreConnection_ReadError input,
       PersistentPrefStore::PrefReadError* output);
 };
 

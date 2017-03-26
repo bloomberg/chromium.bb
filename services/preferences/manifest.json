@@ -6,8 +6,7 @@
       "provides": {
         "pref_client": [
           "prefs::mojom::PrefStoreConnector",
-          "prefs::mojom::PrefStoreRegistry",
-          "prefs::mojom::PersistentPrefStoreConnector"
+          "prefs::mojom::PrefStoreRegistry"
         ],
         "pref_control": [
           "prefs::mojom::PrefServiceControl"

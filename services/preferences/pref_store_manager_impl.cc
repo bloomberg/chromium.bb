@@ -25,15 +25,19 @@ using PrefStorePtrs =
 // Connect calls.
 class ConnectionBarrier : public base::RefCounted<ConnectionBarrier> {
  public:
-  static void Create(const PrefStorePtrs& pref_store_ptrs,
-                     const ConnectCallback& callback);
+  static void Create(
+      const PrefStorePtrs& pref_store_ptrs,
+      mojom::PersistentPrefStoreConnectionPtr persistent_pref_store_connection,
+      const ConnectCallback& callback);
 
   void Init(const PrefStorePtrs& pref_store_ptrs);
 
  private:
   friend class base::RefCounted<ConnectionBarrier>;
-  ConnectionBarrier(const PrefStorePtrs& pref_store_ptrs,
-                    const ConnectCallback& callback);
+  ConnectionBarrier(
+      const PrefStorePtrs& pref_store_ptrs,
+      mojom::PersistentPrefStoreConnectionPtr persistent_pref_store_connection,
+      const ConnectCallback& callback);
   ~ConnectionBarrier() = default;
 
   void OnConnect(PrefValueStore::PrefStoreType type,
@@ -47,13 +51,19 @@ class ConnectionBarrier : public base::RefCounted<ConnectionBarrier> {
 
   const size_t expected_connections_;
 
+  mojom::PersistentPrefStoreConnectionPtr persistent_pref_store_connection_;
+
   DISALLOW_COPY_AND_ASSIGN(ConnectionBarrier);
 };
 
 // static
-void ConnectionBarrier::Create(const PrefStorePtrs& pref_store_ptrs,
-                               const ConnectCallback& callback) {
-  make_scoped_refptr(new ConnectionBarrier(pref_store_ptrs, callback))
+void ConnectionBarrier::Create(
+    const PrefStorePtrs& pref_store_ptrs,
+    mojom::PersistentPrefStoreConnectionPtr persistent_pref_store_connection,
+    const ConnectCallback& callback) {
+  make_scoped_refptr(new ConnectionBarrier(
+                         pref_store_ptrs,
+                         std::move(persistent_pref_store_connection), callback))
       ->Init(pref_store_ptrs);
 }
 
@@ -61,7 +71,8 @@ void ConnectionBarrier::Init(const PrefStorePtrs& pref_store_ptrs) {
   if (expected_connections_ == 0) {
     // Degenerate case. We don't expect this, but it could happen in
     // e.g. testing.
-    callback_.Run(std::move(connections_));
+    callback_.Run(std::move(persistent_pref_store_connection_),
+                  std::move(connections_));
     return;
   }
   for (const auto& ptr : pref_store_ptrs) {
@@ -70,9 +81,14 @@ void ConnectionBarrier::Init(const PrefStorePtrs& pref_store_ptrs) {
   }
 }
 
-ConnectionBarrier::ConnectionBarrier(const PrefStorePtrs& pref_store_ptrs,
-                                     const ConnectCallback& callback)
-    : callback_(callback), expected_connections_(pref_store_ptrs.size()) {}
+ConnectionBarrier::ConnectionBarrier(
+    const PrefStorePtrs& pref_store_ptrs,
+    mojom::PersistentPrefStoreConnectionPtr persistent_pref_store_connection,
+    const ConnectCallback& callback)
+    : callback_(callback),
+      expected_connections_(pref_store_ptrs.size()),
+      persistent_pref_store_connection_(
+          std::move(persistent_pref_store_connection)) {}
 
 void ConnectionBarrier::OnConnect(
     PrefValueStore::PrefStoreType type,
@@ -80,8 +96,9 @@ void ConnectionBarrier::OnConnect(
   connections_.insert(std::make_pair(type, std::move(connection_ptr)));
   if (connections_.size() == expected_connections_) {
     // After this method exits |this| will get destroyed so it's safe to move
-    // out the map.
-    callback_.Run(std::move(connections_));
+    // out the members.
+    callback_.Run(std::move(persistent_pref_store_connection_),
+                  std::move(connections_));
   }
 }
 
@@ -112,17 +129,16 @@ void PrefStoreManagerImpl::Register(PrefValueStore::PrefStoreType type,
   DCHECK(success) << "The same pref store registered twice: " << type;
   if (AllConnected()) {
     DVLOG(1) << "All pref stores registered.";
-    for (const auto& callback : pending_callbacks_)
-      ConnectionBarrier::Create(pref_store_ptrs_, callback);
-    pending_callbacks_.clear();
+    ProcessPendingConnects();
   }
 }
 
 void PrefStoreManagerImpl::Connect(const ConnectCallback& callback) {
-  if (AllConnected())
-    ConnectionBarrier::Create(pref_store_ptrs_, callback);
-  else
+  if (AllConnected()) {
+    ConnectImpl(callback);
+  } else {
     pending_callbacks_.push_back(callback);
+  }
 }
 
 void PrefStoreManagerImpl::Create(
@@ -135,17 +151,6 @@ void PrefStoreManagerImpl::Create(
     const service_manager::Identity& remote_identity,
     prefs::mojom::PrefStoreRegistryRequest request) {
   registry_bindings_.AddBinding(this, std::move(request));
-}
-
-void PrefStoreManagerImpl::Create(
-    const service_manager::Identity& remote_identity,
-    prefs::mojom::PersistentPrefStoreConnectorRequest request) {
-  if (!persistent_pref_store_) {
-    pending_persistent_pref_store_requests_.push_back(std::move(request));
-    return;
-  }
-  persistent_pref_store_bindings_.AddBinding(persistent_pref_store_.get(),
-                                             std::move(request));
 }
 
 void PrefStoreManagerImpl::Create(
@@ -165,14 +170,13 @@ void PrefStoreManagerImpl::Init(
     mojom::PersistentPrefStoreConfigurationPtr configuration) {
   DCHECK(!persistent_pref_store_);
 
-  persistent_pref_store_ =
-      CreatePersistentPrefStore(std::move(configuration), worker_pool_.get());
+  persistent_pref_store_ = CreatePersistentPrefStore(
+      std::move(configuration), worker_pool_.get(),
+      base::Bind(&PrefStoreManagerImpl::OnPersistentPrefStoreReady,
+                 base::Unretained(this)));
   DCHECK(persistent_pref_store_);
-  for (auto& request : pending_persistent_pref_store_requests_) {
-    persistent_pref_store_bindings_.AddBinding(persistent_pref_store_.get(),
-                                               std::move(request));
-  }
-  pending_persistent_pref_store_requests_.clear();
+  if (AllConnected())
+    ProcessPendingConnects();
 }
 
 void PrefStoreManagerImpl::OnStart() {}
@@ -182,7 +186,6 @@ bool PrefStoreManagerImpl::OnConnect(
     service_manager::InterfaceRegistry* registry) {
   registry->AddInterface<prefs::mojom::PrefStoreConnector>(this);
   registry->AddInterface<prefs::mojom::PrefStoreRegistry>(this);
-  registry->AddInterface<prefs::mojom::PersistentPrefStoreConnector>(this);
   registry->AddInterface<prefs::mojom::PrefServiceControl>(this);
   return true;
 }
@@ -194,7 +197,26 @@ void PrefStoreManagerImpl::OnPrefStoreDisconnect(
 }
 
 bool PrefStoreManagerImpl::AllConnected() const {
-  return pref_store_ptrs_.size() == expected_pref_stores_.size();
+  return pref_store_ptrs_.size() == expected_pref_stores_.size() &&
+         persistent_pref_store_ && persistent_pref_store_->initialized();
+}
+
+void PrefStoreManagerImpl::ProcessPendingConnects() {
+  for (auto& connect : pending_callbacks_)
+    ConnectImpl(connect);
+  pending_callbacks_.clear();
+}
+
+void PrefStoreManagerImpl::ConnectImpl(const ConnectCallback& callback) {
+  ConnectionBarrier::Create(
+      pref_store_ptrs_, persistent_pref_store_->CreateConnection(), callback);
+}
+
+void PrefStoreManagerImpl::OnPersistentPrefStoreReady() {
+  DVLOG(1) << "PersistentPrefStore ready";
+  if (AllConnected()) {
+    ProcessPendingConnects();
+  }
 }
 
 }  // namespace prefs

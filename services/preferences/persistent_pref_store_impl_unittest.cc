@@ -40,14 +40,17 @@ class PersistentPrefStoreMock : public InMemoryPrefStore {
   ~PersistentPrefStoreMock() override = default;
 };
 
-class PrefStoreConnectorMock : public mojom::PrefStoreConnector {
- public:
-  MOCK_METHOD1(Connect, void(const ConnectCallback&));
-};
-
 class InitializationMockPersistentPrefStore : public InMemoryPrefStore {
  public:
-  bool IsInitializationComplete() const override { return initialized_; }
+  InitializationMockPersistentPrefStore(
+      bool success,
+      PersistentPrefStore::PrefReadError error,
+      bool read_only)
+      : success_(success), read_error_(error), read_only_(read_only) {}
+
+  bool IsInitializationComplete() const override {
+    return initialized_ && success_;
+  }
 
   void AddObserver(PrefStore::Observer* observer) override {
     observers_.AddObserver(observer);
@@ -59,6 +62,17 @@ class InitializationMockPersistentPrefStore : public InMemoryPrefStore {
 
   void ReadPrefsAsync(ReadErrorDelegate* error_delegate) override {
     DCHECK(!error_delegate);
+    DCHECK(!initialized_);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(&InitializationMockPersistentPrefStore::CompleteRead, this));
+  }
+
+  void CompleteRead() {
+    initialized_ = true;
+    for (auto& observer : observers_) {
+      observer.OnInitializationCompleted(success_);
+    }
   }
 
   PersistentPrefStore::PrefReadError GetReadError() const override {
@@ -66,25 +80,17 @@ class InitializationMockPersistentPrefStore : public InMemoryPrefStore {
   }
   bool ReadOnly() const override { return read_only_; }
 
-  void Initialize(bool success,
-                  PersistentPrefStore::PrefReadError error,
-                  bool read_only) {
-    initialized_ = success;
-    read_error_ = error;
-    read_only_ = read_only;
-    for (auto& observer : observers_) {
-      observer.OnInitializationCompleted(initialized_);
-    }
-  }
-
  private:
   ~InitializationMockPersistentPrefStore() override = default;
 
-  PersistentPrefStore::PrefReadError read_error_;
-  bool read_only_ = false;
   bool initialized_ = false;
+  bool success_;
+  PersistentPrefStore::PrefReadError read_error_;
+  bool read_only_;
   base::ObserverList<PrefStore::Observer, true> observers_;
 };
+
+constexpr char kKey[] = "path.to.key";
 
 class PersistentPrefStoreImplTest : public testing::Test {
  public:
@@ -94,26 +100,23 @@ class PersistentPrefStoreImplTest : public testing::Test {
   void TearDown() override {
     pref_store_ = nullptr;
     base::RunLoop().RunUntilIdle();
-    bindings_.CloseAllBindings();
-    backing_pref_store_.reset();
+    impl_.reset();
     base::RunLoop().RunUntilIdle();
   }
 
   void CreateImpl(scoped_refptr<PersistentPrefStore> backing_pref_store) {
-    backing_pref_store_ = base::MakeUnique<PersistentPrefStoreImpl>(
-        std::move(backing_pref_store), nullptr);
-    mojo::Binding<mojom::PersistentPrefStoreConnector> binding(
-        backing_pref_store_.get());
+    base::RunLoop run_loop;
+    bool initialized = backing_pref_store->IsInitializationComplete();
+    impl_ = base::MakeUnique<PersistentPrefStoreImpl>(
+        std::move(backing_pref_store), nullptr, run_loop.QuitClosure());
+    if (!initialized)
+      run_loop.Run();
     pref_store_ = CreateConnection();
   }
 
-  mojom::PersistentPrefStoreConnectorPtr CreateConnector() {
-    return bindings_.CreateInterfacePtrAndBind(backing_pref_store_.get());
-  }
-
   scoped_refptr<PersistentPrefStore> CreateConnection() {
-    return make_scoped_refptr(new PersistentPrefStoreClient(
-        bindings_.CreateInterfacePtrAndBind(backing_pref_store_.get())));
+    return make_scoped_refptr(
+        new PersistentPrefStoreClient(impl_->CreateConnection()));
   }
 
   PersistentPrefStore* pref_store() { return pref_store_.get(); }
@@ -121,8 +124,7 @@ class PersistentPrefStoreImplTest : public testing::Test {
  private:
   base::MessageLoop message_loop_;
 
-  std::unique_ptr<PersistentPrefStoreImpl> backing_pref_store_;
-  mojo::BindingSet<mojom::PersistentPrefStoreConnector> bindings_;
+  std::unique_ptr<PersistentPrefStoreImpl> impl_;
 
   scoped_refptr<PersistentPrefStore> pref_store_;
 
@@ -131,12 +133,9 @@ class PersistentPrefStoreImplTest : public testing::Test {
 
 TEST_F(PersistentPrefStoreImplTest, InitializationSuccess) {
   auto backing_pref_store =
-      make_scoped_refptr(new InitializationMockPersistentPrefStore);
+      make_scoped_refptr(new InitializationMockPersistentPrefStore(
+          true, PersistentPrefStore::PREF_READ_ERROR_NONE, false));
   CreateImpl(backing_pref_store);
-  backing_pref_store->Initialize(
-      true, PersistentPrefStore::PREF_READ_ERROR_NONE, false);
-  EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE,
-            pref_store()->ReadPrefs());
   EXPECT_TRUE(pref_store()->IsInitializationComplete());
   EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE,
             pref_store()->GetReadError());
@@ -145,12 +144,9 @@ TEST_F(PersistentPrefStoreImplTest, InitializationSuccess) {
 
 TEST_F(PersistentPrefStoreImplTest, InitializationFailure) {
   auto backing_pref_store =
-      make_scoped_refptr(new InitializationMockPersistentPrefStore);
+      make_scoped_refptr(new InitializationMockPersistentPrefStore(
+          false, PersistentPrefStore::PREF_READ_ERROR_JSON_PARSE, true));
   CreateImpl(backing_pref_store);
-  backing_pref_store->Initialize(
-      false, PersistentPrefStore::PREF_READ_ERROR_JSON_PARSE, true);
-  EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_JSON_PARSE,
-            pref_store()->ReadPrefs());
   EXPECT_FALSE(pref_store()->IsInitializationComplete());
   EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_JSON_PARSE,
             pref_store()->GetReadError());
@@ -176,85 +172,11 @@ class TestReadErrorDelegate : public PersistentPrefStore::ReadErrorDelegate {
   const base::Closure quit_;
 };
 
-TEST_F(PersistentPrefStoreImplTest, InitializationFailure_AsyncRead) {
-  auto backing_pref_store =
-      make_scoped_refptr(new InitializationMockPersistentPrefStore);
-  CreateImpl(backing_pref_store);
-  backing_pref_store->Initialize(
-      false, PersistentPrefStore::PREF_READ_ERROR_JSON_TYPE, true);
-  PersistentPrefStore::PrefReadError read_error =
-      PersistentPrefStore::PREF_READ_ERROR_NONE;
-  base::RunLoop run_loop;
-  pref_store()->ReadPrefsAsync(
-      new TestReadErrorDelegate(&read_error, run_loop.QuitClosure()));
-  run_loop.Run();
-  EXPECT_FALSE(pref_store()->IsInitializationComplete());
-  EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_JSON_TYPE, read_error);
-  EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_JSON_TYPE,
-            pref_store()->GetReadError());
-  EXPECT_TRUE(pref_store()->ReadOnly());
-}
-
-TEST_F(PersistentPrefStoreImplTest, DelayedInitializationSuccess) {
-  auto backing_pref_store =
-      make_scoped_refptr(new InitializationMockPersistentPrefStore);
-
-  CreateImpl(backing_pref_store);
-  auto connector = CreateConnector();
-  base::RunLoop run_loop;
-  connector->Connect(base::Bind(
-      [](const base::Closure& quit,
-         PersistentPrefStore::PrefReadError read_error, bool read_only,
-         std::unique_ptr<base::DictionaryValue> local_prefs,
-         mojom::PersistentPrefStorePtr pref_store,
-         mojom::PrefStoreObserverRequest observer_request) {
-        quit.Run();
-        EXPECT_FALSE(read_only);
-        EXPECT_TRUE(local_prefs);
-        EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE, read_error);
-      },
-      run_loop.QuitClosure()));
-  connector.FlushForTesting();
-  backing_pref_store->Initialize(
-      true, PersistentPrefStore::PREF_READ_ERROR_NONE, false);
-  run_loop.Run();
-}
-
-TEST_F(PersistentPrefStoreImplTest, DelayedInitializationFailure) {
-  auto backing_pref_store =
-      make_scoped_refptr(new InitializationMockPersistentPrefStore);
-
-  CreateImpl(backing_pref_store);
-  auto connector = CreateConnector();
-  base::RunLoop run_loop;
-  connector->Connect(base::Bind(
-      [](const base::Closure& quit,
-         PersistentPrefStore::PrefReadError read_error, bool read_only,
-         std::unique_ptr<base::DictionaryValue> local_prefs,
-         mojom::PersistentPrefStorePtr pref_store,
-         mojom::PrefStoreObserverRequest observer_request) {
-        quit.Run();
-        EXPECT_TRUE(read_only);
-        EXPECT_FALSE(local_prefs);
-        EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_ACCESS_DENIED,
-                  read_error);
-      },
-      run_loop.QuitClosure()));
-  connector.FlushForTesting();
-  backing_pref_store->Initialize(
-      false, PersistentPrefStore::PREF_READ_ERROR_ACCESS_DENIED, true);
-  run_loop.Run();
-}
-
-constexpr char kKey[] = "path.to.key";
-
 TEST_F(PersistentPrefStoreImplTest, InitialValue) {
   auto backing_pref_store = make_scoped_refptr(new InMemoryPrefStore());
   const base::Value value("value");
   backing_pref_store->SetValue(kKey, value.CreateDeepCopy(), 0);
   CreateImpl(backing_pref_store);
-  ASSERT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE,
-            pref_store()->ReadPrefs());
   EXPECT_TRUE(pref_store()->IsInitializationComplete());
   const base::Value* output = nullptr;
   ASSERT_TRUE(pref_store()->GetValue(kKey, &output));
@@ -267,8 +189,6 @@ TEST_F(PersistentPrefStoreImplTest, InitialValueWithoutPathExpansion) {
   dict.SetStringWithoutPathExpansion(kKey, "value");
   backing_pref_store->SetValue(kKey, dict.CreateDeepCopy(), 0);
   CreateImpl(backing_pref_store);
-  ASSERT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE,
-            pref_store()->ReadPrefs());
   EXPECT_TRUE(pref_store()->IsInitializationComplete());
   const base::Value* output = nullptr;
   ASSERT_TRUE(pref_store()->GetValue(kKey, &output));
@@ -278,13 +198,9 @@ TEST_F(PersistentPrefStoreImplTest, InitialValueWithoutPathExpansion) {
 TEST_F(PersistentPrefStoreImplTest, WriteObservedByOtherClient) {
   auto backing_pref_store = make_scoped_refptr(new InMemoryPrefStore());
   CreateImpl(backing_pref_store);
-  ASSERT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE,
-            pref_store()->ReadPrefs());
   EXPECT_TRUE(pref_store()->IsInitializationComplete());
 
   auto other_pref_store = CreateConnection();
-  ASSERT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE,
-            other_pref_store->ReadPrefs());
   EXPECT_TRUE(other_pref_store->IsInitializationComplete());
 
   const base::Value value("value");
@@ -308,13 +224,9 @@ TEST_F(PersistentPrefStoreImplTest,
        WriteWithoutPathExpansionObservedByOtherClient) {
   auto backing_pref_store = make_scoped_refptr(new InMemoryPrefStore());
   CreateImpl(backing_pref_store);
-  ASSERT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE,
-            pref_store()->ReadPrefs());
   EXPECT_TRUE(pref_store()->IsInitializationComplete());
 
   auto other_pref_store = CreateConnection();
-  ASSERT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE,
-            other_pref_store->ReadPrefs());
   EXPECT_TRUE(other_pref_store->IsInitializationComplete());
 
   base::DictionaryValue dict;
@@ -340,13 +252,9 @@ TEST_F(PersistentPrefStoreImplTest, RemoveObservedByOtherClient) {
   const base::Value value("value");
   backing_pref_store->SetValue(kKey, value.CreateDeepCopy(), 0);
   CreateImpl(backing_pref_store);
-  ASSERT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE,
-            pref_store()->ReadPrefs());
   EXPECT_TRUE(pref_store()->IsInitializationComplete());
 
   auto other_pref_store = CreateConnection();
-  ASSERT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE,
-            other_pref_store->ReadPrefs());
   EXPECT_TRUE(other_pref_store->IsInitializationComplete());
 
   const base::Value* output = nullptr;
@@ -378,13 +286,9 @@ TEST_F(PersistentPrefStoreImplTest,
   dict.SetStringWithoutPathExpansion(kKey, "value");
   backing_pref_store->SetValue(kKey, dict.CreateDeepCopy(), 0);
   CreateImpl(backing_pref_store);
-  ASSERT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE,
-            pref_store()->ReadPrefs());
   EXPECT_TRUE(pref_store()->IsInitializationComplete());
 
   auto other_pref_store = CreateConnection();
-  ASSERT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE,
-            other_pref_store->ReadPrefs());
   EXPECT_TRUE(other_pref_store->IsInitializationComplete());
 
   const base::Value* output = nullptr;
@@ -417,8 +321,6 @@ TEST_F(PersistentPrefStoreImplTest,
 TEST_F(PersistentPrefStoreImplTest, CommitPendingWrite) {
   auto backing_store = make_scoped_refptr(new PersistentPrefStoreMock);
   CreateImpl(backing_store);
-  ASSERT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE,
-            pref_store()->ReadPrefs());
   base::RunLoop run_loop;
   EXPECT_CALL(*backing_store, CommitPendingWrite())
       .Times(2)
@@ -430,8 +332,6 @@ TEST_F(PersistentPrefStoreImplTest, CommitPendingWrite) {
 TEST_F(PersistentPrefStoreImplTest, SchedulePendingLossyWrites) {
   auto backing_store = make_scoped_refptr(new PersistentPrefStoreMock);
   CreateImpl(backing_store);
-  ASSERT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE,
-            pref_store()->ReadPrefs());
   base::RunLoop run_loop;
   EXPECT_CALL(*backing_store, SchedulePendingLossyWrites())
       .Times(1)
@@ -444,8 +344,6 @@ TEST_F(PersistentPrefStoreImplTest, SchedulePendingLossyWrites) {
 TEST_F(PersistentPrefStoreImplTest, ClearMutableValues) {
   auto backing_store = make_scoped_refptr(new PersistentPrefStoreMock);
   CreateImpl(backing_store);
-  ASSERT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE,
-            pref_store()->ReadPrefs());
   base::RunLoop run_loop;
   EXPECT_CALL(*backing_store, ClearMutableValues())
       .Times(1)

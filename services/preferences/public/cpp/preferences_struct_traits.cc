@@ -61,7 +61,7 @@ bool EnumTraits<PrefStoreType, PrefValueStore::PrefStoreType>::FromMojom(
   return false;
 }
 
-using MojomReadError = prefs::mojom::PersistentPrefStoreConnector_ReadError;
+using MojomReadError = prefs::mojom::PersistentPrefStoreConnection_ReadError;
 
 MojomReadError
 EnumTraits<MojomReadError, PersistentPrefStore::PrefReadError>::ToMojom(

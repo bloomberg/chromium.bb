@@ -137,8 +137,13 @@ class PrefServiceFactoryTest : public base::MessageLoop::DestructionObserver,
                        std::unique_ptr<PrefService> pref_service) {
     DCHECK(pref_service);
     *out = std::move(pref_service);
-    (*out)->AddPrefInitObserver(
-        base::Bind(PrefServiceFactoryTest::OnInit, quit_closure));
+    if ((*out)->GetInitializationStatus() ==
+        PrefService::INITIALIZATION_STATUS_WAITING) {
+      (*out)->AddPrefInitObserver(
+          base::Bind(PrefServiceFactoryTest::OnInit, quit_closure));
+      return;
+    }
+    quit_closure.Run();
   }
 
   static void OnPrefChanged(const base::Closure& quit_closure,

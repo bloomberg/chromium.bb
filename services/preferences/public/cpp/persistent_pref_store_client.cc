@@ -11,8 +11,17 @@
 namespace prefs {
 
 PersistentPrefStoreClient::PersistentPrefStoreClient(
-    mojom::PersistentPrefStoreConnectorPtr connector)
-    : connector_(std::move(connector)) {}
+    mojom::PrefStoreConnectorPtr connector)
+    : connector_(std::move(connector)) {
+  DCHECK(connector_);
+}
+
+PersistentPrefStoreClient::PersistentPrefStoreClient(
+    mojom::PersistentPrefStoreConnectionPtr connection) {
+  OnConnect(std::move(connection),
+            std::unordered_map<PrefValueStore::PrefStoreType,
+                               prefs::mojom::PrefStoreConnectionPtr>());
+}
 
 void PersistentPrefStoreClient::SetValue(const std::string& key,
                                          std::unique_ptr<base::Value> value,
@@ -65,25 +74,22 @@ PersistentPrefStore::PrefReadError PersistentPrefStoreClient::GetReadError()
 }
 
 PersistentPrefStore::PrefReadError PersistentPrefStoreClient::ReadPrefs() {
-  PrefReadError read_error = PrefReadError::PREF_READ_ERROR_NONE;
-  bool read_only = false;
-  std::unique_ptr<base::DictionaryValue> local_prefs;
-  mojom::PersistentPrefStorePtr pref_store;
-  mojom::PrefStoreObserverRequest observer_request;
-  if (!connector_->Connect(&read_error, &read_only, &local_prefs, &pref_store,
-                           &observer_request)) {
+  mojom::PersistentPrefStoreConnectionPtr connection;
+  std::unordered_map<PrefValueStore::PrefStoreType,
+                     prefs::mojom::PrefStoreConnectionPtr>
+      other_pref_stores;
+  if (!connector_->Connect(&connection, &other_pref_stores)) {
     NOTREACHED();
   }
 
-  OnCreateComplete(read_error, read_only, std::move(local_prefs),
-                   std::move(pref_store), std::move(observer_request));
+  OnConnect(std::move(connection), std::move(other_pref_stores));
   return read_error_;
 }
 
 void PersistentPrefStoreClient::ReadPrefsAsync(
     ReadErrorDelegate* error_delegate) {
   error_delegate_.reset(error_delegate);
-  connector_->Connect(base::Bind(&PersistentPrefStoreClient::OnCreateComplete,
+  connector_->Connect(base::Bind(&PersistentPrefStoreClient::OnConnect,
                                  base::Unretained(this)));
 }
 
@@ -109,21 +115,25 @@ PersistentPrefStoreClient::~PersistentPrefStoreClient() {
   pref_store_->CommitPendingWrite();
 }
 
-void PersistentPrefStoreClient::OnCreateComplete(
-    PrefReadError read_error,
-    bool read_only,
-    std::unique_ptr<base::DictionaryValue> cached_prefs,
-    mojom::PersistentPrefStorePtr pref_store,
-    mojom::PrefStoreObserverRequest observer_request) {
+void PersistentPrefStoreClient::OnConnect(
+    mojom::PersistentPrefStoreConnectionPtr connection,
+    std::unordered_map<PrefValueStore::PrefStoreType,
+                       prefs::mojom::PrefStoreConnectionPtr>
+        other_pref_stores) {
   connector_.reset();
-  read_error_ = read_error;
-  read_only_ = read_only;
-  pref_store_ = std::move(pref_store);
+  read_error_ = connection->read_error;
+  read_only_ = connection->read_only;
+  pref_store_ = std::move(connection->pref_store);
   if (error_delegate_ && read_error_ != PREF_READ_ERROR_NONE)
     error_delegate_->OnError(read_error_);
   error_delegate_.reset();
 
-  Init(std::move(cached_prefs), true, std::move(observer_request));
+  if (connection->pref_store_connection) {
+    Init(std::move(connection->pref_store_connection->initial_prefs), true,
+         std::move(connection->pref_store_connection->observer));
+  } else {
+    Init(nullptr, false, nullptr);
+  }
 }
 
 }  // namespace prefs

@@ -69,6 +69,27 @@ struct PrefStoreConnection {
   bool is_initialized;
 };
 
+struct PersistentPrefStoreConnection {
+  enum ReadError {
+    NONE = 0,
+    JSON_PARSE = 1,
+    JSON_TYPE = 2,
+    ACCESS_DENIED = 3,
+    FILE_OTHER = 4,
+    FILE_LOCKED = 5,
+    NO_FILE = 6,
+    JSON_REPEAT = 7,
+    // OTHER = 8,  // Deprecated.
+    FILE_NOT_SPECIFIED = 9,
+    ASYNCHRONOUS_TASK_INCOMPLETE = 10,
+  };
+
+  PrefStoreConnection? pref_store_connection;
+  PersistentPrefStore? pref_store;
+  ReadError read_error;
+  bool read_only;
+};
+
 // Manages actual read of preference data. Accepts observers who subscribe to
 // preferences, notifying them of changes.
 interface PrefStore {
@@ -90,7 +111,9 @@ interface PrefStoreConnector {
   // Connect to all registered pref stores, retrieving the current values of all
   // prefs in each store and an |observer| interfaces through which updates can
   // be received.
-  Connect() => (map<PrefStoreType, PrefStoreConnection> connections);
+  [Sync]
+  Connect() => (PersistentPrefStoreConnection connection,
+                map<PrefStoreType, PrefStoreConnection> connections);
 };
 
 // An interface providing mutation access to a PersistentPrefStore.
@@ -103,35 +126,6 @@ interface PersistentPrefStore {
   CommitPendingWrite();
   SchedulePendingLossyWrites();
   ClearMutableValues();
-};
-
-// A connector that provides a way to connect to a PersistentPrefStore.
-interface PersistentPrefStoreConnector {
-  enum ReadError {
-    NONE = 0,
-    JSON_PARSE = 1,
-    JSON_TYPE = 2,
-    ACCESS_DENIED = 3,
-    FILE_OTHER = 4,
-    FILE_LOCKED = 5,
-    NO_FILE = 6,
-    JSON_REPEAT = 7,
-    // OTHER = 8,  // Deprecated.
-    FILE_NOT_SPECIFIED = 9,
-    ASYNCHRONOUS_TASK_INCOMPLETE = 10,
-  };
-
-  // Connects to the PersistentPrefStore.
-  // A null |preferences| indicates that the pref service failed to load prefs.
-  // |pref_store| provides write access; |observer| is used to observe writes
-  // instigated by other clients.
-  [Sync]
-  Connect() => (
-      ReadError read_error,
-      bool read_only,
-      mojo.common.mojom.DictionaryValue? preferences,
-      PersistentPrefStore? pref_store,
-      PrefStoreObserver&? observer);
 };
 
 interface PrefServiceControl {
