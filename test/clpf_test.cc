@@ -319,7 +319,7 @@ INSTANTIATE_TEST_CASE_P(SSSE3, ClpfSpeedTest,
 
 #if HAVE_SSE4_1
 INSTANTIATE_TEST_CASE_P(SSSE4_1, ClpfSpeedTest,
-                        ::testing::Values(make_tuple(&aom_clpf_block_ssse3,
+                        ::testing::Values(make_tuple(&aom_clpf_block_sse4_1,
                                                      &aom_clpf_block_c, 8, 8)));
 #endif
 
@@ -346,7 +346,7 @@ INSTANTIATE_TEST_CASE_P(SSSE3, ClpfHbdSpeedTest,
 
 #if HAVE_SSE4_1
 INSTANTIATE_TEST_CASE_P(SSSE4_1, ClpfHbdSpeedTest,
-                        ::testing::Values(make_tuple(&aom_clpf_block_hbd_ssse3,
+                        ::testing::Values(make_tuple(&aom_clpf_block_hbd_sse4_1,
                                                      &aom_clpf_block_hbd_c, 8,
                                                      8)));
 #endif
