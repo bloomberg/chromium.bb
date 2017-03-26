@@ -90,6 +90,35 @@ static void copy_sb16_16(uint16_t *dst, int dstride, const uint16_t *src,
   }
 }
 
+static INLINE uint64_t dist_8x8_16bit(uint16_t *dst, int dstride, uint16_t *src,
+                                      int sstride, int coeff_shift) {
+  uint64_t svar = 0;
+  uint64_t dvar = 0;
+  uint64_t sum_s = 0;
+  uint64_t sum_d = 0;
+  uint64_t sum_s2 = 0;
+  uint64_t sum_d2 = 0;
+  uint64_t sum_sd = 0;
+  int i, j;
+  for (i = 0; i < 8; i++) {
+    for (j = 0; j < 8; j++) {
+      sum_s += src[i * sstride + j];
+      sum_d += dst[i * dstride + j];
+      sum_s2 += src[i * sstride + j] * src[i * sstride + j];
+      sum_d2 += dst[i * dstride + j] * dst[i * dstride + j];
+      sum_sd += src[i * sstride + j] * dst[i * dstride + j];
+    }
+  }
+  /* Compute the variance -- the calculation cannot go negative. */
+  svar = sum_s2 - ((sum_s * sum_s + 32) >> 6);
+  dvar = sum_d2 - ((sum_d * sum_d + 32) >> 6);
+  return (uint64_t)floor(
+      .5 +
+      (sum_d2 + sum_s2 - 2 * sum_sd) * .5 *
+          (svar + dvar + (400 << 2 * coeff_shift)) /
+          (sqrt((20000 << 4 * coeff_shift) + svar * (double)dvar)));
+}
+
 static INLINE uint64_t mse_8x8_16bit(uint16_t *dst, int dstride, uint16_t *src,
                                      int sstride) {
   uint64_t sum = 0;
@@ -117,17 +146,22 @@ static INLINE uint64_t mse_4x4_16bit(uint16_t *dst, int dstride, uint16_t *src,
 }
 
 /* Compute MSE only on the blocks we filtered. */
-uint64_t compute_dering_mse(uint16_t *dst, int dstride, uint16_t *src,
-                            dering_list *dlist, int dering_count,
-                            BLOCK_SIZE bsize, int coeff_shift) {
+uint64_t compute_dering_dist(uint16_t *dst, int dstride, uint16_t *src,
+                             dering_list *dlist, int dering_count,
+                             BLOCK_SIZE bsize, int coeff_shift, int pli) {
   uint64_t sum = 0;
   int bi, bx, by;
   if (bsize == BLOCK_8X8) {
     for (bi = 0; bi < dering_count; bi++) {
       by = dlist[bi].by;
       bx = dlist[bi].bx;
-      sum += mse_8x8_16bit(&dst[(by << 3) * dstride + (bx << 3)], dstride,
-                           &src[bi << (2 * 3)], 8);
+      if (pli == 0) {
+        sum += dist_8x8_16bit(&dst[(by << 3) * dstride + (bx << 3)], dstride,
+                              &src[bi << (2 * 3)], 8, coeff_shift);
+      } else {
+        sum += mse_8x8_16bit(&dst[(by << 3) * dstride + (bx << 3)], dstride,
+                             &src[bi << (2 * 3)], 8);
+      }
     }
   } else {
     for (bi = 0; bi < dering_count; bi++) {
@@ -278,12 +312,12 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
                     dering_count, threshold,
                     clpf_strength + (clpf_strength == 3), clpf_damping,
                     coeff_shift, clpf_strength != 0, 1);
-          mse[pli][sb_count][gi] = compute_dering_mse(
+          mse[pli][sb_count][gi] = compute_dering_dist(
               ref_coeff[pli] +
                   (sbr * MAX_MIB_SIZE << mi_high_l2[pli]) * stride[pli] +
                   (sbc * MAX_MIB_SIZE << mi_wide_l2[pli]),
               stride[pli], tmp_dst, dlist, dering_count, bsize[pli],
-              coeff_shift);
+              coeff_shift, pli);
           sb_index[sb_count] =
               MAX_MIB_SIZE * sbr * cm->mi_stride + MAX_MIB_SIZE * sbc;
         }
