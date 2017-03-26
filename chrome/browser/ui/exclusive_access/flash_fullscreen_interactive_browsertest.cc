@@ -16,8 +16,11 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/ppapi/ppapi_test.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -400,4 +403,34 @@ IN_PROC_BROWSER_TEST_F(FlashFullscreenInteractiveBrowserTest,
   EXPECT_TRUE(ObserveFlashHasFocus(first_tab_contents, true));
   PressEscape();
   EXPECT_TRUE(ObserveTabIsInFullscreen(false));
+}
+
+// Tests that a fullscreen flash plugin can lock the mouse, and that it'll be
+// unlocked when the plugin exits fullscreen.
+IN_PROC_BROWSER_TEST_F(FlashFullscreenInteractiveBrowserTest,
+                       Fullscreen_LockMouse) {
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+  StartFakingTabCapture();
+  ASSERT_TRUE(LaunchFlashFullscreen());
+  content::WebContents* web_contents = GetActiveWebContents();
+  EXPECT_TRUE(ObserveFlashHasFocus(web_contents, true));
+
+  // Try to lock the mouse.
+  content::RenderWidgetHostView* fullscreen_view =
+      web_contents->GetFullscreenRenderWidgetHostView();
+  content::RenderWidgetHost* fullscreen_widget =
+      fullscreen_view->GetRenderWidgetHost();
+  content::RenderProcessHost* process = fullscreen_widget->GetProcess();
+  content::PwnMessageHelper::LockMouse(
+      process, fullscreen_widget->GetRoutingID(), true, false, true);
+
+  // Make sure that the fullscreen widget got the mouse lock.
+  EXPECT_TRUE(fullscreen_view->IsMouseLocked());
+  EXPECT_EQ(fullscreen_widget, content::GetMouseLockWidget(web_contents));
+
+  PressEscape();
+  EXPECT_TRUE(ObserveTabIsInFullscreen(false));
+
+  // Mouse should be unlocked.
+  EXPECT_EQ(nullptr, content::GetMouseLockWidget(web_contents));
 }

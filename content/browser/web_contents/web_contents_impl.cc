@@ -2001,7 +2001,9 @@ bool WebContentsImpl::HasMouseLock(RenderWidgetHostImpl* render_widget_host) {
 }
 
 RenderWidgetHostImpl* WebContentsImpl::GetMouseLockWidget() {
-  if (GetTopLevelRenderWidgetHostView()->IsMouseLocked())
+  if (GetTopLevelRenderWidgetHostView()->IsMouseLocked() ||
+      (GetFullscreenRenderWidgetHostView() &&
+       GetFullscreenRenderWidgetHostView()->IsMouseLocked()))
     return mouse_lock_widget_;
 
   return nullptr;

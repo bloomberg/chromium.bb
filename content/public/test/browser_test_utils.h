@@ -325,6 +325,9 @@ ui::AXTreeUpdate GetAccessibilityTreeSnapshot(WebContents* web_contents);
 // false if the WebContents isn't a guest with a BrowserPlugin.
 bool IsWebContentsBrowserPluginFocused(content::WebContents* web_contents);
 
+// Returns the RenderWidgetHost that holds the mouse lock.
+RenderWidgetHost* GetMouseLockWidget(WebContents* web_contents);
+
 #if defined(USE_AURA)
 // The following two methods allow a test to send a touch tap sequence, and
 // a corresponding gesture tap sequence, by sending it to the top-level
@@ -756,6 +759,13 @@ class PwnMessageHelper {
                               GURL file_path,
                               std::string blob_uuid,
                               int64_t position);
+
+  // Sends ViewHostMsg_LockMouse
+  static void LockMouse(RenderProcessHost* process,
+                        int routing_id,
+                        bool user_gesture,
+                        bool last_unlocked_by_target,
+                        bool privileged);
 
  private:
   PwnMessageHelper();  // Not instantiable.
