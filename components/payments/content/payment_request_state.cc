@@ -62,7 +62,13 @@ void PaymentRequestState::OnInstrumentDetailsReady(
   // TODO(mathp): Fill other fields in the PaymentResponsePtr object.
   mojom::PaymentResponsePtr payment_response = mojom::PaymentResponse::New();
 
-  payment_response->method_name = method_name;
+  // Make sure that we return the method name that the merchant specified for
+  // this instrument: cards can be either specified through their name (e.g.,
+  // "visa") or through basic-card's supportedNetworks.
+  payment_response->method_name =
+      spec_->IsMethodSupportedThroughBasicCard(method_name)
+          ? kBasicCardMethodName
+          : method_name;
   payment_response->stringified_details = stringified_details;
   delegate_->OnPaymentResponseAvailable(std::move(payment_response));
 }

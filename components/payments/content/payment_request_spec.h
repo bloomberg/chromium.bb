@@ -16,6 +16,9 @@
 
 namespace payments {
 
+// Identifier for the basic card payment method in the PaymentMethodData.
+extern const char kBasicCardMethodName[];
+
 // The spec contains all the options that the merchant has specified about this
 // Payment Request. It's a (mostly) read-only view, which can be updated in
 // certain occasions by the merchant (see API).
@@ -53,6 +56,10 @@ class PaymentRequestSpec {
   const std::set<std::string>& supported_card_networks_set() const {
     return supported_card_networks_set_;
   }
+  // Returns whether the |method_name| was specified as supported through the
+  // "basic-card" payment method. If false, it means either the |method_name| is
+  // not supported at all, or specified directly in supportedMethods.
+  bool IsMethodSupportedThroughBasicCard(const std::string& method_name);
 
   // Uses CurrencyFormatter to format |amount| with the currency symbol for this
   // request's currency. Will use currency of the "total" display item, because
@@ -94,6 +101,10 @@ class PaymentRequestSpec {
   // fast lookup of supported methods.
   std::vector<std::string> supported_card_networks_;
   std::set<std::string> supported_card_networks_set_;
+
+  // Only the set of basic-card specified networks. NOTE: callers should use
+  // |supported_card_networks_set_| to check merchant support.
+  std::set<std::string> basic_card_specified_networks_;
 
   base::ObserverList<Observer> observers_;
 

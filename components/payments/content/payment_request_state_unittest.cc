@@ -273,7 +273,7 @@ TEST_F(PaymentRequestStateTest, ReadyToPay_ContactInfo) {
 }
 
 // Test generating a PaymentResponse.
-TEST_F(PaymentRequestStateTest, GeneratePaymentResponse) {
+TEST_F(PaymentRequestStateTest, GeneratePaymentResponse_SupportedMethod) {
   // Default options (no shipping, no contact info).
   RecreateStateWithOptions(mojom::PaymentOptions::New());
   state()->SetSelectedInstrument(state()->available_instruments()[0].get());
@@ -281,8 +281,47 @@ TEST_F(PaymentRequestStateTest, GeneratePaymentResponse) {
   EXPECT_TRUE(state()->is_ready_to_pay());
 
   // TODO(mathp): Currently synchronous, when async will need a RunLoop.
+  // "visa" is specified directly in the supportedMethods so it is returned
+  // as the method name.
   state()->GeneratePaymentResponse();
   EXPECT_EQ("visa", response()->method_name);
+  EXPECT_EQ(
+      "{\"billingAddress\":"
+      "{\"addressLine\":[\"666 Erebus St.\",\"Apt 8\"],"
+      "\"city\":\"Elysium\","
+      "\"country\":\"US\","
+      "\"organization\":\"Underworld\","
+      "\"phone\":\"16502111111\","
+      "\"postalCode\":\"91111\","
+      "\"recipient\":\"John H. Doe\","
+      "\"region\":\"CA\"},"
+      "\"cardNumber\":\"4111111111111111\","
+      "\"cardSecurityCode\":\"123\","
+      "\"cardholderName\":\"Test User\","
+      "\"expiryMonth\":\"11\","
+      "\"expiryYear\":\"2017\"}",
+      response()->stringified_details);
+}
+
+// Test generating a PaymentResponse when the method is specified through
+// "basic-card".
+TEST_F(PaymentRequestStateTest, GeneratePaymentResponse_BasicCard) {
+  // The method data supports visa through basic-card.
+  mojom::PaymentMethodDataPtr entry = mojom::PaymentMethodData::New();
+  entry->supported_methods.push_back("basic-card");
+  entry->supported_networks.push_back(mojom::BasicCardNetwork::VISA);
+  std::vector<mojom::PaymentMethodDataPtr> method_data;
+  method_data.push_back(std::move(entry));
+  RecreateStateWithOptionsAndDetails(mojom::PaymentOptions::New(),
+                                     mojom::PaymentDetails::New(),
+                                     std::move(method_data));
+
+  EXPECT_TRUE(state()->is_ready_to_pay());
+
+  // TODO(mathp): Currently synchronous, when async will need a RunLoop.
+  // "basic-card" is specified so it is returned as the method name.
+  state()->GeneratePaymentResponse();
+  EXPECT_EQ("basic-card", response()->method_name);
   EXPECT_EQ(
       "{\"billingAddress\":"
       "{\"addressLine\":[\"666 Erebus St.\",\"Apt 8\"],"

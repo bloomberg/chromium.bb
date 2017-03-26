@@ -10,10 +10,7 @@
 
 namespace payments {
 
-namespace {
-// Identifier for the basic card payment method in the PaymentMethodData.
-static const char* const kBasicCardMethodName = "basic-card";
-}  // namespace
+const char kBasicCardMethodName[] = "basic-card";
 
 PaymentRequestSpec::PaymentRequestSpec(
     mojom::PaymentOptionsPtr options,
@@ -37,6 +34,11 @@ void PaymentRequestSpec::AddObserver(Observer* observer) {
 
 void PaymentRequestSpec::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
+}
+
+bool PaymentRequestSpec::IsMethodSupportedThroughBasicCard(
+    const std::string& method_name) {
+  return basic_card_specified_networks_.count(method_name) > 0;
 }
 
 base::string16 PaymentRequestSpec::GetFormattedCurrencyAmount(
@@ -94,6 +96,8 @@ void PaymentRequestSpec::PopulateValidatedMethodData(
           supported_card_networks_.insert(supported_card_networks_.end(),
                                           card_networks.begin(),
                                           card_networks.end());
+          basic_card_specified_networks_.insert(card_networks.begin(),
+                                                card_networks.end());
           // Clear the set so that no further networks are added to
           // |supported_card_networks_|.
           card_networks.clear();
@@ -117,6 +121,8 @@ void PaymentRequestSpec::PopulateValidatedMethodData(
             auto card_it = card_networks.find(networks[supported_network]);
             if (card_it != card_networks.end()) {
               supported_card_networks_.push_back(networks[supported_network]);
+              basic_card_specified_networks_.insert(
+                  networks[supported_network]);
               card_networks.erase(card_it);
             }
           }
