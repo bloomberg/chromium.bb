@@ -117,8 +117,7 @@ MATCHER_P3(HasDownloadSuggestionExtra,
   if (extra.is_download_asset != is_download_asset) {
     return false;
   }
-  *result_listener << "expected target_file_path: "
-                   << target_file_path
+  *result_listener << "expected target_file_path: " << target_file_path
                    << "\nactual target_file_path: "
                    << extra.target_file_path.value();
   if (extra.target_file_path.value() !=
@@ -126,8 +125,7 @@ MATCHER_P3(HasDownloadSuggestionExtra,
     return false;
   }
   *result_listener << "expected mime_type: " << mime_type
-                   << "\nactual mime_type: "
-                   << extra.mime_type;
+                   << "\nactual mime_type: " << extra.mime_type;
   return extra.mime_type == mime_type;
 }
 

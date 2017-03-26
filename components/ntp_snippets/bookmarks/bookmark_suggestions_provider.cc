@@ -230,11 +230,11 @@ void BookmarkSuggestionsProvider::BookmarkMetaInfoChanged(
 }
 
 void BookmarkSuggestionsProvider::BookmarkNodeRemoved(
-      bookmarks::BookmarkModel* model,
-      const bookmarks::BookmarkNode* parent,
-      int old_index,
-      const bookmarks::BookmarkNode* node,
-      const std::set<GURL>& no_longer_bookmarked) {
+    bookmarks::BookmarkModel* model,
+    const bookmarks::BookmarkNode* parent,
+    int old_index,
+    const bookmarks::BookmarkNode* node,
+    const std::set<GURL>& no_longer_bookmarked) {
   base::Time time;
   if (GetLastVisitDateForNTPBookmark(
           *node, consider_bookmark_visits_from_desktop_, &time) &&

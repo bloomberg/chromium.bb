@@ -161,7 +161,7 @@ TEST_F(GetRecentlyVisitedBookmarksTest, ShouldReturnNotMoreThanMaxCount) {
 namespace {
 
 base::Callback<bool(const GURL& url)> DeleteAllFilter() {
-  return base::Bind([] (const GURL& url) { return true; });
+  return base::Bind([](const GURL& url) { return true; });
 }
 
 base::Callback<bool(const GURL& url)> DeleteOneURLFilter(

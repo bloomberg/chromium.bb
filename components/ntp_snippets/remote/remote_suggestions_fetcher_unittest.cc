@@ -503,8 +503,7 @@ TEST_F(RemoteSuggestionsSignedInFetcherTest, ShouldFetchSuccessfully) {
                                        /*count=*/1)));
 }
 
-TEST_F(RemoteSuggestionsSignedInFetcherTest,
-       ShouldRetryWhenOAuthCancelled) {
+TEST_F(RemoteSuggestionsSignedInFetcherTest, ShouldRetryWhenOAuthCancelled) {
   SignIn();
   IssueRefreshToken();
 

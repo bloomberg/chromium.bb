@@ -41,12 +41,12 @@ const int kUnlimitedQuota = INT_MAX;
 }  // namespace
 
 struct RequestThrottler::RequestTypeInfo {
-    const char* name;
-    const char* count_pref;
-    const char* interactive_count_pref;
-    const char* day_pref;
-    const int default_quota;
-    const int default_interactive_quota;
+  const char* name;
+  const char* count_pref;
+  const char* interactive_count_pref;
+  const char* day_pref;
+  const int default_quota;
+  const int default_interactive_quota;
 };
 
 // When adding a new type here, extend also the "RequestThrottlerTypes"
@@ -82,8 +82,7 @@ RequestThrottler::RequestThrottler(PrefService* pref_service, RequestType type)
       base::StringPrintf("quota_%s", GetRequestTypeName()));
   if (!base::StringToInt(quota, &quota_)) {
     LOG_IF(WARNING, !quota.empty())
-        << "Invalid variation parameter for quota for "
-        << GetRequestTypeName();
+        << "Invalid variation parameter for quota for " << GetRequestTypeName();
     quota_ = type_info_.default_quota;
   }
 

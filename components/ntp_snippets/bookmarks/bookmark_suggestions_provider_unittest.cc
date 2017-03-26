@@ -38,9 +38,10 @@ class BookmarkSuggestionsProviderTest : public ::testing::Test {
  public:
   BookmarkSuggestionsProviderTest()
       : model_(bookmarks::TestBookmarkClient::CreateModel()) {
-    EXPECT_CALL(observer_, OnNewSuggestions(_, Category::FromKnownCategory(
-                                                   KnownCategories::BOOKMARKS),
-                                            IsEmpty()))
+    EXPECT_CALL(observer_,
+                OnNewSuggestions(
+                    _, Category::FromKnownCategory(KnownCategories::BOOKMARKS),
+                    IsEmpty()))
         .RetiresOnSaturation();
     EXPECT_CALL(observer_,
                 OnCategoryStatusChanged(
@@ -64,8 +65,7 @@ class BookmarkSuggestionsProviderTest : public ::testing::Test {
   std::unique_ptr<BookmarkSuggestionsProvider> provider_;
 };
 
-TEST_F(BookmarkSuggestionsProviderTest,
-       ShouldProvideBookmarkSuggestions) {
+TEST_F(BookmarkSuggestionsProviderTest, ShouldProvideBookmarkSuggestions) {
   GURL url("http://my-new-bookmarked.url");
   // Note, this update to the model does not trigger OnNewSuggestions() on the
   // observer as the provider realizes no new nodes were added.
@@ -125,12 +125,13 @@ TEST_F(BookmarkSuggestionsProviderTest,
   EXPECT_THAT(IsDismissedFromNTPForBookmark(*dismissed_node), Eq(true));
 
   // Clear history and make sure the suggestions actually get removed.
-  EXPECT_CALL(observer_, OnNewSuggestions(_, Category::FromKnownCategory(
-                                                 KnownCategories::BOOKMARKS),
-                                          IsEmpty()));
+  EXPECT_CALL(observer_,
+              OnNewSuggestions(
+                  _, Category::FromKnownCategory(KnownCategories::BOOKMARKS),
+                  IsEmpty()));
   static_cast<ContentSuggestionsProvider*>(provider_.get())
       ->ClearHistory(base::Time(), base::Time::Max(),
-                     base::Bind([] (const GURL& url) { return true; }));
+                     base::Bind([](const GURL& url) { return true; }));
 
   // Verify the dismissed marker is gone.
   EXPECT_THAT(IsDismissedFromNTPForBookmark(*dismissed_node), Eq(false));
@@ -143,4 +144,3 @@ TEST_F(BookmarkSuggestionsProviderTest,
 
 }  // namespace
 }  // namespace ntp_snippets
-

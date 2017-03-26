@@ -112,15 +112,15 @@ class SchedulingRemoteSuggestionsProvider final
  private:
   // Abstract description of the fetching schedule.
   struct FetchingSchedule {
-      static FetchingSchedule Empty();
-      bool operator==(const FetchingSchedule& other) const;
-      bool operator!=(const FetchingSchedule& other) const;
-      bool is_empty() const;
+    static FetchingSchedule Empty();
+    bool operator==(const FetchingSchedule& other) const;
+    bool operator!=(const FetchingSchedule& other) const;
+    bool is_empty() const;
 
-      base::TimeDelta interval_persistent_wifi;
-      base::TimeDelta interval_persistent_fallback;
-      base::TimeDelta interval_soft_on_usage_event;
-      base::TimeDelta interval_soft_on_ntp_opened;
+    base::TimeDelta interval_persistent_wifi;
+    base::TimeDelta interval_persistent_fallback;
+    base::TimeDelta interval_soft_on_usage_event;
+    base::TimeDelta interval_soft_on_ntp_opened;
   };
 
   enum class TriggerType;

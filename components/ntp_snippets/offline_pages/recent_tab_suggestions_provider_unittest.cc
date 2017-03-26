@@ -165,14 +165,12 @@ TEST_F(RecentTabSuggestionsProviderTest, ShouldConvertToSuggestions) {
   EXPECT_CALL(*observer(), OnNewSuggestions(_, _, _)).Times(2);
   EXPECT_CALL(
       *observer(),
-      OnNewSuggestions(_, recent_tabs_category(),
-                       UnorderedElementsAre(
-                           Property(&ContentSuggestion::url,
-                                    GURL("http://dummy.com/1")),
-                           Property(&ContentSuggestion::url,
-                                    GURL("http://dummy.com/2")),
-                           Property(&ContentSuggestion::url,
-                                    GURL("http://dummy.com/3")))));
+      OnNewSuggestions(
+          _, recent_tabs_category(),
+          UnorderedElementsAre(
+              Property(&ContentSuggestion::url, GURL("http://dummy.com/1")),
+              Property(&ContentSuggestion::url, GURL("http://dummy.com/2")),
+              Property(&ContentSuggestion::url, GURL("http://dummy.com/3")))));
 
   auto recent_tabs_list = CreateDummyRecentTabs({1, 2, 3});
   for (OfflinePageItem& recent_tab : recent_tabs_list) {
@@ -212,12 +210,10 @@ TEST_F(RecentTabSuggestionsProviderTest, ShouldSortByCreationTime) {
       *observer(),
       OnNewSuggestions(
           _, recent_tabs_category(),
-          ElementsAre(Property(&ContentSuggestion::url,
-                               GURL("http://dummy.com/3")),
-                      Property(&ContentSuggestion::url,
-                               GURL("http://dummy.com/1")),
-                      Property(&ContentSuggestion::url,
-                               GURL("http://dummy.com/2")))));
+          ElementsAre(
+              Property(&ContentSuggestion::url, GURL("http://dummy.com/3")),
+              Property(&ContentSuggestion::url, GURL("http://dummy.com/1")),
+              Property(&ContentSuggestion::url, GURL("http://dummy.com/2")))));
   AddTabAndOfflinePageToModel(CreateDummyRecentTab(3, tomorrow));
 }
 
@@ -261,10 +257,9 @@ TEST_F(RecentTabSuggestionsProviderTest, ShouldDismiss) {
       base::Bind(&CaptureDismissedSuggestions, &dismissed_suggestions));
   EXPECT_THAT(
       dismissed_suggestions,
-      UnorderedElementsAre(Property(&ContentSuggestion::url,
-                                    GURL("http://dummy.com/2")),
-                           Property(&ContentSuggestion::url,
-                                    GURL("http://dummy.com/3"))));
+      UnorderedElementsAre(
+          Property(&ContentSuggestion::url, GURL("http://dummy.com/2")),
+          Property(&ContentSuggestion::url, GURL("http://dummy.com/3"))));
 
   // Clear dismissed suggestions.
   provider()->ClearDismissedSuggestionsForDebugging(recent_tabs_category());

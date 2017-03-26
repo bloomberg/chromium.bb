@@ -360,8 +360,7 @@ TEST_F(PhysicalWebPageSuggestionsProviderTest,
   provider()->DismissSuggestion(GetDummySuggestionId(1));
   provider()->DismissSuggestion(GetDummySuggestionId(2));
 
-  physical_web_data_source()->SetMetadataList(
-      CreateDummyPhysicalWebPages({2}));
+  physical_web_data_source()->SetMetadataList(CreateDummyPhysicalWebPages({2}));
   FireUrlLost("https://resolved_url.com/1");
 
   physical_web_data_source()->SetMetadataList(

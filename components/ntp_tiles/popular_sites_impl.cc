@@ -380,8 +380,9 @@ void PopularSitesImpl::OnURLFetchComplete(const net::URLFetcher* source) {
     return;
   }
 
-  parse_json_.Run(json_string, base::Bind(&PopularSitesImpl::OnJsonParsed,
-                                          weak_ptr_factory_.GetWeakPtr()),
+  parse_json_.Run(json_string,
+                  base::Bind(&PopularSitesImpl::OnJsonParsed,
+                             weak_ptr_factory_.GetWeakPtr()),
                   base::Bind(&PopularSitesImpl::OnJsonParseFailed,
                              weak_ptr_factory_.GetWeakPtr()));
 }

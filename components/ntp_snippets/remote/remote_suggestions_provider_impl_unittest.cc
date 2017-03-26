@@ -907,11 +907,12 @@ TEST_F(RemoteSuggestionsProviderImplTest, LoadsAdditionalSuggestions) {
   EXPECT_THAT(service->GetSuggestionsForTesting(articles_category()),
               ElementsAre(IdEq("http://first")));
 
-  auto expect_only_second_suggestion_received = base::Bind([](
-      Status status, std::vector<ContentSuggestion> suggestions) {
-    EXPECT_THAT(suggestions, SizeIs(1));
-    EXPECT_THAT(suggestions[0].id().id_within_category(), Eq("http://second"));
-  });
+  auto expect_only_second_suggestion_received =
+      base::Bind([](Status status, std::vector<ContentSuggestion> suggestions) {
+        EXPECT_THAT(suggestions, SizeIs(1));
+        EXPECT_THAT(suggestions[0].id().id_within_category(),
+                    Eq("http://second"));
+      });
   LoadMoreFromJSONString(service.get(), articles_category(),
                          GetTestJson({GetSuggestionWithUrl("http://second")}),
                          /*known_ids=*/std::set<std::string>(),
@@ -984,9 +985,10 @@ TEST_F(RemoteSuggestionsProviderImplTest,
       service.get(), articles_category(),
       GetTestJson({GetSuggestionWithUrl("http://more-id-1"),
                    GetSuggestionWithUrl("http://more-id-2")}),
-      /*known_ids=*/{"http://id-1", "http://id-2", "http://id-3", "http://id-4",
-                     "http://id-5", "http://id-6", "http://id-7", "http://id-8",
-                     "http://id-9", "http://id-10"},
+      /*known_ids=*/
+      {"http://id-1", "http://id-2", "http://id-3", "http://id-4",
+       "http://id-5", "http://id-6", "http://id-7", "http://id-8",
+       "http://id-9", "http://id-10"},
       expect_receiving_two_new_suggestions);
 
   // Verify that the observer received the update as well. We should see the
@@ -1096,9 +1098,10 @@ TEST_F(RemoteSuggestionsProviderImplTest,
                    GetSuggestionWithUrl("http://more-id-8"),
                    GetSuggestionWithUrl("http://more-id-9"),
                    GetSuggestionWithUrl("http://more-id-10")}),
-      /*known_ids=*/{"http://id-1", "http://id-2", "http://id-3", "http://id-4",
-                     "http://id-5", "http://id-6", "http://id-7", "http://id-8",
-                     "http://id-9", "http://id-10"},
+      /*known_ids=*/
+      {"http://id-1", "http://id-2", "http://id-3", "http://id-4",
+       "http://id-5", "http://id-6", "http://id-7", "http://id-8",
+       "http://id-9", "http://id-10"},
       expect_receiving_ten_new_suggestions);
   EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
               ElementsAre(IdWithinCategoryEq("http://more-id-1"),

@@ -384,8 +384,8 @@ void ClickBasedCategoryRanker::AppendKnownCategory(
     KnownCategories known_category) {
   Category category = Category::FromKnownCategory(known_category);
   DCHECK(!ContainsCategory(category));
-  ordered_categories_.push_back(RankedCategory(
-      category, /*clicks=*/0, /*last_dismissed=*/base::Time()));
+  ordered_categories_.push_back(
+      RankedCategory(category, /*clicks=*/0, /*last_dismissed=*/base::Time()));
 }
 
 namespace {

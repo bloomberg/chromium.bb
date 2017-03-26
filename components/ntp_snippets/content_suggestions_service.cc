@@ -362,11 +362,10 @@ void ContentSuggestionsService::OnURLsDeleted(
     for (const history::URLRow& row : deleted_rows) {
       deleted_urls.insert(row.url());
     }
-    base::Callback<bool(const GURL& url)> filter = base::Bind(
-        [](const std::set<GURL>& set, const GURL& url) {
-          return set.count(url) != 0;
-        },
-        deleted_urls);
+    base::Callback<bool(const GURL& url)> filter =
+        base::Bind([](const std::set<GURL>& set,
+                      const GURL& url) { return set.count(url) != 0; },
+                   deleted_urls);
     // We usually don't have any time-related information (the URLRow objects
     // usually don't provide a |last_visit()| timestamp. Hence we simply clear
     // the whole history for the selected URLs.

@@ -151,8 +151,8 @@ RemoteSuggestion::CreateFromChromeReaderDictionary(
     // Expected to not have AMP url sometimes.
     if (dict_value->GetString("ampUrl", &amp_url_str)) {
       amp_url = GURL(amp_url_str);
-      DLOG_IF(WARNING, !amp_url.is_valid()) << "Invalid AMP url "
-                                            << amp_url_str;
+      DLOG_IF(WARNING, !amp_url.is_valid())
+          << "Invalid AMP url " << amp_url_str;
     }
     sources.emplace_back(corpus_id, site_title,
                          amp_url.is_valid() ? amp_url : GURL());
@@ -308,8 +308,8 @@ std::unique_ptr<RemoteSuggestion> RemoteSuggestion::CreateFromProto(
     GURL amp_url;
     if (source_proto.has_amp_url()) {
       amp_url = GURL(source_proto.amp_url());
-      DLOG_IF(WARNING, !amp_url.is_valid()) << "Invalid AMP URL "
-                                            << source_proto.amp_url();
+      DLOG_IF(WARNING, !amp_url.is_valid())
+          << "Invalid AMP URL " << source_proto.amp_url();
     }
 
     sources.emplace_back(url, source_proto.publisher_name(), amp_url);

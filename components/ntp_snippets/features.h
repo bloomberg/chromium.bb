@@ -24,7 +24,7 @@ extern const base::Feature kArticleSuggestionsFeature;
 extern const base::Feature kBookmarkSuggestionsFeature;
 extern const base::Feature kRecentOfflineTabSuggestionsFeature;
 extern const base::Feature kPhysicalWebPageSuggestionsFeature;
-extern const base::Feature kForeignSessionsSuggestionsFeature;;
+extern const base::Feature kForeignSessionsSuggestionsFeature;
 
 // Feature to allow the 'save to offline' option to appear in the snippets
 // context menu.

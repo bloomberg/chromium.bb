@@ -97,8 +97,8 @@ MostVisitedSitesBridge::MostVisitedSitesBridge(Profile* profile)
 
 MostVisitedSitesBridge::~MostVisitedSitesBridge() {}
 
-void MostVisitedSitesBridge::Destroy(
-    JNIEnv* env, const JavaParamRef<jobject>& obj) {
+void MostVisitedSitesBridge::Destroy(JNIEnv* env,
+                                     const JavaParamRef<jobject>& obj) {
   delete this;
 }
 
@@ -169,7 +169,6 @@ static jlong Init(JNIEnv* env,
                   const JavaParamRef<jobject>& obj,
                   const JavaParamRef<jobject>& jprofile) {
   MostVisitedSitesBridge* most_visited_sites =
-      new MostVisitedSitesBridge(
-          ProfileAndroid::FromProfileAndroid(jprofile));
+      new MostVisitedSitesBridge(ProfileAndroid::FromProfileAndroid(jprofile));
   return reinterpret_cast<intptr_t>(most_visited_sites);
 }

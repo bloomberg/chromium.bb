@@ -104,8 +104,7 @@ void ConsumeQuota(PrefService* prefs) {
 class ContentSuggestionsNotifierService::NotifyingObserver
     : public ContentSuggestionsService::Observer {
  public:
-  NotifyingObserver(ContentSuggestionsService* service,
-                    Profile* profile)
+  NotifyingObserver(ContentSuggestionsService* service, Profile* profile)
       : service_(service),
         profile_(profile),
         app_status_listener_(base::Bind(&NotifyingObserver::AppStatusChanged,

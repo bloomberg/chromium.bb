@@ -14,8 +14,7 @@
 // Android implementation of ntp_snippets::NTPSnippetsScheduler.
 // The NTPSnippetsLauncher singleton owns the Java SnippetsLauncher object, and
 // is used to schedule the fetching of snippets. Runs on the UI thread.
-class NTPSnippetsLauncher
-    : public ntp_snippets::PersistentScheduler {
+class NTPSnippetsLauncher : public ntp_snippets::PersistentScheduler {
  public:
   static NTPSnippetsLauncher* Get();
 

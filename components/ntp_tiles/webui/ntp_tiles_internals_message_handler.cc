@@ -159,8 +159,8 @@ void NTPTilesInternalsMessageHandler::HandleViewPopularSitesJson(
     return;
   }
 
-  popular_sites_json_ = FormatJson(
-      *most_visited_sites_->popular_sites()->GetCachedJson());
+  popular_sites_json_ =
+      FormatJson(*most_visited_sites_->popular_sites()->GetCachedJson());
   SendSourceInfo();
 }
 

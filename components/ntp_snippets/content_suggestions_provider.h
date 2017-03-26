@@ -151,6 +151,7 @@ class ContentSuggestionsProvider {
   ContentSuggestionsProvider(Observer* observer);
 
   Observer* observer() const { return observer_; }
+
  private:
   Observer* observer_;
 };

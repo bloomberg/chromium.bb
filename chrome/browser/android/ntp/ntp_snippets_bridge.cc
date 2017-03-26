@@ -164,9 +164,8 @@ NTPSnippetsBridge::NTPSnippetsBridge(JNIEnv* env,
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   content_suggestions_service_ =
       ContentSuggestionsServiceFactory::GetForProfile(profile);
-  history_service_ =
-      HistoryServiceFactory::GetForProfile(profile,
-                                           ServiceAccessType::EXPLICIT_ACCESS);
+  history_service_ = HistoryServiceFactory::GetForProfile(
+      profile, ServiceAccessType::EXPLICIT_ACCESS);
   content_suggestions_service_observer_.Add(content_suggestions_service_);
 }
 
@@ -243,15 +242,16 @@ void NTPSnippetsBridge::Fetch(
 
   Category category = Category::FromIDValue(j_category_id);
   content_suggestions_service_->Fetch(
-      category, std::set<std::string>(known_suggestion_ids.begin(),
-                                      known_suggestion_ids.end()),
+      category,
+      std::set<std::string>(known_suggestion_ids.begin(),
+                            known_suggestion_ids.end()),
       base::Bind(&NTPSnippetsBridge::OnSuggestionsFetched,
                  weak_ptr_factory_.GetWeakPtr(), category));
 }
 
 void NTPSnippetsBridge::ReloadSuggestions(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj) {
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
   content_suggestions_service_->ReloadSuggestions();
 }
 

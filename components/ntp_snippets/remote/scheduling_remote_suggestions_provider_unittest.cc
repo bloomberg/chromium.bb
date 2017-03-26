@@ -113,8 +113,7 @@ class MockRemoteSuggestionsProvider : public RemoteSuggestionsProvider {
 
 }  // namespace
 
-class SchedulingRemoteSuggestionsProviderTest
-    : public ::testing::Test {
+class SchedulingRemoteSuggestionsProviderTest : public ::testing::Test {
  public:
   SchedulingRemoteSuggestionsProviderTest()
       :  // For the test we enabled all trigger types.

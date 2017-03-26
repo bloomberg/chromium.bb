@@ -392,8 +392,8 @@ void RemoteSuggestionsFetcher::OnGetTokenFailure(
     FetchFinished(OptionalFetchedCategories(),
                   std::move(builder_and_callback.second),
                   FetchResult::OAUTH_TOKEN_ERROR,
-                  /*error_details=*/base::StringPrintf(
-                      " (%s)", error.ToString().c_str()));
+                  /*error_details=*/
+                  base::StringPrintf(" (%s)", error.ToString().c_str()));
     pending_requests_.pop();
   }
 }

@@ -15,8 +15,10 @@ const base::FilePath::CharType kDatabaseFolder[] =
 const char kContentSuggestionsServer[] =
     "https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/fetch";
 const char kContentSuggestionsStagingServer[] =
-    "https://staging-chromecontentsuggestions-pa.googleapis.com/v1/suggestions/fetch";
+    "https://staging-chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
+    "fetch";
 const char kContentSuggestionsAlphaServer[] =
-    "https://alpha-chromecontentsuggestions-pa.sandbox.googleapis.com/v1/suggestions/fetch";
+    "https://alpha-chromecontentsuggestions-pa.sandbox.googleapis.com/v1/"
+    "suggestions/fetch";
 
 }  // namespace ntp_snippets

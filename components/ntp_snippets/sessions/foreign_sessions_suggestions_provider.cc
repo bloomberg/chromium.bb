@@ -231,11 +231,11 @@ void ForeignSessionsSuggestionsProvider::Fetch(
   LOG(DFATAL)
       << "ForeignSessionsSuggestionsProvider has no |Fetch| functionality!";
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(callback, Status(StatusCode::PERMANENT_ERROR,
-                                  "ForeignSessionsSuggestionsProvider "
-                                  "has no |Fetch| functionality!"),
-                 base::Passed(std::vector<ContentSuggestion>())));
+      FROM_HERE, base::Bind(callback,
+                            Status(StatusCode::PERMANENT_ERROR,
+                                   "ForeignSessionsSuggestionsProvider "
+                                   "has no |Fetch| functionality!"),
+                            base::Passed(std::vector<ContentSuggestion>())));
 }
 
 void ForeignSessionsSuggestionsProvider::ClearHistory(
