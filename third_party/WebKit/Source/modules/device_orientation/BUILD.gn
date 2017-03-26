@@ -6,6 +6,8 @@ import("//third_party/WebKit/Source/modules/modules.gni")
 
 blink_modules_sources("device_orientation") {
   sources = [
+    "DOMWindowDeviceMotion.h",
+    "DOMWindowDeviceOrientation.h",
     "DeviceAcceleration.cpp",
     "DeviceAcceleration.h",
     "DeviceMotionController.cpp",

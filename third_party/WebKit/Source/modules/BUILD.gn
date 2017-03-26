@@ -53,6 +53,10 @@ target(modules_target_type, "modules") {
   visibility = [ "//third_party/WebKit/*" ]
 
   sources = [
+    "EventModules.h",
+    "EventModulesFactory.h",
+    "EventTargetModules.h",
+    "ModulesExport.h",
     "ModulesInitializer.cpp",
     "ModulesInitializer.h",
   ]

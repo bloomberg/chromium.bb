@@ -152,6 +152,7 @@ component("core") {
   # If you create a new subdirectory, make a new BUILD file for that directory
   # and reference it in the deps below rather than adding the sources here.
   sources = [
+    "CoreExport.h",
     "CoreInitializer.cpp",
     "CoreInitializer.h",
   ]

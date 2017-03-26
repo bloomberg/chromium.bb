@@ -24,6 +24,7 @@ blink_modules_sources("webgl") {
     "EXTTextureFilterAnisotropic.h",
     "EXTsRGB.cpp",
     "EXTsRGB.h",
+    "GLStringQuery.h",
     "OESElementIndexUint.cpp",
     "OESElementIndexUint.h",
     "OESStandardDerivatives.cpp",

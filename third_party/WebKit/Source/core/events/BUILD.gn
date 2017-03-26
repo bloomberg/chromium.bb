@@ -6,6 +6,7 @@ import("//third_party/WebKit/Source/core/core.gni")
 
 blink_core_sources("events") {
   sources = [
+    "AddEventListenerOptionsDefaults.h",
     "AddEventListenerOptionsResolved.cpp",
     "AddEventListenerOptionsResolved.h",
     "AnimationEvent.cpp",
@@ -78,6 +79,7 @@ blink_core_sources("events") {
     "ProgressEvent.h",
     "PromiseRejectionEvent.cpp",
     "PromiseRejectionEvent.h",
+    "RegisteredEventListener.h",
     "RelatedEvent.cpp",
     "RelatedEvent.h",
     "ResourceProgressEvent.cpp",
@@ -88,6 +90,7 @@ blink_core_sources("events") {
     "SecurityPolicyViolationEvent.h",
     "TextEvent.cpp",
     "TextEvent.h",
+    "TextEventInputType.h",
     "TouchEvent.cpp",
     "TouchEvent.h",
     "TouchEventContext.cpp",

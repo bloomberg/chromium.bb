@@ -58,6 +58,7 @@ source_set("loader") {
     "fetch/ResourceLoader.h",
     "fetch/ResourceLoaderOptions.h",
     "fetch/ResourceLoadingLog.h",
+    "fetch/ResourceOwner.h",
     "fetch/ResourceRequest.cpp",
     "fetch/ResourceRequest.h",
     "fetch/ResourceResponse.cpp",

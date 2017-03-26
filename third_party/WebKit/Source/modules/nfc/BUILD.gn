@@ -6,6 +6,7 @@ import("//third_party/WebKit/Source/modules/modules.gni")
 
 blink_modules_sources("nfc") {
   sources = [
+    "MessageCallback.h",
     "NFC.cpp",
     "NFC.h",
     "NFCError.cpp",

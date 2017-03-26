@@ -16,6 +16,7 @@ blink_modules_sources("storage") {
     "Storage.h",
     "StorageArea.cpp",
     "StorageArea.h",
+    "StorageClient.h",
     "StorageEvent.cpp",
     "StorageEvent.h",
     "StorageNamespace.cpp",

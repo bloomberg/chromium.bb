@@ -6,6 +6,7 @@ import("//third_party/WebKit/Source/modules/modules.gni")
 
 blink_modules_sources("mediastream") {
   sources = [
+    "DOMWindowMediaStream.h",
     "MediaConstraintsImpl.cpp",
     "MediaConstraintsImpl.h",
     "MediaDeviceInfo.cpp",

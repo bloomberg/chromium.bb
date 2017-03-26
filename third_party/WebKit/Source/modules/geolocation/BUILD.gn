@@ -10,10 +10,15 @@ blink_modules_sources("geolocation") {
     "GeoNotifier.cpp",
     "GeoNotifier.h",
     "Geolocation.cpp",
+    "GeolocationError.h",
     "GeolocationWatchers.cpp",
     "GeolocationWatchers.h",
+    "Geoposition.h",
     "NavigatorGeolocation.cpp",
     "NavigatorGeolocation.h",
+    "PositionCallback.h",
+    "PositionError.h",
+    "PositionErrorCallback.h",
   ]
   deps = [
     "//device/geolocation/public/interfaces:interfaces_blink",

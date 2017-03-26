@@ -6,6 +6,7 @@ import("//third_party/WebKit/Source/modules/modules.gni")
 
 blink_modules_sources("crypto") {
   sources = [
+    "AesKeyAlgorithm.h",
     "Crypto.cpp",
     "Crypto.h",
     "CryptoHistograms.cpp",

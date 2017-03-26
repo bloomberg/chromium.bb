@@ -404,6 +404,7 @@ source_set("blink_headers") {
     "platform/modules/screen_orientation/WebLockOrientationCallback.h",
     "platform/modules/screen_orientation/WebLockOrientationError.h",
     "platform/modules/screen_orientation/WebScreenOrientationClient.h",
+    "platform/modules/screen_orientation/WebScreenOrientationEnumTraits.h",
     "platform/modules/screen_orientation/WebScreenOrientationLockType.h",
     "platform/modules/screen_orientation/WebScreenOrientationType.h",
     "platform/modules/serviceworker/WebNavigationPreloadState.h",

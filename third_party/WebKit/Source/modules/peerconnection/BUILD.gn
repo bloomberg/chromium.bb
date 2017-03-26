@@ -32,6 +32,7 @@ blink_modules_sources("peerconnection") {
     "RTCSessionDescriptionRequestImpl.h",
     "RTCSessionDescriptionRequestPromiseImpl.cpp",
     "RTCSessionDescriptionRequestPromiseImpl.h",
+    "RTCStatsCallback.h",
     "RTCStatsReport.cpp",
     "RTCStatsReport.h",
     "RTCStatsRequestImpl.cpp",

@@ -12,6 +12,7 @@ blink_core_sources("clipboard") {
     "DataObjectItem.h",
     "DataTransfer.cpp",
     "DataTransfer.h",
+    "DataTransferAccessPolicy.h",
     "DataTransferItem.cpp",
     "DataTransferItem.h",
     "DataTransferItemList.cpp",

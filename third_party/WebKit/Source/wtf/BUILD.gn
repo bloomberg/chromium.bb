@@ -40,8 +40,8 @@ component("wtf") {
     "DataLog.h",
     "DateMath.h",
     "Deque.h",
-    "Dummy.cpp",
     "DoublyLinkedList.h",
+    "Dummy.cpp",
     "DynamicAnnotations.h",
     "FilePrintStream.h",
     "Forward.h",
@@ -70,6 +70,7 @@ component("wtf") {
     "PtrUtil.h",
     "RefCounted.h",
     "RefPtr.h",
+    "RefVector.h",
     "RetainPtr.h",
     "SaturatedArithmetic.h",
     "SizeAssertions.h",
@@ -79,6 +80,8 @@ component("wtf") {
     "StdLibExtras.h",
     "StringExtras.h",
     "StringHasher.h",
+    "TerminatedArray.h",
+    "TerminatedArrayBuilder.h",
     "ThreadRestrictionVerifier.h",
     "ThreadSafeRefCounted.h",
     "ThreadSpecific.h",
@@ -157,6 +160,7 @@ component("wtf") {
     "typed_arrays/Uint16Array.h",
     "typed_arrays/Uint32Array.h",
     "typed_arrays/Uint8Array.h",
+    "typed_arrays/Uint8ClampedArray.h",
   ]
 
   configs += [
