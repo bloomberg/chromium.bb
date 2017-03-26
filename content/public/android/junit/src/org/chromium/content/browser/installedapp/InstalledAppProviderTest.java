@@ -246,7 +246,7 @@ public class InstalledAppProviderTest {
      * returned.
      */
     private void verifyInstalledApps(RelatedApplication[] manifestRelatedApps,
-            final RelatedApplication[] expectedInstalledRelatedApps) {
+            RelatedApplication[] expectedInstalledRelatedApps) {
         mInstalledAppProvider.filterInstalledApps(
                 manifestRelatedApps, new InstalledAppProvider.FilterInstalledAppsResponse() {
                     @Override
