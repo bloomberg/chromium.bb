@@ -30,7 +30,6 @@
 #include "base/win/registry.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/install_static/install_util.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "components/crash/content/app/crashpad.h"
 #endif  // OS_WIN
 
