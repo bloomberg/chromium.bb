@@ -47,25 +47,6 @@
 #include "etnaviv_drmif.h"
 #include "etnaviv_drm.h"
 
-#define VIV_FEATURES_WORD_COUNT 7
-
-struct etna_specs {
-	uint32_t model;
-	uint32_t revision;
-	uint32_t features[VIV_FEATURES_WORD_COUNT];
-	uint32_t stream_count;
-	uint32_t register_max;
-	uint32_t thread_count;
-	uint32_t shader_core_count;
-	uint32_t vertex_cache_size;
-	uint32_t vertex_output_buffer_size;
-	uint32_t pixel_pipes;
-	uint32_t instruction_count;
-	uint32_t num_constants;
-	uint32_t num_varyings;
-	uint32_t buffer_size;
-};
-
 struct etna_bo_bucket {
 	uint32_t size;
 	struct list_head list;
@@ -134,8 +115,9 @@ struct etna_bo {
 
 struct etna_gpu {
 	struct etna_device *dev;
-	struct etna_specs specs;
 	uint32_t core;
+	uint32_t model;
+	uint32_t revision;
 };
 
 struct etna_pipe {
