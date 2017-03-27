@@ -4,16 +4,32 @@
 
 {%- if use_new_js_bindings %}
 
-"use strict";
+'use strict';
 
 (function() {
+  var mojomId = '{{module.path}}';
+  if (mojoBindings.internal.isMojomLoaded(mojomId)) {
+    console.warn('The following mojom is loaded multiple times: ' + mojomId);
+    return;
+  }
+  mojoBindings.internal.markMojomLoaded(mojomId);
+
   // TODO(yzshen): Define these aliases to minimize the differences between the
   // old/new modes. Remove them when the old mode goes away.
   var bindings = mojoBindings;
   var codec = mojoBindings.internal;
   var validator = mojoBindings.internal;
+
 {%-   for import in imports %}
-  var {{import.unique_name}} = {{import.module.namespace}};
+  var {{import.unique_name}} =
+      mojoBindings.internal.exposeNamespace('{{import.module.namespace}}');
+  if (mojoBindings.config.autoLoadMojomDeps) {
+    mojoBindings.internal.loadMojomIfNecessary(
+        '{{import.module.path}}',
+        new URL(
+            '{{import.module|get_relative_path(module)}}.js',
+            document.currentScript.src).href);
+  }
 {%-   endfor %}
 
 {% include "module_definition.tmpl" %}
