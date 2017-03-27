@@ -22,6 +22,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/event_processor.h"
 #include "ui/events/event_targeter.h"
+#include "ui/events/fraction_of_time_without_user_input_recorder.h"
 #include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/events/gestures/gesture_types.h"
 #include "ui/gfx/geometry/point.h"
@@ -245,6 +246,9 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   Window* mouse_moved_handler_;
   Window* event_dispatch_target_;
   Window* old_dispatch_target_;
+
+  ui::FractionOfTimeWithoutUserInputRecorder
+      fraction_of_time_without_user_input_recorder_;
 
   bool synthesize_mouse_move_;
 

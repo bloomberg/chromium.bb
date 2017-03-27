@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,6 +36,7 @@
 #include "ui/events/event_handler.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/events/test/test_event_handler.h"
@@ -2692,6 +2694,37 @@ TEST_P(WindowEventDispatcherTest, OnCursorMovedToRootLocationUpdatesHover) {
   EXPECT_TRUE(recorder.HasReceivedEvent(ui::ET_MOUSE_EXITED));
 
   w->RemovePreTargetHandler(&recorder);
+}
+
+// Tests that we correctly report the fraction of time without user input via
+// UMA.
+TEST_P(WindowEventDispatcherTest, FractionOfTimeWithoutUserInputRecorded) {
+  const char* kHistogram = "Event.FractionOfTimeWithoutUserInput";
+  base::HistogramTester tester;
+
+  std::unique_ptr<aura::Window> window(
+      test::CreateTestWindowWithId(1234, root_window()));
+
+  ui::MouseEvent mouse1(ui::ET_MOUSE_MOVED, gfx::Point(10, 10),
+                        gfx::Point(10, 10), ui::EventTimeStampFromSeconds(4), 0,
+                        0);
+
+  // To flush the idle fraction reporter, we need to dispatch two events. The
+  // first event causes us to record the previous active period, and the second
+  // flushes the previous active period.
+  ui::MouseEvent mouse2(ui::ET_MOUSE_MOVED, gfx::Point(10, 10),
+                        gfx::Point(10, 10), ui::EventTimeStampFromSeconds(16),
+                        0, 0);
+
+  ui::MouseEvent mouse3(ui::ET_MOUSE_MOVED, gfx::Point(10, 10),
+                        gfx::Point(10, 10), ui::EventTimeStampFromSeconds(30),
+                        0, 0);
+
+  DispatchEventUsingWindowDispatcher(&mouse1);
+  DispatchEventUsingWindowDispatcher(&mouse2);
+  DispatchEventUsingWindowDispatcher(&mouse3);
+
+  tester.ExpectTotalCount(kHistogram, 1);
 }
 
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
