@@ -36,6 +36,8 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
   AddLocalizedString(source, "clearSearch",
                      IDS_MD_BOOKMARK_MANAGER_CLEAR_SEARCH);
   AddLocalizedString(source, "editBookmarkTitle", IDS_BOOKMARK_EDITOR_TITLE);
+  AddLocalizedString(source, "editDialogInvalidUrl",
+                     IDS_BOOKMARK_MANAGER_INVALID_URL);
   AddLocalizedString(source, "editDialogNameInput",
                      IDS_BOOKMARK_MANAGER_NAME_INPUT_PLACE_HOLDER);
   AddLocalizedString(source, "editDialogUrlInput",

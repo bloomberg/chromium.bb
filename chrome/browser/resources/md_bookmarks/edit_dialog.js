@@ -33,8 +33,10 @@ Polymer({
     this.isFolder_ = !editItem.url;
 
     this.titleValue_ = editItem.title;
-    if (!this.isFolder_)
+    if (!this.isFolder_) {
+      this.$.url.invalid = false;
       this.urlValue_ = assert(editItem.url);
+    }
 
     this.$.dialog.showModal();
   },
@@ -49,12 +51,37 @@ Polymer({
         isFolder ? 'renameFolderTitle' : 'editBookmarkTitle');
   },
 
+  /**
+   * Validates the value of the URL field, returning true if it is a valid URL.
+   * May modify the value by prepending 'http://' in order to make it valid.
+   * @return {boolean}
+   * @private
+   */
+  validateUrl_: function() {
+    var urlInput = /** @type {PaperInputElement} */ (this.$.url);
+    var originalValue = this.urlValue_;
+
+    if (urlInput.validate())
+      return true;
+
+    this.urlValue_ = 'http://' + originalValue;
+
+    if (urlInput.validate())
+      return true;
+
+    this.urlValue_ = originalValue;
+    return false;
+  },
+
   /** @private */
   onSaveButtonTap_: function() {
-    // TODO(tsergeant): Verify values.
     var edit = {'title': this.titleValue_};
-    if (!this.isFolder_)
+    if (!this.isFolder_) {
+      if (!this.validateUrl_())
+        return;
+
       edit['url'] = this.urlValue_;
+    }
 
     chrome.bookmarks.update(this.editItem_.id, edit);
     this.$.dialog.close();

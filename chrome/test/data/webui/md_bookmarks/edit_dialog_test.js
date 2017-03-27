@@ -35,7 +35,7 @@ suite('<bookmarks-edit-dialog>', function() {
 
   test('editing passes the correct details to the update', function() {
     // Editing an item without changing anything.
-    var item = createItem('1', {url: 'www.website.com', title: 'website'});
+    var item = createItem('1', {url: 'http://website.com', title: 'website'});
     dialog.showEditDialog(item);
 
     MockInteractions.tap(dialog.$.saveButton);
@@ -62,5 +62,35 @@ suite('<bookmarks-edit-dialog>', function() {
 
     MockInteractions.pressEnter(dialog.$.url);
     assertFalse(dialog.$.dialog.open);
+  });
+
+  test('validates urls correctly', function() {
+    dialog.urlValue_ = 'http://www.example.com';
+    assertTrue(dialog.validateUrl_());
+
+    dialog.urlValue_ = 'https://a@example.com:8080';
+    assertTrue(dialog.validateUrl_());
+
+    dialog.urlValue_ = 'example.com';
+    assertTrue(dialog.validateUrl_());
+    assertEquals('http://example.com', dialog.urlValue_);
+
+    dialog.urlValue_ = '';
+    assertFalse(dialog.validateUrl_());
+
+    dialog.urlValue_ = '~~~example.com~~~';
+    assertFalse(dialog.validateUrl_());
+  });
+
+  test('doesn\'t save when URL is invalid', function() {
+    var item = createItem('0');
+    dialog.showEditDialog(item);
+
+    dialog.urlValue_ = '';
+
+    MockInteractions.tap(dialog.$.saveButton);
+
+    assertTrue(dialog.$.url.invalid);
+    assertTrue(dialog.$.dialog.open);
   });
 });

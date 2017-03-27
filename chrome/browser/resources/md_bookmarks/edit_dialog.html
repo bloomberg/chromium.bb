@@ -18,9 +18,12 @@
             autofocus>
         </paper-input>
         <paper-input always-float-label id="url"
+            type="url"
             label="$i18n{editDialogUrlInput}"
+            error-message="$i18n{editDialogInvalidUrl}"
             value="{{urlValue_}}"
-            hidden$="[[isFolder_]]">
+            hidden$="[[isFolder_]]"
+            required>
         </paper-input>
       </div>
       <div class="button-container">
