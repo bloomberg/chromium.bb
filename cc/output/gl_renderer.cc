@@ -2061,9 +2061,9 @@ void GLRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
   gfx::ColorSpace src_color_space = quad->video_color_space;
   gfx::ColorSpace dst_color_space =
       current_frame()->current_render_pass->color_space;
-  if (!base::FeatureList::IsEnabled(media::kVideoColorManagement)) {
-    if (!settings_->enable_color_correct_rendering)
-      dst_color_space = gfx::ColorSpace();
+  if (!base::FeatureList::IsEnabled(media::kVideoColorManagement) &&
+      !settings_->enable_color_correct_rendering) {
+    dst_color_space = gfx::ColorSpace();
     switch (quad->color_space) {
       case YUVVideoDrawQuad::REC_601:
         src_color_space = gfx::ColorSpace::CreateREC601();
