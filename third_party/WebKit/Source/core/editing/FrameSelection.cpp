@@ -665,10 +665,6 @@ bool FrameSelection::setSelectedRange(const EphemeralRange& range,
   return true;
 }
 
-Range* FrameSelection::firstRange() const {
-  return m_selectionEditor->firstRange();
-}
-
 void FrameSelection::notifyAccessibilityForSelectionChange() {
   if (selectionInDOMTree().isNone())
     return;

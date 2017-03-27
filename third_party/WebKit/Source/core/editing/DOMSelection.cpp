@@ -540,15 +540,16 @@ Range* DOMSelection::primaryRangeOrNull() const {
 }
 
 Range* DOMSelection::createRangeFromSelectionEditor() const {
-  Position anchor = blink::anchorPosition(visibleSelection());
+  const VisibleSelection& selection = visibleSelection();
+  const Position& anchor = blink::anchorPosition(selection);
   if (isSelectionOfDocument() && !anchor.anchorNode()->isInShadowTree())
-    return frame()->selection().firstRange();
+    return createRange(firstEphemeralRangeOf(selection));
 
-  Node* node = shadowAdjustedNode(anchor);
+  Node* const node = shadowAdjustedNode(anchor);
   if (!node)  // crbug.com/595100
     return nullptr;
-  Position focus = focusPosition(visibleSelection());
-  if (!visibleSelection().isBaseFirst()) {
+  const Position& focus = focusPosition(selection);
+  if (!selection.isBaseFirst()) {
     return Range::create(*anchor.document(), shadowAdjustedNode(focus),
                          shadowAdjustedOffset(focus), node,
                          shadowAdjustedOffset(anchor));

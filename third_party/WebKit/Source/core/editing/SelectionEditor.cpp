@@ -348,10 +348,6 @@ void SelectionEditor::didSplitTextNode(const Text& oldNode) {
   didFinishTextChange(newBase, newExtent);
 }
 
-Range* SelectionEditor::firstRange() const {
-  return createRange(firstEphemeralRangeOf(computeVisibleSelectionInDOMTree()));
-}
-
 bool SelectionEditor::shouldAlwaysUseDirectionalSelection() const {
   return frame()->editor().behavior().shouldConsiderSelectionAsDirectional();
 }

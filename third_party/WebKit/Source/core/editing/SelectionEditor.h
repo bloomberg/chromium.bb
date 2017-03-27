@@ -61,11 +61,6 @@ class SelectionEditor final : public GarbageCollectedFinalized<SelectionEditor>,
 
   void documentAttached(Document*);
 
-  // If this FrameSelection has a logical range which is still valid, this
-  // function return its clone. Otherwise, the return value from underlying
-  // |VisibleSelection|'s |firstRange()| is returned.
-  Range* firstRange() const;
-
   // There functions are exposed for |FrameSelection|.
   void cacheRangeOfDocument(Range*);
   Range* documentCachedRange() const;

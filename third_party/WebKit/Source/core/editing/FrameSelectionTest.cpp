@@ -56,7 +56,7 @@ Text* FrameSelectionTest::appendTextNode(const String& data) {
   return text;
 }
 
-TEST_F(FrameSelectionTest, FirstRange) {
+TEST_F(FrameSelectionTest, FirstEphemeralRangeOf) {
   setBodyContent("<div id=sample>0123456789</div>abc");
   Element* const sample = document().getElementById("sample");
   Node* const text = sample->firstChild();
@@ -66,10 +66,11 @@ TEST_F(FrameSelectionTest, FirstRange) {
   sample->setAttribute(HTMLNames::styleAttr, "display:none");
   // Move |VisibleSelection| before "abc".
   updateAllLifecyclePhases();
-  Range* const range = selection().firstRange();
-  EXPECT_EQ(Position(sample->nextSibling(), 0), range->startPosition())
+  const EphemeralRange& range =
+      firstEphemeralRangeOf(selection().computeVisibleSelectionInDOMTree());
+  EXPECT_EQ(Position(sample->nextSibling(), 0), range.startPosition())
       << "firstRagne() should return current selection value";
-  EXPECT_EQ(Position(sample->nextSibling(), 0), range->endPosition());
+  EXPECT_EQ(Position(sample->nextSibling(), 0), range.endPosition());
 }
 
 TEST_F(FrameSelectionTest, SetValidSelection) {

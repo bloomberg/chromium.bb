@@ -180,11 +180,6 @@ class CORE_EXPORT FrameSelection final
   const SelectionInDOMTree& selectionInDOMTree() const;
   bool isDirectional() const { return selectionInDOMTree().isDirectional(); }
 
-  // If this FrameSelection has a logical range which is still valid, this
-  // function return its clone. Otherwise, the return value from underlying
-  // VisibleSelection's firstRange() is returned.
-  Range* firstRange() const;
-
   void documentAttached(Document*);
 
   void didLayout();
