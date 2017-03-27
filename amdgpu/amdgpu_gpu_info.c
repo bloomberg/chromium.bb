@@ -169,20 +169,20 @@ drm_private int amdgpu_query_gpu_info_init(amdgpu_device_handle dev)
 	dev->info.vce_harvest_config = dev->dev_info.vce_harvest_config;
 	dev->info.pci_rev_id = dev->dev_info.pci_rev;
 
-	for (i = 0; i < (int)dev->info.num_shader_engines; i++) {
-		unsigned instance = (i << AMDGPU_INFO_MMR_SE_INDEX_SHIFT) |
-				    (AMDGPU_INFO_MMR_SH_INDEX_MASK <<
-				     AMDGPU_INFO_MMR_SH_INDEX_SHIFT);
+	if (dev->info.family_id < AMDGPU_FAMILY_AI) {
+		for (i = 0; i < (int)dev->info.num_shader_engines; i++) {
+			unsigned instance = (i << AMDGPU_INFO_MMR_SE_INDEX_SHIFT) |
+					    (AMDGPU_INFO_MMR_SH_INDEX_MASK <<
+					     AMDGPU_INFO_MMR_SH_INDEX_SHIFT);
 
-		r = amdgpu_read_mm_registers(dev, 0x263d, 1, instance, 0,
-					     &dev->info.backend_disable[i]);
-		if (r)
-			return r;
-		/* extract bitfield CC_RB_BACKEND_DISABLE.BACKEND_DISABLE */
-		dev->info.backend_disable[i] =
-			(dev->info.backend_disable[i] >> 16) & 0xff;
+			r = amdgpu_read_mm_registers(dev, 0x263d, 1, instance, 0,
+						     &dev->info.backend_disable[i]);
+			if (r)
+				return r;
+			/* extract bitfield CC_RB_BACKEND_DISABLE.BACKEND_DISABLE */
+			dev->info.backend_disable[i] =
+				(dev->info.backend_disable[i] >> 16) & 0xff;
 
-		if (dev->info.family_id < AMDGPU_FAMILY_AI) {
 			r = amdgpu_read_mm_registers(dev, 0xa0d4, 1, instance, 0,
 						     &dev->info.pa_sc_raster_cfg[i]);
 			if (r)
