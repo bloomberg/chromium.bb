@@ -180,8 +180,18 @@ public class AccountManagerHelper {
     /**
      * Retrieves all Google accounts on the device asynchronously.
      */
-    public void getGoogleAccounts(Callback<Account[]> callback) {
-        mAccountManager.getAccountsByType(GOOGLE_ACCOUNT_TYPE, callback);
+    public void getGoogleAccounts(final Callback<Account[]> callback) {
+        new AsyncTask<Void, Void, Account[]>() {
+            @Override
+            protected Account[] doInBackground(Void... params) {
+                return getGoogleAccounts();
+            }
+
+            @Override
+            protected void onPostExecute(Account[] accounts) {
+                callback.onResult(accounts);
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**
@@ -347,8 +357,26 @@ public class AccountManagerHelper {
     }
 
     public void checkChildAccount(Account account, Callback<Boolean> callback) {
-        String[] features = {FEATURE_IS_CHILD_ACCOUNT_KEY};
-        mAccountManager.hasFeatures(account, features, callback);
+        hasFeatures(account, new String[] {FEATURE_IS_CHILD_ACCOUNT_KEY}, callback);
+    }
+
+    private boolean hasFeatures(Account account, String[] features) {
+        return mAccountManager.hasFeatures(account, features);
+    }
+
+    private void hasFeatures(
+            final Account account, final String[] features, final Callback<Boolean> callback) {
+        new AsyncTask<Void, Void, Boolean>() {
+            @Override
+            public Boolean doInBackground(Void... params) {
+                return hasFeatures(account, features);
+            }
+
+            @Override
+            public void onPostExecute(Boolean value) {
+                callback.onResult(value);
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**

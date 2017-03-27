@@ -26,13 +26,6 @@ public interface AccountManagerDelegate {
     Account[] getAccountsByType(String type);
 
     /**
-     * Async version of {@link #getAccountsByType}
-     * This method is deprecated and will be removed soon.
-     */
-    @AnyThread
-    void getAccountsByType(String type, Callback<Account[]> callback);
-
-    /**
      * Get an auth token.
      *
      * @param account The {@link Account} for which the auth token is requested.
@@ -64,13 +57,6 @@ public interface AccountManagerDelegate {
      */
     @WorkerThread
     boolean hasFeatures(Account account, String[] features);
-
-    /**
-     * Asynchronous version of {@link #hasFeatures}
-     * This method is deprecated and will be removed soon.
-     */
-    @AnyThread
-    void hasFeatures(Account account, String[] features, Callback<Boolean> callback);
 
     /**
      * Asks the user to enter a new password for an account, updating the saved credentials for the

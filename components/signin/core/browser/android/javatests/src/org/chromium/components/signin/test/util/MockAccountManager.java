@@ -8,7 +8,6 @@ import android.accounts.Account;
 import android.accounts.AuthenticatorDescription;
 import android.app.Activity;
 import android.content.Context;
-import android.os.AsyncTask;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
@@ -71,23 +70,6 @@ public class MockAccountManager implements AccountManagerDelegate {
             }
         }
         return validAccounts.toArray(new Account[0]);
-    }
-
-    @Override
-    public void getAccountsByType(final String type, final Callback<Account[]> callback) {
-        mGetAccountsTaskCounter.increment();
-        new AsyncTask<Void, Void, Account[]>() {
-            @Override
-            protected Account[] doInBackground(Void... params) {
-                return getAccountsByType(type);
-            }
-
-            @Override
-            protected void onPostExecute(Account[] accounts) {
-                callback.onResult(accounts);
-                mGetAccountsTaskCounter.decrement();
-            }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     @VisibleForTesting
@@ -167,17 +149,6 @@ public class MockAccountManager implements AccountManagerDelegate {
             }
         }
         return hasAllFeatures;
-    }
-
-    @Override
-    public void hasFeatures(
-            final Account account, final String[] features, final Callback<Boolean> callback) {
-        ThreadUtils.postOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                callback.onResult(hasFeatures(account, features));
-            }
-        });
     }
 
     @Override

@@ -15,7 +15,6 @@ import android.accounts.OperationCanceledException;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Process;
@@ -61,21 +60,6 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
         long elapsed = SystemClock.elapsedRealtime() - now;
         recordElapsedTimeHistogram("Signin.AndroidGetAccountsTime_AccountManager", elapsed);
         return accounts;
-    }
-
-    @Override
-    public void getAccountsByType(final String type, final Callback<Account[]> callback) {
-        new AsyncTask<Void, Void, Account[]>() {
-            @Override
-            protected Account[] doInBackground(Void... params) {
-                return getAccountsByType(type);
-            }
-
-            @Override
-            protected void onPostExecute(Account[] accounts) {
-                callback.onResult(accounts);
-            }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     @Override
@@ -126,23 +110,6 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
             Log.e(TAG, "Checking features was cancelled. This should not happen.");
         }
         return false;
-    }
-
-    @Override
-    public void hasFeatures(
-            final Account account, final String[] features, final Callback<Boolean> callback) {
-        AsyncTask<Void, Void, Boolean> task = new AsyncTask<Void, Void, Boolean>() {
-            @Override
-            public Boolean doInBackground(Void... params) {
-                return hasFeatures(account, features);
-            }
-
-            @Override
-            public void onPostExecute(Boolean value) {
-                callback.onResult(value);
-            }
-        };
-        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**
