@@ -538,11 +538,6 @@ Chromium is unable to recover your settings.
         </message>
       </if>
 
-      <!-- about:flags -->
-      <message name="IDS_FLAGS_DEBUG_SHORTCUTS_DESCRIPTION" desc="Description of the 'Debugging keyboard shortcuts' lab.">
-        Enables additional keyboard shortcuts that are useful for debugging Chromium.
-      </message>
-
       <!-- Obsolete System info bar -->
       <message name="IDS_SYSTEM_OBSOLETE_MESSAGE" desc="Message shown when your OS is no longer supported. This message is followed by a 'Learn more' link.">
          Chromium has stopped updating and no longer supports this version of your operating system.

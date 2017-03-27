@@ -5182,31 +5182,31 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_NACL_DEBUG_MASK_DESCRIPTION" desc="Description of the 'Restrict NaCl GDB debugging' lab." translateable="false">
         Restricts Native Client application GDB-based debugging by URL of manifest file. Native Client GDB-based debugging must be enabled for this option to work.
       </message>
-      <message name="IDS_NACL_DEBUG_MASK_CHOICE_DEBUG_ALL">
+      <message name="IDS_FLAGS_NACL_DEBUG_MASK_CHOICE_DEBUG_ALL" translateable="false">
         Debug everything.
       </message>
-      <message name="IDS_NACL_DEBUG_MASK_CHOICE_EXCLUDE_UTILS_PNACL">
+      <message name="IDS_FLAGS_NACL_DEBUG_MASK_CHOICE_EXCLUDE_UTILS_PNACL" translateable="false">
         Debug everything except secure shell and the PNaCl translator.
       </message>
-      <message name="IDS_NACL_DEBUG_MASK_CHOICE_INCLUDE_DEBUG">
+      <message name="IDS_FLAGS_NACL_DEBUG_MASK_CHOICE_INCLUDE_DEBUG" translateable="false">
         Debug only if manifest URL ends with debug.nmf.
       </message>
-      <message name="IDS_ENABLE_HTTP_FORM_WARNING_NAME" desc="Name of the 'HTTP form warning' feature.">
+      <message name="IDS_FLAGS_ENABLE_HTTP_FORM_WARNING_NAME" desc="Name of the 'HTTP form warning' feature." translateable="false">
         Show in-form warnings for sensitive fields when the top-level page is not HTTPS
       </message>
-      <message name="IDS_ENABLE_HTTP_FORM_WARNING_DESCRIPTION" desc="Description of the 'HTTP form warning' feature.">
+      <message name="IDS_FLAGS_ENABLE_HTTP_FORM_WARNING_DESCRIPTION" desc="Description of the 'HTTP form warning' feature." translateable="false">
         Attaches a warning UI to any password or credit card fields detected when the top-level page is not HTTPS
       </message>
-      <message name="IDS_MARK_HTTP_AS_NAME" desc="Name of the 'Mark Non-Secure Origins As' lab.">
+      <message name="IDS_FLAGS_MARK_HTTP_AS_NAME" desc="Name of the 'Mark Non-Secure Origins As' lab." translateable="false">
         Mark non-secure origins as non-secure
       </message>
-      <message name="IDS_MARK_HTTP_AS_DESCRIPTION" desc="Description of the 'Mark Non-Secure Origins As' lab.">
+      <message name="IDS_FLAGS_MARK_HTTP_AS_DESCRIPTION" desc="Description of the 'Mark Non-Secure Origins As' lab." translateable="false">
         Change the UI treatment for HTTP pages
       </message>
       <message name="IDS_MARK_HTTP_AS_NEUTRAL">
         Always mark HTTP as neutral
       </message>
-      <message name="IDS_MARK_HTTP_AS_DANGEROUS">
+      <message name="IDS_FLAGS_MARK_HTTP_AS_DANGEROUS" translateable="false">
         Always mark HTTP as actively dangerous
       </message>
       <message name="IDS_MARK_HTTP_WITH_PASSWORDS_OR_CC_WITH_CHIP">
@@ -5488,10 +5488,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_TOUCH_SELECTION_STRATEGY_DESCRIPTION" desc="Description of the flag that controls touch based text selection strategy." translateable="false">
         Controls how text selection granularity changes when touch text selection handles are dragged. Non-default behavior is experimental.
       </message>
-      <message name="IDS_TOUCH_SELECTION_STRATEGY_CHARACTER" desc="Description for the touch text selection strategy which always uses character granularity.">
+      <message name="IDS_FLAGS_TOUCH_SELECTION_STRATEGY_CHARACTER" desc="Description for the touch text selection strategy which always uses character granularity." translateable="false">
         Character
       </message>
-      <message name="IDS_TOUCH_SELECTION_STRATEGY_DIRECTION" desc="Description for the touch text selection strategy which is based on the direction in which the handle is dragged.">
+      <message name="IDS_FLAGS_TOUCH_SELECTION_STRATEGY_DIRECTION" desc="Description for the touch text selection strategy which is based on the direction in which the handle is dragged." translateable="false">
         Direction
       </message>
       <message name="IDS_FLAGS_WALLET_SERVICE_USE_SANDBOX_NAME" desc="Title for the flag to use the Online Wallet sandbox servers (instead of production)." translateable="false">
@@ -5506,7 +5506,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_OVERSCROLL_HISTORY_NAVIGATION_DESCRIPTION" desc="Description for the flag to disable history navigation from horizontal overscroll." translateable="false">
         Experimental history navigation in response to horizontal overscroll.
       </message>
-      <message name="IDS_OVERSCROLL_HISTORY_NAVIGATION_SIMPLE_UI" desc="Description for the simple UI for history navigation from horizontal overscroll.">
+      <message name="IDS_FLAGS_OVERSCROLL_HISTORY_NAVIGATION_SIMPLE_UI" desc="Description for the simple UI for history navigation from horizontal overscroll." translateable="false">
         Simple
       </message>
       <message name="IDS_FLAGS_OVERSCROLL_START_THRESHOLD_NAME" desc="Title for the flag to specify the threshold for starting horizontal overscroll." translateable="false">
@@ -5515,13 +5515,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_OVERSCROLL_START_THRESHOLD_DESCRIPTION" desc="Description for the flag to specify the threshold for starting horizontal overscroll." translateable="false">
         Changes overscroll start threshold relative to the default value.
       </message>
-      <message name="IDS_OVERSCROLL_START_THRESHOLD_133_PERCENT" desc="Description for the 133% threshold for starting horizontal overscroll." translateable="false">
+      <message name="IDS_FLAGS_OVERSCROLL_START_THRESHOLD_133_PERCENT" desc="Description for the 133% threshold for starting horizontal overscroll." translateable="false">
         133%
       </message>
-      <message name="IDS_OVERSCROLL_START_THRESHOLD_166_PERCENT" desc="Description for the 166% threshold for starting horizontal overscroll." translateable="false">
+      <message name="IDS_FLAGS_OVERSCROLL_START_THRESHOLD_166_PERCENT" desc="Description for the 166% threshold for starting horizontal overscroll." translateable="false">
         166%
       </message>
-      <message name="IDS_OVERSCROLL_START_THRESHOLD_200_PERCENT" desc="Description for the 200% threshold for starting horizontal overscroll." translateable="false">
+      <message name="IDS_FLAGS_OVERSCROLL_START_THRESHOLD_200_PERCENT" desc="Description for the 200% threshold for starting horizontal overscroll." translateable="false">
         200%
       </message>
       <message name="IDS_FLAGS_SCROLL_END_EFFECT_NAME" desc="Title for the flag for scroll end effect from vertical overscroll." translateable="false">
@@ -6130,28 +6130,28 @@ Keep your key file in a safe place. You will need it to create new versions of y
         This is to be used in conjunction with the enable-navigation-tracing flag.
         Please select the label that best describes the recorded traces. This will choose the destination the traces are uploaded to. If you are not sure, select other. If left empty, no traces will be uploaded.
       </message>
-      <message name="IDS_FLAG_DISABLE_AUDIO_FOR_DESKTOP_SHARE" desc="Title for the flag to disable Audio Sharing.">
+      <message name="IDS_FLAGS_DISABLE_AUDIO_FOR_DESKTOP_SHARE" desc="Title for the flag to disable Audio Sharing." translateable="false">
         Disable Audio For Desktop Share
       </message>
-      <message name="IDS_FLAG_DISABLE_AUDIO_FOR_DESKTOP_SHARE_DESCRIPTION" desc="Description for the flag to disable Audio Sharing.">
+      <message name="IDS_FLAGS_DISABLE_AUDIO_FOR_DESKTOP_SHARE_DESCRIPTION" desc="Description for the flag to disable Audio Sharing." translateable="false">
         With this flag on, desktop share picker window will not let the user choose whether to share audio.
       </message>
-      <message name="IDS_FLAG_DISABLE_TAB_FOR_DESKTOP_SHARE" desc="Title for the flag to disable tab for desktop share.">
+      <message name="IDS_FLAGS_DISABLE_TAB_FOR_DESKTOP_SHARE" desc="Title for the flag to disable tab for desktop share." translateable="false">
         Disable Desktop Share with tab source
       </message>
-      <message name="IDS_FLAG_DISABLE_TAB_FOR_DESKTOP_SHARE_DESCRIPTION" desc="Description for the flag to disable tab for desktop share.">
+      <message name="IDS_FLAGS_DISABLE_TAB_FOR_DESKTOP_SHARE_DESCRIPTION" desc="Description for the flag to disable tab for desktop share." translateable="false">
         This flag controls whether users can choose a tab for desktop share.
       </message>
-      <message name="IDS_TRACE_UPLOAD_URL_CHOICE_OTHER">
+      <message name="IDS_FLAGS_TRACE_UPLOAD_URL_CHOICE_OTHER" translateable="false">
         Other
       </message>
-      <message name="IDS_TRACE_UPLOAD_URL_CHOICE_EMLOADING">
+      <message name="IDS_FLAGS_TRACE_UPLOAD_URL_CHOICE_EMLOADING" translateable="false">
         emloading
       </message>
-      <message name="IDS_TRACE_UPLOAD_URL_CHOICE_QA">
+      <message name="IDS_FLAGS_TRACE_UPLOAD_URL_CHOICE_QA" translateable="false">
         QA
       </message>
-      <message name="IDS_TRACE_UPLOAD_URL_CHOICE_TESTING">
+      <message name="IDS_FLAGS_TRACE_UPLOAD_URL_CHOICE_TESTING" translateable="false">
         Testing
       </message>
       <message name="IDS_FLAGS_SUPERVISED_USER_MANAGED_BOOKMARKS_FOLDER_NAME" desc="Name of the flag to enable the managed bookmarks folder for supervised users." translateable="false">
@@ -7335,10 +7335,10 @@ the Bookmarks menu.">
       <message name="IDS_PASSWORD_MANAGER_CANCEL_BUTTON" desc="Label for the 'dismiss' button in the Manage Password bubble/Update Password infobar. These UIs ask the user if they wish to perform some action with saved passwords, e.g. updating or deleting them; the button dismisses the UI without taking the suggested action.">
         Nope
       </message>
-      <message name="IDS_FILL_ON_ACCOUNT_SELECT_NAME" desc="Name of the experiment for the password manager to fill on account selection rather than page load">
+      <message name="IDS_FLAGS_FILL_ON_ACCOUNT_SELECT_NAME" desc="Name of the experiment for the password manager to fill on account selection rather than page load" translateable="false">
         Fill passwords on account selection
       </message>
-      <message name="IDS_FILL_ON_ACCOUNT_SELECT_DESCRIPTION" desc="Description of the experiment for the password manager to fill on account selection rather than page load">
+      <message name="IDS_FLAGS_FILL_ON_ACCOUNT_SELECT_DESCRIPTION" desc="Description of the experiment for the password manager to fill on account selection rather than page load" translateable="false">
         Filling of passwords when an account is explicitly selected by the user rather than autofilling credentials on page load.
       </message>
       <if expr="not is_android">
@@ -7961,10 +7961,10 @@ I don't think this site should be blocked!
       <message name="IDS_NOTIFICATIONS_ASK_RADIO" desc="A radio button in Content Settings dialog to configure notifications per-site.">
         Ask when a site wants to show notifications (recommended)
       </message>
-      <message name="IDS_NOTIFICATIONS_NATIVE_FLAG" desc="Name of the flag to enable native notifications.">
+      <message name="IDS_FLAGS_NOTIFICATIONS_NATIVE_FLAG" desc="Name of the flag to enable native notifications." translateable="false">
         Enable native notifications.
       </message>
-      <message name="IDS_NOTIFICATIONS_NATIVE_FLAG_DESCRIPTION" desc="Description of the flag to enable native notifications.">
+      <message name="IDS_FLAGS_NOTIFICATIONS_NATIVE_FLAG_DESCRIPTION" desc="Description of the flag to enable native notifications." translateable="false">
         Enable support for using the native notification toasts and notification center on platforms where these are available.
       </message>
       <message name="IDS_EXCEPTIONS_PATTERN_HEADER" desc="A column header for the pattern column of the cookie/image/javascript/plugins exceptions dialog">
@@ -10856,8 +10856,11 @@ I don't think this site should be blocked!
         Language and input settings...
       </message>
       <if expr="is_android">
-        <message name="IDS_OPTIONS_ENABLE_ANDROID_SPELLCHECKER_DESCRIPTION" desc="The description for the flag to enable use of the Android spellchecker.">
+        <message name="IDS_FLAGS_ENABLE_ANDROID_SPELLCHECKER_DESCRIPTION" desc="The description for the flag to enable use of the Android spellchecker." translateable="false">
           Enables use of the Android spellchecker.
+        </message>
+        <message name="IDS_FLAGS_ENABLE_ANDROID_SPELLCHECKER_NAME" desc="The name of the flag to enable use of the Android spellchecker." translateable="false">
+          Enable spell checking
         </message>
       </if>
       <if expr="not is_macosx">
@@ -13989,10 +13992,10 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         Enable "Ok Google"
       </message>
 
-      <message name="IDS_ALLOW_INSECURE_LOCALHOST" desc="Name of the 'Allow insecure localhost' flag.">
+      <message name="IDS_FLAGS_ALLOW_INSECURE_LOCALHOST" desc="Name of the 'Allow insecure localhost' flag." translateable="false">
         Allow invalid certificates for resources loaded from localhost.
       </message>
-      <message name="IDS_ALLOW_INSECURE_LOCALHOST_DESCRIPTION" desc="Description of the 'Allow insecure localhost' flag.">
+      <message name="IDS_FLAGS_ALLOW_INSECURE_LOCALHOST_DESCRIPTION" desc="Description of the 'Allow insecure localhost' flag." translateable="false">
         Allows requests to localhost over HTTPS even when an invalid certificate is presented.
       </message>
 
@@ -14763,18 +14766,18 @@ read aloud to screenreader users to announce that a completion is available.">
     </message>
 
     <!-- Audio rendering mixing experiment strings. -->
-    <message name="IDS_NEW_AUDIO_RENDERING_MIXING_STRATEGY_NAME" desc="Name of the flag for enabling the new audio rendering mixing strategy.">
+    <message name="IDS_FLAGS_NEW_AUDIO_RENDERING_MIXING_STRATEGY_NAME" desc="Name of the flag for enabling the new audio rendering mixing strategy." translateable="false">
       New audio rendering mixing strategy
     </message>
-    <message name="IDS_NEW_AUDIO_RENDERING_MIXING_STRATEGY_DESCRIPTION" desc="Description of the flag for enabling the new audio rendering mixing strategy.">
+    <message name="IDS_FLAGS_NEW_AUDIO_RENDERING_MIXING_STRATEGY_DESCRIPTION" desc="Description of the flag for enabling the new audio rendering mixing strategy." translateable="false">
       Use the new audio rendering mixing strategy.
     </message>
 
     <!-- Background video track disabling experiment strings. -->
-    <message name="IDS_BACKGROUND_VIDEO_TRACK_OPTIMIZATION_NAME" desc="Name of the flag for enabling optimizing background video playback.">
+    <message name="IDS_FLAGS_BACKGROUND_VIDEO_TRACK_OPTIMIZATION_NAME" desc="Name of the flag for enabling optimizing background video playback." translateable="false">
       Optimize background video playback.
     </message>
-    <message name="IDS_BACKGROUND_VIDEO_TRACK_OPTIMIZATION_DESCRIPTION" desc="Description of the flag for enabling optimizing background video playback.">
+    <message name="IDS_FLAGS_BACKGROUND_VIDEO_TRACK_OPTIMIZATION_DESCRIPTION" desc="Description of the flag for enabling optimizing background video playback." translateable="false">
       Disable video tracks when the video is played in the background to optimize performance.
     </message>
 
@@ -14955,12 +14958,13 @@ read aloud to screenreader users to announce that a completion is available.">
 
     <!-- Native Android History chrome://flags strings -->
     <if expr="is_android">
-      <message name="IDS_NATIVE_ANDROID_HISTORY_MANAGER" desc="Name of the flag that enables the native Android history UI." translateable="false">
+      <message name="IDS_FLAGS_NATIVE_ANDROID_HISTORY_MANAGER" desc="Name of the flag that enables the native Android history UI." translateable="false">
         Native Android History
       </message>
-      <message name="IDS_NATIVE_ANDROID_HISTORY_MANAGER_DESCRIPTION" desc="Description of the flag that enables the native Android history UI." translateable="false">
+      <message name="IDS_FLAGS_NATIVE_ANDROID_HISTORY_MANAGER_DESCRIPTION" desc="Description of the flag that enables the native Android history UI." translateable="false">
         Show the native Android UI for browsing history.
       </message>
+    </if>
 
     <!-- Play Services LSD permission prompt chrome://flags strings -->
     <if expr="is_android">
@@ -14970,7 +14974,6 @@ read aloud to screenreader users to announce that a completion is available.">
       <message name="IDS_FLAGS_LSD_PERMISSION_PROMPT_DESCRIPTION" desc="Description for the flag to enable LSD permission prompts on Android." translateable="false">
         Whether to use the Google Play Services Location Settings Dialog permission dialog.
       </message>
-    </if>
     </if>
 
     <if expr="is_win">
@@ -15076,6 +15079,10 @@ read aloud to screenreader users to announce that a completion is available.">
     </message>
     <message name="IDS_FLAGS_DELAY_NAVIGATION_DESCRIPTION" desc="Description for the flag to delay navigation" translateable="false">
       Add a fixed delay to main frame navigations.
+    </message>
+
+    <message name="IDS_FLAGS_DEBUG_SHORTCUTS_DESCRIPTION" desc="Description of the 'Debugging keyboard shortcuts' lab." translateable="false">
+      Enables additional keyboard shortcuts that are useful for debugging Ash.
     </message>
   </messages>
  </release>
