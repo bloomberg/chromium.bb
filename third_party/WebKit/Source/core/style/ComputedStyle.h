@@ -206,8 +206,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // don't inherit
   struct NonInheritedData {
     NonInheritedData()
-        : m_effectiveDisplay(static_cast<unsigned>(initialDisplay())),
-          m_originalDisplay(static_cast<unsigned>(initialDisplay())),
+        : m_originalDisplay(static_cast<unsigned>(initialDisplay())),
           m_verticalAlign(static_cast<unsigned>(initialVerticalAlign())),
           m_hasViewportUnits(false),
           m_hasRemUnits(false) {}
@@ -216,8 +215,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     // should not cause an inequality.
     bool operator==(const NonInheritedData& other) const {
       // Generated properties are compared in ComputedStyleBase
-      return m_effectiveDisplay == other.m_effectiveDisplay &&
-             m_originalDisplay == other.m_originalDisplay &&
+      return m_originalDisplay == other.m_originalDisplay &&
              m_verticalAlign == other.m_verticalAlign;
       // Differences in the following fields do not cause inequality:
       // hasViewportUnits
@@ -238,7 +236,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
       return !(*this == other);
     }
 
-    unsigned m_effectiveDisplay : 5;  // EDisplay
     unsigned m_originalDisplay : 5;   // EDisplay
     unsigned m_verticalAlign : 4;     // EVerticalAlign
 
@@ -803,15 +800,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   void setContent(ContentData*);
 
   // display
-  static EDisplay initialDisplay() { return EDisplay::kInline; }
-  EDisplay display() const {
-    return static_cast<EDisplay>(m_nonInheritedData.m_effectiveDisplay);
-  }
   EDisplay originalDisplay() const {
     return static_cast<EDisplay>(m_nonInheritedData.m_originalDisplay);
-  }
-  void setDisplay(EDisplay v) {
-    m_nonInheritedData.m_effectiveDisplay = static_cast<unsigned>(v);
   }
   void setOriginalDisplay(EDisplay v) {
     m_nonInheritedData.m_originalDisplay = static_cast<unsigned>(v);

@@ -74,6 +74,15 @@ inline ECursor cssValueIDToPlatformEnum(CSSValueID v) {
   return detail::cssValueIDToPlatformEnumGenerated<ECursor>(v);
 }
 
+template <>
+inline EDisplay cssValueIDToPlatformEnum(CSSValueID v) {
+  if (v == CSSValueWebkitFlex)
+    return EDisplay::kFlex;
+  if (v == CSSValueWebkitInlineFlex)
+    return EDisplay::kInlineFlex;
+  return detail::cssValueIDToPlatformEnumGenerated<EDisplay>(v);
+}
+
 }  // namespace blink
 
 #endif

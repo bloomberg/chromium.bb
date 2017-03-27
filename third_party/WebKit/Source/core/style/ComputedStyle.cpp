@@ -345,8 +345,6 @@ void ComputedStyle::copyNonInheritedFromCached(const ComputedStyle& other) {
   // The flags are copied one-by-one because m_nonInheritedData.m_contains a
   // bunch of stuff other than real style data.
   // See comments for each skipped flag below.
-  m_nonInheritedData.m_effectiveDisplay =
-      other.m_nonInheritedData.m_effectiveDisplay;
   m_nonInheritedData.m_originalDisplay =
       other.m_nonInheritedData.m_originalDisplay;
   m_nonInheritedData.m_verticalAlign = other.m_nonInheritedData.m_verticalAlign;

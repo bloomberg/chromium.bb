@@ -954,7 +954,16 @@
       interpolable: true,
       svg: true,
     },
-    "display",
+    {
+      name: "display",
+      initial_keyword: "inline",
+      field_template: 'keyword',
+      keywords: [
+        "inline", "block", "list-item", "inline-block", "table", "inline-table", "table-row-group", "table-header-group",
+        "table-footer-group", "table-row", "table-column-group", "table-column", "table-cell", "table-caption", "-webkit-box",
+        "-webkit-inline-box", "flex", "inline-flex", "grid", "inline-grid", "contents", "flow-root", "none",
+      ],
+    },
     {
       name: "dominant-baseline",
       inherited: true,
