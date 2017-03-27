@@ -180,6 +180,7 @@
           '../../../externs/connection.js',
           '../../../externs/css_rule.js',
           '../../../externs/directory_change_event.js',
+          '../../../externs/drag_target.js',
           '../../../externs/entry_location.js',
           '../../../externs/es6_workaround.js',
           '../../../externs/file_browser_background.js',
