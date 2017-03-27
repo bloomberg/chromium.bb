@@ -363,6 +363,9 @@ StringPiece LevelDBTransaction::TransactionIterator::Value() const {
     RefreshDataIterator();
   return current_->Value();
 }
+bool LevelDBTransaction::TransactionIterator::IsDetached() const {
+  return db_iterator_->IsDetached();
+}
 
 void LevelDBTransaction::TransactionIterator::DataChanged() {
   data_changed_ = true;

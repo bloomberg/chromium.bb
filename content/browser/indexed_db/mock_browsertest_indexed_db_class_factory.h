@@ -55,7 +55,9 @@ class MockBrowserTestIndexedDBClassFactory : public IndexedDBClassFactory {
   scoped_refptr<LevelDBTransaction> CreateLevelDBTransaction(
       LevelDBDatabase* db) override;
   std::unique_ptr<LevelDBIteratorImpl> CreateIteratorImpl(
-      std::unique_ptr<leveldb::Iterator> iterator) override;
+      std::unique_ptr<leveldb::Iterator> iterator,
+      LevelDBDatabase* db,
+      const leveldb::Snapshot* snapshot) override;
 
   void FailOperation(FailClass failure_class,
                      FailMethod failure_method,

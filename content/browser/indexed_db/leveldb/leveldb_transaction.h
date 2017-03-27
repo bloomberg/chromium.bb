@@ -19,8 +19,6 @@
 #include "content/browser/indexed_db/leveldb/leveldb_iterator.h"
 
 namespace content {
-
-class LevelDBTransactionRangeTest;
 class LevelDBWriteBatch;
 
 class CONTENT_EXPORT LevelDBTransaction
@@ -49,7 +47,8 @@ class CONTENT_EXPORT LevelDBTransaction
 
  private:
   friend class base::RefCounted<LevelDBTransaction>;
-  friend class content::LevelDBTransactionRangeTest;
+  friend class LevelDBTransactionRangeTest;
+  friend class LevelDBTransactionTest;
   FRIEND_TEST_ALL_PREFIXES(LevelDBTransactionTest, GetAndPut);
   FRIEND_TEST_ALL_PREFIXES(LevelDBTransactionTest, Commit);
   FRIEND_TEST_ALL_PREFIXES(LevelDBTransactionTest, Iterator);
@@ -123,6 +122,8 @@ class CONTENT_EXPORT LevelDBTransaction
     leveldb::Status Prev() override;
     base::StringPiece Key() const override;
     base::StringPiece Value() const override;
+    // Exposed for testing.
+    bool IsDetached() const override;
     void DataChanged();
 
     // Mark the current record as deleted. If an existing record

@@ -1064,7 +1064,9 @@ class DefaultLevelDBFactory : public LevelDBFactory {
                      const LevelDBComparator* comparator,
                      std::unique_ptr<LevelDBDatabase>* db,
                      bool* is_disk_full) override {
-    return LevelDBDatabase::Open(file_name, comparator, db, is_disk_full);
+    return LevelDBDatabase::Open(
+        file_name, comparator,
+        LevelDBDatabase::kDefaultMaxOpenIteratorsPerDatabase, db, is_disk_full);
   }
   Status DestroyLevelDB(const FilePath& file_name) override {
     return LevelDBDatabase::Destroy(file_name);

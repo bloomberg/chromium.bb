@@ -21,6 +21,13 @@ class CONTENT_EXPORT LevelDBIterator {
   virtual leveldb::Status Prev() = 0;
   virtual base::StringPiece Key() const = 0;
   virtual base::StringPiece Value() const = 0;
+
+  // Detaches the internal iterator which saves memory at the performance
+  // expense of reloading and seeking later if the iterator is needed again for
+  // |Seek*|, |Next|, |Prev|, or |Value|.
+  // Cannot be called more than once before the iterator is reloaded.
+  virtual void Detach() {};
+  virtual bool IsDetached() const;
 };
 
 }  // namespace content

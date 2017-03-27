@@ -21,6 +21,7 @@
 namespace content {
 
 namespace {
+static const size_t kDefaultMaxOpenIteratorsPerDatabase = 50;
 
 class SimpleComparator : public LevelDBComparator {
  public:
@@ -45,7 +46,8 @@ TEST(LevelDBDatabaseTest, CorruptionTest) {
   SimpleComparator comparator;
 
   std::unique_ptr<LevelDBDatabase> leveldb;
-  LevelDBDatabase::Open(temp_directory.GetPath(), &comparator, &leveldb);
+  LevelDBDatabase::Open(temp_directory.GetPath(), &comparator,
+                        kDefaultMaxOpenIteratorsPerDatabase, &leveldb);
   EXPECT_TRUE(leveldb);
   put_value = value;
   leveldb::Status status = leveldb->Put(key, &put_value);
@@ -53,7 +55,8 @@ TEST(LevelDBDatabaseTest, CorruptionTest) {
   leveldb.reset();
   EXPECT_FALSE(leveldb);
 
-  LevelDBDatabase::Open(temp_directory.GetPath(), &comparator, &leveldb);
+  LevelDBDatabase::Open(temp_directory.GetPath(), &comparator,
+                        kDefaultMaxOpenIteratorsPerDatabase, &leveldb);
   EXPECT_TRUE(leveldb);
   bool found = false;
   status = leveldb->Get(key, &got_value, &found);
@@ -68,8 +71,8 @@ TEST(LevelDBDatabaseTest, CorruptionTest) {
   file.SetLength(0);
   file.Close();
 
-  status =
-      LevelDBDatabase::Open(temp_directory.GetPath(), &comparator, &leveldb);
+  status = LevelDBDatabase::Open(temp_directory.GetPath(), &comparator,
+                                 kDefaultMaxOpenIteratorsPerDatabase, &leveldb);
   EXPECT_FALSE(leveldb);
   EXPECT_FALSE(status.ok());
   EXPECT_TRUE(status.IsCorruption());
@@ -77,8 +80,8 @@ TEST(LevelDBDatabaseTest, CorruptionTest) {
   status = LevelDBDatabase::Destroy(temp_directory.GetPath());
   EXPECT_TRUE(status.ok());
 
-  status =
-      LevelDBDatabase::Open(temp_directory.GetPath(), &comparator, &leveldb);
+  status = LevelDBDatabase::Open(temp_directory.GetPath(), &comparator,
+                                 kDefaultMaxOpenIteratorsPerDatabase, &leveldb);
   EXPECT_TRUE(status.ok());
   EXPECT_TRUE(leveldb);
   status = leveldb->Get(key, &got_value, &found);

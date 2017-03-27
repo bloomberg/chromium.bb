@@ -38,6 +38,7 @@ using url::Origin;
 namespace content {
 
 namespace {
+static const size_t kDefaultMaxOpenIteratorsPerDatabase = 50;
 
 // Write |content| to |file|. Returns true on success.
 bool WriteFile(const base::FilePath& file, base::StringPiece content) {
@@ -62,7 +63,9 @@ class DefaultLevelDBFactory : public LevelDBFactory {
                               const LevelDBComparator* comparator,
                               std::unique_ptr<LevelDBDatabase>* db,
                               bool* is_disk_full) override {
-    return LevelDBDatabase::Open(file_name, comparator, db, is_disk_full);
+    return LevelDBDatabase::Open(file_name, comparator,
+                                 kDefaultMaxOpenIteratorsPerDatabase, db,
+                                 is_disk_full);
   }
   leveldb::Status DestroyLevelDB(const base::FilePath& file_name) override {
     return LevelDBDatabase::Destroy(file_name);

@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/containers/mru_cache.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -21,6 +22,7 @@ namespace leveldb {
 class Comparator;
 class DB;
 class FilterPolicy;
+class Iterator;
 class Env;
 class Snapshot;
 }
@@ -58,6 +60,10 @@ class CONTENT_EXPORT LevelDBLock {
 class CONTENT_EXPORT LevelDBDatabase
     : public base::trace_event::MemoryDumpProvider {
  public:
+  // Necessary because every iterator hangs onto leveldb blocks which can be
+  // large. See https://crbug/696055.
+  static const size_t kDefaultMaxOpenIteratorsPerDatabase = 50;
+
   class ComparatorAdapter : public leveldb::Comparator {
    public:
     explicit ComparatorAdapter(const LevelDBComparator* comparator);
@@ -75,10 +81,13 @@ class CONTENT_EXPORT LevelDBDatabase
     const LevelDBComparator* comparator_;
   };
 
+  // |max_open_cursors| cannot be 0.
   static leveldb::Status Open(const base::FilePath& file_name,
                               const LevelDBComparator* comparator,
+                              size_t max_open_cursors,
                               std::unique_ptr<LevelDBDatabase>* db,
                               bool* is_disk_full = 0);
+
   static std::unique_ptr<LevelDBDatabase> OpenInMemory(
       const LevelDBComparator* comparator);
   static leveldb::Status Destroy(const base::FilePath& file_name);
@@ -103,10 +112,17 @@ class CONTENT_EXPORT LevelDBDatabase
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
  protected:
-  LevelDBDatabase();
+  LevelDBDatabase(size_t max_open_iterators);
 
  private:
   friend class LevelDBSnapshot;
+  friend class LevelDBIteratorImpl;
+
+  // Methods for iterator pooling.
+  std::unique_ptr<leveldb::Iterator> CreateLevelDBIterator(
+      const leveldb::Snapshot*);
+  void OnIteratorUsed(LevelDBIterator*);
+  void OnIteratorDestroyed(LevelDBIterator*);
 
   void CloseDatabase();
 
@@ -115,6 +131,31 @@ class CONTENT_EXPORT LevelDBDatabase
   std::unique_ptr<leveldb::DB> db_;
   std::unique_ptr<const leveldb::FilterPolicy> filter_policy_;
   const LevelDBComparator* comparator_;
+
+  struct DetachIteratorOnDestruct {
+    DetachIteratorOnDestruct() {}
+    explicit DetachIteratorOnDestruct(LevelDBIterator* it) : it_(it) {}
+    DetachIteratorOnDestruct(DetachIteratorOnDestruct&& that) {
+      it_ = that.it_;
+      that.it_ = nullptr;
+    }
+    ~DetachIteratorOnDestruct();
+
+   private:
+    LevelDBIterator* it_ = nullptr;
+
+    DISALLOW_COPY_AND_ASSIGN(DetachIteratorOnDestruct);
+  };
+
+  // Despite the type name, this object uses LRU eviction.
+  size_t lru_max_size_ = 0;
+  base::HashingMRUCache<LevelDBIterator*, DetachIteratorOnDestruct>
+      iterator_lru_;
+
+  // Recorded for UMA reporting.
+  uint32_t num_iterators_ = 0;
+  uint32_t max_iterators_ = 0;
+
   std::string file_name_for_tracing;
 };
 

@@ -54,8 +54,11 @@ IndexedDBClassFactory::CreateLevelDBTransaction(LevelDBDatabase* db) {
 }
 
 std::unique_ptr<LevelDBIteratorImpl> IndexedDBClassFactory::CreateIteratorImpl(
-    std::unique_ptr<leveldb::Iterator> iterator) {
-  return base::WrapUnique(new LevelDBIteratorImpl(std::move(iterator)));
+    std::unique_ptr<leveldb::Iterator> iterator,
+    LevelDBDatabase* db,
+    const leveldb::Snapshot* snapshot) {
+  return base::WrapUnique(
+      new LevelDBIteratorImpl(std::move(iterator), db, snapshot));
 }
 
 }  // namespace content

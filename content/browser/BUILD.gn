@@ -799,6 +799,7 @@ source_set("browser") {
     "indexed_db/leveldb/leveldb_env.cc",
     "indexed_db/leveldb/leveldb_env.h",
     "indexed_db/leveldb/leveldb_factory.h",
+    "indexed_db/leveldb/leveldb_iterator.cc",
     "indexed_db/leveldb/leveldb_iterator.h",
     "indexed_db/leveldb/leveldb_iterator_impl.cc",
     "indexed_db/leveldb/leveldb_iterator_impl.h",
