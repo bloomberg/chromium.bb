@@ -926,6 +926,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
                                        const volatile GLint* rects);
 
   // Callback for async SwapBuffers.
+  void FinishAsyncSwapBuffers(gfx::SwapResult result);
   void FinishSwapBuffers(gfx::SwapResult result);
 
   void DoCommitOverlayPlanes();
@@ -2371,6 +2372,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   bool supports_swap_buffers_with_bounds_;
   bool supports_commit_overlay_planes_;
   bool supports_async_swap_;
+  uint32_t next_async_swap_id_ = 1;
+  uint32_t pending_swaps_ = 0;
   bool supports_dc_layers_ = false;
 
   // These flags are used to override the state of the shared feature_info_
@@ -11884,10 +11887,14 @@ error::Error GLES2DecoderImpl::HandlePostSubBufferCHROMIUM(
   ClearScheduleDCLayerState();
 
   if (supports_async_swap_) {
-    TRACE_EVENT_ASYNC_BEGIN0("cc", "GLES2DecoderImpl::AsyncSwapBuffers", this);
+    DCHECK_LT(pending_swaps_, 2u);
+    uint32_t async_swap_id = next_async_swap_id_++;
+    ++pending_swaps_;
+    TRACE_EVENT_ASYNC_BEGIN0("gpu", "AsyncSwapBuffers", async_swap_id);
+
     surface_->PostSubBufferAsync(
         c.x, c.y, c.width, c.height,
-        base::Bind(&GLES2DecoderImpl::FinishSwapBuffers,
+        base::Bind(&GLES2DecoderImpl::FinishAsyncSwapBuffers,
                    base::AsWeakPtr(this)));
   } else {
     FinishSwapBuffers(surface_->PostSubBuffer(c.x, c.y, c.width, c.height));
@@ -15505,9 +15512,13 @@ void GLES2DecoderImpl::DoSwapBuffers() {
         glFlush();
     }
   } else if (supports_async_swap_) {
-    TRACE_EVENT_ASYNC_BEGIN0("cc", "GLES2DecoderImpl::AsyncSwapBuffers", this);
-    surface_->SwapBuffersAsync(base::Bind(&GLES2DecoderImpl::FinishSwapBuffers,
-                                          base::AsWeakPtr(this)));
+    DCHECK_LT(pending_swaps_, 2u);
+    uint32_t async_swap_id = next_async_swap_id_++;
+    ++pending_swaps_;
+    TRACE_EVENT_ASYNC_BEGIN0("gpu", "AsyncSwapBuffers", async_swap_id);
+
+    surface_->SwapBuffersAsync(base::Bind(
+        &GLES2DecoderImpl::FinishAsyncSwapBuffers, base::AsWeakPtr(this)));
   } else {
     FinishSwapBuffers(surface_->SwapBuffers());
   }
@@ -15515,6 +15526,15 @@ void GLES2DecoderImpl::DoSwapBuffers() {
   // This may be a slow command.  Exit command processing to allow for
   // context preemption and GPU watchdog checks.
   ExitCommandProcessingEarly();
+}
+
+void GLES2DecoderImpl::FinishAsyncSwapBuffers(gfx::SwapResult result) {
+  DCHECK_NE(0u, pending_swaps_);
+  uint32_t async_swap_id = next_async_swap_id_ - pending_swaps_;
+  --pending_swaps_;
+  TRACE_EVENT_ASYNC_END0("gpu", "AsyncSwapBuffers", async_swap_id);
+
+  FinishSwapBuffers(result);
 }
 
 void GLES2DecoderImpl::FinishSwapBuffers(gfx::SwapResult result) {
@@ -15530,10 +15550,6 @@ void GLES2DecoderImpl::FinishSwapBuffers(gfx::SwapResult result) {
     // The second buffer after a resize is new and needs to be cleared to
     // known values.
     backbuffer_needs_clear_bits_ |= GL_COLOR_BUFFER_BIT;
-  }
-
-  if (supports_async_swap_) {
-    TRACE_EVENT_ASYNC_END0("cc", "GLES2DecoderImpl::AsyncSwapBuffers", this);
   }
 }
 
