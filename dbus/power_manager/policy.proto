@@ -20,7 +20,10 @@ package power_manager;
 // In the case of an unset field, powerd will restore a default value (as
 // opposed to continuing to use a value set by a previous message).  An
 // empty message will restore all settings to their defaults.
+//
+// Next ID to use: 19
 message PowerManagementPolicy {
+
   enum Action {
     // Suspends the system.  Chrome may lock the screen first depending on
     // its "Require password to wake from sleep" setting and the type of
@@ -94,6 +97,12 @@ message PowerManagementPolicy {
   // Delays used while the system is on battery power.
   optional Delays battery_delays = 4;
 
+  // True if at least one full-brightness, dimmed-but-on, or system-level wake
+  // lock is currently held.
+  optional bool screen_wake_lock = 16;
+  optional bool dim_wake_lock = 17;
+  optional bool system_wake_lock = 18;
+
   // Should audio activity be honored?  If true, audio activity will
   // prevent |idle_action| from being performed, although the screen
   // dimming, off, and lock delays will still be in effect.  Once the audio
@@ -149,8 +158,6 @@ message PowerManagementPolicy {
   // Human-readable description of the factors contributing to this policy.
   // Logged by the power manager to aid in debugging.
   optional string reason = 8;
-
-  // Next ID to use: 16
 }
 
 // Message included in IdleActionImminent signals.
