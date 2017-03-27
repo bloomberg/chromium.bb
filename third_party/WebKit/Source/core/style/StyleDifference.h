@@ -5,8 +5,6 @@
 #ifndef StyleDifference_h
 #define StyleDifference_h
 
-#include <iosfwd>
-#include "core/CoreExport.h"
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 
@@ -29,8 +27,6 @@ class StyleDifference {
     ScrollAnchorDisablingPropertyChanged = 1 << 7,
     // If you add a value here, be sure to update the number of bits on
     // m_propertySpecificDifferences.
-
-    PropertyDifferenceMax = TextDecorationOrColorChanged
   };
 
   StyleDifference()
@@ -143,9 +139,6 @@ class StyleDifference {
   }
 
  private:
-  friend CORE_EXPORT std::ostream& operator<<(std::ostream&,
-                                              const StyleDifference&);
-
   enum PaintInvalidationType {
     NoPaintInvalidation,
     PaintInvalidationObject,
@@ -159,8 +152,6 @@ class StyleDifference {
   unsigned m_visualRectUpdate : 1;
   unsigned m_propertySpecificDifferences : 8;
 };
-
-CORE_EXPORT std::ostream& operator<<(std::ostream&, const StyleDifference&);
 
 }  // namespace blink
 

@@ -63,7 +63,6 @@ blink_core_sources("rendering") {
     "StyleContentAlignmentData.h",
     "StyleDeprecatedFlexibleBoxData.cpp",
     "StyleDeprecatedFlexibleBoxData.h",
-    "StyleDifference.cpp",
     "StyleDifference.h",
     "StyleFetchedImage.cpp",
     "StyleFetchedImage.h",
