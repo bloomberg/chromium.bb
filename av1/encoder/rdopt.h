@@ -185,7 +185,8 @@ void av1_check_ncobmc_rd(const struct AV1_COMP *cpi, struct macroblock *x,
 #if CONFIG_VAR_TX
 void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
                        int blk_row, int blk_col, int plane, int block,
-                       int plane_bsize, int coeff_ctx, RD_STATS *rd_stats);
+                       int plane_bsize, const ENTROPY_CONTEXT *a,
+                       const ENTROPY_CONTEXT *l, RD_STATS *rd_stats);
 #endif
 
 void av1_txfm_rd_in_plane_supertx(MACROBLOCK *x, const AV1_COMP *cpi, int *rate,
