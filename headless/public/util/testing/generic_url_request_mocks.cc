@@ -15,7 +15,8 @@ namespace headless {
 
 // MockGenericURLRequestJobDelegate
 MockGenericURLRequestJobDelegate::MockGenericURLRequestJobDelegate()
-    : should_block_(false) {}
+    : should_block_(false),
+      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 MockGenericURLRequestJobDelegate::~MockGenericURLRequestJobDelegate() {}
 
 bool MockGenericURLRequestJobDelegate::BlockOrRewriteRequest(
@@ -24,8 +25,18 @@ bool MockGenericURLRequestJobDelegate::BlockOrRewriteRequest(
     const std::string& method,
     const std::string& referrer,
     GenericURLRequestJob::RewriteCallback callback) {
-  if (should_block_)
-    callback(GenericURLRequestJob::RewriteResult::kDeny, GURL(), method);
+  if (should_block_) {
+    // Simulate the client acknowledging the callback from a different thread.
+    main_thread_task_runner_->PostTask(
+        FROM_HERE, base::Bind(
+                       [](GenericURLRequestJob::RewriteCallback callback,
+                          std::string method) {
+                         callback.Run(
+                             GenericURLRequestJob::RewriteResult::kDeny, GURL(),
+                             method);
+                       },
+                       callback, method));
+  }
   return should_block_;
 }
 

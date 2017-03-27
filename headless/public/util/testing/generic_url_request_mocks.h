@@ -47,6 +47,7 @@ class HEADLESS_EXPORT MockGenericURLRequestJobDelegate
 
  private:
   bool should_block_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(MockGenericURLRequestJobDelegate);
 };

@@ -40,13 +40,17 @@ GenericURLRequestJob::GenericURLRequestJob(
                                    network_delegate,
                                    url_request_dispatcher),
       url_fetcher_(std::move(url_fetcher)),
+      origin_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       delegate_(delegate),
       weak_factory_(this) {}
 
-GenericURLRequestJob::~GenericURLRequestJob() = default;
+GenericURLRequestJob::~GenericURLRequestJob() {
+  DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
+}
 
 void GenericURLRequestJob::SetExtraRequestHeaders(
     const net::HttpRequestHeaders& headers) {
+  DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
   extra_request_headers_ = headers;
 
   if (extra_request_headers_.GetHeader(kDevtoolsRequestId,
@@ -56,36 +60,61 @@ void GenericURLRequestJob::SetExtraRequestHeaders(
 }
 
 void GenericURLRequestJob::Start() {
-  auto callback = [this](RewriteResult result, const GURL& url,
-                         const std::string& method) {
-    switch (result) {
-      case RewriteResult::kAllow:
-        // Note that we use the rewritten url for selecting cookies.
-        // Also, rewriting does not affect the request initiator.
-        PrepareCookies(url, method, url::Origin(url));
-        break;
-      case RewriteResult::kDeny:
-        DispatchStartError(net::ERR_FILE_NOT_FOUND);
-        break;
-      case RewriteResult::kFailure:
-        DispatchStartError(net::ERR_UNEXPECTED);
-        break;
-      default:
-        DCHECK(false);
-    }
-  };
-
-  if (!delegate_->BlockOrRewriteRequest(request_->url(), devtools_request_id_,
-                                        request_->method(),
-                                        request_->referrer(), callback)) {
+  DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
+  if (!delegate_->BlockOrRewriteRequest(
+          request_->url(), devtools_request_id_, request_->method(),
+          request_->referrer(),
+          base::Bind(&GenericURLRequestJob::OnRewriteResult,
+                     weak_factory_.GetWeakPtr(), origin_task_runner_))) {
     PrepareCookies(request_->url(), request_->method(),
                    url::Origin(request_->first_party_for_cookies()));
   }
 }
 
+// static
+void GenericURLRequestJob::OnRewriteResult(
+    base::WeakPtr<GenericURLRequestJob> weak_this,
+    const scoped_refptr<base::SingleThreadTaskRunner>& origin_task_runner,
+    RewriteResult result,
+    const GURL& url,
+    const std::string& method) {
+  if (!origin_task_runner->RunsTasksOnCurrentThread()) {
+    origin_task_runner->PostTask(
+        FROM_HERE,
+        base::Bind(&GenericURLRequestJob::OnRewriteResultOnOriginThread,
+                   weak_this, result, url, method));
+    return;
+  }
+  if (weak_this)
+    weak_this->OnRewriteResultOnOriginThread(result, url, method);
+}
+
+void GenericURLRequestJob::OnRewriteResultOnOriginThread(
+    RewriteResult result,
+    const GURL& url,
+    const std::string& method) {
+  DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
+  switch (result) {
+    case RewriteResult::kAllow:
+      // Note that we use the rewritten url for selecting cookies.
+      // Also, rewriting does not affect the request initiator.
+      PrepareCookies(url, method, url::Origin(url));
+      break;
+    case RewriteResult::kDeny:
+      DispatchStartError(net::ERR_FILE_NOT_FOUND);
+      break;
+    case RewriteResult::kFailure:
+      DispatchStartError(net::ERR_UNEXPECTED);
+      break;
+    default:
+      DCHECK(false);
+  }
+};
+
 void GenericURLRequestJob::PrepareCookies(const GURL& rewritten_url,
                                           const std::string& method,
                                           const url::Origin& site_for_cookies) {
+  DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
   net::CookieStore* cookie_store = request_->context()->cookie_store();
   net::CookieOptions options;
   options.set_include_httponly();
@@ -116,6 +145,7 @@ void GenericURLRequestJob::OnCookiesAvailable(
     const GURL& rewritten_url,
     const std::string& method,
     const net::CookieList& cookie_list) {
+  DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
   // TODO(alexclarke): Set user agent.
   // Pass cookies, the referrer and any extra headers into the fetch request.
   extra_request_headers_.SetHeader(
@@ -140,6 +170,7 @@ void GenericURLRequestJob::OnCookiesAvailable(
 }
 
 void GenericURLRequestJob::OnFetchStartError(net::Error error) {
+  DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
   DispatchStartError(error);
 }
 
@@ -149,6 +180,7 @@ void GenericURLRequestJob::OnFetchComplete(
     scoped_refptr<net::HttpResponseHeaders> response_headers,
     const char* body,
     size_t body_size) {
+  DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
   response_time_ = base::TimeTicks::Now();
   http_response_code_ = http_response_code;
   response_headers_ = response_headers;
@@ -165,6 +197,7 @@ void GenericURLRequestJob::OnFetchComplete(
 }
 
 int GenericURLRequestJob::ReadRawData(net::IOBuffer* buf, int buf_size) {
+  DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
   // TODO(skyostil): Implement ranged fetches.
   // TODO(alexclarke): Add coverage for all the cases below.
   size_t bytes_available = body_size_ - read_offset_;
