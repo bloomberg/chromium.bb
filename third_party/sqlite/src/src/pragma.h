@@ -48,6 +48,7 @@
 #define PragTyp_REKEY                         40
 #define PragTyp_LOCK_STATUS                   41
 #define PragTyp_PARSER_TRACE                  42
+#define PragTyp_AUTO_VACUUM_SLACK_PAGES       43
 
 /* Property flags associated with various pragma. */
 #define PragFlg_NeedSchema 0x01 /* Force schema load before running */
@@ -144,6 +145,13 @@ static const PragmaName aPragmaName[] = {
   /* ePragFlg:  */ PragFlg_NeedSchema|PragFlg_Result0|PragFlg_SchemaReq|PragFlg_NoColumns1,
   /* ColNames:  */ 0, 0,
   /* iArg:      */ 0 },
+#endif
+#if !defined(SQLITE_OMIT_AUTOVACUUM)
+  { /* zName:     */ "auto_vacuum_slack_pages",
+    /* ePragTyp:  */ PragTyp_AUTO_VACUUM_SLACK_PAGES,
+    /* ePragFlg:  */ PragFlg_NeedSchema|PragFlg_Result0|PragFlg_SchemaReq|PragFlg_NoColumns1,
+    /* ColNames:  */ 0, 0,
+    /* iArg:      */ 0 },
 #endif
 #if !defined(SQLITE_OMIT_FLAG_PRAGMAS)
 #if !defined(SQLITE_OMIT_AUTOMATIC_INDEX)

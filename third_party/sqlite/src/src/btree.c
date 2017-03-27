@@ -2812,6 +2812,46 @@ int sqlite3BtreeGetAutoVacuum(Btree *p){
 #endif
 }
 
+/*
+** Change the 'auto-vacuum-slack-pages' property of the database. If auto vacuum
+** is enabled, this is the number of chunks of slack to allow before
+** automatically running an incremental vacuum.
+*/
+int sqlite3BtreeSetAutoVacuumSlackPages(Btree *p, int autoVacuumSlack){
+#ifdef SQLITE_OMIT_AUTOVACUUM
+  return SQLITE_READONLY;
+#else
+  BtShared *pBt = p->pBt;
+  int rc = SQLITE_OK;
+  u8 avs = (u8)autoVacuumSlack;
+  if( autoVacuumSlack>avs ){
+    avs = 0xFF;
+  }
+
+  sqlite3BtreeEnter(p);
+  pBt->autoVacuumSlack = avs;
+  sqlite3BtreeLeave(p);
+  return rc;
+#endif
+}
+
+/*
+** Return the value of the 'auto-vacuum-slack-pages' property.
+*/
+int sqlite3BtreeGetAutoVacuumSlackPages(Btree *p){
+#ifdef SQLITE_OMIT_AUTOVACUUM
+  return 0;
+#else
+  int rc = 0;
+  sqlite3BtreeEnter(p);
+  if( p->pBt->autoVacuum!=0 ){
+    rc = p->pBt->autoVacuumSlack;
+  }
+  sqlite3BtreeLeave(p);
+  return rc;
+#endif
+}
+
 
 /*
 ** Get a reference to pPage1 of the database file.  This will
@@ -3653,13 +3693,27 @@ int sqlite3BtreeIncrVacuum(Btree *p){
 */
 static int autoVacuumCommit(BtShared *pBt){
   int rc = SQLITE_OK;
+  int bShouldVacuum = pBt->autoVacuum && !pBt->incrVacuum;
   Pager *pPager = pBt->pPager;
   VVA_ONLY( int nRef = sqlite3PagerRefcount(pPager); )
 
   assert( sqlite3_mutex_held(pBt->mutex) );
   invalidateAllOverflowCache(pBt);
   assert(pBt->autoVacuum);
-  if( !pBt->incrVacuum ){
+  if( bShouldVacuum && pBt->autoVacuumSlack ){
+    Pgno nOrig;        /* Database size before freeing */
+    Pgno nFree;        /* Number of pages on the freelist initially */
+
+    nOrig = btreePagecount(pBt);
+    nFree = get4byte(&pBt->pPage1->aData[36]);
+    bShouldVacuum =
+        (nOrig-nFree-1)/pBt->autoVacuumSlack < (nOrig-1)/pBt->autoVacuumSlack;
+    /* TODO: When integrating this test with the following code, contrive to
+    ** trim to the integral chunk boundary, rather than trimming the entire free
+    ** list.
+    */
+  }
+  if( bShouldVacuum ){
     Pgno nFin;         /* Number of pages in database after autovacuuming */
     Pgno nFree;        /* Number of pages on the freelist initially */
     Pgno iFree;        /* The next page to be freed */
