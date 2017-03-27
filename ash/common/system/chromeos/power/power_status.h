@@ -17,10 +17,6 @@
 #include "chromeos/dbus/power_manager_client.h"
 #include "ui/gfx/image/image_skia.h"
 
-namespace gfx {
-struct VectorIcon;
-}
-
 namespace ash {
 
 // PowerStatus is a singleton that receives updates about the system's
@@ -28,6 +24,15 @@ namespace ash {
 // available to interested classes within Ash.
 class ASH_EXPORT PowerStatus : public chromeos::PowerManagerClient::Observer {
  public:
+  // Types of badges which can be drawn on top of a battery icon.
+  enum IconBadge {
+    ICON_BADGE_NONE,
+    ICON_BADGE_ALERT,
+    ICON_BADGE_BOLT,
+    ICON_BADGE_X,
+    ICON_BADGE_UNRELIABLE
+  };
+
   // Different styles of battery icons.
   enum IconSet { ICON_LIGHT, ICON_DARK };
 
@@ -68,18 +73,39 @@ class ASH_EXPORT PowerStatus : public chromeos::PowerManagerClient::Observer {
   // updating onscreen icons (GetBatteryImage() creates a new image on each
   // call).
   struct BatteryImageInfo {
-    BatteryImageInfo() : icon_badge(nullptr), charge_level(-1) {}
+    BatteryImageInfo()
+        : resource_id(-1),
+          offset(-1),
+          index(-1),
+          icon_badge(ICON_BADGE_NONE),
+          charge_level(-1) {}
 
     bool operator==(const BatteryImageInfo& o) const;
 
     bool operator!=(const BatteryImageInfo& o) const { return !(*this == o); }
 
-    // The badge (lightning bolt, exclamation mark, etc) that should be drawn
-    // on top of the battery icon.
-    const gfx::VectorIcon* icon_badge;
+    // Resource ID of the image containing the specific battery icon to use.
+    // Only used in non-MD.
+    int resource_id;
 
-    // A value between 0 and kBatteryImageHeight representing the height
-    // of the battery's charge level in dp.
+    // Horizontal offset in the battery icon array image. The USB / "unreliable
+    // charging" image has a single column of icons; the other image contains a
+    // "battery" column on the left and a "line power" column on the right.
+    // Only used in non-MD.
+    int offset;
+
+    // Vertical offset corresponding to the current battery level. Only used in
+    // non-MD.
+    int index;
+
+    // The badge (lightning bolt, exclamation mark, etc) that should be drawn
+    // on top of the battery icon. Only used for MD.
+    // TODO(tdanderson): Consider using gfx::VectorIconId instead of this enum
+    // once all possible badges have been vectorized. See crbug.com/617298.
+    IconBadge icon_badge;
+
+    // A value between 0 and kBatteryImageHeightMD representing the height
+    // of the battery's charge level in dp. Only used for MD.
     int charge_level;
   };
 
@@ -88,10 +114,10 @@ class ASH_EXPORT PowerStatus : public chromeos::PowerManagerClient::Observer {
   // get very large; avoid displaying these large numbers.
   static const int kMaxBatteryTimeToDisplaySec;
 
-  // An alert badge is drawn over the battery icon if the battery is not
-  // connected to a charger and has less than |kCriticalBatteryChargePercentage|
-  // percentage of charge remaining.
-  static const double kCriticalBatteryChargePercentage;
+  // An alert badge is drawn over the material design battery icon if the
+  // battery is not connected to a charger and has less than
+  // |kCriticalBatteryChargePercentageMd| percentage of charge remaining.
+  static const double kCriticalBatteryChargePercentageMd;
 
   // Sets the global instance. Must be called before any calls to Get().
   static void Initialize();
@@ -194,12 +220,23 @@ class ASH_EXPORT PowerStatus : public chromeos::PowerManagerClient::Observer {
   // returned by this method to avoid creating new images unnecessarily.
   BatteryImageInfo GetBatteryImageInfo(IconSet icon_set) const;
 
-  // A helper function called by GetBatteryImageInfo(). Populates the fields of
-  // |info|.
-  void CalculateBatteryImageInfo(BatteryImageInfo* info) const;
+  // A helper function called by GetBatteryImageInfo(). Populates the
+  // MD-specific fields of |info|.
+  void CalculateBatteryImageInfoMd(BatteryImageInfo* info) const;
+
+  // A helper function called by GetBatteryImageInfo(). Populates the
+  // non-MD-specific fields of |info|.
+  void CalculateBatteryImageInfoNonMd(BatteryImageInfo* info,
+                                      const IconSet& icon_set) const;
 
   // Creates a new image that should be shown for the battery's current state.
   gfx::ImageSkia GetBatteryImage(const BatteryImageInfo& info) const;
+
+  // A version of GetBatteryImage() that is used when material design is not
+  // enabled.
+  // TODO(tdanderson): Remove this once material design is enabled by default.
+  // See crbug.com/614453.
+  gfx::ImageSkia GetBatteryImageNonMd(const BatteryImageInfo& info) const;
 
   // Returns an string describing the current state for accessibility.
   base::string16 GetAccessibleNameString(bool full_description) const;

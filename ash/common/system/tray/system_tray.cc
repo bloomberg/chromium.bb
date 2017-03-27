@@ -27,6 +27,7 @@
 #include "ash/common/system/chromeos/screen_security/screen_capture_tray_item.h"
 #include "ash/common/system/chromeos/screen_security/screen_share_tray_item.h"
 #include "ash/common/system/chromeos/session/tray_session_length_limit.h"
+#include "ash/common/system/chromeos/settings/tray_settings.h"
 #include "ash/common/system/chromeos/supervised/tray_supervised_user.h"
 #include "ash/common/system/chromeos/tray_caps_lock.h"
 #include "ash/common/system/chromeos/tray_tracing.h"
@@ -308,6 +309,8 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
       delegate->CreateRotationLockTrayItem(this);
   if (tray_rotation_lock)
     AddTrayItem(std::move(tray_rotation_lock));
+  if (!use_md)
+    AddTrayItem(base::MakeUnique<TraySettings>(this));
   AddTrayItem(base::WrapUnique(tray_update_));
   if (use_md) {
     tray_tiles_ = new TrayTiles(this);

@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <cmath>
 
+#include "ash/common/material_design/material_design_controller.h"
+#include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/logging.h"
@@ -16,6 +18,7 @@
 #include "chromeos/dbus/power_manager_client.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
@@ -97,29 +100,55 @@ int PowerSourceToMessageID(
   return 0;
 }
 
+const gfx::VectorIcon& VectorIconForIconBadge(
+    PowerStatus::IconBadge icon_badge) {
+  switch (icon_badge) {
+    case PowerStatus::ICON_BADGE_NONE:
+      return gfx::kNoneIcon;
+    case PowerStatus::ICON_BADGE_ALERT:
+      return kSystemTrayBatteryAlertIcon;
+    case PowerStatus::ICON_BADGE_BOLT:
+      return kSystemTrayBatteryBoltIcon;
+    case PowerStatus::ICON_BADGE_X:
+      return kSystemTrayBatteryXIcon;
+    case PowerStatus::ICON_BADGE_UNRELIABLE:
+      return kSystemTrayBatteryUnreliableIcon;
+  }
+  NOTREACHED();
+  return gfx::kNoneIcon;
+}
+
 static PowerStatus* g_power_status = NULL;
 
 // Minimum battery percentage rendered in UI.
 const int kMinBatteryPercent = 1;
 
-// The height of the battery icon (as measured from the user-visible bottom of
-// the icon to the user-visible top of the icon).
-const int kBatteryImageHeight = 12;
+// Width and height of battery images.
+const int kBatteryImageHeight = 25;
+const int kBatteryImageWidth = 25;
 
-// The dimensions of the canvas containing the battery icon.
-const int kBatteryCanvasSize = 16;
+// Number of different power states.
+const int kNumPowerImages = 15;
 
-// The minimum height (in dp) of the charged region of the battery icon when the
-// battery is present and has a charge greater than 0.
-const int kMinVisualChargeLevel = 1;
+// The height of the battery icon in material design (as measured from the
+// user-visible bottom of the icon to the user-visible top of the icon).
+const int kBatteryImageHeightMd = 12;
 
-// The empty background color of the battery icon in the system tray.
+// The dimensions of the canvas containing the material design battery icon.
+const int kBatteryCanvasSizeMd = 16;
+
+// The minimum height (in dp) of the charged region of the material design
+// battery icon when the battery is present and has a charge greater than 0.
+const int kMinVisualChargeLevelMd = 1;
+
+// The empty background color of the battery icon in the system tray. Used
+// for material design.
 // TODO(tdanderson): Move these constants to a shared location if they are
 // shared by more than one material design system icon.
 const SkColor kBatteryBaseColor = SkColorSetA(SK_ColorWHITE, 0x4C);
 
 // The background color of the charged region of the battery in the system
-// tray.
+// tray. Used for material design.
 const SkColor kBatteryChargeColor = SK_ColorWHITE;
 
 // The color of the battery's badge (bolt, unreliable, X).
@@ -133,12 +162,17 @@ const SkColor kBatteryAlertColor = SkColorSetRGB(0xDA, 0x27, 0x12);
 
 bool PowerStatus::BatteryImageInfo::operator==(
     const BatteryImageInfo& o) const {
-  return icon_badge == o.icon_badge && charge_level == o.charge_level;
+  if (ash::MaterialDesignController::UseMaterialDesignSystemIcons())
+    return icon_badge == o.icon_badge && charge_level == o.charge_level;
+
+  // TODO(tdanderson): |resource_id|, |offset|, and |index| are only used for
+  // non-MD. Remove these once MD is enabled by default. See crbug.com/614453.
+  return resource_id == o.resource_id && offset == o.offset && index == o.index;
 }
 
 const int PowerStatus::kMaxBatteryTimeToDisplaySec = 24 * 60 * 60;
 
-const double PowerStatus::kCriticalBatteryChargePercentage = 5;
+const double PowerStatus::kCriticalBatteryChargePercentageMd = 5;
 
 // static
 void PowerStatus::Initialize() {
@@ -293,81 +327,127 @@ std::string PowerStatus::GetCurrentPowerSourceID() const {
 PowerStatus::BatteryImageInfo PowerStatus::GetBatteryImageInfo(
     IconSet icon_set) const {
   BatteryImageInfo info;
-  CalculateBatteryImageInfo(&info);
+  if (MaterialDesignController::UseMaterialDesignSystemIcons())
+    CalculateBatteryImageInfoMd(&info);
+  else
+    CalculateBatteryImageInfoNonMd(&info, icon_set);
   return info;
 }
 
-void PowerStatus::CalculateBatteryImageInfo(BatteryImageInfo* info) const {
+void PowerStatus::CalculateBatteryImageInfoMd(BatteryImageInfo* info) const {
   if (!IsUsbChargerConnected() && !IsBatteryPresent()) {
-    info->icon_badge = &kSystemTrayBatteryXIcon;
+    info->icon_badge = ICON_BADGE_X;
     info->charge_level = 0;
     return;
   }
 
   if (IsUsbChargerConnected())
-    info->icon_badge = &kSystemTrayBatteryUnreliableIcon;
+    info->icon_badge = ICON_BADGE_UNRELIABLE;
   else if (IsLinePowerConnected())
-    info->icon_badge = &kSystemTrayBatteryBoltIcon;
+    info->icon_badge = ICON_BADGE_BOLT;
   else
-    info->icon_badge = nullptr;
+    info->icon_badge = ICON_BADGE_NONE;
 
-  // |charge_state| is a value between 0 and kBatteryImageHeight representing
+  // |charge_state| is a value between 0 and kBatteryImageHeightMd representing
   // the number of device pixels the battery image should be shown charged. The
   // exception is when |charge_state| is 0 (a critically-low battery); in this
   // case, still draw 1dp of charge.
   int charge_state =
-      static_cast<int>(GetBatteryPercent() / 100.0 * kBatteryImageHeight);
-  charge_state = std::max(std::min(charge_state, kBatteryImageHeight), 0);
-  info->charge_level = std::max(charge_state, kMinVisualChargeLevel);
+      static_cast<int>(GetBatteryPercent() / 100.0 * kBatteryImageHeightMd);
+  charge_state = std::max(std::min(charge_state, kBatteryImageHeightMd), 0);
+  info->charge_level = std::max(charge_state, kMinVisualChargeLevelMd);
 
-  // Use an alert badge if the battery is critically low and does not already
+  // Use ICON_BADGE_ALERT if the battery is critically low and does not already
   // have a badge assigned.
-  if (GetBatteryPercent() < kCriticalBatteryChargePercentage &&
-      !info->icon_badge) {
-    info->icon_badge = &kSystemTrayBatteryAlertIcon;
+  if (GetBatteryPercent() < kCriticalBatteryChargePercentageMd &&
+      info->icon_badge == ICON_BADGE_NONE) {
+    info->icon_badge = ICON_BADGE_ALERT;
+  }
+}
+
+void PowerStatus::CalculateBatteryImageInfoNonMd(
+    BatteryImageInfo* info,
+    const IconSet& icon_set) const {
+  if (IsUsbChargerConnected()) {
+    info->resource_id =
+        (icon_set == ICON_DARK)
+            ? IDR_AURA_UBER_TRAY_POWER_SMALL_CHARGING_UNRELIABLE_DARK
+            : IDR_AURA_UBER_TRAY_POWER_SMALL_CHARGING_UNRELIABLE;
+  } else {
+    info->resource_id = (icon_set == ICON_DARK)
+                            ? IDR_AURA_UBER_TRAY_POWER_SMALL_DARK
+                            : IDR_AURA_UBER_TRAY_POWER_SMALL;
+  }
+
+  info->offset = IsUsbChargerConnected() ? 0 : (IsLinePowerConnected() ? 1 : 0);
+
+  if (GetBatteryPercent() >= 100.0) {
+    info->index = kNumPowerImages - 1;
+  } else if (!IsBatteryPresent()) {
+    info->index = kNumPowerImages;
+  } else {
+    info->index =
+        static_cast<int>(GetBatteryPercent() / 100.0 * (kNumPowerImages - 1));
+    info->index = std::max(std::min(info->index, kNumPowerImages - 2), 0);
   }
 }
 
 gfx::ImageSkia PowerStatus::GetBatteryImage(
     const BatteryImageInfo& info) const {
+  if (!MaterialDesignController::UseMaterialDesignSystemIcons())
+    return GetBatteryImageNonMd(info);
+
   const bool use_alert_color =
-      (info.charge_level == kMinVisualChargeLevel && !IsLinePowerConnected());
+      (info.charge_level == kMinVisualChargeLevelMd && !IsLinePowerConnected());
   const SkColor badge_color =
       use_alert_color ? kBatteryAlertColor : kBatteryBadgeColor;
   const SkColor charge_color =
       use_alert_color ? kBatteryAlertColor : kBatteryChargeColor;
   gfx::Canvas canvas(
-      gfx::Size(kBatteryCanvasSize, kBatteryCanvasSize),
+      gfx::Size(kBatteryCanvasSizeMd, kBatteryCanvasSizeMd),
       display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor(),
       false);
 
   // Paint the battery's base (background) color.
-  PaintVectorIcon(&canvas, kSystemTrayBatteryIcon, kBatteryCanvasSize,
+  PaintVectorIcon(&canvas, kSystemTrayBatteryIcon, kBatteryCanvasSizeMd,
                   kBatteryBaseColor);
 
   // Paint the charged portion of the battery. Note that |charge_height| adjusts
   // for the 2dp of padding between the bottom of the battery icon and the
   // bottom edge of |canvas|.
   const int charge_height = info.charge_level + 2;
-  gfx::Rect clip_rect(0, kBatteryCanvasSize - charge_height, kBatteryCanvasSize,
-                      charge_height);
+  gfx::Rect clip_rect(0, kBatteryCanvasSizeMd - charge_height,
+                      kBatteryCanvasSizeMd, charge_height);
   canvas.Save();
   canvas.ClipRect(clip_rect);
-  PaintVectorIcon(&canvas, kSystemTrayBatteryIcon, kBatteryCanvasSize,
+  PaintVectorIcon(&canvas, kSystemTrayBatteryIcon, kBatteryCanvasSizeMd,
                   charge_color);
   canvas.Restore();
 
   // Paint the badge over top of the battery, if applicable.
-  if (info.icon_badge)
-    PaintVectorIcon(&canvas, *info.icon_badge, kBatteryCanvasSize, badge_color);
+  if (info.icon_badge != ICON_BADGE_NONE) {
+    PaintVectorIcon(&canvas, VectorIconForIconBadge(info.icon_badge),
+                    kBatteryCanvasSizeMd, badge_color);
+  }
 
   return gfx::ImageSkia(canvas.ExtractImageRep());
 }
 
+gfx::ImageSkia PowerStatus::GetBatteryImageNonMd(
+    const BatteryImageInfo& info) const {
+  gfx::Image all;
+  all = ui::ResourceBundle::GetSharedInstance().GetImageNamed(info.resource_id);
+  gfx::Rect region(info.offset * kBatteryImageWidth,
+                   info.index * kBatteryImageHeight, kBatteryImageWidth,
+                   kBatteryImageHeight);
+  return gfx::ImageSkiaOperations::ExtractSubset(*all.ToImageSkia(), region);
+}
+
 base::string16 PowerStatus::GetAccessibleNameString(
     bool full_description) const {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (IsBatteryFull()) {
-    return l10n_util::GetStringUTF16(
+    return rb.GetLocalizedString(
         IDS_ASH_STATUS_TRAY_BATTERY_FULL_CHARGE_ACCESSIBLE);
   }
 
@@ -384,10 +464,10 @@ base::string16 PowerStatus::GetAccessibleNameString(
       IsBatteryCharging() ? GetBatteryTimeToFull() : GetBatteryTimeToEmpty();
 
   if (IsUsbChargerConnected()) {
-    battery_time_accessible = l10n_util::GetStringUTF16(
+    battery_time_accessible = rb.GetLocalizedString(
         IDS_ASH_STATUS_TRAY_BATTERY_CHARGING_UNRELIABLE_ACCESSIBLE);
   } else if (IsBatteryTimeBeingCalculated()) {
-    battery_time_accessible = l10n_util::GetStringUTF16(
+    battery_time_accessible = rb.GetLocalizedString(
         IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING_ACCESSIBLE);
   } else if (ShouldDisplayBatteryTime(time) &&
              !IsBatteryDischargingOnLinePower()) {

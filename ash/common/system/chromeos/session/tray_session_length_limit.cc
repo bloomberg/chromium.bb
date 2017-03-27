@@ -13,16 +13,14 @@
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
-#include "ash/common/system/tray/tray_constants.h"
 #include "ash/resources/grit/ash_resources.h"
-#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
-#include "ui/gfx/paint_vector_icon.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/views/view.h"
@@ -143,6 +141,7 @@ void TraySessionLengthLimit::UpdateNotification() {
     return;
   }
 
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   message_center::RichNotificationData data;
   data.should_make_spoken_feedback_for_popup_updates =
       (limit_state_ != last_limit_state_);
@@ -151,8 +150,8 @@ void TraySessionLengthLimit::UpdateNotification() {
           message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
           base::string16() /* title */,
           ComposeNotificationMessage() /* message */,
-          gfx::Image(
-              gfx::CreateVectorIcon(kSystemMenuTimerIcon, kMenuIconColor)),
+          bundle.GetImageNamed(
+              IDR_AURA_UBER_TRAY_NOTIFICATION_SESSION_LENGTH_LIMIT),
           base::string16() /* display_source */, GURL(),
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT,

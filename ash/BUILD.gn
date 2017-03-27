@@ -310,6 +310,8 @@ component("ash") {
     "common/system/chromeos/session/session_length_limit_observer.h",
     "common/system/chromeos/session/tray_session_length_limit.cc",
     "common/system/chromeos/session/tray_session_length_limit.h",
+    "common/system/chromeos/settings/tray_settings.cc",
+    "common/system/chromeos/settings/tray_settings.h",
     "common/system/chromeos/supervised/custodian_info_tray_observer.h",
     "common/system/chromeos/supervised/tray_supervised_user.cc",
     "common/system/chromeos/supervised/tray_supervised_user.h",
