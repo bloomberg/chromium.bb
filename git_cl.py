@@ -3722,7 +3722,7 @@ class _GitCookiesChecker(object):
     problems = [False]
     def add_problem():
       if not problems[0]:
-        print('.gitcookies problem report:\n')
+        print('\n\n.gitcookies problem report:\n')
       problems[0] = True
 
     if self.has_generic_host():

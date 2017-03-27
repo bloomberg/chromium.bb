@@ -513,7 +513,7 @@ class GitCookiesCheckerTest(TestCase):
       expected = f.read()
     def by_line(text):
       return [l.rstrip() for l in text.rstrip().splitlines()]
-    self.assertEqual(by_line(sys.stdout.getvalue()), by_line(expected))
+    self.assertEqual(by_line(sys.stdout.getvalue().strip()), by_line(expected))
 
 class TestGitCl(TestCase):
   def setUp(self):
