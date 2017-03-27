@@ -900,9 +900,6 @@ void DocumentThreadableLoader::handleSuccessfulFinish(unsigned long identifier,
   DCHECK(m_fallbackRequestForServiceWorker.isNull());
 
   if (!m_actualRequest.isNull()) {
-    // FIXME: Timeout should be applied to whole fetch, not for each of
-    // preflight and actual request.
-    m_timeoutTimer.stop();
     DCHECK(!m_sameOriginRequest);
     DCHECK_EQ(m_options.crossOriginRequestPolicy, UseAccessControl);
     loadActualRequest();
@@ -988,7 +985,9 @@ void DocumentThreadableLoader::loadRequestAsync(
   if (!m_actualRequest.isNull())
     resourceLoaderOptions.dataBufferingPolicy = BufferData;
 
-  if (m_options.timeoutMilliseconds > 0) {
+  // The timer can be active if this is the actual request of a
+  // CORS-with-preflight request.
+  if (m_options.timeoutMilliseconds > 0 && !m_timeoutTimer.isActive()) {
     m_timeoutTimer.startOneShot(m_options.timeoutMilliseconds / 1000.0,
                                 BLINK_FROM_HERE);
   }
