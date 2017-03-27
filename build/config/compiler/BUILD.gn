@@ -1661,7 +1661,12 @@ config("symbols") {
     # obj/native_client/src/trusted/service_runtime/sel_asm/nacl_switch_32.o:
     # DWARF info may be corrupt; offsets in a range list entry are in different
     # sections" there.  Maybe just a bug in nacl_switch_32.S.
-    if (!is_mac && !is_ios && !is_nacl && target_cpu != "x86") {
+    # TODO(thakis): Figure out if there's a way to make this go for official
+    # builds, currently get
+    # "third_party/binutils/Linux_x64/Release/bin/ld.gold: warning:
+    # /tmp/lto-llvm-0b5201.o: corrupt debug info in .debug_info"
+    if (!is_mac && !is_ios && !is_nacl && target_cpu != "x86" &&
+        !is_official_build) {
       ldflags += [ "-Wl,--gdb-index" ]
     }
   }
