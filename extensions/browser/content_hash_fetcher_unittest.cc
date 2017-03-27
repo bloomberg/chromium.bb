@@ -221,7 +221,15 @@ TEST_F(ContentHashFetcherTest, MissingVerifiedContents) {
 
 // Similar to MissingVerifiedContents, but tests the case where the extension
 // actually has corruption.
-TEST_F(ContentHashFetcherTest, MissingVerifiedContentsAndCorrupt) {
+// Flaky on Linux and ChromeOS. crbug.com/
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#define MAYBE_MissingVerifiedContentsAndCorrupt \
+  DISABLED_MissingVerifiedContentsAndCorrupt
+#else
+#define MAYBE_MissingVerifiedContentsAndCorrupt \
+  MissingVerifiedContentsAndCorrupt
+#endif
+TEST_F(ContentHashFetcherTest, MAYBE_MissingVerifiedContentsAndCorrupt) {
   base::FilePath test_dir_base =
       GetTestPath(base::FilePath()).AppendASCII("missing_verified_contents");
   scoped_refptr<Extension> extension =
