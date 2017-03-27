@@ -147,28 +147,11 @@ VisiblePosition SelectionModifier::nextWordPositionForPlatform(
     const VisiblePosition& originalPosition) {
   VisiblePosition positionAfterCurrentWord = nextWordPosition(originalPosition);
 
-  if (frame() &&
-      frame()->editor().behavior().shouldSkipSpaceWhenMovingRight()) {
-    // In order to skip spaces when moving right, we advance one
-    // word further and then move one word back. Given the
-    // semantics of previousWordPosition() this will put us at the
-    // beginning of the word following.
-    VisiblePosition positionAfterSpacingAndFollowingWord =
-        nextWordPosition(positionAfterCurrentWord);
-    if (positionAfterSpacingAndFollowingWord.isNotNull() &&
-        positionAfterSpacingAndFollowingWord.deepEquivalent() !=
-            positionAfterCurrentWord.deepEquivalent())
-      positionAfterCurrentWord =
-          previousWordPosition(positionAfterSpacingAndFollowingWord);
-
-    bool movingBackwardsMovedPositionToStartOfCurrentWord =
-        positionAfterCurrentWord.deepEquivalent() ==
-        previousWordPosition(nextWordPosition(originalPosition))
-            .deepEquivalent();
-    if (movingBackwardsMovedPositionToStartOfCurrentWord)
-      positionAfterCurrentWord = positionAfterSpacingAndFollowingWord;
-  }
-  return positionAfterCurrentWord;
+  if (!frame() ||
+      !frame()->editor().behavior().shouldSkipSpaceWhenMovingRight())
+    return positionAfterCurrentWord;
+  return createVisiblePosition(
+      skipWhitespace(positionAfterCurrentWord.deepEquivalent()));
 }
 
 static void adjustPositionForUserSelectAll(VisiblePosition& pos,
