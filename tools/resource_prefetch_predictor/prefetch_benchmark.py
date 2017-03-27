@@ -89,8 +89,9 @@ def _Setup(device, database_filename):
   # database, since adb push sets it to root.
   database_content = open(database_filename, 'r').read()
   device.WriteFile(device_database_filename, database_content, force_push=True)
-  command = 'chown %s:%s \'%s\'' % (owner, group, device_database_filename)
-  device.RunShellCommand(command, as_root=True)
+  device.RunShellCommand(
+      ['chown', '%s:%s' % (owner, group), device_database_filename],
+      as_root=True, check_return=True)
 
 
 def _RunOnce(device, database_filename, url, prefetch_delay_ms,

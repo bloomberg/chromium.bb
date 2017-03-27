@@ -33,6 +33,7 @@ Benchmark timings are output by telemetry to stdout and written to
 
 import json
 import os
+import posixpath
 import shutil
 import subprocess
 import sys
@@ -139,7 +140,7 @@ class CronetPerfTestAndroidStory(android.AndroidStory):
 
   def __init__(self, device):
     self._device = device
-    device.RunShellCommand('rm %s' % DONE_FILE)
+    device.RemovePath(DONE_FILE, force=True)
     config = BENCHMARK_CONFIG
     config['HOST_IP'] = GetServersHost(device)
     self.url ='http://dummy/?'+urllib.urlencode(config)
@@ -239,8 +240,9 @@ class QuicServer(object):
       assert waited_s < 5, "quic_server failed to start after %fs" % waited_s
     # Push certificate to device.
     cert = open(QUIC_CERT, 'r').read()
-    device_cert_path = os.path.join(device.GetExternalStoragePath(), CERT_PATH)
-    device.RunShellCommand('mkdir -p %s' % device_cert_path)
+    device_cert_path = posixpath.join(
+        device.GetExternalStoragePath(), CERT_PATH)
+    device.RunShellCommand(['mkdir', '-p', device_cert_path], check_return=True)
     device.WriteFile(os.path.join(device_cert_path, QUIC_CERT_FILENAME), cert)
 
   def ShutdownQuicServer(self):

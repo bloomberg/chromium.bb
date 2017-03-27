@@ -51,7 +51,8 @@ class AndroidRndisForwarder(object):
   def _RedirectPorts(self):
     """Sets the local to remote pair mappings to use for RNDIS."""
     # Flush any old nat rules.
-    self._device.RunShellCommand('iptables -F -t nat')
+    self._device.RunShellCommand(
+        ['iptables', '-F', '-t', 'nat'], check_return=True)
 
   def _OverrideDns(self):
     """Overrides DNS on device to point at the host."""
@@ -76,14 +77,16 @@ class AndroidRndisForwarder(object):
       self._device.SetProp('net.dnschange', str(int(dnschange) + 1))
     # Since commit 8b47b3601f82f299bb8c135af0639b72b67230e6 to frameworks/base
     # the net.dns1 properties have been replaced with explicit commands for netd
-    self._device.RunShellCommand('netd resolver setifdns %s %s %s' %
-                                 (iface, dns1, dns2))
+    self._device.RunShellCommand(
+        ['netd', 'resolver', 'setifdns', iface, dns1, dns2], check_return=True)
     # TODO(szym): if we know the package UID, we could setifaceforuidrange
-    self._device.RunShellCommand('netd resolver setdefaultif %s' % iface)
+    self._device.RunShellCommand(
+        ['netd', 'resolver', 'setdefaultif', iface], check_return=True)
 
   def _GetCurrentDns(self):
     """Returns current gateway, dns1, and dns2."""
-    routes = self._device.RunShellCommand('cat /proc/net/route')[1:]
+    routes = self._device.RunShellCommand(
+        ['cat', '/proc/net/route'], check_return=True)[1:]
     routes = [route.split() for route in routes]
     default_routes = [route[0] for route in routes if route[1] == '00000000']
     return (
@@ -102,11 +105,13 @@ class AndroidRndisForwarder(object):
     (e.g. Telemetry crashes). A power cycle or "adb reboot" is a simple
     workaround around in that case.
     """
-    self._device.RunShellCommand('route add default gw %s dev %s' %
-                                 (self.host_ip, self._device_iface))
+    self._device.RunShellCommand(
+        ['route', 'add', 'default', 'gw', self.host_ip,
+         'dev', self._device_iface], check_return=True)
 
   def _RestoreDefaultGateway(self):
-    self._device.RunShellCommand('netcfg %s down' % self._device_iface)
+    self._device.RunShellCommand(
+        ['netcfg', self._device_iface, 'down'], check_return=True)
 
 
 class AndroidRndisConfigurator(object):
@@ -152,7 +157,8 @@ class AndroidRndisConfigurator(object):
 
   def _FindDeviceRndisInterface(self):
     """Returns the name of the RNDIS network interface if present."""
-    config = self._device.RunShellCommand('ip -o link show')
+    config = self._device.RunShellCommand(
+        ['ip', '-o', 'link', 'show'], check_return=True)
     interfaces = [line.split(':')[1].strip() for line in config]
     candidates = [iface for iface in interfaces if re.match('rndis|usb', iface)]
     if candidates:
@@ -262,12 +268,14 @@ function doit() {
 doit &
     """ % {'dev': self._RNDIS_DEVICE, 'functions': 'rndis,adb',
            'prefix': script_prefix}
-    self._device.WriteFile('%s.sh' % script_prefix, script)
+    script_file = '%s.sh' % script_prefix
+    log_file = '%s.log' % script_prefix
+    self._device.WriteFile(script_file, script)
     # TODO(szym): run via su -c if necessary.
-    self._device.RunShellCommand('rm %s.log' % script_prefix)
-    self._device.RunShellCommand('. %s.sh' % script_prefix)
+    self._device.RemovePath(log_file, force=True)
+    self._device.RunShellCommand(['.', script_file], check_return=True)
     self._device.WaitUntilFullyBooted()
-    result = self._device.ReadFile('%s.log' % script_prefix).splitlines()
+    result = self._device.ReadFile(log_file).splitlines()
     assert any('DONE' in line for line in result), 'RNDIS script did not run!'
 
   def _CheckEnableRndis(self, force):
@@ -338,9 +346,10 @@ doit &
           excluded = excluded_iface
         else:
           excluded = 'no interfaces excluded on other devices'
-        addresses += [line.split()[3]
-                      for line in device.RunShellCommand('ip -o -4 addr')
-                      if excluded not in line]
+        output = device.RunShellCommand(
+            ['ip', '-o', '-4', 'addr'], check_return=True)
+        addresses += [
+            line.split()[3] for line in output if excluded not in line]
       except device_errors.CommandFailedError:
         logging.warning('Unable to determine IP addresses for %s',
                         device_serial)
@@ -436,7 +445,8 @@ doit &
 
     # TODO(szym) run via su -c if necessary.
     self._device.RunShellCommand(
-        'ifconfig %s %s netmask %s up' % (device_iface, device_ip, netmask))
+        ['ifconfig', device_iface, device_ip, 'netmask', netmask, 'up'],
+        check_return=True)
     # Enabling the interface sometimes breaks adb.
     self._device.WaitUntilFullyBooted()
     self._host_iface = host_iface
@@ -453,16 +463,21 @@ doit &
     """Override any routing policy that could prevent
     packets from reaching the rndis interface
     """
-    policies = self._device.RunShellCommand('ip rule')
+    policies = self._device.RunShellCommand(['ip', 'rule'], check_return=True)
     if len(policies) > 1 and not 'lookup main' in policies[1]:
-      self._device.RunShellCommand('ip rule add prio 1 from all table main')
-      self._device.RunShellCommand('ip route flush cache')
+      self._device.RunShellCommand(
+          ['ip', 'rule', 'add', 'prio', '1', 'from', 'all', 'table', 'main'],
+          check_return=True)
+      self._device.RunShellCommand(
+          ['ip', 'route', 'flush', 'cache'], check_return=True)
 
   def RestoreRoutingPolicy(self):
-    policies = self._device.RunShellCommand('ip rule')
+    policies = self._device.RunShellCommand(['ip', 'rule'], check_return=True)
     if len(policies) > 1 and re.match("^1:.*lookup main", policies[1]):
-      self._device.RunShellCommand('ip rule del prio 1')
-      self._device.RunShellCommand('ip route flush cache')
+      self._device.RunShellCommand(
+          ['ip', 'rule', 'del', 'prio', '1'], check_return=True)
+      self._device.RunShellCommand(
+          ['ip', 'route', 'flush', 'cache'], check_return=True)
 
   def _CheckConfigureNetwork(self):
     """Enables RNDIS and configures it, retrying until we have connectivity."""
