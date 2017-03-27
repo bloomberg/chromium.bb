@@ -52,12 +52,12 @@ Attribute.prototype.setValueIgnoreMutation = function(value) {
 // Defines this attribute as a property on the view's element.
 Attribute.prototype.defineProperty = function() {
   $Object.defineProperty(this.view.element, this.name, {
-    get: function() {
+    get: $Function.bind(function() {
       return this.getValue();
-    }.bind(this),
-    set: function(value) {
+    }, this),
+    set: $Function.bind(function(value) {
       this.setValue(value);
-    }.bind(this),
+    }, this),
     enumerable: true
   });
 };

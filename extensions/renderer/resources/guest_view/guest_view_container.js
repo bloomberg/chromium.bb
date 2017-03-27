@@ -68,15 +68,15 @@ GuestViewContainer.registerElement = function(guestViewContainerType) {
 // their resizes.
 GuestViewContainer.prototype.setupGuestProperty = function() {
   $Object.defineProperty(this, 'guest', {
-    get: function() {
+    get: $Function.bind(function() {
       return privates(this).guest;
-    }.bind(this),
-    set: function(value) {
+    }, this),
+    set: $Function.bind(function(value) {
       privates(this).guest = value;
       if (!value) {
         return;
       }
-      privates(this).guest.onresize = function(e) {
+      privates(this).guest.onresize = $Function.bind(function(e) {
         // Dispatch the 'contentresize' event.
         var contentResizeEvent = new Event('contentresize', { bubbles: true });
         contentResizeEvent.oldWidth = e.oldWidth;
@@ -84,8 +84,8 @@ GuestViewContainer.prototype.setupGuestProperty = function() {
         contentResizeEvent.newWidth = e.newWidth;
         contentResizeEvent.newHeight = e.newHeight;
         this.dispatchEvent(contentResizeEvent);
-      }.bind(this);
-    }.bind(this),
+      }, this);
+    }, this),
     enumerable: true
   });
 };

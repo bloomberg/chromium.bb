@@ -34,7 +34,7 @@ ExtensionOptionsImpl.prototype.createGuest = function() {
   // Destroy the old guest if one exists.
   this.guest.destroy();
 
-  this.guest.create(this.buildParams(), function() {
+  this.guest.create(this.buildParams(), $Function.bind(function() {
     if (!this.guest.getId()) {
       // Fire a createfailed event here rather than in ExtensionOptionsGuest
       // because the guest will not be created, and cannot fire an event.
@@ -43,7 +43,7 @@ ExtensionOptionsImpl.prototype.createGuest = function() {
     } else {
       this.attachWindow$();
     }
-  }.bind(this));
+  }, this));
 };
 
 GuestViewContainer.registerElement(ExtensionOptionsImpl);

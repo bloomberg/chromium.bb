@@ -78,13 +78,14 @@ GuestViewEvents.prototype.setupEvents = function() {
   // An array of registerd event listeners that should be removed when this
   // GuestViewEvents is garbage collected.
   this.listenersToBeRemoved = [];
-  MessagingNatives.BindToGC(this, function(listenersToBeRemoved) {
+  MessagingNatives.BindToGC(
+      this, $Function.bind(function(listenersToBeRemoved) {
     for (var i = 0; i != listenersToBeRemoved.length; ++i) {
       listenersToBeRemoved[i].evt.removeListener(
           listenersToBeRemoved[i].listener);
       listenersToBeRemoved[i] = null;
     }
-  }.bind(undefined, this.listenersToBeRemoved), -1 /* portId */);
+  }, undefined, this.listenersToBeRemoved), -1 /* portId */);
 
   // Set up the GuestView events.
   for (var eventName in GuestViewEvents.EVENTS) {
@@ -140,11 +141,11 @@ GuestViewEvents.prototype.makeDomEvent = function(event, eventName) {
   }
   var domEvent = new Event(eventName, details);
   if (eventInfo.fields) {
-    $Array.forEach(eventInfo.fields, function(field) {
+    $Array.forEach(eventInfo.fields, $Function.bind(function(field) {
       if (event[field] !== undefined) {
         domEvent[field] = event[field];
       }
-    }.bind(this));
+    }, this));
   }
 
   return domEvent;
@@ -155,10 +156,10 @@ GuestViewEvents.prototype.makeDomEvent = function(event, eventName) {
 GuestViewEvents.prototype.setupEventProperty = function(eventName) {
   var propertyName = 'on' + eventName.toLowerCase();
   $Object.defineProperty(this.view.element, propertyName, {
-    get: function() {
+    get: $Function.bind(function() {
       return this.on[propertyName];
-    }.bind(this),
-    set: function(value) {
+    }, this),
+    set: $Function.bind(function(value) {
       if (this.on[propertyName]) {
         this.view.element.removeEventListener(eventName, this.on[propertyName]);
       }
@@ -166,7 +167,7 @@ GuestViewEvents.prototype.setupEventProperty = function(eventName) {
       if (value) {
         this.view.element.addEventListener(eventName, value);
       }
-    }.bind(this),
+    }, this),
     enumerable: true
   });
 };

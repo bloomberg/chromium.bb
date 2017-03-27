@@ -27,7 +27,7 @@ GuestViewImpl.prototype.attachImpl$ = function(
   var view = GuestViewInternalNatives.GetViewFromID(viewInstanceId);
   if (!view.elementAttached) {
     // Defer the attachment until the <webview> element is attached.
-    view.deferredAttachCallback = this.attachImpl$.bind(
+    view.deferredAttachCallback = $Function.bind(this.attachImpl$,
         this, internalInstanceId, viewInstanceId, attachParams, callback);
     return;
   };
@@ -60,7 +60,7 @@ GuestViewImpl.prototype.attachImpl$ = function(
   // |contentWindow| is used to retrieve the RenderFrame in cpp.
   GuestViewInternalNatives.AttachIframeGuest(
       internalInstanceId, this.id, attachParams, contentWindow,
-      callbackWrapper.bind(this, callback));
+      $Function.bind(callbackWrapper, this, callback));
 
   this.internalInstanceId = internalInstanceId;
   this.state = GuestViewImpl.GuestState.GUEST_STATE_ATTACHED;
@@ -102,7 +102,8 @@ GuestViewImpl.prototype.createImpl$ = function(createParams, callback) {
     this.handleCallback(callback);
   };
 
-  this.sendCreateRequest(createParams, callbackWrapper.bind(this, callback));
+  this.sendCreateRequest(
+      createParams, $Function.bind(callbackWrapper, this, callback));
 
   this.state = GuestViewImpl.GuestState.GUEST_STATE_CREATED;
 };

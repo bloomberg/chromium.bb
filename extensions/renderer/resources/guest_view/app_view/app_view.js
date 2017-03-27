@@ -60,7 +60,7 @@ AppViewImpl.prototype.connect = function(app, data, callback) {
   this.data = data;
 
   this.guest.destroy();
-  this.guest.create(this.buildParams(), function() {
+  this.guest.create(this.buildParams(), $Function.bind(function() {
     if (!this.guest.getId()) {
       var errorMsg = 'Unable to connect to app "' + app + '".';
       window.console.warn(errorMsg);
@@ -74,7 +74,7 @@ AppViewImpl.prototype.connect = function(app, data, callback) {
     if (callback) {
       callback(true);
     }
-  }.bind(this));
+  }, this));
 };
 
 GuestViewContainer.registerElement(AppViewImpl);

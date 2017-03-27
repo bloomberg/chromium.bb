@@ -91,9 +91,9 @@ WebViewImpl.prototype.setupElementProperties = function() {
   // We cannot use {writable: true} property descriptor because we want a
   // dynamic getter value.
   Object.defineProperty(this.element, 'contentWindow', {
-    get: function() {
+    get: $Function.bind(function() {
       return this.guest.getContentWindow();
-    }.bind(this),
+    }, this),
     // No setter.
     enumerable: true
   });
@@ -136,9 +136,9 @@ WebViewImpl.prototype.onSizeChanged = function(webViewEvent) {
 };
 
 WebViewImpl.prototype.createGuest = function() {
-  this.guest.create(this.buildParams(), function() {
+  this.guest.create(this.buildParams(), $Function.bind(function() {
     this.attachWindow$();
-  }.bind(this));
+  }, this));
 };
 
 WebViewImpl.prototype.onFrameNameChanged = function(name) {
@@ -212,9 +212,9 @@ WebViewImpl.prototype.executeCode = function(func, args) {
 
 // Requests the <webview> element wihtin the embedder to enter fullscreen.
 WebViewImpl.prototype.makeElementFullscreen = function() {
-  GuestViewInternalNatives.RunWithGesture(function() {
+  GuestViewInternalNatives.RunWithGesture($Function.bind(function() {
     this.element.webkitRequestFullScreen();
-  }.bind(this));
+  }, this));
 };
 
 // Implemented when the ChromeWebView API is available.

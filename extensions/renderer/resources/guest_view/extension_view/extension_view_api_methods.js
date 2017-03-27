@@ -24,18 +24,18 @@ var EXTENSION_VIEW_API_METHODS = [
 // Custom API method implementations.
 
 ExtensionViewImpl.prototype.load = function(src) {
-  return new Promise(function(resolve, reject) {
+  return new Promise($Function.bind(function(resolve, reject) {
     this.loadQueue.push({src: src, resolve: resolve, reject: reject});
     this.loadNextSrc();
-  }.bind(this))
-  .then(function onLoadResolved() {
+  }, this))
+  .then($Function.bind(function onLoadResolved() {
     this.pendingLoad = null;
     this.loadNextSrc();
-  }.bind(this), function onLoadRejected() {
+  }, this), $Function.bind(function onLoadRejected() {
     this.pendingLoad.reject('Failed to load.');
     this.pendingLoad = null;
     this.loadNextSrc();
-  }.bind(this));
+  }, this));
 };
 
 // -----------------------------------------------------------------------------

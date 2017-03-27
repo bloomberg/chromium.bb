@@ -212,16 +212,16 @@ SrcAttribute.prototype.detach = function() {
 // spawns off a new process.
 SrcAttribute.prototype.setupMutationObserver =
     function() {
-  this.observer = new MutationObserver(function(mutations) {
-    $Array.forEach(mutations, function(mutation) {
+  this.observer = new MutationObserver($Function.bind(function(mutations) {
+    $Array.forEach(mutations, $Function.bind(function(mutation) {
       var oldValue = mutation.oldValue;
       var newValue = this.getValue();
       if (oldValue != newValue) {
         return;
       }
       this.handleMutation(oldValue, newValue);
-    }.bind(this));
-  }.bind(this));
+    }, this));
+  }, this));
   var params = {
     attributes: true,
     attributeOldValue: true,

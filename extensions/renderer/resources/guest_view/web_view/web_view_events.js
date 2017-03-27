@@ -151,7 +151,7 @@ WebViewEvents.EVENTS = {
 
 WebViewEvents.prototype.setupWebRequestEvents = function() {
   var request = {};
-  var createWebRequestEvent = function(webRequestEvent) {
+  var createWebRequestEvent = $Function.bind(function(webRequestEvent) {
     return this.weakWrapper(function() {
       if (!this[webRequestEvent.name]) {
         this[webRequestEvent.name] =
@@ -163,13 +163,14 @@ WebViewEvents.prototype.setupWebRequestEvents = function() {
       }
       return this[webRequestEvent.name];
     });
-  }.bind(this);
+  }, this);
 
-  var createDeclarativeWebRequestEvent = function(webRequestEvent) {
+  var createDeclarativeWebRequestEvent =
+      $Function.bind(function(webRequestEvent) {
     return this.weakWrapper(function() {
       if (!this[webRequestEvent.name]) {
-        // The onMessage event gets a special event type because we want
-        // the listener to fire only for messages targeted for this particular
+        // The onMessage event gets a special event type because we want the
+        // listener to fire only for messages targeted for this particular
         // <webview>.
         var EventClass = webRequestEvent.name === 'onMessage' ?
             DeclarativeWebRequestEvent : EventBindings.Event;
@@ -182,7 +183,7 @@ WebViewEvents.prototype.setupWebRequestEvents = function() {
       }
       return this[webRequestEvent.name];
     });
-  }.bind(this);
+  }, this);
 
   for (var i = 0; i < DeclarativeWebRequestSchema.events.length; ++i) {
     var eventSchema = DeclarativeWebRequestSchema.events[i];
@@ -289,10 +290,12 @@ function DeclarativeWebRequestEvent(opt_eventName,
   if (!view) {
     return;
   }
-  view.events.addScopedListener(WebRequestMessageEvent, function() {
-    // Re-dispatch to subEvent's listeners.
-    $Function.apply(this.dispatch, this, $Array.slice(arguments));
-  }.bind(this), {instanceId: opt_webViewInstanceId || 0});
+  view.events.addScopedListener(
+      WebRequestMessageEvent,
+      $Function.bind(function() {
+        // Re-dispatch to subEvent's listeners.
+        $Function.apply(this.dispatch, this, $Array.slice(arguments));
+      }, this), {instanceId: opt_webViewInstanceId || 0});
 }
 
 DeclarativeWebRequestEvent.prototype.__proto__ = EventBindings.Event.prototype;

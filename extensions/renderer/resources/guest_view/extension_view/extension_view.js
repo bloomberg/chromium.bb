@@ -37,10 +37,10 @@ ExtensionViewImpl.setupElement = function(proto) {
 };
 
 ExtensionViewImpl.prototype.createGuest = function(callback) {
-  this.guest.create(this.buildParams(), function() {
+  this.guest.create(this.buildParams(), $Function.bind(function() {
     this.attachWindow$();
     callback();
-  }.bind(this));
+  }, this));
 };
 
 ExtensionViewImpl.prototype.buildContainerParams = function() {
@@ -79,7 +79,8 @@ ExtensionViewImpl.prototype.loadNextSrc = function() {
     // The extensionview validates the |src| twice, once in |parseSrc| and then
     // in |loadSrc|. The |src| isn't checked directly in |loadNextSrc| for
     // validity since the sending renderer (WebUI) is trusted.
-    ExtensionViewInternal.parseSrc(src, function(isSrcValid, extensionId) {
+    ExtensionViewInternal.parseSrc(
+        src, $Function.bind(function(isSrcValid, extensionId) {
       // Check if the src is valid.
       if (!isSrcValid) {
         reject('Failed to load: src is not valid.');
@@ -109,16 +110,16 @@ ExtensionViewImpl.prototype.loadNextSrc = function() {
         this.attributes[ExtensionViewConstants.ATTRIBUTE_SRC]
             .setValueIgnoreMutation(src);
 
-        this.createGuest(function() {
+        this.createGuest($Function.bind(function() {
           if (this.guest.getId() <= 0) {
             reject('Failed to load: guest creation failed.');
           } else {
             resolve('Successful load.');
           }
-        }.bind(this));
+        }, this));
       } else {
         ExtensionViewInternal.loadSrc(this.guest.getId(), src,
-            function(hasLoadSucceeded) {
+            $Function.bind(function(hasLoadSucceeded) {
           if (!hasLoadSucceeded) {
             reject('Failed to load.');
           } else {
@@ -127,9 +128,9 @@ ExtensionViewImpl.prototype.loadNextSrc = function() {
                 .setValueIgnoreMutation(src);
             resolve('Successful load.');
           }
-        }.bind(this));
+        }, this));
       }
-    }.bind(this));
+    }, this));
   }
 };
 
