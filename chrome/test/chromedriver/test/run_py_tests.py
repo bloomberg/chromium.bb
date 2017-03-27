@@ -214,6 +214,7 @@ _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
         # Webview shell doesn't support Alerts.
         'ChromeDriverTest.testAlert',
         'ChromeDesiredCapabilityTest.testUnexpectedAlertBehaviour',
+        'ChromeDriverTest.testAlertHandlingOnPageUnload',
     ]
 )
 
