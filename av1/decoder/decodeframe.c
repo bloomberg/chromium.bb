@@ -498,10 +498,10 @@ static int av1_pvq_decode_helper2(AV1_COMMON *cm, MACROBLOCKD *const xd,
 #if CONFIG_AOM_HIGHBITDEPTH
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
       fwd_txfm_param.bd = xd->bd;
-      highbd_fwd_txfm(pred, pvq_ref_coeff, diff_stride, &fwd_txfm_param);
+      av1_highbd_fwd_txfm(pred, pvq_ref_coeff, diff_stride, &fwd_txfm_param);
     } else {
 #endif  // CONFIG_AOM_HIGHBITDEPTH
-      fwd_txfm(pred, pvq_ref_coeff, diff_stride, &fwd_txfm_param);
+      av1_fwd_txfm(pred, pvq_ref_coeff, diff_stride, &fwd_txfm_param);
 #if CONFIG_AOM_HIGHBITDEPTH
     }
 #endif  // CONFIG_AOM_HIGHBITDEPTH

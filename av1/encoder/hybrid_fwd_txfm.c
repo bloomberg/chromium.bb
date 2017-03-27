@@ -403,8 +403,8 @@ static void highbd_fwd_txfm_64x64(const int16_t *src_diff, tran_low_t *coeff,
 #endif  // CONFIG_TX64X64
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
-void fwd_txfm(const int16_t *src_diff, tran_low_t *coeff, int diff_stride,
-              FWD_TXFM_PARAM *fwd_txfm_param) {
+void av1_fwd_txfm(const int16_t *src_diff, tran_low_t *coeff, int diff_stride,
+                  FWD_TXFM_PARAM *fwd_txfm_param) {
   const int fwd_txfm_opt = FWD_TXFM_OPT_NORMAL;
   const TX_TYPE tx_type = fwd_txfm_param->tx_type;
   const TX_SIZE tx_size = fwd_txfm_param->tx_size;
@@ -455,8 +455,8 @@ void fwd_txfm(const int16_t *src_diff, tran_low_t *coeff, int diff_stride,
 }
 
 #if CONFIG_AOM_HIGHBITDEPTH
-void highbd_fwd_txfm(const int16_t *src_diff, tran_low_t *coeff,
-                     int diff_stride, FWD_TXFM_PARAM *fwd_txfm_param) {
+void av1_highbd_fwd_txfm(const int16_t *src_diff, tran_low_t *coeff,
+                         int diff_stride, FWD_TXFM_PARAM *fwd_txfm_param) {
   const int fwd_txfm_opt = FWD_TXFM_OPT_NORMAL;
   const TX_TYPE tx_type = fwd_txfm_param->tx_type;
   const TX_SIZE tx_size = fwd_txfm_param->tx_size;

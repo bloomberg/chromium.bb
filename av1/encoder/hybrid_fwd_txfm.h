@@ -29,12 +29,12 @@ typedef struct FWD_TXFM_PARAM {
 extern "C" {
 #endif
 
-void fwd_txfm(const int16_t *src_diff, tran_low_t *coeff, int diff_stride,
-              FWD_TXFM_PARAM *fwd_txfm_param);
+void av1_fwd_txfm(const int16_t *src_diff, tran_low_t *coeff, int diff_stride,
+                  FWD_TXFM_PARAM *fwd_txfm_param);
 
 #if CONFIG_AOM_HIGHBITDEPTH
-void highbd_fwd_txfm(const int16_t *src_diff, tran_low_t *coeff,
-                     int diff_stride, FWD_TXFM_PARAM *fwd_txfm_param);
+void av1_highbd_fwd_txfm(const int16_t *src_diff, tran_low_t *coeff,
+                         int diff_stride, FWD_TXFM_PARAM *fwd_txfm_param);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
 #ifdef __cplusplus

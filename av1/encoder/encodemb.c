@@ -627,7 +627,7 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 #if CONFIG_AOM_HIGHBITDEPTH
   fwd_txfm_param.bd = xd->bd;
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    highbd_fwd_txfm(src_diff, coeff, diff_stride, &fwd_txfm_param);
+    av1_highbd_fwd_txfm(src_diff, coeff, diff_stride, &fwd_txfm_param);
     if (xform_quant_idx != AV1_XFORM_QUANT_SKIP_QUANT) {
       if (LIKELY(!x->skip_block)) {
         quant_func_list[xform_quant_idx][QUANT_FUNC_HIGHBD](
@@ -643,7 +643,7 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
     return;
   }
 #endif  // CONFIG_AOM_HIGHBITDEPTH
-  fwd_txfm(src_diff, coeff, diff_stride, &fwd_txfm_param);
+  av1_fwd_txfm(src_diff, coeff, diff_stride, &fwd_txfm_param);
   if (xform_quant_idx != AV1_XFORM_QUANT_SKIP_QUANT) {
     if (LIKELY(!x->skip_block)) {
       quant_func_list[xform_quant_idx][QUANT_FUNC_LOWBD](
@@ -661,12 +661,12 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 #if CONFIG_AOM_HIGHBITDEPTH
   fwd_txfm_param.bd = xd->bd;
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    highbd_fwd_txfm(src_int16, coeff, diff_stride, &fwd_txfm_param);
-    highbd_fwd_txfm(pred, ref_coeff, diff_stride, &fwd_txfm_param);
+    av1_highbd_fwd_txfm(src_int16, coeff, diff_stride, &fwd_txfm_param);
+    av1_highbd_fwd_txfm(pred, ref_coeff, diff_stride, &fwd_txfm_param);
   } else {
 #endif
-    fwd_txfm(src_int16, coeff, diff_stride, &fwd_txfm_param);
-    fwd_txfm(pred, ref_coeff, diff_stride, &fwd_txfm_param);
+    av1_fwd_txfm(src_int16, coeff, diff_stride, &fwd_txfm_param);
+    av1_fwd_txfm(pred, ref_coeff, diff_stride, &fwd_txfm_param);
 #if CONFIG_AOM_HIGHBITDEPTH
   }
 #endif
