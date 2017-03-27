@@ -965,14 +965,6 @@ inline bool Node::shouldCallRecalcStyle(StyleRecalcChange change) {
          childNeedsStyleRecalc();
 }
 
-inline bool isTreeScopeRoot(const Node* node) {
-  return !node || node->isDocumentNode() || node->isShadowRoot();
-}
-
-inline bool isTreeScopeRoot(const Node& node) {
-  return node.isDocumentNode() || node.isShadowRoot();
-}
-
 // See the comment at the declaration of ScriptWrappable::fromNode in
 // bindings/core/v8/ScriptWrappable.h about why this method is defined here.
 inline ScriptWrappable* ScriptWrappable::fromNode(Node* node) {

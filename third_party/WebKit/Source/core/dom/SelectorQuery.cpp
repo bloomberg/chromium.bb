@@ -250,8 +250,7 @@ void SelectorQuery::findTraverseRootsAndExecute(
       Element* element =
           rootNode.containingTreeScope().getElementById(selector->value());
       ContainerNode* adjustedNode = &rootNode;
-      if (element &&
-          (isTreeScopeRoot(rootNode) || element->isDescendantOf(&rootNode)))
+      if (element && element->isDescendantOf(&rootNode))
         adjustedNode = element;
       else if (!element || isRightmostSelector)
         adjustedNode = nullptr;
@@ -509,7 +508,7 @@ void SelectorQuery::execute(
       const HeapVector<Member<Element>>& elements =
           rootNode.treeScope().getAllElementsById(idToMatch);
       for (const auto& element : elements) {
-        if (!(isTreeScopeRoot(rootNode) || element->isDescendantOf(&rootNode)))
+        if (!element->isDescendantOf(&rootNode))
           continue;
         if (selectorMatches(selector, *element, rootNode)) {
           SelectorQueryTrait::appendElement(output, *element);
@@ -520,8 +519,9 @@ void SelectorQuery::execute(
       return;
     }
     Element* element = rootNode.treeScope().getElementById(idToMatch);
-    if (!element ||
-        !(isTreeScopeRoot(rootNode) || element->isDescendantOf(&rootNode)))
+    if (!element)
+      return;
+    if (!element->isDescendantOf(&rootNode))
       return;
     if (selectorMatches(selector, *element, rootNode))
       SelectorQueryTrait::appendElement(output, *element);
