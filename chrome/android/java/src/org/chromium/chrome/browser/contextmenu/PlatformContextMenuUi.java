@@ -32,7 +32,7 @@ public class PlatformContextMenuUi implements ContextMenuUi {
             final Callback<Integer> listener) {
 
         String headerText = ChromeContextMenuPopulator.createHeaderText(params);
-        if (TextUtils.isEmpty(headerText)) {
+        if (!TextUtils.isEmpty(headerText)) {
             setHeaderText(activity, mMenu, headerText);
         }
 
