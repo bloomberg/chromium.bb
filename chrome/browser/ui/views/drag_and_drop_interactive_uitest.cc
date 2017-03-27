@@ -838,7 +838,8 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, DragStartInFrame) {
 
 // There is no known way to execute test-controlled tasks during
 // a drag-and-drop loop run by Windows OS.
-#if defined(OS_WIN)
+// Flaky on Linux. crbug.com/704603
+#if defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_DragImageBetweenFrames DISABLED_DragImageBetweenFrames
 #else
 #define MAYBE_DragImageBetweenFrames DragImageBetweenFrames
