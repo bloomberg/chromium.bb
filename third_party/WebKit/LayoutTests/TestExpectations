@@ -744,18 +744,6 @@ crbug.com/520739 [ Mac ] virtual/mojo-loading/http/tests/websocket/close-code-an
 crbug.com/520737 [ Mac ] external/csswg-test/css-writing-modes-3/writing-mode-vertical-rl-001.xht [ Failure Pass Timeout ]
 crbug.com/520736 [ Win7 ] media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
 
-crbug.com/665259 virtual/disable-spinvalidation/paint/invalidation/svg/clip-path-child-changes.svg [ NeedsRebaseline ]
-crbug.com/665259 virtual/disable-spinvalidation/paint/invalidation/svg/feImage-multiple-targets-id-change.svg [ NeedsRebaseline ]
-crbug.com/665259 virtual/disable-spinvalidation/paint/invalidation/svg/feImage-target-attribute-change.svg [ NeedsRebaseline ]
-crbug.com/665259 virtual/disable-spinvalidation/paint/invalidation/svg/feImage-target-inline-style-change.svg [ NeedsRebaseline ]
-crbug.com/665259 virtual/disable-spinvalidation/paint/invalidation/svg/feImage-target-property-change.svg [ NeedsRebaseline ]
-crbug.com/665259 virtual/disable-spinvalidation/paint/invalidation/svg/feImage-target-style-change.svg [ NeedsRebaseline ]
-crbug.com/665259 virtual/disable-spinvalidation/paint/invalidation/svg/js-late-mask-creation.svg [ NeedsRebaseline ]
-crbug.com/665259 virtual/disable-spinvalidation/paint/invalidation/svg/js-update-pattern-child.svg [ NeedsRebaseline ]
-crbug.com/665259 virtual/disable-spinvalidation/paint/invalidation/svg/js-update-pattern.svg [ NeedsRebaseline ]
-crbug.com/665259 virtual/disable-spinvalidation/paint/invalidation/svg/mask-child-changes.svg [ NeedsRebaseline ]
-crbug.com/665259 virtual/disable-spinvalidation/paint/invalidation/svg/pending-resource-after-removal.xhtml [ NeedsRebaseline ]
-
 
 crbug.com/522648 fast/events/touch/compositor-touch-hit-rects-iframes.html [ Crash Failure Pass ]
 crbug.com/521858 [ Win7 ] http/tests/security/media-element-audio-source-node-same-origin.html [ Failure Pass ]
