@@ -153,7 +153,9 @@ dist_yaml_TESTS =				\
 	yaml/en-ueb-09-typeforms.yaml		\
 	yaml/en-ueb-10-07-contractions.yaml	\
 	yaml/en-ueb-10-13-contractions.yaml	\
+	yaml/en-ueb-g1_backward.yaml		\
 	yaml/en-ueb-g1_harness.yaml		\
+	yaml/en-ueb-g2_backward.yaml		\
 	yaml/en-ueb-g2-dictionary_harness.yaml	\
 	yaml/en-ueb-math.yaml			\
 	yaml/en-ueb-symbols_harness.yaml	\
