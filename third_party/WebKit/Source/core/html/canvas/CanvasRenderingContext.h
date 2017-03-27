@@ -159,6 +159,8 @@ class CORE_EXPORT CanvasRenderingContext
   // of a presentable frame.
   virtual void finalizeFrame() {}
 
+  void needsFinalizeFrame();
+
   // WebThread::TaskObserver implementation
   void didProcessTask() override;
   void willProcessTask() final {}

@@ -9,9 +9,11 @@ self.onmessage = function(msg) {
   ctx = msg.data.getContext('2d');
   ctx.fillStyle = '#0f0';
   ctx.fillRect(0, 0, 100, 100);
-  ctx.commit();
+  var p = ctx.commit();
 
-  self.postMessage("done");
+  p.then(function() {
+    self.postMessage("done");
+  });
 };
 </script>
 

@@ -165,6 +165,10 @@ void CanvasRenderingContext::dispose() {
 
 void CanvasRenderingContext::didDraw(const SkIRect& dirtyRect) {
   canvas()->didDraw(SkRect::Make(dirtyRect));
+  needsFinalizeFrame();
+}
+
+void CanvasRenderingContext::needsFinalizeFrame() {
   if (!m_finalizeFrameScheduled) {
     m_finalizeFrameScheduled = true;
     Platform::current()->currentThread()->addTaskObserver(this);
@@ -179,6 +183,8 @@ void CanvasRenderingContext::didProcessTask() {
   // at which the current frame may be considered complete.
   if (canvas())
     canvas()->finalizeFrame();
+  if (offscreenCanvas())
+    offscreenCanvas()->finalizeFrame();
   finalizeFrame();
 }
 

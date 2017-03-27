@@ -4,6 +4,7 @@
 
 #include "core/offscreencanvas/OffscreenCanvas.h"
 
+#include <memory>
 #include "core/dom/ExceptionCode.h"
 #include "core/fileapi/Blob.h"
 #include "core/frame/ImageBitmap.h"
@@ -17,8 +18,8 @@
 #include "platform/graphics/OffscreenCanvasFrameDispatcherImpl.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/image-encoders/ImageEncoderUtils.h"
+#include "public/platform/Platform.h"
 #include "wtf/MathExtras.h"
-#include <memory>
 
 namespace blink {
 
@@ -237,20 +238,36 @@ ScriptPromise OffscreenCanvas::commit(RefPtr<StaticBitmapImage> image,
                                       bool isWebGLSoftwareRendering,
                                       ScriptState* scriptState) {
   getOrCreateFrameDispatcher()->setNeedsBeginFrame(true);
-  if (m_commitPromiseResolver) {
-    if (image) {
-      m_overdrawFrame = std::move(image);
-      m_overdrawFrameIsWebGLSoftwareRendering = isWebGLSoftwareRendering;
-    }
-  } else {
-    m_overdrawFrame = nullptr;
+
+  if (!m_commitPromiseResolver) {
     m_commitPromiseResolver = ScriptPromiseResolver::create(scriptState);
     m_commitPromiseResolver->keepAliveWhilePending();
+
+    if (image) {
+      // We defer the submission of commit frames at the end of JS task
+      m_currentFrame = std::move(image);
+      m_currentFrameIsWebGLSoftwareRendering = isWebGLSoftwareRendering;
+      m_context->needsFinalizeFrame();
+    }
+  } else if (image) {
+    // Two possible scenarios:
+    // 1. An override of m_currentFrame can happen when there are multiple
+    // frames committed before JS task finishes. (m_currentFrame!=nullptr)
+    // 2. The current frame has been dispatched but the promise is not
+    // resolved yet. (m_currentFrame==nullptr)
+    m_currentFrame = std::move(image);
+    m_currentFrameIsWebGLSoftwareRendering = isWebGLSoftwareRendering;
+  }
+
+  return m_commitPromiseResolver->promise();
+}
+
+void OffscreenCanvas::finalizeFrame() {
+  if (m_currentFrame) {
     // TODO(eseckler): OffscreenCanvas shouldn't dispatch CompositorFrames
     // without a prior BeginFrame.
-    doCommit(std::move(image), isWebGLSoftwareRendering);
+    doCommit(std::move(m_currentFrame), m_currentFrameIsWebGLSoftwareRendering);
   }
-  return m_commitPromiseResolver->promise();
 }
 
 void OffscreenCanvas::doCommit(RefPtr<StaticBitmapImage> image,
@@ -261,20 +278,19 @@ void OffscreenCanvas::doCommit(RefPtr<StaticBitmapImage> image,
 }
 
 void OffscreenCanvas::beginFrame() {
-  // TODO(eseckler): beginFrame() shouldn't be used as confirmation of
-  // CompositorFrame activation.
-  if (m_overdrawFrame) {
-    // if we have an overdraw backlog, push the frame from the backlog
+  if (m_currentFrame) {
+    // TODO(eseckler): beginFrame() shouldn't be used as confirmation of
+    // CompositorFrame activation.
+    // If we have an overdraw backlog, push the frame from the backlog
     // first and save the promise resolution for later.
-    doCommit(std::move(m_overdrawFrame),
-             m_overdrawFrameIsWebGLSoftwareRendering);
+    // Then we need to wait for one more frame time to resolve the existing
+    // promise.
+    doCommit(std::move(m_currentFrame), m_currentFrameIsWebGLSoftwareRendering);
   } else if (m_commitPromiseResolver) {
     m_commitPromiseResolver->resolve();
     m_commitPromiseResolver.clear();
     // We need to tell parent frame to stop sending signals on begin frame to
     // avoid overhead once we resolve the promise.
-    // In the case of overdraw frame (if block), we still need to wait for one
-    // more frame time to resolve the existing promise.
     getOrCreateFrameDispatcher()->setNeedsBeginFrame(false);
   }
 }

@@ -91,6 +91,7 @@ class CORE_EXPORT OffscreenCanvas final
   ScriptPromise commit(RefPtr<StaticBitmapImage>,
                        bool isWebGLSoftwareRendering,
                        ScriptState*);
+  void finalizeFrame();
 
   void detachContext() { m_context = nullptr; }
 
@@ -157,9 +158,11 @@ class CORE_EXPORT OffscreenCanvas final
   bool isPaintable() const;
 
   std::unique_ptr<OffscreenCanvasFrameDispatcher> m_frameDispatcher;
+
   Member<ScriptPromiseResolver> m_commitPromiseResolver;
-  RefPtr<StaticBitmapImage> m_overdrawFrame;
-  bool m_overdrawFrameIsWebGLSoftwareRendering = false;
+  RefPtr<StaticBitmapImage> m_currentFrame;
+  bool m_currentFrameIsWebGLSoftwareRendering = false;
+
   // cc::FrameSinkId is broken into two integer components as this can be used
   // in transfer of OffscreenCanvas across threads
   // If this object is not created via

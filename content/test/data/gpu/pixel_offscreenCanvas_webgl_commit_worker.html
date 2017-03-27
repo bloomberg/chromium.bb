@@ -8,95 +8,107 @@ that the baseline images are regenerated on the next run.
 
 <html>
 <head>
-<title>OffscreenCanvas commit flow on worker thread: red square on white background.</title>
+<title>OffscreenCanvas webgl commit flow on worker thread: Two Canvases</title>
 <style type="text/css">
 .nomargin {
   margin: 0px auto;
 }
 </style>
 <script id="myWorker" type="text/worker">
+/* This pixel test checks the following:
+    1. Whether submission of frames for multiple canvases happen about the same
+       time for OffscreenCanvas.commit() that are invoked in the same JS task.
+    2. Whether overdraw frame in one animation loop is handled well.
+    3. Whether the drawn webgl image is position upright in commit().
+    4. Drawing to OffscreenCanvas without commit() has no rendering results.
 
-var g_frameNumber = 0;
-var gl;
+    Correct end result of this test: The left canvas shows a upright white
+    triangle on a green background and the right canvas shows dark-blue fill.
+*/
 
-function drawTriangle()
-{
-  gl.clearColor(0, 1, 0, 1);
-  gl.clear(gl.COLOR_BUFFER_BIT);
-
-  var prog = gl.createProgram();
-  var vs = gl.createShader(gl.VERTEX_SHADER);
-  gl.shaderSource(vs, ['attribute vec2 pos;',
-      'void main() {',
-      '  gl_Position = vec4(pos, 0., 1.);',
-      '}'].join('\n'));
-  gl.compileShader(vs);
-  if (!gl.getShaderParameter(vs, gl.COMPILE_STATUS)) {
-      throw 'failed to compiled shader';
-  }
-  gl.attachShader(prog, vs);
-
-  var fs = gl.createShader(gl.FRAGMENT_SHADER);
-  gl.shaderSource(fs, ['void main() {',
-      '  gl_FragColor = vec4(1.);',
-      '}'].join('\n'));
-  gl.compileShader(fs);
-  if (!gl.getShaderParameter(fs, gl.COMPILE_STATUS)) {
-      throw 'failed to compiled shader';
-  }
-  gl.attachShader(prog, fs);
-
-  gl.linkProgram(prog);
-  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
-      throw "Could not link the shader program!";
-  }
-  gl.useProgram(prog);
-
-  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-.5,0, 0,.5, .5,0]), gl.STATIC_DRAW);
-  var attr = gl.getAttribLocation(prog, 'pos');
-  gl.enableVertexAttribArray(attr);
-  gl.vertexAttribPointer(attr, 2, gl.FLOAT, false, 0, 0);
-
-  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 3);
-}
-
-function drawLoop()
-{
-  if (g_frameNumber < 10) {
-    g_frameNumber++;
-    // Purposely intersperse overdraw and non-overdraw commit cases to see
-    // if OffscreenCanvas commit() handles both cases well.
-    if (0 == g_frameNumber % 2) {
-      // When promise is used, the next drawLoop() is called after the first
-      // frame is resolved; therefore there is no overdraw in this case.
-      gl.commit().then(drawLoop);
-    } else {
-      // When the next drawLoop() is invoked regardless the promise resolve
-      // status of the previous commit(), the frame committed in the next
-      // drawLoop() is very likely to be overdrawn.
-      gl.commit();
-      drawLoop();
-    }
-  } else {
-    drawTriangle();
-    gl.commit();
-
-    // The following clear is never committed
-    gl.clearColor(0, 0, 1, 1);
-    gl.clear(gl.COLOR_BUFFER_BIT);
-
-    self.postMessage("");
-  }
-}
+var g_ctx1, g_ctx2;
+var g_asyncCallbackNumber = 2;
 
 self.onmessage = function(e) {
-  var transferredOffscreenCanvas = e.data;
-  gl = transferredOffscreenCanvas.getContext("webgl", {preserveDrawingBuffer: true});
-  gl.clearColor(1, 0, 0, 1);
-  gl.clear(gl.COLOR_BUFFER_BIT);
-  drawLoop();
-};
+  g_ctx1 = e.data.offscreenCanvas1.getContext("webgl");
+  g_ctx2 = e.data.offscreenCanvas2.getContext("webgl");
+
+  startTest();
+}  
+
+function startTest() {
+  g_ctx1.clearColor(0, 1, 0, 1);
+  g_ctx1.clear(g_ctx1.COLOR_BUFFER_BIT);
+  // The promise returned by this g_ctx1.commit() must be resolved at
+  // about the same time as the other g_ctx2.commit() below as they are in the
+  // same JS task.
+  g_ctx1.commit().then(function() {
+    g_ctx2.clearColor(0, 0, 1, 1);
+    g_ctx2.clear(g_ctx2.COLOR_BUFFER_BIT);
+    // This g_ctx2.commit() must happen after the other g_ctx2.commit() below.
+    g_ctx2.commit();
+    if (--g_asyncCallbackNumber == 0) self.postMessage("");
+  });
+
+  function drawTriangle(gl)
+  {
+    gl.clearColor(0, 1, 0, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    var prog = gl.createProgram();
+    var vs = gl.createShader(gl.VERTEX_SHADER);
+    gl.shaderSource(vs, ['attribute vec2 pos;',
+        'void main() {',
+        '  gl_Position = vec4(pos, 0., 1.);',
+        '}'].join('\n'));
+    gl.compileShader(vs);
+    if (!gl.getShaderParameter(vs, gl.COMPILE_STATUS)) {
+        throw 'failed to compiled shader';
+    }
+    gl.attachShader(prog, vs);
+
+    var fs = gl.createShader(gl.FRAGMENT_SHADER);
+    gl.shaderSource(fs, ['void main() {',
+        '  gl_FragColor = vec4(1.);',
+        '}'].join('\n'));
+    gl.compileShader(fs);
+    if (!gl.getShaderParameter(fs, gl.COMPILE_STATUS)) {
+        throw 'failed to compiled shader';
+    }
+    gl.attachShader(prog, fs);
+
+    gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+        throw "Could not link the shader program!";
+    }
+    gl.useProgram(prog);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-.5,0, 0,.5, .5,0]), gl.STATIC_DRAW);
+    var attr = gl.getAttribLocation(prog, 'pos');
+    gl.enableVertexAttribArray(attr);
+    gl.vertexAttribPointer(attr, 2, gl.FLOAT, false, 0, 0);
+
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 3);
+  }
+
+  // Do something complex to g_ctx2.
+  drawTriangle(g_ctx2);
+  // This g_ctx2.commit() must be resolved at about the same time as the first
+  // g_ctx1.commit() above because they are in the same JS task, no matter how
+  // complex the drawing operation is.
+  g_ctx2.commit().then(function() {
+    drawTriangle(g_ctx1);
+    g_ctx1.commit();
+
+    // The following clear is never committed
+    g_ctx1.clearColor(1, 0, 0, 1);
+    g_ctx1.clear(g_ctx1.COLOR_BUFFER_BIT);
+    if (--g_asyncCallbackNumber == 0) self.postMessage("");
+  });
+
+}
+
 </script>
 <script>
 var g_swapsBeforeAck = 15;
@@ -104,22 +116,6 @@ var g_swapsBeforeAck = 15;
 function makeWorker(script) {
    var blob = new Blob([script]);
    return new Worker(URL.createObjectURL(blob));
-}
-
-function main()
-{
-  draw();
-}
-
-function draw()
-{
-  var canvas = document.getElementById("c");
-  var offscreenCanvas = canvas.transferControlToOffscreen();
-  var worker = makeWorker(document.getElementById("myWorker").textContent);
-  worker.onmessage = function (e) {
-    waitForFinish();
-  }
-  worker.postMessage(offscreenCanvas, [offscreenCanvas]);
 }
 
 function waitForFinish()
@@ -133,13 +129,29 @@ function waitForFinish()
     window.requestAnimationFrame(waitForFinish);
   }
 }
+
+function main()
+{
+  var offscreenCanvas1 = document.getElementById("canvas1").transferControlToOffscreen();
+  var offscreenCanvas2 = document.getElementById("canvas2").transferControlToOffscreen();
+  
+  var worker = makeWorker(document.getElementById("myWorker").textContent);
+  worker.onmessage = function (e) {
+      waitForFinish();
+  };
+  worker.postMessage(
+      {offscreenCanvas1: offscreenCanvas1,
+       offscreenCanvas2: offscreenCanvas2},
+      [offscreenCanvas1, offscreenCanvas2]);
+}
 </script>
 </head>
 <body onload="main()">
-<div style="position:relative; width:300px; height:300px; background-color:white">
+<div style="position:relative; width:600px; height:300px; background-color:white">
 </div>
 <div id="container" style="position:absolute; top:0px; left:0px">
-<canvas id="c" width="300" height="300" class="nomargin"></canvas>
+<canvas id="canvas1" width="300" height="300" class="nomargin"></canvas>
+<canvas id="canvas2" width="300" height="300" class="nomargin"></canvas>
 </div>
 </body>
 </html>
