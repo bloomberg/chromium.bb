@@ -867,16 +867,6 @@ void LayoutView::commitPendingSelection() {
   m_frameView->frame().selection().commitAppearanceIfNeeded(*this);
 }
 
-LayoutObject* LayoutView::selectionStart() {
-  commitPendingSelection();
-  return m_selectionStart;
-}
-
-LayoutObject* LayoutView::selectionEnd() {
-  commitPendingSelection();
-  return m_selectionEnd;
-}
-
 void LayoutView::selectionStartEnd(int& startPos, int& endPos) {
   commitPendingSelection();
   startPos = m_selectionStartPos;

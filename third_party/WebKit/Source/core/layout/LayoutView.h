@@ -159,8 +159,6 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   void clearSelection();
   bool hasPendingSelection() const;
   void commitPendingSelection();
-  LayoutObject* selectionStart();
-  LayoutObject* selectionEnd();
   IntRect selectionBounds();
   void selectionStartEnd(int& startPos, int& endPos);
   void invalidatePaintForSelection();
