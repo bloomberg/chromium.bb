@@ -6389,12 +6389,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_FULLSCREEN_TOOLBAR_REVEAL_DESCRIPTION" desc="Description of the flag to reveal the fullscreen toolbar for tab strip changes" translateable="false">
           Reveal the toolbar in fullscreen for a short period when the tab strip has changed.
         </message>
-        <message name="IDS_FLAGS_TAB_STRIP_KEYBOARD_FOCUS_NAME" desc="Name of the
-  flag to enable keyboard focus for the tab strip">
+        <message name="IDS_FLAGS_TAB_STRIP_KEYBOARD_FOCUS_NAME" desc="Name of the flag to enable keyboard focus for the tab strip" translateable="false">
           Tab Strip Keyboard Focus
         </message>
-        <message name="IDS_FLAGS_TAB_STRIP_KEYBOARD_FOCUS_DESCRIPTION"
-  desc="Description of the flag to enable keyboard focus for the tab strip">
+        <message name="IDS_FLAGS_TAB_STRIP_KEYBOARD_FOCUS_DESCRIPTION" desc="Description of the flag to enable keyboard focus for the tab strip" translateable="false">
           Enable keyboard focus for the tabs in the tab strip.
         </message>
       </if>
@@ -12972,41 +12970,41 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
 
       <!-- Web MIDI API. -->
       <message name="IDS_FLAGS_WEB_MIDI_NAME"
-               desc="Name of about:flag option to turn on Web MIDI API">
+               desc="Name of about:flag option to turn on Web MIDI API" translateable="false">
         Web MIDI API
       </message>
       <message name="IDS_FLAGS_WEB_MIDI_DESCRIPTION"
-               desc="Description of about:flag option to turn on Web MIDI API">
+               desc="Description of about:flag option to turn on Web MIDI API" translateable="false">
         Enable Web MIDI API experimental support.
       </message>
 
       <!-- Site per process mode -->
       <message name="IDS_FLAGS_SITE_PER_PROCESS_NAME"
-               desc="Name of about:flag option to turn on experimental out-of-process iframe support">
+               desc="Name of about:flag option to turn on experimental out-of-process iframe support" translateable="false">
         Out of process iframes
       </message>
       <message name="IDS_FLAGS_SITE_PER_PROCESS_DESCRIPTION"
-               desc="Description of about:flag option to turn on experimental out-of-process iframe support">
+               desc="Description of about:flag option to turn on experimental out-of-process iframe support" translateable="false">
         Highly experimental support for rendering cross-site iframes in separate processes. In this mode, documents will share a renderer process only if they are from the same web site.
       </message>
 
       <!-- Top document isolation mode -->
       <message name="IDS_FLAGS_TOP_DOCUMENT_ISOLATION_NAME"
-               desc="Name of about:flag option to turn on experimental top document isolation support">
+               desc="Name of about:flag option to turn on experimental top document isolation support" translateable="false">
         Top document isolation
       </message>
       <message name="IDS_FLAGS_TOP_DOCUMENT_ISOLATION_DESCRIPTION"
-               desc="Description of about:flag option to turn on top document isolation">
+               desc="Description of about:flag option to turn on top document isolation" translateable="false">
         Highly experimental performance mode where cross-site iframes are kept in a separate process from the top document. In this mode, iframes from different third-party sites will be allowed to share a process.
       </message>
 
       <!-- Cross process guest frames isolation mode -->
       <message name="IDS_FLAGS_CROSS_PROCESS_GUEST_VIEW_ISOLATION_NAME"
-               desc="Name of about:flag option to turn on experimental guests using out-of-process iframes">
+               desc="Name of about:flag option to turn on experimental guests using out-of-process iframes" translateable="false">
         Cross process frames for guests
       </message>
       <message name="IDS_FLAGS_CROSS_PROCESS_GUEST_VIEW_ISOLATION_DESCRIPTION"
-               desc="Description of about:flag option to turn on experimental guests using out-of-process iframes">
+               desc="Description of about:flag option to turn on experimental guests using out-of-process iframes" translateable="false">
                Highly experimental where guests such as &amp;lt;webview> are implemented on the out-of-process iframe infrastructure.
       </message>
 
