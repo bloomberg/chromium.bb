@@ -80,7 +80,7 @@ LayoutBoxModelObject* findFirstStickyBetween(LayoutObject* from,
 
     maybeStickyAncestor =
         maybeStickyAncestor->isLayoutInline()
-            ? maybeStickyAncestor->containingBlock()
+            ? maybeStickyAncestor->container()
             : toLayoutBox(maybeStickyAncestor)->locationContainer();
   }
   return nullptr;

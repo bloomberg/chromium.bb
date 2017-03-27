@@ -341,9 +341,15 @@ TEST_F(LayoutBoxModelObjectTest,
   setBodyInnerHTML(
       "<style>#stickyOuterDiv { position: sticky; }"
       "#stickyOuterInline { position: sticky; display: inline; }"
-      "#stickyInnerInline { position: sticky; display: inline; }</style>"
-      "<div id='stickyOuterDiv'><div id='stickyOuterInline'>"
-      "<div id='stickyInnerInline'></div></div></div>");
+      "#stickyInnerInline { position: sticky; display: inline; }"
+      ".inline { display: inline; }</style>"
+      "<div id='stickyOuterDiv'>"
+      "  <div id='stickyOuterInline'>"
+      "    <div class='inline'>"
+      "      <div id='stickyInnerInline'></div>"
+      "    </div>"
+      "  </div>"
+      "</div>");
 
   LayoutBoxModelObject* stickyOuterDiv =
       toLayoutBoxModelObject(getLayoutObjectByElementId("stickyOuterDiv"));
@@ -371,7 +377,8 @@ TEST_F(LayoutBoxModelObjectTest,
                    .nearestStickyBoxShiftingStickyBox());
 
   // However the inner inline element does have a sticky-box shifting ancestor,
-  // as its containing block is the ancestor block element, not its parent.
+  // as its containing block is the ancestor block element, above its ancestor
+  // sticky element.
   EXPECT_EQ(stickyOuterInline,
             constraintsMap.at(stickyInnerInline->layer())
                 .nearestStickyBoxShiftingStickyBox());
@@ -843,10 +850,18 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionNestedInlineElements) {
       "<style>#scroller { width: 100px; height: 100px; overflow-y: scroll; }"
       "#paddingBefore { height: 50px; }"
       "#outerInline { display: inline; position: sticky; top: 0; }"
+      ".inline {display: inline;}"
       "#innerInline { display: inline; position: sticky; top: 25px; }"
       "#paddingAfter { height: 200px; }</style>"
-      "<div id='scroller'><div id='paddingBefore'></div><div id='outerInline'>"
-      "<div id='innerInline'></div></div><div id='paddingAfter'></div></div>");
+      "<div id='scroller'>"
+      "  <div id='paddingBefore'></div>"
+      "  <div id='outerInline'>"
+      "    <div class='inline'>"
+      "      <div id='innerInline'></div>"
+      "    </div>"
+      "  </div>"
+      "  <div id='paddingAfter'></div>"
+      "</div>");
 
   LayoutBoxModelObject* outerInline =
       toLayoutBoxModelObject(getLayoutObjectByElementId("outerInline"));
