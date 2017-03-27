@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/cpu.h"
 #include "base/files/file_util.h"
 #include "base/guid.h"
@@ -116,77 +117,6 @@ std::string GetClockString() {
   return std::string();
 }
 
-std::unique_ptr<base::DictionaryValue> GenerateTracingMetadataDict() {
-  std::unique_ptr<base::DictionaryValue> metadata_dict(
-      new base::DictionaryValue());
-
-  metadata_dict->SetString("network-type", GetNetworkTypeString());
-  metadata_dict->SetString("product-version", GetContentClient()->GetProduct());
-  metadata_dict->SetString("v8-version", V8_VERSION_STRING);
-  metadata_dict->SetString("user-agent", GetContentClient()->GetUserAgent());
-
-  // OS
-  metadata_dict->SetString("os-name", base::SysInfo::OperatingSystemName());
-  metadata_dict->SetString("os-version",
-                           base::SysInfo::OperatingSystemVersion());
-  metadata_dict->SetString("os-arch",
-                           base::SysInfo::OperatingSystemArchitecture());
-
-  // CPU
-  base::CPU cpu;
-  metadata_dict->SetInteger("cpu-family", cpu.family());
-  metadata_dict->SetInteger("cpu-model", cpu.model());
-  metadata_dict->SetInteger("cpu-stepping", cpu.stepping());
-  metadata_dict->SetInteger("num-cpus", base::SysInfo::NumberOfProcessors());
-  metadata_dict->SetInteger("physical-memory",
-                            base::SysInfo::AmountOfPhysicalMemoryMB());
-
-  std::string cpu_brand = cpu.cpu_brand();
-  // Workaround for crbug.com/249713.
-  // TODO(oysteine): Remove workaround when bug is fixed.
-  size_t null_pos = cpu_brand.find('\0');
-  if (null_pos != std::string::npos)
-    cpu_brand.erase(null_pos);
-  metadata_dict->SetString("cpu-brand", cpu_brand);
-
-  // GPU
-  gpu::GPUInfo gpu_info = content::GpuDataManager::GetInstance()->GetGPUInfo();
-
-#if !defined(OS_ANDROID)
-  metadata_dict->SetInteger("gpu-venid", gpu_info.gpu.vendor_id);
-  metadata_dict->SetInteger("gpu-devid", gpu_info.gpu.device_id);
-#endif
-
-  metadata_dict->SetString("gpu-driver", gpu_info.driver_version);
-  metadata_dict->SetString("gpu-psver", gpu_info.pixel_shader_version);
-  metadata_dict->SetString("gpu-vsver", gpu_info.vertex_shader_version);
-
-#if defined(OS_MACOSX)
-  metadata_dict->SetString("gpu-glver", gpu_info.gl_version);
-#elif defined(OS_POSIX)
-  metadata_dict->SetString("gpu-gl-vendor", gpu_info.gl_vendor);
-  metadata_dict->SetString("gpu-gl-renderer", gpu_info.gl_renderer);
-#endif
-
-  std::unique_ptr<TracingDelegate> delegate(
-      GetContentClient()->browser()->GetTracingDelegate());
-  if (delegate)
-    delegate->GenerateMetadataDict(metadata_dict.get());
-
-  metadata_dict->SetString("clock-domain", GetClockString());
-  metadata_dict->SetBoolean("highres-ticks",
-                            base::TimeTicks::IsHighResolution());
-
-  base::Time::Exploded ctime;
-  base::Time::Now().UTCExplode(&ctime);
-  std::string time_string = base::StringPrintf("%u-%u-%u %d:%d:%d",
-      ctime.year, ctime.month, ctime.day_of_month, ctime.hour,
-      ctime.minute, ctime.second);
-  metadata_dict->SetString("trace-capture-datetime", time_string);
-
-  return metadata_dict;
-}
-
 }  // namespace
 
 TracingController* TracingController::GetInstance() {
@@ -261,10 +191,9 @@ bool TracingControllerImpl::StartTracing(
   if (!can_start_tracing())
     return false;
   start_tracing_done_callback_ = callback;
-  start_tracing_trace_config_.reset(
-      new base::trace_event::TraceConfig(trace_config));
+  trace_config_.reset(new base::trace_event::TraceConfig(trace_config));
   enabled_tracing_modes_ = TraceLog::RECORDING_MODE;
-  if (!start_tracing_trace_config_->event_filters().empty())
+  if (!trace_config_->event_filters().empty())
     enabled_tracing_modes_ |= TraceLog::FILTERING_MODE;
   metadata_.reset(new base::DictionaryValue());
   pending_start_tracing_ack_count_ = 0;
@@ -333,21 +262,17 @@ void TracingControllerImpl::OnAllTracingAgentsStarted() {
       TraceLog::GetCategoryGroupEnabled("__metadata"),
       "IsTimeTicksHighResolution", "value",
       base::TimeTicks::IsHighResolution());
-  TRACE_EVENT_API_ADD_METADATA_EVENT(
-      TraceLog::GetCategoryGroupEnabled("__metadata"), "TraceConfig", "value",
-      start_tracing_trace_config_->AsConvertableToTraceFormat());
 
   // Notify all child processes.
   for (TraceMessageFilterSet::iterator it = trace_message_filters_.begin();
       it != trace_message_filters_.end(); ++it) {
-    it->get()->SendBeginTracing(*start_tracing_trace_config_);
+    it->get()->SendBeginTracing(*trace_config_);
   }
 
   if (!start_tracing_done_callback_.is_null())
     start_tracing_done_callback_.Run();
 
   start_tracing_done_callback_.Reset();
-  start_tracing_trace_config_.reset();
 }
 
 void TracingControllerImpl::AddMetadata(const base::DictionaryValue& data) {
@@ -390,6 +315,7 @@ bool TracingControllerImpl::StopTracing(
   }
 
   trace_data_sink_ = trace_data_sink;
+  trace_config_.reset();
 
   // Issue clock sync marker before actually stopping tracing.
   // StopTracingAfterClockSync() will be called after clock sync is done.
@@ -895,6 +821,87 @@ void TracingControllerImpl::AddFilteredMetadata(
       filtered_metadata->SetString(it.key(), "__stripped__");
   }
   sink->AddMetadata(std::move(filtered_metadata));
+}
+
+std::unique_ptr<base::DictionaryValue>
+TracingControllerImpl::GenerateTracingMetadataDict() const {
+  // It's important that this function creates a new metadata dict and returns
+  // it rather than directly populating the metadata_ member, as the data may
+  // need filtering in some cases.
+  std::unique_ptr<base::DictionaryValue> metadata_dict(
+      new base::DictionaryValue());
+
+  metadata_dict->SetString("network-type", GetNetworkTypeString());
+  metadata_dict->SetString("product-version", GetContentClient()->GetProduct());
+  metadata_dict->SetString("v8-version", V8_VERSION_STRING);
+  metadata_dict->SetString("user-agent", GetContentClient()->GetUserAgent());
+
+  // OS
+  metadata_dict->SetString("os-name", base::SysInfo::OperatingSystemName());
+  metadata_dict->SetString("os-version",
+                           base::SysInfo::OperatingSystemVersion());
+  metadata_dict->SetString("os-arch",
+                           base::SysInfo::OperatingSystemArchitecture());
+
+  // CPU
+  base::CPU cpu;
+  metadata_dict->SetInteger("cpu-family", cpu.family());
+  metadata_dict->SetInteger("cpu-model", cpu.model());
+  metadata_dict->SetInteger("cpu-stepping", cpu.stepping());
+  metadata_dict->SetInteger("num-cpus", base::SysInfo::NumberOfProcessors());
+  metadata_dict->SetInteger("physical-memory",
+                            base::SysInfo::AmountOfPhysicalMemoryMB());
+
+  std::string cpu_brand = cpu.cpu_brand();
+  // Workaround for crbug.com/249713.
+  // TODO(oysteine): Remove workaround when bug is fixed.
+  size_t null_pos = cpu_brand.find('\0');
+  if (null_pos != std::string::npos)
+    cpu_brand.erase(null_pos);
+  metadata_dict->SetString("cpu-brand", cpu_brand);
+
+  // GPU
+  gpu::GPUInfo gpu_info = content::GpuDataManager::GetInstance()->GetGPUInfo();
+
+#if !defined(OS_ANDROID)
+  metadata_dict->SetInteger("gpu-venid", gpu_info.gpu.vendor_id);
+  metadata_dict->SetInteger("gpu-devid", gpu_info.gpu.device_id);
+#endif
+
+  metadata_dict->SetString("gpu-driver", gpu_info.driver_version);
+  metadata_dict->SetString("gpu-psver", gpu_info.pixel_shader_version);
+  metadata_dict->SetString("gpu-vsver", gpu_info.vertex_shader_version);
+
+#if defined(OS_MACOSX)
+  metadata_dict->SetString("gpu-glver", gpu_info.gl_version);
+#elif defined(OS_POSIX)
+  metadata_dict->SetString("gpu-gl-vendor", gpu_info.gl_vendor);
+  metadata_dict->SetString("gpu-gl-renderer", gpu_info.gl_renderer);
+#endif
+
+  std::unique_ptr<TracingDelegate> delegate(
+      GetContentClient()->browser()->GetTracingDelegate());
+  if (delegate)
+    delegate->GenerateMetadataDict(metadata_dict.get());
+
+  metadata_dict->SetString("clock-domain", GetClockString());
+  metadata_dict->SetBoolean("highres-ticks",
+                            base::TimeTicks::IsHighResolution());
+
+  metadata_dict->SetString("trace-config", trace_config_->ToString());
+
+  metadata_dict->SetString(
+      "command_line",
+      base::CommandLine::ForCurrentProcess()->GetCommandLineString());
+
+  base::Time::Exploded ctime;
+  base::Time::Now().UTCExplode(&ctime);
+  std::string time_string = base::StringPrintf(
+      "%u-%u-%u %d:%d:%d", ctime.year, ctime.month, ctime.day_of_month,
+      ctime.hour, ctime.minute, ctime.second);
+  metadata_dict->SetString("trace-capture-datetime", time_string);
+
+  return metadata_dict;
 }
 
 void TracingControllerImpl::AddTraceMessageFilterObserver(

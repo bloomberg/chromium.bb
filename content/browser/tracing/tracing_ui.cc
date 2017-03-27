@@ -150,14 +150,6 @@ void TracingCallbackWrapperBase64(
   callback.Run(data_base64);
 }
 
-void AddCustomMetadata() {
-  base::DictionaryValue metadata_dict;
-  metadata_dict.SetString(
-      "command_line",
-      base::CommandLine::ForCurrentProcess()->GetCommandLineString());
-  TracingController::GetInstance()->AddMetadata(metadata_dict);
-}
-
 bool OnBeginJSONRequest(const std::string& path,
                         const WebUIDataSource::GotDataCallback& callback) {
   if (path == "json/categories") {
@@ -186,7 +178,6 @@ bool OnBeginJSONRequest(const std::string& path,
         TracingControllerImpl::CreateCompressedStringSink(
             TracingControllerImpl::CreateCallbackEndpoint(
                 base::Bind(TracingCallbackWrapperBase64, callback)));
-    AddCustomMetadata();
     return TracingController::GetInstance()->StopTracing(data_sink);
   }
 

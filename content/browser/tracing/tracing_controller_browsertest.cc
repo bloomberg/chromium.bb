@@ -380,6 +380,12 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest, DisableRecordingStoresMetadata) {
   std::string cpu_brand;
   last_metadata()->GetString("cpu-brand", &cpu_brand);
   EXPECT_TRUE(cpu_brand.length() > 0);
+  std::string command_line;
+  last_metadata()->GetString("command_line", &command_line);
+  EXPECT_TRUE(command_line.length() > 0);
+  std::string trace_config;
+  last_metadata()->GetString("trace-config", &trace_config);
+  EXPECT_EQ(TraceConfig().ToString(), trace_config);
 }
 
 // TODO(crbug.com/642991) Disabled for flakiness.

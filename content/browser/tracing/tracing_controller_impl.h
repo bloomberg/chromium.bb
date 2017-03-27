@@ -169,6 +169,8 @@ class TracingControllerImpl
                            std::unique_ptr<base::DictionaryValue> metadata,
                            const MetadataFilterPredicate& filter);
 
+  std::unique_ptr<base::DictionaryValue> GenerateTracingMetadataDict() const;
+
   typedef std::set<scoped_refptr<TraceMessageFilter>> TraceMessageFilterSet;
   TraceMessageFilterSet trace_message_filters_;
 
@@ -176,7 +178,7 @@ class TracingControllerImpl
   int pending_start_tracing_ack_count_;
   base::OneShotTimer start_tracing_timer_;
   StartTracingDoneCallback start_tracing_done_callback_;
-  std::unique_ptr<base::trace_event::TraceConfig> start_tracing_trace_config_;
+  std::unique_ptr<base::trace_event::TraceConfig> trace_config_;
 
   // Pending acks for StopTracing.
   int pending_stop_tracing_ack_count_;
