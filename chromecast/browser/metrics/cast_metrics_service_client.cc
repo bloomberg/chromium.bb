@@ -35,6 +35,7 @@
 #include "components/metrics/url_constants.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/histogram_fetcher.h"
 #include "content/public/common/content_switches.h"
 
 #if defined(OS_LINUX)
@@ -51,6 +52,7 @@ namespace metrics {
 namespace {
 
 const int kStandardUploadIntervalMinutes = 5;
+const int kMetricsFetchTimeoutSeconds = 60;
 
 const char kMetricsOldClientID[] = "user_experience_metrics.client_id";
 
@@ -227,7 +229,12 @@ void CastMetricsServiceClient::InitializeSystemProfileMetrics(
 
 void CastMetricsServiceClient::CollectFinalMetricsForLog(
     const base::Closure& done_callback) {
-  done_callback.Run();
+  // Asynchronously fetch metrics data from child processes. Since this method
+  // is called on log upload, metrics that occur between log upload and child
+  // process termination will not be uploaded.
+  content::FetchHistogramsAsynchronously(
+      task_runner_, done_callback,
+      base::TimeDelta::FromSeconds(kMetricsFetchTimeoutSeconds));
 }
 
 std::string CastMetricsServiceClient::GetMetricsServerUrl() {
