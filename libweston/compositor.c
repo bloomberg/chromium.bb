@@ -81,6 +81,7 @@ static void weston_mode_switch_finish(struct weston_output *output,
 				      int scale_changed)
 {
 	struct weston_seat *seat;
+	struct weston_head *head;
 	struct wl_resource *resource;
 	pixman_region32_t old_output_region;
 	int version;
@@ -129,8 +130,10 @@ static void weston_mode_switch_finish(struct weston_output *output,
 	if (!mode_changed && !scale_changed)
 		return;
 
+	head = &output->head;
+
 	/* notify clients of the changes */
-	wl_resource_for_each(resource, &output->resource_list) {
+	wl_resource_for_each(resource, &head->resource_list) {
 		if (mode_changed) {
 			wl_output_send_mode(resource,
 					    output->current_mode->flags,
@@ -340,12 +343,14 @@ weston_presentation_feedback_present(
 		uint32_t flags)
 {
 	struct wl_client *client = wl_resource_get_client(feedback->resource);
+	struct weston_head *head;
 	struct wl_resource *o;
 	uint32_t tv_sec_hi;
 	uint32_t tv_sec_lo;
 	uint32_t tv_nsec;
 
-	wl_resource_for_each(o, &output->resource_list) {
+	head = &output->head;
+	wl_resource_for_each(o, &head->resource_list) {
 		if (wl_resource_get_client(o) != client)
 			continue;
 
@@ -922,7 +927,7 @@ weston_view_damage_below(struct weston_view *view)
 /** Send wl_surface.enter/leave events
  *
  * \param surface The surface.
- * \param output The entered/left output.
+ * \param head A head of the entered/left output.
  * \param enter True if entered.
  * \param left True if left.
  *
@@ -931,7 +936,7 @@ weston_view_damage_below(struct weston_view *view)
  */
 static void
 weston_surface_send_enter_leave(struct weston_surface *surface,
-				struct weston_output *output,
+				struct weston_head *head,
 				bool enter,
 				bool leave)
 {
@@ -941,7 +946,7 @@ weston_surface_send_enter_leave(struct weston_surface *surface,
 	assert(enter != leave);
 
 	client = wl_resource_get_client(surface->resource);
-	wl_resource_for_each(wloutput, &output->resource_list) {
+	wl_resource_for_each(wloutput, &head->resource_list) {
 		if (wl_resource_get_client(wloutput) != client)
 			continue;
 
@@ -981,7 +986,7 @@ weston_surface_update_output_mask(struct weston_surface *es, uint32_t mask)
 		if (!(output_bit & different))
 			continue;
 
-		weston_surface_send_enter_leave(es, output,
+		weston_surface_send_enter_leave(es, &output->head,
 						output_bit & entered,
 						output_bit & left);
 	}
@@ -4324,7 +4329,7 @@ bind_output(struct wl_client *client,
 		return;
 	}
 
-	wl_list_insert(&output->resource_list, wl_resource_get_link(resource));
+	wl_list_insert(&head->resource_list, wl_resource_get_link(resource));
 	wl_resource_set_implementation(resource, &output_interface, data, unbind_resource);
 
 	wl_output_send_geometry(resource,
@@ -4578,7 +4583,7 @@ weston_output_move(struct weston_output *output, int x, int y)
 	wl_signal_emit(&output->compositor->output_moved_signal, output);
 
 	/* Notify clients of the change for output position. */
-	wl_resource_for_each(resource, &output->resource_list) {
+	wl_resource_for_each(resource, &head->resource_list) {
 		wl_output_send_geometry(resource,
 					output->x,
 					output->y,
@@ -4612,6 +4617,7 @@ weston_compositor_add_output(struct weston_compositor *compositor,
                              struct weston_output *output)
 {
 	struct weston_view *view, *next;
+	struct weston_head *head;
 
 	assert(!output->enabled);
 
@@ -4629,9 +4635,10 @@ weston_compositor_add_output(struct weston_compositor *compositor,
 	wl_list_insert(compositor->output_list.prev, &output->link);
 	output->enabled = true;
 
-	output->global = wl_global_create(compositor->wl_display,
-					  &wl_output_interface, 3,
-					  output, bind_output);
+	head = &output->head;
+	head->global = wl_global_create(compositor->wl_display,
+					&wl_output_interface, 3,
+					output, bind_output);
 
 	wl_signal_emit(&compositor->output_created_signal, output);
 
@@ -4703,6 +4710,7 @@ weston_compositor_remove_output(struct weston_output *output)
 	struct weston_compositor *compositor = output->compositor;
 	struct wl_resource *resource;
 	struct weston_view *view;
+	struct weston_head *head;
 
 	assert(output->destroying);
 	assert(output->enabled);
@@ -4723,9 +4731,10 @@ weston_compositor_remove_output(struct weston_output *output)
 	wl_signal_emit(&compositor->output_destroyed_signal, output);
 	wl_signal_emit(&output->destroy_signal, output);
 
-	wl_global_destroy(output->global);
-	output->global = NULL;
-	wl_resource_for_each(resource, &output->resource_list) {
+	head = &output->head;
+	wl_global_destroy(head->global);
+	head->global = NULL;
+	wl_resource_for_each(resource, &head->resource_list) {
 		wl_resource_set_destructor(resource, NULL);
 	}
 
@@ -4793,7 +4802,7 @@ weston_output_set_transform(struct weston_output *output,
 	output->dirty = 1;
 
 	/* Notify clients of the change for output transform. */
-	wl_resource_for_each(resource, &output->resource_list) {
+	wl_resource_for_each(resource, &head->resource_list) {
 		wl_output_send_geometry(resource,
 					output->x,
 					output->y,
@@ -4967,7 +4976,7 @@ weston_output_enable(struct weston_output *output)
 	wl_signal_init(&output->frame_signal);
 	wl_signal_init(&output->destroy_signal);
 	wl_list_init(&output->animation_list);
-	wl_list_init(&output->resource_list);
+	wl_list_init(&output->head.resource_list);
 	wl_list_init(&output->feedback_list);
 
 	/* Enable the output (set up the crtc or create a

@@ -153,6 +153,9 @@ enum dpms_enum {
  * (windowed nested backends).
  */
 struct weston_head {
+	struct wl_list resource_list;	/**< wl_output protocol objects */
+	struct wl_global *global;	/**< wl_output global */
+
 	int32_t mm_width;		/**< physical image width in mm */
 	int32_t mm_height;		/**< physical image height in mm */
 	char *make;			/**< monitor manufacturer (PNP ID) */
@@ -169,8 +172,6 @@ struct weston_output {
 	void *renderer_state;
 
 	struct wl_list link;
-	struct wl_list resource_list;
-	struct wl_global *global;
 	struct weston_compositor *compositor;
 
 	/** From global to output buffer coordinates. */
