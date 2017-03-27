@@ -79,6 +79,8 @@ class CORE_EXPORT ComputedStyleBase {
 
   {% endfor %}
  protected:
+  // Constructor and destructor are protected so that only the parent class ComputedStyle
+  // can instantiate this class.
   ALWAYS_INLINE ComputedStyleBase() :
   {% for field in fields %}
       {{field.name}}(static_cast<unsigned>({{field.default_value}})){{print_if(not loop.last, ',')}}
