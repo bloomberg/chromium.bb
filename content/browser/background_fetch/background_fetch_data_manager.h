@@ -22,7 +22,7 @@
 namespace content {
 
 class BrowserContext;
-class BlobHandle;
+class ChromeBlobStorageContext;
 
 // The BackgroundFetchDataManager keeps track of all of the outstanding requests
 // which are in process in the DownloadManager. When Chromium restarts, it is
@@ -81,9 +81,10 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
       const std::string& job_guid,
       size_t request_index);
 
-  void DidGetRequestResponse(const std::string& job_guid,
-                             int request_sequence_number,
-                             std::unique_ptr<BlobHandle> blob_handle);
+  void DidGetBlobStorageContext(
+      const std::string& job_guid,
+      const BackgroundFetchResponseCompleteCallback& callback,
+      ChromeBlobStorageContext* blob_context);
 
   // Indirectly, this is owned by the BrowserContext.
   BrowserContext* browser_context_;

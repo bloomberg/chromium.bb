@@ -9,11 +9,13 @@
 #include <vector>
 
 #include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "content/browser/background_fetch/background_fetch_job_info.h"
 #include "content/browser/background_fetch/background_fetch_job_response_data.h"
 #include "content/browser/background_fetch/background_fetch_request_info.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
@@ -55,9 +57,38 @@ class BackgroundFetchDataManagerTest : public ::testing::Test {
                                                   std::move(request_infos));
   }
 
+  void GetResponse() {
+    base::RunLoop run_loop;
+    BackgroundFetchResponseCompleteCallback callback =
+        base::Bind(&BackgroundFetchDataManagerTest::DidGetResponse,
+                   base::Unretained(this), run_loop.QuitClosure());
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&BackgroundFetchDataManager::GetJobResponse,
+                   base::Unretained(background_fetch_data_manager()), job_guid_,
+                   base::Bind(&BackgroundFetchDataManagerTest::DidGetResponse,
+                              base::Unretained(this), run_loop.QuitClosure())));
+    run_loop.Run();
+  }
+
+  void DidGetResponse(base::Closure closure,
+                      std::vector<ServiceWorkerResponse> responses,
+                      std::vector<std::unique_ptr<BlobHandle>> blobs) {
+    responses_ = std::move(responses);
+    blobs_ = std::move(blobs);
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, closure);
+  }
+
   const std::string& job_guid() const { return job_guid_; }
   BackgroundFetchDataManager* background_fetch_data_manager() {
     return background_fetch_data_manager_.get();
+  }
+
+  const std::vector<ServiceWorkerResponse>& responses() const {
+    return responses_;
+  }
+  const std::vector<std::unique_ptr<BlobHandle>>& blobs() const {
+    return blobs_;
   }
 
  private:
@@ -65,7 +96,47 @@ class BackgroundFetchDataManagerTest : public ::testing::Test {
   TestBrowserContext browser_context_;
   std::unique_ptr<BackgroundFetchDataManager> background_fetch_data_manager_;
   TestBrowserThreadBundle thread_bundle_;
+  std::vector<ServiceWorkerResponse> responses_;
+  std::vector<std::unique_ptr<BlobHandle>> blobs_;
 };
+
+TEST_F(BackgroundFetchDataManagerTest, CompleteJob) {
+  CreateRequests(10);
+  BackgroundFetchDataManager* data_manager = background_fetch_data_manager();
+  std::vector<std::string> request_guids;
+
+  // Get all of the fetch requests from the BackgroundFetchDataManager.
+  for (int i = 0; i < 10; i++) {
+    EXPECT_FALSE(data_manager->IsComplete(job_guid()));
+    ASSERT_TRUE(data_manager->HasRequestsRemaining(job_guid()));
+    const BackgroundFetchRequestInfo& request_info =
+        data_manager->GetNextBackgroundFetchRequestInfo(job_guid());
+    request_guids.push_back(request_info.guid());
+    EXPECT_EQ(request_info.tag(), kTag);
+    EXPECT_EQ(request_info.state(),
+              DownloadItem::DownloadState::MAX_DOWNLOAD_STATE);
+    EXPECT_EQ(request_info.interrupt_reason(),
+              DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_NONE);
+  }
+
+  // At this point, all the fetches have been started, but none finished.
+  EXPECT_FALSE(data_manager->HasRequestsRemaining(job_guid()));
+
+  // Complete all of the fetch requests.
+  for (int i = 0; i < 10; i++) {
+    EXPECT_FALSE(data_manager->IsComplete(job_guid()));
+    EXPECT_FALSE(data_manager->UpdateRequestState(
+        job_guid(), request_guids[i], DownloadItem::DownloadState::COMPLETE,
+        DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_NONE));
+  }
+
+  // All requests are complete now.
+  EXPECT_TRUE(data_manager->IsComplete(job_guid()));
+  GetResponse();
+
+  EXPECT_EQ(10U, responses().size());
+  EXPECT_EQ(10U, blobs().size());
+}
 
 TEST_F(BackgroundFetchDataManagerTest, OutOfOrderCompletion) {
   CreateRequests(10);

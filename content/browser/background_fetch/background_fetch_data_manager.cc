@@ -8,6 +8,7 @@
 #include "content/browser/background_fetch/background_fetch_context.h"
 #include "content/browser/background_fetch/background_fetch_job_response_data.h"
 #include "content/browser/background_fetch/background_fetch_request_info.h"
+#include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/public/browser/blob_handle.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_interrupt_reasons.h"
@@ -97,6 +98,18 @@ BackgroundFetchDataManager::GetRequestInfo(const std::string& job_guid,
 void BackgroundFetchDataManager::GetJobResponse(
     const std::string& job_guid,
     const BackgroundFetchResponseCompleteCallback& callback) {
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&ChromeBlobStorageContext::GetFor, browser_context_),
+      base::Bind(&BackgroundFetchDataManager::DidGetBlobStorageContext,
+                 weak_ptr_factory_.GetWeakPtr(), job_guid, callback));
+}
+
+void BackgroundFetchDataManager::DidGetBlobStorageContext(
+    const std::string& job_guid,
+    const BackgroundFetchResponseCompleteCallback& callback,
+    ChromeBlobStorageContext* blob_context) {
+  DCHECK(blob_context);
   BackgroundFetchJobInfo* job_info = job_map_[job_guid].get();
   DCHECK(job_info);
 
@@ -105,6 +118,9 @@ void BackgroundFetchDataManager::GetJobResponse(
   job_info->set_job_response_data(
       base::MakeUnique<BackgroundFetchJobResponseData>(job_info->num_requests(),
                                                        callback));
+  BackgroundFetchJobResponseData* job_response_data =
+      job_info->job_response_data();
+  DCHECK(job_response_data);
 
   // Iterate over the requests and create blobs for each response.
   for (size_t request_index = 0; request_index < job_info->num_requests();
@@ -115,28 +131,14 @@ void BackgroundFetchDataManager::GetJobResponse(
 
     // TODO(harkness): Only create a blob response if the request was
     // successful. Otherwise create an error response.
-    content::BrowserContext::CreateFileBackedBlob(
-        browser_context_, request_info->file_path(), 0 /* offset */,
-        request_info->received_bytes(),
-        base::Time() /* expected_modification_time */,
-        base::Bind(&BackgroundFetchDataManager::DidGetRequestResponse,
-                   weak_ptr_factory_.GetWeakPtr(), job_guid, request_index));
+    std::unique_ptr<BlobHandle> blob_handle =
+        blob_context->CreateFileBackedBlob(
+            request_info->file_path(), 0 /* offset */,
+            request_info->received_bytes(),
+            base::Time() /* expected_modification_time */);
+
+    job_response_data->AddResponse(*request_info.get(), std::move(blob_handle));
   }
-}
-
-void BackgroundFetchDataManager::DidGetRequestResponse(
-    const std::string& job_guid,
-    int request_sequence_number,
-    std::unique_ptr<BlobHandle> blob_handle) {
-  BackgroundFetchJobInfo* job_info = job_map_[job_guid].get();
-  DCHECK(job_info);
-
-  BackgroundFetchJobResponseData* job_response_data =
-      job_info->job_response_data();
-  DCHECK(job_response_data);
-
-  job_response_data->AddResponse(request_sequence_number,
-                                 std::move(blob_handle));
 }
 
 bool BackgroundFetchDataManager::UpdateRequestState(

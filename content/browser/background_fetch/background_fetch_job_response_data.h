@@ -12,12 +12,17 @@
 #include "base/callback.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/blob_handle.h"
 
 namespace content {
 
+class BackgroundFetchRequestInfo;
+
 using BackgroundFetchResponseCompleteCallback =
-    base::Callback<void(std::vector<std::unique_ptr<BlobHandle>>)>;
+    base::Callback<void(std::vector<ServiceWorkerResponse>,
+                        std::vector<std::unique_ptr<BlobHandle>>)>;
 
 // Temporary holding class to aggregate the response data for requests
 // associated with a given BackgroundFetch job.
@@ -28,11 +33,13 @@ class BackgroundFetchJobResponseData {
       const BackgroundFetchResponseCompleteCallback& completion_callback);
   ~BackgroundFetchJobResponseData();
 
-  void AddResponse(int request_num, std::unique_ptr<BlobHandle> response);
+  void AddResponse(const BackgroundFetchRequestInfo& request_info,
+                   std::unique_ptr<BlobHandle> response);
   bool IsComplete();
 
  private:
   std::vector<std::unique_ptr<BlobHandle>> blobs_;
+  std::vector<ServiceWorkerResponse> responses_;
   size_t num_requests_ = 0;
   size_t completed_requests_ = 0;
   const std::string job_guid_;
