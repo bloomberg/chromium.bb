@@ -78,44 +78,6 @@ int sb_compute_dering_list(const AV1_COMMON *const cm, int mi_row, int mi_col,
   return count;
 }
 
-static INLINE void copy_8x8_16bit_to_8bit(uint8_t *dst, int dstride,
-                                          uint16_t *src, int sstride) {
-  int i, j;
-  for (i = 0; i < 8; i++)
-    for (j = 0; j < 8; j++)
-      dst[i * dstride + j] = (uint8_t)src[i * sstride + j];
-}
-
-static INLINE void copy_4x4_16bit_to_8bit(uint8_t *dst, int dstride,
-                                          uint16_t *src, int sstride) {
-  int i, j;
-  for (i = 0; i < 4; i++)
-    for (j = 0; j < 4; j++)
-      dst[i * dstride + j] = (uint8_t)src[i * sstride + j];
-}
-
-/* TODO: Optimize this function for SSE. */
-void copy_dering_16bit_to_8bit(uint8_t *dst, int dstride, uint16_t *src,
-                               dering_list *dlist, int dering_count,
-                               int bsize) {
-  int bi, bx, by;
-  if (bsize == 3) {
-    for (bi = 0; bi < dering_count; bi++) {
-      by = dlist[bi].by;
-      bx = dlist[bi].bx;
-      copy_8x8_16bit_to_8bit(&dst[(by << 3) * dstride + (bx << 3)], dstride,
-                             &src[bi << 2 * bsize], 1 << bsize);
-    }
-  } else {
-    for (bi = 0; bi < dering_count; bi++) {
-      by = dlist[bi].by;
-      bx = dlist[bi].bx;
-      copy_4x4_16bit_to_8bit(&dst[(by << 2) * dstride + (bx << 2)], dstride,
-                             &src[bi << 2 * bsize], 1 << bsize);
-    }
-  }
-}
-
 /* TODO: Optimize this function for SSE. */
 static void copy_sb8_16(UNUSED AV1_COMMON *cm, uint16_t *dst, int dstride,
                         const uint8_t *src, int src_voffset, int src_hoffset,
@@ -384,27 +346,28 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
 
         threshold = level << coeff_shift;
         if (threshold == 0 && clpf_strength == 0) continue;
-        od_dering(dst,
-                  &src[OD_FILT_VBORDER * OD_FILT_BSTRIDE + OD_FILT_HBORDER],
-                  dec[pli], dir, NULL, var, pli, dlist, dering_count, threshold,
-                  clpf_strength, clpf_damping, coeff_shift, 0);
 #if CONFIG_AOM_HIGHBITDEPTH
         if (cm->use_highbitdepth) {
-          copy_dering_16bit_to_16bit(
-              &CONVERT_TO_SHORTPTR(
-                  xd->plane[pli]
-                      .dst.buf)[xd->plane[pli].dst.stride *
-                                    (MAX_MIB_SIZE * sbr << bsize[pli]) +
-                                (sbc * MAX_MIB_SIZE << bsize[pli])],
-              xd->plane[pli].dst.stride, dst, dlist, dering_count,
-              3 - dec[pli]);
+          od_dering((uint8_t *)&CONVERT_TO_SHORTPTR(
+                        xd->plane[pli]
+                            .dst.buf)[xd->plane[pli].dst.stride *
+                                          (MAX_MIB_SIZE * sbr << bsize[pli]) +
+                                      (sbc * MAX_MIB_SIZE << bsize[pli])],
+                    xd->plane[pli].dst.stride, dst,
+                    &src[OD_FILT_VBORDER * OD_FILT_BSTRIDE + OD_FILT_HBORDER],
+                    dec[pli], dir, NULL, var, pli, dlist, dering_count,
+                    threshold, clpf_strength, clpf_damping, coeff_shift, 0, 1);
         } else {
 #endif
-          copy_dering_16bit_to_8bit(
+          od_dering(
               &xd->plane[pli].dst.buf[xd->plane[pli].dst.stride *
                                           (MAX_MIB_SIZE * sbr << bsize[pli]) +
                                       (sbc * MAX_MIB_SIZE << bsize[pli])],
-              xd->plane[pli].dst.stride, dst, dlist, dering_count, bsize[pli]);
+              xd->plane[pli].dst.stride, dst,
+              &src[OD_FILT_VBORDER * OD_FILT_BSTRIDE + OD_FILT_HBORDER],
+              dec[pli], dir, NULL, var, pli, dlist, dering_count, threshold,
+              clpf_strength, clpf_damping, coeff_shift, 0, 0);
+
 #if CONFIG_AOM_HIGHBITDEPTH
         }
 #endif

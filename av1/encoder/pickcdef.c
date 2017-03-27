@@ -263,14 +263,11 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
                          src[pli], (sbr * MAX_MIB_SIZE << bsize[pli]) - yoff,
                          (sbc * MAX_MIB_SIZE << bsize[pli]) - xoff, stride[pli],
                          ysize, xsize);
-          od_dering(tmp_dst, in, dec[pli], dir, &dirinit, var, pli, dlist,
+          od_dering(clpf_strength ? NULL : (uint8_t *)in, OD_FILT_BSTRIDE,
+                    tmp_dst, in, dec[pli], dir, &dirinit, var, pli, dlist,
                     dering_count, threshold,
                     clpf_strength + (clpf_strength == 3), clpf_damping,
-                    coeff_shift, clpf_strength != 0);
-          if (clpf_strength == 0) {
-            copy_dering_16bit_to_16bit(in, OD_FILT_BSTRIDE, tmp_dst, dlist,
-                                       dering_count, bsize[pli]);
-          }
+                    coeff_shift, clpf_strength != 0, 1);
           mse[pli][sb_count][gi] = compute_dering_mse(
               ref_coeff[pli] +
                   (sbr * MAX_MIB_SIZE << bsize[pli]) * stride[pli] +
