@@ -282,7 +282,6 @@
    */
   function getEffectiveCvdMatrix(cvdType, severity, delta, simulate, enable) {
     if (!enable) {
-      //TODO(mustaq): we should remove matrices at the svg level
       return IDENTITY_MATRIX_3x3;
     }
 
@@ -352,9 +351,7 @@
     var matrixElem = document.getElementById('cvd_matrix_' + next);
     matrixElem.setAttribute('values', svgMatrixStringFrom3x3(matrix));
 
-    var html = document.documentElement;
-    html.classList.remove('filter' + curFilter);
-    html.classList.add('filter' + next);
+    document.documentElement.setAttribute('cvd', next);
 
     curFilter = next;
   }
@@ -363,20 +360,24 @@
    * Updates the SVG matrix using the current settings.
    */
   function update() {
-    if (!document.body) {
-      document.addEventListener('DOMContentLoaded', update);
-      return;
+    if (curEnable) {
+      if (!document.body) {
+        document.addEventListener('DOMContentLoaded', update);
+        return;
+      }
+
+      var effectiveMatrix = getEffectiveCvdMatrix(
+          curType, curSeverity, curDelta * 2 - 1, curSimulate, curEnable);
+
+      setFilter(effectiveMatrix);
+
+      if (window == window.top) {
+        window.scrollBy(0, 1);
+        window.scrollBy(0, -1);
+      }
+    } else {
+      clearFilter();
     }
-
-    var effectiveMatrix = getEffectiveCvdMatrix(
-        curType, curSeverity, curDelta * 2 - 1, curSimulate, curEnable);
-
-    setFilter(effectiveMatrix);
-
-    // TODO(kevers): Check if a call to getComputedStyle is sufficient to force
-    // an update.
-    window.scrollBy(0, 1);
-    window.scrollBy(0, -1);
   }
 
 
@@ -428,8 +429,17 @@
       }
     }
 
-    if (changed)
+    if (changed) {
       update();
+    }
+  }
+
+
+  /**
+   * Remove the filter from the page.
+   */
+  function clearFilter() {
+    document.documentElement.removeAttribute('cvd');
   }
 
 
@@ -465,9 +475,7 @@
    * Clears color correction filter.
    */
   exports.clearColorEnhancementFilter = function() {
-    var html = document.documentElement;
-    html.classList.remove('filter0');
-    html.classList.remove('filter1');
+    clearFilter();
   };
 })(this);
 

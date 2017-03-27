@@ -2,10 +2,10 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-html.filter0 {
+html[cvd="0"] {
   -webkit-filter: url('#cvd_extension_0');
 }
 
-html.filter1 {
+html[cvd="1"] {
   -webkit-filter: url('#cvd_extension_1');
 }
