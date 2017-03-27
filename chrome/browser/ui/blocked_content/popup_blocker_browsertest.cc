@@ -599,6 +599,44 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ModalPopUnderWindowOpener) {
   ASSERT_EQ(popup_browser, chrome::FindLastActive());
 }
 
+// Verify that popunders from subframes are prevented. https://crbug.com/705316
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ModalPopUnderSubframe) {
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  GURL url(embedded_test_server()->GetURL(
+      "/popup_blocker/popup-window-subframe-open.html"));
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->SetContentSettingDefaultScope(url, GURL(), CONTENT_SETTINGS_TYPE_POPUPS,
+                                      std::string(), CONTENT_SETTING_ALLOW);
+
+  NavigateAndCheckPopupShown(url, ExpectPopup);
+
+  Browser* popup_browser = chrome::FindLastActive();
+  ASSERT_NE(popup_browser, browser());
+
+// Showing an alert will raise the tab over the popup.
+#if !defined(OS_MACOSX)
+  // Mac doesn't activate the browser during modal dialogs, see
+  // https://crbug.com/687732 for details.
+  ui_test_utils::BrowserActivationWaiter alert_waiter(browser());
+#endif
+  tab->GetMainFrame()->ExecuteJavaScriptForTests(base::UTF8ToUTF16("alert()"));
+  app_modal::AppModalDialog* dialog = ui_test_utils::WaitForAppModalDialog();
+#if !defined(OS_MACOSX)
+  if (chrome::FindLastActive() != browser())
+    alert_waiter.WaitForActivation();
+#endif
+
+  // Verify that after the dialog is closed, the popup is in front again.
+  ASSERT_TRUE(dialog->IsJavaScriptModalDialog());
+  app_modal::JavaScriptAppModalDialog* js_dialog =
+      static_cast<app_modal::JavaScriptAppModalDialog*>(dialog);
+
+  ui_test_utils::BrowserActivationWaiter waiter(popup_browser);
+  js_dialog->native_dialog()->AcceptAppModalDialog();
+  waiter.WaitForActivation();
+  ASSERT_EQ(popup_browser, chrome::FindLastActive());
+}
+
 // Verify that popups without an opener don't interfere with popup blocking.
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ModalPopUnderNoOpener) {
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();

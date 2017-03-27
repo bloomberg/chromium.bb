@@ -227,6 +227,7 @@ void FrameTreeNode::SetOpener(FrameTreeNode* opener) {
 
 void FrameTreeNode::SetOriginalOpener(FrameTreeNode* opener) {
   DCHECK(!original_opener_ || !opener);
+  DCHECK(opener == nullptr || !opener->parent());
 
   original_opener_ = opener;
 

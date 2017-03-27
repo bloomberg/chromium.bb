@@ -123,7 +123,8 @@ class CONTENT_EXPORT FrameTreeNode {
 
   // Assigns the initial opener for this node, and if |opener| is non-null,
   // registers an observer that will clear this node's opener if |opener| is
-  // ever destroyed.
+  // ever destroyed. The value set here is the root of the tree.
+  //
   // It is not possible to change the opener once it was set.
   void SetOriginalOpener(FrameTreeNode* opener);
 

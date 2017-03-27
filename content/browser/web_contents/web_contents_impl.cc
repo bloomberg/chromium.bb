@@ -598,7 +598,12 @@ WebContentsImpl* WebContentsImpl::CreateWithOpener(
   FrameTreeNode* new_root = new_contents->GetFrameTree()->root();
 
   if (opener) {
-    new_root->SetOriginalOpener(opener);
+    // For the "original opener", track the opener's main frame instead, because
+    // if the opener is a subframe, the opener tracking could be easily bypassed
+    // by spawning from a subframe and deleting the subframe.
+    // https://crbug.com/705316
+    new_root->SetOriginalOpener(opener->frame_tree()->root());
+
     if (!params.opener_suppressed) {
       new_root->SetOpener(opener);
       new_contents->created_with_opener_ = true;
