@@ -16,8 +16,8 @@ declare_args() {
   system_webview_package_name = "com.android.webview"
 }
 
-if (!defined(use_webview_internal_framework)) {
-  use_webview_internal_framework = false
+if (!defined(use_unpublished_apis)) {
+  use_unpublished_apis = false
 }
 
 if (enable_resource_whitelist_generation) {
@@ -29,7 +29,7 @@ system_webview_android_manifest =
     "$target_gen_dir/system_webview_apk/AndroidManifest.xml"
 
 group("android_webview") {
-  if (!use_webview_internal_framework) {
+  if (!use_unpublished_apis) {
     deps = [
       ":system_webview_apk",
     ]
@@ -805,7 +805,7 @@ android_aidl("crash_receiver_aidl") {
   ]
 }
 
-if (!use_webview_internal_framework) {
+if (!use_unpublished_apis) {
   system_webview_apk_tmpl("system_webview_apk") {
     android_manifest = system_webview_android_manifest
     android_manifest_dep = ":system_webview_manifest"
