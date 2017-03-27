@@ -73,14 +73,25 @@ void project_points(const WarpedMotionParams *wm_params, int *points, int *proj,
                     const int n, const int stride_points, const int stride_proj,
                     const int subsampling_x, const int subsampling_y);
 
-double av1_warp_erroradv(WarpedMotionParams *wm,
+// Returns the error between the result of applying motion 'wm' to the frame
+// described by 'ref' and the frame described by 'dst'.
+int64_t av1_warp_error(WarpedMotionParams *wm,
 #if CONFIG_HIGHBITDEPTH
-                         int use_hbd, int bd,
+                       int use_hbd, int bd,
 #endif  // CONFIG_HIGHBITDEPTH
-                         const uint8_t *ref, int width, int height, int stride,
-                         uint8_t *dst, int p_col, int p_row, int p_width,
-                         int p_height, int p_stride, int subsampling_x,
-                         int subsampling_y, int x_scale, int y_scale);
+                       const uint8_t *ref, int width, int height, int stride,
+                       uint8_t *dst, int p_col, int p_row, int p_width,
+                       int p_height, int p_stride, int subsampling_x,
+                       int subsampling_y, int x_scale, int y_scale);
+
+// Returns the error between the frame described by 'ref' and the frame
+// described by 'dst'.
+int64_t av1_frame_error(
+#if CONFIG_HIGHBITDEPTH
+    int use_hbd, int bd,
+#endif  // CONFIG_HIGHBITDEPTH
+    const uint8_t *ref, int stride, uint8_t *dst, int p_col, int p_row,
+    int p_width, int p_height, int p_stride);
 
 void av1_warp_plane(WarpedMotionParams *wm,
 #if CONFIG_HIGHBITDEPTH
