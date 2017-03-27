@@ -25,6 +25,8 @@
 #include "components/version_info/version_info.h"
 #include "net/url_request/url_request_context_getter.h"
 
+class AccessTokenFetcher;
+class OAuth2TokenService;
 class PrefService;
 class SigninManagerBase;
 
@@ -60,8 +62,7 @@ CategoryInfo BuildRemoteCategoryInfo(const base::string16& title,
 // TODO(fhorschig): Untangle cyclic dependencies by introducing a
 // RemoteSuggestionsFetcherInterface. (Would be good for mock implementations,
 // too!)
-class RemoteSuggestionsFetcher : public OAuth2TokenService::Consumer,
-                                 public OAuth2TokenService::Observer {
+class RemoteSuggestionsFetcher {
  public:
   struct FetchedCategory {
     Category category;
@@ -90,7 +91,7 @@ class RemoteSuggestionsFetcher : public OAuth2TokenService::Consumer,
       const GURL& api_endpoint,
       const std::string& api_key,
       const UserClassifier* user_classifier);
-  ~RemoteSuggestionsFetcher() override;
+  ~RemoteSuggestionsFetcher();
 
   // Initiates a fetch from the server. When done (successfully or not), calls
   // the callback.
@@ -135,22 +136,15 @@ class RemoteSuggestionsFetcher : public OAuth2TokenService::Consumer,
                                      SnippetsAvailableCallback callback);
   void FetchSnippetsAuthenticated(internal::JsonRequest::Builder builder,
                                   SnippetsAvailableCallback callback,
-                                  const std::string& account_id,
                                   const std::string& oauth_access_token);
   void StartRequest(internal::JsonRequest::Builder builder,
                     SnippetsAvailableCallback callback);
 
   void StartTokenRequest();
 
-  // OAuth2TokenService::Consumer overrides:
-  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                         const std::string& access_token,
-                         const base::Time& expiration_time) override;
-  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                         const GoogleServiceAuthError& error) override;
-
-  // OAuth2TokenService::Observer overrides:
-  void OnRefreshTokenAvailable(const std::string& account_id) override;
+  void AccessTokenFetchFinished(const GoogleServiceAuthError& error,
+                                const std::string& access_token);
+  void AccessTokenError(const GoogleServiceAuthError& error);
 
   void JsonRequestDone(std::unique_ptr<internal::JsonRequest> request,
                        SnippetsAvailableCallback callback,
@@ -169,11 +163,8 @@ class RemoteSuggestionsFetcher : public OAuth2TokenService::Consumer,
   // Authentication for signed-in users.
   SigninManagerBase* signin_manager_;
   OAuth2TokenService* token_service_;
-  std::unique_ptr<OAuth2TokenService::Request> oauth_request_;
-  bool waiting_for_refresh_token_ = false;
 
-  // When a token request gets canceled, we want to retry once.
-  bool oauth_token_retried_ = false;
+  std::unique_ptr<AccessTokenFetcher> token_fetcher_;
 
   // Holds the URL request context.
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;

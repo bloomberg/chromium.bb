@@ -399,9 +399,11 @@ class RemoteSuggestionsSignedOutFetcherTest
             GURL(kTestChromeContentSuggestionsSignedOutUrl)) {}
 };
 
-// TODO(jkrcal): Add unit-tests for the "authentication in progress" case as it
-// requires more changes (instead FakeSigninManagerBase use FakeSigninManager
-// which does not exist on ChromeOS). crbug.com/688310
+// TODO(jkrcal): Investigate whether the "authentication in progress" case can
+// ever happen (see discussion on https://codereview.chromium.org/2582573002),
+// and if so, add unit-tests for it. This will require more changes (instead of
+// FakeSigninManagerBase use FakeSigninManager which does not exist on
+// ChromeOS). crbug.com/688310
 class RemoteSuggestionsSignedInFetcherTest
     : public RemoteSuggestionsFetcherTestBase {
  public:

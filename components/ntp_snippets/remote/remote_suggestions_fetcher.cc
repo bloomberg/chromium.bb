@@ -24,6 +24,7 @@
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/remote/request_params.h"
 #include "components/ntp_snippets/user_classifier.h"
+#include "components/signin/core/browser/access_token_fetcher.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/strings/grit/components_strings.h"
@@ -243,8 +244,7 @@ RemoteSuggestionsFetcher::RemoteSuggestionsFetcher(
     const GURL& api_endpoint,
     const std::string& api_key,
     const UserClassifier* user_classifier)
-    : OAuth2TokenService::Consumer("ntp_snippets"),
-      signin_manager_(signin_manager),
+    : signin_manager_(signin_manager),
       token_service_(token_service),
       url_request_context_getter_(std::move(url_request_context_getter)),
       language_model_(language_model),
@@ -254,11 +254,7 @@ RemoteSuggestionsFetcher::RemoteSuggestionsFetcher(
       clock_(new base::DefaultClock()),
       user_classifier_(user_classifier) {}
 
-RemoteSuggestionsFetcher::~RemoteSuggestionsFetcher() {
-  if (waiting_for_refresh_token_) {
-    token_service_->RemoveObserver(this);
-  }
-}
+RemoteSuggestionsFetcher::~RemoteSuggestionsFetcher() = default;
 
 void RemoteSuggestionsFetcher::FetchSnippets(
     const RequestParams& params,
@@ -282,20 +278,10 @@ void RemoteSuggestionsFetcher::FetchSnippets(
       .SetUrlRequestContextGetter(url_request_context_getter_)
       .SetUserClassifier(*user_classifier_);
 
-  if (signin_manager_->IsAuthenticated()) {
+  if (signin_manager_->IsAuthenticated() || signin_manager_->AuthInProgress()) {
     // Signed-in: get OAuth token --> fetch suggestions.
-    oauth_token_retried_ = false;
     pending_requests_.emplace(std::move(builder), std::move(callback));
     StartTokenRequest();
-  } else if (signin_manager_->AuthInProgress()) {
-    // Currently signing in: wait for auth to finish (the refresh token) -->
-    //     get OAuth token --> fetch suggestions.
-    pending_requests_.emplace(std::move(builder), std::move(callback));
-    if (!waiting_for_refresh_token_) {
-      // Wait until we get a refresh token.
-      waiting_for_refresh_token_ = true;
-      token_service_->AddObserver(this);
-    }
   } else {
     // Not signed in: fetch suggestions (without authentication).
     FetchSnippetsNonAuthenticated(std::move(builder), std::move(callback));
@@ -321,11 +307,10 @@ void RemoteSuggestionsFetcher::FetchSnippetsNonAuthenticated(
 void RemoteSuggestionsFetcher::FetchSnippetsAuthenticated(
     JsonRequest::Builder builder,
     SnippetsAvailableCallback callback,
-    const std::string& account_id,
     const std::string& oauth_access_token) {
   // TODO(jkrcal, treib): Add unit-tests for authenticated fetches.
   builder.SetUrl(fetch_url_)
-      .SetAuthentication(account_id,
+      .SetAuthentication(signin_manager_->GetAuthenticatedAccountId(),
                          base::StringPrintf(kAuthorizationRequestHeaderFormat,
                                             oauth_access_token.c_str()));
   StartRequest(std::move(builder), std::move(callback));
@@ -342,23 +327,33 @@ void RemoteSuggestionsFetcher::StartRequest(
 }
 
 void RemoteSuggestionsFetcher::StartTokenRequest() {
-  OAuth2TokenService::ScopeSet scopes;
-  scopes.insert(kContentSuggestionsApiScope);
-  oauth_request_ = token_service_->StartRequest(
-      signin_manager_->GetAuthenticatedAccountId(), scopes, this);
+  // If there is already an ongoing token request, just wait for that.
+  if (token_fetcher_) {
+    return;
+  }
+
+  OAuth2TokenService::ScopeSet scopes{kContentSuggestionsApiScope};
+  token_fetcher_ = base::MakeUnique<AccessTokenFetcher>(
+      "ntp_snippets", signin_manager_, token_service_, scopes,
+      base::BindOnce(&RemoteSuggestionsFetcher::AccessTokenFetchFinished,
+                     base::Unretained(this)));
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// OAuth2TokenService::Consumer overrides
-void RemoteSuggestionsFetcher::OnGetTokenSuccess(
-    const OAuth2TokenService::Request* request,
-    const std::string& access_token,
-    const base::Time& expiration_time) {
-  // Delete the request after we leave this method.
-  std::unique_ptr<OAuth2TokenService::Request> oauth_request(
-      std::move(oauth_request_));
-  DCHECK_EQ(oauth_request.get(), request)
-      << "Got tokens from some previous request";
+void RemoteSuggestionsFetcher::AccessTokenFetchFinished(
+    const GoogleServiceAuthError& error,
+    const std::string& access_token) {
+  // Delete the fetcher only after we leave this method (which is called from
+  // the fetcher itself).
+  DCHECK(token_fetcher_);
+  std::unique_ptr<AccessTokenFetcher> token_fetcher_deleter(
+      std::move(token_fetcher_));
+
+  if (error.state() != GoogleServiceAuthError::NONE) {
+    AccessTokenError(error);
+    return;
+  }
+
+  DCHECK(!access_token.empty());
 
   while (!pending_requests_.empty()) {
     std::pair<JsonRequest::Builder, SnippetsAvailableCallback>
@@ -366,25 +361,16 @@ void RemoteSuggestionsFetcher::OnGetTokenSuccess(
     pending_requests_.pop();
     FetchSnippetsAuthenticated(std::move(builder_and_callback.first),
                                std::move(builder_and_callback.second),
-                               oauth_request->GetAccountId(), access_token);
+                               access_token);
   }
 }
 
-void RemoteSuggestionsFetcher::OnGetTokenFailure(
-    const OAuth2TokenService::Request* request,
+void RemoteSuggestionsFetcher::AccessTokenError(
     const GoogleServiceAuthError& error) {
-  oauth_request_.reset();
-
-  if (!oauth_token_retried_ &&
-      error.state() == GoogleServiceAuthError::State::REQUEST_CANCELED) {
-    // The request (especially on startup) can get reset by loading the refresh
-    // token - do it one more time.
-    oauth_token_retried_ = true;
-    StartTokenRequest();
-    return;
-  }
+  DCHECK_NE(error.state(), GoogleServiceAuthError::NONE);
 
   DLOG(ERROR) << "Unable to get token: " << error.ToString();
+
   while (!pending_requests_.empty()) {
     std::pair<JsonRequest::Builder, SnippetsAvailableCallback>
         builder_and_callback = std::move(pending_requests_.front());
@@ -396,21 +382,6 @@ void RemoteSuggestionsFetcher::OnGetTokenFailure(
                   base::StringPrintf(" (%s)", error.ToString().c_str()));
     pending_requests_.pop();
   }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// OAuth2TokenService::Observer overrides
-void RemoteSuggestionsFetcher::OnRefreshTokenAvailable(
-    const std::string& account_id) {
-  // Only react on tokens for the account the user has signed in with.
-  if (account_id != signin_manager_->GetAuthenticatedAccountId()) {
-    return;
-  }
-
-  token_service_->RemoveObserver(this);
-  waiting_for_refresh_token_ = false;
-  oauth_token_retried_ = false;
-  StartTokenRequest();
 }
 
 void RemoteSuggestionsFetcher::JsonRequestDone(
