@@ -49,7 +49,6 @@ TilesDefaultView::TilesDefaultView(SystemTrayItem* owner, LoginStatus login)
 TilesDefaultView::~TilesDefaultView() {}
 
 void TilesDefaultView::Init() {
-  WmShell* shell = WmShell::Get();
   views::BoxLayout* box_layout =
       new views::BoxLayout(views::BoxLayout::kHorizontal, 4, 0, 0);
   box_layout->set_main_axis_alignment(
@@ -102,7 +101,7 @@ void TilesDefaultView::Init() {
   AddChildView(power_button_);
   // This object is recreated every time the menu opens. Don't bother updating
   // the tooltip if the shutdown policy changes while the menu is open.
-  bool reboot = shell->shutdown_controller()->reboot_on_shutdown();
+  bool reboot = Shell::Get()->shutdown_controller()->reboot_on_shutdown();
   power_button_->SetTooltipText(l10n_util::GetStringUTF16(
       reboot ? IDS_ASH_STATUS_TRAY_REBOOT : IDS_ASH_STATUS_TRAY_SHUTDOWN));
 }

@@ -48,7 +48,7 @@ void OverviewButtonTray::UpdateAfterLoginStatusChange(LoginStatus status) {
 
 bool OverviewButtonTray::PerformAction(const ui::Event& event) {
   WindowSelectorController* controller =
-      WmShell::Get()->window_selector_controller();
+      Shell::Get()->window_selector_controller();
   // Toggling overview mode will fail if there is no window to show.
   bool performed = controller->ToggleOverview();
   WmShell::Get()->RecordUserMetricsAction(UMA_TRAY_OVERVIEW);

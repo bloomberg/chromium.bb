@@ -245,11 +245,11 @@ void VPNListNetworkEntry::SetupConnectingItem(const base::string16& text,
 }  // namespace
 
 VPNListView::VPNListView(NetworkListDelegate* delegate) : delegate_(delegate) {
-  WmShell::Get()->vpn_list()->AddObserver(this);
+  Shell::Get()->vpn_list()->AddObserver(this);
 }
 
 VPNListView::~VPNListView() {
-  WmShell::Get()->vpn_list()->RemoveObserver(this);
+  Shell::Get()->vpn_list()->RemoveObserver(this);
 }
 
 void VPNListView::Update() {
@@ -397,7 +397,7 @@ void VPNListView::AddProvidersAndNetworks(
     const chromeos::NetworkStateHandler::NetworkStateList& networks) {
   // Get the list of VPN providers enabled in the primary user's profile.
   std::vector<VPNProvider> providers =
-      WmShell::Get()->vpn_list()->vpn_providers();
+      Shell::Get()->vpn_list()->vpn_providers();
 
   // Add providers with at least one configured network along with their
   // networks. Providers are added in the order of their highest priority

@@ -44,11 +44,11 @@ TrayUser::TrayUser(SystemTray* system_tray, UserIndex index)
       layout_view_(nullptr),
       avatar_(nullptr),
       label_(nullptr) {
-  WmShell::Get()->system_tray_notifier()->AddUserObserver(this);
+  Shell::Get()->system_tray_notifier()->AddUserObserver(this);
 }
 
 TrayUser::~TrayUser() {
-  WmShell::Get()->system_tray_notifier()->RemoveUserObserver(this);
+  Shell::Get()->system_tray_notifier()->RemoveUserObserver(this);
 }
 
 TrayUser::TestState TrayUser::GetStateForTest() const {

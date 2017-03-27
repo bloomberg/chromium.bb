@@ -22,7 +22,6 @@
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray_accessibility.h"
 #include "ash/common/system/user/user_observer.h"
-#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/rotation/tray_rotation_lock.h"
 #include "base/callback.h"
@@ -466,7 +465,7 @@ void SystemTrayDelegateChromeOS::UserChangedChildStatus(
 }
 
 ash::SystemTrayNotifier* SystemTrayDelegateChromeOS::GetSystemTrayNotifier() {
-  return ash::WmShell::Get()->system_tray_notifier();
+  return ash::Shell::Get()->system_tray_notifier();
 }
 
 void SystemTrayDelegateChromeOS::SetProfile(Profile* profile) {

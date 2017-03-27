@@ -6,7 +6,6 @@
 
 #include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
-#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -27,7 +26,7 @@ void BluetoothDeviceConnectError(
     device::BluetoothDevice::ConnectErrorCode error_code) {}
 
 ash::SystemTrayNotifier* GetSystemTrayNotifier() {
-  return WmShell::Get()->system_tray_notifier();
+  return Shell::Get()->system_tray_notifier();
 }
 
 }  // namespace

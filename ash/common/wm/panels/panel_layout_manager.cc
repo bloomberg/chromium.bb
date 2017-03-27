@@ -258,9 +258,8 @@ PanelLayoutManager::PanelLayoutManager(WmWindow* panel_container)
       keyboard_observer_(this),
       weak_factory_(this) {
   DCHECK(panel_container);
-  WmShell* shell = panel_container->GetShell();
   Shell::GetInstance()->activation_client()->AddObserver(this);
-  shell->AddDisplayObserver(this);
+  WmShell::Get()->AddDisplayObserver(this);
   Shell::GetInstance()->AddShellObserver(this);
 }
 
@@ -616,7 +615,7 @@ void PanelLayoutManager::Relayout() {
   // when the WindowSelectorController is restoring minimized windows so that
   // they actually become visible.
   WindowSelectorController* window_selector_controller =
-      WmShell::Get()->window_selector_controller();
+      Shell::Get()->window_selector_controller();
   if (in_layout_ ||
       (window_selector_controller->IsSelecting() &&
        !window_selector_controller->IsRestoringMinimizedWindows())) {

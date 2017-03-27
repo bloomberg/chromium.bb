@@ -10,6 +10,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
 
 namespace ash {
 
@@ -179,7 +180,7 @@ void SystemTrayController::SetPrimaryTrayVisible(bool visible) {
 
 void SystemTrayController::SetUse24HourClock(bool use_24_hour) {
   hour_clock_type_ = use_24_hour ? base::k24HourClock : base::k12HourClock;
-  WmShell::Get()->system_tray_notifier()->NotifyDateFormatChanged();
+  Shell::Get()->system_tray_notifier()->NotifyDateFormatChanged();
 }
 
 void SystemTrayController::ShowUpdateIcon(mojom::UpdateSeverity severity,

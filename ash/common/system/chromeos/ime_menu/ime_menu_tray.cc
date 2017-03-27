@@ -360,7 +360,7 @@ ImeMenuTray::ImeMenuTray(WmShelf* wm_shelf)
     SetInkDropMode(InkDropMode::ON);
   SetupLabelForTray(label_);
   tray_container()->AddChildView(label_);
-  SystemTrayNotifier* tray_notifier = WmShell::Get()->system_tray_notifier();
+  SystemTrayNotifier* tray_notifier = Shell::Get()->system_tray_notifier();
   tray_notifier->AddIMEObserver(this);
   tray_notifier->AddVirtualKeyboardObserver(this);
 }
@@ -368,7 +368,7 @@ ImeMenuTray::ImeMenuTray(WmShelf* wm_shelf)
 ImeMenuTray::~ImeMenuTray() {
   if (bubble_)
     bubble_->bubble_view()->reset_delegate();
-  SystemTrayNotifier* tray_notifier = WmShell::Get()->system_tray_notifier();
+  SystemTrayNotifier* tray_notifier = Shell::Get()->system_tray_notifier();
   tray_notifier->RemoveIMEObserver(this);
   tray_notifier->RemoveVirtualKeyboardObserver(this);
   keyboard::KeyboardController* keyboard_controller =

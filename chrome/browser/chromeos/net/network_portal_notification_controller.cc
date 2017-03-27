@@ -11,7 +11,7 @@
 
 #include "ash/common/system/system_notifier.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
-#include "ash/common/wm_shell.h"
+#include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -300,8 +300,8 @@ void NetworkPortalNotificationController::OnPortalDetectionCompleted(
     return;
   last_network_guid_ = network->guid();
 
-  if (ash::WmShell::HasInstance()) {
-    ash::WmShell::Get()->system_tray_notifier()->NotifyOnCaptivePortalDetected(
+  if (ash::Shell::HasInstance()) {
+    ash::Shell::Get()->system_tray_notifier()->NotifyOnCaptivePortalDetected(
         network->guid());
   }
 

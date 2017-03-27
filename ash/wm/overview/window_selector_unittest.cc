@@ -159,7 +159,7 @@ class WindowSelectorTest : public test::AshTestBase {
   }
 
   WindowSelectorController* window_selector_controller() {
-    return WmShell::Get()->window_selector_controller();
+    return Shell::Get()->window_selector_controller();
   }
 
   WindowSelector* window_selector() {

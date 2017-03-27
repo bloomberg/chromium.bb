@@ -98,7 +98,7 @@ TEST_F(OverviewButtonTrayTest, MaximizeModeObserverOnMaximizeModeToggled) {
 
 // Tests that activating this control brings up window selection mode.
 TEST_F(OverviewButtonTrayTest, PerformAction) {
-  ASSERT_FALSE(WmShell::Get()->window_selector_controller()->IsSelecting());
+  ASSERT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
 
   // Overview Mode only works when there is a window
   std::unique_ptr<aura::Window> window(
@@ -106,7 +106,7 @@ TEST_F(OverviewButtonTrayTest, PerformAction) {
   ui::GestureEvent tap(0, 0, 0, base::TimeTicks(),
                        ui::GestureEventDetails(ui::ET_GESTURE_TAP));
   GetTray()->PerformAction(tap);
-  EXPECT_TRUE(WmShell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
 }
 
 // Tests that tapping on the control will record the user action Tray_Overview.
@@ -115,7 +115,7 @@ TEST_F(OverviewButtonTrayTest, TrayOverviewUserAction) {
   if (WmShell::Get()->IsRunningInMash())
     return;
 
-  ASSERT_FALSE(WmShell::Get()->window_selector_controller()->IsSelecting());
+  ASSERT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
 
   // Tapping on the control when there are no windows (and thus the user cannot
   // enter overview mode) should still record the action.
@@ -123,7 +123,7 @@ TEST_F(OverviewButtonTrayTest, TrayOverviewUserAction) {
   ui::GestureEvent tap(0, 0, 0, base::TimeTicks(),
                        ui::GestureEventDetails(ui::ET_GESTURE_TAP));
   GetTray()->PerformAction(tap);
-  ASSERT_FALSE(WmShell::Get()->window_selector_controller()->IsSelecting());
+  ASSERT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
   EXPECT_EQ(1, user_action_tester.GetActionCount(kTrayOverview));
 
   // With one window present, tapping on the control to enter overview mode
@@ -131,13 +131,13 @@ TEST_F(OverviewButtonTrayTest, TrayOverviewUserAction) {
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
   GetTray()->PerformAction(tap);
-  ASSERT_TRUE(WmShell::Get()->window_selector_controller()->IsSelecting());
+  ASSERT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
   EXPECT_EQ(2, user_action_tester.GetActionCount(kTrayOverview));
 
   // Tapping on the control to exit overview mode should record the
   // user action.
   GetTray()->PerformAction(tap);
-  ASSERT_FALSE(WmShell::Get()->window_selector_controller()->IsSelecting());
+  ASSERT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
   EXPECT_EQ(3, user_action_tester.GetActionCount(kTrayOverview));
 }
 
@@ -192,19 +192,19 @@ TEST_F(OverviewButtonTrayTest, VisibilityChangesForLoginStatus) {
 // Tests that the tray only renders as active while selection is ongoing. Any
 // dismissal of overview mode clears the active state.
 TEST_F(OverviewButtonTrayTest, ActiveStateOnlyDuringOverviewMode) {
-  ASSERT_FALSE(WmShell::Get()->window_selector_controller()->IsSelecting());
+  ASSERT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
   ASSERT_FALSE(GetTray()->is_active());
 
   // Overview Mode only works when there is a window
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
 
-  EXPECT_TRUE(WmShell::Get()->window_selector_controller()->ToggleOverview());
-  EXPECT_TRUE(WmShell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_TRUE(Shell::Get()->window_selector_controller()->ToggleOverview());
+  EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
   EXPECT_TRUE(GetTray()->is_active());
 
-  EXPECT_TRUE(WmShell::Get()->window_selector_controller()->ToggleOverview());
-  EXPECT_FALSE(WmShell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_TRUE(Shell::Get()->window_selector_controller()->ToggleOverview());
+  EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
   EXPECT_FALSE(GetTray()->is_active());
 }
 

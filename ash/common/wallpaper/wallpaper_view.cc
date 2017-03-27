@@ -85,7 +85,7 @@ class PreEventDispatchHandler : public ui::EventHandler {
   void OnMouseEvent(ui::MouseEvent* event) override {
     CHECK_EQ(ui::EP_PRETARGET, event->phase());
     WindowSelectorController* controller =
-        WmShell::Get()->window_selector_controller();
+        Shell::Get()->window_selector_controller();
     if (event->type() == ui::ET_MOUSE_RELEASED && controller->IsSelecting()) {
       controller->ToggleOverview();
       event->StopPropagation();
@@ -95,7 +95,7 @@ class PreEventDispatchHandler : public ui::EventHandler {
   void OnGestureEvent(ui::GestureEvent* event) override {
     CHECK_EQ(ui::EP_PRETARGET, event->phase());
     WindowSelectorController* controller =
-        WmShell::Get()->window_selector_controller();
+        Shell::Get()->window_selector_controller();
     if (event->type() == ui::ET_GESTURE_TAP && controller->IsSelecting()) {
       controller->ToggleOverview();
       event->StopPropagation();

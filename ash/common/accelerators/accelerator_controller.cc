@@ -175,7 +175,7 @@ void HandleCycleBackwardMRU(const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_TAB)
     base::RecordAction(base::UserMetricsAction("Accel_PrevWindow_Tab"));
 
-  WmShell::Get()->window_cycle_controller()->HandleCycleWindow(
+  Shell::Get()->window_cycle_controller()->HandleCycleWindow(
       WindowCycleController::BACKWARD);
 }
 
@@ -183,7 +183,7 @@ void HandleCycleForwardMRU(const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_TAB)
     base::RecordAction(base::UserMetricsAction("Accel_NextWindow_Tab"));
 
-  WmShell::Get()->window_cycle_controller()->HandleCycleWindow(
+  Shell::Get()->window_cycle_controller()->HandleCycleWindow(
       WindowCycleController::FORWARD);
 }
 
@@ -401,7 +401,7 @@ void HandleToggleFullscreen(const ui::Accelerator& accelerator) {
 
 void HandleToggleOverview() {
   base::RecordAction(base::UserMetricsAction("Accel_Overview_F5"));
-  WmShell::Get()->window_selector_controller()->ToggleOverview();
+  Shell::Get()->window_selector_controller()->ToggleOverview();
 }
 
 bool CanHandleWindowSnap() {
@@ -1188,7 +1188,7 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       HandleToggleSpokenFeedback();
       break;
     case TOGGLE_WIFI:
-      WmShell::Get()->system_tray_notifier()->NotifyRequestToggleWifi();
+      Shell::Get()->system_tray_notifier()->NotifyRequestToggleWifi();
       break;
     case VOLUME_DOWN:
       HandleVolumeDown(volume_controller_.get(), accelerator);

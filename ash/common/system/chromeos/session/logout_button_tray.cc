@@ -14,7 +14,6 @@
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_utils.h"
 #include "ash/common/system/user/login_status.h"
-#include "ash/common/wm_shell.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -53,11 +52,11 @@ LogoutButtonTray::LogoutButtonTray(WmShelf* wm_shelf)
   // by itself, no separator is needed on its right side.
   set_separator_visibility(false);
   tray_container()->AddChildView(button_);
-  WmShell::Get()->system_tray_notifier()->AddLogoutButtonObserver(this);
+  Shell::Get()->system_tray_notifier()->AddLogoutButtonObserver(this);
 }
 
 LogoutButtonTray::~LogoutButtonTray() {
-  WmShell::Get()->system_tray_notifier()->RemoveLogoutButtonObserver(this);
+  Shell::Get()->system_tray_notifier()->RemoveLogoutButtonObserver(this);
 }
 
 void LogoutButtonTray::SetShelfAlignment(ShelfAlignment alignment) {

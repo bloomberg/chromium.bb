@@ -10,7 +10,6 @@
 #include "ash/common/system/chromeos/session/logout_confirmation_dialog.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
-#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "base/location.h"
 #include "base/time/default_tick_clock.h"
@@ -28,17 +27,16 @@ LogoutConfirmationController::LogoutConfirmationController(
       logout_closure_(logout_closure),
       dialog_(NULL),
       logout_timer_(false, false) {
-  if (WmShell::HasInstance()) {
+  if (Shell::HasInstance()) {
     Shell::GetInstance()->AddShellObserver(this);
-    WmShell::Get()->system_tray_notifier()->AddLastWindowClosedObserver(this);
+    Shell::Get()->system_tray_notifier()->AddLastWindowClosedObserver(this);
   }
 }
 
 LogoutConfirmationController::~LogoutConfirmationController() {
-  if (WmShell::HasInstance()) {
+  if (Shell::HasInstance()) {
     Shell::GetInstance()->RemoveShellObserver(this);
-    WmShell::Get()->system_tray_notifier()->RemoveLastWindowClosedObserver(
-        this);
+    Shell::Get()->system_tray_notifier()->RemoveLastWindowClosedObserver(this);
   }
   if (dialog_)
     dialog_->ControllerGone();
@@ -55,7 +53,7 @@ void LogoutConfirmationController::ConfirmLogout(base::TimeTicks logout_time) {
 
   if (!dialog_) {
     // Show confirmation dialog unless this is a unit test without a Shell.
-    if (WmShell::HasInstance())
+    if (Shell::HasInstance())
       dialog_ = new LogoutConfirmationDialog(this, logout_time_);
   } else {
     dialog_->Update(logout_time_);

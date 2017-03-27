@@ -44,13 +44,8 @@ class RootWindowController;
 class ScopedDisableInternalMouseAndKeyboard;
 class SessionStateDelegate;
 struct ShellInitParams;
-class ShutdownController;
-class SystemTrayNotifier;
-class VpnList;
-class WindowCycleController;
 class WindowCycleEventFilter;
 class WindowResizer;
-class WindowSelectorController;
 class WmDisplayObserver;
 class WmWindow;
 class WorkspaceEventHandler;
@@ -72,24 +67,6 @@ class ASH_EXPORT WmShell {
   static bool HasInstance() { return instance_ != nullptr; }
 
   virtual void Shutdown();
-
-  ShutdownController* shutdown_controller() {
-    return shutdown_controller_.get();
-  }
-
-  SystemTrayNotifier* system_tray_notifier() {
-    return system_tray_notifier_.get();
-  }
-
-  VpnList* vpn_list() { return vpn_list_.get(); }
-
-  WindowCycleController* window_cycle_controller() {
-    return window_cycle_controller_.get();
-  }
-
-  WindowSelectorController* window_selector_controller() {
-    return window_selector_controller_.get();
-  }
 
   // Returns true when ash is running as a service_manager::Service.
   virtual bool IsRunningInMash() const = 0;
@@ -255,21 +232,11 @@ class ASH_EXPORT WmShell {
   virtual std::unique_ptr<AcceleratorController>
   CreateAcceleratorController() = 0;
 
-  void DeleteWindowCycleController();
-
-  void DeleteWindowSelectorController();
-
  private:
   friend class AcceleratorControllerTest;
   friend class Shell;
 
   static WmShell* instance_;
-
-  std::unique_ptr<ShutdownController> shutdown_controller_;
-  std::unique_ptr<SystemTrayNotifier> system_tray_notifier_;
-  std::unique_ptr<VpnList> vpn_list_;
-  std::unique_ptr<WindowCycleController> window_cycle_controller_;
-  std::unique_ptr<WindowSelectorController> window_selector_controller_;
 
   base::ObserverList<LockStateObserver> lock_state_observers_;
 

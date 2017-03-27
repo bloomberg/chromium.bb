@@ -75,11 +75,11 @@ TrayTracing::TrayTracing(SystemTray* system_tray)
     : TrayImageItem(system_tray, kSystemTrayTracingIcon, UMA_TRACING),
       default_(nullptr) {
   DCHECK(system_tray);
-  WmShell::Get()->system_tray_notifier()->AddTracingObserver(this);
+  Shell::Get()->system_tray_notifier()->AddTracingObserver(this);
 }
 
 TrayTracing::~TrayTracing() {
-  WmShell::Get()->system_tray_notifier()->RemoveTracingObserver(this);
+  Shell::Get()->system_tray_notifier()->RemoveTracingObserver(this);
 }
 
 void TrayTracing::SetTrayIconVisible(bool visible) {

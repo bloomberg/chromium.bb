@@ -334,11 +334,11 @@ TrayAccessibility::TrayAccessibility(SystemTray* system_tray)
       previous_accessibility_state_(GetAccessibilityState()),
       show_a11y_menu_on_lock_screen_(true) {
   DCHECK(system_tray);
-  WmShell::Get()->system_tray_notifier()->AddAccessibilityObserver(this);
+  Shell::Get()->system_tray_notifier()->AddAccessibilityObserver(this);
 }
 
 TrayAccessibility::~TrayAccessibility() {
-  WmShell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(this);
+  Shell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(this);
 }
 
 void TrayAccessibility::SetTrayIconVisible(bool visible) {

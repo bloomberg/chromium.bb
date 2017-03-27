@@ -6,6 +6,7 @@
 
 #include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/common/wm_shell.h"
+#include "ash/shell.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 
@@ -33,7 +34,7 @@ bool OverviewGestureHandler::ProcessScrollEvent(const ui::ScrollEvent& event) {
   scroll_y_ += event.y_offset();
 
   WindowSelectorController* window_selector_controller =
-      WmShell::Get()->window_selector_controller();
+      Shell::Get()->window_selector_controller();
 
   // Horizontal 3-finger scroll moves selection when already in overview mode.
   if (std::fabs(scroll_x_) >= std::fabs(scroll_y_)) {

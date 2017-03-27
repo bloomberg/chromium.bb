@@ -7,7 +7,6 @@
 #include "ash/common/system/chromeos/screen_security/screen_tray_item.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/wm/overview/window_selector_controller.h"
-#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "chrome/browser/ui/simple_message_box.h"
@@ -22,7 +21,7 @@ void TrySwitchingActiveUser(const base::Callback<void()> on_switch) {
 
   // Cancel overview mode when switching user profiles.
   ash::WindowSelectorController* controller =
-      ash::WmShell::Get()->window_selector_controller();
+      ash::Shell::Get()->window_selector_controller();
   if (controller->IsSelecting())
     controller->ToggleOverview();
 

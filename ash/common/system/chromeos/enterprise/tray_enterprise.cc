@@ -8,7 +8,6 @@
 #include "ash/common/system/tray/label_tray_view.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
-#include "ash/common/wm_shell.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/shell.h"
 #include "base/logging.h"
@@ -18,11 +17,11 @@ namespace ash {
 
 TrayEnterprise::TrayEnterprise(SystemTray* system_tray)
     : SystemTrayItem(system_tray, UMA_ENTERPRISE), tray_view_(nullptr) {
-  WmShell::Get()->system_tray_notifier()->AddEnterpriseDomainObserver(this);
+  Shell::Get()->system_tray_notifier()->AddEnterpriseDomainObserver(this);
 }
 
 TrayEnterprise::~TrayEnterprise() {
-  WmShell::Get()->system_tray_notifier()->RemoveEnterpriseDomainObserver(this);
+  Shell::Get()->system_tray_notifier()->RemoveEnterpriseDomainObserver(this);
 }
 
 void TrayEnterprise::UpdateEnterpriseMessage() {

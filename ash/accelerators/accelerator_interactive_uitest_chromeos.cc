@@ -9,7 +9,6 @@
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wm/window_state.h"
-#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/test/ash_interactive_ui_test_base.h"
 #include "ash/test/test_screenshot_delegate.h"
@@ -183,7 +182,7 @@ TEST_F(AcceleratorInteractiveUITest, MAYBE_ChromeOsAccelerators) {
 
   // Test TOGGLE_WIFI.
   TestNetworkObserver network_observer;
-  WmShell::Get()->system_tray_notifier()->AddNetworkObserver(&network_observer);
+  Shell::Get()->system_tray_notifier()->AddNetworkObserver(&network_observer);
 
   EXPECT_FALSE(network_observer.wifi_enabled_status());
   SendKeyPressSync(ui::VKEY_WLAN, false, false, false);
@@ -191,7 +190,7 @@ TEST_F(AcceleratorInteractiveUITest, MAYBE_ChromeOsAccelerators) {
   SendKeyPressSync(ui::VKEY_WLAN, false, false, false);
   EXPECT_FALSE(network_observer.wifi_enabled_status());
 
-  WmShell::Get()->system_tray_notifier()->RemoveNetworkObserver(
+  Shell::Get()->system_tray_notifier()->RemoveNetworkObserver(
       &network_observer);
 }
 

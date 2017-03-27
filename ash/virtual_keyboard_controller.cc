@@ -198,11 +198,9 @@ void VirtualKeyboardController::UpdateKeyboardEnabled() {
       has_internal_keyboard_ && !ignore_internal_keyboard;
   SetKeyboardEnabled(!is_internal_keyboard_active && has_touchscreen_ &&
                      (!has_external_keyboard_ || ignore_external_keyboard_));
-  WmShell::Get()
-      ->system_tray_notifier()
-      ->NotifyVirtualKeyboardSuppressionChanged(!is_internal_keyboard_active &&
-                                                has_touchscreen_ &&
-                                                has_external_keyboard_);
+  Shell::Get()->system_tray_notifier()->NotifyVirtualKeyboardSuppressionChanged(
+      !is_internal_keyboard_active && has_touchscreen_ &&
+      has_external_keyboard_);
 }
 
 void VirtualKeyboardController::SetKeyboardEnabled(bool enabled) {

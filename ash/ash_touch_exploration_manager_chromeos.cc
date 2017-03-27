@@ -6,7 +6,6 @@
 
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
-#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/root_window_controller.h"
 #include "ash/shared/app_types.h"
@@ -30,7 +29,7 @@ AshTouchExplorationManager::AshTouchExplorationManager(
       enable_chromevox_arc_support_(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
               chromeos::switches::kEnableChromeVoxArcSupport)) {
-  WmShell::Get()->system_tray_notifier()->AddAccessibilityObserver(this);
+  Shell::Get()->system_tray_notifier()->AddAccessibilityObserver(this);
   Shell::GetInstance()->activation_client()->AddObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
   UpdateTouchExplorationState();
@@ -38,7 +37,7 @@ AshTouchExplorationManager::AshTouchExplorationManager(
 
 AshTouchExplorationManager::~AshTouchExplorationManager() {
   SystemTrayNotifier* system_tray_notifier =
-      WmShell::Get()->system_tray_notifier();
+      Shell::Get()->system_tray_notifier();
   if (system_tray_notifier)
     system_tray_notifier->RemoveAccessibilityObserver(this);
   Shell::GetInstance()->activation_client()->RemoveObserver(this);

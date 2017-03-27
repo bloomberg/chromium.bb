@@ -220,14 +220,14 @@ TrayIME::TrayIME(SystemTray* system_tray)
       detailed_(NULL),
       keyboard_suppressed_(false),
       is_visible_(true) {
-  SystemTrayNotifier* tray_notifier = WmShell::Get()->system_tray_notifier();
+  SystemTrayNotifier* tray_notifier = Shell::Get()->system_tray_notifier();
   tray_notifier->AddVirtualKeyboardObserver(this);
   tray_notifier->AddAccessibilityObserver(this);
   tray_notifier->AddIMEObserver(this);
 }
 
 TrayIME::~TrayIME() {
-  SystemTrayNotifier* tray_notifier = WmShell::Get()->system_tray_notifier();
+  SystemTrayNotifier* tray_notifier = Shell::Get()->system_tray_notifier();
   tray_notifier->RemoveIMEObserver(this);
   tray_notifier->RemoveAccessibilityObserver(this);
   tray_notifier->RemoveVirtualKeyboardObserver(this);

@@ -11,13 +11,8 @@
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/app_list_shelf_item_delegate.h"
 #include "ash/common/shell_delegate.h"
-#include "ash/common/shutdown_controller.h"
-#include "ash/common/system/chromeos/network/vpn_list.h"
-#include "ash/common/system/tray/system_tray_notifier.h"
-#include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/common/wm/root_window_finder.h"
 #include "ash/common/wm/system_modal_container_layout_manager.h"
-#include "ash/common/wm/window_cycle_controller.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -71,13 +66,7 @@ void WmShell::RemoveLockStateObserver(LockStateObserver* observer) {
   lock_state_observers_.RemoveObserver(observer);
 }
 
-WmShell::WmShell()
-    : shutdown_controller_(base::MakeUnique<ShutdownController>()),
-      system_tray_notifier_(base::MakeUnique<SystemTrayNotifier>()),
-      vpn_list_(base::MakeUnique<VpnList>()),
-      window_cycle_controller_(base::MakeUnique<WindowCycleController>()),
-      window_selector_controller_(
-          base::MakeUnique<WindowSelectorController>()) {
+WmShell::WmShell() {
   DCHECK(!instance_);
   instance_ = this;
 }
@@ -132,14 +121,6 @@ void WmShell::OnModalWindowRemoved(WmWindow* removed) {
         ->GetSystemModalLayoutManager(removed)
         ->DestroyModalBackground();
   }
-}
-
-void WmShell::DeleteWindowCycleController() {
-  window_cycle_controller_.reset();
-}
-
-void WmShell::DeleteWindowSelectorController() {
-  window_selector_controller_.reset();
 }
 
 }  // namespace ash

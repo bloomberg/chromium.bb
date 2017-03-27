@@ -11,7 +11,7 @@
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray/tray_item_view.h"
-#include "ash/common/wm_shell.h"
+#include "ash/shell.h"
 
 namespace ash {
 
@@ -21,11 +21,11 @@ TraySystemInfo::TraySystemInfo(SystemTray* system_tray)
       default_view_(nullptr),
       login_status_(LoginStatus::NOT_LOGGED_IN),
       system_clock_observer_(new SystemClockObserver()) {
-  WmShell::Get()->system_tray_notifier()->AddClockObserver(this);
+  Shell::Get()->system_tray_notifier()->AddClockObserver(this);
 }
 
 TraySystemInfo::~TraySystemInfo() {
-  WmShell::Get()->system_tray_notifier()->RemoveClockObserver(this);
+  Shell::Get()->system_tray_notifier()->RemoveClockObserver(this);
 }
 
 const tray::TimeView* TraySystemInfo::GetTimeTrayForTesting() const {

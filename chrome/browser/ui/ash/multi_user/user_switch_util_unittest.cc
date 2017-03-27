@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/ash/multi_user/user_switch_util.h"
+
 #include "ash/common/system/chromeos/screen_security/screen_tray_item.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/wm/overview/window_selector_controller.h"
-#include "ash/common/wm_shell.h"
+#include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/ui/ash/multi_user/user_switch_util.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "ui/aura/window.h"
 
@@ -82,19 +83,11 @@ class TrySwitchingUserTest : public ash::test::AshTestBase {
   void SwitchCallback() { switch_callback_hit_count_++; }
 
   // Methods needed to test with overview mode.
-  const WindowSelectorController* window_selector_controller() const {
-    return WmShell::Get()->window_selector_controller();
-  }
-  WindowSelectorController* window_selector_controller() {
-    return const_cast<WindowSelectorController*>(
-        const_cast<const TrySwitchingUserTest*>(this)
-            ->window_selector_controller());
-  }
   bool ToggleOverview() {
-    return window_selector_controller()->ToggleOverview();
+    return Shell::Get()->window_selector_controller()->ToggleOverview();
   }
   bool IsSelecting() const {
-    return window_selector_controller()->IsSelecting();
+    return Shell::Get()->window_selector_controller()->IsSelecting();
   }
 
   // Various counter accessors.

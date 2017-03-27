@@ -89,7 +89,7 @@ DateDefaultView::DateDefaultView(SystemTrayItem* owner, LoginStatus login)
     view->AddViewToRowNonMd(shutdown_button_, true);
     // This object is recreated every time the menu opens. Don't bother updating
     // the tooltip if the shutdown policy changes while the menu is open.
-    bool reboot = WmShell::Get()->shutdown_controller()->reboot_on_shutdown();
+    bool reboot = Shell::Get()->shutdown_controller()->reboot_on_shutdown();
     shutdown_button_->SetTooltipText(l10n_util::GetStringUTF16(
         reboot ? IDS_ASH_STATUS_TRAY_REBOOT : IDS_ASH_STATUS_TRAY_SHUTDOWN));
   }

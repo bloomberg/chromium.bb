@@ -9,7 +9,6 @@
 
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_state.h"
-#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -489,7 +488,7 @@ void WindowCycleList::OnWindowDestroying(aura::Window* window) {
                                          new_target_window);
     if (windows_.empty()) {
       // This deletes us.
-      WmShell::Get()->window_cycle_controller()->CancelCycling();
+      Shell::Get()->window_cycle_controller()->CancelCycling();
       return;
     }
   }
@@ -507,7 +506,7 @@ void WindowCycleList::OnDisplayMetricsChanged(const display::Display& display,
               ->GetDisplayNearestWindow(cycle_ui_widget_->GetNativeView())
               .id() &&
       (changed_metrics & (DISPLAY_METRIC_BOUNDS | DISPLAY_METRIC_ROTATION))) {
-    WmShell::Get()->window_cycle_controller()->CancelCycling();
+    Shell::Get()->window_cycle_controller()->CancelCycling();
     // |this| is deleted.
     return;
   }

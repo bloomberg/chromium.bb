@@ -10,7 +10,7 @@
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray/tray_item_view.h"
 #include "ash/common/test/ash_test.h"
-#include "ash/common/wm_shell.h"
+#include "ash/shell.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -143,13 +143,13 @@ void TestNotificationStartAndStop(ScreenTrayItemTest* test,
 TEST_F(ScreenCaptureTest, NotificationStartAndStop) {
   base::Closure start_function = base::Bind(
       &SystemTrayNotifier::NotifyScreenCaptureStart,
-      base::Unretained(WmShell::Get()->system_tray_notifier()),
+      base::Unretained(Shell::Get()->system_tray_notifier()),
       base::Bind(&ScreenTrayItemTest::StopCallback, base::Unretained(this)),
       base::UTF8ToUTF16(kTestScreenCaptureAppName));
 
   base::Closure stop_function =
       base::Bind(&SystemTrayNotifier::NotifyScreenCaptureStop,
-                 base::Unretained(WmShell::Get()->system_tray_notifier()));
+                 base::Unretained(Shell::Get()->system_tray_notifier()));
 
   TestNotificationStartAndStop(this, start_function, stop_function);
 }
@@ -157,13 +157,13 @@ TEST_F(ScreenCaptureTest, NotificationStartAndStop) {
 TEST_F(ScreenShareTest, NotificationStartAndStop) {
   base::Closure start_func = base::Bind(
       &SystemTrayNotifier::NotifyScreenShareStart,
-      base::Unretained(WmShell::Get()->system_tray_notifier()),
+      base::Unretained(Shell::Get()->system_tray_notifier()),
       base::Bind(&ScreenTrayItemTest::StopCallback, base::Unretained(this)),
       base::UTF8ToUTF16(kTestScreenShareHelperName));
 
   base::Closure stop_func =
       base::Bind(&SystemTrayNotifier::NotifyScreenShareStop,
-                 base::Unretained(WmShell::Get()->system_tray_notifier()));
+                 base::Unretained(Shell::Get()->system_tray_notifier()));
 
   TestNotificationStartAndStop(this, start_func, stop_func);
 }

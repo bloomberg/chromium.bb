@@ -7,7 +7,6 @@
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
-#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "base/memory/singleton.h"
 #include "ui/aura/client/focus_client.h"
@@ -28,7 +27,7 @@ WMHelperAsh::WMHelperAsh() {
       aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
   focus_client->AddObserver(this);
   ui::DeviceDataManager::GetInstance()->AddObserver(this);
-  ash::WmShell::Get()->system_tray_notifier()->AddAccessibilityObserver(this);
+  ash::Shell::Get()->system_tray_notifier()->AddAccessibilityObserver(this);
 }
 
 WMHelperAsh::~WMHelperAsh() {
@@ -41,8 +40,7 @@ WMHelperAsh::~WMHelperAsh() {
   ash::Shell::GetInstance()->activation_client()->RemoveObserver(this);
   ash::Shell::GetInstance()->RemoveShellObserver(this);
   ui::DeviceDataManager::GetInstance()->RemoveObserver(this);
-  ash::WmShell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(
-      this);
+  ash::Shell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

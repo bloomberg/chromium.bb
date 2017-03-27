@@ -33,7 +33,7 @@ namespace {
 // Exits overview mode if it is currently active.
 void CancelOverview() {
   WindowSelectorController* controller =
-      WmShell::Get()->window_selector_controller();
+      Shell::Get()->window_selector_controller();
   if (controller->IsSelecting())
     controller->OnSelectionEnded();
 }

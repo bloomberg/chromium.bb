@@ -8,8 +8,8 @@
 
 #include "ash/common/system/system_notifier.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
-#include "ash/common/wm_shell.h"
 #include "ash/resources/grit/ash_resources.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -26,11 +26,11 @@ const char kScreenShareNotificationId[] = "chrome://screen/share";
 
 ScreenShareTrayItem::ScreenShareTrayItem(SystemTray* system_tray)
     : ScreenTrayItem(system_tray, UMA_SCREEN_SHARE) {
-  WmShell::Get()->system_tray_notifier()->AddScreenShareObserver(this);
+  Shell::Get()->system_tray_notifier()->AddScreenShareObserver(this);
 }
 
 ScreenShareTrayItem::~ScreenShareTrayItem() {
-  WmShell::Get()->system_tray_notifier()->RemoveScreenShareObserver(this);
+  Shell::Get()->system_tray_notifier()->RemoveScreenShareObserver(this);
 }
 
 views::View* ScreenShareTrayItem::CreateDefaultView(LoginStatus status) {

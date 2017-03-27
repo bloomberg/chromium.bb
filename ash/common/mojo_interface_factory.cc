@@ -19,7 +19,6 @@
 #include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/wallpaper/wallpaper_controller.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
-#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
@@ -69,7 +68,7 @@ void BindShelfRequestOnMainThread(mojom::ShelfControllerRequest request) {
 
 void BindShutdownControllerRequestOnMainThread(
     mojom::ShutdownControllerRequest request) {
-  WmShell::Get()->shutdown_controller()->BindRequest(std::move(request));
+  Shell::Get()->shutdown_controller()->BindRequest(std::move(request));
 }
 
 void BindSystemTrayRequestOnMainThread(mojom::SystemTrayRequest request) {
@@ -81,7 +80,7 @@ void BindTouchViewRequestOnMainThread(mojom::TouchViewManagerRequest request) {
 }
 
 void BindVpnListRequestOnMainThread(mojom::VpnListRequest request) {
-  WmShell::Get()->vpn_list()->BindRequest(std::move(request));
+  Shell::Get()->vpn_list()->BindRequest(std::move(request));
 }
 
 void BindWallpaperRequestOnMainThread(

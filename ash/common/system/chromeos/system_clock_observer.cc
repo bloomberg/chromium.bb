@@ -5,7 +5,7 @@
 #include "ash/common/system/chromeos/system_clock_observer.h"
 
 #include "ash/common/system/tray/system_tray_notifier.h"
-#include "ash/common/wm_shell.h"
+#include "ash/shell.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 
 namespace ash {
@@ -24,17 +24,17 @@ SystemClockObserver::~SystemClockObserver() {
 }
 
 void SystemClockObserver::SystemClockUpdated() {
-  WmShell::Get()->system_tray_notifier()->NotifySystemClockTimeUpdated();
+  Shell::Get()->system_tray_notifier()->NotifySystemClockTimeUpdated();
 }
 
 void SystemClockObserver::SystemClockCanSetTimeChanged(bool can_set_time) {
   can_set_time_ = can_set_time;
-  WmShell::Get()->system_tray_notifier()->NotifySystemClockCanSetTimeChanged(
+  Shell::Get()->system_tray_notifier()->NotifySystemClockCanSetTimeChanged(
       can_set_time_);
 }
 
 void SystemClockObserver::TimezoneChanged(const icu::TimeZone& timezone) {
-  WmShell::Get()->system_tray_notifier()->NotifyRefreshClock();
+  Shell::Get()->system_tray_notifier()->NotifyRefreshClock();
 }
 
 }  // namespace ash

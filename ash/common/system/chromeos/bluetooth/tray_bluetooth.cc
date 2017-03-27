@@ -597,11 +597,11 @@ TrayBluetooth::TrayBluetooth(SystemTray* system_tray)
     : SystemTrayItem(system_tray, UMA_BLUETOOTH),
       default_(nullptr),
       detailed_(nullptr) {
-  WmShell::Get()->system_tray_notifier()->AddBluetoothObserver(this);
+  Shell::Get()->system_tray_notifier()->AddBluetoothObserver(this);
 }
 
 TrayBluetooth::~TrayBluetooth() {
-  WmShell::Get()->system_tray_notifier()->RemoveBluetoothObserver(this);
+  Shell::Get()->system_tray_notifier()->RemoveBluetoothObserver(this);
 }
 
 views::View* TrayBluetooth::CreateTrayView(LoginStatus status) {

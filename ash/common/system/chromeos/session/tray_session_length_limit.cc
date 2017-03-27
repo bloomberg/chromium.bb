@@ -13,7 +13,6 @@
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
-#include "ash/common/wm_shell.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -49,13 +48,12 @@ TraySessionLengthLimit::TraySessionLengthLimit(SystemTray* system_tray)
       limit_state_(LIMIT_NONE),
       last_limit_state_(LIMIT_NONE),
       tray_bubble_view_(NULL) {
-  WmShell::Get()->system_tray_notifier()->AddSessionLengthLimitObserver(this);
+  Shell::Get()->system_tray_notifier()->AddSessionLengthLimitObserver(this);
   Update();
 }
 
 TraySessionLengthLimit::~TraySessionLengthLimit() {
-  WmShell::Get()->system_tray_notifier()->RemoveSessionLengthLimitObserver(
-      this);
+  Shell::Get()->system_tray_notifier()->RemoveSessionLengthLimitObserver(this);
 }
 
 // Add view to tray bubble.

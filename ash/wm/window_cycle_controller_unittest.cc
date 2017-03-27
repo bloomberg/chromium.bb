@@ -112,7 +112,7 @@ class WindowCycleControllerTest : public test::AshTestBase {
   }
 
   const views::Widget* GetWindowCycleListWidget() const {
-    return WmShell::Get()
+    return Shell::Get()
         ->window_cycle_controller()
         ->window_cycle_list()
         ->widget();
@@ -125,7 +125,7 @@ class WindowCycleControllerTest : public test::AshTestBase {
 };
 
 TEST_F(WindowCycleControllerTest, HandleCycleWindowBaseCases) {
-  WindowCycleController* controller = WmShell::Get()->window_cycle_controller();
+  WindowCycleController* controller = Shell::Get()->window_cycle_controller();
 
   // Cycling doesn't crash if there are no windows.
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
@@ -143,7 +143,7 @@ TEST_F(WindowCycleControllerTest, HandleCycleWindowBaseCases) {
 // Verifies if there is only one window and it isn't active that cycling
 // activates it.
 TEST_F(WindowCycleControllerTest, SingleWindowNotActive) {
-  WindowCycleController* controller = WmShell::Get()->window_cycle_controller();
+  WindowCycleController* controller = Shell::Get()->window_cycle_controller();
 
   // Create a single test window.
   std::unique_ptr<Window> window0(CreateTestWindowInShellWithId(0));
@@ -161,7 +161,7 @@ TEST_F(WindowCycleControllerTest, SingleWindowNotActive) {
 }
 
 TEST_F(WindowCycleControllerTest, HandleCycleWindow) {
-  WindowCycleController* controller = WmShell::Get()->window_cycle_controller();
+  WindowCycleController* controller = Shell::Get()->window_cycle_controller();
 
   // Set up several windows to use to test cycling.  Create them in reverse
   // order so they are stacked 0 over 1 over 2.
@@ -273,7 +273,7 @@ TEST_F(WindowCycleControllerTest, MaximizedWindow) {
   EXPECT_TRUE(window1_state->IsActive());
 
   // Rotate focus, this should move focus to window0.
-  WindowCycleController* controller = WmShell::Get()->window_cycle_controller();
+  WindowCycleController* controller = Shell::Get()->window_cycle_controller();
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
   controller->CompleteCycling();
   EXPECT_TRUE(wm::GetWindowState(window0.get())->IsActive());
@@ -298,7 +298,7 @@ TEST_F(WindowCycleControllerTest, Minimized) {
   EXPECT_TRUE(window0_state->IsActive());
 
   // Rotate focus, this should move focus to window1 and unminimize it.
-  WindowCycleController* controller = WmShell::Get()->window_cycle_controller();
+  WindowCycleController* controller = Shell::Get()->window_cycle_controller();
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
   controller->CompleteCycling();
   EXPECT_FALSE(window0_state->IsActive());
@@ -323,7 +323,7 @@ TEST_F(WindowCycleControllerTest, AllAreMinimized) {
   window0_state->Minimize();
   window1_state->Minimize();
 
-  WindowCycleController* controller = WmShell::Get()->window_cycle_controller();
+  WindowCycleController* controller = Shell::Get()->window_cycle_controller();
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
   controller->CompleteCycling();
   EXPECT_TRUE(window0_state->IsActive());
@@ -341,7 +341,7 @@ TEST_F(WindowCycleControllerTest, AllAreMinimized) {
 }
 
 TEST_F(WindowCycleControllerTest, AlwaysOnTopWindow) {
-  WindowCycleController* controller = WmShell::Get()->window_cycle_controller();
+  WindowCycleController* controller = Shell::Get()->window_cycle_controller();
 
   // Set up several windows to use to test cycling.
   std::unique_ptr<Window> window0(CreateTestWindowInShellWithId(0));
@@ -367,7 +367,7 @@ TEST_F(WindowCycleControllerTest, AlwaysOnTopWindow) {
 }
 
 TEST_F(WindowCycleControllerTest, AlwaysOnTopMultiWindow) {
-  WindowCycleController* controller = WmShell::Get()->window_cycle_controller();
+  WindowCycleController* controller = Shell::Get()->window_cycle_controller();
 
   // Set up several windows to use to test cycling.
   std::unique_ptr<Window> window0(CreateTestWindowInShellWithId(0));
@@ -400,7 +400,7 @@ TEST_F(WindowCycleControllerTest, AlwaysOnTopMultipleRootWindows) {
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   ASSERT_EQ(2U, root_windows.size());
 
-  WindowCycleController* controller = WmShell::Get()->window_cycle_controller();
+  WindowCycleController* controller = Shell::Get()->window_cycle_controller();
 
   // Create two windows in the primary root.
   std::unique_ptr<Window> window0(CreateTestWindowInShellWithId(0));
@@ -444,7 +444,7 @@ TEST_F(WindowCycleControllerTest, AlwaysOnTopMultipleRootWindows) {
 }
 
 TEST_F(WindowCycleControllerTest, MostRecentlyUsed) {
-  WindowCycleController* controller = WmShell::Get()->window_cycle_controller();
+  WindowCycleController* controller = Shell::Get()->window_cycle_controller();
 
   // Set up several windows to use to test cycling.
   std::unique_ptr<Window> window0(CreateTestWindowInShellWithId(0));
@@ -488,7 +488,7 @@ TEST_F(WindowCycleControllerTest, SelectingHidesAppList) {
   // The tested behavior relies on the app list presenter implementation.
   test::TestAppListViewPresenterImpl app_list_presenter_impl;
 
-  WindowCycleController* controller = WmShell::Get()->window_cycle_controller();
+  WindowCycleController* controller = Shell::Get()->window_cycle_controller();
 
   std::unique_ptr<aura::Window> window0(CreateTestWindowInShellWithId(0));
   std::unique_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
@@ -507,7 +507,7 @@ TEST_F(WindowCycleControllerTest, SelectingHidesAppList) {
 
 // Tests that cycling through windows doesn't change their minimized state.
 TEST_F(WindowCycleControllerTest, CyclePreservesMinimization) {
-  WindowCycleController* controller = WmShell::Get()->window_cycle_controller();
+  WindowCycleController* controller = Shell::Get()->window_cycle_controller();
 
   std::unique_ptr<aura::Window> window0(CreateTestWindowInShellWithId(0));
   std::unique_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
@@ -531,7 +531,7 @@ TEST_F(WindowCycleControllerTest, CyclePreservesMinimization) {
 
 // Tests cycles between panel and normal windows.
 TEST_F(WindowCycleControllerTest, CyclePanels) {
-  WindowCycleController* controller = WmShell::Get()->window_cycle_controller();
+  WindowCycleController* controller = Shell::Get()->window_cycle_controller();
 
   std::unique_ptr<aura::Window> window0(CreateTestWindowInShellWithId(0));
   std::unique_ptr<aura::Window> panel0(CreatePanelWindow());
@@ -559,7 +559,7 @@ TEST_F(WindowCycleControllerTest, CyclePanels) {
 
 // Tests cycles between panel and normal windows.
 TEST_F(WindowCycleControllerTest, CyclePanelsDestroyed) {
-  WindowCycleController* controller = WmShell::Get()->window_cycle_controller();
+  WindowCycleController* controller = Shell::Get()->window_cycle_controller();
 
   std::unique_ptr<aura::Window> window0(CreateTestWindowInShellWithId(0));
   std::unique_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
@@ -586,7 +586,7 @@ TEST_F(WindowCycleControllerTest, CyclePanelsDestroyed) {
 
 // Tests cycles between panel and normal windows.
 TEST_F(WindowCycleControllerTest, CycleMruPanelDestroyed) {
-  WindowCycleController* controller = WmShell::Get()->window_cycle_controller();
+  WindowCycleController* controller = Shell::Get()->window_cycle_controller();
 
   std::unique_ptr<aura::Window> window0(CreateTestWindowInShellWithId(0));
   std::unique_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
@@ -657,7 +657,7 @@ TEST_F(WindowCycleControllerTest, MouseEventsCaptured) {
   EXPECT_LT(0, event_count.GetMouseEventCountAndReset());
 
   // Start cycling.
-  WindowCycleController* controller = WmShell::Get()->window_cycle_controller();
+  WindowCycleController* controller = Shell::Get()->window_cycle_controller();
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
 
   // Most mouse events don't get through.
@@ -749,8 +749,7 @@ TEST_F(WindowCycleControllerTest, MultiDisplayPositioning) {
     std::unique_ptr<Window> window1(
         CreateTestWindowInShellWithBounds(second_display_bounds));
 
-    WindowCycleController* controller =
-        WmShell::Get()->window_cycle_controller();
+    WindowCycleController* controller = Shell::Get()->window_cycle_controller();
     controller->HandleCycleWindow(WindowCycleController::FORWARD);
 
     const gfx::Rect bounds =

@@ -9,7 +9,6 @@
 #include "ash/common/system/accessibility_observer.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray_accessibility.h"
-#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "base/memory/ptr_util.h"
 #include "ui/keyboard/keyboard_controller.h"
@@ -19,12 +18,12 @@ namespace ash {
 class KeyboardUIImpl : public KeyboardUI, public AccessibilityObserver {
  public:
   KeyboardUIImpl() : enabled_(false) {
-    WmShell::Get()->system_tray_notifier()->AddAccessibilityObserver(this);
+    Shell::Get()->system_tray_notifier()->AddAccessibilityObserver(this);
   }
 
   ~KeyboardUIImpl() override {
-    if (WmShell::HasInstance() && WmShell::Get()->system_tray_notifier())
-      WmShell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(this);
+    if (Shell::HasInstance() && Shell::Get()->system_tray_notifier())
+      Shell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(this);
   }
 
   // KeyboardUI:

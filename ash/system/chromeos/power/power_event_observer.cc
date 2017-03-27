@@ -134,7 +134,7 @@ void PowerEventObserver::SuspendDone(const base::TimeDelta& sleep_duration) {
   // here: http://crbug.com/692193
   if (!WmShell::Get()->IsRunningInMash())
     Shell::GetInstance()->display_configurator()->ResumeDisplays();
-  WmShell::Get()->system_tray_notifier()->NotifyRefreshClock();
+  Shell::Get()->system_tray_notifier()->NotifyRefreshClock();
 
   // If the suspend request was being blocked while waiting for the lock
   // animation to complete, clear the blocker since the suspend has already

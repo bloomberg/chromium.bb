@@ -10,7 +10,7 @@ specific_include_rules = {
   "network_portal_notification_controller\.cc": [
     "+ash/common/system/system_notifier.h",
     "+ash/common/system/tray/system_tray_notifier.h",
-    "+ash/common/wm_shell.h",
+    "+ash/shell.h",
   ],
   "network_state_notifier\.cc": [
     "+ash/common/system/system_notifier.h",

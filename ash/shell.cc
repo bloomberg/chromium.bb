@@ -38,12 +38,14 @@
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/shell_observer.h"
+#include "ash/common/shutdown_controller.h"
 #include "ash/common/system/brightness_control_delegate.h"
 #include "ash/common/system/chromeos/bluetooth/bluetooth_notification_controller.h"
 #include "ash/common/system/chromeos/bluetooth/tray_bluetooth_helper.h"
 #include "ash/common/system/chromeos/brightness/brightness_controller_chromeos.h"
 #include "ash/common/system/chromeos/keyboard_brightness_controller.h"
 #include "ash/common/system/chromeos/network/sms_observer.h"
+#include "ash/common/system/chromeos/network/vpn_list.h"
 #include "ash/common/system/chromeos/power/power_status.h"
 #include "ash/common/system/chromeos/session/logout_confirmation_controller.h"
 #include "ash/common/system/keyboard_brightness_control_delegate.h"
@@ -60,8 +62,10 @@
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_window_manager.h"
 #include "ash/common/wm/mru_window_tracker.h"
+#include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/common/wm/root_window_finder.h"
 #include "ash/common/wm/system_modal_container_layout_manager.h"
+#include "ash/common/wm/window_cycle_controller.h"
 #include "ash/common/wm/window_positioner.h"
 #include "ash/common/wm/workspace_controller.h"
 #include "ash/common/wm_shell.h"
@@ -559,7 +563,12 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
       session_controller_(base::MakeUnique<SessionController>()),
       shelf_controller_(base::MakeUnique<ShelfController>()),
       shell_delegate_(std::move(shell_delegate)),
+      shutdown_controller_(base::MakeUnique<ShutdownController>()),
       system_tray_controller_(base::MakeUnique<SystemTrayController>()),
+      system_tray_notifier_(base::MakeUnique<SystemTrayNotifier>()),
+      vpn_list_(base::MakeUnique<VpnList>()),
+      window_cycle_controller_(base::MakeUnique<WindowCycleController>()),
+      window_selector_controller_(base::MakeUnique<WindowSelectorController>()),
       app_list_(base::MakeUnique<app_list::AppList>()),
       link_handler_model_factory_(nullptr),
       tray_bluetooth_helper_(base::MakeUnique<TrayBluetoothHelper>()),
@@ -667,8 +676,8 @@ Shell::~Shell() {
   resize_shadow_controller_.reset();
 
   // Has to happen before ~MruWindowTracker.
-  wm_shell_->DeleteWindowCycleController();
-  wm_shell_->DeleteWindowSelectorController();
+  window_cycle_controller_.reset();
+  window_selector_controller_.reset();
 
   CloseAllRootWindowChildWindows();
 
@@ -960,7 +969,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   }
 
   lock_state_controller_ =
-      base::MakeUnique<LockStateController>(wm_shell_->shutdown_controller());
+      base::MakeUnique<LockStateController>(shutdown_controller_.get());
   power_button_controller_.reset(
       new PowerButtonController(lock_state_controller_.get()));
   // Pass the initial display state to PowerButtonController.

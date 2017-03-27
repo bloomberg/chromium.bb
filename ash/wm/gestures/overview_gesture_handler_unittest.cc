@@ -5,7 +5,6 @@
 #include "ash/wm/gestures/overview_gesture_handler.h"
 
 #include "ash/common/wm/overview/window_selector_controller.h"
-#include "ash/common/wm_shell.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -29,11 +28,11 @@ class OverviewGestureHandlerTest : public test::AshTestBase {
   }
 
   void ToggleOverview() {
-    WmShell::Get()->window_selector_controller()->ToggleOverview();
+    Shell::Get()->window_selector_controller()->ToggleOverview();
   }
 
   bool IsSelecting() {
-    return WmShell::Get()->window_selector_controller()->IsSelecting();
+    return Shell::Get()->window_selector_controller()->IsSelecting();
   }
 
   float vertical_threshold_pixels() const {

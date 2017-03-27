@@ -11,7 +11,6 @@
 #include "ash/common/system/tray/ime_info.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/test/test_system_tray_delegate.h"
-#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/status_area_widget_test_helper.h"
@@ -97,16 +96,16 @@ class ImeMenuTrayTest : public test::AshTestBase {
 TEST_F(ImeMenuTrayTest, ImeMenuTrayVisibility) {
   ASSERT_FALSE(IsVisible());
 
-  WmShell::Get()->system_tray_notifier()->NotifyRefreshIMEMenu(true);
+  Shell::Get()->system_tray_notifier()->NotifyRefreshIMEMenu(true);
   EXPECT_TRUE(IsVisible());
 
-  WmShell::Get()->system_tray_notifier()->NotifyRefreshIMEMenu(false);
+  Shell::Get()->system_tray_notifier()->NotifyRefreshIMEMenu(false);
   EXPECT_FALSE(IsVisible());
 }
 
 // Tests that IME menu tray shows the right info of the current IME.
 TEST_F(ImeMenuTrayTest, TrayLabelTest) {
-  WmShell::Get()->system_tray_notifier()->NotifyRefreshIMEMenu(true);
+  Shell::Get()->system_tray_notifier()->NotifyRefreshIMEMenu(true);
   ASSERT_TRUE(IsVisible());
 
   // Changes the input method to "ime1".
@@ -118,7 +117,7 @@ TEST_F(ImeMenuTrayTest, TrayLabelTest) {
   info1.third_party = false;
   info1.selected = true;
   GetSystemTrayDelegate()->SetCurrentIME(info1);
-  WmShell::Get()->system_tray_notifier()->NotifyRefreshIME();
+  Shell::Get()->system_tray_notifier()->NotifyRefreshIME();
   EXPECT_EQ(UTF8ToUTF16("US"), GetTrayText());
 
   // Changes the input method to a third-party IME extension.
@@ -130,7 +129,7 @@ TEST_F(ImeMenuTrayTest, TrayLabelTest) {
   info2.third_party = true;
   info2.selected = true;
   GetSystemTrayDelegate()->SetCurrentIME(info2);
-  WmShell::Get()->system_tray_notifier()->NotifyRefreshIME();
+  Shell::Get()->system_tray_notifier()->NotifyRefreshIME();
   EXPECT_EQ(UTF8ToUTF16("UK*"), GetTrayText());
 }
 
@@ -138,7 +137,7 @@ TEST_F(ImeMenuTrayTest, TrayLabelTest) {
 // tests that the background color becomes 'inactive' when disabling the IME
 // menu feature.
 TEST_F(ImeMenuTrayTest, PerformAction) {
-  WmShell::Get()->system_tray_notifier()->NotifyRefreshIMEMenu(true);
+  Shell::Get()->system_tray_notifier()->NotifyRefreshIMEMenu(true);
   ASSERT_TRUE(IsVisible());
   ASSERT_FALSE(IsTrayBackgroundActive());
 
@@ -156,7 +155,7 @@ TEST_F(ImeMenuTrayTest, PerformAction) {
   // element will be deactivated.
   GetTray()->PerformAction(tap);
   EXPECT_TRUE(IsTrayBackgroundActive());
-  WmShell::Get()->system_tray_notifier()->NotifyRefreshIMEMenu(false);
+  Shell::Get()->system_tray_notifier()->NotifyRefreshIMEMenu(false);
   EXPECT_FALSE(IsVisible());
   EXPECT_FALSE(IsBubbleShown());
   EXPECT_FALSE(IsTrayBackgroundActive());
@@ -199,7 +198,7 @@ TEST_F(ImeMenuTrayTest, RefreshImeWithListViewCreated) {
 
   GetSystemTrayDelegate()->SetAvailableIMEList(ime_info_list);
   GetSystemTrayDelegate()->SetCurrentIME(info1);
-  WmShell::Get()->system_tray_notifier()->NotifyRefreshIME();
+  Shell::Get()->system_tray_notifier()->NotifyRefreshIME();
   EXPECT_EQ(UTF8ToUTF16("US"), GetTrayText());
   EXPECT_TRUE(IsTrayImeListValid(ime_info_list, info1));
 
@@ -207,7 +206,7 @@ TEST_F(ImeMenuTrayTest, RefreshImeWithListViewCreated) {
   ime_info_list[2].selected = true;
   GetSystemTrayDelegate()->SetAvailableIMEList(ime_info_list);
   GetSystemTrayDelegate()->SetCurrentIME(info3);
-  WmShell::Get()->system_tray_notifier()->NotifyRefreshIME();
+  Shell::Get()->system_tray_notifier()->NotifyRefreshIME();
   EXPECT_EQ(UTF8ToUTF16("拼"), GetTrayText());
   EXPECT_TRUE(IsTrayImeListValid(ime_info_list, info3));
 
@@ -219,7 +218,7 @@ TEST_F(ImeMenuTrayTest, RefreshImeWithListViewCreated) {
 
 // Tests that quits Chrome with IME menu openned will not crash.
 TEST_F(ImeMenuTrayTest, QuitChromeWithMenuOpen) {
-  WmShell::Get()->system_tray_notifier()->NotifyRefreshIMEMenu(true);
+  Shell::Get()->system_tray_notifier()->NotifyRefreshIMEMenu(true);
   ASSERT_TRUE(IsVisible());
   ASSERT_FALSE(IsTrayBackgroundActive());
 
@@ -232,7 +231,7 @@ TEST_F(ImeMenuTrayTest, QuitChromeWithMenuOpen) {
 
 // Tests using 'Alt+Shift+K' to open the menu.
 TEST_F(ImeMenuTrayTest, TestAccelerator) {
-  WmShell::Get()->system_tray_notifier()->NotifyRefreshIMEMenu(true);
+  Shell::Get()->system_tray_notifier()->NotifyRefreshIMEMenu(true);
   ASSERT_TRUE(IsVisible());
   ASSERT_FALSE(IsTrayBackgroundActive());
 
@@ -249,7 +248,7 @@ TEST_F(ImeMenuTrayTest, TestAccelerator) {
 }
 
 TEST_F(ImeMenuTrayTest, ShowEmojiKeyset) {
-  WmShell::Get()->system_tray_notifier()->NotifyRefreshIMEMenu(true);
+  Shell::Get()->system_tray_notifier()->NotifyRefreshIMEMenu(true);
   ASSERT_TRUE(IsVisible());
   ASSERT_FALSE(IsTrayBackgroundActive());
 

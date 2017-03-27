@@ -148,6 +148,7 @@ class ShelfWindowWatcher;
 class ShellDelegate;
 struct ShellInitParams;
 class ShellObserver;
+class ShutdownController;
 class ShutdownObserver;
 class SmsObserver;
 class StickyKeysController;
@@ -156,16 +157,20 @@ class SystemModalContainerEventFilter;
 class SystemTray;
 class SystemTrayController;
 class SystemTrayDelegate;
+class SystemTrayNotifier;
 class ToplevelWindowEventHandler;
 class ToastManager;
 class TrayBluetoothHelper;
 class VirtualKeyboardController;
 class VideoActivityNotifier;
 class VideoDetector;
+class VpnList;
 class WallpaperController;
 class WallpaperDelegate;
 class WebNotificationTray;
+class WindowCycleController;
 class WindowPositioner;
+class WindowSelectorController;
 class WindowTreeHostManager;
 class WmShell;
 class WmWindow;
@@ -337,14 +342,27 @@ class ASH_EXPORT Shell : public SessionStateObserver,
   ShelfController* shelf_controller() { return shelf_controller_.get(); }
   ShelfDelegate* shelf_delegate() { return shelf_delegate_.get(); }
   ShelfModel* shelf_model();
+  ShutdownController* shutdown_controller() {
+    return shutdown_controller_.get();
+  }
   SystemTrayController* system_tray_controller() {
     return system_tray_controller_.get();
   }
   SystemTrayDelegate* system_tray_delegate() {
     return system_tray_delegate_.get();
   }
+  SystemTrayNotifier* system_tray_notifier() {
+    return system_tray_notifier_.get();
+  }
   views::corewm::TooltipController* tooltip_controller() {
     return tooltip_controller_.get();
+  }
+  VpnList* vpn_list() { return vpn_list_.get(); }
+  WindowCycleController* window_cycle_controller() {
+    return window_cycle_controller_.get();
+  }
+  WindowSelectorController* window_selector_controller() {
+    return window_selector_controller_.get();
   }
   OverlayEventFilter* overlay_filter() { return overlay_filter_.get(); }
   LinkHandlerModelFactory* link_handler_model_factory() {
@@ -669,11 +687,16 @@ class ASH_EXPORT Shell : public SessionStateObserver,
   std::unique_ptr<ShelfDelegate> shelf_delegate_;
   std::unique_ptr<ShelfWindowWatcher> shelf_window_watcher_;
   std::unique_ptr<ShellDelegate> shell_delegate_;
+  std::unique_ptr<ShutdownController> shutdown_controller_;
   std::unique_ptr<SystemTrayController> system_tray_controller_;
   std::unique_ptr<SystemTrayDelegate> system_tray_delegate_;
+  std::unique_ptr<SystemTrayNotifier> system_tray_notifier_;
   std::unique_ptr<ToastManager> toast_manager_;
+  std::unique_ptr<VpnList> vpn_list_;
   std::unique_ptr<WallpaperController> wallpaper_controller_;
   std::unique_ptr<WallpaperDelegate> wallpaper_delegate_;
+  std::unique_ptr<WindowCycleController> window_cycle_controller_;
+  std::unique_ptr<WindowSelectorController> window_selector_controller_;
   std::unique_ptr<::wm::ShadowController> shadow_controller_;
   std::unique_ptr<::wm::VisibilityController> visibility_controller_;
   std::unique_ptr<::wm::WindowModalityController> window_modality_controller_;

@@ -11,7 +11,6 @@
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard.h"
-#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
@@ -116,11 +115,11 @@ class VirtualKeyboardControllerAutoTest : public VirtualKeyboardControllerTest,
     // with the test.
     UpdateKeyboardDevices(std::vector<ui::InputDevice>());
     UpdateTouchscreenDevices(std::vector<ui::TouchscreenDevice>());
-    WmShell::Get()->system_tray_notifier()->AddVirtualKeyboardObserver(this);
+    Shell::Get()->system_tray_notifier()->AddVirtualKeyboardObserver(this);
   }
 
   void TearDown() override {
-    WmShell::Get()->system_tray_notifier()->RemoveVirtualKeyboardObserver(this);
+    Shell::Get()->system_tray_notifier()->RemoveVirtualKeyboardObserver(this);
     AshTestBase::TearDown();
   }
 

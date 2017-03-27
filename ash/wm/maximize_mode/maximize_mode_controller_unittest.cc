@@ -12,7 +12,6 @@
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/test/test_system_tray_delegate.h"
 #include "ash/common/wm/overview/window_selector_controller.h"
-#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
@@ -483,10 +482,10 @@ TEST_F(MaximizeModeControllerTest, DisplayDisconnectionDuringOverview) {
   ASSERT_NE(w1->GetRootWindow(), w2->GetRootWindow());
 
   maximize_mode_controller()->EnableMaximizeModeWindowManager(true);
-  EXPECT_TRUE(WmShell::Get()->window_selector_controller()->ToggleOverview());
+  EXPECT_TRUE(Shell::Get()->window_selector_controller()->ToggleOverview());
 
   UpdateDisplay("800x600");
-  EXPECT_FALSE(WmShell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
   EXPECT_EQ(w1->GetRootWindow(), w2->GetRootWindow());
 }
 

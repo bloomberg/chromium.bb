@@ -19,6 +19,7 @@
 #include "ash/common/system/tray/tray_popup_item_style.h"
 #include "ash/common/system/tray/tray_utils.h"
 #include "ash/common/wm_shell.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
@@ -230,13 +231,13 @@ TrayNetwork::TrayNetwork(SystemTray* system_tray)
       detailed_(NULL),
       request_wifi_view_(false) {
   network_state_observer_.reset(new TrayNetworkStateObserver(this));
-  SystemTrayNotifier* notifier = WmShell::Get()->system_tray_notifier();
+  SystemTrayNotifier* notifier = Shell::Get()->system_tray_notifier();
   notifier->AddNetworkObserver(this);
   notifier->AddNetworkPortalDetectorObserver(this);
 }
 
 TrayNetwork::~TrayNetwork() {
-  SystemTrayNotifier* notifier = WmShell::Get()->system_tray_notifier();
+  SystemTrayNotifier* notifier = Shell::Get()->system_tray_notifier();
   notifier->RemoveNetworkObserver(this);
   notifier->RemoveNetworkPortalDetectorObserver(this);
 }
