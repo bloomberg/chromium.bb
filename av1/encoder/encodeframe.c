@@ -1093,7 +1093,12 @@ static void update_state(const AV1_COMP *const cpi, ThreadData *td,
 #if CONFIG_REF_MV
   rf_type = av1_ref_frame_type(mbmi->ref_frame);
   if (x->mbmi_ext->ref_mv_count[rf_type] > 1 &&
-      (mbmi->sb_type >= BLOCK_8X8 || unify_bsize) && mbmi->mode == NEWMV) {
+      (mbmi->sb_type >= BLOCK_8X8 || unify_bsize) &&
+#if CONFIG_EXT_INTER
+      (mbmi->mode == NEWMV || mbmi->mode == NEW_NEWMV)) {
+#else
+      mbmi->mode == NEWMV) {
+#endif
     for (i = 0; i < 1 + has_second_ref(mbmi); ++i) {
       int_mv this_mv =
           (i == 0)
@@ -1299,7 +1304,11 @@ static void update_state_supertx(const AV1_COMP *const cpi, ThreadData *td,
 #if !CONFIG_CB4X4
       mbmi->sb_type >= BLOCK_8X8 &&
 #endif  // !CONFIG_CB4X4
+#if CONFIG_EXT_INTER
+      (mbmi->mode == NEWMV || mbmi->mode == NEW_NEWMV)) {
+#else
       mbmi->mode == NEWMV) {
+#endif
     for (i = 0; i < 1 + has_second_ref(mbmi); ++i) {
       int_mv this_mv =
           (i == 0)
@@ -2211,7 +2220,11 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
         }
 #endif  // CONFIG_EXT_INTER
 
-        if (mode == NEWMV) {
+#if CONFIG_EXT_INTER
+        if (mbmi->mode == NEWMV || mbmi->mode == NEW_NEWMV) {
+#else
+        if (mbmi->mode == NEWMV) {
+#endif
           uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
           int idx;
 
@@ -2226,7 +2239,11 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
           }
         }
 
-        if (mode == NEARMV) {
+#if CONFIG_EXT_INTER
+        if (mbmi->mode == NEARMV || mbmi->mode == NEAR_NEARMV) {
+#else
+        if (mbmi->mode == NEARMV) {
+#endif
           uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
           int idx;
 
