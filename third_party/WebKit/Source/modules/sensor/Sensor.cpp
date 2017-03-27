@@ -163,10 +163,11 @@ auto Sensor::createSensorConfig() -> SensorConfigurationPtr {
 }
 
 double Sensor::readingValue(int index, bool& isNull) const {
-  if (!canReturnReadings()) {
-    isNull = true;
-    return 0.0;
-  }
+  isNull = !canReturnReadings();
+  return isNull ? 0.0 : readingValueUnchecked(index);
+}
+
+double Sensor::readingValueUnchecked(int index) const {
   DCHECK(m_sensorProxy);
   DCHECK(index >= 0 && index < device::SensorReading::kValuesCount);
   return m_sensorProxy->reading().values[index];
@@ -200,12 +201,13 @@ void Sensor::onSensorInitialized() {
   startListening();
 }
 
-void Sensor::onSensorReadingChanged(double timestamp) {
+void Sensor::notifySensorChanged(double timestamp) {
   if (m_state != Sensor::SensorState::Activated)
     return;
 
   DCHECK_GT(m_configuration->frequency, 0.0);
   double period = 1 / m_configuration->frequency;
+
   if (timestamp - m_lastUpdateTimestamp >= period) {
     m_lastUpdateTimestamp = timestamp;
     notifySensorReadingChanged();
@@ -318,7 +320,7 @@ void Sensor::notifyError(DOMException* error) {
 }
 
 bool Sensor::canReturnReadings() const {
-  if (m_state != Sensor::SensorState::Activated)
+  if (!isActivated())
     return false;
   DCHECK(m_sensorProxy);
   return m_sensorProxy->reading().timestamp != 0.0;

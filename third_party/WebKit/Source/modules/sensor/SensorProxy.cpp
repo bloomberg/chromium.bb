@@ -129,7 +129,11 @@ void SensorProxy::updateSensorReading() {
     }
   }
 
-  m_reading = readingData;
+  if (m_reading.timestamp != readingData.timestamp) {
+    m_reading = readingData;
+    for (Observer* observer : m_observers)
+      observer->onSensorReadingChanged();
+  }
 }
 
 void SensorProxy::notifySensorChanged(double timestamp) {
@@ -137,7 +141,7 @@ void SensorProxy::notifySensorChanged(double timestamp) {
   // we must cache m_observers as it can be modified within event handlers.
   auto copy = m_observers;
   for (Observer* observer : copy)
-    observer->onSensorReadingChanged(timestamp);
+    observer->notifySensorChanged(timestamp);
 }
 
 void SensorProxy::RaiseError() {

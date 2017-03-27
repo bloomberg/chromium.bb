@@ -73,7 +73,11 @@ class Sensor : public EventTargetWithInlineData,
   // concrete sensor implementations can override this method to handle other
   // parameters if needed.
   virtual SensorConfigurationPtr createSensorConfig();
+
   double readingValue(int index, bool& isNull) const;
+  double readingValueUnchecked(int index) const;
+  bool canReturnReadings() const;
+  bool isActivated() const { return m_state == SensorState::Activated; }
 
  private:
   void initSensorProxyIfNeeded();
@@ -81,9 +85,9 @@ class Sensor : public EventTargetWithInlineData,
   // ContextLifecycleObserver overrides.
   void contextDestroyed(ExecutionContext*) override;
 
-  // SensorController::Observer overrides.
+  // SensorProxy::Observer overrides.
   void onSensorInitialized() override;
-  void onSensorReadingChanged(double timestamp) override;
+  void notifySensorChanged(double timestamp) override;
   void onSensorError(ExceptionCode,
                      const String& sanitizedMessage,
                      const String& unsanitizedMessage) override;
@@ -102,8 +106,6 @@ class Sensor : public EventTargetWithInlineData,
   void notifySensorReadingChanged();
   void notifyOnActivate();
   void notifyError(DOMException* error);
-
-  bool canReturnReadings() const;
 
  private:
   SensorOptions m_sensorOptions;

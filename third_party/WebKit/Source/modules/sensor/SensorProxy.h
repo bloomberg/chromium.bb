@@ -36,13 +36,20 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
     // Has valid 'Sensor' binding, {add, remove}Configuration()
     // methods can be called.
     virtual void onSensorInitialized() {}
-    // Platfrom sensort reading has changed.
+    // Platfrom sensor reading has changed.
+    virtual void onSensorReadingChanged() {}
+    // Observer should send 'onchange' event if needed.
+    // The 'notifySensorChanged' calls are in sync with rAF.
+    // Currently, we decide whether to send 'onchange' event based on the
+    // time elapsed from the previous notification.
+    // TODO: Reconsider this after https://github.com/w3c/sensors/issues/152
+    // is resolved.
     // |timestamp| Reference timestamp in seconds of the moment when
     // sensor reading was updated from the buffer.
     // Note: |timestamp| values are only used to calculate elapsed time
     // between shared buffer readings. These values *do not* correspond
     // to sensor reading timestamps which are obtained on platform side.
-    virtual void onSensorReadingChanged(double timestamp) {}
+    virtual void notifySensorChanged(double timestamp) {}
     // An error has occurred.
     virtual void onSensorError(ExceptionCode,
                                const String& sanitizedMessage,

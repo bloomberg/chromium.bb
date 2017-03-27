@@ -6,6 +6,8 @@ import("//third_party/WebKit/Source/modules/modules.gni")
 
 blink_modules_sources("sensor") {
   sources = [
+    "AbsoluteOrientationSensor.cpp",
+    "AbsoluteOrientationSensor.h",
     "Accelerometer.cpp",
     "Accelerometer.h",
     "AmbientLightSensor.cpp",
@@ -14,6 +16,8 @@ blink_modules_sources("sensor") {
     "Gyroscope.h",
     "Magnetometer.cpp",
     "Magnetometer.h",
+    "OrientationSensor.cpp",
+    "OrientationSensor.h",
     "Sensor.cpp",
     "Sensor.h",
     "SensorErrorEvent.cpp",

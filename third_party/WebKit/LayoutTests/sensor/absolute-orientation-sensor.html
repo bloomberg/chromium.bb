@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script src="resources/sensor-helpers.js"></script>
+<script src="resources/generic-sensor-tests.js"></script>
+<script>
+
+'use strict';
+
+if (!window.testRunner)
+    debug('This test cannot be run without the TestRunner');
+
+const kQuaternion = [0, 1, 0, 0]; // 180 degrees around X axis.
+const kRotationMatrix = [1,  0,  0,  0,
+                         0, -1,  0,  0,
+                         0,  0, -1,  0,
+                         0,  0,  0,  1];
+
+function update_sensor_reading(buffer, expects_modified_reading, readsCount) {
+  buffer[1] = window.performance.now();
+  buffer[2] = 1;
+  buffer[3] = 0;
+  buffer[4] = 0;
+  buffer[5] = 0;
+}
+
+function verify_sensor_reading(sensor, should_be_null) {
+  if (should_be_null)
+    return sensor.quaternion == null && sensor.timestamp == null;
+
+  if (sensor.timestamp == null ||
+      sensor.quaternion.toString() != kQuaternion.toString())
+    return false;
+
+  let rotationMatrix = new Float32Array(16);
+  sensor.populateMatrix(rotationMatrix);
+  return rotationMatrix.toString() == kRotationMatrix.toString();
+}
+
+runGenericSensorTests(AbsoluteOrientationSensor, update_sensor_reading, verify_sensor_reading);
+
+</script>
