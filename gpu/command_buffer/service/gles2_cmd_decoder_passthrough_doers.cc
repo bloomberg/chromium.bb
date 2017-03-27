@@ -1277,7 +1277,8 @@ error::Error GLES2DecoderPassthroughImpl::DoGetSamplerParameteriv(
     GLsizei bufsize,
     GLsizei* length,
     GLint* params) {
-  glGetSamplerParameterivRobustANGLE(sampler, pname, bufsize, length, params);
+  glGetSamplerParameterivRobustANGLE(GetSamplerServiceID(sampler, resources_),
+                                     pname, bufsize, length, params);
   return error::kNoError;
 }
 
