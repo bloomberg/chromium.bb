@@ -13,11 +13,11 @@
 #include "public/platform/WebURLRequest.h"
 
 #if INSIDE_BLINK
+#include <utility>
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/weborigin/Referrer.h"
 #include "wtf/Forward.h"
 #include "wtf/text/StringHash.h"
-#include <utility>
 #endif
 
 namespace blink {
@@ -43,10 +43,10 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerRequest {
   void assign(const WebServiceWorkerRequest&);
 
   void setURL(const WebURL&);
-  WebURL url() const;
+  const WebURL& url() const;
 
   void setMethod(const WebString&);
-  WebString method() const;
+  const WebString& method() const;
 
   void setHeader(const WebString& key, const WebString& value);
 
@@ -81,7 +81,7 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerRequest {
   WebURLRequest::FrameType frameType() const;
 
   void setClientId(const WebString&);
-  WebString clientId() const;
+  const WebString& clientId() const;
 
   void setIsReload(bool);
   bool isReload() const;

@@ -55,7 +55,7 @@ void WebServiceWorkerRequest::setURL(const WebURL& url) {
   m_private->m_url = url;
 }
 
-WebURL WebServiceWorkerRequest::url() const {
+const WebURL& WebServiceWorkerRequest::url() const {
   return m_private->m_url;
 }
 
@@ -63,7 +63,7 @@ void WebServiceWorkerRequest::setMethod(const WebString& method) {
   m_private->m_method = method;
 }
 
-WebString WebServiceWorkerRequest::method() const {
+const WebString& WebServiceWorkerRequest::method() const {
   return m_private->m_method;
 }
 
@@ -183,7 +183,7 @@ void WebServiceWorkerRequest::setClientId(const WebString& clientId) {
   m_private->m_clientId = clientId;
 }
 
-WebString WebServiceWorkerRequest::clientId() const {
+const WebString& WebServiceWorkerRequest::clientId() const {
   return m_private->m_clientId;
 }
 

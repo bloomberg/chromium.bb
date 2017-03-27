@@ -64,7 +64,7 @@ void WebServiceWorkerResponse::setStatusText(const WebString& statusText) {
   m_private->statusText = statusText;
 }
 
-WebString WebServiceWorkerResponse::statusText() const {
+const WebString& WebServiceWorkerResponse::statusText() const {
   return m_private->statusText;
 }
 
@@ -132,7 +132,7 @@ void WebServiceWorkerResponse::setStreamURL(const WebURL& url) {
   m_private->streamURL = url;
 }
 
-WebURL WebServiceWorkerResponse::streamURL() const {
+const WebURL& WebServiceWorkerResponse::streamURL() const {
   return m_private->streamURL;
 }
 
@@ -157,7 +157,7 @@ void WebServiceWorkerResponse::setCacheStorageCacheName(
   m_private->cacheStorageCacheName = cacheStorageCacheName;
 }
 
-WebString WebServiceWorkerResponse::cacheStorageCacheName() const {
+const WebString& WebServiceWorkerResponse::cacheStorageCacheName() const {
   return m_private->cacheStorageCacheName;
 }
 
@@ -166,7 +166,8 @@ void WebServiceWorkerResponse::setCorsExposedHeaderNames(
   m_private->corsExposedHeaderNames = headerNames;
 }
 
-WebVector<WebString> WebServiceWorkerResponse::corsExposedHeaderNames() const {
+const WebVector<WebString>& WebServiceWorkerResponse::corsExposedHeaderNames()
+    const {
   return m_private->corsExposedHeaderNames;
 }
 

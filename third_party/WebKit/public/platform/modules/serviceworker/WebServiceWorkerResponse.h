@@ -51,7 +51,7 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerResponse {
   unsigned short status() const;
 
   void setStatusText(const WebString&);
-  WebString statusText() const;
+  const WebString& statusText() const;
 
   void setResponseType(WebServiceWorkerResponseType);
   WebServiceWorkerResponseType responseType() const;
@@ -71,7 +71,7 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerResponse {
   uint64_t blobSize() const;
 
   void setStreamURL(const WebURL&);
-  WebURL streamURL() const;
+  const WebURL& streamURL() const;
 
   // Provides a more detailed error when status() is zero.
   void setError(WebServiceWorkerResponseError);
@@ -81,10 +81,10 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerResponse {
   int64_t responseTime() const;
 
   void setCacheStorageCacheName(const WebString&);
-  WebString cacheStorageCacheName() const;
+  const WebString& cacheStorageCacheName() const;
 
   void setCorsExposedHeaderNames(const WebVector<WebString>&);
-  WebVector<WebString> corsExposedHeaderNames() const;
+  const WebVector<WebString>& corsExposedHeaderNames() const;
 
 #if INSIDE_BLINK
   const HTTPHeaderMap& headers() const;
