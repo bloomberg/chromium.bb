@@ -47,7 +47,7 @@ namespace {
 
 // These must be in sync with Android MediaDrm REQUEST_TYPE_XXX constants!
 // https://developer.android.com/reference/android/media/MediaDrm.KeyRequest.html
-enum class RequestType {
+enum class RequestType : uint32_t {
   REQUEST_TYPE_INITIAL = 0,
   REQUEST_TYPE_RENEWAL = 1,
   REQUEST_TYPE_RELEASE = 2,
@@ -55,12 +55,20 @@ enum class RequestType {
 
 // These must be in sync with Android MediaDrm KEY_STATUS_XXX constants:
 // https://developer.android.com/reference/android/media/MediaDrm.KeyStatus.html
-enum class KeyStatus {
+enum class KeyStatus : uint32_t {
   KEY_STATUS_USABLE = 0,
   KEY_STATUS_EXPIRED = 1,
   KEY_STATUS_OUTPUT_NOT_ALLOWED = 2,
   KEY_STATUS_PENDING = 3,
   KEY_STATUS_INTERNAL_ERROR = 4,
+};
+
+// These must be in sync with Android MediaDrm KEY_TYPE_XXX constants:
+// https://developer.android.com/reference/android/media/MediaDrm.html#KEY_TYPE_OFFLINE
+// KEY_TYPE_RELEASE is handled internally in Java.
+enum class KeyType : uint32_t {
+  KEY_TYPE_STREAMING = 1,
+  KEY_TYPE_OFFLINE = 2,
 };
 
 // Converts jbyteArray (byte[] in Java) into std::string.
@@ -90,6 +98,21 @@ std::string ConvertInitDataType(media::EmeInitDataType init_data_type) {
     default:
       NOTREACHED();
       return "unknown";
+  }
+}
+
+// Convert CdmSessionType to KeyType supported by MediaDrm.
+KeyType ConvertCdmSessionType(CdmSessionType session_type) {
+  switch (session_type) {
+    case CdmSessionType::TEMPORARY_SESSION:
+      return KeyType::KEY_TYPE_STREAMING;
+    case CdmSessionType::PERSISTENT_LICENSE_SESSION:
+      return KeyType::KEY_TYPE_OFFLINE;
+
+    default:
+      LOG(WARNING) << "Unsupported session type "
+                   << static_cast<int>(session_type);
+      return KeyType::KEY_TYPE_STREAMING;
   }
 }
 
@@ -389,13 +412,6 @@ void MediaDrmBridge::CreateSessionAndGenerateRequest(
   DCHECK(task_runner_->BelongsToCurrentThread());
   DVLOG(2) << __func__;
 
-  if (session_type != CdmSessionType::TEMPORARY_SESSION) {
-    NOTIMPLEMENTED() << "EME persistent sessions not yet supported on Android.";
-    promise->reject(CdmPromise::NOT_SUPPORTED_ERROR, 0,
-                    "Only the temporary session type is supported.");
-    return;
-  }
-
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jbyteArray> j_init_data;
   ScopedJavaLocalRef<jobjectArray> j_optional_parameters;
@@ -433,10 +449,12 @@ void MediaDrmBridge::CreateSessionAndGenerateRequest(
 
   ScopedJavaLocalRef<jstring> j_mime =
       ConvertUTF8ToJavaString(env, ConvertInitDataType(init_data_type));
+  uint32_t key_type =
+      static_cast<uint32_t>(ConvertCdmSessionType(session_type));
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
-  Java_MediaDrmBridge_createSessionFromNative(env, j_media_drm_, j_init_data,
-                                              j_mime, j_optional_parameters,
-                                              promise_id);
+  Java_MediaDrmBridge_createSessionFromNative(
+      env, j_media_drm_, j_init_data, j_mime, key_type, j_optional_parameters,
+      promise_id);
 }
 
 void MediaDrmBridge::LoadSession(
