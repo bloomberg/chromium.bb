@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/harmony/layout_delegate.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/sync/bubble_sync_promo_view.h"
@@ -35,7 +36,6 @@
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/layout/layout_constants.h"
 
 using extensions::Extension;
 
@@ -207,14 +207,19 @@ void ExtensionInstalledBubbleView::Init() {
   //     or a link to configure the keybinding shortcut (if one exists).
   // Extra info can include a promo for signing into sync.
 
-  std::unique_ptr<views::BoxLayout> layout(
-      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0,
-                           views::kRelatedControlVerticalSpacing));
+  LayoutDelegate* layout_delegate = LayoutDelegate::Get();
+  std::unique_ptr<views::BoxLayout> layout(new views::BoxLayout(
+      views::BoxLayout::kVertical, 0, 0,
+      layout_delegate->GetMetric(
+          LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING)));
   layout->set_minimum_cross_axis_size(kRightColumnWidth);
   // Indent by the size of the icon.
   layout->set_inside_border_insets(gfx::Insets(
-      0, GetIconSize().width() + views::kUnrelatedControlHorizontalSpacing, 0,
-      0));
+      0,
+      GetIconSize().width() +
+          layout_delegate->GetMetric(
+              LayoutDelegate::Metric::UNRELATED_CONTROL_HORIZONTAL_SPACING),
+      0, 0));
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
   SetLayoutManager(layout.release());

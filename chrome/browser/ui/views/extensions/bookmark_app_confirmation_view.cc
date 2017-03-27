@@ -8,6 +8,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/views/harmony/layout_delegate.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/strings/grit/components_strings.h"
@@ -22,7 +23,6 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
 
@@ -74,9 +74,14 @@ BookmarkAppConfirmationView::BookmarkAppConfirmationView(
       callback_(callback),
       open_as_window_checkbox_(nullptr),
       title_tf_(nullptr) {
+  LayoutDelegate* layout_delegate = LayoutDelegate::Get();
+  // Align the contents with the dialog buttons.
   views::BoxLayout* layout = new views::BoxLayout(
-      views::BoxLayout::kHorizontal, views::kButtonHEdgeMarginNew,
-      views::kButtonHEdgeMarginNew, views::kButtonHEdgeMarginNew);
+      views::BoxLayout::kHorizontal,
+      layout_delegate->GetMetric(LayoutDelegate::Metric::DIALOG_BUTTON_MARGIN),
+      layout_delegate->GetMetric(LayoutDelegate::Metric::PANEL_CONTENT_MARGIN),
+      layout_delegate->GetMetric(
+          LayoutDelegate::Metric::UNRELATED_CONTROL_HORIZONTAL_SPACING_LARGE));
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
   SetLayoutManager(layout);

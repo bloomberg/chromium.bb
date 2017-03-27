@@ -40,8 +40,13 @@ class LayoutDelegate {
     RELATED_BUTTON_HORIZONTAL_SPACING,
     // Horizontal spacing between other controls that are logically related.
     RELATED_CONTROL_HORIZONTAL_SPACING,
+    // Smaller horizontal spacing between other controls that are logically
+    // related.
+    RELATED_CONTROL_HORIZONTAL_SPACING_SMALL,
     // Vertical spacing between controls that are logically related.
     RELATED_CONTROL_VERTICAL_SPACING,
+    // Smaller vertical spacing between controls that are logically related.
+    RELATED_CONTROL_VERTICAL_SPACING_SMALL,
     // Horizontal spacing between an item such as an icon or checkbox and a
     // label related to it.
     RELATED_LABEL_HORIZONTAL_SPACING,

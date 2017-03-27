@@ -14,7 +14,6 @@
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/layout/layout_constants.h"
 
 namespace {
 
@@ -31,8 +30,9 @@ MediaGalleryCheckboxView::MediaGalleryCheckboxView(
   DCHECK(button_listener != NULL);
   SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
-  const int border_horiz_margin = LayoutDelegate::Get()->GetMetric(
-      LayoutDelegate::Metric::PANEL_CONTENT_MARGIN);
+  LayoutDelegate* layout_delegate = LayoutDelegate::Get();
+  const int border_horiz_margin =
+      layout_delegate->GetMetric(LayoutDelegate::Metric::PANEL_CONTENT_MARGIN);
   SetBorder(views::CreateEmptyBorder(
       0, border_horiz_margin, trailing_vertical_space, border_horiz_margin));
   if (menu_controller)
@@ -55,7 +55,10 @@ MediaGalleryCheckboxView::MediaGalleryCheckboxView(
   secondary_text_->SetElideBehavior(gfx::ELIDE_HEAD);
   secondary_text_->SetTooltipText(tooltip_text);
   secondary_text_->SetBorder(views::CreateEmptyBorder(
-      0, views::kRelatedControlSmallHorizontalSpacing, 0, 0));
+      0,
+      layout_delegate->GetMetric(
+          LayoutDelegate::Metric::RELATED_CONTROL_HORIZONTAL_SPACING_SMALL),
+      0, 0));
 
   AddChildView(checkbox_);
   AddChildView(secondary_text_);

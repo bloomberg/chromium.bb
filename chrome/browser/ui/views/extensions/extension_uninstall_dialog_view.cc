@@ -23,7 +23,6 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -169,11 +168,13 @@ ExtensionUninstallDialogDelegateView::ExtensionUninstallDialogDelegateView(
     : dialog_(dialog_view),
       triggered_by_extension_(triggered_by_extension),
       report_abuse_checkbox_(nullptr) {
+  LayoutDelegate* layout_delegate = LayoutDelegate::Get();
   SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kHorizontal, views::kButtonHEdgeMarginNew,
-      LayoutDelegate::Get()->GetMetric(
-          LayoutDelegate::Metric::PANEL_CONTENT_MARGIN),
-      views::kRelatedControlHorizontalSpacing));
+      views::BoxLayout::kHorizontal,
+      layout_delegate->GetMetric(LayoutDelegate::Metric::DIALOG_BUTTON_MARGIN),
+      layout_delegate->GetMetric(LayoutDelegate::Metric::PANEL_CONTENT_MARGIN),
+      layout_delegate->GetMetric(
+          LayoutDelegate::Metric::RELATED_CONTROL_HORIZONTAL_SPACING)));
 
   icon_ = new views::ImageView();
   DCHECK_GE(image->width(), kIconSize);
@@ -212,7 +213,8 @@ views::View* ExtensionUninstallDialogDelegateView::CreateExtraView() {
 bool ExtensionUninstallDialogDelegateView::GetExtraViewPadding(int* padding) {
   // We want a little more padding between the "report abuse" checkbox and the
   // buttons.
-  *padding = views::kUnrelatedControlLargeHorizontalSpacing;
+  *padding = LayoutDelegate::Get()->GetMetric(
+      LayoutDelegate::Metric::UNRELATED_CONTROL_HORIZONTAL_SPACING_LARGE);
   return true;
 }
 

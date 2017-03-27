@@ -27,7 +27,6 @@
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
@@ -112,6 +111,9 @@ void MediaGalleriesDialogViews::InitChildViews() {
                      0);
 
   // Message text.
+  LayoutDelegate* layout_delegate = LayoutDelegate::Get();
+  const int vertical_padding = layout_delegate->GetMetric(
+      LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING);
   views::Label* subtext = new views::Label(controller_->GetSubtext());
   subtext->SetMultiLine(true);
   subtext->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -120,16 +122,16 @@ void MediaGalleriesDialogViews::InitChildViews() {
       subtext, 1, 1,
       views::GridLayout::FILL, views::GridLayout::LEADING,
       dialog_content_width, subtext->GetHeightForWidth(dialog_content_width));
-  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, vertical_padding);
 
   // Scrollable area for checkboxes.
+  const int small_vertical_padding = LayoutDelegate::Get()->GetMetric(
+      LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING_SMALL);
   ScrollableView* scroll_container = new ScrollableView();
   scroll_container->SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kVertical, 0, 0,
-      views::kRelatedControlSmallVerticalSpacing));
+      views::BoxLayout::kVertical, 0, 0, small_vertical_padding));
   scroll_container->SetBorder(
-      views::CreateEmptyBorder(views::kRelatedControlVerticalSpacing, 0,
-                               views::kRelatedControlVerticalSpacing, 0));
+      views::CreateEmptyBorder(vertical_padding, 0, vertical_padding, 0));
 
   std::vector<base::string16> section_headers =
       controller_->GetSectionHeaders();
@@ -146,19 +148,17 @@ void MediaGalleriesDialogViews::InitChildViews() {
       header->SetMultiLine(true);
       header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
       header->SetBorder(views::CreateEmptyBorder(
-          views::kRelatedControlVerticalSpacing,
-          LayoutDelegate::Get()->GetMetric(
+          vertical_padding,
+          layout_delegate->GetMetric(
               LayoutDelegate::Metric::PANEL_CONTENT_MARGIN),
-          views::kRelatedControlVerticalSpacing, 0));
+          vertical_padding, 0));
       scroll_container->AddChildView(header);
     }
 
     // Checkboxes.
     MediaGalleriesDialogController::Entries::const_iterator iter;
     for (iter = entries.begin(); iter != entries.end(); ++iter) {
-      int spacing = 0;
-      if (iter + 1 == entries.end())
-        spacing = views::kRelatedControlSmallVerticalSpacing;
+      int spacing = iter + 1 == entries.end() ? small_vertical_padding : 0;
       AddOrUpdateGallery(*iter, scroll_container, spacing);
     }
   }
@@ -170,8 +170,7 @@ void MediaGalleriesDialogViews::InitChildViews() {
   views::ScrollView* scroll_view =
       views::ScrollView::CreateScrollViewWithBorder();
   scroll_view->SetContents(scroll_container);
-  layout->StartRowWithPadding(1, column_set_id,
-                              0, views::kRelatedControlVerticalSpacing);
+  layout->StartRowWithPadding(1, column_set_id, 0, vertical_padding);
   layout->AddView(scroll_view, 1, 1,
                   views::GridLayout::FILL, views::GridLayout::FILL,
                   dialog_content_width, kScrollAreaHeight);

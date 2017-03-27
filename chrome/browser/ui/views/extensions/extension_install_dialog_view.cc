@@ -50,7 +50,6 @@
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 
 using content::OpenURLParams;
@@ -60,25 +59,36 @@ using extensions::ExperienceSamplingEvent;
 namespace {
 
 // Width of the bullet column in BulletedView.
-const int kBulletWidth = 20;
+constexpr int kBulletWidth = 20;
 
 // Size of extension icon in top left of dialog.
-const int kIconSize = 64;
+constexpr int kIconSize = 64;
 
 // The maximum height of the scroll view before it will show a scrollbar.
-const int kScrollViewMaxHeight = 250;
+constexpr int kScrollViewMaxHeight = 250;
 
 // Width of the left column of the dialog when the extension requests
 // permissions.
-const int kPermissionsLeftColumnWidth = 250;
+constexpr int kPermissionsLeftColumnWidth = 250;
 
 // Width of the left column of the dialog when the extension requests no
 // permissions.
-const int kNoPermissionsLeftColumnWidth = 200;
+constexpr int kNoPermissionsLeftColumnWidth = 200;
 
 // Width of the left column for external install prompts. The text is long in
 // this case, so make it wider than normal.
-const int kExternalInstallLeftColumnWidth = 350;
+constexpr int kExternalInstallLeftColumnWidth = 350;
+
+// Get the appropriate indentation for an item if its parent is using bullet
+// points. If the parent is using bullets for its items, then a padding of one
+// unit will make the child item (which has no bullet) look like a sibling of
+// its parent. Therefore increase the indentation by one more unit to show that
+// it is in fact a child item (with no missing bullet) and not a sibling.
+int GetLeftPaddingForBulletedItems(bool parent_bulleted) {
+  return LayoutDelegate::Get()->GetMetric(
+             LayoutDelegate::Metric::RELATED_CONTROL_HORIZONTAL_SPACING) *
+         (parent_bulleted ? 2 : 1);
+}
 
 void AddResourceIcon(const gfx::ImageSkia* skia_image, void* data) {
   views::View* parent = static_cast<views::View*>(data);
@@ -254,17 +264,20 @@ void ExtensionInstallDialogView::InitView() {
     layout->AddView(user_count);
   }
 
+  LayoutDelegate* layout_delegate = LayoutDelegate::Get();
+  const int vertical_padding = layout_delegate->GetMetric(
+      LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING);
   if (prompt_->ShouldShowPermissions()) {
-    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+    layout->AddPaddingRow(0, vertical_padding);
     layout->StartRow(0, column_set_id);
     layout->AddView(new views::Separator(), 3, 1, views::GridLayout::FILL,
                     views::GridLayout::FILL);
   }
 
-  const int content_width = left_column_width +
-                            LayoutDelegate::Get()->GetMetric(
-                                LayoutDelegate::Metric::PANEL_CONTENT_MARGIN) +
-                            kIconSize;
+  const int content_width =
+      left_column_width +
+      layout_delegate->GetMetric(LayoutDelegate::Metric::PANEL_CONTENT_MARGIN) +
+      kIconSize;
 
   // Create the scrollable view which will contain the permissions and retained
   // files/devices. It will span the full content width.
@@ -281,7 +294,9 @@ void ExtensionInstallDialogView::InitView() {
       views::GridLayout::USE_PREF, content_width, content_width);
 
   // Pad to the very right of the dialog, so the scrollbar will be on the edge.
-  scrollable_column_set->AddPaddingColumn(0, views::kButtonHEdgeMarginNew);
+  const int button_margin =
+      layout_delegate->GetMetric(LayoutDelegate::Metric::DIALOG_BUTTON_MARGIN);
+  scrollable_column_set->AddPaddingColumn(0, button_margin);
 
   layout->StartRow(0, column_set_id);
   scroll_view_ = new views::ScrollView();
@@ -301,7 +316,7 @@ void ExtensionInstallDialogView::InitView() {
           scroll_layout, rb, column_set_id, content_width,
           ExtensionInstallPrompt::PermissionsType::WITHHELD_PERMISSIONS);
     } else {
-      scroll_layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+      scroll_layout->AddPaddingRow(0, vertical_padding);
       scroll_layout->StartRow(0, column_set_id);
       views::Label* permission_label = new views::Label(
           l10n_util::GetStringUTF16(IDS_EXTENSION_NO_SPECIAL_PERMISSIONS));
@@ -313,7 +328,7 @@ void ExtensionInstallDialogView::InitView() {
   }
 
   if (prompt_->GetRetainedFileCount()) {
-    scroll_layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+    scroll_layout->AddPaddingRow(0, vertical_padding);
 
     scroll_layout->StartRow(0, column_set_id);
     views::Label* retained_files_header =
@@ -334,7 +349,7 @@ void ExtensionInstallDialogView::InitView() {
   }
 
   if (prompt_->GetRetainedDeviceCount()) {
-    scroll_layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+    scroll_layout->AddPaddingRow(0, vertical_padding);
 
     scroll_layout->StartRow(0, column_set_id);
     views::Label* retained_devices_header =
@@ -363,9 +378,8 @@ void ExtensionInstallDialogView::InitView() {
       0,
       std::min(kScrollViewMaxHeight, scrollable->GetPreferredSize().height()));
 
-  dialog_size_ = gfx::Size(
-      content_width + 2 * views::kButtonHEdgeMarginNew,
-      container_->GetPreferredSize().height());
+  dialog_size_ = gfx::Size(content_width + 2 * button_margin,
+                           container_->GetPreferredSize().height());
 
   std::string event_name = ExperienceSamplingEvent::kExtensionInstallDialog;
   event_name.append(
@@ -382,7 +396,9 @@ bool ExtensionInstallDialogView::AddPermissions(
   if (prompt_->GetPermissionCount(perm_type) == 0)
     return false;
 
-  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+  const int vertical_padding = LayoutDelegate::Get()->GetMetric(
+      LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING);
+  layout->AddPaddingRow(0, vertical_padding);
 
   layout->StartRow(0, column_set_id);
   views::Label* permissions_header =
@@ -393,7 +409,7 @@ bool ExtensionInstallDialogView::AddPermissions(
   layout->AddView(permissions_header);
 
   for (size_t i = 0; i < prompt_->GetPermissionCount(perm_type); ++i) {
-    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+    layout->AddPaddingRow(0, vertical_padding);
     layout->StartRow(0, column_set_id);
     views::Label* permission_label =
         new views::Label(prompt_->GetPermission(i, perm_type));
@@ -421,14 +437,20 @@ views::GridLayout* ExtensionInstallDialogView::CreateLayout(
     int left_column_width,
     int column_set_id) {
   container_ = new views::View();
-  // This is basically views::GridLayout::CreatePanel, but without a top or
-  // right margin (we effectively get a top margin anyway from the empty dialog
-  // title, and we add an explicit padding column as a right margin below).
+  LayoutDelegate* layout_delegate = LayoutDelegate::Get();
+  const int horizontal_margin =
+      layout_delegate->GetMetric(LayoutDelegate::Metric::DIALOG_BUTTON_MARGIN);
+  const int bottom_margin =
+      layout_delegate->GetMetric(LayoutDelegate::Metric::PANEL_CONTENT_MARGIN);
+
+  // This is views::GridLayout::CreatePanel(), but without a top or right
+  // margin. The empty dialog title will then become the top margin, and a
+  // padding column will be manually added to handle a right margin. This is
+  // done so that the extension icon can be shown on the right of the dialog
+  // title, but on the same y-axis, and the scroll view used to contain other
+  // content can have its scrollbar aligned with the right edge of the dialog.
   views::GridLayout* layout = new views::GridLayout(container_);
-  layout->SetInsets(0, views::kButtonHEdgeMarginNew,
-                    LayoutDelegate::Get()->GetMetric(
-                        LayoutDelegate::Metric::PANEL_CONTENT_MARGIN),
-                    0);
+  layout->SetInsets(0, horizontal_margin, bottom_margin, 0);
   container_->SetLayoutManager(layout);
   AddChildView(container_);
 
@@ -439,14 +461,14 @@ views::GridLayout* ExtensionInstallDialogView::CreateLayout(
                         0,  // no fixed width
                         left_column_width);
   column_set->AddPaddingColumn(
-      0, LayoutDelegate::Get()->GetMetric(
-             LayoutDelegate::Metric::PANEL_CONTENT_MARGIN));
+      0, layout_delegate->GetMetric(
+             LayoutDelegate::Metric::UNRELATED_CONTROL_HORIZONTAL_SPACING));
   column_set->AddColumn(views::GridLayout::TRAILING, views::GridLayout::LEADING,
                         0,  // no resizing
                         views::GridLayout::USE_PREF,
                         0,  // no fixed width
                         kIconSize);
-  column_set->AddPaddingColumn(0, views::kButtonHEdgeMarginNew);
+  column_set->AddPaddingColumn(0, horizontal_margin);
 
   layout->StartRow(0, column_set_id);
   views::Label* title = new views::Label(prompt_->GetDialogTitle(),
@@ -587,25 +609,19 @@ ExpandableContainerView::DetailsView::DetailsView(int horizontal_space,
       state_(0) {
   SetLayoutManager(layout_);
   views::ColumnSet* column_set = layout_->AddColumnSet(0);
-  // If the parent is using bullets for its items, then a padding of one unit
-  // will make the child item (which has no bullet) look like a sibling of its
-  // parent. Therefore increase the indentation by one more unit to show that it
-  // is in fact a child item (with no missing bullet) and not a sibling.
-  int padding =
-      views::kRelatedControlHorizontalSpacing * (parent_bulleted ? 2 : 1);
+  const int padding = GetLeftPaddingForBulletedItems(parent_bulleted);
   column_set->AddPaddingColumn(0, padding);
-  column_set->AddColumn(views::GridLayout::LEADING,
-                        views::GridLayout::LEADING,
-                        0,
-                        views::GridLayout::FIXED,
-                        horizontal_space - padding,
+  column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING,
+                        0, views::GridLayout::FIXED, horizontal_space - padding,
                         0);
 }
 
 void ExpandableContainerView::DetailsView::AddDetail(
     const base::string16& detail) {
-  layout_->StartRowWithPadding(0, 0,
-                               0, views::kRelatedControlSmallVerticalSpacing);
+  layout_->StartRowWithPadding(
+      0, 0, 0,
+      LayoutDelegate::Get()->GetMetric(
+          LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING_SMALL));
   views::Label* detail_label =
       new views::Label(PrepareForDisplay(detail, false));
   detail_label->SetMultiLine(true);
@@ -654,8 +670,7 @@ ExpandableContainerView::ExpandableContainerView(
     details_view_->AddDetail(details[i]);
 
   // Make sure the link width column is as wide as needed for both Show and
-  // Hide details, so that the arrow doesn't shift horizontally when we
-  // toggle.
+  // Hide details, so that the arrow doesn't shift horizontally when we toggle.
   views::Link* link = new views::Link(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_HIDE_DETAILS));
   int link_col_width = link->GetPreferredSize().width();
@@ -663,13 +678,9 @@ ExpandableContainerView::ExpandableContainerView(
   link_col_width = std::max(link_col_width, link->GetPreferredSize().width());
 
   column_set = layout->AddColumnSet(++column_set_id);
-  // Padding to the left of the More Details column. If the parent is using
-  // bullets for its items, then a padding of one unit will make the child
-  // item (which has no bullet) look like a sibling of its parent. Therefore
-  // increase the indentation by one more unit to show that it is in fact a
-  // child item (with no missing bullet) and not a sibling.
-  column_set->AddPaddingColumn(
-      0, views::kRelatedControlHorizontalSpacing * (parent_bulleted ? 2 : 1));
+  // Padding to the left of the More Details column.
+  column_set->AddPaddingColumn(0,
+                               GetLeftPaddingForBulletedItems(parent_bulleted));
   // The More Details column.
   column_set->AddColumn(views::GridLayout::LEADING,
                         views::GridLayout::LEADING,

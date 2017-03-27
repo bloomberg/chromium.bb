@@ -49,9 +49,13 @@ int LayoutDelegate::GetMetric(Metric metric) const {
     case Metric::RELATED_CONTROL_HORIZONTAL_SPACING:
       return ChromeViewsDelegate::GetDefaultDistanceMetric(
           views::DistanceMetric::RELATED_CONTROL_HORIZONTAL);
+    case Metric::RELATED_CONTROL_HORIZONTAL_SPACING_SMALL:
+      return views::kRelatedControlSmallVerticalSpacing;
     case Metric::RELATED_CONTROL_VERTICAL_SPACING:
       return ChromeViewsDelegate::GetDefaultDistanceMetric(
           views::DistanceMetric::RELATED_CONTROL_VERTICAL);
+    case Metric::RELATED_CONTROL_VERTICAL_SPACING_SMALL:
+      return views::kRelatedControlSmallVerticalSpacing;
     case Metric::RELATED_LABEL_HORIZONTAL_SPACING:
       return views::kItemLabelSpacing;
     case Metric::SUBSECTION_HORIZONTAL_INDENT:
