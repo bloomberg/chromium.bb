@@ -15,22 +15,44 @@
 #      'target_name': 'banners',
 #      'includes': ['../../../../compile_js2.gypi'],
 #    },
-#    {
-#      'target_name': 'combobutton',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'commandbutton',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'default_task_dialog',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'dialog_footer',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'combobutton',
+      'dependencies': [
+        '../../elements/compiled_resources2.gyp:files_toggle_ripple',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:menu_button',
+        'files_menu',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'commandbutton',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+        '<(DEPTH)/ui/webui/resources/js/cr/compiled_resources2.gyp:ui',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:command',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'default_task_dialog',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:array_data_model',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:list',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:list_single_selection_model',
+        'file_manager_dialog_base',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'dialog_footer',
+      'dependencies': [
+        '../../../common/js/compiled_resources2.gyp:file_type',
+        '../../../common/js/compiled_resources2.gyp:util',
+        '../compiled_resources2.gyp:dialog_type',
+        '../compiled_resources2.gyp:file_list_model',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
 #    {
 #      'target_name': 'directory_tree',
 #      'includes': ['../../../../compile_js2.gypi'],
@@ -159,10 +181,14 @@
 #      'target_name': 'providers_menu',
 #      'includes': ['../../../../compile_js2.gypi'],
 #    },
-#    {
-#      'target_name': 'scrollbar',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'scrollbar',
+      'dependencies': [
+        '../../../common/js/compiled_resources2.gyp:util',
+        '<(DEPTH)/ui/webui/resources/js/cr/compiled_resources2.gyp:ui',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
 #    {
 #      'target_name': 'search_box',
 #      'includes': ['../../../../compile_js2.gypi'],

@@ -61,10 +61,16 @@
 #      'target_name': 'empty_folder_controller',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
-#    {
-#      'target_name': 'file_list_model',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'file_list_model',
+      'dependencies': [
+        '../../common/js/compiled_resources2.gyp:file_type',
+        '../../common/js/compiled_resources2.gyp:util',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:array_data_model',
+        'metadata/compiled_resources2.gyp:metadata_model',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
 #    {
 #      'target_name': 'file_manager',
 #      'includes': ['../../../compile_js2.gypi'],
@@ -159,10 +165,17 @@
 #      'target_name': 'naming_controller',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
-#    {
-#      'target_name': 'navigation_list_model',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'navigation_list_model',
+      'dependencies': [
+        '../../../externs/compiled_resources2.gyp:volume_info',
+        '<(DEPTH)/ui/webui/resources/js/cr/compiled_resources2.gyp:event_target',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:array_data_model',
+        'folder_shortcuts_data_model',
+        'volume_manager_wrapper',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
 #    {
 #      'target_name': 'progress_center_item_group',
 #      'includes': ['../../../compile_js2.gypi'],
