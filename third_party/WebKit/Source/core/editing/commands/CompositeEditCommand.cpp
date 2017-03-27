@@ -1963,6 +1963,37 @@ void CompositeEditCommand::setParent(CompositeEditCommand* parent) {
   m_endingSelection = parent->m_endingSelection;
 }
 
+// Determines whether a node is inside a range or visibly starts and ends at the
+// boundaries of the range. Call this function to determine whether a node is
+// visibly fit inside selectedRange
+bool CompositeEditCommand::isNodeVisiblyContainedWithin(
+    Node& node,
+    const Range& selectedRange) {
+  DCHECK(!needsLayoutTreeUpdate(node));
+  DocumentLifecycle::DisallowTransitionScope disallowTransition(
+      node.document().lifecycle());
+
+  if (selectedRange.isNodeFullyContained(node))
+    return true;
+
+  bool startIsVisuallySame =
+      visiblePositionBeforeNode(node).deepEquivalent() ==
+      createVisiblePosition(selectedRange.startPosition()).deepEquivalent();
+  if (startIsVisuallySame && comparePositions(Position::inParentAfterNode(node),
+                                              selectedRange.endPosition()) < 0)
+    return true;
+
+  bool endIsVisuallySame =
+      visiblePositionAfterNode(node).deepEquivalent() ==
+      createVisiblePosition(selectedRange.endPosition()).deepEquivalent();
+  if (endIsVisuallySame &&
+      comparePositions(selectedRange.startPosition(),
+                       Position::inParentBeforeNode(node)) < 0)
+    return true;
+
+  return startIsVisuallySame && endIsVisuallySame;
+}
+
 DEFINE_TRACE(CompositeEditCommand) {
   visitor->trace(m_commands);
   visitor->trace(m_startingSelection);

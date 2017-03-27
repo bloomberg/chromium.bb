@@ -104,7 +104,7 @@ InputEvent::EventCancelable inputTypeIsCancelable(
 
 }  // namespace
 
-static bool needsLayoutTreeUpdate(const Node& node) {
+bool needsLayoutTreeUpdate(const Node& node) {
   const Document& document = node.document();
   if (document.needsLayoutTreeUpdate())
     return true;
@@ -1968,36 +1968,6 @@ VisiblePosition visiblePositionForIndex(int index, ContainerNode* scope) {
   if (range.isNull())
     return VisiblePosition();
   return createVisiblePosition(range.startPosition());
-}
-
-// Determines whether a node is inside a range or visibly starts and ends at the
-// boundaries of the range. Call this function to determine whether a node is
-// visibly fit inside selectedRange
-bool isNodeVisiblyContainedWithin(Node& node, const Range& selectedRange) {
-  DCHECK(!needsLayoutTreeUpdate(node));
-  DocumentLifecycle::DisallowTransitionScope disallowTransition(
-      node.document().lifecycle());
-
-  if (selectedRange.isNodeFullyContained(node))
-    return true;
-
-  bool startIsVisuallySame =
-      visiblePositionBeforeNode(node).deepEquivalent() ==
-      createVisiblePosition(selectedRange.startPosition()).deepEquivalent();
-  if (startIsVisuallySame &&
-      comparePositions(Position::inParentAfterNode(node),
-                       selectedRange.endPosition()) < 0)
-    return true;
-
-  bool endIsVisuallySame =
-      visiblePositionAfterNode(node).deepEquivalent() ==
-      createVisiblePosition(selectedRange.endPosition()).deepEquivalent();
-  if (endIsVisuallySame &&
-      comparePositions(selectedRange.startPosition(),
-                       Position::inParentBeforeNode(node)) < 0)
-    return true;
-
-  return startIsVisuallySame && endIsVisuallySame;
 }
 
 bool isRenderedAsNonInlineTableImageOrHR(const Node* node) {

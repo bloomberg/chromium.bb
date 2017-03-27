@@ -221,6 +221,8 @@ class CORE_EXPORT CompositeEditCommand : public EditCommand {
 
   Node* splitTreeToNode(Node*, Node*, bool splitAncestor = false);
 
+  static bool isNodeVisiblyContainedWithin(Node&, const Range&);
+
   HeapVector<Member<EditCommand>> m_commands;
 
  private:

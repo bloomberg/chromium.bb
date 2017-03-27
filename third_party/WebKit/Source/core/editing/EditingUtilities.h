@@ -63,10 +63,10 @@ class Element;
 class HTMLElement;
 class HTMLSpanElement;
 class Node;
-class Range;
 
 // This file contains a set of helper functions used by the editing commands
 
+bool needsLayoutTreeUpdate(const Node&);
 CORE_EXPORT bool needsLayoutTreeUpdate(const Position&);
 CORE_EXPORT bool needsLayoutTreeUpdate(const PositionInFlatTree&);
 
@@ -185,7 +185,6 @@ bool isHTMLListElement(Node*);
 bool isListItem(const Node*);
 bool isPresentationalHTMLElement(const Node*);
 bool isNodeRendered(const Node&);
-bool isNodeVisiblyContainedWithin(Node&, const Range&);
 bool isRenderedAsNonInlineTableImageOrHR(const Node*);
 // Returns true if specified nodes are elements, have identical tag names,
 // have identical attributes, and are editable.
