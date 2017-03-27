@@ -14,6 +14,8 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
 import android.graphics.Picture;
 import android.graphics.Rect;
@@ -360,6 +362,8 @@ public class AwContents implements SmartClipProvider {
     private boolean mIsNoOperation;
 
     private static String sCurrentLocales = "";
+
+    private Paint mPaintForNWorkaround;
 
     private static final class AwContentsDestroyRunnable implements Runnable {
         private final long mNativeAwContents;
@@ -3053,6 +3057,21 @@ public class AwContents implements SmartClipProvider {
             int scrollX = mContainerView.getScrollX();
             int scrollY = mContainerView.getScrollY();
             Rect globalVisibleRect = getGlobalVisibleRect();
+            // Workaround for bug in libhwui on N that does not swap if inserting functor is the
+            // only operation in a canvas. See crbug.com/704212.
+            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.N
+                    || Build.VERSION.SDK_INT == 25 /* N_MR1 */) {
+                if (mPaintForNWorkaround == null) {
+                    mPaintForNWorkaround = new Paint();
+                    // Note a completely transparent color will get optimized out. So draw almost
+                    // transparent black, but then scale alpha down to effectively 0.
+                    mPaintForNWorkaround.setColor(Color.argb(1, 0, 0, 0));
+                    ColorMatrix colorMatrix = new ColorMatrix();
+                    colorMatrix.setScale(0.f, 0.f, 0.f, 0.1f);
+                    mPaintForNWorkaround.setColorFilter(new ColorMatrixColorFilter(colorMatrix));
+                }
+                canvas.drawRect(0, 0, 1, 1, mPaintForNWorkaround);
+            }
             boolean did_draw = nativeOnDraw(mNativeAwContents, canvas,
                     canvas.isHardwareAccelerated(), scrollX, scrollY, globalVisibleRect.left,
                     globalVisibleRect.top, globalVisibleRect.right, globalVisibleRect.bottom);
