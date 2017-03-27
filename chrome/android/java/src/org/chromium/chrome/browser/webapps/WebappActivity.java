@@ -108,6 +108,9 @@ public class WebappActivity extends FullScreenActivity {
             mWebappInfo = newWebappInfo;
             resetSavedInstanceState();
             if (mIsInitialized) initializeUI(null);
+        } else if (newWebappInfo.shouldForceNavigation() && mIsInitialized) {
+            getActivityTab().loadUrl(new LoadUrlParams(
+                    newWebappInfo.uri().toString(), PageTransition.AUTO_TOPLEVEL));
         }
     }
 
@@ -119,7 +122,7 @@ public class WebappActivity extends FullScreenActivity {
         return (intent == null) ? WebappInfo.createEmpty() : WebappInfo.create(intent);
     }
 
-    private void initializeUI(Bundle savedInstanceState) {
+    protected void initializeUI(Bundle savedInstanceState) {
         // We do not load URL when restoring from saved instance states.
         if (savedInstanceState == null && mWebappInfo.isInitialized()) {
             if (TextUtils.isEmpty(getActivityTab().getUrl())) {

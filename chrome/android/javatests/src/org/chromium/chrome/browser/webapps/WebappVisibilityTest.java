@@ -102,8 +102,8 @@ public class WebappVisibilityTest extends NativeLibraryTestBase {
                     "", webappStartUrlOrScopeUrl, null, null, null, null, 0, 0, 0, 0, 0, false);
         } else {
             delegate = new WebApkBrowserControlsDelegate(null, new Tab(0, false, null));
-            info = WebApkInfo.create("", "", webappStartUrlOrScopeUrl, null, null, null, 0, 0, 0, 0,
-                    0, "", 0, null, "", null);
+            info = WebApkInfo.create("", "", false /* forceNavigation */, webappStartUrlOrScopeUrl,
+                    null, null, null, 0, 0, 0, 0, 0, "", 0, null, "", null);
         }
         return delegate.shouldShowBrowserControls(info, url, securityLevel);
     }

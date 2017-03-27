@@ -4,4 +4,4 @@
 
 # Must be incremented whenever code in //chrome/android/webapk/shell_apk
 # (including AndroidManifest.xml) is updated.
-shell_apk_version = 1
+shell_apk_version = 2

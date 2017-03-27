@@ -689,8 +689,8 @@ public class ShortcutHelper {
             if (WebApkValidator.isValidWebApk(context, packageInfo.packageName)) {
                 // Pass non-null URL parameter so that {@link WebApkInfo#create()}
                 // return value is non-null
-                WebApkInfo webApkInfo =
-                        WebApkInfo.create(packageInfo.packageName, "", ShortcutSource.UNKNOWN);
+                WebApkInfo webApkInfo = WebApkInfo.create(packageInfo.packageName, "",
+                        ShortcutSource.UNKNOWN, false /* forceNavigation */);
                 if (webApkInfo != null) {
                     names.add(webApkInfo.name());
                     shortNames.add(webApkInfo.shortName());

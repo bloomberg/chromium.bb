@@ -194,6 +194,14 @@ public class WebappInfo {
         return mUri;
     }
 
+    /**
+     * Whether the webapp should be navigated to {@link uri()} if the webapp is already open when
+     * Chrome receives a ACTION_START_WEBAPP intent.
+     */
+    public boolean shouldForceNavigation() {
+        return false;
+    }
+
     public Uri scopeUri() {
         return mScopeUri;
     }

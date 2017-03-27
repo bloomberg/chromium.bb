@@ -73,6 +73,7 @@ public class WebApkInfoTest {
         Intent intent = new Intent();
         intent.putExtra(
                 WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WebApkTestHelper.WEBAPK_PACKAGE_NAME);
+        intent.putExtra(WebApkConstants.EXTRA_WEBAPK_FORCE_NAVIGATION, true);
         intent.putExtra(ShortcutHelper.EXTRA_URL, START_URL);
         intent.putExtra(ShortcutHelper.EXTRA_SOURCE, ShortcutSource.NOTIFICATION);
 
@@ -80,6 +81,8 @@ public class WebApkInfoTest {
 
         Assert.assertEquals(WebApkConstants.WEBAPK_ID_PREFIX + WebApkTestHelper.WEBAPK_PACKAGE_NAME,
                 info.id());
+        Assert.assertEquals(START_URL, info.uri().toString());
+        Assert.assertTrue(info.shouldForceNavigation());
         Assert.assertEquals(SCOPE, info.scopeUri().toString());
         Assert.assertEquals(NAME, info.name());
         Assert.assertEquals(SHORT_NAME, info.shortName());

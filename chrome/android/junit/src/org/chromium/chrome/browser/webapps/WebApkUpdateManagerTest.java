@@ -251,12 +251,12 @@ public class WebApkUpdateManagerTest {
     private static WebApkInfo infoFromManifestData(ManifestData manifestData) {
         if (manifestData == null) return null;
 
-        return WebApkInfo.create(WEBAPK_ID, "", manifestData.scopeUrl,
+        return WebApkInfo.create(WEBAPK_ID, "", false /* forceNavigation */, manifestData.scopeUrl,
                 new WebApkInfo.Icon(manifestData.bestIcon), manifestData.name,
                 manifestData.shortName, manifestData.displayMode, manifestData.orientation, -1,
                 manifestData.themeColor, manifestData.backgroundColor,
-                WebApkTestHelper.WEBAPK_PACKAGE_NAME, -1, WEB_MANIFEST_URL,
-                manifestData.startUrl, manifestData.iconUrlToMurmur2HashMap);
+                WebApkTestHelper.WEBAPK_PACKAGE_NAME, -1, WEB_MANIFEST_URL, manifestData.startUrl,
+                manifestData.iconUrlToMurmur2HashMap);
     }
 
     /**
