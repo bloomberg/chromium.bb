@@ -54,6 +54,11 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
          * Gets the URL of the current frame. Can return null (if the frame has disappeared).
          */
         public URI getUrl();
+
+        /**
+         * Checks if we're in incognito. If the frame has disappeared this returns true.
+         */
+        public boolean isIncognito();
     }
 
     public InstalledAppProviderImpl(FrameUrlDelegate frameUrlDelegate, Context context) {
@@ -64,6 +69,11 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
     @Override
     public void filterInstalledApps(
             RelatedApplication[] relatedApps, FilterInstalledAppsResponse callback) {
+        if (mFrameUrlDelegate.isIncognito()) {
+            callback.call(new RelatedApplication[0]);
+            return;
+        }
+
         URI frameUrl = mFrameUrlDelegate.getUrl();
         ArrayList<RelatedApplication> installedApps = new ArrayList<RelatedApplication>();
         PackageManager pm = mContext.getPackageManager();
@@ -79,6 +89,7 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
                 installedApps.add(app);
             }
         }
+
         RelatedApplication[] installedAppsArray = new RelatedApplication[installedApps.size()];
         installedApps.toArray(installedAppsArray);
         callback.call(installedAppsArray);

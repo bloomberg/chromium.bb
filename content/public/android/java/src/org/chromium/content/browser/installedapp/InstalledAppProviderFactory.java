@@ -5,6 +5,7 @@
 package org.chromium.content.browser.installedapp;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.content.browser.framehost.RenderFrameHostImpl;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.installedapp.mojom.InstalledAppProvider;
 import org.chromium.services.service_manager.InterfaceFactory;
@@ -18,10 +19,10 @@ public class InstalledAppProviderFactory implements InterfaceFactory<InstalledAp
 
     private static final class FrameUrlDelegateImpl
             implements InstalledAppProviderImpl.FrameUrlDelegate {
-        private final RenderFrameHost mRenderFrameHost;
+        private final RenderFrameHostImpl mRenderFrameHost;
 
         public FrameUrlDelegateImpl(RenderFrameHost renderFrameHost) {
-            mRenderFrameHost = renderFrameHost;
+            mRenderFrameHost = (RenderFrameHostImpl) renderFrameHost;
         }
 
         @Override
@@ -34,6 +35,11 @@ public class InstalledAppProviderFactory implements InterfaceFactory<InstalledAp
             } catch (URISyntaxException e) {
                 throw new AssertionError(e);
             }
+        }
+
+        @Override
+        public boolean isIncognito() {
+            return mRenderFrameHost.isIncognito();
         }
     }
 

@@ -8,6 +8,8 @@
 #include "base/logging.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/site_instance.h"
 #include "jni/RenderFrameHostImpl_jni.h"
 
 using base::android::AttachCurrentThread;
@@ -39,9 +41,13 @@ base::android::ScopedJavaLocalRef<jobject>
 RenderFrameHostAndroid::GetJavaObject() {
   JNIEnv* env = base::android::AttachCurrentThread();
   if (obj_.is_uninitialized()) {
+    bool is_incognito = render_frame_host_->GetSiteInstance()
+                            ->GetBrowserContext()
+                            ->IsOffTheRecord();
     ScopedJavaLocalRef<jobject> local_ref = Java_RenderFrameHostImpl_create(
         env, reinterpret_cast<intptr_t>(this),
-        render_frame_host_->delegate()->GetJavaRenderFrameHostDelegate());
+        render_frame_host_->delegate()->GetJavaRenderFrameHostDelegate(),
+        is_incognito);
     obj_ = JavaObjectWeakGlobalRef(env, local_ref);
     return local_ref;
   }

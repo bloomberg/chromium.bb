@@ -162,6 +162,7 @@ public class InstalledAppProviderTest {
     private static final class FakeFrameUrlDelegate
             implements InstalledAppProviderImpl.FrameUrlDelegate {
         private URI mFrameUrl;
+        private boolean mIncognito;
 
         public FakeFrameUrlDelegate(String frameUrl) {
             setFrameUrl(frameUrl);
@@ -183,6 +184,15 @@ public class InstalledAppProviderTest {
         @Override
         public URI getUrl() {
             return mFrameUrl;
+        }
+
+        public void setIncognito(boolean incognito) {
+            mIncognito = incognito;
+        }
+
+        @Override
+        public boolean isIncognito() {
+            return mIncognito;
         }
     }
 
@@ -286,6 +296,21 @@ public class InstalledAppProviderTest {
         verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
 
         mFrameUrlDelegate.setFrameUrl(ORIGIN_MISSING_HOST);
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+    }
+
+    /**
+     * Incognito mode with one related Android app.
+     */
+    @Test
+    @Feature({"InstalledApp"})
+    public void testIncognitoWithOneInstalledRelatedApp() {
+        RelatedApplication manifestRelatedApps[] = new RelatedApplication[] {
+                createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_1, null)};
+        setAssetStatement(PACKAGE_NAME_1, NAMESPACE_WEB, RELATION_HANDLE_ALL_URLS, ORIGIN);
+        RelatedApplication[] expectedInstalledRelatedApps = new RelatedApplication[] {};
+
+        mFrameUrlDelegate.setIncognito(true);
         verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
     }
 
