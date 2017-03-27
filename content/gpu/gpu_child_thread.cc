@@ -280,6 +280,7 @@ void GpuChildThread::CreateGpuService(
 
   if (dead_on_arrival_) {
     LOG(ERROR) << "Exiting GPU process due to errors during initialization";
+    gpu_service_.reset();
     base::MessageLoop::current()->QuitWhenIdle();
     return;
   }
