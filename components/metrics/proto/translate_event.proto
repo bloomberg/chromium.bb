@@ -131,6 +131,9 @@ message TranslateEventProto {
     WEB_CONTENTS_NOT_ACTIVE = 22;
     // The translate UI was not shown because the user is editing a form field.
     EDITABLE_FIELD_IS_ACTIVE = 23;
+    // The translate UI was not shown because the language is in the user's User
+    // Language Profile.
+    LANGUAGE_IN_ULP = 24;
   }
 
   // Event received from translate UI.

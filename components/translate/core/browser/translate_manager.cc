@@ -182,6 +182,7 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
   if (!prefs->GetBoolean(prefs::kEnableTranslate)) {
     TranslateBrowserMetrics::ReportInitiationStatus(
         TranslateBrowserMetrics::INITIATION_STATUS_DISABLED_BY_PREFS);
+    RecordTranslateEvent(metrics::TranslateEventProto::DISABLED_BY_PREF);
     const std::string& locale =
         TranslateDownloadManager::GetInstance()->application_locale();
     TranslateBrowserMetrics::ReportLocalesOnDisabledByPrefs(locale);
@@ -295,7 +296,7 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
   if (LanguageInULP(language_code)) {
     TranslateBrowserMetrics::ReportInitiationStatus(
         TranslateBrowserMetrics::INITIATION_STATUS_LANGUAGE_IN_ULP);
-    RecordTranslateEvent(metrics::TranslateEventProto::DISABLED_BY_PREF);
+    RecordTranslateEvent(metrics::TranslateEventProto::LANGUAGE_IN_ULP);
     return;
   }
 
