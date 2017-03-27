@@ -125,7 +125,8 @@ PaintInvalidationReason BoxPaintInvalidator::computePaintInvalidationReason() {
   DCHECK(borderBoxChanged);
 
   if (style.hasVisualOverflowingEffect() || style.hasAppearance() ||
-      style.hasFilterInducingProperty() || style.hasMask())
+      style.hasFilterInducingProperty() || style.resize() != RESIZE_NONE ||
+      style.hasMask())
     return PaintInvalidationBorderBoxChange;
 
   if (style.hasBorderRadius())
