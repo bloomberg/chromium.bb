@@ -112,6 +112,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void BeginMainFrame(const BeginFrameArgs& begin_frame_args);
   void BeginMainFrameAbortedOnImplThread(CommitEarlyOutReason reason);
   void DoBeginMainFrame(const BeginFrameArgs& begin_frame_args);
+  void DoPainting();
   void DoCommit();
   DrawResult DoComposite(LayerTreeHostImpl::FrameData* frame);
   void DoSwap();

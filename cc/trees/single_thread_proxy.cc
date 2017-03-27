@@ -471,6 +471,7 @@ void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
     DCHECK(inside_impl_frame_);
 #endif
     DoBeginMainFrame(begin_frame_args);
+    DoPainting();
     DoCommit();
 
     DCHECK_EQ(
@@ -658,6 +659,22 @@ void SingleThreadProxy::BeginMainFrame(const BeginFrameArgs& begin_frame_args) {
   commit_requested_ = true;
 
   DoBeginMainFrame(begin_frame_args);
+
+  // New commits requested inside UpdateLayers should be respected.
+  commit_requested_ = false;
+
+  // At this point the main frame may have deferred commits to avoid committing
+  // right now.
+  if (defer_commits_) {
+    TRACE_EVENT_INSTANT0("cc", "EarlyOut_DeferCommit_InsideBeginMainFrame",
+                         TRACE_EVENT_SCOPE_THREAD);
+    BeginMainFrameAbortedOnImplThread(
+        CommitEarlyOutReason::ABORTED_DEFERRED_COMMIT);
+    layer_tree_host_->DidBeginMainFrame();
+    return;
+  }
+
+  DoPainting();
 }
 
 void SingleThreadProxy::DoBeginMainFrame(
@@ -674,10 +691,9 @@ void SingleThreadProxy::DoBeginMainFrame(
   layer_tree_host_->BeginMainFrame(begin_frame_args);
   layer_tree_host_->AnimateLayers(begin_frame_args.frame_time);
   layer_tree_host_->RequestMainFrameUpdate();
+}
 
-  // New commits requested inside UpdateLayers should be respected.
-  commit_requested_ = false;
-
+void SingleThreadProxy::DoPainting() {
   layer_tree_host_->UpdateLayers();
 
   // TODO(enne): SingleThreadProxy does not support cancelling commits yet,

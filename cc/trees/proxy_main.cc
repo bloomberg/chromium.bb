@@ -187,6 +187,26 @@ void ProxyMain::BeginMainFrame(
     layer_tree_host_->GetUIResourceManager()->RecreateUIResources();
 
   layer_tree_host_->RequestMainFrameUpdate();
+
+  // At this point the main frame may have deferred commits to avoid committing
+  // right now.
+  if (defer_commits_) {
+    TRACE_EVENT_INSTANT0("cc", "EarlyOut_DeferCommit_InsideBeginMainFrame",
+                         TRACE_EVENT_SCOPE_THREAD);
+    std::vector<std::unique_ptr<SwapPromise>> empty_swap_promises;
+    ImplThreadTaskRunner()->PostTask(
+        FROM_HERE, base::Bind(&ProxyImpl::BeginMainFrameAbortedOnImpl,
+                              base::Unretained(proxy_impl_.get()),
+                              CommitEarlyOutReason::ABORTED_DEFERRED_COMMIT,
+                              begin_main_frame_start_time,
+                              base::Passed(&empty_swap_promises)));
+    current_pipeline_stage_ = NO_PIPELINE_STAGE;
+    // We intentionally don't report CommitComplete() here since it was aborted
+    // prematurely and we're waiting to do another commit in the future.
+    layer_tree_host_->DidBeginMainFrame();
+    return;
+  }
+
   TRACE_EVENT_SYNTHETIC_DELAY_END("cc.BeginMainFrame");
 
   bool can_cancel_this_commit = final_pipeline_stage_ < COMMIT_PIPELINE_STAGE &&
