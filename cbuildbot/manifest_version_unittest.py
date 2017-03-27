@@ -10,12 +10,12 @@ import mock
 import os
 import tempfile
 
-from chromite.cbuildbot import buildbucket_lib
 from chromite.cbuildbot import build_status
 from chromite.cbuildbot import build_status_unittest
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import repository
 from chromite.lib import builder_status_lib
+from chromite.lib import buildbucket_lib
 from chromite.lib import constants
 from chromite.lib import config_lib
 from chromite.lib import cros_build_lib_unittest

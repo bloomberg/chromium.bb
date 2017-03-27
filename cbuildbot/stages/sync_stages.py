@@ -19,7 +19,6 @@ import time
 from xml.etree import ElementTree
 from xml.dom import minidom
 
-from chromite.cbuildbot import buildbucket_lib
 from chromite.cbuildbot import chroot_lib
 from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import manifest_version
@@ -30,6 +29,7 @@ from chromite.cbuildbot import trybot_patch_pool
 from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import build_stages
+from chromite.lib import buildbucket_lib
 from chromite.lib import clactions
 from chromite.lib import config_lib
 from chromite.lib import constants

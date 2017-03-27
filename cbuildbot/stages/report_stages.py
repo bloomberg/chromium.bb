@@ -11,13 +11,13 @@ import datetime
 import os
 import sys
 
-from chromite.cbuildbot import buildbucket_lib
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import tree_status
 from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import completion_stages
 from chromite.cbuildbot.stages import generic_stages
+from chromite.lib import buildbucket_lib
 from chromite.lib import cidb
 from chromite.lib import config_lib
 from chromite.lib import constants

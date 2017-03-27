@@ -15,7 +15,6 @@ import shutil
 import time
 import tempfile
 
-from chromite.cbuildbot import buildbucket_lib
 from chromite.cbuildbot import chromeos_config
 from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import manifest_version
@@ -29,6 +28,7 @@ from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import sync_stages
 from chromite.lib import auth
+from chromite.lib import buildbucket_lib
 from chromite.lib import cidb
 from chromite.lib import clactions
 from chromite.lib import cl_messages

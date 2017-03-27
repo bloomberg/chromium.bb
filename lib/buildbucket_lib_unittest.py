@@ -9,8 +9,8 @@ from __future__ import print_function
 import json
 import mock
 
-from chromite.cbuildbot import buildbucket_lib
 from chromite.lib import auth
+from chromite.lib import buildbucket_lib
 from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import metadata_lib

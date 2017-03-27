@@ -10,10 +10,10 @@ import datetime
 import mock
 import time
 
-from chromite.cbuildbot import buildbucket_lib
 from chromite.cbuildbot import build_status
 from chromite.cbuildbot import relevant_changes
 from chromite.cbuildbot import validation_pool_unittest
+from chromite.lib import buildbucket_lib
 from chromite.lib import constants
 from chromite.lib import config_lib
 from chromite.lib import fake_cidb

@@ -9,7 +9,6 @@ from __future__ import print_function
 import contextlib
 import os
 
-from chromite.cbuildbot import buildbucket_lib
 from chromite.cbuildbot import cbuildbot_unittest
 from chromite.cbuildbot import chromeos_config
 from chromite.cbuildbot import commands
@@ -17,6 +16,7 @@ from chromite.cbuildbot.stages import build_stages
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.lib import auth
+from chromite.lib import buildbucket_lib
 from chromite.lib import cidb
 from chromite.lib import config_lib
 from chromite.lib import constants

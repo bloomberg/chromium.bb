@@ -23,10 +23,10 @@ try:
 except ImportError:
   mox = None
 
-from chromite.cbuildbot import buildbucket_lib
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import repository
 from chromite.cbuildbot import topology
+from chromite.lib import buildbucket_lib
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib

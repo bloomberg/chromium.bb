@@ -10,7 +10,6 @@ import itertools
 import mock
 import sys
 
-from chromite.cbuildbot import buildbucket_lib
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import manifest_version
@@ -23,6 +22,7 @@ from chromite.cbuildbot.stages import sync_stages_unittest
 from chromite.cbuildbot.stages import sync_stages
 from chromite.lib import alerts
 from chromite.lib import auth
+from chromite.lib import buildbucket_lib
 from chromite.lib import builder_status_lib
 from chromite.lib import cidb
 from chromite.lib import clactions

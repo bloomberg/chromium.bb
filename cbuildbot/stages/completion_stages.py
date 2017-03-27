@@ -6,7 +6,6 @@
 
 from __future__ import print_function
 
-from chromite.cbuildbot import buildbucket_lib
 from chromite.cbuildbot import chroot_lib
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import prebuilts
@@ -14,6 +13,7 @@ from chromite.cbuildbot import relevant_changes
 from chromite.cbuildbot import tree_status
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import sync_stages
+from chromite.lib import buildbucket_lib
 from chromite.lib import builder_status_lib
 from chromite.lib import clactions
 from chromite.lib import config_lib

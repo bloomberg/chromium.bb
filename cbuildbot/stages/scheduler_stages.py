@@ -9,8 +9,8 @@ from __future__ import print_function
 import json
 import time
 
-from chromite.cbuildbot import buildbucket_lib
 from chromite.cbuildbot.stages import generic_stages
+from chromite.lib import buildbucket_lib
 from chromite.lib import constants
 from chromite.lib import config_lib
 from chromite.lib import cros_logging as logging

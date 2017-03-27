@@ -8,11 +8,11 @@ from __future__ import print_function
 
 import mock
 
-from chromite.cbuildbot import buildbucket_lib
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import scheduler_stages
 from chromite.lib import auth
+from chromite.lib import buildbucket_lib
 from chromite.lib import cidb
 from chromite.lib import config_lib
 from chromite.lib import constants
