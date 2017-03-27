@@ -1886,17 +1886,9 @@
             ],
             "experiments": [
                 {
-                    "name": "EnabledInMemory",
+                    "name": "EnabledOnDiskNoStability3",
                     "params": {
-                        "storage": "LocalMemory"
-                    },
-                    "enable_features": [
-                        "PersistentHistograms"
-                    ]
-                },
-                {
-                    "name": "EnabledOnDisk",
-                    "params": {
+                        "send_unreported_metrics": "no",
                         "storage": "MappedFile"
                     },
                     "enable_features": [
