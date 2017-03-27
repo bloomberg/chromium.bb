@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "chrome/common/file_patcher.mojom.h"
+#include "chrome/utility/media_router/dial_device_description_parser_impl.h"
 #include "chrome/utility/utility_message_handler.h"
 #include "components/safe_json/utility/safe_json_parser_mojo_impl.h"
 #include "content/public/common/content_switches.h"
@@ -293,6 +294,10 @@ void ChromeContentUtilityClient::ExposeInterfacesToBrowser(
 #if defined(FULL_SAFE_BROWSING)
   registry->AddInterface(base::Bind(&SafeArchiveAnalyzerImpl::Create));
 #endif
+#if defined(ENABLE_MEDIA_ROUTER)
+  registry->AddInterface(
+      base::Bind(&media_router::DialDeviceDescriptionParserImpl::Create));
+#endif  // defined(ENABLE_MEDIA_ROUTER)
 }
 
 // static

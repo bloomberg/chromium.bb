@@ -181,4 +181,11 @@ static_library("utility") {
   if (is_mac && safe_browsing_mode == 1) {
     deps += [ "//chrome/utility/safe_browsing/mac" ]
   }
+
+  if (enable_media_router) {
+    sources += [
+      "media_router/dial_device_description_parser_impl.cc",
+      "media_router/dial_device_description_parser_impl.h",
+    ]
+  }
 }

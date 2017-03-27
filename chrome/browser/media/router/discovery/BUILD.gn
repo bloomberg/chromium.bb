@@ -4,8 +4,13 @@
 #
 
 static_library("discovery") {
+  inputs = [
+    "$root_gen_dir/chrome/grit/generated_resources.h",
+  ]
   deps = [
     "//base",
+    "//base:i18n",
+    "//chrome/app:generated_resources",
     "//chrome/common:constants",
     "//content/public/browser",
     "//content/public/common",
@@ -19,5 +24,7 @@ static_library("discovery") {
     "dial/dial_registry.h",
     "dial/dial_service.cc",
     "dial/dial_service.h",
+    "dial/safe_dial_device_description_parser.cc",
+    "dial/safe_dial_device_description_parser.h",
   ]
 }

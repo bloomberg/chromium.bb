@@ -3507,6 +3507,11 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
           PWG Raster Convertor
         </message>
       </if>
+      <if expr="enable_media_router">
+        <message name="IDS_UTILITY_PROCESS_DIAL_DEVICE_DESCRIPTION_PARSER_NAME" desc="The name of the utility process used for parsing device description xml.">
+          Dial Device Description Parser
+        </message>
+      </if>
 
       <!-- Theme preview info bar -->
       <message name="IDS_THEME_INSTALL_INFOBAR_LABEL" desc="Text displayed on an infobar when a theme has been installed.">
