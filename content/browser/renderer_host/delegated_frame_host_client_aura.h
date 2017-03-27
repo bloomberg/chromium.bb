@@ -39,7 +39,7 @@ class CONTENT_EXPORT DelegatedFrameHostClientAura
       int compositor_frame_sink_id,
       bool is_swap_ack,
       const cc::ReturnedResourceArray& resources) override;
-  void SetBeginFrameSource(cc::BeginFrameSource* source) override;
+  void OnBeginFrame(const cc::BeginFrameArgs& args) override;
   bool IsAutoResizeEnabled() const override;
 
  private:

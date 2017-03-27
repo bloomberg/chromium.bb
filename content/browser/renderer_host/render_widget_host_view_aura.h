@@ -89,8 +89,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       public aura::WindowDelegate,
       public aura::client::ActivationDelegate,
       public aura::client::FocusChangeObserver,
-      public aura::client::CursorClientObserver,
-      public cc::BeginFrameObserver {
+      public aura::client::CursorClientObserver {
  public:
   // When |is_guest_view_hack| is true, this view isn't really the view for
   // the |widget|, a RenderWidgetHostViewGuest is.
@@ -432,10 +431,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void OnTextSelectionChanged(TextInputManager* text_input_mangager,
                               RenderWidgetHostViewBase* updated_view) override;
 
-  // cc::BeginFrameObserver implementation.
-  void OnBeginFrame(const cc::BeginFrameArgs& args) override;
-  const cc::BeginFrameArgs& LastUsedBeginFrameArgs() const override;
-  void OnBeginFrameSourcePausedChanged(bool paused) override;
+  void OnBeginFrame(const cc::BeginFrameArgs& args);
 
   // Detaches |this| from the input method object.
   void DetachFromInputMethod();
@@ -463,7 +459,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Forwards a mouse event to this view's parent window delegate.
   void ForwardMouseEventToParent(ui::MouseEvent* event);
 
-  // Adds/Removes frame observer based on state.
+  // Tells DelegatedFrameHost whether we need to receive BeginFrames.
   void UpdateNeedsBeginFramesInternal();
 
   // The model object.
@@ -509,10 +505,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   // Current tooltip text.
   base::string16 tooltip_;
-
-  // The begin frame source being observed.  Null if none.
-  cc::BeginFrameSource* begin_frame_source_;
-  cc::BeginFrameArgs last_begin_frame_args_;
 
   // Whether a request for begin frames has been issued.
   bool needs_begin_frames_;

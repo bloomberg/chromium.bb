@@ -75,7 +75,7 @@ class CONTENT_EXPORT DelegatedFrameHostClient {
       bool is_swap_ack,
       const cc::ReturnedResourceArray& resources) = 0;
 
-  virtual void SetBeginFrameSource(cc::BeginFrameSource* source) = 0;
+  virtual void OnBeginFrame(const cc::BeginFrameArgs& args) = 0;
   virtual bool IsAutoResizeEnabled() const = 0;
 };
 
@@ -89,7 +89,6 @@ class CONTENT_EXPORT DelegatedFrameHost
       public ui::ContextFactoryObserver,
       public DelegatedFrameEvictorClient,
       public NON_EXPORTED_BASE(cc::CompositorFrameSinkSupportClient),
-      public cc::ExternalBeginFrameSourceClient,
       public base::SupportsWeakPtr<DelegatedFrameHost> {
  public:
   DelegatedFrameHost(const cc::FrameSinkId& frame_sink_id,
@@ -174,6 +173,9 @@ class CONTENT_EXPORT DelegatedFrameHost
                                          RenderWidgetHostViewBase* target_view,
                                          gfx::Point* transformed_point);
 
+  void SetNeedsBeginFrames(bool needs_begin_frames);
+  void BeginFrameDidNotSwap(const cc::BeginFrameAck& ack);
+
   // Exposed for tests.
   cc::SurfaceId SurfaceIdForTesting() const {
     return cc::SurfaceId(frame_sink_id_, local_surface_id_);
@@ -248,12 +250,10 @@ class CONTENT_EXPORT DelegatedFrameHost
   // initiate a copy-into-video-frame request.
   void AttemptFrameSubscriberCapture(const gfx::Rect& damage_rect);
 
-  // cc::ExternalBeginFrameSource implementation.
-  void OnNeedsBeginFrames(bool needs_begin_frames) override;
-  void OnDidFinishFrame(const cc::BeginFrameAck& ack) override;
-
   void CreateCompositorFrameSinkSupport();
   void ResetCompositorFrameSinkSupport();
+
+  void DidFinishFrame(const cc::BeginFrameAck& ack);
 
   const cc::FrameSinkId frame_sink_id_;
   cc::LocalSurfaceId local_surface_id_;
@@ -333,7 +333,6 @@ class CONTENT_EXPORT DelegatedFrameHost
   std::unique_ptr<display_compositor::ReadbackYUVInterface>
       yuv_readback_pipeline_;
 
-  std::unique_ptr<cc::ExternalBeginFrameSource> begin_frame_source_;
   bool needs_begin_frame_ = false;
   uint32_t latest_confirmed_begin_frame_source_id_ = 0;
   uint64_t latest_confirmed_begin_frame_sequence_number_ =

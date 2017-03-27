@@ -383,7 +383,6 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
       popup_child_host_view_(nullptr),
       is_loading_(false),
       has_composition_text_(false),
-      begin_frame_source_(nullptr),
       needs_begin_frames_(false),
       needs_flush_input_(false),
       added_frame_observer_(false),
@@ -649,37 +648,12 @@ void RenderWidgetHostViewAura::OnSetNeedsFlushInput() {
   UpdateNeedsBeginFramesInternal();
 }
 
-void RenderWidgetHostViewAura::UpdateNeedsBeginFramesInternal() {
-  if (!begin_frame_source_)
-    return;
-
-  bool needs_frame = needs_begin_frames_ || needs_flush_input_;
-  if (needs_frame == added_frame_observer_)
-    return;
-
-  added_frame_observer_ = needs_frame;
-  if (needs_frame)
-    begin_frame_source_->AddObserver(this);
-  else
-    begin_frame_source_->RemoveObserver(this);
-}
-
 void RenderWidgetHostViewAura::OnBeginFrame(
     const cc::BeginFrameArgs& args) {
   needs_flush_input_ = false;
   host_->FlushInput();
   UpdateNeedsBeginFramesInternal();
   host_->Send(new ViewMsg_BeginFrame(host_->GetRoutingID(), args));
-  last_begin_frame_args_ = args;
-}
-
-const cc::BeginFrameArgs& RenderWidgetHostViewAura::LastUsedBeginFrameArgs()
-    const {
-  return last_begin_frame_args_;
-}
-
-void RenderWidgetHostViewAura::OnBeginFrameSourcePausedChanged(bool paused) {
-  // Only used on Android WebView.
 }
 
 RenderFrameHostImpl* RenderWidgetHostViewAura::GetFocusedFrame() {
@@ -932,23 +906,17 @@ void RenderWidgetHostViewAura::OnSwapCompositorFrame(
     selection.end.SetEdge(end_edge_top, end_edge_bottom);
   }
 
-  cc::BeginFrameAck ack(frame.metadata.begin_frame_ack);
-
   if (delegated_frame_host_) {
     delegated_frame_host_->SwapDelegatedFrame(
         compositor_frame_sink_id, local_surface_id, std::move(frame));
   }
   selection_controller_->OnSelectionBoundsChanged(selection.start,
                                                   selection.end);
-
-  if (begin_frame_source_)
-    begin_frame_source_->DidFinishFrame(this, ack);
 }
 
 void RenderWidgetHostViewAura::OnBeginFrameDidNotSwap(
     const cc::BeginFrameAck& ack) {
-  if (begin_frame_source_)
-    begin_frame_source_->DidFinishFrame(this, ack);
+  delegated_frame_host_->BeginFrameDidNotSwap(ack);
 }
 
 void RenderWidgetHostViewAura::ClearCompositorFrame() {
@@ -1944,6 +1912,7 @@ void RenderWidgetHostViewAura::CreateDelegatedFrameHostClient() {
   }
   delegated_frame_host_ = base::MakeUnique<DelegatedFrameHost>(
       frame_sink_id, delegated_frame_host_client_.get());
+  UpdateNeedsBeginFramesInternal();
 
   // Let the page-level input event router know about our surface ID
   // namespace for surface-based hit testing.
@@ -2371,6 +2340,13 @@ void RenderWidgetHostViewAura::SetPopupChild(
   event_handler_->SetPopupChild(
       popup_child_host_view,
       popup_child_host_view ? popup_child_host_view->event_handler() : nullptr);
+}
+
+void RenderWidgetHostViewAura::UpdateNeedsBeginFramesInternal() {
+  if (!delegated_frame_host_)
+    return;
+  delegated_frame_host_->SetNeedsBeginFrames(needs_begin_frames_ ||
+                                             needs_flush_input_);
 }
 
 }  // namespace content

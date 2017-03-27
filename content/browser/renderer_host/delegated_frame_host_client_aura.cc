@@ -95,16 +95,9 @@ void DelegatedFrameHostClientAura::
       is_swap_ack, resources));
 }
 
-void DelegatedFrameHostClientAura::SetBeginFrameSource(
-    cc::BeginFrameSource* source) {
-  if (render_widget_host_view_->begin_frame_source_ &&
-      render_widget_host_view_->added_frame_observer_) {
-    render_widget_host_view_->begin_frame_source_->RemoveObserver(
-        render_widget_host_view_);
-    render_widget_host_view_->added_frame_observer_ = false;
-  }
-  render_widget_host_view_->begin_frame_source_ = source;
-  render_widget_host_view_->UpdateNeedsBeginFramesInternal();
+void DelegatedFrameHostClientAura::OnBeginFrame(
+    const cc::BeginFrameArgs& args) {
+  render_widget_host_view_->OnBeginFrame(args);
 }
 
 bool DelegatedFrameHostClientAura::IsAutoResizeEnabled() const {

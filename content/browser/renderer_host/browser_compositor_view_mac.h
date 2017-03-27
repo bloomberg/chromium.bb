@@ -43,8 +43,7 @@ class BrowserCompositorMacClient {
 //   is visible.
 // - The RenderWidgetHostViewMac that is used to display these frames is
 //   attached to the NSView hierarchy of an NSWindow.
-class BrowserCompositorMac : public cc::BeginFrameObserver,
-                             public DelegatedFrameHostClient {
+class BrowserCompositorMac : public DelegatedFrameHostClient {
  public:
   BrowserCompositorMac(
       ui::AcceleratedWidgetMacNSView* accelerated_widget_mac_ns_view,
@@ -112,13 +111,8 @@ class BrowserCompositorMac : public cc::BeginFrameObserver,
       int compositor_frame_sink_id,
       bool is_swap_ack,
       const cc::ReturnedResourceArray& resources) override;
-  void SetBeginFrameSource(cc::BeginFrameSource* source) override;
-  bool IsAutoResizeEnabled() const override;
-
-  // cc::BeginFrameObserver implementation.
   void OnBeginFrame(const cc::BeginFrameArgs& args) override;
-  const cc::BeginFrameArgs& LastUsedBeginFrameArgs() const override;
-  void OnBeginFrameSourcePausedChanged(bool paused) override;
+  bool IsAutoResizeEnabled() const override;
 
  private:
   // The state of |delegated_frame_host_| and |recyclable_compositor_| to
@@ -178,11 +172,6 @@ class BrowserCompositorMac : public cc::BeginFrameObserver,
   std::unique_ptr<ui::Layer> root_layer_;
 
   bool has_transparent_background_ = false;
-
-  // The begin frame source being observed.  Null if none.
-  cc::BeginFrameSource* begin_frame_source_ = nullptr;
-  cc::BeginFrameArgs last_begin_frame_args_;
-  bool needs_begin_frames_ = false;
 
   base::WeakPtrFactory<BrowserCompositorMac> weak_factory_;
 };

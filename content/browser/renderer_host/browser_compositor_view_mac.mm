@@ -282,17 +282,13 @@ void BrowserCompositorMac::SwapCompositorFrame(
     recyclable_compositor_->compositor()->SetScaleAndSize(scale_factor,
                                                           pixel_size);
   }
-  cc::BeginFrameAck ack(frame.metadata.begin_frame_ack);
   delegated_frame_host_->SwapDelegatedFrame(compositor_frame_sink_id,
                                             local_surface_id, std::move(frame));
-  if (begin_frame_source_)
-    begin_frame_source_->DidFinishFrame(this, ack);
 }
 
 void BrowserCompositorMac::OnBeginFrameDidNotSwap(
     const cc::BeginFrameAck& ack) {
-  if (begin_frame_source_)
-    begin_frame_source_->DidFinishFrame(this, ack);
+  delegated_frame_host_->BeginFrameDidNotSwap(ack);
 }
 
 void BrowserCompositorMac::SetHasTransparentBackground(bool transparent) {
@@ -398,16 +394,7 @@ void BrowserCompositorMac::DisableRecyclingForShutdown() {
 }
 
 void BrowserCompositorMac::SetNeedsBeginFrames(bool needs_begin_frames) {
-  if (needs_begin_frames_ == needs_begin_frames)
-    return;
-
-  needs_begin_frames_ = needs_begin_frames;
-  if (begin_frame_source_) {
-    if (needs_begin_frames_)
-      begin_frame_source_->AddObserver(this);
-    else
-      begin_frame_source_->RemoveObserver(this);
-  }
+  delegated_frame_host_->SetNeedsBeginFrames(needs_begin_frames);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -455,33 +442,13 @@ void BrowserCompositorMac::DelegatedFrameHostSendReclaimCompositorResources(
       compositor_frame_sink_id, is_swap_ack, resources);
 }
 
-void BrowserCompositorMac::SetBeginFrameSource(cc::BeginFrameSource* source) {
-  if (begin_frame_source_ && needs_begin_frames_)
-    begin_frame_source_->RemoveObserver(this);
-  begin_frame_source_ = source;
-  if (begin_frame_source_ && needs_begin_frames_)
-    begin_frame_source_->AddObserver(this);
+void BrowserCompositorMac::OnBeginFrame(const cc::BeginFrameArgs& args) {
+  client_->BrowserCompositorMacSendBeginFrame(args);
 }
 
 bool BrowserCompositorMac::IsAutoResizeEnabled() const {
   NOTREACHED();
   return false;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// cc::BeginFrameSourceBase, public:
-
-void BrowserCompositorMac::OnBeginFrame(const cc::BeginFrameArgs& args) {
-  client_->BrowserCompositorMacSendBeginFrame(args);
-  last_begin_frame_args_ = args;
-}
-
-const cc::BeginFrameArgs& BrowserCompositorMac::LastUsedBeginFrameArgs() const {
-  return last_begin_frame_args_;
-}
-
-void BrowserCompositorMac::OnBeginFrameSourcePausedChanged(bool paused) {
-  // Only used on Android WebView.
 }
 
 }  // namespace content

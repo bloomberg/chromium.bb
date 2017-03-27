@@ -59,8 +59,6 @@ DelegatedFrameHost::DelegatedFrameHost(const cc::FrameSinkId& frame_sink_id,
   factory->GetContextFactoryPrivate()->GetSurfaceManager()->RegisterFrameSinkId(
       frame_sink_id_);
   CreateCompositorFrameSinkSupport();
-  begin_frame_source_ = base::MakeUnique<cc::ExternalBeginFrameSource>(this);
-  client_->SetBeginFrameSource(begin_frame_source_.get());
 }
 
 void DelegatedFrameHost::WasShown(const ui::LatencyInfo& latency_info) {
@@ -231,6 +229,27 @@ bool DelegatedFrameHost::TransformPointToCoordSpaceForView(
       transformed_point);
 }
 
+void DelegatedFrameHost::SetNeedsBeginFrames(bool needs_begin_frames) {
+  needs_begin_frame_ = needs_begin_frames;
+  support_->SetNeedsBeginFrame(needs_begin_frames);
+}
+
+void DelegatedFrameHost::BeginFrameDidNotSwap(const cc::BeginFrameAck& ack) {
+  DidFinishFrame(ack);
+
+  cc::BeginFrameAck modified_ack = ack;
+  if (skipped_frames_) {
+    // If we skipped the last frame(s), we didn't incorporate the last
+    // CompositorFrame's damage, so need to wait for the next one before
+    // confirming newer sequence numbers.
+    modified_ack.has_damage = false;
+    modified_ack.latest_confirmed_sequence_number =
+        latest_confirmed_begin_frame_sequence_number_;
+  }
+
+  support_->BeginFrameDidNotSwap(modified_ack);
+}
+
 bool DelegatedFrameHost::ShouldSkipFrame(gfx::Size size_in_dip) const {
   // Should skip a frame only when another frame from the renderer is guaranteed
   // to replace it. Otherwise may cause hangs when the renderer is waiting for
@@ -379,6 +398,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(
   DCHECK(!resize_lock_ || !client_->IsAutoResizeEnabled());
 #endif
   float frame_device_scale_factor = frame.metadata.device_scale_factor;
+  cc::BeginFrameAck ack(frame.metadata.begin_frame_ack);
 
   DCHECK(!frame.render_pass_list.empty());
 
@@ -404,6 +424,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(
     client_->DelegatedFrameHostSendReclaimCompositorResources(
         compositor_frame_sink_id, true /* is_swap_ack*/, resources);
     skipped_frames_ = true;
+    BeginFrameDidNotSwap(ack);
     return;
   }
 
@@ -482,6 +503,8 @@ void DelegatedFrameHost::SwapDelegatedFrame(
         client_->DelegatedFrameHostIsVisible());
   }
   // Note: the frame may have been evicted immediately.
+
+  DidFinishFrame(ack);
 }
 
 void DelegatedFrameHost::ClearDelegatedFrame() {
@@ -512,7 +535,7 @@ void DelegatedFrameHost::WillDrawSurface(const cc::LocalSurfaceId& id,
 }
 
 void DelegatedFrameHost::OnBeginFrame(const cc::BeginFrameArgs& args) {
-  begin_frame_source_->OnBeginFrame(args);
+  client_->OnBeginFrame(args);
 }
 
 void DelegatedFrameHost::EvictDelegatedFrame() {
@@ -756,7 +779,6 @@ DelegatedFrameHost::~DelegatedFrameHost() {
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   factory->GetContextFactory()->RemoveObserver(this);
 
-  begin_frame_source_.reset();
   ResetCompositorFrameSinkSupport();
 
   factory->GetContextFactoryPrivate()
@@ -822,37 +844,6 @@ void DelegatedFrameHost::UnlockResources() {
   delegated_frame_evictor_->UnlockFrame();
 }
 
-void DelegatedFrameHost::OnNeedsBeginFrames(bool needs_begin_frames) {
-  needs_begin_frame_ = needs_begin_frames;
-  support_->SetNeedsBeginFrame(needs_begin_frames);
-}
-
-void DelegatedFrameHost::OnDidFinishFrame(const cc::BeginFrameAck& ack) {
-  if (ack.source_id != latest_confirmed_begin_frame_source_id_) {
-    // Source changed, we don't know our freshness anymore.
-    latest_confirmed_begin_frame_sequence_number_ =
-        cc::BeginFrameArgs::kInvalidFrameNumber;
-  }
-
-  cc::BeginFrameAck modified_ack = ack;
-  if (skipped_frames_) {
-    // If we skipped the last frame(s), we didn't incorporate the last
-    // CompositorFrame's damage, so need to wait for the next one before
-    // confirming newer sequence numbers.
-    modified_ack.has_damage = false;
-    modified_ack.latest_confirmed_sequence_number =
-        latest_confirmed_begin_frame_sequence_number_;
-  } else {
-    latest_confirmed_begin_frame_source_id_ = modified_ack.source_id;
-    latest_confirmed_begin_frame_sequence_number_ =
-        modified_ack.latest_confirmed_sequence_number;
-  }
-
-  // If there was damage, the unmodified ack was sent with the CompositorFrame.
-  if (!modified_ack.has_damage)
-    support_->BeginFrameDidNotSwap(modified_ack);
-}
-
 void DelegatedFrameHost::CreateCompositorFrameSinkSupport() {
   DCHECK(!support_);
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
@@ -873,6 +864,20 @@ void DelegatedFrameHost::ResetCompositorFrameSinkSupport() {
   if (compositor_)
     compositor_->RemoveFrameSink(frame_sink_id_);
   support_.reset();
+}
+
+void DelegatedFrameHost::DidFinishFrame(const cc::BeginFrameAck& ack) {
+  if (ack.source_id != latest_confirmed_begin_frame_source_id_) {
+    // Source changed, we don't know our freshness anymore.
+    latest_confirmed_begin_frame_sequence_number_ =
+        cc::BeginFrameArgs::kInvalidFrameNumber;
+  }
+
+  if (!skipped_frames_) {
+    latest_confirmed_begin_frame_source_id_ = ack.source_id;
+    latest_confirmed_begin_frame_sequence_number_ =
+        ack.latest_confirmed_sequence_number;
+  }
 }
 
 }  // namespace content
