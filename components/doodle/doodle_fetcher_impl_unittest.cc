@@ -198,7 +198,6 @@ TEST_F(DoodleFetcherImplTest, ResponseContainsValidBaseInformation) {
         "alt_text":"Mouseover Text",
         "doodle_type":"SIMPLE",
         "interactive_html":"\u003cstyle\u003e\u003c\/style\u003e",
-        "search_url":"/search?q\u003dtest",
         "target_url":"/search?q\u003dtest\u0026sa\u003dX\u0026ved\u003d0ahUKEw",
         "time_to_live_ms":55000,
         "large_image": {
@@ -210,9 +209,6 @@ TEST_F(DoodleFetcherImplTest, ResponseContainsValidBaseInformation) {
   ASSERT_TRUE(response.has_value());
   DoodleConfig config = response.value();
 
-  EXPECT_TRUE(config.search_url.is_valid());
-  EXPECT_THAT(config.search_url, Eq(Resolve("/search?q\u003dtest")));
-  EXPECT_TRUE(config.fullpage_interactive_url.is_empty());
   EXPECT_TRUE(config.target_url.is_valid());
   EXPECT_THAT(config.target_url,
               Eq(Resolve("/search?q\u003dtest\u0026sa\u003dX\u0026ved\u003d"

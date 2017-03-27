@@ -141,9 +141,7 @@ TEST(DoodleConfigTest, ParsesMinimalConfig) {
   EXPECT_THAT(config->doodle_type, Eq(DoodleType::UNKNOWN));
   EXPECT_THAT(config->alt_text, Eq(std::string()));
   EXPECT_THAT(config->interactive_html, Eq(std::string()));
-  EXPECT_THAT(config->search_url, Eq(GURL()));
   EXPECT_THAT(config->target_url, Eq(GURL()));
-  EXPECT_THAT(config->fullpage_interactive_url, Eq(GURL()));
   EXPECT_FALSE(config->large_cta_image.has_value());
   EXPECT_FALSE(config->transparent_large_image.has_value());
 }
@@ -153,9 +151,7 @@ TEST(DoodleConfigTest, ParsesFullConfig) {
         "doodle_type":"SLIDESHOW",
         "alt_text":"some text",
         "interactive_html":"<div id='dood'></div>",
-        "search_url":"https://doodle.com/search",
         "target_url":"https://doodle.com/target",
-        "fullpage_interactive_url":"https://doodle.com/interactive",
         "large_image":{"url":"https://doodle.com/img.jpg"},
         "large_cta_image":{"url":"https://doodle.com/cta.jpg"},
         "transparent_large_image":{"url":"https://doodle.com/transparent.jpg"}
@@ -166,10 +162,7 @@ TEST(DoodleConfigTest, ParsesFullConfig) {
   EXPECT_THAT(config->doodle_type, Eq(DoodleType::SLIDESHOW));
   EXPECT_THAT(config->alt_text, Eq("some text"));
   EXPECT_THAT(config->interactive_html, Eq("<div id='dood'></div>"));
-  EXPECT_THAT(config->search_url, Eq(GURL("https://doodle.com/search")));
   EXPECT_THAT(config->target_url, Eq(GURL("https://doodle.com/target")));
-  EXPECT_THAT(config->fullpage_interactive_url,
-              Eq(GURL("https://doodle.com/interactive")));
   EXPECT_THAT(config->large_image.url, Eq(GURL("https://doodle.com/img.jpg")));
   ASSERT_TRUE(config->large_cta_image.has_value());
   EXPECT_THAT(config->large_cta_image->url,
@@ -184,9 +177,7 @@ TEST(DoodleConfigTest, RequiresLargeImage) {
         "doodle_type":"SLIDESHOW",
         "alt_text":"some text",
         "interactive_html":"<div id='dood'></div>",
-        "search_url":"https://doodle.com/search",
         "target_url":"https://doodle.com/target",
-        "fullpage_interactive_url":"https://doodle.com/interactive",
         "large_cta_image":{"url":"https://doodle.com/cta.jpg"},
         "transparent_large_image":{"url":"https://doodle.com/transparent.jpg"}
       })json";
@@ -200,9 +191,7 @@ TEST(DoodleConfigTest, RequiresValidLargeImage) {
         "doodle_type":"SLIDESHOW",
         "alt_text":"some text",
         "interactive_html":"<div id='dood'></div>",
-        "search_url":"https://doodle.com/search",
         "target_url":"https://doodle.com/target",
-        "fullpage_interactive_url":"https://doodle.com/interactive",
         "large_image":{"no_url":"asdf"},
         "large_cta_image":{"url":"https://doodle.com/cta.jpg"},
         "transparent_large_image":{"url":"https://doodle.com/transparent.jpg"}
@@ -214,9 +203,7 @@ TEST(DoodleConfigTest, RequiresValidLargeImage) {
 
 TEST(DoodleConfigTest, ResolvesRelativeUrls) {
   std::string json = R"json({
-        "search_url":"/search",
         "target_url":"/target",
-        "fullpage_interactive_url":"/interactive",
         "large_image":{"url":"/large.jpg"},
         "large_cta_image":{"url":"/cta.jpg"},
         "transparent_large_image":{"url":"/transparent.jpg"}
@@ -224,10 +211,7 @@ TEST(DoodleConfigTest, ResolvesRelativeUrls) {
   base::Optional<DoodleConfig> config =
       DoodleConfigFromJson(json, GURL("https://doodle.com/"));
   ASSERT_TRUE(config.has_value());
-  EXPECT_THAT(config->search_url, Eq(GURL("https://doodle.com/search")));
   EXPECT_THAT(config->target_url, Eq(GURL("https://doodle.com/target")));
-  EXPECT_THAT(config->fullpage_interactive_url,
-              Eq(GURL("https://doodle.com/interactive")));
   EXPECT_THAT(config->large_image.url,
               Eq(GURL("https://doodle.com/large.jpg")));
   ASSERT_TRUE(config->large_cta_image.has_value());
@@ -240,18 +224,14 @@ TEST(DoodleConfigTest, ResolvesRelativeUrls) {
 
 TEST(DoodleConfigTest, HandlesInvalidUrls) {
   std::string json = R"json({
-        "search_url":"not_a_url",
         "target_url":"not_a_url",
-        "fullpage_interactive_url":"not_a_url",
         "large_image":{"url":"https://doodle.com/img.jpg"}
       })json";
   base::Optional<DoodleConfig> config =
       DoodleConfigFromJson(json, base::nullopt);
   // All the URLs are optional, so invalid ones shouldn't matter.
   ASSERT_TRUE(config.has_value());
-  EXPECT_TRUE(config->search_url.is_empty());
   EXPECT_TRUE(config->target_url.is_empty());
-  EXPECT_TRUE(config->fullpage_interactive_url.is_empty());
 }
 
 TEST(DoodleConfigTest, PreservesFieldsOverRoundtrip) {
@@ -260,9 +240,7 @@ TEST(DoodleConfigTest, PreservesFieldsOverRoundtrip) {
                       DoodleImage(GURL("https://www.doodle.com/img.jpg")));
   config.alt_text = "some text";
   config.interactive_html = "<div id='dood'></div>";
-  config.search_url = GURL("https://doodle.com/search");
   config.target_url = GURL("https://doodle.com/target");
-  config.fullpage_interactive_url = GURL("https://doodle.com/interactive");
   config.large_cta_image = DoodleImage(GURL("https://www.doodle.com/cta.jpg"));
   config.transparent_large_image =
       DoodleImage(GURL("https://www.doodle.com/transparent.jpg"));

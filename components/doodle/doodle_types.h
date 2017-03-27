@@ -77,9 +77,7 @@ struct DoodleConfig {
   std::string alt_text;
   std::string interactive_html;
 
-  GURL search_url;
   GURL target_url;
-  GURL fullpage_interactive_url;
 
   DoodleImage large_image;
   base::Optional<DoodleImage> large_cta_image;

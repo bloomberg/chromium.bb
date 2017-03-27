@@ -31,9 +31,7 @@ const char kKeyIsCta[] = "is_cta";
 const char kKeyDoodleType[] = "doodle_type";
 const char kKeyAltText[] = "alt_text";
 const char kKeyInteractiveHtml[] = "interactive_html";
-const char kKeySearchUrl[] = "search_url";
 const char kKeyTargetUrl[] = "target_url";
-const char kKeyFullpageInteractiveUrl[] = "fullpage_interactive_url";
 const char kKeyLargeImage[] = "large_image";
 const char kKeyLargeCtaImage[] = "large_cta_image";
 const char kKeyTransparentLargeImage[] = "transparent_large_image";
@@ -184,10 +182,7 @@ base::Optional<DoodleConfig> DoodleConfig::FromDictionary(
 
   dict.GetString(kKeyInteractiveHtml, &doodle.interactive_html);
 
-  doodle.search_url = ParseUrl(dict, kKeySearchUrl, base_url);
   doodle.target_url = ParseUrl(dict, kKeyTargetUrl, base_url);
-  doodle.fullpage_interactive_url =
-      ParseUrl(dict, kKeyFullpageInteractiveUrl, base_url);
 
   doodle.large_cta_image = ParseImage(dict, kKeyLargeCtaImage, base_url);
   doodle.transparent_large_image =
@@ -201,9 +196,7 @@ std::unique_ptr<base::DictionaryValue> DoodleConfig::ToDictionary() const {
   dict->SetString(kKeyDoodleType, DoodleTypeToString(doodle_type));
   dict->SetString(kKeyAltText, alt_text);
   dict->SetString(kKeyInteractiveHtml, interactive_html);
-  dict->SetString(kKeySearchUrl, search_url.spec());
   dict->SetString(kKeyTargetUrl, target_url.spec());
-  dict->SetString(kKeyFullpageInteractiveUrl, fullpage_interactive_url.spec());
   dict->Set(kKeyLargeImage, large_image.ToDictionary());
   if (large_cta_image.has_value()) {
     dict->Set(kKeyLargeCtaImage, large_cta_image->ToDictionary());
@@ -218,8 +211,6 @@ std::unique_ptr<base::DictionaryValue> DoodleConfig::ToDictionary() const {
 bool DoodleConfig::operator==(const DoodleConfig& other) const {
   return doodle_type == other.doodle_type && alt_text == other.alt_text &&
          interactive_html == other.interactive_html &&
-         search_url == other.search_url && target_url == other.target_url &&
-         fullpage_interactive_url == other.fullpage_interactive_url &&
          large_image == other.large_image &&
          large_cta_image == other.large_cta_image &&
          transparent_large_image == other.transparent_large_image;
