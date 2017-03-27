@@ -14,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -109,25 +110,16 @@ void SanitizePossibleUsernames(PasswordForm* form) {
 
   // Deduplicate.
   std::sort(usernames.begin(), usernames.end());
-  auto new_end = std::unique(usernames.begin(), usernames.end());
+  usernames.erase(std::unique(usernames.begin(), usernames.end()),
+                  usernames.end());
 
-  // Filter out |form->username_value|.
+  // Filter out |form->username_value| and sensitive information.
   const base::string16& username_value = form->username_value;
-  new_end = std::remove_if(usernames.begin(), new_end,
-                           [&username_value](const PossibleUsernamePair& pair) {
-                             return pair.first == username_value;
-                           });
-
-  // Filter out sensitive information.
-  new_end = std::remove_if(
-      usernames.begin(), new_end, [](const PossibleUsernamePair& pair) {
-        return autofill::IsValidCreditCardNumber(pair.first);
-      });
-  new_end = std::remove_if(usernames.begin(), new_end,
-                           [](const PossibleUsernamePair& pair) {
-                             return autofill::IsSSN(pair.first);
-                           });
-  usernames.erase(new_end, usernames.end());
+  base::EraseIf(usernames, [&username_value](const PossibleUsernamePair& pair) {
+    return pair.first == username_value ||
+           autofill::IsValidCreditCardNumber(pair.first) ||
+           autofill::IsSSN(pair.first);
+  });
 }
 
 // Copies field properties masks from the form |from| to the form |to|.
