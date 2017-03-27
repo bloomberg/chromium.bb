@@ -175,7 +175,7 @@ class CORE_EXPORT CSPDirectiveList
   // * form-action
   // The exported directives only contains sources that affect navigation. For
   // instance it doesn't contains 'unsafe-inline' or 'unsafe-eval'
-  WebContentSecurityPolicyPolicy exposeForNavigationalChecks() const;
+  WebContentSecurityPolicy exposeForNavigationalChecks() const;
 
   DECLARE_TRACE();
 

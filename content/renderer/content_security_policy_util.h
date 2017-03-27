@@ -15,7 +15,7 @@ namespace content {
 // classes represent the exact same thing, but one is in content, the other is
 // in blink.
 ContentSecurityPolicy BuildContentSecurityPolicy(
-    const blink::WebContentSecurityPolicyPolicy&);
+    const blink::WebContentSecurityPolicy&);
 
 // Convert a CSPViolationParams into a WebContentSecurityPolicyViolation. These
 // two classes represent the exact same thing, but one is in content, the other

@@ -920,7 +920,7 @@ void LocalFrameClientImpl::didAddContentSecurityPolicy(
     const String& headerValue,
     ContentSecurityPolicyHeaderType type,
     ContentSecurityPolicyHeaderSource source,
-    const std::vector<WebContentSecurityPolicyPolicy>& policies) {
+    const std::vector<WebContentSecurityPolicy>& policies) {
   if (m_webFrame->client()) {
     m_webFrame->client()->didAddContentSecurityPolicy(
         headerValue, static_cast<WebContentSecurityPolicyType>(type),

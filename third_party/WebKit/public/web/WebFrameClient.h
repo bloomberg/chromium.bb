@@ -239,7 +239,7 @@ class BLINK_EXPORT WebFrameClient {
       const WebString& headerValue,
       WebContentSecurityPolicyType type,
       WebContentSecurityPolicySource source,
-      const std::vector<WebContentSecurityPolicyPolicy>& policies) {}
+      const std::vector<WebContentSecurityPolicy>& policies) {}
 
   // Some frame owner properties have changed for a child frame of this frame.
   // Frame owner properties currently include: scrolling, marginwidth and

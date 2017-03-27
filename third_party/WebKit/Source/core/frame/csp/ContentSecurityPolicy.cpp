@@ -349,7 +349,7 @@ void ContentSecurityPolicy::addAndReportPolicyFromHeaderValue(
     // when (2) is finished.
 
     // Zero, one or several policies could be produced by only one header.
-    std::vector<blink::WebContentSecurityPolicyPolicy> policies;
+    std::vector<blink::WebContentSecurityPolicy> policies;
     for (size_t i = previousPolicyCount; i < m_policies.size(); ++i)
       policies.push_back(m_policies[i]->exposeForNavigationalChecks());
     document()->frame()->client()->didAddContentSecurityPolicy(

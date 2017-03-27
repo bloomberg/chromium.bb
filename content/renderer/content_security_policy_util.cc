@@ -37,7 +37,7 @@ CSPDirective BuildCSPDirective(
 }
 
 ContentSecurityPolicy BuildContentSecurityPolicy(
-    const blink::WebContentSecurityPolicyPolicy& policy) {
+    const blink::WebContentSecurityPolicy& policy) {
   std::vector<CSPDirective> directives;
   for (const auto& directive : policy.directives)
     directives.push_back(BuildCSPDirective(directive));

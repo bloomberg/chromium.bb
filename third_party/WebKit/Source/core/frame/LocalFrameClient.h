@@ -284,7 +284,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
       const String& headerValue,
       ContentSecurityPolicyHeaderType,
       ContentSecurityPolicyHeaderSource,
-      const std::vector<WebContentSecurityPolicyPolicy>&) {}
+      const std::vector<WebContentSecurityPolicy>&) {}
 
   virtual void didChangeFrameOwnerProperties(HTMLFrameElementBase*) {}
 

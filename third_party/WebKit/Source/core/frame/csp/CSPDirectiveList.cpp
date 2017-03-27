@@ -1320,9 +1320,8 @@ bool CSPDirectiveList::subsumes(const CSPDirectiveListVector& other) {
   return m_pluginTypes->subsumes(pluginTypesOther);
 }
 
-WebContentSecurityPolicyPolicy CSPDirectiveList::exposeForNavigationalChecks()
-    const {
-  WebContentSecurityPolicyPolicy policy;
+WebContentSecurityPolicy CSPDirectiveList::exposeForNavigationalChecks() const {
+  WebContentSecurityPolicy policy;
   policy.disposition = static_cast<WebContentSecurityPolicyType>(m_headerType);
   policy.source = static_cast<WebContentSecurityPolicySource>(m_headerSource);
   std::vector<WebContentSecurityPolicyDirective> directives;

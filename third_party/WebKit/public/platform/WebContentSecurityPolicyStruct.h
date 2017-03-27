@@ -63,7 +63,7 @@ struct WebContentSecurityPolicyDirective {
   WebContentSecurityPolicySourceList sourceList;
 };
 
-struct WebContentSecurityPolicyPolicy {
+struct WebContentSecurityPolicy {
   WebContentSecurityPolicyType disposition;
   WebContentSecurityPolicySource source;
   WebVector<WebContentSecurityPolicyDirective> directives;

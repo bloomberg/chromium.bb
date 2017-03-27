@@ -3257,7 +3257,7 @@ void RenderFrameImpl::didAddContentSecurityPolicy(
     const blink::WebString& header_value,
     blink::WebContentSecurityPolicyType type,
     blink::WebContentSecurityPolicySource source,
-    const std::vector<blink::WebContentSecurityPolicyPolicy>& policies) {
+    const std::vector<blink::WebContentSecurityPolicy>& policies) {
   ContentSecurityPolicyHeader header;
   header.header_value = header_value.utf8();
   header.type = type;
