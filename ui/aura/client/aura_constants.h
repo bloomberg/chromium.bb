@@ -60,7 +60,7 @@ AURA_EXPORT extern const WindowProperty<bool>* const kCreatedByUserGesture;
 
 // A property key to indicate that a window should show that it deserves
 // attention.
-AURA_EXPORT extern const aura::WindowProperty<bool>* const kDrawAttentionKey;
+AURA_EXPORT extern const WindowProperty<bool>* const kDrawAttentionKey;
 
 // A property key to store the host window of a window. This lets
 // WebContentsViews find the windows that should constrain NPAPI plugins.
@@ -70,12 +70,11 @@ AURA_EXPORT extern const WindowProperty<Window*>* const kHostWindowKey;
 // window enters the fullscreen mode. The immersive fullscreen mode is slightly
 // different from the normal fullscreen mode by allowing the user to reveal the
 // top portion of the window through a touch / mouse gesture.
-AURA_EXPORT extern const aura::WindowProperty<bool>* const
-    kImmersiveFullscreenKey;
+AURA_EXPORT extern const WindowProperty<bool>* const kImmersiveFullscreenKey;
 
 // A property key to indicate that a window is being "mirrored" and its contents
 // should render regardless of its actual visibility state.
-AURA_EXPORT extern const aura::WindowProperty<bool>* const kMirroringEnabledKey;
+AURA_EXPORT extern const WindowProperty<bool>* const kMirroringEnabledKey;
 
 // A property key to store the window modality.
 AURA_EXPORT extern const WindowProperty<ui::ModalType>* const kModalKey;
@@ -117,19 +116,18 @@ AURA_EXPORT extern const WindowProperty<base::string16*>* const kTitleKey;
 // non-client view. The topmost view depends on the window type. The topmost
 // view is the tab strip for tabbed browser windows, the toolbar for popups,
 // the web contents for app windows and varies for fullscreen windows.
-AURA_EXPORT extern const aura::WindowProperty<int>* const kTopViewInset;
+AURA_EXPORT extern const WindowProperty<int>* const kTopViewInset;
 
 // The color of the window header.
-AURA_EXPORT extern const aura::WindowProperty<SkColor>* const kTopViewColor;
+AURA_EXPORT extern const WindowProperty<SkColor>* const kTopViewColor;
 
 // A property key to store the window icon, typically 16x16 for title bars.
 AURA_EXPORT extern const WindowProperty<gfx::ImageSkia*>* const kWindowIconKey;
 
 // Indicates the type of embedding within the given window.
-AURA_EXPORT extern const aura::WindowProperty<WindowEmbedType>* const
-    kEmbedType;
+AURA_EXPORT extern const WindowProperty<WindowEmbedType>* const kEmbedType;
 
-AURA_EXPORT extern const aura::WindowProperty<ui::mojom::WindowType>* const
+AURA_EXPORT extern const WindowProperty<ui::mojom::WindowType>* const
     kWindowTypeKey;
 
 // Alphabetical sort.
