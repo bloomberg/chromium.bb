@@ -36,7 +36,7 @@ RefPtr<NGConstraintSpace> CreateConstraintSpaceForFloat(
     NGConstraintSpaceBuilder* space_builder) {
   DCHECK(space_builder) << "space_builder cannot be null here";
   bool is_new_bfc =
-      IsNewFormattingContextForInFlowBlockLevelChild(parent_space, style);
+      IsNewFormattingContextForBlockLevelChild(parent_space, style);
   return space_builder->SetIsNewFormattingContext(is_new_bfc)
       .SetTextDirection(style.direction())
       .SetIsShrinkToFit(ShouldShrinkToFit(parent_space, style))
@@ -326,7 +326,7 @@ void NGLineBuilder::LayoutAndPositionFloat(LayoutUnit end_position,
 
   RefPtr<NGFloatingObject> floating_object = NGFloatingObject::Create(
       float_space.get(), constraint_space_, node->Style(), NGBoxStrut(),
-      layout_result->PhysicalFragment().get());
+      current_opportunity_.size, layout_result->PhysicalFragment().get());
 
   bool float_does_not_fit = end_position + float_fragment.InlineSize() >
                             current_opportunity_.InlineSize();

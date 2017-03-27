@@ -137,8 +137,9 @@ crbug.com/703403 virtual/disable-spinvalidation/paint/inline/focus-ring-under-ab
 # LayoutNG - is a new layout system for Blink.
 
 #### css2.1/20110323
-#### Passed: 226
-#### Skipped: 183
+#### Passed: 225
+#### Skipped: 184
+crbug.com/635619 virtual/layout_ng/css2.1/20110323/inline-block-non-replaced-width-001.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-height-006.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-height-008.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-max-height-008.htm [ Skip ]
@@ -420,8 +421,8 @@ crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/webkit-margin-coll
 
 #### fast/block/float
 #### Total: 209
-#### Passed: 35
-#### Skipped: 174
+#### Passed: 29
+#### Skipped: 176
 crbug.com/635619 virtual/layout_ng/fast/block/float/001.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/002.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/003.html [ Skip ]
@@ -574,6 +575,8 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/overhanging-float-remove-fro
 crbug.com/635619 virtual/layout_ng/fast/block/float/overhanging-float-remove-from-fixed-position-block.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/overhanging-float-remove-from-fixed-position-block2.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/overhanging-tall-block.html [ Skip ]
+crbug.com/635619 virtual/layout_ng/fast/block/float/overhanging-from-second-last-sibling.html [ Skip ]
+crbug.com/635619 virtual/layout_ng/fast/block/float/overhanging-from-third-last-sibling.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/overlapping-floats-paint-hittest-order-1.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/overlapping-floats-paint-hittest-order-2.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/overlapping-floats-with-overflow-hidden.html [ Skip ]
@@ -596,6 +599,10 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/trailing-float-layout.html [
 crbug.com/635619 virtual/layout_ng/fast/block/float/trailing-float-with-columns.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/vertical-move-relayout.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/width-update-after-clear.html [ Skip ]
+crbug.com/635619 virtual/layout_ng/fast/block/float/float-not-removed-from-first-letter.html [ Skip ]
+crbug.com/635619 virtual/layout_ng/fast/block/float/floats-not-cleared-from-grand-parents.html [ Skip ]
+crbug.com/635619 virtual/layout_ng/fast/block/float/relayout-nested-float-after-line.html [ Skip ]
+crbug.com/635619 virtual/layout_ng/fast/block/float/selection-gap-clip-out-tiger-crash.html [ Skip ]
 
 #### external/csswg-test/css21/linebox
 #### Passed: 84
@@ -621,6 +628,7 @@ crbug.com/636993 virtual/layout_ng/external/csswg-test/css21/linebox/inline-form
 crbug.com/636993 virtual/layout_ng/external/csswg-test/css21/linebox/line-height-002.xht [ Skip ]
 crbug.com/636993 virtual/layout_ng/external/csswg-test/css21/linebox/line-height-004.xht [ Skip ]
 crbug.com/636993 virtual/layout_ng/external/csswg-test/css21/linebox/line-height-005.xht [ Skip ]
+crbug.com/636993 virtual/layout_ng/external/csswg-test/css21/linebox/line-height-applies-to-012.xht [ Skip ]
 crbug.com/636993 virtual/layout_ng/external/csswg-test/css21/linebox/line-height-013.xht [ Skip ]
 crbug.com/636993 virtual/layout_ng/external/csswg-test/css21/linebox/line-height-015.xht [ Skip ]
 crbug.com/636993 virtual/layout_ng/external/csswg-test/css21/linebox/line-height-016.xht [ Skip ]

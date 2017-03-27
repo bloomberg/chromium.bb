@@ -6,6 +6,7 @@
 #define NGFloatingObject_h
 
 #include "core/layout/ng/geometry/ng_box_strut.h"
+#include "core/layout/ng/geometry/ng_logical_size.h"
 #include "core/layout/ng/ng_block_node.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_exclusion.h"
@@ -23,9 +24,10 @@ struct CORE_EXPORT NGFloatingObject : public RefCounted<NGFloatingObject> {
                                          const NGConstraintSpace* parent_space,
                                          const ComputedStyle& style,
                                          const NGBoxStrut& margins,
+                                         const NGLogicalSize& available_size,
                                          NGPhysicalFragment* fragment) {
-    return adoptRef(
-        new NGFloatingObject(space, parent_space, style, margins, fragment));
+    return adoptRef(new NGFloatingObject(space, parent_space, style, margins,
+                                         available_size, fragment));
   }
 
   // Original constraint space of the float.
@@ -38,6 +40,9 @@ struct CORE_EXPORT NGFloatingObject : public RefCounted<NGFloatingObject> {
   NGExclusion::Type exclusion_type;
   EClear clear_type;
   NGBoxStrut margins;
+  // Available size of the constraint space that will be used by
+  // NGLayoutOpportunityIterator to position this floaing object.
+  NGLogicalSize available_size;
 
   RefPtr<NGPhysicalFragment> fragment;
 
@@ -60,10 +65,12 @@ struct CORE_EXPORT NGFloatingObject : public RefCounted<NGFloatingObject> {
                    const NGConstraintSpace* parent_space,
                    const ComputedStyle& style,
                    const NGBoxStrut& margins,
+                   const NGLogicalSize& available_size,
                    NGPhysicalFragment* fragment)
       : space(space),
         original_parent_space(parent_space),
         margins(margins),
+        available_size(available_size),
         fragment(fragment) {
     exclusion_type = NGExclusion::kFloatLeft;
     if (style.floating() == EFloat::kRight)

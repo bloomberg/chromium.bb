@@ -187,13 +187,15 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
     curr_margin_strut_ = NGMarginStrut();
   }
 
-  // Block that establishes a new BFC knows its BFC offset == {}
   // If a new formatting context hits the if branch above then the BFC offset is
   // still {} as the margin strut from the constraint space must also be empty.
   if (ConstraintSpace().IsNewFormattingContext()) {
     UpdateFragmentBfcOffset(curr_bfc_offset_);
-    DCHECK_EQ(builder_.BfcOffset().value(), NGLogicalOffset());
     DCHECK_EQ(curr_margin_strut_, NGMarginStrut());
+    // TODO(glebl): Uncomment the line below once we add the fragmentation
+    // support for floats.
+    // DCHECK_EQ(builder_.BfcOffset().value(), NGLogicalOffset());
+    curr_bfc_offset_ = {};
   }
 
   curr_bfc_offset_.block_offset += content_size_;
@@ -345,7 +347,8 @@ void NGBlockLayoutAlgorithm::FinishChildLayout(
       toNGBlockNode(child)->Style().isFloating()) {
     RefPtr<NGFloatingObject> floating_object = NGFloatingObject::Create(
         child_space, constraint_space_, toNGBlockNode(child)->Style(),
-        curr_child_margins_, layout_result->PhysicalFragment().get());
+        curr_child_margins_, child_space->AvailableSize(),
+        layout_result->PhysicalFragment().get());
     builder_.AddUnpositionedFloat(floating_object);
     // No need to postpone the positioning if we know the correct offset.
     if (builder_.BfcOffset()) {
@@ -475,19 +478,20 @@ RefPtr<NGConstraintSpace> NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     NGLayoutInputNode* child) {
   DCHECK(child);
 
-  if (child->Type() == NGLayoutInputNode::kLegacyInline) {
+  const ComputedStyle& child_style = child->Style();
+  bool is_new_bfc =
+      IsNewFormattingContextForBlockLevelChild(ConstraintSpace(), child_style);
+  space_builder_.SetIsNewFormattingContext(is_new_bfc)
+      .SetBfcOffset(curr_bfc_offset_);
+
+  if (child->IsInline()) {
     // TODO(kojii): Setup space_builder_ appropriately for inline child.
     space_builder_.SetBfcOffset(curr_bfc_offset_);
     return space_builder_.ToConstraintSpace(
         FromPlatformWritingMode(Style().getWritingMode()));
   }
 
-  const ComputedStyle& child_style = toNGBlockNode(child)->Style();
-
-  bool is_new_bfc = IsNewFormattingContextForInFlowBlockLevelChild(
-      ConstraintSpace(), child_style);
-  space_builder_.SetIsNewFormattingContext(is_new_bfc)
-      .SetBfcOffset(curr_bfc_offset_)
+  space_builder_
       .SetClearanceOffset(
           GetClearanceOffset(constraint_space_->Exclusions(), child_style))
       .SetIsShrinkToFit(ShouldShrinkToFit(ConstraintSpace(), child_style))
@@ -508,6 +512,9 @@ RefPtr<NGConstraintSpace> NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     if (is_new_bfc) {
       DCHECK(builder_.BfcOffset());
       space_available -= curr_bfc_offset_.block_offset;
+      // TODO(glebl): We need to reset BFCOffset in ToConstraintSpace() after we
+      // started handling the fragmentation for floats.
+      space_builder_.SetBfcOffset(NGLogicalOffset());
     }
   }
   space_builder_.SetFragmentainerSpaceAvailable(space_available);

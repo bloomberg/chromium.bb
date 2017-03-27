@@ -55,17 +55,15 @@ void CollectAllOpportunities(const NGLayoutOpportunityTreeNode* node,
 
 // Creates layout opportunity from the provided space and the origin point.
 NGLayoutOpportunity CreateLayoutOpportunityFromConstraintSpace(
-    const NGConstraintSpace& space,
+    const NGLogicalSize& size,
     const NGLogicalOffset& origin_point) {
   NGLayoutOpportunity opportunity;
   // TODO(glebl): Perhaps fix other methods (e.g IsContained) instead of using
   // INT_MAX here.
-  opportunity.size.block_size = space.AvailableSize().block_size >= 0
-                                    ? space.AvailableSize().block_size
-                                    : LayoutUnit(INT_MAX);
-  opportunity.size.inline_size = space.AvailableSize().inline_size >= 0
-                                     ? space.AvailableSize().inline_size
-                                     : LayoutUnit(INT_MAX);
+  opportunity.size.block_size =
+      size.block_size >= 0 ? size.block_size : LayoutUnit(INT_MAX);
+  opportunity.size.inline_size =
+      size.inline_size >= 0 ? size.inline_size : LayoutUnit(INT_MAX);
 
   // adjust to the origin_point.
   opportunity.offset += origin_point;
@@ -276,6 +274,7 @@ NGExclusion ToLeaderExclusion(const NGLogicalOffset& origin_point,
 
 NGLayoutOpportunityIterator::NGLayoutOpportunityIterator(
     const NGConstraintSpace* space,
+    const NGLogicalSize& available_size,
     const WTF::Optional<NGLogicalOffset>& opt_offset,
     const WTF::Optional<NGLogicalOffset>& opt_leader_point)
     : constraint_space_(space),
@@ -287,7 +286,7 @@ NGLayoutOpportunityIterator::NGLayoutOpportunityIterator(
       << "Exclusions are expected to be sorted by TOP";
 
   NGLayoutOpportunity initial_opportunity =
-      CreateLayoutOpportunityFromConstraintSpace(*constraint_space_, Offset());
+      CreateLayoutOpportunityFromConstraintSpace(available_size, Offset());
   opportunity_tree_root_.reset(
       new NGLayoutOpportunityTreeNode(initial_opportunity));
 

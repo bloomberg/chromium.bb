@@ -40,16 +40,19 @@ NGLogicalOffset AdjustToTopEdgeAlignmentRule(const NGConstraintSpace& space,
 //                     establishes a new formatting context that we're currently
 //                     in and where all our exclusions reside.
 // @param margins Margins of the fragment.
+// @param available_size Available size used by the layout opportunity iterator.
 // @return Layout opportunity for the fragment.
 const NGLayoutOpportunity FindLayoutOpportunityForFragment(
     const NGConstraintSpace* space,
     const NGFragment& fragment,
     const NGLogicalOffset& origin_point,
-    const NGBoxStrut& margins) {
+    const NGBoxStrut& margins,
+    const NGLogicalSize& available_size) {
   NGLogicalOffset adjusted_origin_point =
       AdjustToTopEdgeAlignmentRule(*space, origin_point);
 
-  NGLayoutOpportunityIterator opportunity_iter(space, adjusted_origin_point);
+  NGLayoutOpportunityIterator opportunity_iter(space, available_size,
+                                               adjusted_origin_point);
   NGLayoutOpportunity opportunity;
   NGLayoutOpportunity opportunity_candidate = opportunity_iter.Next();
 
@@ -140,7 +143,8 @@ NGLogicalOffset PositionFloat(const NGLogicalOffset& origin_point,
 
   // Find a layout opportunity that will fit our float.
   const NGLayoutOpportunity opportunity = FindLayoutOpportunityForFragment(
-      float_space, float_fragment, origin_point, floating_object->margins);
+      new_parent_space, float_fragment, origin_point, floating_object->margins,
+      floating_object->available_size);
   DCHECK(!opportunity.IsEmpty()) << "Opportunity is empty but it shouldn't be";
 
   // Calculate the float offset if needed.

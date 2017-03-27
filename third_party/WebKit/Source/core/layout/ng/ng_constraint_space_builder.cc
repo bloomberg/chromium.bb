@@ -176,7 +176,9 @@ RefPtr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
   // Reset things that do not pass the Formatting Context boundary.
   std::shared_ptr<NGExclusions> exclusions(
       is_new_fc_ ? std::make_shared<NGExclusions>() : exclusions_);
-  NGLogicalOffset bfc_offset = is_new_fc_ ? NGLogicalOffset() : bfc_offset_;
+  // TODO(glebl): Uncomment the line below once we add the fragmentation
+  // support for floats.
+  // NGLogicalOffset bfc_offset = is_new_fc_ ? NGLogicalOffset() : bfc_offset_;
   NGMarginStrut margin_strut = is_new_fc_ ? NGMarginStrut() : margin_strut_;
   WTF::Optional<LayoutUnit> clearance_offset =
       is_new_fc_ ? WTF::nullopt : clearance_offset_;
@@ -191,7 +193,8 @@ RefPtr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
         is_inline_direction_triggers_scrollbar_,
         is_block_direction_triggers_scrollbar_,
         static_cast<NGFragmentationType>(fragmentation_type_), is_new_fc_,
-        is_anonymous_, margin_strut, bfc_offset, exclusions, clearance_offset));
+        is_anonymous_, margin_strut, bfc_offset_, exclusions,
+        clearance_offset));
   }
   return adoptRef(new NGConstraintSpace(
       out_writing_mode, static_cast<TextDirection>(text_direction_),
@@ -201,7 +204,7 @@ RefPtr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
       is_block_direction_triggers_scrollbar_,
       is_inline_direction_triggers_scrollbar_,
       static_cast<NGFragmentationType>(fragmentation_type_), is_new_fc_,
-      is_anonymous_, margin_strut, bfc_offset, exclusions, clearance_offset));
+      is_anonymous_, margin_strut, bfc_offset_, exclusions, clearance_offset));
 }
 
 }  // namespace blink

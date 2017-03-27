@@ -233,49 +233,6 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase1WithFloats) {
       toNGPhysicalBoxFragment(container_fragment->Children()[0].get());
   // 0 = collapsed with container's margin
   EXPECT_THAT(LayoutUnit(0), first_child_fragment->TopOffset());
-
-  // ** Verify layout tree **
-  Element* first_child = document().getElementById("first-child");
-  int first_child_block_offset = body_top_offset;
-  EXPECT_EQ(first_child_block_offset, first_child->offsetTop());
-
-  // float-child-left is positioned at the top edge of the container padding box
-  Element* float_child_left = document().getElementById("float-child-left");
-  // 30 = std::max(first-child's margin 20, container's margin 10,
-  //      body's margin 8) + float-child-left's margin 10
-  int float_child_left_block_offset = 30;
-  EXPECT_EQ(float_child_left_block_offset, float_child_left->offsetTop());
-
-  // float-child-right is positioned at the top edge of container padding box
-  Element* float_child_right = document().getElementById("float-child-right");
-  // Should be equal to first_child_block_offset
-  // 20 = std::max(first-child's margin 20, container's margin 10,
-  //      body's margin 8)
-  int float_child_right_block_offset = 20;
-  EXPECT_EQ(float_child_right_block_offset, float_child_right->offsetTop());
-
-  // ** Verify exclusions **
-  // float-child-left's height(10) + padding(2x10) + margin(2x10) = 50px
-  NGLogicalSize exclusion1_size = {LayoutUnit(50), LayoutUnit(50)};
-  // float-child-left's inline offset
-  // 15 = body's margin(8) + container's inline padding(7)
-  NGLogicalOffset exclusion1_offset = {LayoutUnit(15),
-                                       LayoutUnit(first_child_block_offset)};
-  NGLogicalRect exclusion1_rect = {exclusion1_offset, exclusion1_size};
-  NGExclusion expected_exclusion1 = {exclusion1_rect, NGExclusion::kFloatLeft};
-
-  NGLogicalSize exclusion2_size = {LayoutUnit(30), LayoutUnit(30)};
-  // float-child-right's inline offset
-  // right_float_offset = 200 container's width - right float width 30 = 170
-  // 185 = body's margin(8) + right_float_offset(170) + container's padding(7)
-  NGLogicalOffset exclusion2_offset = {LayoutUnit(185),
-                                       LayoutUnit(first_child_block_offset)};
-  NGLogicalRect exclusion2_rect = {exclusion2_offset, exclusion2_size};
-  NGExclusion expected_exclusion2 = {exclusion2_rect, NGExclusion::kFloatRight};
-
-  EXPECT_THAT(space->Exclusions()->storage,
-              (ElementsAre(Pointee(expected_exclusion1),
-                           Pointee(expected_exclusion2))));
 }
 
 // Verifies the collapsing margins case for the next pairs:
@@ -339,7 +296,6 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase2WithFloats) {
   // -7 = empty1's margin(-15) + body's margin(8)
   int body_top_offset = -7;
   EXPECT_THAT(LayoutUnit(body_top_offset), body_fragment->TopOffset());
-  int body_left_offset = 8;
   EXPECT_THAT(LayoutUnit(body_top_offset), body_fragment->TopOffset());
   ASSERT_EQ(3UL, body_fragment->Children().size());
 
@@ -374,42 +330,6 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase2WithFloats) {
   Element* first_child = document().getElementById("first-child");
   // -7 = body_top_offset
   EXPECT_EQ(body_top_offset, first_child->offsetTop());
-
-  NGLogicalSize float_empties_exclusion_size = {LayoutUnit(30), LayoutUnit(30)};
-  NGLogicalOffset float_empties_exclusion_offset = {
-      LayoutUnit(body_left_offset), LayoutUnit(body_top_offset)};
-  NGLogicalRect float_empties_exclusion_rect = {float_empties_exclusion_offset,
-                                                float_empties_exclusion_size};
-  NGExclusion float_empties_exclusion = {float_empties_exclusion_rect,
-                                         NGExclusion::kFloatLeft};
-
-  NGLogicalSize float_nonempties_exclusion_size = {LayoutUnit(40),
-                                                   LayoutUnit(40)};
-  // 63 = first_child_margin_strut(20) + first-child's height(50) +
-  // body_top_offset(-7)
-  NGLogicalOffset float_nonempties_exclusion_offset = {
-      LayoutUnit(body_left_offset), LayoutUnit(63)};
-  NGLogicalRect float_nonempties_exclusion_rect = {
-      float_nonempties_exclusion_offset, float_nonempties_exclusion_size};
-  NGExclusion float_nonempties_exclusion = {float_nonempties_exclusion_rect,
-                                            NGExclusion::kFloatLeft};
-
-  NGLogicalSize float_top_align_exclusion_size = {LayoutUnit(50),
-                                                  LayoutUnit(50)};
-  // 63 = float_nonempties_exclusion_offset because of the top edge alignment
-  // rule.
-  // 48 = body's margin + float_nonempties_exclusion_size
-  NGLogicalOffset float_top_align_exclusion_offset = {LayoutUnit(48),
-                                                      LayoutUnit(63)};
-  NGLogicalRect float_top_align_exclusion_rect = {
-      float_top_align_exclusion_offset, float_top_align_exclusion_size};
-  NGExclusion float_top_align_exclusion = {float_top_align_exclusion_rect,
-                                           NGExclusion::kFloatLeft};
-
-  EXPECT_THAT(space->Exclusions()->storage,
-              (ElementsAre(Pointee(float_empties_exclusion),
-                           Pointee(float_nonempties_exclusion),
-                           Pointee(float_top_align_exclusion))));
 }
 
 // Verifies the collapsing margins case for the next pair:
@@ -1045,50 +965,6 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFloatFragments) {
   // 10 = left_float_with_margin_inline_offset(18) - body's margin(8)
   EXPECT_THAT(LayoutUnit(left_float_with_margin_inline_offset - 8),
               left_float_with_margin_fragment->LeftOffset());
-
-  // ** Verify exclusions **
-  NGLogicalSize left_float_exclusion_size = {LayoutUnit(30), LayoutUnit(30)};
-  // this should be equal to body's margin(8)
-  NGLogicalOffset left_float_exclusion_offset = {LayoutUnit(8), LayoutUnit(8)};
-  NGLogicalRect left_float_exclusion_rect = {left_float_exclusion_offset,
-                                             left_float_exclusion_size};
-  NGExclusion left_float_exclusion = {left_float_exclusion_rect,
-                                      NGExclusion::kFloatLeft};
-
-  NGLogicalSize left_wide_exclusion_size = {LayoutUnit(180), LayoutUnit(30)};
-  NGLogicalOffset left_wide_exclusion_offset = {
-      LayoutUnit(8), LayoutUnit(left_wide_float_block_offset)};
-  NGLogicalRect left_wide_exclusion_rect = {left_wide_exclusion_offset,
-                                            left_wide_exclusion_size};
-  NGExclusion left_wide_exclusion = {left_wide_exclusion_rect,
-                                     NGExclusion::kFloatLeft};
-
-  NGLogicalSize right_float_exclusion_size = {LayoutUnit(50), LayoutUnit(50)};
-  NGLogicalOffset right_float_exclusion_offset = {
-      LayoutUnit(right_float_inline_offset),
-      LayoutUnit(right_float_block_offset)};
-  NGLogicalRect right_float_exclusion_rect = {right_float_exclusion_offset,
-                                              right_float_exclusion_size};
-  NGExclusion right_float_exclusion = {right_float_exclusion_rect,
-                                       NGExclusion::kFloatRight};
-
-  // left-float-with-margin's size(120) + margin(2x10)
-  NGLogicalSize left_float_with_margin_exclusion_size = {LayoutUnit(140),
-                                                         LayoutUnit(140)};
-  // Exclusion starts from the right_float_block_offset position.
-  NGLogicalOffset left_float_with_margin_exclusion_offset = {
-      LayoutUnit(8), LayoutUnit(right_float_block_offset)};
-  NGLogicalRect left_float_with_margin_exclusion_rect = {
-      left_float_with_margin_exclusion_offset,
-      left_float_with_margin_exclusion_size};
-  NGExclusion left_float_with_margin_exclusion = {
-      left_float_with_margin_exclusion_rect, NGExclusion::kFloatLeft};
-
-  EXPECT_THAT(
-      space->Exclusions()->storage,
-      (ElementsAre(Pointee(left_float_exclusion), Pointee(left_wide_exclusion),
-                   Pointee(right_float_exclusion),
-                   Pointee(left_float_with_margin_exclusion))));
 }
 
 // Verifies that NG block layout algorithm respects "clear" CSS property.

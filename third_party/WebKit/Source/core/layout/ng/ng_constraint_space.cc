@@ -141,8 +141,8 @@ NGLayoutOpportunityIterator* NGConstraintSpace::LayoutOpportunityIterator(
     layout_opp_iter_.reset();
 
   if (!layout_opp_iter_) {
-    layout_opp_iter_ =
-        WTF::makeUnique<NGLayoutOpportunityIterator>(this, iter_offset);
+    layout_opp_iter_ = WTF::makeUnique<NGLayoutOpportunityIterator>(
+        this, AvailableSize(), iter_offset);
   }
   return layout_opp_iter_.get();
 }

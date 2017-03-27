@@ -31,6 +31,7 @@ class CORE_EXPORT NGLayoutOpportunityIterator final {
   //                         represent a text fragment for example.
   NGLayoutOpportunityIterator(
       const NGConstraintSpace* space,
+      const NGLogicalSize& available_size,
       const WTF::Optional<NGLogicalOffset>& opt_offset = WTF::nullopt,
       const WTF::Optional<NGLogicalOffset>& opt_leader_point = WTF::nullopt);
 

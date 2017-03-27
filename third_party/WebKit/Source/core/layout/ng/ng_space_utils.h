@@ -14,11 +14,10 @@ namespace blink {
 // Whether an in-flow block-level child creates a new formatting context.
 //
 // This will *NOT* check the following cases:
-//  - The child is out-of-flow, e.g. floating or abs-pos.
 //  - The child is a inline-level, e.g. "display: inline-block".
 //  - The child establishes a new formatting context, but should be a child of
 //    another layout algorithm, e.g. "display: table-caption" or flex-item.
-CORE_EXPORT bool IsNewFormattingContextForInFlowBlockLevelChild(
+CORE_EXPORT bool IsNewFormattingContextForBlockLevelChild(
     const NGConstraintSpace& space,
     const ComputedStyle& style);
 
