@@ -845,7 +845,6 @@ crbug.com/359838 virtual/mojo-loading/http/tests/ManualTests/ [ Skip ]
 
 # Will be re-enabled and rebaselined once we remove the '--enable-file-cookies' flag.
 crbug.com/470482 fast/cookies/local-file-can-set-cookies.html [ Skip ]
-crbug.com/704850 fast/forms/calendar-picker/calendar-picker-appearance-coarse.html [ NeedsRebaseline ]
 
 # Text::inDocument() returns false but should not.
 crbug.com/264138 dom/legacy_dom_conformance/xhtml/level3/core/nodecomparedocumentposition38.xhtml [ Failure ]
