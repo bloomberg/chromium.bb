@@ -143,7 +143,7 @@ class VM(object):
             '-serial', 'file:%s' % self.kvm_serial,
             '-mon', 'chardev=control_pipe',
             '-net', 'nic,model=virtio',
-            '-net', 'user,hostfwd=tcp::%d-:22' % self.ssh_port,
+            '-net', 'user,hostfwd=tcp:127.0.0.1:%d-:22' % self.ssh_port,
             '-drive', 'file=%s,index=0,media=disk,cache=unsafe'
             % self.image_path]
     if self.enable_kvm:
