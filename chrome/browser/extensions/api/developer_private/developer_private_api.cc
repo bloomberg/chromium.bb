@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/guid.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -193,6 +194,27 @@ namespace Reload = api::developer_private::Reload;
 static base::LazyInstance<BrowserContextKeyedAPIFactory<DeveloperPrivateAPI>>::
     DestructorAtExit g_factory = LAZY_INSTANCE_INITIALIZER;
 
+class DeveloperPrivateAPI::WebContentsTracker
+    : public content::WebContentsObserver {
+ public:
+  WebContentsTracker(base::WeakPtr<DeveloperPrivateAPI> api,
+                     content::WebContents* web_contents)
+      : content::WebContentsObserver(web_contents), api_(api) {}
+
+ private:
+  ~WebContentsTracker() override = default;
+
+  void WebContentsDestroyed() override {
+    if (api_)
+      api_->allowed_unpacked_paths_.erase(web_contents());
+    delete this;
+  }
+
+  base::WeakPtr<DeveloperPrivateAPI> api_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebContentsTracker);
+};
+
 // static
 BrowserContextKeyedAPIFactory<DeveloperPrivateAPI>*
 DeveloperPrivateAPI::GetFactoryInstance() {
@@ -206,7 +228,7 @@ DeveloperPrivateAPI* DeveloperPrivateAPI::Get(
 }
 
 DeveloperPrivateAPI::DeveloperPrivateAPI(content::BrowserContext* context)
-    : profile_(Profile::FromBrowserContext(context)) {
+    : profile_(Profile::FromBrowserContext(context)), weak_factory_(this) {
   RegisterNotifications();
 }
 
@@ -414,8 +436,42 @@ void DeveloperPrivateEventRouter::BroadcastItemStateChangedHelper(
   event_router_->BroadcastEvent(std::move(event));
 }
 
-void DeveloperPrivateAPI::SetLastUnpackedDirectory(const base::FilePath& path) {
+DeveloperPrivateAPI::UnpackedRetryId DeveloperPrivateAPI::AddUnpackedPath(
+    content::WebContents* web_contents,
+    const base::FilePath& path) {
+  DCHECK(web_contents);
   last_unpacked_directory_ = path;
+  IdToPathMap& paths = allowed_unpacked_paths_[web_contents];
+  if (paths.empty()) {
+    // This is the first we've added this WebContents. Track its lifetime so we
+    // can clean up the paths when it is destroyed.
+    // WebContentsTracker manages its own lifetime.
+    new WebContentsTracker(weak_factory_.GetWeakPtr(), web_contents);
+  } else {
+    auto existing = std::find_if(
+        paths.begin(), paths.end(),
+        [path](const std::pair<std::string, base::FilePath>& entry) {
+          return entry.second == path;
+        });
+    if (existing != paths.end())
+      return existing->first;
+  }
+  UnpackedRetryId id = base::GenerateGUID();
+  paths[id] = path;
+  return id;
+}
+
+base::FilePath DeveloperPrivateAPI::GetUnpackedPath(
+    content::WebContents* web_contents,
+    const UnpackedRetryId& id) const {
+  auto iter = allowed_unpacked_paths_.find(web_contents);
+  if (iter == allowed_unpacked_paths_.end())
+    return base::FilePath();
+  const IdToPathMap& paths = iter->second;
+  auto path_iter = paths.find(id);
+  if (path_iter == paths.end())
+    return base::FilePath();
+  return path_iter->second;
 }
 
 void DeveloperPrivateAPI::RegisterNotifications() {
@@ -732,13 +788,9 @@ ExtensionFunction::ResponseAction DeveloperPrivateLoadUnpackedFunction::Run() {
       developer::LoadUnpacked::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  if (!ShowPicker(
-           ui::SelectFileDialog::SELECT_FOLDER,
-           l10n_util::GetStringUTF16(IDS_EXTENSION_LOAD_FROM_DIRECTORY),
-           ui::SelectFileDialog::FileTypeInfo(),
-           0 /* file_type_index */)) {
-    return RespondNow(Error(kCouldNotShowSelectFileDialogError));
-  }
+  content::WebContents* web_contents = GetSenderWebContents();
+  if (!web_contents)
+    return RespondNow(Error(kCouldNotFindWebContentsError));
 
   fail_quietly_ = params->options &&
                   params->options->fail_quietly &&
@@ -746,6 +798,24 @@ ExtensionFunction::ResponseAction DeveloperPrivateLoadUnpackedFunction::Run() {
 
   populate_error_ = params->options && params->options->populate_error &&
                     *params->options->populate_error;
+
+  if (params->options && params->options->retry_guid) {
+    DeveloperPrivateAPI* api = DeveloperPrivateAPI::Get(browser_context());
+    base::FilePath path =
+        api->GetUnpackedPath(web_contents, *params->options->retry_guid);
+    if (path.empty())
+      return RespondNow(Error("Invalid retry id"));
+    AddRef();  // Balanced in FileSelected.
+    FileSelected(path);
+    return RespondLater();
+  }
+
+  if (!ShowPicker(ui::SelectFileDialog::SELECT_FOLDER,
+                  l10n_util::GetStringUTF16(IDS_EXTENSION_LOAD_FROM_DIRECTORY),
+                  ui::SelectFileDialog::FileTypeInfo(),
+                  0 /* file_type_index */)) {
+    return RespondNow(Error(kCouldNotShowSelectFileDialogError));
+  }
 
   AddRef();  // Balanced in FileSelected / FileSelectionCanceled.
   return RespondLater();
@@ -760,7 +830,8 @@ void DeveloperPrivateLoadUnpackedFunction::FileSelected(
       base::Bind(&DeveloperPrivateLoadUnpackedFunction::OnLoadComplete, this));
   installer->Load(path);
 
-  DeveloperPrivateAPI::Get(browser_context())->SetLastUnpackedDirectory(path);
+  retry_guid_ = DeveloperPrivateAPI::Get(browser_context())
+                  ->AddUnpackedPath(GetSenderWebContents(), path);
 
   Release();  // Balanced in Run().
 }
@@ -792,12 +863,14 @@ void DeveloperPrivateLoadUnpackedFunction::OnGotManifestError(
     const std::string& error,
     size_t line_number,
     const std::string& manifest) {
+  DCHECK(!retry_guid_.empty());
   base::FilePath prettified_path = path_util::PrettifyPath(file_path);
 
   SourceHighlighter highlighter(manifest, line_number);
   developer::LoadError response;
   response.error = error;
   response.path = base::UTF16ToUTF8(prettified_path.LossyDisplayName());
+  response.retry_guid = retry_guid_;
 
   response.source = base::MakeUnique<developer::ErrorFileSource>();
   response.source->before_highlight = highlighter.GetBeforeFeature();
@@ -820,14 +893,10 @@ bool DeveloperPrivateChooseEntryFunction::ShowPicker(
   // and subsequent sending of the function response) until the user has
   // selected a file or cancelled the picker. At that point, the picker will
   // delete itself.
-  new EntryPicker(this,
-                  web_contents,
-                  picker_type,
-                  DeveloperPrivateAPI::Get(browser_context())->
-                      GetLastUnpackedDirectory(),
-                  select_title,
-                  info,
-                  file_type_index);
+  new EntryPicker(
+      this, web_contents, picker_type,
+      DeveloperPrivateAPI::Get(browser_context())->last_unpacked_directory(),
+      select_title, info, file_type_index);
   return true;
 }
 

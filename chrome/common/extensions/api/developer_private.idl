@@ -307,6 +307,12 @@ namespace developerPrivate {
     // If true, populates a LoadError for the response rather than setting
     // lastError.
     boolean? populateError;
+
+    // A unique identifier for retrying a previous failed load. This should be
+    // the identifier returned in the LoadError. If specified, the path
+    // associated with the identifier will be loaded, and the file chooser
+    // will be skipped.
+    DOMString? retryGuid;
   };
 
   enum PackStatus {
@@ -386,6 +392,10 @@ namespace developerPrivate {
 
     // The file source for the error, if it could be retrieved.
     ErrorFileSource? source;
+
+    // A unique identifier to pass to developerPrivate.loadUnpacked to retry
+    // loading the extension at the same path.
+    DOMString retryGuid;
   };
 
   dictionary RequestFileSourceProperties {

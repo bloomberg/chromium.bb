@@ -590,6 +590,137 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateLoadUnpackedLoadError) {
   }
 }
 
+// Test that the retryGuid supplied by loadUnpacked works correctly.
+TEST_F(DeveloperPrivateApiUnitTest, LoadUnpackedRetryId) {
+  std::unique_ptr<content::WebContents> web_contents(
+      content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
+
+  // Load an extension with a clear manifest error ('version' is invalid).
+  TestExtensionDir dir;
+  dir.WriteManifest(
+      R"({
+           "name": "foo",
+           "description": "bar",
+           "version": 1,
+           "manifest_version": 2
+         })");
+  base::FilePath path = dir.UnpackedPath();
+  api::EntryPicker::SkipPickerAndAlwaysSelectPathForTest(&path);
+
+  DeveloperPrivateAPI::UnpackedRetryId retry_guid;
+  {
+    // Trying to load the extension should result in a load error with the
+    // retry id populated.
+    scoped_refptr<UIThreadExtensionFunction> function(
+        new api::DeveloperPrivateLoadUnpackedFunction());
+    function->SetRenderFrameHost(web_contents->GetMainFrame());
+    std::unique_ptr<base::Value> result =
+        api_test_utils::RunFunctionAndReturnSingleResult(
+            function.get(),
+            "[{\"failQuietly\": true, \"populateError\": true}]", profile());
+    ASSERT_TRUE(result);
+    std::unique_ptr<api::developer_private::LoadError> error =
+        api::developer_private::LoadError::FromValue(*result);
+    ASSERT_TRUE(error);
+    EXPECT_FALSE(error->retry_guid.empty());
+    retry_guid = error->retry_guid;
+  }
+
+  {
+    // Trying to reload the same extension, again to fail, should result in the
+    // same retry id.  This is somewhat an implementation detail, but is
+    // important to ensure we don't allocate crazy numbers of ids if the user
+    // just retries continously.
+    scoped_refptr<UIThreadExtensionFunction> function(
+        new api::DeveloperPrivateLoadUnpackedFunction());
+    function->SetRenderFrameHost(web_contents->GetMainFrame());
+    std::unique_ptr<base::Value> result =
+        api_test_utils::RunFunctionAndReturnSingleResult(
+            function.get(),
+            "[{\"failQuietly\": true, \"populateError\": true}]", profile());
+    ASSERT_TRUE(result);
+    std::unique_ptr<api::developer_private::LoadError> error =
+        api::developer_private::LoadError::FromValue(*result);
+    ASSERT_TRUE(error);
+    EXPECT_EQ(retry_guid, error->retry_guid);
+  }
+
+  {
+    // Try loading a different directory. The retry id should be different; this
+    // also tests loading a second extension with one retry currently
+    // "in-flight" (i.e., unresolved).
+    TestExtensionDir second_dir;
+    second_dir.WriteManifest(
+        R"({
+             "name": "foo",
+             "description": "bar",
+             "version": 1,
+             "manifest_version": 2
+           })");
+    base::FilePath second_path = second_dir.UnpackedPath();
+    api::EntryPicker::SkipPickerAndAlwaysSelectPathForTest(&second_path);
+
+    scoped_refptr<UIThreadExtensionFunction> function(
+        new api::DeveloperPrivateLoadUnpackedFunction());
+    function->SetRenderFrameHost(web_contents->GetMainFrame());
+    std::unique_ptr<base::Value> result =
+        api_test_utils::RunFunctionAndReturnSingleResult(
+            function.get(),
+            "[{\"failQuietly\": true, \"populateError\": true}]", profile());
+    // The loadError result should be populated.
+    ASSERT_TRUE(result);
+    std::unique_ptr<api::developer_private::LoadError> error =
+        api::developer_private::LoadError::FromValue(*result);
+    ASSERT_TRUE(error);
+    EXPECT_NE(retry_guid, error->retry_guid);
+  }
+
+  // Correct the manifest to make the extension valid.
+  dir.WriteManifest(
+      R"({
+           "name": "foo",
+           "description": "bar",
+           "version": "1.0",
+           "manifest_version": 2
+         })");
+
+  // Set the picker to choose an invalid path (the picker should be skipped if
+  // we supply a retry id).
+  base::FilePath empty_path;
+  api::EntryPicker::SkipPickerAndAlwaysSelectPathForTest(&empty_path);
+
+  {
+    // Try reloading the extension by supplying the retry id. It should succeed.
+    scoped_refptr<UIThreadExtensionFunction> function(
+        new api::DeveloperPrivateLoadUnpackedFunction());
+    function->SetRenderFrameHost(web_contents->GetMainFrame());
+    TestExtensionRegistryObserver observer(registry());
+    api_test_utils::RunFunction(function.get(),
+                                base::StringPrintf("[{\"failQuietly\": true,"
+                                                   "\"populateError\": true,"
+                                                   "\"retryGuid\": \"%s\"}]",
+                                                   retry_guid.c_str()),
+                                profile());
+    const Extension* extension = observer.WaitForExtensionLoaded();
+    ASSERT_TRUE(extension);
+    EXPECT_EQ(extension->path(), path);
+  }
+
+  {
+    // Try supplying an invalid retry id. It should fail with an error.
+    scoped_refptr<UIThreadExtensionFunction> function(
+        new api::DeveloperPrivateLoadUnpackedFunction());
+    function->SetRenderFrameHost(web_contents->GetMainFrame());
+    std::string error = api_test_utils::RunFunctionAndReturnError(
+        function.get(),
+        "[{\"failQuietly\": true,"
+        "\"populateError\": true,"
+        "\"retryGuid\": \"invalid id\"}]",
+        profile());
+    EXPECT_EQ("Invalid retry id", error);
+  }
+}
+
 // Test developerPrivate.requestFileSource.
 TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateRequestFileSource) {
   // Testing of this function seems light, but that's because it basically just

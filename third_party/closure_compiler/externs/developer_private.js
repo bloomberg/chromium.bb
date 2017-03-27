@@ -416,7 +416,8 @@ chrome.developerPrivate.ReloadOptions;
 /**
  * @typedef {{
  *   failQuietly: (boolean|undefined),
- *   populateError: (boolean|undefined)
+ *   populateError: (boolean|undefined),
+ *   retryId: (string|undefined)
  * }}
  * @see https://developer.chrome.com/extensions/developerPrivate#type-LoadUnpackedOptions
  */
@@ -511,7 +512,8 @@ chrome.developerPrivate.ErrorFileSource;
  * @typedef {{
  *   error: string,
  *   path: string,
- *   source: (!chrome.developerPrivate.ErrorFileSource|undefined)
+ *   source: (!chrome.developerPrivate.ErrorFileSource|undefined),
+ *   retryId: string
  * }}
  * @see https://developer.chrome.com/extensions/developerPrivate#type-LoadError
  */
