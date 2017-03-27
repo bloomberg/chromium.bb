@@ -15,11 +15,11 @@
 namespace blink {
 
 class PaintLayerClipperTest : public ::testing::WithParamInterface<bool>,
-                              private ScopedSlimmingPaintV2ForTest,
+                              private ScopedSlimmingPaintInvalidationForTest,
                               public RenderingTest {
  public:
   PaintLayerClipperTest()
-      : ScopedSlimmingPaintV2ForTest(GetParam()),
+      : ScopedSlimmingPaintInvalidationForTest(GetParam()),
         RenderingTest(EmptyLocalFrameClient::create()) {}
 
   void SetUp() override {
@@ -63,8 +63,16 @@ TEST_P(PaintLayerClipperTest, LayoutSVGRoot) {
   targetPaintLayer->clipper(option).calculateRects(
       context, LayoutRect(LayoutRect::infiniteIntRect()), layerBounds,
       backgroundRect, foregroundRect);
-  EXPECT_EQ(LayoutRect(FloatRect(8.25, 8.35, 200, 300)), backgroundRect.rect());
-  EXPECT_EQ(LayoutRect(FloatRect(8.25, 8.35, 200, 300)), foregroundRect.rect());
+  // TODO(chrishtr): investigate why these differences exist.
+  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
+    EXPECT_EQ(LayoutRect(FloatRect(8.25, 8.35, 200, 300)),
+              backgroundRect.rect());
+    EXPECT_EQ(LayoutRect(FloatRect(8.25, 8.35, 200, 300)),
+              foregroundRect.rect());
+  } else {
+    EXPECT_EQ(LayoutRect(FloatRect(8, 8, 200, 300)), backgroundRect.rect());
+    EXPECT_EQ(LayoutRect(FloatRect(8, 8, 200, 300)), foregroundRect.rect());
+  }
   EXPECT_EQ(LayoutRect(8, 8, 200, 300), layerBounds);
 }
 
@@ -445,6 +453,33 @@ TEST_P(PaintLayerClipperTest, ClearClipRectsRecursiveOneType) {
   EXPECT_TRUE(child->clipRectsCache());
   EXPECT_FALSE(parent->clipRectsCache()->get(AbsoluteClipRects).root);
   EXPECT_FALSE(parent->clipRectsCache()->get(AbsoluteClipRects).root);
+}
+
+TEST_P(PaintLayerClipperTest, CSSClip) {
+  setBodyInnerHTML(
+      "<style>"
+      "  #target { "
+      "    width: 400px; height: 400px; position: absolute;"
+      "    clip: rect(0, 50px, 100px, 0); "
+      "  }"
+      "</style>"
+      "<div id='target'></div>");
+
+  PaintLayer* target =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("target"))->layer();
+  ClipRectsContext context(target, UncachedClipRects);
+  PaintLayer::GeometryMapperOption option = PaintLayer::DoNotUseGeometryMapper;
+  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+    option = PaintLayer::UseGeometryMapper;
+  LayoutRect infiniteRect(LayoutRect::infiniteIntRect());
+  LayoutRect layerBounds(infiniteRect);
+  ClipRect backgroundRect(infiniteRect);
+  ClipRect foregroundRect(infiniteRect);
+  target->clipper(option).calculateRects(context, infiniteRect, layerBounds,
+                                         backgroundRect, foregroundRect);
+
+  EXPECT_EQ(LayoutRect(0, 0, 50, 100), backgroundRect.rect());
+  EXPECT_EQ(LayoutRect(0, 0, 50, 100), foregroundRect.rect());
 }
 
 }  // namespace blink

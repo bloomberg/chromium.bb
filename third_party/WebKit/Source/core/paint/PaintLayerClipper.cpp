@@ -457,6 +457,13 @@ void PaintLayerClipper::calculateClipRectWithGeometryMapper(
   DCHECK(ancestorProperties && ancestorProperties->localBorderBoxProperties());
   PropertyTreeState destinationPropertyTreeState =
       *ancestorProperties->localBorderBoxProperties();
+  // CSS clip of the root is always applied.
+  if (ancestorProperties->cssClip()) {
+    DCHECK(destinationPropertyTreeState.clip() ==
+           ancestorProperties->cssClip());
+    destinationPropertyTreeState.setClip(
+        ancestorProperties->cssClip()->parent());
+  }
 
   if (&m_layer == context.rootLayer) {
     // Set the overflow clip for |propertyTreeState| so that it differs from
