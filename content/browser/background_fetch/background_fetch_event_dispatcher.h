@@ -17,6 +17,7 @@
 
 namespace content {
 
+class BackgroundFetchRegistrationId;
 struct BackgroundFetchSettledFetch;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerRegistration;
@@ -42,35 +43,29 @@ class CONTENT_EXPORT BackgroundFetchEventDispatcher {
 
   // Dispatches the `backgroundfetchabort` event, which indicates that an active
   // background fetch was aborted by the user or another external event.
-  void DispatchBackgroundFetchAbortEvent(int64_t service_worker_registration_id,
-                                         const GURL& origin,
-                                         const std::string& tag,
-                                         base::Closure finished_closure);
+  void DispatchBackgroundFetchAbortEvent(
+      const BackgroundFetchRegistrationId& registration_id,
+      base::Closure finished_closure);
 
   // Dispatches the `backgroundfetchclick` event, which indicates that the user
   // interface displayed for an active background fetch was activated.
-  void DispatchBackgroundFetchClickEvent(int64_t service_worker_registration_id,
-                                         const GURL& origin,
-                                         const std::string& tag,
-                                         mojom::BackgroundFetchState state,
-                                         base::Closure finished_closure);
+  void DispatchBackgroundFetchClickEvent(
+      const BackgroundFetchRegistrationId& registration_id,
+      mojom::BackgroundFetchState state,
+      base::Closure finished_closure);
 
   // Dispatches the `backgroundfetchfail` event, which indicates that a
   // background fetch has finished with one or more failed fetches. The request-
   // response pairs are included.
   void DispatchBackgroundFetchFailEvent(
-      int64_t service_worker_registration_id,
-      const GURL& origin,
-      const std::string& tag,
+      const BackgroundFetchRegistrationId& registration_id,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
       base::Closure finished_closure);
 
   // Dispatches the `backgroundfetched` event, which indicates that a background
   // fetch has successfully completed. The request-response pairs are included.
   void DispatchBackgroundFetchedEvent(
-      int64_t service_worker_registration_id,
-      const GURL& origin,
-      const std::string& tag,
+      const BackgroundFetchRegistrationId& registration_id,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
       base::Closure finished_closure);
 
@@ -81,13 +76,12 @@ class CONTENT_EXPORT BackgroundFetchEventDispatcher {
   // Phase at which the dispatching process finished. Used for UMA.
   enum class DispatchPhase { FINDING, STARTING, DISPATCHING };
 
-  // Loads the Service Worker identified by |service_worker_registration_id| and
+  // Loads the Service Worker identified included in the |registration_id| and
   // ensures that there is an activated version. Will invoke |finished_closure|,
   // log UMA and abort on error, or invoke |loaded_callback| on success.
   void LoadServiceWorkerRegistrationForDispatch(
+      const BackgroundFetchRegistrationId& registration_id,
       ServiceWorkerMetrics::EventType event,
-      int64_t service_worker_registration_id,
-      const GURL& origin,
       base::Closure finished_closure,
       ServiceWorkerLoadedCallback loaded_callback);
 

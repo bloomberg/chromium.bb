@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/stringprintf.h"
+#include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_version.h"
@@ -69,17 +70,15 @@ BackgroundFetchEventDispatcher::BackgroundFetchEventDispatcher(
 BackgroundFetchEventDispatcher::~BackgroundFetchEventDispatcher() = default;
 
 void BackgroundFetchEventDispatcher::DispatchBackgroundFetchAbortEvent(
-    int64_t service_worker_registration_id,
-    const GURL& origin,
-    const std::string& tag,
+    const BackgroundFetchRegistrationId& registration_id,
     base::Closure finished_closure) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   LoadServiceWorkerRegistrationForDispatch(
-      ServiceWorkerMetrics::EventType::BACKGROUND_FETCH_ABORT,
-      service_worker_registration_id, origin, std::move(finished_closure),
+      registration_id, ServiceWorkerMetrics::EventType::BACKGROUND_FETCH_ABORT,
+      std::move(finished_closure),
       base::Bind(
           &BackgroundFetchEventDispatcher::DoDispatchBackgroundFetchAbortEvent,
-          tag));
+          registration_id.tag()));
 }
 
 void BackgroundFetchEventDispatcher::DoDispatchBackgroundFetchAbortEvent(
@@ -92,18 +91,16 @@ void BackgroundFetchEventDispatcher::DoDispatchBackgroundFetchAbortEvent(
 }
 
 void BackgroundFetchEventDispatcher::DispatchBackgroundFetchClickEvent(
-    int64_t service_worker_registration_id,
-    const GURL& origin,
-    const std::string& tag,
+    const BackgroundFetchRegistrationId& registration_id,
     mojom::BackgroundFetchState state,
     base::Closure finished_closure) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   LoadServiceWorkerRegistrationForDispatch(
-      ServiceWorkerMetrics::EventType::BACKGROUND_FETCH_CLICK,
-      service_worker_registration_id, origin, std::move(finished_closure),
+      registration_id, ServiceWorkerMetrics::EventType::BACKGROUND_FETCH_CLICK,
+      std::move(finished_closure),
       base::Bind(
           &BackgroundFetchEventDispatcher::DoDispatchBackgroundFetchClickEvent,
-          tag, state));
+          registration_id.tag(), state));
 }
 
 void BackgroundFetchEventDispatcher::DoDispatchBackgroundFetchClickEvent(
@@ -118,18 +115,16 @@ void BackgroundFetchEventDispatcher::DoDispatchBackgroundFetchClickEvent(
 }
 
 void BackgroundFetchEventDispatcher::DispatchBackgroundFetchFailEvent(
-    int64_t service_worker_registration_id,
-    const GURL& origin,
-    const std::string& tag,
+    const BackgroundFetchRegistrationId& registration_id,
     const std::vector<BackgroundFetchSettledFetch>& fetches,
     base::Closure finished_closure) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   LoadServiceWorkerRegistrationForDispatch(
-      ServiceWorkerMetrics::EventType::BACKGROUND_FETCH_FAIL,
-      service_worker_registration_id, origin, std::move(finished_closure),
+      registration_id, ServiceWorkerMetrics::EventType::BACKGROUND_FETCH_FAIL,
+      std::move(finished_closure),
       base::Bind(
           &BackgroundFetchEventDispatcher::DoDispatchBackgroundFetchFailEvent,
-          tag, fetches));
+          registration_id.tag(), fetches));
 }
 
 void BackgroundFetchEventDispatcher::DoDispatchBackgroundFetchFailEvent(
@@ -144,18 +139,16 @@ void BackgroundFetchEventDispatcher::DoDispatchBackgroundFetchFailEvent(
 }
 
 void BackgroundFetchEventDispatcher::DispatchBackgroundFetchedEvent(
-    int64_t service_worker_registration_id,
-    const GURL& origin,
-    const std::string& tag,
+    const BackgroundFetchRegistrationId& registration_id,
     const std::vector<BackgroundFetchSettledFetch>& fetches,
     base::Closure finished_closure) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   LoadServiceWorkerRegistrationForDispatch(
-      ServiceWorkerMetrics::EventType::BACKGROUND_FETCHED,
-      service_worker_registration_id, origin, std::move(finished_closure),
+      registration_id, ServiceWorkerMetrics::EventType::BACKGROUND_FETCHED,
+      std::move(finished_closure),
       base::Bind(
           &BackgroundFetchEventDispatcher::DoDispatchBackgroundFetchedEvent,
-          tag, fetches));
+          registration_id.tag(), fetches));
 }
 
 void BackgroundFetchEventDispatcher::DoDispatchBackgroundFetchedEvent(
@@ -170,13 +163,13 @@ void BackgroundFetchEventDispatcher::DoDispatchBackgroundFetchedEvent(
 }
 
 void BackgroundFetchEventDispatcher::LoadServiceWorkerRegistrationForDispatch(
+    const BackgroundFetchRegistrationId& registration_id,
     ServiceWorkerMetrics::EventType event,
-    int64_t service_worker_registration_id,
-    const GURL& origin,
     base::Closure finished_closure,
     ServiceWorkerLoadedCallback loaded_callback) {
   service_worker_context_->FindReadyRegistrationForId(
-      service_worker_registration_id, origin,
+      registration_id.service_worker_registration_id(),
+      registration_id.origin().GetURL(),
       base::Bind(&BackgroundFetchEventDispatcher::StartActiveWorkerForDispatch,
                  event, std::move(finished_closure),
                  std::move(loaded_callback)));

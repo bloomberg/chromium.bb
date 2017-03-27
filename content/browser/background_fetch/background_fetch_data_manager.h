@@ -5,14 +5,15 @@
 #ifndef CONTENT_BROWSER_BACKGROUND_FETCH_BACKGROUND_FETCH_DATA_MANAGER_H_
 #define CONTENT_BROWSER_BACKGROUND_FETCH_BACKGROUND_FETCH_DATA_MANAGER_H_
 
-#include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <unordered_map>
 
 #include "base/macros.h"
 #include "content/browser/background_fetch/background_fetch_job_data.h"
 #include "content/browser/background_fetch/background_fetch_job_info.h"
+#include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/common/content_export.h"
 #include "url/origin.h"
 
@@ -47,9 +48,8 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
   // DataManager is guaranteed to be destructed before the Context.
   BackgroundFetchContext* background_fetch_context_;
 
-  // Map from <sw_registration_id, tag> to the job_guid for that tag.
-  using JobIdentifier = std::pair<int64_t, std::string>;
-  std::map<JobIdentifier, std::string> service_worker_tag_map_;
+  // Set of known background fetch registration ids.
+  std::set<BackgroundFetchRegistrationId> known_registrations_;
 
   // Temporary map to hold data which will be written to storage.
   // Map from job_guid to JobInfo.

@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
+#include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/background_fetch/background_fetch_types.h"
@@ -190,6 +191,9 @@ class BackgroundFetchEventDispatcherTest : public ::testing::Test {
     return service_worker_registration;
   }
 
+  // Helper function for getting an url::Origin object with the example origin.
+  url::Origin origin() const { return url::Origin(GURL(kExampleOrigin)); }
+
   BackgroundFetchEmbeddedWorkerTestHelper* test_helpers() {
     return &embedded_worker_test_helper_;
   }
@@ -236,11 +240,11 @@ class BackgroundFetchEventDispatcherTest : public ::testing::Test {
 };
 
 TEST_F(BackgroundFetchEventDispatcherTest, DispatchInvalidRegistration) {
-  GURL origin(kExampleOrigin);
+  BackgroundFetchRegistrationId invalid_registration_id(
+      9042 /* random invalid id */, origin(), kExampleTag);
 
   base::RunLoop run_loop;
-  dispatcher()->DispatchBackgroundFetchAbortEvent(9042 /* random invalid Id */,
-                                                  origin, kExampleTag,
+  dispatcher()->DispatchBackgroundFetchAbortEvent(invalid_registration_id,
                                                   run_loop.QuitClosure());
 
   run_loop.Run();
@@ -258,13 +262,13 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchAbortEvent) {
   ASSERT_TRUE(service_worker_registration);
   ASSERT_TRUE(service_worker_registration->active_version());
 
-  GURL origin(kExampleOrigin);
+  BackgroundFetchRegistrationId registration_id(
+      service_worker_registration->id(), origin(), kExampleTag);
 
   {
     base::RunLoop run_loop;
-    dispatcher()->DispatchBackgroundFetchAbortEvent(
-        service_worker_registration->id(), origin, kExampleTag,
-        run_loop.QuitClosure());
+    dispatcher()->DispatchBackgroundFetchAbortEvent(registration_id,
+                                                    run_loop.QuitClosure());
 
     run_loop.Run();
   }
@@ -278,11 +282,13 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchAbortEvent) {
 
   test_helpers()->set_fail_abort_event(true);
 
+  BackgroundFetchRegistrationId second_registration_id(
+      service_worker_registration->id(), origin(), kExampleTag2);
+
   {
     base::RunLoop run_loop;
-    dispatcher()->DispatchBackgroundFetchAbortEvent(
-        service_worker_registration->id(), origin, kExampleTag2,
-        run_loop.QuitClosure());
+    dispatcher()->DispatchBackgroundFetchAbortEvent(second_registration_id,
+                                                    run_loop.QuitClosure());
 
     run_loop.Run();
   }
@@ -306,13 +312,14 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchClickEvent) {
   ASSERT_TRUE(service_worker_registration);
   ASSERT_TRUE(service_worker_registration->active_version());
 
-  GURL origin(kExampleOrigin);
+  BackgroundFetchRegistrationId registration_id(
+      service_worker_registration->id(), origin(), kExampleTag);
 
   {
     base::RunLoop run_loop;
     dispatcher()->DispatchBackgroundFetchClickEvent(
-        service_worker_registration->id(), origin, kExampleTag,
-        mojom::BackgroundFetchState::PENDING, run_loop.QuitClosure());
+        registration_id, mojom::BackgroundFetchState::PENDING,
+        run_loop.QuitClosure());
 
     run_loop.Run();
   }
@@ -329,11 +336,14 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchClickEvent) {
 
   test_helpers()->set_fail_click_event(true);
 
+  BackgroundFetchRegistrationId second_registration_id(
+      service_worker_registration->id(), origin(), kExampleTag2);
+
   {
     base::RunLoop run_loop;
     dispatcher()->DispatchBackgroundFetchClickEvent(
-        service_worker_registration->id(), origin, kExampleTag2,
-        mojom::BackgroundFetchState::SUCCEEDED, run_loop.QuitClosure());
+        second_registration_id, mojom::BackgroundFetchState::SUCCEEDED,
+        run_loop.QuitClosure());
 
     run_loop.Run();
   }
@@ -361,16 +371,16 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFailEvent) {
   ASSERT_TRUE(service_worker_registration);
   ASSERT_TRUE(service_worker_registration->active_version());
 
-  GURL origin(kExampleOrigin);
+  BackgroundFetchRegistrationId registration_id(
+      service_worker_registration->id(), origin(), kExampleTag);
 
   std::vector<BackgroundFetchSettledFetch> fetches;
   fetches.push_back(BackgroundFetchSettledFetch());
 
   {
     base::RunLoop run_loop;
-    dispatcher()->DispatchBackgroundFetchFailEvent(
-        service_worker_registration->id(), origin, kExampleTag, fetches,
-        run_loop.QuitClosure());
+    dispatcher()->DispatchBackgroundFetchFailEvent(registration_id, fetches,
+                                                   run_loop.QuitClosure());
 
     run_loop.Run();
   }
@@ -389,11 +399,13 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFailEvent) {
 
   test_helpers()->set_fail_fail_event(true);
 
+  BackgroundFetchRegistrationId second_registration_id(
+      service_worker_registration->id(), origin(), kExampleTag2);
+
   {
     base::RunLoop run_loop;
     dispatcher()->DispatchBackgroundFetchFailEvent(
-        service_worker_registration->id(), origin, kExampleTag2, fetches,
-        run_loop.QuitClosure());
+        second_registration_id, fetches, run_loop.QuitClosure());
 
     run_loop.Run();
   }
@@ -420,16 +432,16 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFetchedEvent) {
   ASSERT_TRUE(service_worker_registration);
   ASSERT_TRUE(service_worker_registration->active_version());
 
-  GURL origin(kExampleOrigin);
+  BackgroundFetchRegistrationId registration_id(
+      service_worker_registration->id(), origin(), kExampleTag);
 
   std::vector<BackgroundFetchSettledFetch> fetches;
   fetches.push_back(BackgroundFetchSettledFetch());
 
   {
     base::RunLoop run_loop;
-    dispatcher()->DispatchBackgroundFetchedEvent(
-        service_worker_registration->id(), origin, kExampleTag, fetches,
-        run_loop.QuitClosure());
+    dispatcher()->DispatchBackgroundFetchedEvent(registration_id, fetches,
+                                                 run_loop.QuitClosure());
 
     run_loop.Run();
   }
@@ -448,11 +460,13 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFetchedEvent) {
 
   test_helpers()->set_fail_fetched_event(true);
 
+  BackgroundFetchRegistrationId second_registration_id(
+      service_worker_registration->id(), origin(), kExampleTag2);
+
   {
     base::RunLoop run_loop;
     dispatcher()->DispatchBackgroundFetchedEvent(
-        service_worker_registration->id(), origin, kExampleTag2, fetches,
-        run_loop.QuitClosure());
+        second_registration_id, fetches, run_loop.QuitClosure());
 
     run_loop.Run();
   }

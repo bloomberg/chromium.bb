@@ -23,9 +23,13 @@ std::unique_ptr<BackgroundFetchJobData>
 BackgroundFetchDataManager::CreateRequest(
     std::unique_ptr<BackgroundFetchJobInfo> job_info,
     BackgroundFetchRequestInfos request_infos) {
-  JobIdentifier id(job_info->service_worker_registration_id(), job_info->tag());
+  BackgroundFetchRegistrationId registration_id(
+      job_info->service_worker_registration_id(), job_info->origin(),
+      job_info->tag());
+
   // Ensure that this is not a duplicate request.
-  if (service_worker_tag_map_.find(id) != service_worker_tag_map_.end()) {
+  if (known_registrations_.find(registration_id) !=
+      known_registrations_.end()) {
     DVLOG(1) << "Origin " << job_info->origin()
              << " has already created a batch request with tag "
              << job_info->tag();
@@ -36,7 +40,7 @@ BackgroundFetchDataManager::CreateRequest(
   // Add the request to our maps and return a JobData to track the individual
   // files in the request.
   const std::string job_guid = job_info->guid();
-  service_worker_tag_map_[id] = job_guid;
+  known_registrations_.insert(std::move(registration_id));
   WriteJobToStorage(std::move(job_info), std::move(request_infos));
   // TODO(harkness): Remove data when the job is complete.
 
