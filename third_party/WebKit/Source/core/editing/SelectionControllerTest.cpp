@@ -24,12 +24,19 @@ class SelectionControllerTest : public EditingTestBase {
     return selection().selectionInFlatTree();
   }
 
+  void setCaretAtHitTestResult(const HitTestResult&);
   void setNonDirectionalSelectionIfNeeded(const SelectionInFlatTree&,
                                           TextGranularity);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SelectionControllerTest);
 };
+
+void SelectionControllerTest::setCaretAtHitTestResult(
+    const HitTestResult& hitTestResult) {
+  frame().eventHandler().selectionController().setCaretAtHitTestResult(
+      hitTestResult);
+}
 
 void SelectionControllerTest::setNonDirectionalSelectionIfNeeded(
     const SelectionInFlatTree& newSelection,
@@ -102,6 +109,23 @@ TEST_F(SelectionControllerTest, setCaretAtHitTestResult) {
   frame().eventHandler().selectionController().handleGestureLongPress(
       WebGestureEvent(),
       frame().eventHandler().hitTestResultAtPoint(IntPoint(8, 8)));
+}
+
+// For http://crbug.com/704827
+TEST_F(SelectionControllerTest, setCaretAtHitTestResultWithNullPosition) {
+  setBodyContent(
+      "<style>"
+      "#sample:before {content: '&nbsp;'}"
+      "#sample { user-select: none; }"
+      "</style>"
+      "<div id=sample></div>");
+  document().view()->updateAllLifecyclePhases();
+
+  // Hit "&nbsp;" in before pseudo element of "sample".
+  setCaretAtHitTestResult(
+      frame().eventHandler().hitTestResultAtPoint(IntPoint(10, 10)));
+
+  EXPECT_TRUE(selection().selectionInDOMTree().isNone());
 }
 
 }  // namespace blink

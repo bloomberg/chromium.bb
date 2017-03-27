@@ -709,6 +709,12 @@ void SelectionController::setCaretAtHitTestResult(
                 PositionInFlatTree::firstPositionInOrBeforeNode(innerNode))
           : visibleHitPos;
 
+  if (visiblePos.isNull()) {
+    updateSelectionForMouseDownDispatchingSelectStart(
+        innerNode, VisibleSelectionInFlatTree(), CharacterGranularity,
+        HandleVisibility::Visible);
+    return;
+  }
   updateSelectionForMouseDownDispatchingSelectStart(
       innerNode,
       expandSelectionToRespectUserSelectAll(
