@@ -1073,8 +1073,9 @@ TEST_F(RenderWidgetHostViewMacTest, PointerEventWithEraserType) {
   base::RunLoop().RunUntilIdle();
   process_host->sink().ClearMessages();
 
-  event = MockMouseEventWithParams(kCGEventMouseMoved, {6, 9}, 0,
-                                   kCGEventMouseSubtypeTabletPoint);
+  event =
+      MockMouseEventWithParams(kCGEventMouseMoved, {6, 9}, kCGMouseButtonLeft,
+                               kCGEventMouseSubtypeTabletPoint);
   [view->cocoa_view() mouseEvent:event];
   ASSERT_EQ(1U, process_host->sink().message_count());
   EXPECT_EQ(blink::WebPointerProperties::PointerType::Eraser,
@@ -1107,8 +1108,9 @@ TEST_F(RenderWidgetHostViewMacTest, PointerEventWithPenType) {
   base::RunLoop().RunUntilIdle();
   process_host->sink().ClearMessages();
 
-  event = MockMouseEventWithParams(kCGEventMouseMoved, {6, 9}, 0,
-                                   kCGEventMouseSubtypeTabletPoint);
+  event =
+      MockMouseEventWithParams(kCGEventMouseMoved, {6, 9}, kCGMouseButtonLeft,
+                               kCGEventMouseSubtypeTabletPoint);
   [view->cocoa_view() mouseEvent:event];
   ASSERT_EQ(1U, process_host->sink().message_count());
   EXPECT_EQ(blink::WebPointerProperties::PointerType::Pen,
@@ -1134,8 +1136,9 @@ TEST_F(RenderWidgetHostViewMacTest, PointerEventWithMouseType) {
   process_host->sink().ClearMessages();
 
   // Send a NSEvent of a mouse type.
-  NSEvent* event = MockMouseEventWithParams(kCGEventMouseMoved, {6, 9}, 0,
-                                            kCGEventMouseSubtypeDefault);
+  NSEvent* event =
+      MockMouseEventWithParams(kCGEventMouseMoved, {6, 9}, kCGMouseButtonLeft,
+                               kCGEventMouseSubtypeDefault);
   [view->cocoa_view() mouseEvent:event];
   ASSERT_EQ(1U, process_host->sink().message_count());
   EXPECT_EQ(blink::WebPointerProperties::PointerType::Mouse,
