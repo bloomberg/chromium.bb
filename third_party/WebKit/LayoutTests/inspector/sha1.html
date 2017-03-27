@@ -1,0 +1,28 @@
+<html>
+<head>
+<meta charset="utf8">
+<script src="../http/tests/inspector/inspector-test.js"></script>
+<script>
+
+function initialize_ProductRegistry() {
+    InspectorTest.preloadModule('product_registry');
+}
+
+function test()
+{
+    InspectorTest.addResult('foobar : ' + ProductRegistry.sha1('foobar'));
+    InspectorTest.addResult('hello : ' + ProductRegistry.sha1('hello'));
+    InspectorTest.addResult('abcdefghijklmnopqrstuvwxyz : ' + ProductRegistry.sha1('abcdefghijklmnopqrstuvwxyz'));
+    InspectorTest.addResult('ABCDEFGHIJKLMNOPQRSTUVWXYZ : ' + ProductRegistry.sha1('ABCDEFGHIJKLMNOPQRSTUVWXYZ'));
+    InspectorTest.addResult('a : ' + ProductRegistry.sha1('a'));
+    InspectorTest.addResult('A : ' + ProductRegistry.sha1('A'));
+    InspectorTest.addResult('A1 : ' + ProductRegistry.sha1('A1'));
+    InspectorTest.completeTest();
+}
+
+</script>
+</head>
+<body onload="runTest()">
+Tests SHA-1 hashes.
+</body>
+</html>
