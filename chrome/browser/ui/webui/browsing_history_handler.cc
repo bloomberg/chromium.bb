@@ -522,6 +522,8 @@ void BrowsingHistoryHandler::OnQueryComplete(
       "queryEndTime",
       GetRelativeDateLocalized(clock_.get(), query_results_info->end_time));
 
+// Not used in mobile UI, and cause ~16kb of code bloat (crbug/683386).
+#ifndef OS_ANDROID
   // TODO(calamity): Clean up grouped-specific fields once grouped history is
   // removed.
   results_info.SetString(
@@ -532,6 +534,7 @@ void BrowsingHistoryHandler::OnQueryComplete(
       base::DateIntervalFormat(query_results_info->start_time,
                                query_results_info->end_time,
                                base::DATE_FORMAT_MONTH_WEEKDAY_DAY));
+#endif
 
   web_ui()->CallJavascriptFunctionUnsafe("historyResult", results_info,
                                          results_value);
