@@ -65,6 +65,10 @@ declare_args() {
   exclude_unwind_tables = (is_chrome_branded && is_official_build) ||
                           (is_chromecast && !is_cast_desktop_build && !is_debug)
 
+  # If true, gold linker will save symbol table inside object files.
+  # This speeds up gdb startup by 60%
+  gdb_index = false
+
   # If true, optimize for size. Does not affect windows builds.
   # Linux & Mac favor speed over size.
   # TODO(brettw) it's weird that Mac and desktop Linux are different. We should
@@ -305,8 +309,7 @@ config("compiler") {
       ldflags += [ "-fPIC" ]
     }
 
-    # Use pipes for communicating between sub-processes. Faster.
-    cflags += [ "-pipe" ]
+    cflags += [ "-pipe" ]  # Use pipes for communicating between sub-processes. Faster.
 
     ldflags += [
       "-Wl,-z,noexecstack",
@@ -370,6 +373,10 @@ config("compiler") {
           "-Wl,--thread-count=4",
         ]
       }
+    }
+
+    if (gdb_index) {
+      ldflags += [ "-Wl,--gdb-index" ]
     }
 
     # TODO(thestig): Make this flag work with GN.
@@ -1655,9 +1662,6 @@ config("symbols") {
     }
     asmflags = cflags
     ldflags = []
-    if (!is_mac && !is_ios && !is_nacl) {
-      ldflags += [ "-Wl,--gdb-index" ]
-    }
   }
 }
 
@@ -1679,8 +1683,9 @@ config("minimal_symbols") {
     } else {
       cflags = [ "-g1" ]
     }
-
-    # Note: -gsplit-dwarf implicitly turns on -g2 with clang, so don't pass it.
+    if (use_debug_fission) {
+      cflags += [ "-gsplit-dwarf" ]
+    }
     asmflags = cflags
     ldflags = []
   }
