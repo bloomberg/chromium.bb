@@ -625,16 +625,8 @@ static gfx::Rect LayerVisibleRect(PropertyTrees* property_trees,
   } else {
     const ClipNode* clip_node =
         property_trees->clip_tree.Node(layer->clip_tree_index());
-    const EffectNode* effect_node = property_trees->effect_tree.Node(
-        layer->render_target_effect_tree_index());
-    bool fully_visible =
-        !layer->is_clipped() && !effect_node->surface_is_clipped;
-    if (fully_visible) {
-      accumulated_clip_in_root_space = property_trees->clip_tree.ViewportClip();
-    } else {
-      accumulated_clip_in_root_space =
-          clip_node->cached_accumulated_rect_in_screen_space;
-    }
+    accumulated_clip_in_root_space =
+        clip_node->cached_accumulated_rect_in_screen_space;
   }
 
   const EffectNode* root_effect_node =

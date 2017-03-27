@@ -3972,28 +3972,6 @@ TEST_F(LayerTreeHostCommonTest,
   EXPECT_EQ(gfx::Rect(100, 100), render_surface2->visible_layer_rect());
 }
 
-TEST_F(LayerTreeHostCommonTest, VisibleRectOfUnclippedRenderSurface) {
-  LayerImpl* root = root_layer_for_testing();
-  LayerImpl* clip = AddChildToRoot<LayerImpl>();
-  LayerImpl* render_surface1 = AddChild<LayerImpl>(clip);
-  LayerImpl* render_surface2 = AddChild<LayerImpl>(render_surface1);
-
-  root->SetBounds(gfx::Size(100, 100));
-  clip->SetBounds(gfx::Size(50, 50));
-  clip->SetMasksToBounds(true);
-  render_surface1->SetBounds(gfx::Size(100, 100));
-  render_surface1->test_properties()->force_render_surface = true;
-  render_surface2->SetBounds(gfx::Size(100, 100));
-  render_surface2->test_properties()->force_render_surface = true;
-  render_surface2->SetDrawsContent(true);
-
-  ExecuteCalculateDrawProperties(root);
-  // The clip should be handled by render_surface1 and render_surface2 should
-  // be unclipped and its visible rect should be clipped only by viewport clip.
-  EXPECT_FALSE(render_surface2->is_clipped());
-  EXPECT_EQ(gfx::Rect(100, 100), render_surface2->visible_layer_rect());
-}
-
 TEST_F(LayerTreeHostCommonTest,
        VisibleRectsWhenClipChildIsBetweenTwoRenderSurfaces) {
   LayerImpl* root = root_layer_for_testing();
