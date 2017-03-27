@@ -412,6 +412,7 @@ class WebMediaPlayerMSTest
             nullptr,
             blink::WebString(),
             blink::WebSecurityOrigin())),
+        web_layer_set_(false),
         rendering_(false),
         background_rendering_(false) {}
   ~WebMediaPlayerMSTest() override {
@@ -498,6 +499,7 @@ class WebMediaPlayerMSTest
   // rendering.
   void RenderFrame();
 
+  bool web_layer_set_;
   bool rendering_;
   bool background_rendering_;
 };
@@ -545,6 +547,11 @@ void WebMediaPlayerMSTest::readyStateChanged() {
 }
 
 void WebMediaPlayerMSTest::setWebLayer(blink::WebLayer* layer) {
+  // Make sure that the old layer is still alive, see http://crbug.com/705448.
+  if (web_layer_set_)
+    EXPECT_TRUE(web_layer_ != nullptr);
+  web_layer_set_ = layer ? true : false;
+
   web_layer_ = layer;
   if (layer)
     compositor_->SetVideoFrameProviderClient(this);

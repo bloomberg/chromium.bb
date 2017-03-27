@@ -660,11 +660,13 @@ void WebMediaPlayerMS::OnRotationChanged(media::VideoRotation video_rotation,
   DCHECK(thread_checker_.CalledOnValidThread());
   video_rotation_ = video_rotation;
 
-  video_weblayer_.reset(new cc_blink::WebLayerImpl(
-      cc::VideoLayer::Create(compositor_.get(), video_rotation)));
-  video_weblayer_->layer()->SetContentsOpaque(is_opaque);
-  video_weblayer_->SetContentsOpaqueIsFixed(true);
-  get_client()->setWebLayer(video_weblayer_.get());
+  std::unique_ptr<cc_blink::WebLayerImpl> rotated_weblayer =
+      base::WrapUnique(new cc_blink::WebLayerImpl(
+          cc::VideoLayer::Create(compositor_.get(), video_rotation)));
+  rotated_weblayer->layer()->SetContentsOpaque(is_opaque);
+  rotated_weblayer->SetContentsOpaqueIsFixed(true);
+  get_client()->setWebLayer(rotated_weblayer.get());
+  video_weblayer_ = std::move(rotated_weblayer);
 }
 
 void WebMediaPlayerMS::RepaintInternal() {
