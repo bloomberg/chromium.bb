@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <string>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -20,12 +21,12 @@ namespace cast {
 
 namespace {
 
-const int kScale = 4;  // Physical pixels per one logical pixel.
-const int kCharacterWidth = 3;  // Logical pixel width of one character.
-const int kCharacterHeight = 5;  // Logical pixel height of one character.
-const int kCharacterSpacing = 1;  // Logical pixels between each character.
-const int kLineSpacing = 2;  // Logical pixels between each line of characters.
-const int kPlane = 0;  // Y-plane in YUV formats.
+constexpr int kScale = 4;             // Physical pixels per one logical pixel.
+constexpr int kCharacterWidth = 3;    // Logical pixel width of one character.
+constexpr int kCharacterHeight = 5;   // Logical pixel height of one character.
+constexpr int kCharacterSpacing = 1;  // Logical pixels between each character.
+constexpr int kLineSpacing = 2;  // Logical pixels between each line of chars.
+constexpr int kPlane = 0;        // Y-plane in YUV formats.
 
 // For each pixel in the |rect| (logical coordinates), either decrease the
 // intensity or increase it so that the resulting pixel has a perceivably
@@ -214,29 +215,60 @@ void RenderLineOfText(const std::string& line, int top, VideoFrame* frame) {
 
 }  // namespace
 
-void MaybeRenderPerformanceMetricsOverlay(base::TimeDelta target_playout_delay,
-                                          bool in_low_latency_mode,
-                                          int target_bitrate,
-                                          int frames_ago,
-                                          double encoder_utilization,
-                                          double lossy_utilization,
-                                          VideoFrame* frame) {
-  if (VideoFrame::PlaneHorizontalBitsPerPixel(frame->format(), kPlane) != 8) {
+scoped_refptr<VideoFrame> MaybeRenderPerformanceMetricsOverlay(
+    base::TimeDelta target_playout_delay,
+    bool in_low_latency_mode,
+    int target_bitrate,
+    int frames_ago,
+    double encoder_utilization,
+    double lossy_utilization,
+    scoped_refptr<VideoFrame> source) {
+  if (!VLOG_IS_ON(1))
+    return source;
+
+  if (VideoFrame::PlaneHorizontalBitsPerPixel(source->format(), kPlane) != 8) {
     DLOG(WARNING) << "Cannot render overlay: Plane " << kPlane << " not 8bpp.";
-    return;
+    return source;
   }
 
-  // Can't render to unmappable memory (DmaBuf, CVPixelBuffer).
-  if (!frame->IsMappable()) {
+  // Can't read from unmappable memory (DmaBuf, CVPixelBuffer).
+  if (!source->IsMappable()) {
     DVLOG(2) << "Cannot render overlay: frame uses unmappable memory.";
-    return;
+    return source;
   }
 
   // Compute the physical pixel top row for the bottom-most line of text.
   const int line_height = (kCharacterHeight + kLineSpacing) * kScale;
-  int top = frame->visible_rect().height() - line_height;
-  if (top < 0 || !VLOG_IS_ON(1))
-    return;
+  int top = source->visible_rect().height() - line_height;
+  if (top < 0)
+    return source;  // No pixels would change: Return source frame.
+
+  // Allocate a new frame, identical in configuration to |source| and copy over
+  // all data and metadata.
+  const scoped_refptr<VideoFrame> frame = VideoFrame::CreateFrame(
+      source->format(), source->coded_size(), source->visible_rect(),
+      source->natural_size(), source->timestamp());
+  if (!frame)
+    return source;  // Allocation failure: Return source frame.
+  for (size_t plane = 0, num_planes = VideoFrame::NumPlanes(source->format());
+       plane < num_planes; ++plane) {
+    memcpy(frame->data(plane), source->data(plane),
+           source->stride(plane) * source->rows(plane));
+  }
+  frame->metadata()->MergeMetadataFrom(source->metadata());
+  // Important: After all consumers are done with the frame, copy-back the
+  // changed/new metadata to the source frame, as it contains feedback signals
+  // that need to propagate back up the video stack. The destruction callback
+  // for the |frame| holds a ref-counted reference to the source frame to ensure
+  // the source frame has the right metadata before its destruction observers
+  // are invoked.
+  frame->AddDestructionObserver(base::Bind(
+      [](const VideoFrameMetadata* sent_frame_metadata,
+         const scoped_refptr<VideoFrame>& source_frame) {
+        source_frame->metadata()->Clear();
+        source_frame->metadata()->MergeMetadataFrom(sent_frame_metadata);
+      },
+      frame->metadata(), std::move(source)));
 
   // Line 3: Frame duration, resolution, and timestamp.
   int frame_duration_ms = 0;
@@ -255,21 +287,17 @@ void MaybeRenderPerformanceMetricsOverlay(base::TimeDelta target_playout_delay,
   const int seconds = static_cast<int>(rem.InSeconds());
   rem -= base::TimeDelta::FromSeconds(seconds);
   const int hundredth_seconds = static_cast<int>(rem.InMilliseconds() / 10);
-  RenderLineOfText(base::StringPrintf("%d.%01d %dx%d %d:%02d.%02d",
-                                      frame_duration_ms,
-                                      frame_duration_ms_frac,
-                                      frame->visible_rect().width(),
-                                      frame->visible_rect().height(),
-                                      minutes,
-                                      seconds,
-                                      hundredth_seconds),
-                   top,
-                   frame);
+  RenderLineOfText(
+      base::StringPrintf("%d.%01d %dx%d %d:%02d.%02d", frame_duration_ms,
+                         frame_duration_ms_frac, frame->visible_rect().width(),
+                         frame->visible_rect().height(), minutes, seconds,
+                         hundredth_seconds),
+      top, frame.get());
 
   // Move up one line's worth of pixels.
   top -= line_height;
   if (top < 0 || !VLOG_IS_ON(2))
-    return;
+    return frame;
 
   // Line 2: Capture duration, target playout delay, low-latency mode, and
   // target bitrate.
@@ -285,18 +313,16 @@ void MaybeRenderPerformanceMetricsOverlay(base::TimeDelta target_playout_delay,
   const int target_playout_delay_ms =
       static_cast<int>(target_playout_delay.InMillisecondsF() + 0.5);
   const int target_kbits = target_bitrate / 1000;
-  RenderLineOfText(base::StringPrintf("%d %4.1d%c %4.1d",
-                                      capture_duration_ms,
-                                      target_playout_delay_ms,
-                                      in_low_latency_mode ? '!' : '.',
-                                      target_kbits),
-                   top,
-                   frame);
+  RenderLineOfText(
+      base::StringPrintf("%d %4.1d%c %4.1d", capture_duration_ms,
+                         target_playout_delay_ms,
+                         in_low_latency_mode ? '!' : '.', target_kbits),
+      top, frame.get());
 
   // Move up one line's worth of pixels.
   top -= line_height;
   if (top < 0 || !VLOG_IS_ON(3))
-    return;
+    return frame;
 
   // Line 1: Recent utilization metrics.
   const int encoder_pct =
@@ -305,7 +331,9 @@ void MaybeRenderPerformanceMetricsOverlay(base::TimeDelta target_playout_delay,
       base::saturated_cast<int>(lossy_utilization * 100.0 + 0.5);
   RenderLineOfText(base::StringPrintf("%d %3.1d%% %3.1d%%", frames_ago,
                                       encoder_pct, lossy_pct),
-                   top, frame);
+                   top, frame.get());
+
+  return frame;
 }
 
 }  // namespace cast
