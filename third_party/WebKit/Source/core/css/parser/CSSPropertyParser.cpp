@@ -1864,9 +1864,9 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyFontWeight:
       return CSSPropertyFontUtils::consumeFontWeight(m_range);
     case CSSPropertyCounterIncrement:
+      return consumeCounter(m_range, 1);
     case CSSPropertyCounterReset:
-      return consumeCounter(m_range,
-                            property == CSSPropertyCounterIncrement ? 1 : 0);
+      return consumeCounter(m_range, 0);
     case CSSPropertyMaxWidth:
     case CSSPropertyMaxHeight:
       return CSSPropertyLengthUtils::consumeMaxWidthOrHeight(
