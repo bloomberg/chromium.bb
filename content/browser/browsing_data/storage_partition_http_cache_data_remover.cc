@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/browsing_data/content/storage_partition_http_cache_data_remover.h"
+#include "content/browser/browsing_data/storage_partition_http_cache_data_remover.h"
 
 #include "base/location.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/browsing_data/content/conditional_cache_deletion_helper.h"
+#include "content/browser/browsing_data/conditional_cache_deletion_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/sdch_manager.h"
@@ -18,10 +19,9 @@
 #include "net/http/http_cache.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "url/gurl.h"
 
-using content::BrowserThread;
-
-namespace browsing_data {
+namespace content {
 
 StoragePartitionHttpCacheDataRemover::StoragePartitionHttpCacheDataRemover(
     base::Callback<bool(const GURL&)> url_predicate,
@@ -37,9 +37,6 @@ StoragePartitionHttpCacheDataRemover::StoragePartitionHttpCacheDataRemover(
       next_cache_state_(CacheState::NONE),
       cache_(nullptr) {}
 
-StoragePartitionHttpCacheDataRemover::~StoragePartitionHttpCacheDataRemover() {
-}
-
 // static.
 StoragePartitionHttpCacheDataRemover*
 StoragePartitionHttpCacheDataRemover::CreateForRange(
@@ -48,8 +45,7 @@ StoragePartitionHttpCacheDataRemover::CreateForRange(
     base::Time delete_end) {
   return new StoragePartitionHttpCacheDataRemover(
       base::Callback<bool(const GURL&)>(),  // Null callback.
-      delete_begin, delete_end,
-      storage_partition->GetURLRequestContext(),
+      delete_begin, delete_end, storage_partition->GetURLRequestContext(),
       storage_partition->GetMediaURLRequestContext());
 }
 
@@ -65,6 +61,8 @@ StoragePartitionHttpCacheDataRemover::CreateForURLsAndRange(
       storage_partition->GetURLRequestContext(),
       storage_partition->GetMediaURLRequestContext());
 }
+
+StoragePartitionHttpCacheDataRemover::~StoragePartitionHttpCacheDataRemover() {}
 
 void StoragePartitionHttpCacheDataRemover::Remove(
     const base::Closure& done_callback) {
@@ -156,24 +154,21 @@ void StoragePartitionHttpCacheDataRemover::DoClearCache(int rv) {
         if (cache_) {
           if (!url_predicate_.is_null()) {
             rv = (new ConditionalCacheDeletionHelper(
-                cache_,
-                ConditionalCacheDeletionHelper::CreateURLAndTimeCondition(
-                    url_predicate_,
-                    delete_begin_,
-                    delete_end_)))->DeleteAndDestroySelfWhenFinished(
-                        base::Bind(
-                            &StoragePartitionHttpCacheDataRemover::DoClearCache,
-                            base::Unretained(this)));
+                      cache_,
+                      ConditionalCacheDeletionHelper::CreateURLAndTimeCondition(
+                          url_predicate_, delete_begin_, delete_end_)))
+                     ->DeleteAndDestroySelfWhenFinished(base::Bind(
+                         &StoragePartitionHttpCacheDataRemover::DoClearCache,
+                         base::Unretained(this)));
           } else if (delete_begin_.is_null() && delete_end_.is_max()) {
-            rv = cache_->DoomAllEntries(base::Bind(
-                &StoragePartitionHttpCacheDataRemover::DoClearCache,
-                base::Unretained(this)));
+            rv = cache_->DoomAllEntries(
+                base::Bind(&StoragePartitionHttpCacheDataRemover::DoClearCache,
+                           base::Unretained(this)));
           } else {
             rv = cache_->DoomEntriesBetween(
                 delete_begin_, delete_end_,
-                base::Bind(
-                    &StoragePartitionHttpCacheDataRemover::DoClearCache,
-                    base::Unretained(this)));
+                base::Bind(&StoragePartitionHttpCacheDataRemover::DoClearCache,
+                           base::Unretained(this)));
           }
           cache_ = NULL;
         }
@@ -198,4 +193,4 @@ void StoragePartitionHttpCacheDataRemover::DoClearCache(int rv) {
   }
 }
 
-}  // namespace browsing_data
+}  // namespace content

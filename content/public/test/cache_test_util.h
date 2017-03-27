@@ -12,7 +12,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "net/disk_cache/disk_cache.h"
 
-using content::BrowserThread;
+namespace content {
 
 // A util class that can be used to create and retreive cache entries.
 class CacheTestUtil {
@@ -56,5 +56,7 @@ class CacheTestUtil {
   std::unique_ptr<base::WaitableEvent> waitable_event_;
   int remaining_tasks_;
 };
+
+}  // namespace content
 
 #endif  // CHROME_BROWSER_BROWSING_DATA_CACHE_TEST_UTIL_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_BROWSING_DATA_CONTENT_STORAGE_PARTITION_HTTP_CACHE_DATA_REMOVER_H_
-#define COMPONENTS_BROWSING_DATA_CONTENT_STORAGE_PARTITION_HTTP_CACHE_DATA_REMOVER_H_
+#ifndef CONTENT_BROWSER_BROWSING_DATA_STORAGE_PARTITION_HTTP_CACHE_DATA_REMOVER_H_
+#define CONTENT_BROWSER_BROWSING_DATA_STORAGE_PARTITION_HTTP_CACHE_DATA_REMOVER_H_
 
 #include <stdint.h>
 
@@ -14,10 +14,6 @@
 #include "net/base/completion_callback.h"
 #include "url/gurl.h"
 
-namespace content {
-class StoragePartition;
-}
-
 namespace disk_cache {
 class Backend;
 }
@@ -26,7 +22,9 @@ namespace net {
 class URLRequestContextGetter;
 }
 
-namespace browsing_data {
+namespace content {
+
+class StoragePartition;
 
 // Helper to remove http cache data from a StoragePartition.
 class StoragePartitionHttpCacheDataRemover {
@@ -96,6 +94,6 @@ class StoragePartitionHttpCacheDataRemover {
   DISALLOW_COPY_AND_ASSIGN(StoragePartitionHttpCacheDataRemover);
 };
 
-}  // namespace browsing_data
+}  // namespace content
 
-#endif  // COMPONENTS_BROWSING_DATA_CONTENT_STORAGE_PARTITION_HTTP_CACHE_DATA_REMOVER_H_
+#endif  // CONTENT_BROWSER_BROWSING_DATA_STORAGE_PARTITION_HTTP_CACHE_DATA_REMOVER_H_

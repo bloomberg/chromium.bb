@@ -12,21 +12,20 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
-#include "chrome/browser/browsing_data/cache_test_util.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/test/base/in_process_browser_test.h"
-#include "components/browsing_data/content/conditional_cache_deletion_helper.h"
+#include "content/browser/browsing_data/conditional_cache_deletion_helper.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/test/cache_test_util.h"
+#include "content/public/test/content_browser_test.h"
+#include "content/shell/browser/shell.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
-using browsing_data::ConditionalCacheDeletionHelper;
-using content::BrowserThread;
+namespace content {
 
 namespace {
 
@@ -42,12 +41,12 @@ bool HasHttpsExampleOrigin(const GURL& url) {
 
 }  // namespace
 
-class ConditionalCacheDeletionHelperBrowserTest : public InProcessBrowserTest {
+class ConditionalCacheDeletionHelperBrowserTest : public ContentBrowserTest {
  public:
   void SetUpOnMainThread() override {
     cache_util_ = base::MakeUnique<CacheTestUtil>(
         content::BrowserContext::GetDefaultStoragePartition(
-            browser()->profile()));
+            shell()->web_contents()->GetBrowserContext()));
     done_callback_ =
         base::Bind(&ConditionalCacheDeletionHelperBrowserTest::DoneCallback,
                    base::Unretained(this));
@@ -107,8 +106,7 @@ IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest, Condition) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&ConditionalCacheDeletionHelperBrowserTest::DeleteEntries,
-                 base::Unretained(this),
-                 base::Bind(&KeyIsEven)));
+                 base::Unretained(this), base::Bind(&KeyIsEven)));
   WaitForTasksOnIOThread();
 
   // Expect that the keys with values 56 and 42 were deleted.
@@ -168,8 +166,7 @@ IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest,
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&ConditionalCacheDeletionHelperBrowserTest::DeleteEntries,
-                 base::Unretained(this),
-                 base::ConstRef(condition)));
+                 base::Unretained(this), base::ConstRef(condition)));
   WaitForTasksOnIOThread();
 
   // Expect that only "icon2.png" and "icon3.png" were deleted.
@@ -178,3 +175,5 @@ IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest,
   keys.erase("https://example.com/foo/bar/icon3.png");
   CompareRemainingKeys(keys);
 }
+
+}  // namespace content

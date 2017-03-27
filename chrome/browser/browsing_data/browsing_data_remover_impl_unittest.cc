@@ -226,6 +226,14 @@ class TestStoragePartition : public StoragePartition {
                                        base::Unretained(this), callback));
   }
 
+  void ClearHttpAndMediaCaches(
+      const base::Time begin,
+      const base::Time end,
+      const base::Callback<bool(const GURL&)>& url_matcher,
+      const base::Closure& callback) override {
+    // Not needed in this test.
+  }
+
   void Flush() override {}
 
   void ClearBluetoothAllowedDevicesMapForTesting() override {}

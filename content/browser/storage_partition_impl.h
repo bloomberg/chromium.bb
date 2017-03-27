@@ -111,6 +111,12 @@ class CONTENT_EXPORT  StoragePartitionImpl
                  const base::Time end,
                  const base::Closure& callback) override;
 
+  void ClearHttpAndMediaCaches(
+      const base::Time begin,
+      const base::Time end,
+      const base::Callback<bool(const GURL&)>& url_matcher,
+      const base::Closure& callback) override;
+
   void Flush() override;
 
   // Can return nullptr while |this| is being destroyed.

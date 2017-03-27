@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/browsing_data/content/conditional_cache_deletion_helper.h"
+#include "content/browser/browsing_data/conditional_cache_deletion_helper.h"
 
 #include "base/callback.h"
 #include "base/location.h"
@@ -24,16 +24,16 @@ bool EntryPredicateFromURLsAndTime(
 
 }  // namespace
 
-namespace browsing_data {
+namespace content {
 
 ConditionalCacheDeletionHelper::ConditionalCacheDeletionHelper(
     disk_cache::Backend* cache,
     const base::Callback<bool(const disk_cache::Entry*)>& condition)
-        : cache_(cache),
-          condition_(condition),
-          current_entry_(nullptr),
-          previous_entry_(nullptr) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    : cache_(cache),
+      condition_(condition),
+      current_entry_(nullptr),
+      previous_entry_(nullptr) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
 // static
@@ -42,16 +42,14 @@ ConditionalCacheDeletionHelper::CreateURLAndTimeCondition(
     const base::Callback<bool(const GURL&)>& url_predicate,
     const base::Time& begin_time,
     const base::Time& end_time) {
-  return base::Bind(
-      &EntryPredicateFromURLsAndTime,
-      url_predicate,
-      begin_time.is_null() ? base::Time() : begin_time,
-      end_time.is_null() ? base::Time::Max() : end_time);
+  return base::Bind(&EntryPredicateFromURLsAndTime, url_predicate,
+                    begin_time.is_null() ? base::Time() : begin_time,
+                    end_time.is_null() ? base::Time::Max() : end_time);
 }
 
 int ConditionalCacheDeletionHelper::DeleteAndDestroySelfWhenFinished(
     const net::CompletionCallback& completion_callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   completion_callback_ = completion_callback;
   iterator_ = cache_->CreateIterator();
@@ -60,8 +58,7 @@ int ConditionalCacheDeletionHelper::DeleteAndDestroySelfWhenFinished(
   return net::ERR_IO_PENDING;
 }
 
-ConditionalCacheDeletionHelper::~ConditionalCacheDeletionHelper() {
-}
+ConditionalCacheDeletionHelper::~ConditionalCacheDeletionHelper() {}
 
 void ConditionalCacheDeletionHelper::IterateOverEntries(int error) {
   while (error != net::ERR_IO_PENDING) {
@@ -93,4 +90,4 @@ void ConditionalCacheDeletionHelper::IterateOverEntries(int error) {
   }
 }
 
-}  // namespace browsing_data
+}  // namespace content

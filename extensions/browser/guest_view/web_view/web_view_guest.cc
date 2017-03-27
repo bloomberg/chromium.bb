@@ -13,7 +13,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "components/browsing_data/content/storage_partition_http_cache_data_remover.h"
 #include "components/guest_view/browser/guest_view_event.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/guest_view/common/guest_view_constants.h"
@@ -804,12 +803,10 @@ bool WebViewGuest::ClearData(base::Time remove_since,
     base::Closure cache_removal_done_callback = base::Bind(
         &WebViewGuest::ClearDataInternal, weak_ptr_factory_.GetWeakPtr(),
         remove_since, removal_mask, callback);
-    // StoragePartitionHttpCacheDataRemover removes itself when it is done.
     // components/, move |ClearCache| to WebViewGuest: http//crbug.com/471287.
-    browsing_data::StoragePartitionHttpCacheDataRemover::CreateForRange(
-        partition, remove_since, base::Time::Now())
-        ->Remove(cache_removal_done_callback);
-
+    partition->ClearHttpAndMediaCaches(remove_since, base::Time::Now(),
+                                       base::Callback<bool(const GURL&)>(),
+                                       cache_removal_done_callback);
     return true;
   }
 

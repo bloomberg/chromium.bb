@@ -18,7 +18,6 @@
 #include "chrome/browser/browsing_data/browsing_data_remover_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "components/browsing_data/content/storage_partition_http_cache_data_remover.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -472,16 +471,16 @@ void BrowsingDataRemoverImpl::RemoveImpl(
         content::StoragePartition::REMOVE_DATA_MASK_PLUGIN_PRIVATE_DATA;
   }
 
+  content::StoragePartition* storage_partition;
+  if (storage_partition_for_testing_) {
+    storage_partition = storage_partition_for_testing_;
+  } else {
+    storage_partition =
+        BrowserContext::GetDefaultStoragePartition(browser_context_);
+  }
+
   if (storage_partition_remove_mask) {
     clear_storage_partition_data_.Start();
-
-    content::StoragePartition* storage_partition;
-    if (storage_partition_for_testing_) {
-      storage_partition = storage_partition_for_testing_;
-    } else {
-      storage_partition =
-          BrowserContext::GetDefaultStoragePartition(browser_context_);
-    }
 
     uint32_t quota_storage_remove_mask =
         ~content::StoragePartition::QUOTA_MANAGED_STORAGE_MASK_PERSISTENT;
@@ -519,19 +518,11 @@ void BrowsingDataRemoverImpl::RemoveImpl(
     // TODO(msramek): Clear the cache of all renderers.
 
     clear_cache_.Start();
-    // StoragePartitionHttpCacheDataRemover deletes itself when it is done.
-    if (filter_builder.IsEmptyBlacklist()) {
-      browsing_data::StoragePartitionHttpCacheDataRemover::CreateForRange(
-          BrowserContext::GetDefaultStoragePartition(browser_context_),
-          delete_begin_, delete_end_)
-          ->Remove(clear_cache_.GetCompletionCallback());
-    } else {
-      browsing_data::StoragePartitionHttpCacheDataRemover::
-          CreateForURLsAndRange(
-              BrowserContext::GetDefaultStoragePartition(browser_context_),
-              filter, delete_begin_, delete_end_)
-              ->Remove(clear_cache_.GetCompletionCallback());
-    }
+    storage_partition->ClearHttpAndMediaCaches(
+        delete_begin, delete_end,
+        filter_builder.IsEmptyBlacklist() ? base::Callback<bool(const GURL&)>()
+                                          : filter,
+        clear_cache_.GetCompletionCallback());
 
     // Tell the shader disk cache to clear.
     content::RecordAction(UserMetricsAction("ClearBrowsingData_ShaderCache"));

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/public/test/cache_test_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/synchronization/waitable_event.h"
-#include "chrome/browser/browsing_data/cache_test_util.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
-using content::BrowserThread;
+namespace content {
 
 CacheTestUtil::CacheTestUtil(content::StoragePartition* partition)
     : partition_(partition), remaining_tasks_(0) {
@@ -145,3 +145,5 @@ void CacheTestUtil::GetNextKey(int error) {
         base::Bind(&CacheTestUtil::GetNextKey, base::Unretained(this)));
   }
 }
+
+}  // namespace content

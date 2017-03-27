@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/browsing_data/content/storage_partition_http_cache_data_remover.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -217,12 +216,10 @@ IN_PROC_BROWSER_TEST_F(CacheCounterTest, AfterDoom) {
       profile->GetPrefs(), browsing_data::ClearBrowsingDataTab::ADVANCED,
       base::Bind(&CacheCounterTest::CountingCallback, base::Unretained(this)));
 
-  browsing_data::StoragePartitionHttpCacheDataRemover::CreateForRange(
-      content::BrowserContext::GetDefaultStoragePartition(browser()->profile()),
-      base::Time(),
-      base::Time::Max())->Remove(
-          base::Bind(&CacheCounter::Restart,
-          base::Unretained(&counter)));
+  content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
+      ->ClearHttpAndMediaCaches(
+          base::Time(), base::Time::Max(), base::Callback<bool(const GURL&)>(),
+          base::Bind(&CacheCounter::Restart, base::Unretained(&counter)));
 
   WaitForIOThread();
   EXPECT_EQ(0u, GetResult());

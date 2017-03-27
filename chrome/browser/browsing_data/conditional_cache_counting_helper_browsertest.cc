@@ -8,13 +8,13 @@
 #include <string>
 
 #include "base/run_loop.h"
-#include "chrome/browser/browsing_data/cache_test_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/browsing_data/content/conditional_cache_counting_helper.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/test/cache_test_util.h"
 
 using browsing_data::ConditionalCacheCountingHelper;
 using content::BrowserThread;
@@ -28,7 +28,7 @@ class ConditionalCacheCountingHelperBrowserTest : public InProcessBrowserTest {
         base::Bind(&ConditionalCacheCountingHelperBrowserTest::CountCallback,
                    base::Unretained(this));
 
-    cache_util_ = base::MakeUnique<CacheTestUtil>(
+    cache_util_ = base::MakeUnique<content::CacheTestUtil>(
         content::BrowserContext::GetDefaultStoragePartition(
             browser()->profile()));
   }
@@ -69,12 +69,12 @@ class ConditionalCacheCountingHelperBrowserTest : public InProcessBrowserTest {
 
   int64_t GetResultOrError() { return last_size_; }
 
-  CacheTestUtil* GetCacheTestUtil() { return cache_util_.get(); }
+  content::CacheTestUtil* GetCacheTestUtil() { return cache_util_.get(); }
 
  private:
   ConditionalCacheCountingHelper::CacheCountCallback count_callback_;
   std::unique_ptr<base::RunLoop> run_loop_;
-  std::unique_ptr<CacheTestUtil> cache_util_;
+  std::unique_ptr<content::CacheTestUtil> cache_util_;
 
   int64_t last_size_;
   bool last_is_upper_limit_;

@@ -15,6 +15,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/browser_main_loop.h"
+#include "content/browser/browsing_data/storage_partition_http_cache_data_remover.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/browser/gpu/shader_cache_factory.h"
 #include "content/browser/host_zoom_map_impl.h"
@@ -875,6 +876,22 @@ void StoragePartitionImpl::ClearData(
     const base::Closure& callback) {
   ClearDataImpl(remove_mask, quota_storage_remove_mask, GURL(), origin_matcher,
                 cookie_matcher, GetURLRequestContext(), begin, end, callback);
+}
+
+void StoragePartitionImpl::ClearHttpAndMediaCaches(
+    const base::Time begin,
+    const base::Time end,
+    const base::Callback<bool(const GURL&)>& url_matcher,
+    const base::Closure& callback) {
+  // StoragePartitionHttpCacheDataRemover deletes itself when it is done.
+  if (url_matcher.is_null()) {
+    StoragePartitionHttpCacheDataRemover::CreateForRange(this, begin, end)
+        ->Remove(callback);
+  } else {
+    StoragePartitionHttpCacheDataRemover::CreateForURLsAndRange(
+        this, url_matcher, begin, end)
+        ->Remove(callback);
+  }
 }
 
 void StoragePartitionImpl::Flush() {

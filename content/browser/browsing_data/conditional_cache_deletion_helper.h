@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_BROWSING_DATA_CONTENT_CONDITIONAL_CACHE_DELETION_HELPER_H_
-#define COMPONENTS_BROWSING_DATA_CONTENT_CONDITIONAL_CACHE_DELETION_HELPER_H_
+#ifndef CONTENT_BROWSER_BROWSING_DATA_CONDITIONAL_CACHE_DELETION_HELPER_H_
+#define CONTENT_BROWSER_BROWSING_DATA_CONDITIONAL_CACHE_DELETION_HELPER_H_
 
 #include <memory>
 
 #include "base/callback_forward.h"
 #include "base/message_loop/message_loop.h"
+#include "content/common/content_export.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/disk_cache.h"
@@ -18,10 +19,10 @@ namespace disk_cache {
 class Entry;
 }
 
-namespace browsing_data {
+namespace content {
 
 // Helper to remove http cache data from a StoragePartition.
-class ConditionalCacheDeletionHelper {
+class CONTENT_EXPORT ConditionalCacheDeletionHelper {
  public:
   // Creates a helper to delete |cache| entries that match the |condition|.
   // Must be created on the IO thread!
@@ -68,6 +69,6 @@ class ConditionalCacheDeletionHelper {
   DISALLOW_COPY_AND_ASSIGN(ConditionalCacheDeletionHelper);
 };
 
-}  // namespace browsing_data
+}  // namespace content
 
-#endif  // COMPONENTS_BROWSING_DATA_CONTENT_CONDITIONAL_CACHE_DELETION_HELPER_H_
+#endif  // CONTENT_BROWSER_BROWSING_DATA_CONDITIONAL_CACHE_DELETION_HELPER_H_
