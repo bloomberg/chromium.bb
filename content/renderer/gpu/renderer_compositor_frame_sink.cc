@@ -29,7 +29,7 @@ namespace content {
 RendererCompositorFrameSink::RendererCompositorFrameSink(
     int32_t routing_id,
     uint32_t compositor_frame_sink_id,
-    std::unique_ptr<cc::BeginFrameSource> begin_frame_source,
+    std::unique_ptr<cc::SyntheticBeginFrameSource> synthetic_begin_frame_source,
     scoped_refptr<cc::ContextProvider> context_provider,
     scoped_refptr<cc::ContextProvider> worker_context_provider,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
@@ -44,19 +44,22 @@ RendererCompositorFrameSink::RendererCompositorFrameSink(
           RenderThreadImpl::current()->compositor_message_filter()),
       message_sender_(RenderThreadImpl::current()->sync_message_filter()),
       frame_swap_message_queue_(swap_frame_message_queue),
-      begin_frame_source_(std::move(begin_frame_source)),
+      synthetic_begin_frame_source_(std::move(synthetic_begin_frame_source)),
+      external_begin_frame_source_(
+          synthetic_begin_frame_source_
+              ? nullptr
+              : base::MakeUnique<cc::ExternalBeginFrameSource>(this)),
       routing_id_(routing_id) {
   DCHECK(compositor_frame_sink_filter_);
   DCHECK(frame_swap_message_queue_);
   DCHECK(message_sender_);
-  DCHECK(begin_frame_source_);
   thread_checker_.DetachFromThread();
 }
 
 RendererCompositorFrameSink::RendererCompositorFrameSink(
     int32_t routing_id,
     uint32_t compositor_frame_sink_id,
-    std::unique_ptr<cc::BeginFrameSource> begin_frame_source,
+    std::unique_ptr<cc::SyntheticBeginFrameSource> synthetic_begin_frame_source,
     scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider,
     scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue)
     : CompositorFrameSink(std::move(vulkan_context_provider)),
@@ -65,12 +68,15 @@ RendererCompositorFrameSink::RendererCompositorFrameSink(
           RenderThreadImpl::current()->compositor_message_filter()),
       message_sender_(RenderThreadImpl::current()->sync_message_filter()),
       frame_swap_message_queue_(swap_frame_message_queue),
-      begin_frame_source_(std::move(begin_frame_source)),
+      synthetic_begin_frame_source_(std::move(synthetic_begin_frame_source)),
+      external_begin_frame_source_(
+          synthetic_begin_frame_source_
+              ? nullptr
+              : base::MakeUnique<cc::ExternalBeginFrameSource>(this)),
       routing_id_(routing_id) {
   DCHECK(compositor_frame_sink_filter_);
   DCHECK(frame_swap_message_queue_);
   DCHECK(message_sender_);
-  DCHECK(begin_frame_source_);
   thread_checker_.DetachFromThread();
 }
 
@@ -86,8 +92,10 @@ bool RendererCompositorFrameSink::BindToClient(
   if (!cc::CompositorFrameSink::BindToClient(client))
     return false;
 
-  DCHECK(begin_frame_source_);
-  client_->SetBeginFrameSource(begin_frame_source_.get());
+  if (synthetic_begin_frame_source_)
+    client_->SetBeginFrameSource(synthetic_begin_frame_source_.get());
+  else
+    client_->SetBeginFrameSource(external_begin_frame_source_.get());
 
   compositor_frame_sink_proxy_ = new RendererCompositorFrameSinkProxy(this);
   compositor_frame_sink_filter_handler_ =
@@ -104,7 +112,8 @@ void RendererCompositorFrameSink::DetachFromClient() {
   client_->SetBeginFrameSource(nullptr);
   // Destroy the begin frame source on the same thread it was bound on.
   // The CompositorFrameSink itself is destroyed on the main thread.
-  begin_frame_source_ = nullptr;
+  external_begin_frame_source_ = nullptr;
+  synthetic_begin_frame_source_ = nullptr;
   compositor_frame_sink_proxy_->ClearCompositorFrameSink();
   compositor_frame_sink_filter_->RemoveHandlerOnCompositorThread(
       routing_id_, compositor_frame_sink_filter_handler_);
@@ -142,7 +151,10 @@ void RendererCompositorFrameSink::OnMessageReceived(
   DCHECK(thread_checker_.CalledOnValidThread());
   IPC_BEGIN_MESSAGE_MAP(RendererCompositorFrameSink, message)
     IPC_MESSAGE_HANDLER(ViewMsg_ReclaimCompositorResources,
-                        OnReclaimCompositorResources);
+                        OnReclaimCompositorResources)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetBeginFramePaused,
+                        OnSetBeginFrameSourcePaused)
+    IPC_MESSAGE_HANDLER(ViewMsg_BeginFrame, OnBeginFrame)
   IPC_END_MESSAGE_MAP()
 }
 
@@ -157,6 +169,16 @@ void RendererCompositorFrameSink::OnReclaimCompositorResources(
   client_->ReclaimResources(resources);
   if (is_swap_ack)
     client_->DidReceiveCompositorFrameAck();
+}
+
+void RendererCompositorFrameSink::OnSetBeginFrameSourcePaused(bool paused) {
+  if (external_begin_frame_source_)
+    external_begin_frame_source_->OnSetBeginFrameSourcePaused(paused);
+}
+
+void RendererCompositorFrameSink::OnBeginFrame(const cc::BeginFrameArgs& args) {
+  if (external_begin_frame_source_)
+    external_begin_frame_source_->OnBeginFrame(args);
 }
 
 bool RendererCompositorFrameSink::Send(IPC::Message* message) {
@@ -208,6 +230,18 @@ void RendererCompositorFrameSink::UpdateFrameData(
   current_frame_data_.has_transparent_background =
       root_pass->has_transparent_background;
 #endif
+}
+
+void RendererCompositorFrameSink::OnNeedsBeginFrames(bool needs_begin_frames) {
+  Send(new ViewHostMsg_SetNeedsBeginFrames(routing_id_, needs_begin_frames));
+}
+
+void RendererCompositorFrameSink::OnDidFinishFrame(
+    const cc::BeginFrameAck& ack) {
+  DCHECK_LE(cc::BeginFrameArgs::kStartingFrameNumber, ack.sequence_number);
+  // If there was damage, ViewHostMsg_SwapCompositorFrame includes the ack.
+  if (!ack.has_damage)
+    Send(new ViewHostMsg_BeginFrameDidNotSwap(routing_id_, ack));
 }
 
 }  // namespace content

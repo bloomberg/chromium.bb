@@ -1566,27 +1566,18 @@ blink::scheduler::RendererScheduler* RenderThreadImpl::GetRendererScheduler() {
 
 std::unique_ptr<cc::BeginFrameSource>
 RenderThreadImpl::CreateExternalBeginFrameSource(int routing_id) {
-  const base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
-  if (cmd->HasSwitch(switches::kDisableGpuVsync)) {
-    std::string display_vsync_string =
-        cmd->GetSwitchValueASCII(switches::kDisableGpuVsync);
-    if (display_vsync_string != "gpu") {
-      // In disable gpu vsync mode, also let the renderer tick as fast as it
-      // can.  The top level begin frame source will also be running as a back
-      // to back begin frame source, but using a synthetic begin frame source
-      // here reduces latency when in this mode (at least for frames
-      // starting--it potentially increases it for input on the other hand.)
-      base::SingleThreadTaskRunner* compositor_impl_side_task_runner =
-          compositor_task_runner_ ? compositor_task_runner_.get()
-                                  : base::ThreadTaskRunnerHandle::Get().get();
-      return base::MakeUnique<cc::BackToBackBeginFrameSource>(
-          base::MakeUnique<cc::DelayBasedTimeSource>(
-              compositor_impl_side_task_runner));
-    }
-  }
-
   return base::MakeUnique<CompositorExternalBeginFrameSource>(
       compositor_message_filter_.get(), sync_message_filter(), routing_id);
+}
+
+std::unique_ptr<cc::SyntheticBeginFrameSource>
+RenderThreadImpl::CreateSyntheticBeginFrameSource() {
+  base::SingleThreadTaskRunner* compositor_impl_side_task_runner =
+      compositor_task_runner_ ? compositor_task_runner_.get()
+                              : base::ThreadTaskRunnerHandle::Get().get();
+  return base::MakeUnique<cc::BackToBackBeginFrameSource>(
+      base::MakeUnique<cc::DelayBasedTimeSource>(
+          compositor_impl_side_task_runner));
 }
 
 cc::TaskGraphRunner* RenderThreadImpl::GetTaskGraphRunner() {
@@ -1878,6 +1869,17 @@ void RenderThreadImpl::RequestNewCompositorFrameSink(
   if (command_line.HasSwitch(switches::kDisableGpuCompositing))
     use_software = true;
 
+  // In disable gpu vsync mode, also let the renderer tick as fast as it
+  // can. The top level begin frame source will also be running as a back
+  // to back begin frame source, but using a synthetic begin frame source
+  // here reduces latency when in this mode (at least for frames
+  // starting--it potentially increases it for input on the other hand.)
+  std::unique_ptr<cc::SyntheticBeginFrameSource> synthetic_begin_frame_source;
+  if (command_line.HasSwitch(switches::kDisableGpuVsync) &&
+      command_line.GetSwitchValueASCII(switches::kDisableGpuVsync) != "gpu") {
+    synthetic_begin_frame_source = CreateSyntheticBeginFrameSource();
+  }
+
 #if defined(USE_AURA)
   if (!use_software && IsRunningInMash()) {
     scoped_refptr<gpu::GpuChannelHost> channel = EstablishGpuChannelSync();
@@ -1904,7 +1906,7 @@ void RenderThreadImpl::RequestNewCompositorFrameSink(
       DCHECK(!layout_test_mode());
       callback.Run(base::MakeUnique<RendererCompositorFrameSink>(
           routing_id, compositor_frame_sink_id,
-          CreateExternalBeginFrameSource(routing_id),
+          std::move(synthetic_begin_frame_source),
           std::move(vulkan_context_provider),
           std::move(frame_swap_message_queue)));
       return;
@@ -1931,7 +1933,7 @@ void RenderThreadImpl::RequestNewCompositorFrameSink(
     DCHECK(!layout_test_mode());
     callback.Run(base::MakeUnique<RendererCompositorFrameSink>(
         routing_id, compositor_frame_sink_id,
-        CreateExternalBeginFrameSource(routing_id), nullptr, nullptr, nullptr,
+        std::move(synthetic_begin_frame_source), nullptr, nullptr, nullptr,
         shared_bitmap_manager(), std::move(frame_swap_message_queue)));
     return;
   }
@@ -1986,10 +1988,14 @@ void RenderThreadImpl::RequestNewCompositorFrameSink(
 
 #if defined(OS_ANDROID)
   if (sync_compositor_message_filter_) {
+    std::unique_ptr<cc::BeginFrameSource> begin_frame_source =
+        synthetic_begin_frame_source
+            ? std::move(synthetic_begin_frame_source)
+            : CreateExternalBeginFrameSource(routing_id);
     callback.Run(base::MakeUnique<SynchronousCompositorFrameSink>(
         std::move(context_provider), std::move(worker_context_provider),
         GetGpuMemoryBufferManager(), shared_bitmap_manager(), routing_id,
-        compositor_frame_sink_id, CreateExternalBeginFrameSource(routing_id),
+        compositor_frame_sink_id, std::move(begin_frame_source),
         sync_compositor_message_filter_.get(),
         std::move(frame_swap_message_queue)));
     return;
@@ -1997,7 +2003,7 @@ void RenderThreadImpl::RequestNewCompositorFrameSink(
 #endif
   callback.Run(base::WrapUnique(new RendererCompositorFrameSink(
       routing_id, compositor_frame_sink_id,
-      CreateExternalBeginFrameSource(routing_id), std::move(context_provider),
+      std::move(synthetic_begin_frame_source), std::move(context_provider),
       std::move(worker_context_provider), GetGpuMemoryBufferManager(), nullptr,
       std::move(frame_swap_message_queue))));
 }

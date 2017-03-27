@@ -74,6 +74,7 @@ class Thread;
 namespace cc {
 class BeginFrameSource;
 class CompositorFrameSink;
+class SyntheticBeginFrameSource;
 class TaskGraphRunner;
 }
 
@@ -588,6 +589,9 @@ class CONTENT_EXPORT RenderThreadImpl
 
   std::unique_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource(
       int routing_id);
+
+  std::unique_ptr<cc::SyntheticBeginFrameSource>
+  CreateSyntheticBeginFrameSource();
 
   void OnRendererInterfaceRequest(mojom::RendererAssociatedRequest request);
 

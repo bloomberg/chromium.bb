@@ -32,7 +32,6 @@ class Message;
 }
 
 namespace cc {
-class BeginFrameSource;
 class CompositorFrame;
 class ContextProvider;
 }
@@ -44,12 +43,14 @@ class FrameSwapMessageQueue;
 // to a fixed thread when BindToClient is called.
 class RendererCompositorFrameSink
     : NON_EXPORTED_BASE(public cc::CompositorFrameSink),
-      NON_EXPORTED_BASE(public base::NonThreadSafe) {
+      NON_EXPORTED_BASE(public base::NonThreadSafe),
+      public cc::ExternalBeginFrameSourceClient {
  public:
   RendererCompositorFrameSink(
       int32_t routing_id,
       uint32_t compositor_frame_sink_id,
-      std::unique_ptr<cc::BeginFrameSource> begin_frame_source,
+      std::unique_ptr<cc::SyntheticBeginFrameSource>
+          synthetic_begin_frame_source,
       scoped_refptr<cc::ContextProvider> context_provider,
       scoped_refptr<cc::ContextProvider> worker_context_provider,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
@@ -58,7 +59,8 @@ class RendererCompositorFrameSink
   RendererCompositorFrameSink(
       int32_t routing_id,
       uint32_t compositor_frame_sink_id,
-      std::unique_ptr<cc::BeginFrameSource> begin_frame_source,
+      std::unique_ptr<cc::SyntheticBeginFrameSource>
+          synthetic_begin_frame_source,
       scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider,
       scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue);
   ~RendererCompositorFrameSink() override;
@@ -96,10 +98,16 @@ class RendererCompositorFrameSink
   void OnReclaimCompositorResources(uint32_t compositor_frame_sink_id,
                                     bool is_swap_ack,
                                     const cc::ReturnedResourceArray& resources);
+  void OnSetBeginFrameSourcePaused(bool paused);
+  void OnBeginFrame(const cc::BeginFrameArgs& args);
   bool Send(IPC::Message* message);
 
   bool ShouldAllocateNewLocalSurfaceId(const cc::CompositorFrame& frame);
   void UpdateFrameData(const cc::CompositorFrame& frame);
+
+  // cc::ExternalBeginFrameSourceClient implementation.
+  void OnNeedsBeginFrames(bool need_begin_frames) override;
+  void OnDidFinishFrame(const cc::BeginFrameAck& ack) override;
 
   scoped_refptr<CompositorForwardingMessageFilter>
       compositor_frame_sink_filter_;
@@ -108,7 +116,8 @@ class RendererCompositorFrameSink
   scoped_refptr<RendererCompositorFrameSinkProxy> compositor_frame_sink_proxy_;
   scoped_refptr<IPC::SyncMessageFilter> message_sender_;
   scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue_;
-  std::unique_ptr<cc::BeginFrameSource> begin_frame_source_;
+  std::unique_ptr<cc::SyntheticBeginFrameSource> synthetic_begin_frame_source_;
+  std::unique_ptr<cc::ExternalBeginFrameSource> external_begin_frame_source_;
   int routing_id_;
 
   cc::LocalSurfaceId local_surface_id_;
