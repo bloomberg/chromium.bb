@@ -507,7 +507,7 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
         ChildProcessLauncher.start(context, paramId,
                 new String[] {"--" + ContentSwitches.SWITCH_PROCESS_TYPE + "="
                         + ContentSwitches.SWITCH_RENDERER_PROCESS},
-                0 /* childProcessId */, filesToMap, 0 /* clientContext */);
+                0 /* childProcessId */, filesToMap, null /* launchCallback */);
     }
 
     /**
@@ -538,6 +538,7 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
 
     private void triggerConnectionSetup(ChildProcessConnectionImpl connection) {
         ChildProcessLauncher.triggerConnectionSetup(connection, sProcessWaitArguments, 1,
-                new FileDescriptorInfo[0], ChildProcessLauncher.CALLBACK_FOR_RENDERER_PROCESS, 0);
+                new FileDescriptorInfo[0], ChildProcessLauncher.CALLBACK_FOR_RENDERER_PROCESS,
+                null);
     }
 }

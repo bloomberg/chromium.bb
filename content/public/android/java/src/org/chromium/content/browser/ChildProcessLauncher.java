@@ -11,7 +11,6 @@ import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.text.TextUtils;
 
@@ -21,8 +20,6 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.Linker;
 import org.chromium.base.process_launcher.ChildProcessCreationParams;
 import org.chromium.base.process_launcher.FileDescriptorInfo;
@@ -31,7 +28,6 @@ import org.chromium.content.app.PrivilegedProcessService;
 import org.chromium.content.app.SandboxedProcessService;
 import org.chromium.content.common.ContentSwitches;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Map;
@@ -45,7 +41,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * Code can run on these threads: UI, Launcher, async thread pool, binder, and one-off
  * background threads.
  */
-@JNINamespace("content::internal")
 public class ChildProcessLauncher {
     private static final String TAG = "ChildProcLauncher";
 
@@ -165,20 +160,21 @@ public class ChildProcessLauncher {
         private final String[] mCommandLine;
         private final int mChildProcessId;
         private final FileDescriptorInfo[] mFilesToBeMapped;
-        private final long mClientContext;
+        private final LaunchCallback mLaunchCallback;
         private final int mCallbackType;
         private final boolean mInSandbox;
         private final ChildProcessCreationParams mCreationParams;
 
         private SpawnData(boolean forWarmUp, Context context, String[] commandLine,
-                int childProcessId, FileDescriptorInfo[] filesToBeMapped, long clientContext,
-                int callbackType, boolean inSandbox, ChildProcessCreationParams creationParams) {
+                int childProcessId, FileDescriptorInfo[] filesToBeMapped,
+                LaunchCallback launchCallback, int callbackType, boolean inSandbox,
+                ChildProcessCreationParams creationParams) {
             mForWarmup = forWarmUp;
             mContext = context;
             mCommandLine = commandLine;
             mChildProcessId = childProcessId;
             mFilesToBeMapped = filesToBeMapped;
-            mClientContext = clientContext;
+            mLaunchCallback = launchCallback;
             mCallbackType = callbackType;
             mInSandbox = inSandbox;
             mCreationParams = creationParams;
@@ -200,8 +196,8 @@ public class ChildProcessLauncher {
         private FileDescriptorInfo[] filesToBeMapped() {
             return mFilesToBeMapped;
         }
-        private long clientContext() {
-            return mClientContext;
+        private LaunchCallback launchCallback() {
+            return mLaunchCallback;
         }
         private int callbackType() {
             return mCallbackType;
@@ -213,6 +209,11 @@ public class ChildProcessLauncher {
             return mCreationParams;
         }
     }
+
+    /**
+     * Implemented by ChildProcessLauncherHelper.
+     */
+    public interface LaunchCallback { void onChildProcessStarted(int pid); }
 
     // Service class for child process.
     // Map from package name to ChildConnectionAllocator.
@@ -453,7 +454,7 @@ public class ChildProcessLauncher {
                         public void run() {
                             startInternal(pendingSpawn.context(), pendingSpawn.commandLine(),
                                     pendingSpawn.childProcessId(), pendingSpawn.filesToBeMapped(),
-                                    pendingSpawn.clientContext(), pendingSpawn.callbackType(),
+                                    pendingSpawn.launchCallback(), pendingSpawn.callbackType(),
                                     pendingSpawn.inSandbox(), pendingSpawn.getCreationParams());
                         }
                     }).start();
@@ -493,24 +494,14 @@ public class ChildProcessLauncher {
     // Whether the main application is currently brought to the foreground.
     private static boolean sApplicationInForeground = true;
 
+    // TODO(boliu): This should be internal to content.
+    public static BindingManager getBindingManager() {
+        return sBindingManager;
+    }
+
     @VisibleForTesting
     public static void setBindingManagerForTesting(BindingManager manager) {
         sBindingManager = manager;
-    }
-
-    /** @return true iff the child process is protected from out-of-memory killing */
-    @CalledByNative
-    private static boolean isOomProtected(int pid) {
-        return sBindingManager.isOomProtected(pid);
-    }
-
-    /**
-     * Sets the visibility of the child process when it changes or when it is determined for the
-     * first time.
-     */
-    @CalledByNative
-    public static void setInForeground(int pid, boolean inForeground) {
-        sBindingManager.setInForeground(pid, inForeground);
     }
 
     /**
@@ -594,30 +585,12 @@ public class ChildProcessLauncher {
                         };
                 SpawnData spawnData = new SpawnData(true /* forWarmUp*/, context,
                         null /* commandLine */, -1 /* child process id */,
-                        null /* filesToBeMapped */, 0 /* clientContext */,
+                        null /* filesToBeMapped */, null /* launchCallback */,
                         CALLBACK_FOR_RENDERER_PROCESS, true /* inSandbox */, params);
                 sSpareSandboxedConnection = allocateBoundConnection(
                         spawnData, false /* alwaysInForeground */, startCallback);
             }
         }
-    }
-
-    @CalledByNative
-    private static FileDescriptorInfo makeFdInfo(
-            int id, int fd, boolean autoClose, long offset, long size) {
-        ParcelFileDescriptor pFd;
-        if (autoClose) {
-            // Adopt the FD, it will be closed when we close the ParcelFileDescriptor.
-            pFd = ParcelFileDescriptor.adoptFd(fd);
-        } else {
-            try {
-                pFd = ParcelFileDescriptor.fromFd(fd);
-            } catch (IOException e) {
-                Log.e(TAG, "Invalid FD provided for process connection, aborting connection.", e);
-                return null;
-            }
-        }
-        return new FileDescriptorInfo(id, pFd, offset, size);
     }
 
     /**
@@ -630,13 +603,10 @@ public class ChildProcessLauncher {
      * @param paramId Key used to retrieve ChildProcessCreationParams.
      * @param commandLine The child process command line argv.
      * @param filesToBeMapped File IDs, FDs, offsets, and lengths to pass through.
-     * @param clientContext Arbitrary parameter used by the client to distinguish this connection.
      */
     // TODO(boliu): All tests should use this over startForTesting.
-    @VisibleForTesting
-    @CalledByNative
     static void start(Context context, int paramId, final String[] commandLine, int childProcessId,
-            FileDescriptorInfo[] filesToBeMapped, long clientContext) {
+            FileDescriptorInfo[] filesToBeMapped, LaunchCallback launchCallback) {
         int callbackType = CALLBACK_FOR_UNKNOWN_PROCESS;
         boolean inSandbox = true;
         String processType =
@@ -673,18 +643,14 @@ public class ChildProcessLauncher {
             }
         }
 
-        startInternal(context, commandLine, childProcessId, filesToBeMapped, clientContext,
+        startInternal(context, commandLine, childProcessId, filesToBeMapped, launchCallback,
                 callbackType, inSandbox, params);
     }
 
-    private static ChildProcessConnection startInternal(
-            final Context context,
-            final String[] commandLine,
-            final int childProcessId,
-            final FileDescriptorInfo[] filesToBeMapped,
-            final long clientContext,
-            final int callbackType,
-            final boolean inSandbox,
+    private static ChildProcessConnection startInternal(final Context context,
+            final String[] commandLine, final int childProcessId,
+            final FileDescriptorInfo[] filesToBeMapped, final LaunchCallback launchCallback,
+            final int callbackType, final boolean inSandbox,
             final ChildProcessCreationParams creationParams) {
         try {
             TraceEvent.begin("ChildProcessLauncher.startInternal");
@@ -728,7 +694,7 @@ public class ChildProcessLauncher {
                                         // This connection that failed to start has not been freed,
                                         // so a new bound connection will be allocated.
                                         startInternal(context, commandLine, childProcessId,
-                                                filesToBeMapped, clientContext, callbackType,
+                                                filesToBeMapped, launchCallback, callbackType,
                                                 inSandbox, creationParams);
                                     }
                                 });
@@ -736,7 +702,7 @@ public class ChildProcessLauncher {
                         };
 
                 SpawnData spawnData = new SpawnData(false /* forWarmUp */, context, commandLine,
-                        childProcessId, filesToBeMapped, clientContext, callbackType, inSandbox,
+                        childProcessId, filesToBeMapped, launchCallback, callbackType, inSandbox,
                         creationParams);
                 allocatedConnection =
                         allocateBoundConnection(spawnData, alwaysInForeground, startCallback);
@@ -748,7 +714,7 @@ public class ChildProcessLauncher {
             Log.d(TAG, "Setting up connection to process: slot=%d",
                     allocatedConnection.getServiceNumber());
             triggerConnectionSetup(allocatedConnection, commandLine, childProcessId,
-                    filesToBeMapped, callbackType, clientContext);
+                    filesToBeMapped, callbackType, launchCallback);
             return allocatedConnection;
         } finally {
             TraceEvent.end("ChildProcessLauncher.startInternal");
@@ -773,19 +739,15 @@ public class ChildProcessLauncher {
     }
 
     @VisibleForTesting
-    static void triggerConnectionSetup(
-            final ChildProcessConnection connection,
-            String[] commandLine,
-            int childProcessId,
-            FileDescriptorInfo[] filesToBeMapped,
-            final int callbackType,
-            final long clientContext) {
+    static void triggerConnectionSetup(final ChildProcessConnection connection,
+            String[] commandLine, int childProcessId, FileDescriptorInfo[] filesToBeMapped,
+            final int callbackType, final LaunchCallback launchCallback) {
         ChildProcessConnection.ConnectionCallback connectionCallback =
                 new ChildProcessConnection.ConnectionCallback() {
                     @Override
                     public void onConnected(int pid) {
-                        Log.d(TAG, "on connect callback, pid=%d context=%d callbackType=%d",
-                                pid, clientContext, callbackType);
+                        Log.d(TAG, "on connect callback, pid=%d callbackType=%d", pid,
+                                callbackType);
                         if (pid != NULL_PROCESS_HANDLE) {
                             sBindingManager.addNewConnection(pid, connection);
                             sServiceMap.put(pid, connection);
@@ -793,8 +755,8 @@ public class ChildProcessLauncher {
                         // If the connection fails and pid == 0, the Java-side cleanup was already
                         // handled by DeathCallback. We still have to call back to native for
                         // cleanup there.
-                        if (clientContext != 0) {  // Will be 0 in Java instrumentation tests.
-                            nativeOnChildProcessStarted(clientContext, pid);
+                        if (launchCallback != null) { // Will be null in Java instrumentation tests.
+                            launchCallback.onChildProcessStarted(pid);
                         }
                     }
                 };
@@ -809,7 +771,6 @@ public class ChildProcessLauncher {
      *
      * @param pid The pid (process handle) of the service connection obtained from {@link #start}.
      */
-    @CalledByNative
     static void stop(int pid) {
         Log.d(TAG, "stopping child connection: pid=%d", pid);
         ChildProcessConnection connection = sServiceMap.remove(pid);
@@ -832,7 +793,7 @@ public class ChildProcessLauncher {
     @VisibleForTesting
     public static ChildProcessConnection startForTesting(Context context, String[] commandLine,
             FileDescriptorInfo[] filesToMap, ChildProcessCreationParams params) {
-        return startInternal(context, commandLine, 0, filesToMap, 0,
+        return startInternal(context, commandLine, 0, filesToMap, null,
                 CALLBACK_FOR_RENDERER_PROCESS, true, params);
     }
 
@@ -841,8 +802,9 @@ public class ChildProcessLauncher {
             ChildProcessCreationParams creationParams) {
         return allocateBoundConnection(
                 new SpawnData(false /* forWarmUp */, context, null /* commandLine */,
-                        0 /* childProcessId */, null /* filesToBeMapped */, 0 /* clientContext */,
-                        CALLBACK_FOR_RENDERER_PROCESS, true /* inSandbox */, creationParams),
+                        0 /* childProcessId */, null /* filesToBeMapped */,
+                        null /* LaunchCallback */, CALLBACK_FOR_RENDERER_PROCESS,
+                        true /* inSandbox */, creationParams),
                 false /* alwaysInForeground */, null);
     }
 
@@ -854,8 +816,9 @@ public class ChildProcessLauncher {
                 ChildProcessConstants.EXTRA_LINKER_PARAMS, getLinkerParamsForNewConnection());
         return allocateConnection(
                 new SpawnData(false /* forWarmUp */, context, null /* commandLine */,
-                        0 /* childProcessId */, null /* filesToBeMapped */, 0 /* clientContext */,
-                        CALLBACK_FOR_RENDERER_PROCESS, true /* inSandbox */, creationParams),
+                        0 /* childProcessId */, null /* filesToBeMapped */,
+                        null /* LaunchCallback */, CALLBACK_FOR_RENDERER_PROCESS,
+                        true /* inSandbox */, creationParams),
                 commonParams, false);
     }
 
@@ -870,8 +833,8 @@ public class ChildProcessLauncher {
         ChildConnectionAllocator allocator =
                 getAllocatorForTesting(context, packageName, inSandbox);
         allocator.enqueuePendingQueueForTesting(new SpawnData(false /* forWarmUp*/, context,
-                commandLine, 1, new FileDescriptorInfo[0], 0, CALLBACK_FOR_RENDERER_PROCESS, true,
-                creationParams));
+                commandLine, 1, new FileDescriptorInfo[0], null, CALLBACK_FOR_RENDERER_PROCESS,
+                true, creationParams));
     }
 
     /**
@@ -929,6 +892,4 @@ public class ChildProcessLauncher {
 
         return true;
     }
-
-    private static native void nativeOnChildProcessStarted(long clientContext, int pid);
 }

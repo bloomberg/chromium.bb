@@ -86,7 +86,6 @@ void ChildProcessLauncherHelper::AfterLaunchOnLauncherThread(
   DCHECK_CURRENTLY_ON(BrowserThread::PROCESS_LAUNCHER);
 }
 
-// static
 base::TerminationStatus ChildProcessLauncherHelper::GetTerminationStatus(
     const ChildProcessLauncherHelper::Process& process,
     bool known_dead,
@@ -108,7 +107,6 @@ void ChildProcessLauncherHelper::ForceNormalProcessTerminationSync(
   process.process.Terminate(RESULT_CODE_NORMAL_EXIT, false);
 }
 
-// static
 void ChildProcessLauncherHelper::SetProcessBackgroundedOnLauncherThread(
       base::Process process, bool background) {
   DCHECK_CURRENTLY_ON(BrowserThread::PROCESS_LAUNCHER);

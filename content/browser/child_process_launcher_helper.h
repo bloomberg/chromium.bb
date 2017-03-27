@@ -18,6 +18,10 @@
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "services/catalog/public/cpp/manifest_parsing_util.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/scoped_java_ref.h"
+#endif
+
 #if defined(OS_WIN)
 #include "sandbox/win/src/sandbox_types.h"
 #else
@@ -133,7 +137,7 @@ class ChildProcessLauncherHelper :
 
   // Returns the termination status and sets |exit_code| if non null.
   // See ChildProcessLauncher::GetChildTerminationStatus for more info.
-  static base::TerminationStatus GetTerminationStatus(
+  base::TerminationStatus GetTerminationStatus(
       const ChildProcessLauncherHelper::Process& process,
       bool known_dead,
       int* exit_code);
@@ -153,14 +157,20 @@ class ChildProcessLauncherHelper :
   static void ForceNormalProcessTerminationAsync(
       ChildProcessLauncherHelper::Process process);
 
-  static void SetProcessBackgroundedOnLauncherThread(
-      base::Process process, bool background);
+  void SetProcessBackgroundedOnLauncherThread(base::Process process,
+                                              bool background);
 
   static void SetRegisteredFilesForService(
       const std::string& service_name,
       catalog::RequiredFileMap required_files);
 
   static void ResetRegisteredFilesForTesting();
+
+#if defined(OS_ANDROID)
+  void OnChildProcessStarted(JNIEnv* env,
+                             const base::android::JavaParamRef<jobject>& obj,
+                             jint handle);
+#endif  // OS_ANDROID
 
  private:
   friend class base::RefCountedThreadSafe<ChildProcessLauncherHelper>;
@@ -189,6 +199,10 @@ class ChildProcessLauncherHelper :
   mojo::edk::ScopedPlatformHandle mojo_client_handle_;
   mojo::edk::ScopedPlatformHandle mojo_server_handle_;
   bool terminate_on_shutdown_;
+
+#if defined(OS_ANDROID)
+  base::android::ScopedJavaGlobalRef<jobject> java_peer_;
+#endif
 };
 
 }  // namespace internal

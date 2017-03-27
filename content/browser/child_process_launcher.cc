@@ -66,8 +66,7 @@ void ChildProcessLauncher::SetProcessBackgrounded(bool background) {
       BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
       base::Bind(
           &ChildProcessLauncherHelper::SetProcessBackgroundedOnLauncherThread,
-          base::Passed(&to_pass),
-          background));
+          helper_, base::Passed(&to_pass), background));
 }
 
 void ChildProcessLauncher::Notify(
@@ -121,8 +120,8 @@ base::TerminationStatus ChildProcessLauncher::GetChildTerminationStatus(
     return termination_status_;
   }
 
-  termination_status_ = ChildProcessLauncherHelper::GetTerminationStatus(
-      process_, known_dead, &exit_code_);
+  termination_status_ =
+      helper_->GetTerminationStatus(process_, known_dead, &exit_code_);
   if (exit_code)
     *exit_code = exit_code_;
 

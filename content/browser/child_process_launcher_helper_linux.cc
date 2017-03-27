@@ -100,7 +100,6 @@ void ChildProcessLauncherHelper::AfterLaunchOnLauncherThread(
   delete options.fds_to_remap;
 }
 
-// static
 base::TerminationStatus ChildProcessLauncherHelper::GetTerminationStatus(
     const ChildProcessLauncherHelper::Process& process,
     bool known_dead,
@@ -136,7 +135,6 @@ void ChildProcessLauncherHelper::ForceNormalProcessTerminationSync(
   }
 }
 
-// static
 void ChildProcessLauncherHelper::SetProcessBackgroundedOnLauncherThread(
       base::Process process, bool background) {
   DCHECK_CURRENTLY_ON(BrowserThread::PROCESS_LAUNCHER);
