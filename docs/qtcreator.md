@@ -100,10 +100,6 @@ standalone GDB frontend. **
 
 ### Tips, tricks, and troubleshooting
 
-#### Make GDB start fast
-
-Add `gdb_index = true` to `gn args`.
-
 #### Debugger shows start then finish
 
 ```
