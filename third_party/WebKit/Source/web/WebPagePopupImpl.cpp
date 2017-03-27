@@ -303,6 +303,10 @@ bool WebPagePopupImpl::initializePage() {
       mainSettings.getAccessibilityEnabled());
   m_page->settings().setScrollAnimatorEnabled(
       mainSettings.getScrollAnimatorEnabled());
+  m_page->settings().setAvailablePointerTypes(
+      mainSettings.getAvailablePointerTypes());
+  m_page->settings().setPrimaryPointerType(
+      mainSettings.getPrimaryPointerType());
 
   provideContextFeaturesTo(*m_page, WTF::makeUnique<PagePopupFeaturesClient>());
   DEFINE_STATIC_LOCAL(LocalFrameClient, emptyLocalFrameClient,

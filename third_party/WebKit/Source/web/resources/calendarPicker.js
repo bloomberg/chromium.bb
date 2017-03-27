@@ -60,7 +60,7 @@ var global = {
  * @return {!boolean}
  */
 function hasInaccuratePointingDevice() {
-  return matchMedia('(pointer: coarse)').matches;
+  return matchMedia('(any-pointer: coarse)').matches;
 }
 
 /**
