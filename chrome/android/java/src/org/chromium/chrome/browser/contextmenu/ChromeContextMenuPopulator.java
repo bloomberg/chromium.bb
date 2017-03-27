@@ -338,10 +338,15 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         }
     }
 
+    /**
+     *  This works in the same way as {@link #addValidItems(List, List, Set, Set)} however the list
+     *  given for example (a, b, c) will be added to list d, e f, as a, b, c, d, e, f not
+     *  c, b, a, d, e, f.
+     */
     private void addValidItemsToFront(List<ContextMenuItem> validItems,
             List<ContextMenuItem> allItems, Set<ContextMenuItem> supportedOptions,
             Set<ContextMenuItem> disabledOptions) {
-        for (int i = 0; i < allItems.size(); i++) {
+        for (int i = allItems.size() - 1; i >= 0; i--) {
             ContextMenuItem item = allItems.get(i);
             if (supportedOptions.contains(item) && !disabledOptions.contains(item)) {
                 assert !validItems.contains(item);
