@@ -152,8 +152,7 @@ void History::go(ScriptState* scriptState, int delta) {
     // Otherwise, navigation happens on the root frame.
     // This behavior is designed in the following spec.
     // https://html.spec.whatwg.org/multipage/browsers.html#dom-history-go
-    frame()->reload(FrameLoadTypeReloadMainResource,
-                    ClientRedirectPolicy::ClientRedirect);
+    frame()->reload(FrameLoadTypeReload, ClientRedirectPolicy::ClientRedirect);
   }
 }
 

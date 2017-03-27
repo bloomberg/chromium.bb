@@ -218,7 +218,7 @@ void Location::reload(LocalDOMWindow* currentWindow) {
     return;
   if (document()->url().protocolIsJavaScript())
     return;
-  m_domWindow->frame()->reload(FrameLoadTypeReloadMainResource,
+  m_domWindow->frame()->reload(FrameLoadTypeReload,
                                ClientRedirectPolicy::ClientRedirect);
 }
 

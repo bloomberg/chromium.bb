@@ -213,7 +213,7 @@ void ContentSettingsObserver::SetAllowRunningInsecureContent() {
   // Reload if we are the main frame.
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   if (!frame->parent())
-    frame->reload(blink::WebFrameLoadType::ReloadMainResource);
+    frame->reload(blink::WebFrameLoadType::Reload);
 }
 
 void ContentSettingsObserver::OnInsecureContentRendererRequest(

@@ -385,7 +385,7 @@ void LocalFrame::reload(FrameLoadType loadType,
     request.setClientRedirect(clientRedirectPolicy);
     m_loader.load(request, loadType);
   } else {
-    DCHECK_EQ(FrameLoadTypeReloadMainResource, loadType);
+    DCHECK_EQ(FrameLoadTypeReload, loadType);
     m_navigationScheduler->scheduleReload();
   }
 }

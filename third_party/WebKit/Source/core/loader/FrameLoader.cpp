@@ -114,7 +114,6 @@ bool isBackForwardLoadType(FrameLoadType type) {
 
 bool isReloadLoadType(FrameLoadType type) {
   return type == FrameLoadTypeReload ||
-         type == FrameLoadTypeReloadMainResource ||
          type == FrameLoadTypeReloadBypassingCache;
 }
 
@@ -852,7 +851,7 @@ FrameLoadType FrameLoader::determineFrameLoadType(
     if (request.resourceRequest().httpMethod() == HTTPNames::POST)
       return FrameLoadTypeStandard;
     if (!request.originDocument())
-      return FrameLoadTypeReloadMainResource;
+      return FrameLoadTypeReload;
     return FrameLoadTypeReplaceCurrentItem;
   }
 

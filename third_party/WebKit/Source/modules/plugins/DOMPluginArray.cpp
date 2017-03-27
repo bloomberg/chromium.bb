@@ -69,8 +69,7 @@ void DOMPluginArray::refresh(bool reload) {
     return;
   Page::refreshPlugins();
   if (reload) {
-    frame()->reload(FrameLoadTypeReloadMainResource,
-                    ClientRedirectPolicy::ClientRedirect);
+    frame()->reload(FrameLoadTypeReload, ClientRedirectPolicy::ClientRedirect);
   }
 }
 

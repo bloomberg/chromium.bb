@@ -254,8 +254,6 @@ WebCachePolicy determineWebCachePolicy(RequestMethod method,
                  ? WebCachePolicy::ReturnCacheDataDontLoad
                  : WebCachePolicy::ReturnCacheDataElseLoad;
     case FrameLoadTypeReload:
-      return WebCachePolicy::ValidatingCacheData;
-    case FrameLoadTypeReloadMainResource:
       return resourceType == ResourceType::kIsMainResource
                  ? WebCachePolicy::ValidatingCacheData
                  : WebCachePolicy::UseProtocolCachePolicy;

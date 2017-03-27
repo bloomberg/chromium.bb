@@ -126,7 +126,7 @@ void loadHistoryItem(WebFrame* frame,
 }
 
 void reloadFrame(WebFrame* frame) {
-  frame->reload(WebFrameLoadType::ReloadMainResource);
+  frame->reload(WebFrameLoadType::Reload);
   pumpPendingRequestsForFrameToLoad(frame);
 }
 

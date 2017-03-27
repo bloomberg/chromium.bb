@@ -568,8 +568,8 @@ TEST_F(FrameFetchContextTest, MainResource) {
             fetchContext->resourceRequestCachePolicy(
                 postRequest, Resource::MainResource, FetchRequest::NoDefer));
 
-  // FrameLoadTypeReloadMainResource
-  document->loader()->setLoadType(FrameLoadTypeReloadMainResource);
+  // FrameLoadTypeReload
+  document->loader()->setLoadType(FrameLoadTypeReload);
   EXPECT_EQ(WebCachePolicy::ValidatingCacheData,
             fetchContext->resourceRequestCachePolicy(
                 request, Resource::MainResource, FetchRequest::NoDefer));
@@ -593,7 +593,7 @@ TEST_F(FrameFetchContextTest, MainResource) {
 
   // Child frame as part of reload
   document->loader()->setLoadType(FrameLoadTypeReload);
-  EXPECT_EQ(WebCachePolicy::ValidatingCacheData,
+  EXPECT_EQ(WebCachePolicy::UseProtocolCachePolicy,
             childFetchContext->resourceRequestCachePolicy(
                 request, Resource::MainResource, FetchRequest::NoDefer));
 
@@ -726,7 +726,7 @@ TEST_F(FrameFetchContextTest, ChangeDataSaverConfig) {
   EXPECT_EQ("on", resourceRequest.httpHeaderField("Save-Data"));
 
   settings->setDataSaverEnabled(false);
-  document->loader()->setLoadType(FrameLoadTypeReloadMainResource);
+  document->loader()->setLoadType(FrameLoadTypeReload);
   fetchContext->addAdditionalRequestHeaders(resourceRequest, FetchMainResource);
   EXPECT_EQ(String(), resourceRequest.httpHeaderField("Save-Data"));
 
@@ -735,7 +735,7 @@ TEST_F(FrameFetchContextTest, ChangeDataSaverConfig) {
   EXPECT_EQ("on", resourceRequest.httpHeaderField("Save-Data"));
 
   settings->setDataSaverEnabled(false);
-  document->loader()->setLoadType(FrameLoadTypeReloadMainResource);
+  document->loader()->setLoadType(FrameLoadTypeReload);
   fetchContext->addAdditionalRequestHeaders(resourceRequest, FetchMainResource);
   EXPECT_EQ(String(), resourceRequest.httpHeaderField("Save-Data"));
 }

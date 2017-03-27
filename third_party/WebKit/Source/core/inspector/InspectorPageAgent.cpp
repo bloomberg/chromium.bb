@@ -449,7 +449,7 @@ Response InspectorPageAgent::reload(
   m_reloading = true;
   m_inspectedFrames->root()->reload(optionalBypassCache.fromMaybe(false)
                                         ? FrameLoadTypeReloadBypassingCache
-                                        : FrameLoadTypeReloadMainResource,
+                                        : FrameLoadTypeReload,
                                     ClientRedirectPolicy::NotClientRedirect);
   return Response::OK();
 }

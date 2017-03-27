@@ -2625,9 +2625,9 @@ void Internals::forceReload(bool bypassCache) {
   if (!frame())
     return;
 
-  frame()->reload(bypassCache ? FrameLoadTypeReloadBypassingCache
-                              : FrameLoadTypeReloadMainResource,
-                  ClientRedirectPolicy::NotClientRedirect);
+  frame()->reload(
+      bypassCache ? FrameLoadTypeReloadBypassingCache : FrameLoadTypeReload,
+      ClientRedirectPolicy::NotClientRedirect);
 }
 
 Node* Internals::visibleSelectionAnchorNode() {

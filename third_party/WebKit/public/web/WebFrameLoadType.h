@@ -18,9 +18,6 @@ namespace blink {
 //   Uses cached entries even if the entries are stale. Used in history back and
 //   forward navigations.
 // Reload:
-//   Revalidates cached entries even if the entries are fresh. Used in usual
-//   reload.
-// ReloadMainResource:
 //   Revalidates a cached entry for the main resource if one exists, but follows
 //   protocols for other subresources. Blink internally uses this for the same
 //   page navigation. Also used in optimized reload for mobiles in a field
@@ -39,7 +36,6 @@ enum class WebFrameLoadType {
   Standard,
   BackForward,
   Reload,
-  ReloadMainResource,
   ReplaceCurrentItem,
   InitialInChildFrame,
   InitialHistoryLoad,

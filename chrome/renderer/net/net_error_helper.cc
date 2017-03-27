@@ -314,7 +314,7 @@ void NetErrorHelper::SendTrackingRequest(
 void NetErrorHelper::ReloadPage(bool bypass_cache) {
   render_frame()->GetWebFrame()->reload(
       bypass_cache ? blink::WebFrameLoadType::ReloadBypassingCache
-                   : blink::WebFrameLoadType::ReloadMainResource);
+                   : blink::WebFrameLoadType::Reload);
 }
 
 void NetErrorHelper::LoadPageFromCache(const GURL& page_url) {

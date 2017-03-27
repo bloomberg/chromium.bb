@@ -36,7 +36,6 @@ enum FrameLoadType {
   FrameLoadTypeStandard,
   FrameLoadTypeBackForward,
   FrameLoadTypeReload,
-  FrameLoadTypeReloadMainResource,
   FrameLoadTypeReplaceCurrentItem,
   FrameLoadTypeInitialInChildFrame,
   FrameLoadTypeInitialHistoryLoad,
