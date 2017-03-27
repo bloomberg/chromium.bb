@@ -5,6 +5,10 @@
 Polymer({
   is: 'bookmarks-edit-dialog',
 
+  behaviors: [
+    Polymer.IronA11yKeysBehavior,
+  ],
+
   properties: {
     /** @private {BookmarkNode} */
     editItem_: Object,
@@ -17,6 +21,10 @@ Polymer({
 
     /** @private */
     urlValue_: String,
+  },
+
+  keyBindings: {
+    'enter': 'onSaveButtonTap_',
   },
 
   /** @param {BookmarkNode} editItem */
@@ -43,7 +51,6 @@ Polymer({
 
   /** @private */
   onSaveButtonTap_: function() {
-    // TODO(tsergeant): Save changes when enter is pressed.
     // TODO(tsergeant): Verify values.
     var edit = {'title': this.titleValue_};
     if (!this.isFolder_)
