@@ -1410,6 +1410,7 @@ split_static_library("ui") {
     deps += [
       "//ash",
       "//ash:ash_with_content",
+      "//ash/mus:lib",
       "//ash/public/cpp:ash_public_cpp",
       "//ash/resources/vector_icons",
       "//ash/strings",

@@ -63,6 +63,9 @@ class AURA_EXPORT WindowManagerClient {
   // this does nothing.
   virtual void RequestClose(Window* window) = 0;
 
+  // Blocks until the initial displays have been received.
+  virtual bool WaitForInitialDisplays() = 0;
+
  protected:
   virtual ~WindowManagerClient() {}
 };

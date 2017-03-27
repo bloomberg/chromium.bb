@@ -23,6 +23,7 @@
 #include "ash/mus/shell_delegate_mus.h"
 #include "ash/mus/top_level_window_factory.h"
 #include "ash/mus/window_properties.h"
+#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
@@ -71,8 +72,10 @@ struct WindowManager::DragState {
 };
 
 // TODO: need to register OSExchangeDataProviderMus. http://crbug.com/665077.
-WindowManager::WindowManager(service_manager::Connector* connector)
+WindowManager::WindowManager(service_manager::Connector* connector,
+                             Config config)
     : connector_(connector),
+      config_(config),
       wm_state_(base::MakeUnique<::wm::WMState>()),
       property_converter_(base::MakeUnique<aura::PropertyConverter>()) {
   property_converter_->RegisterProperty(
@@ -99,7 +102,8 @@ WindowManager::~WindowManager() {
 
 void WindowManager::Init(
     std::unique_ptr<aura::WindowTreeClient> window_tree_client,
-    const scoped_refptr<base::SequencedWorkerPool>& blocking_pool) {
+    const scoped_refptr<base::SequencedWorkerPool>& blocking_pool,
+    std::unique_ptr<ShellDelegate> shell_delegate) {
   blocking_pool_ = blocking_pool;
   DCHECK(window_manager_client_);
   DCHECK(!window_tree_client_);
@@ -136,6 +140,13 @@ void WindowManager::Init(
   pointer_watcher_event_router_->AttachToCaptureClient(capture_client);
   window_tree_client_->capture_synchronizer()->AttachToCaptureClient(
       capture_client);
+
+  if (shell_delegate)
+    shell_delegate_ = std::move(shell_delegate);
+}
+
+bool WindowManager::WaitForInitialDisplays() {
+  return window_manager_client_->WaitForInitialDisplays();
 }
 
 void WindowManager::DeleteAllRootWindowControllers() {
@@ -209,9 +220,8 @@ void WindowManager::CreateShell(
       this, pointer_watcher_event_router_.get(),
       create_session_state_delegate_stub_for_test_);
   // Shell::CreateInstance() takes ownership of ShellDelegate.
-  init_params.delegate = shell_delegate_for_test_
-                             ? shell_delegate_for_test_.release()
-                             : new ShellDelegateMus(connector_);
+  init_params.delegate = shell_delegate_ ? shell_delegate_.release()
+                                         : new ShellDelegateMus(connector_);
   init_params.primary_window_tree_host = window_tree_host.release();
   init_params.wm_shell = wm_shell;
   init_params.blocking_pool = blocking_pool_.get();

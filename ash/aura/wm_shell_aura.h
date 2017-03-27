@@ -33,6 +33,7 @@ class ASH_EXPORT WmShellAura : public WmShell,
   // WmShell:
   void Shutdown() override;
   bool IsRunningInMash() const override;
+  Config GetConfig() const override;
   WmWindow* GetFocusedWindow() override;
   WmWindow* GetActiveWindow() override;
   WmWindow* GetCaptureWindow() override;

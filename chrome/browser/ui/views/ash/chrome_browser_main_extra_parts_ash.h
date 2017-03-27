@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 
+class AshInit;
 class CastConfigClientMediaRouter;
 class ChromeLauncherControllerMus;
 class ChromeNewWindowClient;
@@ -48,6 +49,7 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   std::unique_ptr<ChromeNewWindowClient> new_window_client_;
   std::unique_ptr<VolumeController> volume_controller_;
   std::unique_ptr<VpnListForwarder> vpn_list_forwarder_;
+  std::unique_ptr<AshInit> ash_init_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsAsh);
 };

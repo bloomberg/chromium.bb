@@ -10,6 +10,7 @@
 #include <memory>
 #include <set>
 
+#include "ash/common/shell_delegate.h"
 #include "ash/root_window_controller.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -43,7 +44,8 @@ namespace ash {
 
 class RootWindowController;
 class ScreenMus;
-class ShellDelegate;
+
+enum class Config;
 
 namespace test {
 class AshTestHelper;
@@ -61,14 +63,20 @@ class WmTestHelper;
 class WindowManager : public aura::WindowManagerDelegate,
                       public aura::WindowTreeClientDelegate {
  public:
-  explicit WindowManager(service_manager::Connector* connector);
+  WindowManager(service_manager::Connector* connector, Config config);
   ~WindowManager() override;
 
   void Init(std::unique_ptr<aura::WindowTreeClient> window_tree_client,
-            const scoped_refptr<base::SequencedWorkerPool>& blocking_pool);
+            const scoped_refptr<base::SequencedWorkerPool>& blocking_pool,
+            std::unique_ptr<ash::ShellDelegate> shell_delegate = nullptr);
+
+  // Blocks waiting for the initial set of displays.
+  bool WaitForInitialDisplays();
 
   // Called during shutdown to delete all the RootWindowControllers.
   void DeleteAllRootWindowControllers();
+
+  Config config() const { return config_; }
 
   ScreenMus* screen() { return screen_.get(); }
 
@@ -182,6 +190,8 @@ class WindowManager : public aura::WindowManagerDelegate,
   service_manager::Connector* connector_;
   display::mojom::DisplayControllerPtr display_controller_;
 
+  const Config config_;
+
   std::unique_ptr<::wm::WMState> wm_state_;
   std::unique_ptr<aura::PropertyConverter> property_converter_;
 
@@ -203,8 +213,9 @@ class WindowManager : public aura::WindowManagerDelegate,
 
   scoped_refptr<base::SequencedWorkerPool> blocking_pool_;
 
-  // Only set in tests. If non-null this is used as the shell delegate.
-  std::unique_ptr<ShellDelegate> shell_delegate_for_test_;
+  // The ShellDelegate to install. This may be null, in which case
+  // ShellDelegateMus is used.
+  std::unique_ptr<ShellDelegate> shell_delegate_;
 
   // See WmShellMus's constructor for details. Tests may set to false.
   bool create_session_state_delegate_stub_for_test_ = true;

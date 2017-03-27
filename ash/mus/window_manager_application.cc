@@ -11,6 +11,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/mus/network_connect_delegate_mus.h"
 #include "ash/mus/window_manager.h"
+#include "ash/public/cpp/config.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -115,7 +116,8 @@ void WindowManagerApplication::OnStart() {
       context()->connector(), context()->identity(), "ash_mus_resources.pak",
       "ash_mus_resources_200.pak", nullptr,
       views::AuraInit::Mode::AURA_MUS_WINDOW_MANAGER);
-  window_manager_.reset(new WindowManager(context()->connector()));
+  window_manager_ =
+      base::MakeUnique<WindowManager>(context()->connector(), Config::MASH);
 
   tracing_.Initialize(context()->connector(), context()->identity().name());
 

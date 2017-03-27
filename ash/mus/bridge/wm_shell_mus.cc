@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/accelerators/accelerator_controller_delegate_aura.h"
 #include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/key_event_watcher.h"
 #include "ash/common/session/session_state_delegate.h"
@@ -27,6 +28,7 @@
 #include "ash/mus/keyboard_ui_mus.h"
 #include "ash/mus/screen_mus.h"
 #include "ash/mus/window_manager.h"
+#include "ash/public/cpp/config.h"
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
 #include "ash/shared/immersive_fullscreen_controller.h"
@@ -89,7 +91,8 @@ WmShellMus::WmShellMus(
     session_state_delegate_ = base::MakeUnique<SessionStateDelegateStub>();
   DCHECK(primary_root_window_);
 
-  immersive_handler_factory_.reset(new ImmersiveHandlerFactoryMus);
+  if (GetConfig() == Config::MASH)
+    immersive_handler_factory_ = base::MakeUnique<ImmersiveHandlerFactoryMus>();
 }
 
 WmShellMus::~WmShellMus() {
@@ -97,6 +100,8 @@ WmShellMus::~WmShellMus() {
 
 // static
 WmShellMus* WmShellMus::Get() {
+  const ash::Config config = WmShell::Get()->GetConfig();
+  CHECK(config == Config::MUS || config == Config::MASH);
   return static_cast<WmShellMus*>(WmShell::Get());
 }
 
@@ -124,7 +129,11 @@ void WmShellMus::Shutdown() {
 }
 
 bool WmShellMus::IsRunningInMash() const {
-  return true;
+  return GetConfig() == Config::MASH;
+}
+
+Config WmShellMus::GetConfig() const {
+  return window_manager_->config();
 }
 
 WmWindow* WmShellMus::GetFocusedWindow() {
@@ -353,6 +362,13 @@ void WmShellMus::InitHosts(const ShellInitParams& init_params) {
 std::unique_ptr<AcceleratorController>
 WmShellMus::CreateAcceleratorController() {
   DCHECK(!accelerator_controller_delegate_);
+  if (GetConfig() == Config::MUS) {
+    accelerator_controller_delegate_classic_ =
+        base::MakeUnique<AcceleratorControllerDelegateAura>();
+    return base::MakeUnique<AcceleratorController>(
+        accelerator_controller_delegate_classic_.get(), nullptr);
+  }
+
   uint16_t accelerator_namespace_id = 0u;
   const bool add_result =
       window_manager_->GetNextAcceleratorNamespaceId(&accelerator_namespace_id);

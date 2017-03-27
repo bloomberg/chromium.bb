@@ -9,6 +9,7 @@
 #include "ash/mus/screen_mus.h"
 #include "ash/mus/window_manager.h"
 #include "ash/mus/window_manager_application.h"
+#include "ash/public/cpp/config.h"
 #include "ash/test/test_shell_delegate.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -99,8 +100,9 @@ void WmTestHelper::Init() {
   blocking_pool_owner_ = base::MakeUnique<base::SequencedWorkerPoolOwner>(
       kMaxNumberThreads, kThreadNamePrefix);
 
-  window_manager_app_->window_manager_.reset(new WindowManager(nullptr));
-  window_manager_app_->window_manager()->shell_delegate_for_test_ =
+  window_manager_app_->window_manager_ =
+      base::MakeUnique<WindowManager>(nullptr, Config::MASH);
+  window_manager_app_->window_manager()->shell_delegate_ =
       base::MakeUnique<test::TestShellDelegate>();
 
   window_tree_client_setup_.InitForWindowManager(

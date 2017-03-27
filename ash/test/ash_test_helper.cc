@@ -13,6 +13,7 @@
 #include "ash/mus/screen_mus.h"
 #include "ash/mus/window_manager.h"
 #include "ash/mus/window_manager_application.h"
+#include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
 #include "ash/system/chromeos/screen_layout_observer.h"
@@ -287,8 +288,9 @@ void AshTestHelper::CreateMashWindowManager() {
   CHECK(IsMash());
   window_manager_app_ = base::MakeUnique<mus::WindowManagerApplication>();
 
-  window_manager_app_->window_manager_.reset(new mus::WindowManager(nullptr));
-  window_manager_app_->window_manager()->shell_delegate_for_test_.reset(
+  window_manager_app_->window_manager_.reset(
+      new mus::WindowManager(nullptr, Config::MASH));
+  window_manager_app_->window_manager()->shell_delegate_.reset(
       test_shell_delegate_);
   window_manager_app_->window_manager()
       ->create_session_state_delegate_stub_for_test_ = false;

@@ -8,6 +8,7 @@ component("ash_public_cpp") {
     "app_launch_id.cc",
     "app_launch_id.h",
     "ash_public_export.h",
+    "config.h",
     "mus_property_mirror_ash.cc",
     "mus_property_mirror_ash.h",
     "session_types.h",

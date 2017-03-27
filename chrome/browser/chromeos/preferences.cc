@@ -9,7 +9,6 @@
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/common/accessibility_types.h"
 #include "ash/common/ash_constants.h"
-#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
@@ -20,6 +19,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
+#include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/input_method/input_method_syncer.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
@@ -81,7 +81,7 @@ Preferences::Preferences()
       user_is_primary_(false) {
   // Do not observe shell, if there is no shell instance; e.g., in some unit
   // tests.
-  if (ash::WmShell::HasInstance())
+  if (ash::Shell::HasInstance())
     ash::Shell::GetInstance()->AddShellObserver(this);
 }
 
@@ -92,7 +92,7 @@ Preferences::Preferences(input_method::InputMethodManager* input_method_manager)
       user_is_primary_(false) {
   // Do not observe shell, if there is no shell instance; e.g., in some unit
   // tests.
-  if (ash::WmShell::HasInstance())
+  if (ash::Shell::HasInstance())
     ash::Shell::GetInstance()->AddShellObserver(this);
 }
 
@@ -101,7 +101,7 @@ Preferences::~Preferences() {
   user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
   // If shell instance is destoryed before this preferences instance, there is
   // no need to remove this shell observer.
-  if (ash::WmShell::HasInstance())
+  if (ash::Shell::HasInstance())
     ash::Shell::GetInstance()->RemoveShellObserver(this);
 }
 
@@ -549,7 +549,9 @@ void Preferences::ApplyPreferences(ApplyReason reason,
   if (reason != REASON_PREF_CHANGED ||
       pref_name == prefs::kUnifiedDesktopEnabledByDefault) {
     const bool enabled = unified_desktop_enabled_by_default_.GetValue();
-    if (ash::Shell::HasInstance()) {
+    // TODO: this needs to work in Config::MUS. http://crbug.com/705591.
+    if (ash::Shell::HasInstance() &&
+        chromeos::GetConfig() == ash::Config::CLASSIC) {
       ash::Shell::GetInstance()->display_manager()
           ->SetUnifiedDesktopEnabled(enabled);
     }

@@ -116,7 +116,6 @@ class LaserPointerController;
 class LinkHandlerModelFactory;
 class LocaleNotificationController;
 class LockStateController;
-enum class LoginStatus;
 class LogoutConfirmationController;
 class MagnificationController;
 class MaximizeModeController;
@@ -174,6 +173,9 @@ class WindowSelectorController;
 class WindowTreeHostManager;
 class WmShell;
 class WmWindow;
+
+enum class Config;
+enum class LoginStatus;
 
 namespace shell {
 class WindowWatcher;
@@ -260,6 +262,8 @@ class ASH_EXPORT Shell : public SessionStateObserver,
   static aura::WindowManagerClient* window_manager_client() {
     return window_manager_client_;
   }
+
+  static Config GetConfig();
 
   // Creates a default views::NonClientFrameView for use by windows in the
   // Ash environment.

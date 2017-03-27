@@ -35,6 +35,24 @@
 #include "ui/base/l10n/l10n_util.h"
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/ash_config.h"
+#endif
+
+namespace {
+
+#if defined(USE_AURA)
+bool ShouldCreateWMState() {
+#if defined(OS_CHROMEOS)
+  return chromeos::GetConfig() != ash::Config::MUS;
+#else
+  return true;
+#endif
+}
+#endif
+
+}  // namespace
+
 ChromeBrowserMainExtraPartsViews::ChromeBrowserMainExtraPartsViews() {
 }
 
@@ -51,7 +69,8 @@ void ChromeBrowserMainExtraPartsViews::ToolkitInitialized() {
   SetConstrainedWindowViewsClient(CreateChromeConstrainedWindowViewsClient());
 
 #if defined(USE_AURA)
-  wm_state_.reset(new wm::WMState);
+  if (ShouldCreateWMState())
+    wm_state_.reset(new wm::WMState);
 #endif
 }
 
@@ -101,19 +120,25 @@ void ChromeBrowserMainExtraPartsViews::ServiceManagerConnectionStarted(
     content::ServiceManagerConnection* connection) {
   DCHECK(connection);
 #if defined(USE_AURA)
-  if (service_manager::ServiceManagerIsRemote()) {
-    input_device_client_.reset(new ui::InputDeviceClient());
-    ui::mojom::InputDeviceServerPtr server;
-    connection->GetConnector()->BindInterface(ui::mojom::kServiceName, &server);
-    input_device_client_->Connect(std::move(server));
+  if (!service_manager::ServiceManagerIsRemote())
+    return;
 
-    // WMState is owned as a member, so don't have MusClient create it.
-    const bool create_wm_state = false;
-    mus_client_ = base::MakeUnique<views::MusClient>(
-        connection->GetConnector(), service_manager::Identity(),
-        content::BrowserThread::GetTaskRunnerForThread(
-            content::BrowserThread::IO),
-        create_wm_state);
-  }
+  input_device_client_ = base::MakeUnique<ui::InputDeviceClient>();
+  ui::mojom::InputDeviceServerPtr server;
+  connection->GetConnector()->BindInterface(ui::mojom::kServiceName, &server);
+  input_device_client_->Connect(std::move(server));
+
+#if defined(OS_CHROMEOS)
+  if (chromeos::GetConfig() != ash::Config::MASH)
+    return;
+#endif
+
+  // WMState is owned as a member, so don't have MusClient create it.
+  const bool create_wm_state = false;
+  mus_client_ = base::MakeUnique<views::MusClient>(
+      connection->GetConnector(), service_manager::Identity(),
+      content::BrowserThread::GetTaskRunnerForThread(
+          content::BrowserThread::IO),
+      create_wm_state);
 #endif  // defined(USE_AURA)
 }

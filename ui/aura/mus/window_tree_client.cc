@@ -553,6 +553,8 @@ WindowTreeHostMus* WindowTreeClient::WmNewDisplayAddedImpl(
     const cc::FrameSinkId& frame_sink_id) {
   DCHECK(window_manager_delegate_);
 
+  got_initial_displays_ = true;
+
   window_manager_delegate_->OnWmWillCreateDisplay(display);
 
   std::unique_ptr<WindowTreeHostMus> window_tree_host = CreateWindowTreeHost(
@@ -1364,6 +1366,17 @@ void WindowTreeClient::RequestClose(uint32_t window_id) {
   // Since the window is the root window, we send close request to the entire
   // WindowTreeHost.
   GetWindowTreeHostMus(window->GetWindow())->OnCloseRequest();
+}
+
+bool WindowTreeClient::WaitForInitialDisplays() {
+  if (got_initial_displays_)
+    return true;
+
+  bool valid_wait = true;
+  // TODO(sky): having to block here is not ideal. http://crbug.com/594852.
+  while (!got_initial_displays_ && valid_wait)
+    valid_wait = binding_.WaitForIncomingMethodCall();
+  return valid_wait;
 }
 
 void WindowTreeClient::OnConnect(ClientSpecificId client_id) {

@@ -6,18 +6,18 @@
 
 #include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/mojo_interface_factory.h"
+#include "ash/public/cpp/config.h"
 #include "ash/public/interfaces/event_properties.mojom.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/ui/ash/ash_init.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/common/service_names.mojom.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/interfaces/interface_provider_spec.mojom.h"
-#include "services/service_manager/runner/common/client_util.h"
 #include "ui/aura/window_event_dispatcher.h"
 
 namespace ash_util {
@@ -62,17 +62,7 @@ bool ShouldOpenAshOnStartup() {
 }
 
 bool IsRunningInMash() {
-  return GetConfig() == Config::MASH;
-}
-
-Config GetConfig() {
-  if (!service_manager::ServiceManagerIsRemote())
-    return Config::CLASSIC;
-
-  return base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-             switches::kMusConfig) == switches::kMash
-             ? Config::MASH
-             : Config::MUS;
+  return chromeos::GetConfig() == ash::Config::MASH;
 }
 
 bool IsAcceleratorDeprecated(const ui::Accelerator& accelerator) {

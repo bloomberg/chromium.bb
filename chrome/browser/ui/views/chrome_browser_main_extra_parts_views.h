@@ -32,10 +32,6 @@ class ChromeBrowserMainExtraPartsViews : public ChromeBrowserMainExtraParts {
   ChromeBrowserMainExtraPartsViews();
   ~ChromeBrowserMainExtraPartsViews() override;
 
-#if defined(USE_AURA)
-  wm::WMState* wm_state() { return wm_state_.get(); }
-#endif
-
   // Overridden from ChromeBrowserMainExtraParts:
   void ToolkitInitialized() override;
   void PreCreateThreads() override;
@@ -47,7 +43,10 @@ class ChromeBrowserMainExtraPartsViews : public ChromeBrowserMainExtraParts {
   std::unique_ptr<views::ViewsDelegate> views_delegate_;
 
 #if defined(USE_AURA)
+  // Not created when running in ash::Config::MUS.
   std::unique_ptr<wm::WMState> wm_state_;
+
+  // Only used if ash_util::GetConfig() returns ash::Config::MASH.
   std::unique_ptr<views::MusClient> mus_client_;
 
   // Subscribes to updates about input-devices.

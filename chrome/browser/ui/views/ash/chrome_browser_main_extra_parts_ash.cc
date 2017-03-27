@@ -62,7 +62,7 @@ void ChromeBrowserMainExtraPartsAsh::ServiceManagerConnectionStarted(
 
 void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   if (ash_util::ShouldOpenAshOnStartup())
-    chrome::OpenAsh(gfx::kNullAcceleratedWidget);
+    ash_init_ = base::MakeUnique<AshInit>();
 
   if (ash_util::IsRunningInMash()) {
     immersive_context_ = base::MakeUnique<ImmersiveContextMus>();
@@ -119,5 +119,5 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   cast_config_client_media_router_.reset();
   session_controller_client_.reset();
 
-  chrome::CloseAsh();
+  ash_init_.reset();
 }

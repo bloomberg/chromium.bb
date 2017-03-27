@@ -29,6 +29,7 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_url_util.h"
+#include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/background/ash_wallpaper_delegate.h"
 #include "chrome/browser/chromeos/display/display_configuration_observer.h"
 #include "chrome/browser/chromeos/display/display_preferences.h"
@@ -423,6 +424,10 @@ bool ChromeShellDelegate::IsForceMaximizeOnFirstRun() const {
 }
 
 void ChromeShellDelegate::PreInit() {
+  // TODO: port to mus. http://crbug.com/678949.
+  if (chromeos::GetConfig() != ash::Config::CLASSIC)
+    return;
+
   bool first_run_after_boot = base::CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kFirstExecAfterBoot);
   chromeos::LoadDisplayPreferences(first_run_after_boot);

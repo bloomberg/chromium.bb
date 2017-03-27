@@ -50,6 +50,7 @@ class WmDisplayObserver;
 class WmWindow;
 class WorkspaceEventHandler;
 
+enum class Config;
 enum class LoginStatus;
 enum class TaskSwitchSource;
 
@@ -69,7 +70,9 @@ class ASH_EXPORT WmShell {
   virtual void Shutdown();
 
   // Returns true when ash is running as a service_manager::Service.
+  // TODO(sky): remove and convert to GetConfig().
   virtual bool IsRunningInMash() const = 0;
+  virtual Config GetConfig() const = 0;
 
   virtual WmWindow* GetFocusedWindow() = 0;
   virtual WmWindow* GetActiveWindow() = 0;

@@ -90,6 +90,7 @@
 #include "ash/laser/laser_pointer_controller.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
+#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell_init_params.h"
@@ -309,6 +310,11 @@ const aura::Window* Shell::GetContainer(const aura::Window* root_window,
   return root_window->GetChildById(container_id);
 }
 
+// static
+Config Shell::GetConfig() {
+  return GetInstance()->wm_shell_->GetConfig();
+}
+
 views::NonClientFrameView* Shell::CreateDefaultNonClientFrameView(
     views::Widget* widget) {
   // Use translucent-style window frames for dialogs.
@@ -436,9 +442,12 @@ void Shell::SetLargeCursorSizeInDip(int large_cursor_size_in_dip) {
 }
 
 void Shell::SetCursorCompositingEnabled(bool enabled) {
-  window_tree_host_manager_->cursor_window_controller()
-      ->SetCursorCompositingEnabled(enabled);
-  native_cursor_manager_->SetNativeCursorEnabled(!enabled);
+  if (GetConfig() == Config::CLASSIC) {
+    // TODO: needs to work in mus. http://crbug.com/705592.
+    window_tree_host_manager_->cursor_window_controller()
+        ->SetCursorCompositingEnabled(enabled);
+    native_cursor_manager_->SetNativeCursorEnabled(!enabled);
+  }
 }
 
 void Shell::DoInitialWorkspaceAnimation() {
@@ -778,6 +787,7 @@ Shell::~Shell() {
 
 void Shell::Init(const ShellInitParams& init_params) {
   const bool is_mash = wm_shell_->IsRunningInMash();
+  const Config config = wm_shell_->GetConfig();
 
   blocking_pool_ = init_params.blocking_pool;
 
@@ -827,7 +837,8 @@ void Shell::Init(const ShellInitParams& init_params) {
       new ScopedOverviewAnimationSettingsFactoryAura);
   window_positioner_ = base::MakeUnique<WindowPositioner>();
 
-  if (!is_mash) {
+  if (config == Config::CLASSIC) {
+    // TODO: needs to work in mus. http://crbug.com/705592.
     native_cursor_manager_ = new AshNativeCursorManager;
     cursor_manager_.reset(
         new CursorManager(base::WrapUnique(native_cursor_manager_)));
@@ -835,7 +846,9 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   shell_delegate_->PreInit();
   bool display_initialized = true;
-  if (!is_mash) {
+  if (config == Config::CLASSIC) {
+    // TODO: decide if this needs to be made to work in Config::MUS.
+    // http://crbug.com/705595.
     display_initialized = display_manager_->InitFromCommandLine();
 
     display_configuration_controller_.reset(new DisplayConfigurationController(
@@ -926,7 +939,9 @@ void Shell::Init(const ShellInitParams& init_params) {
   accelerator_controller_ = wm_shell_->CreateAcceleratorController();
   maximize_mode_controller_ = base::MakeUnique<MaximizeModeController>();
 
-  if (!is_mash) {
+  if (config == Config::CLASSIC) {
+    // Not applicable to mus/mash as events are already routed to InputMethod
+    // first.
     AddPreTargetHandler(
         window_tree_host_manager_->input_method_event_handler());
   }

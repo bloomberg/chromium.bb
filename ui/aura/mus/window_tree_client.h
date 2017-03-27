@@ -456,6 +456,7 @@ class AURA_EXPORT WindowTreeClient
   void ActivateNextWindow() override;
   void SetExtendedHitArea(Window* window, const gfx::Insets& hit_area) override;
   void RequestClose(Window* window) override;
+  bool WaitForInitialDisplays() override;
 
   // Overriden from WindowTreeHostMusDelegate:
   void OnWindowTreeHostBoundsWillChange(WindowTreeHostMus* window_tree_host,
@@ -588,6 +589,10 @@ class AURA_EXPORT WindowTreeClient
   // If |compositor_context_factory_| is installed on Env, then this is the
   // ContextFactory that was set on Env originally.
   ui::ContextFactory* initial_context_factory_ = nullptr;
+
+  // Set to true once OnWmDisplayAdded() is called.
+  bool got_initial_displays_ = false;
+
   base::WeakPtrFactory<WindowTreeClient> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeClient);

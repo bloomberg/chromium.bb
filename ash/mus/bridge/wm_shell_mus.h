@@ -23,6 +23,7 @@ class PointerWatcherEventRouter;
 
 namespace ash {
 
+class AcceleratorControllerDelegateAura;
 class RootWindowController;
 
 namespace mus {
@@ -48,8 +49,8 @@ class WmShellMus : public WmShell {
 
   ash::RootWindowController* GetRootWindowControllerWithDisplayId(int64_t id);
 
-  AcceleratorControllerDelegateMus* accelerator_controller_delegate() {
-    return accelerator_controller_delegate_.get();
+  AcceleratorControllerDelegateAura* accelerator_controller_delegate_classic() {
+    return accelerator_controller_delegate_classic_.get();
   }
 
   aura::WindowTreeClient* window_tree_client();
@@ -59,6 +60,7 @@ class WmShellMus : public WmShell {
   // WmShell:
   void Shutdown() override;
   bool IsRunningInMash() const override;
+  Config GetConfig() const override;
   WmWindow* GetFocusedWindow() override;
   WmWindow* GetActiveWindow() override;
   WmWindow* GetCaptureWindow() override;
@@ -119,8 +121,12 @@ class WmShellMus : public WmShell {
   WmWindow* primary_root_window_;
   views::PointerWatcherEventRouter* pointer_watcher_event_router_;
 
+  // |accelerator_controller_delegate_classic_| is created in MUS mode,
+  // |accelerator_controller_delegate_| in MASH mode.
   std::unique_ptr<AcceleratorControllerDelegateMus>
       accelerator_controller_delegate_;
+  std::unique_ptr<AcceleratorControllerDelegateAura>
+      accelerator_controller_delegate_classic_;
   std::unique_ptr<AcceleratorControllerRegistrar>
       accelerator_controller_registrar_;
   std::unique_ptr<ImmersiveHandlerFactoryMus> immersive_handler_factory_;

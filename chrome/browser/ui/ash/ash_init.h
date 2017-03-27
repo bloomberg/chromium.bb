@@ -5,17 +5,27 @@
 #ifndef CHROME_BROWSER_UI_ASH_ASH_INIT_H_
 #define CHROME_BROWSER_UI_ASH_ASH_INIT_H_
 
-#include "ui/gfx/native_widget_types.h"
+#include <memory>
 
-namespace chrome {
+#include "base/macros.h"
 
-// Creates the Ash Shell and opens the Ash window. |remote_window| is only used
-// on windows. It provides the HWND to the remote window.
-void OpenAsh(gfx::AcceleratedWidget remote_window);
+namespace ash {
+namespace mus {
+class WindowManager;
+}
+}
 
-// Closes the Ash window and destroys the Ash Shell.
-void CloseAsh();
+// Creates and owns ash.
+class AshInit {
+ public:
+  AshInit();
+  ~AshInit();
 
-}  // namespace chrome
+ private:
+  // Only created when running in ash::Config::MUS.
+  std::unique_ptr<ash::mus::WindowManager> window_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(AshInit);
+};
 
 #endif  // CHROME_BROWSER_UI_ASH_ASH_INIT_H_
