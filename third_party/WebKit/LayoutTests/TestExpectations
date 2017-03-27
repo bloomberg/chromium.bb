@@ -790,8 +790,6 @@ crbug.com/518993 external/wpt/user-timing/test_user_timing_measure_navigation_ti
 crbug.com/636053 [ Mac Win ] printing/thead-repeats-at-top-of-each-page-multiple-tables.html [ NeedsManualRebaseline ]
 crbug.com/636053 [ Mac Win ] virtual/threaded/printing/thead-repeats-at-top-of-each-page-multiple-tables.html [ NeedsManualRebaseline ]
 
-crbug.com/659123 [ Mac ] fast/css/text-overflow-ellipsis-button.html [ Pass Failure ]
-
 crbug.com/432129 html/marquee/marquee-scroll.html [ Failure Pass ]
 crbug.com/326139 crbug.com/390125 media/video-frame-accurate-seek.html [ Failure Pass ]
 crbug.com/248938 virtual/threaded/animations/animation-iteration-event-destroy-renderer.html [ Pass Timeout ]
@@ -1320,7 +1318,6 @@ crbug.com/665577 virtual/threaded/fast/scroll-behavior/overflow-scroll-root-fram
 crbug.com/665577 virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-scroll.html [ Pass Failure ]
 crbug.com/665577 [ Linux Win ] virtual/threaded/fast/scroll-behavior/smooth-scroll/horizontal-smooth-scroll-in-rtl.html [ Pass Failure ]
 crbug.com/665577 [ Linux Win ] virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-scroll-interrupted.html [ Pass Failure ]
-crbug.com/665577 [ Linux Win ] virtual/threaded/fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-vertical-rl-anchors.html [ Pass Failure ]
 crbug.com/665577 [ Linux Win ] virtual/threaded/fast/scroll-behavior/smooth-scroll/track-scroll.html [ Pass Failure ]
 
 crbug.com/480769 http/tests/inspector/service-workers/service-workers-redundant.html [ Pass Failure ]
@@ -2485,7 +2482,6 @@ crbug.com/664819 http/tests/security/isolatedWorld/events.html [ Pass Failure ]
 crbug.com/664839 http/tests/security/link-crossorigin-preload-no-cors.html [ Pass Failure ]
 crbug.com/671475 http/tests/security/suborigins/suborigin-invalid-options.html [ Pass Failure ]
 crbug.com/663876 virtual/mojo-loading/http/tests/loading/doc-write-sync-third-party-script-block-effectively-2g.html [ Pass Failure ]
-crbug.com/664816 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/require-sri-for/require-sri-for-script-reportonly-blocked.php [ Pass Failure ]
 crbug.com/664819 virtual/mojo-loading/http/tests/security/isolatedWorld/bypass-main-world-csp-for-inline-style.html [ Pass Failure ]
 crbug.com/664819 virtual/mojo-loading/http/tests/security/isolatedWorld/bypass-main-world-csp-for-xhr.html [ Pass Failure ]
 crbug.com/664819 virtual/mojo-loading/http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Pass Failure ]
@@ -2584,7 +2580,6 @@ crbug.com/685951 css2.1/t040304-c64-uri-00-a-g.html [ Failure Pass ]
 crbug.com/688515 fast/spatial-navigation/snav-div-overflow-scrol-hidden.html [ Pass Failure ]
 
 # Flaky on trybots
-crbug.com/688486 external/wpt/service-workers/service-worker/fetch-request-redirect.https.html [ Failure Pass ]
 crbug.com/688486 external/wpt/service-workers/service-worker/fetch-request-resources.https.html [ Failure Pass ]
 
 # Sheriff failures 2017-02-21
@@ -2606,16 +2601,11 @@ crbug.com/697342 http/tests/push_messaging/permission-state-granted-in-document.
 crbug.com/697342 virtual/mojo-loading/http/tests/push_messaging/permission-state-granted-in-document.html [ Pass Failure ]
 
 crbug.com/698520 external/wpt/preload/fetch-destination.https.html [ Failure Pass ]
-crbug.com/698521 external/wpt/preload/preload-with-type.html [ Failure Pass ]
 
 # Sheriff failures 2017-03-10
 crbug.com/402805 inspector-protocol/input/emulateTouchFromMouseEvent.html [ Timeout ]
 crbug.com/700374 [ Win ] virtual/mojo-loading/http/tests/inspector/workers-on-navigation.html [ Failure Pass ]
 crbug.com/700374 [ Win ] http/tests/inspector/workers-on-navigation.html [ Failure Pass ]
-
-# Sheriff failures 2017-03-16
-crbug.com/701718 [ Win7 ] fast/table/border-collapsing/001-vertical.html [ Failure Pass ]
-crbug.com/701718 [ Win7 ] fast/table/border-collapsing/001.html [ Failure Pass ]
 
 # Sheriff failures 2017-03-21
 crbug.com/703503 inspector/tracing/timeline-js/timeline-runtime-stats.html [ Failure Pass ]
