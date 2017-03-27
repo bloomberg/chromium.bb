@@ -52,6 +52,10 @@
       'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
     },
     {
+      'target_name': 'drag_target',
+      'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
+    },
+    {
       'target_name': 'entries_changed_event',
       'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
     },

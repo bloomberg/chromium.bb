@@ -73,7 +73,40 @@
       'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
+      'target_name': 'list',
+      'dependencies': [
+        'array_data_model',
+        'list_item',
+        'list_selection_controller',
+        'list_selection_model',
+      ],
+      'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'list_item',
+      'dependencies': [
+        '../../compiled_resources2.gyp:cr',
+      ],
+      'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'list_selection_controller',
+      'dependencies': [
+        '../../compiled_resources2.gyp:cr',
+        'list_selection_model',
+      ],
+      'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'list_selection_model',
+      'dependencies': [
+        '../../compiled_resources2.gyp:cr',
+        '../compiled_resources2.gyp:event_target',
+      ],
+      'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'list_single_selection_model',
       'dependencies': [
         '../../compiled_resources2.gyp:cr',
         '../compiled_resources2.gyp:event_target',
