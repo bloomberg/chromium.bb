@@ -359,7 +359,7 @@ bool AutofillPopupControllerImpl::RemoveSuggestion(int list_index) {
   elided_values_.erase(elided_values_.begin() + list_index);
   elided_labels_.erase(elided_labels_.begin() + list_index);
 
-  SetSelectedLine(base::nullopt);
+  selected_line_.reset();
 
   if (HasSuggestions()) {
     delegate_->ClearPreviewedForm();

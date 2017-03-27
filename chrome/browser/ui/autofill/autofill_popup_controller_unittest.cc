@@ -32,6 +32,7 @@
 
 using ::testing::_;
 using ::testing::AtLeast;
+using ::testing::Mock;
 using ::testing::NiceMock;
 using base::ASCIIToUTF16;
 using base::WeakPtr;
@@ -246,16 +247,30 @@ TEST_F(AutofillPopupControllerUnitTest, RemoveLine) {
   // No line is selected so the removal should fail.
   EXPECT_FALSE(autofill_popup_controller_->RemoveSelectedLine());
 
+  // Select the first entry.
+  base::Optional<int> selected_line(0);
+  EXPECT_CALL(*autofill_popup_view_,
+              OnSelectedRowChanged(kNoSelection, selected_line));
+  autofill_popup_controller_->SetSelectedLine(selected_line);
+  Mock::VerifyAndClearExpectations(autofill_popup_view());
+
   // Remove the first entry. The popup should be redrawn since its size has
   // changed.
+  EXPECT_CALL(*autofill_popup_view_, OnSelectedRowChanged(_, _)).Times(0);
   EXPECT_CALL(*autofill_popup_controller_, OnSuggestionsChanged());
-  autofill_popup_controller_->SetSelectedLine(0);
   EXPECT_TRUE(autofill_popup_controller_->RemoveSelectedLine());
+  Mock::VerifyAndClearExpectations(autofill_popup_view());
+
+  // Select the last entry.
+  EXPECT_CALL(*autofill_popup_view_,
+              OnSelectedRowChanged(kNoSelection, selected_line));
+  autofill_popup_controller_->SetSelectedLine(selected_line);
+  Mock::VerifyAndClearExpectations(autofill_popup_view());
 
   // Remove the last entry. The popup should then be hidden since there are
   // no Autofill entries left.
+  EXPECT_CALL(*autofill_popup_view_, OnSelectedRowChanged(_, _)).Times(0);
   EXPECT_CALL(*autofill_popup_controller_, Hide());
-  autofill_popup_controller_->SetSelectedLine(0);
   EXPECT_TRUE(autofill_popup_controller_->RemoveSelectedLine());
 }
 
@@ -268,18 +283,20 @@ TEST_F(AutofillPopupControllerUnitTest, RemoveOnlyLine) {
   // Generate a popup.
   autofill::GenerateTestAutofillPopup(external_delegate_.get());
 
+  // No selection immediately after drawing popup.
+  EXPECT_FALSE(autofill_popup_controller_->selected_line());
+
   // Select the only line.
   base::Optional<int> selected_line(0);
-  autofill_popup_controller_->SetSelectedLine(selected_line);
   EXPECT_CALL(*autofill_popup_view_,
-              OnSelectedRowChanged(kNoSelection, selected_line))
-      .Times(0);
+              OnSelectedRowChanged(kNoSelection, selected_line));
+  autofill_popup_controller_->SetSelectedLine(selected_line);
+  Mock::VerifyAndClearExpectations(autofill_popup_view());
 
   // Remove the only line. The popup should then be hidden since there are no
   // Autofill entries left.
   EXPECT_CALL(*autofill_popup_controller_, Hide());
-  EXPECT_CALL(*autofill_popup_view_,
-              OnSelectedRowChanged(selected_line, kNoSelection));
+  EXPECT_CALL(*autofill_popup_view_, OnSelectedRowChanged(_, _)).Times(0);
   EXPECT_TRUE(autofill_popup_controller_->RemoveSelectedLine());
 }
 
