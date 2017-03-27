@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/log_manager.h"
 #include "components/sync/driver/sync_service.h"
@@ -61,15 +62,12 @@ void FindDuplicates(
 void TrimUsernameOnlyCredentials(
     std::vector<std::unique_ptr<autofill::PasswordForm>>* android_credentials) {
   // Remove username-only credentials which are not federated.
-  android_credentials->erase(
-      std::remove_if(
-          android_credentials->begin(), android_credentials->end(),
-          [](const std::unique_ptr<autofill::PasswordForm>& form) {
-            return form->scheme ==
-                       autofill::PasswordForm::SCHEME_USERNAME_ONLY &&
-                   form->federation_origin.unique();
-          }),
-      android_credentials->end());
+  base::EraseIf(*android_credentials,
+                [](const std::unique_ptr<autofill::PasswordForm>& form) {
+                  return form->scheme ==
+                             autofill::PasswordForm::SCHEME_USERNAME_ONLY &&
+                         form->federation_origin.unique();
+                });
 
   // Set "skip_zero_click" on federated credentials.
   std::for_each(

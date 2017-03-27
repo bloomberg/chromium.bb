@@ -38,13 +38,10 @@ PasswordStore::GetLoginsRequest::~GetLoginsRequest() {
 void PasswordStore::GetLoginsRequest::NotifyConsumerWithResults(
     std::vector<std::unique_ptr<PasswordForm>> results) {
   if (!ignore_logins_cutoff_.is_null()) {
-    results.erase(
-        std::remove_if(results.begin(), results.end(),
-                       [this](const std::unique_ptr<PasswordForm>& credential) {
-                         return (credential->date_created <
-                                 ignore_logins_cutoff_);
-                       }),
-        results.end());
+    base::EraseIf(results,
+                  [this](const std::unique_ptr<PasswordForm>& credential) {
+                    return (credential->date_created < ignore_logins_cutoff_);
+                  });
   }
 
   origin_task_runner_->PostTask(

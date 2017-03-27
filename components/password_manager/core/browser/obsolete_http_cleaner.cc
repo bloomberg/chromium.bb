@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/stl_util.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -58,11 +59,9 @@ ObsoleteHttpCleaner::~ObsoleteHttpCleaner() = default;
 void ObsoleteHttpCleaner::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<PasswordForm>> results) {
   // Non HTTP or HTTPS credentials are ignored.
-  results.erase(std::remove_if(std::begin(results), std::end(results),
-                               [](const std::unique_ptr<PasswordForm>& form) {
-                                 return !form->origin.SchemeIsHTTPOrHTTPS();
-                               }),
-                std::end(results));
+  base::EraseIf(results, [](const std::unique_ptr<PasswordForm>& form) {
+    return !form->origin.SchemeIsHTTPOrHTTPS();
+  });
 
   // Move HTTPS forms into their own container.
   auto https_forms = SplitFormsFrom(

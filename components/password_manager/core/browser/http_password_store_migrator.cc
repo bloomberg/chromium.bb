@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/http_password_store_migrator.h"
 
 #include "base/memory/weak_ptr.h"
+#include "base/stl_util.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -74,13 +75,10 @@ void HttpPasswordStoreMigrator::OnHSTSQueryResult(bool is_hsts) {
 
 void HttpPasswordStoreMigrator::ProcessPasswordStoreResults() {
   // Android and PSL matches are ignored.
-  results_.erase(
-      std::remove_if(results_.begin(), results_.end(),
-                     [](const std::unique_ptr<autofill::PasswordForm>& form) {
-                       return form->is_affiliation_based_match ||
-                              form->is_public_suffix_match;
-                     }),
-      results_.end());
+  base::EraseIf(
+      results_, [](const std::unique_ptr<autofill::PasswordForm>& form) {
+        return form->is_affiliation_based_match || form->is_public_suffix_match;
+      });
 
   // Add the new credentials to the password store. The HTTP forms are
   // removed iff |mode_| == MigrationMode::MOVE.

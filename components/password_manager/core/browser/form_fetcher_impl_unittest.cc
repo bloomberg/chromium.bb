@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
@@ -60,12 +61,9 @@ class NameFilter : public StubCredentialsFilter {
 
   std::vector<std::unique_ptr<PasswordForm>> FilterResults(
       std::vector<std::unique_ptr<PasswordForm>> results) const override {
-    results.erase(
-        std::remove_if(results.begin(), results.end(),
-                       [this](const std::unique_ptr<PasswordForm>& form) {
-                         return !ShouldSave(*form);
-                       }),
-        results.end());
+    base::EraseIf(results, [this](const std::unique_ptr<PasswordForm>& form) {
+      return !ShouldSave(*form);
+    });
     return results;
   }
 
