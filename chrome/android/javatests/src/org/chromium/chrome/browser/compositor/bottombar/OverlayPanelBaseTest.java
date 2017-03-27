@@ -43,7 +43,7 @@ public class OverlayPanelBaseTest {
      */
     private static class MockOverlayPanel extends OverlayPanel {
         public MockOverlayPanel(Context context, OverlayPanelManager manager) {
-            super(context, null, null, manager);
+            super(context, null, manager);
         }
 
         /**

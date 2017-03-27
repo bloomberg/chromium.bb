@@ -20,7 +20,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilterHost;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.OverlayPanelEventFilter;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content.browser.ContentViewCore;
@@ -69,9 +68,8 @@ public class OverlayPanelEventFilterTest {
      * Wrapper around OverlayPanelEventFilter used by tests.
      */
     public final class OverlayPanelEventFilterWrapper extends OverlayPanelEventFilter {
-        public OverlayPanelEventFilterWrapper(Context context, EventFilterHost host,
-                OverlayPanel panel) {
-            super(context, host, panel);
+        public OverlayPanelEventFilterWrapper(Context context, OverlayPanel panel) {
+            super(context, panel);
         }
 
         @Override
@@ -151,7 +149,7 @@ public class OverlayPanelEventFilterTest {
         private ContentViewCore mContentViewCore;
 
         public MockOverlayPanel(Context context, OverlayPanelManager panelManager) {
-            super(context, null, null, panelManager);
+            super(context, null, panelManager);
             mContentViewCore = new StubbedContentViewCore(context);
         }
 
@@ -228,7 +226,7 @@ public class OverlayPanelEventFilterTest {
         mTouchSlopDp = ViewConfiguration.get(context).getScaledTouchSlop() / mDpToPx;
 
         mPanel = new MockOverlayPanel(context, new OverlayPanelManager());
-        mEventFilter = new OverlayPanelEventFilterWrapper(context, null, mPanel);
+        mEventFilter = new OverlayPanelEventFilterWrapper(context, mPanel);
 
         mPanel.setSearchBarHeightForTesting(BAR_HEIGHT_DP);
         mPanel.setHeightForTesting(LAYOUT_HEIGHT_DP);

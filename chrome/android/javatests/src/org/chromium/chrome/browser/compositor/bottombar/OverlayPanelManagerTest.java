@@ -49,7 +49,7 @@ public class OverlayPanelManagerTest {
         public MockOverlayPanel(Context context, LayoutUpdateHost updateHost,
                 OverlayPanelManager panelManager, PanelPriority priority,
                 boolean canBeSuppressed) {
-            super(context, updateHost, null, panelManager);
+            super(context, updateHost, panelManager);
             mPriority = priority;
             mCanBeSuppressed = canBeSuppressed;
         }

@@ -13,9 +13,8 @@ import android.view.ViewGroup;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.AreaGestureEventFilter;
-import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeEventFilter.ScrollDirection;
-import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilterHost;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.GestureHandler;
+import org.chromium.chrome.browser.compositor.layouts.eventfilter.ScrollDirection;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelperManager;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManagerDelegate;
@@ -52,8 +51,8 @@ public class LayoutManagerChromeTablet extends LayoutManagerChrome {
         Context context = host.getContext();
 
         // Build Event Filters
-        mTabStripFilter = new TabStripEventFilter(
-                context, this, new TabStripEventHandler(), null, false, false);
+        mTabStripFilter =
+                new TabStripEventFilter(context, new TabStripEventHandler(), null, false, false);
 
         mTabStripLayoutHelperManager = new StripLayoutHelperManager(
                 context, this, mHost.getLayoutRenderHost(), mTabStripFilter);
@@ -247,9 +246,9 @@ public class LayoutManagerChromeTablet extends LayoutManagerChrome {
     }
 
     private class TabStripEventFilter extends AreaGestureEventFilter {
-        public TabStripEventFilter(Context context, EventFilterHost host, GestureHandler handler,
-                RectF triggerRect, boolean autoOffset, boolean useDefaultLongPress) {
-            super(context, host, handler, triggerRect, autoOffset, useDefaultLongPress);
+        public TabStripEventFilter(Context context, GestureHandler handler, RectF triggerRect,
+                boolean autoOffset, boolean useDefaultLongPress) {
+            super(context, handler, triggerRect, autoOffset, useDefaultLongPress);
         }
 
         @Override

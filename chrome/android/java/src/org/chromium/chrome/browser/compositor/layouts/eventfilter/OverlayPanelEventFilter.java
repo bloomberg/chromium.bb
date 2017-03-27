@@ -22,7 +22,7 @@ import java.util.ArrayList;
 /**
  * The {@link GestureEventFilter} used when an overlay panel is being shown. It filters
  * events that happen in the Content View area and propagates them to the appropriate
- * ContentViewCore via {@link EventFilterHost}.
+ * ContentViewCore.
  */
 public class OverlayPanelEventFilter extends GestureEventFilter {
 
@@ -127,11 +127,10 @@ public class OverlayPanelEventFilter extends GestureEventFilter {
     /**
      * Creates a {@link GestureEventFilter} with offset touch events.
      * @param context The {@link Context} for Android.
-     * @param host The {@link EventFilterHost} for this event filter.
      * @param panelManager The {@link OverlayPanelManager} responsible for showing panels.
      */
-    public OverlayPanelEventFilter(Context context, EventFilterHost host, OverlayPanel panel) {
-        super(context, host, panel, false, false);
+    public OverlayPanelEventFilter(Context context, OverlayPanel panel) {
+        super(context, panel, false, false);
 
         mGestureDetector = new GestureDetector(context, new InternalGestureDetector());
         mPanel = panel;

@@ -14,10 +14,10 @@ import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.components.VirtualView;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.BlackHoleEventFilter;
-import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeEventFilter.ScrollDirection;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.GestureEventFilter;
+import org.chromium.chrome.browser.compositor.layouts.eventfilter.ScrollDirection;
 import org.chromium.chrome.browser.compositor.layouts.phone.StackLayout;
 import org.chromium.chrome.browser.compositor.overlays.SceneOverlay;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelperManager;
@@ -167,8 +167,8 @@ public class LayoutManagerChrome
         mToolbarSwipeHandler = createToolbarSwipeHandler(this);
 
         // Build Event Filters
-        mBlackHoleEventFilter = new BlackHoleEventFilter(context, this);
-        mGestureEventFilter = new GestureEventFilter(context, this, mGestureHandler);
+        mBlackHoleEventFilter = new BlackHoleEventFilter(context);
+        mGestureEventFilter = new GestureEventFilter(context, mGestureHandler);
 
         // Build Layouts
         mOverviewListLayout =

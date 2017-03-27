@@ -10,7 +10,6 @@ import android.content.Context;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.view.MotionEvent;
-import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Interpolator;
 
@@ -22,8 +21,8 @@ import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animation;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.components.VirtualView;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeEventFilter.ScrollDirection;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
+import org.chromium.chrome.browser.compositor.layouts.eventfilter.ScrollDirection;
 import org.chromium.chrome.browser.compositor.overlays.SceneOverlay;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneOverlayLayer;
@@ -169,20 +168,6 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
      */
     public boolean isActive() {
         return mUpdateHost.isActiveLayout(this);
-    }
-
-    /**
-     * @return A {@link View} that should be the one the user can interact with.  This can be
-     *         {@code null} if there is no {@link View} representing {@link Tab} content that should
-     *         be interacted with at this time.
-     */
-    public View getViewForInteraction() {
-        if (!shouldDisplayContentOverlay()) return null;
-
-        Tab tab = mTabModelSelector.getCurrentTab();
-        if (tab == null) return null;
-
-        return tab.getView();
     }
 
     /**

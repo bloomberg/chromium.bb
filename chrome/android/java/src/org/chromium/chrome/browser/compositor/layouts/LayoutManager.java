@@ -24,7 +24,6 @@ import org.chromium.chrome.browser.compositor.layouts.components.VirtualView;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
-import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilterHost;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManagerDelegate;
@@ -43,7 +42,7 @@ import java.util.List;
  * A class that is responsible for managing an active {@link Layout} to show to the screen.  This
  * includes lifecycle managment like showing/hiding this {@link Layout}.
  */
-public abstract class LayoutManager implements LayoutUpdateHost, LayoutProvider, EventFilterHost {
+public abstract class LayoutManager implements LayoutUpdateHost, LayoutProvider {
     /** Sampling at 60 fps. */
     private static final long FRAME_DELTA_TIME_MS = 16;
 
@@ -140,22 +139,6 @@ public abstract class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         PointF offsets = getMotionOffsets(e);
         if (offsets != null) mActiveEventFilter.setCurrentMotionEventOffsets(offsets.x, offsets.y);
         return consumed;
-    }
-
-    @Override
-    public boolean propagateEvent(MotionEvent e) {
-        if (e == null) return false;
-
-        View view = getActiveLayout().getViewForInteraction();
-        if (view == null) return false;
-
-        e.offsetLocation(-view.getLeft(), -view.getTop());
-        return view.dispatchTouchEvent(e);
-    }
-
-    @Override
-    public int getViewportWidth() {
-        return mHost.getWidth();
     }
 
     private PointF getMotionOffsets(MotionEvent e) {

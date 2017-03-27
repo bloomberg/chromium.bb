@@ -63,16 +63,15 @@ public class GestureEventFilter extends EventFilter {
     /**
      * Creates a {@link GestureEventFilter} with offset touch events.
      */
-    public GestureEventFilter(Context context, EventFilterHost host, GestureHandler handler) {
-        this(context, host, handler, true);
+    public GestureEventFilter(Context context, GestureHandler handler) {
+        this(context, handler, true);
     }
 
     /**
      * Creates a {@link GestureEventFilter} with default long press behavior.
      */
-    public GestureEventFilter(Context context, EventFilterHost host, GestureHandler handler,
-            boolean autoOffset) {
-        this(context, host, handler, autoOffset, true);
+    public GestureEventFilter(Context context, GestureHandler handler, boolean autoOffset) {
+        this(context, handler, autoOffset, true);
     }
 
     /**
@@ -81,9 +80,9 @@ public class GestureEventFilter extends EventFilter {
      *                            any more events after a long press. If false, use a custom
      *                            implementation that will send events after a long press.
      */
-    public GestureEventFilter(Context context, EventFilterHost host, GestureHandler handler,
-            boolean autoOffset, boolean useDefaultLongPress) {
-        super(context, host, autoOffset);
+    public GestureEventFilter(Context context, GestureHandler handler, boolean autoOffset,
+            boolean useDefaultLongPress) {
+        super(context, autoOffset);
         assert handler != null;
         mScaledTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
         mLongPressTimeoutMs = ViewConfiguration.getLongPressTimeout();

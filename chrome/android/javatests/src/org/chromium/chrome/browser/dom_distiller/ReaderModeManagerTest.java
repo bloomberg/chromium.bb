@@ -112,7 +112,7 @@ public class ReaderModeManagerTest extends InstrumentationTestCase {
      */
     private static class MockReaderModePanel extends ReaderModePanel {
         public MockReaderModePanel(Context context, OverlayPanelManager manager) {
-            super(context, null, null, manager, null);
+            super(context, null, manager, null);
         }
 
         @Override
