@@ -1976,27 +1976,31 @@ static PARTITION_TYPE read_partition(AV1_COMMON *cm, MACROBLOCKD *xd,
   FRAME_CONTEXT *ec_ctx = cm->fc;
 #endif
 
+#if CONFIG_EC_MULTISYMBOL
+  aom_cdf_prob *partition_cdf = (ctx >= 0) ? ec_ctx->partition_cdf[ctx] : NULL;
+#endif
+
   if (has_rows && has_cols)
 #if CONFIG_EXT_PARTITION_TYPES
     if (bsize <= BLOCK_8X8)
 #if CONFIG_EC_MULTISYMBOL
-      p = (PARTITION_TYPE)aom_read_symbol(r, ec_ctx->partition_cdf[ctx],
-                                          PARTITION_TYPES, ACCT_STR);
+      p = (PARTITION_TYPE)aom_read_symbol(r, partition_cdf, PARTITION_TYPES,
+                                          ACCT_STR);
 #else
       p = (PARTITION_TYPE)aom_read_tree(r, av1_partition_tree, probs, ACCT_STR);
 #endif
     else
 #if CONFIG_EC_MULTISYMBOL
-      p = (PARTITION_TYPE)aom_read_symbol(r, ec_ctx->partition_cdf[ctx],
-                                          EXT_PARTITION_TYPES, ACCT_STR);
+      p = (PARTITION_TYPE)aom_read_symbol(r, partition_cdf, EXT_PARTITION_TYPES,
+                                          ACCT_STR);
 #else
       p = (PARTITION_TYPE)aom_read_tree(r, av1_ext_partition_tree, probs,
                                         ACCT_STR);
 #endif
 #else
 #if CONFIG_EC_MULTISYMBOL
-    p = (PARTITION_TYPE)aom_read_symbol(r, ec_ctx->partition_cdf[ctx],
-                                        PARTITION_TYPES, ACCT_STR);
+    p = (PARTITION_TYPE)aom_read_symbol(r, partition_cdf, PARTITION_TYPES,
+                                        ACCT_STR);
 #else
     p = (PARTITION_TYPE)aom_read_tree(r, av1_partition_tree, probs, ACCT_STR);
 #endif
