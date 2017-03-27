@@ -355,6 +355,10 @@ bool SupportsSetAsDefaultBrowser() {
   return InstallDetails::Get().mode().supports_set_as_default_browser;
 }
 
+bool SupportsRetentionExperiments() {
+  return InstallDetails::Get().mode().supports_retention_experiments;
+}
+
 int GetIconResourceIndex() {
   return InstallDetails::Get().mode().app_icon_resource_index;
 }

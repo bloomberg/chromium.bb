@@ -24,50 +24,50 @@ const wchar_t kBinariesAppGuid[] = L"{4DC8B4CA-1BDA-483e-B5FA-D3C12E15B62D}";
 const wchar_t kBinariesPathName[] = L"";
 
 const InstallConstants kInstallModes[] = {
-    // clang-format off
     // The primary install mode for stable Google Chrome.
     {
         sizeof(kInstallModes[0]),
-        STABLE_INDEX,
-        "",   // No install switch for the primary install mode.
-        L"",  // Empty install_suffix for the primary install mode.
-        L"",  // No logo suffix for the primary install mode.
+        STABLE_INDEX,  // The first mode is for stable/beta/dev.
+        "",            // No install switch for the primary install mode.
+        L"",           // Empty install_suffix for the primary install mode.
+        L"",           // No logo suffix for the primary install mode.
         L"{8A69D345-D564-463c-AFF1-A69D9E530F96}",
-        L"Chrome",  // A distinct base_app_id.
-        L"ChromeHTML",  // ProgID prefix.
-        L"Chrome HTML Document",  // ProgID description.
+        L"Chrome",                                  // A distinct base_app_id.
+        L"ChromeHTML",                              // ProgID prefix.
+        L"Chrome HTML Document",                    // ProgID description.
         L"{8A69D345-D564-463c-AFF1-A69D9E530F96}",  // Active Setup GUID.
         L"{5C65F4B0-3651-4514-B207-D10CB699B14B}",  // CommandExecuteImpl CLSID.
         L"",  // The empty string means "stable".
         ChannelStrategy::ADDITIONAL_PARAMETERS,
         true,  // Supports system-level installs.
         true,  // Supports in-product set as default browser UX.
+        true,  // Supports retention experiments.
         true,  // Supported multi-install.
-        icon_resources::kApplicationIndex,
-        IDR_MAINFRAME,
+        icon_resources::kApplicationIndex,  // App icon resource index.
+        IDR_MAINFRAME,                      // App icon resource id.
     },
     // A secondary install mode for Google Chrome SxS (canary).
     {
         sizeof(kInstallModes[0]),
-        CANARY_INDEX,
-        "chrome-sxs",
-        L" SxS",
-        L"Canary",
-        L"{4ea16ac7-fd5a-47c3-875b-dbf4a2008c20}",
-        L"ChromeCanary",  // A distinct base_app_id.
-        L"ChromeSSHTM",  // ProgID prefix.
-        L"Chrome Canary HTML Document",  // ProgID description.
+        CANARY_INDEX,  // The mode for the side-by-side canary channel.
+        "chrome-sxs",  // Install switch.
+        L" SxS",       // Install suffix.
+        L"Canary",     // Logo suffix.
+        L"{4ea16ac7-fd5a-47c3-875b-dbf4a2008c20}",  // A distinct app GUID.
+        L"ChromeCanary",                            // A distinct base_app_id.
+        L"ChromeSSHTM",                             // ProgID prefix.
+        L"Chrome Canary HTML Document",             // ProgID description.
         L"{4ea16ac7-fd5a-47c3-875b-dbf4a2008c20}",  // Active Setup GUID.
         L"{1BEAC3E3-B852-44F4-B468-8906C062422E}",  // CommandExecuteImpl CLSID.
-        L"canary",
+        L"canary",                                  // Forced channel name.
         ChannelStrategy::FIXED,
         false,  // Does not support system-level installs.
         false,  // Does not support in-product set as default browser UX.
+        true,   // Supports retention experiments.
         false,  // Did not support multi-install.
-        icon_resources::kSxSApplicationIndex,
-        IDR_SXS,
+        icon_resources::kSxSApplicationIndex,  // App icon resource index.
+        IDR_SXS,                               // App icon resource id.
     },
-    // clang-format on
 };
 
 static_assert(_countof(kInstallModes) == NUM_INSTALL_MODES,

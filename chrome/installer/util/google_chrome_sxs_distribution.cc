@@ -44,7 +44,3 @@ base::string16 GoogleChromeSxSDistribution::GetStartMenuShortcutSubfolder(
 bool GoogleChromeSxSDistribution::ShouldSetExperimentLabels() {
   return true;
 }
-
-bool GoogleChromeSxSDistribution::HasUserExperiments() {
-  return true;
-}

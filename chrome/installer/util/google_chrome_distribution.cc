@@ -244,7 +244,3 @@ void GoogleChromeDistribution::UpdateInstallStatus(bool system_install,
 bool GoogleChromeDistribution::ShouldSetExperimentLabels() {
   return true;
 }
-
-bool GoogleChromeDistribution::HasUserExperiments() {
-  return true;
-}

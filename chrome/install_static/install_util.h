@@ -111,6 +111,10 @@ std::wstring GetLegacyCommandExecuteImplClsid();
 // the user's chosen default browser.
 bool SupportsSetAsDefaultBrowser();
 
+// Returns true if this mode supports user retention experiments run by the
+// installer following updates.
+bool SupportsRetentionExperiments();
+
 // Returns the index of the icon resource in the main executable for the mode.
 int GetIconResourceIndex();
 

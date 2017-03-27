@@ -101,6 +101,10 @@ struct InstallConstants {
   // in chrome://settings are hidden when this is false.
   bool supports_set_as_default_browser;
 
+  // True if this mode supports user retention experiments run by the installer
+  // following updates.
+  bool supports_retention_experiments;
+
   // True if this mode supported the now-deprecated multi-install.
   bool supported_multi_install;
 

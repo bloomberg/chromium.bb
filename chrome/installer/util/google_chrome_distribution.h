@@ -57,8 +57,6 @@ class GoogleChromeDistribution : public BrowserDistribution {
 
   bool ShouldSetExperimentLabels() override;
 
-  bool HasUserExperiments() override;
-
  protected:
   // Disallow construction from others.
   GoogleChromeDistribution();

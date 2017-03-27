@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/process/launch.h"
 #include "base/win/registry.h"
+#include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/chrome_browser_operations.h"
 #include "chrome/installer/util/google_update_constants.h"
@@ -111,7 +112,10 @@ void Product::AddDefaultShortcutProperties(
 void Product::LaunchUserExperiment(const base::FilePath& setup_path,
                                    InstallStatus status,
                                    bool system_level) const {
-  if (distribution_->HasUserExperiments()) {
+  // Assert that this is only called with the one relevant distribution.
+  // TODO(grt): Remove this when BrowserDistribution goes away.
+  DCHECK_EQ(BrowserDistribution::GetDistribution(), distribution_);
+  if (install_static::SupportsRetentionExperiments()) {
     VLOG(1) << "LaunchUserExperiment status: " << status << " product: "
             << distribution_->GetDisplayName()
             << " system_level: " << system_level;

@@ -15,7 +15,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
-#include "chrome/installer/util/browser_distribution.h"
+#include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/user_experiment.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/aura/window.h"
@@ -172,7 +172,7 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
 
   // Find out what experiment we are conducting.
   installer::ExperimentDetails experiment;
-  if (!BrowserDistribution::GetDistribution()->HasUserExperiments() ||
+  if (!install_static::SupportsRetentionExperiments() ||
       !installer::CreateExperimentDetails(flavor_, &experiment) ||
       !experiment.heading) {
     NOTREACHED() << "Cannot determine which headline to show.";

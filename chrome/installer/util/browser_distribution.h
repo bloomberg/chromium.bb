@@ -84,8 +84,6 @@ class BrowserDistribution {
   // registry value.
   virtual bool ShouldSetExperimentLabels();
 
-  virtual bool HasUserExperiments();
-
  protected:
   explicit BrowserDistribution(
       std::unique_ptr<AppRegistrationData> app_reg_data);

@@ -24,7 +24,6 @@ class GoogleChromeSxSDistribution : public GoogleChromeDistribution {
   base::string16 GetStartMenuShortcutSubfolder(
       Subfolder subfolder_type) override;
   bool ShouldSetExperimentLabels() override;
-  bool HasUserExperiments() override;
 
  private:
   friend class BrowserDistribution;
