@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
@@ -31,11 +32,16 @@
 #include "components/safe_browsing_db/test_database_manager.h"
 #include "components/safe_browsing_db/util.h"
 #include "components/security_interstitials/content/unsafe_resource.h"
+#include "components/subresource_filter/content/browser/async_document_subresource_filter.h"
+#include "components/subresource_filter/content/browser/async_document_subresource_filter_test_utils.h"
+#include "components/subresource_filter/content/browser/content_ruleset_service.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
 #include "components/subresource_filter/core/common/activation_level.h"
+#include "components/subresource_filter/core/common/activation_state.h"
 #include "components/subresource_filter/core/common/scoped_timers.h"
+#include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -52,6 +58,7 @@
 #include "net/test/test_data_directory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace {
 
@@ -586,6 +593,73 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, DynamicFrame) {
   content::RenderFrameHost* dynamic_frame = FindFrameByName("dynamic");
   ASSERT_TRUE(dynamic_frame);
   EXPECT_FALSE(WasParsedScriptElementLoaded(dynamic_frame));
+}
+
+IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
+                       RulesetVerified_Activation) {
+  ASSERT_NO_FATAL_FAILURE(
+      SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
+  ContentRulesetService* service =
+      g_browser_process->subresource_filter_ruleset_service();
+  ASSERT_TRUE(service->ruleset_dealer());
+  auto ruleset_handle =
+      base::MakeUnique<VerifiedRuleset::Handle>(service->ruleset_dealer());
+  AsyncDocumentSubresourceFilter::InitializationParams params(
+      GURL("https://example.com/"), ActivationLevel::ENABLED, false);
+
+  testing::TestActivationStateCallbackReceiver receiver;
+  AsyncDocumentSubresourceFilter filter(ruleset_handle.get(), std::move(params),
+                                        receiver.GetCallback());
+  receiver.WaitForActivationDecision();
+  receiver.ExpectReceivedOnce(ActivationState(ActivationLevel::ENABLED));
+}
+
+IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, NoRuleset_NoActivation) {
+  // Do not set the ruleset, which results in an invalid ruleset.
+  ContentRulesetService* service =
+      g_browser_process->subresource_filter_ruleset_service();
+  ASSERT_TRUE(service->ruleset_dealer());
+  auto ruleset_handle =
+      base::MakeUnique<VerifiedRuleset::Handle>(service->ruleset_dealer());
+  AsyncDocumentSubresourceFilter::InitializationParams params(
+      GURL("https://example.com/"), ActivationLevel::ENABLED, false);
+
+  testing::TestActivationStateCallbackReceiver receiver;
+  AsyncDocumentSubresourceFilter filter(ruleset_handle.get(), std::move(params),
+                                        receiver.GetCallback());
+  receiver.WaitForActivationDecision();
+  receiver.ExpectReceivedOnce(ActivationState(ActivationLevel::DISABLED));
+}
+
+IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
+                       InvalidRuleset_NoActivation) {
+  const char kTestRulesetSuffix[] = "foo";
+  const int kNumberOfRules = 500;
+  TestRulesetCreator ruleset_creator;
+  TestRulesetPair test_ruleset_pair;
+  ASSERT_NO_FATAL_FAILURE(
+      ruleset_creator.CreateRulesetToDisallowURLsWithManySuffixes(
+          kTestRulesetSuffix, kNumberOfRules, &test_ruleset_pair));
+  testing::TestRuleset::CorruptByTruncating(test_ruleset_pair.indexed, 123);
+
+  // Just publish the corrupt indexed file directly, to simulate it being
+  // corrupt on startup.
+  ContentRulesetService* service =
+      g_browser_process->subresource_filter_ruleset_service();
+  ASSERT_TRUE(service->ruleset_dealer());
+  service->PublishNewRulesetVersion(
+      testing::TestRuleset::Open(test_ruleset_pair.indexed));
+
+  auto ruleset_handle =
+      base::MakeUnique<VerifiedRuleset::Handle>(service->ruleset_dealer());
+  AsyncDocumentSubresourceFilter::InitializationParams params(
+      GURL("https://example.com/"), ActivationLevel::ENABLED, false);
+
+  testing::TestActivationStateCallbackReceiver receiver;
+  AsyncDocumentSubresourceFilter filter(ruleset_handle.get(), std::move(params),
+                                        receiver.GetCallback());
+  receiver.WaitForActivationDecision();
+  receiver.ExpectReceivedOnce(ActivationState(ActivationLevel::DISABLED));
 }
 
 // Schemes 'about:' and 'chrome-native:' are loaded synchronously as empty

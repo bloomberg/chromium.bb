@@ -128,6 +128,8 @@ static_library("test_support") {
     "//components/search_engines:test_support",
     "//components/sessions:test_support",
     "//components/signin/core/browser:test_support",
+    "//components/subresource_filter/content/browser:test_support",
+    "//components/subresource_filter/core/common",
     "//components/sync",
     "//components/sync:test_support_driver",
     "//components/sync_preferences:test_support",

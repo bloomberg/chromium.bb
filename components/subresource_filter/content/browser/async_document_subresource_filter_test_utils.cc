@@ -6,15 +6,28 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace subresource_filter {
 namespace testing {
 
+TestActivationStateCallbackReceiver::TestActivationStateCallbackReceiver() =
+    default;
+TestActivationStateCallbackReceiver::~TestActivationStateCallbackReceiver() =
+    default;
+
 base::Callback<void(ActivationState)>
 TestActivationStateCallbackReceiver::GetCallback() {
   return base::Bind(&TestActivationStateCallbackReceiver::Callback,
                     base::Unretained(this));
+}
+
+void TestActivationStateCallbackReceiver::WaitForActivationDecision() {
+  ASSERT_EQ(0, callback_count_);
+  base::RunLoop run_loop;
+  quit_closure_ = run_loop.QuitClosure();
+  run_loop.Run();
 }
 
 void TestActivationStateCallbackReceiver::ExpectReceivedOnce(
@@ -27,6 +40,8 @@ void TestActivationStateCallbackReceiver::Callback(
     ActivationState activation_state) {
   ++callback_count_;
   last_activation_state_ = activation_state;
+  if (quit_closure_)
+    quit_closure_.Run();
 }
 
 }  // namespace testing

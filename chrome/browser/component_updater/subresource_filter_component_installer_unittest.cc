@@ -16,7 +16,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
-#include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -103,16 +102,22 @@ class SubresourceFilterComponentInstallerTest : public PlatformTest {
         pref_service_.registry());
 
     auto content_service =
-        base::MakeUnique<subresource_filter::ContentRulesetService>();
+        base::MakeUnique<subresource_filter::ContentRulesetService>(
+            base::ThreadTaskRunnerHandle::Get());
     auto test_ruleset_service = base::MakeUnique<TestRulesetService>(
-        &pref_service_, task_runner_, content_service.get(),
-        ruleset_service_dir_.GetPath());
+        &pref_service_, base::ThreadTaskRunnerHandle::Get(),
+        content_service.get(), ruleset_service_dir_.GetPath());
     test_ruleset_service_ = test_ruleset_service.get();
     content_service->set_ruleset_service(std::move(test_ruleset_service));
 
     TestingBrowserProcess::GetGlobal()->SetRulesetService(
         std::move(content_service));
     traits_.reset(new SubresourceFilterComponentInstallerTraits());
+  }
+
+  void TearDown() override {
+    TestingBrowserProcess::GetGlobal()->SetRulesetService(nullptr);
+    PlatformTest::TearDown();
   }
 
   TestRulesetService* service() { return test_ruleset_service_; }
@@ -176,7 +181,6 @@ class SubresourceFilterComponentInstallerTest : public PlatformTest {
 
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<SubresourceFilterComponentInstallerTraits> traits_;
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   TestingPrefServiceSimple pref_service_;
 
   TestRulesetService* test_ruleset_service_ = nullptr;

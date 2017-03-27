@@ -19,6 +19,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
 #include "base/task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -138,7 +139,7 @@ class SubresourceFilterContentRulesetServiceTest : public ::testing::Test {
 
 TEST_F(SubresourceFilterContentRulesetServiceTest, NoRuleset_NoIPCMessages) {
   NotifyingMockRenderProcessHost existing_renderer(browser_context());
-  ContentRulesetService service;
+  ContentRulesetService service(base::ThreadTaskRunnerHandle::Get());
   NotifyingMockRenderProcessHost new_renderer(browser_context());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0u, existing_renderer.sink().message_count());
@@ -156,7 +157,7 @@ TEST_F(SubresourceFilterContentRulesetServiceTest,
                   base::File::FLAG_OPEN | base::File::FLAG_READ);
 
   NotifyingMockRenderProcessHost existing_renderer(browser_context());
-  ContentRulesetService service;
+  ContentRulesetService service(base::ThreadTaskRunnerHandle::Get());
   MockClosureTarget publish_callback_target;
   service.SetRulesetPublishedCallbackForTesting(base::Bind(
       &MockClosureTarget::Call, base::Unretained(&publish_callback_target)));
@@ -178,7 +179,7 @@ TEST_F(SubresourceFilterContentRulesetServiceTest,
 }
 
 TEST_F(SubresourceFilterContentRulesetServiceTest, PostAfterStartupTask) {
-  ContentRulesetService service;
+  ContentRulesetService service(base::ThreadTaskRunnerHandle::Get());
 
   MockClosureTarget mock_closure_target;
   service.PostAfterStartupTask(base::Bind(

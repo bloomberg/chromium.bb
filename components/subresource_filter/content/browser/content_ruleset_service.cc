@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
 #include "components/subresource_filter/core/browser/ruleset_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -43,7 +44,10 @@ void CloseFileOnFileThread(base::File* file) {
 
 }  // namespace
 
-ContentRulesetService::ContentRulesetService() {
+ContentRulesetService::ContentRulesetService(
+    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
+    : ruleset_dealer_(base::MakeUnique<VerifiedRulesetDealer::Handle>(
+          std::move(blocking_task_runner))) {
   // Must rely on notifications as RenderProcessHostObserver::RenderProcessReady
   // would only be called after queued IPC messages (potentially triggering a
   // navigation) had already been sent to the new renderer.
@@ -72,6 +76,11 @@ void ContentRulesetService::PostAfterStartupTask(base::Closure task) {
 void ContentRulesetService::PublishNewRulesetVersion(base::File ruleset_data) {
   DCHECK(ruleset_data.IsValid());
   CloseFileOnFileThread(&ruleset_data_);
+
+  // Will not perform verification until the ruleset is retrieved the first
+  // time.
+  ruleset_dealer_->SetRulesetFile(ruleset_data.Duplicate());
+
   ruleset_data_ = std::move(ruleset_data);
   for (auto it = content::RenderProcessHost::AllHostsIterator(); !it.IsAtEnd();
        it.Advance()) {

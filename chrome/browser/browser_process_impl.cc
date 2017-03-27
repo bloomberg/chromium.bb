@@ -1223,7 +1223,8 @@ void BrowserProcessImpl::CreateSubresourceFilterRulesetService() {
       user_data_dir.Append(subresource_filter::kTopLevelDirectoryName)
           .Append(subresource_filter::kIndexedRulesetBaseDirectoryName);
   subresource_filter_ruleset_service_ =
-      base::MakeUnique<subresource_filter::ContentRulesetService>();
+      base::MakeUnique<subresource_filter::ContentRulesetService>(
+          blocking_task_runner);
   subresource_filter_ruleset_service_->set_ruleset_service(
       base::MakeUnique<subresource_filter::RulesetService>(
           local_state(), blocking_task_runner,

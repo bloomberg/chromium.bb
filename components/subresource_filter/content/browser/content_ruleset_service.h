@@ -5,12 +5,20 @@
 #ifndef COMPONENTS_SUBRESOURCE_FILTER_CONTENT_BROWSER_CONTENT_RULESET_SERVICE_H_
 #define COMPONENTS_SUBRESOURCE_FILTER_CONTENT_BROWSER_CONTENT_RULESET_SERVICE_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "components/subresource_filter/content/browser/verified_ruleset_dealer.h"
 #include "components/subresource_filter/core/browser/ruleset_service_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+
+namespace base {
+class SequencedTaskRunner;
+}  // namespace base
 
 namespace subresource_filter {
 
@@ -49,7 +57,8 @@ struct UnindexedRulesetInfo;
 class ContentRulesetService : public RulesetServiceDelegate,
                               content::NotificationObserver {
  public:
-  ContentRulesetService();
+  ContentRulesetService(
+      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
   ~ContentRulesetService() override;
 
   void SetRulesetPublishedCallbackForTesting(base::Closure callback);
@@ -64,6 +73,10 @@ class ContentRulesetService : public RulesetServiceDelegate,
   void IndexAndStoreAndPublishRulesetIfNeeded(
       const UnindexedRulesetInfo& unindex_ruleset_info);
 
+  VerifiedRulesetDealer::Handle* ruleset_dealer() {
+    return ruleset_dealer_.get();
+  }
+
  private:
   // content::NotificationObserver:
   void Observe(int type,
@@ -75,6 +88,7 @@ class ContentRulesetService : public RulesetServiceDelegate,
   base::Closure ruleset_published_callback_;
 
   std::unique_ptr<RulesetService> ruleset_service_;
+  std::unique_ptr<VerifiedRulesetDealer::Handle> ruleset_dealer_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentRulesetService);
 };
