@@ -21,6 +21,9 @@ class MediaRouterUIService : public KeyedService {
   explicit MediaRouterUIService(Profile* profile);
   ~MediaRouterUIService() override;
 
+  // KeyedService:
+  void Shutdown() override;
+
   static MediaRouterUIService* Get(Profile* profile);
 
   virtual MediaRouterActionController* action_controller();
@@ -28,7 +31,7 @@ class MediaRouterUIService : public KeyedService {
  private:
   friend class MediaRouterUIBrowserTest;
 
-  MediaRouterActionController action_controller_;
+  std::unique_ptr<MediaRouterActionController> action_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterUIService);
 };
