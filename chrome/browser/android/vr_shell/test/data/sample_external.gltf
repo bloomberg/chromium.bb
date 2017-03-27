@@ -1,0 +1,11 @@
+{
+  "asset": {
+    "version": "1.0"
+  },
+  "buffers": {
+    "dummyBuffer": {
+      "uri": "sample.bin",
+      "byteLength": 12
+    }
+  }
+}

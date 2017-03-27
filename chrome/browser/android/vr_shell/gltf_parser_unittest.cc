@@ -17,12 +17,21 @@
 
 namespace vr_shell {
 
-TEST(GltfParser, Parse) {
-  test::RegisterPathProvider();
-  base::FilePath gltf_path;
-  PathService::Get(test::DIR_TEST_DATA, &gltf_path);
-  gltf_path = gltf_path.Append("sample_inline.gltf");
+class GltfParserTest : public testing::Test {
+ protected:
+  void SetUp() override {
+    test::RegisterPathProvider();
+    PathService::Get(test::DIR_TEST_DATA, &data_dir_);
+  }
 
+  base::FilePath data_dir_;
+
+  std::unique_ptr<base::DictionaryValue> Deserialize(
+      const base::FilePath& gltf_path);
+};
+
+std::unique_ptr<base::DictionaryValue> GltfParserTest::Deserialize(
+    const base::FilePath& gltf_path) {
   int error_code;
   std::string error_msg;
   JSONFileValueDeserializer json_deserializer(gltf_path);
@@ -30,8 +39,14 @@ TEST(GltfParser, Parse) {
   EXPECT_NE(nullptr, asset_value);
   base::DictionaryValue* asset;
   EXPECT_TRUE(asset_value->GetAsDictionary(&asset));
+  asset_value.release();
+  return std::unique_ptr<base::DictionaryValue>(asset);
+}
 
+TEST_F(GltfParserTest, Parse) {
+  auto asset = Deserialize(data_dir_.Append("sample_inline.gltf"));
   GltfParser parser;
+
   auto gltf_model = parser.Parse(*asset);
   EXPECT_TRUE(gltf_model);
 
@@ -90,6 +105,52 @@ TEST(GltfParser, Parse) {
   EXPECT_EQ(node_1, scene->nodes[0]);
 
   EXPECT_EQ(scene, gltf_model->GetMainScene());
+}
+
+TEST_F(GltfParserTest, ParseUnknownBuffer) {
+  auto asset = Deserialize(data_dir_.Append("sample_inline.gltf"));
+  GltfParser parser;
+
+  // Parsing succeeds.
+  EXPECT_NE(nullptr, parser.Parse(*asset));
+
+  // Parsing fails when a referenced buffer is removed.
+  std::unique_ptr<base::Value> value;
+  asset->Remove("buffers.dummyBuffer", &value);
+  EXPECT_EQ(nullptr, parser.Parse(*asset));
+
+  // Parsing fails when the buffer reinserted with a different ID.
+  asset->Set("buffers.anotherDummyBuffer", std::move(value));
+  EXPECT_EQ(nullptr, parser.Parse(*asset));
+}
+
+TEST_F(GltfParserTest, ParseMissingRequired) {
+  auto asset = Deserialize(data_dir_.Append("sample_inline.gltf"));
+  GltfParser parser;
+
+  std::unique_ptr<base::Value> value;
+  asset->Remove("buffers.dummyBuffer.uri", &value);
+  EXPECT_EQ(nullptr, parser.Parse(*asset));
+}
+
+TEST_F(GltfParserTest, ParseExternal) {
+  auto gltf_path = data_dir_.Append("sample_external.gltf");
+  GltfParser parser;
+
+  auto gltf_model = parser.Parse(gltf_path);
+  EXPECT_NE(nullptr, gltf_model);
+  const gltf::Buffer* buffer = gltf_model->GetBuffer(0);
+  EXPECT_NE(nullptr, buffer);
+  EXPECT_EQ("HELLO WORLD!", *buffer);
+  EXPECT_EQ(12u, buffer->length());
+}
+
+TEST_F(GltfParserTest, ParseExternalNoPath) {
+  auto asset = Deserialize(data_dir_.Append("sample_external.gltf"));
+  GltfParser parser;
+
+  // Parsing fails when no path is provided.
+  EXPECT_EQ(nullptr, parser.Parse(*asset));
 }
 
 }  // namespace vr_shell

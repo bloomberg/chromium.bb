@@ -4,36 +4,57 @@
 
 #include "chrome/browser/android/vr_shell/gltf_parser.h"
 
-#include "base/base64.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
+#include "base/files/file_util.h"
+#include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "net/base/data_url.h"
+#include "net/base/filename_util.h"
+#include "url/gurl.h"
 
 namespace vr_shell {
-
-constexpr char kBase64Header[] = "data:application/octet-stream;base64,";
-constexpr size_t kBase64HeaderSize = 37;
 
 GltfParser::GltfParser() {}
 
 GltfParser::~GltfParser() = default;
 
 std::unique_ptr<gltf::Asset> GltfParser::Parse(
-    const base::DictionaryValue& dict) {
-  std::string gltf_version;
-  if (!dict.GetString("asset.version", &gltf_version) || gltf_version != "1.0")
-    return nullptr;
-
+    const base::DictionaryValue& dict,
+    const base::FilePath& path) {
+  path_ = path;
   asset_ = base::MakeUnique<gltf::Asset>();
 
-  if (!ParseInternal(dict)) {
-    asset_.reset();
+  base::ScopedClosureRunner runner(
+      base::Bind(&GltfParser::Clear, base::Unretained(this)));
+
+  if (!ParseInternal(dict))
     return nullptr;
-  }
 
   return std::move(asset_);
 }
 
+std::unique_ptr<gltf::Asset> GltfParser::Parse(
+    const base::FilePath& gltf_path) {
+  JSONFileValueDeserializer json_deserializer(gltf_path);
+  int error_code;
+  std::string error_msg;
+  auto asset_value = json_deserializer.Deserialize(&error_code, &error_msg);
+  if (!asset_value)
+    return nullptr;
+  base::DictionaryValue* asset;
+  if (!asset_value->GetAsDictionary(&asset))
+    return nullptr;
+  return Parse(*asset, gltf_path);
+}
+
 bool GltfParser::ParseInternal(const base::DictionaryValue& dict) {
+  std::string gltf_version;
+  if (!dict.GetString("asset.version", &gltf_version) || gltf_version != "1.0")
+    return false;
+
   const base::DictionaryValue* sub_dict;
   if (dict.GetDictionary("buffers", &sub_dict) && !SetBuffers(*sub_dict))
     return false;
@@ -66,14 +87,11 @@ bool GltfParser::SetBuffers(const base::DictionaryValue& dict) {
     if (!it.value().GetAsDictionary(&buffer_dict))
       return false;
 
-    std::string uri;
-    // TODO(acondor): Support files. Only inline data is supported now.
-    if (!buffer_dict->GetString("uri", &uri) ||
-        uri.substr(0, kBase64HeaderSize) != kBase64Header)
+    std::string uri_str;
+    if (!buffer_dict->GetString("uri", &uri_str))
       return false;
-
-    auto buffer = base::MakeUnique<gltf::Buffer>();
-    if (!base::Base64Decode(uri.substr(kBase64HeaderSize), buffer.get()))
+    auto buffer = ProcessUri(uri_str);
+    if (!buffer)
       return false;
 
     int byte_length;
@@ -84,6 +102,30 @@ bool GltfParser::SetBuffers(const base::DictionaryValue& dict) {
     buffer_ids_[it.key()] = asset_->AddBuffer(std::move(buffer));
   }
   return true;
+}
+
+std::unique_ptr<gltf::Buffer> GltfParser::ProcessUri(
+    const std::string& uri_str) {
+  auto uri = path_.empty() ? GURL(uri_str)
+                           : net::FilePathToFileURL(path_).Resolve(uri_str);
+  if (!uri.is_valid())
+    return nullptr;
+  if (uri.SchemeIs(url::kDataScheme)) {
+    std::string mime_type;
+    std::string charset;
+    auto data = base::MakeUnique<gltf::Buffer>();
+    if (!net::DataURL::Parse(uri, &mime_type, &charset, data.get()))
+      return nullptr;
+    return data;
+  }
+  if (uri.SchemeIsFile()) {
+    auto data = base::MakeUnique<gltf::Buffer>();
+    if (!base::ReadFileToString(base::FilePath(uri.path()), data.get()))
+      return nullptr;
+    return data;
+  }
+  // No other schemes are supported yet.
+  return nullptr;
 }
 
 bool GltfParser::SetBufferViews(const base::DictionaryValue& dict) {
@@ -269,6 +311,17 @@ bool GltfParser::SetScenes(const base::DictionaryValue& dict) {
     scene_ids_[it.key()] = asset_->AddScene(std::move(scene));
   }
   return true;
+}
+
+void GltfParser::Clear() {
+  asset_.reset();
+  path_.clear();
+  buffer_ids_.clear();
+  buffer_view_ids_.clear();
+  accessor_ids_.clear();
+  node_ids_.clear();
+  mesh_ids_.clear();
+  scene_ids_.clear();
 }
 
 }  // namespace vr_shell

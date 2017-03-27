@@ -9,6 +9,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "base/files/file_path.h"
 #include "base/values.h"
 #include "chrome/browser/android/vr_shell/gltf_asset.h"
 
@@ -28,7 +29,13 @@ class GltfParser {
  public:
   GltfParser();
   ~GltfParser();
-  std::unique_ptr<gltf::Asset> Parse(const base::DictionaryValue& dict);
+  // Note: If your glTF references external files, this function will perform
+  // IO, and a base path must be specified.
+  std::unique_ptr<gltf::Asset> Parse(
+      const base::DictionaryValue& dict,
+      const base::FilePath& path = base::FilePath());
+  // Note: This function will perform IO.
+  std::unique_ptr<gltf::Asset> Parse(const base::FilePath& gltf_path);
 
  private:
   bool ParseInternal(const base::DictionaryValue& dict);
@@ -40,8 +47,11 @@ class GltfParser {
   bool SetScenes(const base::DictionaryValue& dict);
   std::unique_ptr<gltf::Mesh::Primitive> ProcessPrimitive(
       const base::DictionaryValue& dict);
+  std::unique_ptr<gltf::Buffer> ProcessUri(const std::string& uri_str);
+  void Clear();
 
   std::unique_ptr<gltf::Asset> asset_;
+  base::FilePath path_;
   std::unordered_map<std::string, std::size_t> buffer_ids_;
   std::unordered_map<std::string, std::size_t> buffer_view_ids_;
   std::unordered_map<std::string, std::size_t> accessor_ids_;
