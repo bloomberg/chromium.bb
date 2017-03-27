@@ -126,10 +126,8 @@ class OZONE_EXPORT OzonePlatform {
   virtual void AddInterfaces(service_manager::InterfaceRegistry* registry);
 
  private:
-  virtual void InitializeUI() = 0;
-  virtual void InitializeGPU() = 0;
-  virtual void InitializeUI(const InitParams& args);
-  virtual void InitializeGPU(const InitParams& args);
+  virtual void InitializeUI(const InitParams& params) = 0;
+  virtual void InitializeGPU(const InitParams& params) = 0;
 
   static OzonePlatform* instance_;
 

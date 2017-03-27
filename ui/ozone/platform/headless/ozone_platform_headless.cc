@@ -77,7 +77,7 @@ class OzonePlatformHeadless : public OzonePlatform {
     return base::MakeUnique<display::FakeDisplayDelegate>();
   }
 
-  void InitializeUI() override {
+  void InitializeUI(const InitParams& params) override {
     window_manager_.reset(new HeadlessWindowManager(file_path_));
     window_manager_->Initialize();
     surface_factory_.reset(new HeadlessSurfaceFactory(window_manager_.get()));
@@ -93,7 +93,7 @@ class OzonePlatformHeadless : public OzonePlatform {
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
   }
 
-  void InitializeGPU() override {
+  void InitializeGPU(const InitParams& params) override {
     if (!surface_factory_)
       surface_factory_.reset(new HeadlessSurfaceFactory());
   }

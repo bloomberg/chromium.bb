@@ -85,15 +85,6 @@ OzonePlatform* OzonePlatform::EnsureInstance() {
 // static
 OzonePlatform* OzonePlatform::instance_;
 
-// Convenience methods to facilitate transitionning to new API.
-void OzonePlatform::InitializeUI(const InitParams& args) {
-  InitializeUI();
-}
-
-void OzonePlatform::InitializeGPU(const InitParams& args) {
-  InitializeGPU();
-}
-
 IPC::MessageFilter* OzonePlatform::GetGpuMessageFilter() {
   return nullptr;
 }

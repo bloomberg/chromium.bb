@@ -94,8 +94,6 @@ class OzonePlatformX11 : public OzonePlatform {
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
   }
 
-  void InitializeUI() override { NOTREACHED(); }
-
   void InitializeGPU(const InitParams& params) override {
     InitializeCommon(params);
 
@@ -106,8 +104,6 @@ class OzonePlatformX11 : public OzonePlatform {
 
     surface_factory_ozone_ = base::MakeUnique<X11SurfaceFactory>();
   }
-
-  void InitializeGPU() override { NOTREACHED(); }
 
   base::MessageLoop::Type GetMessageLoopTypeForGpu() override {
     // When Ozone X11 backend is running use an UI loop to grab Expose events.

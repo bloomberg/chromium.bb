@@ -74,11 +74,6 @@ class OzonePlatformWayland : public OzonePlatform {
     return base::MakeUnique<display::FakeDisplayDelegate>();
   }
 
-  void InitializeUI() override {
-    InitParams default_params;
-    InitializeUI(default_params);
-  }
-
   void InitializeUI(const InitParams& args) override {
     connection_.reset(new WaylandConnection);
     if (!connection_->Initialize())
@@ -98,11 +93,6 @@ class OzonePlatformWayland : public OzonePlatform {
     input_controller_ = CreateStubInputController();
     surface_factory_.reset(new WaylandSurfaceFactory(connection_.get()));
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
-  }
-
-  void InitializeGPU() override {
-    InitParams default_params;
-    InitializeGPU(default_params);
   }
 
   void InitializeGPU(const InitParams& args) override {

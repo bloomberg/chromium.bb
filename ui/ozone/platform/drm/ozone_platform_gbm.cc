@@ -139,10 +139,6 @@ class OzonePlatformGbm
       override {
     return base::MakeUnique<DrmNativeDisplayDelegate>(display_manager_.get());
   }
-  void InitializeUI() override {
-    InitParams default_params;
-    InitializeUI(default_params);
-  }
   void InitializeUI(const InitParams& args) override {
     // Ozone drm can operate in three modes configured at runtime:
     //   1. legacy mode where browser and gpu components communicate
@@ -206,10 +202,6 @@ class OzonePlatformGbm
       mus_thread_proxy_->ProvideManagers(display_manager_.get(),
                                          overlay_manager_.get());
     }
-  }
-  void InitializeGPU() override {
-    InitParams default_params;
-    InitializeGPU(default_params);
   }
   void InitializeGPU(const InitParams& args) override {
     // TODO(rjkroege): services/ui should initialize this with a connector.

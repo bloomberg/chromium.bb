@@ -85,7 +85,7 @@ class OzonePlatformCast : public OzonePlatform {
     return nullptr;
   }
 
-  void InitializeUI() override {
+  void InitializeUI(const InitParams& params) override {
     device_manager_ = CreateDeviceManager();
     overlay_manager_.reset(new OverlayManagerCast());
     cursor_factory_.reset(new CursorFactoryOzone());
@@ -111,7 +111,7 @@ class OzonePlatformCast : public OzonePlatform {
     if (enable_dummy_software_rendering)
       surface_factory_.reset(new SurfaceFactoryCast());
   }
-  void InitializeGPU() override {
+  void InitializeGPU(const InitParams& params) override {
     surface_factory_.reset(new SurfaceFactoryCast(std::move(egl_platform_)));
   }
 
