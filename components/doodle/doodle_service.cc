@@ -17,6 +17,12 @@
 
 namespace doodle {
 
+namespace {
+
+const int64_t kMaxTimeToLiveSecs = 30 * 24 * 60 * 60;  // 30 days
+
+}  // namespace
+
 // static
 void DoodleService::RegisterProfilePrefs(PrefRegistrySimple* pref_registry) {
   pref_registry->RegisterDictionaryPref(prefs::kCachedConfig,
@@ -148,6 +154,12 @@ DoodleService::DownloadOutcome DoodleService::HandleNewConfig(
     DoodleState state,
     base::TimeDelta time_to_live,
     const base::Optional<DoodleConfig>& doodle_config) {
+  // Clamp the time-to-live to some reasonable maximum.
+  if (time_to_live.InSeconds() > kMaxTimeToLiveSecs) {
+    time_to_live = base::TimeDelta::FromSeconds(kMaxTimeToLiveSecs);
+    DLOG(WARNING) << "Clamping TTL to " << kMaxTimeToLiveSecs << " seconds!";
+  }
+
   // Handle the case where the new config is already expired.
   bool expired = time_to_live <= base::TimeDelta();
   const base::Optional<DoodleConfig>& new_config =

@@ -23,8 +23,6 @@ namespace doodle {
 
 namespace {
 
-const double kMaxTimeToLiveMS = 30.0 * 24 * 60 * 60 * 1000;  // 30 days
-
 // "/async/ddljson" is the base API path. "ntp:1" identifies this request as
 // being for a New Tab page. The "graybg:" param specifies whether the doodle
 // will be displayed on a gray background.
@@ -148,17 +146,12 @@ base::Optional<DoodleConfig> DoodleFetcherImpl::ParseDoodleConfigAndTimeToLive(
       DoodleConfig::FromDictionary(ddljson, GetGoogleBaseUrl());
 
   // The JSON doesn't guarantee the number to fit into an int.
-  double ttl = 0;  // Expires immediately if the parameter is missing.
-  if (!ddljson.GetDouble("time_to_live_ms", &ttl) || ttl < 0) {
+  double ttl_ms = 0;  // Expires immediately if the parameter is missing.
+  if (!ddljson.GetDouble("time_to_live_ms", &ttl_ms) || ttl_ms < 0) {
     DLOG(WARNING) << "No valid Doodle TTL present in ddljson!";
-    ttl = 0;
+    ttl_ms = 0;
   }
-  // TODO(treib,fhorschig): Move this logic into the service.
-  if (ttl > kMaxTimeToLiveMS) {
-    ttl = kMaxTimeToLiveMS;
-    DLOG(WARNING) << "Clamping Doodle TTL to 30 days!";
-  }
-  *time_to_live = base::TimeDelta::FromMillisecondsD(ttl);
+  *time_to_live = base::TimeDelta::FromMillisecondsD(ttl_ms);
 
   return doodle;
 }

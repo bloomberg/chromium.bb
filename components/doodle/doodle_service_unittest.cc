@@ -357,6 +357,20 @@ TEST_F(DoodleServiceTest, DisregardsAlreadyExpiredConfigs) {
   service()->RemoveObserver(&observer);
 }
 
+TEST_F(DoodleServiceTest, ClampsTimeToLive) {
+  // Load a config with an excessive time-to-live.
+  service()->Refresh();
+  DoodleConfig config = CreateConfig(DoodleType::SIMPLE);
+  fetcher()->ServeAllCallbacks(DoodleState::AVAILABLE,
+                               base::TimeDelta::FromDays(100), config);
+  ASSERT_THAT(service()->config(), Eq(config));
+
+  // The time-to-live should have been clamped to a reasonable maximum.
+  ASSERT_THAT(task_runner()->GetPendingTaskCount(), Eq(1u));
+  EXPECT_THAT(task_runner()->NextPendingTaskDelay(),
+              Eq(base::TimeDelta::FromDays(30)));
+}
+
 TEST_F(DoodleServiceTest, RecordsMetricsForSuccessfulDownload) {
   base::HistogramTester histograms;
 

@@ -224,28 +224,6 @@ TEST_F(DoodleFetcherImplTest, ResponseContainsValidBaseInformation) {
   EXPECT_THAT(time_to_live, Eq(base::TimeDelta::FromMilliseconds(55000)));
 }
 
-TEST_F(DoodleFetcherImplTest, DoodleExpiresWithinThirtyDaysForTooLargeTTL) {
-  base::MockCallback<DoodleFetcherImpl::FinishedCallback> callback;
-  doodle_fetcher()->FetchDoodle(callback.Get());
-
-  DoodleState state = DoodleState::NO_DOODLE;
-  base::TimeDelta time_to_live;
-  base::Optional<DoodleConfig> response;
-  EXPECT_CALL(callback, Run(_, _, _))
-      .WillOnce(DoAll(SaveArg<0>(&state), SaveArg<1>(&time_to_live),
-                      SaveArg<2>(&response)));
-  RespondWithData(R"json({"ddljson": {
-      "time_to_live_ms":5184000000,
-      "large_image": {"url":"/logos/doodles/2015/some.gif"}
-    }})json");  // 60 days
-
-  EXPECT_THAT(state, Eq(DoodleState::AVAILABLE));
-  EXPECT_TRUE(response.has_value());
-  EXPECT_THAT(time_to_live,
-              Eq(base::TimeDelta::FromMilliseconds(30ul * 24 * 60 * 60 *
-                                                   1000)));  // 30 days
-}
-
 TEST_F(DoodleFetcherImplTest, DoodleExpiresImmediatelyWithNegativeTTL) {
   base::MockCallback<DoodleFetcherImpl::FinishedCallback> callback;
   doodle_fetcher()->FetchDoodle(callback.Get());
