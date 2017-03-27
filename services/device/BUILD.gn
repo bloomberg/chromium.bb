@@ -11,6 +11,9 @@ if (is_android) {
 }
 
 source_set("lib") {
+  # This should be visible only to embedders of the Device Service, and the
+  # dependence should only be for the purpose of embedding the Device Service.
+  visibility = [ "//content/browser" ]
   sources = [
     "device_service.cc",
     "device_service.h",
@@ -87,11 +90,13 @@ if (is_android) {
   }
 
   android_library("java") {
-    java_files = [
-      "android/java/src/org/chromium/services/device/InterfaceRegistrar.java",
-      "screen_orientation/android/java/src/org/chromium/device/screen_orientation/ScreenOrientationListener.java",
-      "time_zone_monitor/android/java/src/org/chromium/device/time_zone_monitor/TimeZoneMonitor.java",
-    ]
+    # This should be visible only to embedders of the Device Service, and the
+    # dependence should only be for the purpose of embedding the Device Service.
+    # //content/public/android:* here actually wants to identify the
+    # //content/public/android:content_java target and all of its generated
+    # targets which also need to see this target as well.
+    visibility = [ "//content/public/android:*" ]
+    java_files = [ "android/java/src/org/chromium/services/device/InterfaceRegistrar.java" ]
     deps = [
       "//base:base_java",
       "//device/battery:mojo_bindings_java",
@@ -101,9 +106,10 @@ if (is_android) {
       "//mojo/android:system_java",
       "//mojo/public/java:bindings_java",
       "//mojo/public/java:system_java",
+      "//services/device/screen_orientation:java",
+      "//services/device/time_zone_monitor:java",
       "//services/service_manager/public/interfaces:interfaces_java",
       "//services/service_manager/public/java:service_manager_java",
-      "//ui/android:ui_java",
     ]
   }
 }

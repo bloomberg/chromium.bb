@@ -61,4 +61,15 @@ if (is_android) {
     ]
     jni_package = "time_zone_monitor"
   }
+
+  android_library("java") {
+    # Conceptually, this should be visible only to //services/device:java.
+    # However, various generated targets also need to see this target as a
+    # result of //services/device:java depending on it.
+    visibility = [ "//services/device:*" ]
+    java_files = [ "android/java/src/org/chromium/device/time_zone_monitor/TimeZoneMonitor.java" ]
+    deps = [
+      "//base:base_java",
+    ]
+  }
 }
