@@ -17,7 +17,6 @@
 
 namespace blink {
 
-class FrameHost;
 class FrameOwner;
 class RemoteFrame;
 enum class WebFrameLoadType;
@@ -109,7 +108,7 @@ class WEB_EXPORT WebRemoteFrameImpl final
   WebFrameImplBase* toImplBase() { return this; }
 
   // WebFrameImplBase methods:
-  void initializeCoreFrame(FrameHost*,
+  void initializeCoreFrame(Page&,
                            FrameOwner*,
                            const AtomicString& name) override;
   RemoteFrame* frame() const override { return m_frame.get(); }

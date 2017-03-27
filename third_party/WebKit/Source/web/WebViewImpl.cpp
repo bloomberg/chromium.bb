@@ -309,7 +309,7 @@ void WebView::didExitModalLoop() {
 }
 
 void WebViewImpl::setMainFrame(WebFrame* frame) {
-  frame->toImplBase()->initializeCoreFrame(&page()->frameHost(), 0, nullAtom);
+  frame->toImplBase()->initializeCoreFrame(*page(), 0, nullAtom);
 }
 
 void WebViewImpl::setCredentialManagerClient(

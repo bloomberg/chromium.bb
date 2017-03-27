@@ -314,7 +314,7 @@ class WEB_EXPORT WebLocalFrameImpl final
                             WebString& clipHtml) override;
 
   // WebFrameImplBase methods:
-  void initializeCoreFrame(FrameHost*,
+  void initializeCoreFrame(Page&,
                            FrameOwner*,
                            const AtomicString& name) override;
   LocalFrame* frame() const override { return m_frame.get(); }

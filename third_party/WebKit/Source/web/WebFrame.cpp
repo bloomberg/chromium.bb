@@ -6,7 +6,6 @@
 
 #include "bindings/core/v8/WindowProxyManager.h"
 #include "core/HTMLNames.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/RemoteFrame.h"
@@ -68,7 +67,7 @@ bool WebFrame::swap(WebFrame* frame) {
   }
   m_openedFrameTracker->transferTo(frame);
 
-  FrameHost* host = oldFrame->host();
+  Page* page = oldFrame->page();
   AtomicString name = oldFrame->tree().name();
   FrameOwner* owner = oldFrame->owner();
 
@@ -105,7 +104,7 @@ bool WebFrame::swap(WebFrame* frame) {
                            TRACE_EVENT_SCOPE_THREAD, "frame", &localFrame);
     }
   } else {
-    toWebRemoteFrameImpl(frame)->initializeCoreFrame(host, owner, name);
+    toWebRemoteFrameImpl(frame)->initializeCoreFrame(*page, owner, name);
   }
 
   if (m_parent && oldFrame->hasReceivedUserGesture())

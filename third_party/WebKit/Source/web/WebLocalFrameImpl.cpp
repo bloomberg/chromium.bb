@@ -118,7 +118,6 @@
 #include "core/editing/iterators/TextIterator.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/editing/spellcheck/SpellChecker.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/PageScaleConstraintsSet.h"
@@ -1599,11 +1598,10 @@ void WebLocalFrameImpl::setCoreFrame(LocalFrame* frame) {
   m_frame = frame;
 }
 
-void WebLocalFrameImpl::initializeCoreFrame(FrameHost* host,
+void WebLocalFrameImpl::initializeCoreFrame(Page& page,
                                             FrameOwner* owner,
                                             const AtomicString& name) {
-  setCoreFrame(LocalFrame::create(m_localFrameClientImpl.get(),
-                                  host ? &host->page() : nullptr, owner,
+  setCoreFrame(LocalFrame::create(m_localFrameClientImpl.get(), &page, owner,
                                   m_interfaceProvider, m_interfaceRegistry));
   frame()->tree().setName(name);
   // We must call init() after m_frame is assigned because it is referenced
@@ -1662,7 +1660,7 @@ LocalFrame* WebLocalFrameImpl::createChildFrame(
   if (!webframeChild)
     return nullptr;
 
-  webframeChild->initializeCoreFrame(frame()->host(), ownerElement, name);
+  webframeChild->initializeCoreFrame(*frame()->page(), ownerElement, name);
   // Initializing the core frame may cause the new child to be detached, since
   // it may dispatch a load event in the parent.
   if (!webframeChild->parent())

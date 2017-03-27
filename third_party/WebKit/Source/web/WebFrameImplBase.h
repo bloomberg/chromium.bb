@@ -12,8 +12,8 @@
 namespace blink {
 
 class Frame;
-class FrameHost;
 class FrameOwner;
+class Page;
 
 // WebFrameImplBase exists to avoid the diamond inheritance problem:
 // - The public interfaces WebLocalFrame/WebRemoteFrame extend WebFrame.
@@ -33,7 +33,7 @@ class WEB_EXPORT WebFrameImplBase
  public:
   virtual ~WebFrameImplBase();
 
-  virtual void initializeCoreFrame(FrameHost*,
+  virtual void initializeCoreFrame(Page&,
                                    FrameOwner*,
                                    const AtomicString& name) = 0;
   // TODO(dcheng): Rename this to coreFrame()? This probably also shouldn't be

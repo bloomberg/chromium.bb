@@ -9,7 +9,6 @@
 #include "core/dom/Fullscreen.h"
 #include "core/dom/RemoteSecurityContext.h"
 #include "core/dom/SecurityContext.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
@@ -337,7 +336,7 @@ WebLocalFrame* WebRemoteFrameImpl::createLocalChild(
   // (one from the initial frame creation, and one from swapping it into the
   // remote process).  FrameLoader might need a special initialization function
   // for this case to avoid that duplicate navigation.
-  child->initializeCoreFrame(frame()->host(), owner, name);
+  child->initializeCoreFrame(*frame()->page(), owner, name);
   // Partially related with the above FIXME--the init() call may trigger JS
   // dispatch. However,
   // if the parent is remote, it should never be detached synchronously...
@@ -345,11 +344,10 @@ WebLocalFrame* WebRemoteFrameImpl::createLocalChild(
   return child;
 }
 
-void WebRemoteFrameImpl::initializeCoreFrame(FrameHost* host,
+void WebRemoteFrameImpl::initializeCoreFrame(Page& page,
                                              FrameOwner* owner,
                                              const AtomicString& name) {
-  setCoreFrame(RemoteFrame::create(m_frameClient.get(),
-                                   host ? &host->page() : nullptr, owner));
+  setCoreFrame(RemoteFrame::create(m_frameClient.get(), &page, owner));
   frame()->createView();
   m_frame->tree().setName(name);
 }
@@ -364,7 +362,7 @@ WebRemoteFrame* WebRemoteFrameImpl::createRemoteChild(
   appendChild(child);
   RemoteFrameOwner* owner = RemoteFrameOwner::create(
       static_cast<SandboxFlags>(sandboxFlags), WebFrameOwnerProperties());
-  child->initializeCoreFrame(frame()->host(), owner, name);
+  child->initializeCoreFrame(*frame()->page(), owner, name);
   return child;
 }
 
