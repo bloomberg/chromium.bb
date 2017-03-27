@@ -201,6 +201,11 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                               MAX_MIB_SIZE * sbc]
               ->mbmi.boundary_info;
 #endif
+      if (cm->mi_grid_visible[MAX_MIB_SIZE * sbr * cm->mi_stride +
+                              MAX_MIB_SIZE * sbc] == NULL) {
+        dering_left = 0;
+        continue;
+      }
       if (!dering_left) cstart = -OD_FILT_HBORDER;
       nhb = AOMMIN(MAX_MIB_SIZE, cm->mi_cols - MAX_MIB_SIZE * sbc);
       nvb = AOMMIN(MAX_MIB_SIZE, cm->mi_rows - MAX_MIB_SIZE * sbr);
