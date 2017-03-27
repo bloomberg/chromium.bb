@@ -26,7 +26,7 @@
 #ifndef ThemeMac_h
 #define ThemeMac_h
 
-#import <Cocoa/Cocoa.h>
+#import <AppKit/AppKit.h>
 
 #include "platform/Theme.h"
 

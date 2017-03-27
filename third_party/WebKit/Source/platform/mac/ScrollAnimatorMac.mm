@@ -25,6 +25,8 @@
 
 #include "platform/mac/ScrollAnimatorMac.h"
 
+#import <AppKit/AppKit.h>
+
 #include "platform/Timer.h"
 #include "platform/animation/TimingFunction.h"
 #include "platform/geometry/FloatRect.h"

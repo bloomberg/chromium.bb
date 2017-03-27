@@ -26,8 +26,6 @@
 #ifndef WebCore_NSScrollerImpDetails_h
 #define WebCore_NSScrollerImpDetails_h
 
-#import <Cocoa/Cocoa.h>
-
 #import <AvailabilityMacros.h>
 
 @interface NSObject (ScrollbarPainter)

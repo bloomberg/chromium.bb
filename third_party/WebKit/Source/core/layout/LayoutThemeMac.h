@@ -24,7 +24,7 @@
 #ifndef LayoutThemeMac_h
 #define LayoutThemeMac_h
 
-#import <Cocoa/Cocoa.h>
+#import <AppKit/AppKit.h>
 
 #import "core/layout/LayoutTheme.h"
 #import "core/paint/ThemePainterMac.h"

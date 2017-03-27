@@ -29,8 +29,6 @@
 #ifndef ColorMac_h
 #define ColorMac_h
 
-#import <Cocoa/Cocoa.h>
-
 #include "platform/graphics/Color.h"
 
 OBJC_CLASS NSColor;

@@ -26,7 +26,7 @@
 #ifndef ScrollbarThemeMac_h
 #define ScrollbarThemeMac_h
 
-#import <Cocoa/Cocoa.h>
+#include <AppKit/AppKit.h>
 
 #include "platform/mac/NSScrollerImpDetails.h"
 #include "platform/scroll/ScrollbarTheme.h"

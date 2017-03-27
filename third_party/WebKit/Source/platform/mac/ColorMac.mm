@@ -26,6 +26,8 @@
 
 #import "platform/mac/ColorMac.h"
 
+#import <AppKit/AppKit.h>
+
 #import "wtf/RetainPtr.h"
 #import "wtf/StdLibExtras.h"
 
