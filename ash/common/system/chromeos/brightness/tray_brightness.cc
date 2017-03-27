@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shell_observer.h"
 #include "ash/common/system/brightness_control_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
@@ -103,13 +102,8 @@ BrightnessView::BrightnessView(bool default_view, double initial_percent)
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   views::ImageView* icon = TrayPopupUtils::CreateMainImageView();
-  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-    icon->SetImage(
-        gfx::CreateVectorIcon(kSystemMenuBrightnessIcon, kMenuIconColor));
-  } else {
-    icon->SetImage(
-        rb.GetImageNamed(IDR_AURA_UBER_TRAY_BRIGHTNESS).ToImageSkia());
-  }
+  icon->SetImage(
+      gfx::CreateVectorIcon(kSystemMenuBrightnessIcon, kMenuIconColor));
   tri_view->AddView(TriView::Container::START, icon);
 
   slider_ = TrayPopupUtils::CreateSlider(this);
