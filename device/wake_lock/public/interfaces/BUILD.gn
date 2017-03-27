@@ -6,6 +6,8 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("interfaces") {
   sources = [
+    "wake_lock_context.mojom",
+    "wake_lock_context_provider.mojom",
     "wake_lock_service.mojom",
   ]
 }

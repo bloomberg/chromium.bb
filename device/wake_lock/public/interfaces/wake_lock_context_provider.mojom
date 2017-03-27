@@ -1,0 +1,15 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module device.mojom;
+
+import "device/wake_lock/public/interfaces/wake_lock_context.mojom";
+
+interface WakeLockContextProvider {
+
+  // Gets a WakeLockContext that is associated with |context_id|. |context_id|
+  // is used to obtain the NativeView associated with the relevant context on
+  // Android (see WakeLockContextCallback).
+  GetContext(int32 context_id, WakeLockContext& context);
+};

@@ -98,7 +98,8 @@
 #include "device/generic_sensor/sensor_provider_impl.h"
 #include "device/geolocation/geolocation_service_context.h"
 #include "device/vr/features.h"
-#include "device/wake_lock/wake_lock_service_context.h"
+#include "device/wake_lock/public/interfaces/wake_lock_context.mojom.h"
+#include "device/wake_lock/public/interfaces/wake_lock_service.mojom.h"
 #include "media/base/media_switches.h"
 #include "media/media_features.h"
 #include "media/mojo/interfaces/media_service.mojom.h"
@@ -2440,14 +2441,14 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
                    base::Unretained(geolocation_service_context)));
   }
 
-  device::WakeLockServiceContext* wake_lock_service_context =
+  device::mojom::WakeLockContext* wake_lock_service_context =
       delegate_ ? delegate_->GetWakeLockServiceContext() : nullptr;
   if (wake_lock_service_context) {
     // WakeLockServiceContext is owned by WebContentsImpl so it will outlive
     // this RenderFrameHostImpl, hence a raw pointer can be bound to service
     // factory callback.
     GetInterfaceRegistry()->AddInterface<device::mojom::WakeLockService>(
-        base::Bind(&device::WakeLockServiceContext::CreateService,
+        base::Bind(&device::mojom::WakeLockContext::GetWakeLock,
                    base::Unretained(wake_lock_service_context)));
   }
 

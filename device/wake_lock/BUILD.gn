@@ -4,6 +4,8 @@
 
 source_set("wake_lock") {
   sources = [
+    "wake_lock_context_provider.cc",
+    "wake_lock_context_provider.h",
     "wake_lock_service_context.cc",
     "wake_lock_service_context.h",
     "wake_lock_service_impl.cc",

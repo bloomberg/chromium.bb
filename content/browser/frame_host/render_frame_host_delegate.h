@@ -38,7 +38,10 @@ class Message;
 
 namespace device {
 class GeolocationServiceContext;
-class WakeLockServiceContext;
+
+namespace mojom {
+class WakeLockContext;
+}
 }
 
 namespace gfx {
@@ -192,7 +195,7 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual device::GeolocationServiceContext* GetGeolocationServiceContext();
 
   // Gets the WakeLockServiceContext associated with this delegate.
-  virtual device::WakeLockServiceContext* GetWakeLockServiceContext();
+  virtual device::mojom::WakeLockContext* GetWakeLockServiceContext();
 
   // Notification that the frame wants to go into fullscreen mode.
   // |origin| represents the origin of the frame that requests fullscreen.

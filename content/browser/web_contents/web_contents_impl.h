@@ -31,6 +31,7 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
+#include "content/browser/wake_lock/wake_lock_context_host.h"
 #include "content/common/accessibility_mode.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/color_chooser.h"
@@ -43,6 +44,7 @@
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/three_d_api_types.h"
+#include "device/wake_lock/public/interfaces/wake_lock_context.mojom.h"
 #include "net/base/load_states.h"
 #include "net/http/http_response_headers.h"
 #include "ppapi/features/features.h"
@@ -78,7 +80,6 @@ class ScreenOrientationProvider;
 class SiteInstance;
 class TestWebContents;
 class TextInputManager;
-class WakeLockServiceContext;
 class WebContentsAudioMuter;
 class WebContentsDelegate;
 class WebContentsImpl;
@@ -488,7 +489,7 @@ class CONTENT_EXPORT WebContentsImpl
       RenderFrameHost* render_frame_host,
       int browser_plugin_instance_id) override;
   device::GeolocationServiceContext* GetGeolocationServiceContext() override;
-  device::WakeLockServiceContext* GetWakeLockServiceContext() override;
+  device::mojom::WakeLockContext* GetWakeLockServiceContext() override;
   void EnterFullscreenMode(const GURL& origin) override;
   void ExitFullscreenMode(bool will_cause_resize) override;
   bool ShouldRouteMessageEvent(
@@ -1473,7 +1474,7 @@ class CONTENT_EXPORT WebContentsImpl
   std::unique_ptr<device::GeolocationServiceContext>
       geolocation_service_context_;
 
-  std::unique_ptr<device::WakeLockServiceContext> wake_lock_service_context_;
+  std::unique_ptr<WakeLockContextHost> wake_lock_context_host_;
 
   std::unique_ptr<ScreenOrientationProvider> screen_orientation_provider_;
 

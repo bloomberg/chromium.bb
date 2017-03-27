@@ -747,7 +747,7 @@ test("content_browsertests") {
     "//device/screen_orientation/public/interfaces",
     "//device/sensors",
     "//device/sensors/public/cpp:full",
-    "//device/wake_lock",
+    "//device/wake_lock/public/interfaces",
     "//gin",
     "//gpu",
     "//gpu/ipc/host",

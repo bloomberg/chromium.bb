@@ -76,7 +76,6 @@ test("device_unittests") {
     "test/run_all_unittests.cc",
     "u2f/u2f_apdu_unittest.cc",
     "u2f/u2f_message_unittest.cc",
-    "wake_lock/wake_lock_service_context_unittest.cc",
   ]
 
   deps = [

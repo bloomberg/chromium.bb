@@ -10,8 +10,7 @@
 
 namespace device {
 
-WakeLockServiceImpl::WakeLockServiceImpl(
-    base::WeakPtr<WakeLockServiceContext> context)
+WakeLockServiceImpl::WakeLockServiceImpl(WakeLockServiceContext* context)
     : context_(context), wake_lock_request_outstanding_(false) {}
 
 WakeLockServiceImpl::~WakeLockServiceImpl() {
@@ -19,7 +18,7 @@ WakeLockServiceImpl::~WakeLockServiceImpl() {
 }
 
 void WakeLockServiceImpl::RequestWakeLock() {
-  if (!context_ || wake_lock_request_outstanding_)
+  if (wake_lock_request_outstanding_)
     return;
 
   wake_lock_request_outstanding_ = true;
@@ -27,7 +26,7 @@ void WakeLockServiceImpl::RequestWakeLock() {
 }
 
 void WakeLockServiceImpl::CancelWakeLock() {
-  if (!context_ || !wake_lock_request_outstanding_)
+  if (!wake_lock_request_outstanding_)
     return;
 
   wake_lock_request_outstanding_ = false;

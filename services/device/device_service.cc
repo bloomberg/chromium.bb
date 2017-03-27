@@ -4,6 +4,8 @@
 
 #include "services/device/device_service.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
@@ -13,6 +15,7 @@
 #include "device/battery/battery_monitor_impl.h"
 #include "device/battery/battery_status_service.h"
 #include "device/sensors/device_sensor_host.h"
+#include "device/wake_lock/wake_lock_context_provider.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/device/fingerprint/fingerprint.h"
 #include "services/device/power_monitor/power_monitor_message_broadcaster.h"
@@ -20,6 +23,7 @@
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service_info.h"
+#include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/context_utils.h"
@@ -33,30 +37,45 @@
 
 namespace device {
 
+#if defined(OS_ANDROID)
 std::unique_ptr<service_manager::Service> CreateDeviceService(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
-#if defined(OS_ANDROID)
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    const WakeLockContextCallback& wake_lock_context_callback) {
   if (!EnsureJniRegistered()) {
     DLOG(ERROR) << "Failed to register JNI for Device Service";
     return nullptr;
   }
-#endif
 
+  return base::MakeUnique<DeviceService>(std::move(file_task_runner),
+                                         std::move(io_task_runner),
+                                         wake_lock_context_callback);
+}
+#else
+std::unique_ptr<service_manager::Service> CreateDeviceService(
+    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
   return base::MakeUnique<DeviceService>(std::move(file_task_runner),
                                          std::move(io_task_runner));
 }
+#endif
 
+#if defined(OS_ANDROID)
+DeviceService::DeviceService(
+    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    const WakeLockContextCallback& wake_lock_context_callback)
+    : java_interface_provider_initialized_(false),
+      file_task_runner_(std::move(file_task_runner)),
+      io_task_runner_(std::move(io_task_runner)),
+      wake_lock_context_callback_(wake_lock_context_callback) {}
+#else
 DeviceService::DeviceService(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
-    :
-#if defined(OS_ANDROID)
-      java_interface_provider_initialized_(false),
+    : file_task_runner_(std::move(file_task_runner)),
+      io_task_runner_(std::move(io_task_runner)) {}
 #endif
-      file_task_runner_(std::move(file_task_runner)),
-      io_task_runner_(std::move(io_task_runner)) {
-}
 
 DeviceService::~DeviceService() {
 #if !defined(OS_ANDROID)
@@ -76,6 +95,7 @@ bool DeviceService::OnConnect(const service_manager::ServiceInfo& remote_info,
   registry->AddInterface<mojom::PowerMonitor>(this);
   registry->AddInterface<mojom::ScreenOrientationListener>(this);
   registry->AddInterface<mojom::TimeZoneMonitor>(this);
+  registry->AddInterface<mojom::WakeLockContextProvider>(this);
 
 #if defined(OS_ANDROID)
   registry->AddInterface(
@@ -199,6 +219,12 @@ void DeviceService::Create(const service_manager::Identity& remote_identity,
   if (!time_zone_monitor_)
     time_zone_monitor_ = TimeZoneMonitor::Create(file_task_runner_);
   time_zone_monitor_->Bind(std::move(request));
+}
+
+void DeviceService::Create(const service_manager::Identity& remote_identity,
+                           mojom::WakeLockContextProviderRequest request) {
+  WakeLockContextProvider::Create(std::move(request), file_task_runner_,
+                                  wake_lock_context_callback_);
 }
 
 #if defined(OS_ANDROID)

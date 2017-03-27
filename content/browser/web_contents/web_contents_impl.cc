@@ -126,7 +126,6 @@
 #include "content/public/common/web_preferences.h"
 #include "device/geolocation/geolocation_service_context.h"
 #include "device/nfc/nfc.mojom.h"
-#include "device/wake_lock/wake_lock_service_context.h"
 #include "net/base/url_util.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_transaction_factory.h"
@@ -481,10 +480,9 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
 #if BUILDFLAG(ENABLE_PLUGINS)
   pepper_playback_observer_.reset(new PepperPlaybackObserver(this));
 #endif
+
+  wake_lock_context_host_.reset(new WakeLockContextHost(this));
   loader_io_thread_notifier_.reset(new LoaderIOThreadNotifier(this));
-  wake_lock_service_context_.reset(new device::WakeLockServiceContext(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE),
-      base::Bind(&WebContentsImpl::GetNativeView, base::Unretained(this))));
   host_zoom_map_observer_.reset(new HostZoomMapObserver(this));
 }
 
@@ -2485,8 +2483,8 @@ WebContentsImpl::GetGeolocationServiceContext() {
   return geolocation_service_context_.get();
 }
 
-device::WakeLockServiceContext* WebContentsImpl::GetWakeLockServiceContext() {
-  return wake_lock_service_context_.get();
+device::mojom::WakeLockContext* WebContentsImpl::GetWakeLockServiceContext() {
+  return wake_lock_context_host_->GetWakeLockContext();
 }
 
 void WebContentsImpl::OnShowValidationMessage(

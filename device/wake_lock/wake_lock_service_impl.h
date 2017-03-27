@@ -6,7 +6,6 @@
 #define DEVICE_WAKE_LOCK_WAKE_LOCK_SERVICE_IMPL_H_
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "device/wake_lock/public/interfaces/wake_lock_service.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 
@@ -16,7 +15,7 @@ class WakeLockServiceContext;
 
 class WakeLockServiceImpl : public mojom::WakeLockService {
  public:
-  explicit WakeLockServiceImpl(base::WeakPtr<WakeLockServiceContext> context);
+  explicit WakeLockServiceImpl(WakeLockServiceContext* context);
   ~WakeLockServiceImpl() override;
 
   // WakeLockSevice implementation.
@@ -24,7 +23,8 @@ class WakeLockServiceImpl : public mojom::WakeLockService {
   void CancelWakeLock() override;
 
  private:
-  base::WeakPtr<WakeLockServiceContext> context_;
+  // Will outlive this instance.
+  WakeLockServiceContext* context_;
   bool wake_lock_request_outstanding_;
 
   DISALLOW_COPY_AND_ASSIGN(WakeLockServiceImpl);
