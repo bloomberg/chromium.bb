@@ -51,8 +51,6 @@ def infra_kitchen(c):
       c.base_paths[path] = c.base_paths['cache'] + (path,)
 
 
-@CONFIG_CTX()
-def infra_generic(c):
-  c.base_paths['builder_cache'] = c.base_paths['cache'] + ('builder',)
-  c.base_paths['git_cache'] = c.base_paths['cache'] + ('git',)
-  c.base_paths['goma_cache'] = c.base_paths['cache'] + ('goma',)
+@CONFIG_CTX(includes=['infra_buildbot'])
+def infra_swarmbucket(c):
+  c.base_paths['git_cache'] = c.START_DIR + ('git_cache',)
