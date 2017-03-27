@@ -1203,7 +1203,6 @@ class CORE_EXPORT UseCounter {
     PresentationConnectionListConnectionAvailableEventListener = 1555,
     WebAudioAutoplayCrossOriginIframe = 1556,
     VRGetDisplays = 1558,
-    VRPresent = 1559,
     VRDeprecatedGetPose = 1560,
     CSSZoomReset = 1578,
     CSSZoomDocument = 1579,
