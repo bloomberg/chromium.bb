@@ -57,7 +57,7 @@ class UrlRuleFlatBufferConverter {
         if (domain_list_item.exclude())
           domain += '~';
         domain += domain_list_item.domain();
-        domains.push_back(builder->CreateString(domain));
+        domains.push_back(builder->CreateSharedString(domain));
       }
       domains_offset = builder->CreateVector(domains);
     }
@@ -200,7 +200,7 @@ class UrlRuleFlatBufferConverter {
 // RulesetIndexer --------------------------------------------------------------
 
 // static
-const int RulesetIndexer::kIndexedFormatVersion = 11;
+const int RulesetIndexer::kIndexedFormatVersion = 12;
 
 RulesetIndexer::MutableUrlPatternIndex::MutableUrlPatternIndex() = default;
 RulesetIndexer::MutableUrlPatternIndex::~MutableUrlPatternIndex() = default;
@@ -416,6 +416,8 @@ bool MatchesAny(const FlatUrlRuleList* rules,
       continue;
     }
 
+    // TODO(pkalinnikov): Match the medatada before the URL pattern, but maybe
+    // excluding the domain list.
     if (DoesRuleMetadataMatch(*rule, initiator, element_type, activation_type,
                               is_third_party, disable_generic_rules)) {
       return true;

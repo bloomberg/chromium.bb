@@ -591,6 +591,9 @@ TEST_F(IndexedRulesetTest, MatchWithDisableGenericRules) {
                      .AddDomain("example1.com")
                      .AddDomain("sub.example2.com")
                      .rule()));
+  // Note: Some of the rules have common domains (e.g., example1.com), which are
+  // ultimately shared by FlatBuffers' CreateSharedString. The test also makes
+  // sure that the data structure works properly with such optimization.
 
   Finish();
 
