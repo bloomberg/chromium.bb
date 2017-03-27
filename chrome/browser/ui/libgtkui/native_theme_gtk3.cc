@@ -203,7 +203,7 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
     case ui::NativeTheme::kColorId_TextOnProminentButtonColor:
       return GetFgColor(
           "GtkTreeView#treeview.view "
-          "GtkTreeview#treeview.view.cell:selected:focus GtkLabel");
+          "GtkTreeView#treeview.view.cell:selected:focus GtkLabel");
 
     // Textfield
     case ui::NativeTheme::kColorId_TextfieldDefaultColor:
