@@ -308,7 +308,7 @@ weston_desktop_wl_shell_surface_protocol_set_fullscreen(struct wl_client *wl_cli
 	struct weston_output *output = NULL;
 
 	if (output_resource != NULL)
-		output = weston_output_from_resource(output_resource);
+		output = weston_head_from_resource(output_resource)->output;
 
 	weston_desktop_wl_shell_change_state(surface, FULLSCREEN, NULL, 0, 0);
 	weston_desktop_api_fullscreen_requested(surface->desktop, dsurface,

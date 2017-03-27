@@ -1995,8 +1995,8 @@ weston_output_disable(struct weston_output *output);
 void
 weston_pending_output_coldplug(struct weston_compositor *compositor);
 
-struct weston_output *
-weston_output_from_resource(struct wl_resource *resource);
+struct weston_head *
+weston_head_from_resource(struct wl_resource *resource);
 
 #ifdef  __cplusplus
 }

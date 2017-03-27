@@ -4330,7 +4330,7 @@ bind_output(struct wl_client *client,
 	}
 
 	wl_list_insert(&head->resource_list, wl_resource_get_link(resource));
-	wl_resource_set_implementation(resource, &output_interface, output,
+	wl_resource_set_implementation(resource, &output_interface, head,
 				       unbind_resource);
 
 	assert(output);
@@ -4364,8 +4364,8 @@ bind_output(struct wl_client *client,
  * \return The backing object (user data) of a wl_resource representing a
  * wl_output protocol object.
  */
-WL_EXPORT struct weston_output *
-weston_output_from_resource(struct wl_resource *resource)
+WL_EXPORT struct weston_head *
+weston_head_from_resource(struct wl_resource *resource)
 {
 	assert(wl_resource_instance_of(resource, &wl_output_interface,
 				       &output_interface));

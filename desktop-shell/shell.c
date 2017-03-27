@@ -2969,7 +2969,7 @@ desktop_shell_set_background(struct wl_client *client,
 	surface->committed = background_committed;
 	surface->committed_private = shell;
 	weston_surface_set_label_func(surface, background_get_label);
-	surface->output = weston_output_from_resource(output_resource);
+	surface->output = weston_head_from_resource(output_resource)->output;
 	view->output = surface->output;
 
 	sh_output = find_shell_output_from_weston_output(shell, surface->output);
@@ -3066,7 +3066,7 @@ desktop_shell_set_panel(struct wl_client *client,
 	surface->committed = panel_committed;
 	surface->committed_private = shell;
 	weston_surface_set_label_func(surface, panel_get_label);
-	surface->output = weston_output_from_resource(output_resource);
+	surface->output = weston_head_from_resource(output_resource)->output;
 	view->output = surface->output;
 
 	sh_output = find_shell_output_from_weston_output(shell, surface->output);

@@ -271,11 +271,13 @@ input_panel_surface_set_toplevel(struct wl_client *client,
 	struct input_panel_surface *input_panel_surface =
 		wl_resource_get_user_data(resource);
 	struct ivi_shell *shell = input_panel_surface->shell;
+	struct weston_head *head;
 
 	wl_list_insert(&shell->input_panel.surfaces,
 		       &input_panel_surface->link);
 
-	input_panel_surface->output = weston_output_from_resource(output_resource);
+	head = weston_head_from_resource(output_resource);
+	input_panel_surface->output = head->output;
 	input_panel_surface->panel = 0;
 }
 
