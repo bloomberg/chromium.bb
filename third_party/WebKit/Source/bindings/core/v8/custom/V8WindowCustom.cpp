@@ -347,6 +347,9 @@ void V8Window::namedPropertyGetterCustom(
   // https://html.spec.whatwg.org/multipage/browsers.html#document-tree-child-browsing-context-name-property-set
   Frame* child = frame->tree().scopedChild(name);
   if (child) {
+    UseCounter::count(window->frame(),
+                      UseCounter::NamedAccessOnWindow_ChildBrowsingContext);
+
     // step 3. Remove each browsing context from childBrowsingContexts whose
     // active document's origin is not same origin with activeDocument's origin
     // and whose browsing context name does not match the name of its browsing
@@ -357,6 +360,10 @@ void V8Window::namedPropertyGetterCustom(
       return;
     }
 
+    UseCounter::count(
+        window->frame(),
+        UseCounter::
+            NamedAccessOnWindow_ChildBrowsingContext_CrossOriginNameMismatch);
     // In addition to the above spec'ed case, we return the child window
     // regardless of step 3 due to crbug.com/701489 for the time being.
     // TODO(yukishiino): Makes iframe.name update the browsing context name

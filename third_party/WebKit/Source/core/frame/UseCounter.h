@@ -1490,6 +1490,8 @@ class CORE_EXPORT UseCounter {
     ChildSrcAllowedWorkerThatScriptSrcBlocked = 1868,
     HTMLTableElementPresentationAttributeBackground = 1869,
     V8Navigator_GetInstalledRelatedApps_Method = 1870,
+    NamedAccessOnWindow_ChildBrowsingContext = 1871,
+    NamedAccessOnWindow_ChildBrowsingContext_CrossOriginNameMismatch = 1872,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
