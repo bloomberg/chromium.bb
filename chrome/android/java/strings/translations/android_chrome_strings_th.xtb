@@ -242,7 +242,6 @@
 <translation id="3810973564298564668">จัดการ</translation>
 <translation id="3819178904835489326">ลบการดาวน์โหลด <ph name="NUMBER_OF_DOWNLOADS" /> รายการแล้ว</translation>
 <translation id="3822502789641063741">ล้างพื้นที่เก็บข้อมูลเว็บไซต์ไหม</translation>
-<translation id="3828029223314399057">ค้นหาบุ๊กมาร์ก</translation>
 <translation id="3845539888601087042">กำลังแสดงประวัติการเข้าชมจากอุปกรณ์ที่คุณลงชื่อเข้าใช้ <ph name="BEGIN_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="3859306556332390985">ไปข้างหน้า</translation>
 <translation id="3894427358181296146">เพิ่มโฟลเดอร์</translation>
@@ -336,7 +335,6 @@
 <translation id="4860895144060829044">โทร</translation>
 <translation id="4881695831933465202">เปิด</translation>
 <translation id="4885273946141277891">อินสแตนซ์ของ Chrome เกินจำนวนที่สนับสนุน</translation>
-<translation id="490442468485962363">เปิดในแท็บไม่ระบุตัวตน Chrome</translation>
 <translation id="4910889077668685004">แอปชำระเงิน</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />รับความช่วยเหลือ<ph name="END_LINK" />ระหว่างการค้นหาอุปกรณ์…</translation>
 <translation id="4943872375798546930">ไม่มีผลการค้นหา</translation>

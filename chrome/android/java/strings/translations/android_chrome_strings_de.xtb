@@ -242,7 +242,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="3810973564298564668">Verwalten</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> Downloads gelöscht</translation>
 <translation id="3822502789641063741">Websitespeicher löschen?</translation>
-<translation id="3828029223314399057">In Lesezeichen suchen</translation>
 <translation id="3845539888601087042">Der Verlauf für alle Geräte, auf denen Sie angemeldet sind, wird angezeigt. <ph name="BEGIN_LINK" />Weitere Informationen.<ph name="END_LINK" /></translation>
 <translation id="3859306556332390985">Nach vorne navigieren</translation>
 <translation id="3894427358181296146">Ordner hinzufügen</translation>
@@ -336,7 +335,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4860895144060829044">Anrufen</translation>
 <translation id="4881695831933465202">Öffnen</translation>
 <translation id="4885273946141277891">Nicht unterstützte Anzahl von Chrome-Instanzen</translation>
-<translation id="490442468485962363">In Chrome-Inkognito-Tab öffnen</translation>
 <translation id="4910889077668685004">Zahlungs-Apps</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Hilfe aufrufen<ph name="END_LINK" />, während nach Geräten gesucht wird…</translation>
 <translation id="4943872375798546930">Keine Ergebnisse</translation>
@@ -682,7 +680,7 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="856481929701340285">Desktopversion anfordern</translation>
 <translation id="857943718398505171">Zugelassen (empfohlen)</translation>
 <translation id="8583805026567836021">Kontodaten werden gelöscht</translation>
-<translation id="85969253066007694">Du und deine Eltern könnt die Chrome-Synchronisierung sowie Google-Dienste in den <ph name="BEGIN_LINK1" />Einstellungen<ph name="END_LINK1" /> verwalten</translation>
+<translation id="85969253066007694">Du und deine Eltern könnt diese Funktionen in den <ph name="BEGIN_LINK1" />Einstellungen<ph name="END_LINK1" /> verwalten</translation>
 <translation id="8617240290563765734">Soll die im heruntergeladenen Inhalt angegebene URL geöffnet werden?</translation>
 <translation id="862875433388403934">In anderen Anwendungen heruntergeladene Inhalte wie Filme und Musik können möglicherweise erst wieder abgespielt werden, nachdem Lizenzen basierend auf neuen Anmeldedaten für die betreffenden Anwendungen erworben wurden.
 

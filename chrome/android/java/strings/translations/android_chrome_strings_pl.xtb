@@ -242,7 +242,6 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="3810973564298564668">Zarządzaj</translation>
 <translation id="3819178904835489326">Usunięte pobrane pliki: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
 <translation id="3822502789641063741">Wyczyścić dane witryn?</translation>
-<translation id="3828029223314399057">Przeszukaj zakładki</translation>
 <translation id="3845539888601087042">Wyświetlam historię z urządzeń, na których jesteś zalogowany. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="3859306556332390985">Przewiń do przodu</translation>
 <translation id="3894427358181296146">Dodaj folder</translation>
@@ -336,7 +335,6 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="4860895144060829044">Zadzwoń</translation>
 <translation id="4881695831933465202">Otwórz</translation>
 <translation id="4885273946141277891">Nieobsługiwana liczba wystąpień Chrome.</translation>
-<translation id="490442468485962363">Otwórz w Chrome na karcie incognito</translation>
 <translation id="4910889077668685004">Aplikacje do płatności</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Pomoc<ph name="END_LINK" /> w trakcie wyszukiwania urządzeń…</translation>
 <translation id="4943872375798546930">Brak wyników</translation>
@@ -714,7 +712,7 @@ Aby otrzymać nowe licencje, połącz się z internetem i odtwórz pobrane treś
 <translation id="8951232171465285730">Chrome pozwolił Ci zaoszczędzić <ph name="MEGABYTES" /> MB</translation>
 <translation id="8959122750345127698">Adres nieosiągalny: <ph name="URL" /></translation>
 <translation id="8979340629087822094">z ostatniego dnia</translation>
-<translation id="8981454092730389528">Zarządzanie aktywnością Google</translation>
+<translation id="8981454092730389528">Zarządzanie aktywnością w Google</translation>
 <translation id="8986494364107987395">Automatycznie przesyłaj do Google statystyki użytkowania i raporty o awariach</translation>
 <translation id="8993760627012879038">Otwórz nową kartę w trybie incognito</translation>
 <translation id="8998729206196772491">Logujesz się na konto, którym zarządza <ph name="MANAGED_DOMAIN" />, i przekazujesz jego administratorowi kontrolę nad Twoimi danymi Chrome. Zostaną one trwale przypisane do tego konta. Gdy się wylogujesz, znikną one z tego urządzenia, ale pozostaną zapisane na Twoim koncie Google.</translation>

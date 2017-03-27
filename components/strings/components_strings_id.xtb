@@ -214,7 +214,7 @@
 <translation id="2955913368246107853">Tutup bilah cari</translation>
 <translation id="2958431318199492670">Konfigurasi jaringan tidak mematuhi standar ONC. Bagian dari konfigurasi mungkin tidak diimpor.</translation>
 <translation id="29611076221683977">Saat ini penyerang yang berada pada <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> mungkin berusaha memasang program berbahaya di Mac yang dapat mencuri atau menghapus informasi Anda (misalnya, foto, sandi, pesan, dan kartu kredit).</translation>
-<translation id="2966678944701946121">Kedaluwarsa: <ph name="EXPIRATION_DATE_ABBR" />, ditambahkan pada <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
+<translation id="2966678944701946121">Habis masa berlaku: <ph name="EXPIRATION_DATE_ABBR" />, ditambahkan pada <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="2969319727213777354">Untuk membuat sambungan aman, jam perlu disetel dengan benar. Itu karena sertifikat yang digunakan situs web untuk mengidentifikasi situs web tersebut hanya valid untuk jangka waktu tertentu. Karena jam perangkat tidak benar, Google Chrome tidak dapat memverifikasi sertifikat ini.</translation>
 <translation id="2972581237482394796">&amp;Ulang</translation>
 <translation id="2985306909656435243">Jika diaktifkan, Chromium akan menyimpan salinan kartu Anda di perangkat ini untuk pengisian formulir yang lebih cepat.</translation>
@@ -592,7 +592,7 @@
 <translation id="6534179046333460208">Saran Web Fisik</translation>
 <translation id="6550675742724504774">Opsi</translation>
 <translation id="6556239504065605927">Sambungan aman</translation>
-<translation id="6556915248009097796">Kedaluwarsa: <ph name="EXPIRATION_DATE_ABBR" />, terakhir digunakan pada <ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
+<translation id="6556915248009097796">Habis masa berlaku: <ph name="EXPIRATION_DATE_ABBR" />, terakhir digunakan pada <ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
 <translation id="6563469144985748109">Pengelola Anda belum menyetujuinya</translation>
 <translation id="6569060085658103619">Anda melihat halaman ekstensi</translation>
 <translation id="6593753688552673085">kurang dari <ph name="UPPER_ESTIMATE" /></translation>
@@ -828,7 +828,6 @@ Ssst! <ph name="SHORTCUT_KEY" /> mode penyamaran mungkin berguna suatu saat nant
 <translation id="8931333241327730545">Ingin menyimpan kartu ini ke Akun Google Anda?</translation>
 <translation id="8932102934695377596">Setelan waktu Anda terlalu lambat</translation>
 <translation id="8954894007019320973">(Lanjutan.)</translation>
-<translation id="895548565263634352">Baca berita dari <ph name="ARTICLE_PUBLISHER" /> dan <ph name="OTHER_ARTICLE_COUNT" /> lainnya</translation>
 <translation id="8971063699422889582">Sertifikat server telah kedaluwarsa.</translation>
 <translation id="8986494364107987395">Kirim statistik penggunaan dan laporan kerusakan ke Google secara otomatis</translation>
 <translation id="8987927404178983737">Bulan</translation>

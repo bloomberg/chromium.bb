@@ -19,7 +19,7 @@
 <translation id="6015796118275082299">عام</translation>
 <translation id="6315516427814392808">تعذر إكمال العملية السابقة نظرًا لانخفاض الذاكرة</translation>
 <translation id="6444070574980481588">تعيين التاريخ والوقت</translation>
-<translation id="6555463879959038093">أخفق النسخ إلى الحافظة</translation>
+<translation id="6555463879959038093">تعذّر النسخ إلى الحافظة</translation>
 <translation id="6643016212128521049">محو</translation>
 <translation id="6727102863431372879">تعيين</translation>
 <translation id="7102218676258945610">الدقائق</translation>
@@ -27,7 +27,7 @@
 <translation id="7575803462290353686">تعيين الوقت</translation>
 <translation id="7781164152564914424">تعيين الشهر</translation>
 <translation id="7821540960913969614">تعيين التاريخ</translation>
-<translation id="793640675459356075">أخفق فتح الملف المحدد</translation>
+<translation id="793640675459356075">تعذّر فتح الملف المحدد</translation>
 <translation id="8987927404178983737">شهر</translation>
 <translation id="928752963351137118">عرض نافذة الملء التلقائي المنبثقة</translation>
 </translationbundle>

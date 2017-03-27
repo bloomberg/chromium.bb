@@ -242,7 +242,6 @@
 <translation id="3810973564298564668">管理</translation>
 <translation id="3819178904835489326">已刪除 <ph name="NUMBER_OF_DOWNLOADS" /> 個下載項目</translation>
 <translation id="3822502789641063741">要清除網站儲存的資料嗎？</translation>
-<translation id="3828029223314399057">搜尋書籤</translation>
 <translation id="3845539888601087042">目前顯示的歷史紀錄來源包括您已登入帳戶的所有裝置。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="3859306556332390985">快轉到特定的播放時間點</translation>
 <translation id="3894427358181296146">新增資料夾</translation>
@@ -336,7 +335,6 @@
 <translation id="4860895144060829044">撥號</translation>
 <translation id="4881695831933465202">開啟</translation>
 <translation id="4885273946141277891">Chrome 實例的數量已超出上限。</translation>
-<translation id="490442468485962363">在 Chrome 無痕式分頁中開啟</translation>
 <translation id="4910889077668685004">付款應用程式</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />查看說明<ph name="END_LINK" />。正在掃描裝置…</translation>
 <translation id="4943872375798546930">沒有結果</translation>

@@ -242,7 +242,6 @@
 <translation id="3810973564298564668">مدیریت</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> بارگیری حذف شد</translation>
 <translation id="3822502789641063741">فضای ذخیره سایت پاک شود؟</translation>
-<translation id="3828029223314399057">جستجوی نشانک‌ها</translation>
 <translation id="3845539888601087042">در حال نمایش سابقه از دستگاه‌هایی که در آن‌ها به سیستم وارد شده‌اید. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" />.</translation>
 <translation id="3859306556332390985">جستجو به جلو</translation>
 <translation id="3894427358181296146">افزودن پوشه</translation>
@@ -336,7 +335,6 @@
 <translation id="4860895144060829044">تماس</translation>
 <translation id="4881695831933465202">باز کردن</translation>
 <translation id="4885273946141277891">‏این تعداد از نسخه‌های Chrome پشتیبانی نمی‌شود.</translation>
-<translation id="490442468485962363">‏باز کردن در برگه ناشناس Chrome</translation>
 <translation id="4910889077668685004">برنامه‌های پرداخت</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />دریافت راهنمایی<ph name="END_LINK" /> درحین اسکن دستگاه‌ها…</translation>
 <translation id="4943872375798546930">نتیجه‌ای پیدا نشد</translation>
@@ -681,7 +679,7 @@
 <translation id="856481929701340285">درخواست نمای رایانه</translation>
 <translation id="857943718398505171">مجاز (توصیه می‌شود)</translation>
 <translation id="8583805026567836021">پاک‌سازی داده‌های حساب</translation>
-<translation id="85969253066007694">شما و پدر یا مادرتان می‌توانید نحوه عملکرد را در <ph name="BEGIN_LINK1" />تنظیمات<ph name="END_LINK1" /> تغییر دهید</translation>
+<translation id="85969253066007694">شما و والدینتان می‌توانید نحوه عملکرد را در <ph name="BEGIN_LINK1" />تنظیمات<ph name="END_LINK1" /> تغییر دهید</translation>
 <translation id="8617240290563765734">نشانی وب مشخص شده در محتوای بارگیری‌شده باز شود؟</translation>
 <translation id="862875433388403934">شاید دیگر محتوای بارگیری‌شده (فیلم‌ها، موسیقی و غیره) در برنامه‌های دیگر قابل پخش نباشد، مگر آنکه آن برنامه‌ها مجدداً مجوزها را براساس اعتبارنامه دستگاه جدید بدست آورند.
 

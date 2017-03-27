@@ -242,7 +242,6 @@
 <translation id="3810973564298564668">管理</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> 件のダウンロードを削除しました</translation>
 <translation id="3822502789641063741">サイトのストレージを消去しますか？</translation>
-<translation id="3828029223314399057">ブックマークを検索</translation>
 <translation id="3845539888601087042">ログインしている端末の履歴を表示しています。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="3859306556332390985">前方にシーク再生</translation>
 <translation id="3894427358181296146">フォルダの追加</translation>
@@ -336,7 +335,6 @@
 <translation id="4860895144060829044">通話</translation>
 <translation id="4881695831933465202">開く</translation>
 <translation id="4885273946141277891">Chrome のインスタンス数の上限を超えています。</translation>
-<translation id="490442468485962363">Chrome のシークレット タブで開く</translation>
 <translation id="4910889077668685004">お支払いアプリ</translation>
 <translation id="4915549754973153784">デバイスのスキャン中… <ph name="BEGIN_LINK" />ヘルプ<ph name="END_LINK" /></translation>
 <translation id="4943872375798546930">結果はありません</translation>

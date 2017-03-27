@@ -242,7 +242,6 @@ Da biste prilagodili pojam za pretraživanje, dugo pritisnite za odabir. Da bist
 <translation id="3810973564298564668">Upravljaj</translation>
 <translation id="3819178904835489326">Izbrisano preuzimanja: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
 <translation id="3822502789641063741">Izbrisati pohranu?</translation>
-<translation id="3828029223314399057">Pretraži oznake</translation>
 <translation id="3845539888601087042">Prikazuje se povijest s uređaja na kojima ste prijavljeni. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" />.</translation>
 <translation id="3859306556332390985">Traži unaprijed</translation>
 <translation id="3894427358181296146">Dodavanje mape</translation>
@@ -336,7 +335,6 @@ Da biste prilagodili pojam za pretraživanje, dugo pritisnite za odabir. Da bist
 <translation id="4860895144060829044">Poziv</translation>
 <translation id="4881695831933465202">Otvori</translation>
 <translation id="4885273946141277891">Nepodržan broj različitih verzija Chromea.</translation>
-<translation id="490442468485962363">Otvori u Chrome kart. Anonimno</translation>
 <translation id="4910889077668685004">Aplikacije za plaćanje</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Potražite pomoć<ph name="END_LINK" /> tijekom traženja uređaja…</translation>
 <translation id="4943872375798546930">Nema rezultata</translation>

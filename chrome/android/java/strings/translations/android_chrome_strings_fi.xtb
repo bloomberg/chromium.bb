@@ -242,7 +242,6 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="3810973564298564668">Hallinnoi</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> latausta poistettiin.</translation>
 <translation id="3822502789641063741">Poistetaanko tiedot?</translation>
-<translation id="3828029223314399057">Hae kirjanmerkeistä</translation>
 <translation id="3845539888601087042">Näytetään kirjautuneiden laitteiden historia. <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
 <translation id="3859306556332390985">Kelaa eteenpäin</translation>
 <translation id="3894427358181296146">Lisää kansio</translation>
@@ -336,7 +335,6 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="4860895144060829044">Soita</translation>
 <translation id="4881695831933465202">Avaa</translation>
 <translation id="4885273946141277891">Chromen versioiden määrää ei tueta.</translation>
-<translation id="490442468485962363">Avaa, Chromen incognito-tila</translation>
 <translation id="4910889077668685004">Maksusovellukset</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Tutustu ohjeisiin<ph name="END_LINK" /> laitteiden skannauksen aikana…</translation>
 <translation id="4943872375798546930">Ei tuloksia</translation>

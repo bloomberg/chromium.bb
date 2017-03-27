@@ -232,7 +232,7 @@
 <translation id="3105172416063519923">رقم تعريف الأصل:</translation>
 <translation id="3109728660330352905">ليس لديك إذن بعرض هذه الصفحة.</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />تجربة تشغيل بيانات تشخيص الاتصال<ph name="END_LINK" />.</translation>
-<translation id="3145945101586104090">أخفق فك تشفير الاستجابة</translation>
+<translation id="3145945101586104090">تعذّر فك تشفير الاستجابة</translation>
 <translation id="3149891296864842641">خيار الشحن</translation>
 <translation id="3150653042067488994">خطأ مؤقت في الخادم</translation>
 <translation id="3157931365184549694">استعادة</translation>
@@ -373,7 +373,7 @@
 <translation id="4300246636397505754">اقتراحات الآباء</translation>
 <translation id="4304224509867189079">تسجيل الدخول</translation>
 <translation id="432290197980158659">قدم الخادم شهادة لا تتطابق مع التوقعات المضمّنة. تم تضمين هذه التوقعات للحصول على مواقع ويب موثوقة وآمنة جدًا لتوفير الحماية لك. <ph name="BEGIN_LEARN_MORE_LINK" />مزيد من المعلومات<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="4325863107915753736">أخفق العثور على المقالة</translation>
+<translation id="4325863107915753736">تعذّر العثور على المقالة</translation>
 <translation id="4326324639298822553">تحقق من تاريخ انتهاء الصلاحية وأعِد المحاولة مرة أخرى</translation>
 <translation id="4331708818696583467">غير آمن</translation>
 <translation id="4356973930735388585">قد يحاول المهاجمون الموجودون على هذا الموقع تثبيت برامج خطيرة على الكمبيوتر التابع لك تسرق معلوماتك أو تحذفها (على سبيل المثال، الصور وكلمات المرور والرسائل وبطاقات الائتمان).</translation>
@@ -467,7 +467,7 @@
 <translation id="5337705430875057403">قد يخدعك المخترقون الموجودون على <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> بفعل شيء خطير كتثبيت البرامج أو الكشف عن معلوماتك الشخصية (على سبيل المثال، كلمات المرور، أرقام الهواتف، أو بطاقات الائتمان).</translation>
 <translation id="53553865750799677">عنوان الاستلام غير مدعوم. حدّد عنوانًا آخر.</translation>
 <translation id="5359637492792381994">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />، بل إن شهادة أمانه غير صالحة حاليًا. وربما يكون السبب في ذلك خطأً في التهيئة أو مهاجمًا يعترض اتصالك. <ph name="BEGIN_LEARN_MORE_LINK" />مزيد من المعلومات<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="536296301121032821">أخفق تخزين إعدادات السياسة</translation>
+<translation id="536296301121032821">تعذّر تخزين إعدادات السياسة</translation>
 <translation id="5386426401304769735">‏تتضمن سلسلة الشهادات لهذا الموقع شهادة موقعة باستخدام SHA-1.</translation>
 <translation id="5402410679244714488">تاريخ انتهاء الصلاحية: <ph name="EXPIRATION_DATE_ABBR" />، تم استخدامها آخر مرة قبل أكثر من عام</translation>
 <translation id="5421136146218899937">محو بيانات التصفح...</translation>
@@ -499,7 +499,7 @@
 <translation id="5610807607761827392">يمكنك إدارة البطاقات والعناوين في <ph name="BEGIN_LINK" />الإعدادات<ph name="END_LINK" />.</translation>
 <translation id="5617949217645503996">أعاد <ph name="HOST_NAME" /> توجيهك مرات كثيرة جدًا.</translation>
 <translation id="5622887735448669177">هل تريد الخروج من هذا الموقع؟</translation>
-<translation id="5629630648637658800">أخفق تحميل إعدادات السياسة</translation>
+<translation id="5629630648637658800">تعذّر تحميل إعدادات السياسة</translation>
 <translation id="5631439013527180824">الرمز المميز لإدارة الجهاز غير صالح</translation>
 <translation id="5669703222995421982">الحصول على محتوى مخصص</translation>
 <translation id="5675650730144413517">يتعذّر على هذه الصفحة العمل</translation>
@@ -749,7 +749,7 @@
 <translation id="803030522067524905">‏اكتشف التصفح الآمن من Google‬ مؤخرًا تصيّد احتيالي على <ph name="SITE" />. تتظاهر مواقع التصيّد الاحتيالي بكونها مواقع ويب أخرى للاحتيال عليك. <ph name="BEGIN_LEARN_MORE_LINK" />مزيد من المعلومات<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="8034522405403831421">هذه الصفحة باللغة <ph name="SOURCE_LANGUAGE" />. هل تريد ترجمتها إلى اللغة <ph name="TARGET_LANGUAGE" />؟</translation>
 <translation id="8041089156583427627">إرسال تعليقات</translation>
-<translation id="8088680233425245692">أخفق عرض المقالة.</translation>
+<translation id="8088680233425245692">تعذّر عرض المقالة.</translation>
 <translation id="8089520772729574115">أقل من ميغابايت واحدة</translation>
 <translation id="8091372947890762290">التنشيط قيد الانتظار في الخادم</translation>
 <translation id="8131740175452115882">التأكيد</translation>
@@ -820,7 +820,7 @@
 <translation id="8866481888320382733">خطأ في إعدادات تحليل السياسة</translation>
 <translation id="8866959479196209191">تعرض هذه الصفحة:</translation>
 <translation id="8870413625673593573">العناصر المغلقة مؤخرًا</translation>
-<translation id="8876793034577346603">أخفق تحليل تهيئة الشبكة</translation>
+<translation id="8876793034577346603">تعذّر تحليل تهيئة الشبكة</translation>
 <translation id="8877192140621905067">بعد تأكيدك، ستتم مشاركة تفاصيل بطاقتك مع هذا الموقع</translation>
 <translation id="8889402386540077796">تدرج اللون</translation>
 <translation id="8891727572606052622">وضع الخادم الوكيل غير صالح.</translation>
@@ -829,7 +829,6 @@
 <translation id="8931333241327730545">‏هل تريد حفظ هذه البطاقة إلى حسابك في Google؟</translation>
 <translation id="8932102934695377596">توقيت ساعتك متأخر عن الوقت الحالي</translation>
 <translation id="8954894007019320973">(يتبع)</translation>
-<translation id="895548565263634352">قراءة مقالات من <ph name="ARTICLE_PUBLISHER" /> و<ph name="OTHER_ARTICLE_COUNT" /> إضافية</translation>
 <translation id="8971063699422889582">انتهت صلاحية شهادة الخادم.</translation>
 <translation id="8986494364107987395">‏إرسال إحصائيات الاستخدام وتقارير الأعطال إلى Google تلقائيًا</translation>
 <translation id="8987927404178983737">شهر</translation>

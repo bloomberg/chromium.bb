@@ -242,7 +242,6 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="3810973564298564668">Gérer</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> téléchargements supprimés</translation>
 <translation id="3822502789641063741">Suppr. données de site ?</translation>
-<translation id="3828029223314399057">Rechercher dans les favoris</translation>
 <translation id="3845539888601087042">Affichage de l'historique des appareils auxquels vous êtes connecté. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="3859306556332390985">Avance rapide</translation>
 <translation id="3894427358181296146">Ajouter un dossier</translation>
@@ -336,7 +335,6 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4860895144060829044">Appeler</translation>
 <translation id="4881695831933465202">Ouvrir</translation>
 <translation id="4885273946141277891">Le nombre d'instances de Chrome n'est pas compatible.</translation>
-<translation id="490442468485962363">Ouvrir dans onglet nav. privée Chrome</translation>
 <translation id="4910889077668685004">Applications de paiement</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Obtenir de l'aide<ph name="END_LINK" /> lors de la recherche d'appareils…</translation>
 <translation id="4943872375798546930">Aucun résultat</translation>

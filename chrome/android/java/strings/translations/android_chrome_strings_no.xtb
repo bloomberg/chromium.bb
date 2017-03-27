@@ -242,7 +242,6 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="3810973564298564668">Administrer</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> nedlastinger er slettet</translation>
 <translation id="3822502789641063741">Slette nettstedslagring?</translation>
-<translation id="3828029223314399057">Søk i bokmerker</translation>
 <translation id="3845539888601087042">Viser loggen fra enhetene du er logget på. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" />.</translation>
 <translation id="3859306556332390985">Spol fremover</translation>
 <translation id="3894427358181296146">Legg til en mappe</translation>
@@ -336,7 +335,6 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="4860895144060829044">Ring</translation>
 <translation id="4881695831933465202">Åpne</translation>
 <translation id="4885273946141277891">For mange Chrome-forekomster.</translation>
-<translation id="490442468485962363">Åpne i en inkognitofane i Chrome</translation>
 <translation id="4910889077668685004">Betalingsapper</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Få hjelp<ph name="END_LINK" /> mens du skanner etter enheter …</translation>
 <translation id="4943872375798546930">Ingen resultater</translation>

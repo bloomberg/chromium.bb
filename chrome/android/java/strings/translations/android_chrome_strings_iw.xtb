@@ -242,7 +242,6 @@
 <translation id="3810973564298564668">נהל</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> הורדות נמחקו</translation>
 <translation id="3822502789641063741">למחוק נתוני אתר מהאחסון?</translation>
-<translation id="3828029223314399057">חפש סימניות</translation>
 <translation id="3845539888601087042">מציג היסטוריה מהמכשירים שבהם אתה מחובר לחשבון. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" />.</translation>
 <translation id="3859306556332390985">הרץ קדימה</translation>
 <translation id="3894427358181296146">הוספת תיקייה</translation>
@@ -336,7 +335,6 @@
 <translation id="4860895144060829044">התקשר</translation>
 <translation id="4881695831933465202">פתח</translation>
 <translation id="4885273946141277891">‏מספר בלתי נתמך של מופעי Chrome.</translation>
-<translation id="490442468485962363">‏פתח בכרטיסיית גלישה בסתר של Chrome</translation>
 <translation id="4910889077668685004">אפליקציות תשלום</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />קבל עזרה<ph name="END_LINK" /> בזמן חיפוש התקנים…</translation>
 <translation id="4943872375798546930">אין תוצאות</translation>
@@ -682,7 +680,7 @@
 <translation id="856481929701340285">בקש אתר לשולחן העבודה</translation>
 <translation id="857943718398505171">מותרת (מומלץ)</translation>
 <translation id="8583805026567836021">מנקה נתוני חשבון</translation>
-<translation id="85969253066007694">לך ולהורים שלך יש אפשרות לקבוע את אופן הפעולה בדך <ph name="BEGIN_LINK1" />הגדרות<ph name="END_LINK1" /></translation>
+<translation id="85969253066007694">לך ולהורים שלך יש אפשרות לקבוע את אופן הפעולה ב<ph name="BEGIN_LINK1" />הגדרות<ph name="END_LINK1" /></translation>
 <translation id="8617240290563765734">האם לעבור אל כתובת האתר שצוינה כהצעה בתוכן שהורדת?</translation>
 <translation id="862875433388403934">ייתכן שלא תוכל עוד להפעיל תוכן (סרטים, מוזיקה וכו') שהורדת באפליקציות אחרות עד לרכישה מחדש של רישיונות באפליקציות אלה עם פרטי כניסה למכשיר חדש. כדי להשיג רישיונות חדשים, התחבר לאינטרנט והפעל את התוכן שהורדת.</translation>
 <translation id="8636825310635137004">כדי לקבל את הכרטיסיות מהמכשירים האחרים שלך, הפעל את הסנכרון.</translation>

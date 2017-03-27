@@ -90,7 +90,7 @@
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1797835274315207060">Selecione um endereço de entrega para verificar os requisitos e métodos de entrega.</translation>
 <translation id="1803678881841855883">Recentemente, a Navegação segura do Google <ph name="BEGIN_LINK" />detectou malware<ph name="END_LINK" /> em <ph name="SITE" />. Websites que costumam ser seguros às vezes são infectados por malware. O conteúdo malicioso vem de <ph name="SUBRESOURCE_HOST" />, um conhecido distribuidor de malware. <ph name="BEGIN_LEARN_MORE_LINK" />Saiba mais<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="1806541873155184440">Data de adição: <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
+<translation id="1806541873155184440">Adicionado em: <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="1821930232296380041">Solicitação ou parâmetros de solicitação inválidos</translation>
 <translation id="1826516787628120939">Em verificação</translation>
 <translation id="1834321415901700177">Este site contém programas perigosos</translation>
@@ -404,7 +404,7 @@
 <translation id="4728558894243024398">Plataforma</translation>
 <translation id="4736825316280949806">Reiniciar o Chromium</translation>
 <translation id="4744603770635761495">Caminho do executável</translation>
-<translation id="4749685221585524849">Último uso: <ph name="LAST_USED_MONTH" /></translation>
+<translation id="4749685221585524849">Usado pela última vez em: <ph name="LAST_USED_MONTH" /></translation>
 <translation id="4750917950439032686">Suas informações (por exemplo, senhas ou números de cartão de crédito) permanecem particulares quando são enviadas para esse site.</translation>
 <translation id="4756388243121344051">&amp;Histórico</translation>
 <translation id="4758311279753947758">Adicionar dados de contato</translation>
@@ -592,7 +592,7 @@
 <translation id="6534179046333460208">Sugestões da Web física</translation>
 <translation id="6550675742724504774">Opções</translation>
 <translation id="6556239504065605927">Conexão segura</translation>
-<translation id="6556915248009097796">Validade: <ph name="EXPIRATION_DATE_ABBR" />, último uso: <ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
+<translation id="6556915248009097796">Validade: <ph name="EXPIRATION_DATE_ABBR" />, usado pela última vez em: <ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
 <translation id="6563469144985748109">Seu administrador ainda não o aprovou</translation>
 <translation id="6569060085658103619">Você está vendo uma página de extensões</translation>
 <translation id="6593753688552673085">menos que <ph name="UPPER_ESTIMATE" /></translation>
@@ -829,7 +829,6 @@ Dica: o modo de navegação anônimo <ph name="SHORTCUT_KEY" /> pode ser útil d
 <translation id="8931333241327730545">Deseja salvar este cartão na sua Conta do Google?</translation>
 <translation id="8932102934695377596">Seu relógio está atrasado</translation>
 <translation id="8954894007019320973">(Continuação)</translation>
-<translation id="895548565263634352">Leia matérias de <ph name="ARTICLE_PUBLISHER" /> e mais <ph name="OTHER_ARTICLE_COUNT" /> artigo(s)</translation>
 <translation id="8971063699422889582">O certificado do servidor expirou.</translation>
 <translation id="8986494364107987395">Enviar estatísticas de uso e relatórios de erros ao Google automaticamente</translation>
 <translation id="8987927404178983737">Mês</translation>

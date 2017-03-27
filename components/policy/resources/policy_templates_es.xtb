@@ -1246,7 +1246,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="4467952432486360968">Bloquear cookies de terceros</translation>
 <translation id="4474167089968829729">Habilitar el almacenamiento de contraseñas en el administrador de contraseñas</translation>
 <translation id="4476769083125004742">Si se asigna el valor <ph name="BLOCK_GEOLOCATION_SETTING" /> a esta política, las aplicaciones para Android no tendrán acceso a la información sobre la ubicación. Si se le asigna cualquier otro valor o no se configura, el usuario tendrá que dar su consentimiento cuando una aplicación para Android quiera acceder a los datos de ubicación.</translation>
-<translation id="4480694116501920047">Forzar SafeSearch</translation>
+<translation id="4480694116501920047">Forzar Búsqueda Segura</translation>
 <translation id="4482640907922304445">Permite que el botón para volver a la página de inicio se muestre en la barra de herramientas de <ph name="PRODUCT_NAME" />.
 
       Si habilitas esta opción, siempre se mostrará el botón de página de inicio.
@@ -1706,11 +1706,11 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
           Si estableces esta política, los usuarios podrán anularla de forma temporal habilitando o inhabilitando el cursor grande. No obstante, la selección del usuario no es permanente, y se restablecerá la opción predeterminada cuando se vuelva a mostrar la pantalla de inicio de sesión o el usuario permanezca inactivo en la pantalla de inicio durante un minuto.
 
           Si no se establece esta política, el cursor grande se inhabilitará la primera vez que se muestre la pantalla de inicio de sesión. Los usuarios pueden habilitar o inhabilitar el cursor grande en cualquier momento, y su estado en la pantalla de inicio de sesión permanece entre usuarios.</translation>
-<translation id="5936622343001856595">Permite forzar las consultas en la Búsqueda web de Google para que se realicen con SafeSearch activado e impide que los usuarios modifiquen esta configuración.
+<translation id="5936622343001856595">Permite forzar las consultas en la Búsqueda web de Google para que se realicen con Búsqueda Segura activado e impide que los usuarios modifiquen esta configuración.
 
-      Si esta opción se habilita, SafeSearch en la Búsqueda web de Google siempre está activado.
+      Si esta opción se habilita, Búsqueda Segura en la Búsqueda web de Google siempre está activado.
 
-      Si esta opción se inhabilita o no se establece un valor, no se aplicará SafeSearch en la Búsqueda web de Google.</translation>
+      Si esta opción se inhabilita o no se establece un valor, no se aplicará Búsqueda Segura en la Búsqueda web de Google.</translation>
 <translation id="5937539742111853215">Esta política controla únicamente el modo desarrollador de <ph name="PRODUCT_OS_NAME" />. Si quieres impedir el acceso a las Opciones para Desarrolladores de Android, debes configurar la política <ph name="DEVELOPER_TOOLS_POLICY" />.</translation>
 <translation id="5940306398763671235">Habilita Google Cast</translation>
 <translation id="5946082169633555022">Canal beta</translation>
@@ -2182,7 +2182,7 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
           Ten en cuenta que si <ph name="PRODUCT_NAME" /> se está ejecutando en segundo plano, es posible que la sesión no finalice al cerrar la última ventana del navegador y siga activa hasta que el navegador se cierre completamente. Consulta la política BackgroundModeEnable para obtener más información sobre cómo configurar este comportamiento.
 
           Si la política RestoreOnStartup se configura para restaurar las URL de sesiones anteriores, esta política no se respetará y las cookies se almacenarán de forma permanente para estos sitios web.</translation>
-<translation id="7207095846245296855">Forzar Google SafeSearch</translation>
+<translation id="7207095846245296855">Forzar Google Búsqueda Segura</translation>
 <translation id="7216442368414164495">Permitir a los usuarios habilitar los informes ampliados de la función de navegación segura</translation>
 <translation id="7227967227357489766">Permite definir la lista de usuarios con permiso para iniciar sesión en el dispositivo. Las entradas tienen el formato <ph name="USER_WHITELIST_ENTRY_FORMAT" /> (por ejemplo, <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />). Para permitir usuarios arbitrarios en un dominio, utiliza entradas del formulario <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 
