@@ -154,7 +154,8 @@ class MEDIA_EXPORT FFmpegDemuxerStream : public DemuxerStream {
   FFmpegDemuxerStream(FFmpegDemuxer* demuxer,
                       AVStream* stream,
                       std::unique_ptr<AudioDecoderConfig> audio_config,
-                      std::unique_ptr<VideoDecoderConfig> video_config);
+                      std::unique_ptr<VideoDecoderConfig> video_config,
+                      scoped_refptr<MediaLog> media_log);
 
   // Runs |read_cb_| if present with the front of |buffer_queue_|, calling
   // NotifyCapacityAvailable() if capacity is still available.
@@ -176,6 +177,7 @@ class MEDIA_EXPORT FFmpegDemuxerStream : public DemuxerStream {
   base::TimeDelta start_time_;
   std::unique_ptr<AudioDecoderConfig> audio_config_;
   std::unique_ptr<VideoDecoderConfig> video_config_;
+  scoped_refptr<MediaLog> media_log_;
   Type type_;
   Liveness liveness_;
   base::TimeDelta duration_;

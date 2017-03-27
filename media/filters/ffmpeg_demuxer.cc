@@ -247,8 +247,9 @@ std::unique_ptr<FFmpegDemuxerStream> FFmpegDemuxerStream::Create(
                                << video_config->AsHumanReadableString();
   }
 
-  return base::WrapUnique(new FFmpegDemuxerStream(
-      demuxer, stream, std::move(audio_config), std::move(video_config)));
+  return base::WrapUnique(
+      new FFmpegDemuxerStream(demuxer, stream, std::move(audio_config),
+                              std::move(video_config), media_log));
 }
 
 static void UnmarkEndOfStreamAndClearError(AVFormatContext* format_context) {
@@ -263,13 +264,15 @@ FFmpegDemuxerStream::FFmpegDemuxerStream(
     FFmpegDemuxer* demuxer,
     AVStream* stream,
     std::unique_ptr<AudioDecoderConfig> audio_config,
-    std::unique_ptr<VideoDecoderConfig> video_config)
+    std::unique_ptr<VideoDecoderConfig> video_config,
+    scoped_refptr<MediaLog> media_log)
     : demuxer_(demuxer),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       stream_(stream),
       start_time_(kNoTimestamp),
       audio_config_(audio_config.release()),
       video_config_(video_config.release()),
+      media_log_(std::move(media_log)),
       type_(UNKNOWN),
       liveness_(LIVENESS_UNKNOWN),
       end_of_stream_(false),
@@ -479,6 +482,7 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
       ConvertStreamTimestamp(stream_->time_base, packet->pts);
 
   if (stream_timestamp == kNoTimestamp) {
+    MEDIA_LOG(ERROR, media_log_) << "FFmpegDemuxer: PTS is not defined";
     demuxer_->NotifyDemuxerError(DEMUXER_ERROR_COULD_NOT_PARSE);
     return;
   }
@@ -504,6 +508,8 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
   // Only allow negative timestamps past if we know they'll be fixed up by the
   // code paths below; otherwise they should be treated as a parse error.
   if (!fixup_negative_timestamps_ && buffer->timestamp() < base::TimeDelta()) {
+    MEDIA_LOG(DEBUG, media_log_)
+        << "FFmpegDemuxer: unfixable negative timestamp";
     demuxer_->NotifyDemuxerError(DEMUXER_ERROR_COULD_NOT_PARSE);
     return;
   }
@@ -1726,8 +1732,15 @@ void FFmpegDemuxer::OnReadFrameDone(ScopedAVPacket packet, int result) {
   // - either underlying ffmpeg returned an error
   // - or FFMpegDemuxer reached the maximum allowed memory usage.
   if (result < 0 || IsMaxMemoryUsageReached()) {
-    DVLOG(1) << __func__ << " result=" << result
-             << " IsMaxMemoryUsageReached=" << IsMaxMemoryUsageReached();
+    if (result < 0) {
+      MEDIA_LOG(DEBUG, media_log_)
+          << GetDisplayName()
+          << ": av_read_frame(): " << AVErrorToString(result);
+    } else {
+      MEDIA_LOG(DEBUG, media_log_)
+          << GetDisplayName() << ": memory limit exceeded";
+    }
+
     // Update the duration based on the highest elapsed time across all streams.
     base::TimeDelta max_duration;
     for (const auto& stream : streams_) {

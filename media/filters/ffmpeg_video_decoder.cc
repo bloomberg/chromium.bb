@@ -362,7 +362,8 @@ bool FFmpegVideoDecoder::FFmpegDecode(
   // Log the problem if we can't decode a video frame and exit early.
   if (result < 0) {
     MEDIA_LOG(DEBUG, media_log_)
-        << "avcodec_decode_video2(): " << AVErrorToString(result) << ", at "
+        << GetDisplayName()
+        << ": avcodec_decode_video2(): " << AVErrorToString(result) << ", at "
         << buffer->AsHumanReadableString();
     return false;
   }
