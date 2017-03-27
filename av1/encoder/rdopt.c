@@ -2690,7 +2690,10 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
   assert(bsize < BLOCK_8X8);
   assert(tx_width < 8 || tx_height < 8);
 #if CONFIG_EXT_TX && CONFIG_RECT_TX
-  assert(tx_width == pred_block_width && tx_height == pred_block_height);
+  if (is_lossless)
+    assert(tx_width == 4 && tx_height == 4);
+  else
+    assert(tx_width == pred_block_width && tx_height == pred_block_height);
 #else
   assert(tx_width == 4 && tx_height == 4);
 #endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
@@ -3227,7 +3230,6 @@ static int64_t rd_pick_intra_sub_8x8_y_mode(const AV1_COMP *const cpi,
 
         bmode_costs = cpi->y_mode_costs[A][L];
       }
-
       this_rd = rd_pick_intra_sub_8x8_y_subblock_mode(
           cpi, mb, idy, idx, &best_mode, bmode_costs,
           xd->plane[0].above_context + idx, xd->plane[0].left_context + idy, &r,
