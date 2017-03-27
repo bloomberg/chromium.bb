@@ -391,10 +391,20 @@ void NoteTakingHelper::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
   DCHECK_EQ(type, chrome::NOTIFICATION_PROFILE_ADDED);
-  auto* registry = extensions::ExtensionRegistry::Get(
-      content::Source<Profile>(source).ptr());
+  Profile* profile = content::Source<Profile>(source).ptr();
+  DCHECK(profile);
+
+  auto* registry = extensions::ExtensionRegistry::Get(profile);
   DCHECK(!extension_registry_observer_.IsObserving(registry));
   extension_registry_observer_.Add(registry);
+
+  // TODO(derat): Remove this once OnArcPlayStoreEnabledChanged() is always
+  // called after an ARC-enabled user logs in: http://b/36655474
+  if (!play_store_enabled_ && arc::IsArcPlayStoreEnabledForProfile(profile)) {
+    play_store_enabled_ = true;
+    for (auto& observer : observers_)
+      observer.OnAvailableNoteTakingAppsUpdated();
+  }
 }
 
 void NoteTakingHelper::OnExtensionLoaded(

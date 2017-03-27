@@ -11,13 +11,16 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -31,6 +34,7 @@
 #include "components/arc/common/intent_helper.mojom.h"
 #include "components/arc/test/fake_intent_helper_instance.h"
 #include "components/crx_file/id_util.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/common/api/app_runtime.h"
@@ -495,6 +499,41 @@ TEST_P(NoteTakingHelperTest, PlayStoreInitiallyDisabled) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(helper()->play_store_enabled());
   EXPECT_TRUE(helper()->android_apps_received());
+}
+
+TEST_P(NoteTakingHelperTest, AddProfileWithPlayStoreEnabled) {
+  Init(ENABLE_PALETTE);
+  EXPECT_FALSE(helper()->play_store_enabled());
+  EXPECT_FALSE(helper()->android_apps_received());
+
+  TestObserver observer;
+  ASSERT_EQ(0, observer.num_updates());
+
+  // Add a second profile with the ARC-enabled pref already set. The Play Store
+  // should be immediately regarded as being enabled and the observer should be
+  // notified, since OnArcPlayStoreEnabledChanged() apparently isn't called in
+  // this case: http://crbug.com/700554
+  const char kSecondProfileName[] = "second-profile";
+  auto prefs = base::MakeUnique<sync_preferences::TestingPrefServiceSyncable>();
+  chrome::RegisterUserProfilePrefs(prefs->registry());
+  prefs->SetBoolean(prefs::kArcEnabled, true);
+  profile_manager_->CreateTestingProfile(
+      kSecondProfileName, std::move(prefs), base::ASCIIToUTF16("Second User"),
+      1 /* avatar_id */, std::string() /* supervised_user_id */,
+      TestingProfile::TestingFactories());
+  EXPECT_TRUE(helper()->play_store_enabled());
+  EXPECT_FALSE(helper()->android_apps_received());
+  EXPECT_EQ(1, observer.num_updates());
+
+  // Notification of updated intent filters should result in the apps being
+  // refreshed.
+  helper()->OnIntentFiltersUpdated();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(helper()->play_store_enabled());
+  EXPECT_TRUE(helper()->android_apps_received());
+  EXPECT_EQ(2, observer.num_updates());
+
+  profile_manager_->DeleteTestingProfile(kSecondProfileName);
 }
 
 TEST_P(NoteTakingHelperTest, ListAndroidApps) {
