@@ -6,7 +6,13 @@
 
 #include <map>
 
+#include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "cc/base/switches.h"
+#include "content/renderer/gpu/render_widget_compositor.h"
+#include "content/renderer/render_frame_impl.h"
+#include "content/renderer/render_view_impl.h"
+#include "content/renderer/render_widget.h"
 #include "services/ui/public/cpp/client_compositor_frame_sink.h"
 
 namespace content {
@@ -63,7 +69,11 @@ void RendererWindowTreeClient::RequestCompositorFrameSink(
 }
 
 RendererWindowTreeClient::RendererWindowTreeClient(int routing_id)
-    : routing_id_(routing_id), binding_(this) {}
+    : routing_id_(routing_id), binding_(this) {
+  enable_surface_synchronization_ =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          cc::switches::kEnableSurfaceSynchronization);
+}
 
 RendererWindowTreeClient::~RendererWindowTreeClient() {
   g_connections.Get().erase(routing_id_);
@@ -81,6 +91,16 @@ void RendererWindowTreeClient::RequestCompositorFrameSinkInternal(
       root_window_id_, frame_sink_binding->TakeFrameSinkRequest(),
       mojo::MakeProxy(frame_sink_binding->TakeFrameSinkClient()));
   callback.Run(std::move(frame_sink));
+}
+
+RenderWidget* RendererWindowTreeClient::GetRenderWidgetFromRoutingId(
+    int routing_id) {
+  RenderFrameImpl* render_frame = RenderFrameImpl::FromRoutingID(routing_id);
+  RenderViewImpl* render_view = RenderViewImpl::FromRoutingID(routing_id);
+  if (!render_frame && !render_view)
+    return nullptr;
+  return render_frame ? render_frame->GetRenderWidget()
+                      : render_view->GetWidget();
 }
 
 void RendererWindowTreeClient::DestroySelf() {
@@ -139,7 +159,17 @@ void RendererWindowTreeClient::OnWindowBoundsChanged(
     ui::Id window_id,
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds,
-    const base::Optional<cc::LocalSurfaceId>& local_surface_id) {}
+    const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
+  if (!enable_surface_synchronization_)
+    return;
+  current_local_surface_id_ = *local_surface_id;
+  RenderWidget* widget = GetRenderWidgetFromRoutingId(routing_id_);
+  if (!widget)
+    return;
+  // TODO(fsamuel): This isn't quite correct. The resize arrives from the
+  // browser and so it might not synchronize with the LocalSurfaceId.
+  widget->compositor()->SetLocalSurfaceId(*local_surface_id);
+}
 
 void RendererWindowTreeClient::OnClientAreaChanged(
     uint32_t window_id,
