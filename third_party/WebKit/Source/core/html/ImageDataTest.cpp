@@ -39,9 +39,20 @@ TEST_F(ImageDataTest, NegativeAndZeroIntSizeTest) {
   EXPECT_EQ(imageData, nullptr);
 }
 
+// Under asan_clang_phone, the test crashes after the memory allocation
+// is not successful. It is probably related to the value of
+// allocator_may_return_null on trybots, which in this case causes ASAN
+// to terminate the process instead of returning null.
+// crbug.com/704948
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_CreateImageDataTooBig DISABLED_CreateImageDataTooBig
+#else
+#define MAYBE_CreateImageDataTooBig CreateImageDataTooBig
+#endif
+
 // This test passes if it does not crash. If the required memory is not
 // allocated to the ImageData, then an exception must raise.
-TEST_F(ImageDataTest, CreateImageDataTooBig) {
+TEST_F(ImageDataTest, MAYBE_CreateImageDataTooBig) {
   DummyExceptionStateForTesting exceptionState;
   ImageData* tooBigImageData = ImageData::create(32767, 32767, exceptionState);
   if (!tooBigImageData) {
