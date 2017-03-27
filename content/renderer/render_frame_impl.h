@@ -622,6 +622,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebURLRequest& request,
       const blink::WebURLResponse& response) override;
   void didDisplayInsecureContent() override;
+  void didContainInsecureFormAction() override;
   void didRunInsecureContent(const blink::WebSecurityOrigin& origin,
                              const blink::WebURL& target) override;
   void didDisplayContentWithCertificateErrors(

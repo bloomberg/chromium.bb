@@ -127,6 +127,27 @@ TEST(SecurityStateContentUtilsTest,
   EXPECT_FALSE(explanations.displayed_content_with_cert_errors);
 }
 
+// Tests that SecurityInfo flags for mixed content are reflected in the
+// SecurityStyleExplanations produced by GetSecurityStyle.
+TEST(SecurityStateContentUtilsTest, GetSecurityStyleForMixedContent) {
+  content::SecurityStyleExplanations explanations;
+  security_state::SecurityInfo security_info;
+  security_info.cert_status = 0;
+  security_info.scheme_is_cryptographic = true;
+
+  security_info.contained_mixed_form = true;
+  GetSecurityStyle(security_info, &explanations);
+  EXPECT_TRUE(explanations.contained_mixed_form);
+  EXPECT_FALSE(explanations.ran_mixed_content);
+  EXPECT_FALSE(explanations.displayed_mixed_content);
+
+  security_info.contained_mixed_form = false;
+  security_info.mixed_content_status = security_state::CONTENT_STATUS_DISPLAYED;
+  GetSecurityStyle(security_info, &explanations);
+  EXPECT_FALSE(explanations.contained_mixed_form);
+  EXPECT_TRUE(explanations.displayed_mixed_content);
+}
+
 bool FindSecurityStyleExplanation(
     const std::vector<content::SecurityStyleExplanation>& explanations,
     const char* summary,

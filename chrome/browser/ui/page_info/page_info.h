@@ -45,6 +45,8 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
     SITE_CONNECTION_STATUS_ENCRYPTED,    // Connection is encrypted.
     SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE,  // Non-secure passive
                                                           // content.
+    SITE_CONNECTION_STATUS_INSECURE_FORM_ACTION,          // Non-secure form
+                                                          // target.
     SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE,   // Non-secure active
                                                           // content.
     SITE_CONNECTION_STATUS_UNENCRYPTED,      // Connection is not encrypted.

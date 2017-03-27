@@ -156,7 +156,8 @@ SecurityLevel GetSecurityLevelForRequest(
   DCHECK_NE(CONTENT_STATUS_RAN, mixed_content_status);
   DCHECK_NE(CONTENT_STATUS_DISPLAYED_AND_RAN, mixed_content_status);
 
-  if (mixed_content_status == CONTENT_STATUS_DISPLAYED ||
+  if (visible_security_state.contained_mixed_form ||
+      mixed_content_status == CONTENT_STATUS_DISPLAYED ||
       content_with_cert_errors_status == CONTENT_STATUS_DISPLAYED) {
     return kDisplayedInsecureContentLevel;
   }
@@ -228,6 +229,9 @@ void SecurityInfoForRequest(
                                                                nullptr);
   }
 
+  security_info->contained_mixed_form =
+      visible_security_state.contained_mixed_form;
+
   security_info->security_level = GetSecurityLevelForRequest(
       visible_security_state, used_policy_installed_certificate,
       is_origin_secure_callback, security_info->sha1_in_chain,
@@ -255,6 +259,7 @@ SecurityInfo::SecurityInfo()
       pkp_bypassed(false),
       displayed_password_field_on_http(false),
       displayed_credit_card_field_on_http(false),
+      contained_mixed_form(false),
       cert_missing_subject_alt_name(false) {}
 
 SecurityInfo::~SecurityInfo() {}
@@ -281,6 +286,7 @@ VisibleSecurityState::VisibleSecurityState()
       key_exchange_group(0),
       security_bits(-1),
       displayed_mixed_content(false),
+      contained_mixed_form(false),
       ran_mixed_content(false),
       displayed_content_with_cert_errors(false),
       ran_content_with_cert_errors(false),
@@ -308,7 +314,8 @@ bool VisibleSecurityState::operator==(const VisibleSecurityState& other) const {
           displayed_password_field_on_http ==
               other.displayed_password_field_on_http &&
           displayed_credit_card_field_on_http ==
-              other.displayed_credit_card_field_on_http);
+              other.displayed_credit_card_field_on_http &&
+          contained_mixed_form == other.contained_mixed_form);
 }
 
 }  // namespace security_state

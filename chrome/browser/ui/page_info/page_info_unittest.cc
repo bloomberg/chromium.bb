@@ -364,6 +364,7 @@ TEST_F(PageInfoTest, InsecureContent) {
     security_state::SecurityLevel security_level;
     net::CertStatus cert_status;
     security_state::ContentStatus mixed_content_status;
+    bool contained_mixed_form;
     security_state::ContentStatus content_with_cert_errors_status;
     PageInfo::SiteConnectionStatus expected_site_connection_status;
     PageInfo::SiteIdentityStatus expected_site_identity_status;
@@ -372,42 +373,60 @@ TEST_F(PageInfoTest, InsecureContent) {
 
   const TestCase kTestCases[] = {
       // Passive mixed content.
-      {security_state::NONE, 0, security_state::CONTENT_STATUS_DISPLAYED,
+      {security_state::NONE, 0, security_state::CONTENT_STATUS_DISPLAYED, false,
        security_state::CONTENT_STATUS_NONE,
        PageInfo::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE,
        PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_WARNING_MINOR},
+      // Passive mixed content with a nonsecure form. The nonsecure form is the
+      // more severe problem.
+      {security_state::NONE, 0, security_state::CONTENT_STATUS_DISPLAYED, true,
+       security_state::CONTENT_STATUS_NONE,
+       PageInfo::SITE_CONNECTION_STATUS_INSECURE_FORM_ACTION,
+       PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_WARNING_MINOR},
+      // Only nonsecure form.
+      {security_state::NONE, 0, security_state::CONTENT_STATUS_NONE, true,
+       security_state::CONTENT_STATUS_NONE,
+       PageInfo::SITE_CONNECTION_STATUS_INSECURE_FORM_ACTION,
+       PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_WARNING_MINOR},
       // Passive mixed content with a cert error on the main resource.
       {security_state::DANGEROUS, net::CERT_STATUS_DATE_INVALID,
-       security_state::CONTENT_STATUS_DISPLAYED,
+       security_state::CONTENT_STATUS_DISPLAYED, false,
        security_state::CONTENT_STATUS_NONE,
        PageInfo::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE,
        PageInfo::SITE_IDENTITY_STATUS_ERROR, IDR_PAGEINFO_WARNING_MINOR},
       // Active and passive mixed content.
       {security_state::DANGEROUS, 0,
-       security_state::CONTENT_STATUS_DISPLAYED_AND_RAN,
+       security_state::CONTENT_STATUS_DISPLAYED_AND_RAN, false,
+       security_state::CONTENT_STATUS_NONE,
+       PageInfo::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE,
+       PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_BAD},
+      // Active mixed content and nonsecure form.
+      {security_state::DANGEROUS, 0,
+       security_state::CONTENT_STATUS_DISPLAYED_AND_RAN, true,
        security_state::CONTENT_STATUS_NONE,
        PageInfo::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE,
        PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_BAD},
       // Active and passive mixed content with a cert error on the main
       // resource.
       {security_state::DANGEROUS, net::CERT_STATUS_DATE_INVALID,
-       security_state::CONTENT_STATUS_DISPLAYED_AND_RAN,
+       security_state::CONTENT_STATUS_DISPLAYED_AND_RAN, false,
        security_state::CONTENT_STATUS_NONE,
        PageInfo::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE,
        PageInfo::SITE_IDENTITY_STATUS_ERROR, IDR_PAGEINFO_BAD},
       // Active mixed content.
-      {security_state::DANGEROUS, 0, security_state::CONTENT_STATUS_RAN,
+      {security_state::DANGEROUS, 0, security_state::CONTENT_STATUS_RAN, false,
        security_state::CONTENT_STATUS_NONE,
        PageInfo::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE,
        PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_BAD},
       // Active mixed content with a cert error on the main resource.
       {security_state::DANGEROUS, net::CERT_STATUS_DATE_INVALID,
-       security_state::CONTENT_STATUS_RAN, security_state::CONTENT_STATUS_NONE,
+       security_state::CONTENT_STATUS_RAN, false,
+       security_state::CONTENT_STATUS_NONE,
        PageInfo::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE,
        PageInfo::SITE_IDENTITY_STATUS_ERROR, IDR_PAGEINFO_BAD},
 
       // Passive subresources with cert errors.
-      {security_state::NONE, 0, security_state::CONTENT_STATUS_NONE,
+      {security_state::NONE, 0, security_state::CONTENT_STATUS_NONE, false,
        security_state::CONTENT_STATUS_DISPLAYED,
        PageInfo::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE,
        PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_WARNING_MINOR},
@@ -417,53 +436,65 @@ TEST_F(PageInfoTest, InsecureContent) {
       // error, it's not that useful to warn about subresources with cert
       // errors as well.
       {security_state::DANGEROUS, net::CERT_STATUS_DATE_INVALID,
-       security_state::CONTENT_STATUS_NONE,
+       security_state::CONTENT_STATUS_NONE, false,
        security_state::CONTENT_STATUS_DISPLAYED,
        PageInfo::SITE_CONNECTION_STATUS_ENCRYPTED,
        PageInfo::SITE_IDENTITY_STATUS_ERROR, IDR_PAGEINFO_GOOD},
       // Passive and active subresources with cert errors.
-      {security_state::DANGEROUS, 0, security_state::CONTENT_STATUS_NONE,
+      {security_state::DANGEROUS, 0, security_state::CONTENT_STATUS_NONE, false,
        security_state::CONTENT_STATUS_DISPLAYED_AND_RAN,
        PageInfo::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE,
        PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_BAD},
       // Passive and active subresources with cert errors, with a cert
       // error on the main resource also.
       {security_state::DANGEROUS, net::CERT_STATUS_DATE_INVALID,
-       security_state::CONTENT_STATUS_NONE,
+       security_state::CONTENT_STATUS_NONE, false,
        security_state::CONTENT_STATUS_DISPLAYED_AND_RAN,
        PageInfo::SITE_CONNECTION_STATUS_ENCRYPTED,
        PageInfo::SITE_IDENTITY_STATUS_ERROR, IDR_PAGEINFO_GOOD},
       // Active subresources with cert errors.
-      {security_state::DANGEROUS, 0, security_state::CONTENT_STATUS_NONE,
+      {security_state::DANGEROUS, 0, security_state::CONTENT_STATUS_NONE, false,
        security_state::CONTENT_STATUS_RAN,
        PageInfo::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE,
        PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_BAD},
       // Active subresources with cert errors, with a cert error on the main
       // resource also.
       {security_state::DANGEROUS, net::CERT_STATUS_DATE_INVALID,
-       security_state::CONTENT_STATUS_NONE, security_state::CONTENT_STATUS_RAN,
+       security_state::CONTENT_STATUS_NONE, false,
+       security_state::CONTENT_STATUS_RAN,
        PageInfo::SITE_CONNECTION_STATUS_ENCRYPTED,
        PageInfo::SITE_IDENTITY_STATUS_ERROR, IDR_PAGEINFO_GOOD},
 
       // Passive mixed content and subresources with cert errors.
-      {security_state::NONE, 0, security_state::CONTENT_STATUS_DISPLAYED,
+      {security_state::NONE, 0, security_state::CONTENT_STATUS_DISPLAYED, false,
        security_state::CONTENT_STATUS_DISPLAYED,
        PageInfo::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE,
        PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_WARNING_MINOR},
+      // Passive mixed content and subresources with cert errors.
+      {security_state::NONE, 0, security_state::CONTENT_STATUS_DISPLAYED, false,
+       security_state::CONTENT_STATUS_DISPLAYED,
+       PageInfo::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE,
+       PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_WARNING_MINOR},
+      // Passive mixed content, a nonsecure form, and subresources with cert
+      // errors.
+      {security_state::NONE, 0, security_state::CONTENT_STATUS_DISPLAYED, true,
+       security_state::CONTENT_STATUS_DISPLAYED,
+       PageInfo::SITE_CONNECTION_STATUS_INSECURE_FORM_ACTION,
+       PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_WARNING_MINOR},
       // Passive mixed content and active subresources with cert errors.
       {security_state::DANGEROUS, 0, security_state::CONTENT_STATUS_DISPLAYED,
-       security_state::CONTENT_STATUS_RAN,
+       false, security_state::CONTENT_STATUS_RAN,
        PageInfo::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE,
        PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_BAD},
       // Active mixed content and passive subresources with cert errors.
-      {security_state::DANGEROUS, 0, security_state::CONTENT_STATUS_RAN,
+      {security_state::DANGEROUS, 0, security_state::CONTENT_STATUS_RAN, false,
        security_state::CONTENT_STATUS_DISPLAYED,
        PageInfo::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE,
        PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_BAD},
       // Passive mixed content, active subresources with cert errors, and a cert
       // error on the main resource.
       {security_state::DANGEROUS, net::CERT_STATUS_DATE_INVALID,
-       security_state::CONTENT_STATUS_DISPLAYED,
+       security_state::CONTENT_STATUS_DISPLAYED, false,
        security_state::CONTENT_STATUS_RAN,
        PageInfo::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE,
        PageInfo::SITE_IDENTITY_STATUS_ERROR, IDR_PAGEINFO_WARNING_MINOR},
@@ -479,6 +510,7 @@ TEST_F(PageInfoTest, InsecureContent) {
     security_info_.cert_status = test.cert_status;
     security_info_.security_bits = 81;  // No error if > 80.
     security_info_.mixed_content_status = test.mixed_content_status;
+    security_info_.contained_mixed_form = test.contained_mixed_form;
     security_info_.content_with_cert_errors_status =
         test.content_with_cert_errors_status;
     int status = 0;

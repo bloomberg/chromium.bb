@@ -4533,6 +4533,10 @@ void RenderFrameImpl::didDisplayInsecureContent() {
   Send(new FrameHostMsg_DidDisplayInsecureContent(routing_id_));
 }
 
+void RenderFrameImpl::didContainInsecureFormAction() {
+  Send(new FrameHostMsg_DidContainInsecureFormAction(routing_id_));
+}
+
 void RenderFrameImpl::didRunInsecureContent(
     const blink::WebSecurityOrigin& origin,
     const blink::WebURL& target) {

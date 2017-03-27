@@ -45,6 +45,7 @@ class TestSecurityStateHelper {
                            << net::SSL_CONNECTION_VERSION_SHIFT),
         cert_status_(net::CERT_STATUS_SHA1_SIGNATURE_PRESENT),
         displayed_mixed_content_(false),
+        contained_mixed_form_(false),
         ran_mixed_content_(false),
         malicious_content_status_(MALICIOUS_CONTENT_STATUS_NONE),
         displayed_password_field_on_http_(false),
@@ -63,10 +64,13 @@ class TestSecurityStateHelper {
   void AddCertStatus(net::CertStatus cert_status) {
     cert_status_ |= cert_status;
   }
-  void SetDisplayedMixedContent(bool displayed_mixed_content) {
+  void set_displayed_mixed_content(bool displayed_mixed_content) {
     displayed_mixed_content_ = displayed_mixed_content;
   }
-  void SetRanMixedContent(bool ran_mixed_content) {
+  void set_contained_mixed_form(bool contained_mixed_form) {
+    contained_mixed_form_ = contained_mixed_form;
+  }
+  void set_ran_mixed_content(bool ran_mixed_content) {
     ran_mixed_content_ = ran_mixed_content;
   }
   void set_malicious_content_status(
@@ -93,6 +97,7 @@ class TestSecurityStateHelper {
     state->connection_status = connection_status_;
     state->security_bits = 256;
     state->displayed_mixed_content = displayed_mixed_content_;
+    state->contained_mixed_form = contained_mixed_form_;
     state->ran_mixed_content = ran_mixed_content_;
     state->malicious_content_status = malicious_content_status_;
     state->displayed_password_field_on_http = displayed_password_field_on_http_;
@@ -114,6 +119,7 @@ class TestSecurityStateHelper {
   int connection_status_;
   net::CertStatus cert_status_;
   bool displayed_mixed_content_;
+  bool contained_mixed_form_;
   bool ran_mixed_content_;
   MaliciousContentStatus malicious_content_status_;
   bool displayed_password_field_on_http_;
@@ -148,15 +154,15 @@ TEST(SecurityStateTest, SHA1Warning) {
 // with the handling of mixed content.
 TEST(SecurityStateTest, SHA1WarningMixedContent) {
   TestSecurityStateHelper helper;
-  helper.SetDisplayedMixedContent(true);
+  helper.set_displayed_mixed_content(true);
   SecurityInfo security_info1;
   helper.GetSecurityInfo(&security_info1);
   EXPECT_TRUE(security_info1.sha1_in_chain);
   EXPECT_EQ(CONTENT_STATUS_DISPLAYED, security_info1.mixed_content_status);
   EXPECT_EQ(NONE, security_info1.security_level);
 
-  helper.SetDisplayedMixedContent(false);
-  helper.SetRanMixedContent(true);
+  helper.set_displayed_mixed_content(false);
+  helper.set_ran_mixed_content(true);
   SecurityInfo security_info2;
   helper.GetSecurityInfo(&security_info2);
   EXPECT_TRUE(security_info2.sha1_in_chain);
@@ -387,6 +393,31 @@ TEST(SecurityStateTest, DetectSubjectAltName) {
   SecurityInfo no_san_security_info;
   helper.GetSecurityInfo(&no_san_security_info);
   EXPECT_TRUE(no_san_security_info.cert_missing_subject_alt_name);
+}
+
+// Tests that a mixed form is reflected in the SecurityInfo.
+TEST(SecurityStateTest, MixedForm) {
+  TestSecurityStateHelper helper;
+
+  SecurityInfo no_mixed_form_security_info;
+  helper.GetSecurityInfo(&no_mixed_form_security_info);
+  EXPECT_FALSE(no_mixed_form_security_info.contained_mixed_form);
+
+  helper.set_contained_mixed_form(true);
+
+  SecurityInfo mixed_form_security_info;
+  helper.GetSecurityInfo(&mixed_form_security_info);
+  EXPECT_TRUE(mixed_form_security_info.contained_mixed_form);
+  EXPECT_EQ(CONTENT_STATUS_NONE, mixed_form_security_info.mixed_content_status);
+  EXPECT_EQ(NONE, mixed_form_security_info.security_level);
+
+  helper.set_ran_mixed_content(true);
+  SecurityInfo mixed_form_and_active_security_info;
+  helper.GetSecurityInfo(&mixed_form_and_active_security_info);
+  EXPECT_TRUE(mixed_form_and_active_security_info.contained_mixed_form);
+  EXPECT_EQ(CONTENT_STATUS_RAN,
+            mixed_form_and_active_security_info.mixed_content_status);
+  EXPECT_EQ(DANGEROUS, mixed_form_and_active_security_info.security_level);
 }
 
 }  // namespace security_state

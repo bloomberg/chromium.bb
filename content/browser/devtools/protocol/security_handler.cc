@@ -126,6 +126,8 @@ void SecurityHandler::DidChangeVisibleSecurityState() {
           .SetRanMixedContent(security_style_explanations.ran_mixed_content)
           .SetDisplayedMixedContent(
               security_style_explanations.displayed_mixed_content)
+          .SetContainedMixedForm(
+              security_style_explanations.contained_mixed_form)
           .SetRanContentWithCertErrors(
               security_style_explanations.ran_content_with_cert_errors)
           .SetDisplayedContentWithCertErrors(
@@ -134,8 +136,7 @@ void SecurityHandler::DidChangeVisibleSecurityState() {
               security_style_explanations.ran_insecure_content_style))
           .SetDisplayedInsecureContentStyle(
               SecurityStyleToProtocolSecurityState(
-                  security_style_explanations
-                      .displayed_insecure_content_style))
+                  security_style_explanations.displayed_insecure_content_style))
           .Build();
 
   frontend_->SecurityStateChanged(

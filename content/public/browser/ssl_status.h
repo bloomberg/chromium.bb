@@ -43,15 +43,14 @@ struct CONTENT_EXPORT SSLStatus {
 
     // HTTP page containing a password input. Embedders may use this to
     // adjust UI on nonsecure pages that collect sensitive data.
-    // TODO: integrate password detection to set this flag.
-    // https://crbug.com/647560
     DISPLAYED_PASSWORD_FIELD_ON_HTTP = 1 << 4,
 
     // HTTP page containing a credit card input. Embedders may use this to
     // adjust UI on nonsecure pages that collect sensitive data.
-    // TODO: integrate credit card detection to set this flag.
-    // https://crbug.com/647560
     DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP = 1 << 5,
+
+    // HTTPS page containing a form targeting an insecure action url.
+    DISPLAYED_FORM_WITH_INSECURE_ACTION = 1 << 6,
   };
 
   SSLStatus();

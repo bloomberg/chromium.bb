@@ -37,6 +37,9 @@ struct SecurityStyleExplanations {
   // True if the page was loaded over HTTPS and displayed mixed (HTTP)
   // content such as images.
   bool displayed_mixed_content;
+  // True if the page was loaded over HTTPS and contained a form targeting a
+  // nonsecure url.
+  bool contained_mixed_form;
   // True if the page was loaded over HTTPS without certificate errors,
   // but ran subresources, such as scripts, that were loaded over HTTPS
   // with certificate errors.

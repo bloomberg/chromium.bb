@@ -144,21 +144,52 @@ void CheckContentStatus(security_state::ContentStatus content_status,
   }
 }
 
-void CheckForInsecureContent(const security_state::SecurityInfo& security_info,
-                             bool* displayed,
-                             bool* ran) {
-  CheckContentStatus(security_info.mixed_content_status, displayed, ran);
-  // Only consider subresources with certificate errors if the main
-  // resource was loaded over HTTPS without major certificate errors. If
-  // the main resource had a certificate error, then it would not be
-  // that useful (and would potentially be confusing) to warn about
-  // subesources that had certificate errors too.
-  if (net::IsCertStatusError(security_info.cert_status) &&
-      !net::IsCertStatusMinorError(security_info.cert_status)) {
+// If the |security_info| indicates that mixed content or certificate errors
+// were present, update |connection_status| and |connection_details|.
+void ReportAnyInsecureContent(const security_state::SecurityInfo& security_info,
+                              PageInfo::SiteConnectionStatus& connection_status,
+                              base::string16& connection_details) {
+  bool displayed_insecure_content = false;
+  bool ran_insecure_content = false;
+  CheckContentStatus(security_info.mixed_content_status,
+                     &displayed_insecure_content, &ran_insecure_content);
+  // Only note subresources with certificate errors if the main resource was
+  // loaded without major certificate errors. If the main resource had a
+  // certificate error, then it would not be that useful (and could
+  // potentially be confusing) to warn about subresources that had certificate
+  // errors too.
+  if (!net::IsCertStatusError(security_info.cert_status) ||
+      net::IsCertStatusMinorError(security_info.cert_status)) {
+    CheckContentStatus(security_info.content_with_cert_errors_status,
+                       &displayed_insecure_content, &ran_insecure_content);
+  }
+
+  // Only one insecure content warning is displayed; show the most severe.
+  if (ran_insecure_content) {
+    connection_status =
+        PageInfo::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE;
+    connection_details.assign(l10n_util::GetStringFUTF16(
+        IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_SENTENCE_LINK, connection_details,
+        l10n_util::GetStringUTF16(
+            IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_INSECURE_CONTENT_ERROR)));
     return;
   }
-  CheckContentStatus(security_info.content_with_cert_errors_status, displayed,
-                     ran);
+  if (security_info.contained_mixed_form) {
+    connection_status = PageInfo::SITE_CONNECTION_STATUS_INSECURE_FORM_ACTION;
+    connection_details.assign(l10n_util::GetStringFUTF16(
+        IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_SENTENCE_LINK, connection_details,
+        l10n_util::GetStringUTF16(
+            IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_INSECURE_FORM_WARNING)));
+    return;
+  }
+  if (displayed_insecure_content) {
+    connection_status =
+        PageInfo::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE;
+    connection_details.assign(l10n_util::GetStringFUTF16(
+        IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_SENTENCE_LINK, connection_details,
+        l10n_util::GetStringUTF16(
+            IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_INSECURE_CONTENT_WARNING)));
+  }
 }
 
 void GetSiteIdentityByMaliciousContentStatus(
@@ -559,23 +590,8 @@ void PageInfo::Init(const GURL& url,
           subject_name));
     }
 
-    bool ran_insecure_content = false;
-    bool displayed_insecure_content = false;
-    CheckForInsecureContent(security_info, &displayed_insecure_content,
-                            &ran_insecure_content);
-    if (ran_insecure_content || displayed_insecure_content) {
-      site_connection_status_ =
-          ran_insecure_content
-              ? SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE
-              : SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE;
-      site_connection_details_.assign(l10n_util::GetStringFUTF16(
-          IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_SENTENCE_LINK,
-          site_connection_details_,
-          l10n_util::GetStringUTF16(
-              ran_insecure_content
-                  ? IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_INSECURE_CONTENT_ERROR
-                  : IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_INSECURE_CONTENT_WARNING)));
-    }
+    ReportAnyInsecureContent(security_info, site_connection_status_,
+                             site_connection_details_);
   }
 
   uint16_t cipher_suite =

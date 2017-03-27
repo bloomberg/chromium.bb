@@ -127,6 +127,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   bool navigateBackForward(int offset) const override;
   void didAccessInitialDocument() override;
   void didDisplayInsecureContent() override;
+  void didContainInsecureFormAction() override;
   void didRunInsecureContent(SecurityOrigin*, const KURL& insecureURL) override;
   void didDetectXSS(const KURL&, bool didBlockEntirePage) override;
   void didDispatchPingLoader(const KURL&) override;

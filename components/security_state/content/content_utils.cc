@@ -167,6 +167,9 @@ std::unique_ptr<security_state::VisibleSecurityState> GetVisibleSecurityState(
          content::SSLStatus::DISPLAYED_CONTENT_WITH_CERT_ERRORS);
   state->ran_content_with_cert_errors =
       !!(ssl.content_status & content::SSLStatus::RAN_CONTENT_WITH_CERT_ERRORS);
+  state->contained_mixed_form =
+      !!(ssl.content_status &
+         content::SSLStatus::DISPLAYED_FORM_WITH_INSECURE_ACTION);
   state->displayed_password_field_on_http =
       !!(ssl.content_status &
          content::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP);
@@ -246,6 +249,9 @@ blink::WebSecurityStyle GetSecurityStyle(
           security_state::CONTENT_STATUS_DISPLAYED ||
       security_info.mixed_content_status ==
           security_state::CONTENT_STATUS_DISPLAYED_AND_RAN;
+
+  security_style_explanations->contained_mixed_form =
+      security_info.contained_mixed_form;
 
   bool is_cert_status_error = net::IsCertStatusError(security_info.cert_status);
   bool is_cert_status_minor_error =

@@ -151,6 +151,9 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   // insecure source.  Inactive content cannot spread to other frames.
   virtual void didDisplayInsecureContent() = 0;
 
+  // This frame contains a form that submits to an insecure target url.
+  virtual void didContainInsecureFormAction() = 0;
+
   // The indicated security origin has run active content (such as a script)
   // from an insecure source.  Note that the insecure content can spread to
   // other frames in the same origin.

@@ -133,16 +133,14 @@ struct SecurityInfo {
   // key exchange, or cipher for the connection is considered
   // obsolete. See net::ObsoleteSSLMask for specific mask values.
   int obsolete_ssl_status;
-
   // True if pinning was bypassed due to a local trust anchor.
   bool pkp_bypassed;
-
   // True if the page displayed password field on an HTTP page.
   bool displayed_password_field_on_http;
-
   // True if the page displayed credit card field on an HTTP page.
   bool displayed_credit_card_field_on_http;
-
+  // True if the secure page contained a form with a nonsecure target.
+  bool contained_mixed_form;
   // True if the server's certificate does not contain a
   // subjectAltName extension with a domain name or IP address.
   bool cert_missing_subject_alt_name;
@@ -175,6 +173,8 @@ struct VisibleSecurityState {
   std::vector<net::ct::SCTVerifyStatus> sct_verify_statuses;
   // True if the page displayed passive mixed content.
   bool displayed_mixed_content;
+  // True if the secure page contained a form with a nonsecure target.
+  bool contained_mixed_form;
   // True if the page ran active mixed content.
   bool ran_mixed_content;
   // True if the page displayed passive subresources with certificate errors.

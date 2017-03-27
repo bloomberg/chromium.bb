@@ -316,6 +316,7 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
 
   bool navigateBackForward(int offset) const override { return false; }
   void didDisplayInsecureContent() override {}
+  void didContainInsecureFormAction() override {}
   void didRunInsecureContent(SecurityOrigin*, const KURL&) override {}
   void didDetectXSS(const KURL&, bool) override {}
   void didDispatchPingLoader(const KURL&) override {}

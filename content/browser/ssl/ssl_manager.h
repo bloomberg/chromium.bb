@@ -82,6 +82,7 @@ class CONTENT_EXPORT SSLManager {
   // they notify the WebContents of the change via
   // DidChangeVisibleSecurityState();
   void DidDisplayMixedContent();
+  void DidContainInsecureFormAction();
   void DidDisplayContentWithCertErrors();
   void DidShowPasswordInputOnHttp();
   void DidHideAllPasswordInputsOnHttp();

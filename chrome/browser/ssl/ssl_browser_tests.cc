@@ -143,7 +143,8 @@ enum AuthStateFlags {
   DISPLAYED_INSECURE_CONTENT = 1 << 0,
   RAN_INSECURE_CONTENT = 1 << 1,
   SHOWING_INTERSTITIAL = 1 << 2,
-  SHOWING_ERROR = 1 << 3
+  SHOWING_ERROR = 1 << 3,
+  DISPLAYED_FORM_WITH_INSECURE_ACTION = 1 << 4
 };
 
 void Check(const NavigationEntry& entry, int expected_authentication_state) {
@@ -167,6 +168,13 @@ void Check(const NavigationEntry& entry, int expected_authentication_state) {
       !!(entry.GetSSL().content_status & SSLStatus::RAN_INSECURE_CONTENT);
   EXPECT_EQ(!!(expected_authentication_state & AuthState::RAN_INSECURE_CONTENT),
             ran_insecure_content);
+
+  bool displayed_form_with_insecure_action =
+      !!(entry.GetSSL().content_status &
+         SSLStatus::DISPLAYED_FORM_WITH_INSECURE_ACTION);
+  EXPECT_EQ(!!(expected_authentication_state &
+               AuthState::DISPLAYED_FORM_WITH_INSECURE_ACTION),
+            displayed_form_with_insecure_action);
 }
 
 }  // namespace AuthState
@@ -1518,6 +1526,24 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestDisplaysInsecureContent) {
                      AuthState::DISPLAYED_INSECURE_CONTENT);
 }
 
+// Visits a page that displays an insecure form.
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysInsecureForm) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(https_server_.Start());
+
+  std::string replacement_path;
+  GetFilePathWithHostAndPortReplacement(
+      "/ssl/page_displays_insecure_form.html",
+      embedded_test_server()->host_port_pair(), &replacement_path);
+
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL(replacement_path));
+
+  CheckSecurityState(browser()->tab_strip_model()->GetActiveWebContents(),
+                     CertError::NONE, security_state::NONE,
+                     AuthState::DISPLAYED_FORM_WITH_INSECURE_ACTION);
+}
+
 // Test that if the user proceeds and the checkbox is checked, a report
 // is sent or not sent depending on the Finch config.
 IN_PROC_BROWSER_TEST_F(SSLUITestWithExtendedReporting,
@@ -2326,12 +2352,12 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestGoodFrameNavigation) {
     observer.Wait();
   }
 
-  // Our state should be unathenticated (in the ran mixed script sense). Note
+  // Our state should be unauthenticated (in the ran mixed script sense). Note
   // this also displays images from the http page (google.com).
   CheckAuthenticationBrokenState(
-      tab,
-      CertError::NONE,
-      AuthState::RAN_INSECURE_CONTENT | AuthState::DISPLAYED_INSECURE_CONTENT);
+      tab, CertError::NONE,
+      AuthState::RAN_INSECURE_CONTENT | AuthState::DISPLAYED_INSECURE_CONTENT |
+          AuthState::DISPLAYED_FORM_WITH_INSECURE_ACTION);
 
   // Go back, our state should be unchanged.
   {
@@ -2343,9 +2369,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestGoodFrameNavigation) {
   }
 
   CheckAuthenticationBrokenState(
-      tab,
-      CertError::NONE,
-      AuthState::RAN_INSECURE_CONTENT | AuthState::DISPLAYED_INSECURE_CONTENT);
+      tab, CertError::NONE,
+      AuthState::RAN_INSECURE_CONTENT | AuthState::DISPLAYED_INSECURE_CONTENT |
+          AuthState::DISPLAYED_FORM_WITH_INSECURE_ACTION);
 }
 
 // From a bad HTTPS top frame:

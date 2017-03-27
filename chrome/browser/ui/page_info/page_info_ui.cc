@@ -167,6 +167,9 @@ PageInfoUI::IdentityInfo::GetSecurityDescription() const {
         case PageInfo::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE:
           return CreateSecurityDescription(IDS_PAGEINFO_NOT_SECURE_SUMMARY,
                                            IDS_PAGEINFO_NOT_SECURE_DETAILS);
+        case PageInfo::SITE_CONNECTION_STATUS_INSECURE_FORM_ACTION:
+          return CreateSecurityDescription(IDS_PAGEINFO_MIXED_CONTENT_SUMMARY,
+                                           IDS_PAGEINFO_NOT_SECURE_DETAILS);
         case PageInfo::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE:
           return CreateSecurityDescription(IDS_PAGEINFO_MIXED_CONTENT_SUMMARY,
                                            IDS_PAGEINFO_MIXED_CONTENT_DETAILS);
@@ -359,6 +362,7 @@ int PageInfoUI::GetConnectionIconID(PageInfo::SiteConnectionStatus status) {
       resource_id = IDR_PAGEINFO_GOOD;
       break;
     case PageInfo::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE:
+    case PageInfo::SITE_CONNECTION_STATUS_INSECURE_FORM_ACTION:
       resource_id = IDR_PAGEINFO_WARNING_MINOR;
       break;
     case PageInfo::SITE_CONNECTION_STATUS_UNENCRYPTED:

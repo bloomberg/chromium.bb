@@ -208,6 +208,10 @@ void SSLManager::DidDisplayMixedContent() {
   UpdateLastCommittedEntry(SSLStatus::DISPLAYED_INSECURE_CONTENT, 0);
 }
 
+void SSLManager::DidContainInsecureFormAction() {
+  UpdateLastCommittedEntry(SSLStatus::DISPLAYED_FORM_WITH_INSECURE_ACTION, 0);
+}
+
 void SSLManager::DidDisplayContentWithCertErrors() {
   NavigationEntryImpl* entry = controller_->GetLastCommittedEntry();
   if (!entry)

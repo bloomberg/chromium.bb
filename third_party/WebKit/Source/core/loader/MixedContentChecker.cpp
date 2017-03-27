@@ -497,7 +497,7 @@ bool MixedContentChecker::isMixedFormAction(
 
   // Use the current local frame's client; the embedder doesn't distinguish
   // mixed content signals from different frames on the same page.
-  frame->loader().client()->didDisplayInsecureContent();
+  frame->loader().client()->didContainInsecureFormAction();
 
   if (reportingPolicy == SecurityViolationReportingPolicy::Report) {
     String message = String::format(

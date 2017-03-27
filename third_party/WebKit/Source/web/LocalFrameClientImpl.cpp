@@ -668,6 +668,11 @@ void LocalFrameClientImpl::didDisplayInsecureContent() {
     m_webFrame->client()->didDisplayInsecureContent();
 }
 
+void LocalFrameClientImpl::didContainInsecureFormAction() {
+  if (m_webFrame->client())
+    m_webFrame->client()->didContainInsecureFormAction();
+}
+
 void LocalFrameClientImpl::didRunInsecureContent(SecurityOrigin* origin,
                                                  const KURL& insecureURL) {
   if (m_webFrame->client()) {

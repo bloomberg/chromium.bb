@@ -106,6 +106,7 @@ namespace {
 class MockLocalFrameClient : public EmptyLocalFrameClient {
  public:
   MockLocalFrameClient() : EmptyLocalFrameClient() {}
+  MOCK_METHOD0(didContainInsecureFormAction, void());
   MOCK_METHOD1(didDisplayContentWithCertificateErrors, void(const KURL&));
   MOCK_METHOD1(didRunContentWithCertificateErrors, void(const KURL&));
 };
@@ -143,6 +144,38 @@ TEST(MixedContentCheckerTest, HandleCertificateError) {
   MixedContentChecker::handleCertificateError(
       &dummyPageHolder->frame(), response2, WebURLRequest::FrameTypeNone,
       requestContext);
+}
+
+TEST(MixedContentCheckerTest, DetectMixedForm) {
+  MockLocalFrameClient* client = new MockLocalFrameClient;
+  std::unique_ptr<DummyPageHolder> dummyPageHolder =
+      DummyPageHolder::create(IntSize(1, 1), nullptr, client);
+
+  KURL mainResourceUrl(KURL(), "https://example.test/");
+
+  KURL httpFormActionUrl(KURL(), "http://example-action.test/");
+  KURL httpsFormActionUrl(KURL(), "https://example-action.test/");
+  KURL javascriptFormActionUrl(KURL(), "javascript:void(0);");
+  KURL mailtoFormActionUrl(KURL(), "mailto:action@example-action.test");
+
+  dummyPageHolder->frame().document()->setSecurityOrigin(
+      SecurityOrigin::create(mainResourceUrl));
+
+  // mailto and http are non-secure form targets.
+  EXPECT_CALL(*client, didContainInsecureFormAction()).Times(2);
+
+  EXPECT_TRUE(MixedContentChecker::isMixedFormAction(
+      &dummyPageHolder->frame(), httpFormActionUrl,
+      SecurityViolationReportingPolicy::SuppressReporting));
+  EXPECT_FALSE(MixedContentChecker::isMixedFormAction(
+      &dummyPageHolder->frame(), httpsFormActionUrl,
+      SecurityViolationReportingPolicy::SuppressReporting));
+  EXPECT_FALSE(MixedContentChecker::isMixedFormAction(
+      &dummyPageHolder->frame(), javascriptFormActionUrl,
+      SecurityViolationReportingPolicy::SuppressReporting));
+  EXPECT_TRUE(MixedContentChecker::isMixedFormAction(
+      &dummyPageHolder->frame(), mailtoFormActionUrl,
+      SecurityViolationReportingPolicy::SuppressReporting));
 }
 
 }  // namespace blink
