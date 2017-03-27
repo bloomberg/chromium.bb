@@ -16,8 +16,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/paint/paint_canvas.h"
-#include "cc/paint/paint_surface.h"
+#include "cc/paint/skia_paint_canvas.h"
 #include "content/renderer/media/renderer_gpu_video_accelerator_factories.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/bind_to_current_loop.h"
@@ -242,7 +241,7 @@ class VideoTrackRecorder::Encoder : public base::RefCountedThreadSafe<Encoder> {
   // Used to retrieve incoming opaque VideoFrames (i.e. VideoFrames backed by
   // textures). Created on-demand on |main_task_runner_|.
   std::unique_ptr<media::SkCanvasVideoRenderer> video_renderer_;
-  sk_sp<cc::PaintSurface> surface_;
+  std::unique_ptr<cc::PaintCanvas> canvas_;
 
   DISALLOW_COPY_AND_ASSIGN(Encoder);
 };
@@ -312,21 +311,23 @@ void VideoTrackRecorder::Encoder::RetrieveFrameOnMainThread(
         frame->visible_rect().width(), frame->visible_rect().height(),
         kOpaque_SkAlphaType);
 
+    SkBitmap bitmap;
     // Create |surface_| if it doesn't exist or incoming resolution has changed.
-    if (!surface_ || surface_->width() != info.width() ||
-        surface_->height() != info.height()) {
-      surface_ = cc::PaintSurface::MakeRaster(info);
+    if (!canvas_ || canvas_->imageInfo().width() != info.width() ||
+        canvas_->imageInfo().height() != info.height()) {
+      bitmap.allocPixels(info);
+      canvas_ = base::MakeUnique<cc::SkiaPaintCanvas>(bitmap);
     }
     if (!video_renderer_)
       video_renderer_.reset(new media::SkCanvasVideoRenderer);
 
     DCHECK(context_provider->ContextGL());
-    video_renderer_->Copy(video_frame.get(), surface_->getCanvas(),
+    video_renderer_->Copy(video_frame.get(), canvas_.get(),
                           media::Context3D(context_provider->ContextGL(),
                                            context_provider->GrContext()));
 
     SkPixmap pixmap;
-    if (!cc::ToPixmap(surface_->getCanvas(), &pixmap)) {
+    if (!bitmap.peekPixels(&pixmap)) {
       DLOG(ERROR) << "Error trying to map PaintSurface's pixels";
       return;
     }

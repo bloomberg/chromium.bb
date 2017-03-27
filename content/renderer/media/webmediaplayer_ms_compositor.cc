@@ -11,7 +11,7 @@
 #include "base/hash.h"
 #include "base/single_thread_task_runner.h"
 #include "base/values.h"
-#include "cc/paint/paint_surface.h"
+#include "cc/paint/skia_paint_canvas.h"
 #include "content/renderer/media/webmediaplayer_ms.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/media_log.h"

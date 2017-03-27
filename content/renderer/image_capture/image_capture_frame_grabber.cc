@@ -5,7 +5,6 @@
 #include "content/renderer/image_capture/image_capture_frame_grabber.h"
 
 #include "cc/paint/paint_canvas.h"
-#include "cc/paint/paint_surface.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
@@ -15,6 +14,7 @@
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkSurface.h"
 
 namespace content {
 

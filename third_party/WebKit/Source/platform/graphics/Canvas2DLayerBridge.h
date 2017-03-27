@@ -32,7 +32,6 @@
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/ImageBufferSurface.h"
 #include "platform/graphics/paint/PaintRecorder.h"
-#include "platform/graphics/paint/PaintSurface.h"
 #include "public/platform/WebExternalTextureLayer.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
