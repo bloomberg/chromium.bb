@@ -26,7 +26,7 @@ namespace protocol {
 const char kStreamLabel[] = "screen_stream";
 const char kVideoLabel[] = "screen_video";
 
-struct WebrtcVideoStream::FrameTimestamps {
+struct WebrtcVideoStream::FrameStats {
   // The following fields is not null only for one frame after each incoming
   // input event.
   InputEventTimestamps input_event_timestamps;
@@ -36,11 +36,13 @@ struct WebrtcVideoStream::FrameTimestamps {
   base::TimeDelta capture_delay;
   base::TimeTicks encode_started_time;
   base::TimeTicks encode_ended_time;
+
+  uint32_t capturer_id = 0;
 };
 
-struct WebrtcVideoStream::EncodedFrameWithTimestamps {
+struct WebrtcVideoStream::EncodedFrameWithStats {
   std::unique_ptr<WebrtcVideoEncoder::EncodedFrame> frame;
-  std::unique_ptr<FrameTimestamps> timestamps;
+  std::unique_ptr<FrameStats> stats;
 };
 
 WebrtcVideoStream::WebrtcVideoStream()
@@ -139,8 +141,8 @@ void WebrtcVideoStream::OnCaptureResult(
     std::unique_ptr<webrtc::DesktopFrame> frame) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  captured_frame_timestamps_->capture_ended_time = base::TimeTicks::Now();
-  captured_frame_timestamps_->capture_delay =
+  captured_frame_stats_->capture_ended_time = base::TimeTicks::Now();
+  captured_frame_stats_->capture_delay =
       base::TimeDelta::FromMilliseconds(frame ? frame->capture_time_ms() : 0);
 
   WebrtcVideoEncoder::FrameParams frame_params;
@@ -166,7 +168,7 @@ void WebrtcVideoStream::OnCaptureResult(
       encode_task_runner_.get(), FROM_HERE,
       base::Bind(&WebrtcVideoStream::EncodeFrame, encoder_.get(),
                  base::Passed(std::move(frame)), frame_params,
-                 base::Passed(std::move(captured_frame_timestamps_))),
+                 base::Passed(std::move(captured_frame_stats_))),
       base::Bind(&WebrtcVideoStream::OnFrameEncoded,
                  weak_factory_.GetWeakPtr()));
 }
@@ -184,29 +186,32 @@ void WebrtcVideoStream::OnChannelClosed(
 void WebrtcVideoStream::CaptureNextFrame() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  captured_frame_timestamps_.reset(new FrameTimestamps());
-  captured_frame_timestamps_->capture_started_time = base::TimeTicks::Now();
-  captured_frame_timestamps_->input_event_timestamps =
+  captured_frame_stats_.reset(new FrameStats());
+  captured_frame_stats_->capture_started_time = base::TimeTicks::Now();
+  captured_frame_stats_->input_event_timestamps =
       event_timestamps_source_->TakeLastEventTimestamps();
 
   capturer_->CaptureFrame();
 }
 
 // static
-WebrtcVideoStream::EncodedFrameWithTimestamps WebrtcVideoStream::EncodeFrame(
+WebrtcVideoStream::EncodedFrameWithStats WebrtcVideoStream::EncodeFrame(
     WebrtcVideoEncoder* encoder,
     std::unique_ptr<webrtc::DesktopFrame> frame,
     WebrtcVideoEncoder::FrameParams params,
-    std::unique_ptr<WebrtcVideoStream::FrameTimestamps> timestamps) {
-  EncodedFrameWithTimestamps result;
-  result.timestamps = std::move(timestamps);
-  result.timestamps->encode_started_time = base::TimeTicks::Now();
+    std::unique_ptr<WebrtcVideoStream::FrameStats> stats) {
+  EncodedFrameWithStats result;
+  result.stats = std::move(stats);
+  result.stats->encode_started_time = base::TimeTicks::Now();
   result.frame = encoder->Encode(frame.get(), params);
-  result.timestamps->encode_ended_time = base::TimeTicks::Now();
+  result.stats->encode_ended_time = base::TimeTicks::Now();
+  if (frame) {
+    result.stats->capturer_id = frame->capturer_id();
+  }
   return result;
 }
 
-void WebrtcVideoStream::OnFrameEncoded(EncodedFrameWithTimestamps frame) {
+void WebrtcVideoStream::OnFrameEncoded(EncodedFrameWithStats frame) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   HostFrameStats stats;
@@ -218,7 +223,7 @@ void WebrtcVideoStream::OnFrameEncoded(EncodedFrameWithTimestamps frame) {
 
   webrtc::EncodedImageCallback::Result result =
       webrtc_transport_->video_encoder_factory()->SendEncodedFrame(
-          *frame.frame, frame.timestamps->capture_started_time);
+          *frame.frame, frame.stats->capture_started_time);
   if (result.error != webrtc::EncodedImageCallback::Result::OK) {
     // TODO(sergeyu): Stop the stream.
     LOG(ERROR) << "Failed to send video frame.";
@@ -229,26 +234,28 @@ void WebrtcVideoStream::OnFrameEncoded(EncodedFrameWithTimestamps frame) {
   if (video_stats_dispatcher_.is_connected()) {
     stats.frame_size = frame.frame ? frame.frame->data.size() : 0;
 
-    if (!frame.timestamps->input_event_timestamps.is_null()) {
+    if (!frame.stats->input_event_timestamps.is_null()) {
       stats.capture_pending_delay =
-          frame.timestamps->capture_started_time -
-          frame.timestamps->input_event_timestamps.host_timestamp;
+          frame.stats->capture_started_time -
+          frame.stats->input_event_timestamps.host_timestamp;
       stats.latest_event_timestamp =
-          frame.timestamps->input_event_timestamps.client_timestamp;
+          frame.stats->input_event_timestamps.client_timestamp;
     }
 
-    stats.capture_delay = frame.timestamps->capture_delay;
+    stats.capture_delay = frame.stats->capture_delay;
 
     // Total overhead time for IPC and threading when capturing frames.
-    stats.capture_overhead_delay = (frame.timestamps->capture_ended_time -
-                                    frame.timestamps->capture_started_time) -
-                                   stats.capture_delay;
+    stats.capture_overhead_delay =
+        (frame.stats->capture_ended_time - frame.stats->capture_started_time) -
+        stats.capture_delay;
 
-    stats.encode_pending_delay = frame.timestamps->encode_started_time -
-                                 frame.timestamps->capture_ended_time;
+    stats.encode_pending_delay =
+        frame.stats->encode_started_time - frame.stats->capture_ended_time;
 
-    stats.encode_delay = frame.timestamps->encode_ended_time -
-                         frame.timestamps->encode_started_time;
+    stats.encode_delay =
+        frame.stats->encode_ended_time - frame.stats->encode_started_time;
+
+    stats.capturer_id = frame.stats->capturer_id;
 
     video_stats_dispatcher_.OnVideoFrameStats(result.frame_id, stats);
   }

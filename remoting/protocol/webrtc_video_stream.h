@@ -52,8 +52,8 @@ class WebrtcVideoStream : public VideoStream,
   void SetObserver(Observer* observer) override;
 
  private:
-  struct FrameTimestamps;
-  struct EncodedFrameWithTimestamps;
+  struct FrameStats;
+  struct EncodedFrameWithStats;
 
   // webrtc::DesktopCapturer::Callback interface.
   void OnCaptureResult(webrtc::DesktopCapturer::Result result,
@@ -67,12 +67,12 @@ class WebrtcVideoStream : public VideoStream,
   void CaptureNextFrame();
 
   // Task running on the encoder thread to encode the |frame|.
-  static EncodedFrameWithTimestamps EncodeFrame(
+  static EncodedFrameWithStats EncodeFrame(
       WebrtcVideoEncoder* encoder,
       std::unique_ptr<webrtc::DesktopFrame> frame,
       WebrtcVideoEncoder::FrameParams params,
-      std::unique_ptr<WebrtcVideoStream::FrameTimestamps> timestamps);
-  void OnFrameEncoded(EncodedFrameWithTimestamps frame);
+      std::unique_ptr<WebrtcVideoStream::FrameStats> stats);
+  void OnFrameEncoded(EncodedFrameWithStats frame);
 
   // Capturer used to capture the screen.
   std::unique_ptr<webrtc::DesktopCapturer> capturer_;
@@ -90,8 +90,8 @@ class WebrtcVideoStream : public VideoStream,
 
   HostVideoStatsDispatcher video_stats_dispatcher_;
 
-  // Timestamps for the frame that's being captured.
-  std::unique_ptr<FrameTimestamps> captured_frame_timestamps_;
+  // Stats of the frame that's being captured.
+  std::unique_ptr<FrameStats> captured_frame_stats_;
 
   std::unique_ptr<WebrtcFrameScheduler> scheduler_;
 

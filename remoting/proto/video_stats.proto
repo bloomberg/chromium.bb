@@ -11,6 +11,7 @@ option optimize_for = LITE_RUNTIME;
 
 package remoting;
 
+// Next Id: 13
 message FrameStatsMessage {
   // Frame ID.
   optional uint32 frame_id = 1;
@@ -44,5 +45,9 @@ message FrameStatsMessage {
 
   // Current bandwidth estimate in kb/s.
   optional int32 bandwidth_estimate_kbps = 11;
+
+  // The capturer Id to indicate the implementation of ScreenCapturer that
+  // generates this frame.
+  optional uint32 capturer_id = 12;
 }
 
