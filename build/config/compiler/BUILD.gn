@@ -65,10 +65,6 @@ declare_args() {
   exclude_unwind_tables = (is_chrome_branded && is_official_build) ||
                           (is_chromecast && !is_cast_desktop_build && !is_debug)
 
-  # If true, gold linker will save symbol table inside object files.
-  # This speeds up gdb startup by 60%
-  gdb_index = false
-
   # If true, optimize for size. Does not affect windows builds.
   # Linux & Mac favor speed over size.
   # TODO(brettw) it's weird that Mac and desktop Linux are different. We should
@@ -309,7 +305,8 @@ config("compiler") {
       ldflags += [ "-fPIC" ]
     }
 
-    cflags += [ "-pipe" ]  # Use pipes for communicating between sub-processes. Faster.
+    # Use pipes for communicating between sub-processes. Faster.
+    cflags += [ "-pipe" ]
 
     ldflags += [
       "-Wl,-z,noexecstack",
@@ -373,10 +370,6 @@ config("compiler") {
           "-Wl,--thread-count=4",
         ]
       }
-    }
-
-    if (gdb_index) {
-      ldflags += [ "-Wl,--gdb-index" ]
     }
 
     # TODO(thestig): Make this flag work with GN.
@@ -1662,6 +1655,15 @@ config("symbols") {
     }
     asmflags = cflags
     ldflags = []
+
+    # TODO(thakis): Figure out if there's a way to make this go for 32-bit,
+    # currently we get "warning:
+    # obj/native_client/src/trusted/service_runtime/sel_asm/nacl_switch_32.o:
+    # DWARF info may be corrupt; offsets in a range list entry are in different
+    # sections" there.  Maybe just a bug in nacl_switch_32.S.
+    if (!is_mac && !is_ios && !is_nacl && target_cpu != "x86") {
+      ldflags += [ "-Wl,--gdb-index" ]
+    }
   }
 }
 
@@ -1683,9 +1685,8 @@ config("minimal_symbols") {
     } else {
       cflags = [ "-g1" ]
     }
-    if (use_debug_fission) {
-      cflags += [ "-gsplit-dwarf" ]
-    }
+
+    # Note: -gsplit-dwarf implicitly turns on -g2 with clang, so don't pass it.
     asmflags = cflags
     ldflags = []
   }
