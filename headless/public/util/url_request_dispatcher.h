@@ -6,6 +6,7 @@
 #define HEADLESS_PUBLIC_UTIL_URL_REQUEST_DISPATCHER_H_
 
 #include "base/macros.h"
+#include "headless/public/headless_export.h"
 #include "net/base/net_errors.h"
 
 namespace headless {
@@ -15,7 +16,7 @@ class NavigationRequest;
 // Interface to abstract and potentially reorder (for determinism) calls to
 // ManagedDispatchUrlRequestJob::OnHeadersComplete and
 // ManagedDispatchUrlRequestJob::NotifyStartError.
-class URLRequestDispatcher {
+class HEADLESS_EXPORT URLRequestDispatcher {
  public:
   URLRequestDispatcher() {}
   virtual ~URLRequestDispatcher() {}

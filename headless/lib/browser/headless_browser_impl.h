@@ -16,6 +16,7 @@
 #include "content/public/browser/web_contents.h"
 #include "headless/lib/browser/headless_devtools_manager_delegate.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
+#include "headless/public/headless_export.h"
 
 #if defined(USE_AURA)
 #include "headless/lib/browser/headless_window_tree_host.h"
@@ -32,7 +33,8 @@ namespace headless {
 class HeadlessBrowserContextImpl;
 class HeadlessBrowserMainParts;
 
-class HeadlessBrowserImpl : public HeadlessBrowser {
+// Exported for tests.
+class HEADLESS_EXPORT HeadlessBrowserImpl : public HeadlessBrowser {
  public:
   HeadlessBrowserImpl(
       const base::Callback<void(HeadlessBrowser*)>& on_start_callback,

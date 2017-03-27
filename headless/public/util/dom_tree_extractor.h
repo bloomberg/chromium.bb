@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "headless/public/devtools/domains/css.h"
 #include "headless/public/devtools/domains/dom.h"
+#include "headless/public/headless_export.h"
 
 namespace headless {
 class HeadlessDevToolsClient;
@@ -20,7 +21,7 @@ class HeadlessDevToolsClient;
 // exact layout should not be regarded as stable, it's subject to change without
 // notice).
 // TODO(alexclarke): Remove in favor of one using DOM.getFlattenedDocument.
-class DomTreeExtractor {
+class HEADLESS_EXPORT DomTreeExtractor {
  public:
   explicit DomTreeExtractor(HeadlessDevToolsClient* devtools_client);
   ~DomTreeExtractor();
@@ -28,7 +29,7 @@ class DomTreeExtractor {
   using NodeId = int;
   using Index = size_t;
 
-  class DomTree {
+  class HEADLESS_EXPORT DomTree {
    public:
     DomTree();
     DomTree(DomTree&& other);

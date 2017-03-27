@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/single_thread_task_runner.h"
+#include "headless/public/headless_export.h"
 #include "net/url_request/url_request_job_factory.h"
 
 namespace net {
@@ -22,7 +23,7 @@ class DeterministicDispatcher;
 // will return in order of creation, regardless of what order the network
 // returns them in.  This helps remove one large source of network related
 // non determinism at the cost of slower page loads.
-class DeterministicHttpProtocolHandler
+class HEADLESS_EXPORT DeterministicHttpProtocolHandler
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
   // Note |deterministic_dispatcher| is expected to be shared across a number of

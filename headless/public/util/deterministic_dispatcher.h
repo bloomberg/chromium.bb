@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "headless/public/headless_export.h"
 #include "headless/public/util/url_request_dispatcher.h"
 #include "net/base/net_errors.h"
 
@@ -23,7 +24,7 @@ class ManagedDispatchURLRequestJob;
 // The purpose of this class is to queue up navigations and calls to
 // OnHeadersComplete / OnStartError and dispatch them in order of creation. This
 // helps make renders deterministic at the cost of slower page loads.
-class DeterministicDispatcher : public URLRequestDispatcher {
+class HEADLESS_EXPORT DeterministicDispatcher : public URLRequestDispatcher {
  public:
   explicit DeterministicDispatcher(
       scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner);

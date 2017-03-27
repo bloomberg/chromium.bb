@@ -26,11 +26,11 @@ class HeadlessDevToolsTarget;
 // main thread.
 class HEADLESS_EXPORT HeadlessWebContents {
  public:
-  class Builder;
+  class HEADLESS_EXPORT Builder;
 
   virtual ~HeadlessWebContents() {}
 
-  class Observer {
+  class HEADLESS_EXPORT Observer {
    public:
     // All the following notifications will be called on browser main thread.
 

@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "headless/public/headless_export.h"
 #include "net/base/net_errors.h"
 #include "url/gurl.h"
 
@@ -22,13 +23,13 @@ class HttpResponseHeaders;
 namespace headless {
 
 // An interface for fetching URLs. Note these are only intended to be used once.
-class URLFetcher {
+class HEADLESS_EXPORT URLFetcher {
  public:
   URLFetcher() {}
   virtual ~URLFetcher() {}
 
   // Interface for reporting the fetch result.
-  class ResultListener {
+  class HEADLESS_EXPORT ResultListener {
    public:
     ResultListener() {}
 

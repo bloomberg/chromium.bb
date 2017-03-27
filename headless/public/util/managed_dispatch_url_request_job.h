@@ -6,6 +6,7 @@
 #define HEADLESS_PUBLIC_UTIL_MANAGED_DISPATCH_URL_REQUEST_JOB_H_
 
 #include "base/macros.h"
+#include "headless/public/headless_export.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
@@ -17,7 +18,7 @@ class URLRequestDispatcher;
 // the order in which a set of fetches complete. Typically this is done to make
 // fetching deterministic. NOTE URLRequestDispatcher sub classes use
 // OnHeadersComplete and OnStartError to drive the URLRequestJob.
-class ManagedDispatchURLRequestJob : public net::URLRequestJob {
+class HEADLESS_EXPORT ManagedDispatchURLRequestJob : public net::URLRequestJob {
  public:
   ManagedDispatchURLRequestJob(net::URLRequest* request,
                                net::NetworkDelegate* network_delegate,

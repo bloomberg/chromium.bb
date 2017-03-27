@@ -13,6 +13,7 @@
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "headless/public/headless_devtools_target.h"
+#include "headless/public/headless_export.h"
 #include "headless/public/headless_web_contents.h"
 
 namespace content {
@@ -28,10 +29,12 @@ namespace headless {
 class HeadlessBrowserImpl;
 class WebContentsObserverAdapter;
 
-class HeadlessWebContentsImpl : public HeadlessWebContents,
-                                public HeadlessDevToolsTarget,
-                                public content::RenderProcessHostObserver,
-                                public content::WebContentsObserver {
+// Exported for tests.
+class HEADLESS_EXPORT HeadlessWebContentsImpl
+    : public HeadlessWebContents,
+      public HeadlessDevToolsTarget,
+      public content::RenderProcessHostObserver,
+      public content::WebContentsObserver {
  public:
   ~HeadlessWebContentsImpl() override;
 

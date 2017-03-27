@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "headless/public/headless_export.h"
 #include "headless/public/util/managed_dispatch_url_request_job.h"
 #include "headless/public/util/url_fetcher.h"
 #include "net/base/net_errors.h"
@@ -34,8 +35,9 @@ class URLRequestDispatcher;
 // 1. The delegate can extension observe / cancel and redirect requests
 // 2. The delegate can optionally provide the results, otherwise the specifed
 //    fetcher is invoked.
-class GenericURLRequestJob : public ManagedDispatchURLRequestJob,
-                             public URLFetcher::ResultListener {
+class HEADLESS_EXPORT GenericURLRequestJob
+    : public ManagedDispatchURLRequestJob,
+      public URLFetcher::ResultListener {
  public:
   enum class RewriteResult { kAllow, kDeny, kFailure };
   using RewriteCallback = std::function<
@@ -51,7 +53,7 @@ class GenericURLRequestJob : public ManagedDispatchURLRequestJob,
     size_t response_data_size;
   };
 
-  class Delegate {
+  class HEADLESS_EXPORT Delegate {
    public:
     // Allows the delegate to rewrite the URL for a given request. Return true
     // to signal that the rewrite is in progress and |callback| will be called

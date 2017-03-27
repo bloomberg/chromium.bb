@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "headless/public/devtools/domains/css.h"
 #include "headless/public/devtools/domains/dom.h"
+#include "headless/public/headless_export.h"
 
 namespace headless {
 class HeadlessDevToolsClient;
@@ -19,7 +20,7 @@ class HeadlessDevToolsClient;
 // addition, it also extracts details of bounding boxes and layout text (NB the
 // exact layout should not be regarded as stable, it's subject to change without
 // notice).
-class FlatDomTreeExtractor {
+class HEADLESS_EXPORT FlatDomTreeExtractor {
  public:
   explicit FlatDomTreeExtractor(HeadlessDevToolsClient* devtools_client);
   ~FlatDomTreeExtractor();
@@ -27,7 +28,7 @@ class FlatDomTreeExtractor {
   using NodeId = int;
   using Index = size_t;
 
-  class DomTree {
+  class HEADLESS_EXPORT DomTree {
    public:
     DomTree();
     DomTree(DomTree&& other);

@@ -50,8 +50,8 @@
 
 namespace headless {
 namespace {{domain.domain | camelcase_to_hacker_style}} {
-class ExperimentalDomain;
-class ExperimentalObserver;
+class HEADLESS_EXPORT ExperimentalDomain;
+class HEADLESS_EXPORT ExperimentalObserver;
 {% if "events" in domain %}
 
 class HEADLESS_EXPORT ExperimentalObserver {
