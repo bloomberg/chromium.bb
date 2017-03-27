@@ -112,8 +112,9 @@ void LocalWindowProxy::initialize() {
   TRACE_EVENT1("v8", "LocalWindowProxy::initialize", "isMainWindow",
                frame()->isMainFrame());
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER(
-      frame()->isMainFrame() ? "Blink.Binding.InitializeMainWindowProxy"
-                             : "Blink.Binding.InitializeNonMainWindowProxy");
+      frame()->isMainFrame()
+          ? "Blink.Binding.InitializeMainLocalWindowProxy"
+          : "Blink.Binding.InitializeNonMainLocalWindowProxy");
 
   ScriptForbiddenScope::AllowUserAgentScript allowScript;
 

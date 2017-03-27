@@ -69,8 +69,9 @@ void RemoteWindowProxy::initialize() {
   TRACE_EVENT1("v8", "RemoteWindowProxy::initialize", "isMainWindow",
                frame()->isMainFrame());
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER(
-      frame()->isMainFrame() ? "Blink.Binding.InitializeMainWindowProxy"
-                             : "Blink.Binding.InitializeNonMainWindowProxy");
+      frame()->isMainFrame()
+          ? "Blink.Binding.InitializeMainRemoteWindowProxy"
+          : "Blink.Binding.InitializeNonMainRemoteWindowProxy");
 
   ScriptForbiddenScope::AllowUserAgentScript allowScript;
 
