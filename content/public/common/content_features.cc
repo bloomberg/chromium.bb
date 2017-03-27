@@ -14,6 +14,11 @@ namespace features {
 const base::Feature kAsmJsToWebAssembly{"AsmJsToWebAssembly",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Block subresource requests whose URLs contain embedded credentials (e.g.
+// `https://user:pass@example.com/resource`).
+const base::Feature kBlockCredentialedSubresources{
+    "BlockCredentialedSubresources", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables brotli "Accept-Encoding" advertising and "Content-Encoding" support.
 // Brotli format specification: http://www.ietf.org/id/draft-alakuijala-brotli
 const base::Feature kBrotliEncoding{"brotli-encoding",

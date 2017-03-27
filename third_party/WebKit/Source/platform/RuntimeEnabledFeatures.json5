@@ -1008,7 +1008,7 @@
     },
     {
       name: "BlockCredentialedSubresources",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "UnclosedFormControlIsInvalid",

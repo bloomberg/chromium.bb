@@ -983,74 +983,6 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
   EXPECT_EQ(0, observer_incognito.auth_cancelled_count());
 }
 
-// If an XMLHttpRequest is made with incorrect credentials, there should be no
-// login prompt; instead the 401 status should be returned to the script.
-IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
-                       NoLoginPromptForXHRWithBadCredentials) {
-  const char kXHRTestPage[] = "/login/xhr_with_credentials.html#incorrect";
-
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  NavigationController* controller = &contents->GetController();
-  LoginPromptBrowserTestObserver observer;
-
-  observer.Register(content::Source<NavigationController>(controller));
-
-  // Load a page which makes a synchronous XMLHttpRequest for an authenticated
-  // resource with the wrong credentials.  There should be no login prompt.
-  {
-    GURL test_page = embedded_test_server()->GetURL(kXHRTestPage);
-    WindowedLoadStopObserver load_stop_waiter(controller, 1);
-    browser()->OpenURL(OpenURLParams(test_page, Referrer(),
-                                     WindowOpenDisposition::CURRENT_TAB,
-                                     ui::PAGE_TRANSITION_TYPED, false));
-    load_stop_waiter.Wait();
-  }
-
-  base::string16 expected_title(base::UTF8ToUTF16("status=401"));
-
-  EXPECT_EQ(expected_title, contents->GetTitle());
-  EXPECT_EQ(0, observer.auth_supplied_count());
-  EXPECT_EQ(0, observer.auth_needed_count());
-  EXPECT_EQ(0, observer.auth_cancelled_count());
-}
-
-// If an XMLHttpRequest is made with correct credentials, there should be no
-// login prompt either.
-IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
-                       NoLoginPromptForXHRWithGoodCredentials) {
-  const char kXHRTestPage[] = "/login/xhr_with_credentials.html#secret";
-
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  NavigationController* controller = &contents->GetController();
-  LoginPromptBrowserTestObserver observer;
-
-  observer.Register(content::Source<NavigationController>(controller));
-
-  // Load a page which makes a synchronous XMLHttpRequest for an authenticated
-  // resource with the wrong credentials.  There should be no login prompt.
-  {
-    GURL test_page = embedded_test_server()->GetURL(kXHRTestPage);
-    WindowedLoadStopObserver load_stop_waiter(controller, 1);
-    browser()->OpenURL(OpenURLParams(test_page, Referrer(),
-                                     WindowOpenDisposition::CURRENT_TAB,
-                                     ui::PAGE_TRANSITION_TYPED, false));
-    load_stop_waiter.Wait();
-  }
-
-  base::string16 expected_title(base::UTF8ToUTF16("status=200"));
-
-  EXPECT_EQ(expected_title, contents->GetTitle());
-  EXPECT_EQ(0, observer.auth_supplied_count());
-  EXPECT_EQ(0, observer.auth_needed_count());
-  EXPECT_EQ(0, observer.auth_cancelled_count());
-}
-
 // If an XMLHttpRequest is made without credentials, there should be a login
 // prompt.
 IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
@@ -1067,7 +999,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
   observer.Register(content::Source<NavigationController>(controller));
 
   // Load a page which makes a synchronous XMLHttpRequest for an authenticated
-  // resource with the wrong credentials.  There should be no login prompt.
+  // resource without credentials. There should be a login prompt.
   {
     GURL test_page = embedded_test_server()->GetURL(kXHRTestPage);
     WindowedAuthNeededObserver auth_needed_waiter(controller);

@@ -275,12 +275,10 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
           "https://www.chromestatus.com/feature/5709390967472128 for details.");
 
     case UseCounter::RequestedSubresourceWithEmbeddedCredentials:
-      return String::format(
-          "Subresource requests whose URLs contain embedded credentials (e.g. "
-          "`https://user:pass@host/`) are deprecated, and will be blocked in "
-          "%s. See https://www.chromestatus.com/feature/5669008342777856 for "
-          "more details.",
-          milestoneString(M59));
+      return "Subresource requests whose URLs contain embedded credentials "
+             "(e.g. `https://user:pass@host/`) are blocked. See "
+             "https://www.chromestatus.com/feature/5669008342777856 for more "
+             "details.";
 
     // Powerful features on insecure origins (https://goo.gl/rStTGz)
     case UseCounter::DeviceMotionInsecureOrigin:

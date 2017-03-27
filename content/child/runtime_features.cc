@@ -366,6 +366,11 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (base::FeatureList::IsEnabled(features::kLoadingWithMojo))
     WebRuntimeFeatures::enableLoadingWithMojo(true);
 
+  if (!base::FeatureList::IsEnabled(features::kBlockCredentialedSubresources)) {
+    WebRuntimeFeatures::enableFeatureFromString("BlockCredentialedSubresources",
+                                                false);
+  }
+
   // Enable explicitly enabled features, and then disable explicitly disabled
   // ones.
   if (command_line.HasSwitch(switches::kEnableBlinkFeatures)) {
