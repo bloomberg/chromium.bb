@@ -122,6 +122,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/PageScaleConstraintsSet.h"
 #include "core/frame/RemoteFrame.h"
+#include "core/frame/ScreenOrientationController.h"
 #include "core/frame/Settings.h"
 #include "core/frame/SmartClip.h"
 #include "core/frame/UseCounter.h"
@@ -159,7 +160,6 @@
 #include "core/timing/Performance.h"
 #include "modules/app_banner/AppBannerController.h"
 #include "modules/installation/InstallationServiceImpl.h"
-#include "modules/screen_orientation/ScreenOrientationControllerImpl.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/WebFrameScheduler.h"
@@ -2167,8 +2167,8 @@ void WebLocalFrameImpl::sendOrientationChangeEvent() {
     return;
 
   // Screen Orientation API
-  if (ScreenOrientationControllerImpl::from(*frame()))
-    ScreenOrientationControllerImpl::from(*frame())->notifyOrientationChanged();
+  if (ScreenOrientationController::from(*frame()))
+    ScreenOrientationController::from(*frame())->notifyOrientationChanged();
 
   // Legacy window.orientation API
   if (RuntimeEnabledFeatures::orientationEventEnabled() && frame()->domWindow())

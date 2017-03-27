@@ -29,6 +29,8 @@ class CORE_EXPORT ScreenOrientationController
 
   static ScreenOrientationController* from(LocalFrame&);
 
+  virtual void notifyOrientationChanged() = 0;
+
   virtual void lock(WebScreenOrientationLockType,
                     std::unique_ptr<WebLockOrientationCallback>) = 0;
   virtual void unlock() = 0;

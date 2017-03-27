@@ -92,6 +92,8 @@ class MockScreenOrientationController final
     mockUnlock();
   }
 
+  void notifyOrientationChanged() override {}
+
   bool maybeHasActiveLock() const override { return m_locked; }
 
   bool m_locked = false;

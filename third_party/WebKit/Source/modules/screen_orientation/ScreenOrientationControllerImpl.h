@@ -30,7 +30,7 @@ class MODULES_EXPORT ScreenOrientationControllerImpl final
   ~ScreenOrientationControllerImpl() override;
 
   void setOrientation(ScreenOrientation*);
-  void notifyOrientationChanged();
+  void notifyOrientationChanged() override;
 
   // Implementation of ScreenOrientationController.
   void lock(WebScreenOrientationLockType,
