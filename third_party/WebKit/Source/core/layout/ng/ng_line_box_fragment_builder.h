@@ -11,6 +11,7 @@
 
 namespace blink {
 
+class NGInlineBreakToken;
 class NGInlineNode;
 class NGPhysicalFragment;
 class NGPhysicalLineBoxFragment;
@@ -36,6 +37,10 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final {
   void UniteMetrics(const NGLineHeightMetrics&);
   const NGLineHeightMetrics& Metrics() const { return metrics_; }
 
+  // Set the break token for the fragment to build.
+  // A finished break token will be attached if not set.
+  void SetBreakToken(RefPtr<NGInlineBreakToken>);
+
   // Creates the fragment. Can only be called once.
   RefPtr<NGPhysicalLineBoxFragment> ToLineBoxFragment();
 
@@ -50,6 +55,8 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final {
   Vector<NGLogicalOffset> offsets_;
 
   NGLineHeightMetrics metrics_;
+
+  RefPtr<NGInlineBreakToken> break_token_;
 };
 
 }  // namespace blink

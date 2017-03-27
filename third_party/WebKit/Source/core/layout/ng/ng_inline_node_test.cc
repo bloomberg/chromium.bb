@@ -8,12 +8,11 @@
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_fragment_builder.h"
-#include "core/layout/ng/ng_line_builder.h"
+#include "core/layout/ng/ng_inline_layout_algorithm.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
 #include "core/layout/ng/ng_physical_line_box_fragment.h"
 #include "core/layout/ng/ng_physical_text_fragment.h"
 #include "core/layout/ng/ng_text_fragment.h"
-#include "core/layout/ng/ng_text_layout_algorithm.h"
 #include "core/style/ComputedStyle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -93,12 +92,9 @@ class NGInlineNodeTest : public RenderingTest {
     RefPtr<NGConstraintSpace> constraint_space =
         NGConstraintSpaceBuilder(kHorizontalTopBottom)
             .ToConstraintSpace(kHorizontalTopBottom);
-    NGLineBuilder line_builder(node, constraint_space.get());
+    RefPtr<NGLayoutResult> result =
+        NGInlineLayoutAlgorithm(node, constraint_space.get()).Layout();
 
-    NGTextLayoutAlgorithm algorithm(node);
-    algorithm.LayoutInline(&line_builder);
-
-    RefPtr<NGLayoutResult> result = line_builder.CreateFragments();
     const NGPhysicalBoxFragment* container =
         toNGPhysicalBoxFragment(result->PhysicalFragment().get());
     EXPECT_EQ(container->Children().size(), 1u);
@@ -316,8 +312,8 @@ TEST_F(NGInlineNodeTest, MinMaxContentSize) {
   node->Append("AB CDE", style_.get(), layout_object_);
   node->ShapeText();
   MinMaxContentSize sizes = node->ComputeMinMaxContentSize();
-  // TODO(kojii): min_content should be 20, but is 30 until NGLineBuilder
-  // implements trailing spaces correctly.
+  // TODO(kojii): min_content should be 20, but is 30 until
+  // NGInlineLayoutAlgorithm implements trailing spaces correctly.
   EXPECT_EQ(30, sizes.min_content);
   EXPECT_EQ(60, sizes.max_content);
 }
@@ -331,8 +327,8 @@ TEST_F(NGInlineNodeTest, MinMaxContentSizeElementBoundary) {
   MinMaxContentSize sizes = node->ComputeMinMaxContentSize();
   // |min_content| should be the width of "BC" because there is an element
   // boundary between "B" and "C" but no break opportunities.
-  // TODO(kojii): min_content should be 20, but is 30 until NGLineBuilder
-  // implements trailing spaces correctly.
+  // TODO(kojii): min_content should be 20, but is 30 until
+  // NGInlineLayoutAlgorithm implements trailing spaces correctly.
   EXPECT_EQ(30, sizes.min_content);
   EXPECT_EQ(60, sizes.max_content);
 }

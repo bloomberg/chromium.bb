@@ -9,7 +9,7 @@
 namespace blink {
 
 NGBlockBreakToken::NGBlockBreakToken(
-    NGBlockNode* node,
+    NGLayoutInputNode* node,
     LayoutUnit used_block_size,
     Vector<RefPtr<NGBreakToken>>& child_break_tokens)
     : NGBreakToken(kBlockBreakToken, kUnfinished, node),

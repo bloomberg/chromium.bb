@@ -11,12 +11,12 @@
 #include "core/layout/ng/ng_box_fragment.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_fragment_builder.h"
+#include "core/layout/ng/ng_inline_break_token.h"
+#include "core/layout/ng/ng_inline_layout_algorithm.h"
 #include "core/layout/ng/ng_layout_inline_items_builder.h"
-#include "core/layout/ng/ng_line_builder.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
 #include "core/layout/ng/ng_physical_text_fragment.h"
 #include "core/layout/ng/ng_text_fragment.h"
-#include "core/layout/ng/ng_text_layout_algorithm.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/fonts/CharacterRange.h"
 #include "platform/fonts/shaping/CachingWordShapeIterator.h"
@@ -93,7 +93,7 @@ LayoutObject* NGInlineNode::CollectInlines(
     } else if (node->isFloating()) {
       // Add floats and positioned objects in the same way as atomic inlines.
       // Because these objects need positions, they will be handled in
-      // NGLineBuilder.
+      // NGInlineLayoutAlgorithm.
       builder->Append(NGLayoutInlineItem::kFloating, objectReplacementCharacter,
                       nullptr, node);
     } else if (node->isOutOfFlowPositioned()) {
@@ -233,7 +233,7 @@ LayoutUnit NGLayoutInlineItem::InlineSize() const {
     return LayoutUnit(shape_result_->width());
 
   DCHECK(Type() != NGLayoutInlineItem::kAtomicInline)
-      << "Use NGLineBuilder::InlineSize";
+      << "Use NGInlineLayoutAlgorithm::InlineSize";
   // Bidi controls and out-of-flow objects do not have in-flow widths.
   return LayoutUnit();
 }
@@ -279,27 +279,22 @@ void NGInlineNode::ShapeText() {
 }
 
 RefPtr<NGLayoutResult> NGInlineNode::Layout(NGConstraintSpace* constraint_space,
-                                            NGBreakToken*) {
+                                            NGBreakToken* break_token) {
   // TODO(kojii): Invalidate PrepareLayout() more efficiently.
   InvalidatePrepareLayout();
-  NGLineBuilder line_builder(this, constraint_space);
-  Layout(&line_builder);
-  RefPtr<NGLayoutResult> result = line_builder.CreateFragments();
-  line_builder.CopyFragmentDataToLayoutBlockFlow();
+  PrepareLayout();
+
+  NGInlineLayoutAlgorithm algorithm(this, constraint_space,
+                                    toNGInlineBreakToken(break_token));
+  RefPtr<NGLayoutResult> result = algorithm.Layout();
+  algorithm.CopyFragmentDataToLayoutBlockFlow(result.get());
   return result;
 }
 
-void NGInlineNode::Layout(NGLineBuilder* line_builder) {
+MinMaxContentSize NGInlineNode::ComputeMinMaxContentSize() {
   if (!IsPrepareLayoutFinished())
     PrepareLayout();
 
-  if (text_content_.isEmpty())
-    return;
-
-  NGTextLayoutAlgorithm(this).LayoutInline(line_builder);
-}
-
-MinMaxContentSize NGInlineNode::ComputeMinMaxContentSize() {
   // Compute the max of inline sizes of all line boxes with 0 available inline
   // size. This gives the min-content, the width where lines wrap at every break
   // opportunity.
@@ -310,17 +305,8 @@ MinMaxContentSize NGInlineNode::ComputeMinMaxContentSize() {
           .SetTextDirection(Style().direction())
           .SetAvailableSize({LayoutUnit(), NGSizeIndefinite})
           .ToConstraintSpace(writing_mode);
-  NGLineBuilder line_builder(this, constraint_space.get());
-  Layout(&line_builder);
-  MinMaxContentSize sizes;
-  sizes.min_content = line_builder.MaxInlineSize();
-
-  // max-content is the width without any line wrapping.
-  // TODO(kojii): Implement hard breaks (<br> etc.) to break.
-  for (const auto& item : items_)
-    sizes.max_content += line_builder.InlineSize(item);
-
-  return sizes;
+  NGInlineLayoutAlgorithm algorithm(this, constraint_space.get());
+  return algorithm.ComputeMinMaxContentSizeByLayout();
 }
 
 NGLayoutInputNode* NGInlineNode::NextSibling() {

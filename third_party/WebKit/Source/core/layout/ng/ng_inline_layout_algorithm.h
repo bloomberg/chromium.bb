@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NGLineBuilder_h
-#define NGLineBuilder_h
+#ifndef NGInlineLayoutAlgorithm_h
+#define NGInlineLayoutAlgorithm_h
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/geometry/ng_logical_offset.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_fragment_builder.h"
+#include "core/layout/ng/ng_layout_algorithm.h"
 #include "core/layout/ng/ng_line_height_metrics.h"
 #include "platform/fonts/FontBaseline.h"
 #include "platform/heap/Handle.h"
@@ -17,21 +18,26 @@
 namespace blink {
 
 class NGConstraintSpace;
+class NGInlineBreakToken;
 class NGInlineNode;
 class NGLayoutInlineItem;
 class NGLineBoxFragmentBuilder;
 class NGTextFragmentBuilder;
 
-// NGLineBuilder creates the fragment tree for a line.
-// NGLineBuilder manages the current line as a range, |start| and |end|.
-// |end| can be extended multiple times before creating a line, usually until
-// |!CanFitOnLine()|.
-// |SetBreakOpportunity| can mark the last confirmed offset that can fit.
-class CORE_EXPORT NGLineBuilder final {
-  STACK_ALLOCATED();
-
+// A class for inline layout (e.g. a <span> with no special style).
+//
+// Uses NGLineBreaker to find break opportunities, and let it call back to
+// construct linebox fragments and its wrapper box fragment.
+//
+// From a line breaker, this class manages the current line as a range, |start|
+// and |end|. |end| can be extended multiple times before creating a line,
+// usually until |!CanFitOnLine()|. |SetBreakOpportunity| can mark the last
+// confirmed offset that can fit.
+class CORE_EXPORT NGInlineLayoutAlgorithm final : public NGLayoutAlgorithm {
  public:
-  NGLineBuilder(NGInlineNode*, NGConstraintSpace*);
+  NGInlineLayoutAlgorithm(NGInlineNode*,
+                          NGConstraintSpace*,
+                          NGInlineBreakToken* = nullptr);
 
   const NGConstraintSpace& ConstraintSpace() const {
     return *constraint_space_;
@@ -45,10 +51,6 @@ class CORE_EXPORT NGLineBuilder final {
   // Returns if there were any items.
   bool HasItems() const;
 
-  // Set the start offset.
-  // Set the end as well, and therefore empties the current line.
-  void SetStart(unsigned index, unsigned offset);
-
   // Set the end offset.
   void SetEnd(unsigned end_offset);
 
@@ -59,7 +61,9 @@ class CORE_EXPORT NGLineBuilder final {
 
   // Create a line up to the end offset.
   // Then set the start to the end offset, and thus empty the current line.
-  void CreateLine();
+  // @return false if the line does not fit in the constraint space in block
+  //         direction.
+  bool CreateLine();
 
   // Returns if a break opportunity was set on the current line.
   bool HasBreakOpportunity() const;
@@ -72,21 +76,25 @@ class CORE_EXPORT NGLineBuilder final {
 
   // Create a line up to the last break opportunity.
   // Items after that are sent to the next line.
-  void CreateLineUpToLastBreakOpportunity();
+  // @return false if the line does not fit in the constraint space in block
+  //         direction.
+  bool CreateLineUpToLastBreakOpportunity();
 
   // Set the start offset of hangables; e.g., spaces or hanging punctuations.
   // Hangable characters can go beyond the right margin, and are ignored for
   // center/right alignment.
   void SetStartOfHangables(unsigned offset);
 
-  // Create fragments for all lines created so far.
-  RefPtr<NGLayoutResult> CreateFragments();
+  RefPtr<NGLayoutResult> Layout() override;
 
-  // Copy fragment data of all lines created by this NGLineBuilder to
-  // LayoutBlockFlow.
-  // This must run after |CreateFragments()|, and after the fragments it created
-  // are placed.
-  void CopyFragmentDataToLayoutBlockFlow();
+  // Compute MinMaxContentSize by performing layout.
+  // Unlike NGLayoutAlgorithm::ComputeMinMaxContentSize(), this function runs
+  // part of layout operations and modifies the state of |this|.
+  MinMaxContentSize ComputeMinMaxContentSizeByLayout();
+
+  // Copy fragment data of all lines to LayoutBlockFlow.
+  // TODO(kojii): Move to NGInlineNode (or remove when paint is implemented.)
+  void CopyFragmentDataToLayoutBlockFlow(NGLayoutResult*);
 
   // Compute inline size of an NGLayoutInlineItem.
   // Same as NGLayoutInlineItem::InlineSize(), except that this function can
@@ -95,6 +103,10 @@ class CORE_EXPORT NGLineBuilder final {
 
  private:
   bool IsHorizontalWritingMode() const { return is_horizontal_writing_mode_; }
+
+  // Set the start and the end to the specified offset.
+  // This empties the current line.
+  void Initialize(unsigned index, unsigned offset);
 
   LayoutUnit InlineSize(const NGLayoutInlineItem&,
                         unsigned start_offset,
@@ -119,7 +131,7 @@ class CORE_EXPORT NGLineBuilder final {
   //   be positioned after we're done with the current line.
   void LayoutAndPositionFloat(LayoutUnit end_position, LayoutObject*);
 
-  void PlaceItems(const Vector<LineItemChunk, 32>&);
+  bool PlaceItems(const Vector<LineItemChunk, 32>&);
   void AccumulateUsedFonts(const NGLayoutInlineItem&,
                            const LineItemChunk&,
                            NGLineBoxFragmentBuilder*);
@@ -145,7 +157,6 @@ class CORE_EXPORT NGLineBuilder final {
   LayoutUnit content_size_;
   LayoutUnit max_inline_size_;
   NGFragmentBuilder container_builder_;
-  RefPtr<NGLayoutResult> container_layout_result_;
   FontBaseline baseline_type_ = FontBaseline::AlphabeticBaseline;
 
   NGLogicalOffset bfc_offset_;
@@ -161,4 +172,4 @@ class CORE_EXPORT NGLineBuilder final {
 
 }  // namespace blink
 
-#endif  // NGLineBuilder_h
+#endif  // NGInlineLayoutAlgorithm_h

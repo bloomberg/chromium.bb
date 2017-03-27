@@ -6,6 +6,9 @@
 
 #include "core/dom/TagCollection.h"
 #include "core/layout/line/InlineTextBox.h"
+#include "core/layout/ng/layout_ng_block_flow.h"
+#include "core/layout/ng/ng_block_break_token.h"
+#include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_inline_node.h"
 #include "core/layout/ng/ng_physical_line_box_fragment.h"
 #include "core/layout/ng/ng_physical_text_fragment.h"
@@ -15,11 +18,70 @@
 namespace blink {
 namespace {
 
-class NGTextLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {};
+class NGInlineLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {};
+
+TEST_F(NGInlineLayoutAlgorithmTest, BreakToken) {
+  loadAhem();
+  setBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      html {
+        font: 10px/1 Ahem;
+      }
+      #container {
+        width: 50px; height: 20px;
+      }
+    </style>
+    <div id=container>123 456 789</div>
+  )HTML");
+
+  // Perform 1st Layout.
+  LayoutNGBlockFlow* block_flow =
+      toLayoutNGBlockFlow(getLayoutObjectByElementId("container"));
+  NGInlineNode* inline_node =
+      new NGInlineNode(block_flow->firstChild(), block_flow);
+  RefPtr<NGConstraintSpace> constraint_space =
+      NGConstraintSpaceBuilder(NGWritingMode::kHorizontalTopBottom)
+          .SetAvailableSize({LayoutUnit(50), LayoutUnit(20)})
+          .ToConstraintSpace(NGWritingMode::kHorizontalTopBottom);
+  RefPtr<NGLayoutResult> layout_result =
+      inline_node->Layout(constraint_space.get(), nullptr);
+  auto* wrapper =
+      toNGPhysicalBoxFragment(layout_result->PhysicalFragment().get());
+
+  // Test that the anonymous wrapper has 2 line boxes, and both have unfinished
+  // break tokens.
+  EXPECT_EQ(2u, wrapper->Children().size());
+  auto* line1 = toNGPhysicalLineBoxFragment(wrapper->Children()[0].get());
+  EXPECT_FALSE(line1->BreakToken()->IsFinished());
+  auto* line2 = toNGPhysicalLineBoxFragment(wrapper->Children()[1].get());
+  EXPECT_FALSE(line2->BreakToken()->IsFinished());
+
+  // Test that the wrapper has the break token from the last line as its child.
+  auto* wrapper_break_token = toNGBlockBreakToken(wrapper->BreakToken());
+  EXPECT_EQ(wrapper_break_token->ChildBreakTokens()[0], line2->BreakToken());
+  EXPECT_FALSE(wrapper_break_token->IsFinished());
+
+  // Perform 2nd layout with the break token from the 2nd line.
+  RefPtr<NGLayoutResult> layout_result2 =
+      inline_node->Layout(constraint_space.get(), line2->BreakToken());
+  auto* wrapper2 =
+      toNGPhysicalBoxFragment(layout_result2->PhysicalFragment().get());
+
+  // Test that the anonymous wrapper has 1 line boxes, and has a finished break
+  // token.
+  EXPECT_EQ(1u, wrapper2->Children().size());
+  auto* line3 = toNGPhysicalLineBoxFragment(wrapper2->Children()[0].get());
+  EXPECT_TRUE(line3->BreakToken()->IsFinished());
+
+  // Test that the wrapper has the break token without children.
+  auto* wrapper2_break_token = toNGBlockBreakToken(wrapper2->BreakToken());
+  EXPECT_EQ(0u, wrapper2_break_token->ChildBreakTokens().size());
+}
 
 // Verifies that text can flow correctly around floats that were positioned
 // before the inline block.
-TEST_F(NGTextLayoutAlgorithmTest, TextFloatsAroundFloatsBefore) {
+TEST_F(NGInlineLayoutAlgorithmTest, TextFloatsAroundFloatsBefore) {
   setBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -96,7 +158,7 @@ TEST_F(NGTextLayoutAlgorithmTest, TextFloatsAroundFloatsBefore) {
 
 // Verifies that text correctly flows around the inline float that fits on
 // the same text line.
-TEST_F(NGTextLayoutAlgorithmTest, TextFloatsAroundInlineFloatThatFitsOnLine) {
+TEST_F(NGInlineLayoutAlgorithmTest, TextFloatsAroundInlineFloatThatFitsOnLine) {
   setBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -133,7 +195,7 @@ TEST_F(NGTextLayoutAlgorithmTest, TextFloatsAroundInlineFloatThatFitsOnLine) {
 
 // Verifies that the inline float got pushed to the next line if it doesn't
 // fit the current line.
-TEST_F(NGTextLayoutAlgorithmTest,
+TEST_F(NGInlineLayoutAlgorithmTest,
        TextFloatsAroundInlineFloatThatDoesNotFitOnLine) {
   setBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
@@ -170,7 +232,7 @@ TEST_F(NGTextLayoutAlgorithmTest,
 // Verifies that if an inline float pushed to the next line then all others
 // following inline floats positioned with respect to the float's top edge
 // alignment rule.
-TEST_F(NGTextLayoutAlgorithmTest,
+TEST_F(NGInlineLayoutAlgorithmTest,
        FloatsArePositionedWithRespectToTopEdgeAlignmentRule) {
   setBodyInnerHTML(R"HTML(
     <!DOCTYPE html>

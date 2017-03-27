@@ -2,49 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ng/ng_text_layout_algorithm.h"
+#include "core/layout/ng/ng_line_breaker.h"
 
 #include "core/layout/ng/ng_box_fragment.h"
 #include "core/layout/ng/ng_break_token.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_fragment_builder.h"
+#include "core/layout/ng/ng_inline_layout_algorithm.h"
 #include "core/layout/ng/ng_inline_node.h"
 #include "core/layout/ng/ng_layout_opportunity_iterator.h"
-#include "core/layout/ng/ng_line_builder.h"
 #include "core/layout/ng/ng_text_fragment.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/text/TextBreakIterator.h"
 
 namespace blink {
 
-NGTextLayoutAlgorithm::NGTextLayoutAlgorithm(
-    NGInlineNode* inline_box,
-    NGBreakToken* break_token)
-    : inline_box_(inline_box),
-      break_token_(break_token) {
-  DCHECK(inline_box_);
-}
-
-RefPtr<NGLayoutResult> NGTextLayoutAlgorithm::Layout() {
-  NOTREACHED();
-  return nullptr;
-}
-
 static bool IsHangable(UChar ch) {
   return ch == ' ';
 }
 
-void NGTextLayoutAlgorithm::LayoutInline(NGLineBuilder* line_builder) {
-  // TODO(kojii): Make this tickable. Each line is easy. Needs more thoughts
-  // for each fragment in a line. Bidi reordering is probably atomic.
-  // TODO(kojii): oof is not well-thought yet. The bottom static position may be
-  // in the next line, https://github.com/w3c/csswg-drafts/issues/609
-  const String& text_content = inline_box_->Text();
+void NGLineBreaker::BreakLines(NGInlineLayoutAlgorithm* algorithm,
+                               const String& text_content,
+                               unsigned current_offset) {
   DCHECK(!text_content.isEmpty());
   // TODO(kojii): Give the locale to LazyLineBreakIterator.
   LazyLineBreakIterator line_break_iterator(text_content);
-  unsigned current_offset = 0;
-  line_builder->SetStart(0, current_offset);
   const unsigned end_offset = text_content.length();
   while (current_offset < end_offset) {
     // Find the next break opportunity.
@@ -67,48 +49,50 @@ void NGTextLayoutAlgorithm::LayoutInline(NGLineBuilder* line_builder) {
       current_offset++;
 
     // Set the end to the next break opportunity.
-    line_builder->SetEnd(current_offset);
+    algorithm->SetEnd(current_offset);
 
     // If there are more available spaces, mark the break opportunity and fetch
     // more text.
     // TODO(layout-ng): check if the height of the linebox can fit within
     // the current opportunity.
-    if (line_builder->CanFitOnLine()) {
-      line_builder->SetBreakOpportunity();
+    if (algorithm->CanFitOnLine()) {
+      algorithm->SetBreakOpportunity();
       continue;
     }
 
     // Compute hangable characters if exists.
     if (current_offset != start_of_hangables) {
-      line_builder->SetStartOfHangables(start_of_hangables);
+      algorithm->SetStartOfHangables(start_of_hangables);
       // If text before hangables can fit, include it in the current line.
-      if (line_builder->CanFitOnLine())
-        line_builder->SetBreakOpportunity();
+      if (algorithm->CanFitOnLine())
+        algorithm->SetBreakOpportunity();
     }
 
-    if (!line_builder->HasBreakOpportunity()) {
+    if (!algorithm->HasBreakOpportunity()) {
       // The first word (break opportunity) did not fit on the line.
       // Create a line including items that don't fit, allowing them to
       // overflow.
-      line_builder->CreateLine();
+      if (!algorithm->CreateLine())
+        return;
     } else {
-      line_builder->CreateLineUpToLastBreakOpportunity();
+      if (!algorithm->CreateLineUpToLastBreakOpportunity())
+        return;
 
       // Items after the last break opportunity were sent to the next line.
       // Set the break opportunity, or create a line if the word doesn't fit.
-      if (line_builder->HasItems()) {
-        if (!line_builder->CanFitOnLine())
-          line_builder->CreateLine();
-        else
-          line_builder->SetBreakOpportunity();
+      if (algorithm->HasItems()) {
+        if (algorithm->CanFitOnLine())
+          algorithm->SetBreakOpportunity();
+        else if (!algorithm->CreateLine())
+          return;
       }
     }
   }
 
   // If inline children ended with items left in the line builder, create a line
   // for them.
-  if (line_builder->HasItems())
-    line_builder->CreateLine();
+  if (algorithm->HasItems())
+    algorithm->CreateLine();
 }
 
 }  // namespace blink

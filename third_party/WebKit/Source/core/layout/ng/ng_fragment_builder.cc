@@ -80,10 +80,27 @@ NGFragmentBuilder& NGFragmentBuilder::AddChild(
   DCHECK_EQ(type_, NGPhysicalFragment::kFragmentBox)
       << "Only box fragments can have children";
 
-  // Update if we have fragmented in this flow.
-  did_break_ |= child->IsBox() && !child->BreakToken()->IsFinished();
+  switch (child->Type()) {
+    case NGPhysicalBoxFragment::kFragmentBox:
+      // Update if we have fragmented in this flow.
+      did_break_ |= !child->BreakToken()->IsFinished();
+      child_break_tokens_.push_back(child->BreakToken());
+      break;
+    case NGPhysicalBoxFragment::kFragmentLineBox:
+      // NGInlineNode produces multiple line boxes in an anonymous box. Only
+      // the last break token is needed to be reported to the parent.
+      DCHECK(child->BreakToken() && child->BreakToken()->InputNode() == node_);
+      last_inline_break_token_ =
+          child->BreakToken()->IsFinished() ? nullptr : child->BreakToken();
+      break;
+    case NGPhysicalBoxFragment::kFragmentText:
+      DCHECK(!child->BreakToken());
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
 
-  child_break_tokens_.push_back(child->BreakToken());
   children_.push_back(std::move(child));
   offsets_.push_back(child_offset);
 
@@ -173,9 +190,14 @@ RefPtr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
   }
 
   RefPtr<NGBreakToken> break_token;
+  if (last_inline_break_token_) {
+    DCHECK(!last_inline_break_token_->IsFinished());
+    child_break_tokens_.push_back(std::move(last_inline_break_token_));
+    did_break_ = true;
+  }
   if (did_break_) {
-    break_token = NGBlockBreakToken::create(
-        toNGBlockNode(node_.get()), used_block_size_, child_break_tokens_);
+    break_token = NGBlockBreakToken::create(node_.get(), used_block_size_,
+                                            child_break_tokens_);
   } else {
     break_token = NGBlockBreakToken::create(node_.get());
   }

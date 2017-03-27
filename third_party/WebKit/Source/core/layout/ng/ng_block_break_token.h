@@ -21,8 +21,11 @@ class CORE_EXPORT NGBlockBreakToken : public NGBreakToken {
   //
   // The NGBlockBreakToken takes ownership of child_break_tokens, leaving it
   // empty for the caller.
+  //
+  // The node is NGBlockNode, or any other NGLayoutInputNode that produces
+  // anonymous box.
   static RefPtr<NGBlockBreakToken> create(
-      NGBlockNode* node,
+      NGLayoutInputNode* node,
       LayoutUnit used_block_size,
       Vector<RefPtr<NGBreakToken>>& child_break_tokens) {
     return adoptRef(
@@ -54,7 +57,7 @@ class CORE_EXPORT NGBlockBreakToken : public NGBreakToken {
   }
 
  private:
-  NGBlockBreakToken(NGBlockNode* node,
+  NGBlockBreakToken(NGLayoutInputNode* node,
                     LayoutUnit used_block_size,
                     Vector<RefPtr<NGBreakToken>>& child_break_tokens);
 

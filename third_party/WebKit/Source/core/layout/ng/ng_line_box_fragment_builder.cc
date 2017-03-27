@@ -6,6 +6,7 @@
 
 #include "core/layout/ng/geometry/ng_logical_size.h"
 #include "core/layout/ng/ng_fragment.h"
+#include "core/layout/ng/ng_inline_break_token.h"
 #include "core/layout/ng/ng_inline_node.h"
 #include "core/layout/ng/ng_physical_line_box_fragment.h"
 #include "platform/heap/Handle.h"
@@ -46,6 +47,11 @@ void NGLineBoxFragmentBuilder::UniteMetrics(
   metrics_.Unite(metrics);
 }
 
+void NGLineBoxFragmentBuilder::SetBreakToken(
+    RefPtr<NGInlineBreakToken> break_token) {
+  break_token_ = std::move(break_token);
+}
+
 RefPtr<NGPhysicalLineBoxFragment>
 NGLineBoxFragmentBuilder::ToLineBoxFragment() {
   DCHECK_EQ(offsets_.size(), children_.size());
@@ -62,9 +68,10 @@ NGLineBoxFragmentBuilder::ToLineBoxFragment() {
         writing_mode, direction_, physical_size, child->Size()));
   }
 
-  // TODO(kojii): Implement BreakToken.
-  return adoptRef(new NGPhysicalLineBoxFragment(physical_size, children_,
-                                                metrics_, nullptr));
+  return adoptRef(new NGPhysicalLineBoxFragment(
+      physical_size, children_, metrics_,
+      break_token_ ? std::move(break_token_)
+                   : NGInlineBreakToken::create(node_)));
 }
 
 }  // namespace blink

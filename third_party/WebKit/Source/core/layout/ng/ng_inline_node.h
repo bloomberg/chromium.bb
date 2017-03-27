@@ -29,7 +29,6 @@ class NGLayoutInlineItem;
 class NGLayoutInlineItemRange;
 class NGLayoutInlineItemsBuilder;
 class NGLayoutResult;
-class NGLineBuilder;
 
 // Represents an anonymous block box to be laid out, that contains consecutive
 // inline nodes and their descendants.
@@ -84,8 +83,6 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
                                NGLayoutInlineItemsBuilder*);
   void SegmentText();
   void ShapeText();
-
-  void Layout(NGLineBuilder*);
 
   LayoutObject* start_inline_;
   LayoutBlockFlow* block_;

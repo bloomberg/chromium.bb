@@ -35,7 +35,7 @@ class CORE_EXPORT NGBreakToken : public RefCounted<NGBreakToken> {
  public:
   virtual ~NGBreakToken() {}
 
-  enum NGBreakTokenType { kBlockBreakToken, kTextBreakToken };
+  enum NGBreakTokenType { kBlockBreakToken, kInlineBreakToken };
   NGBreakTokenType Type() const { return static_cast<NGBreakTokenType>(type_); }
 
   enum NGBreakTokenStatus { kUnfinished, kFinished };
