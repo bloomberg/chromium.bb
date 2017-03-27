@@ -33,17 +33,13 @@ void DownloadJob::Interrupt(DownloadInterruptReason reason) {
   download_item_->UpdateObservers();
 }
 
-void DownloadJob::AddByteStream(std::unique_ptr<ByteStreamReader> stream_reader,
+bool DownloadJob::AddByteStream(std::unique_ptr<ByteStreamReader> stream_reader,
                                 int64_t offset,
                                 int64_t length) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DownloadFile* download_file = download_item_->download_file_.get();
-  if (!download_file) {
-    // TODO(xingliu): Handle early and late incoming streams, see crbug/702683.
-    VLOG(1) << "Download file is released when byte stream arrived. Discard "
-               "the byte stream.";
-    return;
-  }
+  if (!download_file)
+    return false;
 
   // download_file_ is owned by download_item_ on the UI thread and is always
   // deleted on the FILE thread after download_file_ is nulled out.
@@ -52,6 +48,7 @@ void DownloadJob::AddByteStream(std::unique_ptr<ByteStreamReader> stream_reader,
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&DownloadFile::AddByteStream, base::Unretained(download_file),
                  base::Passed(&stream_reader), offset, length));
+  return true;
 }
 
 bool DownloadJob::UsesParallelRequests() const {

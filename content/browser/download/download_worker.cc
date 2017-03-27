@@ -38,6 +38,8 @@ DownloadWorker::DownloadWorker(DownloadWorker::Delegate* delegate,
     : delegate_(delegate),
       offset_(offset),
       length_(length),
+      is_paused_(false),
+      is_canceled_(false),
       weak_factory_(this) {
   DCHECK(delegate_);
 }
@@ -56,16 +58,19 @@ void DownloadWorker::SendRequest(
 }
 
 void DownloadWorker::Pause() {
+  is_paused_ = true;
   if (request_handle_)
     request_handle_->PauseRequest();
 }
 
 void DownloadWorker::Resume() {
+  is_paused_ = false;
   if (request_handle_)
     request_handle_->ResumeRequest();
 }
 
 void DownloadWorker::Cancel() {
+  is_canceled_ = true;
   if (request_handle_)
     request_handle_->CancelRequest();
 }
@@ -76,6 +81,13 @@ void DownloadWorker::OnUrlDownloaderStarted(
     const DownloadUrlParameters::OnStartedCallback& callback) {
   // |callback| is not used in subsequent requests.
   DCHECK(callback.is_null());
+
+  // Destroy the request if user canceled.
+  if (is_canceled_) {
+    VLOG(kVerboseLevel) << "Byte stream arrived after user cancel the request.";
+    create_info->request_handle->CancelRequest();
+    return;
+  }
 
   // TODO(xingliu): Add the interrupt reason and metric data for precondition
   // failure. Make DownloadRequestCore know if it should return error if the
@@ -90,8 +102,14 @@ void DownloadWorker::OnUrlDownloaderStarted(
   }
 
   request_handle_ = std::move(create_info->request_handle);
-  if (delegate_)
-    delegate_->OnByteStreamReady(this, std::move(stream_reader));
+
+  // Pause the stream if user paused, still push the stream reader to the sink.
+  if (is_paused_) {
+    VLOG(kVerboseLevel) << "Byte stream arrived after user pause the request.";
+    Pause();
+  }
+
+  delegate_->OnByteStreamReady(this, std::move(stream_reader));
 }
 
 void DownloadWorker::OnUrlDownloaderStopped(UrlDownloader* downloader) {

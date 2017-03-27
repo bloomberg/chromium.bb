@@ -12,6 +12,7 @@
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/url_downloader.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_url_parameters.h"
 
@@ -21,7 +22,7 @@ namespace content {
 // file after handling response of the original non-range request.
 // TODO(xingliu): we should consider to reuse this class for single connection
 // download.
-class DownloadWorker : public UrlDownloader::Delegate {
+class CONTENT_EXPORT DownloadWorker : public UrlDownloader::Delegate {
  public:
   class Delegate {
    public:
@@ -71,6 +72,10 @@ class DownloadWorker : public UrlDownloader::Delegate {
 
   // The length of the request. May be 0 to fetch to the end of the file.
   int64_t length_;
+
+  // States of the worker.
+  bool is_paused_;
+  bool is_canceled_;
 
   // Used to control the network request. Live on UI thread.
   std::unique_ptr<DownloadRequestHandleInterface> request_handle_;

@@ -47,8 +47,9 @@ class CONTENT_EXPORT DownloadJob {
   void StartDownload() const;
   void Interrupt(DownloadInterruptReason reason);
 
-  // Add a byte stream to the download sink.
-  void AddByteStream(std::unique_ptr<ByteStreamReader> stream_reader,
+  // Add a byte stream to the download sink. Return false if we start to
+  // destroy download file.
+  bool AddByteStream(std::unique_ptr<ByteStreamReader> stream_reader,
                      int64_t offset,
                      int64_t length);
 

@@ -11,6 +11,11 @@
 #include "content/public/browser/storage_partition.h"
 
 namespace content {
+namespace {
+
+const int kVerboseLevel = 1;
+
+}  // namespace
 
 ParallelDownloadJob::ParallelDownloadJob(
     DownloadItemImpl* download_item,
@@ -19,7 +24,8 @@ ParallelDownloadJob::ParallelDownloadJob(
     : DownloadJobImpl(download_item, std::move(request_handle)),
       initial_request_offset_(create_info.offset),
       content_length_(create_info.total_bytes),
-      requests_sent_(false) {}
+      requests_sent_(false),
+      is_canceled_(false) {}
 
 ParallelDownloadJob::~ParallelDownloadJob() = default;
 
@@ -30,6 +36,7 @@ void ParallelDownloadJob::Start() {
 }
 
 void ParallelDownloadJob::Cancel(bool user_cancel) {
+  is_canceled_ = true;
   DownloadJobImpl::Cancel(user_cancel);
 
   if (!requests_sent_) {
@@ -69,7 +76,6 @@ void ParallelDownloadJob::Resume(bool resume_request) {
     worker.second->Resume();
 }
 
-
 int ParallelDownloadJob::GetParallelRequestCount() const {
   return GetParallelRequestCountConfig();
 }
@@ -90,8 +96,15 @@ void ParallelDownloadJob::BuildParallelRequestAfterDelay() {
 void ParallelDownloadJob::OnByteStreamReady(
     DownloadWorker* worker,
     std::unique_ptr<ByteStreamReader> stream_reader) {
-  DownloadJob::AddByteStream(std::move(stream_reader), worker->offset(),
-                             worker->length());
+  bool success = DownloadJob::AddByteStream(std::move(stream_reader),
+                                            worker->offset(), worker->length());
+
+  // Destroy the request if the sink is gone.
+  if (!success) {
+    VLOG(kVerboseLevel)
+        << "Byte stream arrived after download file is released.";
+    worker->Cancel();
+  }
 }
 
 void ParallelDownloadJob::OnServerResponseError(
@@ -105,6 +118,10 @@ void ParallelDownloadJob::OnServerResponseError(
 
 void ParallelDownloadJob::BuildParallelRequests() {
   DCHECK(!requests_sent_);
+  DCHECK(!is_paused());
+  if (is_canceled_)
+    return;
+
   // TODO(qinmin): The size of |slices_to_download| should be no larger than
   // |kParallelRequestCount| unless |kParallelRequestCount| is changed after
   // a download is interrupted. This could happen if we use finch to config

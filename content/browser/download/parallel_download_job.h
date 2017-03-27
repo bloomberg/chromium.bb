@@ -40,11 +40,15 @@ class CONTENT_EXPORT ParallelDownloadJob : public DownloadJobImpl,
   // Virtual for testing.
   virtual int GetParallelRequestCount() const;
 
- private:
-  friend class ParallelDownloadJobTest;
-
   using WorkerMap =
       std::unordered_map<int64_t, std::unique_ptr<DownloadWorker>>;
+
+  // Map from the offset position of the slice to the worker that downloads the
+  // slice.
+  WorkerMap workers_;
+
+ private:
+  friend class ParallelDownloadJobTest;
 
   // DownloadWorker::Delegate implementation.
   void OnByteStreamReady(
@@ -75,15 +79,14 @@ class CONTENT_EXPORT ParallelDownloadJob : public DownloadJobImpl,
   // the size of the target file if the request starts from non-zero offset.
   int64_t content_length_;
 
-  // Map from the offset position of the slice to the worker that downloads the
-  // slice.
-  WorkerMap workers_;
-
   // Used to send parallel requests after a delay based on Finch config.
   base::OneShotTimer timer_;
 
   // If we have sent parallel requests.
   bool requests_sent_;
+
+  // If the download progress is canceled.
+  bool is_canceled_;
 
   DISALLOW_COPY_AND_ASSIGN(ParallelDownloadJob);
 };
