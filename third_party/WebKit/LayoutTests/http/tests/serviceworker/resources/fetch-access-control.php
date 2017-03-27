@@ -104,6 +104,12 @@ foreach ($_FILES as $key => $file) {
                      'content' => $content);
 }
 
+if (isset($_GET['WINDOW'])) {
+  header('Content-Type: text/html');
+  echo "<!DOCTYPE html><script>window.opener.postMessage('Loaded', '*');</script>";
+  exit;
+}
+
 header('Content-Type: application/json');
 $arr = array('jsonpResult' => 'success',
              'method' => $_SERVER['REQUEST_METHOD'],

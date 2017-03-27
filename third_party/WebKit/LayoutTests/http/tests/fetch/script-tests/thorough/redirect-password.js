@@ -4,8 +4,9 @@ if (self.importScripts) {
 }
 
 var TEST_TARGETS = [
-  // Redirects to URLs with username/password.
-  // Spec: https://fetch.spec.whatwg.org/#concept-http-fetch
+  // Redirects to URLs with username/password; these requests are blocked.
+  //
+  // Spec: https://github.com/whatwg/fetch/pull/465
   // Step 5, redirect status, Step 10.1 and 10.2:
   // "If |request|'s mode is "cors", |request|'s origin is not same origin with
   //  |locationURL|'s origin, and |locationURL| includes credentials, return a
@@ -16,34 +17,22 @@ var TEST_TARGETS = [
   // Origin A -[fetch]-> Origin A -[redirect]-> Origin A
   [REDIRECT_URL + encodeURIComponent(BASE_URL_WITH_USERNAME) +
    '&mode=same-origin&method=GET',
-   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic,
-    responseRedirected, checkURLList.bind(self, [BASE_URL_WITH_USERNAME])],
-   [methodIsGET]],
+   [fetchRejected]],
   [REDIRECT_URL + encodeURIComponent(BASE_URL_WITH_PASSWORD) +
    '&mode=same-origin&method=GET',
-   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic,
-    responseRedirected, checkURLList.bind(self, [BASE_URL_WITH_PASSWORD])],
-   [methodIsGET]],
+   [fetchRejected]],
   [REDIRECT_URL + encodeURIComponent(BASE_URL_WITH_USERNAME) +
    '&mode=cors&method=GET',
-   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic,
-    responseRedirected, checkURLList.bind(self, [BASE_URL_WITH_USERNAME])],
-   [methodIsGET]],
+   [fetchRejected]],
   [REDIRECT_URL + encodeURIComponent(BASE_URL_WITH_PASSWORD) +
    '&mode=cors&method=GET',
-   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic,
-    responseRedirected, checkURLList.bind(self, [BASE_URL_WITH_PASSWORD])],
-   [methodIsGET]],
+   [fetchRejected]],
   [REDIRECT_URL + encodeURIComponent(BASE_URL_WITH_USERNAME) +
    '&mode=no-cors&method=GET',
-   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic,
-    responseRedirected, checkURLList.bind(self, [BASE_URL_WITH_USERNAME])],
-   [methodIsGET]],
+   [fetchRejected]],
   [REDIRECT_URL + encodeURIComponent(BASE_URL_WITH_PASSWORD) +
    '&mode=no-cors&method=GET',
-   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic,
-    responseRedirected, checkURLList.bind(self, [BASE_URL_WITH_PASSWORD])],
-   [methodIsGET]],
+   [fetchRejected]],
 
   // Origin A -[fetch]-> Origin A -[redirect]-> Origin B
   [REDIRECT_URL +
@@ -57,17 +46,11 @@ var TEST_TARGETS = [
   [REDIRECT_URL +
    encodeURIComponent(OTHER_BASE_URL_WITH_USERNAME + '&ACAOrigin=*') +
    '&mode=no-cors&method=GET',
-   [fetchResolved, noContentLength, noServerHeader, noBody, typeOpaque,
-    responseNotRedirected,
-    checkURLList.bind(self, [OTHER_BASE_URL_WITH_USERNAME + '&ACAOrigin=*'])],
-   onlyOnServiceWorkerProxiedTest([methodIsGET])],
+   [fetchRejected]],
   [REDIRECT_URL +
    encodeURIComponent(OTHER_BASE_URL_WITH_PASSWORD + '&ACAOrigin=*') +
    '&mode=no-cors&method=GET',
-   [fetchResolved, noContentLength, noServerHeader, noBody, typeOpaque,
-    responseNotRedirected,
-    checkURLList.bind(self, [OTHER_BASE_URL_WITH_PASSWORD + '&ACAOrigin=*'])],
-   onlyOnServiceWorkerProxiedTest([methodIsGET])],
+   [fetchRejected]],
 
   // Origin A -[fetch]-> Origin B -[redirect]-> Origin A
   [OTHER_REDIRECT_URL +
@@ -81,17 +64,11 @@ var TEST_TARGETS = [
   [OTHER_REDIRECT_URL +
    encodeURIComponent(BASE_URL_WITH_USERNAME + 'ACAOrigin=*') +
    '&mode=no-cors&method=GET&ACAOrigin=*',
-   [fetchResolved, noContentLength, noServerHeader, noBody, typeOpaque,
-    responseNotRedirected,
-    checkURLList.bind(self, [BASE_URL_WITH_USERNAME + 'ACAOrigin=*'])],
-   onlyOnServiceWorkerProxiedTest([methodIsGET])],
+   [fetchRejected]],
   [OTHER_REDIRECT_URL +
    encodeURIComponent(BASE_URL_WITH_PASSWORD + 'ACAOrigin=*') +
    '&mode=no-cors&method=GET&ACAOrigin=*',
-   [fetchResolved, noContentLength, noServerHeader, noBody, typeOpaque,
-    responseNotRedirected,
-    checkURLList.bind(self, [BASE_URL_WITH_PASSWORD + 'ACAOrigin=*'])],
-   onlyOnServiceWorkerProxiedTest([methodIsGET])],
+   [fetchRejected]],
 
   // Origin A -[fetch]-> Origin B -[redirect]-> Origin B
   [OTHER_REDIRECT_URL +
@@ -105,17 +82,11 @@ var TEST_TARGETS = [
   [OTHER_REDIRECT_URL +
    encodeURIComponent(OTHER_BASE_URL_WITH_USERNAME + 'ACAOrigin=*') +
    '&mode=no-cors&method=GET&ACAOrigin=*',
-   [fetchResolved, noContentLength, noServerHeader, noBody, typeOpaque,
-    responseNotRedirected,
-    checkURLList.bind(self, [OTHER_BASE_URL_WITH_USERNAME + 'ACAOrigin=*'])],
-   onlyOnServiceWorkerProxiedTest([methodIsGET])],
+   [fetchRejected]],
   [OTHER_REDIRECT_URL +
    encodeURIComponent(OTHER_BASE_URL_WITH_PASSWORD + 'ACAOrigin=*') +
    '&mode=no-cors&method=GET&ACAOrigin=*',
-   [fetchResolved, noContentLength, noServerHeader, noBody, typeOpaque,
-    responseNotRedirected,
-    checkURLList.bind(self, [OTHER_BASE_URL_WITH_PASSWORD + 'ACAOrigin=*'])],
-   onlyOnServiceWorkerProxiedTest([methodIsGET])],
+   [fetchRejected]],
 ];
 
 if (self.importScripts) {

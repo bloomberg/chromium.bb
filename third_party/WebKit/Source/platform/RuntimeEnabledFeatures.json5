@@ -1007,6 +1007,10 @@
       status: "experimental",
     },
     {
+      name: "BlockCredentialedSubresources",
+      status: "experimental",
+    },
+    {
       name: "UnclosedFormControlIsInvalid",
       status: "experimental",
     },

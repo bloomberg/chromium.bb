@@ -12,6 +12,11 @@ function checkResult(n, code) {
         ((code == 401) ? " OK" : (" " + code + " != 401"));
 }
 
+function checkFailure(n, code) {
+    document.getElementsByTagName("li")[n - 1].firstChild.nodeValue += 
+        ((code == 0) ? " OK" : (" " + code + " != 0"));
+}
+
 function log(n, message) {
     document.getElementsByTagName("li")[n - 1].firstChild.nodeValue += 
         " " + message;
@@ -64,7 +69,7 @@ function test4() {
         r.open("GET", "resources/basic-auth/basic-auth.php?uid=login4", true, "badname", "passpw");
         r.onreadystatechange = function() {
           if (r.readyState == 4) {
-            checkResult(4, r.status);
+            checkFailure(4, r.status);
             testRunner.notifyDone();
           }
         };

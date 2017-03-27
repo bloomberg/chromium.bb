@@ -800,6 +800,10 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(
       Deprecation::countDeprecation(
           frame()->document(),
           UseCounter::RequestedSubresourceWithEmbeddedCredentials);
+      // TODO(mkwst): Remove the runtime-enabled check in M59:
+      // https://www.chromestatus.com/feature/5669008342777856
+      if (RuntimeEnabledFeatures::blockCredentialedSubresourcesEnabled())
+        return ResourceRequestBlockedReason::Origin;
     }
   }
 

@@ -13,7 +13,7 @@ function log(message)
     console_messages.appendChild(item);
 }
 
-var workerUrl = location.protocol + "//MyUserName:MySecurePassword@" + location.host + location.pathname.replace(/\/[^\/]*$/, "") + '/resources/referer.js#ref';
+var workerUrl = location.protocol + "//" + location.host + location.pathname.replace(/\/[^\/]*$/, "") + '/resources/referer.js#ref';
 var worker = createWorker(workerUrl);
 
 worker.onmessage = function(evt)

@@ -1,16 +1,16 @@
 <script>
 // Set authentication info
+var port;
+var w;
 window.addEventListener("message", function(evt) {
-    var port = evt.ports[0];
+  if (evt.ports[0]) {
+    port = evt.ports[0];
     document.cookie = 'cookie=' + evt.data.cookie;
-    var xhr = new XMLHttpRequest();
-    xhr.addEventListener('load', function() {
-        port.postMessage({msg: 'LOGIN FINISHED'});
-      }, false);
-    xhr.open('GET',
-             './fetch-access-control.php?Auth',
-             true,
-             evt.data.username, evt.data.password);
-    xhr.send();
-  }, false);
+    w = window.open(window.location.protocol + "//" + evt.data.username + ":" + evt.data.password + "@" + window.location.hostname + ":" + window.location.port + "/serviceworker/resources/fetch-access-control.php?Auth&WINDOW", evt.data.username);
+  } else {
+    w.close();
+    w = null;
+    port.postMessage({msg: 'LOGIN FINISHED'});
+  }
+}, false);
 </script>
