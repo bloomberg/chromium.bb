@@ -358,15 +358,28 @@ void od_dering(uint8_t *dst, int dstride, uint16_t *y, uint16_t *in, int xdec,
     for (bi = 0; bi < dering_count; bi++) {
       by = dlist[bi].by;
       bx = dlist[bi].bx;
+      int py = by << mi_size_l2;
+      int px = bx << mi_size_l2;
 
-      (!threshold || (dir[by][bx] < 4 && dir[by][bx]) ? aom_clpf_block_hbd
-                                                      : aom_clpf_hblock_hbd)(
-          in, &y[((bi - by) << 2 * bsize) - (bx << bsize)], OD_FILT_BSTRIDE,
-          1 << bsize, bx << mi_size_l2, by << mi_size_l2, 1 << bsize,
-          1 << bsize, clpf_strength << coeff_shift, clpf_damping + coeff_shift);
+      if (!dst || hbd) {
+        // 16 bit destination if high bitdepth or 8 bit destination not given
+        (!threshold || (dir[by][bx] < 4 && dir[by][bx]) ? aom_clpf_block_hbd
+                                                        : aom_clpf_hblock_hbd)(
+            dst ? (uint16_t *)dst + py * dstride + px : &y[bi << 2 * bsize],
+            in + py * OD_FILT_BSTRIDE + px, dst && hbd ? dstride : 1 << bsize,
+            OD_FILT_BSTRIDE, 1 << bsize, 1 << bsize,
+            clpf_strength << coeff_shift, clpf_damping + coeff_shift);
+      } else {
+        // Do clpf and write the result to an 8 bit destination
+        (!threshold || (dir[by][bx] < 4 && dir[by][bx]) ? aom_clpf_block
+                                                        : aom_clpf_hblock)(
+            dst + py * dstride + px, in + py * OD_FILT_BSTRIDE + px, dstride,
+            OD_FILT_BSTRIDE, 1 << bsize, 1 << bsize,
+            clpf_strength << coeff_shift, clpf_damping + coeff_shift);
+      }
     }
-  }
-  if (dst) {
+  } else {
+    // No clpf, so copy instead
     if (hbd) {
       copy_dering_16bit_to_16bit((uint16_t *)dst, dstride, y, dlist,
                                  dering_count, 3 - xdec);

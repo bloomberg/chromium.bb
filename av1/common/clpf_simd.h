@@ -15,32 +15,29 @@
 #include "av1/common/clpf_simd_kernel.h"
 
 // Process blocks of width 8, two lines at a time, 8 bit.
-static void clpf_block8(const uint8_t *src, uint8_t *dst, int sstride,
-                        int dstride, int x0, int y0, int sizey,
-                        unsigned int strength, unsigned int dmp) {
+static void clpf_block8(uint8_t *dst, const uint16_t *src, int dstride,
+                        int sstride, int sizey, unsigned int strength,
+                        unsigned int dmp) {
   int y;
 
-  dst += x0 + y0 * dstride;
-  src += x0 + y0 * sstride;
-
   for (y = 0; y < sizey; y += 2) {
-    const v64 l1 = v64_load_aligned(src);
-    const v64 l2 = v64_load_aligned(src + sstride);
-    const v64 l3 = v64_load_aligned(src - sstride);
-    const v64 l4 = v64_load_aligned(src + 2 * sstride);
-    const v128 a = v128_from_v64(v64_load_aligned(src - 2 * sstride), l3);
-    const v128 b = v128_from_v64(l3, l1);
-    const v128 g = v128_from_v64(l2, l4);
-    const v128 h = v128_from_v64(l4, v64_load_aligned(src + 3 * sstride));
-    const v128 c = v128_from_v64(v64_load_unaligned(src - 2),
-                                 v64_load_unaligned(src - 2 + sstride));
-    const v128 d = v128_from_v64(v64_load_unaligned(src - 1),
-                                 v64_load_unaligned(src - 1 + sstride));
-    const v128 e = v128_from_v64(v64_load_unaligned(src + 1),
-                                 v64_load_unaligned(src + 1 + sstride));
-    const v128 f = v128_from_v64(v64_load_unaligned(src + 2),
-                                 v64_load_unaligned(src + 2 + sstride));
-    const v128 o = calc_delta(v128_from_v64(l1, l2), a, b, c, d, e, f, g, h,
+    const v128 l1 = v128_load_aligned(src);
+    const v128 l2 = v128_load_aligned(src + sstride);
+    const v128 l3 = v128_load_aligned(src - sstride);
+    const v128 l4 = v128_load_aligned(src + 2 * sstride);
+    const v128 a = v128_pack_s16_u8(v128_load_aligned(src - 2 * sstride), l3);
+    const v128 b = v128_pack_s16_u8(l3, l1);
+    const v128 g = v128_pack_s16_u8(l2, l4);
+    const v128 h = v128_pack_s16_u8(l4, v128_load_aligned(src + 3 * sstride));
+    const v128 c = v128_pack_s16_u8(v128_load_unaligned(src - 2),
+                                    v128_load_unaligned(src - 2 + sstride));
+    const v128 d = v128_pack_s16_u8(v128_load_unaligned(src - 1),
+                                    v128_load_unaligned(src - 1 + sstride));
+    const v128 e = v128_pack_s16_u8(v128_load_unaligned(src + 1),
+                                    v128_load_unaligned(src + 1 + sstride));
+    const v128 f = v128_pack_s16_u8(v128_load_unaligned(src + 2),
+                                    v128_load_unaligned(src + 2 + sstride));
+    const v128 o = calc_delta(v128_pack_s16_u8(l1, l2), a, b, c, d, e, f, g, h,
                               strength, dmp);
 
     v64_store_aligned(dst, v128_high_v64(o));
@@ -51,46 +48,52 @@ static void clpf_block8(const uint8_t *src, uint8_t *dst, int sstride,
 }
 
 // Process blocks of width 4, four lines at a time, 8 bit.
-static void clpf_block4(const uint8_t *src, uint8_t *dst, int sstride,
-                        int dstride, int x0, int y0, int sizey,
-                        unsigned int strength, unsigned int dmp) {
+static void clpf_block4(uint8_t *dst, const uint16_t *src, int dstride,
+                        int sstride, int sizey, unsigned int strength,
+                        unsigned int dmp) {
   int y;
 
-  dst += x0 + y0 * dstride;
-  src += x0 + y0 * sstride;
-
   for (y = 0; y < sizey; y += 4) {
-    const uint32_t l0 = u32_load_aligned(src - 2 * sstride);
-    const uint32_t l1 = u32_load_aligned(src - sstride);
-    const uint32_t l2 = u32_load_aligned(src);
-    const uint32_t l3 = u32_load_aligned(src + sstride);
-    const uint32_t l4 = u32_load_aligned(src + 2 * sstride);
-    const uint32_t l5 = u32_load_aligned(src + 3 * sstride);
-    const uint32_t l6 = u32_load_aligned(src + 4 * sstride);
-    const uint32_t l7 = u32_load_aligned(src + 5 * sstride);
-    const v128 a = v128_from_32(l0, l1, l2, l3);
-    const v128 b = v128_from_32(l1, l2, l3, l4);
-    const v128 g = v128_from_32(l3, l4, l5, l6);
-    const v128 h = v128_from_32(l4, l5, l6, l7);
-    const v128 c = v128_from_32(u32_load_unaligned(src - 2),
-                                u32_load_unaligned(src + sstride - 2),
-                                u32_load_unaligned(src + 2 * sstride - 2),
-                                u32_load_unaligned(src + 3 * sstride - 2));
-    const v128 d = v128_from_32(u32_load_unaligned(src - 1),
-                                u32_load_unaligned(src + sstride - 1),
-                                u32_load_unaligned(src + 2 * sstride - 1),
-                                u32_load_unaligned(src + 3 * sstride - 1));
-    const v128 e = v128_from_32(u32_load_unaligned(src + 1),
-                                u32_load_unaligned(src + sstride + 1),
-                                u32_load_unaligned(src + 2 * sstride + 1),
-                                u32_load_unaligned(src + 3 * sstride + 1));
-    const v128 f = v128_from_32(u32_load_unaligned(src + 2),
-                                u32_load_unaligned(src + sstride + 2),
-                                u32_load_unaligned(src + 2 * sstride + 2),
-                                u32_load_unaligned(src + 3 * sstride + 2));
+    const v64 l0 = v64_load_aligned(src - 2 * sstride);
+    const v64 l1 = v64_load_aligned(src - sstride);
+    const v64 l2 = v64_load_aligned(src);
+    const v64 l3 = v64_load_aligned(src + sstride);
+    const v64 l4 = v64_load_aligned(src + 2 * sstride);
+    const v64 l5 = v64_load_aligned(src + 3 * sstride);
+    const v64 l6 = v64_load_aligned(src + 4 * sstride);
+    const v64 l7 = v64_load_aligned(src + 5 * sstride);
+    const v128 a =
+        v128_pack_s16_u8(v128_from_v64(l0, l1), v128_from_v64(l2, l3));
+    const v128 b =
+        v128_pack_s16_u8(v128_from_v64(l1, l2), v128_from_v64(l3, l4));
+    const v128 g =
+        v128_pack_s16_u8(v128_from_v64(l3, l4), v128_from_v64(l5, l6));
+    const v128 h =
+        v128_pack_s16_u8(v128_from_v64(l4, l5), v128_from_v64(l6, l7));
+    const v128 c = v128_pack_s16_u8(
+        v128_from_v64(v64_load_unaligned(src - 2),
+                      v64_load_unaligned(src + sstride - 2)),
+        v128_from_v64(v64_load_unaligned(src + 2 * sstride - 2),
+                      v64_load_unaligned(src + 3 * sstride - 2)));
+    const v128 d = v128_pack_s16_u8(
+        v128_from_v64(v64_load_unaligned(src - 1),
+                      v64_load_unaligned(src + sstride - 1)),
+        v128_from_v64(v64_load_unaligned(src + 2 * sstride - 1),
+                      v64_load_unaligned(src + 3 * sstride - 1)));
+    const v128 e = v128_pack_s16_u8(
+        v128_from_v64(v64_load_unaligned(src + 1),
+                      v64_load_unaligned(src + sstride + 1)),
+        v128_from_v64(v64_load_unaligned(src + 2 * sstride + 1),
+                      v64_load_unaligned(src + 3 * sstride + 1)));
+    const v128 f = v128_pack_s16_u8(
+        v128_from_v64(v64_load_unaligned(src + 2),
+                      v64_load_unaligned(src + sstride + 2)),
+        v128_from_v64(v64_load_unaligned(src + 2 * sstride + 2),
+                      v64_load_unaligned(src + 3 * sstride + 2)));
 
-    const v128 o = calc_delta(v128_from_32(l2, l3, l4, l5), a, b, c, d, e, f, g,
-                              h, strength, dmp);
+    const v128 o = calc_delta(
+        v128_pack_s16_u8(v128_from_v64(l2, l3), v128_from_v64(l4, l5)), a, b, c,
+        d, e, f, g, h, strength, dmp);
 
     u32_store_aligned(dst, v128_low_u32(v128_shr_n_byte(o, 12)));
     u32_store_aligned(dst + dstride, v128_low_u32(v128_shr_n_byte(o, 8)));
@@ -102,23 +105,106 @@ static void clpf_block4(const uint8_t *src, uint8_t *dst, int sstride,
   }
 }
 
-void SIMD_FUNC(aom_clpf_block)(const uint8_t *src, uint8_t *dst, int sstride,
-                               int dstride, int x0, int y0, int sizex,
-                               int sizey, unsigned int strength,
-                               unsigned int dmp) {
+static void clpf_hblock8(uint8_t *dst, const uint16_t *src, int dstride,
+                         int sstride, int sizey, unsigned int strength,
+                         unsigned int dmp) {
+  int y;
+
+  for (y = 0; y < sizey; y += 2) {
+    const v128 l1 = v128_load_aligned(src);
+    const v128 l2 = v128_load_aligned(src + sstride);
+    const v128 a = v128_pack_s16_u8(v128_load_unaligned(src - 2),
+                                    v128_load_unaligned(src - 2 + sstride));
+    const v128 b = v128_pack_s16_u8(v128_load_unaligned(src - 1),
+                                    v128_load_unaligned(src - 1 + sstride));
+    const v128 c = v128_pack_s16_u8(v128_load_unaligned(src + 1),
+                                    v128_load_unaligned(src + 1 + sstride));
+    const v128 d = v128_pack_s16_u8(v128_load_unaligned(src + 2),
+                                    v128_load_unaligned(src + 2 + sstride));
+    const v128 o =
+        calc_hdelta(v128_pack_s16_u8(l1, l2), a, b, c, d, strength, dmp);
+
+    v64_store_aligned(dst, v128_high_v64(o));
+    v64_store_aligned(dst + dstride, v128_low_v64(o));
+    src += sstride * 2;
+    dst += dstride * 2;
+  }
+}
+
+// Process blocks of width 4, four lines at a time, 8 bit.
+static void clpf_hblock4(uint8_t *dst, const uint16_t *src, int dstride,
+                         int sstride, int sizey, unsigned int strength,
+                         unsigned int dmp) {
+  int y;
+
+  for (y = 0; y < sizey; y += 4) {
+    const v64 l0 = v64_load_aligned(src);
+    const v64 l1 = v64_load_aligned(src + sstride);
+    const v64 l2 = v64_load_aligned(src + 2 * sstride);
+    const v64 l3 = v64_load_aligned(src + 3 * sstride);
+    const v128 a = v128_pack_s16_u8(
+        v128_from_v64(v64_load_unaligned(src - 2),
+                      v64_load_unaligned(src + sstride - 2)),
+        v128_from_v64(v64_load_unaligned(src + 2 * sstride - 2),
+                      v64_load_unaligned(src + 3 * sstride - 2)));
+    const v128 b = v128_pack_s16_u8(
+        v128_from_v64(v64_load_unaligned(src - 1),
+                      v64_load_unaligned(src + sstride - 1)),
+        v128_from_v64(v64_load_unaligned(src + 2 * sstride - 1),
+                      v64_load_unaligned(src + 3 * sstride - 1)));
+    const v128 c = v128_pack_s16_u8(
+        v128_from_v64(v64_load_unaligned(src + 1),
+                      v64_load_unaligned(src + sstride + 1)),
+        v128_from_v64(v64_load_unaligned(src + 2 * sstride + 1),
+                      v64_load_unaligned(src + 3 * sstride + 1)));
+    const v128 d = v128_pack_s16_u8(
+        v128_from_v64(v64_load_unaligned(src + 2),
+                      v64_load_unaligned(src + sstride + 2)),
+        v128_from_v64(v64_load_unaligned(src + 2 * sstride + 2),
+                      v64_load_unaligned(src + 3 * sstride + 2)));
+
+    const v128 o = calc_hdelta(
+        v128_pack_s16_u8(v128_from_v64(l0, l1), v128_from_v64(l2, l3)), a, b, c,
+        d, strength, dmp);
+
+    u32_store_aligned(dst, v128_low_u32(v128_shr_n_byte(o, 12)));
+    u32_store_aligned(dst + dstride, v128_low_u32(v128_shr_n_byte(o, 8)));
+    u32_store_aligned(dst + 2 * dstride, v128_low_u32(v128_shr_n_byte(o, 4)));
+    u32_store_aligned(dst + 3 * dstride, v128_low_u32(o));
+
+    dst += 4 * dstride;
+    src += 4 * sstride;
+  }
+}
+
+void SIMD_FUNC(aom_clpf_block)(uint8_t *dst, const uint16_t *src, int dstride,
+                               int sstride, int sizex, int sizey,
+                               unsigned int strength, unsigned int dmp) {
   if ((sizex != 4 && sizex != 8) || ((sizey & 3) && sizex == 4)) {
     // Fallback to C for odd sizes:
     // * block widths not 4 or 8
     // * block heights not a multiple of 4 if the block width is 4
-    aom_clpf_block_c(src, dst, sstride, dstride, x0, y0, sizex, sizey, strength,
-                     dmp);
+    aom_clpf_block_c(dst, src, dstride, sstride, sizex, sizey, strength, dmp);
   } else {
-    (sizex == 4 ? clpf_block4 : clpf_block8)(src, dst, sstride, dstride, x0, y0,
-                                             sizey, strength, dmp);
+    (sizex == 4 ? clpf_block4 : clpf_block8)(dst, src, dstride, sstride, sizey,
+                                             strength, dmp);
   }
 }
 
-#if defined(CONFIG_AOM_HIGHBITDEPTH)
+void SIMD_FUNC(aom_clpf_hblock)(uint8_t *dst, const uint16_t *src, int dstride,
+                                int sstride, int sizex, int sizey,
+                                unsigned int strength, unsigned int dmp) {
+  if ((sizex != 4 && sizex != 8) || ((sizey & 3) && sizex == 4)) {
+    // Fallback to C for odd sizes:
+    // * block widths not 4 or 8
+    // * block heights not a multiple of 4 if the block width is 4
+    aom_clpf_hblock_c(dst, src, dstride, sstride, sizex, sizey, strength, dmp);
+  } else {
+    (sizex == 4 ? clpf_hblock4 : clpf_hblock8)(dst, src, dstride, sstride,
+                                               sizey, strength, dmp);
+  }
+}
+
 // sign(a - b) * max(0, abs(a - b) - max(0, abs(a - b) -
 // strength + (abs(a - b) >> (dmp - log2(s)))))
 SIMD_INLINE v128 constrain_hbd(v128 a, v128 b, unsigned int strength,
@@ -206,14 +292,10 @@ static void calc_hdelta_hbd8(v128 o, v128 a, v128 b, v128 c, v128 d,
 }
 
 // Process blocks of width 4, two lines at time.
-SIMD_INLINE void clpf_block_hbd4(const uint16_t *src, uint16_t *dst,
-                                 int sstride, int dstride, int x0, int y0,
-                                 int sizey, unsigned int strength,
-                                 unsigned int dmp) {
+SIMD_INLINE void clpf_block_hbd4(uint16_t *dst, const uint16_t *src,
+                                 int dstride, int sstride, int sizey,
+                                 unsigned int strength, unsigned int dmp) {
   int y;
-
-  dst += x0 + y0 * dstride;
-  src += x0 + y0 * sstride;
 
   for (y = 0; y < sizey; y += 2) {
     const v64 l1 = v64_load_aligned(src);
@@ -241,13 +323,10 @@ SIMD_INLINE void clpf_block_hbd4(const uint16_t *src, uint16_t *dst,
 }
 
 // The most simple case.  Start here if you need to understand the functions.
-SIMD_INLINE void clpf_block_hbd(const uint16_t *src, uint16_t *dst, int sstride,
-                                int dstride, int x0, int y0, int sizey,
-                                unsigned int strength, unsigned int dmp) {
+SIMD_INLINE void clpf_block_hbd(uint16_t *dst, const uint16_t *src, int dstride,
+                                int sstride, int sizey, unsigned int strength,
+                                unsigned int dmp) {
   int y;
-
-  dst += x0 + y0 * dstride;
-  src += x0 + y0 * sstride;
 
   for (y = 0; y < sizey; y++) {
     const v128 o = v128_load_aligned(src);
@@ -267,14 +346,10 @@ SIMD_INLINE void clpf_block_hbd(const uint16_t *src, uint16_t *dst, int sstride,
 }
 
 // Process blocks of width 4, horizontal filter, two lines at time.
-SIMD_INLINE void clpf_hblock_hbd4(const uint16_t *src, uint16_t *dst,
-                                  int sstride, int dstride, int x0, int y0,
-                                  int sizey, unsigned int strength,
-                                  unsigned int dmp) {
+SIMD_INLINE void clpf_hblock_hbd4(uint16_t *dst, const uint16_t *src,
+                                  int dstride, int sstride, int sizey,
+                                  unsigned int strength, unsigned int dmp) {
   int y;
-
-  dst += x0 + y0 * dstride;
-  src += x0 + y0 * sstride;
 
   for (y = 0; y < sizey; y += 2) {
     const v128 a = v128_from_v64(v64_load_unaligned(src - 2),
@@ -295,14 +370,10 @@ SIMD_INLINE void clpf_hblock_hbd4(const uint16_t *src, uint16_t *dst,
 }
 
 // Process blocks of width 8, horizontal filter, two lines at time.
-SIMD_INLINE void clpf_hblock_hbd(const uint16_t *src, uint16_t *dst,
-                                 int sstride, int dstride, int x0, int y0,
-                                 int sizey, unsigned int strength,
-                                 unsigned int dmp) {
+SIMD_INLINE void clpf_hblock_hbd(uint16_t *dst, const uint16_t *src,
+                                 int dstride, int sstride, int sizey,
+                                 unsigned int strength, unsigned int dmp) {
   int y;
-
-  dst += x0 + y0 * dstride;
-  src += x0 + y0 * sstride;
 
   for (y = 0; y < sizey; y++) {
     const v128 o = v128_load_aligned(src);
@@ -317,35 +388,34 @@ SIMD_INLINE void clpf_hblock_hbd(const uint16_t *src, uint16_t *dst,
   }
 }
 
-void SIMD_FUNC(aom_clpf_block_hbd)(const uint16_t *src, uint16_t *dst,
-                                   int sstride, int dstride, int x0, int y0,
-                                   int sizex, int sizey, unsigned int strength,
+void SIMD_FUNC(aom_clpf_block_hbd)(uint16_t *dst, const uint16_t *src,
+                                   int dstride, int sstride, int sizex,
+                                   int sizey, unsigned int strength,
                                    unsigned int dmp) {
   if ((sizex != 4 && sizex != 8) || ((sizey & 1) && sizex == 4)) {
     // Fallback to C for odd sizes:
     // * block width not 4 or 8
     // * block heights not a multiple of 2 if the block width is 4
-    aom_clpf_block_hbd_c(src, dst, sstride, dstride, x0, y0, sizex, sizey,
-                         strength, dmp);
+    aom_clpf_block_hbd_c(dst, src, dstride, sstride, sizex, sizey, strength,
+                         dmp);
   } else {
-    (sizex == 4 ? clpf_block_hbd4 : clpf_block_hbd)(
-        src, dst, sstride, dstride, x0, y0, sizey, strength, dmp);
+    (sizex == 4 ? clpf_block_hbd4 : clpf_block_hbd)(dst, src, dstride, sstride,
+                                                    sizey, strength, dmp);
   }
 }
 
-void SIMD_FUNC(aom_clpf_hblock_hbd)(const uint16_t *src, uint16_t *dst,
-                                    int sstride, int dstride, int x0, int y0,
-                                    int sizex, int sizey, unsigned int strength,
+void SIMD_FUNC(aom_clpf_hblock_hbd)(uint16_t *dst, const uint16_t *src,
+                                    int dstride, int sstride, int sizex,
+                                    int sizey, unsigned int strength,
                                     unsigned int dmp) {
   if ((sizex != 4 && sizex != 8) || ((sizey & 1) && sizex == 4)) {
     // Fallback to C for odd sizes:
     // * block width not 4 or 8
     // * block heights not a multiple of 2 if the block width is 4
-    aom_clpf_hblock_hbd_c(src, dst, sstride, dstride, x0, y0, sizex, sizey,
-                          strength, dmp);
+    aom_clpf_hblock_hbd_c(dst, src, dstride, sstride, sizex, sizey, strength,
+                          dmp);
   } else {
     (sizex == 4 ? clpf_hblock_hbd4 : clpf_hblock_hbd)(
-        src, dst, sstride, dstride, x0, y0, sizey, strength, dmp);
+        dst, src, dstride, sstride, sizey, strength, dmp);
   }
 }
-#endif

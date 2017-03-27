@@ -47,4 +47,19 @@ SIMD_INLINE v128 calc_delta(v128 x, v128 a, v128 b, v128 c, v128 d, v128 e,
              4));
 }
 
+// delta = 1/8 * constrain(a, x, s) + 3/8 * constrain(b, x, s) +
+//         3/8 * constrain(c, x, s) + 1/8 * constrain(d, x, s) +
+SIMD_INLINE v128 calc_hdelta(v128 x, v128 a, v128 b, v128 c, v128 d,
+                             unsigned int s, unsigned int dmp) {
+  const v128 bc = v128_add_8(constrain(b, x, s, dmp), constrain(c, x, s, dmp));
+  const v128 delta =
+      v128_add_8(v128_add_8(constrain(a, x, s, dmp), constrain(d, x, s, dmp)),
+                 v128_add_8(v128_add_8(bc, bc), bc));
+  return v128_add_8(
+      x, v128_shr_s8(
+             v128_add_8(v128_dup_8(4),
+                        v128_add_8(delta, v128_cmplt_s8(delta, v128_zero()))),
+             3));
+}
+
 #endif

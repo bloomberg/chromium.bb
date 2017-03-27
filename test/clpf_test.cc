@@ -26,8 +26,8 @@ using libaom_test::ACMRandom;
 
 namespace {
 
-typedef void (*clpf_block_t)(const uint8_t *src, uint8_t *dst, int sstride,
-                             int dstride, int x0, int y0, int sizex, int sizey,
+typedef void (*clpf_block_t)(uint8_t *dst, const uint16_t *src, int dstride,
+                             int sstride, int sizex, int sizey,
                              unsigned int strength, unsigned int bitdepth);
 
 typedef std::tr1::tuple<clpf_block_t, clpf_block_t, int, int>
@@ -55,10 +55,9 @@ class ClpfBlockTest : public ::testing::TestWithParam<clpf_block_param_t> {
 typedef ClpfBlockTest ClpfSpeedTest;
 
 #if CONFIG_AOM_HIGHBITDEPTH
-typedef void (*clpf_block_hbd_t)(const uint16_t *src, uint16_t *dst,
-                                 int sstride, int dstride, int x0, int y0,
-                                 int sizex, int sizey, unsigned int strength,
-                                 unsigned int bitdepth);
+typedef void (*clpf_block_hbd_t)(uint16_t *dst, const uint16_t *src,
+                                 int dstride, int sstride, int sizex, int sizey,
+                                 unsigned int strength, unsigned int bitdepth);
 
 typedef std::tr1::tuple<clpf_block_hbd_t, clpf_block_hbd_t, int, int>
     clpf_block_hbd_param_t;
@@ -88,16 +87,15 @@ typedef ClpfBlockHbdTest ClpfHbdSpeedTest;
 
 template <typename pixel>
 void test_clpf(int w, int h, int depth, int iterations,
-               void (*clpf)(const pixel *src, pixel *dst, int sstride,
-                            int dstride, int x0, int y0, int sizex, int sizey,
+               void (*clpf)(pixel *dst, const uint16_t *src, int dstride,
+                            int sstride, int sizex, int sizey,
                             unsigned int strength, unsigned int bitdepth),
-               void (*ref_clpf)(const pixel *src, pixel *dst, int sstride,
-                                int dstride, int x0, int y0, int sizex,
-                                int sizey, unsigned int strength,
-                                unsigned int bitdepth)) {
+               void (*ref_clpf)(pixel *dst, const uint16_t *src, int dstride,
+                                int sstride, int sizex, int sizey,
+                                unsigned int strength, unsigned int bitdepth)) {
   const int size = 40;
   ACMRandom rnd(ACMRandom::DeterministicSeed());
-  DECLARE_ALIGNED(16, pixel, s[size * size]);
+  DECLARE_ALIGNED(16, uint16_t, s[size * size]);
   DECLARE_ALIGNED(16, pixel, d[size * size]);
   DECLARE_ALIGNED(16, pixel, ref_d[size * size]);
   memset(ref_d, 0, size * size * sizeof(*ref_d));
@@ -123,11 +121,12 @@ void test_clpf(int w, int h, int depth, int iterations,
           for (xpos = 8; xpos < size - w - 8 && !error; xpos += w * !error) {
             for (strength = depth - 8; strength < depth - 5 && !error;
                  strength += !error) {
-              ref_clpf(s, ref_d, size, size, xpos, ypos, w, h, 1 << strength,
-                       depth);
+              ref_clpf(ref_d + ypos * size + xpos, s + ypos * size + xpos, size,
+                       size, w, h, 1 << strength, depth);
               if (clpf != ref_clpf)
-                ASM_REGISTER_STATE_CHECK(clpf(s, d, size, size, xpos, ypos, w,
-                                              h, 1 << strength, depth));
+                ASM_REGISTER_STATE_CHECK(
+                    clpf(d + ypos * size + xpos, s + ypos * size + xpos, size,
+                         size, w, h, 1 << strength, depth));
               if (ref_clpf != clpf)
                 for (pos = 0; pos < size * size && !error; pos++) {
                   error = ref_d[pos] != d[pos];
@@ -165,12 +164,11 @@ void test_clpf(int w, int h, int depth, int iterations,
 
 template <typename pixel>
 void test_clpf_speed(int w, int h, int depth, int iterations,
-                     void (*clpf)(const pixel *src, pixel *dst, int sstride,
-                                  int dstride, int x0, int y0, int sizex,
-                                  int sizey, unsigned int strength,
-                                  unsigned int bitdepth),
-                     void (*ref_clpf)(const pixel *src, pixel *dst, int sstride,
-                                      int dstride, int x0, int y0, int sizex,
+                     void (*clpf)(pixel *dst, const uint16_t *src, int dstride,
+                                  int sstride, int sizex, int sizey,
+                                  unsigned int strength, unsigned int bitdepth),
+                     void (*ref_clpf)(pixel *dst, const uint16_t *src,
+                                      int dstride, int sstride, int sizex,
                                       int sizey, unsigned int strength,
                                       unsigned int bitdepth)) {
   aom_usec_timer ref_timer;
