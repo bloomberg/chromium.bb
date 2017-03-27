@@ -1414,27 +1414,18 @@ void WindowTreeClient::WmSetBounds(uint32_t change_id,
                                    Id window_id,
                                    const gfx::Rect& transit_bounds_in_pixels) {
   WindowMus* window = GetWindowByServerId(window_id);
-  bool result = false;
   if (window) {
     float device_scale_factor = ScaleFactorForDisplay(window->GetWindow());
     DCHECK(window_manager_delegate_);
     gfx::Rect transit_bounds_in_dip =
         gfx::ConvertRectToDIP(device_scale_factor, transit_bounds_in_pixels);
-    gfx::Rect bounds_in_dip = transit_bounds_in_dip;
-    // TODO: this needs to trigger scheduling a bounds change on |window|.
-    result = window_manager_delegate_->OnWmSetBounds(window->GetWindow(),
-                                                     &bounds_in_dip);
-    if (result) {
-      // If the resulting bounds differ return false. Returning false ensures
-      // the client applies the bounds we set below.
-      result = bounds_in_dip == transit_bounds_in_dip;
-      window->SetBoundsFromServer(bounds_in_dip);
-    }
+    window_manager_delegate_->OnWmSetBounds(window->GetWindow(),
+                                            transit_bounds_in_dip);
   } else {
     DVLOG(1) << "Unknown window passed to WmSetBounds().";
   }
   if (window_manager_internal_client_)
-    window_manager_internal_client_->WmResponse(change_id, result);
+    window_manager_internal_client_->WmSetBoundsResponse(change_id);
 }
 
 void WindowTreeClient::WmSetProperty(

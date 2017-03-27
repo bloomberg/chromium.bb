@@ -37,9 +37,8 @@ void MusDemoInternal::OnStartImpl() {
 void MusDemoInternal::SetWindowManagerClient(
     aura::WindowManagerClient* client) {}
 
-bool MusDemoInternal::OnWmSetBounds(aura::Window* window, gfx::Rect* bounds) {
-  return true;
-}
+void MusDemoInternal::OnWmSetBounds(aura::Window* window,
+                                    const gfx::Rect& bounds) {}
 
 bool MusDemoInternal::OnWmSetProperty(
     aura::Window* window,

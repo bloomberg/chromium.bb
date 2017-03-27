@@ -488,6 +488,7 @@ class WindowTree : public mojom::WindowTree,
   void ActivateNextWindow() override;
   void SetExtendedHitArea(Id window_id, const gfx::Insets& hit_area) override;
   void WmResponse(uint32_t change_id, bool response) override;
+  void WmSetBoundsResponse(uint32_t change_id) override;
   void WmRequestClose(Id transport_window_id) override;
   void WmSetFrameDecorationValues(
       mojom::FrameDecorationValuesPtr values) override;

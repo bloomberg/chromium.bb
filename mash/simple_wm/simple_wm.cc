@@ -411,10 +411,9 @@ void SimpleWM::SetWindowManagerClient(
   window_manager_client_ = client;
 }
 
-bool SimpleWM::OnWmSetBounds(aura::Window* window, gfx::Rect* bounds) {
+void SimpleWM::OnWmSetBounds(aura::Window* window, const gfx::Rect& bounds) {
   FrameView* frame_view = GetFrameViewForClientWindow(window);
-  frame_view->GetWidget()->SetBounds(*bounds);
-  return false;
+  frame_view->GetWidget()->SetBounds(bounds);
 }
 
 bool SimpleWM::OnWmSetProperty(

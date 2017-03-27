@@ -326,12 +326,11 @@ void WindowManager::SetWindowManagerClient(aura::WindowManagerClient* client) {
   ash::Shell::set_window_manager_client(client);
 }
 
-bool WindowManager::OnWmSetBounds(aura::Window* window, gfx::Rect* bounds) {
+void WindowManager::OnWmSetBounds(aura::Window* window,
+                                  const gfx::Rect& bounds) {
   // TODO(sky): this indirectly sets bounds, which is against what
   // OnWmSetBounds() recommends doing. Remove that restriction, or fix this.
-  WmWindow::Get(window)->SetBounds(*bounds);
-  *bounds = window->bounds();
-  return true;
+  WmWindow::Get(window)->SetBounds(bounds);
 }
 
 bool WindowManager::OnWmSetProperty(

@@ -152,11 +152,11 @@ void WindowServerTestBase::SetWindowManagerClient(
   window_manager_client_ = client;
 }
 
-bool WindowServerTestBase::OnWmSetBounds(aura::Window* window,
-                                         gfx::Rect* bounds) {
-  return window_manager_delegate_
-             ? window_manager_delegate_->OnWmSetBounds(window, bounds)
-             : true;
+void WindowServerTestBase::OnWmSetBounds(aura::Window* window,
+                                         const gfx::Rect& bounds) {
+  if (!window_manager_delegate_)
+    return;
+  window_manager_delegate_->OnWmSetBounds(window, bounds);
 }
 
 bool WindowServerTestBase::OnWmSetProperty(

@@ -2070,6 +2070,13 @@ void WindowTree::WmResponse(uint32_t change_id, bool response) {
   window_server_->WindowManagerChangeCompleted(change_id, response);
 }
 
+void WindowTree::WmSetBoundsResponse(uint32_t change_id) {
+  // The window manager will always give a response of false to the client
+  // because it will always update the bounds of the top level window itself
+  // which will overwrite the request made by the client.
+  WmResponse(change_id, false);
+}
+
 void WindowTree::WmRequestClose(Id transport_window_id) {
   ServerWindow* window =
       GetWindowByClientId(ClientWindowId(transport_window_id));

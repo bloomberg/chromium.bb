@@ -269,6 +269,10 @@ interface WindowManagerClient {
   // The window manager has completed a request with the specific change id.
   WmResponse(uint32 change_id, bool response);
 
+  // The window manager has completed a SetBounds request with the specified
+  // change id
+  WmSetBoundsResponse(uint32 change_id);
+
   // Calls WindowTreeClient::RequestClose() on the embedded app at the
   // specified window.
   WmRequestClose(uint32 window_id);

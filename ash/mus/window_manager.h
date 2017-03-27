@@ -147,7 +147,7 @@ class WindowManager : public aura::WindowManagerDelegate,
 
   // WindowManagerDelegate:
   void SetWindowManagerClient(aura::WindowManagerClient* client) override;
-  bool OnWmSetBounds(aura::Window* window, gfx::Rect* bounds) override;
+  void OnWmSetBounds(aura::Window* window, const gfx::Rect& bounds) override;
   bool OnWmSetProperty(
       aura::Window* window,
       const std::string& name,

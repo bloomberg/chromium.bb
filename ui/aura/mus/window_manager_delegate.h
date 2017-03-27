@@ -79,12 +79,8 @@ class AURA_EXPORT WindowManagerDelegate {
   // the WindowManager.
   virtual void SetWindowManagerClient(WindowManagerClient* client) = 0;
 
-  // A client requested the bounds of |window| to change to |bounds|. Return
-  // true if the bounds are allowed to change. A return value of false
-  // indicates the change is not allowed.
-  // NOTE: This should not change the bounds of |window|. Instead return the
-  // bounds the window should be in |bounds|.
-  virtual bool OnWmSetBounds(Window* window, gfx::Rect* bounds) = 0;
+  // A client requested the bounds of |window| to change to |bounds|.
+  virtual void OnWmSetBounds(Window* window, const gfx::Rect& bounds) = 0;
 
   // A client requested the shared property named |name| to change to
   // |new_data|. Return true to allow the change to |new_data|, false

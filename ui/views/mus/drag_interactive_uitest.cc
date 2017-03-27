@@ -151,7 +151,7 @@ TEST_F(DragTestInteractive, DragTest) {
   source_widget->Show();
 
   aura::test::ChangeCompletionWaiter source_waiter(
-      MusClient::Get()->window_tree_client(), aura::ChangeType::BOUNDS, true);
+      MusClient::Get()->window_tree_client(), aura::ChangeType::BOUNDS, false);
   source_widget->SetBounds(gfx::Rect(0, 0, 20, 20));
   source_waiter.Wait();
 
@@ -161,7 +161,7 @@ TEST_F(DragTestInteractive, DragTest) {
   target_widget->Show();
 
   aura::test::ChangeCompletionWaiter target_waiter(
-      MusClient::Get()->window_tree_client(), aura::ChangeType::BOUNDS, true);
+      MusClient::Get()->window_tree_client(), aura::ChangeType::BOUNDS, false);
   target_widget->SetBounds(gfx::Rect(20, 20, 20, 20));
   target_waiter.Wait();
 

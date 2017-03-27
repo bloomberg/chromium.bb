@@ -32,7 +32,7 @@ class MusDemoInternal : public MusDemo, public aura::WindowManagerDelegate {
 
   // aura::WindowManagerDelegate:
   void SetWindowManagerClient(aura::WindowManagerClient* client) final;
-  bool OnWmSetBounds(aura::Window* window, gfx::Rect* bounds) final;
+  void OnWmSetBounds(aura::Window* window, const gfx::Rect& bounds) final;
   bool OnWmSetProperty(aura::Window* window,
                        const std::string& name,
                        std::unique_ptr<std::vector<uint8_t>>* new_data) final;
