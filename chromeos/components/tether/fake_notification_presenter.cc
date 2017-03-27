@@ -6,24 +6,50 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "ui/message_center/message_center.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
 
 namespace tether {
 
 FakeNotificationPresenter::FakeNotificationPresenter()
-    : NotificationPresenter(nullptr) {}
+    : NotificationPresenter(),
+      potential_hotspot_state_(
+          PotentialHotspotNotificationState::NO_HOTSPOT_NOTIFICATION_SHOWN),
+      is_connection_failed_notification_shown_(false) {}
 
 FakeNotificationPresenter::~FakeNotificationPresenter() {}
 
-void FakeNotificationPresenter::NotifyConnectionToHostFailed(
-    const std::string& host_device_name) {
-  connection_failed_notification_device_name_ = host_device_name;
+cryptauth::RemoteDevice&
+FakeNotificationPresenter::GetPotentialHotspotRemoteDevice() {
+  EXPECT_EQ(PotentialHotspotNotificationState::SINGLE_HOTSPOT_NEARBY_SHOWN,
+            potential_hotspot_state_);
+  return potential_hotspot_remote_device_;
+}
+
+void FakeNotificationPresenter::NotifyPotentialHotspotNearby(
+    const cryptauth::RemoteDevice& remote_device) {
+  potential_hotspot_state_ =
+      PotentialHotspotNotificationState::SINGLE_HOTSPOT_NEARBY_SHOWN;
+  potential_hotspot_remote_device_ = remote_device;
+}
+
+void FakeNotificationPresenter::NotifyMultiplePotentialHotspotsNearby() {
+  potential_hotspot_state_ =
+      PotentialHotspotNotificationState::MULTIPLE_HOTSPOTS_NEARBY_SHOWN;
+}
+
+void FakeNotificationPresenter::RemovePotentialHotspotNotification() {
+  potential_hotspot_state_ =
+      PotentialHotspotNotificationState::NO_HOTSPOT_NOTIFICATION_SHOWN;
+}
+
+void FakeNotificationPresenter::NotifyConnectionToHostFailed() {
+  is_connection_failed_notification_shown_ = true;
 }
 
 void FakeNotificationPresenter::RemoveConnectionToHostFailedNotification() {
-  connection_failed_notification_device_name_ = "";
+  is_connection_failed_notification_shown_ = false;
 }
 
 }  // namespace tether

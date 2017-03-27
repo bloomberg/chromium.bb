@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_COMPONENTS_TETHER_FAKE_NOTIFICATION_PRESENTER_H_
 #define CHROMEOS_COMPONENTS_TETHER_FAKE_NOTIFICATION_PRESENTER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -16,21 +17,39 @@ namespace tether {
 
 class FakeNotificationPresenter : public NotificationPresenter {
  public:
+  enum class PotentialHotspotNotificationState {
+    SINGLE_HOTSPOT_NEARBY_SHOWN,
+    MULTIPLE_HOTSPOTS_NEARBY_SHOWN,
+    NO_HOTSPOT_NOTIFICATION_SHOWN
+  };
+
   FakeNotificationPresenter();
   ~FakeNotificationPresenter() override;
 
-  // If no "connection to host failed" dialog is visible, "" is returned.
-  const std::string& connection_failed_notification_device_name() const {
-    return connection_failed_notification_device_name_;
+  PotentialHotspotNotificationState potential_hotspot_state() {
+    return potential_hotspot_state_;
+  }
+
+  // Note: This function fails a test if potential_hotspot_state() is not
+  // SINGLE_HOTSPOT_NEARBY_SHOWN when called.
+  cryptauth::RemoteDevice& GetPotentialHotspotRemoteDevice();
+
+  bool is_connection_failed_notification_shown() {
+    return is_connection_failed_notification_shown_;
   }
 
   // NotificationPresenter:
-  void NotifyConnectionToHostFailed(
-      const std::string& host_device_name) override;
+  void NotifyPotentialHotspotNearby(
+      const cryptauth::RemoteDevice& remote_device) override;
+  void NotifyMultiplePotentialHotspotsNearby() override;
+  void RemovePotentialHotspotNotification() override;
+  void NotifyConnectionToHostFailed() override;
   void RemoveConnectionToHostFailedNotification() override;
 
  private:
-  std::string connection_failed_notification_device_name_;
+  PotentialHotspotNotificationState potential_hotspot_state_;
+  cryptauth::RemoteDevice potential_hotspot_remote_device_;
+  bool is_connection_failed_notification_shown_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeNotificationPresenter);
 };

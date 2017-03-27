@@ -5,19 +5,9 @@
 #ifndef CHROMEOS_COMPONENTS_TETHER_NOTIFICATION_PRESENTER_H_
 #define CHROMEOS_COMPONENTS_TETHER_NOTIFICATION_PRESENTER_H_
 
-#include <memory>
-#include <string>
-
-#include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/strings/string16.h"
-
-namespace message_center {
-class MessageCenter;
-class Notification;
-}  // namespace message_center
+#include "components/cryptauth/remote_device.h"
 
 namespace chromeos {
 
@@ -25,35 +15,31 @@ namespace tether {
 
 class NotificationPresenter {
  public:
-  NotificationPresenter();
-  virtual ~NotificationPresenter();
+  NotificationPresenter() {}
+  virtual ~NotificationPresenter() {}
+
+  // Notifies the user that a nearby device can potentially provide a tether
+  // hotspot.
+  virtual void NotifyPotentialHotspotNearby(
+      const cryptauth::RemoteDevice& remote_device) = 0;
+
+  // Notifies the user that multiple nearby devices can potentially provide
+  // tether hotspots.
+  virtual void NotifyMultiplePotentialHotspotsNearby() = 0;
+
+  // Removes the notification created by either NotifyPotentialHotspotNearby()
+  // or NotifyMultiplePotentialHotspotsNearby(), or does nothing if that
+  // notification is not currently displayed.
+  virtual void RemovePotentialHotspotNotification() = 0;
 
   // Notifies the user that the connection attempt has failed.
-  virtual void NotifyConnectionToHostFailed(
-      const std::string& host_device_name);
+  virtual void NotifyConnectionToHostFailed() = 0;
 
   // Removes the notification created by NotifyConnectionToHostFailed(), or does
   // nothing if that notification is not currently displayed.
-  virtual void RemoveConnectionToHostFailedNotification();
-
- protected:
-  NotificationPresenter(message_center::MessageCenter* message_center);
+  virtual void RemoveConnectionToHostFailedNotification() = 0;
 
  private:
-  friend class NotificationPresenterTest;
-
-  static const char kTetherNotifierId[];
-  static const char kActiveHostNotificationId[];
-
-  static std::unique_ptr<message_center::Notification> CreateNotification(
-      const std::string& id,
-      const base::string16& title,
-      const base::string16& message);
-
-  message_center::MessageCenter* message_center_;
-
-  base::WeakPtrFactory<NotificationPresenter> weak_ptr_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(NotificationPresenter);
 };
 
