@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.infobar;
 
+import android.support.design.widget.TabLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,6 +36,24 @@ class TranslateCompactInfoBar extends InfoBar {
                 (LinearLayout) LayoutInflater.from(getContext())
                         .inflate(R.layout.infobar_translate_compact_content, parent, false);
         return content;
+    }
+
+    @Override
+    protected boolean usesCompactLayout() {
+        return true;
+    }
+
+    @Override
+    protected void createCompactLayoutContent(InfoBarCompactLayout layout) {
+        // TODO(googleo): Put the real ViewGroup inflation here.
+        TabLayout tabLayout = new TabLayout(layout.getContext());
+        tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
+        tabLayout.addTab(tabLayout.newTab().setText("Tab 1"));
+        tabLayout.addTab(tabLayout.newTab().setText("Tab 2"));
+        tabLayout.addTab(tabLayout.newTab().setText("Tab 3"));
+        tabLayout.addTab(tabLayout.newTab().setText("Tab 4"));
+        tabLayout.addTab(tabLayout.newTab().setText("Tab 5"));
+        layout.addContent(tabLayout, 1.0f);
     }
 
     @Override

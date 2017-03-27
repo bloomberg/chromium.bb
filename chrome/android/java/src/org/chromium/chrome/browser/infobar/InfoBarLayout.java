@@ -10,6 +10,7 @@ import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.Nullable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -77,7 +78,6 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
     private final int mMarginAboveControlGroups;
     private final int mPadding;
     private final int mMinWidth;
-    private final int mAccentColor;
 
     private final InfoBarView mInfoBarView;
     private final ImageButton mCloseButton;
@@ -121,34 +121,19 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
                 res.getDimensionPixelSize(R.dimen.infobar_margin_above_control_groups);
         mPadding = res.getDimensionPixelOffset(R.dimen.infobar_padding);
         mMinWidth = res.getDimensionPixelSize(R.dimen.infobar_min_width);
-        mAccentColor = ApiCompatibilityUtils.getColor(res, R.color.infobar_accent_blue);
 
         // Set up the close button. Apply padding so it has a big touch target.
-        mCloseButton = new ImageButton(context);
-        mCloseButton.setId(R.id.infobar_close_button);
-        mCloseButton.setImageResource(R.drawable.btn_close);
-        TypedArray a = getContext().obtainStyledAttributes(
-                new int [] {R.attr.selectableItemBackground});
-        Drawable closeButtonBackground = a.getDrawable(0);
-        a.recycle();
-        mCloseButton.setBackground(closeButtonBackground);
-        mCloseButton.setPadding(mPadding, mPadding, mPadding, mPadding);
+        mCloseButton = createCloseButton(context);
         mCloseButton.setOnClickListener(this);
-        mCloseButton.setContentDescription(res.getString(R.string.infobar_close));
+        mCloseButton.setPadding(mPadding, mPadding, mPadding, mPadding);
         mCloseButton.setLayoutParams(new LayoutParams(0, -mPadding, -mPadding, -mPadding));
 
-        // Set up the icon.
-        if (iconResourceId != 0 || iconBitmap != null) {
-            mIconView = new ImageView(context);
-            if (iconResourceId != 0) {
-                mIconView.setImageResource(iconResourceId);
-            } else if (iconBitmap != null) {
-                mIconView.setImageBitmap(iconBitmap);
-            }
+        // Set up the icon, if necessary.
+        mIconView = createIconView(context, iconResourceId, iconBitmap);
+        if (mIconView != null) {
             mIconView.setLayoutParams(new LayoutParams(0, 0, mSmallIconMargin, 0));
             mIconView.getLayoutParams().width = mSmallIconSize;
             mIconView.getLayoutParams().height = mSmallIconSize;
-            mIconView.setFocusable(false);
         }
 
         // Set up the message view.
@@ -491,5 +476,48 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
         }
 
         return fullString;
+    }
+
+    /**
+     * Creates a View that holds an icon representing an infobar.
+     * @param context Context to grab resources from.
+     * @param iconResourceId ID of the icon to use for the infobar.
+     * @param iconBitmap Bitmap for the icon to use, if the resource ID wasn't passed through.
+     * @return {@link ImageButton} that represents the icon.
+     */
+    @Nullable
+    static ImageView createIconView(Context context, int iconResourceId, Bitmap iconBitmap) {
+        ImageView iconView = null;
+        if (iconResourceId != 0 || iconBitmap != null) {
+            iconView = new ImageView(context);
+            if (iconResourceId != 0) {
+                iconView.setImageResource(iconResourceId);
+            } else if (iconBitmap != null) {
+                iconView.setImageBitmap(iconBitmap);
+            }
+            iconView.setFocusable(false);
+            iconView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+        }
+        return iconView;
+    }
+
+    /**
+     * Creates a close button that can be inserted into an infobar.
+     * @param context Context to grab resources from.
+     * @return {@link ImageButton} that represents a close button.
+     */
+    static ImageButton createCloseButton(Context context) {
+        TypedArray a = context.obtainStyledAttributes(new int[] {R.attr.selectableItemBackground});
+        Drawable closeButtonBackground = a.getDrawable(0);
+        a.recycle();
+
+        ImageButton closeButton = new ImageButton(context);
+        closeButton.setId(R.id.infobar_close_button);
+        closeButton.setImageResource(R.drawable.btn_close);
+        closeButton.setBackground(closeButtonBackground);
+        closeButton.setContentDescription(context.getString(R.string.infobar_close));
+        closeButton.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+
+        return closeButton;
     }
 }
