@@ -738,20 +738,24 @@ class GetRTCStatsCallback : public webrtc::RTCStatsCollectorCallback {
             this, report));
   }
 
-  void OnStatsDeliveredOnMainThread(
-      const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report) {
-    DCHECK(main_thread_->BelongsToCurrentThread());
-    DCHECK(report);
-    callback_->OnStatsDelivered(std::unique_ptr<blink::WebRTCStatsReport>(
-        new RTCStatsReport(make_scoped_refptr(report.get()))));
-  }
-
  protected:
   GetRTCStatsCallback(
       const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
       blink::WebRTCStatsReportCallback* callback)
       : main_thread_(main_thread),
         callback_(callback) {
+  }
+  ~GetRTCStatsCallback() override { DCHECK(!callback_); }
+
+  void OnStatsDeliveredOnMainThread(
+      const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report) {
+    DCHECK(main_thread_->BelongsToCurrentThread());
+    DCHECK(report);
+    DCHECK(callback_);
+    callback_->OnStatsDelivered(std::unique_ptr<blink::WebRTCStatsReport>(
+        new RTCStatsReport(make_scoped_refptr(report.get()))));
+    // Make sure the callback is destroyed in the main thread as well.
+    callback_.reset();
   }
 
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;

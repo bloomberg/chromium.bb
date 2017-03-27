@@ -393,13 +393,18 @@ class WebRTCStatsReportCallbackResolver : public WebRTCStatsReportCallback {
         new WebRTCStatsReportCallbackResolver(resolver));
   }
 
-  ~WebRTCStatsReportCallbackResolver() override {}
+  ~WebRTCStatsReportCallbackResolver() override {
+    DCHECK(
+        m_resolver->getScriptState()->getExecutionContext()->isContextThread());
+  }
 
  private:
   WebRTCStatsReportCallbackResolver(ScriptPromiseResolver* resolver)
       : m_resolver(resolver) {}
 
   void OnStatsDelivered(std::unique_ptr<WebRTCStatsReport> report) override {
+    DCHECK(
+        m_resolver->getScriptState()->getExecutionContext()->isContextThread());
     m_resolver->resolve(new RTCStatsReport(std::move(report)));
   }
 
