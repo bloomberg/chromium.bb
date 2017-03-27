@@ -250,7 +250,7 @@ void VideoRendererImpl::OnVideoFrameStreamInitialized(bool success) {
   // frames yet.
   state_ = kFlushed;
 
-  algorithm_.reset(new VideoRendererAlgorithm(wall_clock_time_cb_));
+  algorithm_.reset(new VideoRendererAlgorithm(wall_clock_time_cb_, media_log_));
   if (!drop_frames_)
     algorithm_->disable_frame_dropping();
 

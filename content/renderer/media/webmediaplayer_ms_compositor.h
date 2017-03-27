@@ -11,6 +11,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/lock.h"
@@ -31,6 +32,7 @@ class Size;
 }
 
 namespace media {
+class MediaLog;
 class VideoRendererAlgorithm;
 }
 
@@ -57,7 +59,8 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
   WebMediaPlayerMSCompositor(
       const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
       const blink::WebMediaStream& web_stream,
-      const base::WeakPtr<WebMediaPlayerMS>& player);
+      const base::WeakPtr<WebMediaPlayerMS>& player,
+      scoped_refptr<media::MediaLog> media_log_);
 
   void EnqueueFrame(scoped_refptr<media::VideoFrame> frame);
 
@@ -121,6 +124,8 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
   base::MessageLoop* main_message_loop_;
 
   base::WeakPtr<WebMediaPlayerMS> player_;
+
+  scoped_refptr<media::MediaLog> media_log_;
 
   size_t serial_;
 

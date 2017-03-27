@@ -10,8 +10,10 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "media/base/media_log.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_frame_pool.h"
 #include "media/base/wall_clock_time_source.h"
@@ -70,7 +72,8 @@ class VideoRendererAlgorithmTest : public testing::Test {
   VideoRendererAlgorithmTest()
       : tick_clock_(new base::SimpleTestTickClock()),
         algorithm_(base::Bind(&WallClockTimeSource::GetWallClockTimes,
-                              base::Unretained(&time_source_))) {
+                              base::Unretained(&time_source_)),
+                   make_scoped_refptr(new MediaLog())) {
     // Always start the TickClock at a non-zero value since null values have
     // special connotations.
     tick_clock_->Advance(base::TimeDelta::FromMicroseconds(10000));

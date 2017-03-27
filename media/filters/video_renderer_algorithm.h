@@ -22,6 +22,8 @@
 
 namespace media {
 
+class MediaLog;
+
 // VideoRendererAlgorithm manages a queue of VideoFrames from which it chooses
 // frames with the goal of providing a smooth playback experience.  I.e., the
 // selection process results in the best possible uniformity for displayed frame
@@ -48,8 +50,8 @@ namespace media {
 // Combined these three approaches enforce optimal smoothness in many cases.
 class MEDIA_EXPORT VideoRendererAlgorithm {
  public:
-  explicit VideoRendererAlgorithm(
-      const TimeSource::WallClockTimeCB& wall_clock_time_cb);
+  VideoRendererAlgorithm(const TimeSource::WallClockTimeCB& wall_clock_time_cb,
+                         scoped_refptr<MediaLog> media_log);
   ~VideoRendererAlgorithm();
 
   // Chooses the best frame for the interval [deadline_min, deadline_max] based
@@ -264,6 +266,9 @@ class MEDIA_EXPORT VideoRendererAlgorithm {
   // Computes the unclamped count of effective frames.  Used by
   // UpdateEffectiveFramesQueued().
   size_t CountEffectiveFramesQueued() const;
+
+  scoped_refptr<MediaLog> media_log_;
+  int out_of_order_frame_logs_ = 0;
 
   // Queue of incoming frames waiting for rendering.
   using VideoFrameQueue = std::deque<ReadyFrame>;

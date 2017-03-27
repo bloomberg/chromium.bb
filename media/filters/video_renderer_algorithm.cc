@@ -7,7 +7,11 @@
 #include <algorithm>
 #include <limits>
 
+#include "media/base/media_log.h"
+
 namespace media {
+
+const int kMaxOutOfOrderFrameLogs = 10;
 
 // The number of frames to store for moving average calculations.  Value picked
 // after experimenting with playback of various local media and YouTube clips.
@@ -34,8 +38,10 @@ bool VideoRendererAlgorithm::ReadyFrame::operator<(
 }
 
 VideoRendererAlgorithm::VideoRendererAlgorithm(
-    const TimeSource::WallClockTimeCB& wall_clock_time_cb)
-    : cadence_estimator_(base::TimeDelta::FromSeconds(
+    const TimeSource::WallClockTimeCB& wall_clock_time_cb,
+    scoped_refptr<MediaLog> media_log)
+    : media_log_(std::move(media_log)),
+      cadence_estimator_(base::TimeDelta::FromSeconds(
           kMinimumAcceptableTimeBetweenGlitchesSecs)),
       wall_clock_time_cb_(wall_clock_time_cb),
       frame_duration_calculator_(kMovingAverageSamples),
@@ -308,6 +314,7 @@ void VideoRendererAlgorithm::OnLastFrameDropped() {
 }
 
 void VideoRendererAlgorithm::Reset(ResetFlag reset_flag) {
+  out_of_order_frame_logs_ = 0;
   frames_dropped_during_enqueue_ = 0;
   have_rendered_frames_ = last_render_had_glitch_ = false;
   render_interval_ = base::TimeDelta();
@@ -352,7 +359,11 @@ void VideoRendererAlgorithm::EnqueueFrame(
   // already rendered any frames.
   const size_t new_frame_index = it - frame_queue_.begin();
   if (new_frame_index <= 0 && have_rendered_frames_) {
-    DVLOG(2) << "Dropping frame inserted before the last rendered frame.";
+    LIMITED_MEDIA_LOG(INFO, media_log_, out_of_order_frame_logs_,
+                      kMaxOutOfOrderFrameLogs)
+        << "Dropping frame with timestamp " << frame->timestamp()
+        << ", which is earlier than the last rendered frame ("
+        << frame_queue_.front().frame->timestamp() << ").";
     ++frames_dropped_during_enqueue_;
     return;
   }
@@ -388,6 +399,12 @@ void VideoRendererAlgorithm::EnqueueFrame(
 
   // The vast majority of cases should always append to the back, but in rare
   // circumstance we get out of order timestamps, http://crbug.com/386551.
+  if (it != frame_queue_.end()) {
+    LIMITED_MEDIA_LOG(INFO, media_log_, out_of_order_frame_logs_,
+                      kMaxOutOfOrderFrameLogs)
+        << "Decoded frame with timestamp " << frame->timestamp()
+        << " is out of order.";
+  }
   frame_queue_.insert(it, ready_frame);
 
   // Project the current cadence calculations to include the new frame.  These
