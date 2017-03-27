@@ -29,8 +29,8 @@ static void CheckDetailsAreEqual(const DatabaseDetails& d1,
 }
 
 static bool DatabasesTableIsEmpty(sql::Connection* db) {
-  sql::Statement statement(db->GetCachedStatement(
-      SQL_FROM_HERE, "SELECT COUNT(*) FROM Databases"));
+  sql::Statement statement(
+      db->GetCachedStatement(SQL_FROM_HERE, "SELECT COUNT(*) FROM Databases"));
   return (statement.is_valid() && statement.Step() && !statement.ColumnInt(0));
 }
 
@@ -65,16 +65,12 @@ TEST(DatabasesTableTest, TestIt) {
   // Updating details for this database should fail.
   EXPECT_FALSE(databases_table.UpdateDatabaseDetails(details_in1));
   EXPECT_FALSE(databases_table.GetDatabaseDetails(
-      details_in1.origin_identifier,
-      details_in1.database_name,
-      &details_out1));
+      details_in1.origin_identifier, details_in1.database_name, &details_out1));
 
   // Inserting details for this database should pass.
   EXPECT_TRUE(databases_table.InsertDatabaseDetails(details_in1));
   EXPECT_TRUE(databases_table.GetDatabaseDetails(
-      details_in1.origin_identifier,
-      details_in1.database_name,
-      &details_out1));
+      details_in1.origin_identifier, details_in1.database_name, &details_out1));
   EXPECT_EQ(1, databases_table.GetDatabaseID(details_in1.origin_identifier,
                                              details_in1.database_name));
 
@@ -127,8 +123,8 @@ TEST(DatabasesTableTest, TestIt) {
 
   // Delete an origin and check that it's no longer in the table.
   origins_out.clear();
-  EXPECT_TRUE(databases_table.DeleteOriginIdentifier(
-      details_in3.origin_identifier));
+  EXPECT_TRUE(
+      databases_table.DeleteOriginIdentifier(details_in3.origin_identifier));
   EXPECT_TRUE(databases_table.GetAllOriginIdentifiers(&origins_out));
   EXPECT_EQ(size_t(1), origins_out.size());
   EXPECT_EQ(details_in1.origin_identifier, origins_out[0]);
@@ -140,9 +136,7 @@ TEST(DatabasesTableTest, TestIt) {
   EXPECT_TRUE(databases_table.DeleteDatabaseDetails(
       details_in1.origin_identifier, details_in1.database_name));
   EXPECT_FALSE(databases_table.GetDatabaseDetails(
-      details_in1.origin_identifier,
-      details_in1.database_name,
-      &details_out1));
+      details_in1.origin_identifier, details_in1.database_name, &details_out1));
 
   // Check that trying to delete a record that doesn't exist fails.
   EXPECT_FALSE(databases_table.DeleteDatabaseDetails(

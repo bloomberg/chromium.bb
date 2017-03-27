@@ -54,8 +54,7 @@ class MockDatabaseTracker : public DatabaseTracker {
   bool GetAllOriginIdentifiers(
       std::vector<std::string>* origins_identifiers) override {
     std::map<GURL, MockOriginInfo>::const_iterator iter;
-    for (iter = mock_origin_infos_.begin();
-         iter != mock_origin_infos_.end();
+    for (iter = mock_origin_infos_.begin(); iter != mock_origin_infos_.end();
          ++iter) {
       origins_identifiers->push_back(iter->second.GetOriginIdentifier());
     }
@@ -64,8 +63,7 @@ class MockDatabaseTracker : public DatabaseTracker {
 
   bool GetAllOriginsInfo(std::vector<OriginInfo>* origins_info) override {
     std::map<GURL, MockOriginInfo>::const_iterator iter;
-    for (iter = mock_origin_infos_.begin();
-         iter != mock_origin_infos_.end();
+    for (iter = mock_origin_infos_.begin(); iter != mock_origin_infos_.end();
          ++iter) {
       origins_info->push_back(OriginInfo(iter->second));
     }
@@ -88,7 +86,7 @@ class MockDatabaseTracker : public DatabaseTracker {
     callback.Run(net::OK);
   }
 
-  void AddMockDatabase(const GURL& origin,  const char* name, int size) {
+  void AddMockDatabase(const GURL& origin, const char* name, int size) {
     MockOriginInfo& info = mock_origin_infos_[origin];
     info.set_origin(storage::GetIdentifierFromOrigin(origin));
     info.AddMockDatabase(base::ASCIIToUTF16(name), size);
@@ -120,7 +118,6 @@ class MockDatabaseTracker : public DatabaseTracker {
   std::map<GURL, MockOriginInfo> mock_origin_infos_;
 };
 
-
 // Base class for our test fixtures.
 class DatabaseQuotaClientTest : public testing::Test {
  public:
@@ -134,8 +131,7 @@ class DatabaseQuotaClientTest : public testing::Test {
         kOriginOther("http://other"),
         usage_(0),
         mock_tracker_(new MockDatabaseTracker),
-        weak_factory_(this) {
-  }
+        weak_factory_(this) {}
 
   int64_t GetOriginUsage(storage::QuotaClient* client,
                          const GURL& origin,
@@ -153,9 +149,8 @@ class DatabaseQuotaClientTest : public testing::Test {
                                           storage::StorageType type) {
     origins_.clear();
     client->GetOriginsForType(
-        type,
-        base::Bind(&DatabaseQuotaClientTest::OnGetOriginsComplete,
-                   weak_factory_.GetWeakPtr()));
+        type, base::Bind(&DatabaseQuotaClientTest::OnGetOriginsComplete,
+                         weak_factory_.GetWeakPtr()));
     base::RunLoop().RunUntilIdle();
     return origins_;
   }
@@ -186,7 +181,6 @@ class DatabaseQuotaClientTest : public testing::Test {
 
   MockDatabaseTracker* mock_tracker() { return mock_tracker_.get(); }
 
-
  private:
   void OnGetOriginUsageComplete(int64_t usage) { usage_ = usage; }
 
@@ -205,7 +199,6 @@ class DatabaseQuotaClientTest : public testing::Test {
   scoped_refptr<MockDatabaseTracker> mock_tracker_;
   base::WeakPtrFactory<DatabaseQuotaClientTest> weak_factory_;
 };
-
 
 TEST_F(DatabaseQuotaClientTest, GetOriginUsage) {
   DatabaseQuotaClient client(base::ThreadTaskRunnerHandle::Get().get(),
