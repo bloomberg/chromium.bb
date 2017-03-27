@@ -4,7 +4,12 @@
 
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 
+#include "content/common/service_worker/service_worker_types.h"
+
 namespace content {
+
+BackgroundFetchRegistrationId::BackgroundFetchRegistrationId()
+    : service_worker_registration_id_(kInvalidServiceWorkerRegistrationId) {}
 
 BackgroundFetchRegistrationId::BackgroundFetchRegistrationId(
     int64_t service_worker_registration_id,
@@ -18,6 +23,9 @@ BackgroundFetchRegistrationId::BackgroundFetchRegistrationId(
     BackgroundFetchRegistrationId&& other) = default;
 
 BackgroundFetchRegistrationId::~BackgroundFetchRegistrationId() = default;
+
+BackgroundFetchRegistrationId& BackgroundFetchRegistrationId::operator=(
+    const BackgroundFetchRegistrationId& other) = default;
 
 bool BackgroundFetchRegistrationId::operator==(
     const BackgroundFetchRegistrationId& other) const {
@@ -36,6 +44,10 @@ bool BackgroundFetchRegistrationId::operator<(
   return service_worker_registration_id_ <
              other.service_worker_registration_id_ ||
          origin_ < other.origin_ || tag_ < other.tag_;
+}
+
+bool BackgroundFetchRegistrationId::is_null() const {
+  return service_worker_registration_id_ == kInvalidServiceWorkerRegistrationId;
 }
 
 }  // namespace content

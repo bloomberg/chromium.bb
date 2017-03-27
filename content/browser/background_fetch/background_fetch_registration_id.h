@@ -18,11 +18,15 @@ namespace content {
 // to uniquely identify a Background Fetch registration in scope of a profile.
 class CONTENT_EXPORT BackgroundFetchRegistrationId {
  public:
+  BackgroundFetchRegistrationId();
   BackgroundFetchRegistrationId(int64_t service_worker_registration_id,
                                 const url::Origin& origin,
                                 const std::string& tag);
   BackgroundFetchRegistrationId(BackgroundFetchRegistrationId&& other);
   ~BackgroundFetchRegistrationId();
+
+  BackgroundFetchRegistrationId& operator=(
+      const BackgroundFetchRegistrationId& other);
 
   // Returns whether the |other| registration id are identical or different.
   bool operator==(const BackgroundFetchRegistrationId& other) const;
@@ -31,6 +35,9 @@ class CONTENT_EXPORT BackgroundFetchRegistrationId {
   // Enables this type to be used in an std::map and std::set.
   // TODO(peter): Delete this when we switch away from using maps.
   bool operator<(const BackgroundFetchRegistrationId& other) const;
+
+  // Returns whether this registration id refers to valid data.
+  bool is_null() const;
 
   int64_t service_worker_registration_id() const {
     return service_worker_registration_id_;
@@ -43,7 +50,7 @@ class CONTENT_EXPORT BackgroundFetchRegistrationId {
   url::Origin origin_;
   std::string tag_;
 
-  DISALLOW_COPY_AND_ASSIGN(BackgroundFetchRegistrationId);
+  DISALLOW_COPY(BackgroundFetchRegistrationId);
 };
 
 }  // namespace content
