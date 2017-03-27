@@ -9,7 +9,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
-#include "ppapi/c/pp_errors.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/ppb_instance_api.h"
@@ -35,53 +34,39 @@ namespace thunk {
 
 namespace subtle {
 
-EnterBase::EnterBase()
-    : resource_(NULL),
-      retval_(PP_OK) {
-  PpapiGlobals::Get()->MarkPluginIsActive();
-}
+EnterBase::EnterBase() {}
 
-EnterBase::EnterBase(PP_Resource resource)
-    : resource_(GetResource(resource)),
-      retval_(PP_OK) {
-  PpapiGlobals::Get()->MarkPluginIsActive();
-}
+EnterBase::EnterBase(PP_Resource resource) : resource_(GetResource(resource)) {}
 
 EnterBase::EnterBase(PP_Instance instance, SingletonResourceID resource_id)
-    : resource_(GetSingletonResource(instance, resource_id)),
-      retval_(PP_OK) {
-  PpapiGlobals::Get()->MarkPluginIsActive();
+    : resource_(GetSingletonResource(instance, resource_id)) {
+  if (!resource_)
+    retval_ = PP_ERROR_BADARGUMENT;
 }
 
 EnterBase::EnterBase(PP_Resource resource,
                      const PP_CompletionCallback& callback)
-    : resource_(GetResource(resource)),
-      retval_(PP_OK) {
+    : EnterBase(resource) {
   callback_ = new TrackedCallback(resource_, callback);
-  PpapiGlobals::Get()->MarkPluginIsActive();
 }
 
-EnterBase::EnterBase(PP_Instance instance, SingletonResourceID resource_id,
+EnterBase::EnterBase(PP_Instance instance,
+                     SingletonResourceID resource_id,
                      const PP_CompletionCallback& callback)
-    : resource_(GetSingletonResource(instance, resource_id)),
-      retval_(PP_OK) {
-  if (!resource_)
-    retval_ = PP_ERROR_BADARGUMENT;
+    : EnterBase(instance, resource_id) {
   callback_ = new TrackedCallback(resource_, callback);
-  PpapiGlobals::Get()->MarkPluginIsActive();
 }
 
 EnterBase::~EnterBase() {
   // callback_ is cleared any time it is run, scheduled to be run, or once we
   // know it will be completed asynchronously. So by this point it should be
-  // NULL.
-  DCHECK(!callback_.get())
-      << "|callback_| is not NULL. Did you forget to call "
-         "|EnterBase::SetResult| in the interface's thunk?";
+  // null.
+  DCHECK(!callback_) << "|callback_| is not null. Did you forget to call "
+                        "|EnterBase::SetResult| in the interface's thunk?";
 }
 
 int32_t EnterBase::SetResult(int32_t result) {
-  if (!callback_.get()) {
+  if (!callback_) {
     // It doesn't make sense to call SetResult if there is no callback.
     NOTREACHED();
     retval_ = result;
@@ -110,7 +95,7 @@ int32_t EnterBase::SetResult(int32_t result) {
       retval_ = result;
     }
   }
-  callback_ = NULL;
+  callback_ = nullptr;
   return retval_;
 }
 
@@ -125,7 +110,7 @@ Resource* EnterBase::GetSingletonResource(PP_Instance instance,
   PPB_Instance_API* ppb_instance =
       PpapiGlobals::Get()->GetInstanceAPI(instance);
   if (!ppb_instance)
-    return NULL;
+    return nullptr;
 
   return ppb_instance->GetSingletonResource(instance, resource_id);
 }
@@ -135,11 +120,11 @@ void EnterBase::SetStateForCallbackError(bool report_error) {
     // In-process plugins can't make PPAPI calls off the main thread.
     CHECK(IsMainThread());
   }
-  if (callback_.get()) {
+  if (callback_) {
     if (callback_->is_blocking() && IsMainThread()) {
       // Blocking callbacks are never allowed on the main thread.
       callback_->MarkAsCompleted();
-      callback_ = NULL;
+      callback_ = nullptr;
       retval_ = PP_ERROR_BLOCKS_MAIN_THREAD;
       if (report_error) {
         std::string message(
@@ -151,7 +136,7 @@ void EnterBase::SetStateForCallbackError(bool report_error) {
                CurrentThreadHandlingBlockingMessage()) {
       // Blocking callbacks are not allowed while handling a blocking message.
       callback_->MarkAsCompleted();
-      callback_ = NULL;
+      callback_ = nullptr;
       retval_ = PP_ERROR_WOULD_BLOCK_THREAD;
       if (report_error) {
         std::string message("Blocking callbacks are not allowed while handling "
@@ -179,7 +164,7 @@ void EnterBase::SetStateForCallbackError(bool report_error) {
       }
 
       callback_->MarkAsCompleted();
-      callback_ = NULL;
+      callback_ = nullptr;
       retval_ = PP_ERROR_NO_MESSAGE_LOOP;
       if (report_error) {
         std::string message(
@@ -192,7 +177,7 @@ void EnterBase::SetStateForCallbackError(bool report_error) {
 }
 
 void EnterBase::ClearCallback() {
-  callback_ = NULL;
+  callback_ = nullptr;
 }
 
 void EnterBase::SetStateForResourceError(PP_Resource pp_resource,
@@ -208,14 +193,14 @@ void EnterBase::SetStateForResourceError(PP_Resource pp_resource,
   if (object)
     return;  // Everything worked.
 
-  if (callback_.get() && callback_->is_required()) {
+  if (callback_ && callback_->is_required()) {
     callback_->PostRun(static_cast<int32_t>(PP_ERROR_BADRESOURCE));
-    callback_ = NULL;
+    callback_ = nullptr;
     retval_ = PP_OK_COMPLETIONPENDING;
   } else {
-    if (callback_.get())
+    if (callback_)
       callback_->MarkAsCompleted();
-    callback_ = NULL;
+    callback_ = nullptr;
     retval_ = PP_ERROR_BADRESOURCE;
   }
 
@@ -250,14 +235,14 @@ void EnterBase::SetStateForFunctionError(PP_Instance pp_instance,
   if (object)
     return;  // Everything worked.
 
-  if (callback_.get() && callback_->is_required()) {
+  if (callback_ && callback_->is_required()) {
     callback_->PostRun(static_cast<int32_t>(PP_ERROR_BADARGUMENT));
-    callback_ = NULL;
+    callback_ = nullptr;
     retval_ = PP_OK_COMPLETIONPENDING;
   } else {
-    if (callback_.get())
+    if (callback_)
       callback_->MarkAsCompleted();
-    callback_ = NULL;
+    callback_ = nullptr;
     retval_ = PP_ERROR_BADARGUMENT;
   }
 

@@ -73,10 +73,6 @@ class NaClBrowserDelegate {
   // Returns whether NaCl application with this manifest URL should be debugged.
   virtual bool URLMatchesDebugPatterns(const GURL& manifest_url) = 0;
 
-  // Returns a callback that handles NaCl idle state transitions.
-  virtual content::BrowserPpapiHost::OnKeepaliveCallback
-      GetOnKeepaliveCallback() = 0;
-
   // Returns whether Non-SFI mode is allowed for a given manifest URL.
   virtual bool IsNonSfiModeAllowed(const base::FilePath& profile_directory,
                                    const GURL& manifest_url) = 0;

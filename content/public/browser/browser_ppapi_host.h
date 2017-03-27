@@ -33,17 +33,6 @@ namespace content {
 // lives entirely on the I/O thread.
 class CONTENT_EXPORT BrowserPpapiHost {
  public:
-  struct OnKeepaliveInstanceStruct {
-    int render_process_id;
-    int render_frame_id;
-    GURL document_url;
-  };
-  typedef std::vector<OnKeepaliveInstanceStruct> OnKeepaliveInstanceData;
-  typedef base::Callback<
-      void (const OnKeepaliveInstanceData& instance_data,
-            const base::FilePath& profile_data_directory)>
-      OnKeepaliveCallback;
-
   // Creates a browser host and sets up an out-of-process proxy for an external
   // pepper plugin process.
   static BrowserPpapiHost* CreateExternalPluginProcess(
@@ -91,10 +80,6 @@ class CONTENT_EXPORT BrowserPpapiHost {
   // Get the Document/Plugin URLs for the given PP_Instance.
   virtual GURL GetDocumentURLForInstance(PP_Instance instance) = 0;
   virtual GURL GetPluginURLForInstance(PP_Instance instance) = 0;
-
-  // Sets a callback the BrowserPpapiHost will run when the plugin messages
-  // that it is active.
-  virtual void SetOnKeepaliveCallback(const OnKeepaliveCallback& callback) = 0;
 };
 
 }  // namespace content

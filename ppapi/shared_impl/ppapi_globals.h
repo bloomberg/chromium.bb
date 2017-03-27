@@ -128,12 +128,6 @@ class PPAPI_SHARED_EXPORT PpapiGlobals {
   virtual bool IsHostGlobals() const;
   virtual bool IsPluginGlobals() const;
 
-  // Records that the plugin is active. The plugin reports that it is active to
-  // containers that monitor and shutdown idle content such as background apps.
-  // This method only has an effect on the plugin process, calls from the
-  // renderer process will have no effect.
-  virtual void MarkPluginIsActive();
-
  private:
   // Return the thread-local pointer which is used only for unit testing. It
   // should always be NULL when running in production. It allows separate

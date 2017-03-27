@@ -71,8 +71,6 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
   const base::FilePath& GetProfileDataDirectory() override;
   GURL GetDocumentURLForInstance(PP_Instance instance) override;
   GURL GetPluginURLForInstance(PP_Instance instance) override;
-  void SetOnKeepaliveCallback(
-      const BrowserPpapiHost::OnKeepaliveCallback& callback) override;
 
   // Whether the plugin context is secure. That is, it is served from a secure
   // origin and it is embedded within a hierarchy of secure frames. This value
@@ -125,7 +123,6 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
    private:
     ~HostMessageFilter() override;
 
-    void OnKeepalive();
     void OnHostMsgLogInterfaceUsage(int hash) const;
 
     // Non owning pointers cleared in OnHostDestroyed()
@@ -142,9 +139,6 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
 
     base::ObserverList<InstanceObserver> observer_list;
   };
-
-  // Reports plugin activity to the callback set with SetOnKeepaliveCallback.
-  void OnKeepalive();
 
   std::unique_ptr<ppapi::host::PpapiHost> ppapi_host_;
   base::Process plugin_process_;
@@ -165,8 +159,6 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
   std::unordered_map<PP_Instance, std::unique_ptr<InstanceData>> instance_map_;
 
   scoped_refptr<HostMessageFilter> message_filter_;
-
-  BrowserPpapiHost::OnKeepaliveCallback on_keepalive_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPpapiHostImpl);
 };

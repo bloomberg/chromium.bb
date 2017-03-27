@@ -45,50 +45,6 @@ const char* const kAllowedNonSfiOrigins[] = {
     "4EB74897CB187C7633357C2FE832E0AD6A44883A"   // see http://crbug.com/355141
 };
 
-// Handles an extension's NaCl process transitioning in or out of idle state by
-// relaying the state to the extension's process manager.
-//
-// A NaCl instance, when active (making PPAPI calls or receiving callbacks),
-// sends keepalive IPCs to the browser process BrowserPpapiHost at a throttled
-// rate. The content::BrowserPpapiHost passes context information up to the
-// chrome level NaClProcessHost where we use the instance's context to find the
-// associated extension process manager.
-//
-// There is a 1:many relationship for extension:nacl-embeds, but only a
-// 1:1 relationship for NaClProcessHost:PP_Instance. The content layer doesn't
-// rely on this knowledge because it routes messages for ppapi non-nacl
-// instances as well, though they won't have callbacks set. Here the 1:1
-// assumption is made and DCHECKed.
-void OnKeepaliveOnUIThread(
-    const content::BrowserPpapiHost::OnKeepaliveInstanceData& instance_data,
-    const base::FilePath& profile_data_directory) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  // Only one instance will exist for NaCl embeds, even when more than one
-  // embed of the same plugin exists on the same page.
-  DCHECK_EQ(1U, instance_data.size());
-  if (instance_data.size() < 1)
-    return;
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  extensions::ProcessManager::OnKeepaliveFromPlugin(
-      instance_data[0].render_process_id,
-      instance_data[0].render_frame_id,
-      instance_data[0].document_url.host());
-#endif
-}
-
-// Calls OnKeepaliveOnUIThread on UI thread.
-void OnKeepalive(
-    const content::BrowserPpapiHost::OnKeepaliveInstanceData& instance_data,
-    const base::FilePath& profile_data_directory) {
-  DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                   base::Bind(&OnKeepaliveOnUIThread,
-                                              instance_data,
-                                              profile_data_directory));
-}
-
 }  // namespace
 
 NaClBrowserDelegateImpl::NaClBrowserDelegateImpl(
@@ -219,11 +175,6 @@ bool NaClBrowserDelegateImpl::MapUrlToLocalFilePath(
 #else
   return false;
 #endif
-}
-
-content::BrowserPpapiHost::OnKeepaliveCallback
-NaClBrowserDelegateImpl::GetOnKeepaliveCallback() {
-  return base::Bind(&OnKeepalive);
 }
 
 bool NaClBrowserDelegateImpl::IsNonSfiModeAllowed(

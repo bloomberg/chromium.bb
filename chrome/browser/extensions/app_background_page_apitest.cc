@@ -122,9 +122,6 @@ class AppBackgroundPageNaClTest : public AppBackgroundPageApiTest {
 
   void SetUpOnMainThread() override {
     AppBackgroundPageApiTest::SetUpOnMainThread();
-#if !defined(DISABLE_NACL)
-    nacl::NaClProcessHost::SetPpapiKeepAliveThrottleForTesting(50);
-#endif
     extensions::ProcessManager::SetEventPageIdleTimeForTesting(1000);
     extensions::ProcessManager::SetEventPageSuspendingTimeForTesting(1000);
   }
@@ -143,56 +140,6 @@ class AppBackgroundPageNaClTest : public AppBackgroundPageApiTest {
 
  private:
   const Extension* extension_;
-};
-
-// Produces an extensions::ProcessManager::ImpulseCallbackForTesting callback
-// that will match a specified goal and can be waited on.
-class ImpulseCallbackCounter {
- public:
-  explicit ImpulseCallbackCounter(extensions::ProcessManager* manager,
-                                  const std::string& extension_id)
-      : observed_(0),
-        goal_(0),
-        manager_(manager),
-        extension_id_(extension_id) {
-  }
-
-  extensions::ProcessManager::ImpulseCallbackForTesting
-      SetGoalAndGetCallback(int goal) {
-    observed_ = 0;
-    goal_ = goal;
-    message_loop_runner_ = new content::MessageLoopRunner();
-    return base::Bind(&ImpulseCallbackCounter::ImpulseCallback,
-                      base::Unretained(this),
-                      message_loop_runner_->QuitClosure(),
-                      extension_id_);
-  }
-
-  void Wait() {
-    message_loop_runner_->Run();
-  }
- private:
-  void ImpulseCallback(
-      const base::Closure& quit_callback,
-      const std::string& extension_id_from_test,
-      const std::string& extension_id_from_manager) {
-    if (extension_id_from_test == extension_id_from_manager) {
-      if (++observed_ >= goal_) {
-        // Clear callback to free reference to message loop.
-        manager_->SetKeepaliveImpulseCallbackForTesting(
-            extensions::ProcessManager::ImpulseCallbackForTesting());
-        manager_->SetKeepaliveImpulseDecrementCallbackForTesting(
-            extensions::ProcessManager::ImpulseCallbackForTesting());
-        quit_callback.Run();
-      }
-    }
-  }
-
-  int observed_;
-  int goal_;
-  extensions::ProcessManager* manager_;
-  const std::string extension_id_;
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 };
 
 }  // namespace
@@ -592,54 +539,63 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, UnloadExtensionWhileHidden) {
   ASSERT_TRUE(WaitForBackgroundMode(false));
 }
 
-// Verify active NaCl embeds cause many keepalive impulses to be sent.
-// Disabled on Windows due to flakiness: http://crbug.com/346278
-#if defined(OS_WIN)
-#define MAYBE_BackgroundKeepaliveActive DISABLED_BackgroundKeepaliveActive
-#else
-// Disabling other platforms too since the test started failing
-// consistently. http://crbug.com/490440
-#define MAYBE_BackgroundKeepaliveActive DISABLED_BackgroundKeepaliveActive
-#endif
-IN_PROC_BROWSER_TEST_F(AppBackgroundPageNaClTest,
-                       MAYBE_BackgroundKeepaliveActive) {
 #if !defined(DISABLE_NACL)
-  ExtensionTestMessageListener nacl_modules_loaded("nacl_modules_loaded", true);
-  LaunchTestingApp();
+
+// Verify that active NaCl embeds raise the keepalive count.
+IN_PROC_BROWSER_TEST_F(AppBackgroundPageNaClTest, BackgroundKeepaliveActive) {
   extensions::ProcessManager* manager =
       extensions::ProcessManager::Get(browser()->profile());
-  ImpulseCallbackCounter active_impulse_counter(manager, extension()->id());
-  EXPECT_TRUE(nacl_modules_loaded.WaitUntilSatisfied());
-
-  // Target .5 seconds: .5 seconds / 50ms throttle * 2 embeds == 20 impulses.
-  manager->SetKeepaliveImpulseCallbackForTesting(
-      active_impulse_counter.SetGoalAndGetCallback(20));
-  active_impulse_counter.Wait();
-#endif
-}
-
-// Verify that nacl modules that go idle will not send keepalive impulses.
-// Disabled on windows due to Win XP failures:
-// DesktopWindowTreeHostWin::HandleCreate not implemented. crbug.com/331954
-#if defined(OS_WIN)
-#define MAYBE_BackgroundKeepaliveIdle DISABLED_BackgroundKeepaliveIdle
-#else
-// ASAN errors appearing: https://crbug.com/332440
-#define MAYBE_BackgroundKeepaliveIdle DISABLED_BackgroundKeepaliveIdle
-#endif
-IN_PROC_BROWSER_TEST_F(AppBackgroundPageNaClTest,
-                       MAYBE_BackgroundKeepaliveIdle) {
-#if !defined(DISABLE_NACL)
-  ExtensionTestMessageListener nacl_modules_loaded("nacl_modules_loaded", true);
+  ExtensionTestMessageListener ready_listener("ready", true);
   LaunchTestingApp();
-  extensions::ProcessManager* manager =
-      extensions::ProcessManager::Get(browser()->profile());
-  ImpulseCallbackCounter idle_impulse_counter(manager, extension()->id());
-  EXPECT_TRUE(nacl_modules_loaded.WaitUntilSatisfied());
+  EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
 
-  manager->SetKeepaliveImpulseDecrementCallbackForTesting(
-      idle_impulse_counter.SetGoalAndGetCallback(1));
-  nacl_modules_loaded.Reply("be idle");
-  idle_impulse_counter.Wait();
-#endif
+  // When the app calls chrome.test.sendMessage() the keepalive count stays
+  // incremented until the call completes (i.e. until we call Reply() below).
+  // So between WaitUntilSatisfied() and Reply(), we know that the count must
+  // be in the incremented state, and in this case that is the only
+  // contributor to the keepalive count.
+  EXPECT_EQ(1, manager->GetLazyKeepaliveCount(extension()));
+
+  ExtensionTestMessageListener created1_listener("created_module:1", true);
+  ready_listener.Reply("create_module");
+  EXPECT_TRUE(created1_listener.WaitUntilSatisfied());
+
+  // Now chrome.test.sendMessage() is incrementing the keepalive count, but
+  // there is also a Native Client module active, incrementing it again.
+  EXPECT_EQ(2, manager->GetLazyKeepaliveCount(extension()));
+
+  ExtensionTestMessageListener created2_listener("created_module:2", true);
+  created1_listener.Reply("create_module");
+  EXPECT_TRUE(created2_listener.WaitUntilSatisfied());
+
+  // Keepalive comes from chrome.test.sendMessage, plus two modules.
+  EXPECT_EQ(3, manager->GetLazyKeepaliveCount(extension()));
+
+  // Tear-down both modules.
+  ExtensionTestMessageListener destroyed1_listener("destroyed_module", true);
+  created2_listener.Reply("destroy_module");
+  EXPECT_TRUE(destroyed1_listener.WaitUntilSatisfied());
+  ExtensionTestMessageListener destroyed2_listener("destroyed_module", false);
+  destroyed1_listener.Reply("destroy_module");
+  EXPECT_TRUE(destroyed2_listener.WaitUntilSatisfied());
+
+  // Both modules are gone, and no sendMessage API reply is pending (since the
+  // last listener has the |will_reply| flag set to |false|).
+  EXPECT_EQ(0, manager->GetLazyKeepaliveCount(extension()));
 }
+
+// Verify that we can create a NaCl module by adding the <embed> to the
+// background page, without having to e.g. touch emebed.lastError to
+// trigger the module to load.
+// Disabled due to http://crbug.com/371059.
+IN_PROC_BROWSER_TEST_F(AppBackgroundPageNaClTest, DISABLED_CreateNaClModule) {
+  ExtensionTestMessageListener ready_listener("ready", true);
+  LaunchTestingApp();
+  EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
+
+  ExtensionTestMessageListener created_listener("created_module:1", false);
+  ready_listener.Reply("create_module_without_hack");
+  EXPECT_TRUE(created_listener.WaitUntilSatisfied());
+}
+
+#endif  //  !defined(DISABLE_NACL)

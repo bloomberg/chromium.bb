@@ -474,7 +474,6 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(ppapi::PpapiNaClPluginArgs)
   IPC_STRUCT_TRAITS_MEMBER(off_the_record)
   IPC_STRUCT_TRAITS_MEMBER(permissions)
-  IPC_STRUCT_TRAITS_MEMBER(keepalive_throttle_interval_milliseconds)
   IPC_STRUCT_TRAITS_MEMBER(switch_names)
   IPC_STRUCT_TRAITS_MEMBER(switch_values)
 IPC_STRUCT_TRAITS_END()
@@ -963,10 +962,7 @@ IPC_SYNC_MESSAGE_CONTROL2_1(PpapiMsg_PnaclTranslatorLink,
                             /* success status result */
                             bool)
 
-// Reports to the browser that a plugin has been active.
-IPC_MESSAGE_CONTROL0(PpapiHostMsg_Keepalive)
 
-// -----------------------------------------------------------------------------
 // These are from the plugin to the renderer.
 
 // Reply to PpapiMsg_CreateChannel. The handle will be NULL if the channel

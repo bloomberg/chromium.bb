@@ -77,7 +77,6 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
                               const std::string& value) override;
   MessageLoopShared* GetCurrentMessageLoop() override;
   base::TaskRunner* GetFileTaskRunner() override;
-  void MarkPluginIsActive() override;
 
   // Returns the channel for sending to the browser.
   IPC::Sender* GetBrowserSender();
@@ -149,19 +148,11 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
   void RegisterResourceMessageFilters(
       ppapi::proxy::PluginMessageFilter* plugin_filter);
 
-  // Interval to limit how many IPC messages are sent indicating that the plugin
-  // is active and should be kept alive. The value must be smaller than any
-  // threshold used to kill inactive plugins by the embedder host.
-  void set_keepalive_throttle_interval_milliseconds(unsigned i);
-
  private:
   class BrowserSender;
 
   // PpapiGlobals overrides.
   bool IsPluginGlobals() const override;
-
-  // Locks the proxy lock and releases the throttle on keepalive IPC messages.
-  void OnReleaseKeepaliveThrottle();
 
   static PluginGlobals* plugin_globals_;
 
@@ -194,14 +185,6 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
   scoped_refptr<ResourceReplyThreadRegistrar> resource_reply_thread_registrar_;
 
   scoped_refptr<UDPSocketFilter> udp_socket_filter_;
-
-  // Indicates activity by the plugin. Used to monitor when a plugin can be
-  // shutdown due to idleness. Current needs do not require differentiating
-  // between idle state between multiple instances, if any are active they are
-  // all considered active.
-  bool plugin_recently_active_;
-
-  unsigned keepalive_throttle_interval_milliseconds_;
 
   // Member variables should appear before the WeakPtrFactory, see weak_ptr.h.
   base::WeakPtrFactory<PluginGlobals> weak_factory_;

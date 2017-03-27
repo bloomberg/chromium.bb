@@ -10,10 +10,7 @@ namespace ppapi {
 // We must provide explicit definitions of these functions for builds on
 // Windows.
 PpapiNaClPluginArgs::PpapiNaClPluginArgs()
-    : off_the_record(false),
-      supports_dev_channel(false),
-      keepalive_throttle_interval_milliseconds(
-          kKeepaliveThrottleIntervalDefaultMilliseconds) {}
+    : off_the_record(false), supports_dev_channel(false) {}
 
 PpapiNaClPluginArgs::~PpapiNaClPluginArgs() {}
 

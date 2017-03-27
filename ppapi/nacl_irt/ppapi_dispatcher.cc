@@ -165,9 +165,6 @@ void PpapiDispatcher::OnMsgInitializeNaClDispatcher(
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
   logging::InitLogging(settings);
 
-  proxy::PluginGlobals::Get()->set_keepalive_throttle_interval_milliseconds(
-      args.keepalive_throttle_interval_milliseconds);
-
   // Tell the process-global GetInterface which interfaces it can return to the
   // plugin.
   proxy::InterfaceList::SetProcessGlobalPermissions(args.permissions);

@@ -137,11 +137,6 @@ GURL BrowserPpapiHostImpl::GetPluginURLForInstance(PP_Instance instance) {
   return it->second->renderer_data.plugin_url;
 }
 
-void BrowserPpapiHostImpl::SetOnKeepaliveCallback(
-    const BrowserPpapiHost::OnKeepaliveCallback& callback) {
-  on_keepalive_callback_ = callback;
-}
-
 bool BrowserPpapiHostImpl::IsPotentiallySecurePluginContext(
     PP_Instance instance) {
   auto it = instance_map_.find(instance);
@@ -208,7 +203,6 @@ bool BrowserPpapiHostImpl::HostMessageFilter::OnMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BrowserPpapiHostImpl::HostMessageFilter, msg)
   // Add necessary message handlers here.
-  IPC_MESSAGE_HANDLER(PpapiHostMsg_Keepalive, OnKeepalive)
   IPC_MESSAGE_HANDLER(PpapiHostMsg_LogInterfaceUsage,
                       OnHostMsgLogInterfaceUsage)
   IPC_MESSAGE_UNHANDLED(handled = ppapi_host_->OnMessageReceived(msg))
@@ -224,11 +218,6 @@ void BrowserPpapiHostImpl::HostMessageFilter::OnHostDestroyed() {
 
 BrowserPpapiHostImpl::HostMessageFilter::~HostMessageFilter() {}
 
-void BrowserPpapiHostImpl::HostMessageFilter::OnKeepalive() {
-  if (browser_ppapi_host_impl_)
-    browser_ppapi_host_impl_->OnKeepalive();
-}
-
 void BrowserPpapiHostImpl::HostMessageFilter::OnHostMsgLogInterfaceUsage(
     int hash) const {
   UMA_HISTOGRAM_SPARSE_SLOWLY("Pepper.InterfaceUsed", hash);
@@ -240,35 +229,6 @@ BrowserPpapiHostImpl::InstanceData::InstanceData(
 }
 
 BrowserPpapiHostImpl::InstanceData::~InstanceData() {
-}
-
-void BrowserPpapiHostImpl::OnKeepalive() {
-  // An instance has been active. The on_keepalive_callback_ will be
-  // used to permit the content embedder to handle this, e.g. by tracking
-  // activity and shutting down processes that go idle.
-  //
-  // Currently embedders do not need to distinguish between instances having
-  // different idle state, and thus this implementation handles all instances
-  // for this module together.
-
-  if (on_keepalive_callback_.is_null())
-    return;
-
-  BrowserPpapiHost::OnKeepaliveInstanceData instance_data(instance_map_.size());
-
-  auto instance = instance_map_.begin();
-  int i = 0;
-  while (instance != instance_map_.end()) {
-    instance_data[i].render_process_id =
-        instance->second->renderer_data.render_process_id;
-    instance_data[i].render_frame_id =
-        instance->second->renderer_data.render_frame_id;
-    instance_data[i].document_url =
-        instance->second->renderer_data.document_url;
-    ++instance;
-    ++i;
-  }
-  on_keepalive_callback_.Run(instance_data, profile_data_directory_);
 }
 
 }  // namespace content

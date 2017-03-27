@@ -197,9 +197,6 @@ void CloseFile(base::File file) {
 
 }  // namespace
 
-unsigned NaClProcessHost::keepalive_throttle_interval_milliseconds_ =
-    ppapi::kKeepaliveThrottleIntervalDefaultMilliseconds;
-
 NaClProcessHost::NaClProcessHost(
     const GURL& manifest_url,
     base::File nexe_file,
@@ -343,12 +340,6 @@ void NaClProcessHost::EarlyZygoteLaunch() {
   g_nacl_zygote = content::CreateZygote();
 }
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
-
-// static
-void NaClProcessHost::SetPpapiKeepAliveThrottleForTesting(
-    unsigned milliseconds) {
-  keepalive_throttle_interval_milliseconds_ = milliseconds;
-}
 
 void NaClProcessHost::Launch(
     NaClHostMessageFilter* nacl_host_message_filter,
@@ -930,14 +921,10 @@ bool NaClProcessHost::StartPPAPIProxy(
       nacl_host_message_filter_->render_process_id(),
       render_view_id_,
       profile_directory_));
-  ppapi_host_->SetOnKeepaliveCallback(
-      NaClBrowser::GetDelegate()->GetOnKeepaliveCallback());
 
   ppapi::PpapiNaClPluginArgs args;
   args.off_the_record = nacl_host_message_filter_->off_the_record();
   args.permissions = permissions_;
-  args.keepalive_throttle_interval_milliseconds =
-      keepalive_throttle_interval_milliseconds_;
   base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
   DCHECK(cmdline);
   std::string flag_whitelist[] = {

@@ -30,39 +30,6 @@ using content::BrowserThread;
 using content::BrowserPpapiHost;
 
 namespace extensions {
-namespace {
-
-// Handles an extension's NaCl process transitioning in or out of idle state by
-// relaying the state to the extension's process manager. See Chrome's
-// NaClBrowserDelegateImpl for another example.
-void OnKeepaliveOnUIThread(
-    const BrowserPpapiHost::OnKeepaliveInstanceData& instance_data,
-    const base::FilePath& profile_data_directory) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  // Only one instance will exist for NaCl embeds, even when more than one
-  // embed of the same plugin exists on the same page.
-  DCHECK(instance_data.size() == 1);
-  if (instance_data.size() < 1)
-    return;
-
-  ProcessManager::OnKeepaliveFromPlugin(instance_data[0].render_process_id,
-                                        instance_data[0].render_frame_id,
-                                        instance_data[0].document_url.host());
-}
-
-// Calls OnKeepaliveOnUIThread on UI thread.
-void OnKeepalive(const BrowserPpapiHost::OnKeepaliveInstanceData& instance_data,
-                 const base::FilePath& profile_data_directory) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(
-          &OnKeepaliveOnUIThread, instance_data, profile_data_directory));
-}
-
-}  // namespace
 
 ShellNaClBrowserDelegate::ShellNaClBrowserDelegate(BrowserContext* context)
     : browser_context_(context) {
@@ -180,11 +147,6 @@ bool ShellNaClBrowserDelegate::MapUrlToLocalFilePath(
 
   *file_path = resource_file_path;
   return true;
-}
-
-content::BrowserPpapiHost::OnKeepaliveCallback
-ShellNaClBrowserDelegate::GetOnKeepaliveCallback() {
-  return base::Bind(&OnKeepalive);
 }
 
 bool ShellNaClBrowserDelegate::IsNonSfiModeAllowed(

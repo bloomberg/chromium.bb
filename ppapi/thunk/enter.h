@@ -148,8 +148,8 @@ class PPAPI_THUNK_EXPORT EnterBase {
 
   // For Enter objects that need a resource, we'll store a pointer to the
   // Resource object so that we don't need to look it up more than once. For
-  // Enter objects with no resource, this will be NULL.
-  Resource* resource_;
+  // Enter objects with no resource, this will be null.
+  Resource* resource_ = nullptr;
 
  private:
   bool CallbackIsValid() const;
@@ -161,10 +161,10 @@ class PPAPI_THUNK_EXPORT EnterBase {
   void SetStateForCallbackError(bool report_error);
 
   // Holds the callback. For Enter objects that aren't given a callback, this
-  // will be NULL.
+  // will be null.
   scoped_refptr<TrackedCallback> callback_;
 
-  int32_t retval_;
+  int32_t retval_ = PP_OK;
 };
 
 }  // namespace subtle
@@ -195,7 +195,7 @@ class EnterResource
     if (resource_)
       object_ = resource_->GetAs<ResourceT>();
     else
-      object_ = NULL;
+      object_ = nullptr;
     // Validate the resource (note, if both are wrong, we will return
     // PP_ERROR_BADRESOURCE; last in wins).
     SetStateForResourceError(resource, resource_, object_, report_error);
@@ -265,16 +265,13 @@ class EnterInstanceAPI
       public subtle::EnterBase {
  public:
   explicit EnterInstanceAPI(PP_Instance instance)
-      : EnterBase(instance, ApiT::kSingletonResourceID),
-        functions_(NULL) {
+      : EnterBase(instance, ApiT::kSingletonResourceID) {
     if (resource_)
       functions_ = resource_->GetAs<ApiT>();
     SetStateForFunctionError(instance, functions_, true);
   }
-  EnterInstanceAPI(PP_Instance instance,
-                   const PP_CompletionCallback& callback)
-      : EnterBase(instance, ApiT::kSingletonResourceID, callback),
-        functions_(NULL) {
+  EnterInstanceAPI(PP_Instance instance, const PP_CompletionCallback& callback)
+      : EnterBase(instance, ApiT::kSingletonResourceID, callback) {
     if (resource_)
       functions_ = resource_->GetAs<ApiT>();
     SetStateForFunctionError(instance, functions_, true);
@@ -287,7 +284,7 @@ class EnterInstanceAPI
   ApiT* functions() const { return functions_; }
 
  private:
-  ApiT* functions_;
+  ApiT* functions_ = nullptr;
 };
 
 template<typename ApiT>

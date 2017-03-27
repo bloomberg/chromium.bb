@@ -66,8 +66,6 @@ bool PpapiGlobals::IsHostGlobals() const { return false; }
 
 bool PpapiGlobals::IsPluginGlobals() const { return false; }
 
-void PpapiGlobals::MarkPluginIsActive() {}
-
 // static
 PpapiGlobals* PpapiGlobals::GetThreadLocalPointer() {
   return tls_ppapi_globals_for_test.Pointer()->Get();
