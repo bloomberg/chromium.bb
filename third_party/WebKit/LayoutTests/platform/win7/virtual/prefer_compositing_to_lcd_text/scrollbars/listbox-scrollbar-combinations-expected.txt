@@ -3,16 +3,16 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutText {#text} at (165,0) size 4x17
+      LayoutText {#text} at (165,0) size 4x19
         text run at (165,0) width 4: " "
-      LayoutText {#text} at (334,0) size 4x17
+      LayoutText {#text} at (334,0) size 4x19
         text run at (334,0) width 4: " "
-      LayoutText {#text} at (503,0) size 4x17
+      LayoutText {#text} at (503,0) size 4x19
         text run at (503,0) width 4: " "
       LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (165,140) size 4x17
+      LayoutText {#text} at (165,140) size 4x19
         text run at (165,140) width 4: " "
-      LayoutText {#text} at (334,140) size 4x17
+      LayoutText {#text} at (334,140) size 4x19
         text run at (334,140) width 4: " "
       LayoutText {#text} at (0,0) size 0x0
 layer at (28,28) size 125x100 clip at (29,29) size 110x98

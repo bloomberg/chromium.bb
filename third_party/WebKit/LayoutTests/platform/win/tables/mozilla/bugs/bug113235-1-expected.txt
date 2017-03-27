@@ -1,43 +1,43 @@
-layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 12126
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 12131
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x12126 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutBlockFlow {HTML} at (0,0) size 785x12126
-    LayoutBlockFlow {BODY} at (8,8) size 769x12110
-      LayoutTable {TABLE} at (0,0) size 731x12110 [border: (1px outset #808080)]
-        LayoutTableSection {TBODY} at (1,1) size 729x12108
-          LayoutTableRow {TR} at (0,2) size 729x12104
-            LayoutTableCell {TD} at (2,2) size 12x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 8x17
-                text run at (2,2) width 8: "x"
-            LayoutTableCell {TD} at (16,2) size 711x12104.34 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+layer at (0,0) size 785x12131 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutBlockFlow {HTML} at (0,0) size 785x12131
+    LayoutBlockFlow {BODY} at (8,8) size 769x12115
+      LayoutTable {TABLE} at (0,0) size 730x12115 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 728x12113
+          LayoutTableRow {TR} at (0,2) size 728x12109
+            LayoutTableCell {TD} at (2,2) size 11x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 7x19
+                text run at (2,2) width 7: "x"
+            LayoutTableCell {TD} at (15,2) size 711x12109.34 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
               LayoutBlockFlow (anonymous) at (2,2) size 707x0
                 LayoutInline {FONT} at (0,0) size 0x0
                   LayoutText {#text} at (0,0) size 0x0
-              LayoutBlockFlow (anonymous) at (2,2) size 707x52
-                LayoutTable {TABLE} at (0,0) size 567x52 [border: (1px outset #808080)]
-                  LayoutTableSection {TBODY} at (1,1) size 565x50
-                    LayoutTableRow {TR} at (0,2) size 565x22
-                      LayoutTableCell {TD} at (2,2) size 112x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-                        LayoutText {#text} at (2,2) size 5x17
-                          text run at (2,2) width 5: " "
-                      LayoutTableCell {TD} at (116,2) size 447x4 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-                    LayoutTableRow {TR} at (0,26) size 565x22
-                      LayoutTableCell {TD} at (2,26) size 112x22 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-                        LayoutText {#text} at (2,2) size 108x17
-                          text run at (2,2) width 108: "Search again..."
-              LayoutBlockFlow (anonymous) at (2,54) size 707x16
+              LayoutBlockFlow (anonymous) at (2,2) size 707x54
+                LayoutTable {TABLE} at (0,0) size 564x54 [border: (1px outset #808080)]
+                  LayoutTableSection {TBODY} at (1,1) size 562x52
+                    LayoutTableRow {TR} at (0,2) size 562x23
+                      LayoutTableCell {TD} at (2,2) size 109x23 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+                        LayoutText {#text} at (2,2) size 4x18
+                          text run at (2,2) width 4: " "
+                      LayoutTableCell {TD} at (113,2) size 447x4 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+                    LayoutTableRow {TR} at (0,27) size 562x23
+                      LayoutTableCell {TD} at (2,27) size 109x23 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+                        LayoutText {#text} at (2,2) size 105x18
+                          text run at (2,2) width 105: "Search again..."
+              LayoutBlockFlow (anonymous) at (2,56) size 707x16
                 LayoutInline {FONT} at (0,0) size 707x16
                   LayoutText {#text} at (0,0) size 707x16
                     text run at (0,0) width 330: "This text node only exists once in the original document! "
                     text run at (330,0) width 304: "If it were a large collection of inlines, the page would "
                     text run at (634,0) width 73: "hang forever."
                   LayoutInline {A} at (0,0) size 0x0
-              LayoutBlockFlow (anonymous) at (2,86.17) size 707x12016.17
-                LayoutBlockFlow {H2} at (0,0) size 707x23
-                  LayoutInline {A} at (0,0) size 164x22
-                    LayoutText {#text} at (0,0) size 164x22
-                      text run at (0,0) width 164: "Table of Contents"
-                LayoutBlockFlow {P} at (0,39.17) size 707x160
+              LayoutBlockFlow (anonymous) at (2,88.17) size 707x12019.17
+                LayoutBlockFlow {H2} at (0,0) size 707x25
+                  LayoutInline {A} at (0,0) size 168x24
+                    LayoutText {#text} at (0,0) size 168x24
+                      text run at (0,0) width 168: "Table of Contents"
+                LayoutBlockFlow {P} at (0,41.17) size 707x160
                   LayoutInline {B} at (0,0) size 76x16
                     LayoutInline {A} at (0,0) size 76x16 [color=#0000EE]
                       LayoutText {#text} at (0,0) size 76x16
@@ -90,7 +90,7 @@ layer at (0,0) size 785x12126 backgroundClip at (0,0) size 785x600 clip at (0,0)
                     LayoutText {#text} at (0,144) size 215x16
                       text run at (0,144) width 215: "Related Documentation for This Book"
                   LayoutText {#text} at (0,0) size 0x0
-                LayoutBlockFlow {P} at (0,212.17) size 707x1056
+                LayoutBlockFlow {P} at (0,214.17) size 707x1056
                   LayoutInline {B} at (0,0) size 58x16
                     LayoutInline {A} at (0,0) size 58x16 [color=#0000EE]
                       LayoutText {#text} at (0,0) size 58x16
@@ -479,7 +479,7 @@ layer at (0,0) size 785x12126 backgroundClip at (0,0) size 785x600 clip at (0,0)
                     LayoutText {#text} at (0,1040) size 98x16
                       text run at (0,1040) width 98: "Table Collocation"
                   LayoutText {#text} at (0,0) size 0x0
-                LayoutBlockFlow {P} at (0,1281.17) size 707x2128
+                LayoutBlockFlow {P} at (0,1283.17) size 707x2128
                   LayoutInline {B} at (0,0) size 126x16
                     LayoutInline {A} at (0,0) size 126x16 [color=#0000EE]
                       LayoutText {#text} at (0,0) size 126x16
@@ -1270,7 +1270,7 @@ layer at (0,0) size 785x12126 backgroundClip at (0,0) size 785x600 clip at (0,0)
                     LayoutText {#text} at (0,2112) size 58x16
                       text run at (0,2112) width 58: "Examples"
                   LayoutText {#text} at (0,0) size 0x0
-                LayoutBlockFlow {P} at (0,3422.17) size 707x2064
+                LayoutBlockFlow {P} at (0,3424.17) size 707x2064
                   LayoutInline {B} at (0,0) size 61x16
                     LayoutInline {A} at (0,0) size 61x16 [color=#0000EE]
                       LayoutText {#text} at (0,0) size 61x16
@@ -2037,7 +2037,7 @@ layer at (0,0) size 785x12126 backgroundClip at (0,0) size 785x600 clip at (0,0)
                     LayoutText {#text} at (0,2048) size 135x16
                       text run at (0,2048) width 135: "User-Defined Functions"
                   LayoutText {#text} at (0,0) size 0x0
-                LayoutBlockFlow {P} at (0,5499.17) size 707x368
+                LayoutBlockFlow {P} at (0,5501.17) size 707x368
                   LayoutInline {B} at (0,0) size 49x16
                     LayoutInline {A} at (0,0) size 49x16 [color=#0000EE]
                       LayoutText {#text} at (0,0) size 49x16
@@ -2168,7 +2168,7 @@ layer at (0,0) size 785x12126 backgroundClip at (0,0) size 785x600 clip at (0,0)
                     LayoutText {#text} at (0,352) size 184x16
                       text run at (0,352) width 184: "Examples of a select-statement"
                   LayoutText {#text} at (0,0) size 0x0
-                LayoutBlockFlow {P} at (0,5880.17) size 707x1888
+                LayoutBlockFlow {P} at (0,5882.17) size 707x1888
                   LayoutInline {B} at (0,0) size 102x16
                     LayoutInline {A} at (0,0) size 102x16 [color=#0000EE]
                       LayoutText {#text} at (0,0) size 102x16
@@ -2869,7 +2869,7 @@ layer at (0,0) size 785x12126 backgroundClip at (0,0) size 785x600 clip at (0,0)
                     LayoutText {#text} at (0,1872) size 76x16
                       text run at (0,1872) width 76: "WHENEVER"
                   LayoutText {#text} at (0,0) size 0x0
-                LayoutBlockFlow {P} at (0,7781.17) size 707x320
+                LayoutBlockFlow {P} at (0,7783.17) size 707x320
                   LayoutInline {B} at (0,0) size 103x16
                     LayoutInline {A} at (0,0) size 103x16 [color=#0000EE]
                       LayoutText {#text} at (0,0) size 103x16
@@ -2982,13 +2982,13 @@ layer at (0,0) size 785x12126 backgroundClip at (0,0) size 785x600 clip at (0,0)
                     LayoutText {#text} at (0,304) size 105x16
                       text run at (0,304) width 105: "WHILE Statement"
                   LayoutText {#text} at (0,0) size 0x0
-                LayoutBlockFlow {P} at (0,8114.17) size 707x16
+                LayoutBlockFlow {P} at (0,8116.17) size 707x16
                   LayoutInline {B} at (0,0) size 151x16
                     LayoutInline {A} at (0,0) size 151x16 [color=#0000EE]
                       LayoutText {#text} at (0,0) size 151x16
                         text run at (0,0) width 151: "Appendix A. SQL Limits"
                   LayoutBR {BR} at (151,13) size 0x0
-                LayoutBlockFlow {P} at (0,8143.17) size 707x96
+                LayoutBlockFlow {P} at (0,8145.17) size 707x96
                   LayoutInline {B} at (0,0) size 276x16
                     LayoutInline {A} at (0,0) size 276x16 [color=#0000EE]
                       LayoutText {#text} at (0,0) size 276x16
@@ -3017,7 +3017,7 @@ layer at (0,0) size 785x12126 backgroundClip at (0,0) size 785x600 clip at (0,0)
                     LayoutText {#text} at (0,80) size 324x16
                       text run at (0,80) width 324: "DB2 Enterprise - Extended Edition Usage of the SQLCA"
                   LayoutText {#text} at (0,0) size 0x0
-                LayoutBlockFlow {P} at (0,8252.17) size 707x176
+                LayoutBlockFlow {P} at (0,8254.17) size 707x176
                   LayoutInline {B} at (0,0) size 268x16
                     LayoutInline {A} at (0,0) size 268x16 [color=#0000EE]
                       LayoutText {#text} at (0,0) size 268x16
@@ -3076,7 +3076,7 @@ layer at (0,0) size 785x12126 backgroundClip at (0,0) size 785x600 clip at (0,0)
                     LayoutText {#text} at (0,160) size 152x16
                       text run at (0,160) width 152: "SQLLEN Field for Decimal"
                   LayoutText {#text} at (0,0) size 0x0
-                LayoutBlockFlow {P} at (0,8441.17) size 707x1168
+                LayoutBlockFlow {P} at (0,8443.17) size 707x1168
                   LayoutInline {B} at (0,0) size 173x16
                     LayoutInline {A} at (0,0) size 173x16 [color=#0000EE]
                       LayoutText {#text} at (0,0) size 173x16
@@ -3507,7 +3507,7 @@ layer at (0,0) size 785x12126 backgroundClip at (0,0) size 785x600 clip at (0,0)
                     LayoutText {#text} at (0,1152) size 109x16
                       text run at (0,1152) width 109: "SYSSTAT.TABLES"
                   LayoutText {#text} at (0,0) size 0x0
-                LayoutBlockFlow {P} at (0,9622.17) size 707x176
+                LayoutBlockFlow {P} at (0,9624.17) size 707x176
                   LayoutInline {B} at (0,0) size 367x16
                     LayoutInline {A} at (0,0) size 367x16 [color=#0000EE]
                       LayoutText {#text} at (0,0) size 367x16
@@ -3566,7 +3566,7 @@ layer at (0,0) size 785x12126 backgroundClip at (0,0) size 785x600 clip at (0,0)
                     LayoutText {#text} at (0,160) size 142x16
                       text run at (0,160) width 142: "OBJCAT.TRANSFORMS"
                   LayoutText {#text} at (0,0) size 0x0
-                LayoutBlockFlow {P} at (0,9811.17) size 707x256
+                LayoutBlockFlow {P} at (0,9813.17) size 707x256
                   LayoutInline {B} at (0,0) size 201x16
                     LayoutInline {A} at (0,0) size 201x16 [color=#0000EE]
                       LayoutText {#text} at (0,0) size 201x16
@@ -3655,7 +3655,7 @@ layer at (0,0) size 785x12126 backgroundClip at (0,0) size 785x600 clip at (0,0)
                     LayoutText {#text} at (0,240) size 184x16
                       text run at (0,240) width 184: "Considerations and Restrictions"
                   LayoutText {#text} at (0,0) size 0x0
-                LayoutBlockFlow {P} at (0,10080.17) size 707x416
+                LayoutBlockFlow {P} at (0,10082.17) size 707x416
                   LayoutInline {B} at (0,0) size 241x16
                     LayoutInline {A} at (0,0) size 241x16 [color=#0000EE]
                       LayoutText {#text} at (0,0) size 241x16
@@ -3804,7 +3804,7 @@ layer at (0,0) size 785x12126 backgroundClip at (0,0) size 785x600 clip at (0,0)
                     LayoutText {#text} at (0,400) size 93x16
                       text run at (0,400) width 93: "Walker Resume"
                   LayoutText {#text} at (0,0) size 0x0
-                LayoutBlockFlow {P} at (0,10509.17) size 707x96
+                LayoutBlockFlow {P} at (0,10511.17) size 707x96
                   LayoutInline {B} at (0,0) size 379x16
                     LayoutInline {A} at (0,0) size 379x16 [color=#0000EE]
                       LayoutText {#text} at (0,0) size 379x16
@@ -3833,19 +3833,19 @@ layer at (0,0) size 785x12126 backgroundClip at (0,0) size 785x600 clip at (0,0)
                     LayoutText {#text} at (0,80) size 196x16
                       text run at (0,80) width 196: "ISO/ANS SQL92 Reserved Words"
                   LayoutText {#text} at (0,0) size 0x0
-                LayoutBlockFlow {P} at (0,10618.17) size 707x16
+                LayoutBlockFlow {P} at (0,10620.17) size 707x16
                   LayoutInline {B} at (0,0) size 272x16
                     LayoutInline {A} at (0,0) size 272x16 [color=#0000EE]
                       LayoutText {#text} at (0,0) size 272x16
                         text run at (0,0) width 272: "Appendix I. Comparison of Isolation Levels"
                   LayoutBR {BR} at (272,13) size 0x0
-                LayoutBlockFlow {P} at (0,10647.17) size 707x16
+                LayoutBlockFlow {P} at (0,10649.17) size 707x16
                   LayoutInline {B} at (0,0) size 322x16
                     LayoutInline {A} at (0,0) size 322x16 [color=#0000EE]
                       LayoutText {#text} at (0,0) size 322x16
                         text run at (0,0) width 322: "Appendix J. Interaction of Triggers and Constraints"
                   LayoutBR {BR} at (321,13) size 1x0
-                LayoutBlockFlow {P} at (0,10676.17) size 707x336
+                LayoutBlockFlow {P} at (0,10678.17) size 707x336
                   LayoutInline {B} at (0,0) size 275x16
                     LayoutInline {A} at (0,0) size 275x16 [color=#0000EE]
                       LayoutText {#text} at (0,0) size 275x16
@@ -3964,13 +3964,13 @@ layer at (0,0) size 785x12126 backgroundClip at (0,0) size 785x600 clip at (0,0)
                     LayoutText {#text} at (0,320) size 222x16
                       text run at (0,320) width 222: "ADVISE_WORKLOAD Table Definition"
                   LayoutText {#text} at (0,0) size 0x0
-                LayoutBlockFlow {P} at (0,11025.17) size 707x16
+                LayoutBlockFlow {P} at (0,11027.17) size 707x16
                   LayoutInline {B} at (0,0) size 232x16
                     LayoutInline {A} at (0,0) size 232x16 [color=#0000EE]
                       LayoutText {#text} at (0,0) size 232x16
                         text run at (0,0) width 232: "Appendix L. Explain Register Values"
                   LayoutBR {BR} at (231,13) size 1x0
-                LayoutBlockFlow {P} at (0,11054.17) size 707x80
+                LayoutBlockFlow {P} at (0,11056.17) size 707x80
                   LayoutInline {B} at (0,0) size 314x16
                     LayoutInline {A} at (0,0) size 314x16 [color=#0000EE]
                       LayoutText {#text} at (0,0) size 314x16
@@ -3993,7 +3993,7 @@ layer at (0,0) size 785x12126 backgroundClip at (0,0) size 785x600 clip at (0,0)
                     LayoutText {#text} at (0,64) size 169x16
                       text run at (0,64) width 169: "Example 3: Controlling Depth"
                   LayoutText {#text} at (0,0) size 0x0
-                LayoutBlockFlow {P} at (0,11147.17) size 707x80
+                LayoutBlockFlow {P} at (0,11149.17) size 707x80
                   LayoutInline {B} at (0,0) size 191x16
                     LayoutInline {A} at (0,0) size 191x16 [color=#0000EE]
                       LayoutText {#text} at (0,0) size 191x16
@@ -4016,7 +4016,7 @@ layer at (0,0) size 785x12126 backgroundClip at (0,0) size 785x600 clip at (0,0)
                     LayoutText {#text} at (0,64) size 177x16
                       text run at (0,64) width 177: "Querying the Exception Tables"
                   LayoutText {#text} at (0,0) size 0x0
-                LayoutBlockFlow {P} at (0,11240.17) size 707x352
+                LayoutBlockFlow {P} at (0,11242.17) size 707x352
                   LayoutInline {B} at (0,0) size 428x16
                     LayoutInline {A} at (0,0) size 428x16 [color=#0000EE]
                       LayoutText {#text} at (0,0) size 428x16
@@ -4141,13 +4141,13 @@ layer at (0,0) size 785x12126 backgroundClip at (0,0) size 785x600 clip at (0,0)
                     LayoutText {#text} at (0,336) size 63x16
                       text run at (0,336) width 63: "PREPARE"
                   LayoutText {#text} at (0,0) size 0x0
-                LayoutBlockFlow {P} at (0,11605.17) size 707x16
+                LayoutBlockFlow {P} at (0,11607.17) size 707x16
                   LayoutInline {B} at (0,0) size 294x16
                     LayoutInline {A} at (0,0) size 294x16 [color=#0000EE]
                       LayoutText {#text} at (0,0) size 294x16
                         text run at (0,0) width 294: "Appendix P. BNF Specifications for DATALINKs"
                   LayoutBR {BR} at (293,13) size 1x0
-                LayoutBlockFlow {P} at (0,11634.17) size 707x192
+                LayoutBlockFlow {P} at (0,11636.17) size 707x192
                   LayoutInline {B} at (0,0) size 220x16
                     LayoutInline {A} at (0,0) size 220x16 [color=#0000EE]
                       LayoutText {#text} at (0,0) size 220x16
@@ -4212,7 +4212,7 @@ layer at (0,0) size 785x12126 backgroundClip at (0,0) size 785x600 clip at (0,0)
                     LayoutText {#text} at (0,176) size 166x16
                       text run at (0,176) width 166: "Searching Information Online"
                   LayoutText {#text} at (0,0) size 0x0
-                LayoutBlockFlow {P} at (0,11839.17) size 707x48
+                LayoutBlockFlow {P} at (0,11841.17) size 707x48
                   LayoutInline {B} at (0,0) size 128x16
                     LayoutInline {A} at (0,0) size 128x16 [color=#0000EE]
                       LayoutText {#text} at (0,0) size 128x16
@@ -4223,13 +4223,13 @@ layer at (0,0) size 785x12126 backgroundClip at (0,0) size 785x600 clip at (0,0)
                     LayoutText {#text} at (0,32) size 68x16
                       text run at (0,32) width 68: "Trademarks"
                   LayoutText {#text} at (0,0) size 0x0
-                LayoutBlockFlow {P} at (0,11900.17) size 707x16
+                LayoutBlockFlow {P} at (0,11902.17) size 707x16
                   LayoutInline {B} at (0,0) size 36x16
                     LayoutInline {A} at (0,0) size 36x16 [color=#0000EE]
                       LayoutText {#text} at (0,0) size 36x16
                         text run at (0,0) width 36: "Index"
                   LayoutBR {BR} at (36,13) size 0x0
-                LayoutBlockFlow {P} at (0,11929.17) size 707x48
+                LayoutBlockFlow {P} at (0,11931.17) size 707x48
                   LayoutInline {B} at (0,0) size 96x16
                     LayoutInline {A} at (0,0) size 96x16 [color=#0000EE]
                       LayoutText {#text} at (0,0) size 96x16
@@ -4242,15 +4242,15 @@ layer at (0,0) size 785x12126 backgroundClip at (0,0) size 785x600 clip at (0,0)
                   LayoutText {#text} at (0,0) size 0x0
                   LayoutInline {A} at (0,0) size 0x0
                   LayoutText {#text} at (0,0) size 0x0
-                LayoutTable {TABLE} at (0,11990.17) size 26x26
-                  LayoutTableSection {TBODY} at (0,0) size 26x26
-                    LayoutTableRow {TR} at (0,2) size 26x0
-                    LayoutTableRow {TR} at (0,4) size 26x20
-                      LayoutTableCell {TD} at (2,4) size 10x20 [r=1 c=0 rs=1 cs=1]
-                        LayoutText {#text} at (1,1) size 8x17
-                          text run at (1,1) width 8: "x"
-                      LayoutTableCell {TD} at (14,4) size 10x20 [r=1 c=1 rs=1 cs=1]
-                        LayoutText {#text} at (1,1) size 8x17
-                          text run at (1,1) width 8: "x"
-              LayoutBlockFlow (anonymous) at (2,12102.34) size 707x0
+                LayoutTable {TABLE} at (0,11992.17) size 24x27
+                  LayoutTableSection {TBODY} at (0,0) size 24x27
+                    LayoutTableRow {TR} at (0,2) size 24x0
+                    LayoutTableRow {TR} at (0,4) size 24x21
+                      LayoutTableCell {TD} at (2,4) size 9x21 [r=1 c=0 rs=1 cs=1]
+                        LayoutText {#text} at (1,1) size 7x18
+                          text run at (1,1) width 7: "x"
+                      LayoutTableCell {TD} at (13,4) size 9x21 [r=1 c=1 rs=1 cs=1]
+                        LayoutText {#text} at (1,1) size 7x18
+                          text run at (1,1) width 7: "x"
+              LayoutBlockFlow (anonymous) at (2,12107.34) size 707x0
                 LayoutInline {FONT} at (0,0) size 0x0

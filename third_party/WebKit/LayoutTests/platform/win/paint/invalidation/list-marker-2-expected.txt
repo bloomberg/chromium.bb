@@ -8,17 +8,17 @@
       "paintInvalidations": [
         {
           "object": "LayoutListItem LI",
-          "rect": [48, 94, 744, 104],
+          "rect": [48, 100, 744, 105],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutListMarker (anonymous)",
-          "rect": [31, 180, 7, 17],
+          "rect": [30, 185, 7, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutListMarker (anonymous)",
-          "rect": [31, 130, 7, 17],
+          "rect": [30, 135, 7, 19],
           "reason": "forced by layout"
         }
       ]

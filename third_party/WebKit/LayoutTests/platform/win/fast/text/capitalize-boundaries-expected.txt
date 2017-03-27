@@ -290,9 +290,9 @@ layer at (0,0) size 785x1279 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutTableCell {TD} at (58,215) size 709x29 [border: (1px solid #EEEEEE)] [r=5 c=1 rs=1 cs=1]
               LayoutText {#text} at (2,6) size 228x17
                 text run at (2,6) width 228: "Quelqu'un L\x{2019}amour T'appelles\x{2011}Tu 3"
-              LayoutInline {SUP} at (0,0) size 23x15
-                LayoutText {#text} at (229,2) size 23x15
-                  text run at (229,2) width 23: "eme"
+              LayoutInline {SUP} at (0,0) size 24x15
+                LayoutText {#text} at (229,2) size 24x15
+                  text run at (229,2) width 24: "eme"
           LayoutTableRow {TR} at (0,246) size 769x29
             LayoutTableCell {TH} at (2,249) size 54x22 [bgcolor=#F8F8F8] [border: (1px solid #EEEEEE)] [r=6 c=0 rs=1 cs=1]
               LayoutText {#text} at (18,2) size 18x17

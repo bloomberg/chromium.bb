@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutInline SPAN id='target'",
-          "rect": [6, 6, 204, 57],
+          "rect": [6, 6, 204, 58],
           "reason": "style change"
         }
       ]

@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutText #text",
-          "rect": [8, 42, 775, 125],
+          "rect": [8, 44, 781, 119],
           "reason": "full"
         }
       ]
@@ -24,27 +24,23 @@
       "reason": "full"
     },
     {
-      "object": "InlineTextBox 'pellentesque cursus. Proin vitae nulla. Vivamus in ipsum. Etiam mi. Nam malesuada purus in sem. Sed eget elit vel erat'",
+      "object": "InlineTextBox 'pellentesque cursus. Proin vitae nulla. Vivamus in ipsum. Etiam mi. Nam malesuada purus in sem. Sed eget elit vel erat laoreet'",
       "reason": "full"
     },
     {
-      "object": "InlineTextBox 'laoreet feugiat. Phasellus mollis pulvinar mi. Etiam ut neque sed eros egestas laoreet. Vestibulum ullamcorper, nulla non'",
+      "object": "InlineTextBox 'feugiat. Phasellus mollis pulvinar mi. Etiam ut neque sed eros egestas laoreet. Vestibulum ullamcorper, nulla non feugiat molestie, mi'",
       "reason": "full"
     },
     {
-      "object": "InlineTextBox 'feugiat molestie, mi lorem bibendum leo, ac gravida orci nunc nec nulla. Nunc nunc lorem, rhoncus et, rutrum ac,'",
+      "object": "InlineTextBox 'lorem bibendum leo, ac gravida orci nunc nec nulla. Nunc nunc lorem, rhoncus et, rutrum ac, fermentum ut, tortor. Sed rhoncus.'",
       "reason": "full"
     },
     {
-      "object": "InlineTextBox 'fermentum ut, tortor. Sed rhoncus. Quisque enim metus, luctus tincidunt, vestibulum eu, vestibulum eu, libero. Mauris'",
+      "object": "InlineTextBox 'Quisque enim metus, luctus tincidunt, vestibulum eu, vestibulum eu, libero. Mauris sagittis aliquam nunc. Nullam pharetra molestie'",
       "reason": "full"
     },
     {
-      "object": "InlineTextBox 'sagittis aliquam nunc. Nullam pharetra molestie eros. Donec tempus purus ut ligula. Phasellus non nisl. Etiam eu mauris.'",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'Curabitur a velit.'",
+      "object": "InlineTextBox 'eros. Donec tempus purus ut ligula. Phasellus non nisl. Etiam eu mauris. Curabitur a velit.'",
       "reason": "full"
     }
   ]

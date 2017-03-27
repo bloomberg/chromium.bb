@@ -3,16 +3,16 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
-      LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutInline {<pseudo:before>} at (0,0) size 56x17
-          LayoutInline {<pseudo:first-letter>} at (0,0) size 9x17 [color=#FFD800]
-            LayoutTextFragment (anonymous) at (0,0) size 9x17
+      LayoutBlockFlow {P} at (0,0) size 784x20
+        LayoutInline {<pseudo:before>} at (0,0) size 51x19
+          LayoutInline {<pseudo:first-letter>} at (0,0) size 9x19 [color=#FFD800]
+            LayoutTextFragment (anonymous) at (0,0) size 9x19
               text run at (0,0) width 9: "S"
-          LayoutTextFragment (anonymous) at (8,0) size 48x17
-            text run at (8,0) width 48: "pecial: "
-        LayoutText {#text} at (55,0) size 604x17
-          text run at (55,0) width 223: "The \"S\" to the left should be gold. "
-          text run at (277,0) width 382: "This is testing :before used in conjunction with :first-letter. "
-        LayoutInline {<pseudo:after>} at (0,0) size 66x17
-          LayoutTextFragment (anonymous) at (658,0) size 66x17
-            text run at (658,0) width 66: "[The End]"
+          LayoutTextFragment (anonymous) at (9,0) size 42x19
+            text run at (9,0) width 42: "pecial: "
+        LayoutText {#text} at (51,0) size 553x19
+          text run at (51,0) width 206: "The \"S\" to the left should be gold. "
+          text run at (257,0) width 347: "This is testing :before used in conjunction with :first-letter. "
+        LayoutInline {<pseudo:after>} at (0,0) size 62x19
+          LayoutTextFragment (anonymous) at (603,0) size 62x19
+            text run at (603,0) width 62: "[The End]"

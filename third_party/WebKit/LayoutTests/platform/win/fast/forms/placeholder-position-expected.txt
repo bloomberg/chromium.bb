@@ -6,18 +6,18 @@ layer at (0,0) size 800x600
       LayoutTextControl {INPUT} at (0,0) size 175x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutFlexibleBox {DIV} at (3,3) size 169x16
           LayoutBlockFlow {DIV} at (0,0) size 156x16
-      LayoutText {#text} at (175,2) size 4x17
-        text run at (175,2) width 4: " "
+      LayoutText {#text} at (175,1) size 4x19
+        text run at (175,1) width 4: " "
       LayoutBR {BR} at (179,16) size 0x0
       LayoutTextControl {INPUT} at (0,22) size 103x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-      LayoutText {#text} at (103,24) size 4x17
-        text run at (103,24) width 4: " "
+      LayoutText {#text} at (103,23) size 4x19
+        text run at (103,23) width 4: " "
       LayoutTextControl {INPUT} at (107,22) size 103x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-      LayoutText {#text} at (210,24) size 4x17
-        text run at (210,24) width 4: " "
+      LayoutText {#text} at (210,23) size 4x19
+        text run at (210,23) width 4: " "
       LayoutTextControl {INPUT} at (214,22) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-      LayoutText {#text} at (387,24) size 4x17
-        text run at (387,24) width 4: " "
+      LayoutText {#text} at (387,23) size 4x19
+        text run at (387,23) width 4: " "
       LayoutBR {BR} at (391,38) size 0x0
       LayoutTextControl {INPUT} at (0,44) size 175x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutFlexibleBox {DIV} at (3,3) size 169x16
@@ -34,29 +34,29 @@ layer at (0,0) size 800x600
       LayoutTextControl {INPUT} at (5,214) size 183x29 [bgcolor=#FFFFFF] [border: (5px solid #000000)]
       LayoutBR {BR} at (193,234) size 0x0
       LayoutTextControl {INPUT} at (0,248) size 173x31 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-      LayoutText {#text} at (173,254) size 4x17
-        text run at (173,254) width 4: " "
+      LayoutText {#text} at (173,253) size 4x19
+        text run at (173,253) width 4: " "
       LayoutTextControl {INPUT} at (177,248) size 173x31 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-      LayoutText {#text} at (350,254) size 4x17
-        text run at (350,254) width 4: " "
+      LayoutText {#text} at (350,253) size 4x19
+        text run at (350,253) width 4: " "
       LayoutTextControl {INPUT} at (354,251) size 173x25 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-      LayoutText {#text} at (527,254) size 4x17
-        text run at (527,254) width 4: " "
+      LayoutText {#text} at (527,253) size 4x19
+        text run at (527,253) width 4: " "
       LayoutTextControl {INPUT} at (531,251) size 173x25 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       LayoutText {#text} at (0,0) size 0x0
       LayoutTextControl {INPUT} at (0,279) size 173x25 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-      LayoutText {#text} at (173,282) size 4x17
-        text run at (173,282) width 4: " "
+      LayoutText {#text} at (173,281) size 4x19
+        text run at (173,281) width 4: " "
       LayoutBR {BR} at (0,0) size 0x0
       LayoutTextControl {INPUT} at (0,304) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-      LayoutText {#text} at (173,306) size 4x17
-        text run at (173,306) width 4: " "
+      LayoutText {#text} at (173,305) size 4x19
+        text run at (173,305) width 4: " "
       LayoutTextControl {INPUT} at (177,304) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-      LayoutText {#text} at (350,306) size 4x17
-        text run at (350,306) width 4: " "
+      LayoutText {#text} at (350,305) size 4x19
+        text run at (350,305) width 4: " "
       LayoutTextControl {INPUT} at (354,304) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-      LayoutText {#text} at (527,306) size 4x17
-        text run at (527,306) width 4: " "
+      LayoutText {#text} at (527,305) size 4x19
+        text run at (527,305) width 4: " "
       LayoutBR {BR} at (531,320) size 0x0
       LayoutBR {BR} at (173,356) size 0x0
 layer at (11,11) size 156x16

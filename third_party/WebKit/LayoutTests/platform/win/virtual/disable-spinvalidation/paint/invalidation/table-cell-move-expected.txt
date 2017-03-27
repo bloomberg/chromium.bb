@@ -1,0 +1,69 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [8, 206, 60, 180],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [8, 146, 60, 180],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [8, 326, 60, 60],
+          "reason": "became invisible"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [8, 266, 60, 60],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [8, 206, 60, 60],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [8, 146, 60, 60],
+          "reason": "became visible"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "became visible"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "became invisible"
+    },
+    {
+      "object": "LayoutTableCell TD id='s'",
+      "reason": "location change"
+    }
+  ]
+}
+

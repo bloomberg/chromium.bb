@@ -3,24 +3,24 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-layer at (30,500) size 345x72
-  LayoutBlockFlow (positioned) {DIV} at (30,500) size 344.84x72
-    LayoutInline {SPAN} at (0,0) size 305x17 [color=#008000]
-      LayoutText {#text} at (0,0) size 305x17
-        text run at (0,0) width 305: "PASS: event at (158, 83) hit card at offset (2, 2)"
-    LayoutBR {BR} at (304,14) size 1x0
-    LayoutInline {SPAN} at (0,0) size 329x17 [color=#008000]
-      LayoutText {#text} at (0,18) size 329x17
-        text run at (0,18) width 329: "PASS: event at (309, 112) hit card at offset (198, 2)"
-    LayoutBR {BR} at (328,32) size 1x0
-    LayoutInline {SPAN} at (0,0) size 329x17 [color=#008000]
-      LayoutText {#text} at (0,36) size 329x17
-        text run at (0,36) width 329: "PASS: event at (158, 338) hit card at offset (2, 198)"
-    LayoutBR {BR} at (328,50) size 1x0
-    LayoutInline {SPAN} at (0,0) size 345x17 [color=#008000]
-      LayoutText {#text} at (0,54) size 345x17
-        text run at (0,54) width 345: "PASS: event at (309, 308) hit card at offset (198, 198)"
-    LayoutBR {BR} at (344,68) size 1x0
+layer at (30,500) size 331x80
+  LayoutBlockFlow (positioned) {DIV} at (30,500) size 331.25x80
+    LayoutInline {SPAN} at (0,0) size 292x19 [color=#008000]
+      LayoutText {#text} at (0,0) size 292x19
+        text run at (0,0) width 292: "PASS: event at (158, 83) hit card at offset (2, 2)"
+    LayoutBR {BR} at (291,15) size 1x0
+    LayoutInline {SPAN} at (0,0) size 315x19 [color=#008000]
+      LayoutText {#text} at (0,20) size 315x19
+        text run at (0,20) width 315: "PASS: event at (309, 112) hit card at offset (198, 2)"
+    LayoutBR {BR} at (314,35) size 1x0
+    LayoutInline {SPAN} at (0,0) size 316x19 [color=#008000]
+      LayoutText {#text} at (0,40) size 316x19
+        text run at (0,40) width 316: "PASS: event at (158, 338) hit card at offset (2, 198)"
+    LayoutBR {BR} at (315,55) size 1x0
+    LayoutInline {SPAN} at (0,0) size 332x19 [color=#008000]
+      LayoutText {#text} at (0,60) size 332x19
+        text run at (0,60) width 332: "PASS: event at (309, 308) hit card at offset (198, 198)"
+    LayoutBR {BR} at (331,75) size 1x0
 layer at (8,8) size 402x402
   LayoutBlockFlow (positioned) {DIV} at (8,8) size 402x402 [border: (1px solid #000000)]
 layer at (59,59) size 302x302

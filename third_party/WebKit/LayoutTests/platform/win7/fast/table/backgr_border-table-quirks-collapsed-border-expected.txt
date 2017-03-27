@@ -11,8 +11,8 @@ layer at (0,0) size 800x600
           text run at (0,0) width 656: "There should be three aqua stripes just inside the bottom and right table borders."
       LayoutTable {TABLE} at (0,61.20) size 586x427 [color=#FFFFFF] [bgcolor=#000000] [border: (6px dotted #FFFFFF)]
         LayoutBlockFlow {CAPTION} at (0,0) size 586x27
-          LayoutText {#text} at (128,0) size 330x27
-            text run at (128,0) width 330: "With 'border-collapse: collapse'"
+          LayoutText {#text} at (130,0) size 326x27
+            text run at (130,0) width 326: "With 'border-collapse: collapse'"
         LayoutTableCol {COLGROUP} at (0,0) size 0x0
           LayoutTableCol {COL} at (0,0) size 0x0
           LayoutTableCol {COL} at (0,0) size 0x0
@@ -21,50 +21,50 @@ layer at (0,0) size 800x600
           LayoutTableCol {COL} at (0,0) size 0x0
         LayoutTableSection {THEAD} at (2,33) size 581x96
           LayoutTableRow {TR} at (0,0) size 581x96
-            LayoutTableCell {TH} at (0,31) size 137x33 [border: (3px dotted #FFFFFF)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (44,4) size 46x21
-                text run at (44,4) width 46: "TH A"
-            LayoutTableCell {TH} at (137,29) size 207x37 [border: (7px dotted #FFFFFF)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (81,8) size 46x21
+            LayoutTableCell {TH} at (0,31) size 137x34 [border: (3px dotted #FFFFFF)] [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (45,4) size 44x22
+                text run at (45,4) width 44: "TH A"
+            LayoutTableCell {TH} at (137,29) size 207x38 [border: (7px dotted #FFFFFF)] [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (81,8) size 46x22
                 text run at (81,8) width 46: "TH B"
-            LayoutTableCell {TH} at (344,34) size 123x27 [border: (3px dotted #FFFFFF)] [r=0 c=2 rs=1 cs=1]
-              LayoutText {#text} at (42,4) size 46x21
+            LayoutTableCell {TH} at (344,34) size 123x28 [border: (3px dotted #FFFFFF)] [r=0 c=2 rs=1 cs=1]
+              LayoutText {#text} at (42,4) size 46x22
                 text run at (42,4) width 46: "TH C"
-            LayoutTableCell {TH} at (467,34) size 114x27 [border: (3px dotted #FFFFFF)] [r=0 c=3 rs=1 cs=1]
-              LayoutText {#text} at (34,4) size 45x21
+            LayoutTableCell {TH} at (467,34) size 114x28 [border: (3px dotted #FFFFFF)] [r=0 c=3 rs=1 cs=1]
+              LayoutText {#text} at (34,4) size 45x22
                 text run at (34,4) width 45: "TH D"
         LayoutTableSection {TFOOT} at (2,313) size 581x111
           LayoutTableRow {TR} at (0,0) size 581x111
             LayoutTableCell {TD} at (0,36) size 344x38 [border: (7px dotted #FFFFFF)] [r=0 c=0 rs=1 cs=2]
-              LayoutText {#text} at (4,8) size 54x27
-                text run at (4,8) width 54: "TD M"
+              LayoutText {#text} at (4,8) size 53x27
+                text run at (4,8) width 53: "TD M"
             LayoutTableCell {TD} at (344,39) size 123x32 [border: (1px dotted #FFFFFF)] [r=0 c=2 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 52x27
-                text run at (2,2) width 52: "TD O"
+              LayoutText {#text} at (2,2) size 51x27
+                text run at (2,2) width 51: "TD O"
             LayoutTableCell {TD} at (467,39) size 114x32 [border: (1px dotted #FFFFFF)] [r=0 c=3 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 50x27
-                text run at (2,2) width 50: "TD P"
+              LayoutText {#text} at (2,2) size 49x27
+                text run at (2,2) width 49: "TD P"
         LayoutTableSection {TBODY} at (2,129) size 581x184
           LayoutTableRow {TR} at (0,0) size 581x104
             LayoutTableCell {TD} at (0,71) size 137x42 [border: (7px dotted #FFFFFF)] [r=0 c=0 rs=2 cs=1]
-              LayoutText {#text} at (8,8) size 50x27
-                text run at (8,8) width 50: "TD E"
+              LayoutText {#text} at (8,8) size 49x27
+                text run at (8,8) width 49: "TD E"
             LayoutTableCell {TD} at (137,34) size 207x36 [border: (7px dotted #FFFFFF)] [r=0 c=1 rs=1 cs=1]
               LayoutText {#text} at (8,8) size 48x27
                 text run at (8,8) width 48: "TD F"
             LayoutTableCell {TD} at (344,37) size 123x30 [border: (1px dotted #FFFFFF)] [r=0 c=2 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 52x27
-                text run at (2,2) width 52: "TD G"
+              LayoutText {#text} at (2,2) size 51x27
+                text run at (2,2) width 51: "TD G"
             LayoutTableCell {TD} at (467,37) size 114x30 [border: (1px dotted #FFFFFF)] [r=0 c=3 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 52x27
-                text run at (2,2) width 52: "TD H"
+              LayoutText {#text} at (2,2) size 51x27
+                text run at (2,2) width 51: "TD H"
           LayoutTableRow {TR} at (0,104) size 581x80
             LayoutTableCell {TD} at (137,129) size 207x30 [border: (1px dotted #FFFFFF)] [r=1 c=1 rs=1 cs=1]
               LayoutText {#text} at (8,2) size 48x27
                 text run at (8,2) width 48: "TD J"
             LayoutTableCell {TD} at (344,129) size 123x30 [border: (1px dotted #FFFFFF)] [r=1 c=2 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 52x27
-                text run at (2,2) width 52: "TD K"
+              LayoutText {#text} at (2,2) size 51x27
+                text run at (2,2) width 51: "TD K"
             LayoutTableCell {TD} at (467,129) size 114x30 [border: (1px dotted #FFFFFF)] [r=1 c=3 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 48x27
                 text run at (2,2) width 48: "TD L"

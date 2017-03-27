@@ -3,26 +3,26 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
-      LayoutBlockFlow (anonymous) at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 780x35
-          text run at (0,0) width 780: "This tests whether alt text is shown for image elements with no src attribute. You should see \"Success\" twice, followed by"
-          text run at (0,18) width 106: "a blue rectangle."
-      LayoutBlockFlow {P} at (0,52) size 784x99
-        LayoutBlockFlow {IMG} at (0,0) size 54.66x22
-        LayoutBR {BR} at (54,22) size 1x0
-        LayoutBlockFlow {IMG} at (0,22) size 102x52 [border: (1px solid #000000)]
-        LayoutBR {BR} at (102,73) size 0x0
-        LayoutImage {IMG} at (0,74) size 75x25
-        LayoutBR {BR} at (75,99) size 0x0
-layer at (8,60) size 55x22 clip at (9,61) size 53x20
-  LayoutBlockFlow {DIV} at (0,0) size 54.66x22 [border: (1px solid #C0C0C0)]
-layer at (10,62) size 51x18
-  LayoutBlockFlow {DIV} at (2,2) size 50.66x18
-    LayoutText {#text} at (0,0) size 51x17
-      text run at (0,0) width 51: "Success"
-layer at (9,83) size 100x50 clip at (10,84) size 98x48
+      LayoutBlockFlow (anonymous) at (0,0) size 784x40
+        LayoutText {#text} at (0,0) size 764x39
+          text run at (0,0) width 764: "This tests whether alt text is shown for image elements with no src attribute. You should see \"Success\" twice, followed by a blue"
+          text run at (0,20) width 58: "rectangle."
+      LayoutBlockFlow {P} at (0,56) size 784x101
+        LayoutBlockFlow {IMG} at (0,0) size 53x24
+        LayoutBR {BR} at (53,24) size 0x0
+        LayoutBlockFlow {IMG} at (0,24) size 102x52 [border: (1px solid #000000)]
+        LayoutBR {BR} at (102,75) size 0x0
+        LayoutImage {IMG} at (0,76) size 75x25
+        LayoutBR {BR} at (75,101) size 0x0
+layer at (8,64) size 53x24 clip at (9,65) size 51x22
+  LayoutBlockFlow {DIV} at (0,0) size 53x24 [border: (1px solid #C0C0C0)]
+layer at (10,66) size 49x20
+  LayoutBlockFlow {DIV} at (2,2) size 49x20
+    LayoutText {#text} at (0,0) size 49x19
+      text run at (0,0) width 49: "Success"
+layer at (9,89) size 100x50 clip at (10,90) size 98x48
   LayoutBlockFlow {DIV} at (1,1) size 100x50 [border: (1px solid #C0C0C0)]
-layer at (11,85) size 96x18
-  LayoutBlockFlow {DIV} at (2,2) size 96x18
-    LayoutText {#text} at (0,0) size 51x17
-      text run at (0,0) width 51: "Success"
+layer at (11,91) size 96x20
+  LayoutBlockFlow {DIV} at (2,2) size 96x20
+    LayoutText {#text} at (0,0) size 49x19
+      text run at (0,0) width 49: "Success"

@@ -25,7 +25,7 @@ TEST_F(NGTextLayoutAlgorithmTest, TextFloatsAroundFloatsBefore) {
     <style>
       * {
         font-family: "Arial", sans-serif;
-        font-size: 19px;
+        font-size: 20px;
       }
       #container {
         height: 200px; width: 200px; outline: solid blue;

@@ -3,30 +3,30 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutTable {TABLE} at (0,0) size 600x495
-        LayoutTableSection {TBODY} at (0,0) size 600x495
-          LayoutTableRow {TR} at (0,0) size 600x495
-            LayoutTableCell {TD} at (0,0) size 600x495 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,0) size 600x521
+        LayoutTableSection {TBODY} at (0,0) size 600x521
+          LayoutTableRow {TR} at (0,0) size 600x521
+            LayoutTableCell {TD} at (0,0) size 600x521 [r=0 c=0 rs=1 cs=1]
               LayoutBlockFlow (anonymous) at (0,0) size 600x1
                 LayoutImage {IMG} at (0,0) size 600x1
                 LayoutText {#text} at (0,0) size 0x0
-              LayoutBlockFlow {BLOCKQUOTE} at (40,17) size 520x462
-                LayoutBlockFlow {BLOCKQUOTE} at (40,0) size 440x462
-                  LayoutBlockFlow (anonymous) at (0,0) size 440x216
-                    LayoutTable (floating) {TABLE} at (180,0) size 260x315
-                      LayoutTableSection {TBODY} at (0,0) size 260x315
-                        LayoutTableRow {TR} at (0,0) size 260x22
-                          LayoutTableCell {TD} at (0,0) size 6x22 [bgcolor=#FFFFFF] [r=0 c=0 rs=1 cs=1]
-                            LayoutBR {BR} at (2,2) size 0x17
-                          LayoutTableCell {TD} at (6,1) size 254x20 [bgcolor=#CCCCDD] [r=0 c=1 rs=1 cs=1]
+              LayoutBlockFlow {BLOCKQUOTE} at (40,17) size 520x488
+                LayoutBlockFlow {BLOCKQUOTE} at (40,0) size 440x488
+                  LayoutBlockFlow (anonymous) at (0,0) size 440x240
+                    LayoutTable (floating) {TABLE} at (180,0) size 260x317
+                      LayoutTableSection {TBODY} at (0,0) size 260x317
+                        LayoutTableRow {TR} at (0,0) size 260x24
+                          LayoutTableCell {TD} at (0,0) size 6x24 [bgcolor=#FFFFFF] [r=0 c=0 rs=1 cs=1]
+                            LayoutBR {BR} at (2,2) size 0x19
+                          LayoutTableCell {TD} at (6,2) size 254x20 [bgcolor=#CCCCDD] [r=0 c=1 rs=1 cs=1]
                             LayoutInline {FONT} at (0,0) size 242x16
                               LayoutInline {B} at (0,0) size 242x16
                                 LayoutText {#text} at (2,2) size 242x16
                                   text run at (2,2) width 242: "CHAMBERLAIN'S CAREER STATISTICS"
-                        LayoutTableRow {TR} at (0,22) size 260x293
-                          LayoutTableCell {TD} at (0,157) size 6x22 [bgcolor=#FFFFFF] [r=1 c=0 rs=1 cs=1]
-                            LayoutBR {BR} at (2,2) size 0x17
-                          LayoutTableCell {TD} at (6,22) size 254x293 [r=1 c=1 rs=1 cs=1]
+                        LayoutTableRow {TR} at (0,24) size 260x293
+                          LayoutTableCell {TD} at (0,158) size 6x24 [bgcolor=#FFFFFF] [r=1 c=0 rs=1 cs=1]
+                            LayoutBR {BR} at (2,2) size 0x19
+                          LayoutTableCell {TD} at (6,24) size 254x293 [r=1 c=1 rs=1 cs=1]
                             LayoutTable {TABLE} at (2,2) size 250x272
                               LayoutTableSection {TBODY} at (0,0) size 250x272
                                 LayoutTableRow {TR} at (0,0) size 250x17 [bgcolor=#EEEEEE]
@@ -490,33 +490,32 @@ layer at (0,0) size 800x600
                                       LayoutText {#text} at (4,2) size 21x13
                                         text run at (4,2) width 21: "30.1"
                             LayoutBlockFlow {HR} at (2,282) size 250x1 [border: (1px inset #EEEEEE) none (1px inset #EEEEEE)]
-                    LayoutText {#text} at (0,0) size 179x215
-                      text run at (0,0) width 167: "Known as ``Wilt the Stilt''"
-                      text run at (0,18) width 171: "and ``The Big Dipper,'' the"
-                      text run at (0,36) width 140: "7-foot-1 Chamberlain"
-                      text run at (0,54) width 164: "dominated the NBA from"
-                      text run at (0,72) width 165: "1959 through 1973, when"
-                      text run at (0,90) width 108: "he played for the"
-                      text run at (0,108) width 170: "Philadelphia (later the San"
-                      text run at (0,126) width 155: "Francisco) Warriors, the"
-                      text run at (0,144) width 160: "76ers and the Lakers. He"
-                      text run at (0,162) width 179: "scored 31,419 points during"
-                      text run at (0,180) width 165: "his career, averaging 30.1"
-                      text run at (0,198) width 131: "points for his career."
-                  LayoutBlockFlow {P} at (0,232) size 440x54
-                    LayoutText {#text} at (0,0) size 158x53
-                      text run at (0,0) width 158: "He also led the league in"
-                      text run at (0,18) width 149: "career rebounding with"
-                      text run at (0,36) width 48: "23,924."
-                  LayoutBlockFlow {P} at (0,302) size 440x90
-                    LayoutText {#text} at (0,0) size 419x89
-                      text run at (0,0) width 136: "One of only two men"
-                      text run at (0,18) width 419: "named MVP and rookie of the year in the same season (1959), he"
-                      text run at (0,36) width 415: "was also MVP in 1966 through 1968. He led the NBA in scoring"
-                      text run at (0,54) width 375: "seven straight seasons, 1960 to 1966, and led the league in"
-                      text run at (0,72) width 210: "rebounding 11 of his 14 seasons."
-                  LayoutBlockFlow {P} at (0,408) size 440x54
-                    LayoutText {#text} at (0,0) size 439x53
-                      text run at (0,0) width 406: "One of his most famous records is the 100 points he scored in a"
-                      text run at (0,18) width 439: "single game in the Philadelphia Warriors' 169-147 defeat of the New"
-                      text run at (0,36) width 304: "York Knicks on March 2, 1962, in Hershey, Pa."
+                    LayoutText {#text} at (0,0) size 179x239
+                      text run at (0,0) width 156: "Known as ``Wilt the Stilt''"
+                      text run at (0,20) width 179: "and ``The Big Dipper,'' the 7-"
+                      text run at (0,40) width 118: "foot-1 Chamberlain"
+                      text run at (0,60) width 154: "dominated the NBA from"
+                      text run at (0,80) width 175: "1959 through 1973, when he"
+                      text run at (0,100) width 159: "played for the Philadelphia"
+                      text run at (0,120) width 148: "(later the San Francisco)"
+                      text run at (0,140) width 165: "Warriors, the 76ers and the"
+                      text run at (0,160) width 161: "Lakers. He scored 31,419"
+                      text run at (0,180) width 143: "points during his career,"
+                      text run at (0,200) width 170: "averaging 30.1 points for his"
+                      text run at (0,220) width 42: "career."
+                  LayoutBlockFlow {P} at (0,256) size 440x60
+                    LayoutText {#text} at (0,0) size 146x59
+                      text run at (0,0) width 146: "He also led the league in"
+                      text run at (0,20) width 138: "career rebounding with"
+                      text run at (0,40) width 48: "23,924."
+                  LayoutBlockFlow {P} at (0,332) size 440x80
+                    LayoutText {#text} at (0,0) size 438x79
+                      text run at (0,0) width 417: "One of only two men named MVP and rookie of the year in the same"
+                      text run at (0,20) width 408: "season (1959), he was also MVP in 1966 through 1968. He led the"
+                      text run at (0,40) width 438: "NBA in scoring seven straight seasons, 1960 to 1966, and led the league"
+                      text run at (0,60) width 212: "in rebounding 11 of his 14 seasons."
+                  LayoutBlockFlow {P} at (0,428) size 440x60
+                    LayoutText {#text} at (0,0) size 420x59
+                      text run at (0,0) width 420: "One of his most famous records is the 100 points he scored in a single"
+                      text run at (0,20) width 410: "game in the Philadelphia Warriors' 169-147 defeat of the New York"
+                      text run at (0,40) width 257: "Knicks on March 2, 1962, in Hershey, Pa."

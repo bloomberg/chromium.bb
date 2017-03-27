@@ -4,27 +4,27 @@ layer at (0,0) size 800x1794 backgroundClip at (0,0) size 800x600 clip at (0,0) 
   LayoutBlockFlow {HTML} at (0,0) size 800x1794
     LayoutBlockFlow {BODY} at (0,0) size 800x1793
       LayoutBlockFlow {DIV} at (0,0) size 600x36
-        LayoutText {#text} at (0,0) size 308x14
-          text run at (0,0) width 308: "Table autosizing tests - single-percent-width-cell-lots-of-text.html"
-        LayoutBR {BR} at (307,0) size 1x14
-        LayoutText {#text} at (0,15) size 492x14
-          text run at (0,15) width 492: "This test passes if there is a one cell with lots of text that's autosized, and five cells that are not autosized."
+        LayoutText {#text} at (0,0) size 317x14
+          text run at (0,0) width 317: "Table autosizing tests - single-percent-width-cell-lots-of-text.html"
+        LayoutBR {BR} at (316,0) size 1x14
+        LayoutText {#text} at (0,15) size 506x14
+          text run at (0,15) width 506: "This test passes if there is a one cell with lots of text that's autosized, and five cells that are not autosized."
       LayoutTable {TABLE} at (1,37) size 798x1756 [border: none]
         LayoutTableSection {TBODY} at (0,0) size 797x1755
           LayoutTableRow {TR} at (0,0) size 797x18
             LayoutTableCell {TD} at (0,0) size 279x18 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 23x14
-                text run at (2,2) width 23: "hello"
+              LayoutText {#text} at (2,2) size 24x14
+                text run at (2,2) width 24: "hello"
             LayoutTableCell {TD} at (279,0) size 239x18 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 23x14
-                text run at (2,2) width 23: "hello"
+              LayoutText {#text} at (2,2) size 24x14
+                text run at (2,2) width 24: "hello"
             LayoutTableCell {TD} at (518,0) size 279x18 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=2 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 23x14
-                text run at (2,2) width 23: "hello"
+              LayoutText {#text} at (2,2) size 24x14
+                text run at (2,2) width 24: "hello"
           LayoutTableRow {TR} at (0,18) size 797x1737
             LayoutTableCell {TD} at (0,877) size 279x18 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 23x14
-                text run at (2,2) width 23: "hello"
+              LayoutText {#text} at (2,2) size 24x14
+                text run at (2,2) width 24: "hello"
             LayoutTableCell {TD} at (279,18) size 239x1737 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=1 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 195x1733
                 text run at (2,2) width 195: "hello hello hello"
@@ -79,5 +79,5 @@ layer at (0,0) size 800x1794 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (2,1668) width 195: "hello hello hello"
                 text run at (2,1702) width 128: "hello hello"
             LayoutTableCell {TD} at (518,877) size 279x18 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=2 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 23x14
-                text run at (2,2) width 23: "hello"
+              LayoutText {#text} at (2,2) size 24x14
+                text run at (2,2) width 24: "hello"

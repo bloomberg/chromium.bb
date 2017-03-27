@@ -8,22 +8,22 @@
       "paintInvalidations": [
         {
           "object": "LayoutText #text",
-          "rect": [8, 114, 200, 89],
+          "rect": [8, 122, 196, 79],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 78, 198, 53],
+          "rect": [8, 82, 190, 59],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutInline SPAN id='t'",
-          "rect": [115, 84, 37, 47],
+          "rect": [47, 92, 33, 49],
           "reason": "style change"
         },
         {
           "object": "LayoutInline SPAN id='t'",
-          "rect": [38, 132, 36, 17],
+          "rect": [77, 122, 33, 19],
           "reason": "style change"
         }
       ]
@@ -35,15 +35,11 @@
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'Cras faucibus. Nunc'",
+      "object": "InlineTextBox 'Cras faucibus. Nunc adipiscing,'",
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'adipiscing, enim in scelerisque'",
-      "reason": "forced by layout"
-    },
-    {
-      "object": "InlineTextBox 'convallis,\n'",
+      "object": "InlineTextBox 'enim in scelerisque convallis,'",
       "reason": "forced by layout"
     },
     {
@@ -71,23 +67,19 @@
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox ' eleifend'",
+      "object": "InlineTextBox ' eleifend lacus, at'",
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'lacus, at sagittis eros leo'",
+      "object": "InlineTextBox 'sagittis eros leo pulvinar velit.'",
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'pulvinar velit. Integer'",
+      "object": "InlineTextBox 'Integer sollicitudin nisi ut urna'",
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'sollicitudin nisi ut urna blandit'",
-      "reason": "forced by layout"
-    },
-    {
-      "object": "InlineTextBox 'convallis.'",
+      "object": "InlineTextBox 'blandit convallis.'",
       "reason": "forced by layout"
     }
   ]

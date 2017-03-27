@@ -7,19 +7,19 @@ Initial
   "layers": [
     {
       "name": "LayoutView #document",
-      "bounds": [785, 623],
+      "bounds": [785, 626],
       "contentsOpaque": true,
       "drawsContent": true
     },
     {
       "name": "LayoutBlockFlow DIV class='composited container'",
       "position": [18, 10],
-      "bounds": [749, 144]
+      "bounds": [749, 145]
     },
     {
       "name": "LayoutBlockFlow DIV class='composited hidden container'",
-      "position": [14, 314],
-      "bounds": [757, 152],
+      "position": [14, 316],
+      "bounds": [757, 153],
       "contentsVisible": false
     },
     {
@@ -35,14 +35,14 @@ After step 1
   "layers": [
     {
       "name": "LayoutView #document",
-      "bounds": [785, 1059],
+      "bounds": [785, 1062],
       "contentsOpaque": true,
       "drawsContent": true
     },
     {
       "name": "LayoutBlockFlow DIV class='composited container'",
       "position": [18, 10],
-      "bounds": [749, 144]
+      "bounds": [749, 145]
     },
     {
       "name": "LayoutImage IMG class='hidden composited box'",
@@ -51,8 +51,8 @@ After step 1
     },
     {
       "name": "LayoutBlockFlow DIV class='composited hidden container'",
-      "position": [14, 314],
-      "bounds": [757, 152],
+      "position": [14, 316],
+      "bounds": [757, 153],
       "contentsVisible": false
     },
     {
@@ -68,14 +68,14 @@ After step 2
   "layers": [
     {
       "name": "LayoutView #document",
-      "bounds": [785, 1574],
+      "bounds": [785, 1577],
       "contentsOpaque": true,
       "drawsContent": true
     },
     {
       "name": "LayoutBlockFlow DIV class='composited container'",
       "position": [18, 10],
-      "bounds": [749, 144]
+      "bounds": [749, 145]
     },
     {
       "name": "LayoutImage IMG class='hidden composited box'",
@@ -84,8 +84,8 @@ After step 2
     },
     {
       "name": "LayoutBlockFlow DIV class='composited hidden container'",
-      "position": [14, 160],
-      "bounds": [757, 152],
+      "position": [14, 161],
+      "bounds": [757, 153],
       "drawsContent": true
     },
     {
@@ -95,8 +95,8 @@ After step 2
     },
     {
       "name": "LayoutBlockFlow DIV class='composited hidden container'",
-      "position": [14, 314],
-      "bounds": [757, 152],
+      "position": [14, 316],
+      "bounds": [757, 153],
       "contentsVisible": false
     },
     {

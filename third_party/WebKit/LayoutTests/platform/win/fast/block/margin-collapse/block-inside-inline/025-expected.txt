@@ -1,12 +1,12 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x224
-  LayoutBlockFlow {HTML} at (0,0) size 800x224
-    LayoutBlockFlow {BODY} at (8,16) size 784x200
-      LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 300x17
-          text run at (0,0) width 300: "The following two squares should be identical."
-      LayoutTable {TABLE} at (0,34) size 316x166
+layer at (0,0) size 800x226
+  LayoutBlockFlow {HTML} at (0,0) size 800x226
+    LayoutBlockFlow {BODY} at (8,16) size 784x202
+      LayoutBlockFlow {P} at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 277x19
+          text run at (0,0) width 277: "The following two squares should be identical."
+      LayoutTable {TABLE} at (0,36) size 316x166
         LayoutTableSection {TBODY} at (0,0) size 316x166
           LayoutTableRow {TR} at (0,16) size 316x134
             LayoutTableCell {TD} at (16,16) size 134x134 [bgcolor=#FF0000] [border: (3px solid #000000)] [r=0 c=0 rs=1 cs=1]

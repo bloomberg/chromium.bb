@@ -1,0 +1,33 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [18, 72, 55, 75],
+          "reason": "border box change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [18, 192, 55, 55],
+          "reason": "border box change"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "border box change"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "border box change"
+    }
+  ]
+}
+

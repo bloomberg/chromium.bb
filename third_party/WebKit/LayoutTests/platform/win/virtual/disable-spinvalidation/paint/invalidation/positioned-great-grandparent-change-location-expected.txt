@@ -18,12 +18,12 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [100, 200, 41, 17],
+          "rect": [100, 200, 38, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [100, 100, 41, 17],
+          "rect": [100, 100, 38, 19],
           "reason": "bounds change"
         }
       ]

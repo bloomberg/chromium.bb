@@ -16,26 +16,6 @@
           "rect": [59, 43, 95, 23],
           "reason": "full"
         }
-      ],
-      "underPaintInvalidations": [
-        {
-          "x": 155,
-          "y": 55,
-          "oldPixel": "#FFFFFF",
-          "newPixel": "#008800"
-        },
-        {
-          "x": 155,
-          "y": 56,
-          "oldPixel": "#FFFFFF",
-          "newPixel": "#008800"
-        },
-        {
-          "x": 155,
-          "y": 57,
-          "oldPixel": "#FFFFFF",
-          "newPixel": "#008800"
-        }
       ]
     }
   ],

@@ -1,18 +1,17 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x232
-  LayoutBlockFlow {HTML} at (0,0) size 800x232
-    LayoutBlockFlow {BODY} at (8,16) size 784x208
-      LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 632x17
-          text run at (0,0) width 632: "The following box should contain exactly three bands, one yellow, one orange, and one lime, with "
-        LayoutInline {STRONG} at (0,0) size 749x35
-          LayoutText {#text} at (631,0) size 749x35
-            text run at (631,0) width 118: "absolutely no red"
-            text run at (0,18) width 44: "visible"
-        LayoutText {#text} at (43,18) size 5x17
-          text run at (43,18) width 5: "."
-      LayoutTable {TABLE} at (0,52) size 106x156 [bgcolor=#FF0000] [border: (3px solid #000000)]
+layer at (0,0) size 800x216
+  LayoutBlockFlow {HTML} at (0,0) size 800x216
+    LayoutBlockFlow {BODY} at (8,16) size 784x192
+      LayoutBlockFlow {P} at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 586x19
+          text run at (0,0) width 586: "The following box should contain exactly three bands, one yellow, one orange, and one lime, with "
+        LayoutInline {STRONG} at (0,0) size 162x19
+          LayoutText {#text} at (585,0) size 162x19
+            text run at (585,0) width 162: "absolutely no red visible"
+        LayoutText {#text} at (746,0) size 5x19
+          text run at (746,0) width 5: "."
+      LayoutTable {TABLE} at (0,36) size 106x156 [bgcolor=#FF0000] [border: (3px solid #000000)]
         LayoutTableSection {TBODY} at (3,3) size 100x150
           LayoutTableRow {TR} at (0,0) size 100x150
             LayoutTableCell {TD} at (0,0) size 50x150 [r=0 c=0 rs=1 cs=1]

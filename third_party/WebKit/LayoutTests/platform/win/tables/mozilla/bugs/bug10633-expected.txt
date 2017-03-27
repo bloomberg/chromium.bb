@@ -21,35 +21,35 @@ layer at (0,0) size 800x600
           LayoutTableRow {TR} at (0,1) size 468x22
             LayoutTableCell {TD} at (0,1) size 18x22 [r=1 c=0 rs=1 cs=3]
               LayoutImage {IMG} at (0,0) size 18x22
-            LayoutTableCell {TD} at (18,3) size 187x18 [bgcolor=#FFCC00] [r=1 c=3 rs=1 cs=1]
-              LayoutInline {A} at (0,0) size 121x17 [color=#0000EE]
-                LayoutInline {B} at (0,0) size 121x17
-                  LayoutInline {FONT} at (0,0) size 121x17
-                    LayoutText {#text} at (33,0) size 121x17
+            LayoutTableCell {TD} at (18,2) size 187x20 [bgcolor=#FFCC00] [r=1 c=3 rs=1 cs=1]
+              LayoutInline {A} at (0,0) size 121x19 [color=#0000EE]
+                LayoutInline {B} at (0,0) size 121x19
+                  LayoutInline {FONT} at (0,0) size 121x19
+                    LayoutText {#text} at (33,0) size 121x19
                       text run at (33,0) width 121: "Detailed Search"
               LayoutText {#text} at (0,0) size 0x0
             LayoutTableCell {TD} at (205,1) size 20x22 [r=1 c=4 rs=1 cs=1]
               LayoutImage {IMG} at (0,0) size 20x22
-            LayoutTableCell {TD} at (225,3) size 18x18 [r=1 c=5 rs=1 cs=1]
-              LayoutText {#text} at (0,0) size 4x17
+            LayoutTableCell {TD} at (225,2) size 18x20 [r=1 c=5 rs=1 cs=1]
+              LayoutText {#text} at (0,0) size 4x19
                 text run at (0,0) width 4: " "
             LayoutTableCell {TD} at (243,1) size 18x22 [r=1 c=6 rs=1 cs=3]
               LayoutImage {IMG} at (0,0) size 18x22
-            LayoutTableCell {TD} at (261,3) size 187x18 [bgcolor=#FFCC00] [r=1 c=9 rs=1 cs=1]
-              LayoutInline {A} at (0,0) size 151x17 [color=#0000EE]
-                LayoutInline {B} at (0,0) size 151x17
-                  LayoutInline {FONT} at (0,0) size 151x17
-                    LayoutText {#text} at (18,0) size 151x17
+            LayoutTableCell {TD} at (261,2) size 187x20 [bgcolor=#FFCC00] [r=1 c=9 rs=1 cs=1]
+              LayoutInline {A} at (0,0) size 151x19 [color=#0000EE]
+                LayoutInline {B} at (0,0) size 151x19
+                  LayoutInline {FONT} at (0,0) size 151x19
+                    LayoutText {#text} at (18,0) size 151x19
                       text run at (18,0) width 151: "Search By Distance"
               LayoutText {#text} at (0,0) size 0x0
             LayoutTableCell {TD} at (448,1) size 20x22 [r=1 c=10 rs=1 cs=1]
               LayoutImage {IMG} at (0,0) size 20x22
           LayoutTableRow {TR} at (0,23) size 468x85
-            LayoutTableCell {TD} at (0,56) size 6x18 [r=2 c=0 rs=1 cs=1]
-              LayoutText {#text} at (0,0) size 4x17
+            LayoutTableCell {TD} at (0,55) size 6x20 [r=2 c=0 rs=1 cs=1]
+              LayoutText {#text} at (0,0) size 4x19
                 text run at (0,0) width 4: " "
-            LayoutTableCell {TD} at (6,56) size 6x18 [bgcolor=#EBEBE4] [r=2 c=1 rs=1 cs=1]
-              LayoutText {#text} at (0,0) size 4x17
+            LayoutTableCell {TD} at (6,55) size 6x20 [bgcolor=#EBEBE4] [r=2 c=1 rs=1 cs=1]
+              LayoutText {#text} at (0,0) size 4x19
                 text run at (0,0) width 4: " "
             LayoutTableCell {TD} at (12,23) size 213x85 [bgcolor=#EBEBE4] [r=2 c=2 rs=1 cs=3]
               LayoutBlockFlow {P} at (0,0) size 213x85
@@ -67,14 +67,14 @@ layer at (0,0) size 800x600
                   LayoutBR {BR} at (125,66) size 1x0
                   LayoutText {#text} at (0,69) size 4x16
                     text run at (0,69) width 4: " "
-            LayoutTableCell {TD} at (225,56) size 18x18 [r=2 c=5 rs=1 cs=1]
-              LayoutText {#text} at (0,0) size 4x17
+            LayoutTableCell {TD} at (225,55) size 18x20 [r=2 c=5 rs=1 cs=1]
+              LayoutText {#text} at (0,0) size 4x19
                 text run at (0,0) width 4: " "
-            LayoutTableCell {TD} at (243,56) size 7x18 [r=2 c=6 rs=1 cs=1]
-              LayoutText {#text} at (0,0) size 4x17
+            LayoutTableCell {TD} at (243,55) size 7x20 [r=2 c=6 rs=1 cs=1]
+              LayoutText {#text} at (0,0) size 4x19
                 text run at (0,0) width 4: " "
-            LayoutTableCell {TD} at (250,56) size 7x18 [bgcolor=#EBEBE4] [r=2 c=7 rs=1 cs=1]
-              LayoutText {#text} at (0,0) size 4x17
+            LayoutTableCell {TD} at (250,55) size 7x20 [bgcolor=#EBEBE4] [r=2 c=7 rs=1 cs=1]
+              LayoutText {#text} at (0,0) size 4x19
                 text run at (0,0) width 4: " "
             LayoutTableCell {TD} at (257,23) size 211x53 [bgcolor=#EBEBE4] [r=2 c=8 rs=1 cs=3]
               LayoutInline {FONT} at (0,0) size 206x61

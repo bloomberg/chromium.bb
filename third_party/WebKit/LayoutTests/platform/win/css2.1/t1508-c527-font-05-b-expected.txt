@@ -4,24 +4,24 @@ layer at (0,0) size 800x522
   LayoutBlockFlow {HTML} at (0,0) size 800x522
     LayoutBlockFlow {BODY} at (8,18) size 784x486 [color=#000080]
       LayoutBlockFlow {P} at (0,0) size 784x486
-        LayoutText {#text} at (0,17) size 727x74
-          text run at (0,17) width 727: "This text should be 18px sans-serif, in small-caps, italicized, and very light. There"
-          text run at (0,71) width 361: "should be a 36px gap between each line. "
-        LayoutInline {SPAN} at (0,0) size 780x398 [color=#C0C0C0]
-          LayoutText {#text} at (360,71) size 780x398
-            text run at (360,71) width 420: "dummy text dummy text dummy text dummy text"
-            text run at (0,125) width 170: "dummy text dummy "
-            text run at (169,125) width 570: "text dummy text dummy text dummy text dummy text dummy text"
-            text run at (0,179) width 63: "dummy "
-            text run at (62,179) width 638: "text dummy text dummy text dummy text dummy text dummy text dummy "
-            text run at (699,179) width 40: "text"
-            text run at (0,233) width 594: "dummy text dummy text dummy text dummy text dummy text dummy "
-            text run at (593,233) width 146: "text dummy text"
-            text run at (0,287) width 488: "dummy text dummy text dummy text dummy text dummy "
-            text run at (487,287) width 252: "text dummy text dummy text"
-            text run at (0,341) width 382: "dummy text dummy text dummy text dummy "
-            text run at (381,341) width 358: "text dummy text dummy text dummy text"
-            text run at (0,395) width 276: "dummy text dummy text dummy "
-            text run at (275,395) width 464: "text dummy text dummy text dummy text dummy text"
-            text run at (0,449) width 102: "dummy text"
+        LayoutText {#text} at (0,16) size 724x76
+          text run at (0,16) width 724: "This text should be 18px sans-serif, in small-caps, italicized, and very light. There"
+          text run at (0,70) width 359: "should be a 36px gap between each line. "
+        LayoutInline {SPAN} at (0,0) size 778x400 [color=#C0C0C0]
+          LayoutText {#text} at (359,70) size 778x400
+            text run at (359,70) width 419: "dummy text dummy text dummy text dummy text"
+            text run at (0,124) width 169: "dummy text dummy "
+            text run at (169,124) width 568: "text dummy text dummy text dummy text dummy text dummy text"
+            text run at (0,178) width 63: "dummy "
+            text run at (63,178) width 636: "text dummy text dummy text dummy text dummy text dummy text dummy "
+            text run at (699,178) width 38: "text"
+            text run at (0,232) width 593: "dummy text dummy text dummy text dummy text dummy text dummy "
+            text run at (593,232) width 144: "text dummy text"
+            text run at (0,286) width 487: "dummy text dummy text dummy text dummy text dummy "
+            text run at (487,286) width 250: "text dummy text dummy text"
+            text run at (0,340) width 381: "dummy text dummy text dummy text dummy "
+            text run at (381,340) width 356: "text dummy text dummy text dummy text"
+            text run at (0,394) width 275: "dummy text dummy text dummy "
+            text run at (275,394) width 462: "text dummy text dummy text dummy text dummy text"
+            text run at (0,448) width 101: "dummy text"
         LayoutText {#text} at (0,0) size 0x0

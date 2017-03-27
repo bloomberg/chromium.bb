@@ -1,0 +1,53 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (anonymous)",
+          "rect": [8, 156, 784, 20],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='t'",
+          "rect": [8, 176, 100, 100],
+          "reason": "layoutObject insertion"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (anonymous)",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutInline (relative positioned) SPAN id='p'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox '\u00A0'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='t'",
+      "reason": "layoutObject insertion"
+    }
+  ]
+}
+

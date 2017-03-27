@@ -7,35 +7,35 @@ layer at (0,0) size 800x600
         LayoutInline {<pseudo:before>} at (0,0) size 207x36
           LayoutTextFragment (anonymous) at (0,0) size 207x36
             text run at (0,0) width 207: "First Chapter: "
-        LayoutText {#text} at (206,0) size 106x36
-          text run at (206,0) width 106: "TEST 1"
-      LayoutBlockFlow (anonymous) at (0,58.44) size 784x18
-        LayoutText {#text} at (0,0) size 242x17
-          text run at (0,0) width 242: "Should read: \"First Chapter: TEST 1\""
-      LayoutBlockFlow {H2} at (0,96.34) size 784x27
-        LayoutInline {<pseudo:before>} at (0,0) size 100x26
-          LayoutTextFragment (anonymous) at (0,0) size 100x26
-            text run at (0,0) width 100: "Chapter: "
-        LayoutText {#text} at (99,0) size 80x26
-          text run at (99,0) width 80: "TEST 2"
-      LayoutBlockFlow (anonymous) at (0,143.25) size 784x18
-        LayoutText {#text} at (0,0) size 208x17
-          text run at (0,0) width 208: "Should read: \"Chapter: TEST 2\""
-      LayoutBlockFlow {H3} at (0,179.97) size 784x22
-        LayoutInline {<pseudo:before>} at (0,0) size 116x21
-          LayoutTextFragment (anonymous) at (0,0) size 116x21
+        LayoutText {#text} at (207,0) size 105x36
+          text run at (207,0) width 105: "TEST 1"
+      LayoutBlockFlow (anonymous) at (0,58.44) size 784x20
+        LayoutText {#text} at (0,0) size 225x19
+          text run at (0,0) width 225: "Should read: \"First Chapter: TEST 1\""
+      LayoutBlockFlow {H2} at (0,98.34) size 784x27
+        LayoutInline {<pseudo:before>} at (0,0) size 99x26
+          LayoutTextFragment (anonymous) at (0,0) size 99x26
+            text run at (0,0) width 99: "Chapter: "
+        LayoutText {#text} at (99,0) size 77x26
+          text run at (99,0) width 77: "TEST 2"
+      LayoutBlockFlow (anonymous) at (0,145.25) size 784x20
+        LayoutText {#text} at (0,0) size 194x19
+          text run at (0,0) width 194: "Should read: \"Chapter: TEST 2\""
+      LayoutBlockFlow {H3} at (0,183.97) size 784x23
+        LayoutInline {<pseudo:before>} at (0,0) size 116x22
+          LayoutTextFragment (anonymous) at (0,0) size 116x22
             text run at (0,0) width 116: "Chapter One: "
-        LayoutText {#text} at (115,0) size 63x21
-          text run at (115,0) width 63: "TEST 3"
-      LayoutBlockFlow (anonymous) at (0,220.69) size 784x18
-        LayoutText {#text} at (0,0) size 239x17
-          text run at (0,0) width 239: "Should read: \"Chapter One: TEST 3\""
-      LayoutBlockFlow {H4} at (0,259.95) size 784x18
-        LayoutInline {<pseudo:before>} at (0,0) size 67x17
-          LayoutTextFragment (anonymous) at (0,0) size 67x17
-            text run at (0,0) width 67: "Chapter: "
-        LayoutText {#text} at (66,0) size 54x17
-          text run at (66,0) width 54: "TEST 4"
-      LayoutBlockFlow (anonymous) at (0,299.22) size 784x18
-        LayoutText {#text} at (0,0) size 208x17
-          text run at (0,0) width 208: "Should read: \"Chapter: TEST 4\""
+        LayoutText {#text} at (116,0) size 65x22
+          text run at (116,0) width 65: "TEST 3"
+      LayoutBlockFlow (anonymous) at (0,225.69) size 784x20
+        LayoutText {#text} at (0,0) size 224x19
+          text run at (0,0) width 224: "Should read: \"Chapter One: TEST 3\""
+      LayoutBlockFlow {H4} at (0,266.95) size 784x20
+        LayoutInline {<pseudo:before>} at (0,0) size 63x19
+          LayoutTextFragment (anonymous) at (0,0) size 63x19
+            text run at (0,0) width 63: "Chapter: "
+        LayoutText {#text} at (63,0) size 51x19
+          text run at (63,0) width 51: "TEST 4"
+      LayoutBlockFlow (anonymous) at (0,308.22) size 784x20
+        LayoutText {#text} at (0,0) size 194x19
+          text run at (0,0) width 194: "Should read: \"Chapter: TEST 4\""

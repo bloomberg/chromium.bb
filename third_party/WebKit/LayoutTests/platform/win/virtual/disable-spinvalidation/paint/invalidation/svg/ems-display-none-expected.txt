@@ -8,37 +8,37 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGContainer g",
-          "rect": [50, 54, 571, 85],
+          "rect": [50, 54, 561, 86],
           "reason": "became visible"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [50, 54, 571, 85],
+          "rect": [50, 54, 561, 86],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [50, 54, 571, 85],
+          "rect": [50, 54, 561, 86],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [50, 54, 571, 85],
+          "rect": [50, 54, 561, 86],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGTSpan tspan",
-          "rect": [50, 54, 571, 85],
+          "rect": [50, 54, 561, 86],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGTSpan tspan id='tspan'",
-          "rect": [50, 54, 571, 85],
+          "rect": [50, 54, 561, 86],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGText text id='text'",
-          "rect": [50, 54, 571, 85],
+          "rect": [50, 54, 561, 86],
           "reason": "layoutObject insertion"
         }
       ]

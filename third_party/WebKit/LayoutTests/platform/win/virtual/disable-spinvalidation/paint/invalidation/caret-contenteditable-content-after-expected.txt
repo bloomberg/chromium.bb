@@ -8,67 +8,67 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV id='editor'",
-          "rect": [7, 43, 786, 20],
+          "rect": [7, 47, 786, 22],
           "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow DIV id='editor'",
-          "rect": [7, 43, 786, 20],
+          "rect": [7, 47, 786, 22],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow DIV id='editor'",
-          "rect": [7, 43, 786, 20],
+          "rect": [7, 47, 786, 22],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow DIV id='editor'",
-          "rect": [7, 43, 786, 20],
+          "rect": [7, 47, 786, 22],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 44, 23, 17],
+          "rect": [8, 48, 22, 19],
           "reason": "full"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 44, 16, 17],
+          "rect": [8, 48, 15, 19],
           "reason": "full"
         },
         {
           "object": "LayoutTextFragment (anonymous)",
-          "rect": [30, 44, 9, 17],
+          "rect": [30, 48, 7, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutTextFragment (anonymous)",
-          "rect": [23, 44, 9, 17],
+          "rect": [23, 48, 7, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutTextFragment (anonymous)",
-          "rect": [23, 44, 9, 17],
+          "rect": [23, 48, 7, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutTextFragment (anonymous)",
-          "rect": [15, 44, 9, 17],
+          "rect": [15, 48, 7, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutTextFragment (anonymous)",
-          "rect": [15, 44, 9, 17],
+          "rect": [15, 48, 7, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 44, 8, 17],
+          "rect": [8, 48, 7, 19],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutTextFragment (anonymous)",
-          "rect": [8, 44, 8, 17],
+          "rect": [8, 48, 7, 19],
           "reason": "forced by layout"
         }
       ]

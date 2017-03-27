@@ -3,20 +3,20 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
-      LayoutBlockFlow {P} at (0,0) size 784x160
-        LayoutBlockFlow (anonymous) at (0,0) size 784x72
-          LayoutText {#text} at (0,0) size 344x17
-            text run at (0,0) width 344: "In the yellow table the \"W\" is clipped on its left edge."
-          LayoutBR {BR} at (343,14) size 1x0
-          LayoutText {#text} at (0,18) size 173x17
-            text run at (0,18) width 173: "The only difference is that:"
-          LayoutBR {BR} at (172,32) size 1x0
-          LayoutText {#text} at (0,36) size 249x17
-            text run at (0,36) width 249: "yellow table has CELLPADDING=\"0\""
-          LayoutBR {BR} at (248,50) size 1x0
-          LayoutText {#text} at (0,54) size 238x17
-            text run at (0,54) width 238: "grey table has CELLPADDING=\"1\"."
-        LayoutTable {TABLE} at (0,72) size 40x43 [bgcolor=#FFFF00]
+      LayoutBlockFlow {P} at (0,0) size 784x168
+        LayoutBlockFlow (anonymous) at (0,0) size 784x80
+          LayoutText {#text} at (0,0) size 317x19
+            text run at (0,0) width 317: "In the yellow table the \"W\" is clipped on its left edge."
+          LayoutBR {BR} at (317,15) size 0x0
+          LayoutText {#text} at (0,20) size 157x19
+            text run at (0,20) width 157: "The only difference is that:"
+          LayoutBR {BR} at (156,35) size 1x0
+          LayoutText {#text} at (0,40) size 234x19
+            text run at (0,40) width 234: "yellow table has CELLPADDING=\"0\""
+          LayoutBR {BR} at (233,55) size 1x0
+          LayoutText {#text} at (0,60) size 225x19
+            text run at (0,60) width 225: "grey table has CELLPADDING=\"1\"."
+        LayoutTable {TABLE} at (0,80) size 40x43 [bgcolor=#FFFF00]
           LayoutTableSection {TBODY} at (0,0) size 40x43
             LayoutTableRow {TR} at (0,2) size 40x39
               LayoutTableCell {TD} at (2,2) size 36x39 [r=0 c=0 rs=1 cs=1]
@@ -25,7 +25,7 @@ layer at (0,0) size 800x600
                     text run at (0,0) width 32: "Online"
                     text run at (0,13) width 24: "Web-"
                     text run at (0,26) width 25: "Store"
-        LayoutTable {TABLE} at (0,115) size 40x45 [bgcolor=#EEEEEE]
+        LayoutTable {TABLE} at (0,123) size 40x45 [bgcolor=#EEEEEE]
           LayoutTableSection {TBODY} at (0,0) size 40x45
             LayoutTableRow {TR} at (0,2) size 40x41
               LayoutTableCell {TD} at (2,2) size 36x41 [r=0 c=0 rs=1 cs=1]

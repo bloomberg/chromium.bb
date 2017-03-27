@@ -11,10 +11,10 @@ layer at (0,0) size 800x600
         LayoutTable {TABLE} at (0,0) size 693x54
           LayoutTableSection {TBODY} at (0,0) size 693x54
             LayoutTableRow {TR} at (0,2) size 693x24
-              LayoutTableCell {TD} at (2,4) size 106x20 [r=0 c=0 rs=1 cs=1]
-                LayoutInline {B} at (0,0) size 95x17
-                  LayoutText {#text} at (1,1) size 95x17
-                    text run at (1,1) width 95: "Trigger URL:"
+              LayoutTableCell {TD} at (2,3) size 106x22 [r=0 c=0 rs=1 cs=1]
+                LayoutInline {B} at (0,0) size 91x19
+                  LayoutText {#text} at (1,1) size 91x19
+                    text run at (1,1) width 91: "Trigger URL:"
               LayoutTableCell {TD} at (110,2) size 490x24 [r=0 c=1 rs=1 cs=1]
                 LayoutTextControl {INPUT} at (1,1) size 488x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
               LayoutTableCell {TD} at (602,2) size 89x24 [r=0 c=2 rs=1 cs=1]
@@ -23,9 +23,9 @@ layer at (0,0) size 800x600
                     LayoutText {#text} at (0,0) size 39x16
                       text run at (0,0) width 39: "Trigger"
             LayoutTableRow {TR} at (0,28) size 693x24
-              LayoutTableCell {TD} at (2,30) size 106x20 [r=1 c=0 rs=1 cs=1]
-                LayoutInline {B} at (0,0) size 104x17
-                  LayoutText {#text} at (1,1) size 104x17
+              LayoutTableCell {TD} at (2,29) size 106x22 [r=1 c=0 rs=1 cs=1]
+                LayoutInline {B} at (0,0) size 104x19
+                  LayoutText {#text} at (1,1) size 104x19
                     text run at (1,1) width 104: "Run Test Case:"
               LayoutTableCell {TD} at (110,29) size 490x22 [r=1 c=1 rs=1 cs=1]
                 LayoutMenuList {SELECT} at (1,1) size 267x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]

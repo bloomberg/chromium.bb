@@ -2,15 +2,15 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (10,10) size 780x302
   LayoutBlockFlow {fake} at (10,10) size 780x302
-layer at (10,10) size 282x302 clip at (11,11) size 265x300 scrollHeight 1275
+layer at (10,10) size 282x302 clip at (11,11) size 265x300 scrollHeight 1274
   LayoutBlockFlow {channel} at (0,0) size 282x302 [bgcolor=#EEEEEE] [border: (1px solid #000000)]
-    LayoutBlockFlow {title} at (11,11) size 255x19
-      LayoutText {#text} at (0,0) size 156x19
-        text run at (0,0) width 156: "scottandrew.com"
-    LayoutBlockFlow {description} at (11,40) size 255x12
+    LayoutBlockFlow {title} at (11,11) size 255x18
+      LayoutText {#text} at (0,0) size 153x18
+        text run at (0,0) width 153: "scottandrew.com"
+    LayoutBlockFlow {description} at (11,39) size 255x12
       LayoutText {#text} at (0,0) size 192x12
         text run at (0,0) width 192: "DHTML, DOM and JavaScript News"
-    LayoutBlockFlow {item} at (1,62) size 265x92 [bgcolor=#FFFFFF] [border: (1px solid #CCCCCC) none (1px solid #CCCCCC) none]
+    LayoutBlockFlow {item} at (1,61) size 265x92 [bgcolor=#FFFFFF] [border: (1px solid #CCCCCC) none (1px solid #CCCCCC) none]
       LayoutInline {title} at (0,0) size 229x14
         LayoutText {#text} at (10,11) size 229x14
           text run at (10,11) width 229: "DHTML Animation Array Generator"
@@ -23,7 +23,7 @@ layer at (10,10) size 282x302 clip at (11,11) size 265x300 scrollHeight 1275
           text run at (10,67) width 63: "creating..."
       LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
-    LayoutBlockFlow {item} at (1,164) size 265x92 [bgcolor=#FFFFFF] [border: (1px solid #CCCCCC) none (1px solid #CCCCCC) none]
+    LayoutBlockFlow {item} at (1,163) size 265x92 [bgcolor=#FFFFFF] [border: (1px solid #CCCCCC) none (1px solid #CCCCCC) none]
       LayoutInline {title} at (0,0) size 175x14
         LayoutText {#text} at (10,11) size 175x14
           text run at (10,11) width 175: "DOM and Extended Entries"
@@ -38,7 +38,7 @@ layer at (10,10) size 282x302 clip at (11,11) size 265x300 scrollHeight 1275
           text run at (10,67) width 72: "extended..."
       LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
-    LayoutBlockFlow {item} at (1,266) size 265x78 [bgcolor=#FFFFFF] [border: (1px solid #CCCCCC) none (1px solid #CCCCCC) none]
+    LayoutBlockFlow {item} at (1,265) size 265x78 [bgcolor=#FFFFFF] [border: (1px solid #CCCCCC) none (1px solid #CCCCCC) none]
       LayoutInline {title} at (0,0) size 162x14
         LayoutText {#text} at (10,11) size 162x14
           text run at (10,11) width 162: "cellspacing and the DOM"
@@ -52,7 +52,7 @@ layer at (10,10) size 282x302 clip at (11,11) size 265x300 scrollHeight 1275
           text run at (10,53) width 163: "setAttribute() to set the..."
       LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
-    LayoutBlockFlow {item} at (1,354) size 265x92 [bgcolor=#FFFFFF] [border: (1px solid #CCCCCC) none (1px solid #CCCCCC) none]
+    LayoutBlockFlow {item} at (1,353) size 265x92 [bgcolor=#FFFFFF] [border: (1px solid #CCCCCC) none (1px solid #CCCCCC) none]
       LayoutInline {title} at (0,0) size 175x14
         LayoutText {#text} at (10,11) size 175x14
           text run at (10,11) width 175: "contenteditable for Mozilla"
@@ -67,7 +67,7 @@ layer at (10,10) size 282x302 clip at (11,11) size 265x300 scrollHeight 1275
           text run at (10,67) width 195: "released code that simulates..."
       LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
-    LayoutBlockFlow {item} at (1,456) size 265x78 [bgcolor=#FFFFFF] [border: (1px solid #CCCCCC) none (1px solid #CCCCCC) none]
+    LayoutBlockFlow {item} at (1,455) size 265x78 [bgcolor=#FFFFFF] [border: (1px solid #CCCCCC) none (1px solid #CCCCCC) none]
       LayoutInline {title} at (0,0) size 179x28
         LayoutText {#text} at (10,11) size 179x28
           text run at (10,11) width 179: "DHTML Timeline/Keyframe"
@@ -81,7 +81,7 @@ layer at (10,10) size 282x302 clip at (11,11) size 265x300 scrollHeight 1275
           text run at (10,53) width 149: "for his DHTML toolset...."
       LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
-    LayoutBlockFlow {item} at (1,544) size 265x92 [bgcolor=#FFFFFF] [border: (1px solid #CCCCCC) none (1px solid #CCCCCC) none]
+    LayoutBlockFlow {item} at (1,543) size 265x92 [bgcolor=#FFFFFF] [border: (1px solid #CCCCCC) none (1px solid #CCCCCC) none]
       LayoutInline {title} at (0,0) size 243x28
         LayoutText {#text} at (10,11) size 243x28
           text run at (10,11) width 243: "DynAPI 2.9 and Mozilla compatibility"
@@ -96,7 +96,7 @@ layer at (10,10) size 282x302 clip at (11,11) size 265x300 scrollHeight 1275
           text run at (10,67) width 162: "Steinman's original site...."
       LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
-    LayoutBlockFlow {item} at (1,646) size 265x64 [bgcolor=#FFFFFF] [border: (1px solid #CCCCCC) none (1px solid #CCCCCC) none]
+    LayoutBlockFlow {item} at (1,645) size 265x64 [bgcolor=#FFFFFF] [border: (1px solid #CCCCCC) none (1px solid #CCCCCC) none]
       LayoutInline {title} at (0,0) size 152x14
         LayoutText {#text} at (10,11) size 152x14
           text run at (10,11) width 152: "!lineDraw bookmarklet"
@@ -109,7 +109,7 @@ layer at (10,10) size 282x302 clip at (11,11) size 265x300 scrollHeight 1275
           text run at (10,39) width 177: "Coolest Bookmarklet Ever...."
       LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
-    LayoutBlockFlow {item} at (1,720) size 265x92 [bgcolor=#FFFFFF] [border: (1px solid #CCCCCC) none (1px solid #CCCCCC) none]
+    LayoutBlockFlow {item} at (1,719) size 265x92 [bgcolor=#FFFFFF] [border: (1px solid #CCCCCC) none (1px solid #CCCCCC) none]
       LayoutInline {title} at (0,0) size 200x14
         LayoutText {#text} at (10,11) size 200x14
           text run at (10,11) width 200: "Mozilla, DHTML and DOM links"
@@ -124,7 +124,7 @@ layer at (10,10) size 282x302 clip at (11,11) size 265x300 scrollHeight 1275
           text run at (10,67) width 198: "replacement for innerHTML. It..."
       LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
-    LayoutBlockFlow {item} at (1,822) size 265x64 [bgcolor=#FFFFFF] [border: (1px solid #CCCCCC) none (1px solid #CCCCCC) none]
+    LayoutBlockFlow {item} at (1,821) size 265x64 [bgcolor=#FFFFFF] [border: (1px solid #CCCCCC) none (1px solid #CCCCCC) none]
       LayoutInline {title} at (0,0) size 103x14
         LayoutText {#text} at (10,11) size 103x14
           text run at (10,11) width 103: "Mozilla 1.0 RC2"
@@ -137,7 +137,7 @@ layer at (10,10) size 282x302 clip at (11,11) size 265x300 scrollHeight 1275
           text run at (10,39) width 103: "now available...."
       LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
-    LayoutBlockFlow {item} at (1,896) size 265x92 [bgcolor=#FFFFFF] [border: (1px solid #CCCCCC) none (1px solid #CCCCCC) none]
+    LayoutBlockFlow {item} at (1,895) size 265x92 [bgcolor=#FFFFFF] [border: (1px solid #CCCCCC) none (1px solid #CCCCCC) none]
       LayoutInline {title} at (0,0) size 234x28
         LayoutText {#text} at (10,11) size 234x28
           text run at (10,11) width 234: "javascript: is deprecated. Don't use"
@@ -152,7 +152,7 @@ layer at (10,10) size 282x302 clip at (11,11) size 265x300 scrollHeight 1275
           text run at (10,67) width 152: "deprecated. Don't use..."
       LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
-    LayoutBlockFlow {item} at (1,998) size 265x78 [bgcolor=#FFFFFF] [border: (1px solid #CCCCCC) none (1px solid #CCCCCC) none]
+    LayoutBlockFlow {item} at (1,997) size 265x78 [bgcolor=#FFFFFF] [border: (1px solid #CCCCCC) none (1px solid #CCCCCC) none]
       LayoutInline {title} at (0,0) size 173x14
         LayoutText {#text} at (10,11) size 173x14
           text run at (10,11) width 173: "Conditional Script Loading"
@@ -164,7 +164,7 @@ layer at (10,10) size 282x302 clip at (11,11) size 265x300 scrollHeight 1275
           text run at (10,53) width 75: "JavaScript..."
       LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
-    LayoutBlockFlow {item} at (1,1086) size 265x78 [bgcolor=#FFFFFF] [border: (1px solid #CCCCCC) none (1px solid #CCCCCC) none]
+    LayoutBlockFlow {item} at (1,1085) size 265x78 [bgcolor=#FFFFFF] [border: (1px solid #CCCCCC) none (1px solid #CCCCCC) none]
       LayoutInline {title} at (0,0) size 114x14
         LayoutText {#text} at (10,11) size 114x14
           text run at (10,11) width 114: "Stories and Tools"
@@ -178,7 +178,7 @@ layer at (10,10) size 282x302 clip at (11,11) size 265x300 scrollHeight 1275
           text run at (10,53) width 195: "text medium and the Web as..."
       LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
-    LayoutBlockFlow {item} at (1,1174) size 265x92 [bgcolor=#FFFFFF] [border: (1px solid #CCCCCC) none (1px solid #CCCCCC) none]
+    LayoutBlockFlow {item} at (1,1173) size 265x92 [bgcolor=#FFFFFF] [border: (1px solid #CCCCCC) none (1px solid #CCCCCC) none]
       LayoutInline {title} at (0,0) size 164x14
         LayoutText {#text} at (10,11) size 164x14
           text run at (10,11) width 164: "Whole Lotto Gecko Links"

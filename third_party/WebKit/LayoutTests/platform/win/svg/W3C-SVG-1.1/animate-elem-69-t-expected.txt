@@ -2,13 +2,13 @@ layer at (0,0) size 480x360
   LayoutView at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
-    LayoutSVGText {text} at (10,304) size 263.33x45 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (10,304) size 263.33x45
-        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 263.34: "$Revision: 1.7 $"
+    LayoutSVGText {text} at (10,304) size 261x46 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,304) size 261x46
+        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 261.00: "$Revision: 1.7 $"
     LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
-    LayoutSVGText {text} at (200.02,12) size 80.28x22 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (200.02,12) size 80.28x22
-        chunk 1 (middle anchor) text run 1 at (200.02,30.00) startOffset 0 endOffset 9 width 79.95: "repeatDur"
+    LayoutSVGText {text} at (200.50,13) size 79x22 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (200.50,13) size 79x22
+        chunk 1 (middle anchor) text run 1 at (200.50,30.00) startOffset 0 endOffset 9 width 79.00: "repeatDur"
     LayoutSVGContainer {g} at (-48,12) size 323.50x161 [transform={m=((1.00,0.00)(0.00,1.00)) t=(130.00,80.00)}]
       LayoutSVGContainer {g} at (-168,-13) size 168x141 [transform={m=((1.00,0.00)(0.00,1.00)) t=(120.00,45.00)}]
         LayoutSVGText {text} at (-168,-13) size 168x16 contains 1 chunk(s)

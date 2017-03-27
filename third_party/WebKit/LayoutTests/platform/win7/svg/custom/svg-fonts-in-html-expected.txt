@@ -21,20 +21,20 @@ layer at (173,32) size 454x454
       LayoutInline {SPAN} at (0,0) size 0x0
 layer at (173,47) size 454x190
   LayoutBlockFlow (positioned) {H1} at (0,15.11) size 453.53x190 [color=#DD9955]
-    LayoutInline {SPAN} at (0,0) size 343x192
-      LayoutText {#text} at (62,-1) size 343x192
-        text run at (62,-1) width 329: "CSS ZEN"
-        text run at (55,94) width 343: "GARDEN"
+    LayoutInline {SPAN} at (0,0) size 341x190
+      LayoutText {#text} at (63,0) size 341x190
+        text run at (63,0) width 327: "CSS ZEN"
+        text run at (56,95) width 341: "GARDEN"
 layer at (173,119) size 454x22
   LayoutBlockFlow (positioned) {H2} at (0,87.47) size 453.53x22 [color=#EEFF00]
-    LayoutInline {SPAN} at (0,0) size 206x21
-      LayoutText {#text} at (124,0) size 114x21
-        text run at (124,0) width 114: "The Beauty of "
-      LayoutInline {ACRONYM} at (0,0) size 34x21
-        LayoutText {#text} at (237,0) size 34x21
-          text run at (237,0) width 34: "CSS"
-      LayoutText {#text} at (270,0) size 60x21
-        text run at (270,0) width 60: " Design"
+    LayoutInline {SPAN} at (0,0) size 203x21
+      LayoutText {#text} at (125,0) size 112x21
+        text run at (125,0) width 112: "The Beauty of "
+      LayoutInline {ACRONYM} at (0,0) size 36x21
+        LayoutText {#text} at (236,0) size 36x21
+          text run at (236,0) width 36: "CSS"
+      LayoutText {#text} at (271,0) size 57x21
+        text run at (271,0) width 57: " Design"
 layer at (173,351) size 454x135
   LayoutBlockFlow (positioned) {DIV} at (0,319.34) size 453.53x134.19
     LayoutInline {P} at (0,0) size 431x28
@@ -82,7 +82,7 @@ layer at (173,351) size 454x135
     LayoutText {#text} at (0,0) size 0x0
 layer at (321,234) size 307x81
   LayoutBlockFlow (positioned) {H3} at (147.42,-117.41) size 306.11x81.53 [color=#CCCC77] [bgcolor=#888811] [border: (3.77px solid #888811) none (3.77px solid #888811)]
-    LayoutInline {SPAN} at (0,0) size 277x83
-      LayoutText {#text} at (46,-1) size 277x83
-        text run at (46,-1) width 230: "The Road to"
-        text run at (3,36) width 277: "Enlightenment"
+    LayoutInline {SPAN} at (0,0) size 278x83
+      LayoutText {#text} at (45,-1) size 278x83
+        text run at (45,-1) width 231: "The Road to"
+        text run at (3,36) width 278: "Enlightenment"

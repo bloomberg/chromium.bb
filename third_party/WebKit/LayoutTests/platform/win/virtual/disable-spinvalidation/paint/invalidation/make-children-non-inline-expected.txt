@@ -8,112 +8,112 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV",
-          "rect": [8, 60, 784, 262],
+          "rect": [8, 64, 784, 280],
           "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow (anonymous)",
-          "rect": [8, 60, 784, 90],
+          "rect": [8, 64, 784, 100],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutBlockFlow (anonymous)",
-          "rect": [8, 250, 784, 72],
+          "rect": [8, 264, 784, 80],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 250, 113, 17],
+          "rect": [8, 264, 104, 19],
           "reason": "style change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 150, 113, 17],
+          "rect": [8, 164, 104, 19],
           "reason": "layoutObject removal"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 132, 80, 17],
+          "rect": [8, 144, 77, 19],
           "reason": "style change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 132, 80, 17],
+          "rect": [8, 144, 77, 19],
           "reason": "layoutObject removal"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 96, 80, 17],
+          "rect": [8, 104, 77, 19],
           "reason": "style change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 96, 80, 17],
+          "rect": [8, 104, 77, 19],
           "reason": "layoutObject removal"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 268, 69, 17],
+          "rect": [8, 284, 65, 19],
           "reason": "style change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 168, 69, 17],
+          "rect": [8, 184, 65, 19],
           "reason": "layoutObject removal"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 304, 64, 17],
+          "rect": [8, 324, 61, 19],
           "reason": "style change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 204, 64, 17],
+          "rect": [8, 224, 61, 19],
           "reason": "layoutObject removal"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 114, 45, 17],
+          "rect": [8, 124, 42, 19],
           "reason": "style change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 114, 45, 17],
+          "rect": [8, 124, 42, 19],
           "reason": "layoutObject removal"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 78, 44, 17],
+          "rect": [8, 84, 42, 19],
           "reason": "style change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 78, 44, 17],
+          "rect": [8, 84, 42, 19],
           "reason": "layoutObject removal"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 60, 40, 17],
+          "rect": [8, 64, 39, 19],
           "reason": "style change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 60, 40, 17],
+          "rect": [8, 64, 39, 19],
           "reason": "layoutObject removal"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 286, 30, 17],
+          "rect": [8, 304, 27, 19],
           "reason": "style change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 186, 30, 17],
+          "rect": [8, 204, 27, 19],
           "reason": "layoutObject removal"
         },
         {
           "object": "LayoutBlockFlow DIV id='target'",
-          "rect": [8, 150, 10, 100],
+          "rect": [8, 164, 10, 100],
           "reason": "layoutObject insertion"
         }
       ]

@@ -1,35 +1,35 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x508
-  LayoutBlockFlow {HTML} at (0,0) size 800x508
-    LayoutBlockFlow {BODY} at (8,16) size 784x484
-      LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 267x17
-          text run at (0,0) width 267: "You should see the numbers 1 to 9 below."
-      LayoutBlockFlow {DIV} at (0,34) size 784x50
+layer at (0,0) size 800x510
+  LayoutBlockFlow {HTML} at (0,0) size 800x510
+    LayoutBlockFlow {BODY} at (8,16) size 784x486
+      LayoutBlockFlow {P} at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 253x19
+          text run at (0,0) width 253: "You should see the numbers 1 to 9 below."
+      LayoutBlockFlow {DIV} at (0,36) size 784x50
         LayoutText {#text} at (0,0) size 24x50
           text run at (0,0) width 24: "A"
-      LayoutBlockFlow {DIV} at (0,84) size 784x50
+      LayoutBlockFlow {DIV} at (0,86) size 784x50
+        LayoutText {#text} at (0,0) size 25x50
+          text run at (0,0) width 25: "A"
+      LayoutBlockFlow {DIV} at (0,136) size 784x50
         LayoutText {#text} at (0,0) size 26x50
           text run at (0,0) width 26: "A"
-      LayoutBlockFlow {DIV} at (0,134) size 784x50
+      LayoutBlockFlow {DIV} at (0,186) size 784x50
         LayoutText {#text} at (0,0) size 27x50
           text run at (0,0) width 27: "A"
-      LayoutBlockFlow {DIV} at (0,184) size 784x50
-        LayoutText {#text} at (0,0) size 28x50
-          text run at (0,0) width 28: "A"
-      LayoutBlockFlow {DIV} at (0,234) size 784x50
+      LayoutBlockFlow {DIV} at (0,236) size 784x50
         LayoutText {#text} at (0,0) size 29x50
           text run at (0,0) width 29: "A"
-      LayoutBlockFlow {DIV} at (0,284) size 784x50
+      LayoutBlockFlow {DIV} at (0,286) size 784x50
         LayoutText {#text} at (0,0) size 30x50
           text run at (0,0) width 30: "A"
-      LayoutBlockFlow {DIV} at (0,334) size 784x50
+      LayoutBlockFlow {DIV} at (0,336) size 784x50
         LayoutText {#text} at (0,0) size 31x50
           text run at (0,0) width 31: "A"
-      LayoutBlockFlow {DIV} at (0,384) size 784x50
+      LayoutBlockFlow {DIV} at (0,386) size 784x50
         LayoutText {#text} at (0,0) size 32x50
           text run at (0,0) width 32: "A"
-      LayoutBlockFlow {DIV} at (0,434) size 784x50
+      LayoutBlockFlow {DIV} at (0,436) size 784x50
         LayoutText {#text} at (0,0) size 33x50
           text run at (0,0) width 33: "A"

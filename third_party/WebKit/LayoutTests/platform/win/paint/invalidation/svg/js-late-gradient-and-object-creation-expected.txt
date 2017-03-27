@@ -8,8 +8,13 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGContainer g id='content'",
-          "rect": [0, 15, 759, 362],
+          "rect": [0, 15, 756, 364],
           "reason": "became visible"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [0, 247, 756, 132],
+          "reason": "layoutObject insertion"
         }
       ]
     }

@@ -8,21 +8,21 @@ layer at (0,0) size 800x60
           LayoutBlockFlow {DIV} at (0,0) size 136.14x16
           LayoutDetailsMarker {DIV} at (136.14,1.33) size 17.86x13.33: down
           LayoutBlockFlow {DIV} at (154,0) size 15x16
-      LayoutText {#text} at (173,2) size 4x17
-        text run at (173,2) width 4: " "
+      LayoutText {#text} at (173,1) size 4x19
+        text run at (173,1) width 4: " "
       LayoutTextControl {INPUT} at (177,0) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutFlexibleBox {DIV} at (2,3) size 169x16
           LayoutBlockFlow {DIV} at (0,0) size 136.14x16
           LayoutDetailsMarker {DIV} at (136.14,1.33) size 17.86x13.33: down
           LayoutBlockFlow {DIV} at (154,0) size 15x16
-      LayoutText {#text} at (350,2) size 4x17
-        text run at (350,2) width 4: " "
-      LayoutBR {BR} at (354,2) size 0x17
+      LayoutText {#text} at (350,1) size 4x19
+        text run at (350,1) width 4: " "
+      LayoutBR {BR} at (354,1) size 0x19
       LayoutTextControl {INPUT} at (0,22) size 173x22 [color=#545454] [bgcolor=#EBEBE4] [border: (2px inset #EEEEEE)]
         LayoutFlexibleBox {DIV} at (2,3) size 169x16
           LayoutBlockFlow {DIV} at (0,0) size 136.14x16
-      LayoutText {#text} at (173,24) size 4x17
-        text run at (173,24) width 4: " "
+      LayoutText {#text} at (173,23) size 4x19
+        text run at (173,23) width 4: " "
       LayoutTextControl {INPUT} at (177,22) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutFlexibleBox {DIV} at (2,3) size 169x16
           LayoutBlockFlow {DIV} at (0,0) size 136.14x16

@@ -5,21 +5,21 @@ This layer should be composited.
   "layers": [
     {
       "name": "LayoutView #document",
-      "bounds": [785, 612],
+      "bounds": [785, 618],
       "contentsOpaque": true,
       "drawsContent": true
     },
     {
       "name": "LayoutBlockFlow DIV class='preserve3d'",
-      "position": [18, 390],
-      "bounds": [342, 180],
+      "position": [18, 394],
+      "bounds": [342, 182],
       "shouldFlattenTransform": false,
       "3dRenderingContext": 1,
       "drawsContent": true
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='box'",
-      "position": [31, 49],
+      "position": [31, 51],
       "bounds": [100, 100],
       "contentsOpaque": true,
       "3dRenderingContext": 1,

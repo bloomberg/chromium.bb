@@ -2,42 +2,42 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
-    LayoutSVGContainer {g} at (10,5.50) size 248.45x258
-      LayoutSVGText {text} at (10,5.50) size 238.69x18 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (10,5.50) size 238.69x18
-          chunk 1 text run 1 at (10.00,20.00) startOffset 0 endOffset 36 width 238.70: "Testing xml:space=\"default\" support:"
-      LayoutSVGText {text} at (10,25.50) size 173.33x18 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (10,25.50) size 173.33x18
-          chunk 1 text run 1 at (10.00,40.00) startOffset 0 endOffset 23 width 173.34: "No Spaces Between Words"
-      LayoutSVGText {text} at (10,45.50) size 129.48x18 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (10,45.50) size 129.48x18
-          chunk 1 text run 1 at (10.00,60.00) startOffset 0 endOffset 18 width 129.49: "Tabs become spaces"
-      LayoutSVGText {text} at (10,65.50) size 110.17x18 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (10,65.50) size 110.17x18
-          chunk 1 text run 1 at (10.00,80.00) startOffset 0 endOffset 16 width 110.18: "No leading space"
-      LayoutSVGText {text} at (10,85.50) size 109.30x18 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (10,85.50) size 109.30x18
-          chunk 1 text run 1 at (10.00,100.00) startOffset 0 endOffset 17 width 109.30: "No trailing space"
-      LayoutSVGText {text} at (10,105.50) size 158.17x18 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (10,105.50) size 158.17x18
-          chunk 1 text run 1 at (10.00,120.00) startOffset 0 endOffset 11 width 78.63: "Whitespace "
-          chunk 1 text run 1 at (88.63,120.00) startOffset 0 endOffset 3 width 14.67: "is "
-          chunk 1 text run 1 at (103.30,120.00) startOffset 0 endOffset 10 width 64.88: "simplified"
-      LayoutSVGText {text} at (10,145.50) size 248.45x18 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (10,145.50) size 248.45x18
-          chunk 1 text run 1 at (10.00,160.00) startOffset 0 endOffset 37 width 248.46: "Testing xml:space=\"preserve\" support:"
-      LayoutSVGText {text} at (10,165.50) size 173.28x18 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (10,165.50) size 173.28x18
-          chunk 1 text run 1 at (10.00,180.00) startOffset 0 endOffset 24 width 173.28: " Newlines Become Spaces "
-      LayoutSVGText {text} at (10,185.50) size 129.48x18 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (10,185.50) size 129.48x18
-          chunk 1 text run 1 at (10.00,200.00) startOffset 0 endOffset 18 width 129.49: "Tabs become spaces"
-      LayoutSVGText {text} at (10,205.50) size 157.27x18 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (10,205.50) size 157.27x18
-          chunk 1 text run 1 at (10.00,220.00) startOffset 0 endOffset 25 width 157.27: "    Respect leading space"
-      LayoutSVGText {text} at (10,225.50) size 152.39x18 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (10,225.50) size 152.39x18
-          chunk 1 text run 1 at (10.00,240.00) startOffset 0 endOffset 25 width 152.39: "Respect trailing space   "
-      LayoutSVGText {text} at (10,245.50) size 230.63x18 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (10,245.50) size 230.63x18
-          chunk 1 text run 1 at (10.00,260.00) startOffset 0 endOffset 40 width 230.63: "Whitespace      is not        simplified"
+    LayoutSVGContainer {g} at (10,6) size 241.88x258
+      LayoutSVGText {text} at (10,6) size 232.38x18 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,6) size 232.38x18
+          chunk 1 text run 1 at (10.00,20.00) startOffset 0 endOffset 36 width 232.38: "Testing xml:space=\"default\" support:"
+      LayoutSVGText {text} at (10,26) size 170.22x18 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,26) size 170.22x18
+          chunk 1 text run 1 at (10.00,40.00) startOffset 0 endOffset 23 width 170.22: "No Spaces Between Words"
+      LayoutSVGText {text} at (10,46) size 125.38x18 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,46) size 125.38x18
+          chunk 1 text run 1 at (10.00,60.00) startOffset 0 endOffset 18 width 125.38: "Tabs become spaces"
+      LayoutSVGText {text} at (10,66) size 108x18 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,66) size 108x18
+          chunk 1 text run 1 at (10.00,80.00) startOffset 0 endOffset 16 width 108.00: "No leading space"
+      LayoutSVGText {text} at (10,86) size 107.50x18 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,86) size 107.50x18
+          chunk 1 text run 1 at (10.00,100.00) startOffset 0 endOffset 17 width 107.50: "No trailing space"
+      LayoutSVGText {text} at (10,106) size 153.50x18 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,106) size 153.50x18
+          chunk 1 text run 1 at (10.00,120.00) startOffset 0 endOffset 11 width 76.50: "Whitespace "
+          chunk 1 text run 1 at (86.50,120.00) startOffset 0 endOffset 3 width 14.00: "is "
+          chunk 1 text run 1 at (100.50,120.00) startOffset 0 endOffset 10 width 63.00: "simplified"
+      LayoutSVGText {text} at (10,146) size 241.88x18 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,146) size 241.88x18
+          chunk 1 text run 1 at (10.00,160.00) startOffset 0 endOffset 37 width 241.88: "Testing xml:space=\"preserve\" support:"
+      LayoutSVGText {text} at (10,166) size 169.50x18 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,166) size 169.50x18
+          chunk 1 text run 1 at (10.00,180.00) startOffset 0 endOffset 24 width 169.50: " Newlines Become Spaces "
+      LayoutSVGText {text} at (10,186) size 125.38x18 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,186) size 125.38x18
+          chunk 1 text run 1 at (10.00,200.00) startOffset 0 endOffset 18 width 125.38: "Tabs become spaces"
+      LayoutSVGText {text} at (10,206) size 154x18 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,206) size 154x18
+          chunk 1 text run 1 at (10.00,220.00) startOffset 0 endOffset 25 width 154.00: "    Respect leading space"
+      LayoutSVGText {text} at (10,226) size 149.50x18 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,226) size 149.50x18
+          chunk 1 text run 1 at (10.00,240.00) startOffset 0 endOffset 25 width 149.50: "Respect trailing space   "
+      LayoutSVGText {text} at (10,246) size 225.50x18 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,246) size 225.50x18
+          chunk 1 text run 1 at (10.00,260.00) startOffset 0 endOffset 40 width 225.50: "Whitespace      is not        simplified"

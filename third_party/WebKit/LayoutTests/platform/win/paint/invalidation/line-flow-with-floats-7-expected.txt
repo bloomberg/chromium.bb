@@ -8,18 +8,13 @@
       "paintInvalidations": [
         {
           "object": "LayoutText #text",
-          "rect": [14, 422, 355, 53],
+          "rect": [65, 380, 304, 59],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [14, 404, 355, 35],
+          "rect": [297, 420, 72, 19],
           "reason": "style change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [65, 386, 303, 35],
-          "reason": "forced by layout"
         }
       ]
     }
@@ -30,15 +25,19 @@
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'for turns,\n'",
+      "object": "InlineTextBox 'for'",
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'quarrelling all the while, and fighting'",
+      "object": "InlineTextBox 'turns,\n'",
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'for the hedgehogs; and in\n'",
+      "object": "InlineTextBox 'quarrelling all the while, and fighting for the'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'hedgehogs; and in\n'",
       "reason": "forced by layout"
     },
     {
@@ -54,32 +53,8 @@
       "reason": "style change"
     },
     {
-      "object": "InlineTextBox 'the'",
+      "object": "InlineTextBox 'the Queen'",
       "reason": "style change"
-    },
-    {
-      "object": "InlineTextBox 'Queen'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "forced by layout"
-    },
-    {
-      "object": "InlineTextBox ' was in a furious passion, and went\n'",
-      "reason": "forced by layout"
-    },
-    {
-      "object": "InlineTextBox 'stamping'",
-      "reason": "forced by layout"
-    },
-    {
-      "object": "InlineTextBox 'about, and shouting \u2018Off with his head!\u2019 or \u2018Off with'",
-      "reason": "forced by layout"
-    },
-    {
-      "object": "InlineTextBox 'her head!\u2019 about once in a minute.\n'",
-      "reason": "forced by layout"
     }
   ]
 }

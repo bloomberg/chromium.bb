@@ -8,32 +8,32 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV id='keep' class='item'",
-          "rect": [348, 84, 100, 100],
+          "rect": [348, 88, 100, 100],
           "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV id='to_remove' class='item'",
-          "rect": [348, 84, 100, 100],
+          "rect": [348, 88, 100, 100],
           "reason": "layoutObject removal"
         },
         {
           "object": "LayoutBlockFlow DIV id='keep' class='item'",
-          "rect": [88, 84, 100, 100],
+          "rect": [88, 88, 100, 100],
           "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [348, 84, 4, 17],
+          "rect": [348, 88, 4, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [348, 84, 4, 17],
+          "rect": [348, 88, 4, 19],
           "reason": "layoutObject removal"
         },
         {
           "object": "LayoutText #text",
-          "rect": [88, 84, 4, 17],
+          "rect": [88, 88, 4, 19],
           "reason": "bounds change"
         }
       ]

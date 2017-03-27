@@ -8,57 +8,52 @@
       "paintInvalidations": [
         {
           "object": "LayoutText #text",
-          "rect": [8, 275, 75, 17],
+          "rect": [8, 258, 74, 19],
           "reason": "style change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 257, 75, 17],
+          "rect": [8, 238, 74, 19],
           "reason": "style change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 239, 75, 17],
+          "rect": [8, 218, 74, 19],
           "reason": "style change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 221, 75, 17],
+          "rect": [8, 198, 74, 19],
           "reason": "style change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 203, 75, 17],
+          "rect": [8, 178, 74, 19],
           "reason": "style change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 185, 75, 17],
+          "rect": [8, 158, 74, 19],
           "reason": "style change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 167, 75, 17],
+          "rect": [8, 138, 74, 19],
           "reason": "style change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 149, 75, 17],
+          "rect": [8, 118, 74, 19],
           "reason": "style change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 131, 75, 17],
+          "rect": [8, 278, 74, 15],
           "reason": "style change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 113, 75, 17],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [8, 108, 75, 4],
+          "rect": [8, 108, 74, 9],
           "reason": "style change"
         }
       ]

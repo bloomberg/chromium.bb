@@ -1,0 +1,63 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV",
+          "rect": [428, 38, 300, 20],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='container'",
+          "rect": [408, 18, 300, 20],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV",
+          "rect": [28, 38, 300, 20],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='container'",
+          "rect": [8, 18, 300, 20],
+          "reason": "bounds change"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='container'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV",
+      "reason": "bounds change"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineTextBox 'There should only be one copy of this text.'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "location change"
+    }
+  ]
+}
+

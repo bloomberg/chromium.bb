@@ -83,8 +83,8 @@ layer at (0,0) size 480x360
           LayoutSVGInlineText {#text} at (230,187) size 59x16
             chunk 1 text run 1 at (230.00,200.00) startOffset 0 endOffset 10 width 59.00: "Picas (pc)"
         LayoutSVGRect {rect} at (20,200) size 96x1 [fill={[type=SOLID] [color=#000000]}] [x=20.00] [y=200.00] [width=96.00] [height=1.00]
-    LayoutSVGContainer {g} at (10,311) size 229.47x36
-      LayoutSVGText {text} at (10,311) size 229.47x36 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (10,311) size 229.47x36
-          chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 229.47: "$Revision: 1.7 $"
+    LayoutSVGContainer {g} at (10,311) size 228x36
+      LayoutSVGText {text} at (10,311) size 228x36 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,311) size 228x36
+          chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 228.00: "$Revision: 1.7 $"
     LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

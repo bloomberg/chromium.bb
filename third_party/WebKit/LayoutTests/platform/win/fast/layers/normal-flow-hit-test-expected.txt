@@ -1,23 +1,23 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x320
-  LayoutBlockFlow {HTML} at (0,0) size 800x320
-    LayoutBlockFlow {BODY} at (8,16) size 784x296
-      LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 60x17
-          text run at (0,0) width 60: "Tests for "
-        LayoutInline {A} at (0,0) size 310x17 [color=#0000EE]
-          LayoutText {#text} at (59,0) size 310x17
-            text run at (59,0) width 310: "https://bugs.webkit.org/show_bug.cgi?id=24552"
-      LayoutBlockFlow (anonymous) at (0,34) size 784x124
-        LayoutText {#text} at (120,106) size 4x17
-          text run at (120,106) width 4: " "
-        LayoutInline {A} at (0,0) size 62x17 [color=#0000EE]
-          LayoutText {#text} at (124,106) size 62x17
-            text run at (124,106) width 62: "Link here"
+layer at (0,0) size 800x325
+  LayoutBlockFlow {HTML} at (0,0) size 800x325
+    LayoutBlockFlow {BODY} at (8,16) size 784x301
+      LayoutBlockFlow {P} at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 56x19
+          text run at (0,0) width 56: "Tests for "
+        LayoutInline {A} at (0,0) size 292x19 [color=#0000EE]
+          LayoutText {#text} at (55,0) size 292x19
+            text run at (55,0) width 292: "https://bugs.webkit.org/show_bug.cgi?id=24552"
+      LayoutBlockFlow (anonymous) at (0,36) size 784x125
+        LayoutText {#text} at (120,105) size 4x19
+          text run at (120,105) width 4: " "
+        LayoutInline {A} at (0,0) size 57x19 [color=#0000EE]
+          LayoutText {#text} at (124,105) size 57x19
+            text run at (124,105) width 57: "Link here"
         LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow {DIV} at (0,278) size 784x18
-        LayoutText {#text} at (0,0) size 168x17
-          text run at (0,0) width 168: "Found link node, so PASS"
-layer at (18,60) size 100x100
+      LayoutBlockFlow {DIV} at (0,281) size 784x20
+        LayoutText {#text} at (0,0) size 161x19
+          text run at (0,0) width 161: "Found link node, so PASS"
+layer at (18,62) size 100x100
   LayoutBlockFlow {DIV} at (10,10) size 100x100 [bgcolor=#808080]

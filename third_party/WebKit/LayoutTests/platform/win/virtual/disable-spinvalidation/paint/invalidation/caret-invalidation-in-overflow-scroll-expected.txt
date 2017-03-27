@@ -8,12 +8,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV id='inner-editor'",
-          "rect": [406, 11, 2, 16],
+          "rect": [381, 11, 1, 16],
           "reason": "caret"
         },
         {
           "object": "LayoutBlockFlow DIV id='inner-editor'",
-          "rect": [403, 11, 2, 16],
+          "rect": [378, 11, 1, 16],
           "reason": "caret"
         }
       ]

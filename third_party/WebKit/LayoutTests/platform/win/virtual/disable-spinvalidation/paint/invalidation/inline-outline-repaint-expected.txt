@@ -8,17 +8,17 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV",
-          "rect": [8, 166, 100, 36],
+          "rect": [8, 156, 100, 40],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutInline SPAN id='test'",
-          "rect": [5, 163, 98, 41],
+          "rect": [5, 153, 92, 45],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 166, 92, 35],
+          "rect": [8, 156, 86, 39],
           "reason": "full"
         }
       ]

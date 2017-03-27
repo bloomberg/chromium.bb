@@ -6,21 +6,21 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x18
         LayoutText {#text} at (0,0) size 93x17
           text run at (0,0) width 93: "This tests that "
-        LayoutInline {TT} at (0,0) size 25x16
-          LayoutText {#text} at (92,2) size 25x16
-            text run at (92,2) width 25: "WBR"
+        LayoutInline {TT} at (0,0) size 25x15
+          LayoutText {#text} at (92,3) size 25x15
+            text run at (92,3) width 25: "WBR"
         LayoutText {#text} at (116,0) size 309x17
           text run at (116,0) width 309: " elements cannot be styled and that setting their "
-        LayoutInline {TT} at (0,0) size 65x16
-          LayoutText {#text} at (424,2) size 65x16
-            text run at (424,2) width 65: "position"
-        LayoutText {#text} at (488,0) size 22x17
-          text run at (488,0) width 22: " to "
-        LayoutInline {TT} at (0,0) size 65x16
-          LayoutText {#text} at (509,2) size 65x16
-            text run at (509,2) width 65: "absolute"
-        LayoutText {#text} at (573,0) size 154x17
-          text run at (573,0) width 154: " does not crash WebKit."
+        LayoutInline {TT} at (0,0) size 63x15
+          LayoutText {#text} at (424,3) size 63x15
+            text run at (424,3) width 63: "position"
+        LayoutText {#text} at (486,0) size 22x17
+          text run at (486,0) width 22: " to "
+        LayoutInline {TT} at (0,0) size 63x15
+          LayoutText {#text} at (507,3) size 63x15
+            text run at (507,3) width 63: "absolute"
+        LayoutText {#text} at (569,0) size 154x17
+          text run at (569,0) width 154: " does not crash WebKit."
       LayoutBlockFlow {P} at (0,34) size 784x18
         LayoutText {#text} at (0,0) size 128x17
           text run at (0,0) width 128: "There should be no "

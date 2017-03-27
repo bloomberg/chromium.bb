@@ -24,7 +24,7 @@ lorem ipsumlorem ipsumlorem ipsum
       "paintInvalidations": [
         {
           "object": "LayoutText #text",
-          "rect": [0, 80, 42, 35],
+          "rect": [0, 80, 38, 39],
           "reason": "bounds change"
         }
       ]
@@ -78,12 +78,12 @@ lorem ipsumlorem ipsumlorem ipsum
       "paintInvalidations": [
         {
           "object": "LayoutText #text",
-          "rect": [0, 80, 44, 35],
+          "rect": [0, 80, 39, 39],
           "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [0, 160, 42, 35],
+          "rect": [0, 160, 38, 39],
           "reason": "bounds change"
         }
       ]

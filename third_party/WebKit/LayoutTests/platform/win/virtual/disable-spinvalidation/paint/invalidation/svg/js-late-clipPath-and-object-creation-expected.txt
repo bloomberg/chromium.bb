@@ -8,32 +8,32 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGContainer g id='content'",
-          "rect": [16, 40, 784, 168],
+          "rect": [16, 42, 784, 170],
           "reason": "bounds change"
         },
         {
           "object": "LayoutSVGContainer g id='content'",
-          "rect": [16, 40, 784, 168],
+          "rect": [16, 42, 784, 170],
           "reason": "became visible"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [16, 40, 784, 168],
+          "rect": [16, 42, 784, 170],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [16, 40, 784, 168],
+          "rect": [16, 42, 784, 170],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGText text",
-          "rect": [16, 40, 784, 168],
+          "rect": [16, 42, 784, 170],
           "reason": "style change"
         },
         {
           "object": "LayoutSVGText text",
-          "rect": [16, 40, 784, 168],
+          "rect": [16, 42, 784, 170],
           "reason": "layoutObject insertion"
         },
         {

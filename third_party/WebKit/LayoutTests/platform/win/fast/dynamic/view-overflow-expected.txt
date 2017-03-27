@@ -3,21 +3,21 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
-      LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 54x17
-          text run at (0,0) width 54: "Test for "
-        LayoutInline {I} at (0,0) size 647x17
-          LayoutInline {A} at (0,0) size 305x17 [color=#0000EE]
-            LayoutText {#text} at (53,0) size 305x17
-              text run at (53,0) width 305: "http://bugs.webkit.org/show_bug.cgi?id=13145"
-          LayoutText {#text} at (357,0) size 343x17
-            text run at (357,0) width 5: " "
-            text run at (361,0) width 339: "Regression: Scrollbar not resizing after display none"
-        LayoutText {#text} at (699,0) size 5x17
-          text run at (699,0) width 5: "."
-      LayoutBlockFlow {P} at (0,34) size 784x18
-        LayoutText {#text} at (0,0) size 316x17
-          text run at (0,0) width 316: "The window should not have a vertical scroll bar."
+      LayoutBlockFlow {P} at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 50x19
+          text run at (0,0) width 50: "Test for "
+        LayoutInline {I} at (0,0) size 642x19
+          LayoutInline {A} at (0,0) size 306x19 [color=#0000EE]
+            LayoutText {#text} at (49,0) size 306x19
+              text run at (49,0) width 306: "http://bugs.webkit.org/show_bug.cgi?id=13145"
+          LayoutText {#text} at (354,0) size 337x19
+            text run at (354,0) width 5: " "
+            text run at (358,0) width 333: "Regression: Scrollbar not resizing after display none"
+        LayoutText {#text} at (690,0) size 5x19
+          text run at (690,0) width 5: "."
+      LayoutBlockFlow {P} at (0,36) size 784x20
+        LayoutText {#text} at (0,0) size 295x19
+          text run at (0,0) width 295: "The window should not have a vertical scroll bar."
 layer at (8,100) size 100x100
   LayoutBlockFlow (positioned) {DIV} at (8,100) size 100x100
     LayoutBlockFlow {DIV} at (0,0) size 100x100 [bgcolor=#008000]

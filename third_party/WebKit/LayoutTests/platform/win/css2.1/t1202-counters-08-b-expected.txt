@@ -1,143 +1,143 @@
-layer at (0,0) size 800x600 scrollWidth 953
+layer at (0,0) size 800x600 scrollWidth 925
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x94
-  LayoutBlockFlow {HTML} at (0,0) size 800x94
-    LayoutBlockFlow {BODY} at (8,16) size 784x70
-      LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 298x17
-          text run at (0,0) width 298: "The following two lines should look the same:"
-      LayoutBlockFlow {DIV} at (0,34) size 784x18
-        LayoutInline {SPAN} at (0,0) size 15x17
-          LayoutInline {<pseudo:before>} at (0,0) size 15x17
-            LayoutCounter (anonymous) at (0,0) size 15x17
-              text run at (0,0) width 15: "I.I"
-        LayoutText {#text} at (14,0) size 5x17
-          text run at (14,0) width 5: " "
-        LayoutInline {SPAN} at (0,0) size 21x17
-          LayoutInline {<pseudo:before>} at (0,0) size 21x17
-            LayoutCounter (anonymous) at (18,0) size 21x17
-              text run at (18,0) width 21: "I.II"
-        LayoutText {#text} at (38,0) size 5x17
-          text run at (38,0) width 5: " "
-        LayoutInline {SPAN} at (0,0) size 26x17
-          LayoutInline {<pseudo:before>} at (0,0) size 26x17
-            LayoutCounter (anonymous) at (42,0) size 26x17
-              text run at (42,0) width 26: "I.III"
-        LayoutText {#text} at (67,0) size 5x17
-          text run at (67,0) width 5: " "
-        LayoutInline {SPAN} at (0,0) size 28x17
-          LayoutInline {<pseudo:before>} at (0,0) size 28x17
-            LayoutCounter (anonymous) at (71,0) size 28x17
-              text run at (71,0) width 28: "I.IV"
-        LayoutText {#text} at (98,0) size 5x17
-          text run at (98,0) width 5: " "
-        LayoutInline {SPAN} at (0,0) size 22x17
-          LayoutInline {<pseudo:before>} at (0,0) size 22x17
-            LayoutCounter (anonymous) at (102,0) size 22x17
-              text run at (102,0) width 22: "I.V"
-        LayoutText {#text} at (123,0) size 5x17
-          text run at (123,0) width 5: " "
-        LayoutInline {SPAN} at (0,0) size 27x17
-          LayoutInline {<pseudo:before>} at (0,0) size 27x17
-            LayoutCounter (anonymous) at (127,0) size 27x17
-              text run at (127,0) width 27: "I.VI"
-        LayoutText {#text} at (153,0) size 5x17
-          text run at (153,0) width 5: " "
-        LayoutInline {SPAN} at (0,0) size 32x17
-          LayoutInline {<pseudo:before>} at (0,0) size 32x17
-            LayoutCounter (anonymous) at (157,0) size 32x17
-              text run at (157,0) width 32: "I.VII"
-        LayoutText {#text} at (188,0) size 5x17
-          text run at (188,0) width 5: " "
-        LayoutInline {SPAN} at (0,0) size 38x17
-          LayoutInline {<pseudo:before>} at (0,0) size 38x17
-            LayoutCounter (anonymous) at (192,0) size 38x17
-              text run at (192,0) width 38: "I.VIII"
-        LayoutText {#text} at (229,0) size 5x17
-          text run at (229,0) width 5: " "
-        LayoutInline {SPAN} at (0,0) size 27x17
-          LayoutInline {<pseudo:before>} at (0,0) size 27x17
-            LayoutCounter (anonymous) at (233,0) size 27x17
-              text run at (233,0) width 27: "I.IX"
-        LayoutText {#text} at (259,0) size 5x17
-          text run at (259,0) width 5: " "
-        LayoutInline {SPAN} at (0,0) size 22x17
-          LayoutInline {<pseudo:before>} at (0,0) size 22x17
-            LayoutCounter (anonymous) at (263,0) size 22x17
-              text run at (263,0) width 22: "I.X"
-        LayoutText {#text} at (284,0) size 5x17
-          text run at (284,0) width 5: " "
-        LayoutInline {SPAN} at (0,0) size 27x17
-          LayoutInline {<pseudo:before>} at (0,0) size 27x17
-            LayoutCounter (anonymous) at (288,0) size 27x17
-              text run at (288,0) width 27: "I.XI"
-        LayoutText {#text} at (314,0) size 5x17
-          text run at (314,0) width 5: " "
-        LayoutInline {SPAN} at (0,0) size 33x17
-          LayoutInline {<pseudo:before>} at (0,0) size 33x17
-            LayoutCounter (anonymous) at (318,0) size 33x17
-              text run at (318,0) width 33: "I.XII"
-        LayoutText {#text} at (350,0) size 5x17
-          text run at (350,0) width 5: " "
-        LayoutInline {SPAN} at (0,0) size 48x17
-          LayoutInline {<pseudo:before>} at (0,0) size 48x17
-            LayoutCounter (anonymous) at (354,0) size 48x17
-              text run at (354,0) width 48: "I.XLIX"
-        LayoutText {#text} at (401,0) size 5x17
-          text run at (401,0) width 5: " "
-        LayoutInline {SPAN} at (0,0) size 21x17
-          LayoutInline {<pseudo:before>} at (0,0) size 21x17
-            LayoutCounter (anonymous) at (405,0) size 21x17
-              text run at (405,0) width 21: "I.L"
-        LayoutText {#text} at (425,0) size 5x17
-          text run at (425,0) width 5: " "
-        LayoutInline {SPAN} at (0,0) size 103x17
-          LayoutInline {<pseudo:before>} at (0,0) size 103x17
-            LayoutCounter (anonymous) at (429,0) size 103x17
-              text run at (429,0) width 103: "I.CCCLXXXIX"
-        LayoutText {#text} at (531,0) size 5x17
-          text run at (531,0) width 5: " "
-        LayoutInline {SPAN} at (0,0) size 65x17
-          LayoutInline {<pseudo:before>} at (0,0) size 65x17
-            LayoutCounter (anonymous) at (535,0) size 65x17
-              text run at (535,0) width 65: "I.CCCXC"
-        LayoutText {#text} at (599,0) size 5x17
-          text run at (599,0) width 5: " "
-        LayoutInline {SPAN} at (0,0) size 136x17
-          LayoutInline {<pseudo:before>} at (0,0) size 136x17
-            LayoutCounter (anonymous) at (603,0) size 136x17
-              text run at (603,0) width 136: "I.MMMCDLXXXIX"
-        LayoutText {#text} at (738,0) size 5x17
-          text run at (738,0) width 5: " "
-        LayoutInline {SPAN} at (0,0) size 98x17
-          LayoutInline {<pseudo:before>} at (0,0) size 98x17
-            LayoutCounter (anonymous) at (742,0) size 98x17
-              text run at (742,0) width 98: "I.MMMCDXC"
-        LayoutText {#text} at (839,0) size 5x17
-          text run at (839,0) width 5: " "
-        LayoutInline {SPAN} at (0,0) size 103x17
-          LayoutInline {<pseudo:before>} at (0,0) size 103x17
-            LayoutCounter (anonymous) at (843,0) size 103x17
-              text run at (843,0) width 103: "I.MMMCDXCI"
+layer at (0,0) size 800x100
+  LayoutBlockFlow {HTML} at (0,0) size 800x100
+    LayoutBlockFlow {BODY} at (8,16) size 784x76
+      LayoutBlockFlow {P} at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 272x19
+          text run at (0,0) width 272: "The following two lines should look the same:"
+      LayoutBlockFlow {DIV} at (0,36) size 784x20
+        LayoutInline {SPAN} at (0,0) size 14x19
+          LayoutInline {<pseudo:before>} at (0,0) size 14x19
+            LayoutCounter (anonymous) at (0,0) size 14x19
+              text run at (0,0) width 14: "I.I"
+        LayoutText {#text} at (14,0) size 4x19
+          text run at (14,0) width 4: " "
+        LayoutInline {SPAN} at (0,0) size 19x19
+          LayoutInline {<pseudo:before>} at (0,0) size 19x19
+            LayoutCounter (anonymous) at (18,0) size 19x19
+              text run at (18,0) width 19: "I.II"
+        LayoutText {#text} at (37,0) size 4x19
+          text run at (37,0) width 4: " "
+        LayoutInline {SPAN} at (0,0) size 24x19
+          LayoutInline {<pseudo:before>} at (0,0) size 24x19
+            LayoutCounter (anonymous) at (41,0) size 24x19
+              text run at (41,0) width 24: "I.III"
+        LayoutText {#text} at (65,0) size 4x19
+          text run at (65,0) width 4: " "
+        LayoutInline {SPAN} at (0,0) size 25x19
+          LayoutInline {<pseudo:before>} at (0,0) size 25x19
+            LayoutCounter (anonymous) at (69,0) size 25x19
+              text run at (69,0) width 25: "I.IV"
+        LayoutText {#text} at (94,0) size 4x19
+          text run at (94,0) width 4: " "
+        LayoutInline {SPAN} at (0,0) size 20x19
+          LayoutInline {<pseudo:before>} at (0,0) size 20x19
+            LayoutCounter (anonymous) at (98,0) size 20x19
+              text run at (98,0) width 20: "I.V"
+        LayoutText {#text} at (118,0) size 4x19
+          text run at (118,0) width 4: " "
+        LayoutInline {SPAN} at (0,0) size 25x19
+          LayoutInline {<pseudo:before>} at (0,0) size 25x19
+            LayoutCounter (anonymous) at (122,0) size 25x19
+              text run at (122,0) width 25: "I.VI"
+        LayoutText {#text} at (147,0) size 4x19
+          text run at (147,0) width 4: " "
+        LayoutInline {SPAN} at (0,0) size 30x19
+          LayoutInline {<pseudo:before>} at (0,0) size 30x19
+            LayoutCounter (anonymous) at (151,0) size 30x19
+              text run at (151,0) width 30: "I.VII"
+        LayoutText {#text} at (181,0) size 4x19
+          text run at (181,0) width 4: " "
+        LayoutInline {SPAN} at (0,0) size 35x19
+          LayoutInline {<pseudo:before>} at (0,0) size 35x19
+            LayoutCounter (anonymous) at (185,0) size 35x19
+              text run at (185,0) width 35: "I.VIII"
+        LayoutText {#text} at (220,0) size 4x19
+          text run at (220,0) width 4: " "
+        LayoutInline {SPAN} at (0,0) size 25x19
+          LayoutInline {<pseudo:before>} at (0,0) size 25x19
+            LayoutCounter (anonymous) at (224,0) size 25x19
+              text run at (224,0) width 25: "I.IX"
+        LayoutText {#text} at (249,0) size 4x19
+          text run at (249,0) width 4: " "
+        LayoutInline {SPAN} at (0,0) size 20x19
+          LayoutInline {<pseudo:before>} at (0,0) size 20x19
+            LayoutCounter (anonymous) at (253,0) size 20x19
+              text run at (253,0) width 20: "I.X"
+        LayoutText {#text} at (273,0) size 4x19
+          text run at (273,0) width 4: " "
+        LayoutInline {SPAN} at (0,0) size 25x19
+          LayoutInline {<pseudo:before>} at (0,0) size 25x19
+            LayoutCounter (anonymous) at (277,0) size 25x19
+              text run at (277,0) width 25: "I.XI"
+        LayoutText {#text} at (302,0) size 4x19
+          text run at (302,0) width 4: " "
+        LayoutInline {SPAN} at (0,0) size 30x19
+          LayoutInline {<pseudo:before>} at (0,0) size 30x19
+            LayoutCounter (anonymous) at (306,0) size 30x19
+              text run at (306,0) width 30: "I.XII"
+        LayoutText {#text} at (336,0) size 4x19
+          text run at (336,0) width 4: " "
+        LayoutInline {SPAN} at (0,0) size 45x19
+          LayoutInline {<pseudo:before>} at (0,0) size 45x19
+            LayoutCounter (anonymous) at (340,0) size 45x19
+              text run at (340,0) width 45: "I.XLIX"
+        LayoutText {#text} at (385,0) size 4x19
+          text run at (385,0) width 4: " "
+        LayoutInline {SPAN} at (0,0) size 18x19
+          LayoutInline {<pseudo:before>} at (0,0) size 18x19
+            LayoutCounter (anonymous) at (389,0) size 18x19
+              text run at (389,0) width 18: "I.L"
+        LayoutText {#text} at (407,0) size 4x19
+          text run at (407,0) width 4: " "
+        LayoutInline {SPAN} at (0,0) size 100x19
+          LayoutInline {<pseudo:before>} at (0,0) size 100x19
+            LayoutCounter (anonymous) at (411,0) size 100x19
+              text run at (411,0) width 100: "I.CCCLXXXIX"
+        LayoutText {#text} at (511,0) size 4x19
+          text run at (511,0) width 4: " "
+        LayoutInline {SPAN} at (0,0) size 64x19
+          LayoutInline {<pseudo:before>} at (0,0) size 64x19
+            LayoutCounter (anonymous) at (515,0) size 64x19
+              text run at (515,0) width 64: "I.CCCXC"
+        LayoutText {#text} at (579,0) size 4x19
+          text run at (579,0) width 4: " "
+        LayoutInline {SPAN} at (0,0) size 131x19
+          LayoutInline {<pseudo:before>} at (0,0) size 131x19
+            LayoutCounter (anonymous) at (583,0) size 131x19
+              text run at (583,0) width 131: "I.MMMCDLXXXIX"
+        LayoutText {#text} at (714,0) size 4x19
+          text run at (714,0) width 4: " "
+        LayoutInline {SPAN} at (0,0) size 95x19
+          LayoutInline {<pseudo:before>} at (0,0) size 95x19
+            LayoutCounter (anonymous) at (718,0) size 95x19
+              text run at (718,0) width 95: "I.MMMCDXC"
+        LayoutText {#text} at (813,0) size 4x19
+          text run at (813,0) width 4: " "
+        LayoutInline {SPAN} at (0,0) size 100x19
+          LayoutInline {<pseudo:before>} at (0,0) size 100x19
+            LayoutCounter (anonymous) at (817,0) size 100x19
+              text run at (817,0) width 100: "I.MMMCDXCI"
         LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow {DIV} at (0,52) size 784x18
-        LayoutText {#text} at (0,0) size 946x17
-          text run at (0,0) width 19: "I.I "
-          text run at (18,0) width 25: "I.II "
-          text run at (42,0) width 30: "I.III "
-          text run at (71,0) width 32: "I.IV "
-          text run at (102,0) width 26: "I.V "
-          text run at (127,0) width 31: "I.VI "
-          text run at (157,0) width 36: "I.VII "
-          text run at (192,0) width 42: "I.VIII "
-          text run at (233,0) width 31: "I.IX "
-          text run at (263,0) width 26: "I.X "
-          text run at (288,0) width 31: "I.XI "
-          text run at (318,0) width 37: "I.XII "
-          text run at (354,0) width 52: "I.XLIX "
-          text run at (405,0) width 25: "I.L "
-          text run at (429,0) width 107: "I.CCCLXXXIX "
-          text run at (535,0) width 69: "I.CCCXC "
-          text run at (603,0) width 140: "I.MMMCDLXXXIX "
-          text run at (742,0) width 102: "I.MMMCDXC "
-          text run at (843,0) width 103: "I.MMMCDXCI"
+      LayoutBlockFlow {DIV} at (0,56) size 784x20
+        LayoutText {#text} at (0,0) size 917x19
+          text run at (0,0) width 18: "I.I "
+          text run at (18,0) width 23: "I.II "
+          text run at (41,0) width 28: "I.III "
+          text run at (69,0) width 29: "I.IV "
+          text run at (98,0) width 24: "I.V "
+          text run at (122,0) width 29: "I.VI "
+          text run at (151,0) width 34: "I.VII "
+          text run at (185,0) width 39: "I.VIII "
+          text run at (224,0) width 29: "I.IX "
+          text run at (253,0) width 24: "I.X "
+          text run at (277,0) width 29: "I.XI "
+          text run at (306,0) width 34: "I.XII "
+          text run at (340,0) width 49: "I.XLIX "
+          text run at (389,0) width 22: "I.L "
+          text run at (411,0) width 104: "I.CCCLXXXIX "
+          text run at (515,0) width 68: "I.CCCXC "
+          text run at (583,0) width 135: "I.MMMCDLXXXIX "
+          text run at (718,0) width 99: "I.MMMCDXC "
+          text run at (817,0) width 100: "I.MMMCDXCI"

@@ -2,57 +2,57 @@ layer at (0,0) size 480x360
   LayoutView at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
-    LayoutSVGContainer {g} at (99,2) size 311x333
+    LayoutSVGContainer {g} at (97.91,2) size 312.09x333
       LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-      LayoutSVGText {text} at (99,2) size 282.33x29 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (99,2) size 129.59x29
-          chunk 1 (middle anchor) text run 1 at (99.01,25.00) startOffset 0 endOffset 12 width 129.61: "Text Cursor "
-        LayoutSVGInline {a} at (99,2) size 282.33x29
-          LayoutSVGInlineText {#text} at (228.61,2) size 152.72x29
-            chunk 1 (middle anchor) text run 1 at (228.61,25.00) startOffset 0 endOffset 14 width 152.38: "Pointer Cursor"
+      LayoutSVGText {text} at (97.91,2) size 284.17x29 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (97.91,2) size 131.17x29
+          chunk 1 (middle anchor) text run 1 at (97.91,25.00) startOffset 0 endOffset 12 width 131.18: "Text Cursor "
+        LayoutSVGInline {a} at (97.91,2) size 284.17x29
+          LayoutSVGInlineText {#text} at (229.08,2) size 153x29
+            chunk 1 (middle anchor) text run 1 at (229.09,25.00) startOffset 0 endOffset 14 width 153.00: "Pointer Cursor"
         LayoutSVGInlineText {#text} at (0,0) size 0x0
       LayoutSVGRect {rect} at (120,40) size 240x236 [stroke={[type=SOLID] [color=#666666] [stroke width=3.00]}] [x=120.00] [y=40.00] [width=240.00] [height=236.00]
       LayoutSVGContainer {g} at (148,70) size 184x176
         LayoutSVGContainer {g} at (148,70) size 80x32
           LayoutSVGRect {rect} at (148,70) size 80x32 [fill={[type=SOLID] [color=#666666]}] [x=148.00] [y=70.00] [width=80.00] [height=32.00]
-          LayoutSVGText {text} at (154,76) size 72.03x17 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (154,76) size 72.03x17
-              chunk 1 text run 1 at (154.00,90.00) startOffset 0 endOffset 9 width 72.04: "crosshair"
+          LayoutSVGText {text} at (154,75) size 72x19 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (154,75) size 72x19
+              chunk 1 text run 1 at (154.00,90.00) startOffset 0 endOffset 9 width 72.00: "crosshair"
         LayoutSVGContainer {g} at (148,118) size 80x32
           LayoutSVGRect {rect} at (148,118) size 80x32 [fill={[type=SOLID] [color=#666666]}] [x=148.00] [y=118.00] [width=80.00] [height=32.00]
-          LayoutSVGText {text} at (154,124) size 52.44x17 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (154,124) size 52.44x17
-              chunk 1 text run 1 at (154.00,138.00) startOffset 0 endOffset 7 width 52.45: "default"
+          LayoutSVGText {text} at (154,123) size 52x19 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (154,123) size 52x19
+              chunk 1 text run 1 at (154.00,138.00) startOffset 0 endOffset 7 width 52.00: "default"
         LayoutSVGContainer {g} at (148,166) size 80x32
           LayoutSVGRect {rect} at (148,166) size 80x32 [fill={[type=SOLID] [color=#666666]}] [x=148.00] [y=166.00] [width=80.00] [height=32.00]
-          LayoutSVGText {text} at (154,172) size 54.22x17 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (154,172) size 54.22x17
-              chunk 1 text run 1 at (154.00,186.00) startOffset 0 endOffset 7 width 54.22: "pointer"
+          LayoutSVGText {text} at (154,171) size 54x19 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (154,171) size 54x19
+              chunk 1 text run 1 at (154.00,186.00) startOffset 0 endOffset 7 width 54.00: "pointer"
         LayoutSVGContainer {g} at (148,214) size 80x32
           LayoutSVGRect {rect} at (148,214) size 80x32 [fill={[type=SOLID] [color=#666666]}] [x=148.00] [y=214.00] [width=80.00] [height=32.00]
-          LayoutSVGText {text} at (154,221) size 41.80x17 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (154,221) size 41.80x17
-              chunk 1 text run 1 at (154.00,235.00) startOffset 0 endOffset 4 width 41.80: "move"
+          LayoutSVGText {text} at (154,220) size 42x19 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (154,220) size 42x19
+              chunk 1 text run 1 at (154.00,235.00) startOffset 0 endOffset 4 width 42.00: "move"
         LayoutSVGContainer {g} at (252,70) size 80x32
           LayoutSVGRect {rect} at (252,70) size 80x32 [fill={[type=SOLID] [color=#666666]}] [x=252.00] [y=70.00] [width=80.00] [height=32.00]
-          LayoutSVGText {text} at (258,76) size 28.45x17 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (258,76) size 28.45x17
-              chunk 1 text run 1 at (258.00,90.00) startOffset 0 endOffset 4 width 28.45: "text"
+          LayoutSVGText {text} at (258,75) size 28x19 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (258,75) size 28x19
+              chunk 1 text run 1 at (258.00,90.00) startOffset 0 endOffset 4 width 28.00: "text"
         LayoutSVGContainer {g} at (252,118) size 80x32
           LayoutSVGRect {rect} at (252,118) size 80x32 [fill={[type=SOLID] [color=#666666]}] [x=252.00] [y=118.00] [width=80.00] [height=32.00]
-          LayoutSVGText {text} at (258,124) size 31.11x17 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (258,124) size 31.11x17
-              chunk 1 text run 1 at (258.00,138.00) startOffset 0 endOffset 4 width 31.12: "wait"
+          LayoutSVGText {text} at (258,123) size 31x19 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (258,123) size 31x19
+              chunk 1 text run 1 at (258.00,138.00) startOffset 0 endOffset 4 width 31.00: "wait"
         LayoutSVGContainer {g} at (252,166) size 80x32
           LayoutSVGRect {rect} at (252,166) size 80x32 [fill={[type=SOLID] [color=#666666]}] [x=252.00] [y=166.00] [width=80.00] [height=32.00]
-          LayoutSVGText {text} at (258,172) size 32.89x17 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (258,172) size 32.89x17
-              chunk 1 text run 1 at (258.00,186.00) startOffset 0 endOffset 4 width 32.89: "help"
+          LayoutSVGText {text} at (258,171) size 33x19 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (258,171) size 33x19
+              chunk 1 text run 1 at (258.00,186.00) startOffset 0 endOffset 4 width 33.00: "help"
         LayoutSVGContainer {g} at (252,214) size 80x32
           LayoutSVGRect {rect} at (252,214) size 80x32 [fill={[type=SOLID] [color=#666666]}] [x=252.00] [y=214.00] [width=80.00] [height=32.00]
-          LayoutSVGText {text} at (258,221) size 39.13x17 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (258,221) size 39.13x17
-              chunk 1 text run 1 at (258.00,235.00) startOffset 0 endOffset 5 width 39.13: "<url>"
+          LayoutSVGText {text} at (258,220) size 38x19 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (258,220) size 38x19
+              chunk 1 text run 1 at (258.00,235.00) startOffset 0 endOffset 5 width 38.00: "<url>"
       LayoutSVGContainer {g} at (116,36) size 248x244
         LayoutSVGPath {polygon} at (116,36) size 32x32 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#990000]}] [points="116 36 116 68 148 36"]
         LayoutSVGPath {polygon} at (332,36) size 32x32 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#990000]}] [points="364 36 364 68 332 36"]
@@ -69,7 +69,7 @@ layer at (0,0) size 480x360
         LayoutSVGEllipse {circle} at (384,309) size 12x12 [fill={[type=SOLID] [color=#FFFFFF]}] [cx=390.00] [cy=315.00] [r=6.00]
         LayoutSVGContainer {a} at (388,313) size 4x4
           LayoutSVGEllipse {circle} at (388,313) size 4x4 [fill={[type=SOLID] [color=#000000]}] [cx=390.00] [cy=315.00] [r=2.00]
-    LayoutSVGText {text} at (10,304) size 263.33x45 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (10,304) size 263.33x45
-        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 263.34: "$Revision: 1.1 $"
+    LayoutSVGText {text} at (10,304) size 261x46 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,304) size 261x46
+        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 261.00: "$Revision: 1.1 $"
     LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

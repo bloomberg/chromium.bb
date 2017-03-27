@@ -13,32 +13,32 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [178, 1011, 203, 20],
+          "rect": [177, 1012, 203, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [434, 1011, 173, 20],
+          "rect": [435, 1012, 173, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutInline A",
-          "rect": [384, 1010, 47, 22],
+          "rect": [384, 1011, 47, 21],
           "reason": "style change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [385, 1011, 45, 20],
+          "rect": [385, 1012, 45, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [429, 1011, 6, 20],
+          "rect": [429, 1012, 7, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [380, 1011, 6, 20],
+          "rect": [379, 1012, 7, 19],
           "reason": "forced by layout"
         }
       ]

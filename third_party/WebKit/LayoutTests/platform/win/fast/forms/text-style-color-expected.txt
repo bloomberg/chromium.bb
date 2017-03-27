@@ -4,14 +4,14 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutTextControl {INPUT} at (0,0) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-      LayoutText {#text} at (173,2) size 4x17
-        text run at (173,2) width 4: " "
+      LayoutText {#text} at (173,1) size 4x19
+        text run at (173,1) width 4: " "
       LayoutTextControl {INPUT} at (177,0) size 173x22 [color=#FF0000] [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-      LayoutText {#text} at (350,2) size 4x17
-        text run at (350,2) width 4: " "
+      LayoutText {#text} at (350,1) size 4x19
+        text run at (350,1) width 4: " "
       LayoutTextControl {INPUT} at (354,0) size 173x22 [bgcolor=#008000] [border: (2px inset #EEEEEE)]
-      LayoutText {#text} at (527,2) size 4x17
-        text run at (527,2) width 4: " "
+      LayoutText {#text} at (527,1) size 4x19
+        text run at (527,1) width 4: " "
       LayoutTextControl {INPUT} at (531,0) size 173x22 [color=#FF0000] [bgcolor=#008000] [border: (2px inset #EEEEEE)]
       LayoutText {#text} at (0,0) size 0x0
 layer at (10,11) size 169x16

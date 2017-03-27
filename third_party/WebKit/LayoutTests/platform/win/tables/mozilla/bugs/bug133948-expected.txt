@@ -14,6 +14,6 @@ layer at (0,0) size 800x600
                       LayoutTable {TABLE} at (11,11) size 736x536 [bgcolor=#FF0000] [border: (1px outset #808080)]
                         LayoutTableSection {TBODY} at (1,1) size 734x534
                           LayoutTableRow {TR} at (0,0) size 734x534
-                            LayoutTableCell {TD} at (0,247) size 734x40 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-                              LayoutText {#text} at (11,11) size 4x17
+                            LayoutTableCell {TD} at (0,246) size 734x42 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+                              LayoutText {#text} at (11,11) size 4x19
                                 text run at (11,11) width 4: " "

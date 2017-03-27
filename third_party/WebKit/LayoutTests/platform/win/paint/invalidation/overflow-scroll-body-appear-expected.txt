@@ -2,13 +2,13 @@
   "layers": [
     {
       "name": "LayoutView #document",
-      "bounds": [2008, 2092],
+      "bounds": [2008, 2096],
       "contentsOpaque": true,
       "drawsContent": true,
       "paintInvalidations": [
         {
           "object": "LayoutView #document",
-          "rect": [0, 0, 2008, 2092],
+          "rect": [0, 0, 2008, 2096],
           "reason": "style change"
         },
         {
@@ -18,12 +18,12 @@
         },
         {
           "object": "LayoutBlockFlow BODY",
-          "rect": [8, 16, 784, 2068],
+          "rect": [8, 16, 784, 2072],
           "reason": "style change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [127, 50, 390, 17],
+          "rect": [118, 52, 370, 19],
           "reason": "forced by layout"
         },
         {

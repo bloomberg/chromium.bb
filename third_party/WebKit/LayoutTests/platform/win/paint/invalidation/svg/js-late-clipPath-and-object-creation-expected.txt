@@ -8,12 +8,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGContainer g id='content'",
-          "rect": [16, 40, 784, 168],
+          "rect": [16, 42, 784, 170],
           "reason": "bounds change"
         },
         {
           "object": "LayoutSVGContainer g id='content'",
-          "rect": [16, 40, 784, 168],
+          "rect": [16, 42, 784, 170],
           "reason": "became visible"
         }
       ]

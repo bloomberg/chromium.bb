@@ -8,82 +8,62 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV id='content'",
-          "rect": [138, 116, 654, 90],
+          "rect": [138, 128, 654, 100],
           "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow P",
-          "rect": [138, 116, 654, 90],
+          "rect": [138, 128, 654, 100],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [138, 116, 652, 89],
+          "rect": [138, 128, 651, 99],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow DIV id='content'",
-          "rect": [148, 116, 644, 108],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='content'",
-          "rect": [148, 116, 644, 108],
+          "rect": [148, 128, 644, 100],
           "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow P",
-          "rect": [148, 116, 644, 108],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutBlockFlow P",
-          "rect": [148, 116, 644, 108],
+          "rect": [148, 128, 644, 100],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [148, 116, 632, 107],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [148, 116, 632, 107],
+          "rect": [148, 128, 640, 99],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow DIV id='content'",
-          "rect": [400, 116, 392, 162],
+          "rect": [400, 128, 392, 160],
           "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow P",
-          "rect": [400, 116, 392, 162],
+          "rect": [400, 128, 392, 160],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow DIV id='left'",
-          "rect": [8, 224, 392, 54],
+          "rect": [8, 228, 392, 60],
           "reason": "incremental"
         },
         {
           "object": "LayoutText #text",
-          "rect": [400, 116, 391, 161],
+          "rect": [400, 128, 389, 159],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow DIV id='left'",
-          "rect": [148, 116, 252, 162],
+          "rect": [148, 128, 252, 160],
           "reason": "incremental"
         },
         {
           "object": "LayoutBlockFlow DIV id='left'",
-          "rect": [8, 206, 140, 18],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='left'",
-          "rect": [138, 116, 10, 108],
+          "rect": [138, 128, 10, 100],
           "reason": "incremental"
         }
       ]
@@ -111,27 +91,23 @@
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean laoreet dolor id urna eleifend'",
+      "object": "InlineTextBox 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean laoreet dolor id urna eleifend aliquet. Nulla'",
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'aliquet. Nulla vel dolor ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque'",
+      "object": "InlineTextBox 'vel dolor ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque penatibus et magnis dis'",
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'penatibus et magnis dis parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor'",
+      "object": "InlineTextBox 'parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor feugiat vehicula. Sed volutpat,'",
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'feugiat vehicula. Sed volutpat, tellus vel varius vestibulum, purus quam mollis sapien, in'",
+      "object": "InlineTextBox 'tellus vel varius vestibulum, purus quam mollis sapien, in condimentum leo neque sed nulla. Nunc quis porta'",
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'condimentum leo neque sed nulla. Nunc quis porta elit. Pellentesque erat lectus, ultricies a lobortis'",
-      "reason": "forced by layout"
-    },
-    {
-      "object": "InlineTextBox 'id, faucibus id quam.'",
+      "object": "InlineTextBox 'elit. Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.'",
       "reason": "forced by layout"
     },
     {
@@ -155,23 +131,23 @@
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean laoreet dolor id urna eleifend aliquet.'",
+      "object": "InlineTextBox 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean laoreet dolor id urna eleifend aliquet. Nulla'",
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'Nulla vel dolor ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque penatibus et'",
+      "object": "InlineTextBox 'vel dolor ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque penatibus et magnis dis'",
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'magnis dis parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor feugiat vehicula.'",
+      "object": "InlineTextBox 'parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor feugiat vehicula. Sed volutpat, tellus'",
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'Sed volutpat, tellus vel varius vestibulum, purus quam mollis sapien, in condimentum leo neque sed'",
+      "object": "InlineTextBox 'vel varius vestibulum, purus quam mollis sapien, in condimentum leo neque sed nulla. Nunc quis porta elit.'",
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'nulla. Nunc quis porta elit. Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.'",
+      "object": "InlineTextBox 'Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.'",
       "reason": "forced by layout"
     }
   ]

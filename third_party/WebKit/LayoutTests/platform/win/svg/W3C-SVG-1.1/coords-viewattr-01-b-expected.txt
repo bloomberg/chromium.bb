@@ -184,7 +184,7 @@ layer at (0,0) size 480x360
                 LayoutSVGEllipse {circle} at (10.50,10.50) size 3x3 [fill={[type=SOLID] [color=#000000]}] [cx=12.00] [cy=12.00] [r=1.50]
                 LayoutSVGEllipse {circle} at (15.50,10.50) size 3x3 [fill={[type=SOLID] [color=#000000]}] [cx=17.00] [cy=12.00] [r=1.50]
                 LayoutSVGPath {path} at (10,19) size 10x4 [stroke={[type=SOLID] [color=#000000] [stroke width=2.00]}] [fill={[type=SOLID] [color=#000000]}] [data="M 10 19 L 15 23 L 20 19"]
-    LayoutSVGText {text} at (10,304) size 263.33x45 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (10,304) size 263.33x45
-        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 263.34: "$Revision: 1.6 $"
+    LayoutSVGText {text} at (10,304) size 261x46 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,304) size 261x46
+        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 261.00: "$Revision: 1.6 $"
     LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

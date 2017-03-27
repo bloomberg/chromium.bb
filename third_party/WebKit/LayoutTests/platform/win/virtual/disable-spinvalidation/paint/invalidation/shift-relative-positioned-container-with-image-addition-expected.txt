@@ -1,0 +1,94 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [785, 836],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 742, 785, 94],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
+          "rect": [8, 186, 769, 642],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
+          "rect": [8, 92, 769, 642],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutIFrame IFRAME id='iframe'",
+          "rect": [8, 92, 732, 94],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [10, 94, 728, 90],
+          "reason": "layout overflow box change"
+        },
+        {
+          "object": "LayoutImage IMG",
+          "rect": [58, 236, 489, 537],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutImage IMG",
+          "rect": [58, 142, 489, 537],
+          "reason": "bounds change"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutIFrame IFRAME id='iframe'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutImage IMG",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "location change"
+    },
+    {
+      "object": "VerticalScrollbar",
+      "reason": "scroll"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "scroll"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "layout overflow box change"
+    },
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "location change"
+    }
+  ]
+}
+

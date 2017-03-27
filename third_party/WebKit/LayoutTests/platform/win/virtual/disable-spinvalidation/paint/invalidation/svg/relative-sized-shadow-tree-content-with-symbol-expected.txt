@@ -1,0 +1,78 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow div id='contentBox'",
+          "rect": [8, 72, 402, 402],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "rect": [9, 73, 400, 400],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [9, 73, 400, 400],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='targetSymbol'",
+          "rect": [9, 73, 400, 400],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [209, 273, 200, 200],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [9, 73, 200, 200],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [59, 273, 50, 50],
+          "reason": "bounds change"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow div id='contentBox'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutSVGRoot svg",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutSVGContainer use",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGViewportContainer svg id='targetSymbol'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "bounds change"
+    }
+  ]
+}
+

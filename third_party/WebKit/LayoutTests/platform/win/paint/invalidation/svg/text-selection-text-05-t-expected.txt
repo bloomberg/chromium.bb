@@ -8,102 +8,102 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [16, 523, 441, 76],
+          "rect": [16, 523, 446, 77],
           "reason": "selection"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [521, 13, 124, 32],
+          "rect": [186, 13, 128, 34],
           "reason": "selection"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [355, 13, 124, 32],
+          "rect": [520, 13, 127, 34],
           "reason": "selection"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [188, 13, 124, 32],
+          "rect": [353, 13, 127, 34],
           "reason": "selection"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [266, 485, 111, 29],
+          "rect": [266, 485, 113, 29],
           "reason": "selection"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [266, 201, 111, 21],
+          "rect": [266, 201, 113, 21],
           "reason": "selection"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [428, 485, 102, 29],
+          "rect": [428, 485, 104, 29],
           "reason": "selection"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [428, 201, 102, 21],
+          "rect": [428, 201, 104, 21],
           "reason": "selection"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [590, 485, 94, 29],
+          "rect": [590, 485, 95, 29],
           "reason": "selection"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [590, 201, 94, 21],
+          "rect": [590, 201, 95, 21],
           "reason": "selection"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [378, 36, 77, 33],
+          "rect": [378, 36, 77, 34],
           "reason": "selection"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [16, 491, 74, 33],
+          "rect": [16, 491, 76, 34],
           "reason": "selection"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [16, 441, 74, 33],
+          "rect": [16, 441, 76, 34],
           "reason": "selection"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [16, 391, 74, 33],
+          "rect": [16, 391, 76, 34],
           "reason": "selection"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [16, 341, 74, 33],
+          "rect": [16, 341, 76, 34],
           "reason": "selection"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [16, 291, 74, 33],
+          "rect": [16, 291, 76, 34],
           "reason": "selection"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [16, 241, 74, 33],
+          "rect": [16, 241, 76, 34],
           "reason": "selection"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [16, 191, 74, 33],
+          "rect": [16, 191, 76, 34],
           "reason": "selection"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [16, 141, 74, 33],
+          "rect": [16, 141, 76, 34],
           "reason": "selection"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [16, 91, 74, 33],
+          "rect": [16, 91, 76, 34],
           "reason": "selection"
         },
         {
@@ -128,7 +128,17 @@
         },
         {
           "object": "LayoutSVGInlineText #text",
+          "rect": [266, 285, 61, 54],
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
           "rect": [428, 435, 61, 29],
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [266, 435, 61, 29],
           "reason": "selection"
         },
         {
@@ -138,42 +148,57 @@
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [266, 285, 59, 54],
+          "rect": [266, 151, 61, 21],
           "reason": "selection"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [266, 435, 59, 29],
+          "rect": [225, 36, 50, 34],
           "reason": "selection"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [266, 151, 59, 21],
+          "rect": [428, 335, 46, 54],
           "reason": "selection"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [226, 36, 48, 33],
+          "rect": [590, 335, 45, 54],
           "reason": "selection"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [590, 335, 44, 54],
+          "rect": [266, 335, 44, 54],
           "reason": "selection"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [428, 335, 44, 54],
+          "rect": [563, 36, 41, 34],
           "reason": "selection"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [266, 335, 43, 54],
+          "rect": [573, 235, 39, 54],
           "reason": "selection"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [563, 36, 41, 33],
+          "rect": [411, 235, 39, 54],
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [546, 101, 38, 21],
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [250, 235, 37, 54],
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [250, 385, 37, 45],
           "reason": "selection"
         },
         {
@@ -183,42 +208,17 @@
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [411, 235, 36, 54],
+          "rect": [250, 101, 37, 21],
           "reason": "selection"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [575, 235, 35, 54],
+          "rect": [565, 385, 29, 45],
           "reason": "selection"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [250, 235, 34, 54],
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [250, 385, 34, 45],
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [550, 101, 34, 21],
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [250, 101, 34, 21],
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [411, 385, 28, 45],
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [565, 385, 27, 45],
+          "rect": [411, 385, 29, 45],
           "reason": "selection"
         }
       ]

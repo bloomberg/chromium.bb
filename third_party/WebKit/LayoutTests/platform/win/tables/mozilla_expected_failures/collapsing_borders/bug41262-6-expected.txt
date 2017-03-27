@@ -3,52 +3,52 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
-      LayoutBlockFlow {CENTER} at (0,0) size 784x142
-        LayoutTable {TABLE} at (338,0) size 108x82 [border: none]
-          LayoutTableSection {THEAD} at (0,0) size 107x21
-            LayoutTableRow {TR} at (0,0) size 107x21
-              LayoutTableCell {TD} at (0,0) size 36x21 [border: (1px none #808080) none none (1px solid #808080)] [r=0 c=0 rs=1 cs=1]
-                LayoutText {#text} at (2,2) size 29x17
-                  text run at (2,2) width 29: "EST"
-              LayoutTableCell {TD} at (36,0) size 31x21 [border: (1px none #808080) none none (1px solid #808080)] [r=0 c=1 rs=1 cs=1]
-                LayoutText {#text} at (2,2) size 28x17
-                  text run at (2,2) width 28: "1am"
-              LayoutTableCell {TD} at (67,0) size 40x21 [border: (1px none #808080) none none (1px solid #808080)] [r=0 c=2 rs=1 cs=1]
-                LayoutText {#text} at (2,2) size 29x17
-                  text run at (2,2) width 29: "8pm"
-          LayoutTableSection {TBODY} at (0,21) size 107x40
-            LayoutTableRow {TR} at (0,0) size 107x20
-              LayoutTableCell {TD} at (0,0) size 36x20 [border: none none none (1px solid #808080)] [r=0 c=0 rs=1 cs=1]
-                LayoutText {#text} at (2,1) size 30x17
-                  text run at (2,1) width 30: "CST"
-              LayoutTableCell {TD} at (36,0) size 31x20 [border: none none none (1px solid #808080)] [r=0 c=1 rs=1 cs=1]
-                LayoutText {#text} at (2,1) size 28x17
-                  text run at (2,1) width 28: "2am"
-              LayoutTableCell {TD} at (67,0) size 40x20 [border: none none none (1px solid #808080)] [r=0 c=2 rs=1 cs=1]
-                LayoutText {#text} at (2,1) size 29x17
-                  text run at (2,1) width 29: "9pm"
-            LayoutTableRow {TR} at (0,20) size 107x20
-              LayoutTableCell {TD} at (0,20) size 36x20 [border: none none none (1px solid #808080)] [r=1 c=0 rs=1 cs=1]
-                LayoutText {#text} at (2,1) size 33x17
-                  text run at (2,1) width 33: "MST"
-              LayoutTableCell {TD} at (36,20) size 31x20 [border: none none none (1px solid #808080)] [r=1 c=1 rs=1 cs=1]
-                LayoutText {#text} at (2,1) size 28x17
-                  text run at (2,1) width 28: "3am"
-              LayoutTableCell {TD} at (67,20) size 40x20 [border: none none none (1px solid #808080)] [r=1 c=2 rs=1 cs=1]
-                LayoutText {#text} at (2,1) size 37x17
-                  text run at (2,1) width 37: "10pm"
-          LayoutTableSection {TFOOT} at (0,61) size 107x20
-            LayoutTableRow {TR} at (0,0) size 107x20
-              LayoutTableCell {TD} at (0,0) size 36x20 [border: none none none (1px solid #808080)] [r=0 c=0 rs=1 cs=1]
-                LayoutText {#text} at (2,1) size 28x17
-                  text run at (2,1) width 28: "PST"
-              LayoutTableCell {TD} at (36,0) size 31x20 [border: none none none (1px solid #808080)] [r=0 c=1 rs=1 cs=1]
-                LayoutText {#text} at (2,1) size 28x17
-                  text run at (2,1) width 28: "4am"
-              LayoutTableCell {TD} at (67,0) size 40x20 [border: none none none (1px solid #808080)] [r=0 c=2 rs=1 cs=1]
-                LayoutText {#text} at (2,1) size 36x17
-                  text run at (2,1) width 36: "11pm"
-        LayoutBlockFlow {P} at (0,98) size 784x44
+      LayoutBlockFlow {CENTER} at (0,0) size 784x150
+        LayoutTable {TABLE} at (340.50,0) size 103x90 [border: none]
+          LayoutTableSection {THEAD} at (0,0) size 102x23
+            LayoutTableRow {TR} at (0,0) size 102x23
+              LayoutTableCell {TD} at (0,0) size 35x23 [border: (1px none #808080) none none (1px solid #808080)] [r=0 c=0 rs=1 cs=1]
+                LayoutText {#text} at (2,2) size 27x19
+                  text run at (2,2) width 27: "EST"
+              LayoutTableCell {TD} at (35,0) size 29x23 [border: (1px none #808080) none none (1px solid #808080)] [r=0 c=1 rs=1 cs=1]
+                LayoutText {#text} at (2,2) size 26x19
+                  text run at (2,2) width 26: "1am"
+              LayoutTableCell {TD} at (64,0) size 38x23 [border: (1px none #808080) none none (1px solid #808080)] [r=0 c=2 rs=1 cs=1]
+                LayoutText {#text} at (2,2) size 27x19
+                  text run at (2,2) width 27: "8pm"
+          LayoutTableSection {TBODY} at (0,23) size 102x44
+            LayoutTableRow {TR} at (0,0) size 102x22
+              LayoutTableCell {TD} at (0,0) size 35x22 [border: none none none (1px solid #808080)] [r=0 c=0 rs=1 cs=1]
+                LayoutText {#text} at (2,1) size 29x19
+                  text run at (2,1) width 29: "CST"
+              LayoutTableCell {TD} at (35,0) size 29x22 [border: none none none (1px solid #808080)] [r=0 c=1 rs=1 cs=1]
+                LayoutText {#text} at (2,1) size 26x19
+                  text run at (2,1) width 26: "2am"
+              LayoutTableCell {TD} at (64,0) size 38x22 [border: none none none (1px solid #808080)] [r=0 c=2 rs=1 cs=1]
+                LayoutText {#text} at (2,1) size 27x19
+                  text run at (2,1) width 27: "9pm"
+            LayoutTableRow {TR} at (0,22) size 102x22
+              LayoutTableCell {TD} at (0,22) size 35x22 [border: none none none (1px solid #808080)] [r=1 c=0 rs=1 cs=1]
+                LayoutText {#text} at (2,1) size 32x19
+                  text run at (2,1) width 32: "MST"
+              LayoutTableCell {TD} at (35,22) size 29x22 [border: none none none (1px solid #808080)] [r=1 c=1 rs=1 cs=1]
+                LayoutText {#text} at (2,1) size 26x19
+                  text run at (2,1) width 26: "3am"
+              LayoutTableCell {TD} at (64,22) size 38x22 [border: none none none (1px solid #808080)] [r=1 c=2 rs=1 cs=1]
+                LayoutText {#text} at (2,1) size 35x19
+                  text run at (2,1) width 35: "10pm"
+          LayoutTableSection {TFOOT} at (0,67) size 102x22
+            LayoutTableRow {TR} at (0,0) size 102x22
+              LayoutTableCell {TD} at (0,0) size 35x22 [border: none none none (1px solid #808080)] [r=0 c=0 rs=1 cs=1]
+                LayoutText {#text} at (2,1) size 27x19
+                  text run at (2,1) width 27: "PST"
+              LayoutTableCell {TD} at (35,0) size 29x22 [border: none none none (1px solid #808080)] [r=0 c=1 rs=1 cs=1]
+                LayoutText {#text} at (2,1) size 26x19
+                  text run at (2,1) width 26: "4am"
+              LayoutTableCell {TD} at (64,0) size 38x22 [border: none none none (1px solid #808080)] [r=0 c=2 rs=1 cs=1]
+                LayoutText {#text} at (2,1) size 35x19
+                  text run at (2,1) width 35: "11pm"
+        LayoutBlockFlow {P} at (0,106) size 784x44
           LayoutButton {BUTTON} at (263,0) size 79x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
             LayoutBlockFlow (anonymous) at (8,3) size 63x16
               LayoutText {#text} at (0,0) size 63x16

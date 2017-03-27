@@ -1,99 +1,99 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x97
-  LayoutBlockFlow {HTML} at (0,0) size 800x97
-    LayoutBlockFlow {BODY} at (8,16) size 784x73
-      LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 237x17
-          text run at (0,0) width 237: "The following two lines should look "
-        LayoutInline {EM} at (0,0) size 93x17
-          LayoutText {#text} at (236,0) size 93x17
-            text run at (236,0) width 93: "approximately"
-        LayoutText {#text} at (328,0) size 66x17
-          text run at (328,0) width 66: " the same:"
-      LayoutBlockFlow {DIV} at (0,34) size 784x18
-        LayoutInline {SPAN} at (0,0) size 10x17
-          LayoutInline {<pseudo:before>} at (0,0) size 10x17
-            LayoutCounter (anonymous) at (0,0) size 10x17
-              text run at (0,0) width 10: "\x{25A0}"
-        LayoutText {#text} at (9,0) size 5x17
-          text run at (9,0) width 5: " "
-        LayoutInline {SPAN} at (0,0) size 11x17
-          LayoutInline {<pseudo:before>} at (0,0) size 11x17
-            LayoutCounter (anonymous) at (13,0) size 11x17
-              text run at (13,0) width 11: "\x{25A0}"
-        LayoutText {#text} at (23,0) size 5x17
-          text run at (23,0) width 5: " "
-        LayoutInline {SPAN} at (0,0) size 10x17
-          LayoutInline {<pseudo:before>} at (0,0) size 10x17
-            LayoutCounter (anonymous) at (27,0) size 10x17
-              text run at (27,0) width 10: "\x{25A0}"
-        LayoutText {#text} at (36,0) size 5x17
-          text run at (36,0) width 5: " "
-        LayoutInline {SPAN} at (0,0) size 11x17
-          LayoutInline {<pseudo:before>} at (0,0) size 11x17
-            LayoutCounter (anonymous) at (40,0) size 11x17
-              text run at (40,0) width 11: "\x{25A0}"
-        LayoutText {#text} at (50,0) size 5x17
-          text run at (50,0) width 5: " "
-        LayoutInline {SPAN} at (0,0) size 11x17
-          LayoutInline {<pseudo:before>} at (0,0) size 11x17
-            LayoutCounter (anonymous) at (54,0) size 11x17
-              text run at (54,0) width 11: "\x{25A0}"
-        LayoutText {#text} at (64,0) size 5x17
-          text run at (64,0) width 5: " "
-        LayoutInline {SPAN} at (0,0) size 10x17
-          LayoutInline {<pseudo:before>} at (0,0) size 10x17
-            LayoutCounter (anonymous) at (68,0) size 10x17
-              text run at (68,0) width 10: "\x{25A0}"
-        LayoutText {#text} at (77,0) size 5x17
-          text run at (77,0) width 5: " "
-        LayoutInline {SPAN} at (0,0) size 11x17
-          LayoutInline {<pseudo:before>} at (0,0) size 11x17
-            LayoutCounter (anonymous) at (81,0) size 11x17
-              text run at (81,0) width 11: "\x{25A0}"
-        LayoutText {#text} at (91,0) size 5x17
-          text run at (91,0) width 5: " "
-        LayoutInline {SPAN} at (0,0) size 11x17
-          LayoutInline {<pseudo:before>} at (0,0) size 11x17
-            LayoutCounter (anonymous) at (95,0) size 11x17
-              text run at (95,0) width 11: "\x{25A0}"
-        LayoutText {#text} at (105,0) size 5x17
-          text run at (105,0) width 5: " "
-        LayoutInline {SPAN} at (0,0) size 10x17
-          LayoutInline {<pseudo:before>} at (0,0) size 10x17
-            LayoutCounter (anonymous) at (109,0) size 10x17
-              text run at (109,0) width 10: "\x{25A0}"
-        LayoutText {#text} at (118,0) size 5x17
-          text run at (118,0) width 5: " "
-        LayoutInline {SPAN} at (0,0) size 11x17
-          LayoutInline {<pseudo:before>} at (0,0) size 11x17
-            LayoutCounter (anonymous) at (122,0) size 11x17
-              text run at (122,0) width 11: "\x{25A0}"
-        LayoutText {#text} at (132,0) size 5x17
-          text run at (132,0) width 5: " "
-        LayoutInline {SPAN} at (0,0) size 11x17
-          LayoutInline {<pseudo:before>} at (0,0) size 11x17
-            LayoutCounter (anonymous) at (136,0) size 11x17
-              text run at (136,0) width 11: "\x{25A0}"
-        LayoutText {#text} at (146,0) size 5x17
-          text run at (146,0) width 5: " "
-        LayoutInline {SPAN} at (0,0) size 10x17
-          LayoutInline {<pseudo:before>} at (0,0) size 10x17
-            LayoutCounter (anonymous) at (150,0) size 10x17
-              text run at (150,0) width 10: "\x{25A0}"
+layer at (0,0) size 800x102
+  LayoutBlockFlow {HTML} at (0,0) size 800x102
+    LayoutBlockFlow {BODY} at (8,16) size 784x78
+      LayoutBlockFlow {P} at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 216x19
+          text run at (0,0) width 216: "The following two lines should look "
+        LayoutInline {EM} at (0,0) size 93x19
+          LayoutText {#text} at (216,0) size 93x19
+            text run at (216,0) width 93: "approximately"
+        LayoutText {#text} at (308,0) size 61x19
+          text run at (308,0) width 61: " the same:"
+      LayoutBlockFlow {DIV} at (0,36) size 784x20
+        LayoutInline {SPAN} at (0,0) size 9x19
+          LayoutInline {<pseudo:before>} at (0,0) size 9x19
+            LayoutCounter (anonymous) at (0,0) size 9x19
+              text run at (0,0) width 9: "\x{25A0}"
+        LayoutText {#text} at (9,0) size 4x19
+          text run at (9,0) width 4: " "
+        LayoutInline {SPAN} at (0,0) size 9x19
+          LayoutInline {<pseudo:before>} at (0,0) size 9x19
+            LayoutCounter (anonymous) at (13,0) size 9x19
+              text run at (13,0) width 9: "\x{25A0}"
+        LayoutText {#text} at (22,0) size 4x19
+          text run at (22,0) width 4: " "
+        LayoutInline {SPAN} at (0,0) size 9x19
+          LayoutInline {<pseudo:before>} at (0,0) size 9x19
+            LayoutCounter (anonymous) at (26,0) size 9x19
+              text run at (26,0) width 9: "\x{25A0}"
+        LayoutText {#text} at (35,0) size 4x19
+          text run at (35,0) width 4: " "
+        LayoutInline {SPAN} at (0,0) size 9x19
+          LayoutInline {<pseudo:before>} at (0,0) size 9x19
+            LayoutCounter (anonymous) at (39,0) size 9x19
+              text run at (39,0) width 9: "\x{25A0}"
+        LayoutText {#text} at (48,0) size 4x19
+          text run at (48,0) width 4: " "
+        LayoutInline {SPAN} at (0,0) size 9x19
+          LayoutInline {<pseudo:before>} at (0,0) size 9x19
+            LayoutCounter (anonymous) at (52,0) size 9x19
+              text run at (52,0) width 9: "\x{25A0}"
+        LayoutText {#text} at (61,0) size 4x19
+          text run at (61,0) width 4: " "
+        LayoutInline {SPAN} at (0,0) size 9x19
+          LayoutInline {<pseudo:before>} at (0,0) size 9x19
+            LayoutCounter (anonymous) at (65,0) size 9x19
+              text run at (65,0) width 9: "\x{25A0}"
+        LayoutText {#text} at (74,0) size 4x19
+          text run at (74,0) width 4: " "
+        LayoutInline {SPAN} at (0,0) size 9x19
+          LayoutInline {<pseudo:before>} at (0,0) size 9x19
+            LayoutCounter (anonymous) at (78,0) size 9x19
+              text run at (78,0) width 9: "\x{25A0}"
+        LayoutText {#text} at (87,0) size 4x19
+          text run at (87,0) width 4: " "
+        LayoutInline {SPAN} at (0,0) size 9x19
+          LayoutInline {<pseudo:before>} at (0,0) size 9x19
+            LayoutCounter (anonymous) at (91,0) size 9x19
+              text run at (91,0) width 9: "\x{25A0}"
+        LayoutText {#text} at (100,0) size 4x19
+          text run at (100,0) width 4: " "
+        LayoutInline {SPAN} at (0,0) size 9x19
+          LayoutInline {<pseudo:before>} at (0,0) size 9x19
+            LayoutCounter (anonymous) at (104,0) size 9x19
+              text run at (104,0) width 9: "\x{25A0}"
+        LayoutText {#text} at (113,0) size 4x19
+          text run at (113,0) width 4: " "
+        LayoutInline {SPAN} at (0,0) size 9x19
+          LayoutInline {<pseudo:before>} at (0,0) size 9x19
+            LayoutCounter (anonymous) at (117,0) size 9x19
+              text run at (117,0) width 9: "\x{25A0}"
+        LayoutText {#text} at (126,0) size 4x19
+          text run at (126,0) width 4: " "
+        LayoutInline {SPAN} at (0,0) size 9x19
+          LayoutInline {<pseudo:before>} at (0,0) size 9x19
+            LayoutCounter (anonymous) at (130,0) size 9x19
+              text run at (130,0) width 9: "\x{25A0}"
+        LayoutText {#text} at (139,0) size 4x19
+          text run at (139,0) width 4: " "
+        LayoutInline {SPAN} at (0,0) size 9x19
+          LayoutInline {<pseudo:before>} at (0,0) size 9x19
+            LayoutCounter (anonymous) at (143,0) size 9x19
+              text run at (143,0) width 9: "\x{25A0}"
         LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow {DIV} at (0,52) size 784x21
-        LayoutText {#text} at (0,3) size 210x17
-          text run at (0,3) width 18: "\x{25FE} "
-          text run at (17,3) width 19: "\x{25FE} "
-          text run at (35,3) width 19: "\x{25FE} "
-          text run at (53,3) width 19: "\x{25FE} "
-          text run at (71,3) width 18: "\x{25FE} "
-          text run at (88,3) width 19: "\x{25FE} "
-          text run at (106,3) width 19: "\x{25FE} "
-          text run at (124,3) width 19: "\x{25FE} "
-          text run at (142,3) width 19: "\x{25FE} "
-          text run at (160,3) width 18: "\x{25FE} "
-          text run at (177,3) width 19: "\x{25FE} "
-          text run at (195,3) width 15: "\x{25FE}"
+      LayoutBlockFlow {DIV} at (0,56) size 784x22
+        LayoutText {#text} at (0,2) size 212x19
+          text run at (0,2) width 18: "\x{25FE} "
+          text run at (18,2) width 18: "\x{25FE} "
+          text run at (36,2) width 18: "\x{25FE} "
+          text run at (54,2) width 18: "\x{25FE} "
+          text run at (72,2) width 18: "\x{25FE} "
+          text run at (90,2) width 18: "\x{25FE} "
+          text run at (108,2) width 18: "\x{25FE} "
+          text run at (126,2) width 18: "\x{25FE} "
+          text run at (144,2) width 18: "\x{25FE} "
+          text run at (162,2) width 18: "\x{25FE} "
+          text run at (180,2) width 18: "\x{25FE} "
+          text run at (198,2) width 14: "\x{25FE}"

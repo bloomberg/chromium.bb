@@ -1,34 +1,34 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x266
-  LayoutBlockFlow {HTML} at (0,0) size 800x266
-    LayoutBlockFlow {BODY} at (8,16) size 784x242
-      LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 767x17
-          text run at (0,0) width 767: "There should be one yellow box below. There is only one because the content is composited, and hence not fragmented."
-layer at (8,50) size 706x208
-  LayoutBlockFlow {DIV} at (0,34) size 705.59x208
+layer at (0,0) size 800x268
+  LayoutBlockFlow {HTML} at (0,0) size 800x268
+    LayoutBlockFlow {BODY} at (8,16) size 784x244
+      LayoutBlockFlow {P} at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 721x19
+          text run at (0,0) width 721: "There should be one yellow box below. There is only one because the content is composited, and hence not fragmented."
+layer at (8,52) size 706x208
+  LayoutBlockFlow {DIV} at (0,36) size 705.59x208
     LayoutMultiColumnSet (anonymous) at (0,0) size 705.59x208
-layer at (8,50) size 353x280
+layer at (8,52) size 353x280
   LayoutMultiColumnFlowThread (anonymous) at (0,0) size 352.80x280
     LayoutBlockFlow (anonymous) at (0,0) size 352.80x128
-      LayoutBR {BR} at (0,7) size 0x17
-      LayoutBR {BR} at (0,39) size 0x17
-      LayoutBR {BR} at (0,71) size 0x17
-      LayoutBR {BR} at (0,103) size 0x17
-layer at (0,50) size 800x240
-  LayoutBlockFlow (positioned) {DIV} at (0,50) size 800x240 [bgcolor=#00FFFF]
-layer at (16,186) size 337x136
+      LayoutBR {BR} at (0,6) size 0x19
+      LayoutBR {BR} at (0,38) size 0x19
+      LayoutBR {BR} at (0,70) size 0x19
+      LayoutBR {BR} at (0,102) size 0x19
+layer at (0,52) size 800x240
+  LayoutBlockFlow (positioned) {DIV} at (0,52) size 800x240 [bgcolor=#00FFFF]
+layer at (16,188) size 337x136
   LayoutBlockFlow (relative positioned) {DIV} at (8,136) size 336.80x136 [bgcolor=#FFFF00]
-    LayoutText {#text} at (0,7) size 26x17
-      text run at (0,7) width 26: "first"
-    LayoutBR {BR} at (25,7) size 1x17
-    LayoutText {#text} at (0,39) size 48x17
-      text run at (0,39) width 48: "column"
-    LayoutBR {BR} at (47,39) size 1x17
-    LayoutText {#text} at (0,79) size 45x17
-      text run at (0,79) width 45: "second"
-    LayoutBR {BR} at (44,79) size 1x17
-    LayoutText {#text} at (0,111) size 48x17
-      text run at (0,111) width 48: "column"
-    LayoutBR {BR} at (47,111) size 1x17
+    LayoutText {#text} at (0,6) size 22x19
+      text run at (0,6) width 22: "first"
+    LayoutBR {BR} at (22,6) size 0x19
+    LayoutText {#text} at (0,38) size 43x19
+      text run at (0,38) width 43: "column"
+    LayoutBR {BR} at (43,38) size 0x19
+    LayoutText {#text} at (0,78) size 43x19
+      text run at (0,78) width 43: "second"
+    LayoutBR {BR} at (43,78) size 0x19
+    LayoutText {#text} at (0,110) size 43x19
+      text run at (0,110) width 43: "column"
+    LayoutBR {BR} at (43,110) size 0x19

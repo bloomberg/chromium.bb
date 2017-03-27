@@ -1,69 +1,72 @@
-layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 712
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 720
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x712 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutBlockFlow {HTML} at (0,0) size 785x712.16
-    LayoutBlockFlow {BODY} at (8,16) size 769x688.16
-      LayoutBlockFlow {P} at (0,0) size 769x36
-        LayoutText {#text} at (0,0) size 761x35
-          text run at (0,0) width 761: "There should be a SPAN in the middle of all four paragraphs that has padding, a green border, and a margin on the left,"
-          text run at (0,18) width 368: "and padding, an orange border, and a margin on the right."
-      LayoutBlockFlow {H1} at (0,52) size 769x18
-        LayoutText {#text} at (0,0) size 91x17
-          text run at (0,0) width 91: "Left-to-Right"
-      LayoutBlockFlow {DIV} at (0,80.72) size 769x284 [border: (1px solid #000000)]
+layer at (0,0) size 785x720 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutBlockFlow {HTML} at (0,0) size 785x720.16
+    LayoutBlockFlow {BODY} at (8,16) size 769x696.16
+      LayoutBlockFlow {P} at (0,0) size 769x40
+        LayoutText {#text} at (0,0) size 740x39
+          text run at (0,0) width 718: "There should be a SPAN in the middle of all four paragraphs that has padding, a green border, and a margin on the left, "
+          text run at (717,0) width 23: "and"
+          text run at (0,20) width 320: "padding, an orange border, and a margin on the right."
+      LayoutBlockFlow {H1} at (0,56) size 769x20
+        LayoutText {#text} at (0,0) size 88x19
+          text run at (0,0) width 88: "Left-to-Right"
+      LayoutBlockFlow {DIV} at (0,86.72) size 769x284 [border: (1px solid #000000)]
         LayoutBlockFlow {P} at (6,22) size 757x32
-          LayoutText {#text} at (0,7) size 128x17
-            text run at (0,7) width 128: "Lorem ipsum dolor "
-          LayoutText {#text} at (352,7) size 342x17
-            text run at (352,7) width 342: "adipisicing elit, sed do eiusmod tempor incididunt ut."
+          LayoutText {#text} at (0,6) size 119x19
+            text run at (0,6) width 119: "Lorem ipsum dolor "
+          LayoutText {#text} at (336,6) size 313x19
+            text run at (336,6) width 313: "adipisicing elit, sed do eiusmod tempor incididunt ut."
         LayoutBlockFlow {P} at (6,70) size 757x192
-          LayoutText {#text} at (0,7) size 751x49
-            text run at (0,7) width 604: "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut "
-            text run at (603,7) width 148: "labore et dolore magna"
-            text run at (0,39) width 441: "aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco "
-          LayoutText {#text} at (0,135) size 746x49
-            text run at (0,135) width 581: "sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore "
-            text run at (580,135) width 166: "magna aliqua. Ut enim ad"
-            text run at (0,167) width 459: "minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip."
-      LayoutBlockFlow {H1} at (0,375.44) size 769x18
-        LayoutText {#text} at (0,0) size 91x17
-          text run at (0,0) width 91: "Right-to-Left"
-      LayoutBlockFlow {DIV} at (0,404.16) size 769x284 [border: (1px solid #000000)]
+          LayoutText {#text} at (0,6) size 741x51
+            text run at (0,6) width 559: "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut "
+            text run at (559,6) width 182: "labore et dolore magna aliqua."
+            text run at (0,38) width 359: "Ut enim ad minim veniam, quis nostrud exercitation ullamco "
+          LayoutText {#text} at (458,102) size 718x83
+            text run at (458,102) width 260: "sit amet, consectetur adipisicing elit, sed do"
+            text run at (0,134) width 277: "eiusmod tempor incididunt ut labore et dolore "
+            text run at (277,134) width 441: "magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco"
+            text run at (0,166) width 125: "laboris nisi ut aliquip."
+      LayoutBlockFlow {H1} at (0,381.44) size 769x20
+        LayoutText {#text} at (0,0) size 88x19
+          text run at (0,0) width 88: "Right-to-Left"
+      LayoutBlockFlow {DIV} at (0,412.16) size 769x284 [border: (1px solid #000000)]
         LayoutBlockFlow {P} at (6,22) size 757x32
-          LayoutText {#text} at (629,7) size 128x17
-            text run at (629,7) width 128 RTL override: "Lorem ipsum dolor "
-          LayoutText {#text} at (63,7) size 342x17
-            text run at (63,7) width 342 RTL override: "adipisicing elit, sed do eiusmod tempor incididunt ut."
+          LayoutText {#text} at (638,6) size 119x19
+            text run at (638,6) width 119 RTL override: "Lorem ipsum dolor "
+          LayoutText {#text} at (108,6) size 313x19
+            text run at (108,6) width 313 RTL override: "adipisicing elit, sed do eiusmod tempor incididunt ut."
         LayoutBlockFlow {P} at (6,70) size 757x192
-          LayoutText {#text} at (6,7) size 751x49
-            text run at (6,7) width 148 RTL override: "labore et dolore magna"
-            text run at (153,7) width 604 RTL override: "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut "
-            text run at (316,39) width 441 RTL override: "aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco "
-          LayoutText {#text} at (11,135) size 746x49
-            text run at (11,135) width 166 RTL override: "magna aliqua. Ut enim ad"
-            text run at (176,135) width 581 RTL override: "sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore "
-            text run at (298,167) width 459 RTL override: "minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip."
-layer at (14,119) size 191x19
-  LayoutInline (relative positioned) {SPAN} at (0,0) size 191x19 [border: (1px solid #0000FF) (10px solid #FFA500) (1px solid #0000FF) (10px solid #008000)]
-    LayoutText {#text} at (172,7) size 136x17
-      text run at (172,7) width 136: "sit amet, consectetur "
-layer at (14,167) size 730x83
-  LayoutInline (relative positioned) {SPAN} at (0,0) size 730x83 [border: (1px solid #0000FF) (10px solid #FFA500) (1px solid #0000FF) (10px solid #008000)]
-    LayoutText {#text} at (485,39) size 727x81
-      text run at (485,39) width 242: "laboris nisi ut aliquip ex ea commodo"
-      text run at (0,71) width 331: "consequat. Duis aute irure dolor in reprehenderit in "
-      text run at (331,71) width 366: "voluptate velit esse cillum dolore eu fugiat nulla pariatur."
-      text run at (0,103) width 218: "Excepteur sint occaecat cupidatat "
-      text run at (217,103) width 478: "non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
-layer at (14,442) size 191x19
-  LayoutInline (relative positioned) {SPAN} at (0,0) size 191x19 [border: (1px solid #0000FF) (10px solid #FFA500) (1px solid #0000FF) (10px solid #008000)]
-    LayoutText {#text} at (449,7) size 136x17
-      text run at (449,7) width 136 RTL override: "sit amet, consectetur "
-layer at (14,490) size 727x83
-  LayoutInline (relative positioned) {SPAN} at (0,0) size 727x83 [border: (1px solid #0000FF) (10px solid #FFA500) (1px solid #0000FF) (10px solid #008000)]
-    LayoutText {#text} at (30,39) size 727x81
-      text run at (30,39) width 242 RTL override: "laboris nisi ut aliquip ex ea commodo"
-      text run at (60,71) width 366 RTL override: "voluptate velit esse cillum dolore eu fugiat nulla pariatur."
-      text run at (426,71) width 331 RTL override: "consequat. Duis aute irure dolor in reprehenderit in "
-      text run at (62,103) width 478 RTL override: "non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
-      text run at (539,103) width 218 RTL override: "Excepteur sint occaecat cupidatat "
+          LayoutText {#text} at (16,6) size 741x51
+            text run at (16,6) width 182 RTL override: "labore et dolore magna aliqua."
+            text run at (198,6) width 559 RTL override: "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut "
+            text run at (398,38) width 359 RTL override: "Ut enim ad minim veniam, quis nostrud exercitation ullamco "
+          LayoutText {#text} at (39,102) size 718x83
+            text run at (39,102) width 260 RTL override: "sit amet, consectetur adipisicing elit, sed do"
+            text run at (39,134) width 441 RTL override: "magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco"
+            text run at (480,134) width 277 RTL override: "eiusmod tempor incididunt ut labore et dolore "
+            text run at (632,166) width 125 RTL override: "laboris nisi ut aliquip."
+layer at (14,125) size 182x21
+  LayoutInline (relative positioned) {SPAN} at (0,0) size 182x21 [border: (1px solid #0000FF) (10px solid #FFA500) (1px solid #0000FF) (10px solid #008000)]
+    LayoutText {#text} at (164,6) size 127x19
+      text run at (164,6) width 127: "sit amet, consectetur "
+layer at (14,173) size 755x85
+  LayoutInline (relative positioned) {SPAN} at (0,0) size 755x85 [border: (1px solid #0000FF) (10px solid #FFA500) (1px solid #0000FF) (10px solid #008000)]
+    LayoutText {#text} at (404,38) size 755x83
+      text run at (404,38) width 351: "laboris nisi ut aliquip ex ea commodo consequat. Duis aute"
+      text run at (0,70) width 179: "irure dolor in reprehenderit in "
+      text run at (179,70) width 543: "voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat "
+      text run at (721,70) width 23: "non"
+      text run at (0,102) width 414: "proident, sunt in culpa qui officia deserunt mollit anim id est laborum. "
+layer at (14,450) size 182x21
+  LayoutInline (relative positioned) {SPAN} at (0,0) size 182x21 [border: (1px solid #0000FF) (10px solid #FFA500) (1px solid #0000FF) (10px solid #008000)]
+    LayoutText {#text} at (466,6) size 127x19
+      text run at (466,6) width 127 RTL override: "sit amet, consectetur "
+layer at (14,498) size 755x85
+  LayoutInline (relative positioned) {SPAN} at (0,0) size 755x85 [border: (1px solid #0000FF) (10px solid #FFA500) (1px solid #0000FF) (10px solid #008000)]
+    LayoutText {#text} at (2,38) size 755x83
+      text run at (2,38) width 351 RTL override: "laboris nisi ut aliquip ex ea commodo consequat. Duis aute"
+      text run at (13,70) width 23 RTL override: "non"
+      text run at (35,70) width 543 RTL override: "voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat "
+      text run at (578,70) width 179 RTL override: "irure dolor in reprehenderit in "
+      text run at (343,102) width 414 RTL override: "proident, sunt in culpa qui officia deserunt mollit anim id est laborum. "

@@ -8,32 +8,32 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow P",
-          "rect": [8, 130, 784, 66],
+          "rect": [8, 136, 784, 68],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 178, 36, 17],
+          "rect": [8, 184, 32, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 148, 36, 17],
+          "rect": [8, 156, 32, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutInline SPAN id='d'",
-          "rect": [8, 145, 4, 17],
+          "rect": [8, 150, 4, 19],
           "reason": "style change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 145, 4, 17],
+          "rect": [8, 150, 4, 19],
           "reason": "style change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 130, 4, 17],
+          "rect": [8, 136, 4, 19],
           "reason": "style change"
         }
       ]

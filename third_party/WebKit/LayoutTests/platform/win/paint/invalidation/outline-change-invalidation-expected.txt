@@ -8,12 +8,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow A id='link'",
-          "rect": [43, 79, 754, 28],
+          "rect": [43, 83, 754, 30],
           "reason": "style change"
         },
         {
           "object": "LayoutListMarker (anonymous)",
-          "rect": [31, 84, 7, 17],
+          "rect": [30, 88, 7, 19],
           "reason": "style change"
         }
       ]

@@ -3,20 +3,20 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 776x584
-      LayoutBlockFlow {DIV} at (0,0) size 36x584
-        LayoutBlockFlow {UL} at (0,0) size 36x584
-          LayoutListItem {LI} at (0,40) size 18x544
-            LayoutListMarker (anonymous) at (0,-17) size 17x7: bullet
-            LayoutInline {A} at (0,0) size 17x40 [color=#0000EE]
-              LayoutText {#text} at (0,504) size 17x40
-                text run at (0,504) width 40: "Home"
-          LayoutListItem {LI} at (18,40) size 18x544
-            LayoutListMarker (anonymous) at (0,-17) size 17x7: bullet
-            LayoutInline {A} at (0,0) size 17x58 [color=#0000EE]
-              LayoutText {#text} at (0,486) size 17x58
-                text run at (0,486) width 58: "Archives"
-      LayoutBlockFlow {P} at (52,0) size 36x584
-        LayoutText {#text} at (0,0) size 35x578
-          text run at (0,0) width 553: "This test case illustrates the correct positioning of list item bullets according to CSS3. "
-          text run at (0,552) width 25: "The"
-          text run at (18,0) width 494: "bullets should be on the far left, with the text of the list items on the far right."
+      LayoutBlockFlow {DIV} at (0,0) size 40x584
+        LayoutBlockFlow {UL} at (0,0) size 40x584
+          LayoutListItem {LI} at (0,40) size 20x544
+            LayoutListMarker (anonymous) at (0,-18) size 19x7: bullet
+            LayoutInline {A} at (0,0) size 19x37 [color=#0000EE]
+              LayoutText {#text} at (0,507) size 19x37
+                text run at (0,507) width 37: "Home"
+          LayoutListItem {LI} at (20,40) size 20x544
+            LayoutListMarker (anonymous) at (0,-18) size 19x7: bullet
+            LayoutInline {A} at (0,0) size 19x53 [color=#0000EE]
+              LayoutText {#text} at (0,491) size 19x53
+                text run at (0,491) width 53: "Archives"
+      LayoutBlockFlow {P} at (56,0) size 40x584
+        LayoutText {#text} at (0,0) size 39x577
+          text run at (0,0) width 512: "This test case illustrates the correct positioning of list item bullets according to CSS3. "
+          text run at (0,512) width 65: "The bullets"
+          text run at (20,0) width 410: "should be on the far left, with the text of the list items on the far right."

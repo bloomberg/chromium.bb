@@ -1,18 +1,18 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x128
-  LayoutBlockFlow {html} at (0,0) size 800x128
-    LayoutBlockFlow {body} at (8,8) size 784x104
-      LayoutBlockFlow {div} at (0,0) size 784x104
-        LayoutBlockFlow (anonymous) at (0,0) size 784x18
-          LayoutText {#text} at (0,0) size 196x17
-            text run at (0,0) width 196: "This div contains 3 addresses :"
-        LayoutBlockFlow {address} at (16,18) size 768x18
-          LayoutText {#text} at (0,0) size 255x17
+layer at (0,0) size 800x136
+  LayoutBlockFlow {html} at (0,0) size 800x136
+    LayoutBlockFlow {body} at (8,8) size 784x112
+      LayoutBlockFlow {div} at (0,0) size 784x112
+        LayoutBlockFlow (anonymous) at (0,0) size 784x20
+          LayoutText {#text} at (0,0) size 183x19
+            text run at (0,0) width 183: "This div contains 3 addresses :"
+        LayoutBlockFlow {address} at (16,20) size 768x20
+          LayoutText {#text} at (0,0) size 255x19
             text run at (0,0) width 255: "A first address with normal background"
-        LayoutBlockFlow {address} at (16,52) size 768x18 [bgcolor=#00FF00]
-          LayoutText {#text} at (0,0) size 353x17
-            text run at (0,0) width 353: "A second address that should have a green background"
-        LayoutBlockFlow {address} at (16,86) size 768x18 [bgcolor=#00FF00]
-          LayoutText {#text} at (0,0) size 339x17
-            text run at (0,0) width 339: "A third address that should have a green background"
+        LayoutBlockFlow {address} at (16,56) size 768x20 [bgcolor=#00FF00]
+          LayoutText {#text} at (0,0) size 354x19
+            text run at (0,0) width 354: "A second address that should have a green background"
+        LayoutBlockFlow {address} at (16,92) size 768x20 [bgcolor=#00FF00]
+          LayoutText {#text} at (0,0) size 340x19
+            text run at (0,0) width 340: "A third address that should have a green background"

@@ -1,0 +1,416 @@
+Non-hidden div for comparison
+non-hidden treeitem
+hidden non-treeitem
+ Buttons are leaf nodes
+Descendant of aria-hidden node
+List item also presentational
+Div in list isn't presentational
+Content within label refers to label container     
+
+WebArea
+  tree
+    *Ignored
+{
+  "nodeId": "<string>",
+  "ignored": true,
+  "ignoredReasons": [
+    {
+      "name": "ancestorDisallowsChild",
+      "value": {
+        "type": "idref",
+        "relatedNodes": [
+          {
+            "nodeResult": "div"
+          }
+        ]
+      }
+    }
+  ],
+  "role": {
+    "type": "internalRole",
+    "value": "Ignored"
+  },
+  "domNode": "div"
+}
+
+WebArea
+  img
+    *Ignored
+{
+  "nodeId": "<string>",
+  "ignored": true,
+  "ignoredReasons": [
+    {
+      "name": "ancestorDisallowsChild",
+      "value": {
+        "type": "idref",
+        "relatedNodes": [
+          {
+            "nodeResult": "div"
+          }
+        ]
+      }
+    }
+  ],
+  "role": {
+    "type": "internalRole",
+    "value": "Ignored"
+  },
+  "domNode": "svg"
+}
+
+WebArea
+  button "Buttons are leaf nodes"
+    *Ignored
+{
+  "nodeId": "<string>",
+  "ignored": true,
+  "ignoredReasons": [
+    {
+      "name": "ancestorIsLeafNode",
+      "value": {
+        "type": "idref",
+        "relatedNodes": [
+          {
+            "nodeResult": "button"
+          }
+        ]
+      }
+    }
+  ],
+  "role": {
+    "type": "internalRole",
+    "value": "Ignored"
+  },
+  "domNode": "span"
+}
+
+WebArea
+  *Ignored
+{
+  "nodeId": "<string>",
+  "ignored": true,
+  "ignoredReasons": [
+    {
+      "name": "ariaHidden",
+      "value": {
+        "type": "boolean",
+        "value": true
+      }
+    }
+  ],
+  "role": {
+    "type": "internalRole",
+    "value": "Ignored"
+  },
+  "domNode": "div"
+}
+
+WebArea
+  *Ignored
+{
+  "nodeId": "<string>",
+  "ignored": true,
+  "ignoredReasons": [
+    {
+      "name": "ariaHiddenRoot",
+      "value": {
+        "type": "idref",
+        "relatedNodes": [
+          {
+            "nodeResult": "div"
+          }
+        ]
+      }
+    }
+  ],
+  "role": {
+    "type": "internalRole",
+    "value": "Ignored"
+  },
+  "domNode": "div"
+}
+
+WebArea
+  *Ignored
+{
+  "nodeId": "<string>",
+  "ignored": true,
+  "ignoredReasons": [
+    {
+      "name": "presentationalRole",
+      "value": {
+        "type": "boolean",
+        "value": true
+      }
+    }
+  ],
+  "role": {
+    "type": "internalRole",
+    "value": "Ignored"
+  },
+  "domNode": "ol"
+}
+
+WebArea
+  *Ignored
+{
+  "nodeId": "<string>",
+  "ignored": true,
+  "ignoredReasons": [
+    {
+      "name": "inheritsPresentation",
+      "value": {
+        "type": "idref",
+        "relatedNodes": [
+          {
+            "nodeResult": "ol"
+          }
+        ]
+      }
+    }
+  ],
+  "role": {
+    "type": "internalRole",
+    "value": "Ignored"
+  },
+  "domNode": "li"
+}
+
+WebArea
+  *Div
+    text "Div in list isn't presentational"
+{
+  "nodeId": "<string>",
+  "ignored": false,
+  "role": {
+    "type": "internalRole",
+    "value": "Div"
+  },
+  "name": {
+    "type": "computedString",
+    "value": "",
+    "sources": [
+      {
+        "type": "relatedElement",
+        "attribute": "aria-labelledby"
+      },
+      {
+        "type": "attribute",
+        "attribute": "aria-label"
+      },
+      {
+        "type": "attribute",
+        "attribute": "title"
+      }
+    ]
+  },
+  "properties": [],
+  "domNode": "div"
+}
+
+WebArea
+  *Ignored
+{
+  "nodeId": "<string>",
+  "ignored": true,
+  "ignoredReasons": [
+    {
+      "name": "labelFor",
+      "value": {
+        "type": "idref",
+        "relatedNodes": [
+          {
+            "idref": "checkbox",
+            "nodeResult": "input#checkbox"
+          }
+        ]
+      }
+    }
+  ],
+  "role": {
+    "type": "internalRole",
+    "value": "Ignored"
+  },
+  "domNode": "label"
+}
+
+WebArea
+  *Ignored
+{
+  "nodeId": "<string>",
+  "ignored": true,
+  "ignoredReasons": [
+    {
+      "name": "labelContainer",
+      "value": {
+        "type": "idref",
+        "relatedNodes": [
+          {
+            "nodeResult": "label"
+          }
+        ]
+      }
+    },
+    {
+      "name": "labelFor",
+      "value": {
+        "type": "idref",
+        "relatedNodes": [
+          {
+            "idref": "checkbox",
+            "nodeResult": "input#checkbox"
+          }
+        ]
+      }
+    }
+  ],
+  "role": {
+    "type": "internalRole",
+    "value": "Ignored"
+  },
+  "domNode": "span"
+}
+
+WebArea
+  *Ignored
+{
+  "nodeId": "<string>",
+  "ignored": true,
+  "ignoredReasons": [
+    {
+      "name": "notRendered",
+      "value": {
+        "type": "boolean",
+        "value": true
+      }
+    }
+  ],
+  "role": {
+    "type": "internalRole",
+    "value": "Ignored"
+  },
+  "domNode": "div"
+}
+
+WebArea
+  *Ignored
+{
+  "nodeId": "<string>",
+  "ignored": true,
+  "ignoredReasons": [
+    {
+      "name": "notRendered",
+      "value": {
+        "type": "boolean",
+        "value": true
+      }
+    }
+  ],
+  "role": {
+    "type": "internalRole",
+    "value": "Ignored"
+  },
+  "domNode": "span"
+}
+
+WebArea
+  *Ignored
+{
+  "nodeId": "<string>",
+  "ignored": true,
+  "ignoredReasons": [
+    {
+      "name": "probablyPresentational",
+      "value": {
+        "type": "boolean",
+        "value": true
+      }
+    }
+  ],
+  "role": {
+    "type": "internalRole",
+    "value": "Ignored"
+  },
+  "domNode": "canvas"
+}
+
+WebArea
+  *Ignored
+{
+  "nodeId": "<string>",
+  "ignored": true,
+  "ignoredReasons": [
+    {
+      "name": "presentationalRole",
+      "value": {
+        "type": "boolean",
+        "value": true
+      }
+    }
+  ],
+  "role": {
+    "type": "internalRole",
+    "value": "Ignored"
+  },
+  "domNode": "canvas"
+}
+
+WebArea
+  *combobox
+    MenuListPopup
+      menuitem "Options should be"
+      menuitem "sent down even though"
+      menuitem "they are grandchildren"
+{
+  "nodeId": "<string>",
+  "ignored": false,
+  "role": {
+    "type": "role",
+    "value": "combobox"
+  },
+  "name": {
+    "type": "computedString",
+    "value": "",
+    "sources": [
+      {
+        "type": "relatedElement",
+        "attribute": "aria-labelledby"
+      },
+      {
+        "type": "attribute",
+        "attribute": "aria-label"
+      },
+      {
+        "type": "relatedElement",
+        "nativeSource": "label"
+      },
+      {
+        "type": "attribute",
+        "attribute": "title"
+      }
+    ]
+  },
+  "value": {
+    "type": "string",
+    "value": "Options should be"
+  },
+  "properties": [
+    {
+      "name": "invalid",
+      "value": {
+        "type": "token",
+        "value": "false"
+      }
+    },
+    {
+      "name": "expanded",
+      "value": {
+        "type": "booleanOrUndefined",
+        "value": false
+      }
+    }
+  ],
+  "domNode": "select"
+}
+

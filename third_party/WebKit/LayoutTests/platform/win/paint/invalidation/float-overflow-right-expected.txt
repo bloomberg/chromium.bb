@@ -18,12 +18,12 @@
         },
         {
           "object": "LayoutBlockFlow DIV class='outer'",
-          "rect": [677, 537, 62, 36],
+          "rect": [677, 537, 62, 37],
           "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV class='outer'",
-          "rect": [677, 531, 62, 36],
+          "rect": [677, 531, 62, 37],
           "reason": "bounds change"
         },
         {
@@ -278,142 +278,142 @@
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [727, 99, 16, 17],
+          "rect": [727, 99, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [727, 93, 16, 17],
+          "rect": [727, 93, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [727, 60, 16, 17],
+          "rect": [727, 60, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [727, 54, 16, 17],
+          "rect": [727, 54, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [726, 375, 16, 17],
+          "rect": [726, 375, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [726, 369, 16, 17],
+          "rect": [726, 369, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [726, 336, 16, 17],
+          "rect": [726, 336, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [726, 330, 16, 17],
+          "rect": [726, 330, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [725, 543, 16, 17],
+          "rect": [725, 543, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [725, 537, 16, 17],
+          "rect": [725, 537, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [725, 504, 16, 17],
+          "rect": [725, 504, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [725, 498, 16, 17],
+          "rect": [725, 498, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [725, 465, 16, 17],
+          "rect": [725, 465, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [725, 459, 16, 17],
+          "rect": [725, 459, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [725, 426, 16, 17],
+          "rect": [725, 426, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [725, 420, 16, 17],
+          "rect": [725, 420, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [725, 255, 16, 17],
+          "rect": [725, 255, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [725, 249, 16, 17],
+          "rect": [725, 249, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [725, 216, 16, 17],
+          "rect": [725, 216, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [725, 210, 16, 17],
+          "rect": [725, 210, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [725, 177, 16, 17],
+          "rect": [725, 177, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [725, 171, 16, 17],
+          "rect": [725, 171, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [725, 138, 16, 17],
+          "rect": [725, 138, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [725, 132, 16, 17],
+          "rect": [725, 132, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [721, 21, 16, 17],
+          "rect": [721, 21, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [721, 15, 16, 17],
+          "rect": [721, 15, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [718, 297, 16, 17],
+          "rect": [718, 297, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [718, 291, 16, 17],
+          "rect": [718, 291, 16, 19],
           "reason": "bounds change"
         }
       ]

@@ -23,17 +23,17 @@
         },
         {
           "object": "LayoutSVGContainer use",
-          "rect": [210, 58, 44, 37],
+          "rect": [210, 58, 44, 38],
           "reason": "layoutObject removal"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [210, 58, 44, 37],
+          "rect": [210, 58, 44, 38],
           "reason": "layoutObject removal"
         },
         {
           "object": "LayoutSVGText text id='use_text'",
-          "rect": [210, 58, 44, 37],
+          "rect": [210, 58, 44, 38],
           "reason": "layoutObject removal"
         },
         {

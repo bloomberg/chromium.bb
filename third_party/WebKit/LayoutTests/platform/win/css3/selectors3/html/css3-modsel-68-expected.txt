@@ -8,8 +8,8 @@ layer at (0,0) size 800x76
           LayoutBlockFlow (anonymous) at (8,3) size 243x16
             LayoutText {#text} at (0,0) size 243x16
               text run at (0,0) width 243: "A button (disabled) with green background"
-        LayoutText {#text} at (259,2) size 4x17
-          text run at (259,2) width 4: " "
+        LayoutText {#text} at (259,1) size 4x19
+          text run at (259,1) width 4: " "
         LayoutBR {BR} at (0,0) size 0x0
         LayoutTextControl {INPUT} at (0,22) size 285x22 [color=#545454] [bgcolor=#00FF00] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (0,0) size 0x0

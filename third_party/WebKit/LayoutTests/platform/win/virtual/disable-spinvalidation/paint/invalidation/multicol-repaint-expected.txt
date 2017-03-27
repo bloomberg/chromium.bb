@@ -13,7 +13,7 @@
         },
         {
           "object": "LayoutInline SPAN id='a'",
-          "rect": [234, 10, 300, 56],
+          "rect": [234, 10, 300, 57],
           "reason": "forced by layout"
         },
         {
@@ -28,7 +28,7 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [9, 10, 13, 56],
+          "rect": [9, 10, 13, 57],
           "reason": "forced by layout"
         }
       ]

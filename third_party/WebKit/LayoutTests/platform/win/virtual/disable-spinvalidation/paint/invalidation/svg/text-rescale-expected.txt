@@ -23,52 +23,52 @@
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [0, 114, 194, 45],
+          "rect": [0, 114, 193, 46],
           "reason": "subtree"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [0, 114, 194, 45],
+          "rect": [0, 114, 193, 46],
           "reason": "subtree"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [0, 114, 194, 45],
+          "rect": [0, 114, 193, 46],
           "reason": "subtree"
         },
         {
           "object": "LayoutSVGTSpan tspan",
-          "rect": [0, 114, 194, 45],
+          "rect": [0, 114, 193, 46],
           "reason": "subtree"
         },
         {
           "object": "LayoutSVGText text",
-          "rect": [0, 114, 194, 45],
+          "rect": [0, 114, 193, 46],
           "reason": "subtree"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [0, 14, 194, 45],
+          "rect": [0, 14, 193, 46],
           "reason": "subtree"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [0, 14, 194, 45],
+          "rect": [0, 14, 193, 46],
           "reason": "subtree"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [0, 14, 194, 45],
+          "rect": [0, 14, 193, 46],
           "reason": "subtree"
         },
         {
           "object": "LayoutSVGTSpan tspan",
-          "rect": [0, 14, 194, 45],
+          "rect": [0, 14, 193, 46],
           "reason": "subtree"
         },
         {
           "object": "LayoutSVGText text",
-          "rect": [0, 14, 194, 45],
+          "rect": [0, 14, 193, 46],
           "reason": "subtree"
         },
         {
@@ -83,52 +83,52 @@
         },
         {
           "object": "LayoutBlockFlow P",
-          "rect": [210, 113, 100, 47],
+          "rect": [210, 113, 100, 48],
           "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow P",
-          "rect": [210, 13, 100, 47],
+          "rect": [210, 13, 100, 48],
           "reason": "subtree"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [310, 114, 92, 45],
+          "rect": [310, 114, 92, 46],
           "reason": "subtree"
         },
         {
           "object": "LayoutSVGText text",
-          "rect": [310, 114, 92, 45],
+          "rect": [310, 114, 92, 46],
           "reason": "subtree"
         },
         {
           "object": "LayoutSVGViewportContainer svg",
-          "rect": [310, 114, 92, 45],
+          "rect": [310, 114, 92, 46],
           "reason": "subtree"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [310, 14, 92, 45],
+          "rect": [310, 14, 92, 46],
           "reason": "subtree"
         },
         {
           "object": "LayoutSVGText text",
-          "rect": [310, 14, 92, 45],
+          "rect": [310, 14, 92, 46],
           "reason": "subtree"
         },
         {
           "object": "LayoutSVGViewportContainer svg",
-          "rect": [310, 14, 92, 45],
+          "rect": [310, 14, 92, 46],
           "reason": "subtree"
         },
         {
           "object": "LayoutText #text",
-          "rect": [210, 114, 92, 45],
+          "rect": [210, 114, 92, 46],
           "reason": "subtree"
         },
         {
           "object": "LayoutText #text",
-          "rect": [210, 14, 92, 45],
+          "rect": [210, 14, 92, 46],
           "reason": "subtree"
         },
         {

@@ -1,0 +1,121 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow div id='contentBox'",
+          "rect": [8, 72, 402, 402],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGContainer g id='targetUse'",
+          "rect": [209, 273, 200, 200],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "rect": [209, 273, 200, 200],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='targetRect'",
+          "rect": [209, 273, 200, 200],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [209, 273, 200, 200],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGContainer use id='targetUse'",
+          "rect": [109, 173, 200, 200],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='targetRect'",
+          "rect": [109, 173, 200, 200],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGRect rect id='targetRect'",
+          "rect": [9, 173, 200, 200],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGContainer g id='targetUse'",
+          "rect": [59, 273, 50, 200],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "rect": [59, 273, 50, 200],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='targetRect'",
+          "rect": [59, 273, 50, 200],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [59, 273, 50, 200],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGContainer use id='targetUse'",
+          "rect": [34, 173, 50, 200],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='targetRect'",
+          "rect": [34, 173, 50, 200],
+          "reason": "forced by layout"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow div id='contentBox'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutSVGRoot svg",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutSVGRect rect id='targetRect'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutSVGContainer use id='targetUse'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGRect rect id='targetRect'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutSVGContainer use",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGContainer g id='targetUse'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGRect rect id='targetRect'",
+      "reason": "forced by layout"
+    }
+  ]
+}
+

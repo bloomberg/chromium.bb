@@ -18,17 +18,17 @@
         },
         {
           "object": "LayoutBlockFlow BODY",
-          "rect": [8, 8, 484, 18],
+          "rect": [8, 8, 484, 20],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow H3",
-          "rect": [8, 300, 400, 22],
+          "rect": [8, 300, 400, 23],
           "reason": "became visible"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 8, 346, 17],
+          "rect": [8, 8, 324, 19],
           "reason": "forced by layout"
         },
         {

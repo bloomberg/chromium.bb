@@ -3,24 +3,24 @@ layer at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-    LayoutSVGContainer {g} at (-10,-16) size 452x241
-      LayoutSVGText {text} at (10,4) size 340.20x20 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (10,4) size 340.20x20
-          chunk 1 text run 1 at (10.00,20.00) startOffset 0 endOffset 44 width 340.22: "Testing inapplicable presentation attributes"
-      LayoutSVGContainer {g} at (-10,-16) size 30x26
+    LayoutSVGContainer {g} at (-10,-17) size 452x242
+      LayoutSVGText {text} at (10,3) size 341x21 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,3) size 341x21
+          chunk 1 text run 1 at (10.00,20.00) startOffset 0 endOffset 44 width 341.00: "Testing inapplicable presentation attributes"
+      LayoutSVGContainer {g} at (-10,-17) size 30x27
         LayoutSVGPath {path} at (0,0) size 0x0 [fill={[type=SOLID] [color=#000000]}] [data="M 0 0"]
         LayoutSVGImage {image} at (0,0) size 10x10
         LayoutSVGRect {rect} at (0,0) size 10x10 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=10.00] [height=10.00]
         LayoutSVGEllipse {circle} at (-10,-10) size 20x20 [fill={[type=SOLID] [color=#000000]}] [cx=0.00] [cy=0.00] [r=10.00]
         LayoutSVGEllipse {ellipse} at (-10,-5) size 20x10 [fill={[type=SOLID] [color=#000000]}] [cx=0.00] [cy=0.00] [rx=10.00] [ry=5.00]
         LayoutSVGPath {polyline} at (0,0) size 10x10 [fill={[type=SOLID] [color=#000000]}] [points="0 0 10 10"]
-        LayoutSVGText {text} at (0,-16) size 20x20 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,-16) size 10x20
-            chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 10.01: "a"
-          LayoutSVGTSpan {tspan} at (0,-16) size 20x20
-            LayoutSVGInlineText {#text} at (10,-16) size 10x20
-              chunk 1 text run 1 at (10.01,0.00) startOffset 0 endOffset 1 width 10.01: "b"
-          LayoutSVGTextPath {textPath} at (0,-16) size 20x20
+        LayoutSVGText {text} at (0,-17) size 20x21 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,-17) size 10x21
+            chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 10.00: "a"
+          LayoutSVGTSpan {tspan} at (0,-17) size 20x21
+            LayoutSVGInlineText {#text} at (10,-17) size 10x21
+              chunk 1 text run 1 at (10.00,0.00) startOffset 0 endOffset 1 width 10.00: "b"
+          LayoutSVGTextPath {textPath} at (0,-17) size 20x21
         LayoutSVGResourceLinearGradient {linearGradient} [id="linearGradient"] [gradientUnits=objectBoundingBox] [start=(0,0)] [end=(1,0)]
           LayoutSVGGradientStop {stop} [offset=0.00] [color=#000000]
         LayoutSVGResourceRadialGradient {radialGradient} [id="radialGradient"] [gradientUnits=objectBoundingBox] [center=(0.50,0.50)] [focal=(0.50,0.50)] [radius=0.50] [focalRadius=0.00]
@@ -83,8 +83,8 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (280,207) size 155x16 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (280,207) size 155x16
             chunk 1 text run 1 at (280.00,220.00) startOffset 0 endOffset 26 width 155.00: "lighting-color on clipPath"
-    LayoutSVGContainer {g} at (10,311) size 229.47x36
-      LayoutSVGText {text} at (10,311) size 229.47x36 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (10,311) size 229.47x36
-          chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 229.47: "$Revision: 1.9 $"
+    LayoutSVGContainer {g} at (10,311) size 228x36
+      LayoutSVGText {text} at (10,311) size 228x36 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,311) size 228x36
+          chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 228.00: "$Revision: 1.9 $"
     LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

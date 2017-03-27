@@ -2,9 +2,9 @@ layer at (0,0) size 480x360
   LayoutView at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
-    LayoutSVGText {text} at (206.11,7) size 67.75x22 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (206.11,7) size 67.75x22
-        chunk 1 (middle anchor) text run 1 at (206.12,25.00) startOffset 0 endOffset 8 width 67.75: "graphics"
+    LayoutSVGText {text} at (206.50,8) size 67x22 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (206.50,8) size 67x22
+        chunk 1 (middle anchor) text run 1 at (206.50,25.00) startOffset 0 endOffset 8 width 67.00: "graphics"
     LayoutSVGContainer {g} at (-53.78,-30) size 413.78x243 [transform={m=((1.00,0.00)(0.00,1.00)) t=(80.00,75.00)}]
       LayoutSVGContainer {g} at (-83.78,-12) size 83.78x215 [transform={m=((1.00,0.00)(0.00,1.00)) t=(30.00,10.00)}]
         LayoutSVGText {text} at (-13,-12) size 13x15 contains 1 chunk(s)
@@ -301,7 +301,7 @@ layer at (0,0) size 480x360
             LayoutSVGRect {rect} at (10,0) size 8x8 [fill={[type=SOLID] [color=#CC0066]}] [x=10.00] [y=0.00] [width=8.00] [height=8.00]
           LayoutSVGContainer {a} at (10,0) size 8x8 [transform={m=((1.00,0.00)(0.00,1.00)) t=(220.00,0.00)}]
             LayoutSVGRect {rect} at (10,0) size 8x8 [fill={[type=SOLID] [color=#CC0066]}] [x=10.00] [y=0.00] [width=8.00] [height=8.00]
-    LayoutSVGText {text} at (10,304) size 263.33x45 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (10,304) size 263.33x45
-        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 263.34: "$Revision: 1.9 $"
+    LayoutSVGText {text} at (10,304) size 261x46 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,304) size 261x46
+        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 261.00: "$Revision: 1.9 $"
     LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

@@ -5,11 +5,11 @@ layer at (0,0) size 800x600
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGResourceClipper {clipPath} [id="myclip"] [clipPathUnits=userSpaceOnUse]
         LayoutSVGPath {path} at (200,200) size 100x200 [fill={[type=SOLID] [color=#000000]}] [data="M 200 200 l 100 0 l 0 200 l -100 0 Z"]
-    LayoutSVGContainer {g} at (0,76) size 640.52x61
-      LayoutSVGText {text} at (0,76) size 126.42x61 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,76) size 126.42x61
-          chunk 1 text run 1 at (0.00,125.00) startOffset 0 endOffset 4 width 126.44: "PASS"
-      LayoutSVGText {text} at (0,76) size 640.52x61 contains 1 chunk(s)
+    LayoutSVGContainer {g} at (0,76) size 636.91x62
+      LayoutSVGText {text} at (0,76) size 124.94x62 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,76) size 124.94x62
+          chunk 1 text run 1 at (0.00,125.00) startOffset 0 endOffset 4 width 124.95: "PASS"
+      LayoutSVGText {text} at (0,76) size 636.91x62 contains 1 chunk(s)
         [clipPath="myclip"] LayoutSVGResourceClipper {clipPath} at (200,200) size 100x200
-        LayoutSVGInlineText {#text} at (0,76) size 640.52x61
-          chunk 1 text run 1 at (0.00,125.00) startOffset 0 endOffset 28 width 640.53: "FAIL (should be clipped out)"
+        LayoutSVGInlineText {#text} at (0,76) size 636.91x62
+          chunk 1 text run 1 at (0.00,125.00) startOffset 0 endOffset 28 width 636.92: "FAIL (should be clipped out)"

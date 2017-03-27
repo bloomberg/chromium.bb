@@ -1,12 +1,12 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x164
-  LayoutBlockFlow {HTML} at (0,0) size 800x164
-    LayoutBlockFlow {BODY} at (8,8) size 784x148
-      LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 272x17
-          text run at (0,0) width 272: "The next two columns should be identical."
-      LayoutTable {TABLE} at (0,18) size 138x130
+layer at (0,0) size 800x166
+  LayoutBlockFlow {HTML} at (0,0) size 800x166
+    LayoutBlockFlow {BODY} at (8,8) size 784x150
+      LayoutBlockFlow {P} at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 251x19
+          text run at (0,0) width 251: "The next two columns should be identical."
+      LayoutTable {TABLE} at (0,20) size 138x130
         LayoutTableSection {TBODY} at (0,0) size 138x130
           LayoutTableRow {TR} at (0,2) size 138x126
             LayoutTableCell {TD} at (2,2) size 66x126 [border: (3px solid #000000)] [r=0 c=0 rs=1 cs=1]

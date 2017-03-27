@@ -208,15 +208,6 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(
     data = getFontPlatformData(fontDescription, createByFamily);
   }
 
-  // For font fallback we want to match the subpixel behavior of the original
-  // font. Mixing subpixel and non-subpixel in the same text run looks really
-  // odd and causes problems with preferred width calculations.
-  if (data && originalFontData) {
-    const FontPlatformData& platformData = originalFontData->platformData();
-    data->setMinSizeForAntiAlias(platformData.minSizeForAntiAlias());
-    data->setMinSizeForSubpixel(platformData.minSizeForSubpixel());
-  }
-
   // When i-th font (0-base) in |panUniFonts| contains a character and
   // we get out of the loop, |i| will be |i + 1|. That is, if only the
   // last font in the array covers the character, |i| will be numFonts.
@@ -397,43 +388,6 @@ std::unique_ptr<FontPlatformData> FontCache::createFontPlatformData(
            !tf->isItalic()) ||
               fontDescription.isSyntheticItalic(),
           fontDescription.orientation()));
-
-  struct FamilyMinSize {
-    const wchar_t* family;
-    unsigned minSize;
-  };
-  const static FamilyMinSize minAntiAliasSizeForFont[] = {
-      {L"simsun", 11},
-      {L"dotum", 12},
-      {L"gulim", 12},
-      {L"pmingliu", 11},
-      {L"pmingliu-extb", 11}};
-  size_t numFonts = WTF_ARRAY_LENGTH(minAntiAliasSizeForFont);
-  for (size_t i = 0; i < numFonts; i++) {
-    FamilyMinSize entry = minAntiAliasSizeForFont[i];
-    if (typefacesMatchesFamily(tf.get(), entry.family)) {
-      result->setMinSizeForAntiAlias(entry.minSize);
-      break;
-    }
-  }
-
-  // List of fonts that look bad with subpixel text rendering at smaller font
-  // sizes. This includes all fonts in the Microsoft Core fonts for the Web
-  // collection.
-  const static wchar_t* noSubpixelForSmallSizeFont[] = {
-      L"andale mono", L"arial",           L"comic sans",   L"courier new",
-      L"dotum",       L"georgia",         L"impact",       L"lucida console",
-      L"tahoma",      L"times new roman", L"trebuchet ms", L"verdana",
-      L"webdings"};
-  const static float minSizeForSubpixelForFont = 16.0f;
-  numFonts = WTF_ARRAY_LENGTH(noSubpixelForSmallSizeFont);
-  for (size_t i = 0; i < numFonts; i++) {
-    const wchar_t* family = noSubpixelForSmallSizeFont[i];
-    if (typefacesMatchesFamily(tf.get(), family)) {
-      result->setMinSizeForSubpixel(minSizeForSubpixelForFont);
-      break;
-    }
-  }
 
   return result;
 }

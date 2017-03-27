@@ -3,99 +3,98 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584 [bgcolor=#CCCCCC]
-      LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 363x17
-          text run at (0,0) width 363: "The style declarations which apply to the text below are:"
-      LayoutBlockFlow {PRE} at (0,34) size 784x48
+      LayoutBlockFlow {P} at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 337x19
+          text run at (0,0) width 337: "The style declarations which apply to the text below are:"
+      LayoutBlockFlow {PRE} at (0,36) size 784x48
         LayoutText {#text} at (0,0) size 408x48
           text run at (0,0) width 400: ".one {padding-left: 25px; background-color: aqua;}"
           text run at (400,0) width 0: " "
           text run at (0,16) width 408: ".two {padding-left: -10px; background-color: aqua;}"
           text run at (408,16) width 0: " "
           text run at (0,32) width 0: " "
-      LayoutBlockFlow {HR} at (0,95) size 784x2 [border: (1px inset #EEEEEE)]
-      LayoutBlockFlow {P} at (0,113) size 784x54 [bgcolor=#808080]
-        LayoutText {#text} at (0,0) size 551x17
-          text run at (0,0) width 396: "This element is unstyled save for a background color of gray. "
-          text run at (395,0) width 156: "However, it contains an "
-        LayoutInline {SPAN} at (0,0) size 198x17 [bgcolor=#00FFFF]
-          LayoutText {#text} at (575,0) size 149x17
-            text run at (575,0) width 149: "inline element of class "
+      LayoutBlockFlow {HR} at (0,97) size 784x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {P} at (0,115) size 784x40 [bgcolor=#808080]
+        LayoutText {#text} at (0,0) size 514x19
+          text run at (0,0) width 368: "This element is unstyled save for a background color of gray. "
+          text run at (367,0) width 147: "However, it contains an "
+        LayoutInline {SPAN} at (0,0) size 183x19 [bgcolor=#00FFFF]
+          LayoutText {#text} at (538,0) size 134x19
+            text run at (538,0) width 134: "inline element of class "
           LayoutInline {TT} at (0,0) size 25x16
-            LayoutText {#text} at (723,2) size 25x16
-              text run at (723,2) width 25: "one"
-        LayoutText {#text} at (0,18) size 582x17
-          text run at (0,18) width 582: "which should result in 25-pixel left padding (which should also be a light blue) only in the "
-        LayoutInline {STRONG} at (0,0) size 30x17
-          LayoutText {#text} at (581,18) size 30x17
-            text run at (581,18) width 30: "first"
-        LayoutText {#text} at (610,18) size 762x35
-          text run at (610,18) width 152: " line in which the inline"
-          text run at (0,36) width 81: "box appears."
-      LayoutBlockFlow {P} at (0,183) size 784x54 [bgcolor=#808080]
-        LayoutText {#text} at (0,0) size 551x17
-          text run at (0,0) width 396: "This element is unstyled save for a background color of gray. "
-          text run at (395,0) width 156: "However, it contains an "
-        LayoutInline {SPAN} at (0,0) size 173x17 [bgcolor=#00FFFF]
-          LayoutText {#text} at (550,0) size 149x17
-            text run at (550,0) width 149: "inline element of class "
+            LayoutText {#text} at (671,3) size 25x16
+              text run at (671,3) width 25: "one"
+        LayoutText {#text} at (695,0) size 778x39
+          text run at (695,0) width 83: " which should"
+          text run at (0,20) width 450: "result in 25-pixel left padding (which should also be a light blue) only in the "
+        LayoutInline {STRONG} at (0,0) size 27x19
+          LayoutText {#text} at (450,20) size 27x19
+            text run at (450,20) width 27: "first"
+        LayoutText {#text} at (477,20) size 216x19
+          text run at (477,20) width 216: " line in which the inline box appears."
+      LayoutBlockFlow {P} at (0,171) size 784x40 [bgcolor=#808080]
+        LayoutText {#text} at (0,0) size 514x19
+          text run at (0,0) width 368: "This element is unstyled save for a background color of gray. "
+          text run at (367,0) width 147: "However, it contains an "
+        LayoutInline {SPAN} at (0,0) size 158x19 [bgcolor=#00FFFF]
+          LayoutText {#text} at (513,0) size 134x19
+            text run at (513,0) width 134: "inline element of class "
           LayoutInline {TT} at (0,0) size 25x16
-            LayoutText {#text} at (698,2) size 25x16
-              text run at (698,2) width 25: "two"
-        LayoutText {#text} at (722,0) size 766x35
-          text run at (722,0) width 44: " which"
-          text run at (0,18) width 523: "should result in -10px left padding (which should also be a light blue) only in the "
-        LayoutInline {STRONG} at (0,0) size 29x17
-          LayoutText {#text} at (522,18) size 29x17
-            text run at (522,18) width 29: "first"
-        LayoutText {#text} at (551,18) size 731x35
-          text run at (551,18) width 180: " line in which the inline box"
-          text run at (0,36) width 53: "appears."
-      LayoutTable {TABLE} at (0,253) size 784x160 [border: (1px outset #808080)]
-        LayoutTableSection {TBODY} at (1,1) size 782x158
-          LayoutTableRow {TR} at (0,0) size 782x26
-            LayoutTableCell {TD} at (0,0) size 782x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 161x17
-                LayoutText {#text} at (4,4) size 161x17
-                  text run at (4,4) width 161: "TABLE Testing Section"
-          LayoutTableRow {TR} at (0,26) size 782x132
-            LayoutTableCell {TD} at (0,79) size 12x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-              LayoutText {#text} at (4,4) size 4x17
+            LayoutText {#text} at (646,3) size 25x16
+              text run at (646,3) width 25: "two"
+        LayoutText {#text} at (670,0) size 753x39
+          text run at (670,0) width 83: " which should"
+          text run at (0,20) width 437: "result in -10px left padding (which should also be a light blue) only in the "
+        LayoutInline {STRONG} at (0,0) size 27x19
+          LayoutText {#text} at (437,20) size 27x19
+            text run at (437,20) width 27: "first"
+        LayoutText {#text} at (464,20) size 216x19
+          text run at (464,20) width 216: " line in which the inline box appears."
+      LayoutTable {TABLE} at (0,227) size 784x134 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 782x132
+          LayoutTableRow {TR} at (0,0) size 782x28
+            LayoutTableCell {TD} at (0,0) size 782x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
+              LayoutInline {STRONG} at (0,0) size 157x19
+                LayoutText {#text} at (4,4) size 157x19
+                  text run at (4,4) width 157: "TABLE Testing Section"
+          LayoutTableRow {TR} at (0,28) size 782x104
+            LayoutTableCell {TD} at (0,66) size 12x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+              LayoutText {#text} at (4,4) size 4x19
                 text run at (4,4) width 4: " "
-            LayoutTableCell {TD} at (12,26) size 770x132 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
-              LayoutBlockFlow {P} at (4,4) size 762x54 [bgcolor=#808080]
-                LayoutText {#text} at (0,0) size 551x17
-                  text run at (0,0) width 396: "This element is unstyled save for a background color of gray. "
-                  text run at (395,0) width 156: "However, it contains an "
-                LayoutInline {SPAN} at (0,0) size 198x17 [bgcolor=#00FFFF]
-                  LayoutText {#text} at (575,0) size 149x17
-                    text run at (575,0) width 149: "inline element of class "
+            LayoutTableCell {TD} at (12,28) size 770x104 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
+              LayoutBlockFlow {P} at (4,4) size 762x40 [bgcolor=#808080]
+                LayoutText {#text} at (0,0) size 514x19
+                  text run at (0,0) width 368: "This element is unstyled save for a background color of gray. "
+                  text run at (367,0) width 147: "However, it contains an "
+                LayoutInline {SPAN} at (0,0) size 183x19 [bgcolor=#00FFFF]
+                  LayoutText {#text} at (538,0) size 134x19
+                    text run at (538,0) width 134: "inline element of class "
                   LayoutInline {TT} at (0,0) size 25x16
-                    LayoutText {#text} at (723,2) size 25x16
-                      text run at (723,2) width 25: "one"
-                LayoutText {#text} at (0,18) size 582x17
-                  text run at (0,18) width 582: "which should result in 25-pixel left padding (which should also be a light blue) only in the "
-                LayoutInline {STRONG} at (0,0) size 30x17
-                  LayoutText {#text} at (581,18) size 30x17
-                    text run at (581,18) width 30: "first"
-                LayoutText {#text} at (610,18) size 762x35
-                  text run at (610,18) width 152: " line in which the inline"
-                  text run at (0,36) width 81: "box appears."
-              LayoutBlockFlow {P} at (4,74) size 762x54 [bgcolor=#808080]
-                LayoutText {#text} at (0,0) size 551x17
-                  text run at (0,0) width 396: "This element is unstyled save for a background color of gray. "
-                  text run at (395,0) width 156: "However, it contains an "
-                LayoutInline {SPAN} at (0,0) size 173x17 [bgcolor=#00FFFF]
-                  LayoutText {#text} at (550,0) size 149x17
-                    text run at (550,0) width 149: "inline element of class "
+                    LayoutText {#text} at (671,3) size 25x16
+                      text run at (671,3) width 25: "one"
+                LayoutText {#text} at (695,0) size 735x39
+                  text run at (695,0) width 40: " which"
+                  text run at (0,20) width 493: "should result in 25-pixel left padding (which should also be a light blue) only in the "
+                LayoutInline {STRONG} at (0,0) size 27x19
+                  LayoutText {#text} at (493,20) size 27x19
+                    text run at (493,20) width 27: "first"
+                LayoutText {#text} at (520,20) size 216x19
+                  text run at (520,20) width 216: " line in which the inline box appears."
+              LayoutBlockFlow {P} at (4,60) size 762x40 [bgcolor=#808080]
+                LayoutText {#text} at (0,0) size 514x19
+                  text run at (0,0) width 368: "This element is unstyled save for a background color of gray. "
+                  text run at (367,0) width 147: "However, it contains an "
+                LayoutInline {SPAN} at (0,0) size 158x19 [bgcolor=#00FFFF]
+                  LayoutText {#text} at (513,0) size 134x19
+                    text run at (513,0) width 134: "inline element of class "
                   LayoutInline {TT} at (0,0) size 25x16
-                    LayoutText {#text} at (698,2) size 25x16
-                      text run at (698,2) width 25: "two"
-                LayoutText {#text} at (0,18) size 566x17
-                  text run at (0,18) width 566: "which should result in -10px left padding (which should also be a light blue) only in the "
-                LayoutInline {STRONG} at (0,0) size 30x17
-                  LayoutText {#text} at (565,18) size 30x17
-                    text run at (565,18) width 30: "first"
-                LayoutText {#text} at (594,18) size 746x35
-                  text run at (594,18) width 152: " line in which the inline"
-                  text run at (0,36) width 81: "box appears."
+                    LayoutText {#text} at (646,3) size 25x16
+                      text run at (646,3) width 25: "two"
+                LayoutText {#text} at (670,0) size 753x39
+                  text run at (670,0) width 83: " which should"
+                  text run at (0,20) width 437: "result in -10px left padding (which should also be a light blue) only in the "
+                LayoutInline {STRONG} at (0,0) size 27x19
+                  LayoutText {#text} at (437,20) size 27x19
+                    text run at (437,20) width 27: "first"
+                LayoutText {#text} at (464,20) size 216x19
+                  text run at (464,20) width 216: " line in which the inline box appears."

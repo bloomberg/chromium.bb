@@ -1,12 +1,12 @@
 layer at (0,0) size 1600x1200
   LayoutView at (0,0) size 1600x1200
-layer at (0,0) size 1600x377
-  LayoutBlockFlow {HTML} at (0,0) size 1600x377
-    LayoutBlockFlow {BODY} at (16,16) size 1568x345
+layer at (0,0) size 1600x378
+  LayoutBlockFlow {HTML} at (0,0) size 1600x378
+    LayoutBlockFlow {BODY} at (16,16) size 1568x346
       LayoutBlockFlow {DIV} at (0,0) size 1568x37
-        LayoutText {#text} at (0,0) size 1304x36
-          text run at (0,0) width 1304: "This test passes if the broken image icon appears high-resolution in HiDPI and is the appropriate size."
-      LayoutBlockFlow (anonymous) at (0,37) size 1568x308
+        LayoutText {#text} at (0,0) size 1274x36
+          text run at (0,0) width 1274: "This test passes if the broken image icon appears high-resolution in HiDPI and is the appropriate size."
+      LayoutBlockFlow (anonymous) at (0,37) size 1568x309
         LayoutBlockFlow {IMG} at (0,0) size 600x300
         LayoutText {#text} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0

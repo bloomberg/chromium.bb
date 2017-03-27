@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV class='em-units'",
-          "rect": [8, 8, 784, 146],
+          "rect": [8, 8, 784, 147],
           "reason": "forced by layout"
         },
         {
@@ -28,7 +28,7 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [330, 136, 4, 17],
+          "rect": [330, 135, 4, 19],
           "reason": "forced by layout"
         }
       ]

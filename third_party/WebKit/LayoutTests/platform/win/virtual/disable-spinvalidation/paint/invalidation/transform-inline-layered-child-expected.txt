@@ -8,37 +8,37 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV id='box'",
-          "rect": [66, 85, 168, 192],
+          "rect": [61, 87, 178, 206],
           "reason": "subtree"
         },
         {
           "object": "LayoutInline (relative positioned) SPAN id='child'",
-          "rect": [139, 359, 151, 180],
+          "rect": [135, 360, 160, 196],
           "reason": "subtree"
         },
         {
           "object": "LayoutText #text",
-          "rect": [139, 359, 151, 180],
+          "rect": [135, 361, 159, 194],
           "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='box'",
-          "rect": [100, 100, 100, 162],
+          "rect": [100, 100, 100, 180],
           "reason": "subtree"
         },
         {
           "object": "LayoutInline (relative positioned) SPAN id='child'",
-          "rect": [300, 300, 80, 161],
+          "rect": [300, 300, 80, 179],
           "reason": "subtree"
         },
         {
           "object": "LayoutText #text",
-          "rect": [300, 301, 80, 160],
+          "rect": [300, 302, 80, 176],
           "reason": "subtree"
         },
         {
           "object": "LayoutText #text",
-          "rect": [147, 85, 1, 1],
+          "rect": [151, 87, 1, 1],
           "reason": "subtree"
         }
       ]

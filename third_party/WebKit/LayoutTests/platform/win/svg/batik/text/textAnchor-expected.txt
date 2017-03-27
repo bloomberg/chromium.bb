@@ -2,9 +2,9 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 450x500
   LayoutSVGRoot {svg} at (0,0) size 450x500
-    LayoutSVGText {text} at (142.72,26) size 164.55x17 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (142.72,26) size 164.55x17
-        chunk 1 (middle anchor) text run 1 at (142.72,40.00) startOffset 0 endOffset 22 width 164.55: "text-anchor on <tspan>"
+    LayoutSVGText {text} at (146.50,25) size 157x18 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (146.50,25) size 157x18
+        chunk 1 (middle anchor) text run 1 at (146.50,40.00) startOffset 0 endOffset 22 width 157.00: "text-anchor on <tspan>"
     LayoutSVGContainer {g} at (-12.66,0) size 462.66x500 [transform={m=((0.75,0.00)(0.00,0.75)) t=(56.25,82.50)}]
       LayoutSVGContainer {g} at (0,0) size 450x500
         LayoutSVGRect {rect} at (0,0) size 450x167 [opacity=0.10] [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=450.00] [height=167.00]

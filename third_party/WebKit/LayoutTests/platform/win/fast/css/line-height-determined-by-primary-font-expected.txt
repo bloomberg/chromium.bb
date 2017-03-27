@@ -18,9 +18,9 @@ layer at (0,0) size 800x274
               LayoutText {#text} at (12,5) size 54x20
                 text run at (12,5) width 54: "\x{8521}\x{4F9D}\x{6797}"
           LayoutBlockFlow (floating) {LI} at (180,0) size 94x31 [border: none (1px solid #FF0000) none]
-            LayoutInline {A} at (0,0) size 72x26
-              LayoutText {#text} at (12,2) size 72x26
-                text run at (12,2) width 72: "\x{9648}\x{7EEE}\x{8D1E}"
+            LayoutInline {A} at (0,0) size 72x27
+              LayoutText {#text} at (12,1) size 72x27
+                text run at (12,1) width 72: "\x{9648}\x{7EEE}\x{8D1E}"
           LayoutBlockFlow (floating) {LI} at (274,0) size 76x31 [border: none (1px solid #FF0000) none]
             LayoutInline {A} at (0,0) size 54x20
               LayoutText {#text} at (12,5) size 54x20
@@ -46,8 +46,8 @@ layer at (0,0) size 800x274
             LayoutText {#text} at (12,5) size 54x20
               text run at (12,5) width 54: "\x{8521}\x{4F9D}\x{6797}"
           LayoutBlockFlow (floating) {LI} at (180,0) size 94x31 [border: none (1px solid #FF0000) none]
-            LayoutText {#text} at (12,2) size 72x26
-              text run at (12,2) width 72: "\x{9648}\x{7EEE}\x{8D1E}"
+            LayoutText {#text} at (12,1) size 72x27
+              text run at (12,1) width 72: "\x{9648}\x{7EEE}\x{8D1E}"
           LayoutBlockFlow (floating) {LI} at (274,0) size 76x31 [border: none (1px solid #FF0000) none]
             LayoutText {#text} at (12,5) size 54x20
               text run at (12,5) width 54: "\x{9648}\x{5955}\x{8FC5}"

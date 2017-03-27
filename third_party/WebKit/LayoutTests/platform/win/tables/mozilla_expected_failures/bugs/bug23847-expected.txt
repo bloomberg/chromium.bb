@@ -14,7 +14,7 @@ layer at (0,0) size 800x600
               LayoutBlockFlow {IMG} at (2,2) size 6x113
           LayoutTableRow {TR} at (0,27) size 343x90
             LayoutTableCell {TD} at (130,55) size 199x34 [border: (1px inset #808080)] [r=1 c=2 rs=1 cs=1]
-              LayoutInline {A} at (0,0) size 195x17 [color=#0000EE]
+              LayoutInline {A} at (0,0) size 195x19 [color=#0000EE]
                 LayoutText {#text} at (0,0) size 0x0
                 LayoutBlockFlow {IMG} at (2,2) size 195x30
 layer at (13,51) size 122x35 clip at (14,52) size 120x33

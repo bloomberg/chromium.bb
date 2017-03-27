@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow BODY",
-          "rect": [8, 8, 784, 18],
+          "rect": [8, 8, 784, 20],
           "reason": "forced by layout"
         }
       ]
@@ -16,18 +16,18 @@
     {
       "name": "LayoutInline (relative positioned) DIV id='block'",
       "position": [68, 7],
-      "bounds": [374, 19],
+      "bounds": [348, 21],
       "drawsContent": true,
       "backfaceVisibility": "hidden",
       "paintInvalidations": [
         {
           "object": "LayoutInline (relative positioned) DIV id='block'",
-          "rect": [0, 0, 374, 19],
+          "rect": [0, 0, 348, 21],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [1, 1, 372, 17],
+          "rect": [1, 1, 346, 19],
           "reason": "forced by layout"
         }
       ]

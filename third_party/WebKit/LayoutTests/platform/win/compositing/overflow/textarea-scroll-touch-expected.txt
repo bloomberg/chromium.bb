@@ -23,7 +23,7 @@
     },
     {
       "name": "Scrolling Contents Layer",
-      "bounds": [189, 337],
+      "bounds": [189, 328],
       "contentsOpaque": true,
       "drawsContent": true
     },
@@ -58,7 +58,7 @@
     },
     {
       "name": "Scrolling Contents Layer",
-      "bounds": [189, 337],
+      "bounds": [189, 328],
       "contentsOpaque": true,
       "drawsContent": true
     },

@@ -61,25 +61,17 @@ void FontPlatformData::setupPaint(SkPaint* paint, float, const Font*) const {
   if (ts <= kMaxSizeForEmbeddedBitmap)
     flags |= SkPaint::kEmbeddedBitmapText_Flag;
 
-  if (ts >= m_minSizeForAntiAlias) {
-    // Disable subpixel text for certain older fonts at smaller sizes as
-    // they tend to get quite blurry at non-integer sizes and positions.
-    // For high-DPI this workaround isn't required.
-    if ((ts >= m_minSizeForSubpixel ||
-         FontCache::fontCache()->deviceScaleFactor() >= 1.5)
+  // Only use sub-pixel positioning if anti aliasing is enabled. Otherwise,
+  // without font smoothing, subpixel text positioning leads to uneven spacing
+  // since subpixel test placement coordinates would be passed to Skia, which
+  // only has non-antialiased glyphs to draw, so they necessarily get clamped at
+  // pixel positions, which leads to uneven spacing, either too close or too far
+  // away from adjacent glyphs. We avoid this by linking the two flags.
+  if (textFlags & SkPaint::kAntiAlias_Flag)
+    flags |= SkPaint::kSubpixelText_Flag;
 
-        // Subpixel text positioning looks pretty bad without font
-        // smoothing. Disable it unless some type of font smoothing is used.
-        // As most tests run without font smoothing we enable it for tests
-        // to ensure we get good test coverage matching the more common
-        // smoothing enabled behavior.
-        && ((textFlags & SkPaint::kAntiAlias_Flag) ||
-            LayoutTestSupport::isRunningLayoutTest()))
-      flags |= SkPaint::kSubpixelText_Flag;
-
-    SkASSERT(!(textFlags & ~textFlagsMask));
-    flags |= textFlags;
-  }
+  SkASSERT(!(textFlags & ~textFlagsMask));
+  flags |= textFlags;
 
   paint->setFlags(flags);
 }

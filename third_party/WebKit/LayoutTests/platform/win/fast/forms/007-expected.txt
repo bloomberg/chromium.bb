@@ -3,23 +3,23 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutFieldset {FIELDSET} at (2,0) size 115.09x71.59 [border: (2px groove #C0C0C0)]
-        LayoutBlockFlow {LEGEND} at (14,0) size 87.09x18
-          LayoutText {#text} at (2,0) size 84x17
-            text run at (2,0) width 84: "Number One"
-        LayoutBlockFlow (anonymous) at (14,23.59) size 87.09x36
-          LayoutText {#text} at (0,0) size 81x17
-            text run at (0,0) width 81: "Hello world."
-          LayoutBR {BR} at (80,14) size 1x0
-          LayoutText {#text} at (0,18) size 81x17
-            text run at (0,18) width 81: "Hello world."
-      LayoutText {#text} at (119,41) size 5x17
-        text run at (119,41) width 5: " "
-      LayoutFieldset {FIELDSET} at (125.09,18) size 116.64x53.59 [border: (2px groove #C0C0C0)]
-        LayoutBlockFlow {LEGEND} at (14,0) size 88.64x18
-          LayoutText {#text} at (2,0) size 85x17
-            text run at (2,0) width 85: "Number Two"
-        LayoutBlockFlow (anonymous) at (14,23.59) size 88.64x18
-          LayoutText {#text} at (0,0) size 81x17
-            text run at (0,0) width 81: "Hello world."
+      LayoutFieldset {FIELDSET} at (2,0) size 112x77.59 [border: (2px groove #C0C0C0)]
+        LayoutBlockFlow {LEGEND} at (14,0) size 84x20
+          LayoutText {#text} at (2,0) size 80x19
+            text run at (2,0) width 80: "Number One"
+        LayoutBlockFlow (anonymous) at (14,25.59) size 84x40
+          LayoutText {#text} at (0,0) size 75x19
+            text run at (0,0) width 75: "Hello world."
+          LayoutBR {BR} at (75,15) size 0x0
+          LayoutText {#text} at (0,20) size 75x19
+            text run at (0,20) width 75: "Hello world."
+      LayoutText {#text} at (116,45) size 4x19
+        text run at (116,45) width 4: " "
+      LayoutFieldset {FIELDSET} at (122,20) size 112.89x57.59 [border: (2px groove #C0C0C0)]
+        LayoutBlockFlow {LEGEND} at (14,0) size 84.89x20
+          LayoutText {#text} at (2,0) size 81x19
+            text run at (2,0) width 81: "Number Two"
+        LayoutBlockFlow (anonymous) at (14,25.59) size 84.89x20
+          LayoutText {#text} at (0,0) size 75x19
+            text run at (0,0) width 75: "Hello world."
       LayoutText {#text} at (0,0) size 0x0

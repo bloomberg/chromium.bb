@@ -18,22 +18,22 @@
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [89, 86, 111, 17],
+          "rect": [100, 85, 100, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGText text",
-          "rect": [89, 86, 111, 17],
+          "rect": [100, 85, 100, 19],
           "reason": "full"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [0, 86, 100, 17],
+          "rect": [0, 85, 100, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGText text",
-          "rect": [0, 86, 100, 17],
+          "rect": [0, 85, 100, 19],
           "reason": "full"
         },
         {

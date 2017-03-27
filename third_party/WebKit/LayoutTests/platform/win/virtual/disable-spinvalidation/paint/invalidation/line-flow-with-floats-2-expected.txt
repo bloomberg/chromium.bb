@@ -1,0 +1,391 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow P",
+          "rect": [8, 74, 418, 526],
+          "reason": "border box change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 241, 406, 139],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 240, 406, 139],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 501, 406, 99],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 500, 406, 99],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 181, 406, 79],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 180, 406, 79],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 441, 355, 59],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 440, 355, 59],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 80, 354, 120],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [65, 381, 304, 59],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [65, 380, 304, 59],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [65, 381, 287, 19],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [65, 380, 287, 19],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [134, 361, 131, 19],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [134, 360, 131, 19],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [303, 421, 66, 19],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [303, 420, 66, 19],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) SPAN id='greenFloat'",
+          "rect": [372, 384, 48, 81],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) SPAN id='greenFloat'",
+          "rect": [372, 383, 48, 81],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) SPAN id='blueFloat'",
+          "rect": [14, 364, 48, 65],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) SPAN id='blueFloat'",
+          "rect": [14, 363, 48, 65],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [149, 180, 44, 20],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [485, 0, 15, 600],
+          "reason": "scroll"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "VerticalScrollbar",
+      "reason": "scroll"
+    },
+    {
+      "object": "LayoutBlockFlow P",
+      "reason": "border box change"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "border box change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'The chief difficulty Alice found at first was in managing her'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'flamingo: she succeeded in getting its body tucked away,'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'comfortably enough, under her arm, with its legs hanging'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'down,\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'but generally, just as she had got its neck nicely'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'straightened\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'out, and was going to give the hedgehog a'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'blow with its head, it\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutInline I id='would'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'would'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox ' twist itself round and look up in her'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'face, with\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'such a puzzled expression that she could not help'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'bursting out\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'laughing: and when she had got its head down, and was'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'going to\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'begin again, it was very provoking to find that the'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'hedgehog had\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'unrolled itself, and was in the act of crawling away:'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'besides all\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'this, there was generally a ridge or furrow in the way'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'wherever\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'she wanted to send the hedgehog to, and, as the'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'doubled-up\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'soldiers were always getting up and walking off to'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'other parts of\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'the ground, Alice soon came to the conclusion that it'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'was a very\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutBlockFlow (floating) SPAN id='blueFloat'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'difficult game indeed.\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'The players all played at once without waiting\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutBlockFlow (floating) SPAN id='greenFloat'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'for'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'turns,\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'quarrelling all the while, and fighting for the'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'hedgehogs; and in\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'a very short time '",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'the Queen'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'was in a furious passion, and went\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'stamping about, and'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'shouting \u2018Off with his head!\u2019 or \u2018Off with\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'her head!\u2019 about'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'once in a minute.\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'Alice began to feel very uneasy: to be sure, she had not as\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'yet had'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'any dispute with the Queen, but she knew that it might\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'happen any'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'minute, \u2018and then,\u2019 thought she, \u2018what would become of\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'me?'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'They\u2019re dreadfully fond of beheading people here; the great'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'wonder is, that there\u2018s any one left alive!\u2019'",
+      "reason": "forced by layout"
+    }
+  ]
+}
+

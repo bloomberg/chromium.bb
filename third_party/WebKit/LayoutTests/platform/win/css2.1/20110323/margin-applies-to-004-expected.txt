@@ -1,13 +1,13 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x50
-  LayoutBlockFlow {HTML} at (0,0) size 800x50
-    LayoutBlockFlow {BODY} at (8,16) size 784x18
-      LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 463x17
-          text run at (0,0) width 463: "Test passes if there is no space between the blue and orange lines below."
-layer at (8,50) size 240x240
-  LayoutBlockFlow (positioned) {DIV} at (8,50) size 240x240 [border: (10px solid #0000FF)]
+layer at (0,0) size 800x52
+  LayoutBlockFlow {HTML} at (0,0) size 800x52
+    LayoutBlockFlow {BODY} at (8,16) size 784x20
+      LayoutBlockFlow {P} at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 436x19
+          text run at (0,0) width 436: "Test passes if there is no space between the blue and orange lines below."
+layer at (8,52) size 240x240
+  LayoutBlockFlow (positioned) {DIV} at (8,52) size 240x240 [border: (10px solid #0000FF)]
     LayoutTable {DIV} at (10,10) size 220x220
       LayoutTableSection (anonymous) at (0,0) size 220x220
         LayoutTableRow {DIV} at (0,0) size 220x220

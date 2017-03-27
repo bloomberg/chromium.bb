@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV",
-          "rect": [7, 41, 786, 56],
+          "rect": [7, 43, 786, 62],
           "reason": "border box change"
         }
       ]

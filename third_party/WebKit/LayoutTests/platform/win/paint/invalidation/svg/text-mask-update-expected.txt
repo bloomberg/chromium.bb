@@ -8,17 +8,17 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGRect rect",
-          "rect": [10, 2, 46, 22],
+          "rect": [10, 3, 46, 22],
           "reason": "style change"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [10, 32, 43, 22],
+          "rect": [10, 33, 41, 22],
           "reason": "layoutObject removal"
         },
         {
           "object": "LayoutSVGRect rect",
-          "rect": [10, 32, 43, 18],
+          "rect": [10, 33, 41, 17],
           "reason": "full"
         }
       ]

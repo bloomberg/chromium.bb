@@ -1,19 +1,19 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x50
-  LayoutBlockFlow {html} at (0,0) size 800x50
-    LayoutBlockFlow {body} at (8,16) size 784x18
-      LayoutBlockFlow {p} at (0,0) size 784x18
-        LayoutInline {a} at (0,0) size 387x17 [color=#000080]
-          LayoutText {#text} at (0,0) size 44x17
-            text run at (0,0) width 44: "Hover "
-          LayoutInline {strong} at (0,0) size 31x17
-            LayoutText {#text} at (43,0) size 31x17
-              text run at (43,0) width 31: "here"
-          LayoutText {#text} at (73,0) size 153x17
-            text run at (73,0) width 153: " and the background of "
-          LayoutInline {span} at (0,0) size 158x17
-            LayoutText {#text} at (225,0) size 158x17
-              text run at (225,0) width 158: "this text should go green"
-          LayoutText {#text} at (382,0) size 5x17
-            text run at (382,0) width 5: "."
+layer at (0,0) size 800x52
+  LayoutBlockFlow {html} at (0,0) size 800x52
+    LayoutBlockFlow {body} at (8,16) size 784x20
+      LayoutBlockFlow {p} at (0,0) size 784x20
+        LayoutInline {a} at (0,0) size 365x19 [color=#000080]
+          LayoutText {#text} at (0,0) size 42x19
+            text run at (0,0) width 42: "Hover "
+          LayoutInline {strong} at (0,0) size 30x19
+            LayoutText {#text} at (42,0) size 30x19
+              text run at (42,0) width 30: "here"
+          LayoutText {#text} at (71,0) size 145x19
+            text run at (71,0) width 145: " and the background of "
+          LayoutInline {span} at (0,0) size 146x19
+            LayoutText {#text} at (215,0) size 146x19
+              text run at (215,0) width 146: "this text should go green"
+          LayoutText {#text} at (360,0) size 5x19
+            text run at (360,0) width 5: "."

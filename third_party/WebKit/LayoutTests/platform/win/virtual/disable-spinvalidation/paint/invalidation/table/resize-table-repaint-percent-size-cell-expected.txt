@@ -38,22 +38,22 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [3, 401, 46, 17],
+          "rect": [3, 400, 45, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [3, 162, 46, 17],
+          "rect": [3, 161, 45, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [3, 116, 46, 17],
+          "rect": [3, 115, 45, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [3, 67, 46, 17],
+          "rect": [3, 66, 45, 19],
           "reason": "forced by layout"
         }
       ]

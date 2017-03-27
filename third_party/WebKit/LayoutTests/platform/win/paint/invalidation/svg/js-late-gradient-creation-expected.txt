@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGText text",
-          "rect": [33, 23, 699, 189],
+          "rect": [33, 23, 697, 194],
           "reason": "style change"
         }
       ]

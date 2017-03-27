@@ -8,47 +8,47 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV",
-          "rect": [10, 132, 292, 144],
+          "rect": [10, 138, 292, 160],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow DIV",
-          "rect": [10, 281, 292, 50],
+          "rect": [10, 303, 292, 50],
           "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [10, 132, 276, 143],
+          "rect": [10, 138, 289, 159],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow DIV",
-          "rect": [10, 132, 242, 180],
+          "rect": [10, 138, 242, 180],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow DIV",
-          "rect": [10, 317, 242, 50],
+          "rect": [10, 323, 242, 50],
           "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD id='col1'",
-          "rect": [10, 331, 242, 36],
+          "rect": [10, 353, 242, 20],
           "reason": "incremental"
         },
         {
           "object": "LayoutText #text",
-          "rect": [10, 132, 240, 179],
+          "rect": [10, 138, 239, 179],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutTableCell TD id='target'",
-          "rect": [254, 132, 52, 235],
+          "rect": [254, 138, 52, 235],
           "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD id='col1'",
-          "rect": [252, 132, 50, 199],
+          "rect": [252, 138, 50, 215],
           "reason": "incremental"
         }
       ]
@@ -76,39 +76,35 @@
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'malesuada, est libero feugiat libero,'",
+      "object": "InlineTextBox 'malesuada, est libero feugiat libero, vel'",
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'vel fringilla orci nibh sed neque.'",
+      "object": "InlineTextBox 'fringilla orci nibh sed neque. Quisque eu'",
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'Quisque eu nulla non nisi molestie'",
+      "object": "InlineTextBox 'nulla non nisi molestie accumsan. Etiam'",
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'accumsan. Etiam tellus urna, laoreet'",
+      "object": "InlineTextBox 'tellus urna, laoreet ac, laoreet non,'",
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'ac, laoreet non, suscipit sed, sapien.'",
+      "object": "InlineTextBox 'suscipit sed, sapien. Phasellus vehicula,'",
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'Phasellus vehicula, sem at posuere'",
+      "object": "InlineTextBox 'sem at posuere vehicula, augue nibh'",
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'vehicula, augue nibh molestie nisl,'",
+      "object": "InlineTextBox 'molestie nisl, nec ullamcorper lacus ante'",
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'nec ullamcorper lacus ante vulputate'",
-      "reason": "forced by layout"
-    },
-    {
-      "object": "InlineTextBox 'pede.'",
+      "object": "InlineTextBox 'vulputate pede.'",
       "reason": "forced by layout"
     },
     {

@@ -10,5 +10,5 @@ layer at (0,0) size 800x600
               text run at (0,4) width 53: "Float Text"
           LayoutText {#text} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (56,0) size 478x17
-        text run at (56,0) width 478: "The float on the left should have a black border enclosing its text contents."
+      LayoutText {#text} at (56,0) size 445x19
+        text run at (56,0) width 445: "The float on the left should have a black border enclosing its text contents."

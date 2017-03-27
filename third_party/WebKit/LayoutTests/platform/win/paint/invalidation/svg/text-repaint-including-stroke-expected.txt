@@ -8,17 +8,17 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGText text id='bounce'",
-          "rect": [80, 0, 551, 114],
+          "rect": [80, 0, 550, 117],
           "reason": "subtree"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [30, 0, 404, 57],
+          "rect": [30, 0, 403, 59],
           "reason": "subtree"
         },
         {
           "object": "LayoutSVGText text id='bounce'",
-          "rect": [30, 0, 404, 57],
+          "rect": [30, 0, 403, 59],
           "reason": "subtree"
         }
       ]

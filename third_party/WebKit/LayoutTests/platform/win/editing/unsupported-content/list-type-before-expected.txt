@@ -12,59 +12,59 @@ layer at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {DIV} at (0,0) size 784x220 [border: (4px solid #0000FF)]
         LayoutBlockFlow {DIV} at (20,20) size 744x69
-          LayoutText {#text} at (0,0) size 66x26
-            text run at (0,0) width 66: "Tests: "
+          LayoutText {#text} at (0,0) size 64x26
+            text run at (0,0) width 64: "Tests: "
           LayoutBR {BR} at (0,0) size 0x0
-          LayoutText {#text} at (0,27) size 656x20
-            text run at (0,27) width 656: "Our ability to \"edit around\" content the HTML editing code does not yet handle very well. "
-          LayoutBR {BR} at (655,43) size 1x0
-          LayoutInline {I} at (0,0) size 98x20
-            LayoutText {#text} at (0,48) size 98x20
-              text run at (0,48) width 98: "For this test: "
-          LayoutText {#text} at (97,48) size 224x20
-            text run at (97,48) width 224: "Test typing at the start of a list."
+          LayoutText {#text} at (0,27) size 654x20
+            text run at (0,27) width 654: "Our ability to \"edit around\" content the HTML editing code does not yet handle very well. "
+          LayoutBR {BR} at (654,43) size 0x0
+          LayoutInline {I} at (0,0) size 100x20
+            LayoutText {#text} at (0,48) size 100x20
+              text run at (0,48) width 100: "For this test: "
+          LayoutText {#text} at (100,48) size 224x20
+            text run at (100,48) width 224: "Test typing at the start of a list."
         LayoutBlockFlow (anonymous) at (20,89) size 744x21
           LayoutBR {BR} at (0,0) size 0x20
         LayoutBlockFlow {DIV} at (20,110) size 744x90
-          LayoutText {#text} at (0,0) size 190x26
-            text run at (0,0) width 190: "Expected Results: "
-          LayoutBR {BR} at (189,21) size 1x0
-          LayoutText {#text} at (0,27) size 700x41
-            text run at (0,27) width 700: "The content in the red box must exactly match the content in the green box (except for the border"
+          LayoutText {#text} at (0,0) size 189x26
+            text run at (0,0) width 189: "Expected Results: "
+          LayoutBR {BR} at (189,21) size 0x0
+          LayoutText {#text} at (0,27) size 702x41
+            text run at (0,27) width 702: "The content in the red box must exactly match the content in the green box (except for the border"
             text run at (0,48) width 52: "color). "
-          LayoutBR {BR} at (51,64) size 1x0
-          LayoutInline {I} at (0,0) size 98x20
-            LayoutText {#text} at (0,69) size 98x20
-              text run at (0,69) width 98: "For this test: "
-          LayoutText {#text} at (97,69) size 409x20
-            text run at (97,69) width 409: "Typed text should appear at the start of the first list item."
-      LayoutBlockFlow {DIV} at (0,230) size 784x133 [border: (2px solid #008000)]
-        LayoutBlockFlow {UL} at (2,26) size 780x81
-          LayoutListItem {LI} at (40,0) size 740x27
-            LayoutListMarker (anonymous) at (-22,0) size 9x26: bullet
-            LayoutText {#text} at (0,0) size 113x26
-              text run at (0,0) width 113: "xxxline one"
-          LayoutListItem {LI} at (40,27) size 740x27
-            LayoutListMarker (anonymous) at (-22,0) size 9x26: bullet
-            LayoutText {#text} at (0,0) size 78x26
-              text run at (0,0) width 78: "line two"
-          LayoutListItem {LI} at (40,54) size 740x27
-            LayoutListMarker (anonymous) at (-22,0) size 9x26: bullet
-            LayoutText {#text} at (0,0) size 90x26
+          LayoutBR {BR} at (52,64) size 0x0
+          LayoutInline {I} at (0,0) size 100x20
+            LayoutText {#text} at (0,69) size 100x20
+              text run at (0,69) width 100: "For this test: "
+          LayoutText {#text} at (100,69) size 409x20
+            text run at (100,69) width 409: "Typed text should appear at the start of the first list item."
+      LayoutBlockFlow {DIV} at (0,230) size 784x136 [border: (2px solid #008000)]
+        LayoutBlockFlow {UL} at (2,26) size 780x84
+          LayoutListItem {LI} at (40,0) size 740x28
+            LayoutListMarker (anonymous) at (-22,0) size 9x27: bullet
+            LayoutText {#text} at (0,0) size 112x27
+              text run at (0,0) width 112: "xxxline one"
+          LayoutListItem {LI} at (40,28) size 740x28
+            LayoutListMarker (anonymous) at (-22,0) size 9x27: bullet
+            LayoutText {#text} at (0,0) size 77x27
+              text run at (0,0) width 77: "line two"
+          LayoutListItem {LI} at (40,56) size 740x28
+            LayoutListMarker (anonymous) at (-22,0) size 9x27: bullet
+            LayoutText {#text} at (0,0) size 90x27
               text run at (0,0) width 90: "line three"
-      LayoutBlockFlow {DIV} at (0,373) size 784x133
-        LayoutBlockFlow {DIV} at (0,0) size 784x133 [border: (2px solid #FF0000)]
-          LayoutBlockFlow {UL} at (2,26) size 780x81
-            LayoutListItem {LI} at (40,0) size 740x27
-              LayoutListMarker (anonymous) at (-22,0) size 9x26: bullet
-              LayoutText {#text} at (0,0) size 113x26
-                text run at (0,0) width 113: "xxxline one"
-            LayoutListItem {LI} at (40,27) size 740x27
-              LayoutListMarker (anonymous) at (-22,0) size 9x26: bullet
-              LayoutText {#text} at (0,0) size 78x26
-                text run at (0,0) width 78: "line two"
-            LayoutListItem {LI} at (40,54) size 740x27
-              LayoutListMarker (anonymous) at (-22,0) size 9x26: bullet
-              LayoutText {#text} at (0,0) size 90x26
+      LayoutBlockFlow {DIV} at (0,376) size 784x136
+        LayoutBlockFlow {DIV} at (0,0) size 784x136 [border: (2px solid #FF0000)]
+          LayoutBlockFlow {UL} at (2,26) size 780x84
+            LayoutListItem {LI} at (40,0) size 740x28
+              LayoutListMarker (anonymous) at (-22,0) size 9x27: bullet
+              LayoutText {#text} at (0,0) size 112x27
+                text run at (0,0) width 112: "xxxline one"
+            LayoutListItem {LI} at (40,28) size 740x28
+              LayoutListMarker (anonymous) at (-22,0) size 9x27: bullet
+              LayoutText {#text} at (0,0) size 77x27
+                text run at (0,0) width 77: "line two"
+            LayoutListItem {LI} at (40,56) size 740x28
+              LayoutListMarker (anonymous) at (-22,0) size 9x27: bullet
+              LayoutText {#text} at (0,0) size 90x27
                 text run at (0,0) width 90: "line three"
 caret: position 3 of child 0 {#text} of child 1 {LI} of child 1 {UL} of child 1 {DIV} of child 5 {DIV} of body

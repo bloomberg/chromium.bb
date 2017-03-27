@@ -1,25 +1,25 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x197
-  LayoutBlockFlow {HTML} at (0,0) size 800x197
-    LayoutBlockFlow {BODY} at (8,16) size 784x173
-      LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 608x17
-          text run at (0,0) width 608: "The select list box should not display items (options and optgroups) with style \"display: none\"."
-      LayoutBlockFlow (anonymous) at (0,34) size 784x139
-        LayoutText {#text} at (56,121) size 4x17
-          text run at (56,121) width 4: " "
-        LayoutText {#text} at (125,121) size 4x17
-          text run at (125,121) width 4: " "
-        LayoutText {#text} at (194,121) size 4x17
-          text run at (194,121) width 4: " "
-        LayoutText {#text} at (254,121) size 4x17
-          text run at (254,121) width 4: " "
-        LayoutText {#text} at (314,121) size 4x17
-          text run at (314,121) width 4: " "
+layer at (0,0) size 800x199
+  LayoutBlockFlow {HTML} at (0,0) size 800x199
+    LayoutBlockFlow {BODY} at (8,16) size 784x175
+      LayoutBlockFlow {P} at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 560x19
+          text run at (0,0) width 560: "The select list box should not display items (options and optgroups) with style \"display: none\"."
+      LayoutBlockFlow (anonymous) at (0,36) size 784x139
+        LayoutText {#text} at (56,119) size 4x19
+          text run at (56,119) width 4: " "
+        LayoutText {#text} at (125,119) size 4x19
+          text run at (125,119) width 4: " "
+        LayoutText {#text} at (194,119) size 4x19
+          text run at (194,119) width 4: " "
+        LayoutText {#text} at (254,119) size 4x19
+          text run at (254,119) width 4: " "
+        LayoutText {#text} at (314,119) size 4x19
+          text run at (314,119) width 4: " "
         LayoutText {#text} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0
-layer at (8,67) size 56x121 clip at (9,68) size 39x119
+layer at (8,69) size 56x121 clip at (9,70) size 39x119
   LayoutListBox {SELECT} at (0,17) size 56x121 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     LayoutBlockFlow {OPTION} at (1,1) size 39x17
       LayoutText {#text} at (2,0) size 24x16
@@ -39,7 +39,7 @@ layer at (8,67) size 56x121 clip at (9,68) size 39x119
     LayoutBlockFlow {OPTION} at (1,86) size 39x17
       LayoutText {#text} at (2,0) size 35x16
         text run at (2,0) width 35: "Seven"
-layer at (68,67) size 65x121 clip at (69,68) size 48x119
+layer at (68,69) size 65x121 clip at (69,70) size 48x119
   LayoutListBox {SELECT} at (60,17) size 65x121 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     LayoutBlockFlow {OPTION} at (1,1) size 48x17
       LayoutText {#text} at (2,0) size 24x16
@@ -63,7 +63,7 @@ layer at (68,67) size 65x121 clip at (69,68) size 48x119
     LayoutBlockFlow {OPTION} at (1,86) size 48x17
       LayoutText {#text} at (2,0) size 35x16
         text run at (2,0) width 35: "Seven"
-layer at (137,67) size 65x121 clip at (138,68) size 48x119
+layer at (137,69) size 65x121 clip at (138,70) size 48x119
   LayoutListBox {SELECT} at (129,17) size 65x121 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     LayoutBlockFlow {OPTION} at (1,1) size 48x17
       LayoutText {#text} at (2,0) size 24x16
@@ -87,7 +87,7 @@ layer at (137,67) size 65x121 clip at (138,68) size 48x119
     LayoutBlockFlow {OPTION} at (1,86) size 48x17
       LayoutText {#text} at (2,0) size 35x16
         text run at (2,0) width 35: "Seven"
-layer at (206,50) size 56x138 clip at (207,51) size 39x136
+layer at (206,52) size 56x138 clip at (207,53) size 39x136
   LayoutListBox {SELECT} at (198,0) size 56x138 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     LayoutBlockFlow {OPTION} at (1,1) size 39x17
       LayoutText {#text} at (2,0) size 24x16
@@ -101,7 +101,7 @@ layer at (206,50) size 56x138 clip at (207,51) size 39x136
     LayoutBlockFlow {OPTION} at (1,52) size 39x17
       LayoutText {#text} at (2,0) size 35x16
         text run at (2,0) width 35: "Seven"
-layer at (266,50) size 56x138 clip at (267,51) size 39x136
+layer at (266,52) size 56x138 clip at (267,53) size 39x136
   LayoutListBox {SELECT} at (258,0) size 56x138 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     LayoutBlockFlow {OPTION} at (1,1) size 39x17
       LayoutText {#text} at (2,0) size 24x16
@@ -115,7 +115,7 @@ layer at (266,50) size 56x138 clip at (267,51) size 39x136
     LayoutBlockFlow {OPTION} at (1,52) size 39x17
       LayoutText {#text} at (2,0) size 35x16
         text run at (2,0) width 35: "Seven"
-layer at (326,50) size 63x138 clip at (327,51) size 46x136
+layer at (326,52) size 63x138 clip at (327,53) size 46x136
   LayoutListBox {SELECT} at (318,0) size 63x138 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     LayoutBlockFlow {OPTION} at (1,1) size 46x17
       LayoutText {#text} at (2,0) size 24x16

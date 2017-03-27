@@ -8,32 +8,32 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV",
-          "rect": [8, 26, 784, 18],
+          "rect": [8, 28, 784, 20],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [15, 26, 49, 17],
+          "rect": [17, 28, 46, 19],
           "reason": "style change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [17, 26, 48, 17],
+          "rect": [15, 28, 46, 19],
           "reason": "style change"
         },
         {
           "object": "LayoutTextFragment (anonymous)",
-          "rect": [64, 26, 10, 17],
+          "rect": [63, 28, 9, 19],
           "reason": "style change"
         },
         {
           "object": "LayoutTextFragment (anonymous)",
-          "rect": [8, 26, 10, 17],
+          "rect": [8, 28, 9, 19],
           "reason": "style change"
         },
         {
           "object": "LayoutTextFragment (anonymous)",
-          "rect": [63, 26, 8, 17],
+          "rect": [61, 28, 8, 19],
           "reason": "style change"
         }
       ]

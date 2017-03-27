@@ -1,0 +1,54 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV id='keep_child'",
+          "rect": [508, 208, 100, 100],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='remove_child'",
+          "rect": [508, 88, 100, 100],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='keep_child'",
+          "rect": [408, 208, 100, 100],
+          "reason": "bounds change"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='remove_child'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutBlockFlow (floating) DIV id='remove' class='outer'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutBlockFlow (floating) DIV id='keep_outer' class='outer'",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV id='keep_inner'",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='abs_pos'",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='keep_child'",
+      "reason": "bounds change"
+    }
+  ]
+}
+

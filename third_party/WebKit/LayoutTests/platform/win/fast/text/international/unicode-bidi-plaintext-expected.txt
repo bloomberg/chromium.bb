@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x204
-  LayoutBlockFlow {HTML} at (0,0) size 800x204
-    LayoutBlockFlow {BODY} at (8,8) size 784x183
+layer at (0,0) size 800x199
+  LayoutBlockFlow {HTML} at (0,0) size 800x199
+    LayoutBlockFlow {BODY} at (8,8) size 784x178
       LayoutBlockFlow {DIV} at (0,0) size 784x18
         LayoutText {#text} at (0,0) size 519x17
           text run at (0,0) width 519: "This tests proper handling of unicode-bidi: plaintext. You should not see any red."
@@ -22,19 +22,19 @@ layer at (0,0) size 800x204
           text run at (692,54) width 6 RTL: "!"
           text run at (697,54) width 50: "WebKit"
           text run at (746,54) width 38 RTL: "\x{5E9}\x{5DC}\x{5D5}\x{5DD}, "
-      LayoutBlockFlow {PRE} at (0,103) size 784x80
-        LayoutText {#text} at (0,0) size 784x80
+      LayoutBlockFlow {PRE} at (0,103) size 784x75
+        LayoutText {#text} at (0,0) size 784x75
           text run at (0,0) width 8: "a"
-          text run at (8,0) width 0: " "
-          text run at (0,16) width 8: "("
-          text run at (8,16) width 0: " "
-          text run at (680,32) width 0 RTL: " "
-          text run at (680,32) width 8 RTL: "!"
-          text run at (688,32) width 48: "WebKit"
-          text run at (736,32) width 48 RTL: "\x{5E9}\x{5DC}\x{5D5}\x{5DD}, "
-          text run at (0,48) width 56: "hello, "
-          text run at (56,48) width 24 RTL: "\x{5DC}\x{5D5}\x{5D9}"
-          text run at (80,48) width 8: "!"
-          text run at (88,48) width 0: " "
-          text run at (0,64) width 8: ")"
-          text run at (8,64) width 0: " "
+          text run at (7,0) width 1: " "
+          text run at (0,15) width 8: "("
+          text run at (7,15) width 1: " "
+          text run at (682,30) width 1 RTL: " "
+          text run at (682,30) width 9 RTL: "!"
+          text run at (690,30) width 48: "WebKit"
+          text run at (737,30) width 47 RTL: "\x{5E9}\x{5DC}\x{5D5}\x{5DD}, "
+          text run at (0,45) width 55: "hello, "
+          text run at (54,45) width 24 RTL: "\x{5DC}\x{5D5}\x{5D9}"
+          text run at (77,45) width 9: "!"
+          text run at (85,45) width 1: " "
+          text run at (0,60) width 8: ")"
+          text run at (7,60) width 1: " "

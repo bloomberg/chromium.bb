@@ -14,20 +14,20 @@ layer at (0,0) size 480x360
         LayoutSVGPath {path} at (0,180) size 480x0 [transform={m=((0.00,1.00)(-1.00,0.00)) t=(420.00,-60.00)}] [stroke={[type=LINEAR-GRADIENT] [id="grad"] [stroke width=20.00]}] [fill={[type=SOLID] [color=#000000]}] [data="M 0 180 L 480 180"]
         LayoutSVGPath {path} at (70,10) size 340x340 [stroke={[type=LINEAR-GRADIENT] [id="grad"] [stroke width=20.00]}] [fill={[type=SOLID] [color=#000000]}] [data="M 410 10 L 70 350"]
         LayoutSVGRect {rect} at (0,-60) size 480x480 [stroke={[type=SOLID] [color=#000000]}] [x=0.00] [y=-60.00] [width=480.00] [height=480.00]
-      LayoutSVGText {text} at (68.97,234) size 102.03x20 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (68.97,234) size 102.03x20
-          chunk 1 (middle anchor) text run 1 at (68.98,250.00) startOffset 0 endOffset 13 width 102.03: "With fallback"
+      LayoutSVGText {text} at (69,233) size 102x21 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (69,233) size 102x21
+          chunk 1 (middle anchor) text run 1 at (69.00,250.00) startOffset 0 endOffset 13 width 102.00: "With fallback"
       LayoutSVGContainer {g} at (0,-60) size 480x480 [transform={m=((0.30,0.00)(0.00,0.30)) t=(280.00,100.00)}]
         LayoutSVGPath {path} at (0,180) size 480x0 [stroke={[type=LINEAR-GRADIENT] [id="grad"] [stroke width=20.00]}] [fill={[type=SOLID] [color=#000000]}] [data="M 0 180 L 480 180"]
         LayoutSVGPath {path} at (0,180) size 480x0 [transform={m=((0.71,0.71)(-0.71,0.71)) t=(197.57,-116.98)}] [stroke={[type=LINEAR-GRADIENT] [id="grad"] [stroke width=20.00]}] [fill={[type=SOLID] [color=#000000]}] [data="M 0 180 L 480 180"]
         LayoutSVGPath {path} at (0,180) size 480x0 [transform={m=((0.00,1.00)(-1.00,0.00)) t=(420.00,-60.00)}] [stroke={[type=LINEAR-GRADIENT] [id="grad"] [stroke width=20.00]}] [fill={[type=SOLID] [color=#000000]}] [data="M 0 180 L 480 180"]
         LayoutSVGPath {path} at (70,10) size 340x340 [stroke={[type=LINEAR-GRADIENT] [id="grad"] [stroke width=20.00]}] [fill={[type=SOLID] [color=#000000]}] [data="M 410 10 L 70 350"]
         LayoutSVGRect {rect} at (0,-60) size 480x480 [stroke={[type=SOLID] [color=#000000]}] [x=0.00] [y=-60.00] [width=480.00] [height=480.00]
-      LayoutSVGText {text} at (286.47,234) size 127.05x20 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (286.47,234) size 127.05x20
-          chunk 1 (middle anchor) text run 1 at (286.47,250.00) startOffset 0 endOffset 16 width 127.05: "Without fallback"
-    LayoutSVGContainer {g} at (10,311) size 229.47x36
-      LayoutSVGText {text} at (10,311) size 229.47x36 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (10,311) size 229.47x36
-          chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 229.47: "$Revision: 1.7 $"
+      LayoutSVGText {text} at (286.50,233) size 127x21 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (286.50,233) size 127x21
+          chunk 1 (middle anchor) text run 1 at (286.50,250.00) startOffset 0 endOffset 16 width 127.00: "Without fallback"
+    LayoutSVGContainer {g} at (10,311) size 228x36
+      LayoutSVGText {text} at (10,311) size 228x36 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,311) size 228x36
+          chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 228.00: "$Revision: 1.7 $"
     LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

@@ -1,11 +1,11 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x184
-  LayoutBlockFlow {HTML} at (0,0) size 800x184
-    LayoutBlockFlow {BODY} at (8,8) size 784x168
-      LayoutBlockFlow (anonymous) at (0,150) size 784x18
-        LayoutText {#text} at (0,0) size 640x17
-          text run at (0,0) width 640: "This test verifies the clip parent of a layer gets correctly reset when it gained a non-composited clip."
+layer at (0,0) size 800x186
+  LayoutBlockFlow {HTML} at (0,0) size 800x186
+    LayoutBlockFlow {BODY} at (8,8) size 784x170
+      LayoutBlockFlow (anonymous) at (0,150) size 784x20
+        LayoutText {#text} at (0,0) size 595x19
+          text run at (0,0) width 595: "This test verifies the clip parent of a layer gets correctly reset when it gained a non-composited clip."
         LayoutText {#text} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0
 layer at (8,8) size 150x150 transparent

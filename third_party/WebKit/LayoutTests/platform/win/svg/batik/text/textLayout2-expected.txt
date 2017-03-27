@@ -2,10 +2,10 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 450x500
   LayoutSVGRoot {svg} at (0,0) size 450x500
-    LayoutSVGHiddenContainer {defs} at (0,-14) size 45.31x17
-      LayoutSVGText {text} at (0,-14) size 45.31x17 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,-14) size 45.31x17
-          chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 6 width 45.32: "sample"
+    LayoutSVGHiddenContainer {defs} at (0,-15) size 42x19
+      LayoutSVGText {text} at (0,-15) size 42x19 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,-15) size 42x19
+          chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 6 width 42.00: "sample"
     LayoutSVGContainer {g} at (90,36) size 250x436.22
       LayoutSVGText {text} at (141.83,36) size 166.33x17 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (141.83,36) size 166.33x17
@@ -59,40 +59,40 @@ layer at (0,0) size 450x500
           LayoutSVGInlineText {#text} at (120,252) size 158x17
             chunk 1 text run 1 at (120.00,265.00) startOffset 0 endOffset 27 width 158.00: "lines via <tspan> elements."
         LayoutSVGInlineText {#text} at (0,0) size 0x0
-      LayoutSVGText {text} at (0,-68) size 105.55x122 [transform={m=((1.00,0.00)(0.00,1.00)) t=(90.00,360.00)}] contains 1 chunk(s)
-        LayoutSVGTSpan {tspan} at (0,-68) size 105.55x122
-          LayoutSVGInlineText {#text} at (0,-68) size 105.55x122
-            chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 12.22: "T"
-            chunk 1 text run 1 at (10.00,-25.00) startOffset 0 endOffset 1 width 8.88: "e"
-            chunk 1 text run 1 at (25.00,-40.00) startOffset 0 endOffset 1 width 10.00: "x"
-            chunk 1 text run 1 at (50.00,-50.00) startOffset 0 endOffset 1 width 5.56: "t"
-            chunk 1 text run 1 at (75.00,-40.00) startOffset 0 endOffset 1 width 6.66: "-"
-            chunk 1 text run 1 at (90.00,-25.00) startOffset 0 endOffset 1 width 8.88: "c"
-            chunk 1 text run 1 at (100.00,0.00) startOffset 0 endOffset 1 width 5.56: "i"
-            chunk 1 text run 1 at (90.00,25.00) startOffset 0 endOffset 1 width 6.66: "r"
-            chunk 1 text run 1 at (75.00,40.00) startOffset 0 endOffset 1 width 8.88: "c"
-            chunk 1 text run 1 at (50.00,50.00) startOffset 0 endOffset 1 width 5.56: "l"
-            chunk 1 text run 1 at (25.00,40.00) startOffset 0 endOffset 1 width 8.88: "e"
+      LayoutSVGText {text} at (0,-67) size 106x122 [transform={m=((1.00,0.00)(0.00,1.00)) t=(90.00,360.00)}] contains 1 chunk(s)
+        LayoutSVGTSpan {tspan} at (0,-67) size 106x122
+          LayoutSVGInlineText {#text} at (0,-67) size 106x122
+            chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 12.00: "T"
+            chunk 1 text run 1 at (10.00,-25.00) startOffset 0 endOffset 1 width 9.00: "e"
+            chunk 1 text run 1 at (25.00,-40.00) startOffset 0 endOffset 1 width 9.00: "x"
+            chunk 1 text run 1 at (50.00,-50.00) startOffset 0 endOffset 1 width 5.00: "t"
+            chunk 1 text run 1 at (75.00,-40.00) startOffset 0 endOffset 1 width 7.00: "-"
+            chunk 1 text run 1 at (90.00,-25.00) startOffset 0 endOffset 1 width 9.00: "c"
+            chunk 1 text run 1 at (100.00,0.00) startOffset 0 endOffset 1 width 6.00: "i"
+            chunk 1 text run 1 at (90.00,25.00) startOffset 0 endOffset 1 width 7.00: "r"
+            chunk 1 text run 1 at (75.00,40.00) startOffset 0 endOffset 1 width 9.00: "c"
+            chunk 1 text run 1 at (50.00,50.00) startOffset 0 endOffset 1 width 6.00: "l"
+            chunk 1 text run 1 at (25.00,40.00) startOffset 0 endOffset 1 width 9.00: "e"
             chunk 1 text run 1 at (10.00,25.00) startOffset 0 endOffset 1 width 5.00: "."
         LayoutSVGInlineText {#text} at (0,0) size 0x0
-      LayoutSVGText {text} at (0,-18) size 90x102 [transform={m=((1.00,0.00)(0.00,1.00)) t=(250.00,320.00)}] contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,-18) size 90x102
-          chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 12.22: "T"
-          chunk 1 text run 1 at (20.00,0.00) startOffset 0 endOffset 1 width 8.88: "e"
-          chunk 1 text run 1 at (40.00,0.00) startOffset 0 endOffset 1 width 10.00: "x"
-          chunk 1 text run 1 at (60.00,0.00) startOffset 0 endOffset 1 width 5.56: "t"
-          chunk 1 text run 1 at (80.00,0.00) startOffset 0 endOffset 1 width 6.66: "-"
-          chunk 1 text run 1 at (80.00,20.00) startOffset 0 endOffset 1 width 5.56: "i"
-          chunk 1 text run 1 at (80.00,40.00) startOffset 0 endOffset 1 width 10.00: "n"
-          chunk 1 text run 1 at (80.00,60.00) startOffset 0 endOffset 1 width 6.66: "-"
-          chunk 1 text run 1 at (80.00,80.00) startOffset 0 endOffset 1 width 8.88: "a"
-          chunk 1 text run 1 at (60.00,80.00) startOffset 0 endOffset 1 width 6.66: "-"
-          chunk 1 text run 1 at (40.00,80.00) startOffset 0 endOffset 1 width 7.78: "s"
+      LayoutSVGText {text} at (0,-17) size 90x102 [transform={m=((1.00,0.00)(0.00,1.00)) t=(250.00,320.00)}] contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,-17) size 90x102
+          chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 12.00: "T"
+          chunk 1 text run 1 at (20.00,0.00) startOffset 0 endOffset 1 width 9.00: "e"
+          chunk 1 text run 1 at (40.00,0.00) startOffset 0 endOffset 1 width 9.00: "x"
+          chunk 1 text run 1 at (60.00,0.00) startOffset 0 endOffset 1 width 5.00: "t"
+          chunk 1 text run 1 at (80.00,0.00) startOffset 0 endOffset 1 width 7.00: "-"
+          chunk 1 text run 1 at (80.00,20.00) startOffset 0 endOffset 1 width 6.00: "i"
+          chunk 1 text run 1 at (80.00,40.00) startOffset 0 endOffset 1 width 9.00: "n"
+          chunk 1 text run 1 at (80.00,60.00) startOffset 0 endOffset 1 width 7.00: "-"
+          chunk 1 text run 1 at (80.00,80.00) startOffset 0 endOffset 1 width 9.00: "a"
+          chunk 1 text run 1 at (60.00,80.00) startOffset 0 endOffset 1 width 7.00: "-"
+          chunk 1 text run 1 at (40.00,80.00) startOffset 0 endOffset 1 width 8.00: "s"
           chunk 1 text run 1 at (20.00,80.00) startOffset 0 endOffset 1 width 10.00: "q"
-          chunk 1 text run 1 at (0.00,80.00) startOffset 0 endOffset 1 width 10.00: "u"
-          chunk 1 text run 1 at (0.00,60.00) startOffset 0 endOffset 1 width 8.88: "a"
-          chunk 1 text run 1 at (0.00,40.00) startOffset 0 endOffset 1 width 6.66: "r"
-          chunk 1 text run 1 at (0.00,20.00) startOffset 0 endOffset 1 width 8.88: "e"
+          chunk 1 text run 1 at (0.00,80.00) startOffset 0 endOffset 1 width 9.00: "u"
+          chunk 1 text run 1 at (0.00,60.00) startOffset 0 endOffset 1 width 9.00: "a"
+          chunk 1 text run 1 at (0.00,40.00) startOffset 0 endOffset 1 width 7.00: "r"
+          chunk 1 text run 1 at (0.00,20.00) startOffset 0 endOffset 1 width 9.00: "e"
       LayoutSVGText {text} at (154.52,435.97) size 140.95x19.17 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (154.52,437) size 58.94x17
           chunk 1 (middle anchor) text run 1 at (154.52,450.00) startOffset 0 endOffset 10 width 58.95: "Text with "

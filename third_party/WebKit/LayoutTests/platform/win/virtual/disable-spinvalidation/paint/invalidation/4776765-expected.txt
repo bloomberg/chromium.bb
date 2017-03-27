@@ -8,17 +8,17 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV",
-          "rect": [7, 41, 786, 56],
+          "rect": [7, 43, 786, 62],
           "reason": "border box change"
         },
         {
           "object": "LayoutBlockFlow DIV id='div'",
-          "rect": [8, 78, 784, 18],
+          "rect": [8, 84, 784, 20],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutBlockFlow DIV id='div'",
-          "rect": [8, 60, 1, 17],
+          "rect": [8, 64, 1, 19],
           "reason": "caret"
         }
       ]

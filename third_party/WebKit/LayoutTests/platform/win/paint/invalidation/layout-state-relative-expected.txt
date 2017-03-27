@@ -1,0 +1,36 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV id='target'",
+          "rect": [8, 152, 784, 20],
+          "reason": "forced by layout"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV id='target'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'PASS'",
+      "reason": "full"
+    }
+  ]
+}
+

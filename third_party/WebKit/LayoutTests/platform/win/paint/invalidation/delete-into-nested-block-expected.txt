@@ -8,37 +8,37 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV id='two'",
-          "rect": [8, 137, 784, 37],
+          "rect": [8, 147, 784, 41],
           "reason": "layoutObject removal"
         },
         {
           "object": "LayoutBlockFlow DIV",
-          "rect": [8, 155, 784, 19],
+          "rect": [8, 167, 784, 21],
           "reason": "layoutObject removal"
         },
         {
           "object": "LayoutBlockFlow DIV",
-          "rect": [8, 137, 784, 19],
+          "rect": [8, 147, 784, 21],
           "reason": "layoutObject removal"
         },
         {
           "object": "LayoutBlockFlow DIV id='one'",
-          "rect": [8, 119, 784, 19],
+          "rect": [8, 127, 784, 21],
           "reason": "full"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 155, 32, 18],
+          "rect": [8, 167, 30, 20],
           "reason": "layoutObject removal"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 137, 28, 18],
+          "rect": [8, 147, 27, 20],
           "reason": "layoutObject removal"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 119, 28, 18],
+          "rect": [8, 127, 26, 20],
           "reason": "layoutObject removal"
         }
       ]

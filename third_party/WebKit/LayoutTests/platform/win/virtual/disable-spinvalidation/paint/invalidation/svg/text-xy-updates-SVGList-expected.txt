@@ -2,28 +2,28 @@
   "layers": [
     {
       "name": "LayoutView #document",
-      "bounds": [808, 620],
+      "bounds": [808, 621],
       "contentsOpaque": true,
       "drawsContent": true,
       "paintInvalidations": [
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [208, 14, 170, 17],
+          "rect": [208, 13, 161, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGText text id='ttt'",
-          "rect": [208, 14, 170, 17],
+          "rect": [208, 13, 161, 19],
           "reason": "full"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [18, 194, 170, 17],
+          "rect": [18, 193, 161, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGText text id='ttt'",
-          "rect": [18, 194, 170, 17],
+          "rect": [18, 193, 161, 19],
           "reason": "full"
         }
       ]

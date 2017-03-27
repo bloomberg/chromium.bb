@@ -8,12 +8,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV id='details-content'",
-          "rect": [8, 68, 784, 22],
+          "rect": [8, 72, 784, 22],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutDetailsMarker DIV id='details-marker'",
-          "rect": [8, 53, 11, 11],
+          "rect": [8, 56, 11, 11],
           "reason": "full"
         }
       ]

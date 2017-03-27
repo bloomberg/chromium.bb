@@ -2,14 +2,14 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 450x500
   LayoutSVGRoot {svg} at (0,0) size 450x500
-    LayoutSVGHiddenContainer {defs} at (-22.66,-14) size 45.31x17
+    LayoutSVGHiddenContainer {defs} at (-21,-15) size 42x19
       LayoutSVGResourceFilter {filter} [id="gaussianBlur"] [filterUnits=userSpaceOnUse] [primitiveUnits=userSpaceOnUse]
         [feGaussianBlur stdDeviation="2.00, 2.00"]
           [SourceGraphic]
-      LayoutSVGText {text} at (-22.66,-14) size 45.31x17 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (-22.66,-14) size 45.31x17
-          chunk 1 (middle anchor) text run 1 at (-22.66,0.00) startOffset 0 endOffset 6 width 45.32: "sample"
-    LayoutSVGContainer {g} at (13.42,36) size 418.23x432
+      LayoutSVGText {text} at (-21,-15) size 42x19 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (-21,-15) size 42x19
+          chunk 1 (middle anchor) text run 1 at (-21.00,0.00) startOffset 0 endOffset 6 width 42.00: "sample"
+    LayoutSVGContainer {g} at (23.50,36) size 403x433
       LayoutSVGText {text} at (61.38,36) size 327.22x17 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (61.38,36) size 327.22x17
           chunk 1 (middle anchor) text run 1 at (61.39,50.00) startOffset 0 endOffset 47 width 327.22: "Text Alignment, Geometry, References, and Spans"
@@ -24,137 +24,137 @@ layer at (0,0) size 450x500
         LayoutSVGText {text} at (119,117) size 106x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (119,117) size 106x17
             chunk 1 (end anchor) text run 1 at (119.00,130.00) startOffset 0 endOffset 17 width 106.00: "text-anchor=\"end\""
-      LayoutSVGContainer {g} at (-53.52,-34) size 107.03x52 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,180.00)}]
-        LayoutSVGText {text} at (-53.52,-34) size 107.03x42 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-53.52,-34) size 107.03x42
-            chunk 1 (middle anchor) text run 1 at (-53.52,0.00) startOffset 0 endOffset 6 width 107.04: "sample"
-        LayoutSVGText {text} at (-52.80,1) size 105.61x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-52.80,1) size 105.61x17
-            chunk 1 (middle anchor) text run 1 at (-52.80,15.00) startOffset 0 endOffset 15 width 105.61: "font-size=\"1cm\""
-      LayoutSVGContainer {g} at (-57.69,-29) size 115.39x47 [transform={m=((1.00,0.00)(0.00,1.00)) t=(225.00,180.00)}]
-        LayoutSVGText {text} at (-45.31,-29) size 90.64x36 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-45.31,-29) size 90.64x36
-            chunk 1 (middle anchor) text run 1 at (-45.32,0.00) startOffset 0 endOffset 6 width 90.64: "sample"
-        LayoutSVGText {text} at (-57.69,1) size 115.39x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-57.69,1) size 115.39x17
-            chunk 1 (middle anchor) text run 1 at (-57.70,15.00) startOffset 0 endOffset 16 width 115.39: "font-size=\"200%\""
-      LayoutSVGContainer {g} at (-56.64,-36) size 113.30x54 [transform={m=((1.00,0.00)(0.00,1.00)) t=(350.00,180.00)}]
-        LayoutSVGText {text} at (-56.64,-36) size 113.30x45 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-56.64,-36) size 113.30x45
-            chunk 1 (middle anchor) text run 1 at (-56.65,0.00) startOffset 0 endOffset 6 width 113.30: "sample"
-        LayoutSVGText {text} at (-47.03,1) size 94.06x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-47.03,1) size 94.06x17
-            chunk 1 (middle anchor) text run 1 at (-47.03,15.00) startOffset 0 endOffset 14 width 94.06: "font-size=\"28\""
-      LayoutSVGContainer {g} at (-81.64,1) size 163.28x17 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,225.00)}]
+      LayoutSVGContainer {g} at (-54,-34) size 108x53 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,180.00)}]
+        LayoutSVGText {text} at (-54,-34) size 108x43 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-54,-34) size 108x43
+            chunk 1 (middle anchor) text run 1 at (-54.00,0.00) startOffset 0 endOffset 6 width 108.00: "sample"
+        LayoutSVGText {text} at (-48,0) size 96x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-48,0) size 96x19
+            chunk 1 (middle anchor) text run 1 at (-48.00,15.00) startOffset 0 endOffset 15 width 96.00: "font-size=\"1cm\""
+      LayoutSVGContainer {g} at (-53.50,-28) size 107x47 [transform={m=((1.00,0.00)(0.00,1.00)) t=(225.00,180.00)}]
+        LayoutSVGText {text} at (-43.50,-28) size 87x36 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-43.50,-28) size 87x36
+            chunk 1 (middle anchor) text run 1 at (-43.50,0.00) startOffset 0 endOffset 6 width 87.00: "sample"
+        LayoutSVGText {text} at (-53.50,0) size 107x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-53.50,0) size 107x19
+            chunk 1 (middle anchor) text run 1 at (-53.50,15.00) startOffset 0 endOffset 16 width 107.00: "font-size=\"200%\""
+      LayoutSVGContainer {g} at (-56.50,-36) size 113x55 [transform={m=((1.00,0.00)(0.00,1.00)) t=(350.00,180.00)}]
+        LayoutSVGText {text} at (-56.50,-36) size 113x46 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-56.50,-36) size 113x46
+            chunk 1 (middle anchor) text run 1 at (-56.50,0.00) startOffset 0 endOffset 6 width 113.00: "sample"
+        LayoutSVGText {text} at (-43,0) size 86x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-43,0) size 86x19
+            chunk 1 (middle anchor) text run 1 at (-43.00,15.00) startOffset 0 endOffset 14 width 86.00: "font-size=\"28\""
+      LayoutSVGContainer {g} at (-76.50,0) size 153x19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,225.00)}]
         LayoutSVGText {text} at (0,0) size 0x0
-        LayoutSVGText {text} at (-81.64,1) size 163.28x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-81.64,1) size 163.28x17
-            chunk 1 (middle anchor) text run 1 at (-81.64,15.00) startOffset 0 endOffset 26 width 163.28: "referenced text via <tref>"
-      LayoutSVGContainer {g} at (-47.23,-27) size 94.47x45 [transform={m=((1.00,0.00)(0.00,1.00)) t=(225.00,225.00)}]
-        LayoutSVGText {text} at (-43.31,-27) size 86.61x33 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-43.31,-27) size 24.98x33
-            chunk 1 (middle anchor) text run 1 at (-43.32,0.00) startOffset 0 endOffset 2 width 24.99: "sa"
-          LayoutSVGTSpan {tspan} at (-43.31,-27) size 86.61x33
-            LayoutSVGInlineText {#text} at (-18.31,-27) size 24.98x33
-              chunk 1 (middle anchor) text run 1 at (-18.33,0.00) startOffset 0 endOffset 1 width 24.99: "m"
-          LayoutSVGInlineText {#text} at (6.66,-27) size 36.64x33
-            chunk 1 (middle anchor) text run 1 at (6.67,0.00) startOffset 0 endOffset 3 width 36.65: "ple"
-        LayoutSVGText {text} at (-47.23,1) size 94.47x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-47.23,1) size 94.47x17
-            chunk 1 (middle anchor) text run 1 at (-47.24,15.00) startOffset 0 endOffset 14 width 94.48: "use of <tspan>"
-      LayoutSVGContainer {g} at (-81.66,-27) size 163.31x45 [transform={m=((1.00,0.00)(0.00,1.00)) t=(350.00,225.00)}]
-        LayoutSVGContainer {g} at (-42.48,-27) size 84.97x33
-          LayoutSVGContainer {use} at (-42.48,-27) size 84.97x33
-            LayoutSVGText {text} at (-42.48,-27) size 84.97x33 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (-42.48,-27) size 84.97x33
-                chunk 1 (middle anchor) text run 1 at (-42.49,0.00) startOffset 0 endOffset 6 width 84.98: "sample"
-        LayoutSVGText {text} at (-81.66,1) size 163.31x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-81.66,1) size 163.31x17
-            chunk 1 (middle anchor) text run 1 at (-81.66,15.00) startOffset 0 endOffset 25 width 163.32: "predefined text via <use>"
+        LayoutSVGText {text} at (-76.50,0) size 153x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-76.50,0) size 153x19
+            chunk 1 (middle anchor) text run 1 at (-76.50,15.00) startOffset 0 endOffset 26 width 153.00: "referenced text via <tref>"
+      LayoutSVGContainer {g} at (-45,-28) size 90x47 [transform={m=((1.00,0.00)(0.00,1.00)) t=(225.00,225.00)}]
+        LayoutSVGText {text} at (-41.50,-28) size 83x35 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-41.50,-27) size 24x34
+            chunk 1 (middle anchor) text run 1 at (-41.50,0.00) startOffset 0 endOffset 2 width 24.00: "sa"
+          LayoutSVGTSpan {tspan} at (-41.50,-28) size 83x35
+            LayoutSVGInlineText {#text} at (-17.50,-28) size 24x35
+              chunk 1 (middle anchor) text run 1 at (-17.50,0.00) startOffset 0 endOffset 1 width 24.00: "m"
+          LayoutSVGInlineText {#text} at (6.50,-27) size 35x34
+            chunk 1 (middle anchor) text run 1 at (6.50,0.00) startOffset 0 endOffset 3 width 35.00: "ple"
+        LayoutSVGText {text} at (-45,0) size 90x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-45,0) size 90x19
+            chunk 1 (middle anchor) text run 1 at (-45.00,15.00) startOffset 0 endOffset 14 width 90.00: "use of <tspan>"
+      LayoutSVGContainer {g} at (-76.50,-27) size 153x46 [transform={m=((1.00,0.00)(0.00,1.00)) t=(350.00,225.00)}]
+        LayoutSVGContainer {g} at (-41,-27) size 82x34
+          LayoutSVGContainer {use} at (-41,-27) size 82x34
+            LayoutSVGText {text} at (-41,-27) size 82x34 contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (-41,-27) size 82x34
+                chunk 1 (middle anchor) text run 1 at (-41.00,0.00) startOffset 0 endOffset 6 width 82.00: "sample"
+        LayoutSVGText {text} at (-76.50,0) size 153x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-76.50,0) size 153x19
+            chunk 1 (middle anchor) text run 1 at (-76.50,15.00) startOffset 0 endOffset 25 width 153.00: "predefined text via <use>"
       LayoutSVGText {text} at (148.02,267) size 153.94x17 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (148.02,267) size 153.94x17
           chunk 1 (middle anchor) text run 1 at (148.02,280.00) startOffset 0 endOffset 25 width 153.95: "Text Rendering Properties"
-      LayoutSVGContainer {g} at (-77.67,-6) size 155.36x39 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,305.00)}]
-        LayoutSVGContainer {g} at (-42.48,-27) size 84.97x33 [transform={m=((-1.00,0.00)(-0.00,-1.00)) t=(0.00,0.00)}]
-          LayoutSVGContainer {use} at (-42.48,-27) size 84.97x33
-            LayoutSVGText {text} at (-42.48,-27) size 84.97x33 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (-42.48,-27) size 84.97x33
-                chunk 1 (middle anchor) text run 1 at (-42.49,0.00) startOffset 0 endOffset 6 width 84.98: "sample"
-        LayoutSVGText {text} at (-77.67,16) size 155.36x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-77.67,16) size 155.36x17
-            chunk 1 (middle anchor) text run 1 at (-77.68,30.00) startOffset 0 endOffset 23 width 155.37: "transform=\"rotate(180)\""
-      LayoutSVGContainer {g} at (-44.58,-27) size 89.17x45 [transform={m=((1.00,0.00)(0.00,1.00)) t=(225.00,320.00)}]
-        LayoutSVGContainer {g} at (-42.48,-27) size 84.97x33 [opacity=0.50]
-          LayoutSVGContainer {use} at (-42.48,-27) size 84.97x33
-            LayoutSVGText {text} at (-42.48,-27) size 84.97x33 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (-42.48,-27) size 84.97x33
-                chunk 1 (middle anchor) text run 1 at (-42.49,0.00) startOffset 0 endOffset 6 width 84.98: "sample"
-        LayoutSVGText {text} at (-44.58,1) size 89.17x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-44.58,1) size 89.17x17
-            chunk 1 (middle anchor) text run 1 at (-44.59,15.00) startOffset 0 endOffset 13 width 89.18: "opacity=\"0.5\""
-      LayoutSVGContainer {g} at (-49.25,-27) size 98.50x45 [transform={m=((1.00,0.00)(0.00,1.00)) t=(350.00,320.00)}]
-        LayoutSVGContainer {g} at (-42.48,-27) size 84.97x33
-          LayoutSVGContainer {use} at (-42.48,-27) size 84.97x33
-            LayoutSVGText {text} at (-42.48,-27) size 84.97x33 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (-42.48,-27) size 84.97x33
-                chunk 1 (middle anchor) text run 1 at (-42.49,0.00) startOffset 0 endOffset 6 width 84.98: "sample"
-        LayoutSVGText {text} at (-49.25,1) size 98.50x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-49.25,1) size 98.50x17
-            chunk 1 (middle anchor) text run 1 at (-49.25,15.00) startOffset 0 endOffset 14 width 98.51: "fill=\"DarkRed\""
-      LayoutSVGContainer {g} at (-86.58,-27) size 173.16x45 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,370.00)}]
-        LayoutSVGContainer {g} at (-42.48,-27) size 84.97x33
+      LayoutSVGContainer {g} at (-72.50,-7) size 145x41 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,305.00)}]
+        LayoutSVGContainer {g} at (-41,-27) size 82x34 [transform={m=((-1.00,0.00)(-0.00,-1.00)) t=(0.00,0.00)}]
+          LayoutSVGContainer {use} at (-41,-27) size 82x34
+            LayoutSVGText {text} at (-41,-27) size 82x34 contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (-41,-27) size 82x34
+                chunk 1 (middle anchor) text run 1 at (-41.00,0.00) startOffset 0 endOffset 6 width 82.00: "sample"
+        LayoutSVGText {text} at (-72.50,15) size 145x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-72.50,15) size 145x19
+            chunk 1 (middle anchor) text run 1 at (-72.50,30.00) startOffset 0 endOffset 23 width 145.00: "transform=\"rotate(180)\""
+      LayoutSVGContainer {g} at (-41.50,-27) size 83x46 [transform={m=((1.00,0.00)(0.00,1.00)) t=(225.00,320.00)}]
+        LayoutSVGContainer {g} at (-41,-27) size 82x34 [opacity=0.50]
+          LayoutSVGContainer {use} at (-41,-27) size 82x34
+            LayoutSVGText {text} at (-41,-27) size 82x34 contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (-41,-27) size 82x34
+                chunk 1 (middle anchor) text run 1 at (-41.00,0.00) startOffset 0 endOffset 6 width 82.00: "sample"
+        LayoutSVGText {text} at (-41.50,0) size 83x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-41.50,0) size 83x19
+            chunk 1 (middle anchor) text run 1 at (-41.50,15.00) startOffset 0 endOffset 13 width 83.00: "opacity=\"0.5\""
+      LayoutSVGContainer {g} at (-44,-27) size 88x46 [transform={m=((1.00,0.00)(0.00,1.00)) t=(350.00,320.00)}]
+        LayoutSVGContainer {g} at (-41,-27) size 82x34
+          LayoutSVGContainer {use} at (-41,-27) size 82x34
+            LayoutSVGText {text} at (-41,-27) size 82x34 contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (-41,-27) size 82x34
+                chunk 1 (middle anchor) text run 1 at (-41.00,0.00) startOffset 0 endOffset 6 width 82.00: "sample"
+        LayoutSVGText {text} at (-44,0) size 88x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-44,0) size 88x19
+            chunk 1 (middle anchor) text run 1 at (-44.00,15.00) startOffset 0 endOffset 14 width 88.00: "fill=\"DarkRed\""
+      LayoutSVGContainer {g} at (-76.50,-27) size 153x46 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,370.00)}]
+        LayoutSVGContainer {g} at (-41,-27) size 82x34
           [filter="gaussianBlur"] LayoutSVGResourceFilter {filter} at (-100,-100) size 200x200
-          LayoutSVGContainer {use} at (-42.48,-27) size 84.97x33
-            LayoutSVGText {text} at (-42.48,-27) size 84.97x33 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (-42.48,-27) size 84.97x33
-                chunk 1 (middle anchor) text run 1 at (-42.49,0.00) startOffset 0 endOffset 6 width 84.98: "sample"
-        LayoutSVGText {text} at (-86.58,1) size 173.16x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-86.58,1) size 173.16x17
-            chunk 1 (middle anchor) text run 1 at (-86.58,15.00) startOffset 0 endOffset 27 width 173.16: "filter=\"url(#gaussianBlur)\""
-      LayoutSVGContainer {g} at (-75.48,-27) size 150.97x55 [transform={m=((1.00,0.00)(0.00,1.00)) t=(225.00,370.00)}]
-        LayoutSVGContainer {g} at (-42.48,-27) size 84.97x33
-          LayoutSVGContainer {use} at (-42.48,-27) size 84.97x33
-            LayoutSVGText {text} at (-42.48,-27) size 84.97x33 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (-42.48,-27) size 84.97x33
-                chunk 1 (middle anchor) text run 1 at (-42.49,0.00) startOffset 0 endOffset 6 width 84.98: "sample"
-        LayoutSVGText {text} at (-44.36,1) size 88.73x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-44.36,1) size 88.73x17
-            chunk 1 (middle anchor) text run 1 at (-44.37,15.00) startOffset 0 endOffset 14 width 88.74: "fill=\"yellow\";"
-        LayoutSVGText {text} at (-75.48,11) size 150.97x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-75.48,11) size 150.97x17
-            chunk 1 (middle anchor) text run 1 at (-75.48,25.00) startOffset 0 endOffset 21 width 150.97: "stroke=\"MidnightBlue\""
+          LayoutSVGContainer {use} at (-41,-27) size 82x34
+            LayoutSVGText {text} at (-41,-27) size 82x34 contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (-41,-27) size 82x34
+                chunk 1 (middle anchor) text run 1 at (-41.00,0.00) startOffset 0 endOffset 6 width 82.00: "sample"
+        LayoutSVGText {text} at (-76.50,0) size 153x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-76.50,0) size 153x19
+            chunk 1 (middle anchor) text run 1 at (-76.50,15.00) startOffset 0 endOffset 27 width 153.00: "filter=\"url(#gaussianBlur)\""
+      LayoutSVGContainer {g} at (-68.50,-27) size 137x56 [transform={m=((1.00,0.00)(0.00,1.00)) t=(225.00,370.00)}]
+        LayoutSVGContainer {g} at (-41,-27) size 82x34
+          LayoutSVGContainer {use} at (-41,-27) size 82x34
+            LayoutSVGText {text} at (-41,-27) size 82x34 contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (-41,-27) size 82x34
+                chunk 1 (middle anchor) text run 1 at (-41.00,0.00) startOffset 0 endOffset 6 width 82.00: "sample"
+        LayoutSVGText {text} at (-37.50,0) size 75x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-37.50,0) size 75x19
+            chunk 1 (middle anchor) text run 1 at (-37.50,15.00) startOffset 0 endOffset 14 width 75.00: "fill=\"yellow\";"
+        LayoutSVGText {text} at (-68.50,10) size 137x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-68.50,10) size 137x19
+            chunk 1 (middle anchor) text run 1 at (-68.50,25.00) startOffset 0 endOffset 21 width 137.00: "stroke=\"MidnightBlue\""
       LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGResourceClipper {clipPath} [id="textClip"] [clipPathUnits=userSpaceOnUse]
-          LayoutSVGText {text} at (-42.48,-27) size 84.97x33 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (-42.48,-27) size 84.97x33
-              chunk 1 (middle anchor) text run 1 at (-42.49,0.00) startOffset 0 endOffset 6 width 84.98: "sample"
+          LayoutSVGText {text} at (-41,-27) size 82x34 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (-41,-27) size 82x34
+              chunk 1 (middle anchor) text run 1 at (-41.00,0.00) startOffset 0 endOffset 6 width 82.00: "sample"
         LayoutSVGResourceLinearGradient {linearGradient} [id="gradient"] [gradientUnits=userSpaceOnUse] [start=(-50,-25)] [end=(50,25)]
           LayoutSVGGradientStop {stop} [offset=0.00] [color=#0000FF]
           LayoutSVGGradientStop {stop} [offset=1.00] [color=#008000]
-      LayoutSVGContainer {g} at (-51.09,-25) size 102.19x50 [transform={m=((1.00,0.00)(0.00,1.00)) t=(350.00,370.00)}]
+      LayoutSVGContainer {g} at (-50,-25) size 100x50 [transform={m=((1.00,0.00)(0.00,1.00)) t=(350.00,370.00)}]
         LayoutSVGRect {rect} at (-50,-25) size 100x50 [fill={[type=LINEAR-GRADIENT] [id="gradient"]}] [x=-50.00] [y=-25.00] [width=100.00] [height=50.00]
-          [clipPath="textClip"] LayoutSVGResourceClipper {clipPath} at (-42.48,-27) size 84.97x33
-        LayoutSVGText {text} at (-51.09,1) size 102.19x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-51.09,1) size 102.19x17
-            chunk 1 (middle anchor) text run 1 at (-51.09,15.00) startOffset 0 endOffset 17 width 102.19: "text as clip-path"
-      LayoutSVGText {text} at (136.67,387) size 27x66 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (136.67,387) size 27x66
-          chunk 1 (middle anchor) text run 1 at (136.68,440.00) startOffset 0 endOffset 1 width 26.63: "a"
-      LayoutSVGText {text} at (75.41,441) size 149.16x17 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (75.41,441) size 149.16x17
-          chunk 1 (middle anchor) text run 1 at (75.42,455.00) startOffset 0 endOffset 23 width 149.16: "stroke-linejoin=\"miter\""
-      LayoutSVGText {text} at (72.77,451) size 154.47x17 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (72.77,451) size 154.47x17
-          chunk 1 (middle anchor) text run 1 at (72.77,465.00) startOffset 0 endOffset 23 width 154.47: "stroke-linecap=\"square\""
-      LayoutSVGText {text} at (286.67,387) size 27x66 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (286.67,387) size 27x66
-          chunk 1 (middle anchor) text run 1 at (286.68,440.00) startOffset 0 endOffset 1 width 26.63: "a"
-      LayoutSVGText {text} at (223.63,441) size 152.72x17 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (223.63,441) size 152.72x17
-          chunk 1 (middle anchor) text run 1 at (223.64,455.00) startOffset 0 endOffset 23 width 152.73: "stroke-linejoin=\"round\""
-      LayoutSVGText {text} at (224.97,451) size 150.03x17 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (224.97,451) size 150.03x17
-          chunk 1 (middle anchor) text run 1 at (224.98,465.00) startOffset 0 endOffset 22 width 150.04: "stroke-linecap=\"round\""
+          [clipPath="textClip"] LayoutSVGResourceClipper {clipPath} at (-41,-27) size 82x34
+        LayoutSVGText {text} at (-48,0) size 96x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-48,0) size 96x19
+            chunk 1 (middle anchor) text run 1 at (-48.00,15.00) startOffset 0 endOffset 17 width 96.00: "text as clip-path"
+      LayoutSVGText {text} at (136.50,386) size 27x68 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (136.50,386) size 27x68
+          chunk 1 (middle anchor) text run 1 at (136.50,440.00) startOffset 0 endOffset 1 width 27.00: "a"
+      LayoutSVGText {text} at (82.50,440) size 135x19 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (82.50,440) size 135x19
+          chunk 1 (middle anchor) text run 1 at (82.50,455.00) startOffset 0 endOffset 23 width 135.00: "stroke-linejoin=\"miter\""
+      LayoutSVGText {text} at (77.50,450) size 145x19 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (77.50,450) size 145x19
+          chunk 1 (middle anchor) text run 1 at (77.50,465.00) startOffset 0 endOffset 23 width 145.00: "stroke-linecap=\"square\""
+      LayoutSVGText {text} at (286.50,386) size 27x68 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (286.50,386) size 27x68
+          chunk 1 (middle anchor) text run 1 at (286.50,440.00) startOffset 0 endOffset 1 width 27.00: "a"
+      LayoutSVGText {text} at (230,440) size 140x19 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (230,440) size 140x19
+          chunk 1 (middle anchor) text run 1 at (230.00,455.00) startOffset 0 endOffset 23 width 140.00: "stroke-linejoin=\"round\""
+      LayoutSVGText {text} at (230,450) size 140x19 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (230,450) size 140x19
+          chunk 1 (middle anchor) text run 1 at (230.00,465.00) startOffset 0 endOffset 22 width 140.00: "stroke-linecap=\"round\""
     LayoutSVGContainer {use} at (1,1) size 446x496
       LayoutSVGContainer {g} at (1,1) size 446x496
         LayoutSVGRect {rect} at (1,1) size 446x496 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=446.00] [height=496.00]

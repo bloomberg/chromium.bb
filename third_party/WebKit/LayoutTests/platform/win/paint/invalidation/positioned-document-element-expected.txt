@@ -14,12 +14,12 @@
         },
         {
           "object": "LayoutBlockFlow P",
-          "rect": [8, 16, 784, 18],
+          "rect": [8, 16, 784, 20],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow P",
-          "rect": [108, 116, 436, 18],
+          "rect": [108, 116, 402, 20],
           "reason": "forced by layout"
         }
       ]

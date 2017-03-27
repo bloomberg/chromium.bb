@@ -18,12 +18,12 @@
         },
         {
           "object": "LayoutBlockFlow DIV class='outer'",
-          "rect": [61, 537, 62, 36],
+          "rect": [61, 537, 62, 37],
           "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV class='outer'",
-          "rect": [61, 531, 62, 36],
+          "rect": [61, 531, 62, 37],
           "reason": "bounds change"
         },
         {
@@ -438,282 +438,282 @@
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [66, 297, 16, 17],
+          "rect": [66, 297, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [66, 291, 16, 17],
+          "rect": [66, 291, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [63, 21, 16, 17],
+          "rect": [63, 21, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [63, 15, 16, 17],
+          "rect": [63, 15, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [59, 543, 16, 17],
+          "rect": [59, 543, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [59, 537, 16, 17],
+          "rect": [59, 537, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [59, 504, 16, 17],
+          "rect": [59, 504, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [59, 498, 16, 17],
+          "rect": [59, 498, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [59, 465, 16, 17],
+          "rect": [59, 465, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [59, 459, 16, 17],
+          "rect": [59, 459, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [59, 426, 16, 17],
+          "rect": [59, 426, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [59, 420, 16, 17],
+          "rect": [59, 420, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [59, 255, 16, 17],
+          "rect": [59, 255, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [59, 249, 16, 17],
+          "rect": [59, 249, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [59, 216, 16, 17],
+          "rect": [59, 216, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [59, 210, 16, 17],
+          "rect": [59, 210, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [59, 177, 16, 17],
+          "rect": [59, 177, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [59, 171, 16, 17],
+          "rect": [59, 171, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [59, 138, 16, 17],
+          "rect": [59, 138, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [59, 132, 16, 17],
+          "rect": [59, 132, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [58, 375, 16, 17],
+          "rect": [58, 375, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [58, 369, 16, 17],
+          "rect": [58, 369, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [58, 336, 16, 17],
+          "rect": [58, 336, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [58, 330, 16, 17],
+          "rect": [58, 330, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [57, 99, 16, 17],
+          "rect": [57, 99, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [57, 93, 16, 17],
+          "rect": [57, 93, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [57, 60, 16, 17],
+          "rect": [57, 60, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [57, 54, 16, 17],
+          "rect": [57, 54, 16, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [66, 298, 16, 16],
+          "rect": [66, 299, 16, 16],
           "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [66, 292, 16, 16],
+          "rect": [66, 293, 16, 16],
           "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [63, 22, 16, 16],
+          "rect": [63, 23, 16, 16],
           "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [63, 16, 16, 16],
+          "rect": [63, 17, 16, 16],
           "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [59, 544, 16, 16],
+          "rect": [59, 545, 16, 16],
           "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [59, 538, 16, 16],
+          "rect": [59, 539, 16, 16],
           "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [59, 505, 16, 16],
+          "rect": [59, 506, 16, 16],
           "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [59, 499, 16, 16],
+          "rect": [59, 500, 16, 16],
           "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [59, 466, 16, 16],
+          "rect": [59, 467, 16, 16],
           "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [59, 460, 16, 16],
+          "rect": [59, 461, 16, 16],
           "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [59, 427, 16, 16],
+          "rect": [59, 428, 16, 16],
           "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [59, 421, 16, 16],
+          "rect": [59, 422, 16, 16],
           "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [59, 256, 16, 16],
+          "rect": [59, 257, 16, 16],
           "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [59, 250, 16, 16],
+          "rect": [59, 251, 16, 16],
           "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [59, 217, 16, 16],
+          "rect": [59, 218, 16, 16],
           "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [59, 211, 16, 16],
+          "rect": [59, 212, 16, 16],
           "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [59, 178, 16, 16],
+          "rect": [59, 179, 16, 16],
           "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [59, 172, 16, 16],
+          "rect": [59, 173, 16, 16],
           "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [59, 139, 16, 16],
+          "rect": [59, 140, 16, 16],
           "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [59, 133, 16, 16],
+          "rect": [59, 134, 16, 16],
           "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [58, 376, 16, 16],
+          "rect": [58, 377, 16, 16],
           "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [58, 370, 16, 16],
+          "rect": [58, 371, 16, 16],
           "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [58, 337, 16, 16],
+          "rect": [58, 338, 16, 16],
           "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [58, 331, 16, 16],
+          "rect": [58, 332, 16, 16],
           "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [57, 100, 16, 16],
+          "rect": [57, 101, 16, 16],
           "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [57, 94, 16, 16],
+          "rect": [57, 95, 16, 16],
           "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [57, 61, 16, 16],
+          "rect": [57, 62, 16, 16],
           "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [57, 55, 16, 16],
+          "rect": [57, 56, 16, 16],
           "reason": "bounds change"
         }
       ]

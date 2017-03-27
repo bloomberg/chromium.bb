@@ -10,9 +10,9 @@ layer at (403,0) size 397x600
     layer at (0,0) size 397x600
       LayoutBlockFlow {HTML} at (0,0) size 397x600
         LayoutBlockFlow {BODY} at (8,8) size 381x584
-          LayoutBlockFlow {DIV} at (0,0) size 381x18
-            LayoutText {#text} at (0,0) size 114x17
-              text run at (0,0) width 114: "Subframe content"
+          LayoutBlockFlow {DIV} at (0,0) size 381x20
+            LayoutText {#text} at (0,0) size 106x19
+              text run at (0,0) width 106: "Subframe content"
 layer at (0,0) size 397x600 transparent
   LayoutFrame {FRAME} at (0,0) size 397x600
     layer at (0,0) size 397x600
@@ -20,6 +20,6 @@ layer at (0,0) size 397x600 transparent
     layer at (0,0) size 397x600
       LayoutBlockFlow {HTML} at (0,0) size 397x600
         LayoutBlockFlow {BODY} at (8,8) size 381x584
-          LayoutBlockFlow {DIV} at (0,0) size 381x18
-            LayoutText {#text} at (0,0) size 114x17
-              text run at (0,0) width 114: "Subframe content"
+          LayoutBlockFlow {DIV} at (0,0) size 381x20
+            LayoutText {#text} at (0,0) size 106x19
+              text run at (0,0) width 106: "Subframe content"

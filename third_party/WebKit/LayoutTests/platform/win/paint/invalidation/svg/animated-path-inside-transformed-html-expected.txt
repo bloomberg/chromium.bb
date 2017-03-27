@@ -9,32 +9,32 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGText text id='text'",
-          "rect": [247, 88, 120, 43],
+          "rect": [203, 336, 123, 44],
           "reason": "full"
         },
         {
           "object": "LayoutSVGText text id='text'",
-          "rect": [203, 334, 120, 43],
+          "rect": [247, 90, 122, 43],
           "reason": "full"
         },
         {
           "object": "LayoutSVGRect rect id='rect'",
-          "rect": [355, 123, 103, 104],
+          "rect": [355, 125, 103, 104],
           "reason": "full"
         },
         {
           "object": "LayoutSVGRect rect id='rect'",
-          "rect": [109, 82, 103, 101],
+          "rect": [109, 84, 103, 101],
           "reason": "full"
         },
         {
           "object": "LayoutSVGImage image id='image'",
-          "rect": [90, 206, 98, 97],
+          "rect": [90, 208, 98, 97],
           "reason": "full"
         },
         {
           "object": "LayoutSVGImage image id='image'",
-          "rect": [353, 396, 97, 98],
+          "rect": [353, 398, 97, 98],
           "reason": "full"
         }
       ]

@@ -3,62 +3,62 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
-      LayoutBlockFlow {P} at (0,0) size 86x42 [border: (3px solid #0000FF)]
-        LayoutInline {<pseudo:before>} at (0,0) size 104x17
-          LayoutTextFragment (anonymous) at (3,3) size 104x17
-            text run at (3,3) width 104: "AAAAAAAAA"
-        LayoutText {#text} at (106,3) size 128x35
-          text run at (106,3) width 25: "AA"
-          text run at (3,21) width 22: "BB"
-      LayoutBlockFlow {P} at (0,58) size 86x24 [border: (3px solid #0000FF)]
-        LayoutInline {<pseudo:before>} at (0,0) size 104x17
-          LayoutTextFragment (anonymous) at (3,3) size 104x17
-            text run at (3,3) width 104: "AAAAAAAAA"
-        LayoutText {#text} at (106,3) size 59x17
-          text run at (106,3) width 59: "AAAAA"
-      LayoutBlockFlow {P} at (0,98) size 86x42 [border: (3px solid #0000FF)]
-        LayoutInline {<pseudo:before>} at (0,0) size 47x35
-          LayoutTextFragment (anonymous) at (3,3) size 47x35
-            text run at (3,3) width 47: "AAAA"
-            text run at (3,21) width 43: "BBBB"
-        LayoutText {#text} at (45,21) size 55x17
-          text run at (45,21) width 55: "BBBBB"
-      LayoutBlockFlow {P} at (0,156) size 86x42 [border: (3px solid #0000FF)]
-        LayoutInline {<pseudo:before>} at (0,0) size 104x17
-          LayoutTextFragment (anonymous) at (3,3) size 104x17
-            text run at (3,3) width 104: "AAAAAAAAA"
-        LayoutText {#text} at (106,3) size 128x35
-          text run at (106,3) width 25: "AA"
-          text run at (3,21) width 20: "ZZ"
-        LayoutInline {<pseudo:after>} at (0,0) size 89x17
-          LayoutTextFragment (anonymous) at (22,21) size 89x17
-            text run at (22,21) width 89: "ZZZZZZZZZ"
-      LayoutBlockFlow {P} at (0,214) size 86x24 [border: (3px solid #0000FF)]
-        LayoutInline {<pseudo:before>} at (0,0) size 104x17
-          LayoutTextFragment (anonymous) at (3,3) size 104x17
-            text run at (3,3) width 104: "AAAAAAAAA"
-        LayoutText {#text} at (106,3) size 73x17
-          text run at (106,3) width 73: "MMMMM"
-        LayoutInline {<pseudo:after>} at (0,0) size 89x17
-          LayoutTextFragment (anonymous) at (178,3) size 89x17
-            text run at (178,3) width 89: "ZZZZZZZZZ"
-      LayoutBlockFlow {P} at (0,254) size 86x42 [border: (3px solid #0000FF)]
-        LayoutText {#text} at (3,3) size 58x17
-          text run at (3,3) width 58: "YYYYY"
-        LayoutInline {<pseudo:after>} at (0,0) size 104x35
-          LayoutTextFragment (anonymous) at (60,3) size 104x35
-            text run at (60,3) width 47: "YYYY"
-            text run at (3,21) width 40: "ZZZZ"
-      LayoutBlockFlow {P} at (0,312) size 86x42 [border: (3px solid #0000FF)]
-        LayoutText {#text} at (3,3) size 24x35
-          text run at (3,3) width 24: "YY"
-          text run at (3,21) width 20: "ZZ"
-        LayoutInline {<pseudo:after>} at (0,0) size 89x17
-          LayoutTextFragment (anonymous) at (22,21) size 89x17
-            text run at (22,21) width 89: "ZZZZZZZZZ"
-      LayoutBlockFlow {P} at (0,370) size 86x24 [border: (3px solid #0000FF)]
-        LayoutText {#text} at (3,3) size 49x17
-          text run at (3,3) width 49: "ZZZZZ"
-        LayoutInline {<pseudo:after>} at (0,0) size 89x17
-          LayoutTextFragment (anonymous) at (51,3) size 89x17
-            text run at (51,3) width 89: "ZZZZZZZZZ"
+      LayoutBlockFlow {P} at (0,0) size 86x46 [border: (3px solid #0000FF)]
+        LayoutInline {<pseudo:before>} at (0,0) size 99x19
+          LayoutTextFragment (anonymous) at (3,3) size 99x19
+            text run at (3,3) width 99: "AAAAAAAAA"
+        LayoutText {#text} at (102,3) size 121x39
+          text run at (102,3) width 22: "AA"
+          text run at (3,23) width 20: "BB"
+      LayoutBlockFlow {P} at (0,62) size 86x26 [border: (3px solid #0000FF)]
+        LayoutInline {<pseudo:before>} at (0,0) size 99x19
+          LayoutTextFragment (anonymous) at (3,3) size 99x19
+            text run at (3,3) width 99: "AAAAAAAAA"
+        LayoutText {#text} at (102,3) size 55x19
+          text run at (102,3) width 55: "AAAAA"
+      LayoutBlockFlow {P} at (0,104) size 86x46 [border: (3px solid #0000FF)]
+        LayoutInline {<pseudo:before>} at (0,0) size 44x39
+          LayoutTextFragment (anonymous) at (3,3) size 44x39
+            text run at (3,3) width 44: "AAAA"
+            text run at (3,23) width 40: "BBBB"
+        LayoutText {#text} at (43,23) size 50x19
+          text run at (43,23) width 50: "BBBBB"
+      LayoutBlockFlow {P} at (0,166) size 86x46 [border: (3px solid #0000FF)]
+        LayoutInline {<pseudo:before>} at (0,0) size 99x19
+          LayoutTextFragment (anonymous) at (3,3) size 99x19
+            text run at (3,3) width 99: "AAAAAAAAA"
+        LayoutText {#text} at (102,3) size 121x39
+          text run at (102,3) width 22: "AA"
+          text run at (3,23) width 18: "ZZ"
+        LayoutInline {<pseudo:after>} at (0,0) size 81x19
+          LayoutTextFragment (anonymous) at (21,23) size 81x19
+            text run at (21,23) width 81: "ZZZZZZZZZ"
+      LayoutBlockFlow {P} at (0,228) size 86x26 [border: (3px solid #0000FF)]
+        LayoutInline {<pseudo:before>} at (0,0) size 99x19
+          LayoutTextFragment (anonymous) at (3,3) size 99x19
+            text run at (3,3) width 99: "AAAAAAAAA"
+        LayoutText {#text} at (102,3) size 70x19
+          text run at (102,3) width 70: "MMMMM"
+        LayoutInline {<pseudo:after>} at (0,0) size 81x19
+          LayoutTextFragment (anonymous) at (172,3) size 81x19
+            text run at (172,3) width 81: "ZZZZZZZZZ"
+      LayoutBlockFlow {P} at (0,270) size 86x46 [border: (3px solid #0000FF)]
+        LayoutText {#text} at (3,3) size 55x19
+          text run at (3,3) width 55: "YYYYY"
+        LayoutInline {<pseudo:after>} at (0,0) size 99x39
+          LayoutTextFragment (anonymous) at (58,3) size 99x39
+            text run at (58,3) width 44: "YYYY"
+            text run at (3,23) width 36: "ZZZZ"
+      LayoutBlockFlow {P} at (0,332) size 86x46 [border: (3px solid #0000FF)]
+        LayoutText {#text} at (3,3) size 22x39
+          text run at (3,3) width 22: "YY"
+          text run at (3,23) width 18: "ZZ"
+        LayoutInline {<pseudo:after>} at (0,0) size 81x19
+          LayoutTextFragment (anonymous) at (21,23) size 81x19
+            text run at (21,23) width 81: "ZZZZZZZZZ"
+      LayoutBlockFlow {P} at (0,394) size 86x26 [border: (3px solid #0000FF)]
+        LayoutText {#text} at (3,3) size 45x19
+          text run at (3,3) width 45: "ZZZZZ"
+        LayoutInline {<pseudo:after>} at (0,0) size 81x19
+          LayoutTextFragment (anonymous) at (48,3) size 81x19
+            text run at (48,3) width 81: "ZZZZZZZZZ"

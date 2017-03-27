@@ -11,6 +11,6 @@ layer at (8,8) size 304x154
     layer at (0,0) size 300x150
       LayoutBlockFlow {HTML} at (0,0) size 300x150
         LayoutBlockFlow {BODY} at (8,8) size 284x134
-          LayoutBlockFlow {DIV} at (0,0) size 284x18
-            LayoutText {#text} at (0,0) size 211x17
-              text run at (0,0) width 211: "frameElement ID is \"Mr. Frame\""
+          LayoutBlockFlow {DIV} at (0,0) size 284x20
+            LayoutText {#text} at (0,0) size 195x19
+              text run at (0,0) width 195: "frameElement ID is \"Mr. Frame\""

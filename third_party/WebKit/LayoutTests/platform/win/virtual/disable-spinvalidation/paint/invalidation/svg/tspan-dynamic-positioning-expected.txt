@@ -8,32 +8,32 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [200, 186, 256, 17],
+          "rect": [200, 185, 240, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGTSpan tspan id='ts'",
-          "rect": [200, 186, 256, 17],
+          "rect": [200, 185, 240, 19],
           "reason": "full"
         },
         {
           "object": "LayoutSVGText text",
-          "rect": [200, 186, 256, 17],
+          "rect": [200, 185, 240, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [20, 6, 256, 17],
+          "rect": [20, 5, 240, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGTSpan tspan id='ts'",
-          "rect": [20, 6, 256, 17],
+          "rect": [20, 5, 240, 19],
           "reason": "full"
         },
         {
           "object": "LayoutSVGText text",
-          "rect": [20, 6, 256, 17],
+          "rect": [20, 5, 240, 19],
           "reason": "forced by layout"
         }
       ]

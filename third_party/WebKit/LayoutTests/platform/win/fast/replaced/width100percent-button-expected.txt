@@ -3,10 +3,10 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutBlockFlow (anonymous) at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 315x17
-          text run at (0,0) width 315: "The following sets of buttons should not overlap."
-      LayoutTable {TABLE} at (0,18) size 784x26
+      LayoutBlockFlow (anonymous) at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 291x19
+          text run at (0,0) width 291: "The following sets of buttons should not overlap."
+      LayoutTable {TABLE} at (0,20) size 784x26
         LayoutTableSection {TBODY} at (0,0) size 784x26
           LayoutTableRow {TR} at (0,1) size 784x24
             LayoutTableCell {TD} at (1,1) size 71x24 [r=0 c=0 rs=1 cs=1]
@@ -24,13 +24,13 @@ layer at (0,0) size 800x600
                 LayoutBlockFlow (anonymous) at (8,3) size 52x16
                   LayoutText {#text} at (0,0) size 52x16
                     text run at (0,0) width 52: "Reply All"
-            LayoutTableCell {TD} at (196,3) size 587x20 [r=0 c=3 rs=1 cs=1]
-              LayoutText {#text} at (1,1) size 4x17
+            LayoutTableCell {TD} at (196,2) size 587x22 [r=0 c=3 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 4x19
                 text run at (1,1) width 4: " "
-      LayoutBlockFlow (anonymous) at (0,44) size 784x36
-        LayoutBR {BR} at (0,0) size 0x17
-        LayoutBR {BR} at (0,18) size 0x17
-      LayoutTable {TABLE} at (0,80) size 784x26
+      LayoutBlockFlow (anonymous) at (0,46) size 784x40
+        LayoutBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,20) size 0x19
+      LayoutTable {TABLE} at (0,86) size 784x26
         LayoutTableSection {TBODY} at (0,0) size 784x26
           LayoutTableRow {TR} at (0,1) size 784x24
             LayoutTableCell {TD} at (1,1) size 71x24 [r=0 c=0 rs=1 cs=1]
@@ -48,6 +48,6 @@ layer at (0,0) size 800x600
                 LayoutBlockFlow (anonymous) at (8,3) size 52x16
                   LayoutText {#text} at (0,0) size 52x16
                     text run at (0,0) width 52: "Reply All"
-            LayoutTableCell {TD} at (196,3) size 587x20 [r=0 c=3 rs=1 cs=1]
-              LayoutText {#text} at (1,1) size 4x17
+            LayoutTableCell {TD} at (196,2) size 587x22 [r=0 c=3 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 4x19
                 text run at (1,1) width 4: " "

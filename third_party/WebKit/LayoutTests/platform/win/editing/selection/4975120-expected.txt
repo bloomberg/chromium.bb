@@ -3,22 +3,21 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutBlockFlow {P} at (0,0) size 784x54
-        LayoutText {#text} at (0,0) size 770x53
-          text run at (0,0) width 768: "This tests for a bug that caused the parent of an active frame to paint as though it were active when its window becomes"
-          text run at (0,18) width 31: "key. "
-          text run at (30,18) width 740: "To run manually, make another window active and then make this window active. Only the subframe should appear"
-          text run at (0,36) width 43: "active."
-      LayoutBlockFlow (anonymous) at (0,70) size 784x176
+      LayoutBlockFlow {P} at (0,0) size 784x40
+        LayoutText {#text} at (0,0) size 767x39
+          text run at (0,0) width 751: "This tests for a bug that caused the parent of an active frame to paint as though it were active when its window becomes key. "
+          text run at (750,0) width 17: "To"
+          text run at (0,20) width 712: "run manually, make another window active and then make this window active. Only the subframe should appear active."
+      LayoutBlockFlow (anonymous) at (0,56) size 784x176
         LayoutTextControl {INPUT} at (0,0) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutBR {BR} at (173,16) size 0x0
         LayoutText {#text} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0
-layer at (10,81) size 169x16
+layer at (10,67) size 169x16
   LayoutBlockFlow {DIV} at (2,3) size 169x16
     LayoutText {#text} at (0,0) size 17x16
       text run at (0,0) width 17: "foo"
-layer at (8,100) size 304x154
+layer at (8,86) size 304x154
   LayoutIFrame {IFRAME} at (0,22) size 304x154 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 300x150
       LayoutView at (0,0) size 300x150

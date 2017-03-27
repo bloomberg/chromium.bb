@@ -6,9 +6,9 @@ layer at (0,0) size 800x2016 backgroundClip at (0,0) size 800x600 clip at (0,0) 
       LayoutBlockFlow {DIV} at (-1216,0) size 2000x2000 [bgcolor=#00FF00]
 layer at (-100,100) size 100x100 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 100x100 [bgcolor=#FF00FF]
-    LayoutText {#text} at (0,0) size 99x71
-      text run at (0,0) width 57: "This box"
-      text run at (0,18) width 99: "should be fixed"
-      text run at (0,36) width 88: "to the top-left"
-      text run at (0,54) width 96: "of the window."
+    LayoutText {#text} at (0,0) size 95x79
+      text run at (0,0) width 95: "This box should"
+      text run at (0,20) width 86: "be fixed to the"
+      text run at (0,40) width 82: "top-left of the"
+      text run at (0,60) width 51: "window."
 scrolled to -100,100

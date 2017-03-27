@@ -48,9 +48,7 @@ FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
       m_isHashTableDeletedValue(true)
 #if OS(WIN)
       ,
-      m_paintTextFlags(0),
-      m_minSizeForAntiAlias(0),
-      m_minSizeForSubpixel(0)
+      m_paintTextFlags(0)
 #endif
 {
 }
@@ -64,9 +62,7 @@ FontPlatformData::FontPlatformData()
       m_isHashTableDeletedValue(false)
 #if OS(WIN)
       ,
-      m_paintTextFlags(0),
-      m_minSizeForAntiAlias(0),
-      m_minSizeForSubpixel(0)
+      m_paintTextFlags(0)
 #endif
 {
 }
@@ -83,9 +79,7 @@ FontPlatformData::FontPlatformData(float size,
       m_isHashTableDeletedValue(false)
 #if OS(WIN)
       ,
-      m_paintTextFlags(0),
-      m_minSizeForAntiAlias(0),
-      m_minSizeForSubpixel(0)
+      m_paintTextFlags(0)
 #endif
 {
 }
@@ -106,9 +100,7 @@ FontPlatformData::FontPlatformData(const FontPlatformData& source)
       m_isHashTableDeletedValue(false)
 #if OS(WIN)
       ,
-      m_paintTextFlags(source.m_paintTextFlags),
-      m_minSizeForAntiAlias(source.m_minSizeForAntiAlias),
-      m_minSizeForSubpixel(source.m_minSizeForSubpixel)
+      m_paintTextFlags(source.m_paintTextFlags)
 #endif
 {
 }
@@ -131,9 +123,7 @@ FontPlatformData::FontPlatformData(const FontPlatformData& src, float textSize)
       m_isHashTableDeletedValue(false)
 #if OS(WIN)
       ,
-      m_paintTextFlags(src.m_paintTextFlags),
-      m_minSizeForAntiAlias(src.m_minSizeForAntiAlias),
-      m_minSizeForSubpixel(src.m_minSizeForSubpixel)
+      m_paintTextFlags(src.m_paintTextFlags)
 #endif
 {
 #if OS(WIN)
@@ -163,9 +153,7 @@ FontPlatformData::FontPlatformData(sk_sp<SkTypeface> tf,
       m_isHashTableDeletedValue(false)
 #if OS(WIN)
       ,
-      m_paintTextFlags(0),
-      m_minSizeForAntiAlias(0),
-      m_minSizeForSubpixel(0)
+      m_paintTextFlags(0)
 #endif
 {
 #if OS(WIN)
@@ -206,8 +194,6 @@ const FontPlatformData& FontPlatformData::operator=(
 
 #if OS(WIN)
   m_paintTextFlags = 0;
-  m_minSizeForAntiAlias = other.m_minSizeForAntiAlias;
-  m_minSizeForSubpixel = other.m_minSizeForSubpixel;
 #endif
 
   return *this;

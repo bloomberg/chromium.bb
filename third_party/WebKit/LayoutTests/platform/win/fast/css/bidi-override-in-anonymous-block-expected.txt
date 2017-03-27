@@ -1,240 +1,240 @@
-layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1227
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1308
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x1227 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutBlockFlow {HTML} at (0,0) size 785x1227.02
-    LayoutBlockFlow {BODY} at (8,16) size 769x1203.02
-      LayoutBlockFlow {P} at (0,0) size 769x18
-        LayoutText {#text} at (0,0) size 164x17
-          text run at (0,0) width 164: "div, span, nested div/span"
-      LayoutBlockFlow {P} at (0,34) size 769x18
-        LayoutText {#text} at (0,0) size 66x17
-          text run at (0,0) width 66: "Single div"
-      LayoutBlockFlow {DIV} at (1.42,68) size 766.16x20.84 [border: (1.42px solid #000000)]
-        LayoutText {#text} at (742,1) size 23x17
+layer at (0,0) size 785x1308 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutBlockFlow {HTML} at (0,0) size 785x1308.42
+    LayoutBlockFlow {BODY} at (8,16) size 769x1284.42
+      LayoutBlockFlow {P} at (0,0) size 769x20
+        LayoutText {#text} at (0,0) size 154x19
+          text run at (0,0) width 154: "div, span, nested div/span"
+      LayoutBlockFlow {P} at (0,36) size 769x20
+        LayoutText {#text} at (0,0) size 58x19
+          text run at (0,0) width 58: "Single div"
+      LayoutBlockFlow {DIV} at (1.39,72) size 766.22x22.78 [border: (1.39px solid #000000)]
+        LayoutText {#text} at (742,1) size 23x19
           text run at (742,1) width 23 RTL override: "abc"
-      LayoutBlockFlow {P} at (0,104.84) size 769x18
-        LayoutText {#text} at (0,0) size 419x17
-          text run at (0,0) width 419: "The following 2 lines should be identical, ignorning whitespaces:"
-      LayoutBlockFlow {DIV} at (1.42,138.84) size 766.16x38.84 [border: (1.42px solid #000000)]
-        LayoutBlockFlow (anonymous) at (1.42,1.42) size 763.31x18
-          LayoutText {#text} at (741,0) size 23x17
+      LayoutBlockFlow {P} at (0,110.78) size 769x20
+        LayoutText {#text} at (0,0) size 380x19
+          text run at (0,0) width 380: "The following 2 lines should be identical, ignorning whitespaces:"
+      LayoutBlockFlow {DIV} at (1.39,146.78) size 766.22x42.78 [border: (1.39px solid #000000)]
+        LayoutBlockFlow (anonymous) at (1.39,1.39) size 763.44x20
+          LayoutText {#text} at (741,0) size 23x19
             text run at (741,0) width 23 RTL override: "abc"
-        LayoutBlockFlow {DIV} at (1.42,19.42) size 763.31x18
-          LayoutText {#text} at (741,0) size 23x17
+        LayoutBlockFlow {DIV} at (1.39,21.39) size 763.44x20
+          LayoutText {#text} at (741,0) size 23x19
             text run at (741,0) width 23: "cba"
-      LayoutBlockFlow {P} at (0,193.69) size 769x18
-        LayoutText {#text} at (0,0) size 426x17
-          text run at (0,0) width 426: "The following 2 textes should be identical, ignorning whitespaces:"
-      LayoutBlockFlow {DIV} at (1.42,227.69) size 766.16x20.84 [border: (1.42px solid #000000)]
-        LayoutText {#text} at (738,1) size 27x17
+      LayoutBlockFlow {P} at (0,205.56) size 769x20
+        LayoutText {#text} at (0,0) size 389x19
+          text run at (0,0) width 389: "The following 2 textes should be identical, ignorning whitespaces:"
+      LayoutBlockFlow {DIV} at (1.39,241.56) size 766.22x22.78 [border: (1.39px solid #000000)]
+        LayoutText {#text} at (738,1) size 27x19
           text run at (738,1) width 27 RTL override: "abc "
-        LayoutInline {SPAN} at (0,0) size 23x17
-          LayoutText {#text} at (716,1) size 23x17
+        LayoutInline {SPAN} at (0,0) size 23x19
+          LayoutText {#text} at (716,1) size 23x19
             text run at (716,1) width 23 RTL override: "abc"
-      LayoutBlockFlow {P} at (0,264.53) size 769x18
-        LayoutText {#text} at (0,0) size 419x17
-          text run at (0,0) width 419: "The following 2 lines should be identical, ignorning whitespaces:"
-      LayoutBlockFlow {DIV} at (1.42,298.53) size 766.16x38.84 [border: (1.42px solid #000000)]
-        LayoutBlockFlow {DIV} at (1.42,1.42) size 763.31x18
-          LayoutText {#text} at (741,0) size 23x17
+      LayoutBlockFlow {P} at (0,280.34) size 769x20
+        LayoutText {#text} at (0,0) size 380x19
+          text run at (0,0) width 380: "The following 2 lines should be identical, ignorning whitespaces:"
+      LayoutBlockFlow {DIV} at (1.39,316.34) size 766.22x42.78 [border: (1.39px solid #000000)]
+        LayoutBlockFlow {DIV} at (1.39,1.39) size 763.44x20
+          LayoutText {#text} at (741,0) size 23x19
             text run at (741,0) width 23: "cba"
-        LayoutBlockFlow (anonymous) at (1.42,19.42) size 763.31x18
-          LayoutText {#text} at (741,0) size 23x17
+        LayoutBlockFlow (anonymous) at (1.39,21.39) size 763.44x20
+          LayoutText {#text} at (741,0) size 23x19
             text run at (741,0) width 23 RTL override: "abc"
-      LayoutBlockFlow {P} at (0,353.38) size 769x18
-        LayoutText {#text} at (0,0) size 426x17
-          text run at (0,0) width 426: "The following 2 textes should be identical, ignorning whitespaces:"
-      LayoutBlockFlow {DIV} at (1.42,387.38) size 766.16x20.84 [border: (1.42px solid #000000)]
-        LayoutInline {SPAN} at (0,0) size 27x17
-          LayoutText {#text} at (738,1) size 27x17
+      LayoutBlockFlow {P} at (0,375.13) size 769x20
+        LayoutText {#text} at (0,0) size 389x19
+          text run at (0,0) width 389: "The following 2 textes should be identical, ignorning whitespaces:"
+      LayoutBlockFlow {DIV} at (1.39,411.13) size 766.22x22.78 [border: (1.39px solid #000000)]
+        LayoutInline {SPAN} at (0,0) size 27x19
+          LayoutText {#text} at (738,1) size 27x19
             text run at (738,1) width 27 RTL override: "abc "
-        LayoutText {#text} at (716,1) size 23x17
+        LayoutText {#text} at (716,1) size 23x19
           text run at (716,1) width 23 RTL override: "abc"
-      LayoutBlockFlow {P} at (0,424.22) size 769x18
-        LayoutText {#text} at (0,0) size 75x17
-          text run at (0,0) width 75: "Single span"
-      LayoutBlockFlow (anonymous) at (0,458.22) size 769x18
-        LayoutInline {SPAN} at (0,0) size 26x21 [border: (1.42px solid #000000)]
-          LayoutText {#text} at (2,0) size 24x17
-            text run at (2,0) width 24 RTL override: "abc"
+      LayoutBlockFlow {P} at (0,449.91) size 769x20
+        LayoutText {#text} at (0,0) size 68x19
+          text run at (0,0) width 68: "Single span"
+      LayoutBlockFlow (anonymous) at (0,485.91) size 769x20
+        LayoutInline {SPAN} at (0,0) size 26x23 [border: (1.39px solid #000000)]
+          LayoutText {#text} at (2,0) size 23x19
+            text run at (2,0) width 23 RTL override: "abc"
         LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow {P} at (0,492.22) size 769x18
-        LayoutText {#text} at (0,0) size 426x17
-          text run at (0,0) width 426: "The following 2 textes should be identical, ignorning whitespaces:"
-      LayoutBlockFlow (anonymous) at (0,526.22) size 769x18
-        LayoutInline {SPAN} at (0,0) size 52x21 [border: (1.42px solid #000000)]
-          LayoutText {#text} at (25,0) size 27x17
-            text run at (25,0) width 27 RTL override: "abc "
-          LayoutInline {SPAN} at (0,0) size 24x17
-            LayoutText {#text} at (2,0) size 24x17
-              text run at (2,0) width 24 RTL override: "abc"
+      LayoutBlockFlow {P} at (0,521.91) size 769x20
+        LayoutText {#text} at (0,0) size 389x19
+          text run at (0,0) width 389: "The following 2 textes should be identical, ignorning whitespaces:"
+      LayoutBlockFlow (anonymous) at (0,557.91) size 769x20
+        LayoutInline {SPAN} at (0,0) size 52x23 [border: (1.39px solid #000000)]
+          LayoutText {#text} at (24,0) size 27x19
+            text run at (24,0) width 27 RTL override: "abc "
+          LayoutInline {SPAN} at (0,0) size 23x19
+            LayoutText {#text} at (2,0) size 23x19
+              text run at (2,0) width 23 RTL override: "abc"
         LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow {P} at (0,560.22) size 769x18
-        LayoutText {#text} at (0,0) size 426x17
-          text run at (0,0) width 426: "The following 2 textes should be identical, ignorning whitespaces:"
-      LayoutBlockFlow (anonymous) at (0,594.22) size 769x18
-        LayoutInline {SPAN} at (0,0) size 52x21 [border: (1.42px solid #000000)]
-          LayoutInline {SPAN} at (0,0) size 27x17
-            LayoutText {#text} at (25,0) size 27x17
-              text run at (25,0) width 27 RTL override: "abc "
-          LayoutText {#text} at (2,0) size 24x17
-            text run at (2,0) width 24 RTL override: "abc"
+      LayoutBlockFlow {P} at (0,593.91) size 769x20
+        LayoutText {#text} at (0,0) size 389x19
+          text run at (0,0) width 389: "The following 2 textes should be identical, ignorning whitespaces:"
+      LayoutBlockFlow (anonymous) at (0,629.91) size 769x20
+        LayoutInline {SPAN} at (0,0) size 52x23 [border: (1.39px solid #000000)]
+          LayoutInline {SPAN} at (0,0) size 27x19
+            LayoutText {#text} at (24,0) size 27x19
+              text run at (24,0) width 27 RTL override: "abc "
+          LayoutText {#text} at (2,0) size 23x19
+            text run at (2,0) width 23 RTL override: "abc"
         LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow {P} at (0,628.22) size 769x18
-        LayoutText {#text} at (0,0) size 426x17
-          text run at (0,0) width 426: "The following 2 textes should be identical, ignorning whitespaces:"
-      LayoutBlockFlow (anonymous) at (0,662.22) size 769x18
-        LayoutInline {SPAN} at (0,0) size 24x21 [border: (1.42px solid #000000)]
-          LayoutText {#text} at (0,0) size 23x17
-            text run at (0,0) width 23 RTL override: "abc"
-      LayoutBlockFlow (anonymous) at (0,680.22) size 769x18
-        LayoutBlockFlow {DIV} at (0,0) size 769x18
-          LayoutText {#text} at (746,0) size 23x17
-            text run at (746,0) width 23: "cba"
-      LayoutBlockFlow (anonymous) at (0,698.22) size 769x18
-        LayoutInline {SPAN} at (0,0) size 2x21 [border: (1.42px solid #000000)]
+      LayoutBlockFlow {P} at (0,665.91) size 769x20
+        LayoutText {#text} at (0,0) size 389x19
+          text run at (0,0) width 389: "The following 2 textes should be identical, ignorning whitespaces:"
+      LayoutBlockFlow (anonymous) at (0,701.91) size 769x20
+        LayoutInline {SPAN} at (0,0) size 24x23 [border: (1.39px solid #000000)]
+          LayoutText {#text} at (0,0) size 22x19
+            text run at (0,0) width 22 RTL override: "abc"
+      LayoutBlockFlow (anonymous) at (0,721.91) size 769x20
+        LayoutBlockFlow {DIV} at (0,0) size 769x20
+          LayoutText {#text} at (747,0) size 22x19
+            text run at (747,0) width 22: "cba"
+      LayoutBlockFlow (anonymous) at (0,741.91) size 769x20
+        LayoutInline {SPAN} at (0,0) size 2x23 [border: (1.39px solid #000000)]
         LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow {P} at (0,732.22) size 769x18
-        LayoutText {#text} at (0,0) size 426x17
-          text run at (0,0) width 426: "The following 2 textes should be identical, ignorning whitespaces:"
-      LayoutBlockFlow (anonymous) at (0,766.22) size 769x18
-        LayoutInline {SPAN} at (0,0) size 2x21 [border: (1.42px solid #000000)]
-      LayoutBlockFlow (anonymous) at (0,784.22) size 769x18
-        LayoutBlockFlow {DIV} at (0,0) size 769x18
-          LayoutText {#text} at (746,0) size 23x17
-            text run at (746,0) width 23: "cba"
-      LayoutBlockFlow (anonymous) at (0,802.22) size 769x18
-        LayoutInline {SPAN} at (0,0) size 25x21 [border: (1.42px solid #000000)]
-          LayoutText {#text} at (2,0) size 24x17
-            text run at (2,0) width 24 RTL override: "abc"
+      LayoutBlockFlow {P} at (0,777.91) size 769x20
+        LayoutText {#text} at (0,0) size 389x19
+          text run at (0,0) width 389: "The following 2 textes should be identical, ignorning whitespaces:"
+      LayoutBlockFlow (anonymous) at (0,813.91) size 769x20
+        LayoutInline {SPAN} at (0,0) size 2x23 [border: (1.39px solid #000000)]
+      LayoutBlockFlow (anonymous) at (0,833.91) size 769x20
+        LayoutBlockFlow {DIV} at (0,0) size 769x20
+          LayoutText {#text} at (747,0) size 22x19
+            text run at (747,0) width 22: "cba"
+      LayoutBlockFlow (anonymous) at (0,853.91) size 769x20
+        LayoutInline {SPAN} at (0,0) size 24x23 [border: (1.39px solid #000000)]
+          LayoutText {#text} at (2,0) size 23x19
+            text run at (2,0) width 23 RTL override: "abc"
         LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow {P} at (0,836.22) size 769x18
-        LayoutText {#text} at (0,0) size 30x17
-          text run at (0,0) width 30: "ruby"
-      LayoutBlockFlow {DIV} at (0,870.22) size 769x32.84 [border: (1.42px solid #000000)]
-        LayoutRuby (inline) {RUBY} at (0,0) size 24x18
-          LayoutRubyRun (anonymous) at (165.92,13.42) size 22.20x18
-            LayoutRubyText {RT} at (0,-12) size 22.20x12
+      LayoutBlockFlow {P} at (0,889.91) size 769x20
+        LayoutText {#text} at (0,0) size 27x19
+          text run at (0,0) width 27: "ruby"
+      LayoutBlockFlow {DIV} at (0,925.91) size 769x34.78 [border: (1.39px solid #000000)]
+        LayoutRuby (inline) {RUBY} at (0,0) size 23x20
+          LayoutRubyRun (anonymous) at (164.47,13.39) size 22x20
+            LayoutRubyText {RT} at (0,-12) size 22x12
               LayoutText {#text} at (5,0) size 12x12
                 text run at (5,0) width 12: "def"
-            LayoutRubyBase (anonymous) at (0,0) size 22.20x18
-              LayoutText {#text} at (0,0) size 24x17
-                text run at (0,0) width 23 RTL override: "abc"
-        LayoutText {#text} at (160,13) size 5x18
-          text run at (160,13) width 5 RTL: " "
-        LayoutRuby (inline) {RUBY} at (0,0) size 24x18
-          LayoutRubyRun (anonymous) at (136.88,13.42) size 22.20x18
-            LayoutRubyText {RT} at (0,-12) size 22.20x12
+            LayoutRubyBase (anonymous) at (0,0) size 22x20
+              LayoutText {#text} at (0,0) size 22x19
+                text run at (0,0) width 22 RTL override: "abc"
+        LayoutText {#text} at (159,13) size 5x20
+          text run at (159,13) width 5 RTL: " "
+        LayoutRuby (inline) {RUBY} at (0,0) size 23x20
+          LayoutRubyRun (anonymous) at (135.69,13.39) size 22x20
+            LayoutRubyText {RT} at (0,-12) size 22x12
               LayoutText {#text} at (5,0) size 12x12
                 text run at (5,0) width 12 RTL override: "def"
-            LayoutRubyBase (anonymous) at (0,0) size 22.20x18
-              LayoutText {#text} at (0,0) size 24x17
-                text run at (0,0) width 23 RTL override: "abc"
-        LayoutText {#text} at (131,13) size 5x18
-          text run at (131,13) width 5 RTL: " "
-        LayoutRuby (inline) {RUBY} at (0,0) size 24x18
-          LayoutRubyRun (anonymous) at (107.83,13.42) size 22.20x18
-            LayoutRubyBase (anonymous) at (0,0) size 22.20x18
-              LayoutText {#text} at (0,0) size 24x17
-                text run at (0,0) width 23 RTL override: "abc"
-        LayoutText {#text} at (102,13) size 5x18
-          text run at (102,13) width 5 RTL: " "
-        LayoutRuby (inline) {RUBY} at (0,0) size 12x18
-          LayoutRubyRun (anonymous) at (89.98,29.42) size 11x0
+            LayoutRubyBase (anonymous) at (0,0) size 22x20
+              LayoutText {#text} at (0,0) size 22x19
+                text run at (0,0) width 22 RTL override: "abc"
+        LayoutText {#text} at (130,13) size 5x20
+          text run at (130,13) width 5 RTL: " "
+        LayoutRuby (inline) {RUBY} at (0,0) size 23x20
+          LayoutRubyRun (anonymous) at (106.91,13.39) size 22x20
+            LayoutRubyBase (anonymous) at (0,0) size 22x20
+              LayoutText {#text} at (0,0) size 22x19
+                text run at (0,0) width 22 RTL override: "abc"
+        LayoutText {#text} at (101,13) size 5x20
+          text run at (101,13) width 5 RTL: " "
+        LayoutRuby (inline) {RUBY} at (0,0) size 12x20
+          LayoutRubyRun (anonymous) at (89.13,30.39) size 11x0
             LayoutRubyText {RT} at (0,-12) size 11x12
               LayoutText {#text} at (0,0) size 11x12
                 text run at (0,0) width 11: "def"
-        LayoutText {#text} at (84,13) size 5x18
-          text run at (84,13) width 5 RTL: " "
-        LayoutRuby (inline) {RUBY} at (0,0) size 24x18
-          LayoutRubyRun (anonymous) at (60.94,13.42) size 22.20x18
-            LayoutRubyBase (anonymous) at (0,0) size 22.20x18
-              LayoutInline {RB} at (0,0) size 24x17
-                LayoutText {#text} at (0,0) size 24x17
-                  text run at (0,0) width 23 RTL override: "abc"
-        LayoutText {#text} at (55,13) size 5x18
-          text run at (55,13) width 5 RTL: " "
-        LayoutRuby (inline) {RUBY} at (0,0) size 24x18
-          LayoutRubyRun (anonymous) at (31.89,13.42) size 22.20x18
-            LayoutRubyText {RT} at (0,-12) size 22.20x12
+        LayoutText {#text} at (83,13) size 5x20
+          text run at (83,13) width 5 RTL: " "
+        LayoutRuby (inline) {RUBY} at (0,0) size 23x20
+          LayoutRubyRun (anonymous) at (60.34,13.39) size 22x20
+            LayoutRubyBase (anonymous) at (0,0) size 22x20
+              LayoutInline {RB} at (0,0) size 22x19
+                LayoutText {#text} at (0,0) size 22x19
+                  text run at (0,0) width 22 RTL override: "abc"
+        LayoutText {#text} at (54,13) size 5x20
+          text run at (54,13) width 5 RTL: " "
+        LayoutRuby (inline) {RUBY} at (0,0) size 23x20
+          LayoutRubyRun (anonymous) at (31.56,13.39) size 22x20
+            LayoutRubyText {RT} at (0,-12) size 22x12
               LayoutText {#text} at (5,0) size 12x12
                 text run at (5,0) width 12: "def"
-            LayoutRubyBase (anonymous) at (0,0) size 22.20x18
-              LayoutInline {RB} at (0,0) size 24x17
-                LayoutText {#text} at (0,0) size 24x17
-                  text run at (0,0) width 23 RTL override: "abc"
-        LayoutText {#text} at (26,13) size 5x18
+            LayoutRubyBase (anonymous) at (0,0) size 22x20
+              LayoutInline {RB} at (0,0) size 22x19
+                LayoutText {#text} at (0,0) size 22x19
+                  text run at (0,0) width 22 RTL override: "abc"
+        LayoutText {#text} at (26,13) size 5x20
           text run at (26,13) width 5 RTL: " "
-        LayoutRuby (inline) {RUBY} at (0,0) size 24x18
-          LayoutRubyRun (anonymous) at (2.84,13.42) size 22.20x18
-            LayoutRubyText {RT} at (0,-12) size 22.20x12
+        LayoutRuby (inline) {RUBY} at (0,0) size 23x20
+          LayoutRubyRun (anonymous) at (2.78,13.39) size 22x20
+            LayoutRubyText {RT} at (0,-12) size 22x12
               LayoutText {#text} at (5,0) size 12x12
                 text run at (5,0) width 12: "def"
-            LayoutRubyBase (anonymous) at (0,0) size 22.20x18
-              LayoutInline {RB} at (0,0) size 24x17
-                LayoutText {#text} at (0,0) size 24x17
-                  text run at (0,0) width 23 RTL override: "abc"
+            LayoutRubyBase (anonymous) at (0,0) size 22x20
+              LayoutInline {RB} at (0,0) size 22x19
+                LayoutText {#text} at (0,0) size 22x19
+                  text run at (0,0) width 22 RTL override: "abc"
         LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow {P} at (0,919.06) size 769x18
-        LayoutText {#text} at (0,0) size 426x17
-          text run at (0,0) width 426: "The following 2 tables should be identical, ignorning whitespaces:"
-      LayoutTable {TABLE} at (1.42,953.06) size 84x66.84 [border: (1.42px solid #808080)]
-        LayoutBlockFlow {CAPTION} at (0,0) size 84x18
-          LayoutText {#text} at (0,0) size 85x17
-            text run at (0,0) width 84: "NormalTable"
-        LayoutTableSection {TBODY} at (1,19.42) size 82x46
-          LayoutTableRow {TR} at (0,2) size 82x20
-            LayoutTableCell {TD} at (43,2) size 37x20 [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (13,1) size 23x17
-                text run at (13,1) width 23: "abc"
-            LayoutTableCell {TD} at (2,2) size 39x20 [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (17,1) size 21x17
-                text run at (17,1) width 21: "def"
-          LayoutTableRow {TR} at (0,24) size 82x20
-            LayoutTableCell {TD} at (43,24) size 37x20 [r=1 c=0 rs=1 cs=1]
-              LayoutText {#text} at (19,1) size 17x17
-                text run at (19,1) width 17: "hij"
-            LayoutTableCell {TD} at (2,24) size 39x20 [r=1 c=1 rs=1 cs=1]
-              LayoutText {#text} at (14,1) size 24x17
-                text run at (14,1) width 24: "opq"
-      LayoutTable {DIV} at (1.42,1021.33) size 143x56.84 [border: (1.42px solid #000000)]
-        LayoutBlockFlow {DIV} at (0,0) size 143x18
-          LayoutText {#text} at (0,0) size 144x17
-            text run at (0,0) width 143: "AnonymousTableRow"
-        LayoutTableSection (anonymous) at (1,19.42) size 141x36
-          LayoutTableRow {DIV} at (0,0) size 141x18
-            LayoutTableCell {DIV} at (72,0) size 69x18 [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (46,0) size 23x17
-                text run at (46,0) width 23: "abc"
-            LayoutTableCell {DIV} at (0,0) size 72x18 [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (51,0) size 21x17
-                text run at (51,0) width 21: "def"
-          LayoutTableRow {DIV} at (0,18) size 141x18
-            LayoutTableCell {DIV} at (72,18) size 69x18 [r=1 c=0 rs=1 cs=1]
-              LayoutText {#text} at (52,0) size 17x17
-                text run at (52,0) width 17: "hij"
-            LayoutTableCell {DIV} at (0,18) size 72x18 [r=1 c=1 rs=1 cs=1]
-              LayoutText {#text} at (48,0) size 24x17
-                text run at (48,0) width 24: "opq"
-      LayoutBlockFlow {P} at (0,1094.17) size 769x18
-        LayoutText {#text} at (0,0) size 505x17
-          text run at (0,0) width 505: "Anonymous TABLE, TABLE_ROW, TABLE_ROW_GROUP, TABLE_CELL"
-      LayoutBlockFlow {DIV} at (0,1128.17) size 769x74.84 [border: (1.42px solid #000000)]
-        LayoutTable (anonymous) at (1.42,1.42) size 24x72
-          LayoutTableSection (anonymous) at (0,18) size 24x36
-            LayoutTableRow {DIV} at (0,0) size 24x18
-              LayoutTableCell (anonymous) at (0,0) size 24x18 [r=0 c=0 rs=1 cs=1]
-                LayoutText {#text} at (1,0) size 23x17
-                  text run at (1,0) width 23 RTL override: "abc"
-            LayoutTableRow (anonymous) at (0,18) size 24x18
-              LayoutTableCell {DIV} at (0,18) size 24x18 [r=1 c=0 rs=1 cs=1]
-                LayoutText {#text} at (3,0) size 21x17
-                  text run at (3,0) width 21 RTL override: "def"
-          LayoutBlockFlow {DIV} at (0,0) size 24x18
-            LayoutText {#text} at (7,0) size 17x17
-              text run at (7,0) width 17 RTL override: "hij"
-          LayoutTableSection {DIV} at (0,54) size 24x18
-            LayoutTableRow (anonymous) at (0,0) size 24x18
-              LayoutTableCell (anonymous) at (0,0) size 24x18 [r=0 c=0 rs=1 cs=1]
-                LayoutText {#text} at (0,0) size 24x17
+      LayoutBlockFlow {P} at (0,976.69) size 769x20
+        LayoutText {#text} at (0,0) size 389x19
+          text run at (0,0) width 389: "The following 2 tables should be identical, ignorning whitespaces:"
+      LayoutTable {TABLE} at (1.39,1012.69) size 78x72.78 [border: (1.39px solid #808080)]
+        LayoutBlockFlow {CAPTION} at (0,0) size 78x20
+          LayoutText {#text} at (0,0) size 79x19
+            text run at (0,0) width 78: "NormalTable"
+        LayoutTableSection {TBODY} at (1,21.39) size 76x50
+          LayoutTableRow {TR} at (0,2) size 76x22
+            LayoutTableCell {TD} at (41,2) size 33x22 [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (10,1) size 22x19
+                text run at (10,1) width 22: "abc"
+            LayoutTableCell {TD} at (2,2) size 37x22 [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (17,1) size 19x19
+                text run at (17,1) width 19: "def"
+          LayoutTableRow {TR} at (0,26) size 76x22
+            LayoutTableCell {TD} at (41,26) size 33x22 [r=1 c=0 rs=1 cs=1]
+              LayoutText {#text} at (18,1) size 14x19
+                text run at (18,1) width 14: "hij"
+            LayoutTableCell {TD} at (2,26) size 37x22 [r=1 c=1 rs=1 cs=1]
+              LayoutText {#text} at (12,1) size 24x19
+                text run at (12,1) width 24: "opq"
+      LayoutTable {DIV} at (1.39,1086.86) size 133x62.78 [border: (1.39px solid #000000)]
+        LayoutBlockFlow {DIV} at (0,0) size 133x20
+          LayoutText {#text} at (0,0) size 134x19
+            text run at (0,0) width 133: "AnonymousTableRow"
+        LayoutTableSection (anonymous) at (1,21.39) size 131x40
+          LayoutTableRow {DIV} at (0,0) size 131x20
+            LayoutTableCell {DIV} at (69,0) size 62x20 [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (40,0) size 22x19
+                text run at (40,0) width 22: "abc"
+            LayoutTableCell {DIV} at (0,0) size 69x20 [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (50,0) size 19x19
+                text run at (50,0) width 19: "def"
+          LayoutTableRow {DIV} at (0,20) size 131x20
+            LayoutTableCell {DIV} at (69,20) size 62x20 [r=1 c=0 rs=1 cs=1]
+              LayoutText {#text} at (48,0) size 14x19
+                text run at (48,0) width 14: "hij"
+            LayoutTableCell {DIV} at (0,20) size 69x20 [r=1 c=1 rs=1 cs=1]
+              LayoutText {#text} at (45,0) size 24x19
+                text run at (45,0) width 24: "opq"
+      LayoutBlockFlow {P} at (0,1165.64) size 769x20
+        LayoutText {#text} at (0,0) size 481x19
+          text run at (0,0) width 481: "Anonymous TABLE, TABLE_ROW, TABLE_ROW_GROUP, TABLE_CELL"
+      LayoutBlockFlow {DIV} at (0,1201.64) size 769x82.78 [border: (1.39px solid #000000)]
+        LayoutTable (anonymous) at (1.39,1.39) size 24x80
+          LayoutTableSection (anonymous) at (0,20) size 24x40
+            LayoutTableRow {DIV} at (0,0) size 24x20
+              LayoutTableCell (anonymous) at (0,0) size 24x20 [r=0 c=0 rs=1 cs=1]
+                LayoutText {#text} at (2,0) size 22x19
+                  text run at (2,0) width 22 RTL override: "abc"
+            LayoutTableRow (anonymous) at (0,20) size 24x20
+              LayoutTableCell {DIV} at (0,20) size 24x20 [r=1 c=0 rs=1 cs=1]
+                LayoutText {#text} at (5,0) size 19x19
+                  text run at (5,0) width 19 RTL override: "def"
+          LayoutBlockFlow {DIV} at (0,0) size 24x20
+            LayoutText {#text} at (10,0) size 14x19
+              text run at (10,0) width 14 RTL override: "hij"
+          LayoutTableSection {DIV} at (0,60) size 24x20
+            LayoutTableRow (anonymous) at (0,0) size 24x20
+              LayoutTableCell (anonymous) at (0,0) size 24x20 [r=0 c=0 rs=1 cs=1]
+                LayoutText {#text} at (0,0) size 24x19
                   text run at (0,0) width 24 RTL override: "opq"

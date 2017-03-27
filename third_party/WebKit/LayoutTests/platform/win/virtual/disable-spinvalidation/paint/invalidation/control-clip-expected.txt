@@ -8,22 +8,22 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (anonymous)",
-          "rect": [9, 83, 198, 16],
+          "rect": [9, 87, 198, 16],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow (anonymous)",
-          "rect": [16, 113, 184, 16],
+          "rect": [16, 117, 184, 16],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [76, 113, 64, 16],
+          "rect": [76, 117, 64, 16],
           "reason": "full"
         },
         {
           "object": "LayoutText (anonymous)",
-          "rect": [9, 83, 63, 16],
+          "rect": [9, 87, 63, 16],
           "reason": "full"
         }
       ]

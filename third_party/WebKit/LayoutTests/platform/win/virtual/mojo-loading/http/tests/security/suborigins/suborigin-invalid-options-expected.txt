@@ -1,0 +1,13 @@
+CONSOLE ERROR: Error with Suborigin header: Expected ' to end policy option.
+CONSOLE ERROR: Error with Suborigin header: Invalid character ';' in suborigin policy. Suborigin policy options must start and end with a single quote.
+CONSOLE ERROR: Error with Suborigin header: Invalid character ';' in suborigin policy. Suborigin policy options must start and end with a single quote.
+CONSOLE ERROR: Error with Suborigin header: Invalid character ';' in suborigin.
+CONSOLE ERROR: Error with Suborigin header: Invalid character '@' in suborigin policy.
+This is a testharness.js-based test.
+PASS Single quote as option 
+PASS Character after single policy 
+PASS Charecters after multiple policies 
+PASS Character before policy 
+PASS Bad characters in option 
+Harness: the test ran to completion.
+

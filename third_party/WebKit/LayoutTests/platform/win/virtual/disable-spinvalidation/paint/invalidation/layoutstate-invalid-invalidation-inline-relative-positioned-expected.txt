@@ -8,22 +8,22 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (anonymous)",
-          "rect": [8, 40, 784, 104],
+          "rect": [8, 40, 784, 105],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutInline (relative positioned) SPAN id='target'",
-          "rect": [8, 220, 100, 103],
+          "rect": [8, 220, 100, 104],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutInline (relative positioned) SPAN id='target'",
-          "rect": [8, 200, 100, 103],
+          "rect": [8, 200, 100, 104],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutInline (relative positioned) SPAN",
-          "rect": [8, 120, 100, 103],
+          "rect": [8, 120, 100, 104],
           "reason": "forced by layout"
         },
         {

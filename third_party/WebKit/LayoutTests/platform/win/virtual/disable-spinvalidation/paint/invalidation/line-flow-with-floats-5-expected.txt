@@ -8,52 +8,52 @@
       "paintInvalidations": [
         {
           "object": "LayoutText #text",
-          "rect": [14, 242, 406, 125],
+          "rect": [14, 240, 406, 139],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [14, 476, 406, 89],
+          "rect": [14, 500, 406, 99],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [14, 422, 355, 53],
+          "rect": [14, 420, 355, 79],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [14, 404, 355, 35],
+          "rect": [49, 380, 320, 59],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [49, 368, 320, 53],
+          "rect": [49, 380, 303, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [65, 368, 304, 17],
+          "rect": [134, 360, 131, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [49, 368, 301, 17],
+          "rect": [118, 360, 131, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [178, 350, 146, 17],
+          "rect": [303, 420, 66, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [162, 350, 146, 17],
+          "rect": [275, 420, 64, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow (floating) SPAN id='blueFloat'",
-          "rect": [46, 353, 16, 65],
+          "rect": [46, 363, 16, 65],
           "reason": "incremental"
         }
       ]
@@ -65,11 +65,11 @@
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'begin again, it was very provoking to find that the hedgehog'",
+      "object": "InlineTextBox 'begin again, it was very provoking to find that the'",
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'had\n'",
+      "object": "InlineTextBox 'hedgehog had\n'",
       "reason": "forced by layout"
     },
     {
@@ -81,11 +81,11 @@
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'this, there was generally a ridge or furrow in the'",
+      "object": "InlineTextBox 'this, there was generally a ridge or furrow in the way'",
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'way wherever\n'",
+      "object": "InlineTextBox 'wherever\n'",
       "reason": "forced by layout"
     },
     {
@@ -105,11 +105,11 @@
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'the ground, Alice soon came to the conclusion'",
+      "object": "InlineTextBox 'the ground, Alice soon came to the conclusion that it'",
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'that it was a very\n'",
+      "object": "InlineTextBox 'was a very\n'",
       "reason": "forced by layout"
     },
     {
@@ -145,11 +145,11 @@
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'quarrelling all the while, and fighting for'",
+      "object": "InlineTextBox 'quarrelling all the while, and fighting for the'",
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'the hedgehogs; and in\n'",
+      "object": "InlineTextBox 'hedgehogs; and in\n'",
       "reason": "forced by layout"
     },
     {
@@ -161,11 +161,7 @@
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'the'",
-      "reason": "forced by layout"
-    },
-    {
-      "object": "InlineTextBox 'Queen'",
+      "object": "InlineTextBox 'the Queen'",
       "reason": "forced by layout"
     },
     {
@@ -173,19 +169,27 @@
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox ' was in a furious passion, and went\n'",
+      "object": "InlineTextBox ' was'",
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'stamping'",
+      "object": "InlineTextBox 'in a furious passion, and went\n'",
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'about, and shouting \u2018Off with his head!\u2019 or \u2018Off with'",
+      "object": "InlineTextBox 'stamping about, and'",
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'her head!\u2019 about once in a minute.\n'",
+      "object": "InlineTextBox 'shouting \u2018Off with his head!\u2019 or \u2018Off with\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'her head!\u2019 about'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'once in a minute.\n'",
       "reason": "forced by layout"
     },
     {
@@ -197,27 +201,27 @@
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'yet'",
+      "object": "InlineTextBox 'yet had'",
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'had any dispute with the Queen, but she knew that it might'",
+      "object": "InlineTextBox 'any dispute with the Queen, but she knew that it might\n'",
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'happen any minute, \u2018and then,\u2019 thought she, \u2018what would'",
+      "object": "InlineTextBox 'happen any'",
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'become of\n'",
+      "object": "InlineTextBox 'minute, \u2018and then,\u2019 thought she, \u2018what would become of\n'",
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'me? They\u2019re dreadfully fond of beheading people'",
+      "object": "InlineTextBox 'me?'",
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'here; the great\n'",
+      "object": "InlineTextBox 'They\u2019re dreadfully fond of beheading people here; the great'",
       "reason": "forced by layout"
     },
     {

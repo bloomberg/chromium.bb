@@ -10,6 +10,6 @@ layer at (0,0) size 600x400
               LayoutSVGInlineText {#text} at (0,-2.36) size 26.98x6.86
                 chunk 1 text run 1 at (0.00,4.50) startOffset 0 endOffset 4 width 26.99: "PASS"
     LayoutSVGRect {rect} at (0,0) size 200x200 [fill={[type=PATTERN] [id="pattern"]}] [x=0.00] [y=0.00] [width=200.00] [height=200.00]
-    LayoutSVGText {text} at (0,216) size 443.52x17 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,216) size 443.52x17
-        chunk 1 text run 1 at (0.00,230.00) startOffset 0 endOffset 70 width 443.52: "This test passes if the word \"PASS\" appears above with a line over it."
+    LayoutSVGText {text} at (0,215) size 416.53x19 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (0,215) size 416.53x19
+        chunk 1 text run 1 at (0.00,230.00) startOffset 0 endOffset 70 width 416.53: "This test passes if the word \"PASS\" appears above with a line over it."

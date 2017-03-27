@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGContainer g",
-          "rect": [50, 54, 571, 85],
+          "rect": [50, 54, 561, 86],
           "reason": "became visible"
         }
       ]

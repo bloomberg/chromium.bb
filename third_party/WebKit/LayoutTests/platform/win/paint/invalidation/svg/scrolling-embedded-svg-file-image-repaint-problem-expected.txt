@@ -13,18 +13,13 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [178, 1011, 203, 20],
+          "rect": [177, 1012, 203, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [434, 1011, 173, 20],
+          "rect": [435, 1012, 173, 19],
           "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutInline A",
-          "rect": [384, 1010, 47, 22],
-          "reason": "style change"
         }
       ]
     }

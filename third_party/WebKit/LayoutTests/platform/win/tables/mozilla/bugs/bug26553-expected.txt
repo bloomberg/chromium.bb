@@ -7,7 +7,7 @@ layer at (0,0) size 800x600
         LayoutTableSection {TBODY} at (1,1) size 782x130
           LayoutTableRow {TR} at (0,2) size 782x126
             LayoutTableCell {TD} at (2,2) size 183x126 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              LayoutInline {A} at (0,0) size 181x17 [color=#551A8B]
+              LayoutInline {A} at (0,0) size 181x19 [color=#551A8B]
                 LayoutImage (floating) {IMG} at (1,1) size 61x62
                 LayoutImage {IMG} at (1,63) size 181x62
             LayoutTableCell {TD} at (187,33) size 453x64 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]

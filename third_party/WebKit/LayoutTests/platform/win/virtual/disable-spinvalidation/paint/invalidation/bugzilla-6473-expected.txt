@@ -8,27 +8,27 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV id='allcontent'",
-          "rect": [8, 130, 784, 50],
+          "rect": [8, 136, 784, 52],
           "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) P",
-          "rect": [8, 146, 784, 18],
+          "rect": [8, 152, 784, 20],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) P",
-          "rect": [8, 130, 784, 18],
+          "rect": [8, 136, 784, 20],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 146, 70, 17],
+          "rect": [8, 152, 69, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 130, 70, 17],
+          "rect": [8, 136, 69, 19],
           "reason": "forced by layout"
         }
       ]

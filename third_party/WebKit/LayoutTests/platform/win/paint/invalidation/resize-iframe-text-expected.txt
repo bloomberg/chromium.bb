@@ -1,0 +1,84 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [500, 400],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutIFrame (positioned) IFRAME",
+          "rect": [0, 0, 500, 400],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 200, 500, 200],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [8, 8, 484, 20],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow H3",
+          "rect": [8, 300, 400, 23],
+          "reason": "became visible"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [485, 0, 15, 200],
+          "reason": "scroll"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'Test passes if you see \"Success\" after window resizes.'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutIFrame (positioned) IFRAME",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "VerticalScrollbar",
+      "reason": "scroll"
+    },
+    {
+      "object": "HorizontalScrollbar",
+      "reason": "scroll"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "scroll"
+    },
+    {
+      "object": "LayoutBlockFlow H3",
+      "reason": "became visible"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "became visible"
+    }
+  ]
+}
+

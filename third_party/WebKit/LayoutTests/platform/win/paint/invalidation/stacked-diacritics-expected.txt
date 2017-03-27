@@ -8,12 +8,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV id='stacked'",
-          "rect": [19, 159, 200, 42],
+          "rect": [19, 147, 200, 43],
           "reason": "full"
         },
         {
           "object": "LayoutText #text",
-          "rect": [18, 160, 131, 40],
+          "rect": [18, 148, 126, 41],
           "reason": "layoutObject removal"
         }
       ]

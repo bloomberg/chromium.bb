@@ -3,10 +3,10 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutBlockFlow (anonymous) at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 291x17
-          text run at (0,0) width 291: "The popup buttons below should not overlap."
-      LayoutTable {TABLE} at (0,18) size 784x24
+      LayoutBlockFlow (anonymous) at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 274x19
+          text run at (0,0) width 274: "The popup buttons below should not overlap."
+      LayoutTable {TABLE} at (0,20) size 784x24
         LayoutTableSection {TBODY} at (0,0) size 784x24
           LayoutTableRow {TR} at (0,1) size 784x22
             LayoutTableCell {TD} at (1,1) size 4x22 [r=0 c=0 rs=1 cs=1]
@@ -24,6 +24,6 @@ layer at (0,0) size 800x600
                 LayoutBlockFlow (anonymous) at (1,1) size 20x18
                   LayoutText (anonymous) at (4,1) size 29x16
                     text run at (4,1) width 29: "three"
-            LayoutTableCell {TD} at (16,2) size 767x20 [r=0 c=3 rs=1 cs=1]
-              LayoutText {#text} at (1,1) size 4x17
+            LayoutTableCell {TD} at (16,1) size 767x22 [r=0 c=3 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 4x19
                 text run at (1,1) width 4: " "

@@ -1,18 +1,18 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x265
-  LayoutBlockFlow {HTML} at (0,0) size 800x265
-    LayoutBlockFlow {BODY} at (8,16) size 784x241
-      LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 309x17
-          text run at (0,0) width 309: "Test passes if there is no red visible on the page."
-      LayoutBlockFlow {DIV} at (0,34) size 784x207
-        LayoutBlockFlow (anonymous) at (0,0) size 784x69
-          LayoutText {#text} at (0,1) size 236x66
+layer at (0,0) size 800x273
+  LayoutBlockFlow {HTML} at (0,0) size 800x273
+    LayoutBlockFlow {BODY} at (8,16) size 784x249
+      LayoutBlockFlow {P} at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 289x19
+          text run at (0,0) width 289: "Test passes if there is no red visible on the page."
+      LayoutBlockFlow {DIV} at (0,36) size 784x213
+        LayoutBlockFlow (anonymous) at (0,0) size 784x71
+          LayoutText {#text} at (0,1) size 236x68
             text run at (0,1) width 236: "FillerText"
-        LayoutBlockFlow {DIV} at (0,69) size 784x69
-          LayoutText {#text} at (0,1) size 236x66
+        LayoutBlockFlow {DIV} at (0,71) size 784x71
+          LayoutText {#text} at (0,1) size 236x68
             text run at (0,1) width 236: "FillerText"
-        LayoutBlockFlow (anonymous) at (0,138) size 784x69
-          LayoutText {#text} at (0,1) size 236x66
+        LayoutBlockFlow (anonymous) at (0,142) size 784x71
+          LayoutText {#text} at (0,1) size 236x68
             text run at (0,1) width 236: "FillerText"

@@ -8,12 +8,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow P",
-          "rect": [0, 34, 800, 18],
+          "rect": [0, 36, 800, 20],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow (anonymous)",
-          "rect": [0, 0, 800, 18],
+          "rect": [0, 0, 800, 20],
           "reason": "forced by layout"
         },
         {
@@ -23,7 +23,7 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [0, 0, 40, 17],
+          "rect": [0, 0, 37, 19],
           "reason": "forced by layout"
         }
       ]

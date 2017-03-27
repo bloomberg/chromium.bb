@@ -1,158 +1,158 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x408
-  LayoutBlockFlow {HTML} at (0,0) size 800x407.56
-    LayoutBlockFlow {BODY} at (8,16) size 784x18
-      LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 509x17
-          text run at (0,0) width 509: "In all the following boxes, the fuchsia diamond should be surrounded by a ring."
-      LayoutBlockFlow (floating) {DIV} at (1.80,35.80) size 81x56 [border: (3px solid #000000)]
+layer at (0,0) size 800x410
+  LayoutBlockFlow {HTML} at (0,0) size 800x409.56
+    LayoutBlockFlow {BODY} at (8,16) size 784x20
+      LayoutBlockFlow {P} at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 470x19
+          text run at (0,0) width 470: "In all the following boxes, the fuchsia diamond should be surrounded by a ring."
+      LayoutBlockFlow (floating) {DIV} at (1.80,37.80) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (86.39,35.80) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (86.39,37.80) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (170.98,35.80) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (170.98,37.80) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (255.58,35.80) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (255.58,37.80) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (340.17,35.80) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (340.17,37.80) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (424.77,35.80) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (424.77,37.80) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (509.36,35.80) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (509.36,37.80) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (593.95,35.80) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (593.95,37.80) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (678.55,35.80) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (678.55,37.80) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (1.80,95.39) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (1.80,97.39) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (86.39,95.39) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (86.39,97.39) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (170.98,95.39) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (170.98,97.39) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (255.58,95.39) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (255.58,97.39) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (340.17,95.39) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (340.17,97.39) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (424.77,95.39) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (424.77,97.39) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (509.36,95.39) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (509.36,97.39) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (593.95,95.39) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (593.95,97.39) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (678.55,95.39) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (678.55,97.39) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (1.80,154.98) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (1.80,156.98) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (86.39,154.98) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (86.39,156.98) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (170.98,154.98) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (170.98,156.98) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (255.58,154.98) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (255.58,156.98) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (340.17,154.98) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (340.17,156.98) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (424.77,154.98) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (424.77,156.98) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (509.36,154.98) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (509.36,156.98) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (593.95,154.98) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (593.95,156.98) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (678.55,154.98) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (678.55,156.98) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (1.80,214.58) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (1.80,216.58) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (86.39,214.58) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (86.39,216.58) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (170.98,214.58) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (170.98,216.58) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (255.58,214.58) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (255.58,216.58) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (340.17,214.58) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (340.17,216.58) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (424.77,214.58) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (424.77,216.58) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (509.36,214.58) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (509.36,216.58) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (593.95,214.58) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (593.95,216.58) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (678.55,214.58) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (678.55,216.58) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (1.80,274.17) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (1.80,276.17) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (86.39,274.17) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (86.39,276.17) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (170.98,274.17) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (170.98,276.17) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (255.58,274.17) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (255.58,276.17) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (340.17,274.17) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (340.17,276.17) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (424.77,274.17) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (424.77,276.17) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (509.36,274.17) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (509.36,276.17) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (593.95,274.17) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (593.95,276.17) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (678.55,274.17) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (678.55,276.17) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (1.80,333.77) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (1.80,335.77) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (86.39,333.77) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (86.39,335.77) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (170.98,333.77) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (170.98,335.77) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (255.58,333.77) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (255.58,335.77) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34
-      LayoutBlockFlow (floating) {DIV} at (340.17,333.77) size 81x56 [border: (3px solid #000000)]
+      LayoutBlockFlow (floating) {DIV} at (340.17,335.77) size 81x56 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 75x50 [bgcolor=#FFFFCC]
           LayoutBlockFlow {DIV} at (8,8) size 59x34

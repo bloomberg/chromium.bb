@@ -28,12 +28,12 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 49, 98, 117],
+          "rect": [8, 48, 92, 119],
           "reason": "layoutObject removal"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 49, 8, 17],
+          "rect": [8, 48, 8, 19],
           "reason": "layoutObject insertion"
         }
       ]

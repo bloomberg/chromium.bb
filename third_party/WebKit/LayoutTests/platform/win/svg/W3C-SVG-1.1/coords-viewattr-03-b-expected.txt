@@ -2,9 +2,9 @@ layer at (0,0) size 480x360
   LayoutView at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
-    LayoutSVGText {text} at (136.80,10) size 206.41x22 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (136.80,10) size 206.41x22
-        chunk 1 (middle anchor) text run 1 at (136.80,28.00) startOffset 0 endOffset 25 width 206.41: "<svg> 'viewBox' attribute"
+    LayoutSVGText {text} at (138,11) size 204x22 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (138,11) size 204x22
+        chunk 1 (middle anchor) text run 1 at (138.00,28.00) startOffset 0 endOffset 25 width 204.00: "<svg> 'viewBox' attribute"
     LayoutSVGContainer {g} at (17.50,60) size 449x243
       LayoutSVGViewportContainer {svg} at (20,20) size 160x160
         LayoutSVGPath {path} at (20,20) size 160x160 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#ADD8E6] [fill rule=EVEN-ODD]}] [data="M 20 20 Q 180 20 180 180 Q 20 180 20 20 Z M 20 180 Q 20 20 180 20 Q 180 180 20 180 Z M 100 40 L 160 100 L 100 160 L 40 100 Z"]
@@ -56,7 +56,7 @@ layer at (0,0) size 480x360
       LayoutSVGText {text} at (342,287) size 106x16 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (342,287) size 106x16
           chunk 1 (middle anchor) text run 1 at (342.00,300.00) startOffset 0 endOffset 17 width 106.00: "overflow=\"hidden\""
-    LayoutSVGText {text} at (10,304) size 263.33x45 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (10,304) size 263.33x45
-        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 263.34: "$Revision: 1.7 $"
+    LayoutSVGText {text} at (10,304) size 261x46 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,304) size 261x46
+        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 261.00: "$Revision: 1.7 $"
     LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

@@ -1,12 +1,12 @@
-layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1475
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1533
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x1475 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutBlockFlow {HTML} at (0,0) size 785x1475
-    LayoutBlockFlow {BODY} at (8,8) size 769x1459 [bgcolor=#CCCCCC]
-      LayoutBlockFlow {P} at (0,0) size 769x18
-        LayoutText {#text} at (0,0) size 363x17
-          text run at (0,0) width 363: "The style declarations which apply to the text below are:"
-      LayoutBlockFlow {PRE} at (0,34) size 769x272
+layer at (0,0) size 785x1533 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutBlockFlow {HTML} at (0,0) size 785x1533
+    LayoutBlockFlow {BODY} at (8,8) size 769x1517 [bgcolor=#CCCCCC]
+      LayoutBlockFlow {P} at (0,0) size 769x20
+        LayoutText {#text} at (0,0) size 337x19
+          text run at (0,0) width 337: "The style declarations which apply to the text below are:"
+      LayoutBlockFlow {PRE} at (0,36) size 769x272
         LayoutText {#text} at (0,0) size 688x272
           text run at (0,0) width 648: "BODY {background-image: url(../resources/bg.gif); background-position: right top;"
           text run at (648,0) width 0: " "
@@ -41,108 +41,106 @@ layer at (0,0) size 785x1475 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,240) width 488: "       background-repeat: no-repeat; background-color: aqua;}"
           text run at (488,240) width 0: " "
           text run at (0,256) width 0: " "
-      LayoutBlockFlow {HR} at (0,319) size 769x2 [border: (1px inset #EEEEEE)]
-      LayoutBlockFlow {P} at (0,337) size 769x18
-        LayoutText {#text} at (0,0) size 514x17
-          text run at (0,0) width 514: "This document should have a single, small green image in its upper right corner."
-      LayoutBlockFlow {P} at (0,371) size 769x54 [bgcolor=#00FFFF]
-        LayoutText {#text} at (0,0) size 757x53
-          text run at (0,0) width 753: "This paragraph should have a single, small green image exactly in its center; that is, the center of the image should be"
-          text run at (0,18) width 232: "fixed at the center of the paragraph. "
-          text run at (231,18) width 526: "The background color will make it easier to determine the edges of the paragraph,"
-          text run at (0,36) width 295: "and therefore allow you to calculate its center."
-      LayoutBlockFlow {P} at (0,441) size 769x54 [bgcolor=#00FFFF]
-        LayoutText {#text} at (0,0) size 757x53
-          text run at (0,0) width 753: "This paragraph should have a single, small green image exactly in its center; that is, the center of the image should be"
-          text run at (0,18) width 232: "fixed at the center of the paragraph. "
-          text run at (231,18) width 526: "The background color will make it easier to determine the edges of the paragraph,"
-          text run at (0,36) width 295: "and therefore allow you to calculate its center."
-      LayoutBlockFlow {P} at (0,511) size 769x54 [bgcolor=#00FFFF]
-        LayoutText {#text} at (0,0) size 765x53
-          text run at (0,0) width 747: "This paragraph should have a single, small green image in its lower-right corner; that is, the lower right corner of the"
-          text run at (0,18) width 418: "image should be fixed at the lower right corner of the paragraph. "
-          text run at (417,18) width 348: "The background color will make it easier to determine"
-          text run at (0,36) width 445: "the edges of the paragraph, and therefore allow you to see its corners."
-      LayoutBlockFlow {P} at (0,581) size 769x54 [bgcolor=#00FFFF]
-        LayoutText {#text} at (0,0) size 765x53
-          text run at (0,0) width 747: "This paragraph should have a single, small green image in its lower-right corner; that is, the lower right corner of the"
-          text run at (0,18) width 418: "image should be fixed at the lower right corner of the paragraph. "
-          text run at (417,18) width 348: "The background color will make it easier to determine"
-          text run at (0,36) width 445: "the edges of the paragraph, and therefore allow you to see its corners."
-      LayoutBlockFlow {P} at (0,651) size 769x54 [bgcolor=#00FFFF]
-        LayoutText {#text} at (0,0) size 752x53
-          text run at (0,0) width 741: "This paragraph should have a single, small green image exactly at the left center; that is, the left center of the image"
-          text run at (0,18) width 323: "should be fixed at the left center of the paragraph. "
-          text run at (322,18) width 430: "The background color will make it easier to determine the edges of"
-          text run at (0,36) width 391: "the paragraph, and therefore allow you to calculate its center."
-      LayoutBlockFlow {P} at (0,721) size 769x54 [bgcolor=#00FFFF]
-        LayoutText {#text} at (0,0) size 762x53
-          text run at (0,0) width 762: "This paragraph should have a single, small green image positioned 75% of the way across the element, and 25% down."
-          text run at (0,18) width 758: "The background color will make it easier to determine the edges of the paragraph, which should help in determining if"
-          text run at (0,36) width 683: "all this is so, and the extra text should make the element long enough for this test to be simpler to evaluate."
-      LayoutBlockFlow {P} at (0,791) size 769x72 [bgcolor=#00FFFF]
-        LayoutText {#text} at (0,0) size 769x71
-          text run at (0,0) width 764: "This paragraph should have a single, small green image positioned 20 pixels down and to the left of the upper left-hand"
-          text run at (0,18) width 759: "corner; that is, the upper left-hand corner of the image should be 20 pixels down and to the left of the upper-left corner"
-          text run at (0,36) width 100: "of the element. "
-          text run at (99,36) width 670: "The background color will make it easier to determine the edges of the paragraph, which should assist in"
-          text run at (0,54) width 124: "evaluating this test."
-      LayoutTable {TABLE} at (0,879) size 769x580 [border: (1px outset #808080)]
-        LayoutTableSection {TBODY} at (1,1) size 767x578
-          LayoutTableRow {TR} at (0,0) size 767x26
-            LayoutTableCell {TD} at (0,0) size 767x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 161x17
-                LayoutText {#text} at (4,4) size 161x17
-                  text run at (4,4) width 161: "TABLE Testing Section"
-          LayoutTableRow {TR} at (0,26) size 767x552
-            LayoutTableCell {TD} at (0,289) size 12x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-              LayoutText {#text} at (4,4) size 4x17
+      LayoutBlockFlow {HR} at (0,321) size 769x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {P} at (0,339) size 769x20
+        LayoutText {#text} at (0,0) size 472x19
+          text run at (0,0) width 472: "This document should have a single, small green image in its upper right corner."
+      LayoutBlockFlow {P} at (0,375) size 769x60 [bgcolor=#00FFFF]
+        LayoutText {#text} at (0,0) size 764x59
+          text run at (0,0) width 764: "This paragraph should have a single, small green image exactly in its center; that is, the center of the image should be fixed at the"
+          text run at (0,20) width 148: "center of the paragraph. "
+          text run at (148,20) width 612: "The background color will make it easier to determine the edges of the paragraph, and therefore allow"
+          text run at (0,40) width 156: "you to calculate its center."
+      LayoutBlockFlow {P} at (0,451) size 769x60 [bgcolor=#00FFFF]
+        LayoutText {#text} at (0,0) size 764x59
+          text run at (0,0) width 764: "This paragraph should have a single, small green image exactly in its center; that is, the center of the image should be fixed at the"
+          text run at (0,20) width 148: "center of the paragraph. "
+          text run at (148,20) width 612: "The background color will make it easier to determine the edges of the paragraph, and therefore allow"
+          text run at (0,40) width 156: "you to calculate its center."
+      LayoutBlockFlow {P} at (0,527) size 769x60 [bgcolor=#00FFFF]
+        LayoutText {#text} at (0,0) size 751x59
+          text run at (0,0) width 728: "This paragraph should have a single, small green image in its lower-right corner; that is, the lower right corner of the image"
+          text run at (0,20) width 350: "should be fixed at the lower right corner of the paragraph. "
+          text run at (350,20) width 401: "The background color will make it easier to determine the edges of"
+          text run at (0,40) width 343: "the paragraph, and therefore allow you to see its corners."
+      LayoutBlockFlow {P} at (0,603) size 769x60 [bgcolor=#00FFFF]
+        LayoutText {#text} at (0,0) size 751x59
+          text run at (0,0) width 728: "This paragraph should have a single, small green image in its lower-right corner; that is, the lower right corner of the image"
+          text run at (0,20) width 350: "should be fixed at the lower right corner of the paragraph. "
+          text run at (350,20) width 401: "The background color will make it easier to determine the edges of"
+          text run at (0,40) width 343: "the paragraph, and therefore allow you to see its corners."
+      LayoutBlockFlow {P} at (0,679) size 769x60 [bgcolor=#00FFFF]
+        LayoutText {#text} at (0,0) size 758x59
+          text run at (0,0) width 744: "This paragraph should have a single, small green image exactly at the left center; that is, the left center of the image should be"
+          text run at (0,20) width 240: "fixed at the left center of the paragraph. "
+          text run at (240,20) width 518: "The background color will make it easier to determine the edges of the paragraph, and"
+          text run at (0,40) width 250: "therefore allow you to calculate its center."
+      LayoutBlockFlow {P} at (0,755) size 769x60 [bgcolor=#00FFFF]
+        LayoutText {#text} at (0,0) size 750x59
+          text run at (0,0) width 717: "This paragraph should have a single, small green image positioned 75% of the way across the element, and 25% down. "
+          text run at (717,0) width 23: "The"
+          text run at (0,20) width 750: "background color will make it easier to determine the edges of the paragraph, which should help in determining if all this is so,"
+          text run at (0,40) width 557: "and the extra text should make the element long enough for this test to be simpler to evaluate."
+      LayoutBlockFlow {P} at (0,831) size 769x60 [bgcolor=#00FFFF]
+        LayoutText {#text} at (0,0) size 757x59
+          text run at (0,0) width 756: "This paragraph should have a single, small green image positioned 20 pixels down and to the left of the upper left-hand corner;"
+          text run at (0,20) width 757: "that is, the upper left-hand corner of the image should be 20 pixels down and to the left of the upper-left corner of the element."
+          text run at (0,40) width 740: "The background color will make it easier to determine the edges of the paragraph, which should assist in evaluating this test."
+      LayoutTable {TABLE} at (0,907) size 769x610 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 767x608
+          LayoutTableRow {TR} at (0,0) size 767x28
+            LayoutTableCell {TD} at (0,0) size 767x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
+              LayoutInline {STRONG} at (0,0) size 157x19
+                LayoutText {#text} at (4,4) size 157x19
+                  text run at (4,4) width 157: "TABLE Testing Section"
+          LayoutTableRow {TR} at (0,28) size 767x580
+            LayoutTableCell {TD} at (0,304) size 12x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+              LayoutText {#text} at (4,4) size 4x19
                 text run at (4,4) width 4: " "
-            LayoutTableCell {TD} at (12,26) size 755x552 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
-              LayoutBlockFlow {P} at (4,4) size 747x18
-                LayoutText {#text} at (0,0) size 514x17
-                  text run at (0,0) width 514: "This document should have a single, small green image in its upper right corner."
-              LayoutBlockFlow {P} at (4,38) size 747x54 [bgcolor=#00FFFF]
-                LayoutText {#text} at (0,0) size 734x53
-                  text run at (0,0) width 734: "This paragraph should have a single, small green image exactly in its center; that is, the center of the image should"
-                  text run at (0,18) width 251: "be fixed at the center of the paragraph. "
-                  text run at (250,18) width 454: "The background color will make it easier to determine the edges of the"
-                  text run at (0,36) width 367: "paragraph, and therefore allow you to calculate its center."
-              LayoutBlockFlow {P} at (4,108) size 747x54 [bgcolor=#00FFFF]
-                LayoutText {#text} at (0,0) size 734x53
-                  text run at (0,0) width 734: "This paragraph should have a single, small green image exactly in its center; that is, the center of the image should"
-                  text run at (0,18) width 251: "be fixed at the center of the paragraph. "
-                  text run at (250,18) width 454: "The background color will make it easier to determine the edges of the"
-                  text run at (0,36) width 367: "paragraph, and therefore allow you to calculate its center."
-              LayoutBlockFlow {P} at (4,178) size 747x54 [bgcolor=#00FFFF]
-                LayoutText {#text} at (0,0) size 747x53
-                  text run at (0,0) width 747: "This paragraph should have a single, small green image in its lower-right corner; that is, the lower right corner of the"
-                  text run at (0,18) width 418: "image should be fixed at the lower right corner of the paragraph. "
-                  text run at (417,18) width 280: "The background color will make it easier to"
-                  text run at (0,36) width 513: "determine the edges of the paragraph, and therefore allow you to see its corners."
-              LayoutBlockFlow {P} at (4,248) size 747x54 [bgcolor=#00FFFF]
-                LayoutText {#text} at (0,0) size 747x53
-                  text run at (0,0) width 747: "This paragraph should have a single, small green image in its lower-right corner; that is, the lower right corner of the"
-                  text run at (0,18) width 418: "image should be fixed at the lower right corner of the paragraph. "
-                  text run at (417,18) width 280: "The background color will make it easier to"
-                  text run at (0,36) width 513: "determine the edges of the paragraph, and therefore allow you to see its corners."
-              LayoutBlockFlow {P} at (4,318) size 747x54 [bgcolor=#00FFFF]
-                LayoutText {#text} at (0,0) size 741x53
-                  text run at (0,0) width 741: "This paragraph should have a single, small green image exactly at the left center; that is, the left center of the image"
-                  text run at (0,18) width 323: "should be fixed at the left center of the paragraph. "
-                  text run at (322,18) width 413: "The background color will make it easier to determine the edges"
-                  text run at (0,36) width 408: "of the paragraph, and therefore allow you to calculate its center."
-              LayoutBlockFlow {P} at (4,388) size 747x72 [bgcolor=#00FFFF]
-                LayoutText {#text} at (0,0) size 719x71
-                  text run at (0,0) width 719: "This paragraph should have a single, small green image positioned 75% of the way across the element, and 25%"
-                  text run at (0,18) width 44: "down. "
-                  text run at (43,18) width 663: "The background color will make it easier to determine the edges of the paragraph, which should help in"
-                  text run at (0,36) width 717: "determining if all this is so, and the extra text should make the element long enough for this test to be simpler to"
-                  text run at (0,54) width 58: "evaluate."
-              LayoutBlockFlow {P} at (4,476) size 747x72 [bgcolor=#00FFFF]
-                LayoutText {#text} at (0,0) size 738x71
-                  text run at (0,0) width 733: "This paragraph should have a single, small green image positioned 20 pixels down and to the left of the upper left-"
-                  text run at (0,18) width 728: "hand corner; that is, the upper left-hand corner of the image should be 20 pixels down and to the left of the upper-"
-                  text run at (0,36) width 170: "left corner of the element. "
-                  text run at (169,36) width 569: "The background color will make it easier to determine the edges of the paragraph, which"
-                  text run at (0,54) width 226: "should assist in evaluating this test."
+            LayoutTableCell {TD} at (12,28) size 755x580 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
+              LayoutBlockFlow {P} at (4,4) size 747x20
+                LayoutText {#text} at (0,0) size 472x19
+                  text run at (0,0) width 472: "This document should have a single, small green image in its upper right corner."
+              LayoutBlockFlow {P} at (4,40) size 747x60 [bgcolor=#00FFFF]
+                LayoutText {#text} at (0,0) size 746x59
+                  text run at (0,0) width 742: "This paragraph should have a single, small green image exactly in its center; that is, the center of the image should be fixed at"
+                  text run at (0,20) width 170: "the center of the paragraph. "
+                  text run at (170,20) width 576: "The background color will make it easier to determine the edges of the paragraph, and therefore"
+                  text run at (0,40) width 192: "allow you to calculate its center."
+              LayoutBlockFlow {P} at (4,116) size 747x60 [bgcolor=#00FFFF]
+                LayoutText {#text} at (0,0) size 746x59
+                  text run at (0,0) width 742: "This paragraph should have a single, small green image exactly in its center; that is, the center of the image should be fixed at"
+                  text run at (0,20) width 170: "the center of the paragraph. "
+                  text run at (170,20) width 576: "The background color will make it easier to determine the edges of the paragraph, and therefore"
+                  text run at (0,40) width 192: "allow you to calculate its center."
+              LayoutBlockFlow {P} at (4,192) size 747x60 [bgcolor=#00FFFF]
+                LayoutText {#text} at (0,0) size 735x59
+                  text run at (0,0) width 728: "This paragraph should have a single, small green image in its lower-right corner; that is, the lower right corner of the image"
+                  text run at (0,20) width 350: "should be fixed at the lower right corner of the paragraph. "
+                  text run at (350,20) width 385: "The background color will make it easier to determine the edges"
+                  text run at (0,40) width 359: "of the paragraph, and therefore allow you to see its corners."
+              LayoutBlockFlow {P} at (4,268) size 747x60 [bgcolor=#00FFFF]
+                LayoutText {#text} at (0,0) size 735x59
+                  text run at (0,0) width 728: "This paragraph should have a single, small green image in its lower-right corner; that is, the lower right corner of the image"
+                  text run at (0,20) width 350: "should be fixed at the lower right corner of the paragraph. "
+                  text run at (350,20) width 385: "The background color will make it easier to determine the edges"
+                  text run at (0,40) width 359: "of the paragraph, and therefore allow you to see its corners."
+              LayoutBlockFlow {P} at (4,344) size 747x60 [bgcolor=#00FFFF]
+                LayoutText {#text} at (0,0) size 744x59
+                  text run at (0,0) width 744: "This paragraph should have a single, small green image exactly at the left center; that is, the left center of the image should be"
+                  text run at (0,20) width 240: "fixed at the left center of the paragraph. "
+                  text run at (240,20) width 492: "The background color will make it easier to determine the edges of the paragraph,"
+                  text run at (0,40) width 276: "and therefore allow you to calculate its center."
+              LayoutBlockFlow {P} at (4,420) size 747x60 [bgcolor=#00FFFF]
+                LayoutText {#text} at (0,0) size 740x59
+                  text run at (0,0) width 717: "This paragraph should have a single, small green image positioned 75% of the way across the element, and 25% down. "
+                  text run at (717,0) width 23: "The"
+                  text run at (0,20) width 728: "background color will make it easier to determine the edges of the paragraph, which should help in determining if all this is"
+                  text run at (0,40) width 579: "so, and the extra text should make the element long enough for this test to be simpler to evaluate."
+              LayoutBlockFlow {P} at (4,496) size 747x80 [bgcolor=#00FFFF]
+                LayoutText {#text} at (0,0) size 728x79
+                  text run at (0,0) width 709: "This paragraph should have a single, small green image positioned 20 pixels down and to the left of the upper left-hand"
+                  text run at (0,20) width 728: "corner; that is, the upper left-hand corner of the image should be 20 pixels down and to the left of the upper-left corner of"
+                  text run at (0,40) width 76: "the element. "
+                  text run at (76,40) width 624: "The background color will make it easier to determine the edges of the paragraph, which should assist in"
+                  text run at (0,60) width 112: "evaluating this test."

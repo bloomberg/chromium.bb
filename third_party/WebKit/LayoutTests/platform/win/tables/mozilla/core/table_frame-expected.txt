@@ -3,102 +3,102 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutTable {TABLE} at (0,0) size 81x26
-        LayoutTableSection {TBODY} at (0,0) size 81x26
-          LayoutTableRow {TR} at (0,2) size 81x22
-            LayoutTableCell {TD} at (2,2) size 42x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 38x17
-                text run at (2,2) width 38: "frame"
-            LayoutTableCell {TD} at (46,2) size 33x22 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 29x17
-                text run at (2,2) width 29: "void"
-      LayoutBlockFlow (anonymous) at (0,26) size 784x18
-        LayoutBR {BR} at (0,0) size 0x17
-      LayoutTable {TABLE} at (0,44) size 91x27 [border: (1px solid #808080) none]
-        LayoutTableSection {TBODY} at (0,1) size 91x26
-          LayoutTableRow {TR} at (0,2) size 91x22
-            LayoutTableCell {TD} at (2,2) size 42x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 38x17
-                text run at (2,2) width 38: "frame"
-            LayoutTableCell {TD} at (46,2) size 43x22 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 39x17
-                text run at (2,2) width 39: "above"
-      LayoutBlockFlow (anonymous) at (0,71) size 784x18
-        LayoutBR {BR} at (0,0) size 0x17
-      LayoutTable {TABLE} at (0,89) size 92x27 [border: none (1px solid #808080) none]
-        LayoutTableSection {TBODY} at (0,0) size 92x26
-          LayoutTableRow {TR} at (0,2) size 92x22
-            LayoutTableCell {TD} at (2,2) size 42x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 38x17
-                text run at (2,2) width 38: "frame"
-            LayoutTableCell {TD} at (46,2) size 44x22 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 40x17
-                text run at (2,2) width 40: "below"
-      LayoutBlockFlow (anonymous) at (0,116) size 784x18
-        LayoutBR {BR} at (0,0) size 0x17
-      LayoutTable {TABLE} at (0,134) size 92x28 [border: (1px solid #808080) none (1px solid #808080) none]
-        LayoutTableSection {TBODY} at (0,1) size 92x26
-          LayoutTableRow {TR} at (0,2) size 92x22
-            LayoutTableCell {TD} at (2,2) size 42x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 38x17
-                text run at (2,2) width 38: "frame"
-            LayoutTableCell {TD} at (46,2) size 44x22 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 40x17
-                text run at (2,2) width 40: "hsides"
-      LayoutBlockFlow (anonymous) at (0,162) size 784x18
-        LayoutBR {BR} at (0,0) size 0x17
-      LayoutTable {TABLE} at (0,180) size 94x26 [border: none (1px solid #808080) none (1px solid #808080)]
-        LayoutTableSection {TBODY} at (1,0) size 92x26
-          LayoutTableRow {TR} at (0,2) size 92x22
-            LayoutTableCell {TD} at (2,2) size 42x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 38x17
-                text run at (2,2) width 38: "frame"
-            LayoutTableCell {TD} at (46,2) size 44x22 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 40x17
-                text run at (2,2) width 40: "vsides"
-      LayoutBlockFlow (anonymous) at (0,206) size 784x18
-        LayoutBR {BR} at (0,0) size 0x17
-      LayoutTable {TABLE} at (0,224) size 73x26 [border: none (1px solid #808080) none]
-        LayoutTableSection {TBODY} at (0,0) size 72x26
-          LayoutTableRow {TR} at (0,2) size 72x22
-            LayoutTableCell {TD} at (2,2) size 42x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 38x17
-                text run at (2,2) width 38: "frame"
-            LayoutTableCell {TD} at (46,2) size 24x22 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 20x17
-                text run at (2,2) width 20: "rhs"
-      LayoutBlockFlow (anonymous) at (0,250) size 784x18
-        LayoutBR {BR} at (0,0) size 0x17
-      LayoutTable {TABLE} at (0,268) size 72x26 [border: none (1px solid #808080)]
-        LayoutTableSection {TBODY} at (1,0) size 71x26
-          LayoutTableRow {TR} at (0,2) size 71x22
-            LayoutTableCell {TD} at (2,2) size 42x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 38x17
-                text run at (2,2) width 38: "frame"
-            LayoutTableCell {TD} at (46,2) size 23x22 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 19x17
-                text run at (2,2) width 19: "lhs"
-      LayoutBlockFlow (anonymous) at (0,294) size 784x18
-        LayoutBR {BR} at (0,0) size 0x17
-      LayoutTable {TABLE} at (0,312) size 78x28 [border: (1px solid #808080)]
-        LayoutTableSection {TBODY} at (1,1) size 76x26
-          LayoutTableRow {TR} at (0,2) size 76x22
-            LayoutTableCell {TD} at (2,2) size 42x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 38x17
-                text run at (2,2) width 38: "frame"
-            LayoutTableCell {TD} at (46,2) size 28x22 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 24x17
-                text run at (2,2) width 24: "box"
-      LayoutBlockFlow (anonymous) at (0,340) size 784x18
-        LayoutBR {BR} at (0,0) size 0x17
-      LayoutTable {TABLE} at (0,358) size 96x28 [border: (1px solid #808080)]
-        LayoutTableSection {TBODY} at (1,1) size 94x26
-          LayoutTableRow {TR} at (0,2) size 94x22
-            LayoutTableCell {TD} at (2,2) size 42x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 38x17
-                text run at (2,2) width 38: "frame"
-            LayoutTableCell {TD} at (46,2) size 46x22 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 42x17
-                text run at (2,2) width 42: "border"
-      LayoutBlockFlow (anonymous) at (0,386) size 784x18
-        LayoutBR {BR} at (0,0) size 0x17
+      LayoutTable {TABLE} at (0,0) size 74x28
+        LayoutTableSection {TBODY} at (0,0) size 74x28
+          LayoutTableRow {TR} at (0,2) size 74x24
+            LayoutTableCell {TD} at (2,2) size 38x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 34x19
+                text run at (2,2) width 34: "frame"
+            LayoutTableCell {TD} at (42,2) size 30x24 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 26x19
+                text run at (2,2) width 26: "void"
+      LayoutBlockFlow (anonymous) at (0,28) size 784x20
+        LayoutBR {BR} at (0,0) size 0x19
+      LayoutTable {TABLE} at (0,48) size 85x29 [border: (1px solid #808080) none]
+        LayoutTableSection {TBODY} at (0,1) size 85x28
+          LayoutTableRow {TR} at (0,2) size 85x24
+            LayoutTableCell {TD} at (2,2) size 38x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 34x19
+                text run at (2,2) width 34: "frame"
+            LayoutTableCell {TD} at (42,2) size 41x24 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 37x19
+                text run at (2,2) width 37: "above"
+      LayoutBlockFlow (anonymous) at (0,77) size 784x20
+        LayoutBR {BR} at (0,0) size 0x19
+      LayoutTable {TABLE} at (0,97) size 85x29 [border: none (1px solid #808080) none]
+        LayoutTableSection {TBODY} at (0,0) size 85x28
+          LayoutTableRow {TR} at (0,2) size 85x24
+            LayoutTableCell {TD} at (2,2) size 38x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 34x19
+                text run at (2,2) width 34: "frame"
+            LayoutTableCell {TD} at (42,2) size 41x24 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 37x19
+                text run at (2,2) width 37: "below"
+      LayoutBlockFlow (anonymous) at (0,126) size 784x20
+        LayoutBR {BR} at (0,0) size 0x19
+      LayoutTable {TABLE} at (0,146) size 85x30 [border: (1px solid #808080) none (1px solid #808080) none]
+        LayoutTableSection {TBODY} at (0,1) size 85x28
+          LayoutTableRow {TR} at (0,2) size 85x24
+            LayoutTableCell {TD} at (2,2) size 38x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 34x19
+                text run at (2,2) width 34: "frame"
+            LayoutTableCell {TD} at (42,2) size 41x24 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 37x19
+                text run at (2,2) width 37: "hsides"
+      LayoutBlockFlow (anonymous) at (0,176) size 784x20
+        LayoutBR {BR} at (0,0) size 0x19
+      LayoutTable {TABLE} at (0,196) size 87x28 [border: none (1px solid #808080) none (1px solid #808080)]
+        LayoutTableSection {TBODY} at (1,0) size 85x28
+          LayoutTableRow {TR} at (0,2) size 85x24
+            LayoutTableCell {TD} at (2,2) size 38x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 34x19
+                text run at (2,2) width 34: "frame"
+            LayoutTableCell {TD} at (42,2) size 41x24 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 37x19
+                text run at (2,2) width 37: "vsides"
+      LayoutBlockFlow (anonymous) at (0,224) size 784x20
+        LayoutBR {BR} at (0,0) size 0x19
+      LayoutTable {TABLE} at (0,244) size 67x28 [border: none (1px solid #808080) none]
+        LayoutTableSection {TBODY} at (0,0) size 66x28
+          LayoutTableRow {TR} at (0,2) size 66x24
+            LayoutTableCell {TD} at (2,2) size 38x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 34x19
+                text run at (2,2) width 34: "frame"
+            LayoutTableCell {TD} at (42,2) size 22x24 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 18x19
+                text run at (2,2) width 18: "rhs"
+      LayoutBlockFlow (anonymous) at (0,272) size 784x20
+        LayoutBR {BR} at (0,0) size 0x19
+      LayoutTable {TABLE} at (0,292) size 65x28 [border: none (1px solid #808080)]
+        LayoutTableSection {TBODY} at (1,0) size 64x28
+          LayoutTableRow {TR} at (0,2) size 64x24
+            LayoutTableCell {TD} at (2,2) size 38x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 34x19
+                text run at (2,2) width 34: "frame"
+            LayoutTableCell {TD} at (42,2) size 20x24 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 16x19
+                text run at (2,2) width 16: "lhs"
+      LayoutBlockFlow (anonymous) at (0,320) size 784x20
+        LayoutBR {BR} at (0,0) size 0x19
+      LayoutTable {TABLE} at (0,340) size 73x30 [border: (1px solid #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 71x28
+          LayoutTableRow {TR} at (0,2) size 71x24
+            LayoutTableCell {TD} at (2,2) size 38x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 34x19
+                text run at (2,2) width 34: "frame"
+            LayoutTableCell {TD} at (42,2) size 27x24 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 23x19
+                text run at (2,2) width 23: "box"
+      LayoutBlockFlow (anonymous) at (0,370) size 784x20
+        LayoutBR {BR} at (0,0) size 0x19
+      LayoutTable {TABLE} at (0,390) size 91x30 [border: (1px solid #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 89x28
+          LayoutTableRow {TR} at (0,2) size 89x24
+            LayoutTableCell {TD} at (2,2) size 38x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 34x19
+                text run at (2,2) width 34: "frame"
+            LayoutTableCell {TD} at (42,2) size 45x24 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 41x19
+                text run at (2,2) width 41: "border"
+      LayoutBlockFlow (anonymous) at (0,420) size 784x20
+        LayoutBR {BR} at (0,0) size 0x19

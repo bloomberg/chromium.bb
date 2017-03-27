@@ -3,10 +3,10 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutText {#text} at (0,39) size 295x17
-        text run at (0,39) width 295: "The following inputs should not be stretched. "
-      LayoutBlockFlow {INPUT} at (298.17,3) size 13x50
-      LayoutText {#text} at (314,39) size 5x17
-        text run at (314,39) width 5: " "
-      LayoutBlockFlow {INPUT} at (323.17,3) size 13x50
+      LayoutText {#text} at (0,38) size 272x19
+        text run at (0,38) width 272: "The following inputs should not be stretched. "
+      LayoutBlockFlow {INPUT} at (276,3) size 13x50
+      LayoutText {#text} at (292,38) size 4x19
+        text run at (292,38) width 4: " "
+      LayoutBlockFlow {INPUT} at (301,3) size 13x50
       LayoutText {#text} at (0,0) size 0x0

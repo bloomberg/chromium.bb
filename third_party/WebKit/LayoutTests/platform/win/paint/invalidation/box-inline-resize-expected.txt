@@ -8,17 +8,17 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow H2",
-          "rect": [40, 103, 113, 28],
+          "rect": [40, 107, 111, 28],
           "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow H2",
-          "rect": [8, 103, 113, 28],
+          "rect": [8, 107, 111, 28],
           "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (anonymous)",
-          "rect": [8, 84, 32, 67],
+          "rect": [8, 88, 32, 67],
           "reason": "forced by layout"
         }
       ]

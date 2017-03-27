@@ -1,63 +1,63 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x352
-  LayoutBlockFlow {HTML} at (0,0) size 800x352
-    LayoutBlockFlow {BODY} at (8,8) size 784x336
-      LayoutTable {TABLE} at (0,0) size 610x336
-        LayoutTableSection {TBODY} at (0,0) size 610x336
-          LayoutTableRow {TR} at (0,2) size 610x154
-            LayoutTableCell {TD} at (2,2) size 150x154 [r=0 c=0 rs=1 cs=1]
-            LayoutTableCell {TD} at (154,2) size 150x154 [r=0 c=1 rs=1 cs=1]
-            LayoutTableCell {TD} at (306,2) size 150x154 [r=0 c=2 rs=1 cs=1]
-            LayoutTableCell {TD} at (458,2) size 150x154 [r=0 c=3 rs=1 cs=1]
-          LayoutTableRow {TR} at (0,314) size 610x20
-            LayoutTableCell {TD} at (2,314) size 150x20 [r=2 c=0 rs=1 cs=1]
-              LayoutText {#text} at (59,1) size 32x17
+layer at (0,0) size 800x356
+  LayoutBlockFlow {HTML} at (0,0) size 800x356
+    LayoutBlockFlow {BODY} at (8,8) size 784x340
+      LayoutTable {TABLE} at (0,0) size 610x340
+        LayoutTableSection {TBODY} at (0,0) size 610x340
+          LayoutTableRow {TR} at (0,2) size 610x155
+            LayoutTableCell {TD} at (2,2) size 150x155 [r=0 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (154,2) size 150x155 [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (306,2) size 150x155 [r=0 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (458,2) size 150x155 [r=0 c=3 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,316) size 610x22
+            LayoutTableCell {TD} at (2,316) size 150x22 [r=2 c=0 rs=1 cs=1]
+              LayoutText {#text} at (59,1) size 32x19
                 text run at (59,1) width 32: "PNG"
-            LayoutTableCell {TD} at (154,314) size 150x20 [r=2 c=1 rs=1 cs=1]
-              LayoutText {#text} at (59,1) size 32x17
+            LayoutTableCell {TD} at (154,316) size 150x22 [r=2 c=1 rs=1 cs=1]
+              LayoutText {#text} at (59,1) size 32x19
                 text run at (59,1) width 32: "SVG"
-            LayoutTableCell {TD} at (306,314) size 150x20 [r=2 c=2 rs=1 cs=1]
-              LayoutText {#text} at (59,1) size 32x17
+            LayoutTableCell {TD} at (306,316) size 150x22 [r=2 c=2 rs=1 cs=1]
+              LayoutText {#text} at (59,1) size 32x19
                 text run at (59,1) width 32: "PNG"
-            LayoutTableCell {TD} at (458,314) size 150x20 [r=2 c=3 rs=1 cs=1]
-              LayoutText {#text} at (59,1) size 32x17
+            LayoutTableCell {TD} at (458,316) size 150x22 [r=2 c=3 rs=1 cs=1]
+              LayoutText {#text} at (59,1) size 32x19
                 text run at (59,1) width 32: "SVG"
-layer at (31,31) size 108x108 clip at (35,35) size 100x100 scrollHeight 104
+layer at (31,31) size 108x108 clip at (35,35) size 100x100 scrollHeight 105
   LayoutBlockFlow {DIV} at (21,21) size 108x108 [bgcolor=#FF0000] [border: (4px solid #008000)]
     LayoutImage {IMG} at (4,4) size 100x100
     LayoutText {#text} at (0,0) size 0x0
-layer at (183,31) size 108x108 clip at (187,35) size 100x100 scrollHeight 104
+layer at (183,31) size 108x108 clip at (187,35) size 100x100 scrollHeight 105
   LayoutBlockFlow {DIV} at (21,21) size 108x108 [bgcolor=#FF0000] [border: (4px solid #008000)]
     LayoutImage {IMG} at (4,4) size 100x100
     LayoutText {#text} at (0,0) size 0x0
-layer at (335,31) size 108x108 clip at (339,35) size 100x100 scrollHeight 104
+layer at (335,31) size 108x108 clip at (339,35) size 100x100 scrollHeight 105
   LayoutBlockFlow {DIV} at (21,21) size 108x108 [bgcolor=#FF0000] [border: (4px solid #008000)]
     LayoutImage {IMG} at (4,4) size 100x100
     LayoutText {#text} at (0,0) size 0x0
-layer at (487,31) size 108x108 clip at (491,35) size 100x100 scrollHeight 104
+layer at (487,31) size 108x108 clip at (491,35) size 100x100 scrollHeight 105
   LayoutBlockFlow {DIV} at (21,21) size 108x108 [bgcolor=#FF0000] [border: (4px solid #008000)]
     LayoutImage {IMG} at (4,4) size 100x100
     LayoutText {#text} at (0,0) size 0x0
-layer at (8,166) size 610x154
-  LayoutTableRow {TR} at (0,158) size 610x154
-    LayoutTableCell {TD} at (2,158) size 150x154 [r=1 c=0 rs=1 cs=1]
-    LayoutTableCell {TD} at (154,158) size 150x154 [r=1 c=1 rs=1 cs=1]
-    LayoutTableCell {TD} at (306,158) size 150x154 [r=1 c=2 rs=1 cs=1]
-    LayoutTableCell {TD} at (458,158) size 150x154 [r=1 c=3 rs=1 cs=1]
-layer at (31,187) size 108x108 clip at (35,191) size 100x100 scrollHeight 104
+layer at (8,167) size 610x155
+  LayoutTableRow {TR} at (0,159) size 610x155
+    LayoutTableCell {TD} at (2,159) size 150x155 [r=1 c=0 rs=1 cs=1]
+    LayoutTableCell {TD} at (154,159) size 150x155 [r=1 c=1 rs=1 cs=1]
+    LayoutTableCell {TD} at (306,159) size 150x155 [r=1 c=2 rs=1 cs=1]
+    LayoutTableCell {TD} at (458,159) size 150x155 [r=1 c=3 rs=1 cs=1]
+layer at (31,188) size 108x108 clip at (35,192) size 100x100 scrollHeight 105
   LayoutBlockFlow {DIV} at (21,21) size 108x108 [bgcolor=#FF0000] [border: (4px solid #008000)]
     LayoutImage {IMG} at (4,4) size 100x100
     LayoutText {#text} at (0,0) size 0x0
-layer at (183,187) size 108x108 clip at (187,191) size 100x100 scrollHeight 104
+layer at (183,188) size 108x108 clip at (187,192) size 100x100 scrollHeight 105
   LayoutBlockFlow {DIV} at (21,21) size 108x108 [bgcolor=#FF0000] [border: (4px solid #008000)]
     LayoutImage {IMG} at (4,4) size 100x100
     LayoutText {#text} at (0,0) size 0x0
-layer at (335,187) size 108x108 clip at (339,191) size 100x100 scrollHeight 104
+layer at (335,188) size 108x108 clip at (339,192) size 100x100 scrollHeight 105
   LayoutBlockFlow {DIV} at (21,21) size 108x108 [bgcolor=#FF0000] [border: (4px solid #008000)]
     LayoutImage {IMG} at (4,4) size 100x100
     LayoutText {#text} at (0,0) size 0x0
-layer at (487,187) size 108x108 clip at (491,191) size 100x100 scrollHeight 104
+layer at (487,188) size 108x108 clip at (491,192) size 100x100 scrollHeight 105
   LayoutBlockFlow {DIV} at (21,21) size 108x108 [bgcolor=#FF0000] [border: (4px solid #008000)]
     LayoutImage {IMG} at (4,4) size 100x100
     LayoutText {#text} at (0,0) size 0x0

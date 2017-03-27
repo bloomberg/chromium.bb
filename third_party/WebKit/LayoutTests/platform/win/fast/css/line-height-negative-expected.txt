@@ -8,9 +8,9 @@ layer at (0,0) size 800x600
           text run at (0,-2) width 230: "This should be fairly small text, rather than huge."
 layer at (8,34) size 200x48
   LayoutBlockFlow (positioned) {DIV} at (8,34) size 200x48 [bgcolor=#FF0000]
-    LayoutText {#text} at (0,15) size 4x17
-      text run at (0,15) width 4: " "
+    LayoutText {#text} at (0,14) size 4x19
+      text run at (0,14) width 4: " "
 layer at (8,34) size 200x48
   LayoutBlockFlow (positioned) {SPAN} at (0,0) size 200x48 [bgcolor=#008000]
-    LayoutText {#text} at (0,15) size 180x17
-      text run at (0,15) width 180: "There should be no red here"
+    LayoutText {#text} at (0,14) size 170x19
+      text run at (0,14) width 170: "There should be no red here"

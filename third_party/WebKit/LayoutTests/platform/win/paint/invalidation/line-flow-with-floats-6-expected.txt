@@ -8,22 +8,27 @@
       "paintInvalidations": [
         {
           "object": "LayoutText #text",
-          "rect": [14, 242, 406, 125],
+          "rect": [14, 240, 406, 139],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [65, 368, 304, 17],
+          "rect": [65, 380, 304, 59],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [178, 350, 146, 17],
+          "rect": [65, 380, 287, 19],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [134, 360, 131, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow (floating) SPAN id='blueFloat'",
-          "rect": [14, 353, 48, 65],
+          "rect": [14, 363, 48, 65],
           "reason": "forced by layout"
         }
       ]
@@ -35,11 +40,11 @@
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'begin again, it was very provoking to find that the hedgehog'",
+      "object": "InlineTextBox 'begin again, it was very provoking to find that the'",
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'had\n'",
+      "object": "InlineTextBox 'hedgehog had\n'",
       "reason": "forced by layout"
     },
     {
@@ -51,11 +56,11 @@
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'this, there was generally a ridge or furrow in the'",
+      "object": "InlineTextBox 'this, there was generally a ridge or furrow in the way'",
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'way wherever\n'",
+      "object": "InlineTextBox 'wherever\n'",
       "reason": "forced by layout"
     },
     {
@@ -75,11 +80,11 @@
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'the ground, Alice soon came to the conclusion'",
+      "object": "InlineTextBox 'the ground, Alice soon came to the conclusion that it'",
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'that it was a very\n'",
+      "object": "InlineTextBox 'was a very\n'",
       "reason": "forced by layout"
     },
     {
@@ -111,7 +116,31 @@
       "reason": "forced by layout"
     },
     {
-      "object": "InlineTextBox 'The players all played at once without waiting'",
+      "object": "InlineTextBox 'The players all played at once without waiting\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'for'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'turns,\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'quarrelling all the while, and fighting for the'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'hedgehogs; and in\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'a very short time '",
       "reason": "forced by layout"
     }
   ]

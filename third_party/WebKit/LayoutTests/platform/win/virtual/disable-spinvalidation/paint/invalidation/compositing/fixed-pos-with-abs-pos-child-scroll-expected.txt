@@ -29,22 +29,22 @@ Hi!
         },
         {
           "object": "LayoutText #text",
-          "rect": [425, 980, 22, 17],
+          "rect": [425, 980, 19, 19],
           "reason": "subtree"
         },
         {
           "object": "LayoutText #text",
-          "rect": [425, 980, 22, 17],
+          "rect": [425, 980, 19, 19],
           "reason": "subtree"
         },
         {
           "object": "LayoutText #text",
-          "rect": [425, 480, 22, 17],
+          "rect": [425, 480, 19, 19],
           "reason": "subtree"
         },
         {
           "object": "LayoutText #text",
-          "rect": [425, 480, 22, 17],
+          "rect": [425, 480, 19, 19],
           "reason": "subtree"
         }
       ]

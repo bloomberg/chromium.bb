@@ -3,17 +3,17 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutBlockFlow {H3} at (0,0) size 784x22
-        LayoutText {#text} at (0,0) size 66x21
-          text run at (0,0) width 66: "Test for "
-        LayoutInline {A} at (0,0) size 150x21 [color=#0000EE]
-          LayoutText {#text} at (65,0) size 150x21
-            text run at (65,0) width 150: "WebKit bug 29968"
-        LayoutText {#text} at (214,0) size 552x21
-          text run at (214,0) width 552: ": Selecting text with text-overflow ellipsis should not show cut off text"
-layer at (8,49) size 95x18 scrollWidth 124
-  LayoutBlockFlow {DIV} at (0,40.72) size 95x18
-    LayoutText {#text} at (0,0) size 124x17
-      text run at (0,0) width 124: "Lorem ipsum dolor"
+      LayoutBlockFlow {H3} at (0,0) size 784x23
+        LayoutText {#text} at (0,0) size 69x22
+          text run at (0,0) width 69: "Test for "
+        LayoutInline {A} at (0,0) size 153x22 [color=#0000EE]
+          LayoutText {#text} at (68,0) size 153x22
+            text run at (68,0) width 153: "WebKit bug 29968"
+        LayoutText {#text} at (220,0) size 560x22
+          text run at (220,0) width 560: ": Selecting text with text-overflow ellipsis should not show cut off text"
+layer at (8,50) size 95x20 scrollWidth 115
+  LayoutBlockFlow {DIV} at (0,41.72) size 95x20
+    LayoutText {#text} at (0,0) size 115x19
+      text run at (0,0) width 115: "Lorem ipsum dolor"
 selection start: position 0 of child 0 {#text} of child 3 {DIV} of body
 selection end:   position 11 of child 0 {#text} of child 3 {DIV} of body

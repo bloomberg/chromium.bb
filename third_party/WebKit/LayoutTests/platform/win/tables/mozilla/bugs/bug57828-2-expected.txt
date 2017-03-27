@@ -3,21 +3,21 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 411x17
-          text run at (0,0) width 411: "The table below takes out the nowrap with the cell of 1% width."
-      LayoutTable {TABLE} at (0,34) size 675x65
+      LayoutBlockFlow {P} at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 385x19
+          text run at (0,0) width 385: "The table below takes out the nowrap with the cell of 1% width."
+      LayoutTable {TABLE} at (0,36) size 675x65
         LayoutTableSection {TBODY} at (0,0) size 675x65
           LayoutTableRow {TR} at (0,0) size 675x65 [bgcolor=#9999CC]
-            LayoutTableCell {TD} at (0,20) size 631x25 [r=0 c=0 rs=1 cs=1]
-              LayoutInline {FONT} at (0,0) size 152x20
-                LayoutInline {B} at (0,0) size 152x20
-                  LayoutText {#text} at (2,2) size 152x20
-                    text run at (2,2) width 152: "Technology News"
+            LayoutTableCell {TD} at (0,19) size 631x26 [r=0 c=0 rs=1 cs=1]
+              LayoutInline {FONT} at (0,0) size 156x21
+                LayoutInline {B} at (0,0) size 156x21
+                  LayoutText {#text} at (2,2) size 156x21
+                    text run at (2,2) width 156: "Technology News"
               LayoutInline {FONT} at (0,0) size 182x16
-                LayoutText {#text} at (153,5) size 182x16
-                  text run at (153,5) width 63: " - updated "
-                  text run at (215,5) width 120: "12:15 PM ET Oct 24"
+                LayoutText {#text} at (157,6) size 182x16
+                  text run at (157,6) width 63: " - updated "
+                  text run at (219,6) width 120: "12:15 PM ET Oct 24"
               LayoutText {#text} at (0,0) size 0x0
             LayoutTableCell {TD} at (631,0) size 44x65 [r=0 c=1 rs=1 cs=1]
               LayoutTable {TABLE} at (2,2) size 40x61
@@ -32,23 +32,23 @@ layer at (0,0) size 800x600
                             text run at (3,32) width 14: "My"
                             text run at (3,45) width 34: "Yahoo!"
                       LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow {P} at (0,115) size 784x18
-        LayoutText {#text} at (0,0) size 479x17
-          text run at (0,0) width 479: "The table below leaves in the nowrap but take out the 1% width in the cell."
-      LayoutTable {TABLE} at (0,149) size 675x26
+      LayoutBlockFlow {P} at (0,117) size 784x20
+        LayoutText {#text} at (0,0) size 448x19
+          text run at (0,0) width 448: "The table below leaves in the nowrap but take out the 1% width in the cell."
+      LayoutTable {TABLE} at (0,153) size 675x26
         LayoutTableSection {TBODY} at (0,0) size 675x26
           LayoutTableRow {TR} at (0,0) size 675x26 [bgcolor=#9999CC]
-            LayoutTableCell {TD} at (0,0) size 504x25 [r=0 c=0 rs=1 cs=1]
-              LayoutInline {FONT} at (0,0) size 152x20
-                LayoutInline {B} at (0,0) size 152x20
-                  LayoutText {#text} at (2,2) size 152x20
-                    text run at (2,2) width 152: "Technology News"
+            LayoutTableCell {TD} at (0,0) size 505x26 [r=0 c=0 rs=1 cs=1]
+              LayoutInline {FONT} at (0,0) size 156x21
+                LayoutInline {B} at (0,0) size 156x21
+                  LayoutText {#text} at (2,2) size 156x21
+                    text run at (2,2) width 156: "Technology News"
               LayoutInline {FONT} at (0,0) size 182x16
-                LayoutText {#text} at (153,5) size 182x16
-                  text run at (153,5) width 63: " - updated "
-                  text run at (215,5) width 120: "12:15 PM ET Oct 24"
+                LayoutText {#text} at (157,6) size 182x16
+                  text run at (157,6) width 63: " - updated "
+                  text run at (219,6) width 120: "12:15 PM ET Oct 24"
               LayoutText {#text} at (0,0) size 0x0
-            LayoutTableCell {TD} at (504,0) size 171x26 [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (505,0) size 170x26 [r=0 c=1 rs=1 cs=1]
               LayoutTable {TABLE} at (2,2) size 110x22
                 LayoutTableSection {TBODY} at (0,0) size 110x22
                   LayoutTableRow {TR} at (0,0) size 110x22

@@ -1,137 +1,139 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x454
-  LayoutBlockFlow {HTML} at (0,0) size 800x454
-    LayoutBlockFlow {BODY} at (8,16) size 784x430 [color=#0000FF]
-      LayoutBlockFlow {P} at (0,0) size 784x237
-        LayoutInline {<pseudo:first-letter>} at (0,0) size 88x159 [color=#00FFFF]
-          LayoutTextFragment (anonymous) at (0,3) size 88x159
+layer at (0,0) size 800x479
+  LayoutBlockFlow {HTML} at (0,0) size 800x479
+    LayoutBlockFlow {BODY} at (8,16) size 784x455 [color=#0000FF]
+      LayoutBlockFlow {P} at (0,0) size 784x250
+        LayoutInline {<pseudo:first-letter>} at (0,0) size 88x164 [color=#00FFFF]
+          LayoutTextFragment (anonymous) at (0,3) size 88x164
             text run at (0,3) width 88: "T"
-        LayoutTextFragment {#text} at (87,88) size 59x53
-          text run at (87,88) width 59: "he "
-        LayoutInline {STRONG} at (0,0) size 207x53
-          LayoutText {#text} at (145,88) size 207x53
-            text run at (145,88) width 207: "first letter"
-        LayoutText {#text} at (351,88) size 783x94
-          text run at (351,88) width 432: " of this paragraph, and"
-          text run at (0,165) width 61: "only that "
-          text run at (60,165) width 98: "one, should be "
-        LayoutInline {STRONG} at (0,0) size 88x17
-          LayoutText {#text} at (157,165) size 88x17
-            text run at (157,165) width 88: "600% bigger"
-        LayoutText {#text} at (244,165) size 527x17
-          text run at (244,165) width 138: " than the normal text "
-          text run at (381,165) width 390: "(300% bigger than the rest of first line of this paragraph) and"
-        LayoutInline {STRONG} at (0,0) size 34x17
-          LayoutText {#text} at (0,183) size 34x17
-            text run at (0,183) width 34: "aqua"
-        LayoutText {#text} at (33,183) size 113x17
-          text run at (33,183) width 113: ", while the entire "
-        LayoutInline {STRONG} at (0,0) size 58x17
-          LayoutText {#text} at (145,183) size 58x17
-            text run at (145,183) width 58: "first line"
-        LayoutText {#text} at (202,183) size 71x17
-          text run at (202,183) width 5: " "
-          text run at (206,183) width 67: "should be "
-        LayoutInline {STRONG} at (0,0) size 88x17
-          LayoutText {#text} at (272,183) size 88x17
-            text run at (272,183) width 88: "300% bigger"
-        LayoutText {#text} at (359,183) size 113x17
-          text run at (359,183) width 113: " than normal and "
-        LayoutInline {STRONG} at (0,0) size 26x17
-          LayoutText {#text} at (471,183) size 26x17
-            text run at (471,183) width 26: "teal"
-        LayoutText {#text} at (496,183) size 778x53
-          text run at (496,183) width 281: ". If this precise combination does not occur,"
-          text run at (0,201) width 421: "then the user agent has failed this test. Remember that in order to "
-          text run at (420,201) width 358: "ensure a complete test, the paragraph must be displayed"
-          text run at (0,219) width 57: "on more "
-          text run at (56,219) width 149: "than one line. (TEST1)"
-      LayoutBlockFlow {P} at (0,253) size 784x73
-        LayoutInline {<pseudo:first-letter>} at (0,0) size 33x36 [color=#00FFFF]
-          LayoutTextFragment (anonymous) at (0,0) size 33x36
-            text run at (0,0) width 33: "\"T"
-        LayoutTextFragment {#text} at (32,15) size 104x17
-          text run at (32,15) width 104: "est\": The first "
-        LayoutInline {STRONG} at (0,0) size 119x17
-          LayoutText {#text} at (135,15) size 119x17
-            text run at (135,15) width 119: "two characters"
-        LayoutText {#text} at (253,15) size 483x17
-          text run at (253,15) width 130: " in this paragraph "
-          text run at (382,15) width 354: "(a double-quote mark and a capital 'T') should be "
-        LayoutInline {STRONG} at (0,0) size 776x39
-          LayoutText {#text} at (735,15) size 776x39
-            text run at (735,15) width 41: "200%"
-            text run at (0,37) width 44: "bigger"
-        LayoutText {#text} at (43,37) size 227x17
-          text run at (43,37) width 227: " than the rest of the paragraph, and "
-        LayoutInline {STRONG} at (0,0) size 35x17
-          LayoutText {#text} at (269,37) size 35x17
-            text run at (269,37) width 35: "aqua"
-        LayoutText {#text} at (303,37) size 151x17
-          text run at (303,37) width 151: ". In addition, the entire "
-        LayoutInline {STRONG} at (0,0) size 58x17
-          LayoutText {#text} at (453,37) size 58x17
-            text run at (453,37) width 33: "first "
-            text run at (485,37) width 26: "line"
-        LayoutText {#text} at (510,37) size 98x17
-          text run at (510,37) width 98: " should be in a "
-        LayoutInline {STRONG} at (0,0) size 164x17
-          LayoutText {#text} at (607,37) size 164x17
-            text run at (607,37) width 139: "small-caps font and "
-            text run at (745,37) width 26: "teal"
-        LayoutText {#text} at (770,37) size 775x35
-          text run at (770,37) width 5: "."
-          text run at (0,55) width 323: "Remember that in order to ensure a complete test, "
-          text run at (322,55) width 416: "the paragraph must be displayed on more than one line. (TEST2)"
-      LayoutBlockFlow {P} at (0,342) size 784x54
-        LayoutInline {<pseudo:first-letter>} at (0,0) size 10x17 [color=#00FFFF]
-          LayoutTextFragment (anonymous) at (0,0) size 10x17
-            text run at (0,0) width 10: "T"
-        LayoutTextFragment {#text} at (9,0) size 20x17
-          text run at (9,0) width 20: "he "
-        LayoutInline {STRONG} at (0,0) size 70x17
-          LayoutText {#text} at (28,0) size 70x17
-            text run at (28,0) width 70: "first letter"
-        LayoutText {#text} at (97,0) size 306x17
-          text run at (97,0) width 209: " of this paragraph, and only that "
-          text run at (305,0) width 98: "one, should be "
-        LayoutInline {STRONG} at (0,0) size 35x17
-          LayoutText {#text} at (402,0) size 35x17
-            text run at (402,0) width 35: "aqua"
-        LayoutText {#text} at (436,0) size 112x17
-          text run at (436,0) width 112: ", while the entire "
-        LayoutInline {STRONG} at (0,0) size 59x17
-          LayoutText {#text} at (547,0) size 59x17
-            text run at (547,0) width 59: "first line"
-        LayoutText {#text} at (605,0) size 70x17
-          text run at (605,0) width 70: " should be "
-        LayoutInline {STRONG} at (0,0) size 26x17
-          LayoutText {#text} at (674,0) size 26x17
-            text run at (674,0) width 26: "teal"
-        LayoutText {#text} at (699,0) size 770x53
-          text run at (699,0) width 24: ". If "
-          text run at (722,0) width 24: "this"
-          text run at (0,18) width 384: "precise combination does not occur, then the user agent has "
-          text run at (383,18) width 387: "failed this test. Remember that in order to ensure a complete"
-          text run at (0,36) width 31: "test, "
-          text run at (30,36) width 416: "the paragraph must be displayed on more than one line. (TEST3)"
-      LayoutBlockFlow {DIV} at (0,412) size 784x18
-        LayoutText {#text} at (0,0) size 168x17
-          text run at (0,0) width 168: "You should see the words "
-        LayoutInline {STRONG} at (0,0) size 68x17
-          LayoutText {#text} at (167,0) size 68x17
-            text run at (167,0) width 68: "\"TEST1\""
-        LayoutText {#text} at (234,0) size 9x17
-          text run at (234,0) width 9: ", "
-        LayoutInline {STRONG} at (0,0) size 68x17
-          LayoutText {#text} at (242,0) size 68x17
-            text run at (242,0) width 68: "\"TEST2\""
-        LayoutText {#text} at (309,0) size 36x17
-          text run at (309,0) width 36: ", and "
-        LayoutInline {STRONG} at (0,0) size 67x17
-          LayoutText {#text} at (344,0) size 67x17
-            text run at (344,0) width 67: "\"TEST3\""
-        LayoutText {#text} at (410,0) size 241x17
-          text run at (410,0) width 89: " at the end of "
-          text run at (498,0) width 153: "three paragraphs above."
+        LayoutTextFragment {#text} at (88,89) size 56x55
+          text run at (88,89) width 56: "he "
+        LayoutInline {STRONG} at (0,0) size 205x55
+          LayoutText {#text} at (144,88) size 205x55
+            text run at (144,88) width 205: "first letter"
+        LayoutText {#text} at (349,89) size 772x100
+          text run at (349,89) width 423: " of this paragraph, and"
+          text run at (0,170) width 55: "only that "
+          text run at (55,170) width 92: "one, should be "
+        LayoutInline {STRONG} at (0,0) size 86x19
+          LayoutText {#text} at (147,170) size 86x19
+            text run at (147,170) width 86: "600% bigger"
+        LayoutText {#text} at (233,170) size 492x19
+          text run at (233,170) width 126: " than the normal text "
+          text run at (359,170) width 366: "(300% bigger than the rest of first line of this paragraph) and "
+        LayoutInline {STRONG} at (0,0) size 32x19
+          LayoutText {#text} at (725,170) size 32x19
+            text run at (725,170) width 32: "aqua"
+        LayoutText {#text} at (757,170) size 761x39
+          text run at (757,170) width 4: ","
+          text run at (0,190) width 94: "while the entire "
+        LayoutInline {STRONG} at (0,0) size 55x19
+          LayoutText {#text} at (94,190) size 55x19
+            text run at (94,190) width 55: "first line"
+        LayoutText {#text} at (149,190) size 66x19
+          text run at (149,190) width 4: " "
+          text run at (153,190) width 62: "should be "
+        LayoutInline {STRONG} at (0,0) size 86x19
+          LayoutText {#text} at (215,190) size 86x19
+            text run at (215,190) width 86: "300% bigger"
+        LayoutText {#text} at (301,190) size 104x19
+          text run at (301,190) width 104: " than normal and "
+        LayoutInline {STRONG} at (0,0) size 25x19
+          LayoutText {#text} at (405,190) size 25x19
+            text run at (405,190) width 25: "teal"
+        LayoutText {#text} at (430,190) size 773x59
+          text run at (430,190) width 267: ". If this precise combination does not occur, "
+          text run at (696,190) width 77: "then the user"
+          text run at (0,210) width 312: "agent has failed this test. Remember that in order to "
+          text run at (312,210) width 395: "ensure a complete test, the paragraph must be displayed on more "
+          text run at (707,210) width 51: "than one"
+          text run at (0,230) width 82: "line. (TEST1)"
+      LayoutBlockFlow {P} at (0,266) size 784x77
+        LayoutInline {<pseudo:first-letter>} at (0,0) size 32x36 [color=#00FFFF]
+          LayoutTextFragment (anonymous) at (0,0) size 32x36
+            text run at (0,0) width 32: "\"T"
+        LayoutTextFragment {#text} at (32,13) size 99x19
+          text run at (32,13) width 99: "est\": The first "
+        LayoutInline {STRONG} at (0,0) size 119x19
+          LayoutText {#text} at (131,13) size 119x19
+            text run at (131,13) width 119: "two characters"
+        LayoutText {#text} at (250,13) size 478x19
+          text run at (250,13) width 127: " in this paragraph "
+          text run at (376,13) width 352: "(a double-quote mark and a capital 'T') should be "
+        LayoutInline {STRONG} at (0,0) size 768x43
+          LayoutText {#text} at (727,13) size 768x43
+            text run at (727,13) width 41: "200%"
+            text run at (0,37) width 42: "bigger"
+        LayoutText {#text} at (42,37) size 214x19
+          text run at (42,37) width 214: " than the rest of the paragraph, and "
+        LayoutInline {STRONG} at (0,0) size 32x19
+          LayoutText {#text} at (256,37) size 32x19
+            text run at (256,37) width 32: "aqua"
+        LayoutText {#text} at (288,37) size 139x19
+          text run at (288,37) width 139: ". In addition, the entire "
+        LayoutInline {STRONG} at (0,0) size 55x19
+          LayoutText {#text} at (427,37) size 55x19
+            text run at (427,37) width 31: "first "
+            text run at (458,37) width 24: "line"
+        LayoutText {#text} at (482,37) size 91x19
+          text run at (482,37) width 91: " should be in a "
+        LayoutInline {STRONG} at (0,0) size 157x19
+          LayoutText {#text} at (573,37) size 157x19
+            text run at (573,37) width 132: "small-caps font and "
+            text run at (705,37) width 25: "teal"
+        LayoutText {#text} at (730,37) size 734x39
+          text run at (730,37) width 4: "."
+          text run at (0,57) width 305: "Remember that in order to ensure a complete test, "
+          text run at (305,57) width 390: "the paragraph must be displayed on more than one line. (TEST2)"
+      LayoutBlockFlow {P} at (0,359) size 784x60
+        LayoutInline {<pseudo:first-letter>} at (0,0) size 9x19 [color=#00FFFF]
+          LayoutTextFragment (anonymous) at (0,0) size 9x19
+            text run at (0,0) width 9: "T"
+        LayoutTextFragment {#text} at (9,0) size 18x19
+          text run at (9,0) width 18: "he "
+        LayoutInline {STRONG} at (0,0) size 67x19
+          LayoutText {#text} at (27,0) size 67x19
+            text run at (27,0) width 67: "first letter"
+        LayoutText {#text} at (94,0) size 286x19
+          text run at (94,0) width 194: " of this paragraph, and only that "
+          text run at (288,0) width 92: "one, should be "
+        LayoutInline {STRONG} at (0,0) size 32x19
+          LayoutText {#text} at (380,0) size 32x19
+            text run at (380,0) width 32: "aqua"
+        LayoutText {#text} at (412,0) size 102x19
+          text run at (412,0) width 102: ", while the entire "
+        LayoutInline {STRONG} at (0,0) size 55x19
+          LayoutText {#text} at (514,0) size 55x19
+            text run at (514,0) width 55: "first line"
+        LayoutText {#text} at (569,0) size 66x19
+          text run at (569,0) width 66: " should be "
+        LayoutInline {STRONG} at (0,0) size 25x19
+          LayoutText {#text} at (635,0) size 25x19
+            text run at (635,0) width 25: "teal"
+        LayoutText {#text} at (660,0) size 748x59
+          text run at (660,0) width 21: ". If "
+          text run at (681,0) width 67: "this precise"
+          text run at (0,20) width 315: "combination does not occur, then the user agent has "
+          text run at (314,20) width 395: "failed this test. Remember that in order to ensure a complete test, "
+          text run at (708,20) width 19: "the"
+          text run at (0,40) width 368: "paragraph must be displayed on more than one line. (TEST3)"
+      LayoutBlockFlow {DIV} at (0,435) size 784x20
+        LayoutText {#text} at (0,0) size 160x19
+          text run at (0,0) width 160: "You should see the words "
+        LayoutInline {STRONG} at (0,0) size 66x19
+          LayoutText {#text} at (159,0) size 66x19
+            text run at (159,0) width 66: "\"TEST1\""
+        LayoutText {#text} at (224,0) size 9x19
+          text run at (224,0) width 9: ", "
+        LayoutInline {STRONG} at (0,0) size 66x19
+          LayoutText {#text} at (232,0) size 66x19
+            text run at (232,0) width 66: "\"TEST2\""
+        LayoutText {#text} at (297,0) size 35x19
+          text run at (297,0) width 35: ", and "
+        LayoutInline {STRONG} at (0,0) size 66x19
+          LayoutText {#text} at (331,0) size 66x19
+            text run at (331,0) width 66: "\"TEST3\""
+        LayoutText {#text} at (396,0) size 230x19
+          text run at (396,0) width 84: " at the end of "
+          text run at (479,0) width 147: "three paragraphs above."

@@ -70,8 +70,8 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (38.50,194) size 93x13 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (38.50,194) size 93x13
             chunk 1 (middle anchor) text run 1 at (38.50,204.00) startOffset 0 endOffset 19 width 93.00: "changes to viewport"
-    LayoutSVGContainer {g} at (10,311) size 247.27x36
-      LayoutSVGText {text} at (10,311) size 247.27x36 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (10,311) size 247.27x36
-          chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 17 width 247.27: "$Revision: 1.12 $"
+    LayoutSVGContainer {g} at (10,311) size 246x36
+      LayoutSVGText {text} at (10,311) size 246x36 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,311) size 246x36
+          chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 17 width 246.00: "$Revision: 1.12 $"
     LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

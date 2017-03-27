@@ -1,53 +1,52 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x300
-  LayoutBlockFlow {HTML} at (0,0) size 800x300
-    LayoutBlockFlow {BODY} at (8,8) size 784x284
-      LayoutBlockFlow {DIV} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 348x17
-          text run at (0,0) width 348: "The blue bits of text should be decorated as described."
-      LayoutBlockFlow {P} at (0,34) size 784x216 [color=#C0C0C0]
-        LayoutText {#text} at (0,0) size 777x53
-          text run at (0,0) width 486: "dummy text dummy text dummy text dummy text dummy text dummy text "
-          text run at (485,0) width 292: "dummy text dummy text dummy text dummy"
-          text run at (0,18) width 190: "text dummy text dummy text "
-          text run at (189,18) width 487: "dummy text dummy text dummy text dummy text dummy text dummy text "
-          text run at (675,18) width 77: "dummy text"
-          text run at (0,36) width 405: "dummy text dummy text dummy text dummy text dummy text "
-        LayoutInline {SPAN} at (0,0) size 266x37 [color=#0000FF] [border: (10px double #0000FF)]
-          LayoutText {#text} at (414,36) size 246x17
-            text run at (414,36) width 246: "two blue lines all around this blue text"
-        LayoutText {#text} at (669,36) size 777x107
-          text run at (669,36) width 5: " "
-          text run at (673,36) width 78: "dummy text"
-          text run at (0,54) width 405: "dummy text dummy text dummy text dummy text dummy text "
-          text run at (404,54) width 373: "dummy text dummy text dummy text dummy text dummy"
-          text run at (0,72) width 109: "text dummy text "
-          text run at (108,72) width 487: "dummy text dummy text dummy text dummy text dummy text dummy text "
-          text run at (594,72) width 158: "dummy text dummy text"
-          text run at (0,90) width 324: "dummy text dummy text dummy text dummy text "
-          text run at (323,90) width 454: "dummy text dummy text dummy text dummy text dummy text dummy"
-          text run at (0,108) width 28: "text "
-          text run at (27,108) width 487: "dummy text dummy text dummy text dummy text dummy text dummy text "
-          text run at (513,108) width 239: "dummy text dummy text dummy text"
-          text run at (0,126) width 81: "dummy text "
-        LayoutInline {SPAN} at (0,0) size 241x19 [color=#0000FF] [border: (1px solid #0000FF)]
-          LayoutText {#text} at (81,126) size 239x17
-            text run at (81,126) width 28: "one "
-            text run at (108,126) width 212: "blue line all around this blue text"
-        LayoutText {#text} at (320,126) size 778x89
-          text run at (320,126) width 167: " dummy text dummy text "
-          text run at (486,126) width 292: "dummy text dummy text dummy text dummy"
-          text run at (0,144) width 190: "text dummy text dummy text "
-          text run at (189,144) width 487: "dummy text dummy text dummy text dummy text dummy text dummy text "
-          text run at (675,144) width 77: "dummy text"
-          text run at (0,162) width 405: "dummy text dummy text dummy text dummy text dummy text "
-          text run at (404,162) width 373: "dummy text dummy text dummy text dummy text dummy"
-          text run at (0,180) width 109: "text dummy text "
-          text run at (108,180) width 487: "dummy text dummy text dummy text dummy text dummy text dummy text "
-          text run at (594,180) width 158: "dummy text dummy text"
-          text run at (0,198) width 324: "dummy text dummy text dummy text dummy text "
-          text run at (323,198) width 78: "dummy text"
-      LayoutBlockFlow {DIV} at (0,266) size 784x18
-        LayoutText {#text} at (0,0) size 425x17
-          text run at (0,0) width 425: "(All the lines of text in the block above should be equally spaced.)"
+layer at (0,0) size 800x308
+  LayoutBlockFlow {HTML} at (0,0) size 800x308
+    LayoutBlockFlow {BODY} at (8,8) size 784x292
+      LayoutBlockFlow {DIV} at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 330x19
+          text run at (0,0) width 330: "The blue bits of text should be decorated as described."
+      LayoutBlockFlow {P} at (0,36) size 784x220 [color=#C0C0C0]
+        LayoutText {#text} at (0,0) size 784x59
+          text run at (0,0) width 444: "dummy text dummy text dummy text dummy text dummy text dummy text "
+          text run at (444,0) width 340: "dummy text dummy text dummy text dummy text dummy"
+          text run at (0,20) width 100: "text dummy text "
+          text run at (100,20) width 444: "dummy text dummy text dummy text dummy text dummy text dummy text "
+          text run at (544,20) width 218: "dummy text dummy text dummy text"
+          text run at (0,40) width 222: "dummy text dummy text dummy text "
+        LayoutInline {SPAN} at (0,0) size 244x39 [color=#0000FF] [border: (10px double #0000FF)]
+          LayoutText {#text} at (232,40) size 224x19
+            text run at (232,40) width 224: "two blue lines all around this blue text"
+        LayoutText {#text} at (466,40) size 784x99
+          text run at (466,40) width 4: " "
+          text run at (470,40) width 292: "dummy text dummy text dummy text dummy text"
+          text run at (0,60) width 148: "dummy text dummy text "
+          text run at (148,60) width 444: "dummy text dummy text dummy text dummy text dummy text dummy text "
+          text run at (592,60) width 192: "dummy text dummy text dummy"
+          text run at (0,80) width 248: "text dummy text dummy text dummy text "
+          text run at (248,80) width 444: "dummy text dummy text dummy text dummy text dummy text dummy text "
+          text run at (692,80) width 70: "dummy text"
+          text run at (0,100) width 370: "dummy text dummy text dummy text dummy text dummy text "
+          text run at (370,100) width 414: "dummy text dummy text dummy text dummy text dummy text dummy"
+          text run at (0,120) width 26: "text "
+          text run at (26,120) width 296: "dummy text dummy text dummy text dummy text "
+        LayoutInline {SPAN} at (0,0) size 219x21 [color=#0000FF] [border: (1px solid #0000FF)]
+          LayoutText {#text} at (323,120) size 217x19
+            text run at (323,120) width 26: "one "
+            text run at (349,120) width 191: "blue line all around this blue text"
+        LayoutText {#text} at (541,120) size 784x99
+          text run at (541,120) width 152: " dummy text dummy text "
+          text run at (693,120) width 70: "dummy text"
+          text run at (0,140) width 370: "dummy text dummy text dummy text dummy text dummy text "
+          text run at (370,140) width 414: "dummy text dummy text dummy text dummy text dummy text dummy"
+          text run at (0,160) width 26: "text "
+          text run at (26,160) width 444: "dummy text dummy text dummy text dummy text dummy text dummy text "
+          text run at (470,160) width 292: "dummy text dummy text dummy text dummy text"
+          text run at (0,180) width 148: "dummy text dummy text "
+          text run at (148,180) width 444: "dummy text dummy text dummy text dummy text dummy text dummy text "
+          text run at (592,180) width 192: "dummy text dummy text dummy"
+          text run at (0,200) width 248: "text dummy text dummy text dummy text "
+          text run at (248,200) width 70: "dummy text"
+      LayoutBlockFlow {DIV} at (0,272) size 784x20
+        LayoutText {#text} at (0,0) size 395x19
+          text run at (0,0) width 395: "(All the lines of text in the block above should be equally spaced.)"

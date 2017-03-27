@@ -5,26 +5,26 @@ layer at (0,0) size 800x580
     LayoutBlockFlow {body} at (8,8) size 784x564
       LayoutBlockFlow {div} at (10,10) size 220x543.63
         LayoutBlockFlow {h2} at (0,19.91) size 220x27
-          LayoutText {#text} at (0,0) size 121x26
-            text run at (0,0) width 121: "SVG nested"
+          LayoutText {#text} at (0,0) size 119x26
+            text run at (0,0) width 119: "SVG nested"
         LayoutBlockFlow {h2} at (0,286.72) size 220x27
-          LayoutText {#text} at (0,0) size 116x26
-            text run at (0,0) width 116: "CSS nested"
-      LayoutText {#text} at (240,0) size 4x17
+          LayoutText {#text} at (0,0) size 114x26
+            text run at (0,0) width 114: "CSS nested"
+      LayoutText {#text} at (240,0) size 4x19
         text run at (240,0) width 4: " "
       LayoutBlockFlow {div} at (254,10) size 220x543.63
         LayoutBlockFlow {h2} at (0,19.91) size 220x27
-          LayoutText {#text} at (0,0) size 164x26
-            text run at (0,0) width 164: "SVG compound"
+          LayoutText {#text} at (0,0) size 160x26
+            text run at (0,0) width 160: "SVG compound"
         LayoutBlockFlow {h2} at (0,286.72) size 220x27
-          LayoutText {#text} at (0,0) size 159x26
-            text run at (0,0) width 159: "CSS compound"
-      LayoutText {#text} at (484,0) size 4x17
+          LayoutText {#text} at (0,0) size 155x26
+            text run at (0,0) width 155: "CSS compound"
+      LayoutText {#text} at (484,0) size 4x19
         text run at (484,0) width 4: " "
       LayoutBlockFlow {div} at (498,10) size 220x543.63
         LayoutBlockFlow {h2} at (0,19.91) size 220x27
-          LayoutText {#text} at (0,0) size 128x26
-            text run at (0,0) width 128: "SVG Matrix"
+          LayoutText {#text} at (0,0) size 127x26
+            text run at (0,0) width 127: "SVG Matrix"
         LayoutBlockFlow {h2} at (0,286.72) size 220x27
           LayoutText {#text} at (0,0) size 116x26
             text run at (0,0) width 116: "CSSMatrix"

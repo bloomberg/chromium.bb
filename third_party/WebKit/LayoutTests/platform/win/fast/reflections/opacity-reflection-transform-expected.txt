@@ -3,11 +3,10 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x572
-      LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 769x35
-          text run at (0,0) width 769: "Test that opacity doesn't cause clipping of transformed, reflected content. You should see a rotated green box and its full"
-          text run at (0,18) width 66: "reflection."
-layer at (108,64) size 102x102 transparent
-  LayoutBlockFlow {DIV} at (100,56) size 102x102 [border: (1px solid #000000)]
-layer at (109,65) size 200x100
+      LayoutBlockFlow {P} at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 783x19
+          text run at (0,0) width 783: "Test that opacity doesn't cause clipping of transformed, reflected content. You should see a rotated green box and its full reflection."
+layer at (108,48) size 102x102 transparent
+  LayoutBlockFlow {DIV} at (100,40) size 102x102 [border: (1px solid #000000)]
+layer at (109,49) size 200x100
   LayoutBlockFlow {DIV} at (1,1) size 200x100 [bgcolor=#008000]

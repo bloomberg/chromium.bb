@@ -1,14 +1,14 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x295
-  LayoutBlockFlow {html} at (0,0) size 800x295
-    LayoutBlockFlow {body} at (8,8) size 784x279
-      LayoutText {#text} at (175,261) size 4x17
-        text run at (175,261) width 4: " "
-      LayoutText {#text} at (354,261) size 4x17
-        text run at (354,261) width 4: " "
-      LayoutText {#text} at (533,261) size 4x17
-        text run at (533,261) width 4: " "
+layer at (0,0) size 800x296
+  LayoutBlockFlow {html} at (0,0) size 800x296
+    LayoutBlockFlow {body} at (8,8) size 784x280
+      LayoutText {#text} at (175,260) size 4x19
+        text run at (175,260) width 4: " "
+      LayoutText {#text} at (354,260) size 4x19
+        text run at (354,260) width 4: " "
+      LayoutText {#text} at (533,260) size 4x19
+        text run at (533,260) width 4: " "
       LayoutText {#text} at (0,0) size 0x0
 layer at (8,8) size 175x275
   LayoutEmbeddedObject {object} at (0,0) size 175x275 [bgcolor=#FFA500]

@@ -1,0 +1,19 @@
+CONSOLE MESSAGE: line 25: Frequency is limited to 60 Hz.
+CONSOLE MESSAGE: line 48: Frequency is limited to 60 Hz.
+This is a testharness.js-based test.
+PASS Test that "onerror" is send when sensor is not supported. 
+PASS Test that "onerror" is send when start() call has failed. 
+PASS Test that frequency is capped to 60.0 Hz. 
+PASS Test that frequency is capped to the maximum supported from frequency. 
+PASS Test that frequency is limited to the minimum supported from frequency. 
+PASS Test that sensor can be successfully created and its states are correct. 
+PASS Test that sensor can be constructed with default configuration. 
+PASS Test that addConfiguration and removeConfiguration is called. 
+PASS Test that onChange is called and sensor reading is valid (onchange reporting). 
+PASS Test that onChange is called and sensor reading is valid (continuous reporting). 
+PASS Test that sensor receives suspend / resume notifications when page visibility changes. 
+PASS Test that sensor reading is correct. 
+PASS Test that frequency hint works (onchange reporting). 
+PASS Test that frequency hint works (continuous reporting). 
+Harness: the test ran to completion.
+

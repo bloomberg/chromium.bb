@@ -41,10 +41,7 @@ config("skia_config") {
     "//third_party/skia/include/utils",
   ]
 
-  defines = [
-    "SK_IGNORE_DW_GRAY_FIX",
-    "SK_IGNORE_DIRECTWRITE_GASP_FIX",
-  ]
+  defines = [ "SK_IGNORE_DW_GRAY_FIX" ]
   defines += skia_for_chromium_defines
 
   defines += []

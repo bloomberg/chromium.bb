@@ -8,17 +8,17 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV id='to-be-changed'",
-          "rect": [18, 128, 269, 36],
+          "rect": [18, 130, 269, 40],
           "reason": "full"
         },
         {
           "object": "LayoutText #text",
-          "rect": [18, 128, 257, 35],
+          "rect": [18, 130, 235, 39],
           "reason": "layoutObject removal"
         },
         {
           "object": "LayoutText #text",
-          "rect": [18, 128, 84, 17],
+          "rect": [18, 130, 77, 19],
           "reason": "layoutObject insertion"
         },
         {

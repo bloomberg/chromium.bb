@@ -3,9 +3,9 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGRect {rect} at (-1000,-1000) size 5000x5000 [x=-1000.00] [y=-1000.00] [width=5000.00] [height=5000.00]
-    LayoutSVGText {text} at (50,12.50) size 341.16x21.25 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (50,12.50) size 341.16x21.25
-        chunk 1 text run 1 at (50.00,30.00) startOffset 0 endOffset 34 width 341.16: "Demonstration of the SVG Scrollbar"
+    LayoutSVGText {text} at (50,11.25) size 338.75x23.75 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (50,11.25) size 338.75x23.75
+        chunk 1 text run 1 at (50.00,30.00) startOffset 0 endOffset 34 width 338.75: "Demonstration of the SVG Scrollbar"
     LayoutSVGText {text} at (542.50,15) size 407.50x18.75 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (542.50,15) size 407.50x18.75
         chunk 1 (end anchor) text run 1 at (542.50,30.00) startOffset 0 endOffset 59 width 407.50: "One can also drag the images and the scrollbars will adopt."

@@ -8,11 +8,11 @@ layer at (0,0) size 800x600
         text run at (0,18) width 761: "left for it. Neither the Hindi on the button below nor the same text on two lines below that should be truncated at either"
         text run at (0,36) width 28: "end."
       LayoutBR {BR} at (27,50) size 1x0
-      LayoutButton {INPUT} at (0,54) size 126x23 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-        LayoutBlockFlow (anonymous) at (8,3) size 110x17
+      LayoutButton {INPUT} at (0,54) size 125.58x23 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+        LayoutBlockFlow (anonymous) at (8,3) size 109.58x17
           LayoutText {#text} at (0,2) size 110x15
             text run at (0,2) width 110: "\x{915}\x{93F}\x{938}\x{940} \x{92D}\x{940} \x{924}\x{930}\x{939} \x{906}\x{917}\x{947} \x{92C}"
-      LayoutBR {BR} at (126,71) size 0x0
+      LayoutBR {BR} at (125,71) size 1x0
       LayoutInline {SPAN} at (0,0) size 130x17
         LayoutText {#text} at (0,80) size 130x17
           text run at (0,80) width 130: "\x{915}\x{93F}\x{938}\x{940} \x{92D}\x{940} \x{924}\x{930}\x{939} \x{906}\x{917}\x{947} \x{92C}"

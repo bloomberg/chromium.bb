@@ -7,8 +7,8 @@ layer at (0,0) size 800x127
         LayoutListItem {LI} at (48,48) size 688x15
           LayoutListMarker (anonymous) at (-22,0) size 15x15
           LayoutImage {IMG} at (15,0) size 15x15
-          LayoutText {#text} at (30,1) size 4x17
-            text run at (30,1) width 4: " "
-          LayoutInline {SPAN} at (0,0) size 363x17 [color=#000000]
-            LayoutText {#text} at (34,1) size 363x17
-              text run at (34,1) width 363: "\x{21E6} There should be a green square to the left, and no red."
+          LayoutText {#text} at (30,0) size 4x19
+            text run at (30,0) width 4: " "
+          LayoutInline {SPAN} at (0,0) size 344x19 [color=#000000]
+            LayoutText {#text} at (34,0) size 344x19
+              text run at (34,0) width 344: "\x{21E6} There should be a green square to the left, and no red."

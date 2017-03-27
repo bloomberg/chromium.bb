@@ -1,15 +1,15 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x322
-  LayoutBlockFlow {HTML} at (0,0) size 800x321.88
-    LayoutBlockFlow {BODY} at (8,21.44) size 784x292.44
+layer at (0,0) size 800x323
+  LayoutBlockFlow {HTML} at (0,0) size 800x322.88
+    LayoutBlockFlow {BODY} at (8,21.44) size 784x293.44
       LayoutBlockFlow {H1} at (0,0) size 784x37
-        LayoutText {#text} at (0,0) size 224x36
-          text run at (0,0) width 224: "No size specified"
-      LayoutBlockFlow (anonymous) at (0,58.44) size 784x234
+        LayoutText {#text} at (0,0) size 223x36
+          text run at (0,0) width 223: "No size specified"
+      LayoutBlockFlow (anonymous) at (0,58.44) size 784x235
         LayoutImage {IMG} at (0,0) size 230x230 [border: (2px dashed #800000)]
-        LayoutText {#text} at (230,216) size 4x17
-          text run at (230,216) width 4: " "
+        LayoutText {#text} at (230,215) size 4x19
+          text run at (230,215) width 4: " "
         LayoutText {#text} at (0,0) size 0x0
 layer at (242,82) size 228x228
   LayoutEmbeddedObject {OBJECT} at (234,2) size 228x228 [border: (1px dashed #008000)]

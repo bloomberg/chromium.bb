@@ -1,45 +1,45 @@
-layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 912
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 945
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x912 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutBlockFlow {HTML} at (0,0) size 785x912.03
-    LayoutBlockFlow {BODY} at (8,8) size 769x888.03 [bgcolor=#FFFFFF]
+layer at (0,0) size 785x945 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutBlockFlow {HTML} at (0,0) size 785x945.03
+    LayoutBlockFlow {BODY} at (8,8) size 769x921.03 [bgcolor=#FFFFFF]
       LayoutBlockFlow {H1} at (0,0) size 769x37
-        LayoutText {#text} at (0,0) size 357x36
-          text run at (0,0) width 357: "Tests de conformit\x{E9} CSS 2"
-      LayoutBlockFlow {H3} at (0,58.44) size 769x22
-        LayoutText {#text} at (0,0) size 148x21
-          text run at (0,0) width 148: "Tableaux, test 13.8"
-      LayoutBlockFlow {H6} at (0,105.41) size 769x13
+        LayoutText {#text} at (0,0) size 358x36
+          text run at (0,0) width 358: "Tests de conformit\x{E9} CSS 2"
+      LayoutBlockFlow {H3} at (0,58.44) size 769x23
+        LayoutText {#text} at (0,0) size 154x22
+          text run at (0,0) width 154: "Tableaux, test 13.8"
+      LayoutBlockFlow {H6} at (0,106.41) size 769x13
         LayoutText {#text} at (0,0) size 125x13
           text run at (0,0) width 125: "\x{A9} \x{C9}ditions Eyrolles 1998"
-      LayoutTable (floating) {TABLE} at (193,143.38) size 576x46
-        LayoutTableSection {TBODY} at (0,0) size 576x46
+      LayoutTable (floating) {TABLE} at (193,144.38) size 576x48
+        LayoutTableSection {TBODY} at (0,0) size 576x48
           LayoutTableRow {TR} at (0,2) size 576x20
             LayoutTableCell {TD} at (2,2) size 572x20 [r=0 c=0 rs=1 cs=3]
               LayoutBlockFlow {HR} at (1,9) size 572x2 [bgcolor=#808080] [border: (1px solid #808080)]
-          LayoutTableRow {TR} at (0,24) size 576x20
-            LayoutTableCell {TD} at (2,24) size 142x20 [r=1 c=0 rs=1 cs=1]
-              LayoutInline {A} at (0,0) size 89x17 [color=#0000EE]
-                LayoutText {#text} at (1,1) size 89x17
-                  text run at (1,1) width 89: "test pr\x{E9}c\x{E9}dent"
-            LayoutTableCell {TD} at (146,24) size 284x20 [r=1 c=1 rs=1 cs=1]
-              LayoutInline {B} at (0,0) size 132x17
-                LayoutText {#text} at (76,1) size 132x17
-                  text run at (76,1) width 132: "Cadres de tableaux"
-            LayoutTableCell {TD} at (432,24) size 142x20 [r=1 c=2 rs=1 cs=1]
-              LayoutInline {A} at (0,0) size 73x17 [color=#0000EE]
-                LayoutText {#text} at (68,1) size 73x17
-                  text run at (68,1) width 73: "test suivant"
-      LayoutBlockFlow {P} at (0,143.38) size 769x18
-        LayoutText {#text} at (0,0) size 4x17
+          LayoutTableRow {TR} at (0,24) size 576x22
+            LayoutTableCell {TD} at (2,24) size 142x22 [r=1 c=0 rs=1 cs=1]
+              LayoutInline {A} at (0,0) size 85x19 [color=#0000EE]
+                LayoutText {#text} at (1,1) size 85x19
+                  text run at (1,1) width 85: "test pr\x{E9}c\x{E9}dent"
+            LayoutTableCell {TD} at (146,24) size 284x22 [r=1 c=1 rs=1 cs=1]
+              LayoutInline {B} at (0,0) size 130x19
+                LayoutText {#text} at (77,1) size 130x19
+                  text run at (77,1) width 130: "Cadres de tableaux"
+            LayoutTableCell {TD} at (432,24) size 142x22 [r=1 c=2 rs=1 cs=1]
+              LayoutInline {A} at (0,0) size 66x19 [color=#0000EE]
+                LayoutText {#text} at (75,1) size 66x19
+                  text run at (75,1) width 66: "test suivant"
+      LayoutBlockFlow {P} at (0,144.38) size 769x20
+        LayoutText {#text} at (0,0) size 4x19
           text run at (0,0) width 4: " "
-      LayoutBlockFlow {P} at (0,177.38) size 769x18
-        LayoutText {#text} at (0,0) size 4x17
+      LayoutBlockFlow {P} at (0,180.38) size 769x20
+        LayoutText {#text} at (0,0) size 4x19
           text run at (0,0) width 4: " "
-      LayoutBlockFlow {P} at (0,211.38) size 769x18
-        LayoutText {#text} at (0,0) size 385x17
-          text run at (0,0) width 385: "Ce test v\x{E9}rifie que les cadres s'appliquent bien aux tableaux."
-      LayoutBlockFlow {PRE} at (0,245.38) size 769x192
+      LayoutBlockFlow {P} at (0,216.38) size 769x20
+        LayoutText {#text} at (0,0) size 360x19
+          text run at (0,0) width 360: "Ce test v\x{E9}rifie que les cadres s'appliquent bien aux tableaux."
+      LayoutBlockFlow {PRE} at (0,252.38) size 769x192
         LayoutText {#text} at (0,0) size 576x192
           text run at (0,0) width 472: ".firsttable { border-width : 10pt ; border-color : yellow ;"
           text run at (472,0) width 0: " "
@@ -64,104 +64,103 @@ layer at (0,0) size 785x912 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           text run at (0,160) width 312: "                border-style : double ;"
           text run at (312,160) width 0: " "
           text run at (0,176) width 352: "                border-collapse : collapse }"
-      LayoutTable {TABLE} at (96.50,450.38) size 576x133.66 [border: (13.33px double #FFFF00)]
-        LayoutTableSection {TBODY} at (13,13.33) size 550x107
-          LayoutTableRow {TR} at (0,2) size 550x33
-            LayoutTableCell {TD} at (2,2) size 180x33.31 [border: (6.66px double #000000)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (7,8) size 9x17
+      LayoutTable {TABLE} at (96.50,457.38) size 576x139.66 [border: (13.33px double #FFFF00)]
+        LayoutTableSection {TBODY} at (13,13.33) size 550x113
+          LayoutTableRow {TR} at (0,2) size 550x35
+            LayoutTableCell {TD} at (2,2) size 180x35.31 [border: (6.66px double #000000)] [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (7,8) size 9x19
                 text run at (7,8) width 9: "1"
-            LayoutTableCell {TD} at (184,2) size 181x33.31 [border: (6.66px solid #FF0000)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (7,8) size 9x17
+            LayoutTableCell {TD} at (184,2) size 181x35.31 [border: (6.66px solid #FF0000)] [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (7,8) size 9x19
                 text run at (7,8) width 9: "2"
-            LayoutTableCell {TD} at (367,2) size 181x33.31 [border: (6.66px groove #00FF00)] [r=0 c=2 rs=1 cs=1]
-              LayoutText {#text} at (7,8) size 9x17
+            LayoutTableCell {TD} at (367,2) size 181x35.31 [border: (6.66px groove #00FF00)] [r=0 c=2 rs=1 cs=1]
+              LayoutText {#text} at (7,8) size 9x19
                 text run at (7,8) width 9: "3"
-          LayoutTableRow {TR} at (0,37) size 550x33
-            LayoutTableCell {TD} at (2,37) size 180x33.31 [border: (6.66px inset #0000FF)] [r=1 c=0 rs=1 cs=1]
-              LayoutText {#text} at (7,8) size 9x17
+          LayoutTableRow {TR} at (0,39) size 550x35
+            LayoutTableCell {TD} at (2,39) size 180x35.31 [border: (6.66px inset #0000FF)] [r=1 c=0 rs=1 cs=1]
+              LayoutText {#text} at (7,8) size 9x19
                 text run at (7,8) width 9: "4"
-            LayoutTableCell {TD} at (184,37) size 181x33.31 [border: (6.66px double #000000)] [r=1 c=1 rs=1 cs=1]
-              LayoutText {#text} at (7,8) size 9x17
+            LayoutTableCell {TD} at (184,39) size 181x35.31 [border: (6.66px double #000000)] [r=1 c=1 rs=1 cs=1]
+              LayoutText {#text} at (7,8) size 9x19
                 text run at (7,8) width 9: "5"
-            LayoutTableCell {TD} at (367,37) size 181x33.31 [border: (6.66px solid #FF0000)] [r=1 c=2 rs=1 cs=1]
-              LayoutText {#text} at (7,8) size 9x17
+            LayoutTableCell {TD} at (367,39) size 181x35.31 [border: (6.66px solid #FF0000)] [r=1 c=2 rs=1 cs=1]
+              LayoutText {#text} at (7,8) size 9x19
                 text run at (7,8) width 9: "6"
-          LayoutTableRow {TR} at (0,72) size 550x33
-            LayoutTableCell {TD} at (2,72) size 180x33.31 [border: (6.66px groove #00FF00)] [r=2 c=0 rs=1 cs=1]
-              LayoutText {#text} at (7,8) size 9x17
+          LayoutTableRow {TR} at (0,76) size 550x35
+            LayoutTableCell {TD} at (2,76) size 180x35.31 [border: (6.66px groove #00FF00)] [r=2 c=0 rs=1 cs=1]
+              LayoutText {#text} at (7,8) size 9x19
                 text run at (7,8) width 9: "7"
-            LayoutTableCell {TD} at (184,72) size 181x33.31 [border: (6.66px inset #0000FF)] [r=2 c=1 rs=1 cs=1]
-              LayoutText {#text} at (7,8) size 9x17
+            LayoutTableCell {TD} at (184,76) size 181x35.31 [border: (6.66px inset #0000FF)] [r=2 c=1 rs=1 cs=1]
+              LayoutText {#text} at (7,8) size 9x19
                 text run at (7,8) width 9: "8"
-            LayoutTableCell {TD} at (367,72) size 181x33.31 [border: (6.66px double #000000)] [r=2 c=2 rs=1 cs=1]
-              LayoutText {#text} at (7,8) size 9x17
+            LayoutTableCell {TD} at (367,76) size 181x35.31 [border: (6.66px double #000000)] [r=2 c=2 rs=1 cs=1]
+              LayoutText {#text} at (7,8) size 9x19
                 text run at (7,8) width 9: "9"
-      LayoutBlockFlow (anonymous) at (0,584.03) size 769x18
-        LayoutBR {BR} at (0,0) size 0x17
-      LayoutTable {TABLE} at (96.50,602.03) size 576x98 [border: (6px double #FFFF00)]
-        LayoutTableSection {TBODY} at (6,6) size 563x85
-          LayoutTableRow {TR} at (0,0) size 563x30
-            LayoutTableCell {TD} at (0,0) size 204x30 [border: (7px double #000000)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (8,8) size 8x17
+      LayoutBlockFlow (anonymous) at (0,597.03) size 769x20
+        LayoutBR {BR} at (0,0) size 0x19
+      LayoutTable {TABLE} at (96.50,617.03) size 576x104 [border: (6px double #FFFF00)]
+        LayoutTableSection {TBODY} at (6,6) size 563x91
+          LayoutTableRow {TR} at (0,0) size 563x32
+            LayoutTableCell {TD} at (0,0) size 204x32 [border: (7px double #000000)] [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (8,8) size 8x19
                 text run at (8,8) width 8: "1"
-            LayoutTableCell {TD} at (204,0) size 164x30 [border: (7px solid #FF0000)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (4,8) size 8x17
+            LayoutTableCell {TD} at (204,0) size 164x32 [border: (7px solid #FF0000)] [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (4,8) size 8x19
                 text run at (4,8) width 8: "2"
-            LayoutTableCell {TD} at (368,0) size 195x30 [border: (7px groove #00FF00)] [r=0 c=2 rs=1 cs=1]
-              LayoutText {#text} at (4,8) size 8x17
+            LayoutTableCell {TD} at (368,0) size 195x32 [border: (7px groove #00FF00)] [r=0 c=2 rs=1 cs=1]
+              LayoutText {#text} at (4,8) size 8x19
                 text run at (4,8) width 8: "3"
-          LayoutTableRow {TR} at (0,30) size 563x26
-            LayoutTableCell {TD} at (0,30) size 204x26 [border: (3px inset #0000FF)] [r=1 c=0 rs=1 cs=1]
-              LayoutText {#text} at (8,4) size 8x17
+          LayoutTableRow {TR} at (0,32) size 563x28
+            LayoutTableCell {TD} at (0,32) size 204x28 [border: (3px inset #0000FF)] [r=1 c=0 rs=1 cs=1]
+              LayoutText {#text} at (8,4) size 8x19
                 text run at (8,4) width 8: "4"
-            LayoutTableCell {TD} at (204,30) size 164x26 [border: (3px double #000000)] [r=1 c=1 rs=1 cs=1]
-              LayoutText {#text} at (4,4) size 8x17
+            LayoutTableCell {TD} at (204,32) size 164x28 [border: (3px double #000000)] [r=1 c=1 rs=1 cs=1]
+              LayoutText {#text} at (4,4) size 8x19
                 text run at (4,4) width 8: "5"
-            LayoutTableCell {TD} at (368,30) size 195x26 [border: (3px solid #FF0000)] [r=1 c=2 rs=1 cs=1]
-              LayoutText {#text} at (4,4) size 8x17
+            LayoutTableCell {TD} at (368,32) size 195x28 [border: (3px solid #FF0000)] [r=1 c=2 rs=1 cs=1]
+              LayoutText {#text} at (4,4) size 8x19
                 text run at (4,4) width 8: "6"
-          LayoutTableRow {TR} at (0,56) size 563x29
-            LayoutTableCell {TD} at (0,56) size 204x29 [border: (3px groove #00FF00)] [r=2 c=0 rs=1 cs=1]
-              LayoutText {#text} at (8,4) size 8x17
+          LayoutTableRow {TR} at (0,60) size 563x31
+            LayoutTableCell {TD} at (0,60) size 204x31 [border: (3px groove #00FF00)] [r=2 c=0 rs=1 cs=1]
+              LayoutText {#text} at (8,4) size 8x19
                 text run at (8,4) width 8: "7"
-            LayoutTableCell {TD} at (204,56) size 164x29 [border: (3px inset #0000FF)] [r=2 c=1 rs=1 cs=1]
-              LayoutText {#text} at (4,4) size 8x17
+            LayoutTableCell {TD} at (204,60) size 164x31 [border: (3px inset #0000FF)] [r=2 c=1 rs=1 cs=1]
+              LayoutText {#text} at (4,4) size 8x19
                 text run at (4,4) width 8: "8"
-            LayoutTableCell {TD} at (368,56) size 195x29 [border: (3px double #000000)] [r=2 c=2 rs=1 cs=1]
-              LayoutText {#text} at (4,4) size 8x17
+            LayoutTableCell {TD} at (368,60) size 195x31 [border: (3px double #000000)] [r=2 c=2 rs=1 cs=1]
+              LayoutText {#text} at (4,4) size 8x19
                 text run at (4,4) width 8: "9"
-      LayoutBlockFlow {P} at (0,716.03) size 769x36
-        LayoutText {#text} at (0,0) size 757x35
-          text run at (0,0) width 311: "Si toutes les conditions exprim\x{E9}es par les r\x{E8}gles "
-          text run at (310,0) width 447: "CSS ci-dessus se retrouvent dans le formatage des tableaux ci-dessus,"
-          text run at (0,18) width 60: "la valeur "
-          text run at (59,18) width 165: "de ce test est 2 et 0 sinon."
-      LayoutTable (floating) {TABLE} at (193,768.03) size 576x46
-        LayoutTableSection {TBODY} at (0,0) size 576x46
+      LayoutBlockFlow {P} at (0,737.03) size 769x40
+        LayoutText {#text} at (0,0) size 767x39
+          text run at (0,0) width 289: "Si toutes les conditions exprim\x{E9}es par les r\x{E8}gles "
+          text run at (289,0) width 478: "CSS ci-dessus se retrouvent dans le formatage des tableaux ci-dessus, la valeur"
+          text run at (0,20) width 157: "de ce test est 2 et 0 sinon."
+      LayoutTable (floating) {TABLE} at (193,793.03) size 576x48
+        LayoutTableSection {TBODY} at (0,0) size 576x48
           LayoutTableRow {TR} at (0,2) size 576x20
             LayoutTableCell {TD} at (2,2) size 572x20 [r=0 c=0 rs=1 cs=3]
               LayoutBlockFlow {HR} at (1,9) size 572x2 [bgcolor=#808080] [border: (1px solid #808080)]
-          LayoutTableRow {TR} at (0,24) size 576x20
-            LayoutTableCell {TD} at (2,24) size 142x20 [r=1 c=0 rs=1 cs=1]
-              LayoutText {#text} at (1,1) size 89x17
-                text run at (1,1) width 89: "test pr\x{E9}c\x{E9}dent"
-            LayoutTableCell {TD} at (146,24) size 284x20 [r=1 c=1 rs=1 cs=1]
-              LayoutInline {B} at (0,0) size 132x17
-                LayoutText {#text} at (76,1) size 132x17
-                  text run at (76,1) width 132: "Cadres de tableaux"
-            LayoutTableCell {TD} at (432,24) size 142x20 [r=1 c=2 rs=1 cs=1]
-              LayoutInline {A} at (0,0) size 73x17 [color=#0000EE]
-                LayoutText {#text} at (68,1) size 73x17
-                  text run at (68,1) width 73: "test suivant"
-      LayoutBlockFlow {P} at (0,768.03) size 769x18
-        LayoutText {#text} at (0,0) size 4x17
+          LayoutTableRow {TR} at (0,24) size 576x22
+            LayoutTableCell {TD} at (2,24) size 142x22 [r=1 c=0 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 85x19
+                text run at (1,1) width 85: "test pr\x{E9}c\x{E9}dent"
+            LayoutTableCell {TD} at (146,24) size 284x22 [r=1 c=1 rs=1 cs=1]
+              LayoutInline {B} at (0,0) size 130x19
+                LayoutText {#text} at (77,1) size 130x19
+                  text run at (77,1) width 130: "Cadres de tableaux"
+            LayoutTableCell {TD} at (432,24) size 142x22 [r=1 c=2 rs=1 cs=1]
+              LayoutInline {A} at (0,0) size 66x19 [color=#0000EE]
+                LayoutText {#text} at (75,1) size 66x19
+                  text run at (75,1) width 66: "test suivant"
+      LayoutBlockFlow {P} at (0,793.03) size 769x20
+        LayoutText {#text} at (0,0) size 4x19
           text run at (0,0) width 4: " "
-      LayoutBlockFlow {P} at (0,802.03) size 769x18
-        LayoutText {#text} at (0,0) size 4x17
+      LayoutBlockFlow {P} at (0,829.03) size 769x20
+        LayoutText {#text} at (0,0) size 4x19
           text run at (0,0) width 4: " "
-      LayoutBlockFlow {P} at (0,836.03) size 769x18
-        LayoutText {#text} at (0,0) size 4x17
+      LayoutBlockFlow {P} at (0,865.03) size 769x20
+        LayoutText {#text} at (0,0) size 4x19
           text run at (0,0) width 4: " "
-      LayoutBlockFlow {P} at (0,870.03) size 769x18
-        LayoutText {#text} at (0,0) size 166x17
-          text run at (0,0) width 166: "Auteur : Daniel Glazman."
+      LayoutBlockFlow {P} at (0,901.03) size 769x20
+        LayoutText {#text} at (0,0) size 150x19
+          text run at (0,0) width 150: "Auteur : Daniel Glazman."

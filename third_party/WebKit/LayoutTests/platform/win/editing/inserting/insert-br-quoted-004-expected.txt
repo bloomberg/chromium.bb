@@ -10,43 +10,43 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutBlockFlow {DIV} at (0,0) size 784x108
+      LayoutBlockFlow {DIV} at (0,0) size 784x114
         LayoutBlockFlow {DIV} at (0,0) size 784x27
           LayoutText {#text} at (0,0) size 277x26
             text run at (0,0) width 277: "Splitting Mail blockquotes."
-        LayoutBlockFlow {DIV} at (0,27) size 784x81
-          LayoutText {#text} at (0,0) size 190x26
-            text run at (0,0) width 190: "Expected Results: "
-          LayoutBR {BR} at (189,21) size 1x0
-          LayoutText {#text} at (0,27) size 374x17
-            text run at (0,27) width 374: "Two blockquotes, with an unquoted blank line in between."
-          LayoutBR {BR} at (373,41) size 1x0
-          LayoutText {#text} at (0,45) size 411x17
-            text run at (0,45) width 411: "The first blockquote contains two lines, the second one is blank."
-          LayoutBR {BR} at (410,59) size 1x0
-          LayoutText {#text} at (0,63) size 341x17
-            text run at (0,63) width 341: "The second blockquote contains two non-blank lines."
-      LayoutBlockFlow {DIV} at (0,108) size 784x246 [border: (2px solid #FF0000)]
-        LayoutBlockFlow (anonymous) at (14,14) size 756x27
-          LayoutText {#text} at (0,0) size 118x26
-            text run at (0,0) width 118: "My citation:"
-        LayoutBlockFlow {DIV} at (14,65) size 756x167
-          LayoutBlockFlow {BLOCKQUOTE} at (40,0) size 676x58 [border: (2px solid #0000FF)]
-            LayoutBlockFlow {DIV} at (2,2) size 672x27
-              LayoutText {#text} at (0,0) size 35x26
+        LayoutBlockFlow {DIV} at (0,27) size 784x87
+          LayoutText {#text} at (0,0) size 189x26
+            text run at (0,0) width 189: "Expected Results: "
+          LayoutBR {BR} at (189,21) size 0x0
+          LayoutText {#text} at (0,27) size 350x19
+            text run at (0,27) width 350: "Two blockquotes, with an unquoted blank line in between."
+          LayoutBR {BR} at (349,42) size 1x0
+          LayoutText {#text} at (0,47) size 384x19
+            text run at (0,47) width 384: "The first blockquote contains two lines, the second one is blank."
+          LayoutBR {BR} at (384,62) size 0x0
+          LayoutText {#text} at (0,67) size 321x19
+            text run at (0,67) width 321: "The second blockquote contains two non-blank lines."
+      LayoutBlockFlow {DIV} at (0,114) size 784x252 [border: (2px solid #FF0000)]
+        LayoutBlockFlow (anonymous) at (14,14) size 756x28
+          LayoutText {#text} at (0,0) size 117x27
+            text run at (0,0) width 117: "My citation:"
+        LayoutBlockFlow {DIV} at (14,66) size 756x172
+          LayoutBlockFlow {BLOCKQUOTE} at (40,0) size 676x60 [border: (2px solid #0000FF)]
+            LayoutBlockFlow {DIV} at (2,2) size 672x28
+              LayoutText {#text} at (0,0) size 35x27
                 text run at (0,0) width 35: "one"
-            LayoutBlockFlow {DIV} at (2,29) size 672x27
-              LayoutBlockFlow {DIV} at (0,0) size 672x27
-                LayoutBlockFlow {DIV} at (0,0) size 672x27
-                  LayoutBR {BR} at (0,0) size 0x26
-          LayoutBlockFlow (anonymous) at (0,58) size 756x27
-            LayoutBR {BR} at (0,0) size 0x26
-          LayoutBlockFlow {BLOCKQUOTE} at (40,109) size 676x58 [border: (2px solid #0000FF)]
-            LayoutBlockFlow {DIV} at (2,2) size 672x27
-              LayoutBlockFlow {DIV} at (0,0) size 672x27
-                LayoutText {#text} at (0,0) size 136x26
+            LayoutBlockFlow {DIV} at (2,30) size 672x28
+              LayoutBlockFlow {DIV} at (0,0) size 672x28
+                LayoutBlockFlow {DIV} at (0,0) size 672x28
+                  LayoutBR {BR} at (0,0) size 0x27
+          LayoutBlockFlow (anonymous) at (0,60) size 756x28
+            LayoutBR {BR} at (0,0) size 0x27
+          LayoutBlockFlow {BLOCKQUOTE} at (40,112) size 676x60 [border: (2px solid #0000FF)]
+            LayoutBlockFlow {DIV} at (2,2) size 672x28
+              LayoutBlockFlow {DIV} at (0,0) size 672x28
+                LayoutText {#text} at (0,0) size 136x27
                   text run at (0,0) width 136: "one and a half"
-            LayoutBlockFlow {DIV} at (2,29) size 672x27
-              LayoutText {#text} at (0,0) size 36x26
+            LayoutBlockFlow {DIV} at (2,30) size 672x28
+              LayoutText {#text} at (0,0) size 36x27
                 text run at (0,0) width 36: "two"
 caret: position 0 of child 2 {BR} of child 1 {DIV} of child 3 {DIV} of body

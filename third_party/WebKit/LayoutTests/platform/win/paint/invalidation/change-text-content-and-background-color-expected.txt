@@ -1,0 +1,40 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutTextControl (positioned) INPUT id='input'",
+          "rect": [8, 8, 244, 68],
+          "reason": "style change"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutTextControl (positioned) INPUT id='input'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='inner-editor'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'NEW'",
+      "reason": "full"
+    }
+  ]
+}
+

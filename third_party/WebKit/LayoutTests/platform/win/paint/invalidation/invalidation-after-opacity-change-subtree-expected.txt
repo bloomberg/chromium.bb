@@ -28,22 +28,22 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 2047, 774, 106],
+          "rect": [8, 2046, 766, 107],
           "reason": "subtree"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 2047, 774, 106],
+          "rect": [8, 2046, 766, 107],
           "reason": "subtree"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 2197, 653, 106],
+          "rect": [8, 2196, 639, 107],
           "reason": "subtree"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 2197, 653, 106],
+          "rect": [8, 2196, 639, 107],
           "reason": "subtree"
         }
       ]

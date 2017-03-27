@@ -1,0 +1,110 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [10, 138, 292, 160],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [10, 303, 292, 50],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [10, 138, 242, 180],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [10, 323, 242, 50],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutTableCell TD id='col1'",
+          "rect": [10, 353, 242, 20],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutTableCell TD id='target'",
+          "rect": [254, 138, 52, 235],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutTableCell TD id='col1'",
+          "rect": [252, 138, 50, 215],
+          "reason": "incremental"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutTableCell TD id='col1'",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'Curabitur pretium, quam quis semper'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'malesuada, est libero feugiat libero, vel'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'fringilla orci nibh sed neque. Quisque eu'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'nulla non nisi molestie accumsan. Etiam'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'tellus urna, laoreet ac, laoreet non,'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'suscipit sed, sapien. Phasellus vehicula,'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'sem at posuere vehicula, augue nibh'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'molestie nisl, nec ullamcorper lacus ante'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'vulputate pede.'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutTableCell TD id='target'",
+      "reason": "bounds change"
+    }
+  ]
+}
+

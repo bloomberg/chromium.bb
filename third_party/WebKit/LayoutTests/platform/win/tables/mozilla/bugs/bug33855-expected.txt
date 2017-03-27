@@ -22,8 +22,8 @@ layer at (0,0) size 800x600
                   LayoutBlockFlow (anonymous) at (8,3) size 71x16
                     LayoutText {#text} at (0,0) size 71x16
                       text run at (0,0) width 71: "Empty trash"
-              LayoutTableCell {TD} at (224,6) size 380x20 [r=0 c=3 rs=1 cs=1]
-                LayoutText {#text} at (1,1) size 4x17
+              LayoutTableCell {TD} at (224,4) size 380x22 [r=0 c=3 rs=1 cs=1]
+                LayoutText {#text} at (1,1) size 4x19
                   text run at (1,1) width 4: " "
               LayoutTableCell {TD} at (606,2) size 67x24 [r=0 c=4 rs=1 cs=1]
                 LayoutButton {INPUT} at (1,1) size 65x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]

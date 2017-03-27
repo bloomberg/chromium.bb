@@ -1,78 +1,78 @@
-layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1645
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1661
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x1645 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutBlockFlow {HTML} at (0,0) size 785x1645
-    LayoutBlockFlow {BODY} at (8,16) size 769x1581 [bgcolor=#FFFFFF]
-      LayoutBlockFlow {P} at (0,0) size 769x18
-        LayoutText {#text} at (0,0) size 168x17
-          text run at (0,0) width 168: "This page is part of the "
-        LayoutInline {A} at (0,0) size 73x17 [color=#0000EE]
-          LayoutText {#text} at (167,0) size 73x17
-            text run at (167,0) width 73: "CSS3.info"
-        LayoutText {#text} at (239,0) size 5x17
-          text run at (239,0) width 5: " "
-        LayoutInline {A} at (0,0) size 133x17 [color=#0000EE]
-          LayoutText {#text} at (243,0) size 133x17
-            text run at (243,0) width 133: "CSS selectors test"
-        LayoutText {#text} at (375,0) size 136x17
-          text run at (375,0) width 136: ". See more info on "
-        LayoutInline {A} at (0,0) size 111x17 [color=#0000EE]
-          LayoutText {#text} at (510,0) size 111x17
-            text run at (510,0) width 111: "CSS3 selectors"
-        LayoutText {#text} at (620,0) size 6x17
-          text run at (620,0) width 6: "."
-      LayoutBlockFlow {DIV} at (0,34) size 769x0 [bgcolor=#009900]
-      LayoutBlockFlow {OL} at (0,34) size 769x1547
-        LayoutListItem {LI} at (40,0) size 615.19x248 [bgcolor=#AAAAAA]
+layer at (0,0) size 785x1661 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutBlockFlow {HTML} at (0,0) size 785x1661
+    LayoutBlockFlow {BODY} at (8,16) size 769x1597 [bgcolor=#FFFFFF]
+      LayoutBlockFlow {P} at (0,0) size 769x19
+        LayoutText {#text} at (0,0) size 162x18
+          text run at (0,0) width 162: "This page is part of the "
+        LayoutInline {A} at (0,0) size 72x18 [color=#0000EE]
+          LayoutText {#text} at (162,0) size 72x18
+            text run at (162,0) width 72: "CSS3.info"
+        LayoutText {#text} at (234,0) size 4x18
+          text run at (234,0) width 4: " "
+        LayoutInline {A} at (0,0) size 130x18 [color=#0000EE]
+          LayoutText {#text} at (238,0) size 130x18
+            text run at (238,0) width 130: "CSS selectors test"
+        LayoutText {#text} at (368,0) size 131x18
+          text run at (368,0) width 131: ". See more info on "
+        LayoutInline {A} at (0,0) size 110x18 [color=#0000EE]
+          LayoutText {#text} at (499,0) size 110x18
+            text run at (499,0) width 110: "CSS3 selectors"
+        LayoutText {#text} at (609,0) size 4x18
+          text run at (609,0) width 4: "."
+      LayoutBlockFlow {DIV} at (0,35) size 769x0 [bgcolor=#009900]
+      LayoutBlockFlow {OL} at (0,35) size 769x1562
+        LayoutListItem {LI} at (40,0) size 615.19x251 [bgcolor=#AAAAAA]
           LayoutBlockFlow {DIV} at (16,16) size 583.19x24 [bgcolor=#990000]
             LayoutBlockFlow {DIV} at (0,0) size 583.19x24 [bgcolor=#009900]
-          LayoutBlockFlow {PRE} at (16,53) size 583.19x111 [bgcolor=#FFFFFF]
-            LayoutListMarker (anonymous) at (-33.78,6.50) size 17.78x17: "1"
-            LayoutText {#text} at (6,8) size 137x97
-              text run at (6,8) width 137: "div :only-child {"
-              text run at (142,8) width 1: " "
-              text run at (6,25) width 9: "}"
-              text run at (14,25) width 1: " "
-              text run at (6,41) width 1: " "
-              text run at (6,57) width 41: "<div>"
-              text run at (46,57) width 1: " "
-              text run at (6,73) width 113: "   <div></div>"
-              text run at (118,73) width 1: " "
-              text run at (6,89) width 49: "</div>"
-          LayoutBlockFlow {P} at (16,180) size 583.19x36
-            LayoutText {#text} at (0,0) size 574x35
-              text run at (0,0) width 574: "The CSS selector should match the inner div element, because it is the only child"
-              text run at (0,18) width 168: "of the outer div element"
-        LayoutListItem {LI} at (40,296) size 615.19x264 [bgcolor=#AAAAAA]
+          LayoutBlockFlow {PRE} at (16,53) size 583.19x112 [bgcolor=#FFFFFF]
+            LayoutListMarker (anonymous) at (-33,6.50) size 17x18: "1"
+            LayoutText {#text} at (6,9) size 137x97
+              text run at (6,9) width 137: "div :only-child {"
+              text run at (142,9) width 1: " "
+              text run at (6,26) width 9: "}"
+              text run at (14,26) width 1: " "
+              text run at (6,42) width 1: " "
+              text run at (6,58) width 41: "<div>"
+              text run at (46,58) width 1: " "
+              text run at (6,74) width 113: "   <div></div>"
+              text run at (118,74) width 1: " "
+              text run at (6,90) width 49: "</div>"
+          LayoutBlockFlow {P} at (16,181) size 583.19x38
+            LayoutText {#text} at (0,0) size 569x37
+              text run at (0,0) width 569: "The CSS selector should match the inner div element, because it is the only child of"
+              text run at (0,19) width 143: "the outer div element"
+        LayoutListItem {LI} at (40,299) size 615.19x267 [bgcolor=#AAAAAA]
           LayoutBlockFlow {DIV} at (16,16) size 583.19x24 [bgcolor=#990000]
             LayoutBlockFlow {DIV} at (0,0) size 583.19x24 [bgcolor=#009900]
-          LayoutBlockFlow {PRE} at (16,53) size 583.19x127 [bgcolor=#FFFFFF]
-            LayoutListMarker (anonymous) at (-33.78,6.50) size 17.78x17: "2"
-            LayoutText {#text} at (6,8) size 209x113
-              text run at (6,8) width 137: "div :only-child {"
-              text run at (142,8) width 1: " "
-              text run at (6,25) width 9: "}"
-              text run at (14,25) width 1: " "
-              text run at (6,41) width 1: " "
-              text run at (6,57) width 41: "<div>"
-              text run at (46,57) width 1: " "
-              text run at (6,73) width 113: "   <div></div>"
-              text run at (118,73) width 1: " "
-              text run at (6,89) width 209: "   <!-- Just a comment -->"
-              text run at (214,89) width 1: " "
-              text run at (6,105) width 49: "</div>"
-          LayoutBlockFlow {P} at (16,196) size 583.19x36
-            LayoutText {#text} at (0,0) size 574x35
-              text run at (0,0) width 574: "The CSS selector should match the inner div element, because it is the only child"
-              text run at (0,18) width 168: "of the outer div element"
-        LayoutListItem {LI} at (40,608) size 615.19x280 [bgcolor=#AAAAAA]
-          LayoutBlockFlow {DIV} at (16,16) size 583.19x42 [bgcolor=#990000]
+          LayoutBlockFlow {PRE} at (16,53) size 583.19x128 [bgcolor=#FFFFFF]
+            LayoutListMarker (anonymous) at (-33,6.50) size 17x18: "2"
+            LayoutText {#text} at (6,9) size 209x113
+              text run at (6,9) width 137: "div :only-child {"
+              text run at (142,9) width 1: " "
+              text run at (6,26) width 9: "}"
+              text run at (14,26) width 1: " "
+              text run at (6,42) width 1: " "
+              text run at (6,58) width 41: "<div>"
+              text run at (46,58) width 1: " "
+              text run at (6,74) width 113: "   <div></div>"
+              text run at (118,74) width 1: " "
+              text run at (6,90) width 209: "   <!-- Just a comment -->"
+              text run at (214,90) width 1: " "
+              text run at (6,106) width 49: "</div>"
+          LayoutBlockFlow {P} at (16,197) size 583.19x38
+            LayoutText {#text} at (0,0) size 569x37
+              text run at (0,0) width 569: "The CSS selector should match the inner div element, because it is the only child of"
+              text run at (0,19) width 143: "the outer div element"
+        LayoutListItem {LI} at (40,614) size 615.19x283 [bgcolor=#AAAAAA]
+          LayoutBlockFlow {DIV} at (16,16) size 583.19x43 [bgcolor=#990000]
             LayoutBlockFlow {DIV} at (0,0) size 583.19x24 [bgcolor=#009900]
-            LayoutBlockFlow (anonymous) at (0,24) size 583.19x18
-              LayoutListMarker (anonymous) at (-33.78,0) size 17.78x17: "3"
-              LayoutText {#text} at (0,0) size 5x17
-                text run at (0,0) width 5: "."
-          LayoutBlockFlow {PRE} at (16,71) size 583.19x125 [bgcolor=#FFFFFF]
+            LayoutBlockFlow (anonymous) at (0,24) size 583.19x19
+              LayoutListMarker (anonymous) at (-33,0) size 17x18: "3"
+              LayoutText {#text} at (0,0) size 4x18
+                text run at (0,0) width 4: "."
+          LayoutBlockFlow {PRE} at (16,72) size 583.19x125 [bgcolor=#FFFFFF]
             LayoutText {#text} at (6,7) size 225x112
               text run at (6,7) width 137: "div :only-child {"
               text run at (142,7) width 1: " "
@@ -86,57 +86,57 @@ layer at (0,0) size 785x1645 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               text run at (6,87) width 225: "   How about regular text..."
               text run at (230,87) width 1: " "
               text run at (6,103) width 49: "</div>"
-          LayoutBlockFlow {P} at (16,212) size 583.19x36
-            LayoutText {#text} at (0,0) size 574x35
-              text run at (0,0) width 574: "The CSS selector should match the inner div element, because it is the only child"
-              text run at (0,18) width 168: "of the outer div element"
-        LayoutListItem {LI} at (40,936) size 615.19x267 [bgcolor=#AAAAAA]
+          LayoutBlockFlow {P} at (16,213) size 583.19x38
+            LayoutText {#text} at (0,0) size 569x37
+              text run at (0,0) width 569: "The CSS selector should match the inner div element, because it is the only child of"
+              text run at (0,19) width 143: "the outer div element"
+        LayoutListItem {LI} at (40,945) size 615.19x270 [bgcolor=#AAAAAA]
           LayoutBlockFlow {DIV} at (16,16) size 583.19x24 [bgcolor=#009900]
             LayoutBlockFlow {DIV} at (0,0) size 583.19x24
             LayoutBlockFlow {BLOCKQUOTE} at (40,40) size 503.19x0
-          LayoutBlockFlow {PRE} at (16,56) size 583.19x127 [bgcolor=#FFFFFF]
-            LayoutListMarker (anonymous) at (-33.78,6.50) size 17.78x17: "4"
-            LayoutText {#text} at (6,8) size 225x113
-              text run at (6,8) width 137: "div :only-child {"
-              text run at (142,8) width 1: " "
-              text run at (6,25) width 9: "}"
-              text run at (14,25) width 1: " "
-              text run at (6,41) width 1: " "
-              text run at (6,57) width 49: "<div> "
-              text run at (54,57) width 1: " "
-              text run at (6,73) width 113: "   <div></div>"
-              text run at (118,73) width 1: " "
-              text run at (6,89) width 225: "   <blockquote></blockquote>"
-              text run at (230,89) width 1: " "
-              text run at (6,105) width 49: "</div>"
-          LayoutBlockFlow {P} at (16,199) size 583.19x36
-            LayoutText {#text} at (0,0) size 574x35
-              text run at (0,0) width 574: "The CSS selector should not match the inner div element, because it not the only"
-              text run at (0,18) width 33: "child"
-        LayoutListItem {LI} at (40,1251) size 615.19x296 [bgcolor=#AAAAAA]
+          LayoutBlockFlow {PRE} at (16,56) size 583.19x128 [bgcolor=#FFFFFF]
+            LayoutListMarker (anonymous) at (-33,6.50) size 17x18: "4"
+            LayoutText {#text} at (6,9) size 225x113
+              text run at (6,9) width 137: "div :only-child {"
+              text run at (142,9) width 1: " "
+              text run at (6,26) width 9: "}"
+              text run at (14,26) width 1: " "
+              text run at (6,42) width 1: " "
+              text run at (6,58) width 49: "<div> "
+              text run at (54,58) width 1: " "
+              text run at (6,74) width 113: "   <div></div>"
+              text run at (118,74) width 1: " "
+              text run at (6,90) width 225: "   <blockquote></blockquote>"
+              text run at (230,90) width 1: " "
+              text run at (6,106) width 49: "</div>"
+          LayoutBlockFlow {P} at (16,200) size 583.19x38
+            LayoutText {#text} at (0,0) size 550x37
+              text run at (0,0) width 550: "The CSS selector should not match the inner div element, because it not the only"
+              text run at (0,19) width 32: "child"
+        LayoutListItem {LI} at (40,1263) size 615.19x299 [bgcolor=#AAAAAA]
           LayoutBlockFlow {DIV} at (16,16) size 583.19x24 [bgcolor=#009900]
             LayoutBlockFlow {DIV} at (0,0) size 583.19x24
             LayoutBlockFlow {DIV} at (0,24) size 583.19x0
-          LayoutBlockFlow {PRE} at (16,53) size 583.19x159 [bgcolor=#FFFFFF]
-            LayoutListMarker (anonymous) at (-33.78,6.50) size 17.78x17: "5"
-            LayoutText {#text} at (6,8) size 481x145
-              text run at (6,8) width 137: "div :only-child {"
-              text run at (142,8) width 1: " "
-              text run at (6,25) width 9: "}"
-              text run at (14,25) width 1: " "
-              text run at (6,41) width 1: " "
-              text run at (6,57) width 41: "<div>"
-              text run at (46,57) width 1: " "
-              text run at (6,73) width 249: "   <div id='appendChild'></div>"
-              text run at (254,73) width 1: " "
-              text run at (6,89) width 49: "</div>"
-              text run at (54,89) width 1: " "
-              text run at (6,105) width 1: " "
-              text run at (6,121) width 385: "var ib = document.getElementById('appendChild');"
-              text run at (390,121) width 1: " "
-              text run at (6,137) width 481: "ib.parentElement.appendChild(document.createElement(\"div\"));"
-          LayoutBlockFlow {P} at (16,228) size 583.19x36
-            LayoutText {#text} at (0,0) size 572x35
-              text run at (0,0) width 523: "The CSS selector should not match the original div element, because it is "
-              text run at (522,0) width 50: "not the"
-              text run at (0,18) width 508: "only child anymore after another child is append by the Javascript code."
+          LayoutBlockFlow {PRE} at (16,53) size 583.19x160 [bgcolor=#FFFFFF]
+            LayoutListMarker (anonymous) at (-33,6.50) size 17x18: "5"
+            LayoutText {#text} at (6,9) size 481x145
+              text run at (6,9) width 137: "div :only-child {"
+              text run at (142,9) width 1: " "
+              text run at (6,26) width 9: "}"
+              text run at (14,26) width 1: " "
+              text run at (6,42) width 1: " "
+              text run at (6,58) width 41: "<div>"
+              text run at (46,58) width 1: " "
+              text run at (6,74) width 249: "   <div id='appendChild'></div>"
+              text run at (254,74) width 1: " "
+              text run at (6,90) width 49: "</div>"
+              text run at (54,90) width 1: " "
+              text run at (6,106) width 1: " "
+              text run at (6,122) width 385: "var ib = document.getElementById('appendChild');"
+              text run at (390,122) width 1: " "
+              text run at (6,138) width 481: "ib.parentElement.appendChild(document.createElement(\"div\"));"
+          LayoutBlockFlow {P} at (16,229) size 583.19x38
+            LayoutText {#text} at (0,0) size 583x37
+              text run at (0,0) width 506: "The CSS selector should not match the original div element, because it is "
+              text run at (506,0) width 77: "not the only"
+              text run at (0,19) width 459: "child anymore after another child is append by the Javascript code."

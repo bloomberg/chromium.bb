@@ -1,0 +1,28 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (floating) DIV class='float'",
+          "rect": [8, 68, 100, 100],
+          "reason": "layoutObject removal"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (floating) DIV class='float'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='floatContainer'",
+      "reason": "layoutObject removal"
+    }
+  ]
+}
+

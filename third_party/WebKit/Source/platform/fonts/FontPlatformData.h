@@ -140,12 +140,6 @@ class PLATFORM_EXPORT FontPlatformData {
   const FontPlatformData& operator=(const FontPlatformData&);
 
   bool isHashTableDeletedValue() const { return m_isHashTableDeletedValue; }
-#if OS(WIN)
-  void setMinSizeForAntiAlias(unsigned size) { m_minSizeForAntiAlias = size; }
-  unsigned minSizeForAntiAlias() const { return m_minSizeForAntiAlias; }
-  void setMinSizeForSubpixel(float size) { m_minSizeForSubpixel = size; }
-  float minSizeForSubpixel() const { return m_minSizeForSubpixel; }
-#endif
   bool fontContainsCharacter(UChar32 character);
 
   PassRefPtr<OpenTypeVerticalData> verticalData() const;
@@ -187,8 +181,6 @@ class PLATFORM_EXPORT FontPlatformData {
   bool m_isHashTableDeletedValue;
 #if OS(WIN)
   int m_paintTextFlags;
-  unsigned m_minSizeForAntiAlias;
-  float m_minSizeForSubpixel;
 #endif
 };
 

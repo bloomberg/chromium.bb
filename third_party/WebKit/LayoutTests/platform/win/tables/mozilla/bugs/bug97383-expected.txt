@@ -8,9 +8,9 @@ layer at (0,0) size 800x600
           LayoutTableRow {TR} at (0,2) size 784x227
             LayoutTableCell {TD} at (2,2) size 127x227 [r=0 c=0 rs=1 cs=1]
               LayoutBlockFlow (floating) {DIV} at (1,1) size 15x100 [bgcolor=#0000FF]
-                LayoutText {#text} at (0,0) size 4x17
+                LayoutText {#text} at (0,0) size 4x19
                   text run at (0,0) width 4: " "
               LayoutImage {IMG} at (1,101) size 125x125
-            LayoutTableCell {TD} at (131,105) size 651x20 [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (1,1) size 4x17
+            LayoutTableCell {TD} at (131,104) size 651x22 [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 4x19
                 text run at (1,1) width 4: " "

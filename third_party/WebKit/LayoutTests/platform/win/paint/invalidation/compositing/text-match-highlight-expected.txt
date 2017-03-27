@@ -8,42 +8,42 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [10, 126, 228, 17],
+          "rect": [10, 135, 208, 19],
           "reason": "DocumentMarker change"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [20, 214, 202, 72],
+          "rect": [20, 224, 202, 72],
           "reason": "DocumentMarker change"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [10, 181, 138, 12],
+          "rect": [10, 191, 138, 12],
           "reason": "DocumentMarker change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [282, 36, 46, 17],
+          "rect": [259, 40, 40, 19],
           "reason": "DocumentMarker change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [270, 54, 46, 17],
+          "rect": [244, 60, 40, 19],
           "reason": "DocumentMarker change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [225, 54, 46, 17],
+          "rect": [204, 60, 40, 19],
           "reason": "DocumentMarker change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [90, 54, 46, 17],
+          "rect": [83, 60, 40, 19],
           "reason": "DocumentMarker change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [52, 72, 46, 17],
+          "rect": [47, 80, 40, 19],
           "reason": "DocumentMarker change"
         }
       ]

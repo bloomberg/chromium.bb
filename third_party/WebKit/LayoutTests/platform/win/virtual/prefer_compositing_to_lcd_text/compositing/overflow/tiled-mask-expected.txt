@@ -7,8 +7,8 @@ layer at (8,8) size 808x808 backgroundClip at (8,8) size 777x577 clip at (12,12)
   LayoutBlockFlow {DIV} at (0,0) size 808x808 [bgcolor=#808080] [border: (4px solid #FF0000)]
 layer at (12,12) size 2000x2000 backgroundClip at (0,0) size 785x585 clip at (0,0) size 785x585
   LayoutBlockFlow (positioned) {DIV} at (4,4) size 2000x2000 [bgcolor=#FFEFD5]
-    LayoutText {#text} at (0,0) size 128x17
-      text run at (0,0) width 128: "There's stuff in here"
+    LayoutText {#text} at (0,0) size 117x19
+      text run at (0,0) width 117: "There's stuff in here"
 layer at (12,12) size 50x50
   LayoutBlockFlow (positioned) {DIV} at (4,4) size 50x50 [bgcolor=#800000]
 layer at (12,712) size 100x100 backgroundClip at (0,0) size 785x585 clip at (0,0) size 785x585

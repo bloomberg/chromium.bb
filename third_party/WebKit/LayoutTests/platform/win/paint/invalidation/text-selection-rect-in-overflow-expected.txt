@@ -8,8 +8,8 @@
       "paintInvalidations": [
         {
           "object": "LayoutText #text",
-          "rect": [8, 17, 199, 18],
-          "reason": "bounds change"
+          "rect": [8, 8, 187, 19],
+          "reason": "selection"
         }
       ]
     }
@@ -17,11 +17,11 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutText #text",
-      "reason": "bounds change"
+      "reason": "selection"
     },
     {
       "object": "InlineTextBox 'Should have green background'",
-      "reason": "bounds change"
+      "reason": "selection"
     }
   ]
 }

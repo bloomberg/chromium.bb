@@ -30,7 +30,7 @@ Second dump layer tree:
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='child' class='child'",
-      "position": [121, 39],
+      "position": [121, 41],
       "bounds": [250, 100],
       "contentsOpaque": true,
       "drawsContent": true,

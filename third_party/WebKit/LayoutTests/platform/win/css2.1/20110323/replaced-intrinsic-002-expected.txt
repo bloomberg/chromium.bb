@@ -4,8 +4,8 @@ layer at (8,8) size 150x175
   LayoutBlockFlow (relative positioned) {HTML} at (8,8) size 150x175
     LayoutBlockFlow {BODY} at (0,0) size 150x175
       LayoutBlockFlow {P} at (0,0) size 150x175
-        LayoutText {#text} at (0,1) size 366x17
-          text run at (0,1) width 366: "There should be an exact square of green below this line:"
+        LayoutText {#text} at (0,0) size 340x19
+          text run at (0,0) width 340: "There should be an exact square of green below this line:"
         LayoutText {#text} at (0,0) size 0x0
 layer at (8,28) size 300x150
   LayoutEmbeddedObject {OBJECT} at (0,20) size 300x150

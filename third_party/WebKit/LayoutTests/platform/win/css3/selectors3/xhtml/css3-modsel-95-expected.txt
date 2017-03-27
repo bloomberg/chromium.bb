@@ -1,22 +1,22 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x186
-  LayoutBlockFlow {html} at (0,0) size 800x186
-    LayoutBlockFlow {body} at (8,16) size 784x154
-      LayoutBlockFlow {div} at (0,0) size 784x154
-        LayoutBlockFlow {p} at (0,0) size 784x18 [bgcolor=#00FF00]
-          LayoutText {#text} at (0,0) size 268x17
-            text run at (0,0) width 108: "This line should "
-            text run at (107,0) width 161: "have a green background"
-        LayoutBlockFlow {p} at (0,34) size 784x18 [bgcolor=#00FF00]
-          LayoutText {#text} at (0,0) size 268x17
-            text run at (0,0) width 268: "This line should have a green background"
-        LayoutBlockFlow {q} at (0,68) size 784x18 [bgcolor=#00FF00]
-          LayoutText {#text} at (0,0) size 268x17
-            text run at (0,0) width 268: "This line should have a green background"
-        LayoutBlockFlow {p} at (0,102) size 784x18 [bgcolor=#00FF00]
-          LayoutText {#text} at (0,0) size 268x17
-            text run at (0,0) width 268: "This line should have a green background"
-        LayoutBlockFlow {foo} at (0,136) size 784x18 [bgcolor=#00FF00]
-          LayoutText {#text} at (0,0) size 268x17
-            text run at (0,0) width 268: "This line should have a green background"
+layer at (0,0) size 800x196
+  LayoutBlockFlow {html} at (0,0) size 800x196
+    LayoutBlockFlow {body} at (8,16) size 784x164
+      LayoutBlockFlow {div} at (0,0) size 784x164
+        LayoutBlockFlow {p} at (0,0) size 784x20 [bgcolor=#00FF00]
+          LayoutText {#text} at (0,0) size 248x19
+            text run at (0,0) width 96: "This line should "
+            text run at (96,0) width 152: "have a green background"
+        LayoutBlockFlow {p} at (0,36) size 784x20 [bgcolor=#00FF00]
+          LayoutText {#text} at (0,0) size 248x19
+            text run at (0,0) width 248: "This line should have a green background"
+        LayoutBlockFlow {q} at (0,72) size 784x20 [bgcolor=#00FF00]
+          LayoutText {#text} at (0,0) size 248x19
+            text run at (0,0) width 248: "This line should have a green background"
+        LayoutBlockFlow {p} at (0,108) size 784x20 [bgcolor=#00FF00]
+          LayoutText {#text} at (0,0) size 248x19
+            text run at (0,0) width 248: "This line should have a green background"
+        LayoutBlockFlow {foo} at (0,144) size 784x20 [bgcolor=#00FF00]
+          LayoutText {#text} at (0,0) size 248x19
+            text run at (0,0) width 248: "This line should have a green background"

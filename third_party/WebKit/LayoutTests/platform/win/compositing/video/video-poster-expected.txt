@@ -19,7 +19,7 @@ Case: Displaying poster
   "layers": [
     {
       "name": "LayoutView #document",
-      "bounds": [785, 601],
+      "bounds": [785, 605],
       "contentsOpaque": true,
       "drawsContent": true
     }
@@ -32,7 +32,7 @@ Case: Displaying movie
   "layers": [
     {
       "name": "LayoutView #document",
-      "bounds": [785, 809],
+      "bounds": [785, 813],
       "contentsOpaque": true,
       "drawsContent": true
     },

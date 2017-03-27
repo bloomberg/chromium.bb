@@ -3,13 +3,13 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
-      LayoutBlockFlow {DL} at (0,0) size 784x36
-        LayoutBlockFlow {DT} at (0,0) size 784x18
-          LayoutText {#text} at (0,0) size 60x17
-            text run at (0,0) width 60: "Line One"
-        LayoutBlockFlow {DT} at (0,18) size 784x18
-          LayoutText {#text} at (0,0) size 34x17
-            text run at (0,0) width 34: "Line "
-          LayoutInline {SPAN} at (0,0) size 29x17
-            LayoutText {#text} at (33,0) size 29x17
-              text run at (33,0) width 29: "Two"
+      LayoutBlockFlow {DL} at (0,0) size 784x40
+        LayoutBlockFlow {DT} at (0,0) size 784x20
+          LayoutText {#text} at (0,0) size 56x19
+            text run at (0,0) width 56: "Line One"
+        LayoutBlockFlow {DT} at (0,20) size 784x20
+          LayoutText {#text} at (0,0) size 30x19
+            text run at (0,0) width 30: "Line "
+          LayoutInline {SPAN} at (0,0) size 27x19
+            LayoutText {#text} at (30,0) size 27x19
+              text run at (30,0) width 27: "Two"

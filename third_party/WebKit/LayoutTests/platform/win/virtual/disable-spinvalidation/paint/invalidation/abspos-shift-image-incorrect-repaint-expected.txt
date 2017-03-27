@@ -8,32 +8,32 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV id='shiftMe'",
-          "rect": [0, 0, 1500, 236],
+          "rect": [0, 0, 1500, 237],
           "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='shiftMe'",
-          "rect": [-250, 0, 1500, 236],
+          "rect": [-250, 0, 1500, 237],
           "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV class='imageWrapper'",
-          "rect": [704, 0, 700, 236],
+          "rect": [704, 0, 700, 237],
           "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV class='imageWrapper'",
-          "rect": [454, 0, 700, 236],
+          "rect": [454, 0, 700, 237],
           "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV class='imageWrapper'",
-          "rect": [0, 0, 700, 236],
+          "rect": [0, 0, 700, 237],
           "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV class='imageWrapper'",
-          "rect": [-250, 0, 700, 236],
+          "rect": [-250, 0, 700, 237],
           "reason": "bounds change"
         },
         {
@@ -63,12 +63,12 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [700, 218, 4, 17],
+          "rect": [700, 217, 4, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [450, 218, 4, 17],
+          "rect": [450, 217, 4, 19],
           "reason": "bounds change"
         }
       ]
