@@ -5,17 +5,12 @@
 package org.chromium.components.signin.test.util;
 
 import android.accounts.Account;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.annotation.Nullable;
 
 /**
  * This class is used by the {@link MockAccountManager} to hold information about a given
@@ -23,30 +18,23 @@ import javax.annotation.Nullable;
  */
 public class AccountHolder {
     private final Account mAccount;
-
     private final String mPassword;
-
     private final Map<String, String> mAuthTokens;
-
     private final Map<String, Boolean> mHasBeenAccepted;
-
     private final boolean mAlwaysAccept;
-
-    private Set<String> mFeatures;
-
-    private final List<Runnable> mFeatureCallbacks = new ArrayList<>();
+    private final Set<String> mFeatures;
 
     private AccountHolder(Account account, String password, Map<String, String> authTokens,
-            Map<String, Boolean> hasBeenAccepted, boolean alwaysAccept,
-            @Nullable Set<String> features) {
-        if (account == null) {
-            throw new IllegalArgumentException("Account can not be null");
-        }
+            Map<String, Boolean> hasBeenAccepted, boolean alwaysAccept, Set<String> features) {
+        assert account != null;
+        assert authTokens != null;
+        assert hasBeenAccepted != null;
+        assert features != null;
+
         mAccount = account;
         mPassword = password;
-        mAuthTokens = authTokens == null ? new HashMap<String, String>() : authTokens;
-        mHasBeenAccepted =
-                hasBeenAccepted == null ? new HashMap<String, Boolean>() : hasBeenAccepted;
+        mAuthTokens = authTokens;
+        mHasBeenAccepted = hasBeenAccepted;
         mAlwaysAccept = alwaysAccept;
         mFeatures = features;
     }
@@ -95,44 +83,8 @@ public class AccountHolder {
         }
     }
 
-    /**
-     * @return The set of account features. This method may only be called after the account
-     *         features have been fetched.
-     */
     public Set<String> getFeatures() {
-        assert mFeatures != null;
         return mFeatures;
-    }
-
-    /**
-     * Adds a callback to be run when the account features have been fetched. If that has already
-     * happened, the callback is run immediately.
-     *
-     * @param callback The callback to be run when the account features have been fetched.
-     */
-    public void addFeaturesCallback(Runnable callback) {
-        if (mFeatures == null) {
-            mFeatureCallbacks.add(callback);
-            return;
-        }
-
-        new Handler().post(callback);
-    }
-
-    /**
-     * Notifies this object that the account features have been fetched.
-     *
-     * @param features The set of account features.
-     */
-    public void didFetchFeatures(Set<String> features) {
-        assert features != null;
-        assert mFeatures == null;
-        mFeatures = features;
-        Handler handler = new Handler();
-        for (Runnable r : mFeatureCallbacks) {
-            handler.post(r);
-        }
-        mFeatureCallbacks.clear();
     }
 
     @Override
@@ -182,67 +134,53 @@ public class AccountHolder {
      * Used to construct AccountHolder instances.
      */
     public static class Builder {
-        private Account mTempAccount;
-
-        private String mTempPassword;
-
-        private Map<String, String> mTempAuthTokens;
-
-        private Map<String, Boolean> mTempHasBeenAccepted;
-
-        private boolean mTempAlwaysAccept;
-
+        private Account mAccount;
+        private String mPassword;
+        private Map<String, String> mAuthTokens = new HashMap<>();
+        private Map<String, Boolean> mHasBeenAccepted = new HashMap<>();
+        private boolean mAlwaysAccept;
         private Set<String> mFeatures = new HashSet<>();
 
         public Builder(@NonNull Account account) {
-            mTempAccount = account;
+            mAccount = account;
         }
 
         public Builder account(@NonNull Account account) {
-            mTempAccount = account;
+            mAccount = account;
             return this;
         }
 
         public Builder password(String password) {
-            mTempPassword = password;
+            mPassword = password;
             return this;
         }
 
         public Builder authToken(String authTokenType, String authToken) {
-            if (mTempAuthTokens == null) {
-                mTempAuthTokens = new HashMap<String, String>();
-            }
-            mTempAuthTokens.put(authTokenType, authToken);
+            mAuthTokens.put(authTokenType, authToken);
             return this;
         }
 
-        public Builder authTokens(Map<String, String> authTokens) {
-            mTempAuthTokens = authTokens;
+        public Builder authTokens(@NonNull Map<String, String> authTokens) {
+            mAuthTokens = authTokens;
             return this;
         }
 
         public Builder hasBeenAccepted(String authTokenType, boolean hasBeenAccepted) {
-            if (mTempHasBeenAccepted == null) {
-                mTempHasBeenAccepted = new HashMap<String, Boolean>();
-            }
-            mTempHasBeenAccepted.put(authTokenType, hasBeenAccepted);
+            mHasBeenAccepted.put(authTokenType, hasBeenAccepted);
             return this;
         }
 
-        public Builder hasBeenAcceptedMap(Map<String, Boolean> hasBeenAcceptedMap) {
-            mTempHasBeenAccepted = hasBeenAcceptedMap;
+        public Builder hasBeenAcceptedMap(@NonNull Map<String, Boolean> hasBeenAcceptedMap) {
+            mHasBeenAccepted = hasBeenAcceptedMap;
             return this;
         }
 
         public Builder alwaysAccept(boolean alwaysAccept) {
-            mTempAlwaysAccept = alwaysAccept;
+            mAlwaysAccept = alwaysAccept;
             return this;
         }
 
         public Builder addFeature(String feature) {
-            if (mFeatures == null) {
-                mFeatures = new HashSet<>();
-            }
             mFeatures.add(feature);
             return this;
         }
@@ -250,20 +188,17 @@ public class AccountHolder {
         /**
          * Sets the set of features for this account.
          *
-         * @param features The set of account features. Can be null to indicate that the account
-         *            features have not been fetched yet. In this case,
-         *            {@link AccountHolder#didFetchFeatures} should be called on the resulting
-         *            {@link AccountHolder} before the features can be accessed.
+         * @param features The set of account features.
          * @return This object, for chaining method calls.
          */
-        public Builder featureSet(Set<String> features) {
+        public Builder featureSet(@NonNull Set<String> features) {
             mFeatures = features;
             return this;
         }
 
         public AccountHolder build() {
-            return new AccountHolder(mTempAccount, mTempPassword, mTempAuthTokens,
-                    mTempHasBeenAccepted, mTempAlwaysAccept, mFeatures);
+            return new AccountHolder(
+                    mAccount, mPassword, mAuthTokens, mHasBeenAccepted, mAlwaysAccept, mFeatures);
         }
     }
 }
