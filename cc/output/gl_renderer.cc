@@ -2667,6 +2667,8 @@ void GLRenderer::SwapBuffersComplete() {
       gl_->ScheduleCALayerInUseQueryCHROMIUM(textures.size(), textures.data());
     }
   } else if (swapping_overlay_resources_.size() > 1) {
+    ResourceProvider::ScopedBatchReturnResources returner(resource_provider_);
+
     // If a query is not needed to release the overlay buffers, we can assume
     // that once a swap buffer has completed we can remove the oldest buffers
     // from the queue.
@@ -2677,6 +2679,7 @@ void GLRenderer::SwapBuffersComplete() {
 void GLRenderer::DidReceiveTextureInUseResponses(
     const gpu::TextureInUseResponses& responses) {
   DCHECK(settings_->release_overlay_resources_after_gpu_query);
+  ResourceProvider::ScopedBatchReturnResources returner(resource_provider_);
   for (const gpu::TextureInUseResponse& response : responses) {
     if (!response.in_use) {
       swapped_and_acked_overlay_resources_.erase(response.texture);
@@ -3221,13 +3224,15 @@ void GLRenderer::ScheduleDCLayers() {
        current_frame()->dc_layer_overlay_list) {
     DCHECK(!dc_layer_overlay.rpdq);
 
-    ResourceId contents_resource_id = dc_layer_overlay.contents_resource_id;
     unsigned texture_id = 0;
-    if (contents_resource_id) {
-      pending_overlay_resources_.push_back(
-          base::MakeUnique<ResourceProvider::ScopedReadLockGL>(
-              resource_provider_, contents_resource_id));
-      texture_id = pending_overlay_resources_.back()->texture_id();
+    for (const auto& contents_resource_id : dc_layer_overlay.resources) {
+      if (contents_resource_id) {
+        pending_overlay_resources_.push_back(
+            base::MakeUnique<ResourceProvider::ScopedReadLockGL>(
+                resource_provider_, contents_resource_id));
+        if (!texture_id)
+          texture_id = pending_overlay_resources_.back()->texture_id();
+      }
     }
     GLfloat contents_rect[4] = {
         dc_layer_overlay.contents_rect.x(), dc_layer_overlay.contents_rect.y(),

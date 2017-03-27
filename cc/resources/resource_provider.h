@@ -18,6 +18,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/small_map.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -448,6 +449,19 @@ class CC_EXPORT ResourceProvider
     DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockGpuMemoryBuffer);
   };
 
+  // All resources that are returned to children while an instance of this
+  // class exists will be stored and returned when the instance is destroyed.
+  class CC_EXPORT ScopedBatchReturnResources {
+   public:
+    explicit ScopedBatchReturnResources(ResourceProvider* resource_provider);
+    ~ScopedBatchReturnResources();
+
+   private:
+    ResourceProvider* resource_provider_;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedBatchReturnResources);
+  };
+
   class Fence : public base::RefCounted<Fence> {
    public:
     Fence() {}
@@ -535,6 +549,8 @@ class CC_EXPORT ResourceProvider
   int tracing_id() const { return tracing_id_; }
 
  private:
+  friend class ScopedBatchReturnResources;
+
   struct Resource {
     enum Origin { INTERNAL, EXTERNAL, DELEGATED };
     enum SynchronizationState {
@@ -744,6 +760,8 @@ class CC_EXPORT ResourceProvider
   gfx::ColorSpace GetResourceColorSpaceForRaster(
       const Resource* resource) const;
 
+  void SetBatchReturnResources(bool aggregate);
+
   // Holds const settings for the ResourceProvider. Never changed after init.
   struct Settings {
     Settings(ContextProvider* compositor_context_provider,
@@ -777,6 +795,12 @@ class CC_EXPORT ResourceProvider
   scoped_refptr<Fence> current_read_lock_fence_;
   std::unique_ptr<TextureIdAllocator> texture_id_allocator_;
   BufferToTextureTargetMap buffer_to_texture_target_map_;
+
+  // Keep track of whether deleted resources should be batched up or returned
+  // immediately.
+  bool batch_return_resources_ = false;
+  // Maps from a child id to the set of resources to be returned to it.
+  base::SmallMap<std::map<int, ResourceIdArray>> batched_returning_resources_;
 
   base::ThreadChecker thread_checker_;
 

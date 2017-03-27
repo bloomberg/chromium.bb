@@ -44,9 +44,9 @@ class CC_EXPORT DCLayerOverlay {
   // State that is frequently shared between consecutive DCLayerOverlays.
   scoped_refptr<DCLayerOverlaySharedState> shared_state;
 
-  // Texture that corresponds to an IOSurface to set as the content of the
-  // DCLayer. If this is 0 then the DCLayer is a solid color.
-  unsigned contents_resource_id = 0;
+  // Resource ids that correspond to the DXGI textures to set as the contents
+  // of the DCLayer.
+  DrawQuad::Resources resources;
   // The contents rect property for the DCLayer.
   gfx::RectF contents_rect;
   // The bounds for the DCLayer in pixels.

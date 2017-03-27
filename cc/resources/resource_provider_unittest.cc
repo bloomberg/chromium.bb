@@ -1094,6 +1094,68 @@ INSTANTIATE_TEST_CASE_P(
     ResourceProviderTestNoSyncToken,
     ::testing::Values(ResourceProvider::RESOURCE_TYPE_GL_TEXTURE));
 
+// Test that SetBatchReturnResources batching works.
+TEST_P(ResourceProviderTest, SetBatchPreventsReturn) {
+  if (GetParam() != ResourceProvider::RESOURCE_TYPE_GL_TEXTURE)
+    return;
+  gfx::Size size(1, 1);
+  ResourceFormat format = RGBA_8888;
+
+  uint8_t data1[4] = {1, 2, 3, 4};
+  ReturnedResourceArray returned_to_child;
+  int child_id =
+      resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
+
+  // Transfer some resources to the parent.
+  ResourceProvider::ResourceIdArray resource_ids_to_transfer;
+  ResourceId ids[2];
+  for (size_t i = 0; i < arraysize(ids); i++) {
+    ids[i] = child_resource_provider_->CreateResource(
+        size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
+        gfx::ColorSpace());
+    child_resource_provider_->CopyToResource(ids[i], data1, size);
+    resource_ids_to_transfer.push_back(ids[i]);
+  }
+
+  child_resource_provider_->GenerateSyncTokenForResources(
+      resource_ids_to_transfer);
+
+  TransferableResourceArray list;
+  child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
+                                                &list);
+  ASSERT_EQ(2u, list.size());
+  EXPECT_TRUE(child_resource_provider_->InUseByConsumer(ids[0]));
+  EXPECT_TRUE(child_resource_provider_->InUseByConsumer(ids[1]));
+
+  resource_provider_->ReceiveFromChild(child_id, list);
+
+  std::vector<std::unique_ptr<ResourceProvider::ScopedReadLockGL>> read_locks;
+  for (auto& parent_resource : list) {
+    resource_provider_->WaitSyncTokenIfNeeded(parent_resource.id);
+    read_locks.push_back(base::MakeUnique<ResourceProvider::ScopedReadLockGL>(
+        resource_provider_.get(), parent_resource.id));
+  }
+
+  resource_provider_->DeclareUsedResourcesFromChild(child_id, ResourceIdSet());
+  std::unique_ptr<ResourceProvider::ScopedBatchReturnResources> returner =
+      base::MakeUnique<ResourceProvider::ScopedBatchReturnResources>(
+          resource_provider_.get());
+  EXPECT_EQ(0u, returned_to_child.size());
+
+  read_locks.clear();
+  EXPECT_EQ(0u, returned_to_child.size());
+
+  returner.reset();
+  EXPECT_EQ(2u, returned_to_child.size());
+  // All resources in a batch should share a sync token.
+  EXPECT_EQ(returned_to_child[0].sync_token, returned_to_child[1].sync_token);
+
+  child_resource_provider_->ReceiveReturnsFromParent(returned_to_child);
+  child_resource_provider_->DeleteResource(ids[0]);
+  child_resource_provider_->DeleteResource(ids[1]);
+  EXPECT_EQ(0u, child_resource_provider_->num_resources());
+}
+
 TEST_P(ResourceProviderTest, ReadLockCountStopsReturnToChildOrDelete) {
   if (GetParam() != ResourceProvider::RESOURCE_TYPE_GL_TEXTURE)
     return;

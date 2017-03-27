@@ -19,10 +19,11 @@ DCLayerOverlayProcessor::DCLayerResult FromYUVQuad(
     ResourceProvider* resource_provider,
     const YUVVideoDrawQuad* quad,
     DCLayerOverlay* ca_layer_overlay) {
-  unsigned resource_id = quad->y_plane_resource_id();
-  if (!resource_provider->IsOverlayCandidate(resource_id))
-    return DCLayerOverlayProcessor::DC_LAYER_FAILED_TEXTURE_NOT_CANDIDATE;
-  ca_layer_overlay->contents_resource_id = resource_id;
+  for (const auto& resource : quad->resources) {
+    if (!resource_provider->IsOverlayCandidate(resource))
+      return DCLayerOverlayProcessor::DC_LAYER_FAILED_TEXTURE_NOT_CANDIDATE;
+  }
+  ca_layer_overlay->resources = quad->resources;
   ca_layer_overlay->contents_rect = quad->ya_tex_coord_rect;
   ca_layer_overlay->filter = GL_LINEAR;
   return DCLayerOverlayProcessor::DC_LAYER_SUCCESS;

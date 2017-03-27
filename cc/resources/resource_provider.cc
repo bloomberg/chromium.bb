@@ -1061,10 +1061,14 @@ void ResourceProvider::UnlockForRead(ResourceId id) {
       // The resource belongs to this ResourceProvider, so it can be destroyed.
       DeleteResourceInternal(it, NORMAL);
     } else {
-      ChildMap::iterator child_it = children_.find(resource->child_id);
-      ResourceIdArray unused;
-      unused.push_back(id);
-      DeleteAndReturnUnusedResourcesToChild(child_it, NORMAL, unused);
+      if (batch_return_resources_) {
+        batched_returning_resources_[resource->child_id].push_back(id);
+      } else {
+        ChildMap::iterator child_it = children_.find(resource->child_id);
+        ResourceIdArray unused;
+        unused.push_back(id);
+        DeleteAndReturnUnusedResourcesToChild(child_it, NORMAL, unused);
+      }
     }
   }
 }
@@ -1383,6 +1387,16 @@ ResourceProvider::ScopedWriteLockGpuMemoryBuffer::GetGpuMemoryBuffer() {
   return gpu_memory_buffer_.get();
 }
 
+ResourceProvider::ScopedBatchReturnResources::ScopedBatchReturnResources(
+    ResourceProvider* resource_provider)
+    : resource_provider_(resource_provider) {
+  resource_provider_->SetBatchReturnResources(true);
+}
+
+ResourceProvider::ScopedBatchReturnResources::~ScopedBatchReturnResources() {
+  resource_provider_->SetBatchReturnResources(false);
+}
+
 ResourceProvider::SynchronousFence::SynchronousFence(
     gpu::gles2::GLES2Interface* gl)
     : gl_(gl), has_synchronized_(true) {}
@@ -1688,6 +1702,19 @@ void ResourceProvider::ReceiveReturnsFromParent(
     ChildMap::iterator child_it = children_.find(children.first);
     DCHECK(child_it != children_.end());
     DeleteAndReturnUnusedResourcesToChild(child_it, NORMAL, children.second);
+  }
+}
+
+void ResourceProvider::SetBatchReturnResources(bool batch) {
+  DCHECK_NE(batch_return_resources_, batch);
+  batch_return_resources_ = batch;
+  if (!batch) {
+    for (const auto& resources : batched_returning_resources_) {
+      ChildMap::iterator child_it = children_.find(resources.first);
+      DCHECK(child_it != children_.end());
+      DeleteAndReturnUnusedResourcesToChild(child_it, NORMAL, resources.second);
+    }
+    batched_returning_resources_.clear();
   }
 }
 
