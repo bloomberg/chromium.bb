@@ -51,6 +51,11 @@ public class ContextualSearchPanel extends OverlayPanel {
     private final float mBarShadowHeightPx;
 
     /**
+     * The distance of the divider from the end of the bar, in dp.
+     */
+    private final float mEndButtonWidthDp;
+
+    /**
      * Whether the Panel should be promoted to a new tab after being maximized.
      */
     private boolean mShouldPromoteToTabAfterMaximizing;
@@ -71,9 +76,9 @@ public class ContextualSearchPanel extends OverlayPanel {
     private ContextualSearchSceneLayer mSceneLayer;
 
     /**
-     * The distance of the divider from the end of the bar, in dp.
+     * The velocity of the swipe gesture being handled.
      */
-    private final float mEndButtonWidthDp;
+    private float mCurrentSwipeVelocity;
 
     // ============================================================================================
     // Constructor
@@ -221,7 +226,16 @@ public class ContextualSearchPanel extends OverlayPanel {
 
     @Override
     protected boolean isSupportedState(PanelState state) {
+        if (mCurrentSwipeVelocity > 0 && state == PanelState.EXPANDED) return false;
+
         return canDisplayContentInPanel() || state != PanelState.MAXIMIZED;
+    }
+
+    @Override
+    protected float getThresholdToNextState() {
+        if (mCurrentSwipeVelocity > 0) return 0.30f;
+
+        return super.getThresholdToNextState();
     }
 
     @Override
@@ -235,6 +249,7 @@ public class ContextualSearchPanel extends OverlayPanel {
 
     @Override
     protected PanelState getProjectedState(float velocity) {
+        mCurrentSwipeVelocity = velocity;
         PanelState projectedState = super.getProjectedState(velocity);
 
         // Prevent the fling gesture from moving the Panel from PEEKED to MAXIMIZED. This is to
