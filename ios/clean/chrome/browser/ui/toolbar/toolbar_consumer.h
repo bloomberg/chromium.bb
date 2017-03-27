@@ -7,11 +7,16 @@
 
 #import <UIKit/UIKit.h>
 
-// ToolbarConsumer sets the current appearance of the Toolbar based on
-// WebState or other data sources provided by this protocol.
+// ToolbarConsumer sets the current appearance of the Toolbar.
 @protocol ToolbarConsumer
 // Sets the text for a label appearing in the center of the toolbar.
 - (void)setCurrentPageText:(NSString*)text;
+// Updates the toolbar with the current forward navigation state.
+- (void)setCanGoForward:(BOOL)canGoForward;
+// Updates the toolbar with the current back navigation state.
+- (void)setCanGoBack:(BOOL)canGoBack;
+// Updates the toolbar with the current loading state.
+- (void)setIsLoading:(BOOL)isLoading;
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_CONSUMER_H_

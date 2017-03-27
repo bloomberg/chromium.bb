@@ -25,7 +25,7 @@ CGFloat kHorizontalMargin = 8.0f;
 }  // namespace
 
 @interface ToolbarViewController ()<ToolsMenuActions>
-@property(nonatomic, weak) UITextField* omnibox;
+@property(nonatomic, strong) UITextField* omnibox;
 @property(nonatomic, strong) UIStackView* stackView;
 @property(nonatomic, strong) ToolbarButton* backButton;
 @property(nonatomic, strong) ToolbarButton* forwardButton;
@@ -50,22 +50,28 @@ CGFloat kHorizontalMargin = 8.0f;
 @synthesize reloadButton = _reloadButton;
 @synthesize stopButton = _stopButton;
 
+- (instancetype)init {
+  self = [super init];
+  if (self) {
+    [self setUpToolbarButtons];
+    // PLACEHOLDER: Omnibox could have some "Toolbar component" traits if
+    // needed.
+    UITextField* omnibox = [[UITextField alloc] initWithFrame:CGRectZero];
+    omnibox.translatesAutoresizingMaskIntoConstraints = NO;
+    omnibox.backgroundColor = [UIColor whiteColor];
+    omnibox.enabled = NO;
+    self.omnibox = omnibox;
+  }
+  return self;
+}
+
 - (void)viewDidLoad {
   self.view.backgroundColor = [UIColor lightGrayColor];
-
-  [self setUpToolbarButtons];
-
-  // PLACEHOLDER: Omnibox could have some "Toolbar component" traits if needed.
-  UITextField* omnibox = [[UITextField alloc] initWithFrame:CGRectZero];
-  omnibox.translatesAutoresizingMaskIntoConstraints = NO;
-  omnibox.backgroundColor = [UIColor whiteColor];
-  omnibox.enabled = NO;
-  self.omnibox = omnibox;
 
   // Stack view to contain toolbar items.
   self.stackView = [[UIStackView alloc] initWithArrangedSubviews:@[
     self.backButton, self.forwardButton, self.reloadButton, self.stopButton,
-    omnibox, self.shareButton, self.tabSwitchStripButton,
+    self.omnibox, self.shareButton, self.tabSwitchStripButton,
     self.tabSwitchGridButton, self.toolsMenuButton
   ]];
   [self updateAllButtonsVisibility];
@@ -158,10 +164,8 @@ CGFloat kHorizontalMargin = 8.0f;
               forControlEvents:UIControlEventTouchUpInside];
 
   // Stop button.
-  // PLACEHOLDER: The stop Button state Mask is not being set and will not be
-  // shown on any SizeClass. We will hook this to a WebState later on.
   self.stopButton = [ToolbarButton stopToolbarButton];
-  self.stopButton.visibilityMask = ToolbarComponentVisibilityNone;
+  self.stopButton.visibilityMask = ToolbarComponentVisibilityRegularWidth;
   [self.stopButton addTarget:nil
                       action:@selector(stop:)
             forControlEvents:UIControlEventTouchUpInside];
@@ -186,6 +190,20 @@ CGFloat kHorizontalMargin = 8.0f;
 
 - (void)setCurrentPageText:(NSString*)text {
   self.omnibox.text = text;
+}
+
+- (void)setCanGoForward:(BOOL)canGoForward {
+  self.forwardButton.enabled = canGoForward;
+}
+
+- (void)setCanGoBack:(BOOL)canGoBack {
+  self.backButton.enabled = canGoBack;
+}
+
+- (void)setIsLoading:(BOOL)isLoading {
+  self.reloadButton.hiddenInCurrentState = isLoading;
+  self.stopButton.hiddenInCurrentState = !isLoading;
+  [self updateAllButtonsVisibility];
 }
 
 #pragma mark - ZoomTransitionDelegate

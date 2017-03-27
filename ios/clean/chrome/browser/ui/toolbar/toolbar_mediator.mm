@@ -7,8 +7,13 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_consumer.h"
+#import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @interface ToolbarMediator ()<CRWWebStateObserver>
 @end
@@ -25,17 +30,56 @@
   _webState = nullptr;
 }
 
-- (void)setWebState:(web::WebState*)webState {
-  _webState = webState;
-  _webStateObserver =
-      base::MakeUnique<web::WebStateObserverBridge>(self.webState, self);
-}
-
 #pragma mark - CRWWebStateObserver
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
   const GURL& pageURL = webState->GetVisibleURL();
   [self.consumer setCurrentPageText:base::SysUTF8ToNSString(pageURL.spec())];
+  [self.consumer
+      setCanGoBack:self.webState->GetNavigationManager()->CanGoBack()];
+  [self.consumer
+      setCanGoForward:self.webState->GetNavigationManager()->CanGoForward()];
+}
+
+- (void)webStateDidStartLoading:(web::WebState*)webState {
+  [self.consumer setIsLoading:self.webState->IsLoading()];
+}
+
+- (void)webStateDidStopLoading:(web::WebState*)webState {
+  [self.consumer setIsLoading:self.webState->IsLoading()];
+}
+
+#pragma mark - Setters
+
+- (void)setWebState:(web::WebState*)webState {
+  _webState = webState;
+  _webStateObserver =
+      base::MakeUnique<web::WebStateObserverBridge>(_webState, self);
+  if (self.consumer) {
+    [self updateConsumer];
+  }
+}
+
+- (void)setConsumer:(id<ToolbarConsumer>)consumer {
+  _consumer = consumer;
+  if (self.webState) {
+    [self updateConsumer];
+  }
+}
+
+#pragma mark - Helper methods
+
+// Updates the consumer to match the current WebState.
+- (void)updateConsumer {
+  DCHECK(self.webState);
+  DCHECK(self.consumer);
+  const GURL& pageURL = self.webState->GetVisibleURL();
+  [self.consumer
+      setCanGoForward:self.webState->GetNavigationManager()->CanGoForward()];
+  [self.consumer
+      setCanGoBack:self.webState->GetNavigationManager()->CanGoBack()];
+  [self.consumer setCurrentPageText:base::SysUTF8ToNSString(pageURL.spec())];
+  [self.consumer setIsLoading:self.webState->IsLoading()];
 }
 
 @end
