@@ -769,7 +769,7 @@ fullscreen_shell_present_surface(struct wl_client *client,
 	}
 
 	if (output_res) {
-		output = wl_resource_get_user_data(output_res);
+		output = weston_output_from_resource(output_res);
 		fsout = fs_output_for_output(output);
 		fs_output_set_surface(fsout, surface, method, 0, 0);
 	} else {
@@ -813,7 +813,7 @@ fullscreen_shell_present_surface_for_mode(struct wl_client *client,
 	struct weston_seat *seat;
 	struct fs_output *fsout;
 
-	output = wl_resource_get_user_data(output_res);
+	output = weston_output_from_resource(output_res);
 	fsout = fs_output_for_output(output);
 
 	if (surface_res == NULL) {

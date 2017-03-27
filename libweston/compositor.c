@@ -4323,6 +4323,22 @@ bind_output(struct wl_client *client,
 		wl_output_send_done(resource);
 }
 
+/** Get the backing object of wl_output
+ *
+ * \param resource A wl_output protocol object.
+ * \return The backing object (user data) of a wl_resource representing a
+ * wl_output protocol object.
+ */
+WL_EXPORT struct weston_output *
+weston_output_from_resource(struct wl_resource *resource)
+{
+	assert(wl_resource_instance_of(resource, &wl_output_interface,
+				       &output_interface));
+
+	return wl_resource_get_user_data(resource);
+}
+
+
 /* Move other outputs when one is resized so the space remains contiguous. */
 static void
 weston_compositor_reflow_outputs(struct weston_compositor *compositor,

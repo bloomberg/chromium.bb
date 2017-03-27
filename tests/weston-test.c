@@ -473,7 +473,7 @@ capture_screenshot(struct wl_client *client,
 		   struct wl_resource *buffer_resource)
 {
 	struct weston_output *output =
-		wl_resource_get_user_data(output_resource);
+		weston_output_from_resource(output_resource);
 	struct weston_buffer *buffer =
 		weston_buffer_from_resource(buffer_resource);
 

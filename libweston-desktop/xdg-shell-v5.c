@@ -553,7 +553,7 @@ weston_desktop_xdg_surface_protocol_set_fullscreen(struct wl_client *wl_client,
 	struct weston_output *output = NULL;
 
 	if (output_resource != NULL)
-		output = wl_resource_get_user_data(output_resource);
+		output = weston_output_from_resource(output_resource);
 
 	weston_desktop_xdg_surface_ensure_added(surface);
 	weston_desktop_api_fullscreen_requested(surface->desktop, dsurface,
