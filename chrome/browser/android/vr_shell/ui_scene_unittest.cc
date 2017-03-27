@@ -225,6 +225,7 @@ TEST(UiScene, AddUiElementFromDictionary) {
   base::DictionaryValue dict;
 
   dict.SetInteger("id", 10);
+  dict.SetString("name", "abc");
   dict.SetInteger("parentId", 11);
   dict.SetBoolean("visible", false);
   dict.SetBoolean("hitTestable", false);
@@ -259,6 +260,7 @@ TEST(UiScene, AddUiElementFromDictionary) {
   EXPECT_NE(element, nullptr);
 
   EXPECT_EQ(element->id, 10);
+  EXPECT_EQ(element->name, "abc");
   EXPECT_EQ(element->parent_id, 11);
   EXPECT_EQ(element->visible, false);
   EXPECT_EQ(element->hit_testable, false);

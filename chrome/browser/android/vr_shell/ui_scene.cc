@@ -442,6 +442,7 @@ void UiScene::ApplyDictToElement(const base::DictionaryValue& dict,
     element->parent_id = parent_id;
   }
 
+  dict.GetString("name", &element->name);
   dict.GetBoolean("visible", &element->visible);
   dict.GetBoolean("hitTestable", &element->hit_testable);
   dict.GetBoolean("lockToFov", &element->lock_to_fov);

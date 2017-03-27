@@ -57,6 +57,7 @@ var vrShellUi = (function() {
       this.fullscreen = false;
 
       let element = new api.UiElement(0, 0, 0, 0);
+      element.setName('Content');
       element.setFill(new api.Content());
       element.setVisible(false);
       element.setSize(
@@ -69,6 +70,7 @@ var vrShellUi = (function() {
       // quad, to keep the reticle roughly planar with the content if near
       // content.
       let backPlane = new api.UiElement(0, 0, 0, 0);
+      backPlane.setName('Content backing');
       backPlane.setSize(1000, 1000);
       backPlane.setTranslation(0, 0, -0.01);
       backPlane.setParentId(this.elementId);
@@ -204,6 +206,7 @@ var vrShellUi = (function() {
             this.rotationX, this.rotationY, this.rotationZ, 2 * Math.PI);
       }
 
+      element.setName(domId);
       this.id = ui.addElement(element);
       this.domElement = domElement;
     }
@@ -219,6 +222,7 @@ var vrShellUi = (function() {
 
       // Create an invisible parent, from which the button will hover.
       let backing = new api.UiElement(0, 0, 0, 0);
+      backing.setName(domId + '-backing');
       backing.setParentId(parentId);
       backing.setVisible(false);
       this.backingElementId = ui.addElement(backing);
@@ -294,6 +298,7 @@ var vrShellUi = (function() {
       this.enabled = false;
 
       let backing = new api.UiElement(0, 0, 0, 0);
+      backing.setName('Navigation indicator backing');
       backing.setVisible(false);
       backing.setTranslation(0, 0, -BACKING_DISTANCE);
       backing.setLockToFieldOfView(true);
@@ -418,6 +423,7 @@ var vrShellUi = (function() {
       /** @const */ var BUTTON_SPACING = 0.14;
 
       let controls = new api.UiElement(0, 0, 0, 0);
+      controls.setName('Controls');
       controls.setVisible(false);
       controls.setTranslation(0, BUTTON_Y, BUTTON_Z);
       this.controlsId = ui.addElement(controls);
@@ -736,6 +742,7 @@ var vrShellUi = (function() {
 
       // Make ground plane.
       let groundPlane = new api.UiElementUpdate();
+      groundPlane.setName('Ground plane');
       groundPlane.setVisible(true);
       groundPlane.setSize(this.SCENE_GROUND_SIZE, this.SCENE_GROUND_SIZE);
       groundPlane.setFill(
@@ -747,6 +754,7 @@ var vrShellUi = (function() {
 
       // Make ceiling plane.
       let ceilingPlane = new api.UiElementUpdate();
+      ceilingPlane.setName('Ceiling');
       ceilingPlane.setVisible(true);
       ceilingPlane.setSize(this.SCENE_GROUND_SIZE, this.SCENE_GROUND_SIZE);
       ceilingPlane.setFill(
@@ -758,6 +766,7 @@ var vrShellUi = (function() {
 
       // Ground grid.
       let groundGrid = new api.UiElementUpdate();
+      groundGrid.setName('Ground grid');
       groundGrid.setVisible(true);
       groundGrid.setSize(this.SCENE_GROUND_SIZE, this.SCENE_GROUND_SIZE);
       let transparentHorizonColor = {

@@ -214,6 +214,14 @@ api.UiElementUpdate = class {
   }
 
   /**
+   * Set the name of the element. This name is used for debug and testing.
+   * @param {string} name
+   */
+  setName(name) {
+    this.properties['name'] = name;
+  }
+
+  /**
    * Specify a parent for this element. If set, this element is positioned
    * relative to its parent element, rather than absolutely. This allows
    * elements to automatically move with a parent.
