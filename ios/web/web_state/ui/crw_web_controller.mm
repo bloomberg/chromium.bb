@@ -5033,7 +5033,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
         if (shouldContinue)
           webViewNavigationBlock();
         else
-          defaultNavigationBlock();
+          [self stopLoading];
       }));
 }
 

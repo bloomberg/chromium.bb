@@ -124,6 +124,8 @@ void TestResponseProvider::GetResponseHeadersAndBody(
 
 }  // namespace
 
+using chrome_test_util::OmniboxText;
+
 // Tests submition of HTTP forms POST data including cases involving navigation.
 @interface FormsTestCase : ChromeTestCase
 @end
@@ -142,8 +144,7 @@ void TestResponseProvider::GetResponseHeadersAndBody(
   chrome_test_util::TapWebViewElementWithId(kSubmitButton);
 
   GURL url = TestResponseProvider::GetPrintFormDataUrl();
-  id<GREYMatcher> URLMatcher = chrome_test_util::OmniboxText(url.GetContent());
-  [[EarlGrey selectElementWithMatcher:URLMatcher]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(url.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -288,14 +289,18 @@ void TestResponseProvider::GetResponseHeadersAndBody(
   [self waitForExpectedResponse:kExpectedPostData];
 }
 
-// When data is not re-sent, the request is done with a GET method.
+// When data is not reposted, the request is canceled.
 - (void)testRepostFormCancelling {
-  [ChromeEarlGrey loadURL:TestResponseProvider::GetFormUrl()];
+  GURL formURL = TestResponseProvider::GetFormUrl();
+  [ChromeEarlGrey loadURL:formURL];
   [self submitForm];
 
-  [self reloadPage];
+  [self goBack];
+  [self goForward];
 
   // Abort the reload.
+  // TODO (crbug.com/705020): Use something like ElementToDismissContextMenu
+  // to cancel form repost.
   if (IsIPadIdiom()) {
     // On tablet, dismiss the popover.
     base::scoped_nsobject<GREYElementMatcherBlock> matcher([
@@ -313,8 +318,13 @@ void TestResponseProvider::GetResponseHeadersAndBody(
     [[EarlGrey selectElementWithMatcher:chrome_test_util::CancelButton()]
         performAction:grey_tap()];
   }
-  // Check that the POST is changed to a GET
-  [self waitForExpectedResponse:"GET"];
+
+  // Verify that navigation was cancelled, and forward navigation is possible.
+  [ChromeEarlGrey waitForPageToFinishLoading];
+  [[EarlGrey selectElementWithMatcher:OmniboxText(formURL.GetContent())]
+      assertWithMatcher:grey_notNil()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ForwardButton()]
+      assertWithMatcher:grey_interactable()];
 }
 
 // Tests that a POST followed by a redirect does not show the popup.
