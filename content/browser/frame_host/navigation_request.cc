@@ -341,8 +341,12 @@ NavigationRequest::NavigationRequest(
                                 common_params_.method == "POST");
 
   // Add necessary headers that may not be present in the BeginNavigationParams.
-  const std::string user_agent_override =
-      frame_tree_node_->navigator()->GetDelegate()->GetUserAgentOverride();
+  std::string user_agent_override;
+  if (entry && entry->GetIsOverridingUserAgent()) {
+    user_agent_override =
+        frame_tree_node_->navigator()->GetDelegate()->GetUserAgentOverride();
+  }
+
   net::HttpRequestHeaders headers;
   headers.AddHeadersFromString(begin_params_.headers);
   AddAdditionalRequestHeaders(
