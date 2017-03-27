@@ -98,7 +98,9 @@ void SyncNotificationDelegate::ShowSyncSetup() {
 
 SyncErrorNotifier::SyncErrorNotifier(syncer::SyncErrorController* controller,
                                      Profile* profile)
-    : error_controller_(controller), profile_(profile) {
+    : error_controller_(controller),
+      profile_(profile),
+      notification_displayed_(false) {
   // Create a unique notification ID for this profile.
   notification_id_ =
       kProfileSyncNotificationId + profile_->GetProfileUserName();
@@ -125,7 +127,11 @@ void SyncErrorNotifier::OnErrorChanged() {
   if (!notification_ui_manager)
     return;
 
+  if (error_controller_->HasError() == notification_displayed_)
+    return;
+
   if (!error_controller_->HasError()) {
+    notification_displayed_ = false;
     g_browser_process->notification_ui_manager()->CancelById(
         notification_id_, NotificationUIManager::GetProfileID(profile_));
     return;
@@ -144,10 +150,12 @@ void SyncErrorNotifier::OnErrorChanged() {
   }
 #endif
 
-  // Keep the existing notification if there is one.
-  if (notification_ui_manager->FindById(
-          notification_id_, NotificationUIManager::GetProfileID(profile_)))
-    return;
+  // Error state just got triggered. There shouldn't be previous notification.
+  // Let's display one.
+  DCHECK(!notification_displayed_ && error_controller_->HasError());
+  DCHECK(notification_ui_manager->FindById(
+             notification_id_, NotificationUIManager::GetProfileID(profile_)) ==
+         nullptr);
 
   // Add an accept button to launch the sync setup settings subpage.
   message_center::RichNotificationData data;
@@ -177,4 +185,5 @@ void SyncErrorNotifier::OnErrorChanged() {
       base::string16(),  // display_source
       GURL(notification_id_), notification_id_, data, delegate);
   notification_ui_manager->Add(notification, profile_);
+  notification_displayed_ = true;
 }

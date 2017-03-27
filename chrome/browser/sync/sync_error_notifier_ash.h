@@ -35,6 +35,11 @@ class SyncErrorNotifier : public syncer::SyncErrorController::Observer,
   // The Profile this service belongs to.
   Profile* profile_;
 
+  // Notification was added to NotificationUIManager. This flag is used to
+  // prevent displaying passphrase notification to user if they already saw (and
+  // potentially dismissed) previous one.
+  bool notification_displayed_;
+
   // Used to keep track of the message center notification.
   std::string notification_id_;
 
