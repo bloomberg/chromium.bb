@@ -65,9 +65,7 @@ views::View* CreateUserAvatarView(LoginStatus login_status, int user_index) {
     image_view->SetImage(icon, icon.size());
   } else {
     SessionController* controller = Shell::Get()->session_controller();
-    // TODO(xiyuan); HiDpi avatar support. http://crbug.com/702689
-    image_view->SetImage(gfx::ImageSkia::CreateFrom1xBitmap(
-                             controller->GetUserSession(user_index)->avatar),
+    image_view->SetImage(controller->GetUserSession(user_index)->avatar,
                          gfx::Size(kTrayItemSize, kTrayItemSize));
   }
 

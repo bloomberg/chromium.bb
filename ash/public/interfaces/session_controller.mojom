@@ -5,7 +5,7 @@
 module ash.mojom;
 
 import "components/signin/public/interfaces/account_id.mojom";
-import "skia/public/interfaces/bitmap.mojom";
+import "ui/gfx/image/mojo/image.mojom";
 
 // Matches session_manager::SessionState.
 enum SessionState {
@@ -83,7 +83,7 @@ struct UserSession {
   signin.mojom.AccountId account_id;
   string display_name;
   string display_email;
-  skia.mojom.Bitmap avatar;
+  gfx.mojom.ImageSkia avatar;
 };
 
 // Matches ash::AddUserSessionPolicy.

@@ -36,6 +36,7 @@ mojom("interfaces_internal") {
     "//mojo/common:common_custom_types",
     "//skia/public/interfaces",
     "//ui/events/mojo:interfaces",
+    "//ui/gfx/image/mojo:interfaces",
   ]
 
   export_class_attribute = "ASH_PUBLIC_EXPORT"

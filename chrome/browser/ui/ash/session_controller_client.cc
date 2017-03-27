@@ -62,12 +62,10 @@ ash::mojom::UserSessionPtr UserToUserSession(const User& user) {
   session->display_name = base::UTF16ToUTF8(user.display_name());
   session->display_email = user.display_email();
 
-  // TODO(xiyuan): Support multiple scale factor.
-  session->avatar = *user.GetImage().bitmap();
+  session->avatar = user.GetImage();
   if (session->avatar.isNull()) {
-    session->avatar = *ResourceBundle::GetSharedInstance()
-                           .GetImageSkiaNamed(IDR_PROFILE_PICTURE_LOADING)
-                           ->bitmap();
+    session->avatar = *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+        IDR_PROFILE_PICTURE_LOADING);
   }
 
   return session;
