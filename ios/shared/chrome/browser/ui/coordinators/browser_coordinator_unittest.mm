@@ -16,11 +16,19 @@
 @interface TestCoordinator : BrowserCoordinator
 @property(nonatomic) UIViewController* viewController;
 @property(nonatomic, copy) void (^stopHandler)();
+@property(nonatomic) BOOL wasAddedCalled;
+@property(nonatomic) BOOL wasRemovedCalled;
+@property(nonatomic) BOOL childDidStartCalled;
+@property(nonatomic) BOOL childWillStopCalled;
 @end
 
 @implementation TestCoordinator
 @synthesize viewController = _viewController;
 @synthesize stopHandler = _stopHandler;
+@synthesize wasAddedCalled = _wasAddedCalled;
+@synthesize wasRemovedCalled = _wasRemovedCalled;
+@synthesize childDidStartCalled = _childDidStartCalled;
+@synthesize childWillStopCalled = _childWillStopCalled;
 
 - (instancetype)init {
   if (!(self = [super init]))
@@ -34,6 +42,22 @@
   [super stop];
   if (self.stopHandler)
     self.stopHandler();
+}
+
+- (void)wasAddedToParentCoordinator:(BrowserCoordinator*)parentCoordinator {
+  self.wasAddedCalled = YES;
+}
+
+- (void)wasRemovedFromParentCoordinator {
+  self.wasRemovedCalled = YES;
+}
+
+- (void)childCoordinatorDidStart:(BrowserCoordinator*)childCoordinator {
+  self.childDidStartCalled = YES;
+}
+
+- (void)childCoordinatorWillStop:(BrowserCoordinator*)childCoordinator {
+  self.childWillStopCalled = YES;
 }
 
 @end
@@ -136,6 +160,38 @@ TEST(BrowserCoordinatorTest, TestOverlay) {
   EXPECT_FALSE(thirdOverlay.overlaying);
   [noOverlays addOverlayCoordinator:thirdOverlay];
   EXPECT_FALSE(thirdOverlay.overlaying);
+}
+
+TEST(BrowserCoordinatorTest, AddedRemoved) {
+  TestCoordinator* parent = [[TestCoordinator alloc] init];
+  TestCoordinator* child = [[TestCoordinator alloc] init];
+
+  // Add to the parent.
+  EXPECT_FALSE(child.wasAddedCalled);
+  EXPECT_FALSE(child.wasRemovedCalled);
+  [parent addChildCoordinator:child];
+  EXPECT_TRUE(child.wasAddedCalled);
+  EXPECT_FALSE(child.wasRemovedCalled);
+
+  // Remove from the parent.
+  [parent removeChildCoordinator:child];
+  EXPECT_TRUE(child.wasRemovedCalled);
+}
+
+TEST(BrowserCoordinatorTest, DidStartWillStop) {
+  TestCoordinator* parent = [[TestCoordinator alloc] init];
+  TestCoordinator* child = [[TestCoordinator alloc] init];
+  [parent addChildCoordinator:child];
+  EXPECT_FALSE(parent.childDidStartCalled);
+  EXPECT_FALSE(parent.childWillStopCalled);
+
+  [child start];
+  EXPECT_TRUE(parent.childDidStartCalled);
+  EXPECT_FALSE(parent.childWillStopCalled);
+
+  [child stop];
+  EXPECT_TRUE(parent.childDidStartCalled);
+  EXPECT_TRUE(parent.childWillStopCalled);
 }
 
 }  // namespace

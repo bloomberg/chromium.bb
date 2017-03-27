@@ -69,7 +69,7 @@
   coordinator.parentCoordinator = self;
   coordinator.browser = self.browser;
   coordinator.context.baseViewController = self.viewController;
-  [coordinator coordinatorDidMoveToParentCoordinator:self];
+  [coordinator wasAddedToParentCoordinator:self];
 }
 
 - (BrowserCoordinator*)overlayCoordinator {
@@ -122,10 +122,14 @@
     return;
   [self.childCoordinators removeObject:coordinator];
   coordinator.parentCoordinator = nil;
+  [coordinator wasRemovedFromParentCoordinator];
 }
 
-- (void)coordinatorDidMoveToParentCoordinator:
-    (BrowserCoordinator*)parentCoordinator {
+- (void)wasAddedToParentCoordinator:(BrowserCoordinator*)parentCoordinator {
+  // Default implementation is a no-op.
+}
+
+- (void)wasRemovedFromParentCoordinator {
   // Default implementation is a no-op.
 }
 
