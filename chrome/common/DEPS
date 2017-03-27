@@ -42,7 +42,7 @@ include_rules = [
   "+third_party/boringssl/src/include",
 
   # FIXME - refactor code and remove these dependencies
-  "+chrome/installer",
+  "+chrome/installer/util",
 ]
 specific_include_rules = {
   "service_process_util.*": [
