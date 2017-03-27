@@ -71,6 +71,7 @@ import org.chromium.ui.base.PageTransition;
 import java.io.File;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
+import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -141,6 +142,11 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
         Thread.setDefaultUncaughtExceptionHandler(new ChromeUncaughtExceptionHandler());
         ApplicationTestUtils.setUp(getInstrumentation().getTargetContext(), !mSkipClearAppData);
         setActivityInitialTouchMode(false);
+
+        // Preload Calendar so that it does not trigger ReadFromDisk Strict mode violations if
+        // called on the UI Thread. See https://crbug.com/705477 and https://crbug.com/577185
+        Calendar.getInstance();
+
         startMainActivity();
     }
 
