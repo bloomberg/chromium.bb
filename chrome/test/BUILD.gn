@@ -3405,6 +3405,7 @@ test("unit_tests") {
     "../browser/ui/search_engines/keyword_editor_controller_unittest.cc",
     "../browser/ui/sync/profile_signin_confirmation_helper_unittest.cc",
     "../browser/ui/sync/sync_promo_ui_unittest.cc",
+    "../browser/ui/sync/tab_contents_synced_tab_delegate_unittest.cc",
     "../browser/ui/tests/ui_gfx_image_unittest.cc",
     "../browser/ui/tests/ui_gfx_image_unittest.mm",
     "../browser/ui/webui/browsing_history_handler_unittest.cc",
@@ -4814,6 +4815,7 @@ test("unit_tests") {
     sources -= [
       "../browser/ui/bookmarks/bookmark_ui_utils_desktop_unittest.cc",
       "../browser/ui/sync/sync_promo_ui_unittest.cc",
+      "../browser/ui/sync/tab_contents_synced_tab_delegate_unittest.cc",
     ]
   }
   if (!is_android && !is_chromeos) {
