@@ -69,8 +69,8 @@ SelectionInDOMTree CharacterGranularityStrategy::updateExtent(
       visiblePositionForContentsPoint(extentPoint, frame);
   const VisibleSelection& selection =
       frame->selection().computeVisibleSelectionInDOMTreeDeprecated();
-  if (selection.visibleBase().deepEquivalent() ==
-      extentPosition.deepEquivalent())
+  if (extentPosition.isNull() || selection.visibleBase().deepEquivalent() ==
+                                     extentPosition.deepEquivalent())
     return selection.asSelection();
   return SelectionInDOMTree::Builder()
       .collapse(selection.base())
@@ -127,6 +127,8 @@ SelectionInDOMTree DirectionGranularityStrategy::updateExtent(
 
   VisiblePosition newOffsetExtentPosition =
       visiblePositionForContentsPoint(newOffsetExtentPoint, frame);
+  if (newOffsetExtentPosition.isNull())
+    return selection.asSelection();
   IntPoint newOffsetLocation = positionLocation(newOffsetExtentPosition);
 
   // Reset the offset in case of a vertical change in the location (could be

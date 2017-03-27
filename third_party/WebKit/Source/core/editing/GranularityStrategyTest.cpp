@@ -40,6 +40,7 @@ class GranularityStrategyTest : public ::testing::Test {
 
   DummyPageHolder& dummyPageHolder() const { return *m_dummyPageHolder; }
   Document& document() const;
+  LocalFrame& frame() const { return m_dummyPageHolder->frame(); }
   void setSelection(const VisibleSelection&);
   FrameSelection& selection() const;
   Text* appendTextNode(const String& data);
@@ -706,6 +707,71 @@ TEST_F(GranularityStrategyTest, DirectionSwitchStartOnBoundary) {
   EXPECT_EQ_SELECTED_TEXT("mnopqr ");
   selection().moveRangeSelectionExtent(m_wordMiddles[4]);
   EXPECT_EQ_SELECTED_TEXT("mnopqr iiin");
+}
+
+// For http://crbug.com/704529
+TEST_F(GranularityStrategyTest, UpdateExtentWithNullPositionForCharacter) {
+  dummyPageHolder().frame().settings()->setSelectionStrategy(
+      SelectionStrategy::Character);
+  document().body()->setInnerHTML("<div id=host></div><div id=sample>ab</div>");
+  // Simulate VIDEO element which has a RANGE as slider of video time.
+  Element* const host = document().getElementById("host");
+  ShadowRoot* const shadowRoot =
+      host->createShadowRootInternal(ShadowRootType::Open, ASSERT_NO_EXCEPTION);
+  shadowRoot->setInnerHTML("<input type=range>");
+  Element* const sample = document().getElementById("sample");
+  document().updateStyleAndLayout();
+  const SelectionInDOMTree& selectionInDOMTree =
+      SelectionInDOMTree::Builder()
+          .collapse(Position(sample->firstChild(), 2))
+          .setIsDirectional(true)
+          .setIsHandleVisible(true)
+          .build();
+  selection().setSelection(selectionInDOMTree);
+
+  // Since, it is not obvious that |visiblePositionForContentsPoint()| returns
+  // null position, we verify here.
+  ASSERT_EQ(Position(),
+            visiblePositionForContentsPoint(IntPoint(0, 0), &frame())
+                .deepEquivalent())
+      << "This test requires null position.";
+
+  // Point to RANGE inside shadow root to get null position from
+  // |visiblePositionForContentsPoint()|.
+  selection().moveRangeSelectionExtent(IntPoint(0, 0));
+  EXPECT_EQ(selectionInDOMTree, selection().selectionInDOMTree());
+}
+
+// For http://crbug.com/704529
+TEST_F(GranularityStrategyTest, UpdateExtentWithNullPositionForDirectional) {
+  document().body()->setInnerHTML("<div id=host></div><div id=sample>ab</div>");
+  // Simulate VIDEO element which has a RANGE as slider of video time.
+  Element* const host = document().getElementById("host");
+  ShadowRoot* const shadowRoot =
+      host->createShadowRootInternal(ShadowRootType::Open, ASSERT_NO_EXCEPTION);
+  shadowRoot->setInnerHTML("<input type=range>");
+  Element* const sample = document().getElementById("sample");
+  document().updateStyleAndLayout();
+  const SelectionInDOMTree& selectionInDOMTree =
+      SelectionInDOMTree::Builder()
+          .collapse(Position(sample->firstChild(), 2))
+          .setIsDirectional(true)
+          .setIsHandleVisible(true)
+          .build();
+  selection().setSelection(selectionInDOMTree);
+
+  // Since, it is not obvious that |visiblePositionForContentsPoint()| returns
+  // null position, we verify here.
+  ASSERT_EQ(Position(),
+            visiblePositionForContentsPoint(IntPoint(0, 0), &frame())
+                .deepEquivalent())
+      << "This test requires null position.";
+
+  // Point to RANGE inside shadow root to get null position from
+  // |visiblePositionForContentsPoint()|.
+  selection().moveRangeSelectionExtent(IntPoint(0, 0));
+
+  EXPECT_EQ(selectionInDOMTree, selection().selectionInDOMTree());
 }
 
 }  // namespace blink
