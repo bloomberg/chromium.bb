@@ -85,6 +85,49 @@ InspectorTest.navigateFrame = function(frameId, navigateURL, evalSourceURL) {
     }
 }
 
+InspectorTest.attachShadowDOM = function(id, templateSelector, evalSourceURL) {
+    var evalSource = `(${createShadowDOM.toString()})('${id}', '${templateSelector}')`;
+    if (evalSourceURL)
+        evalSource += '//# sourceURL=' + evalSourceURL;
+    return InspectorTest.evaluateInPagePromise(evalSource);
+
+    function createShadowDOM(id, templateSelector) {
+        var shadowHost = document.createElement('div');
+        shadowHost.setAttribute('id', id);
+        let shadowRoot = shadowHost.attachShadow({mode: 'open'});
+        var t = document.querySelector(templateSelector);
+        var instance = t.content.cloneNode(true);
+        shadowRoot.appendChild(instance);
+        document.body.appendChild(shadowHost);
+    }
+}
+
+InspectorTest.detachShadowDOM = function(id, evalSourceURL) {
+    var evalSource = `(${removeShadowDOM.toString()})('${id}')`;
+    if (evalSourceURL)
+        evalSource += '//# sourceURL=' + evalSourceURL;
+    return InspectorTest.evaluateInPagePromise(evalSource);
+
+    function removeShadowDOM(id) {
+        document.querySelector('#' + id).remove();
+    }
+}
+
+InspectorTest.waitForStyleSheetRemoved = function(urlSuffix) {
+    var fulfill;
+    var promise = new Promise(x => fulfill = x);
+    InspectorTest.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetRemoved, onStyleSheetRemoved);
+    return promise;
+
+    function onStyleSheetRemoved(event) {
+        var styleSheetHeader = event.data;
+        if (!styleSheetHeader.resourceURL().endsWith(urlSuffix))
+            return;
+        InspectorTest.cssModel.removeEventListener(SDK.CSSModel.Events.StyleSheetRemoved, onStyleSheetRemoved);
+        fulfill();
+    }
+}
+
 InspectorTest.addSniffer(Bindings.CompilerScriptMapping.prototype, "_sourceMapAttachedForTest", onSourceMap, true);
 InspectorTest.addSniffer(Bindings.SASSSourceMapping.prototype, "_sourceMapAttachedForTest", onSourceMap, true);
 var sourceMapCallbacks = new Map();

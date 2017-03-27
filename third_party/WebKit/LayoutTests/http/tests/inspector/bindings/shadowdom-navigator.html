@@ -1,0 +1,73 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="./bindings-test.js"></script>
+
+<script>
+
+async function test()
+{
+    var sourcesNavigator = new Sources.SourcesNavigatorView();
+    sourcesNavigator.show(UI.inspectorView.element);
+
+    InspectorTest.markStep('dumpInitialNavigator');
+    InspectorTest.dumpNavigatorView(sourcesNavigator, false);
+
+    InspectorTest.markStep('attachShadow1');
+    await Promise.all([
+        InspectorTest.attachShadowDOM('shadow1', '#template'),
+        InspectorTest.waitForSourceMap('sourcemap-script.js.map'),
+        InspectorTest.waitForSourceMap('sourcemap-style.css.map'),
+    ]);
+    InspectorTest.dumpNavigatorView(sourcesNavigator, false);
+
+    InspectorTest.markStep('attachShadow2');
+    await Promise.all([
+        InspectorTest.attachShadowDOM('shadow2', '#template'),
+        InspectorTest.waitForSourceMap('sourcemap-script.js.map'),
+        InspectorTest.waitForSourceMap('sourcemap-style.css.map'),
+    ]);
+    InspectorTest.dumpNavigatorView(sourcesNavigator, false);
+
+    InspectorTest.markStep('detachShadow1');
+    await Promise.all([
+        InspectorTest.detachShadowDOM('shadow1'),
+        InspectorTest.waitForStyleSheetRemoved('sourcemap-style.css'),
+    ]);
+    InspectorTest.dumpNavigatorView(sourcesNavigator, false);
+
+    InspectorTest.markStep('detachShadow2');
+    await Promise.all([
+        InspectorTest.detachShadowDOM('shadow2'),
+        InspectorTest.waitForStyleSheetRemoved('sourcemap-style.css'),
+    ]);
+    InspectorTest.dumpNavigatorView(sourcesNavigator, false);
+
+    InspectorTest.completeTest();
+}
+
+</script>
+
+</head>
+<body onload="runTest()">
+<p>
+Verify that navigator shows proper UISourceCodes as shadow dom 
+styles and scripts are added and removed.
+</p>
+
+<template id='template'>
+<style>div {
+    color: blue;
+}
+/*# sourceURL=sourcemap-style.css */
+/*# sourceMappingURL=resources/sourcemap-style.css.map */
+</style>
+<script>window.foo = console.log.bind(console, 'foo');
+//# sourceURL=sourcemap-script.js
+//# sourceMappingURL=resources/sourcemap-script.js.map
+</script>
+<p>Hi! I'm ShadowDOM v1!</p>
+</template>
+
+</body>
+</html>
