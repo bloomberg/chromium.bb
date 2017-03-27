@@ -2351,34 +2351,7 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 #endif  // CONFIG_SUPERTX
 
 #if CONFIG_EXT_PARTITION_TYPES
-  if (bsize >= BLOCK_8X8) {
-    switch (partition) {
-      case PARTITION_SPLIT:
-        if (bsize > BLOCK_8X8) break;
-      case PARTITION_NONE:
-      case PARTITION_HORZ:
-      case PARTITION_VERT:
-        update_partition_context(xd, mi_row, mi_col, subsize, bsize);
-        break;
-      case PARTITION_HORZ_A:
-        update_partition_context(xd, mi_row, mi_col, bsize2, subsize);
-        update_partition_context(xd, mi_row + hbs, mi_col, subsize, subsize);
-        break;
-      case PARTITION_HORZ_B:
-        update_partition_context(xd, mi_row, mi_col, subsize, subsize);
-        update_partition_context(xd, mi_row + hbs, mi_col, bsize2, subsize);
-        break;
-      case PARTITION_VERT_A:
-        update_partition_context(xd, mi_row, mi_col, bsize2, subsize);
-        update_partition_context(xd, mi_row, mi_col + hbs, subsize, subsize);
-        break;
-      case PARTITION_VERT_B:
-        update_partition_context(xd, mi_row, mi_col, subsize, subsize);
-        update_partition_context(xd, mi_row, mi_col + hbs, bsize2, subsize);
-        break;
-      default: assert(0 && "Invalid partition type");
-    }
-  }
+  update_ext_partition_context(xd, mi_row, mi_col, subsize, bsize, partition);
 #else
   // update partition context
   if (bsize >= BLOCK_8X8 &&
