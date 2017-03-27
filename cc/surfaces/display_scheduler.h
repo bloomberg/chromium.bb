@@ -84,6 +84,7 @@ class CC_SURFACES_EXPORT DisplayScheduler : public BeginFrameObserverBase {
   bool expecting_root_surface_damage_because_of_resize_;
   bool all_active_child_surfaces_ready_to_draw_;
 
+  int next_swap_id_;
   int pending_swaps_;
   int max_pending_swaps_;
 

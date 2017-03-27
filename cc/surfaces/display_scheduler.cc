@@ -26,6 +26,7 @@ DisplayScheduler::DisplayScheduler(base::SingleThreadTaskRunner* task_runner,
       needs_draw_(false),
       expecting_root_surface_damage_because_of_resize_(false),
       all_active_child_surfaces_ready_to_draw_(false),
+      next_swap_id_(1),
       pending_swaps_(0),
       max_pending_swaps_(max_pending_swaps),
       observing_begin_frame_source_(false),
@@ -372,14 +373,14 @@ void DisplayScheduler::DidFinishFrame(bool did_draw) {
 
 void DisplayScheduler::DidSwapBuffers() {
   pending_swaps_++;
-  TRACE_EVENT_ASYNC_BEGIN1("cc", "DisplayScheduler:pending_swaps", this,
-                           "pending_frames", pending_swaps_);
+  uint32_t swap_id = next_swap_id_++;
+  TRACE_EVENT_ASYNC_BEGIN0("cc", "DisplayScheduler:pending_swaps", swap_id);
 }
 
 void DisplayScheduler::DidReceiveSwapBuffersAck() {
+  uint32_t swap_id = next_swap_id_ - pending_swaps_;
   pending_swaps_--;
-  TRACE_EVENT_ASYNC_END1("cc", "DisplayScheduler:pending_swaps", this,
-                         "pending_frames", pending_swaps_);
+  TRACE_EVENT_ASYNC_END0("cc", "DisplayScheduler:pending_swaps", swap_id);
   ScheduleBeginFrameDeadline();
 }
 
