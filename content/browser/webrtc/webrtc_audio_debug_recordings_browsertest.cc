@@ -186,9 +186,11 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
 
 #if defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
-#define MAYBE_CallWithAudioDebugRecordingsEnabledThenDisabled DISABLED_CallWithAudioDebugRecordingsEnabledThenDisabled
+#define MAYBE_CallWithAudioDebugRecordingsEnabledThenDisabled \
+  DISABLED_CallWithAudioDebugRecordingsEnabledThenDisabled
 #else
-#define MAYBE_CallWithAudioDebugRecordingsEnabledThenDisabled CallWithAudioDebugRecordingsEnabledThenDisabled
+#define MAYBE_CallWithAudioDebugRecordingsEnabledThenDisabled \
+  CallWithAudioDebugRecordingsEnabledThenDisabled
 #endif
 
 // As above, but enable and disable recordings before starting a call. No files
@@ -231,12 +233,21 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
   base::ThreadRestrictions::SetIOAllowed(prev_io_allowed);
 }
 
+#if defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
+#define MAYBE_TwoCallsWithAudioDebugRecordings \
+  DISABLED_TwoCallsWithAudioDebugRecordings
+#elif defined(OS_ANDROID)
 // Renderer crashes on Android M. https://crbug.com/535728.
-// TODO(grunell): Re-enable on all but Android. See conditions for the above two
-// tests.
+#define MAYBE_TwoCallsWithAudioDebugRecordings \
+  DISABLED_TwoCallsWithAudioDebugRecordings
+#else
+#define MAYBE_TwoCallsWithAudioDebugRecordings TwoCallsWithAudioDebugRecordings
+#endif
+
+// Same test as CallWithAudioDebugRecordings, but does two parallel calls.
 IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
-                       DISABLED_TwoCallsWithAudioDebugRecordings) {
+                       MAYBE_TwoCallsWithAudioDebugRecordings) {
   if (!media::AudioManager::Get()->HasAudioOutputDevices()) {
     LOG(INFO) << "Missing output devices: skipping test...";
     return;
