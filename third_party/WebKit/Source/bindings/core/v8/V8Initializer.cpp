@@ -146,6 +146,9 @@ MessageLevel MessageLevelFromNonFatalErrorLevel(int errorLevel) {
   return level;
 }
 
+// NOTE: when editing this, please also edit the error messages we throw when
+// the size is exceeded (see uses of the constant), which use the human-friendly
+// "4KB" text.
 const size_t kWasmWireBytesLimit = 1 << 12;
 
 }  // namespace
@@ -325,46 +328,63 @@ static bool codeGenerationCheckCallbackInMainThread(
   return false;
 }
 
-static bool allowWasmCompileCallbackInMainThread(v8::Isolate* isolate,
-                                                 v8::Local<v8::Value> source,
-                                                 bool asPromise) {
-  // We allow async compilation irrespective of buffer size.
-  if (asPromise)
-    return true;
-  if (source->IsArrayBuffer() &&
-      v8::Local<v8::ArrayBuffer>::Cast(source)->ByteLength() >
-          kWasmWireBytesLimit) {
-    return false;
-  }
-  if (source->IsArrayBufferView() &&
-      v8::Local<v8::ArrayBufferView>::Cast(source)->ByteLength() >
-          kWasmWireBytesLimit) {
-    return false;
-  }
-  return true;
+v8::Local<v8::Value> newRangeException(v8::Isolate* isolate,
+                                       const char* message) {
+  return v8::Exception::RangeError(
+      v8::String::NewFromOneByte(isolate,
+                                 reinterpret_cast<const uint8_t*>(message),
+                                 v8::NewStringType::kNormal)
+          .ToLocalChecked());
 }
 
-static bool allowWasmInstantiateCallbackInMainThread(
-    v8::Isolate* isolate,
-    v8::Local<v8::Value> source,
-    v8::MaybeLocal<v8::Value> ffi,
-    bool asPromise) {
-  // Async cases are allowed, regardless of the size of the
-  // wire bytes. Note that, for instantiation, we use the wire
-  // bytes size as a proxy for instantiation time. We may
-  // consider using the size of the ffi (nr of properties)
-  // instead, or, even more directly, number of imports.
-  if (asPromise)
+void throwRangeException(v8::Isolate* isolate, const char* message) {
+  isolate->ThrowException(newRangeException(isolate, message));
+}
+
+static bool wasmModuleOverride(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  // Return false if we want the base behavior to proceed.
+  if (!WTF::isMainThread() || args.Length() < 1)
+    return false;
+  v8::Local<v8::Value> source = args[0];
+  if ((source->IsArrayBuffer() &&
+       v8::Local<v8::ArrayBuffer>::Cast(source)->ByteLength() >
+           kWasmWireBytesLimit) ||
+      (source->IsArrayBufferView() &&
+       v8::Local<v8::ArrayBufferView>::Cast(source)->ByteLength() >
+           kWasmWireBytesLimit)) {
+    throwRangeException(args.GetIsolate(),
+                        "WebAssembly.Compile is disallowed on the main thread, "
+                        "if the buffer size is larger than 4KB. Use "
+                        "WebAssembly.compile, or compile on a worker thread.");
+    // Return true because we injected new behavior and we do not
+    // want the default behavior.
     return true;
-  // If it's not a promise, the source should be a wasm module
-  DCHECK(source->IsWebAssemblyCompiledModule());
+  }
+  return false;
+}
+
+static bool wasmInstanceOverride(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  // Return false if we want the base behavior to proceed.
+  if (!WTF::isMainThread() || args.Length() < 1)
+    return false;
+  v8::Local<v8::Value> source = args[0];
+  if (!source->IsWebAssemblyCompiledModule())
+    return false;
+
   v8::Local<v8::WasmCompiledModule> module =
       v8::Local<v8::WasmCompiledModule>::Cast(source);
   if (static_cast<size_t>(module->GetWasmWireBytes()->Length()) >
       kWasmWireBytesLimit) {
-    return false;
+    throwRangeException(
+        args.GetIsolate(),
+        "WebAssembly.Instance is disallowed on the main thread, "
+        "if the buffer size is larger than 4KB. Use "
+        "WebAssembly.instantiate.");
+    return true;
   }
-  return true;
+  return false;
 }
 
 static void initializeV8Common(v8::Isolate* isolate) {
@@ -380,6 +400,8 @@ static void initializeV8Common(v8::Isolate* isolate) {
   isolate->SetMicrotasksPolicy(v8::MicrotasksPolicy::kScoped);
 
   isolate->SetUseCounterCallback(&useCounterCallback);
+  isolate->SetWasmModuleCallback(wasmModuleOverride);
+  isolate->SetWasmInstanceCallback(wasmInstanceOverride);
 }
 
 namespace {
@@ -456,9 +478,6 @@ void V8Initializer::initializeMainThread() {
       failedAccessCheckCallbackInMainThread);
   isolate->SetAllowCodeGenerationFromStringsCallback(
       codeGenerationCheckCallbackInMainThread);
-  isolate->SetAllowWasmCompileCallback(allowWasmCompileCallbackInMainThread);
-  isolate->SetAllowWasmInstantiateCallback(
-      allowWasmInstantiateCallbackInMainThread);
   if (RuntimeEnabledFeatures::v8IdleTasksEnabled()) {
     V8PerIsolateData::enableIdleTasks(
         isolate, WTF::makeUnique<V8IdleTaskRunner>(scheduler));

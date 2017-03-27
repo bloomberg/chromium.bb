@@ -12,6 +12,8 @@
   <script>
     test(TestBuffersAreCorrect, "wasm limits buffers are setup correctly");
     test(TestSyncCompile, "wasm sync compile test");
+    test(NoParameters, "wasm no/invalid parameters passthrough");
+    promise_test(NoParameters_Promise, "wasm no/invalid parameters passtrhough (promise APIs)");
     promise_test(TestPromiseCompile, "wasm promise compile test");
     promise_test(TestWorkerCompileAndInstantiate, "wasm worker compile test");
     promise_test(TestPromiseCompileSyncInstantiate, "wasm sync instantiate");
