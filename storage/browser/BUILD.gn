@@ -224,18 +224,21 @@ executable("dump_file_system") {
 
 test("storage_unittests") {
   sources = [
-    # Do NOT add storage/ tests here until this target is added to the build
-    # bots. http://crbug.com/653751
-
-    # If the sources list is empty, the win_clang builder fails.
-    # This file will be removed when the real tests are moved over from
-    # content_unittests to this target.
-    "crbug653751_unittest.cc",
+    # This target is in the process of being populated. See
+    # http://crbug.com/653751
+    "blob/blob_data_builder_unittest.cc",
+    "blob/blob_flattener_unittest.cc",
+    "blob/blob_memory_controller_unittest.cc",
+    "blob/blob_slice_unittest.cc",
+    "blob/blob_storage_registry_unittest.cc",
+    "blob/blob_transport_request_builder_unittest.cc",
   ]
 
   deps = [
+    ":browser",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
+    "//net:test_support",
     "//testing/gtest",
   ]
 }
