@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,21 +28,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SaturatedArithmetic_h
-#define SaturatedArithmetic_h
+#include "wtf/CryptographicallyRandomNumber.h"
+#include "wtf/CurrentTime.h"
+#include "wtf/WTF.h"
+#include "wtf/allocator/Partitions.h"
+#include <base/test/test_suite.h>
+#include <string.h>
 
-#include "base/numerics/saturated_arithmetic.h"
+static double dummyCurrentTime() {
+  return 0.0;
+}
 
-namespace WTF {
-using base::SaturatedAddition;
-using base::SaturatedSubtraction;
-using base::SaturatedNegative;
-using base::SaturatedSet;
-}  // namespace WTF
-
-using WTF::SaturatedAddition;
-using WTF::SaturatedSubtraction;
-using WTF::SaturatedNegative;
-using WTF::SaturatedSet;
-
-#endif  // SaturatedArithmetic_h
+int main(int argc, char** argv) {
+  WTF::Partitions::initialize(nullptr);
+  WTF::setTimeFunctionsForTesting(dummyCurrentTime);
+  WTF::initialize(nullptr);
+  return base::RunUnitTestsUsingBaseTestSuite(argc, argv);
+}

@@ -1,7 +1,0 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
-// Now that all .cpp files are gone for target "wtf". However, this seems to
-// trigger a compile error on Mac. This file gives an empty object file and
-// should make Xcode's libtool happy...
