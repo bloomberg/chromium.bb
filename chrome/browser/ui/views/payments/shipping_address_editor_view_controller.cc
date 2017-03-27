@@ -33,6 +33,7 @@
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/payments/content/payment_request_state.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/libaddressinput/chromium/chrome_metadata_source.h"
 #include "third_party/libaddressinput/chromium/chrome_storage_impl.h"
@@ -290,9 +291,9 @@ void ShippingAddressEditorViewController::OnCountryChanged(
 
 ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
     ShippingAddressValidationDelegate(
-        ShippingAddressEditorViewController* parent,
+        ShippingAddressEditorViewController* controller,
         const EditorField& field)
-    : field_(field) /* TODO(mad): Bring back when needed:, parent_(parent) */ {}
+    : field_(field), controller_(controller) {}
 
 ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
     ~ShippingAddressValidationDelegate() {}
@@ -309,9 +310,28 @@ bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
 
 bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
     ValidateValue(const base::string16& value) {
-  // TODO(crbug.com/703754) add phone validation.
-  // TODO(crbug.com/703756): Display "required" error if applicable.
-  return !field_.required || !value.empty();
+  if (!value.empty()) {
+    if (field_.type == autofill::PHONE_HOME_NUMBER &&
+        !autofill::IsValidPhoneNumber(
+            value,
+            controller_->country_codes_[controller_->chosen_country_index_])) {
+      controller_->DisplayErrorMessageForField(
+          field_, l10n_util::GetStringUTF16(
+                      IDS_PAYMENTS_PHONE_INVALID_VALIDATION_MESSAGE));
+      return false;
+    }
+    // As long as other field types are non-empty, they are valid.
+    controller_->DisplayErrorMessageForField(field_, base::ASCIIToUTF16(""));
+    return true;
+  }
+
+  bool is_required_valid = !field_.required;
+  const base::string16 displayed_message =
+      is_required_valid ? base::ASCIIToUTF16("")
+                        : l10n_util::GetStringUTF16(
+                              IDS_PAYMENTS_FIELD_REQUIRED_VALIDATION_MESSAGE);
+  controller_->DisplayErrorMessageForField(field_, displayed_message);
+  return is_required_valid;
 }
 
 }  // namespace payments

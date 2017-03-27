@@ -45,6 +45,11 @@ bool IsValidEmailAddress(const base::string16& text);
 // insensitive.  Valid for US states only.
 bool IsValidState(const base::string16& text);
 
+// Returns whether the number contained in |text| is valid for the specified
+// |country_code|. Callers should cache the result as the parsing is expensive.
+bool IsValidPhoneNumber(const base::string16& text,
+                        const std::string& country_code);
+
 // Returns true if |text| looks like a valid zip code.
 // Valid for US zip codes only.
 bool IsValidZip(const base::string16& text);

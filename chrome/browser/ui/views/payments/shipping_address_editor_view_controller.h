@@ -58,8 +58,8 @@ class ShippingAddressEditorViewController : public EditorViewController {
     bool ValidateValue(const base::string16& value);
 
     EditorField field_;
-    // TODO(mad): Bring back when needed.
-    // ShippingAddressEditorViewController* parent_{nullptr};
+    // Raw pointer back to the owner of this class, therefore will not be null.
+    ShippingAddressEditorViewController* controller_;
 
     DISALLOW_COPY_AND_ASSIGN(ShippingAddressValidationDelegate);
   };

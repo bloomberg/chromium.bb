@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/phone_number_i18n.h"
 #include "components/autofill/core/browser/state_names.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_regexes.h"
@@ -135,6 +136,12 @@ bool IsValidEmailAddress(const base::string16& text) {
 bool IsValidState(const base::string16& text) {
   return !state_names::GetAbbreviationForName(text).empty() ||
          !state_names::GetNameForAbbreviation(text).empty();
+}
+
+bool IsValidPhoneNumber(const base::string16& text,
+                        const std::string& country_code) {
+  i18n::PhoneObject phone_number(text, country_code);
+  return phone_number.IsValidNumber();
 }
 
 bool IsValidZip(const base::string16& text) {
