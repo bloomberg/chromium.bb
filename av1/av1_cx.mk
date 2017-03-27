@@ -92,8 +92,6 @@ AV1_CX_SRCS-yes += encoder/speed_features.c
 AV1_CX_SRCS-yes += encoder/speed_features.h
 AV1_CX_SRCS-yes += encoder/subexp.c
 AV1_CX_SRCS-yes += encoder/subexp.h
-AV1_CX_SRCS-yes += encoder/resize.c
-AV1_CX_SRCS-yes += encoder/resize.h
 AV1_CX_SRCS-$(CONFIG_INTERNAL_STATS) += encoder/blockiness.c
 
 AV1_CX_SRCS-yes += encoder/tokenize.c

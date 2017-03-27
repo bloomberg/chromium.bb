@@ -22,7 +22,7 @@
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 #include "aom_ports/mem.h"
 #include "av1/common/common.h"
-#include "av1/encoder/resize.h"
+#include "av1/common/resize.h"
 
 #define FILTER_BITS 7
 

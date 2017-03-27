@@ -24,6 +24,7 @@
 #include "av1/common/idct.h"
 #include "av1/common/reconinter.h"
 #include "av1/common/reconintra.h"
+#include "av1/common/resize.h"
 #include "av1/common/tile_common.h"
 
 #include "av1/encoder/aq_complexity.h"
@@ -49,7 +50,6 @@
 #endif  // CONFIG_LOOP_RESTORATION
 #include "av1/encoder/ratectrl.h"
 #include "av1/encoder/rd.h"
-#include "av1/encoder/resize.h"
 #include "av1/encoder/segmentation.h"
 #include "av1/encoder/speed_features.h"
 #include "av1/encoder/temporal_filter.h"
