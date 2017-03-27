@@ -57,7 +57,7 @@ class WebSharedWorker {
                                   WebAddressSpace) = 0;
 
   // Sends a connect event to the SharedWorker context.
-  virtual void connect(WebMessagePortChannel*) = 0;
+  virtual void connect(std::unique_ptr<WebMessagePortChannel>) = 0;
 
   // Invoked to shutdown the worker when there are no more associated documents.
   // This eventually deletes this instance.

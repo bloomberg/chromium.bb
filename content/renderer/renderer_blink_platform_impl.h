@@ -88,8 +88,9 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   unsigned long long visitedLinkHash(const char* canonicalURL,
                                      size_t length) override;
   bool isLinkVisited(unsigned long long linkHash) override;
-  void createMessageChannel(blink::WebMessagePortChannel** channel1,
-                            blink::WebMessagePortChannel** channel2) override;
+  void createMessageChannel(
+      std::unique_ptr<blink::WebMessagePortChannel>* channel1,
+      std::unique_ptr<blink::WebMessagePortChannel>* channel2) override;
   blink::WebPrescientNetworking* prescientNetworking() override;
   void cacheMetadata(const blink::WebURL&,
                      int64_t,

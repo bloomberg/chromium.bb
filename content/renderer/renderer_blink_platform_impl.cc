@@ -385,8 +385,8 @@ bool RendererBlinkPlatformImpl::isLinkVisited(unsigned long long link_hash) {
 }
 
 void RendererBlinkPlatformImpl::createMessageChannel(
-    blink::WebMessagePortChannel** channel1,
-    blink::WebMessagePortChannel** channel2) {
+    std::unique_ptr<blink::WebMessagePortChannel>* channel1,
+    std::unique_ptr<blink::WebMessagePortChannel>* channel2) {
   WebMessagePortChannelImpl::CreatePair(channel1, channel2);
 }
 

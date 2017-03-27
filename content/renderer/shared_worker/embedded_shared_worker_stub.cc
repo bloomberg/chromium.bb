@@ -266,7 +266,7 @@ bool EmbeddedSharedWorkerStub::Send(IPC::Message* message) {
 void EmbeddedSharedWorkerStub::ConnectToChannel(
     int connection_request_id,
     std::unique_ptr<WebMessagePortChannelImpl> channel) {
-  impl_->connect(channel.release());
+  impl_->connect(std::move(channel));
   Send(new WorkerHostMsg_WorkerConnected(connection_request_id, route_id_));
 }
 

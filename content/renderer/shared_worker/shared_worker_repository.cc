@@ -24,7 +24,7 @@ void SharedWorkerRepository::connect(
     blink::WebContentSecurityPolicyType security_policy_type,
     blink::WebAddressSpace creation_address_space,
     blink::WebSharedWorkerCreationContextType creation_context_type,
-    blink::WebMessagePortChannel* channel,
+    std::unique_ptr<blink::WebMessagePortChannel> channel,
     std::unique_ptr<blink::WebSharedWorkerConnectListener> listener) {
   documents_with_workers_.insert(document_id);
 
@@ -40,7 +40,7 @@ void SharedWorkerRepository::connect(
   ViewHostMsg_CreateWorker_Reply reply;
 
   // This proxy will self-destruct when a worker is destroyed.
-  new WebSharedWorkerProxy(std::move(listener), params, channel);
+  new WebSharedWorkerProxy(std::move(listener), params, std::move(channel));
 }
 
 void SharedWorkerRepository::documentDetached(DocumentID document) {

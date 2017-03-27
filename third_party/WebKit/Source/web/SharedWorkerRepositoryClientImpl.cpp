@@ -112,7 +112,7 @@ static WebSharedWorkerRepositoryClient::DocumentID getId(void* document) {
 
 void SharedWorkerRepositoryClientImpl::connect(
     SharedWorker* worker,
-    WebMessagePortChannelUniquePtr port,
+    std::unique_ptr<WebMessagePortChannel> port,
     const KURL& url,
     const String& name) {
   DCHECK(m_client);
@@ -145,7 +145,7 @@ void SharedWorkerRepositoryClientImpl::connect(
       worker->getExecutionContext()->securityContext().addressSpace(),
       isSecureContext ? WebSharedWorkerCreationContextTypeSecure
                       : WebSharedWorkerCreationContextTypeNonsecure,
-      port.release(), std::move(listener));
+      std::move(port), std::move(listener));
 }
 
 void SharedWorkerRepositoryClientImpl::documentDetached(Document* document) {

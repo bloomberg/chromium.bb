@@ -264,17 +264,18 @@ ThreadableLoadingContext* WebSharedWorkerImpl::getThreadableLoadingContext() {
   return m_loadingContext;
 }
 
-void WebSharedWorkerImpl::connect(WebMessagePortChannel* webChannel) {
+void WebSharedWorkerImpl::connect(
+    std::unique_ptr<WebMessagePortChannel> webChannel) {
   DCHECK(isMainThread());
   workerThread()->postTask(
       BLINK_FROM_HERE,
       crossThreadBind(&WebSharedWorkerImpl::connectTaskOnWorkerThread,
                       WTF::crossThreadUnretained(this),
-                      WTF::passed(WebMessagePortChannelUniquePtr(webChannel))));
+                      WTF::passed(std::move(webChannel))));
 }
 
 void WebSharedWorkerImpl::connectTaskOnWorkerThread(
-    WebMessagePortChannelUniquePtr channel) {
+    std::unique_ptr<WebMessagePortChannel> channel) {
   // Wrap the passed-in channel in a MessagePort, and send it off via a connect
   // event.
   DCHECK(m_workerThread->isCurrentThread());

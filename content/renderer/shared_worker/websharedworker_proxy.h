@@ -34,12 +34,12 @@ class WebSharedWorkerProxy : private IPC::Listener {
   WebSharedWorkerProxy(
       std::unique_ptr<blink::WebSharedWorkerConnectListener> listener,
       ViewHostMsg_CreateWorker_Params params,
-      blink::WebMessagePortChannel* channel);
+      std::unique_ptr<blink::WebMessagePortChannel> channel);
   ~WebSharedWorkerProxy() override;
 
  private:
   void connect(ViewHostMsg_CreateWorker_Params params,
-               blink::WebMessagePortChannel* channel);
+               std::unique_ptr<blink::WebMessagePortChannel> channel);
 
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;

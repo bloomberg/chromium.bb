@@ -58,7 +58,7 @@ class WebSharedWorkerRepositoryClient {
                        WebContentSecurityPolicyType,
                        WebAddressSpace,
                        WebSharedWorkerCreationContextType,
-                       WebMessagePortChannel*,
+                       std::unique_ptr<WebMessagePortChannel>,
                        std::unique_ptr<blink::WebSharedWorkerConnectListener>) {
   }
 

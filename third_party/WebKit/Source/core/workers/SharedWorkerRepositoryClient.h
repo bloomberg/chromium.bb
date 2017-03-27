@@ -51,7 +51,7 @@ class SharedWorkerRepositoryClient {
   virtual ~SharedWorkerRepositoryClient() {}
 
   virtual void connect(SharedWorker*,
-                       WebMessagePortChannelUniquePtr,
+                       std::unique_ptr<WebMessagePortChannel>,
                        const KURL&,
                        const String& name) = 0;
 

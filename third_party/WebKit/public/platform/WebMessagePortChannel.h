@@ -38,11 +38,11 @@
 namespace blink {
 
 class WebMessagePortChannelClient;
+class WebMessagePortChannel;
 class WebString;
 
-using WebMessagePortChannelUniquePtr =
-    std::unique_ptr<class WebMessagePortChannel>;
-using WebMessagePortChannelArray = WebVector<WebMessagePortChannelUniquePtr>;
+using WebMessagePortChannelArray =
+    WebVector<std::unique_ptr<WebMessagePortChannel>>;
 
 // Provides an interface to a Message Port Channel implementation.
 class WebMessagePortChannel {

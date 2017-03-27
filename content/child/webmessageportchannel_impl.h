@@ -20,8 +20,9 @@ class WebMessagePortChannelImpl : public blink::WebMessagePortChannel {
   ~WebMessagePortChannelImpl() override;
   explicit WebMessagePortChannelImpl(MessagePort message_port);
 
-  static void CreatePair(blink::WebMessagePortChannel** channel1,
-                         blink::WebMessagePortChannel** channel2);
+  static void CreatePair(
+      std::unique_ptr<blink::WebMessagePortChannel>* channel1,
+      std::unique_ptr<blink::WebMessagePortChannel>* channel2);
 
   // Extracts MessagePorts for passing on to other processes.
   static std::vector<MessagePort> ExtractMessagePorts(

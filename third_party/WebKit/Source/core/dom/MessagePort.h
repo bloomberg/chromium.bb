@@ -48,9 +48,8 @@ class MessagePort;
 class ScriptState;
 class SerializedScriptValue;
 
-// Not to be confused with WebMessagePortChannelArray; this one uses Vector and
-// std::unique_ptr instead of WebVector and raw pointers.
-typedef Vector<WebMessagePortChannelUniquePtr, 1> MessagePortChannelArray;
+typedef Vector<std::unique_ptr<WebMessagePortChannel>, 1>
+    MessagePortChannelArray;
 
 class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
                                 public ActiveScriptWrappable<MessagePort>,
@@ -72,8 +71,8 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
   void start();
   void close();
 
-  void entangle(WebMessagePortChannelUniquePtr);
-  WebMessagePortChannelUniquePtr disentangle();
+  void entangle(std::unique_ptr<WebMessagePortChannel>);
+  std::unique_ptr<WebMessagePortChannel> disentangle();
 
   static WebMessagePortChannelArray toWebMessagePortChannelArray(
       MessagePortChannelArray);
@@ -139,7 +138,7 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
   void messageAvailable() override;
   void dispatchMessages();
 
-  WebMessagePortChannelUniquePtr m_entangledChannel;
+  std::unique_ptr<WebMessagePortChannel> m_entangledChannel;
 
   int m_pendingDispatchTask;
   bool m_started;

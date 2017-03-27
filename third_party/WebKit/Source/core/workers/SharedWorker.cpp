@@ -63,7 +63,8 @@ SharedWorker* SharedWorker::create(ExecutionContext* context,
 
   MessageChannel* channel = MessageChannel::create(context);
   worker->m_port = channel->port1();
-  WebMessagePortChannelUniquePtr remotePort = channel->port2()->disentangle();
+  std::unique_ptr<WebMessagePortChannel> remotePort =
+      channel->port2()->disentangle();
   DCHECK(remotePort);
 
   // We don't currently support nested workers, so workers can only be created

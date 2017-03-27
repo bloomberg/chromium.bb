@@ -46,6 +46,7 @@
 #include "WebGamepads.h"
 #include "WebGestureDevice.h"
 #include "WebLocalizedString.h"
+#include "WebMessagePortChannel.h"
 #include "WebPlatformEventType.h"
 #include "WebSize.h"
 #include "WebSpeechSynthesizer.h"
@@ -100,7 +101,6 @@ class WebMediaStream;
 class WebMediaStreamCenter;
 class WebMediaStreamCenterClient;
 class WebMediaStreamTrack;
-class WebMessagePortChannel;
 class WebNotificationManager;
 class WebPluginListBuilder;
 class WebPrescientNetworking;
@@ -317,10 +317,11 @@ class BLINK_PLATFORM_EXPORT Platform {
   // Creates a Message Port Channel pair. This can be called on any thread.
   // The returned objects should only be used on the thread they were created
   // on.
-  virtual void createMessageChannel(WebMessagePortChannel** channel1,
-                                    WebMessagePortChannel** channel2) {
-    *channel1 = 0;
-    *channel2 = 0;
+  virtual void createMessageChannel(
+      std::unique_ptr<WebMessagePortChannel>* channel1,
+      std::unique_ptr<WebMessagePortChannel>* channel2) {
+    *channel1 = nullptr;
+    *channel2 = nullptr;
   }
 
   // Network -------------------------------------------------------------

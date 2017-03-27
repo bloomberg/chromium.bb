@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannelClient.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
@@ -30,11 +31,14 @@ WebMessagePortChannelImpl::WebMessagePortChannelImpl(
 
 // static
 void WebMessagePortChannelImpl::CreatePair(
-    blink::WebMessagePortChannel** channel1,
-    blink::WebMessagePortChannel** channel2) {
+    std::unique_ptr<blink::WebMessagePortChannel>* channel1,
+    std::unique_ptr<blink::WebMessagePortChannel>* channel2) {
   mojo::MessagePipe pipe;
-  *channel1 = new WebMessagePortChannelImpl(std::move(pipe.handle0));
-  *channel2 = new WebMessagePortChannelImpl(std::move(pipe.handle1));
+  // Constructor is private, so use WrapUnique here.
+  *channel1 =
+      base::WrapUnique(new WebMessagePortChannelImpl(std::move(pipe.handle0)));
+  *channel2 =
+      base::WrapUnique(new WebMessagePortChannelImpl(std::move(pipe.handle1)));
 }
 
 // static

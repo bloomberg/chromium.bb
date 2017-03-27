@@ -267,13 +267,15 @@ class WebMessagePortChannelImpl final : public WebMessagePortChannel {
 MessagePort* makeMessagePort(
     ExecutionContext* executionContext,
     WebMessagePortChannel** unownedChannelOut = nullptr) {
-  auto* unownedChannel = new WebMessagePortChannelImpl();
+  std::unique_ptr<WebMessagePortChannelImpl> channel =
+      WTF::makeUnique<WebMessagePortChannelImpl>();
+  auto* unownedChannelPtr = channel.get();
   MessagePort* port = MessagePort::create(*executionContext);
-  port->entangle(WebMessagePortChannelUniquePtr(unownedChannel));
+  port->entangle(std::move(channel));
   EXPECT_TRUE(port->isEntangled());
-  EXPECT_EQ(unownedChannel, port->entangledChannelForTesting());
+  EXPECT_EQ(unownedChannelPtr, port->entangledChannelForTesting());
   if (unownedChannelOut)
-    *unownedChannelOut = unownedChannel;
+    *unownedChannelOut = unownedChannelPtr;
   return port;
 }
 

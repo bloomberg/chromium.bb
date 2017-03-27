@@ -90,7 +90,7 @@ class WebSharedWorkerImpl final : public WebFrameClient,
                           const WebString& contentSecurityPolicy,
                           WebContentSecurityPolicyType,
                           WebAddressSpace) override;
-  void connect(WebMessagePortChannel*) override;
+  void connect(std::unique_ptr<WebMessagePortChannel>) override;
   void terminateWorkerContext() override;
 
   void pauseWorkerContextOnStart() override;
@@ -125,7 +125,7 @@ class WebSharedWorkerImpl final : public WebFrameClient,
   void didReceiveScriptLoaderResponse();
   void onScriptLoaderFinished();
 
-  void connectTaskOnWorkerThread(WebMessagePortChannelUniquePtr);
+  void connectTaskOnWorkerThread(std::unique_ptr<WebMessagePortChannel>);
 
   // WorkerLoaderProxyProvider
   // postTaskToLoader() must be called from a worker thread.

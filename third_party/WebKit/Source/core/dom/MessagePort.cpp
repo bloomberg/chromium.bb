@@ -108,7 +108,7 @@ MessagePortArray* MessagePort::toMessagePortArray(
   return MessagePort::entanglePorts(*context, std::move(channels));
 }
 
-WebMessagePortChannelUniquePtr MessagePort::disentangle() {
+std::unique_ptr<WebMessagePortChannel> MessagePort::disentangle() {
   DCHECK(m_entangledChannel);
   m_entangledChannel->setClient(nullptr);
   return std::move(m_entangledChannel);
@@ -152,7 +152,7 @@ void MessagePort::close() {
   m_closed = true;
 }
 
-void MessagePort::entangle(WebMessagePortChannelUniquePtr remote) {
+void MessagePort::entangle(std::unique_ptr<WebMessagePortChannel> remote) {
   // Only invoked to set our initial entanglement.
   DCHECK(!m_entangledChannel);
   DCHECK(getExecutionContext());

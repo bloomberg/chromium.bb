@@ -75,9 +75,8 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   if (hash & kFuzzMessagePorts) {
     options.messagePorts = new MessagePortArray(3);
     std::generate(messagePorts->begin(), messagePorts->end(), []() {
-      WebMessagePortChannelUniquePtr channel(new WebMessagePortChannelImpl());
       MessagePort* port = MessagePort::create(pageHolder->document());
-      port->entangle(std::move(channel));
+      port->entangle(WTF::makeUnique<WebMessagePortChannelImpl>());
       return port;
     });
   }
