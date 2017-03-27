@@ -9,6 +9,7 @@
 #include <unordered_map>
 
 #include "base/macros.h"
+#include "components/payments/content/payment_request.h"
 #include "components/payments/content/payment_request.mojom.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -19,7 +20,6 @@ class WebContents;
 
 namespace payments {
 
-class PaymentRequest;
 class PaymentRequestDelegate;
 
 // This class owns the PaymentRequest associated with a given WebContents.
@@ -44,7 +44,8 @@ class PaymentRequestWebContentsManager
   void CreatePaymentRequest(
       content::WebContents* web_contents,
       std::unique_ptr<PaymentRequestDelegate> delegate,
-      mojo::InterfaceRequest<payments::mojom::PaymentRequest> request);
+      mojo::InterfaceRequest<payments::mojom::PaymentRequest> request,
+      PaymentRequest::ObserverForTest* observer_for_testing);
 
   // Destroys the given |request|.
   void DestroyRequest(PaymentRequest* request);

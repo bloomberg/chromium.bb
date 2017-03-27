@@ -20,10 +20,11 @@ void CreatePaymentRequestForWebContents(
     mojo::InterfaceRequest<payments::mojom::PaymentRequest> request) {
   DCHECK(web_contents);
   PaymentRequestWebContentsManager::GetOrCreateForWebContents(web_contents)
-      ->CreatePaymentRequest(web_contents,
-                             base::MakeUnique<ChromePaymentRequestDelegate>(
-                                web_contents),
-                             std::move(request));
+      ->CreatePaymentRequest(
+          web_contents,
+          base::MakeUnique<ChromePaymentRequestDelegate>(web_contents),
+          std::move(request),
+          /*observer_for_testing=*/nullptr);
 }
 
 }  // namespace payments

@@ -91,6 +91,11 @@ void PaymentRequestBrowserTestBase::SetIncognitoForTesting() {
   incognito_for_testing_ = true;
 }
 
+void PaymentRequestBrowserTestBase::OnCanMakePaymentCalled() {
+  if (event_observer_)
+    event_observer_->Observe(DialogEvent::CAN_MAKE_PAYMENT_CALLED);
+}
+
 void PaymentRequestBrowserTestBase::OnDialogOpened() {
   if (event_observer_)
     event_observer_->Observe(DialogEvent::DIALOG_OPENED);
@@ -272,7 +277,7 @@ void PaymentRequestBrowserTestBase::CreatePaymentRequestForTest(
   delegate_ = delegate.get();
   PaymentRequestWebContentsManager::GetOrCreateForWebContents(web_contents)
       ->CreatePaymentRequest(web_contents, std::move(delegate),
-                             std::move(request));
+                             std::move(request), this);
 }
 
 void PaymentRequestBrowserTestBase::ClickOnDialogViewAndWait(

@@ -18,11 +18,13 @@ PaymentRequest::PaymentRequest(
     content::WebContents* web_contents,
     std::unique_ptr<PaymentRequestDelegate> delegate,
     PaymentRequestWebContentsManager* manager,
-    mojo::InterfaceRequest<payments::mojom::PaymentRequest> request)
+    mojo::InterfaceRequest<payments::mojom::PaymentRequest> request,
+    ObserverForTest* observer_for_testing)
     : web_contents_(web_contents),
       delegate_(std::move(delegate)),
       manager_(manager),
-      binding_(this, std::move(request)) {
+      binding_(this, std::move(request)),
+      observer_for_testing_(observer_for_testing) {
   // OnConnectionTerminated will be called when the Mojo pipe is closed. This
   // will happen as a result of many renderer-side events (both successful and
   // erroneous in nature).
@@ -90,6 +92,8 @@ void PaymentRequest::CanMakePayment() {
       delegate_->IsIncognito() || state()->CanMakePayment()
           ? mojom::CanMakePaymentQueryResult::CAN_MAKE_PAYMENT
           : mojom::CanMakePaymentQueryResult::CANNOT_MAKE_PAYMENT);
+  if (observer_for_testing_)
+    observer_for_testing_->OnCanMakePaymentCalled();
 }
 
 void PaymentRequest::OnInvalidSpecProvided() {

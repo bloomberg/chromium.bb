@@ -18,6 +18,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
+#include "components/payments/content/payment_request.h"
 #include "components/payments/content/payment_request.mojom.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -39,7 +40,6 @@ class Widget;
 namespace payments {
 
 enum class DialogViewID;
-class PaymentRequest;
 
 ACTION_P(QuitMessageLoop, loop) {
   loop->Quit();
@@ -58,6 +58,7 @@ class PersonalDataLoadedObserverMock
 // the UI and interact with it.
 class PaymentRequestBrowserTestBase
     : public InProcessBrowserTest,
+      public PaymentRequest::ObserverForTest,
       public PaymentRequestDialogView::ObserverForTest,
       public views::WidgetObserver {
  protected:
@@ -71,7 +72,10 @@ class PaymentRequestBrowserTestBase
 
   void SetIncognitoForTesting();
 
-  // PaymentRequestDialogView::ObserverForTest
+  // PaymentRequest::ObserverForTest:
+  void OnCanMakePaymentCalled() override;
+
+  // PaymentRequestDialogView::ObserverForTest:
   void OnDialogOpened() override;
   void OnOrderSummaryOpened() override;
   void OnPaymentMethodOpened() override;
@@ -165,6 +169,7 @@ class PaymentRequestBrowserTestBase
     BACK_NAVIGATION,
     CONTACT_INFO_OPENED,
     EDITOR_VIEW_UPDATED,
+    CAN_MAKE_PAYMENT_CALLED,
   };
 
   // DialogEventObserver is used to wait on specific events that may have

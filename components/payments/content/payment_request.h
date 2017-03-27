@@ -34,10 +34,19 @@ class PaymentRequest : public mojom::PaymentRequest,
                        public PaymentRequestSpec::Observer,
                        public PaymentRequestState::Delegate {
  public:
+  class ObserverForTest {
+   public:
+    virtual void OnCanMakePaymentCalled() = 0;
+
+   protected:
+    virtual ~ObserverForTest() {}
+  };
+
   PaymentRequest(content::WebContents* web_contents,
                  std::unique_ptr<PaymentRequestDelegate> delegate,
                  PaymentRequestWebContentsManager* manager,
-                 mojo::InterfaceRequest<mojom::PaymentRequest> request);
+                 mojo::InterfaceRequest<mojom::PaymentRequest> request,
+                 ObserverForTest* observer_for_testing);
   ~PaymentRequest() override;
 
   // mojom::PaymentRequest
@@ -86,6 +95,9 @@ class PaymentRequest : public mojom::PaymentRequest,
 
   std::unique_ptr<PaymentRequestSpec> spec_;
   std::unique_ptr<PaymentRequestState> state_;
+
+  // May be null, must outlive this object.
+  ObserverForTest* observer_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequest);
 };
