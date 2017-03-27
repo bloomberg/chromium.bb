@@ -30,6 +30,11 @@ class TestHarnessResultCheckerTest(unittest.TestCase):
             ' PASS: foo bar \n'
             'FAIL  \n'
             ' Harness: the test ran to completion.'))
+        self.assertFalse(testharness_results.is_all_pass_testharness_result(
+            'This is a testharness.js-based test.\n'
+            'Harness Error. harness_status.status = 1\n'
+            'PASS foo bar\n'
+            'Harness: the test ran to completion.'))
 
     def test_is_testharness_output_positive_cases(self):
         self.assertTrue(testharness_results.is_testharness_output(

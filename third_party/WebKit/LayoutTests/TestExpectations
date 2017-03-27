@@ -1762,6 +1762,23 @@ crbug.com/635909 inspector/sources/debugger-frameworks/frameworks-dom-xhr-event-
 crbug.com/636424 [ Win7 Debug ] editing/selection/modify_move/move-by-word-visually-crash-test-5.html [ Pass Timeout ]
 crbug.com/638618 inspector/editor/text-editor-search-switch-editor.html [ Skip ]
 
+# These tests have test harness errors and PASS lines that have a
+# non-deterministic order.
+crbug.com/705125 fast/mediacapturefromelement/CanvasCaptureMediaStream-capture-out-of-DOM-element.html [ Failure ]
+crbug.com/705125 http/tests/security/contentSecurityPolicy/embeddedEnforcement/subsumption_algorithm-wildcards-in-hosts-ports.html [ Failure ]
+crbug.com/705125 http/tests/security/cors-rfc1918/addressspace-document-appcache.html [ Failure ]
+crbug.com/705125 http/tests/security/cors-rfc1918/addressspace-document-csp-appcache.html [ Failure ]
+crbug.com/705125 http/tests/streams/readable-streams/cancel.html [ Failure ]
+crbug.com/705125 http/tests/streams/readable-streams/templated.html [ Failure ]
+crbug.com/705125 http/tests/w3c/webperf/submission/Intel/user-timing/test_user_timing_clearMarks.html [ Failure ]
+crbug.com/705125 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/embeddedEnforcement/subsumption_algorithm-wildcards-in-hosts-ports.html [ Failure ]
+crbug.com/705125 virtual/mojo-loading/http/tests/security/cors-rfc1918/addressspace-document-appcache.html [ Failure ]
+crbug.com/705125 virtual/mojo-loading/http/tests/security/cors-rfc1918/addressspace-document-csp-appcache.html [ Failure ]
+crbug.com/705125 virtual/mojo-loading/http/tests/security/suborigins/suborigin-invalid-options.html [ Failure ]
+crbug.com/705125 virtual/mojo-loading/http/tests/streams/readable-streams/cancel.html [ Failure ]
+crbug.com/705125 virtual/mojo-loading/http/tests/streams/readable-streams/templated.html [ Failure ]
+crbug.com/705125 webaudio/decodeAudioData/decode-audio-data-basic.html [ Failure ]
+
 # This test breaks when the feature introduced in the bug is enabled. We keep
 # this tested without the feature by using the virtual test. See
 # virtual/stable/http/tests/sendbeacon/beacon-cross-origin-redirect-blob-expected.txt

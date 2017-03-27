@@ -1,0 +1,20 @@
+This is a testharness.js-based test.
+Harness Error. harness_status.status = 1 , harness_status.message = 7 duplicate test names: "Attribute should exist and not throw exception in worker", "Attribute should exist and return value in worker", "Constant should exist and return value in worker", "Constant should exist and not be modifiable in worker", "Accessing attribute should throw error in worker", "Attribute should not exist in worker", "Constant should not exist in worker"
+PASS Test Sample API when trial is enabled in shared and service workers 
+PASS Test Sample API when trial is enabled in shared and service workers 1 
+PASS Attribute should exist and not throw exception in worker 
+PASS Attribute should exist and return value in worker 
+PASS Constant should exist and return value in worker 
+PASS Constant should exist and not be modifiable in worker 
+PASS Accessing attribute should throw error in worker 
+PASS Attribute should not exist in worker 
+PASS Constant should not exist in worker 
+PASS Attribute should exist and not throw exception in worker 
+PASS Attribute should exist and return value in worker 
+PASS Constant should exist and return value in worker 
+PASS Constant should exist and not be modifiable in worker 
+PASS Accessing attribute should throw error in worker 
+PASS Attribute should not exist in worker 
+PASS Constant should not exist in worker 
+Harness: the test ran to completion.
+
