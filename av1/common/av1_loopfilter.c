@@ -1938,6 +1938,8 @@ void av1_filter_block_plane_ss11_hor(AV1_COMMON *const cm,
   dst->buf = dst0;
 }
 
+#if !(CONFIG_VAR_TX || CONFIG_EXT_PARTITION || CONFIG_EXT_PARTITION_TYPES || \
+      CONFIG_CB4X4)
 #if CONFIG_PARALLEL_DEBLOCKING
 typedef enum EDGE_DIR { VERT_EDGE = 0, HORZ_EDGE = 1, NUM_EDGE_DIRS } EDGE_DIR;
 static const uint32_t av1_prediction_masks[NUM_EDGE_DIRS][BLOCK_SIZES] = {
@@ -1994,6 +1996,7 @@ static const uint32_t av1_prediction_masks[NUM_EDGE_DIRS][BLOCK_SIZES] = {
 #endif          // CONFIG_EXT_PARTITION
   },
 };
+
 static const uint32_t av1_transform_masks[NUM_EDGE_DIRS][TX_SIZES_ALL] = {
   {
 #if CONFIG_CB4X4
@@ -2040,6 +2043,7 @@ static const uint32_t av1_transform_masks[NUM_EDGE_DIRS][TX_SIZES_ALL] = {
       8 - 1    // TX_32X8
   }
 };
+
 static TX_SIZE av1_get_transform_size(const MODE_INFO *const pCurr,
                                       const EDGE_DIR edgeDir,
                                       const uint32_t scaleHorz,
@@ -2056,6 +2060,7 @@ static TX_SIZE av1_get_transform_size(const MODE_INFO *const pCurr,
   }
   return txSize;
 }
+
 typedef struct AV1_DEBLOCKING_PARAMETERS {
   // length of the filter applied to the outer edge
   uint32_t filterLength;
@@ -2066,6 +2071,7 @@ typedef struct AV1_DEBLOCKING_PARAMETERS {
   const uint8_t *mblim;
   const uint8_t *hev_thr;
 } AV1_DEBLOCKING_PARAMETERS;
+
 static void set_lpf_parameters(AV1_DEBLOCKING_PARAMETERS *const pParams,
                                const MODE_INFO **const ppCurr,
                                const ptrdiff_t modeStep,
@@ -2155,6 +2161,7 @@ static void set_lpf_parameters(AV1_DEBLOCKING_PARAMETERS *const pParams,
     }
   }
 }
+
 static void av1_filter_block_plane_vert(const AV1_COMMON *const cm,
                                         const MACROBLOCKD_PLANE *const pPlane,
                                         const MODE_INFO **ppModeInfo,
@@ -2208,6 +2215,7 @@ static void av1_filter_block_plane_vert(const AV1_COMMON *const cm,
     }
   }
 }
+
 static void av1_filter_block_plane_horz(const AV1_COMMON *const cm,
                                         const MACROBLOCKD_PLANE *const pPlane,
                                         const MODE_INFO **ppModeInfo,
@@ -2262,6 +2270,7 @@ static void av1_filter_block_plane_horz(const AV1_COMMON *const cm,
   }
 }
 #endif  // CONFIG_PARALLEL_DEBLOCKING
+#endif
 
 void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
                           struct macroblockd_plane planes[MAX_MB_PLANE],
