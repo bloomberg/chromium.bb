@@ -19,6 +19,8 @@ namespace blink {
 namespace {
 
 const int kColdModeChunkSize = 16384;  // in UTF16 code units
+const int kInvalidLength = -1;
+const int kInvalidChunkIndex = -1;
 
 bool shouldCheckNode(const Node& node) {
   if (!node.isElementNode())
@@ -44,6 +46,8 @@ ColdModeSpellCheckRequester* ColdModeSpellCheckRequester::create(
 DEFINE_TRACE(ColdModeSpellCheckRequester) {
   visitor->trace(m_frame);
   visitor->trace(m_nextNode);
+  visitor->trace(m_currentRootEditable);
+  visitor->trace(m_currentChunkStart);
 }
 
 ColdModeSpellCheckRequester::ColdModeSpellCheckRequester(LocalFrame& frame)
@@ -63,48 +67,12 @@ SpellCheckRequester& ColdModeSpellCheckRequester::spellCheckRequester() const {
   return frame().spellChecker().spellCheckRequester();
 }
 
-// TODO(xiaochengh): Deduplicate with SpellChecker::chunkAndMarkAllMisspellings.
-void ColdModeSpellCheckRequester::chunkAndRequestFullCheckingFor(
-    const Element& editable) {
-  const EphemeralRange& fullRange = EphemeralRange::rangeOfContents(editable);
-  const int fullLength = TextIterator::rangeLength(fullRange.startPosition(),
-                                                   fullRange.endPosition());
-
-  // Check the full content if it is short.
-  if (fullLength <= kColdModeChunkSize) {
-    spellCheckRequester().requestCheckingFor(fullRange);
-    return;
-  }
-
-  // TODO(xiaochengh): Figure out if this is going to cause performance issues.
-  // In that case, we need finer-grained control over request generation.
-  Position chunkStart = fullRange.startPosition();
-  const int chunkLimit = fullLength / kColdModeChunkSize + 1;
-  for (int chunkIndex = 0; chunkIndex <= chunkLimit; ++chunkIndex) {
-    const Position& chunkEnd =
-        calculateCharacterSubrange(
-            EphemeralRange(chunkStart, fullRange.endPosition()), 0,
-            kColdModeChunkSize)
-            .endPosition();
-    if (chunkEnd <= chunkStart)
-      break;
-    const EphemeralRange chunkRange(chunkStart, chunkEnd);
-    const EphemeralRange& checkRange =
-        chunkIndex >= 1 ? expandEndToSentenceBoundary(chunkRange)
-                        : expandRangeToSentenceBoundary(chunkRange);
-
-    spellCheckRequester().requestCheckingFor(checkRange, chunkIndex);
-
-    chunkStart = checkRange.endPosition();
-  }
-}
-
 void ColdModeSpellCheckRequester::invoke(IdleDeadline* deadline) {
   TRACE_EVENT0("blink", "ColdModeSpellCheckRequester::invoke");
 
   Node* body = frame().document()->body();
   if (!body) {
-    m_nextNode = nullptr;
+    resetCheckingProgress();
     m_lastCheckedDOMTreeVersion = frame().document()->domTreeVersion();
     return;
   }
@@ -113,22 +81,101 @@ void ColdModeSpellCheckRequester::invoke(IdleDeadline* deadline) {
   frame().document()->updateStyleAndLayout();
 
   if (m_lastCheckedDOMTreeVersion != frame().document()->domTreeVersion())
-    m_nextNode = body;
+    resetCheckingProgress();
 
-  // TODO(xiaochengh): Figure out if such frequent calls of |timeRemaining()|
-  // have any performance impact. We might not want to check remaining time
-  // so frequently in a page with millions of nodes.
-  while (m_nextNode && deadline->timeRemaining() > 0) {
-    if (!shouldCheckNode(*m_nextNode)) {
-      m_nextNode = FlatTreeTraversal::next(*m_nextNode, body);
-      continue;
-    }
+  while (m_nextNode && deadline->timeRemaining() > 0)
+    step();
+  m_lastCheckedDOMTreeVersion = frame().document()->domTreeVersion();
+}
 
-    chunkAndRequestFullCheckingFor(toElement(*m_nextNode));
-    m_nextNode = FlatTreeTraversal::nextSkippingChildren(*m_nextNode, body);
+void ColdModeSpellCheckRequester::resetCheckingProgress() {
+  m_nextNode = frame().document()->body();
+  m_currentRootEditable = nullptr;
+  m_currentFullLength = kInvalidLength;
+  m_currentChunkIndex = kInvalidChunkIndex;
+  m_currentChunkStart = Position();
+}
+
+void ColdModeSpellCheckRequester::step() {
+  if (!m_nextNode)
+    return;
+
+  if (!m_currentRootEditable) {
+    searchForNextRootEditable();
+    return;
   }
 
-  m_lastCheckedDOMTreeVersion = frame().document()->domTreeVersion();
+  if (m_currentFullLength == kInvalidLength) {
+    initializeForCurrentRootEditable();
+    return;
+  }
+
+  DCHECK(m_currentChunkIndex != kInvalidChunkIndex);
+  requestCheckingForNextChunk();
+}
+
+void ColdModeSpellCheckRequester::searchForNextRootEditable() {
+  // TODO(xiaochengh): Figure out if such small steps, which result in frequent
+  // calls of |timeRemaining()|, have any performance impact. We might not want
+  // to check remaining time so frequently in a page with millions of nodes.
+
+  if (shouldCheckNode(*m_nextNode)) {
+    m_currentRootEditable = toElement(m_nextNode);
+    return;
+  }
+
+  m_nextNode = FlatTreeTraversal::next(*m_nextNode, frame().document()->body());
+}
+
+void ColdModeSpellCheckRequester::initializeForCurrentRootEditable() {
+  const EphemeralRange& fullRange =
+      EphemeralRange::rangeOfContents(*m_currentRootEditable);
+  m_currentFullLength = TextIterator::rangeLength(fullRange.startPosition(),
+                                                  fullRange.endPosition());
+
+  m_currentChunkIndex = 0;
+  m_currentChunkStart = fullRange.startPosition();
+}
+
+void ColdModeSpellCheckRequester::requestCheckingForNextChunk() {
+  // Check the full content if it is short.
+  if (m_currentFullLength <= kColdModeChunkSize) {
+    spellCheckRequester().requestCheckingFor(
+        EphemeralRange::rangeOfContents(*m_currentRootEditable));
+    finishCheckingCurrentRootEditable();
+    return;
+  }
+
+  const Position& chunkEnd =
+      calculateCharacterSubrange(
+          EphemeralRange(m_currentChunkStart,
+                         Position::lastPositionInNode(m_currentRootEditable)),
+          0, kColdModeChunkSize)
+          .endPosition();
+  if (chunkEnd <= m_currentChunkStart) {
+    finishCheckingCurrentRootEditable();
+    return;
+  }
+  const EphemeralRange chunkRange(m_currentChunkStart, chunkEnd);
+  const EphemeralRange& checkRange = expandEndToSentenceBoundary(chunkRange);
+  spellCheckRequester().requestCheckingFor(checkRange, m_currentChunkIndex);
+
+  m_currentChunkStart = checkRange.endPosition();
+  ++m_currentChunkIndex;
+
+  if (m_currentChunkIndex * kColdModeChunkSize >= m_currentFullLength)
+    finishCheckingCurrentRootEditable();
+}
+
+void ColdModeSpellCheckRequester::finishCheckingCurrentRootEditable() {
+  DCHECK_EQ(m_nextNode, m_currentRootEditable);
+  m_nextNode = FlatTreeTraversal::nextSkippingChildren(
+      *m_nextNode, frame().document()->body());
+
+  m_currentRootEditable = nullptr;
+  m_currentFullLength = kInvalidLength;
+  m_currentChunkIndex = kInvalidChunkIndex;
+  m_currentChunkStart = Position();
 }
 
 }  // namespace blink
