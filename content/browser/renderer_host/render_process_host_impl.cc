@@ -1295,10 +1295,10 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       base::Bind(&PushMessagingManager::BindRequest,
                  base::Unretained(push_messaging_manager_.get())));
 
-  registry->AddInterface(base::Bind(
-      &BackgroundFetchServiceImpl::Create,
-      make_scoped_refptr(storage_partition_impl_->GetBackgroundFetchContext()),
-      make_scoped_refptr(storage_partition_impl_->GetServiceWorkerContext())));
+  registry->AddInterface(
+      base::Bind(&BackgroundFetchServiceImpl::Create, GetID(),
+                 make_scoped_refptr(
+                     storage_partition_impl_->GetBackgroundFetchContext())));
 
   registry->AddInterface(base::Bind(&RenderProcessHostImpl::CreateMusGpuRequest,
                                     base::Unretained(this)));

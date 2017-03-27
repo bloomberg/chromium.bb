@@ -5,21 +5,25 @@
 #ifndef CONTENT_BROWSER_BACKGROUND_FETCH_BACKGROUND_FETCH_CONTEXT_H_
 #define CONTENT_BROWSER_BACKGROUND_FETCH_BACKGROUND_FETCH_CONTEXT_H_
 
-#include <unordered_map>
+#include <map>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "content/browser/background_fetch/background_fetch_data_manager.h"
-#include "content/browser/background_fetch/background_fetch_job_controller.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/WebKit/public/platform/modules/background_fetch/background_fetch.mojom.h"
 
 namespace content {
 
-class BackgroundFetchJobInfo;
-class BackgroundFetchRequestInfo;
+class BackgroundFetchDataManager;
+class BackgroundFetchJobController;
+struct BackgroundFetchOptions;
+class BackgroundFetchRegistrationId;
 class BrowserContext;
 class ServiceWorkerContextWrapper;
+struct ServiceWorkerFetchRequest;
+class StoragePartitionImpl;
 
 // The BackgroundFetchContext is the central moderator of ongoing background
 // fetch requests from the Mojo service and from other callers.
@@ -33,19 +37,20 @@ class CONTENT_EXPORT BackgroundFetchContext
   // that it can respond to service worker events such as unregister.
   BackgroundFetchContext(
       BrowserContext* browser_context,
-      StoragePartition* storage_partition,
+      StoragePartitionImpl* storage_partition,
       const scoped_refptr<ServiceWorkerContextWrapper>& context);
-
-  // Init and Shutdown are for use on the UI thread when the StoragePartition is
-  // being setup and torn down.
-  void Init();
 
   // Shutdown must be called before deleting this. Call on the UI thread.
   void Shutdown();
 
-  BackgroundFetchDataManager* GetDataManagerForTesting() {
-    return &background_fetch_data_manager_;
-  }
+  // Starts a Background Fetch for the |registration_id|. The |requests| will be
+  // asynchronously fetched. The |callback| will be invoked when the fetch has
+  // been registered, or an error occurred that avoids it from doing so.
+  void StartFetch(
+      const BackgroundFetchRegistrationId& registration_id,
+      const std::vector<ServiceWorkerFetchRequest>& requests,
+      const BackgroundFetchOptions& options,
+      const blink::mojom::BackgroundFetchService::FetchCallback& callback);
 
  private:
   friend class base::DeleteHelper<BackgroundFetchContext>;
@@ -55,24 +60,36 @@ class CONTENT_EXPORT BackgroundFetchContext
 
   ~BackgroundFetchContext();
 
-  void CreateRequest(
-      std::unique_ptr<BackgroundFetchJobInfo> job_info,
-      std::vector<std::unique_ptr<BackgroundFetchRequestInfo>> request_infos);
-
-  // Callback for the JobController when the job is complete.
-  void DidCompleteJob(const std::string& job_guid);
-
+  // Shuts down the active Job Controllers on the IO thread.
   void ShutdownOnIO();
 
-  // |this| is owned by the BrowserContext via the StoragePartition.
+  // Creates a new Job Controller for the given |registration_id| and |options|,
+  // which will start fetching the files that are part of the registration.
+  void CreateController(const BackgroundFetchRegistrationId& registration_id,
+                        const BackgroundFetchOptions& options);
+
+  // Called when a new registration has been created by the data manager.
+  void DidCreateRegistration(
+      const BackgroundFetchRegistrationId& registration_id,
+      const BackgroundFetchOptions& options,
+      const blink::mojom::BackgroundFetchService::FetchCallback& callback,
+      blink::mojom::BackgroundFetchError error);
+
+  // Called when a Job Controller has finished processing a Background Fetch
+  // registration, as identified by |registration_id|.
+  void DidFinishFetch(const BackgroundFetchRegistrationId& registration_id);
+
+  // |this| is owned by the BrowserContext via the StoragePartitionImpl.
   BrowserContext* browser_context_;
-  StoragePartition* storage_partition_;
+  StoragePartitionImpl* storage_partition_;
 
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
-  BackgroundFetchDataManager background_fetch_data_manager_;
+  std::unique_ptr<BackgroundFetchDataManager> background_fetch_data_manager_;
 
-  std::unordered_map<std::string, std::unique_ptr<BackgroundFetchJobController>>
-      job_map_;
+  // Map of the Background Fetch fetches that are currently in-progress.
+  std::map<BackgroundFetchRegistrationId,
+           std::unique_ptr<BackgroundFetchJobController>>
+      active_fetches_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchContext);
 };

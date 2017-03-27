@@ -8,7 +8,6 @@
 #include <stdint.h>
 #include <string>
 
-#include "base/macros.h"
 #include "content/common/content_export.h"
 #include "url/origin.h"
 
@@ -22,6 +21,7 @@ class CONTENT_EXPORT BackgroundFetchRegistrationId {
   BackgroundFetchRegistrationId(int64_t service_worker_registration_id,
                                 const url::Origin& origin,
                                 const std::string& tag);
+  BackgroundFetchRegistrationId(const BackgroundFetchRegistrationId& other);
   BackgroundFetchRegistrationId(BackgroundFetchRegistrationId&& other);
   ~BackgroundFetchRegistrationId();
 
@@ -49,8 +49,6 @@ class CONTENT_EXPORT BackgroundFetchRegistrationId {
   int64_t service_worker_registration_id_;
   url::Origin origin_;
   std::string tag_;
-
-  DISALLOW_COPY(BackgroundFetchRegistrationId);
 };
 
 }  // namespace content

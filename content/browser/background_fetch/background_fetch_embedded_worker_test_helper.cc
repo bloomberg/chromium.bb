@@ -57,7 +57,7 @@ void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchFailEvent(
   last_tag_ = tag;
   last_fetches_ = fetches;
 
-  if (fail_fail_event_) {
+  if (fail_fetch_fail_event_) {
     callback.Run(SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED,
                  base::Time::Now());
   } else {

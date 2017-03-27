@@ -185,7 +185,7 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFailEvent) {
 
   fetches.push_back(BackgroundFetchSettledFetch());
 
-  embedded_worker_test_helper()->set_fail_fail_event(true);
+  embedded_worker_test_helper()->set_fail_fetch_fail_event(true);
 
   BackgroundFetchRegistrationId second_registration_id(
       registration_id.service_worker_registration_id(),

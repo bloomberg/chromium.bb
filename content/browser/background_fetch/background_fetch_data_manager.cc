@@ -25,29 +25,36 @@ BackgroundFetchDataManager::BackgroundFetchDataManager(
 
 BackgroundFetchDataManager::~BackgroundFetchDataManager() = default;
 
-void BackgroundFetchDataManager::CreateRequest(
-    std::unique_ptr<BackgroundFetchJobInfo> job_info,
-    std::vector<std::unique_ptr<BackgroundFetchRequestInfo>> request_infos) {
-  BackgroundFetchRegistrationId registration_id(
-      job_info->service_worker_registration_id(), job_info->origin(),
-      job_info->tag());
-
-  // Ensure that this is not a duplicate request.
-  if (known_registrations_.find(registration_id) !=
-      known_registrations_.end()) {
-    DVLOG(1) << "Origin " << job_info->origin()
-             << " has already created a batch request with tag "
-             << job_info->tag();
-    // TODO(harkness) Figure out how to return errors like this.
+void BackgroundFetchDataManager::CreateRegistration(
+    const BackgroundFetchRegistrationId& registration_id,
+    const std::vector<ServiceWorkerFetchRequest>& requests,
+    const BackgroundFetchOptions& options,
+    CreateRegistrationCallback callback) {
+  if (registrations_.find(registration_id) != registrations_.end()) {
+    std::move(callback).Run(blink::mojom::BackgroundFetchError::DUPLICATED_TAG);
     return;
   }
 
-  // Add the JobInfo to the in-memory map, and write the individual requests out
-  // to storage.
-  job_info->set_num_requests(request_infos.size());
-  const std::string job_guid = job_info->guid();
-  known_registrations_.insert(std::move(registration_id));
-  WriteJobToStorage(std::move(job_info), std::move(request_infos));
+  registrations_.insert(registration_id);
+
+  // TODO(peter): Store the |requests|.
+  // TODO(peter): Store the |options|.
+
+  std::move(callback).Run(blink::mojom::BackgroundFetchError::NONE);
+}
+
+void BackgroundFetchDataManager::DeleteRegistration(
+    const BackgroundFetchRegistrationId& registration_id,
+    DeleteRegistrationCallback callback) {
+  auto iter = registrations_.find(registration_id);
+  if (iter == registrations_.end()) {
+    std::move(callback).Run(blink::mojom::BackgroundFetchError::INVALID_TAG);
+    return;
+  }
+
+  registrations_.erase(iter);
+
+  std::move(callback).Run(blink::mojom::BackgroundFetchError::NONE);
 }
 
 void BackgroundFetchDataManager::WriteJobToStorage(

@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "third_party/WebKit/public/platform/modules/background_fetch/background_fetch.mojom.h"
@@ -21,18 +22,17 @@ namespace content {
 
 class BackgroundFetchContext;
 struct BackgroundFetchOptions;
-class ServiceWorkerContextWrapper;
 
 class BackgroundFetchServiceImpl : public blink::mojom::BackgroundFetchService {
  public:
   BackgroundFetchServiceImpl(
-      scoped_refptr<BackgroundFetchContext> background_fetch_context,
-      scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
+      int render_process_id,
+      scoped_refptr<BackgroundFetchContext> background_fetch_context);
   ~BackgroundFetchServiceImpl() override;
 
   static void Create(
+      int render_process_id,
       scoped_refptr<BackgroundFetchContext> background_fetch_context,
-      scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
       blink::mojom::BackgroundFetchServiceRequest request);
 
   // blink::mojom::BackgroundFetchService implementation.
@@ -59,8 +59,24 @@ class BackgroundFetchServiceImpl : public blink::mojom::BackgroundFetchService {
                const GetTagsCallback& callback) override;
 
  private:
+  // Validates and returns whether the |tag| contains a valid value. The
+  // renderer will be flagged for having send a bad message if it isn't.
+  bool ValidateTag(const std::string& tag) WARN_UNUSED_RESULT;
+
+  // Validates and returns whether |requests| contains at least a valid request.
+  // The renderer will be flagged for having send a bad message if it isn't.
+  bool ValidateRequests(const std::vector<ServiceWorkerFetchRequest>& requests)
+      WARN_UNUSED_RESULT;
+
+  // Validates and returns whether the |title| contains a valid value. The
+  // renderer will be flagged for having send a bad message if it isn't.
+  bool ValidateTitle(const std::string& title) WARN_UNUSED_RESULT;
+
+  // Id of the renderer process that this service has been created for.
+  int render_process_id_;
+
+  // The Background Fetch context on which operations will be dispatched.
   scoped_refptr<BackgroundFetchContext> background_fetch_context_;
-  scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchServiceImpl);
 };

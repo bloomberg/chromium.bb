@@ -8,6 +8,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
+#include "content/browser/background_fetch/background_fetch_registration_id.h"
+#include "content/browser/bad_message.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/background_fetch/background_fetch_types.h"
 #include "content/public/browser/browser_thread.h"
@@ -16,25 +18,34 @@
 
 namespace content {
 
+namespace {
+
+// Maximum length of a developer-provided tag for a Background Fetch.
+constexpr size_t kMaxTagLength = 1024 * 1024;
+
+// Maximum length of a developer-provided title for a Background Fetch.
+constexpr size_t kMaxTitleLength = 1024 * 1024;
+
+}  // namespace
+
 // static
 void BackgroundFetchServiceImpl::Create(
+    int render_process_id,
     scoped_refptr<BackgroundFetchContext> background_fetch_context,
-    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
     blink::mojom::BackgroundFetchServiceRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  mojo::MakeStrongBinding(base::MakeUnique<BackgroundFetchServiceImpl>(
-                              std::move(background_fetch_context),
-                              std::move(service_worker_context)),
-                          std::move(request));
+  mojo::MakeStrongBinding(
+      base::MakeUnique<BackgroundFetchServiceImpl>(
+          render_process_id, std::move(background_fetch_context)),
+      std::move(request));
 }
 
 BackgroundFetchServiceImpl::BackgroundFetchServiceImpl(
-    scoped_refptr<BackgroundFetchContext> background_fetch_context,
-    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
-    : background_fetch_context_(std::move(background_fetch_context)),
-      service_worker_context_(std::move(service_worker_context)) {
+    int render_process_id,
+    scoped_refptr<BackgroundFetchContext> background_fetch_context)
+    : render_process_id_(render_process_id),
+      background_fetch_context_(std::move(background_fetch_context)) {
   DCHECK(background_fetch_context_);
-  DCHECK(service_worker_context_);
 }
 
 BackgroundFetchServiceImpl::~BackgroundFetchServiceImpl() = default;
@@ -45,18 +56,29 @@ void BackgroundFetchServiceImpl::Fetch(int64_t service_worker_registration_id,
                                        const BackgroundFetchOptions& options,
                                        const FetchCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!ValidateTag(tag)) {
+    callback.Run(blink::mojom::BackgroundFetchError::INVALID_ARGUMENT,
+                 base::nullopt /* registration */);
+    return;
+  }
 
-  // TODO(peter): Create a new job with the BackgroundFetchContext for the
-  // given tag, requests and options. For now we return a registration that's
-  // based on the given |options|, to make sure round-trip is covered.
+  BackgroundFetchRegistrationId registration_id(service_worker_registration_id,
+                                                origin, tag);
 
-  BackgroundFetchRegistration registration;
-  registration.tag = tag;
-  registration.icons = options.icons;
-  registration.title = options.title;
-  registration.total_download_size = options.total_download_size;
+  // TODO(peter): Remove once https://codereview.chromium.org/2762303002/ lands.
+  std::vector<ServiceWorkerFetchRequest> requests;
+  requests.emplace_back(GURL("https://example.com/image.png"), "POST",
+                        ServiceWorkerHeaderMap(), Referrer(),
+                        false /* is_reload */);
 
-  callback.Run(blink::mojom::BackgroundFetchError::NONE, registration);
+  if (!ValidateRequests(requests)) {
+    callback.Run(blink::mojom::BackgroundFetchError::INVALID_ARGUMENT,
+                 base::nullopt /* registration */);
+    return;
+  }
+
+  background_fetch_context_->StartFetch(registration_id, requests, options,
+                                        callback);
 }
 
 void BackgroundFetchServiceImpl::UpdateUI(
@@ -66,6 +88,10 @@ void BackgroundFetchServiceImpl::UpdateUI(
     const std::string& title,
     const UpdateUICallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!ValidateTag(tag) || !ValidateTitle(title)) {
+    callback.Run(blink::mojom::BackgroundFetchError::INVALID_ARGUMENT);
+    return;
+  }
 
   // TODO(peter): Get the BackgroundFetchJobController for the
   // {service_worker_registration_id, tag} pair and call UpdateUI() on it.
@@ -78,6 +104,10 @@ void BackgroundFetchServiceImpl::Abort(int64_t service_worker_registration_id,
                                        const std::string& tag,
                                        const AbortCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!ValidateTag(tag)) {
+    callback.Run(blink::mojom::BackgroundFetchError::INVALID_ARGUMENT);
+    return;
+  }
 
   // TODO(peter): Get the BackgroundFetchJobController for the
   // {service_worker_registration_id, tag} pair and call Abort() on it.
@@ -91,6 +121,11 @@ void BackgroundFetchServiceImpl::GetRegistration(
     const std::string& tag,
     const GetRegistrationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!ValidateTag(tag)) {
+    callback.Run(blink::mojom::BackgroundFetchError::INVALID_ARGUMENT,
+                 base::nullopt /* registration */);
+    return;
+  }
 
   // TODO(peter): Get the registration for {service_worker_registration_id, tag}
   // and construct a BackgroundFetchRegistrationPtr for it.
@@ -109,6 +144,37 @@ void BackgroundFetchServiceImpl::GetTags(int64_t service_worker_registration_id,
 
   callback.Run(blink::mojom::BackgroundFetchError::NONE,
                std::vector<std::string>());
+}
+
+bool BackgroundFetchServiceImpl::ValidateTag(const std::string& tag) {
+  if (tag.empty() || tag.size() > kMaxTagLength) {
+    bad_message::ReceivedBadMessage(render_process_id_,
+                                    bad_message::BFSI_INVALID_TAG);
+    return false;
+  }
+
+  return true;
+}
+
+bool BackgroundFetchServiceImpl::ValidateRequests(
+    const std::vector<ServiceWorkerFetchRequest>& requests) {
+  if (requests.empty()) {
+    bad_message::ReceivedBadMessage(render_process_id_,
+                                    bad_message::BFSI_INVALID_REQUESTS);
+    return false;
+  }
+
+  return true;
+}
+
+bool BackgroundFetchServiceImpl::ValidateTitle(const std::string& title) {
+  if (title.empty() || title.size() > kMaxTitleLength) {
+    bad_message::ReceivedBadMessage(render_process_id_,
+                                    bad_message::BFSI_INVALID_TITLE);
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace content

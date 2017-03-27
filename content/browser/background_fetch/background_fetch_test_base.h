@@ -32,9 +32,11 @@ class BackgroundFetchTestBase : public ::testing::Test {
   void SetUp() override;
   void TearDown() override;
 
-  // Creates a valid Service Worker registration for the testing origin and
-  // stores the data in the |*registration_id|. Returns whether creation was
-  // successful, which must be asserted by tests.
+  // Creates a Background Fetch registration backed by a Service Worker
+  // registration for the testing origin. The resulting registration will be
+  // stored in |*registration_id|. Returns whether creation was successful,
+  // which must be asserted by tests. The ServiceWorkerRegistration that
+  // backs the |*registration_id| will be kept alive for the test's lifetime.
   bool CreateRegistrationId(const std::string& tag,
                             BackgroundFetchRegistrationId* registration_id)
       WARN_UNUSED_RESULT;

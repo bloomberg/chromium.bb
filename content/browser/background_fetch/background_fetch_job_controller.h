@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_item.h"
 
@@ -28,11 +29,15 @@ class StoragePartition;
 class CONTENT_EXPORT BackgroundFetchJobController
     : public DownloadItem::Observer {
  public:
-  BackgroundFetchJobController(const std::string& job_guid,
-                               BrowserContext* browser_context,
-                               StoragePartition* storage_partition,
-                               BackgroundFetchDataManager* data_manager,
-                               base::OnceClosure completed_closure);
+  using CompletedCallback =
+      base::OnceCallback<void(const BackgroundFetchRegistrationId&)>;
+
+  BackgroundFetchJobController(
+      const BackgroundFetchRegistrationId& registration_id,
+      BrowserContext* browser_context,
+      StoragePartition* storage_partition,
+      BackgroundFetchDataManager* data_manager,
+      CompletedCallback completed_callback);
   ~BackgroundFetchJobController() override;
 
   // Start processing on a batch of requests. Some of these may already be in
@@ -55,6 +60,10 @@ class CONTENT_EXPORT BackgroundFetchJobController
 
   void ProcessRequest(const BackgroundFetchRequestInfo& request);
 
+  // The registration id on behalf of which this controller is fetching data.
+  BackgroundFetchRegistrationId registration_id_;
+
+  // TODO(peter): Deprecated, remove in favor of |registration_id|.
   std::string job_guid_;
 
   // Pointer to the browser context. The BackgroundFetchJobController is owned
@@ -72,7 +81,7 @@ class CONTENT_EXPORT BackgroundFetchJobController
   BackgroundFetchDataManager* data_manager_;
 
   // Callback for when all fetches have been completed.
-  base::OnceClosure completed_closure_;
+  CompletedCallback completed_callback_;
 
   // Map from the GUID assigned by the DownloadManager to the request_guid.
   std::unordered_map<std::string, std::string> download_guid_map_;

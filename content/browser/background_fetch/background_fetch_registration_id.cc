@@ -20,6 +20,9 @@ BackgroundFetchRegistrationId::BackgroundFetchRegistrationId(
       tag_(tag) {}
 
 BackgroundFetchRegistrationId::BackgroundFetchRegistrationId(
+    const BackgroundFetchRegistrationId& other) = default;
+
+BackgroundFetchRegistrationId::BackgroundFetchRegistrationId(
     BackgroundFetchRegistrationId&& other) = default;
 
 BackgroundFetchRegistrationId::~BackgroundFetchRegistrationId() = default;

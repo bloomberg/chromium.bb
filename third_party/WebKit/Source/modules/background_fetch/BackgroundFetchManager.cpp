@@ -82,6 +82,7 @@ void BackgroundFetchManager::didFetch(
           InvalidStateError,
           "There already is a registration for the given tag."));
       return;
+    case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:
     case mojom::blink::BackgroundFetchError::INVALID_TAG:
       // Not applicable for this callback.
       break;
@@ -178,6 +179,7 @@ void BackgroundFetchManager::didGetRegistration(
       resolver->resolve(registration);
       return;
     case mojom::blink::BackgroundFetchError::DUPLICATED_TAG:
+    case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:
     case mojom::blink::BackgroundFetchError::INVALID_TAG:
       // Not applicable for this callback.
       break;
@@ -213,6 +215,7 @@ void BackgroundFetchManager::didGetTags(
       resolver->resolve(tags);
       return;
     case mojom::blink::BackgroundFetchError::DUPLICATED_TAG:
+    case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:
     case mojom::blink::BackgroundFetchError::INVALID_TAG:
       // Not applicable for this callback.
       break;

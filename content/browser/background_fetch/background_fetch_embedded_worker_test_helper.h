@@ -32,7 +32,7 @@ class BackgroundFetchEmbeddedWorkerTestHelper
   // Toggles whether the named Service Worker event should fail.
   void set_fail_abort_event(bool fail) { fail_abort_event_ = fail; }
   void set_fail_click_event(bool fail) { fail_click_event_ = fail; }
-  void set_fail_fail_event(bool fail) { fail_fail_event_ = fail; }
+  void set_fail_fetch_fail_event(bool fail) { fail_fetch_fail_event_ = fail; }
   void set_fail_fetched_event(bool fail) { fail_fetched_event_ = fail; }
 
   const base::Optional<std::string>& last_tag() const { return last_tag_; }
@@ -69,7 +69,7 @@ class BackgroundFetchEmbeddedWorkerTestHelper
  private:
   bool fail_abort_event_ = false;
   bool fail_click_event_ = false;
-  bool fail_fail_event_ = false;
+  bool fail_fetch_fail_event_ = false;
   bool fail_fetched_event_ = false;
 
   base::Optional<std::string> last_tag_;

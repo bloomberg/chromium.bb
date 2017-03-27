@@ -17,6 +17,7 @@
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/browser/background_fetch/background_fetch_request_info.h"
 #include "content/common/content_export.h"
+#include "third_party/WebKit/public/platform/modules/background_fetch/background_fetch.mojom.h"
 #include "url/origin.h"
 
 namespace content {
@@ -30,14 +31,27 @@ class ChromeBlobStorageContext;
 // which will keep the metadata up to date.
 class CONTENT_EXPORT BackgroundFetchDataManager {
  public:
+  using CreateRegistrationCallback =
+      base::OnceCallback<void(blink::mojom::BackgroundFetchError)>;
+  using DeleteRegistrationCallback =
+      base::OnceCallback<void(blink::mojom::BackgroundFetchError)>;
+
   explicit BackgroundFetchDataManager(BrowserContext* browser_context);
   ~BackgroundFetchDataManager();
 
-  // Called by BackgroundFetchContext when a new request is started, this will
-  // store all of the necessary metadata to track the request.
-  void CreateRequest(
-      std::unique_ptr<BackgroundFetchJobInfo> job_info,
-      std::vector<std::unique_ptr<BackgroundFetchRequestInfo>> request_infos);
+  // Creates and stores a new registration with the given properties. Will
+  // invoke the |callback| when the registration has been created, which may
+  // fail due to invalid input or storage errors.
+  void CreateRegistration(
+      const BackgroundFetchRegistrationId& registration_id,
+      const std::vector<ServiceWorkerFetchRequest>& requests,
+      const BackgroundFetchOptions& options,
+      CreateRegistrationCallback callback);
+
+  // Deletes the registration identified by |registration_id|. Will invoke the
+  // |callback| when the registration has been deleted from storage.
+  void DeleteRegistration(const BackgroundFetchRegistrationId& registration_id,
+                          DeleteRegistrationCallback callback);
 
   // TODO(harkness): Replace the OnceClosure with a callback to return the
   // response object once it is decided whether lifetime should be passed to the
@@ -71,6 +85,8 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
   virtual bool IsComplete(const std::string& job_guid) const;
 
  private:
+  friend class BackgroundFetchDataManagerTest;
+
   // Storage interface.
   void WriteJobToStorage(
       std::unique_ptr<BackgroundFetchJobInfo> job_info,
@@ -90,7 +106,7 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
   BrowserContext* browser_context_;
 
   // Set of known background fetch registration ids.
-  std::set<BackgroundFetchRegistrationId> known_registrations_;
+  std::set<BackgroundFetchRegistrationId> registrations_;
 
   // Map from job_guid to JobInfo.
   std::unordered_map<std::string, std::unique_ptr<BackgroundFetchJobInfo>>

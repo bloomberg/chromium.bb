@@ -152,16 +152,22 @@ class BackgroundFetchJobControllerTest : public ::testing::Test {
 
   void TearDown() override { job_controller_->Shutdown(); }
 
-  void InitializeJobController() {
+  void InitializeJobController(
+      const BackgroundFetchRegistrationId& registration_id) {
     job_controller_ = base::MakeUnique<BackgroundFetchJobController>(
-        kJobGuid, &browser_context_,
+        registration_id, &browser_context_,
         BrowserContext::GetDefaultStoragePartition(&browser_context_),
         data_manager_.get(),
         base::BindOnce(&BackgroundFetchJobControllerTest::DidCompleteJob,
-                       base::Unretained(this)));
+                       base::Unretained(this), registration_id));
   }
 
-  void DidCompleteJob() { did_complete_job_ = true; }
+  void DidCompleteJob(
+      const BackgroundFetchRegistrationId& registration_id,
+      const BackgroundFetchRegistrationId& original_registration_id) {
+    ASSERT_EQ(registration_id, original_registration_id);
+    did_complete_job_ = true;
+  }
 
   void StartProcessing() {
     base::RunLoop run_loop;
@@ -202,12 +208,13 @@ class BackgroundFetchJobControllerTest : public ::testing::Test {
 };
 
 TEST_F(BackgroundFetchJobControllerTest, SingleRequestJob) {
-  BackgroundFetchJobInfo job_info(kTag, url::Origin(GURL(kOrigin)),
-                                  kServiceWorkerRegistrationId);
+  BackgroundFetchRegistrationId registration_id(
+      kServiceWorkerRegistrationId, url::Origin(GURL(kOrigin)), kTag);
+
   BackgroundFetchRequestInfo request_info(GURL(kTestUrl), kJobGuid);
   request_info.set_state(DownloadItem::DownloadState::IN_PROGRESS);
   data_manager()->set_next_request(&request_info);
-  InitializeJobController();
+  InitializeJobController(registration_id);
 
   EXPECT_CALL(*(download_manager()),
               DownloadUrlMock(::testing::Pointee(::testing::Property(
@@ -236,14 +243,15 @@ TEST_F(BackgroundFetchJobControllerTest, SingleRequestJob) {
 }
 
 TEST_F(BackgroundFetchJobControllerTest, MultipleRequestJob) {
-  BackgroundFetchJobInfo job_info(kTag, url::Origin(GURL(kOrigin)),
-                                  kServiceWorkerRegistrationId);
+  BackgroundFetchRegistrationId registration_id(
+      kServiceWorkerRegistrationId, url::Origin(GURL(kOrigin)), kTag);
+
   std::vector<BackgroundFetchRequestInfo> request_infos;
   for (int i = 0; i < 10; i++) {
     request_infos.emplace_back(GURL(kTestUrl), base::IntToString(i));
   }
   data_manager()->set_next_request(&request_infos[0]);
-  InitializeJobController();
+  InitializeJobController(registration_id);
 
   EXPECT_CALL(*(download_manager()),
               DownloadUrlMock(::testing::Pointee(::testing::Property(
@@ -287,12 +295,13 @@ TEST_F(BackgroundFetchJobControllerTest, MultipleRequestJob) {
 }
 
 TEST_F(BackgroundFetchJobControllerTest, UpdateStorageState) {
-  BackgroundFetchJobInfo job_info(kTag, url::Origin(GURL(kOrigin)),
-                                  kServiceWorkerRegistrationId);
+  BackgroundFetchRegistrationId registration_id(
+      kServiceWorkerRegistrationId, url::Origin(GURL(kOrigin)), kTag);
+
   BackgroundFetchRequestInfo request_info(GURL(kTestUrl), kJobGuid);
   request_info.set_state(DownloadItem::DownloadState::IN_PROGRESS);
   data_manager()->set_next_request(&request_info);
-  InitializeJobController();
+  InitializeJobController(registration_id);
 
   EXPECT_CALL(*(download_manager()),
               DownloadUrlMock(::testing::Pointee(::testing::Property(

@@ -67,6 +67,7 @@ void BackgroundFetchRegistration::didAbort(
       resolver->resolve(false /* success */);
       return;
     case mojom::blink::BackgroundFetchError::DUPLICATED_TAG:
+    case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:
       // Not applicable for this callback.
       break;
   }

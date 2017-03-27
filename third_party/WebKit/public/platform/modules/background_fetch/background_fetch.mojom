@@ -9,6 +9,7 @@ import "url/mojo/origin.mojom";
 enum BackgroundFetchError {
   NONE,
   DUPLICATED_TAG,
+  INVALID_ARGUMENT,
   INVALID_TAG
 };
 

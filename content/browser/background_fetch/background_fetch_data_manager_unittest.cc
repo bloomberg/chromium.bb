@@ -15,13 +15,12 @@
 #include "content/browser/background_fetch/background_fetch_job_info.h"
 #include "content/browser/background_fetch/background_fetch_job_response_data.h"
 #include "content/browser/background_fetch/background_fetch_request_info.h"
+#include "content/browser/background_fetch/background_fetch_test_base.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
 namespace {
@@ -33,7 +32,7 @@ const int64_t kServiceWorkerRegistrationId = 9001;
 
 }  // namespace
 
-class BackgroundFetchDataManagerTest : public ::testing::Test {
+class BackgroundFetchDataManagerTest : public BackgroundFetchTestBase {
  public:
   BackgroundFetchDataManagerTest()
       : background_fetch_data_manager_(
@@ -41,8 +40,39 @@ class BackgroundFetchDataManagerTest : public ::testing::Test {
   ~BackgroundFetchDataManagerTest() override = default;
 
  protected:
+  // Synchronous version of BackgroundFetchDataManager::CreateRegistration().
+  void CreateRegistration(
+      const BackgroundFetchRegistrationId& registration_id,
+      const std::vector<ServiceWorkerFetchRequest>& requests,
+      const BackgroundFetchOptions& options,
+      blink::mojom::BackgroundFetchError* out_error) {
+    DCHECK(out_error);
+
+    base::RunLoop run_loop;
+    background_fetch_data_manager_->CreateRegistration(
+        registration_id, requests, options,
+        base::BindOnce(&BackgroundFetchDataManagerTest::DidCreateRegistration,
+                       base::Unretained(this), run_loop.QuitClosure(),
+                       out_error));
+    run_loop.Run();
+  }
+
+  // Synchronous version of BackgroundFetchDataManager::DeleteRegistration().
+  void DeleteRegistration(const BackgroundFetchRegistrationId& registration_id,
+                          blink::mojom::BackgroundFetchError* out_error) {
+    DCHECK(out_error);
+
+    base::RunLoop run_loop;
+    background_fetch_data_manager_->DeleteRegistration(
+        registration_id,
+        base::BindOnce(&BackgroundFetchDataManagerTest::DidDeleteRegistration,
+                       base::Unretained(this), run_loop.QuitClosure(),
+                       out_error));
+    run_loop.Run();
+  }
+
   void CreateRequests(int num_requests) {
-    DCHECK(num_requests > 0);
+    DCHECK_GT(num_requests, 0);
     // Create |num_requests| BackgroundFetchRequestInfo's.
     std::vector<std::unique_ptr<BackgroundFetchRequestInfo>> request_infos;
     for (int i = 0; i < num_requests; i++) {
@@ -52,9 +82,12 @@ class BackgroundFetchDataManagerTest : public ::testing::Test {
     std::unique_ptr<BackgroundFetchJobInfo> job_info =
         base::MakeUnique<BackgroundFetchJobInfo>(
             "tag", url::Origin(GURL(kJobOrigin)), kServiceWorkerRegistrationId);
+    job_info->set_num_requests(num_requests);
+
     job_guid_ = job_info->guid();
-    background_fetch_data_manager_->CreateRequest(std::move(job_info),
-                                                  std::move(request_infos));
+
+    background_fetch_data_manager_->WriteJobToStorage(std::move(job_info),
+                                                      std::move(request_infos));
   }
 
   void GetResponse() {
@@ -92,50 +125,63 @@ class BackgroundFetchDataManagerTest : public ::testing::Test {
   }
 
  private:
+  void DidCreateRegistration(base::Closure quit_closure,
+                             blink::mojom::BackgroundFetchError* out_error,
+                             blink::mojom::BackgroundFetchError error) {
+    *out_error = error;
+
+    quit_closure.Run();
+  }
+
+  void DidDeleteRegistration(base::Closure quit_closure,
+                             blink::mojom::BackgroundFetchError* out_error,
+                             blink::mojom::BackgroundFetchError error) {
+    *out_error = error;
+
+    quit_closure.Run();
+  }
+
   std::string job_guid_;
   TestBrowserContext browser_context_;
   std::unique_ptr<BackgroundFetchDataManager> background_fetch_data_manager_;
-  TestBrowserThreadBundle thread_bundle_;
   std::vector<ServiceWorkerResponse> responses_;
   std::vector<std::unique_ptr<BlobHandle>> blobs_;
 };
 
-TEST_F(BackgroundFetchDataManagerTest, CompleteJob) {
-  CreateRequests(10);
-  BackgroundFetchDataManager* data_manager = background_fetch_data_manager();
-  std::vector<std::string> request_guids;
+TEST_F(BackgroundFetchDataManagerTest, NoDuplicateRegistrations) {
+  // Tests that the BackgroundFetchDataManager correctly rejects creating a
+  // registration that's already known to the system.
 
-  // Get all of the fetch requests from the BackgroundFetchDataManager.
-  for (int i = 0; i < 10; i++) {
-    EXPECT_FALSE(data_manager->IsComplete(job_guid()));
-    ASSERT_TRUE(data_manager->HasRequestsRemaining(job_guid()));
-    const BackgroundFetchRequestInfo& request_info =
-        data_manager->GetNextBackgroundFetchRequestInfo(job_guid());
-    request_guids.push_back(request_info.guid());
-    EXPECT_EQ(request_info.tag(), kTag);
-    EXPECT_EQ(request_info.state(),
-              DownloadItem::DownloadState::MAX_DOWNLOAD_STATE);
-    EXPECT_EQ(request_info.interrupt_reason(),
-              DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_NONE);
-  }
+  BackgroundFetchRegistrationId registration_id;
+  ASSERT_TRUE(CreateRegistrationId(kTag, &registration_id));
 
-  // At this point, all the fetches have been started, but none finished.
-  EXPECT_FALSE(data_manager->HasRequestsRemaining(job_guid()));
+  std::vector<ServiceWorkerFetchRequest> requests;
+  BackgroundFetchOptions options;
 
-  // Complete all of the fetch requests.
-  for (int i = 0; i < 10; i++) {
-    EXPECT_FALSE(data_manager->IsComplete(job_guid()));
-    EXPECT_FALSE(data_manager->UpdateRequestState(
-        job_guid(), request_guids[i], DownloadItem::DownloadState::COMPLETE,
-        DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_NONE));
-  }
+  blink::mojom::BackgroundFetchError error;
 
-  // All requests are complete now.
-  EXPECT_TRUE(data_manager->IsComplete(job_guid()));
-  GetResponse();
+  // Deleting the not-yet-created registration should fail.
+  ASSERT_NO_FATAL_FAILURE(DeleteRegistration(registration_id, &error));
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::INVALID_TAG);
 
-  EXPECT_EQ(10U, responses().size());
-  EXPECT_EQ(10U, blobs().size());
+  // Creating the initial registration should succeed.
+  ASSERT_NO_FATAL_FAILURE(
+      CreateRegistration(registration_id, requests, options, &error));
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+
+  // Attempting to create it again should yield an error.
+  ASSERT_NO_FATAL_FAILURE(
+      CreateRegistration(registration_id, requests, options, &error));
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::DUPLICATED_TAG);
+
+  // Deleting the registration should succeed.
+  ASSERT_NO_FATAL_FAILURE(DeleteRegistration(registration_id, &error));
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+
+  // And then recreating the registration again should work fine.
+  ASSERT_NO_FATAL_FAILURE(
+      CreateRegistration(registration_id, requests, options, &error));
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 }
 
 TEST_F(BackgroundFetchDataManagerTest, OutOfOrderCompletion) {

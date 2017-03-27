@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/guid.h"
 #include "base/memory/ptr_util.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
 #include "content/browser/background_fetch/background_fetch_request_info.h"
@@ -18,16 +19,17 @@
 namespace content {
 
 BackgroundFetchJobController::BackgroundFetchJobController(
-    const std::string& job_guid,
+    const BackgroundFetchRegistrationId& registration_id,
     BrowserContext* browser_context,
     StoragePartition* storage_partition,
     BackgroundFetchDataManager* data_manager,
-    base::OnceClosure completed_closure)
-    : job_guid_(job_guid),
+    CompletedCallback completed_callback)
+    : registration_id_(registration_id),
+      job_guid_(base::GenerateGUID()),
       browser_context_(browser_context),
       storage_partition_(storage_partition),
       data_manager_(data_manager),
-      completed_closure_(std::move(completed_closure)),
+      completed_callback_(std::move(completed_callback)),
       weak_ptr_factory_(this) {}
 
 BackgroundFetchJobController::~BackgroundFetchJobController() = default;
@@ -99,7 +101,7 @@ void BackgroundFetchJobController::OnDownloadUpdated(DownloadItem* item) {
         ProcessRequest(
             data_manager_->GetNextBackgroundFetchRequestInfo(job_guid_));
       } else if (data_manager_->IsComplete(job_guid_)) {
-        std::move(completed_closure_).Run();
+        std::move(completed_callback_).Run(registration_id_);
       }
       break;
     case DownloadItem::DownloadState::INTERRUPTED:
