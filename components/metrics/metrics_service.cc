@@ -204,15 +204,12 @@ void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
   MetricsStateManager::RegisterPrefs(registry);
   MetricsLog::RegisterPrefs(registry);
   StabilityMetricsProvider::RegisterPrefs(registry);
-  DataUseTracker::RegisterPrefs(registry);
   ExecutionPhaseManager::RegisterPrefs(registry);
+  MetricsReportingService::RegisterPrefs(registry);
 
   registry->RegisterInt64Pref(prefs::kInstallDate, 0);
 
   registry->RegisterIntegerPref(prefs::kMetricsSessionID, -1);
-
-  registry->RegisterListPref(prefs::kMetricsInitialLogs);
-  registry->RegisterListPref(prefs::kMetricsOngoingLogs);
 
   registry->RegisterInt64Pref(prefs::kUninstallLaunchCount, 0);
   registry->RegisterInt64Pref(prefs::kUninstallMetricsUptimeSec, 0);

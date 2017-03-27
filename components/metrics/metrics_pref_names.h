@@ -65,6 +65,7 @@ extern const char kUninstallMetricsPageLoadCount[];
 extern const char kUninstallMetricsUptimeSec[];
 
 // For measuring data use for throttling UMA log uploads on cellular.
+extern const char kUkmCellDataUse[];
 extern const char kUmaCellDataUse[];
 extern const char kUserCellDataUse[];
 

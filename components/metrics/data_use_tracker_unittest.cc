@@ -21,10 +21,7 @@ const char kExpiredDateStr2[] = "2016-03-01";
 
 class TestDataUsePrefService : public TestingPrefServiceSimple {
  public:
-  TestDataUsePrefService() {
-    registry()->RegisterDictionaryPref(metrics::prefs::kUserCellDataUse);
-    registry()->RegisterDictionaryPref(metrics::prefs::kUmaCellDataUse);
-  }
+  TestDataUsePrefService() { DataUseTracker::RegisterPrefs(registry()); }
 
   void ClearDataUsePrefs() {
     ClearPref(metrics::prefs::kUserCellDataUse);

@@ -16,8 +16,8 @@
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
 #include "components/metrics/metrics_provider.h"
-#include "components/metrics/metrics_reporting_scheduler.h"
-#include "components/metrics/persisted_logs.h"
+#include "components/metrics/metrics_rotation_scheduler.h"
+#include "components/ukm/ukm_reporting_service.h"
 #include "url/gurl.h"
 
 class PrefRegistrySimple;
@@ -29,7 +29,6 @@ class AutofillMetrics;
 }  // namespace autofill
 
 namespace metrics {
-class MetricsLogUploader;
 class MetricsServiceClient;
 }
 
@@ -173,20 +172,16 @@ class UkmService : public base::SupportsWeakPtr<UkmService> {
   // Registered metrics providers.
   std::vector<std::unique_ptr<metrics::MetricsProvider>> metrics_providers_;
 
-  // Logs that have not yet been sent.
-  metrics::PersistedLogs persisted_logs_;
+  // Log reporting service.
+  ukm::UkmReportingService reporting_service_;
 
   // The scheduler for determining when uploads should happen.
-  std::unique_ptr<metrics::MetricsReportingScheduler> scheduler_;
+  std::unique_ptr<metrics::MetricsRotationScheduler> scheduler_;
 
   base::ThreadChecker thread_checker_;
 
-  // Instance of the helper class for uploading logs.
-  std::unique_ptr<metrics::MetricsLogUploader> log_uploader_;
-
   bool initialize_started_;
   bool initialize_complete_;
-  bool log_upload_in_progress_;
 
   // Contains newly added sources and entries of UKM metrics which periodically
   // get serialized and cleared by BuildAndStoreLog().

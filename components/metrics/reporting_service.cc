@@ -166,23 +166,27 @@ void ReportingService::OnLogUploadComplete(int response_code) {
 
   bool upload_succeeded = response_code == 200;
 
-  // Provide boolean for error recovery (allow us to ignore response_code).
-  bool discard_log = false;
-  const size_t log_size = log_store()->staged_log().length();
-  if (upload_succeeded) {
-    LogSuccess(log_size);
-  } else if (log_size > max_retransmit_size_) {
-    LogLargeRejection(log_size);
-    discard_log = true;
-  } else if (response_code == 400) {
-    // Bad syntax.  Retransmission won't work.
-    discard_log = true;
-  }
+  // Staged log could have been removed already (such as by Purge() in some
+  // implementations), otherwise we may remove it here.
+  if (log_store()->has_staged_log()) {
+    // Provide boolean for error recovery (allow us to ignore response_code).
+    bool discard_log = false;
+    const size_t log_size = log_store()->staged_log().length();
+    if (upload_succeeded) {
+      LogSuccess(log_size);
+    } else if (log_size > max_retransmit_size_) {
+      LogLargeRejection(log_size);
+      discard_log = true;
+    } else if (response_code == 400) {
+      // Bad syntax.  Retransmission won't work.
+      discard_log = true;
+    }
 
-  if (upload_succeeded || discard_log) {
-    log_store()->DiscardStagedLog();
-    // Store the updated list to disk now that the removed log is uploaded.
-    log_store()->PersistUnsentLogs();
+    if (upload_succeeded || discard_log) {
+      log_store()->DiscardStagedLog();
+      // Store the updated list to disk now that the removed log is uploaded.
+      log_store()->PersistUnsentLogs();
+    }
   }
 
   // Error 400 indicates a problem with the log, not with the server, so

@@ -9,8 +9,6 @@ import("//testing/test.gni")
 # URLs for top-level navigations.
 static_library("ukm") {
   sources = [
-    "metrics_reporting_scheduler.cc",
-    "metrics_reporting_scheduler.h",
     "persisted_logs_metrics_impl.cc",
     "persisted_logs_metrics_impl.h",
     "ukm_entry.cc",
@@ -19,6 +17,10 @@ static_library("ukm") {
     "ukm_entry_builder.h",
     "ukm_pref_names.cc",
     "ukm_pref_names.h",
+    "ukm_reporting_service.cc",
+    "ukm_reporting_service.h",
+    "ukm_rotation_scheduler.cc",
+    "ukm_rotation_scheduler.h",
     "ukm_service.cc",
     "ukm_service.h",
     "ukm_source.cc",

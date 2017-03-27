@@ -54,7 +54,8 @@ void DataUseTracker::UpdateMetricsUsagePrefs(const std::string& service_name,
     return;
 
   UpdateUsagePref(prefs::kUserCellDataUse, message_size);
-  if (service_name == "UMA")
+  // TODO(holte): Consider adding seperate tracking for UKM.
+  if (service_name == "UMA" || service_name == "UKM")
     UpdateUsagePref(prefs::kUmaCellDataUse, message_size);
 }
 

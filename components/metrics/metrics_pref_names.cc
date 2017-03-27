@@ -190,6 +190,10 @@ const char kUninstallMetricsPageLoadCount[] =
     "uninstall_metrics.page_load_count";
 const char kUninstallMetricsUptimeSec[] = "uninstall_metrics.uptime_sec";
 
+// Dictionary for measuring cellular data used by UKM service during last 7
+// days.
+const char kUkmCellDataUse[] = "user_experience_metrics.ukm_cell_datause";
+
 // Dictionary for measuring cellular data used by UMA service during last 7
 // days.
 const char kUmaCellDataUse[] = "user_experience_metrics.uma_cell_datause";
