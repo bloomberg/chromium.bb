@@ -153,6 +153,8 @@ enum dpms_enum {
  * (windowed nested backends).
  */
 struct weston_head {
+	struct weston_output *output;	/**< the output driving this head */
+
 	struct wl_list resource_list;	/**< wl_output protocol objects */
 	struct wl_global *global;	/**< wl_output global */
 

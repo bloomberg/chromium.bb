@@ -4317,10 +4317,10 @@ static void
 bind_output(struct wl_client *client,
 	    void *data, uint32_t version, uint32_t id)
 {
-	struct weston_output *output = data;
+	struct weston_head *head = data;
+	struct weston_output *output = head->output;
 	struct weston_mode *mode;
 	struct wl_resource *resource;
-	struct weston_head *head = &output->head;
 
 	resource = wl_resource_create(client, &wl_output_interface,
 				      version, id);
@@ -4330,8 +4330,10 @@ bind_output(struct wl_client *client,
 	}
 
 	wl_list_insert(&head->resource_list, wl_resource_get_link(resource));
-	wl_resource_set_implementation(resource, &output_interface, data, unbind_resource);
+	wl_resource_set_implementation(resource, &output_interface, output,
+				       unbind_resource);
 
+	assert(output);
 	wl_output_send_geometry(resource,
 				output->x,
 				output->y,
@@ -4636,9 +4638,10 @@ weston_compositor_add_output(struct weston_compositor *compositor,
 	output->enabled = true;
 
 	head = &output->head;
+	head->output = output;
 	head->global = wl_global_create(compositor->wl_display,
 					&wl_output_interface, 3,
-					output, bind_output);
+					head, bind_output);
 
 	wl_signal_emit(&compositor->output_created_signal, output);
 
