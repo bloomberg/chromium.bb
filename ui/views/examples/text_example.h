@@ -69,9 +69,6 @@ class VIEWS_EXAMPLES_EXPORT TextExample : public ExampleBase,
   // Check box to enable/disable character break behavior.
   Checkbox* break_checkbox_;
 
-  // Check box to enable/disable text halo.
-  Checkbox* halo_checkbox_;
-
   // Check box to enable/disable bold style.
   Checkbox* bold_checkbox_;
 

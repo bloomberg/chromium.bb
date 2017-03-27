@@ -75,9 +75,6 @@ class GFX_EXPORT Canvas {
     // when rendering text onto a fully- or partially-transparent background
     // that will later be blended with another image.
     NO_SUBPIXEL_RENDERING = 1 << 9,
-
-    // Draw text with 1px border.
-    HALO_EFFECT = 1 << 10,
   };
 
   // Creates an empty canvas with image_scale of 1x.
@@ -149,22 +146,6 @@ class GFX_EXPORT Canvas {
   // This function returns either Canvas::TEXT_ALIGN_LEFT or
   // Canvas::TEXT_ALIGN_RIGHT.
   static int DefaultCanvasTextAlignment();
-
-  // Draws text with a 1-pixel halo around it of the given color.
-  // On Windows, it allows ClearType to be drawn to an otherwise transparent
-  //   bitmap for drag images. Drag images have only 1-bit of transparency, so
-  //   we don't do any fancy blurring.
-  // On Linux, text with halo is created by stroking it with 2px |halo_color|
-  //   then filling it with |text_color|.
-  // On Mac, NOTIMPLEMENTED.
-  //   TODO(dhollowa): Skia-native implementation is underway.  Cut over to
-  //   that when ready.  http::/crbug.com/109946
-  void DrawStringRectWithHalo(const base::string16& text,
-                              const FontList& font_list,
-                              SkColor text_color,
-                              SkColor halo_color,
-                              const Rect& display_rect,
-                              int flags);
 
   // Extracts an ImageSkiaRep from the contents of this canvas.
   ImageSkiaRep ExtractImageRep() const;

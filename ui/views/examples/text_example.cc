@@ -67,7 +67,6 @@ class TextExample::TextExampleView : public View {
   TextExampleView()
     : text_(base::ASCIIToUTF16(kShortText)),
       flags_(0),
-      halo_(false),
       elide_(gfx::NO_ELIDE) {
   }
 
@@ -77,9 +76,6 @@ class TextExample::TextExampleView : public View {
     const SkColor color = SK_ColorDKGRAY;
     if (elide_ == gfx::FADE_TAIL) {
       canvas->DrawFadedString(text_, font_list_, color, bounds, flags_);
-    } else if (halo_) {
-      canvas->DrawStringRectWithHalo(text_, font_list_, color, SK_ColorYELLOW,
-                                     bounds, flags_);
     } else {
       canvas->DrawStringRectWithFlags(text_, font_list_, color, bounds, flags_);
     }
@@ -88,7 +84,6 @@ class TextExample::TextExampleView : public View {
   int flags() const { return flags_; }
   void set_flags(int flags) { flags_ = flags; }
   void set_text(const base::string16& text) { text_ = text; }
-  void set_halo(bool halo) { halo_ = halo; }
   void set_elide(gfx::ElideBehavior elide) { elide_ = elide; }
 
   int GetStyle() const { return font_list_.GetFontStyle(); }
@@ -108,9 +103,6 @@ class TextExample::TextExampleView : public View {
 
   // Text flags for passing to |DrawStringRect()|.
   int flags_;
-
-  // A flag to draw a halo around the text.
-  bool halo_;
 
   // The eliding, fading, or truncating behavior.
   gfx::ElideBehavior elide_;
@@ -175,7 +167,6 @@ void TextExample::CreateExampleView(View* container) {
   layout->StartRow(0, 0);
   multiline_checkbox_ = AddCheckbox(layout, "Multiline");
   break_checkbox_ = AddCheckbox(layout, "Character Break");
-  halo_checkbox_ = AddCheckbox(layout, "Halo");
   bold_checkbox_ = AddCheckbox(layout, "Bold");
   italic_checkbox_ = AddCheckbox(layout, "Italic");
   underline_checkbox_ = AddCheckbox(layout, "Underline");
@@ -198,7 +189,6 @@ void TextExample::ButtonPressed(Button* button, const ui::Event& event) {
   SetFlagFromCheckbox(break_checkbox_, &flags, gfx::Canvas::CHARACTER_BREAK);
   SetFlagFromCheckbox(italic_checkbox_, &style, gfx::Font::ITALIC);
   SetFlagFromCheckbox(underline_checkbox_, &style, gfx::Font::UNDERLINE);
-  text_view_->set_halo(halo_checkbox_->checked());
   text_view_->set_flags(flags);
   text_view_->SetStyle(style);
   text_view_->SetWeight(bold_checkbox_->checked() ? gfx::Font::Weight::BOLD
