@@ -37,7 +37,7 @@ bool SubresourceFilter::allowLoad(
       m_subresourceFilter->getLoadPolicy(resourceUrl, requestContext);
   if (reportingPolicy == SecurityViolationReportingPolicy::Report)
     reportLoad(loadPolicy);
-  return loadPolicy != WebDocumentSubresourceFilter::Disallow;
+  return loadPolicy != WebDocumentSubresourceFilter::kDisallow;
 }
 
 bool SubresourceFilter::allowWebSocketConnection(const KURL& url) {
@@ -54,19 +54,19 @@ bool SubresourceFilter::allowWebSocketConnection(const KURL& url) {
   taskRunner->postTask(BLINK_FROM_HERE,
                        WTF::bind(&SubresourceFilter::reportLoad,
                                  wrapPersistent(this), loadPolicy));
-  return loadPolicy != WebDocumentSubresourceFilter::Disallow;
+  return loadPolicy != WebDocumentSubresourceFilter::kDisallow;
 }
 
 void SubresourceFilter::reportLoad(
     WebDocumentSubresourceFilter::LoadPolicy loadPolicy) {
   // TODO(csharrison): log console errors here.
   switch (loadPolicy) {
-    case WebDocumentSubresourceFilter::Allow:
+    case WebDocumentSubresourceFilter::kAllow:
       break;
-    case WebDocumentSubresourceFilter::Disallow:
+    case WebDocumentSubresourceFilter::kDisallow:
       m_subresourceFilter->reportDisallowedLoad();
     // fall through
-    case WebDocumentSubresourceFilter::WouldDisallow:
+    case WebDocumentSubresourceFilter::kWouldDisallow:
       m_documentLoader->didObserveLoadingBehavior(
           WebLoadingBehaviorSubresourceFilterMatch);
       break;

@@ -34,11 +34,11 @@ class TestDocumentSubresourceFilter : public WebDocumentSubresourceFilter {
                   m_queriedSubresourcePaths.end(),
                   resourcePath) == m_queriedSubresourcePaths.end())
       m_queriedSubresourcePaths.push_back(resourcePath);
-    return m_allowLoads ? Allow : Disallow;
+    return m_allowLoads ? kAllow : kDisallow;
   }
 
   LoadPolicy getLoadPolicyForWebSocketConnect(const WebURL& url) override {
-    return Allow;
+    return kAllow;
   }
 
   void reportDisallowedLoad() override {}

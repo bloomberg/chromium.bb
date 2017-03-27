@@ -901,7 +901,7 @@ TEST_F(FrameFetchContextTest, SetIsExternalRequestForLocalDocument) {
 }
 
 TEST_F(FrameFetchContextSubresourceFilterTest, Filter) {
-  setFilterPolicy(WebDocumentSubresourceFilter::Disallow);
+  setFilterPolicy(WebDocumentSubresourceFilter::kDisallow);
 
   EXPECT_EQ(ResourceRequestBlockedReason::SubresourceFilter, canRequest());
   EXPECT_EQ(1, getFilteredLoadCallCount());
@@ -918,7 +918,7 @@ TEST_F(FrameFetchContextSubresourceFilterTest, Filter) {
 }
 
 TEST_F(FrameFetchContextSubresourceFilterTest, Allow) {
-  setFilterPolicy(WebDocumentSubresourceFilter::Allow);
+  setFilterPolicy(WebDocumentSubresourceFilter::kAllow);
 
   EXPECT_EQ(ResourceRequestBlockedReason::None, canRequest());
   EXPECT_EQ(0, getFilteredLoadCallCount());
@@ -928,7 +928,7 @@ TEST_F(FrameFetchContextSubresourceFilterTest, Allow) {
 }
 
 TEST_F(FrameFetchContextSubresourceFilterTest, WouldDisallow) {
-  setFilterPolicy(WebDocumentSubresourceFilter::WouldDisallow);
+  setFilterPolicy(WebDocumentSubresourceFilter::kWouldDisallow);
 
   EXPECT_EQ(ResourceRequestBlockedReason::None, canRequest());
   EXPECT_EQ(0, getFilteredLoadCallCount());

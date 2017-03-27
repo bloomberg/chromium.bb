@@ -76,14 +76,14 @@ proto::ElementType ToElementType(
 WebLoadPolicy ToWebLoadPolicy(LoadPolicy load_policy) {
   switch (load_policy) {
     case LoadPolicy::ALLOW:
-      return WebLoadPolicy::Allow;
+      return WebLoadPolicy::kAllow;
     case LoadPolicy::DISALLOW:
-      return WebLoadPolicy::Disallow;
+      return WebLoadPolicy::kDisallow;
     case LoadPolicy::WOULD_DISALLOW:
-      return WebLoadPolicy::WouldDisallow;
+      return WebLoadPolicy::kWouldDisallow;
     default:
       NOTREACHED();
-      return WebLoadPolicy::Allow;
+      return WebLoadPolicy::kAllow;
   }
 }
 
@@ -124,7 +124,7 @@ WebLoadPolicy WebDocumentSubresourceFilterImpl::getLoadPolicyImpl(
   if (filter_.activation_state().filtering_disabled_for_document ||
       url.protocolIs(url::kDataScheme)) {
     ++filter_.statistics().num_loads_total;
-    return WebLoadPolicy::Allow;
+    return WebLoadPolicy::kAllow;
   }
 
   // TODO(pkalinnikov): Would be good to avoid converting to GURL.

@@ -40,8 +40,8 @@ MockWebDocumentSubresourceFilter::getLoadPolicyImpl(const blink::WebURL& url) {
                         return base::EndsWith(path, suffix,
                                               base::CompareCase::SENSITIVE);
                       }) == disallowed_path_suffixes_.end()
-             ? Allow
-             : Disallow;
+             ? kAllow
+             : kDisallow;
 }
 
 void MockWebDocumentSubresourceFilter::reportDisallowedLoad() {}

@@ -13,7 +13,7 @@ class WebURL;
 
 class WebDocumentSubresourceFilter {
  public:
-  enum LoadPolicy { Allow, Disallow, WouldDisallow };
+  enum LoadPolicy { kAllow, kDisallow, kWouldDisallow };
 
   virtual ~WebDocumentSubresourceFilter() {}
   virtual LoadPolicy getLoadPolicy(const WebURL& resourceUrl,

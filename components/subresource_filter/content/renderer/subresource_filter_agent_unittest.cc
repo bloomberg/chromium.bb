@@ -184,7 +184,7 @@ class SubresourceFilterAgentTest : public ::testing::Test {
     // If the load policy indicated the load was filtered, simulate a filtered
     // load callback. In production, this will be called in FrameFetchContext,
     // but we simulate the call here.
-    if (actual_policy == blink::WebDocumentSubresourceFilter::Disallow)
+    if (actual_policy == blink::WebDocumentSubresourceFilter::kDisallow)
       agent()->filter()->reportDisallowedLoad();
   }
 
@@ -285,8 +285,8 @@ TEST_F(SubresourceFilterAgentTest, Enabled_FilteringIsInEffectForOneLoad) {
 
   ExpectSignalAboutFirstSubresourceDisallowed();
   ExpectLoadPolicy(kTestFirstURL,
-                   blink::WebDocumentSubresourceFilter::Disallow);
-  ExpectLoadPolicy(kTestSecondURL, blink::WebDocumentSubresourceFilter::Allow);
+                   blink::WebDocumentSubresourceFilter::kDisallow);
+  ExpectLoadPolicy(kTestSecondURL, blink::WebDocumentSubresourceFilter::kAllow);
   ExpectDocumentLoadStatisticsSent();
   FinishLoad();
 
@@ -295,8 +295,8 @@ TEST_F(SubresourceFilterAgentTest, Enabled_FilteringIsInEffectForOneLoad) {
   ExpectNoSignalAboutFirstSubresourceDisallowed();
   PerformSamePageNavigationWithoutSettingActivationLevel();
   ExpectLoadPolicy(kTestFirstURL,
-                   blink::WebDocumentSubresourceFilter::Disallow);
-  ExpectLoadPolicy(kTestSecondURL, blink::WebDocumentSubresourceFilter::Allow);
+                   blink::WebDocumentSubresourceFilter::kDisallow);
+  ExpectLoadPolicy(kTestSecondURL, blink::WebDocumentSubresourceFilter::kAllow);
 
   ExpectNoSubresourceFilterGetsInjected();
   StartLoadWithoutSettingActivationLevel();
@@ -329,13 +329,13 @@ TEST_F(SubresourceFilterAgentTest, Enabled_HistogramSamplesOverTwoLoads) {
 
     ExpectSignalAboutFirstSubresourceDisallowed();
     ExpectLoadPolicy(kTestFirstURL,
-                     blink::WebDocumentSubresourceFilter::Disallow);
+                     blink::WebDocumentSubresourceFilter::kDisallow);
     ExpectNoSignalAboutFirstSubresourceDisallowed();
     ExpectLoadPolicy(kTestFirstURL,
-                     blink::WebDocumentSubresourceFilter::Disallow);
+                     blink::WebDocumentSubresourceFilter::kDisallow);
     ExpectNoSignalAboutFirstSubresourceDisallowed();
     ExpectLoadPolicy(kTestSecondURL,
-                     blink::WebDocumentSubresourceFilter::Allow);
+                     blink::WebDocumentSubresourceFilter::kAllow);
     ExpectDocumentLoadStatisticsSent();
     FinishLoad();
 
@@ -346,10 +346,10 @@ TEST_F(SubresourceFilterAgentTest, Enabled_HistogramSamplesOverTwoLoads) {
 
     ExpectNoSignalAboutFirstSubresourceDisallowed();
     ExpectLoadPolicy(kTestSecondURL,
-                     blink::WebDocumentSubresourceFilter::Allow);
+                     blink::WebDocumentSubresourceFilter::kAllow);
     ExpectSignalAboutFirstSubresourceDisallowed();
     ExpectLoadPolicy(kTestFirstURL,
-                     blink::WebDocumentSubresourceFilter::Disallow);
+                     blink::WebDocumentSubresourceFilter::kDisallow);
     ExpectDocumentLoadStatisticsSent();
     FinishLoad();
 
@@ -390,8 +390,8 @@ TEST_F(SubresourceFilterAgentTest, Enabled_NewRulesetIsPickedUpAtNextLoad) {
 
   ExpectSignalAboutFirstSubresourceDisallowed();
   ExpectLoadPolicy(kTestFirstURL,
-                   blink::WebDocumentSubresourceFilter::Disallow);
-  ExpectLoadPolicy(kTestSecondURL, blink::WebDocumentSubresourceFilter::Allow);
+                   blink::WebDocumentSubresourceFilter::kDisallow);
+  ExpectLoadPolicy(kTestSecondURL, blink::WebDocumentSubresourceFilter::kAllow);
   ExpectDocumentLoadStatisticsSent();
   FinishLoad();
 
@@ -400,9 +400,9 @@ TEST_F(SubresourceFilterAgentTest, Enabled_NewRulesetIsPickedUpAtNextLoad) {
   ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(agent()));
 
   ExpectSignalAboutFirstSubresourceDisallowed();
-  ExpectLoadPolicy(kTestFirstURL, blink::WebDocumentSubresourceFilter::Allow);
+  ExpectLoadPolicy(kTestFirstURL, blink::WebDocumentSubresourceFilter::kAllow);
   ExpectLoadPolicy(kTestSecondURL,
-                   blink::WebDocumentSubresourceFilter::Disallow);
+                   blink::WebDocumentSubresourceFilter::kDisallow);
   ExpectDocumentLoadStatisticsSent();
   FinishLoad();
 }
@@ -437,10 +437,10 @@ TEST_F(SubresourceFilterAgentTest, DryRun_ResourcesAreEvaluatedButNotFiltered) {
   // `MatchedRules`, but still be allowed to proceed and not recorded as
   // `Disallowed`.
   ExpectLoadPolicy(kTestFirstURL,
-                   blink::WebDocumentSubresourceFilter::WouldDisallow);
+                   blink::WebDocumentSubresourceFilter::kWouldDisallow);
   ExpectLoadPolicy(kTestFirstURL,
-                   blink::WebDocumentSubresourceFilter::WouldDisallow);
-  ExpectLoadPolicy(kTestSecondURL, blink::WebDocumentSubresourceFilter::Allow);
+                   blink::WebDocumentSubresourceFilter::kWouldDisallow);
+  ExpectLoadPolicy(kTestSecondURL, blink::WebDocumentSubresourceFilter::kAllow);
   ExpectDocumentLoadStatisticsSent();
   FinishLoad();
 
@@ -469,11 +469,11 @@ TEST_F(SubresourceFilterAgentTest,
 
   ExpectSignalAboutFirstSubresourceDisallowed();
   ExpectLoadPolicy(kTestFirstURL,
-                   blink::WebDocumentSubresourceFilter::Disallow);
+                   blink::WebDocumentSubresourceFilter::kDisallow);
   ExpectNoSignalAboutFirstSubresourceDisallowed();
   ExpectLoadPolicy(kTestFirstURL,
-                   blink::WebDocumentSubresourceFilter::Disallow);
-  ExpectLoadPolicy(kTestSecondURL, blink::WebDocumentSubresourceFilter::Allow);
+                   blink::WebDocumentSubresourceFilter::kDisallow);
+  ExpectLoadPolicy(kTestSecondURL, blink::WebDocumentSubresourceFilter::kAllow);
   ExpectDocumentLoadStatisticsSent();
   FinishLoad();
 
@@ -481,10 +481,10 @@ TEST_F(SubresourceFilterAgentTest,
   StartLoadAndSetActivationLevel(ActivationLevel::ENABLED);
   ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(agent()));
 
-  ExpectLoadPolicy(kTestSecondURL, blink::WebDocumentSubresourceFilter::Allow);
+  ExpectLoadPolicy(kTestSecondURL, blink::WebDocumentSubresourceFilter::kAllow);
   ExpectSignalAboutFirstSubresourceDisallowed();
   ExpectLoadPolicy(kTestFirstURL,
-                   blink::WebDocumentSubresourceFilter::Disallow);
+                   blink::WebDocumentSubresourceFilter::kDisallow);
   ExpectDocumentLoadStatisticsSent();
   FinishLoad();
 }
