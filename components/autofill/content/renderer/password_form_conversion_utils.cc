@@ -15,6 +15,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
@@ -93,6 +94,7 @@ const char kLoginAndSignupRegex[] =
 const char kAutocompleteUsername[] = "username";
 const char kAutocompleteCurrentPassword[] = "current-password";
 const char kAutocompleteNewPassword[] = "new-password";
+const char kAutocompleteCreditCardPrefix[] = "cc-";
 
 re2::RE2* CreateMatcher(void* instance, const char* pattern) {
   re2::RE2::Options options;
@@ -425,6 +427,9 @@ bool GetPasswordForm(
     if (!input_element || !input_element->isEnabled())
       continue;
 
+    if (HasCreditCardAutocompleteAttributes(*input_element))
+      continue;
+
     bool element_is_invisible = !form_util::IsWebNodeVisible(*input_element);
     if (input_element->isTextField()) {
       if (input_element->isPasswordField()) {
@@ -735,12 +740,30 @@ std::unique_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
 
 bool HasAutocompleteAttributeValue(const blink::WebInputElement& element,
                                    const char* value_in_lowercase) {
-  base::string16 autocomplete_attribute(
-      element.getAttribute("autocomplete").utf16());
-  std::vector<std::string> tokens = LowercaseAndTokenizeAttributeString(
-      base::UTF16ToUTF8(autocomplete_attribute));
+  std::string autocomplete_value_lowercase = base::ToLowerASCII(
+      base::UTF16ToUTF8(element.getAttribute("autocomplete").utf16()));
+
+  std::vector<base::StringPiece> tokens = base::SplitStringPiece(
+      autocomplete_value_lowercase, base::kWhitespaceASCII,
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
   return base::ContainsValue(tokens, value_in_lowercase);
+}
+
+bool HasCreditCardAutocompleteAttributes(
+    const blink::WebInputElement& element) {
+  std::string autocomplete_value_lowercase = base::ToLowerASCII(
+      base::UTF16ToUTF8(element.getAttribute("autocomplete").utf16()));
+
+  for (const auto& token : base::SplitStringPiece(
+           autocomplete_value_lowercase, base::kWhitespaceASCII,
+           base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
+    if (base::StartsWith(token, kAutocompleteCreditCardPrefix,
+                         base::CompareCase::SENSITIVE)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace autofill

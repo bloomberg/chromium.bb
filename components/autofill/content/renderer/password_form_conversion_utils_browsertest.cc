@@ -1505,4 +1505,37 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, TooManyFieldsToParseForm) {
   EXPECT_FALSE(password_form);
 }
 
+TEST_F(MAYBE_PasswordFormConversionUtilsTest, OnlyCreditCardFields) {
+  PasswordFormBuilder builder(kTestFormActionURL);
+  builder.AddTextField("ccname", "johnsmith", "cc-name");
+  builder.AddPasswordField("cc_security_code", "0123456789", "cc-csc");
+  builder.AddSubmitButton("submit");
+  std::string html = builder.ProduceHTML();
+
+  std::unique_ptr<PasswordForm> password_form =
+      LoadHTMLAndConvertForm(html, nullptr, false);
+  EXPECT_FALSE(password_form);
+}
+
+TEST_F(MAYBE_PasswordFormConversionUtilsTest,
+       FieldsWithAndWithoutCreditCardAttributes) {
+  PasswordFormBuilder builder(kTestFormActionURL);
+  builder.AddTextField("username", "johnsmith", nullptr);
+  builder.AddTextField("ccname", "john_smith", "cc-name");
+  builder.AddPasswordField("cc_security_code", "0123456789", "random cc-csc");
+  builder.AddPasswordField("password", "secret", nullptr);
+  builder.AddSubmitButton("submit");
+  std::string html = builder.ProduceHTML();
+
+  std::unique_ptr<PasswordForm> password_form =
+      LoadHTMLAndConvertForm(html, nullptr, false);
+
+  ASSERT_TRUE(password_form);
+
+  EXPECT_EQ(base::UTF8ToUTF16("username"), password_form->username_element);
+  EXPECT_EQ(base::UTF8ToUTF16("johnsmith"), password_form->username_value);
+  EXPECT_EQ(base::UTF8ToUTF16("password"), password_form->password_element);
+  EXPECT_EQ(base::UTF8ToUTF16("secret"), password_form->password_value);
+}
+
 }  // namespace autofill
