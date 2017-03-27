@@ -45,7 +45,6 @@ const char* const kDefaultAppOrder[] = {
     extension_misc::kYoutubeAppId,
     extension_misc::kGmailAppId,
     "ejjicmeblgpmajnghnpcppodonldlgfn",  // Calendar
-    "kjebfhglflhjjjiceimfkgicifkhjlnm",  // Scratchpad
     "lneaknkopdijkpnocmklfnjbeapigfbh",  // Google Maps
     "apdfllckaahabafndbhieahigkjlhalf",  // Drive
     extension_misc::kGoogleDocAppId,
@@ -57,7 +56,6 @@ const char* const kDefaultAppOrder[] = {
     extension_misc::kGooglePlayMusicAppId,
     "mmimngoggfoobjdlefbcabngfnmieonb",  // Play Books
     "gdijeikdkaembjbdobgfkoidjkpbmlkd",  // Play Movies & TV
-    "fobcpibfeplaikcclojfdhfdmbbeofai",  // Games
     "joodangkbfjnajiiifokapkpmhfnpleo",  // Calculator
     "hfhhnacclhffhdffklopdkcgdhifgngh",  // Camera
     "gbchcmhmhahfdphkhkmpfmihenigjmpp",  // Chrome Remote Desktop
