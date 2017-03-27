@@ -13,7 +13,6 @@
 #include "ash/common/wm/wm_screen_util.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -95,10 +94,9 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
       ->GetShelfLayoutManager()
       ->UpdateAutoHideState();
   view_ = view;
-  aura::Window* root_window = Shell::GetInstance()
-                                  ->window_tree_host_manager()
-                                  ->GetRootWindowForDisplayId(display_id);
-  WmWindow* wm_root_window = WmWindow::Get(root_window);
+  WmWindow* wm_root_window =
+      WmShell::Get()->GetRootWindowForDisplayId(display_id);
+  aura::Window* root_window = wm_root_window->aura_window();
   aura::Window* container = GetRootWindowController(root_window)
                                 ->GetContainer(kShellWindowId_AppListContainer);
   view->InitAsBubble(container, current_apps_page);

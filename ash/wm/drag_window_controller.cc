@@ -6,7 +6,8 @@
 
 #include <algorithm>
 
-#include "ash/display/window_tree_host_manager.h"
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
@@ -21,6 +22,7 @@
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/compositor/paint_context.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/display/display.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -35,9 +37,9 @@ class DragWindowController::DragWindowDetails : public aura::WindowDelegate {
  public:
   DragWindowDetails(const display::Display& display,
                     aura::Window* original_window)
-      : root_window_(Shell::GetInstance()
-                         ->window_tree_host_manager()
-                         ->GetRootWindowForDisplayId(display.id())) {}
+      : root_window_(WmShell::Get()
+                         ->GetRootWindowForDisplayId(display.id())
+                         ->aura_window()) {}
 
   ~DragWindowDetails() override {
     delete drag_window_;

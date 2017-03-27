@@ -20,7 +20,6 @@
 #include "ash/common/wm_shell.h"
 #include "ash/debug.h"
 #include "ash/display/display_configuration_controller.h"
-#include "ash/display/window_tree_host_manager.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
