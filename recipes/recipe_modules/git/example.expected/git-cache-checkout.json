@@ -18,7 +18,7 @@
       "cache",
       "populate",
       "-c",
-      "[CACHE]/git",
+      "[GIT_CACHE]",
       "https://chromium.googlesource.com/chromium/src.git"
     ],
     "cwd": "[START_DIR]/src",
@@ -35,7 +35,7 @@
       "exists",
       "--quiet",
       "--cache-dir",
-      "[CACHE]/git",
+      "[GIT_CACHE]",
       "https://chromium.googlesource.com/chromium/src.git"
     ],
     "cwd": "[START_DIR]/src",
