@@ -116,10 +116,8 @@ LayoutRect CaretDisplayItemClient::computeCaretRect(
 }
 
 void CaretDisplayItemClient::clearPreviousVisualRect(const LayoutBlock& block) {
-  if (block == m_layoutBlock) {
+  if (block == m_layoutBlock)
     m_visualRect = LayoutRect();
-    m_localRect = LayoutRect();
-  }
   if (block == m_previousLayoutBlock)
     m_visualRectInPreviousLayoutBlock = LayoutRect();
 }

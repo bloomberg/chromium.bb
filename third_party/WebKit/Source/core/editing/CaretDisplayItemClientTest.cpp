@@ -341,4 +341,39 @@ TEST_F(CaretDisplayItemClientTest, CaretHideMoveAndShow) {
   document().view()->setTracksPaintInvalidations(false);
 }
 
+TEST_F(CaretDisplayItemClientTest, CompositingChange) {
+  enableCompositing();
+  setBodyInnerHTML(
+      "<style>"
+      "  body { margin: 0 }"
+      "  #container { position: absolute; top: 55px; left: 66px; }"
+      "</style>"
+      "<div id='container'>"
+      "  <div id='editor' contenteditable style='padding: 50px'>ABCDE</div>"
+      "</div>");
+
+  document().page()->focusController().setActive(true);
+  document().page()->focusController().setFocused(true);
+  auto* container = document().getElementById("container");
+  auto* editor = document().getElementById("editor");
+  auto* editorBlock = toLayoutBlock(editor->layoutObject());
+  selection().setSelection(
+      SelectionInDOMTree::Builder().collapse(Position(editor, 0)).build());
+  updateAllLifecyclePhases();
+
+  EXPECT_TRUE(editorBlock->shouldPaintCursorCaret());
+  EXPECT_EQ(editorBlock, caretLayoutBlock());
+  EXPECT_EQ(LayoutRect(116, 105, 1, 1), caretDisplayItemClient().visualRect());
+
+  // Composite container.
+  container->setAttribute(HTMLNames::styleAttr, "will-change: transform");
+  updateAllLifecyclePhases();
+  EXPECT_EQ(LayoutRect(50, 50, 1, 1), caretDisplayItemClient().visualRect());
+
+  // Uncomposite container.
+  container->setAttribute(HTMLNames::styleAttr, "");
+  updateAllLifecyclePhases();
+  EXPECT_EQ(LayoutRect(116, 105, 1, 1), caretDisplayItemClient().visualRect());
+}
+
 }  // namespace blink
