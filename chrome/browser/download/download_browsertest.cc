@@ -3437,7 +3437,13 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, FeedbackServiceDiscardDownload) {
   ASSERT_TRUE(updated_downloads.empty());
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadTest, FeedbackServiceKeepDownload) {
+// Test is flaky Linux. crbug.com/705224
+#if defined(OS_LINUX)
+#define MAYBE_FeedbackServiceKeepDownload DISABLED_FeedbackServiceKeepDownload
+#else
+#define MAYBE_FeedbackServiceKeepDownload FeedbackServiceKeepDownload
+#endif
+IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_FeedbackServiceKeepDownload) {
   PrefService* prefs = browser()->profile()->GetPrefs();
   prefs->SetBoolean(prefs::kSafeBrowsingEnabled, true);
   safe_browsing::SetExtendedReportingPref(prefs, true);
