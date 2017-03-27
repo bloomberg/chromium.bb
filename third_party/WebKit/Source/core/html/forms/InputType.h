@@ -130,6 +130,7 @@ class CORE_EXPORT InputType : public GarbageCollectedFinalized<InputType> {
   bool rangeOverflow(const String&) const;
   bool isInRange(const String&) const;
   bool isOutOfRange(const String&) const;
+  void inRangeChanged() const;
   virtual Decimal defaultValueForStepUp() const;
   double minimum() const;
   double maximum() const;

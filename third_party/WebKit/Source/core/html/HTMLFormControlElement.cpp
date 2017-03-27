@@ -584,9 +584,6 @@ void HTMLFormControlElement::setNeedsValidityCheck() {
     pseudoStateChanged(CSSSelector::PseudoInvalid);
   }
 
-  pseudoStateChanged(CSSSelector::PseudoInRange);
-  pseudoStateChanged(CSSSelector::PseudoOutOfRange);
-
   // Updates only if this control already has a validation message.
   if (isValidationMessageVisible()) {
     // Calls updateVisibleValidationMessage() even if m_isValid is not

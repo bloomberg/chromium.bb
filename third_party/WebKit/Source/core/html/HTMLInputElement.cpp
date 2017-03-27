@@ -726,6 +726,7 @@ void HTMLInputElement::parseAttribute(
     setNeedsValidityCheck();
     m_valueAttributeWasUpdatedAfterParsing = !m_parsingInProgress;
     m_inputType->warnIfValueIsInvalidAndElementIsVisible(value);
+    m_inputType->inRangeChanged();
     m_inputTypeView->valueAttributeChanged();
   } else if (name == checkedAttr) {
     // Another radio button in the same group might be checked by state
@@ -770,11 +771,13 @@ void HTMLInputElement::parseAttribute(
   } else if (name == minAttr) {
     m_inputTypeView->minOrMaxAttributeChanged();
     m_inputType->sanitizeValueInResponseToMinOrMaxAttributeChange();
+    m_inputType->inRangeChanged();
     setNeedsValidityCheck();
     UseCounter::count(document(), UseCounter::MinAttribute);
   } else if (name == maxAttr) {
     m_inputTypeView->minOrMaxAttributeChanged();
     m_inputType->sanitizeValueInResponseToMinOrMaxAttributeChange();
+    m_inputType->inRangeChanged();
     setNeedsValidityCheck();
     UseCounter::count(document(), UseCounter::MaxAttribute);
   } else if (name == multipleAttr) {
@@ -1099,10 +1102,7 @@ void HTMLInputElement::setNonAttributeValue(const String& sanitizedValue) {
   m_nonAttributeValue = sanitizedValue;
   m_hasDirtyValue = true;
   setNeedsValidityCheck();
-  if (m_inputType->isSteppable()) {
-    pseudoStateChanged(CSSSelector::PseudoInRange);
-    pseudoStateChanged(CSSSelector::PseudoOutOfRange);
-  }
+  m_inputType->inRangeChanged();
 }
 
 void HTMLInputElement::setNonDirtyValue(const String& newValue) {

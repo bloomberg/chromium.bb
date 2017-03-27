@@ -297,6 +297,13 @@ bool InputType::isOutOfRange(const String& value) const {
           numericValue > stepRange.maximum());
 }
 
+void InputType::inRangeChanged() const {
+  if (isSteppable()) {
+    element().pseudoStateChanged(CSSSelector::PseudoInRange);
+    element().pseudoStateChanged(CSSSelector::PseudoOutOfRange);
+  }
+}
+
 bool InputType::stepMismatch(const String& value) const {
   if (!isSteppable())
     return false;
