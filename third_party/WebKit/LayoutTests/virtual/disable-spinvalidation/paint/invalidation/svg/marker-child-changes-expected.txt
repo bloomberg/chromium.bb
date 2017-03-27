@@ -8,7 +8,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGPath path",
-          "rect": [202, 211, 112, 112],
+          "rect": [121, 126, 68, 68],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='rect'",
+          "rect": [0, 0, 2, 2],
           "reason": "style change"
         }
       ]
@@ -16,12 +21,8 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutSVGResourceMarker marker id='markerMiddle'",
-      "reason": "layoutObject insertion"
-    },
-    {
-      "object": "LayoutSVGEllipse circle",
-      "reason": "layoutObject insertion"
+      "object": "LayoutSVGRect rect id='rect'",
+      "reason": "style change"
     },
     {
       "object": "LayoutSVGPath path",

@@ -15,16 +15,6 @@
           "object": "LayoutSVGRect rect",
           "rect": [10, 10, 430, 80],
           "reason": "SVG resource change"
-        },
-        {
-          "object": "LayoutSVGRect rect id='rect'",
-          "rect": [10, 10, 10, 10],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGRect rect id='rect'",
-          "rect": [0, 10, 10, 10],
-          "reason": "full"
         }
       ]
     }

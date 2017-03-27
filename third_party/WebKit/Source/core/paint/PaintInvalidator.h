@@ -54,6 +54,17 @@ struct PaintInvalidatorContext {
     // TODO(crbug.com/637313): This is temporary before we support filters in
     // paint property tree.
     ForcedSubtreeSlowPathRect = 1 << 5,
+
+    // The paint invalidation tree walk invalidates paint caches, such as
+    // DisplayItemClients and subsequence caches, and also the regions
+    // into which objects raster pixels. When this flag is set, raster region
+    // invalidations are not issued.
+    //
+    // Context: some objects in this paint walk, for example SVG resource
+    // container subtress, don't actually have any raster regions, because they
+    // are used as "painting subroutines" for one or more other locations in
+    // SVG.
+    ForcedSubtreeNoRasterInvalidation = 1 << 6,
   };
   unsigned forcedSubtreeInvalidationFlags = 0;
 

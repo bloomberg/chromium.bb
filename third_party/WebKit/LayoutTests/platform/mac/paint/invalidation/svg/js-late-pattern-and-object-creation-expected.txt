@@ -10,26 +10,6 @@
           "object": "LayoutSVGContainer g id='content'",
           "rect": [0, 14, 678, 366],
           "reason": "became visible"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [16, 16, 18, 18],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [16, 16, 18, 18],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [8, 8, 17, 17],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [8, 8, 17, 17],
-          "reason": "layoutObject insertion"
         }
       ]
     }

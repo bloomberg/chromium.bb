@@ -10,36 +10,6 @@
           "object": "LayoutBlockFlow div id='contentBox'",
           "rect": [8, 52, 402, 402],
           "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutSVGEllipse circle",
-          "rect": [242, 253, 167, 200],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGEllipse circle",
-          "rect": [242, 53, 167, 200],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGEllipse circle",
-          "rect": [9, 253, 167, 200],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGEllipse circle",
-          "rect": [9, 53, 167, 200],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGEllipse circle",
-          "rect": [67, 253, 42, 67],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGEllipse circle",
-          "rect": [67, 186, 42, 67],
-          "reason": "bounds change"
         }
       ]
     }
@@ -56,22 +26,6 @@
     {
       "object": "LayoutSVGRoot svg",
       "reason": "forced by layout"
-    },
-    {
-      "object": "LayoutSVGEllipse circle",
-      "reason": "bounds change"
-    },
-    {
-      "object": "LayoutSVGEllipse circle",
-      "reason": "bounds change"
-    },
-    {
-      "object": "LayoutSVGEllipse circle",
-      "reason": "bounds change"
-    },
-    {
-      "object": "LayoutSVGEllipse circle",
-      "reason": "bounds change"
     },
     {
       "object": "LayoutSVGContainer g",

@@ -10,21 +10,6 @@
           "object": "LayoutBlockFlow div id='contentBox'",
           "rect": [8, 72, 402, 402],
           "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutSVGContainer use id='targetUse'",
-          "rect": [109, 173, 200, 200],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGRect rect id='targetRect'",
-          "rect": [9, 173, 200, 200],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutSVGContainer use id='targetUse'",
-          "rect": [34, 173, 50, 200],
-          "reason": "bounds change"
         }
       ]
     }

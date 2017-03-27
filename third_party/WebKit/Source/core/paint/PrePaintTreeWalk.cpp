@@ -49,7 +49,6 @@ void PrePaintTreeWalk::walk(FrameView& rootFrame) {
          DocumentLifecycle::InPrePaint);
 
   PrePaintTreeWalkContext initialContext(m_geometryMapper);
-  m_propertyTreeBuilder.setupInitialContext(*initialContext.treeBuilderContext);
   initialContext.ancestorTransformedOrRootPaintLayer =
       rootFrame.layoutView()->layer();
 

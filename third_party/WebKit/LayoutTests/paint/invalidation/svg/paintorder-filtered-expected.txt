@@ -7,11 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutSVGPath polygon",
-          "rect": [137, 37, 581, 564],
-          "reason": "style change"
-        },
-        {
           "object": "LayoutSVGContainer use id='t2'",
           "rect": [181, 163, 138, 137],
           "reason": "style change"
@@ -44,11 +39,6 @@
         {
           "object": "LayoutSVGPath polygon",
           "rect": [183, 165, 134, 134],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutSVGEllipse circle id='t4'",
-          "rect": [46, 28, 7, 7],
           "reason": "style change"
         }
       ]

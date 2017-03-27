@@ -461,6 +461,11 @@ void PaintInvalidator::invalidatePaintIfNeeded(
     return;
   }
 
+  if (object.isSVGHiddenContainer()) {
+    context.forcedSubtreeInvalidationFlags |=
+        PaintInvalidatorContext::ForcedSubtreeNoRasterInvalidation;
+  }
+
   PaintInvalidationReason reason = object.invalidatePaintIfNeeded(context);
   switch (reason) {
     case PaintInvalidationDelayedFull:

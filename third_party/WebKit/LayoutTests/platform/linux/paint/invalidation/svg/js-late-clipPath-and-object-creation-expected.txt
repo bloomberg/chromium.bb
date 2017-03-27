@@ -15,11 +15,6 @@
           "object": "LayoutSVGContainer g id='content'",
           "rect": [16, 42, 784, 170],
           "reason": "became visible"
-        },
-        {
-          "object": "LayoutSVGPath path",
-          "rect": [0, 0, 334, 500],
-          "reason": "layoutObject insertion"
         }
       ]
     }

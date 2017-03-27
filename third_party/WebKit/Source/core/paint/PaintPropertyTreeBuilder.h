@@ -90,11 +90,8 @@ struct PaintPropertyTreeBuilderContext {
   // property tree changes (i.e., a node is added or removed).
   bool forceSubtreeUpdate;
 
-  PaintPropertyTreeBuilderContext()
-      : containerForAbsolutePosition(nullptr),
-        currentEffect(nullptr),
-        inputClipOfCurrentEffect(nullptr),
-        forceSubtreeUpdate(false) {}
+  // Initializes all property tree nodes to the roots.
+  PaintPropertyTreeBuilderContext();
 };
 
 // Creates paint property tree nodes for special things in the layout tree.

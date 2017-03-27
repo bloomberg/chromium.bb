@@ -492,6 +492,10 @@ void ObjectPaintInvalidatorWithContext::invalidatePaintRectangleWithContext(
   if (rect.isEmpty())
     return;
 
+  if (m_context.forcedSubtreeInvalidationFlags &
+      PaintInvalidatorContext::ForcedSubtreeNoRasterInvalidation)
+    return;
+
   // If the parent has fully invalidated and its visual rect covers this object
   // on the same backing, skip the invalidation.
   if (parentFullyInvalidatedOnSameBacking() &&

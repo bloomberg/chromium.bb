@@ -10,11 +10,6 @@
           "object": "LayoutSVGContainer g",
           "rect": [0, 0, 200, 200],
           "reason": "full"
-        },
-        {
-          "object": "LayoutSVGPath path",
-          "rect": [0, 0, 200, 200],
-          "reason": "subtree"
         }
       ]
     }

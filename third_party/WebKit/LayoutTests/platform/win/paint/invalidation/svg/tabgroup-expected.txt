@@ -57,6 +57,11 @@
           "reason": "became visible"
         },
         {
+          "object": "LayoutSVGRect rect",
+          "rect": [30, 188, 240, 12],
+          "reason": "layoutObject removal"
+        },
+        {
           "object": "LayoutSVGPath path",
           "rect": [506, 233, 238, 159],
           "reason": "layoutObject insertion"
@@ -108,32 +113,32 @@
         },
         {
           "object": "LayoutSVGRect rect",
-          "rect": [31, 404, 188, 10],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [23, 146, 188, 10],
+          "rect": [39, 189, 222, 122],
           "reason": "layoutObject removal"
         },
         {
           "object": "LayoutSVGRect rect",
-          "rect": [30, 147, 175, 97],
+          "rect": [40, 188, 220, 122],
           "reason": "layoutObject removal"
         },
         {
-          "object": "LayoutSVGRect rect",
-          "rect": [38, 405, 174, 96],
-          "reason": "layoutObject insertion"
+          "object": "LayoutSVGInlineText #text",
+          "rect": [10, 43, 191, 31],
+          "reason": "layoutObject removal"
         },
         {
-          "object": "LayoutSVGRect rect",
-          "rect": [39, 404, 172, 96],
-          "reason": "layoutObject insertion"
+          "object": "LayoutSVGInlineText #text",
+          "rect": [10, 43, 191, 31],
+          "reason": "layoutObject removal"
         },
         {
-          "object": "LayoutSVGRect rect",
-          "rect": [31, 146, 172, 96],
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [10, 43, 191, 31],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [10, 43, 191, 31],
           "reason": "layoutObject removal"
         },
         {
@@ -160,31 +165,6 @@
           "object": "LayoutSVGContainer g id='tabgroupRect'",
           "rect": [38, 7, 158, 236],
           "reason": "became visible"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [15, 291, 150, 25],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [7, 33, 150, 25],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [7, 33, 150, 25],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [7, 33, 150, 25],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [7, 33, 150, 25],
-          "reason": "layoutObject removal"
         },
         {
           "object": "LayoutSVGPath path id='tabgroupTriangle__1'",

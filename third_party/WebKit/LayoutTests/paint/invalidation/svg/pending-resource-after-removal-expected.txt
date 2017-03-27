@@ -9,16 +9,6 @@
         {
           "object": "LayoutSVGRect rect",
           "rect": [0, 0, 200, 200],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [0, 0, 200, 200],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [0, 0, 200, 200],
           "reason": "layoutObject removal"
         },
         {

@@ -250,36 +250,6 @@
           "object": "LayoutSVGPath line",
           "rect": [428, 388, 10, 2],
           "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGPath line",
-          "rect": [-1, 21, 7, 11],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGPath line",
-          "rect": [-1, 21, 7, 11],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [-1, 21, 7, 11],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGPath line",
-          "rect": [-1, 29, 6, 3],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [0, 22, 5, 9],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [0, 22, 5, 9],
-          "reason": "layoutObject insertion"
         }
       ]
     }

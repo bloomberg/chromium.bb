@@ -10,11 +10,6 @@
           "object": "LayoutSVGContainer g id='content'",
           "rect": [16, 39, 784, 174],
           "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGPath path",
-          "rect": [0, 0, 334, 500],
-          "reason": "layoutObject insertion"
         }
       ]
     }

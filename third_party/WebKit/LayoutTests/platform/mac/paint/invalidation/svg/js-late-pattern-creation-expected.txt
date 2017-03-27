@@ -10,16 +10,6 @@
           "object": "LayoutSVGText text",
           "rect": [33, 22, 618, 196],
           "reason": "style change"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [16, 25, 18, 25],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [8, 12, 17, 26],
-          "reason": "layoutObject insertion"
         }
       ]
     }

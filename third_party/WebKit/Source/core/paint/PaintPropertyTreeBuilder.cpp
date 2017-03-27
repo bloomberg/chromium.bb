@@ -26,16 +26,17 @@
 
 namespace blink {
 
-void PaintPropertyTreeBuilder::setupInitialContext(
-    PaintPropertyTreeBuilderContext& context) {
-  context.current.clip = context.absolutePosition.clip =
-      context.fixedPosition.clip = ClipPaintPropertyNode::root();
-  context.currentEffect = EffectPaintPropertyNode::root();
-  context.inputClipOfCurrentEffect = ClipPaintPropertyNode::root();
-  context.current.transform = context.absolutePosition.transform =
-      context.fixedPosition.transform = TransformPaintPropertyNode::root();
-  context.current.scroll = context.absolutePosition.scroll =
-      context.fixedPosition.scroll = ScrollPaintPropertyNode::root();
+PaintPropertyTreeBuilderContext::PaintPropertyTreeBuilderContext()
+    : containerForAbsolutePosition(nullptr),
+      currentEffect(EffectPaintPropertyNode::root()),
+      inputClipOfCurrentEffect(ClipPaintPropertyNode::root()),
+      forceSubtreeUpdate(false) {
+  current.clip = absolutePosition.clip = fixedPosition.clip =
+      ClipPaintPropertyNode::root();
+  current.transform = absolutePosition.transform = fixedPosition.transform =
+      TransformPaintPropertyNode::root();
+  current.scroll = absolutePosition.scroll = fixedPosition.scroll =
+      ScrollPaintPropertyNode::root();
 }
 
 // True if a new property was created, false if an existing one was updated.
@@ -1094,6 +1095,13 @@ void PaintPropertyTreeBuilder::updateForObjectLocationAndSize(
 void PaintPropertyTreeBuilder::updatePropertiesForSelf(
     const LayoutObject& object,
     PaintPropertyTreeBuilderContext& context) {
+  if (object.isSVGHiddenContainer()) {
+    // SVG resources are painted within one or more other locations in the
+    // SVG during paint, and hence have their own independent paint property
+    // trees, paint offset, etc.
+    context = PaintPropertyTreeBuilderContext();
+  }
+
   // This is not in FindObjectPropertiesNeedingUpdateScope because paint offset
   // can change without needsPaintPropertyUpdate.
   updateForObjectLocationAndSize(object, context);

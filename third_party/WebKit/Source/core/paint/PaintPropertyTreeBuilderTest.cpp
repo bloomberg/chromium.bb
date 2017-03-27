@@ -3329,4 +3329,69 @@ TEST_P(PaintPropertyTreeBuilderTest, MaskClipNodeInvalidation) {
   EXPECT_EQ(FloatRoundedRect(8, 8, 100, 200), maskClip->clipRect());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, SVGResource) {
+  setBodyInnerHTML(
+      "<svg id='svg' xmlns='http://www.w3.org/2000/svg' >"
+      " <g transform='scale(1000)'>"
+      "   <marker id='markerMiddle'  markerWidth='2' markerHeight='2' refX='5' "
+      "       refY='5' markerUnits='strokeWidth'>"
+      "     <g id='transformInsideMarker' transform='scale(4)'>"
+      "       <circle cx='5' cy='5' r='7' fill='green'/>"
+      "     </g>"
+      "   </marker>"
+      " </g>"
+      " <g id='transformOutsidePath' transform='scale(2)'>"
+      "   <path d='M 130 135 L 180 135 L 180 185' "
+      "       marker-mid='url(#markerMiddle)' fill='none' stroke-width='8px' "
+      "       stroke='black'/>"
+      " </g>"
+      "</svg>");
+
+  const ObjectPaintProperties* transformInsideMarkerProperties =
+      paintPropertiesForElement("transformInsideMarker");
+  const ObjectPaintProperties* transformOutsidePathProperties =
+      paintPropertiesForElement("transformOutsidePath");
+  const ObjectPaintProperties* svgProperties = paintPropertiesForElement("svg");
+
+  // The <marker> object resets to a new paint property tree, so the
+  // transform within it should have the root as parent.
+  EXPECT_EQ(TransformPaintPropertyNode::root(),
+            transformInsideMarkerProperties->transform()->parent());
+
+  // Whereas this is not true of the transform above the path.
+  EXPECT_EQ(svgProperties->svgLocalToBorderBoxTransform(),
+            transformOutsidePathProperties->transform()->parent());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, SVGHiddenResource) {
+  setBodyInnerHTML(
+      "<svg id='svg' xmlns='http://www.w3.org/2000/svg' >"
+      " <g transform='scale(1000)'>"
+      "   <symbol id='symbol'>"
+      "     <g id='transformInsideSymbol' transform='scale(4)'>"
+      "       <circle cx='5' cy='5' r='7' fill='green'/>"
+      "     </g>"
+      "   </symbol>"
+      " </g>"
+      " <g id='transformOutsideUse' transform='scale(2)'>"
+      "   <use x='25' y='25' width='400' height='400' xlink:href='#symbol'/>"
+      " </g>"
+      "</svg>");
+
+  const ObjectPaintProperties* transformInsideSymbolProperties =
+      paintPropertiesForElement("transformInsideSymbol");
+  const ObjectPaintProperties* transformOutsideUseProperties =
+      paintPropertiesForElement("transformOutsideUse");
+  const ObjectPaintProperties* svgProperties = paintPropertiesForElement("svg");
+
+  // The <marker> object resets to a new paint property tree, so the
+  // transform within it should have the root as parent.
+  EXPECT_EQ(TransformPaintPropertyNode::root(),
+            transformInsideSymbolProperties->transform()->parent());
+
+  // Whereas this is not true of the transform above the path.
+  EXPECT_EQ(svgProperties->svgLocalToBorderBoxTransform(),
+            transformOutsideUseProperties->transform()->parent());
+}
+
 }  // namespace blink
