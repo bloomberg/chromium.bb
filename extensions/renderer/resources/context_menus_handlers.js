@@ -21,31 +21,24 @@ function createContextMenusHandlers(isWebview) {
   var INSTANCEID_NON_WEBVIEW = -1;
 
   // Generates a customCallback for a given method. |handleCallback| will be
-  // invoked with |request.args| as parameters.
-  function createCustomCallback(handleCallback) {
-    return function(name, request, callback) {
+  // invoked with the same arguments this function is called with.
+  function getCallback(handleCallback) {
+    return function() {
+      var extensionCallback = arguments[arguments.length - 1];
       if (lastError.hasError(chrome)) {
-        if (callback)
-          callback();
+        if (extensionCallback)
+          extensionCallback();
         return;
       }
-      var args = request.args;
-      if (!isWebview) {
-        // <webview>s have an extra item in front of the parameter list, which
-        // specifies the viewInstanceId of the webview. This is used to hide
-        // context menu events in one webview from another.
-        // The non-webview chrome.contextMenus API is not called with such an
-        // ID, so we prepend an ID to match the function signature.
-        args = $Array.concat([INSTANCEID_NON_WEBVIEW], args);
-      }
-      $Function.apply(handleCallback, null, args);
-      if (callback)
-        callback();
+
+      $Function.apply(handleCallback, null, arguments);
+      if (extensionCallback)
+        extensionCallback();
     };
   }
 
-  var contextMenus = {};
-  contextMenus.handlers = {};
+  var contextMenus = { __proto__: null };
+  contextMenus.handlers = { __proto__: null };
   contextMenus.event = new Event(eventName);
 
   contextMenus.getIdFromCreateProperties = function(createProperties) {
@@ -89,37 +82,48 @@ function createContextMenusHandlers(isWebview) {
 
   // To be used with apiFunctions.setHandleRequest
   var requestHandlers = { __proto__: null };
-  // To be used with apiFunctions.setCustomCallback
-  var callbacks = { __proto__: null };
 
-  requestHandlers.create = function() {
-    var createProperties = isWebview ? arguments[1] : arguments[0];
-    createProperties.generatedId = contextMenuNatives.GetNextContextMenuId();
-    var optArgs = {
-      __proto__: null,
-      customCallback: this.customCallback,
-    };
-    sendRequest(this.name, arguments, this.definition.parameters, optArgs);
-    return contextMenus.getIdFromCreateProperties(createProperties);
-  };
-
-  callbacks.create =
-      createCustomCallback(function(instanceId, createProperties) {
-    var id = contextMenus.getIdFromCreateProperties(createProperties);
-    var onclick = createProperties.onclick;
+  function createCallback(instanceId, id, onclick) {
     if (onclick) {
       contextMenus.ensureListenerSetup();
       contextMenus.handlersForId(instanceId, id)[id] = onclick;
     }
-  });
+  }
 
-  callbacks.remove = createCustomCallback(function(instanceId, id) {
+  requestHandlers.create = function() {
+    var createProperties = isWebview ? arguments[1] : arguments[0];
+    createProperties.generatedId = contextMenuNatives.GetNextContextMenuId();
+    var id = contextMenus.getIdFromCreateProperties(createProperties);
+    var instanceId = isWebview ? arguments[0] : INSTANCEID_NON_WEBVIEW;
+    var onclick = createProperties.onclick;
+
+    var optArgs = {
+      __proto__: null,
+      customCallback: getCallback($Function.bind(createCallback, null,
+                                                 instanceId, id, onclick)),
+    };
+    sendRequest(this.name, $Array.from(arguments),
+                this.definition.parameters, optArgs);
+    return id;
+  };
+
+  function removeCallback(instanceId, id) {
     delete contextMenus.handlersForId(instanceId, id)[id];
-  });
+  }
 
-  callbacks.update =
-      createCustomCallback(function(instanceId, id, updateProperties) {
-    var onclick = updateProperties.onclick;
+  requestHandlers.remove = function() {
+    var instanceId = isWebview ? arguments[0] : INSTANCEID_NON_WEBVIEW;
+    var id = isWebview ? arguments[1] : arguments[0];
+    var optArgs = {
+      __proto__: null,
+      customCallback: getCallback($Function.bind(removeCallback, null,
+                                                 instanceId, id)),
+    };
+    sendRequest(this.name, $Array.from(arguments),
+                this.definition.parameters, optArgs);
+  };
+
+  function updateCallback(instanceId, id, onclick) {
     if (onclick) {
       contextMenus.ensureListenerSetup();
       contextMenus.handlersForId(instanceId, id)[id] = onclick;
@@ -127,15 +131,41 @@ function createContextMenusHandlers(isWebview) {
       // When onclick is explicitly set to null, remove the event listener.
       delete contextMenus.handlersForId(instanceId, id)[id];
     }
-  });
+  }
 
-  callbacks.removeAll = createCustomCallback(function(instanceId) {
+  requestHandlers.update = function() {
+    var instanceId = isWebview ? arguments[0] : INSTANCEID_NON_WEBVIEW;
+    var id = isWebview ? arguments[1] : arguments[0];
+    var updateProperties = isWebview ? arguments[2] : arguments[1];
+    var onclick = updateProperties.onclick;
+    var optArgs = {
+      __proto__: null,
+      customCallback: getCallback($Function.bind(updateCallback, null,
+                                                 instanceId, id, onclick)),
+    };
+
+    sendRequest(this.name, $Array.from(arguments),
+                this.definition.parameters, optArgs);
+  };
+
+  function removeAllCallback(instanceId) {
     delete contextMenus.handlers[instanceId];
-  });
+  }
+
+  requestHandlers.removeAll = function() {
+    var instanceId = isWebview ? arguments[0] : INSTANCEID_NON_WEBVIEW;
+    var optArgs = {
+      __proto__: null,
+      customCallback: getCallback($Function.bind(removeAllCallback, null,
+                                                 instanceId)),
+    };
+
+    sendRequest(this.name, $Array.from(arguments),
+                this.definition.parameters, optArgs);
+  };
 
   return {
     requestHandlers: requestHandlers,
-    callbacks: callbacks
   };
 }
 

@@ -127,6 +127,7 @@ function sendRequest(functionName, args, argSchemas, optArgs) {
   var requestId =
       natives.StartRequest(functionName, request.args, hasCallback,
                            optArgs.forIOThread, optArgs.preserveNullInObjects);
+  delete request.args;
   request.id = requestId;
   requests[requestId] = request;
 }

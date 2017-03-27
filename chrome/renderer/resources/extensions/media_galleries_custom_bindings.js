@@ -7,6 +7,7 @@
 var binding = require('binding').Binding.create('mediaGalleries');
 var blobNatives = requireNative('blob_natives');
 var mediaGalleriesNatives = requireNative('mediaGalleries');
+var sendRequest = require('sendRequest').sendRequest;
 
 var blobsAwaitingMetadata = {};
 var mediaGalleriesMetadata = {};
@@ -71,18 +72,7 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
     };
   });
 
-  apiFunctions.setUpdateArgumentsPostValidate('getMetadata',
-      function(mediaFile, options, callback) {
-    var blobUuid = blobNatives.GetBlobUuid(mediaFile)
-    // Store the blob in a global object to keep its refcount nonzero -- this
-    // prevents the object from being garbage collected before any metadata
-    // parsing gets to occur (see crbug.com/415792).
-    blobsAwaitingMetadata[blobUuid] = mediaFile;
-    return [blobUuid, options, callback];
-  });
-
-  apiFunctions.setCustomCallback('getMetadata',
-      function(name, request, callback, response) {
+  function getMetadataCallback(uuid, name, request, callback, response) {
     if (response && response.attachedImagesBlobInfo) {
       for (var i = 0; i < response.attachedImagesBlobInfo.length; i++) {
         var blobInfo = response.attachedImagesBlobInfo[i];
@@ -95,11 +85,26 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
     if (callback)
       callback(response ? response.metadata : null);
 
-    // The UUID was in position 0 in the setUpdateArgumentsPostValidate
-    // function.
-    var uuid = request.args[0];
     delete blobsAwaitingMetadata[uuid];
+  }
+
+  apiFunctions.setHandleRequest('getMetadata',
+                                function(mediaFile, options, callback) {
+    var blobUuid = blobNatives.GetBlobUuid(mediaFile)
+    // Store the blob in a global object to keep its refcount nonzero -- this
+    // prevents the object from being garbage collected before any metadata
+    // parsing gets to occur (see crbug.com/415792).
+    blobsAwaitingMetadata[blobUuid] = mediaFile;
+
+    var optArgs = {
+      __proto__: null,
+      customCallback: $Function.bind(getMetadataCallback, null, blobUuid),
+    };
+
+    sendRequest(this.name, [blobUuid, options, callback],
+                this.definition.parameters, optArgs);
   });
 });
 
-exports.$set('binding', binding.generate());
+if (!apiBridge)
+  exports.$set('binding', binding.generate());

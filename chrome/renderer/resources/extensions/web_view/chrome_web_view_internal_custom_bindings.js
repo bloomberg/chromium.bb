@@ -10,20 +10,17 @@ binding.registerCustomHook(function(bindingsAPI) {
 
   var handlers = contextMenusHandlers.create(true /* isWebview */);
 
-  apiFunctions.setHandleRequest('contextMenusCreate',
-      handlers.requestHandlers.create);
+  apiFunctions.setHandleRequest(
+      'contextMenusCreate', handlers.requestHandlers.create);
 
-  apiFunctions.setCustomCallback('contextMenusCreate',
-      handlers.callbacks.create);
+  apiFunctions.setHandleRequest(
+      'contextMenusUpdate', handlers.requestHandlers.update);
 
-  apiFunctions.setCustomCallback('contextMenusUpdate',
-      handlers.callbacks.update);
+  apiFunctions.setHandleRequest(
+      'contextMenusRemove', handlers.requestHandlers.remove);
 
-  apiFunctions.setCustomCallback('contextMenusRemove',
-      handlers.callbacks.remove);
-
-  apiFunctions.setCustomCallback('contextMenusRemoveAll',
-      handlers.callbacks.removeAll);
+  apiFunctions.setHandleRequest(
+      'contextMenusRemoveAll', handlers.requestHandlers.removeAll);
 
 });
 
