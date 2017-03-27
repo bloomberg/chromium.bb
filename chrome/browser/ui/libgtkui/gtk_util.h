@@ -195,17 +195,17 @@ ScopedStyleContext AppendCssNodeToStyleContext(GtkStyleContext* context,
 // of '.'-prefixed classes and ':'-prefixed pseudoclasses.  An example
 // is "GtkButton.button.suggested-action:hover:active".  The caller
 // must g_object_unref() the returned context.
-ScopedStyleContext GetStyleContextFromCss(const char* css_selector);
+ScopedStyleContext GetStyleContextFromCss(const std::string& css_selector);
 
 SkColor GetFgColorFromStyleContext(GtkStyleContext* context);
 
 // Overrides properties on |context| and all its parents with those
 // provided by |css|.
-void ApplyCssToContext(GtkStyleContext* context, const char* css);
+void ApplyCssToContext(GtkStyleContext* context, const std::string& css);
 
 // Get the 'color' property from the style context created by
 // GetStyleContextFromCss(|css_selector|).
-SkColor GetFgColor(const char* css_selector);
+SkColor GetFgColor(const std::string& css_selector);
 
 // Renders the backgrounds of all ancestors of |context|, then renders
 // the background for |context| itself.
@@ -216,19 +216,19 @@ void RenderBackground(const gfx::Size& size,
 // Renders a background from the style context created by
 // GetStyleContextFromCss(|css_selector|) into a 24x24 bitmap and
 // returns the average color.
-SkColor GetBgColor(const char* css_selector);
+SkColor GetBgColor(const std::string& css_selector);
 
 // Renders the border from the style context created by
 // GetStyleContextFromCss(|css_selector|) into a 24x24 bitmap and
 // returns the average color.
-SkColor GetBorderColor(const char* css_selector);
+SkColor GetBorderColor(const std::string& css_selector);
 
 // On Gtk3.20 or later, behaves like GetBgColor.  Otherwise, returns
 // the background-color property.
-SkColor GetSelectionBgColor(const char* css_selector);
+SkColor GetSelectionBgColor(const std::string& css_selector);
 
 // Get the color of the GtkSeparator specified by |css_selector|.
-SkColor GetSeparatorColor(const char* css_selector);
+SkColor GetSeparatorColor(const std::string& css_selector);
 #endif
 
 }  // namespace libgtkui

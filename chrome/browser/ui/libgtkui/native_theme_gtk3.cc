@@ -148,8 +148,7 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
       GdkColor* color;
       gtk_style_context_get_style(link_context, "link-color", &color, nullptr);
       if (color) {
-        SkColor ret_color = SkColorSetRGB(color->red / 255, color->green / 255,
-                                          color->blue / 255);
+        SkColor ret_color = GdkColorToSkColor(*color);
         // gdk_color_free() was deprecated in Gtk3.14.  This code path is only
         // taken on versions earlier than Gtk3.12, but the compiler doesn't know
         // that, so silence the deprecation warnings.
@@ -580,7 +579,8 @@ void NativeThemeGtk3::PaintFrameTopArea(
     State state,
     const gfx::Rect& rect,
     const FrameTopAreaExtraParams& frame_top_area) const {
-  auto context = GetStyleContextFromCss(frame_top_area.use_custom_frame
+  auto context = GetStyleContextFromCss(frame_top_area.use_custom_frame &&
+                                                GtkVersionCheck(3, 10)
                                             ? "#headerbar.header-bar.titlebar"
                                             : "GtkMenuBar#menubar");
   ApplyCssToContext(context, "* { border-radius: 0px; border-style: none; }");

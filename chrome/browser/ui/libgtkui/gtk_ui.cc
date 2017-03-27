@@ -864,9 +864,11 @@ void GtkUi::LoadGtkValues() {
   colors_[ThemeProperties::COLOR_NTP_HEADER] =
       colors_[ThemeProperties::COLOR_FRAME];
 #else
-  SkColor frame_color = GetBgColor("#headerbar.header-bar.titlebar");
-  SkColor frame_color_inactive =
-      GetBgColor("#headerbar.header-bar.titlebar:backdrop");
+  std::string header_selector = GtkVersionCheck(3, 10)
+                                    ? "#headerbar.header-bar.titlebar"
+                                    : "GtkMenuBar#menubar";
+  SkColor frame_color = GetBgColor(header_selector);
+  SkColor frame_color_inactive = GetBgColor(header_selector + ":backdrop");
   colors_[ThemeProperties::COLOR_FRAME] = frame_color;
   colors_[ThemeProperties::COLOR_FRAME_INACTIVE] = frame_color_inactive;
   colors_[ThemeProperties::COLOR_FRAME_INCOGNITO] =
@@ -921,11 +923,10 @@ void GtkUi::LoadGtkValues() {
   // These colors represent the border drawn around tabs and between
   // the tabstrip and toolbar.
   SkColor toolbar_top_separator = GetToolbarTopSeparatorColor(
-      GetBorderColor("#headerbar.header-bar.titlebar GtkButton#button"),
-      frame_color, toolbar_button_border, toolbar_color);
+      GetBorderColor(header_selector + " GtkButton#button"), frame_color,
+      toolbar_button_border, toolbar_color);
   SkColor toolbar_top_separator_inactive = GetToolbarTopSeparatorColor(
-      GetBorderColor(
-          "#headerbar.header-bar.titlebar:backdrop GtkButton#button"),
+      GetBorderColor(header_selector + ":backdrop GtkButton#button"),
       frame_color_inactive, toolbar_button_border, toolbar_color);
   // Unlike with toolbars, we always want a border around tabs, so let
   // ThemeService choose the border color if the theme doesn't provide one.

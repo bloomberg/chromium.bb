@@ -423,7 +423,7 @@ ScopedStyleContext AppendCssNodeToStyleContext(GtkStyleContext* context,
   return child_context;
 }
 
-ScopedStyleContext GetStyleContextFromCss(const char* css_selector) {
+ScopedStyleContext GetStyleContextFromCss(const std::string& css_selector) {
   // Prepend a window node to the selector since all widgets must live
   // in a window, but we don't want to specify that every time.
   auto context =
@@ -468,14 +468,14 @@ SkColor GetBgColorFromStyleContext(GtkStyleContext* context) {
   return surface.GetAveragePixelValue(false);
 }
 
-SkColor GetFgColor(const char* css_selector) {
+SkColor GetFgColor(const std::string& css_selector) {
   return GetFgColorFromStyleContext(GetStyleContextFromCss(css_selector));
 }
 
-ScopedCssProvider GetCssProvider(const char* css) {
+ScopedCssProvider GetCssProvider(const std::string& css) {
   GtkCssProvider* provider = gtk_css_provider_new();
   GError* error = nullptr;
-  gtk_css_provider_load_from_data(provider, css, -1, &error);
+  gtk_css_provider_load_from_data(provider, css.c_str(), -1, &error);
   DCHECK(!error);
   return ScopedCssProvider(provider);
 }
@@ -489,7 +489,7 @@ void ApplyCssProviderToContext(GtkStyleContext* context,
   }
 }
 
-void ApplyCssToContext(GtkStyleContext* context, const char* css) {
+void ApplyCssToContext(GtkStyleContext* context, const std::string& css) {
   auto provider = GetCssProvider(css);
   ApplyCssProviderToContext(context, provider);
 }
@@ -503,11 +503,11 @@ void RenderBackground(const gfx::Size& size,
   gtk_render_background(context, cr, 0, 0, size.width(), size.height());
 }
 
-SkColor GetBgColor(const char* css_selector) {
+SkColor GetBgColor(const std::string& css_selector) {
   return GetBgColorFromStyleContext(GetStyleContextFromCss(css_selector));
 }
 
-SkColor GetBorderColor(const char* css_selector) {
+SkColor GetBorderColor(const std::string& css_selector) {
   // Borders have the same issue as backgrounds, due to the
   // border-image property.
   auto context = GetStyleContextFromCss(css_selector);
@@ -517,7 +517,7 @@ SkColor GetBorderColor(const char* css_selector) {
   return surface.GetAveragePixelValue(true);
 }
 
-SkColor GetSelectionBgColor(const char* css_selector) {
+SkColor GetSelectionBgColor(const std::string& css_selector) {
   auto context = GetStyleContextFromCss(css_selector);
   if (GtkVersionCheck(3, 20))
     return GetBgColorFromStyleContext(context);
@@ -530,7 +530,7 @@ SkColor GetSelectionBgColor(const char* css_selector) {
   return GdkRgbaToSkColor(selection_color);
 }
 
-SkColor GetSeparatorColor(const char* css_selector) {
+SkColor GetSeparatorColor(const std::string& css_selector) {
   if (!GtkVersionCheck(3, 20))
     return GetFgColor(css_selector);
 
