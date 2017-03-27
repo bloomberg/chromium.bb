@@ -29,14 +29,9 @@ class PaymentRequestCanMakePaymentQueryTest
 };
 
 // Visa is required, and user has a visa instrument.
-// Test is flaky on ChromeOS. crbug.com/705225
-#if defined(OS_CHROMEOS)
-#define MAYBE_CanMakePayment_Supported DISABLED_CanMakePayment_Supported
-#else
-#define MAYBE_CanMakePayment_Supported CanMakePayment_Supported
-#endif
+// Test is flaky. crbug.com/705225
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
-                       MAYBE_CanMakePayment_Supported) {
+                       DISABLED_CanMakePayment_Supported) {
   const autofill::CreditCard card = autofill::test::GetCreditCard();  // Visa.
   AddCreditCard(card);
 
@@ -72,16 +67,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
 
 // Visa is required, and user doesn't have a visa instrument and the user is in
 // incognito mode.
-// Test is flaky on ChromeOS. crbug.com/705271
-#if defined(OS_CHROMEOS)
-#define MAYBE_CanMakePayment_NotSupported_Incognito \
-  DISABLED_CanMakePayment_NotSupported_Incognito
-#else
-#define MAYBE_CanMakePayment_NotSupported_Incognito \
-  CanMakePayment_NotSupported_Incognito
-#endif
+// Test is flaky. crbug.com/705271
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
-                       MAYBE_CanMakePayment_NotSupported_Incognito) {
+                       DISABLED_CanMakePayment_NotSupported_Incognito) {
   SetIncognitoForTesting();
 
   const autofill::CreditCard card = autofill::test::GetCreditCard2();  // Amex.
