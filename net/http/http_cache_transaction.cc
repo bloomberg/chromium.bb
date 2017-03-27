@@ -17,20 +17,16 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
-#include "base/format_macros.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"  // For HexEncode.
-#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"  // For LowerCaseEqualsASCII.
-#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "base/trace_event/trace_event.h"
-#include "base/values.h"
 #include "net/base/auth.h"
 #include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"
@@ -56,9 +52,6 @@ using CacheEntryStatus = HttpResponseInfo::CacheEntryStatus;
 
 namespace {
 
-// TODO(ricea): Move this to HttpResponseHeaders once it is standardised.
-static const char kFreshnessHeader[] = "Resource-Freshness";
-
 // From http://tools.ietf.org/html/draft-ietf-httpbis-p6-cache-21#section-6
 //      a "non-error response" is one with a 2xx (Successful) or 3xx
 //      (Redirection) status code.
@@ -75,13 +68,6 @@ void RecordNoStoreHeaderHistogram(int load_flags,
         response->headers->HasHeaderValue("cache-control", "no-store"));
   }
 }
-
-enum ExternallyConditionalizedType {
-  EXTERNALLY_CONDITIONALIZED_CACHE_REQUIRES_VALIDATION,
-  EXTERNALLY_CONDITIONALIZED_CACHE_USABLE,
-  EXTERNALLY_CONDITIONALIZED_MISMATCHED_VALIDATORS,
-  EXTERNALLY_CONDITIONALIZED_MAX
-};
 
 }  // namespace
 
@@ -2111,7 +2097,7 @@ int HttpCache::Transaction::BeginCacheRead() {
     return ERR_CACHE_MISS;
   }
 
-  if (RequiresValidation() != VALIDATION_NONE) {
+  if (RequiresValidation()) {
     TransitionToState(STATE_NONE);
     return ERR_CACHE_MISS;
   }
@@ -2130,16 +2116,7 @@ int HttpCache::Transaction::BeginCacheRead() {
 int HttpCache::Transaction::BeginCacheValidation() {
   DCHECK_EQ(mode_, READ_WRITE);
 
-  ValidationType required_validation = RequiresValidation();
-
-  bool skip_validation = (required_validation == VALIDATION_NONE);
-
-  if ((effective_load_flags_ & LOAD_SUPPORT_ASYNC_REVALIDATION) &&
-      required_validation == VALIDATION_ASYNCHRONOUS) {
-    DCHECK_EQ(request_->method, "GET");
-    skip_validation = true;
-    response_.async_revalidation_required = true;
-  }
+  bool skip_validation = !RequiresValidation();
 
   if (request_->method == "HEAD" &&
       (truncated_ || response_.headers->response_code() == 206)) {
@@ -2261,22 +2238,6 @@ int HttpCache::Transaction::BeginExternallyConditionalizedRequest() {
     }
   }
 
-  // TODO(ricea): This calculation is expensive to perform just to collect
-  // statistics. Either remove it or use the result, depending on the result of
-  // the experiment.
-  ExternallyConditionalizedType type =
-      EXTERNALLY_CONDITIONALIZED_CACHE_USABLE;
-  if (mode_ == NONE)
-    type = EXTERNALLY_CONDITIONALIZED_MISMATCHED_VALIDATORS;
-  else if (RequiresValidation() != VALIDATION_NONE)
-    type = EXTERNALLY_CONDITIONALIZED_CACHE_REQUIRES_VALIDATION;
-
-  // TODO(ricea): Add CACHE_USABLE_STALE once stale-while-revalidate CL landed.
-  // TODO(ricea): Either remove this histogram or make it permanent by M40.
-  UMA_HISTOGRAM_ENUMERATION("HttpCache.ExternallyConditionalized",
-                            type,
-                            EXTERNALLY_CONDITIONALIZED_MAX);
-
   TransitionToState(STATE_SEND_REQUEST);
   return OK;
 }
@@ -2321,7 +2282,7 @@ int HttpCache::Transaction::RestartNetworkRequestWithAuth(
   return rv;
 }
 
-ValidationType HttpCache::Transaction::RequiresValidation() {
+bool HttpCache::Transaction::RequiresValidation() {
   // TODO(darin): need to do more work here:
   //  - make sure we have a matching request method
   //  - watch out for cached responses that depend on authentication
@@ -2332,11 +2293,11 @@ ValidationType HttpCache::Transaction::RequiresValidation() {
                                           *response_.headers.get())) {
     vary_mismatch_ = true;
     validation_cause_ = VALIDATION_CAUSE_VARY_MISMATCH;
-    return VALIDATION_SYNCHRONOUS;
+    return true;
   }
 
   if (effective_load_flags_ & LOAD_SKIP_CACHE_VALIDATION)
-    return VALIDATION_NONE;
+    return false;
 
   if (response_.unused_since_prefetch &&
       !(effective_load_flags_ & LOAD_PREFETCH) &&
@@ -2345,23 +2306,21 @@ ValidationType HttpCache::Transaction::RequiresValidation() {
           cache_->clock_->Now()) < TimeDelta::FromMinutes(kPrefetchReuseMins)) {
     // The first use of a resource after prefetch within a short window skips
     // validation.
-    return VALIDATION_NONE;
+    return false;
   }
 
   if (effective_load_flags_ & LOAD_VALIDATE_CACHE) {
     validation_cause_ = VALIDATION_CAUSE_VALIDATE_FLAG;
-    return VALIDATION_SYNCHRONOUS;
+    return true;
   }
 
   if (request_->method == "PUT" || request_->method == "DELETE")
-    return VALIDATION_SYNCHRONOUS;
+    return true;
 
-  ValidationType validation_required_by_headers =
-      response_.headers->RequiresValidation(response_.request_time,
-                                            response_.response_time,
-                                            cache_->clock_->Now());
+  bool validation_required_by_headers = response_.headers->RequiresValidation(
+      response_.request_time, response_.response_time, cache_->clock_->Now());
 
-  if (validation_required_by_headers != VALIDATION_NONE) {
+  if (validation_required_by_headers) {
     HttpResponseHeaders::FreshnessLifetimes lifetimes =
         response_.headers->GetFreshnessLifetimes(response_.response_time);
     if (lifetimes.freshness == base::TimeDelta()) {
@@ -2373,12 +2332,6 @@ ValidationType HttpCache::Transaction::RequiresValidation() {
           response_.request_time, response_.response_time,
           cache_->clock_->Now());
     }
-  }
-
-  if (validation_required_by_headers == VALIDATION_ASYNCHRONOUS) {
-    // Asynchronous revalidation is only supported for GET methods.
-    if (request_->method != "GET")
-      return VALIDATION_SYNCHRONOUS;
   }
 
   return validation_required_by_headers;
@@ -2427,26 +2380,6 @@ bool HttpCache::Transaction::ConditionalizeRequest() {
 
   bool use_if_range =
       partial_ && !partial_->IsCurrentRangeCached() && !invalid_range_;
-
-  if (!use_if_range) {
-    // stale-while-revalidate is not useful when we only have a partial response
-    // cached, so don't set the header in that case.
-    HttpResponseHeaders::FreshnessLifetimes lifetimes =
-        response_.headers->GetFreshnessLifetimes(response_.response_time);
-    if (lifetimes.staleness > TimeDelta()) {
-      TimeDelta current_age = response_.headers->GetCurrentAge(
-          response_.request_time, response_.response_time,
-          cache_->clock_->Now());
-
-      custom_request_->extra_headers.SetHeader(
-          kFreshnessHeader,
-          base::StringPrintf("max-age=%" PRId64
-                             ",stale-while-revalidate=%" PRId64 ",age=%" PRId64,
-                             lifetimes.freshness.InSeconds(),
-                             lifetimes.staleness.InSeconds(),
-                             current_age.InSeconds()));
-    }
-  }
 
   if (!etag_value.empty()) {
     if (use_if_range) {

@@ -338,9 +338,8 @@ class HttpCache::Transaction : public HttpTransaction {
   // Returns network error code.
   int RestartNetworkRequestWithAuth(const AuthCredentials& credentials);
 
-  // Called to determine if we need to validate the cache entry before using it,
-  // and whether the validation should be synchronous or asynchronous.
-  ValidationType RequiresValidation();
+  // Called to determine if we need to validate the cache entry before using it.
+  bool RequiresValidation();
 
   // Called to make the request conditional (to ask the server if the cached
   // copy is valid).  Returns true if able to make the request conditional.
