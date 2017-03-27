@@ -16,7 +16,7 @@ const char kHistogramResourcePrefetchPredictorFirstContentfulPaint[] =
     "PageLoad.Clients.ResourcePrefetchPredictor.PaintTiming."
     "NavigationToFirstContentfulPaint.Prefetchable";
 const char kHistogramResourcePrefetchPredictorFirstMeaningfulPaint[] =
-    "PageLoad.Clients.ResourcePrefetchPredictor.PaintTiming."
+    "PageLoad.Clients.ResourcePrefetchPredictor.Experimental.PaintTiming."
     "NavigationToFirstMeaningfulPaint.Prefetchable";
 
 }  // namespace internal
