@@ -920,8 +920,15 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
 // focused. Then the <input> inside frame is both focused and blurred and  and
 // in both cases the test verifies that WebContents is aware whether or not a
 // focused editable element exists on the page.
+// Test is flaky on ChromeOS. crbug.com/705289
+#if defined(OS_CHROMEOS)
+#define MAYBE_TrackPageFocusEditableElement \
+  DISABLED_TrackPageFocusEditableElement
+#else
+#define MAYBE_TrackPageFocusEditableElement TrackPageFocusEditableElement
+#endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
-                       TrackPageFocusEditableElement) {
+                       MAYBE_TrackPageFocusEditableElement) {
   CreateIframePage("a(a, b(a))");
   std::vector<content::RenderFrameHost*> frames{
       GetFrame(IndexVector{}), GetFrame(IndexVector{0}),

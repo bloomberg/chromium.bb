@@ -66,8 +66,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
 
 // Visa is required, and user doesn't have a visa instrument and the user is in
 // incognito mode.
+// Test is flaky. crbug.com/705271
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
-                       CanMakePayment_NotSupported_Incognito) {
+                       DISABLED_CanMakePayment_NotSupported_Incognito) {
   SetIncognitoForTesting();
 
   const autofill::CreditCard card = autofill::test::GetCreditCard2();  // Amex.
