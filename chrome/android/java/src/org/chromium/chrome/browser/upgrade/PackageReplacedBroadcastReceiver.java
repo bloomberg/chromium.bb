@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.upgrade;
 
-import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -24,11 +23,10 @@ import android.os.Build;
  * - This class immediately cullable by Android as soon as {@link #onReceive} returns. To kick off
  *   longer tasks, you must start a Service.
  */
-// TODO(crbug.com/635567): Fix this properly.
-@SuppressLint("UnsafeProtectedBroadcastReceiver")
 public final class PackageReplacedBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
+        if (!Intent.ACTION_MY_PACKAGE_REPLACED.equals(intent.getAction())) return;
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N) return;
         UpgradeIntentService.startMigrationIfNecessary(context);
     }
