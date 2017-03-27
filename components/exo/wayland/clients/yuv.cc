@@ -38,8 +38,9 @@ bool YuvClient::WriteSolidColor(gbm_bo* bo, SkColor color) {
     base::ScopedFD fd(gbm_bo_get_plane_fd(bo, i));
     uint32_t stride = gbm_bo_get_plane_stride(bo, i);
     uint32_t offset = gbm_bo_get_plane_offset(bo, i);
-    void* void_data = mmap(nullptr, gbm_bo_get_plane_size(bo, i) + offset,
-                           (PROT_READ | PROT_WRITE), MAP_SHARED, fd.get(), 0);
+    uint32_t map_size = gbm_bo_get_plane_size(bo, i) + offset;
+    void* void_data = mmap(nullptr, map_size, (PROT_READ | PROT_WRITE),
+                           MAP_SHARED, fd.get(), 0);
     if (void_data == MAP_FAILED) {
       LOG(ERROR) << "Failed mmap().";
       return false;
@@ -65,6 +66,11 @@ bool YuvClient::WriteSolidColor(gbm_bo* bo, SkColor color) {
           data[stride * y + x * 2 + 1] = yuv[2];
         }
       }
+    }
+    int ret = munmap(void_data, map_size);
+    if (ret) {
+      LOG(ERROR) << "Failed munmap().";
+      return false;
     }
   }
   return true;
