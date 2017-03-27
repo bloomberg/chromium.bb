@@ -5,8 +5,10 @@
 #ifndef CONTENT_BROWSER_BACKGROUND_FETCH_REQUEST_INFO_H_
 #define CONTENT_BROWSER_BACKGROUND_FETCH_REQUEST_INFO_H_
 
+#include <memory>
 #include <vector>
 
+#include "base/files/file_path.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
@@ -41,18 +43,33 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo {
     interrupt_reason_ = reason;
   }
 
+  const base::FilePath& file_path() const { return file_path_; }
+  void set_file_path(const base::FilePath& file_path) {
+    file_path_ = file_path;
+  }
+
+  int64_t received_bytes() const { return received_bytes_; }
+  void set_received_bytes(int64_t received_bytes) {
+    received_bytes_ = received_bytes;
+  }
+
+  bool IsComplete() const;
+
  private:
   std::string guid_;
   GURL url_;
   std::string tag_;
   std::string download_guid_;
+
+  // The following members do not need to be persisted, they can be reset after
+  // a chrome restart.
   DownloadItem::DownloadState state_ =
       DownloadItem::DownloadState::MAX_DOWNLOAD_STATE;
   DownloadInterruptReason interrupt_reason_ =
       DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_NONE;
+  base::FilePath file_path_;
+  int64_t received_bytes_ = 0;
 };
-
-using BackgroundFetchRequestInfos = std::vector<BackgroundFetchRequestInfo>;
 
 }  // namespace content
 

@@ -20,7 +20,7 @@ BackgroundFetchContext::BackgroundFetchContext(
     : browser_context_(browser_context),
       storage_partition_(storage_partition),
       service_worker_context_(service_worker_context),
-      background_fetch_data_manager_(this) {
+      background_fetch_data_manager_(browser_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // TODO(harkness): BackgroundFetchContext should have
   // ServiceWorkerContextObserver as a parent class and should register as an
@@ -56,25 +56,21 @@ void BackgroundFetchContext::ShutdownOnIO() {
 
 void BackgroundFetchContext::CreateRequest(
     std::unique_ptr<BackgroundFetchJobInfo> job_info,
-    std::vector<BackgroundFetchRequestInfo>& request_infos) {
+    std::vector<std::unique_ptr<BackgroundFetchRequestInfo>> request_infos) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_GE(1U, request_infos.size());
 
   // Inform the data manager about the new download.
   const std::string job_guid = job_info->guid();
-  std::unique_ptr<BackgroundFetchJobData> job_data =
-      background_fetch_data_manager_.CreateRequest(std::move(job_info),
-                                                   request_infos);
+  background_fetch_data_manager_.CreateRequest(std::move(job_info),
+                                               std::move(request_infos));
 
-  // If job_data is null, the DataManager will have logged an error.
-  if (job_data) {
-    // Create a controller which drives the processing of the job. It will use
-    // the JobData to get information about individual requests for the job.
-    job_map_[job_guid] = base::MakeUnique<BackgroundFetchJobController>(
-        job_guid, browser_context_, storage_partition_, std::move(job_data),
-        base::BindOnce(&BackgroundFetchContext::DidCompleteJob, this,
-                       job_guid));
-  }
+  // Create a controller which drives the processing of the job. It will use
+  // the DataManager to get information about individual requests for the job.
+  job_map_[job_guid] = base::MakeUnique<BackgroundFetchJobController>(
+      job_guid, browser_context_, storage_partition_,
+      &background_fetch_data_manager_,
+      base::BindOnce(&BackgroundFetchContext::DidCompleteJob, this, job_guid));
 }
 
 void BackgroundFetchContext::DidCompleteJob(const std::string& job_guid) {

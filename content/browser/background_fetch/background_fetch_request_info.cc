@@ -24,8 +24,14 @@ BackgroundFetchRequestInfo::BackgroundFetchRequestInfo(
       tag_(request.tag_),
       download_guid_(request.download_guid_),
       state_(request.state_),
-      interrupt_reason_(request.interrupt_reason_) {}
+      interrupt_reason_(request.interrupt_reason_),
+      file_path_(request.file_path_) {}
 
-BackgroundFetchRequestInfo::~BackgroundFetchRequestInfo() = default;
+BackgroundFetchRequestInfo::~BackgroundFetchRequestInfo() {}
+
+bool BackgroundFetchRequestInfo::IsComplete() const {
+  return (state_ == DownloadItem::DownloadState::COMPLETE ||
+          state_ == DownloadItem::DownloadState::CANCELLED);
+}
 
 }  // namespace content

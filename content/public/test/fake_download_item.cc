@@ -134,6 +134,14 @@ const GURL& FakeDownloadItem::GetOriginalUrl() const {
   return original_url_;
 }
 
+void FakeDownloadItem::SetReceivedBytes(int64_t received_bytes) {
+  received_bytes_ = received_bytes;
+}
+
+int64_t FakeDownloadItem::GetReceivedBytes() const {
+  return received_bytes_;
+}
+
 // The methods below are not supported and are not expected to be called.
 void FakeDownloadItem::ValidateDangerousDownload() {
   NOTREACHED();
@@ -321,11 +329,6 @@ bool FakeDownloadItem::AllDataSaved() const {
 }
 
 int64_t FakeDownloadItem::GetTotalBytes() const {
-  NOTREACHED();
-  return 1;
-}
-
-int64_t FakeDownloadItem::GetReceivedBytes() const {
   NOTREACHED();
   return 1;
 }

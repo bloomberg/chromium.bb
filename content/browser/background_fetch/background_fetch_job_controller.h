@@ -17,21 +17,21 @@
 
 namespace content {
 
-class BackgroundFetchJobData;
+class BackgroundFetchDataManager;
 class BackgroundFetchRequestInfo;
 class BrowserContext;
 class StoragePartition;
 
 // The JobController will be responsible for coordinating communication with the
-// DownloadManager. It will get requests from the JobData and dispatch them to
-// the DownloadManager. It lives entirely on the IO thread.
+// DownloadManager. It will get requests from the DataManager and dispatch them
+// to the DownloadManager. It lives entirely on the IO thread.
 class CONTENT_EXPORT BackgroundFetchJobController
     : public DownloadItem::Observer {
  public:
   BackgroundFetchJobController(const std::string& job_guid,
                                BrowserContext* browser_context,
                                StoragePartition* storage_partition,
-                               std::unique_ptr<BackgroundFetchJobData> job_data,
+                               BackgroundFetchDataManager* data_manager,
                                base::OnceClosure completed_closure);
   ~BackgroundFetchJobController() override;
 
@@ -55,6 +55,8 @@ class CONTENT_EXPORT BackgroundFetchJobController
 
   void ProcessRequest(const BackgroundFetchRequestInfo& request);
 
+  std::string job_guid_;
+
   // Pointer to the browser context. The BackgroundFetchJobController is owned
   // by the BrowserContext via the StoragePartition.
   // TODO(harkness): Currently this is only used to lookup the DownloadManager.
@@ -65,8 +67,9 @@ class CONTENT_EXPORT BackgroundFetchJobController
   // (through a sequence of other classes).
   StoragePartition* storage_partition_;
 
-  // The JobData which talks to the DataManager for this job_guid.
-  std::unique_ptr<BackgroundFetchJobData> job_data_;
+  // The DataManager's lifetime is controlled by the BackgroundFetchContext and
+  // will be kept alive until after the JobController is destroyed.
+  BackgroundFetchDataManager* data_manager_;
 
   // Callback for when all fetches have been completed.
   base::OnceClosure completed_closure_;

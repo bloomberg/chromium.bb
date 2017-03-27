@@ -69,6 +69,9 @@ class FakeDownloadItem : public DownloadItem {
   void SetLastReason(DownloadInterruptReason last_reason);
   DownloadInterruptReason GetLastReason() const override;
 
+  void SetReceivedBytes(int64_t received_bytes);
+  int64_t GetReceivedBytes() const override;
+
   // The methods below are not supported and are not expected to be called.
   void ValidateDangerousDownload() override;
   void StealDangerousDownload(bool delete_file_afterward,
@@ -110,7 +113,6 @@ class FakeDownloadItem : public DownloadItem {
   int PercentComplete() const override;
   bool AllDataSaved() const override;
   int64_t GetTotalBytes() const override;
-  int64_t GetReceivedBytes() const override;
   const std::vector<DownloadItem::ReceivedSlice>& GetReceivedSlices()
       const override;
   bool CanShowInFolder() override;
@@ -145,6 +147,7 @@ class FakeDownloadItem : public DownloadItem {
   GURL original_url_;
   DownloadInterruptReason last_reason_ =
       DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_NONE;
+  int64_t received_bytes_ = 0;
 
   // The members below are to be returned by methods, which return by reference.
   std::string dummy_string;

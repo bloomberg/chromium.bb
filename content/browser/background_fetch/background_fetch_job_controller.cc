@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "content/browser/background_fetch/background_fetch_job_data.h"
+#include "content/browser/background_fetch/background_fetch_data_manager.h"
 #include "content/browser/background_fetch/background_fetch_request_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -21,11 +21,12 @@ BackgroundFetchJobController::BackgroundFetchJobController(
     const std::string& job_guid,
     BrowserContext* browser_context,
     StoragePartition* storage_partition,
-    std::unique_ptr<BackgroundFetchJobData> job_data,
+    BackgroundFetchDataManager* data_manager,
     base::OnceClosure completed_closure)
-    : browser_context_(browser_context),
+    : job_guid_(job_guid),
+      browser_context_(browser_context),
       storage_partition_(storage_partition),
-      job_data_(std::move(job_data)),
+      data_manager_(data_manager),
       completed_closure_(std::move(completed_closure)),
       weak_ptr_factory_(this) {}
 
@@ -45,15 +46,15 @@ void BackgroundFetchJobController::Shutdown() {
   download_guid_map_.clear();
 
   // TODO(harkness): Write final status to the DataManager. After this call, the
-  // |job_data_| is no longer valid.
-  job_data_.reset();
+  // |data_manager_| is no longer valid.
+  data_manager_ = nullptr;
 }
 
 void BackgroundFetchJobController::StartProcessing() {
-  DCHECK(job_data_);
+  DCHECK(data_manager_);
 
   const BackgroundFetchRequestInfo& fetch_request =
-      job_data_->GetNextBackgroundFetchRequestInfo();
+      data_manager_->GetNextBackgroundFetchRequestInfo(job_guid_);
   ProcessRequest(fetch_request);
 
   // Currently, this processes a single request at a time.
@@ -67,7 +68,8 @@ void BackgroundFetchJobController::DownloadStarted(
   // can be retrieved from the DownloadManager.
   item->AddObserver(this);
   download_guid_map_[item->GetGuid()] = request_guid;
-  job_data_->SetRequestDownloadGuid(request_guid, item->GetGuid());
+  data_manager_->UpdateRequestDownloadGuid(job_guid_, request_guid,
+                                           item->GetGuid());
 
   // TODO(harkness): If DownloadStarted is called with a real interrupt reason,
   // record that and don't mark it as in-progress.
@@ -76,21 +78,27 @@ void BackgroundFetchJobController::DownloadStarted(
 void BackgroundFetchJobController::OnDownloadUpdated(DownloadItem* item) {
   DCHECK(download_guid_map_.find(item->GetGuid()) != download_guid_map_.end());
 
-  // Update the state of the request on the JobData. If the state is a final
-  // state, this will also update the complete status of the JobData.
-  bool requests_remaining = job_data_->UpdateBackgroundFetchRequestState(
-      download_guid_map_[item->GetGuid()], item->GetState(),
-      item->GetLastReason());
+  // Update the state of the request on the DataManager. If the state is a final
+  // state, this will also update the complete status of the JobInfo.
+  const std::string& request_guid = download_guid_map_[item->GetGuid()];
+  bool requests_remaining = data_manager_->UpdateRequestState(
+      job_guid_, request_guid, item->GetState(), item->GetLastReason());
 
   switch (item->GetState()) {
-    case DownloadItem::DownloadState::CANCELLED:
     case DownloadItem::DownloadState::COMPLETE:
+      // If the download completed, update the storage location and size.
+      data_manager_->UpdateRequestStorageState(job_guid_, request_guid,
+                                               item->GetTargetFilePath(),
+                                               item->GetReceivedBytes());
+    // Fall through.
+    case DownloadItem::DownloadState::CANCELLED:
       // TODO(harkness): Tell the notification service to update the download
       // notification.
 
       if (requests_remaining) {
-        ProcessRequest(job_data_->GetNextBackgroundFetchRequestInfo());
-      } else if (job_data_->IsComplete()) {
+        ProcessRequest(
+            data_manager_->GetNextBackgroundFetchRequestInfo(job_guid_));
+      } else if (data_manager_->IsComplete(job_guid_)) {
         std::move(completed_closure_).Run();
       }
       break;
