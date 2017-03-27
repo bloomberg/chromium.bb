@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(function() {
-  var internal = mojoBindings.internal;
+define("mojo/public/js/validator", [
+  "mojo/public/js/codec",
+], function(codec) {
 
   var validationError = {
     NONE: 'VALIDATION_ERROR_NONE',
@@ -29,33 +30,32 @@
   var NULL_MOJO_POINTER = "NULL_MOJO_POINTER";
 
   function isEnumClass(cls) {
-    return cls instanceof internal.Enum;
+    return cls instanceof codec.Enum;
   }
 
   function isStringClass(cls) {
-    return cls === internal.String || cls === internal.NullableString;
+    return cls === codec.String || cls === codec.NullableString;
   }
 
   function isHandleClass(cls) {
-    return cls === internal.Handle || cls === internal.NullableHandle;
+    return cls === codec.Handle || cls === codec.NullableHandle;
   }
 
   function isInterfaceClass(cls) {
-    return cls instanceof internal.Interface;
+    return cls instanceof codec.Interface;
   }
 
   function isInterfaceRequestClass(cls) {
-    return cls === internal.InterfaceRequest ||
-        cls === internal.NullableInterfaceRequest;
+    return cls === codec.InterfaceRequest ||
+        cls === codec.NullableInterfaceRequest;
   }
 
   function isNullable(type) {
-    return type === internal.NullableString ||
-        type === internal.NullableHandle ||
-        type === internal.NullableInterface ||
-        type === internal.NullableInterfaceRequest ||
-        type instanceof internal.NullableArrayOf ||
-        type instanceof internal.NullablePointerTo;
+    return type === codec.NullableString || type === codec.NullableHandle ||
+        type === codec.NullableInterface ||
+        type === codec.NullableInterfaceRequest ||
+        type instanceof codec.NullableArrayOf ||
+        type instanceof codec.NullablePointerTo;
   }
 
   function Validator(message) {
@@ -98,7 +98,7 @@
   };
 
   Validator.prototype.claimHandle = function(index) {
-    if (index === internal.kEncodedInvalidHandleValue)
+    if (index === codec.kEncodedInvalidHandleValue)
       return true;
 
     if (index < this.handleIndex || index >= this.handleIndexLimit)
@@ -119,7 +119,7 @@
   Validator.prototype.validateHandle = function(offset, nullable) {
     var index = this.message.buffer.getUint32(offset);
 
-    if (index === internal.kEncodedInvalidHandleValue)
+    if (index === codec.kEncodedInvalidHandleValue)
       return nullable ?
           validationError.NONE : validationError.UNEXPECTED_INVALID_HANDLE;
 
@@ -138,10 +138,10 @@
   };
 
   Validator.prototype.validateStructHeader = function(offset, minNumBytes) {
-    if (!internal.isAligned(offset))
+    if (!codec.isAligned(offset))
       return validationError.MISALIGNED_OBJECT;
 
-    if (!this.isValidRange(offset, internal.kStructHeaderSize))
+    if (!this.isValidRange(offset, codec.kStructHeaderSize))
       return validationError.ILLEGAL_MEMORY_RANGE;
 
     var numBytes = this.message.buffer.getUint32(offset);
@@ -182,7 +182,7 @@
 
   Validator.prototype.validateMessageHeader = function() {
 
-    var err = this.validateStructHeader(0, internal.kMessageHeaderSize);
+    var err = this.validateStructHeader(0, codec.kMessageHeaderSize);
     if (err != validationError.NONE)
       return err;
 
@@ -190,11 +190,11 @@
     var version = this.message.getHeaderVersion();
 
     var validVersionAndNumBytes =
-        (version == 0 && numBytes == internal.kMessageHeaderSize) ||
+        (version == 0 && numBytes == codec.kMessageHeaderSize) ||
         (version == 1 &&
-         numBytes == internal.kMessageWithRequestIDHeaderSize) ||
+         numBytes == codec.kMessageWithRequestIDHeaderSize) ||
         (version > 1 &&
-         numBytes >= internal.kMessageWithRequestIDHeaderSize);
+         numBytes >= codec.kMessageWithRequestIDHeaderSize);
     if (!validVersionAndNumBytes)
       return validationError.UNEXPECTED_STRUCT_HEADER;
 
@@ -322,14 +322,13 @@
       return mapIsNullable ?
           validationError.NONE : validationError.UNEXPECTED_NULL_POINTER;
 
-    var mapEncodedSize = internal.kStructHeaderSize +
-        internal.kMapStructPayloadSize;
+    var mapEncodedSize = codec.kStructHeaderSize + codec.kMapStructPayloadSize;
     var err = this.validateStructHeader(structOffset, mapEncodedSize);
     if (err !== validationError.NONE)
         return err;
 
     // Validate the keys array.
-    var keysArrayPointerOffset = structOffset + internal.kStructHeaderSize;
+    var keysArrayPointerOffset = structOffset + codec.kStructHeaderSize;
     err = this.validateArrayPointer(
         keysArrayPointerOffset, keyClass.encodedSize, keyClass, false, [0], 0);
     if (err !== validationError.NONE)
@@ -338,7 +337,7 @@
     // Validate the values array.
     var valuesArrayPointerOffset = keysArrayPointerOffset + 8;
     var valuesArrayDimensions = [0]; // Validate the actual length below.
-    if (valueClass instanceof internal.ArrayOf)
+    if (valueClass instanceof codec.ArrayOf)
       valuesArrayDimensions =
           valuesArrayDimensions.concat(valueClass.dimensions());
     var err = this.validateArrayPointer(valuesArrayPointerOffset,
@@ -361,7 +360,7 @@
 
   Validator.prototype.validateStringPointer = function(offset, nullable) {
     return this.validateArrayPointer(
-        offset, internal.Uint8.encodedSize, internal.Uint8, nullable, [0], 0);
+        offset, codec.Uint8.encodedSize, codec.Uint8, nullable, [0], 0);
   };
 
   // Similar to Array_Data<T>::Validate()
@@ -370,10 +369,10 @@
   Validator.prototype.validateArray =
       function (offset, elementSize, elementType, expectedDimensionSizes,
                 currentDimension) {
-    if (!internal.isAligned(offset))
+    if (!codec.isAligned(offset))
       return validationError.MISALIGNED_OBJECT;
 
-    if (!this.isValidRange(offset, internal.kArrayHeaderSize))
+    if (!this.isValidRange(offset, codec.kArrayHeaderSize))
       return validationError.ILLEGAL_MEMORY_RANGE;
 
     var numBytes = this.message.buffer.getUint32(offset);
@@ -381,10 +380,10 @@
 
     // Note: this computation is "safe" because elementSize <= 8 and
     // numElements is a uint32.
-    var elementsTotalSize = (elementType === internal.PackedBool) ?
+    var elementsTotalSize = (elementType === codec.PackedBool) ?
         Math.ceil(numElements / 8) : (elementSize * numElements);
 
-    if (numBytes < internal.kArrayHeaderSize + elementsTotalSize)
+    if (numBytes < codec.kArrayHeaderSize + elementsTotalSize)
       return validationError.UNEXPECTED_ARRAY_HEADER;
 
     if (expectedDimensionSizes[currentDimension] != 0 &&
@@ -397,7 +396,7 @@
 
     // Validate the array's elements if they are pointers or handles.
 
-    var elementsOffset = offset + internal.kArrayHeaderSize;
+    var elementsOffset = offset + codec.kArrayHeaderSize;
     var nullable = isNullable(elementType);
 
     if (isHandleClass(elementType))
@@ -410,11 +409,11 @@
           elementsOffset, numElements, nullable);
     if (isStringClass(elementType))
       return this.validateArrayElements(
-          elementsOffset, numElements, internal.Uint8, nullable, [0], 0);
-    if (elementType instanceof internal.PointerTo)
+          elementsOffset, numElements, codec.Uint8, nullable, [0], 0);
+    if (elementType instanceof codec.PointerTo)
       return this.validateStructElements(
           elementsOffset, numElements, elementType.cls, nullable);
-    if (elementType instanceof internal.ArrayOf)
+    if (elementType instanceof codec.ArrayOf)
       return this.validateArrayElements(
           elementsOffset, numElements, elementType.cls, nullable,
           expectedDimensionSizes, currentDimension + 1);
@@ -431,7 +430,7 @@
 
   Validator.prototype.validateHandleElements =
       function(offset, numElements, nullable) {
-    var elementSize = internal.Handle.encodedSize;
+    var elementSize = codec.Handle.encodedSize;
     for (var i = 0; i < numElements; i++) {
       var elementOffset = offset + i * elementSize;
       var err = this.validateHandle(elementOffset, nullable);
@@ -443,7 +442,7 @@
 
   Validator.prototype.validateInterfaceElements =
       function(offset, numElements, nullable) {
-    var elementSize = internal.Interface.prototype.encodedSize;
+    var elementSize = codec.Interface.prototype.encodedSize;
     for (var i = 0; i < numElements; i++) {
       var elementOffset = offset + i * elementSize;
       var err = this.validateInterface(elementOffset, nullable);
@@ -455,7 +454,7 @@
 
   Validator.prototype.validateInterfaceRequestElements =
       function(offset, numElements, nullable) {
-    var elementSize = internal.InterfaceRequest.encodedSize;
+    var elementSize = codec.InterfaceRequest.encodedSize;
     for (var i = 0; i < numElements; i++) {
       var elementOffset = offset + i * elementSize;
       var err = this.validateInterfaceRequest(elementOffset, nullable);
@@ -469,7 +468,7 @@
   Validator.prototype.validateArrayElements =
       function(offset, numElements, elementClass, nullable,
                expectedDimensionSizes, currentDimension) {
-    var elementSize = internal.PointerTo.prototype.encodedSize;
+    var elementSize = codec.PointerTo.prototype.encodedSize;
     for (var i = 0; i < numElements; i++) {
       var elementOffset = offset + i * elementSize;
       var err = this.validateArrayPointer(
@@ -483,7 +482,7 @@
 
   Validator.prototype.validateStructElements =
       function(offset, numElements, structClass, nullable) {
-    var elementSize = internal.PointerTo.prototype.encodedSize;
+    var elementSize = codec.PointerTo.prototype.encodedSize;
     for (var i = 0; i < numElements; i++) {
       var elementOffset = offset + i * elementSize;
       var err =
@@ -496,7 +495,7 @@
 
   Validator.prototype.validateEnumElements =
       function(offset, numElements, enumClass) {
-    var elementSize = internal.Enum.prototype.encodedSize;
+    var elementSize = codec.Enum.prototype.encodedSize;
     for (var i = 0; i < numElements; i++) {
       var elementOffset = offset + i * elementSize;
       var err = this.validateEnum(elementOffset, enumClass);
@@ -506,6 +505,8 @@
     return validationError.NONE;
   };
 
-  internal.validationError = validationError;
-  internal.Validator = Validator;
-})();
+  var exports = {};
+  exports.validationError = validationError;
+  exports.Validator = Validator;
+  return exports;
+});

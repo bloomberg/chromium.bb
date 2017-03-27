@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(function() {
+define("mojo/public/js/interface_types", [
+  "mojo/public/js/core",
+], function(core) {
+
   // ---------------------------------------------------------------------------
 
   function InterfacePtrInfo(handle, version) {
@@ -11,14 +14,14 @@
   }
 
   InterfacePtrInfo.prototype.isValid = function() {
-    return this.handle instanceof MojoHandle;
+    return core.isHandle(this.handle);
   };
 
   InterfacePtrInfo.prototype.close = function() {
     if (!this.isValid())
       return;
 
-    this.handle.close();
+    core.close(this.handle);
     this.handle = null;
     this.version = 0;
   };
@@ -30,17 +33,20 @@
   }
 
   InterfaceRequest.prototype.isValid = function() {
-    return this.handle instanceof MojoHandle;
+    return core.isHandle(this.handle);
   };
 
   InterfaceRequest.prototype.close = function() {
     if (!this.isValid())
       return;
 
-    this.handle.close();
+    core.close(this.handle);
     this.handle = null;
   };
 
-  mojoBindings.InterfacePtrInfo = InterfacePtrInfo;
-  mojoBindings.InterfaceRequest = InterfaceRequest;
-})();
+  var exports = {};
+  exports.InterfacePtrInfo = InterfacePtrInfo;
+  exports.InterfaceRequest = InterfaceRequest;
+
+  return exports;
+});

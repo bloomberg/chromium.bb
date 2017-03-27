@@ -2,11 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(function() {
-  var internal = mojoBindings.internal;
+define("mojo/public/js/connector", [
+  "mojo/public/js/buffer",
+  "mojo/public/js/codec",
+  "mojo/public/js/core",
+  "mojo/public/js/support",
+], function(buffer, codec, core, support) {
 
   function Connector(handle) {
-    if (!(handle instanceof MojoHandle))
+    if (!core.isHandle(handle))
       throw new Error("Connector: not a handle " + handle);
     this.handle_ = handle;
     this.dropWrites_ = false;
@@ -16,18 +20,19 @@
     this.errorHandler_ = null;
 
     if (handle) {
-      this.readWatcher_ = handle.watch({readable: true},
-                                       this.readMore_.bind(this));
+      this.readWatcher_ = support.watch(handle,
+                                        core.HANDLE_SIGNAL_READABLE,
+                                        this.readMore_.bind(this));
     }
   }
 
   Connector.prototype.close = function() {
     if (this.readWatcher_) {
-      this.readWatcher_.cancel();
+      support.cancelWatch(this.readWatcher_);
       this.readWatcher_ = null;
     }
     if (this.handle_ != null) {
-      this.handle_.close();
+      core.close(this.handle_);
       this.handle_ = null;
     }
   };
@@ -39,15 +44,17 @@
     if (this.dropWrites_)
       return true;
 
-    var result = this.handle_.writeMessage(
-        new Uint8Array(message.buffer.arrayBuffer), message.handles);
+    var result = core.writeMessage(this.handle_,
+                                   new Uint8Array(message.buffer.arrayBuffer),
+                                   message.handles,
+                                   core.WRITE_MESSAGE_FLAG_NONE);
     switch (result) {
-      case Mojo.RESULT_OK:
+      case core.RESULT_OK:
         // The handles were successfully transferred, so we don't own them
         // anymore.
         message.handles = [];
         break;
-      case Mojo.RESULT_FAILED_PRECONDITION:
+      case core.RESULT_FAILED_PRECONDITION:
         // There's no point in continuing to write to this pipe since the other
         // end is gone. Avoid writing any future messages. Hide write failures
         // from the caller since we'd like them to continue consuming any
@@ -76,29 +83,32 @@
   };
 
   Connector.prototype.waitForNextMessageForTesting = function() {
-    // TODO(yzshen): Change the tests that use this method.
-    throw new Error("Not supported!");
+    var wait = core.wait(this.handle_, core.HANDLE_SIGNAL_READABLE);
+    this.readMore_(wait.result);
   };
 
   Connector.prototype.readMore_ = function(result) {
     for (;;) {
-      var read = this.handle_.readMessage();
+      var read = core.readMessage(this.handle_,
+                                  core.READ_MESSAGE_FLAG_NONE);
       if (this.handle_ == null) // The connector has been closed.
         return;
-      if (read.result == Mojo.RESULT_SHOULD_WAIT)
+      if (read.result == core.RESULT_SHOULD_WAIT)
         return;
-      if (read.result != Mojo.RESULT_OK) {
+      if (read.result != core.RESULT_OK) {
         this.error_ = true;
         if (this.errorHandler_)
           this.errorHandler_.onError(read.result);
         return;
       }
-      var messageBuffer = new internal.Buffer(read.buffer);
-      var message = new internal.Message(messageBuffer, read.handles);
+      var messageBuffer = new buffer.Buffer(read.buffer);
+      var message = new codec.Message(messageBuffer, read.handles);
       if (this.incomingReceiver_)
         this.incomingReceiver_.accept(message);
     }
   };
 
-  internal.Connector = Connector;
-})();
+  var exports = {};
+  exports.Connector = Connector;
+  return exports;
+});

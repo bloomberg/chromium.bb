@@ -27,7 +27,6 @@ mojom("test_interfaces") {
     "validation_test_interfaces.mojom",
   ]
   public_deps = [
-    ":echo",
     ":test_mojom_import",
     ":test_mojom_import2",
   ]
@@ -192,13 +191,4 @@ mojom("test_no_sources") {
   public_deps = [
     ":test_interfaces",
   ]
-}
-
-mojom("echo") {
-  testonly = true
-  sources = [
-    "echo.mojom",
-    "echo_import.mojom",
-  ]
-  use_new_js_bindings = true
 }

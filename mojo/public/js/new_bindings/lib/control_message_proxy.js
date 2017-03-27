@@ -2,35 +2,39 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(function() {
-  var internal = mojoBindings.internal;
+define("mojo/public/js/lib/control_message_proxy", [
+  "mojo/public/interfaces/bindings/interface_control_messages.mojom",
+  "mojo/public/js/codec",
+  "mojo/public/js/validator",
+], function(controlMessages, codec, validator) {
+
+  var Validator = validator.Validator;
 
   function sendRunOrClosePipeMessage(receiver, runOrClosePipeMessageParams) {
-    var messageName = mojo.interface_control2.kRunOrClosePipeMessageId;
-    var payloadSize =
-        mojo.interface_control2.RunOrClosePipeMessageParams.encodedSize;
-    var builder = new internal.MessageBuilder(messageName, payloadSize);
-    builder.encodeStruct(mojo.interface_control2.RunOrClosePipeMessageParams,
+    var messageName = controlMessages.kRunOrClosePipeMessageId;
+    var payloadSize = controlMessages.RunOrClosePipeMessageParams.encodedSize;
+    var builder = new codec.MessageBuilder(messageName, payloadSize);
+    builder.encodeStruct(controlMessages.RunOrClosePipeMessageParams,
                          runOrClosePipeMessageParams);
     var message = builder.finish();
     receiver.accept(message);
   }
 
   function validateControlResponse(message) {
-    var messageValidator = new internal.Validator(message);
+    var messageValidator = new Validator(message);
     var error = messageValidator.validateMessageIsResponse();
-    if (error != internal.validationError.NONE) {
+    if (error != validator.validationError.NONE) {
       throw error;
     }
 
-    if (message.getName() != mojo.interface_control2.kRunMessageId) {
+    if (message.getName() != controlMessages.kRunMessageId) {
       throw new Error("Control message name is not kRunMessageId");
     }
 
     // Validate payload.
-    error = mojo.interface_control2.RunResponseMessageParams.validate(
+    error = controlMessages.RunResponseMessageParams.validate(
         messageValidator, message.getHeaderNumBytes());
-    if (error != internal.validationError.NONE) {
+    if (error != validator.validationError.NONE) {
       throw error;
     }
   }
@@ -38,9 +42,9 @@
   function acceptRunResponse(message) {
     validateControlResponse(message);
 
-    var reader = new internal.MessageReader(message);
+    var reader = new codec.MessageReader(message);
     var runResponseMessageParams = reader.decodeStruct(
-        mojo.interface_control2.RunResponseMessageParams);
+        controlMessages.RunResponseMessageParams);
 
     return Promise.resolve(runResponseMessageParams);
   }
@@ -55,13 +59,12 @@
   * @return {Promise} that resolves to a RunResponseMessageParams.
   */
   function sendRunMessage(receiver, runMessageParams) {
-    var messageName = mojo.interface_control2.kRunMessageId;
-    var payloadSize = mojo.interface_control2.RunMessageParams.encodedSize;
+    var messageName = controlMessages.kRunMessageId;
+    var payloadSize = controlMessages.RunMessageParams.encodedSize;
     // |requestID| is set to 0, but is later properly set by Router.
-    var builder = new internal.MessageWithRequestIDBuilder(messageName,
-        payloadSize, internal.kMessageExpectsResponse, 0);
-    builder.encodeStruct(mojo.interface_control2.RunMessageParams,
-                         runMessageParams);
+    var builder = new codec.MessageWithRequestIDBuilder(messageName,
+        payloadSize, codec.kMessageExpectsResponse, 0);
+    builder.encodeStruct(controlMessages.RunMessageParams, runMessageParams);
     var message = builder.finish();
 
     return receiver.acceptAndExpectResponse(message).then(acceptRunResponse);
@@ -72,10 +75,9 @@
   }
 
   ControlMessageProxy.prototype.queryVersion = function() {
-    var runMessageParams = new mojo.interface_control2.RunMessageParams();
-    runMessageParams.input = new mojo.interface_control2.RunInput();
-    runMessageParams.input.query_version =
-        new mojo.interface_control2.QueryVersion();
+    var runMessageParams = new controlMessages.RunMessageParams();
+    runMessageParams.input = new controlMessages.RunInput();
+    runMessageParams.input.query_version = new controlMessages.QueryVersion();
 
     return sendRunMessage(this.receiver, runMessageParams).then(function(
         runResponseMessageParams) {
@@ -85,13 +87,16 @@
 
   ControlMessageProxy.prototype.requireVersion = function(version) {
     var runOrClosePipeMessageParams = new
-        mojo.interface_control2.RunOrClosePipeMessageParams();
+        controlMessages.RunOrClosePipeMessageParams();
     runOrClosePipeMessageParams.input = new
-        mojo.interface_control2.RunOrClosePipeInput();
+        controlMessages.RunOrClosePipeInput();
     runOrClosePipeMessageParams.input.require_version = new
-        mojo.interface_control2.RequireVersion({'version': version});
+        controlMessages.RequireVersion({'version': version});
     sendRunOrClosePipeMessage(this.receiver, runOrClosePipeMessageParams);
   };
 
-  internal.ControlMessageProxy = ControlMessageProxy;
-})();
+  var exports = {};
+  exports.ControlMessageProxy = ControlMessageProxy;
+
+  return exports;
+});

@@ -2,14 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(function() {
-  var internal = mojoBindings.internal;
+define("mojo/public/js/router", [
+  "console",
+  "mojo/public/js/codec",
+  "mojo/public/js/core",
+  "mojo/public/js/connector",
+  "mojo/public/js/lib/control_message_handler",
+  "mojo/public/js/validator",
+], function(console, codec, core, connector, controlMessageHandler, validator) {
+
+  var Connector = connector.Connector;
+  var MessageReader = codec.MessageReader;
+  var Validator = validator.Validator;
+  var ControlMessageHandler = controlMessageHandler.ControlMessageHandler;
 
   function Router(handle, interface_version, connectorFactory) {
-    if (!(handle instanceof MojoHandle))
+    if (!core.isHandle(handle))
       throw new Error("Router constructor: Not a handle");
     if (connectorFactory === undefined)
-      connectorFactory = internal.Connector;
+      connectorFactory = Connector;
     this.connector_ = new connectorFactory(handle);
     this.incomingReceiver_ = null;
     this.errorHandler_ = null;
@@ -20,7 +31,7 @@
 
     if (interface_version !== undefined) {
       this.controlMessageHandler_ = new
-          internal.ControlMessageHandler(interface_version);
+          ControlMessageHandler(interface_version);
     }
 
     this.connector_.setIncomingReceiver({
@@ -86,8 +97,8 @@
   };
 
   Router.prototype.handleIncomingMessage_ = function(message) {
-    var noError = internal.validationError.NONE;
-    var messageValidator = new internal.Validator(message);
+    var noError = validator.validationError.NONE;
+    var messageValidator = new Validator(message);
     var err = messageValidator.validateMessageHeader();
     for (var i = 0; err === noError && i < this.payloadValidators_.length; ++i)
       err = this.payloadValidators_[i](messageValidator);
@@ -103,7 +114,7 @@
       return;
 
     if (message.expectsResponse()) {
-      if (internal.isInterfaceControlMessage(message)) {
+      if (controlMessageHandler.isControlMessage(message)) {
         if (this.controlMessageHandler_) {
           this.controlMessageHandler_.acceptWithResponder(message, this);
         } else {
@@ -117,7 +128,7 @@
         this.close();
       }
     } else if (message.isResponse()) {
-      var reader = new internal.MessageReader(message);
+      var reader = new MessageReader(message);
       var requestID = reader.requestID;
       var completer = this.completers_.get(requestID);
       if (completer) {
@@ -127,7 +138,7 @@
         console.log("Unexpected response with request ID: " + requestID);
       }
     } else {
-      if (internal.isInterfaceControlMessage(message)) {
+      if (controlMessageHandler.isControlMessage(message)) {
         if (this.controlMessageHandler_) {
           var ok = this.controlMessageHandler_.accept(message);
           if (ok) return;
@@ -145,7 +156,7 @@
       // TODO(yzshen): This should also trigger connection error handler.
       // Consider making accept() return a boolean and let the connector deal
       // with this, as the C++ code does.
-      console.log("Invalid message: " + internal.validationError[error]);
+      console.log("Invalid message: " + validator.validationError[error]);
 
       this.close();
       return;
@@ -186,5 +197,7 @@
       this.invalidMessageHandler_(error);
   };
 
-  internal.Router = Router;
-})();
+  var exports = {};
+  exports.Router = Router;
+  return exports;
+});

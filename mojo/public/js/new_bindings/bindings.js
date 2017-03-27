@@ -2,14 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(function() {
-  var internal = mojoBindings.internal;
+define("mojo/public/js/bindings", [
+  "mojo/public/js/core",
+  "mojo/public/js/lib/control_message_proxy",
+  "mojo/public/js/interface_types",
+  "mojo/public/js/router",
+], function(core, controlMessageProxy, types, router) {
+
   // ---------------------------------------------------------------------------
 
   function makeRequest(interfacePtr) {
-    var pipe = Mojo.createMessagePipe();
-    interfacePtr.ptr.bind(new mojoBindings.InterfacePtrInfo(pipe.handle0, 0));
-    return new mojoBindings.InterfaceRequest(pipe.handle1);
+    var pipe = core.createMessagePipe();
+    interfacePtr.ptr.bind(new types.InterfacePtrInfo(pipe.handle0, 0));
+    return new types.InterfaceRequest(pipe.handle1);
   }
 
   // ---------------------------------------------------------------------------
@@ -36,7 +41,7 @@
   InterfacePtrController.prototype.bind = function(ptrInfoOrHandle) {
     this.reset();
 
-    if (ptrInfoOrHandle instanceof mojoBindings.InterfacePtrInfo) {
+    if (ptrInfoOrHandle instanceof types.InterfacePtrInfo) {
       this.version = ptrInfoOrHandle.version;
       this.handle_ = ptrInfoOrHandle.handle;
     } else {
@@ -59,7 +64,7 @@
       this.proxy_ = null;
     }
     if (this.handle_) {
-      this.handle_.close();
+      core.close(this.handle_);
       this.handle_ = null;
     }
   };
@@ -77,12 +82,12 @@
     var result;
     if (this.router_) {
       // TODO(yzshen): Fix Router interface to support extracting handle.
-      result = new mojoBindings.InterfacePtrInfo(
+      result = new types.InterfacePtrInfo(
           this.router_.connector_.handle_, this.version);
       this.router_.connector_.handle_ = null;
     } else {
       // This also handles the case when this object is not bound.
-      result = new mojoBindings.InterfacePtrInfo(this.handle_, this.version);
+      result = new types.InterfacePtrInfo(this.handle_, this.version);
       this.handle_ = null;
     }
 
@@ -104,11 +109,12 @@
     if (!this.handle_)
       return;
 
-    this.router_ = new internal.Router(this.handle_);
+    this.router_ = new router.Router(this.handle_);
     this.handle_ = null;
     this.router_ .setPayloadValidators([this.interfaceType_.validateResponse]);
 
-    this.controlMessageProxy_ = new internal.ControlMessageProxy(this.router_);
+    this.controlMessageProxy_ = new
+        controlMessageProxy.ControlMessageProxy(this.router_);
 
     this.proxy_ = new this.interfaceType_.proxyClass(this.router_);
   };
@@ -173,13 +179,13 @@
   Binding.prototype.bind = function(requestOrHandle) {
     this.close();
 
-    var handle = requestOrHandle instanceof mojoBindings.InterfaceRequest ?
+    var handle = requestOrHandle instanceof types.InterfaceRequest ?
         requestOrHandle.handle : requestOrHandle;
-    if (!(handle instanceof MojoHandle))
+    if (!core.isHandle(handle))
       return;
 
     this.stub_ = new this.interfaceType_.stubClass(this.impl_);
-    this.router_ = new internal.Router(handle, this.interfaceType_.kVersion);
+    this.router_ = new router.Router(handle, this.interfaceType_.kVersion);
     this.router_.setIncomingReceiver(this.stub_);
     this.router_ .setPayloadValidators([this.interfaceType_.validateRequest]);
   };
@@ -202,10 +208,9 @@
 
   Binding.prototype.unbind = function() {
     if (!this.isBound())
-      return new mojoBindings.InterfaceRequest(null);
+      return new types.InterfaceRequest(null);
 
-    var result = new mojoBindings.InterfaceRequest(
-        this.router_.connector_.handle_);
+    var result = new types.InterfaceRequest(this.router_.connector_.handle_);
     this.router_.connector_.handle_ = null;
     this.close();
     return result;
@@ -268,9 +273,13 @@
       this.errorHandler_();
   };
 
+  var exports = {};
+  exports.InterfacePtrInfo = types.InterfacePtrInfo;
+  exports.InterfaceRequest = types.InterfaceRequest;
+  exports.makeRequest = makeRequest;
+  exports.InterfacePtrController = InterfacePtrController;
+  exports.Binding = Binding;
+  exports.BindingSet = BindingSet;
 
-  mojoBindings.makeRequest = makeRequest;
-  mojoBindings.Binding = Binding;
-  mojoBindings.BindingSet = BindingSet;
-  mojoBindings.InterfacePtrController = InterfacePtrController;
-})();
+  return exports;
+});
