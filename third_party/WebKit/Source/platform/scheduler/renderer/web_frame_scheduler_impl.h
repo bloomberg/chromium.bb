@@ -45,6 +45,7 @@ class WebFrameSchedulerImpl : public WebFrameScheduler {
   void setCrossOrigin(bool cross_origin) override;
   RefPtr<WebTaskRunner> loadingTaskRunner() override;
   RefPtr<WebTaskRunner> timerTaskRunner() override;
+  RefPtr<WebTaskRunner> suspendableTaskRunner() override;
   RefPtr<WebTaskRunner> unthrottledTaskRunner() override;
   WebViewScheduler* webViewScheduler() override;
   void didStartLoading(unsigned long identifier) override;
@@ -85,11 +86,15 @@ class WebFrameSchedulerImpl : public WebFrameScheduler {
   scoped_refptr<TaskQueue> loading_task_queue_;
   scoped_refptr<TaskQueue> timer_task_queue_;
   scoped_refptr<TaskQueue> unthrottled_task_queue_;
+  scoped_refptr<TaskQueue> suspendable_task_queue_;
   std::unique_ptr<TaskQueue::QueueEnabledVoter> loading_queue_enabled_voter_;
   std::unique_ptr<TaskQueue::QueueEnabledVoter> timer_queue_enabled_voter_;
+  std::unique_ptr<TaskQueue::QueueEnabledVoter>
+      suspendable_queue_enabled_voter_;
   RefPtr<WebTaskRunnerImpl> loading_web_task_runner_;
   RefPtr<WebTaskRunnerImpl> timer_web_task_runner_;
   RefPtr<WebTaskRunnerImpl> unthrottled_web_task_runner_;
+  RefPtr<WebTaskRunnerImpl> suspendable_web_task_runner_;
   RendererSchedulerImpl* renderer_scheduler_;        // NOT OWNED
   WebViewSchedulerImpl* parent_web_view_scheduler_;  // NOT OWNED
   base::trace_event::BlameContext* blame_context_;   // NOT OWNED

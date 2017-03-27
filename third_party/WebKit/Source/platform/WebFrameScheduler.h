@@ -51,6 +51,13 @@ class WebFrameScheduler {
   // WebFrameScheduler owns the returned WebTaskRunner.
   virtual RefPtr<WebTaskRunner> timerTaskRunner() = 0;
 
+  // Returns the WebTaskRunner for tasks which shouldn't get throttled,
+  // but can be suspended.
+  // TODO(altimin): This is a transitional task runner. Unthrottled task runner
+  // would become suspendable in the nearest future and a new unsuspended
+  // task runner will be added.
+  virtual RefPtr<WebTaskRunner> suspendableTaskRunner() = 0;
+
   // Returns the WebTaskRunner for tasks which should never get throttled.
   // This is generally used for executing internal browser tasks which should
   // never be throttled. Ideally only tasks whose performance characteristics

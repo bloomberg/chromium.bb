@@ -47,6 +47,8 @@ RefPtr<WebTaskRunner> TaskRunnerHelper::get(TaskType type, LocalFrame* frame) {
     case TaskType::WebGL:
     case TaskType::UnspecedTimer:
     case TaskType::MiscPlatformAPI:
+      return frame ? frame->frameScheduler()->suspendableTaskRunner()
+                   : Platform::current()->currentThread()->getWebTaskRunner();
     case TaskType::Unthrottled:
       return frame ? frame->frameScheduler()->unthrottledTaskRunner()
                    : Platform::current()->currentThread()->getWebTaskRunner();
