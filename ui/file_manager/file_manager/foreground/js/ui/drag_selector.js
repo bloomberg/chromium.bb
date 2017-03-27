@@ -149,12 +149,12 @@ DragSelector.prototype.onMouseMove_ = function(event) {
   borderBounds.height = borderBounds.bottom - borderBounds.top;
 
   // Collect items within the selection rect.
-  var currentSelection = (/** @type {DragTarget} */ (this.target_))
-                             .getHitElements(
-                                 borderBounds.left, borderBounds.top,
-                                 borderBounds.width, borderBounds.height);
-  var pointedElements =
-      (/** @type {DragTarget} */ (this.target_)).getHitElements(pos.x, pos.y);
+  var currentSelection = this.target_.getHitElements(
+      borderBounds.left,
+      borderBounds.top,
+      borderBounds.width,
+      borderBounds.height);
+  var pointedElements = this.target_.getHitElements(pos.x, pos.y);
   var leadIndex = pointedElements.length ? pointedElements[0] : -1;
 
   // Diff the selection between currentSelection and this.lastSelection_.
