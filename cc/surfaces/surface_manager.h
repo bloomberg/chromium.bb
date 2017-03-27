@@ -19,6 +19,7 @@
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "cc/surfaces/frame_sink_id.h"
+#include "cc/surfaces/framesink_manager.h"
 #include "cc/surfaces/surface_dependency_tracker.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_observer.h"
@@ -175,16 +176,6 @@ class CC_SURFACES_EXPORT SurfaceManager {
 
   using SurfaceIdSet = std::unordered_set<SurfaceId, SurfaceIdHash>;
 
-  void RecursivelyAttachBeginFrameSource(const FrameSinkId& frame_sink_id,
-                                         BeginFrameSource* source);
-  void RecursivelyDetachBeginFrameSource(const FrameSinkId& frame_sink_id,
-                                         BeginFrameSource* source);
-
-  // Returns true if |child namespace| is or has |search_frame_sink_id| as a
-  // child.
-  bool ChildContains(const FrameSinkId& child_frame_sink_id,
-                     const FrameSinkId& search_frame_sink_id) const;
-
   // Garbage collects all destroyed surfaces that aren't live.
   void GarbageCollectSurfaces();
 
@@ -232,6 +223,8 @@ class CC_SURFACES_EXPORT SurfaceManager {
   // Use reference or sequence based lifetime management.
   LifetimeType lifetime_type_;
 
+  FrameSinkManager framesink_manager_;
+
   using SurfaceMap = std::unordered_map<SurfaceId, Surface*, SurfaceIdHash>;
   SurfaceMap surface_map_;
   base::ObserverList<SurfaceObserver> observer_list_;
@@ -246,30 +239,6 @@ class CC_SURFACES_EXPORT SurfaceManager {
   // waited on.
   std::unordered_set<SurfaceSequence, SurfaceSequenceHash> satisfied_sequences_;
 
-  // Set of valid surface ID namespaces. When a namespace is removed from
-  // this set, any remaining sequences with that namespace are considered
-  // satisfied.
-  std::unordered_set<FrameSinkId, FrameSinkIdHash> valid_frame_sink_ids_;
-
-  // Begin frame source routing. Both BeginFrameSource and SurfaceFactoryClient
-  // pointers guaranteed alive by callers until unregistered.
-  struct FrameSinkSourceMapping {
-    FrameSinkSourceMapping();
-    FrameSinkSourceMapping(const FrameSinkSourceMapping& other);
-    ~FrameSinkSourceMapping();
-    bool has_children() const { return !children.empty(); }
-    // The currently assigned begin frame source for this client.
-    BeginFrameSource* source;
-    // This represents a dag of parent -> children mapping.
-    std::vector<FrameSinkId> children;
-  };
-
-  std::unordered_map<FrameSinkId, SurfaceFactoryClient*, FrameSinkIdHash>
-      clients_;
-
-  std::unordered_map<FrameSinkId, FrameSinkSourceMapping, FrameSinkIdHash>
-      frame_sink_source_map_;
-
   // Tracks references from the child surface to parent surface. If there are
   // zero entries in the set for a SurfaceId then nothing is referencing the
   // surface and it can be garbage collected.
@@ -279,11 +248,6 @@ class CC_SURFACES_EXPORT SurfaceManager {
   // of |child_to_parent_refs_|.
   std::unordered_map<SurfaceId, SurfaceIdSet, SurfaceIdHash>
       parent_to_child_refs_;
-
-  // Set of which sources are registered to which namespace.  Any child
-  // that is implicitly using this namespace must be reachable by the
-  // parent in the dag.
-  std::unordered_map<BeginFrameSource*, FrameSinkId> registered_sources_;
 
   // Root SurfaceId that references display root surfaces. There is no Surface
   // with this id, it's for bookkeeping purposes only.

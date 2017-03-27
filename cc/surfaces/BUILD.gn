@@ -45,6 +45,8 @@ cc_component("surfaces") {
     "display_client.h",
     "display_scheduler.cc",
     "display_scheduler.h",
+    "framesink_manager.cc",
+    "framesink_manager.h",
     "local_surface_id_allocator.cc",
     "local_surface_id_allocator.h",
     "pending_frame_observer.h",
