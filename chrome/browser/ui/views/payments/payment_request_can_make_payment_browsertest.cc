@@ -29,8 +29,14 @@ class PaymentRequestCanMakePaymentQueryTest
 };
 
 // Visa is required, and user has a visa instrument.
+// Test is flaky on ChromeOS. crbug.com/705225
+#if defined(OS_CHROMEOS)
+#define MAYBE_CanMakePayment_Supported DISABLED_CanMakePayment_Supported
+#else
+#define MAYBE_CanMakePayment_Supported CanMakePayment_Supported
+#endif
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
-                       CanMakePayment_Supported) {
+                       MAYBE_CanMakePayment_Supported) {
   const autofill::CreditCard card = autofill::test::GetCreditCard();  // Visa.
   AddCreditCard(card);
 
