@@ -42,6 +42,7 @@ const int kMaxCompletedTries = 1;
 const bool kPreferUntried = false;
 const bool kPreferEarlier = true;
 const bool kPreferRetryCount = true;
+const int kBackgroundProcessingTimeBudgetSeconds = 170;
 
 // Default request
 const SavePageRequest kEmptyRequest(0UL,
@@ -244,9 +245,9 @@ TEST_F(PickRequestTaskTest, PickFromEmptyQueue) {
 
 TEST_F(PickRequestTaskTest, ChooseRequestWithHigherRetryCount) {
   // Set up policy to prefer higher retry count.
-  policy_.reset(new OfflinerPolicy(kPreferUntried, kPreferEarlier,
-                                   kPreferRetryCount, kMaxStartedTries,
-                                   kMaxCompletedTries + 1));
+  policy_.reset(new OfflinerPolicy(
+      kPreferUntried, kPreferEarlier, kPreferRetryCount, kMaxStartedTries,
+      kMaxCompletedTries + 1, kBackgroundProcessingTimeBudgetSeconds));
   MakePickRequestTask();
 
   base::Time creation_time = base::Time::Now();
@@ -289,9 +290,9 @@ TEST_F(PickRequestTaskTest, ChooseRequestWithSameRetryCountButEarlier) {
 
 TEST_F(PickRequestTaskTest, ChooseEarlierRequest) {
   // We need a custom policy object prefering recency to retry count.
-  policy_.reset(new OfflinerPolicy(kPreferUntried, kPreferEarlier,
-                                   !kPreferRetryCount, kMaxStartedTries,
-                                   kMaxCompletedTries));
+  policy_.reset(new OfflinerPolicy(
+      kPreferUntried, kPreferEarlier, !kPreferRetryCount, kMaxStartedTries,
+      kMaxCompletedTries, kBackgroundProcessingTimeBudgetSeconds));
   MakePickRequestTask();
 
   base::Time creation_time1 =
@@ -315,9 +316,9 @@ TEST_F(PickRequestTaskTest, ChooseEarlierRequest) {
 
 TEST_F(PickRequestTaskTest, ChooseSameTimeRequestWithHigherRetryCount) {
   // We need a custom policy object preferring recency to retry count.
-  policy_.reset(new OfflinerPolicy(kPreferUntried, kPreferEarlier,
-                                   !kPreferRetryCount, kMaxStartedTries,
-                                   kMaxCompletedTries + 1));
+  policy_.reset(new OfflinerPolicy(
+      kPreferUntried, kPreferEarlier, !kPreferRetryCount, kMaxStartedTries,
+      kMaxCompletedTries + 1, kBackgroundProcessingTimeBudgetSeconds));
   MakePickRequestTask();
 
   base::Time creation_time = base::Time::Now();
@@ -339,9 +340,9 @@ TEST_F(PickRequestTaskTest, ChooseSameTimeRequestWithHigherRetryCount) {
 
 TEST_F(PickRequestTaskTest, ChooseRequestWithLowerRetryCount) {
   // We need a custom policy object preferring lower retry count.
-  policy_.reset(new OfflinerPolicy(!kPreferUntried, kPreferEarlier,
-                                   kPreferRetryCount, kMaxStartedTries,
-                                   kMaxCompletedTries + 1));
+  policy_.reset(new OfflinerPolicy(
+      !kPreferUntried, kPreferEarlier, kPreferRetryCount, kMaxStartedTries,
+      kMaxCompletedTries + 1, kBackgroundProcessingTimeBudgetSeconds));
   MakePickRequestTask();
 
   base::Time creation_time = base::Time::Now();
@@ -363,9 +364,9 @@ TEST_F(PickRequestTaskTest, ChooseRequestWithLowerRetryCount) {
 
 TEST_F(PickRequestTaskTest, ChooseLaterRequest) {
   // We need a custom policy preferring recency over retry, and later requests.
-  policy_.reset(new OfflinerPolicy(kPreferUntried, !kPreferEarlier,
-                                   !kPreferRetryCount, kMaxStartedTries,
-                                   kMaxCompletedTries));
+  policy_.reset(new OfflinerPolicy(
+      kPreferUntried, !kPreferEarlier, !kPreferRetryCount, kMaxStartedTries,
+      kMaxCompletedTries, kBackgroundProcessingTimeBudgetSeconds));
   MakePickRequestTask();
 
   base::Time creation_time1 =
@@ -460,9 +461,9 @@ TEST_F(PickRequestTaskTest, ChooseRequestThatHasNotExceededCompletionLimit) {
 }
 
 TEST_F(PickRequestTaskTest, ChooseRequestThatIsNotDisabled) {
-  policy_.reset(new OfflinerPolicy(kPreferUntried, kPreferEarlier,
-                                   kPreferRetryCount, kMaxStartedTries,
-                                   kMaxCompletedTries + 1));
+  policy_.reset(new OfflinerPolicy(
+      kPreferUntried, kPreferEarlier, kPreferRetryCount, kMaxStartedTries,
+      kMaxCompletedTries + 1, kBackgroundProcessingTimeBudgetSeconds));
 
   // put request 2 on disabled list, ensure request1 picked instead,
   // even though policy would prefer 2.

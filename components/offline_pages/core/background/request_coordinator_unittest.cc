@@ -46,6 +46,7 @@ const ClientId kClientId1(kClientNamespace, kId1);
 const ClientId kClientId2(kClientNamespace, kId2);
 const int kRequestId1(1);
 const int kRequestId2(2);
+const long kTestTimeBudgetSeconds = 200;
 const int kBatteryPercentageHigh = 75;
 const int kMaxCompletedTries = 3;
 const bool kPowerRequired = true;
@@ -1228,11 +1229,7 @@ TEST_F(RequestCoordinatorTest, TimeBudgetExceeded) {
   // Advance the mock clock far enough to exceed our time budget.
   // The first request will time out, and because we are over time budget,
   // the second request will not be started.
-  int over_time_budget_seconds =
-      OfflinerPolicy()
-          .GetProcessingTimeBudgetWhenBackgroundScheduledInSeconds() +
-      10;
-  AdvanceClockBy(base::TimeDelta::FromSeconds(over_time_budget_seconds));
+  AdvanceClockBy(base::TimeDelta::FromSeconds(kTestTimeBudgetSeconds));
   PumpLoop();
 
   // TryNextRequest should decide that there is no more work to be done,
