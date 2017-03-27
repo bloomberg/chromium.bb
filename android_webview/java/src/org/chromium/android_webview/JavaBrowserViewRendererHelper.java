@@ -34,7 +34,7 @@ public class JavaBrowserViewRendererHelper {
         try {
             bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         } catch (OutOfMemoryError e) {
-            android.util.Log.w(LOGTAG, "Error allocating bitmap");
+            android.util.Log.e(LOGTAG, "Error allocating bitmap");
         }
         return bitmap;
     }

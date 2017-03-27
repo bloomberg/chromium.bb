@@ -307,7 +307,7 @@ public class TabPersistentStore extends TabPersister {
                         TabState.saveState(getTabStateFile(id, incognito), state, incognito);
                     }
                 } catch (OutOfMemoryError e) {
-                    Log.w(TAG, "Out of memory error while attempting to save tab state.  Erasing.");
+                    Log.e(TAG, "Out of memory error while attempting to save tab state.  Erasing.");
                     deleteTabState(id, incognito);
                 }
             }

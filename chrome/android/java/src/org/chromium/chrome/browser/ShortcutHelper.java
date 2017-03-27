@@ -418,7 +418,7 @@ public class ShortcutHelper {
         try {
             bitmap = Bitmap.createBitmap(outerSize, outerSize, Bitmap.Config.ARGB_8888);
         } catch (OutOfMemoryError e) {
-            Log.w(TAG, "OutOfMemoryError while creating bitmap for home screen icon.");
+            Log.e(TAG, "OutOfMemoryError while creating bitmap for home screen icon.");
             return webIcon;
         }
 
