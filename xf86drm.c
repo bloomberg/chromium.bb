@@ -994,8 +994,10 @@ char *drmGetBusid(int fd)
     if (drmIoctl(fd, DRM_IOCTL_GET_UNIQUE, &u))
         return NULL;
     u.unique = drmMalloc(u.unique_len + 1);
-    if (drmIoctl(fd, DRM_IOCTL_GET_UNIQUE, &u))
+    if (drmIoctl(fd, DRM_IOCTL_GET_UNIQUE, &u)) {
+        drmFree(u.unique);
         return NULL;
+    }
     u.unique[u.unique_len] = '\0';
 
     return u.unique;
@@ -1523,14 +1525,12 @@ drm_context_t *drmGetReservedContextList(int fd, int *count)
 
     if (!(list   = drmMalloc(res.count * sizeof(*list))))
         return NULL;
-    if (!(retval = drmMalloc(res.count * sizeof(*retval)))) {
-        drmFree(list);
-        return NULL;
-    }
+    if (!(retval = drmMalloc(res.count * sizeof(*retval))))
+        goto err_free_list;
 
     res.contexts = list;
     if (drmIoctl(fd, DRM_IOCTL_RES_CTX, &res))
-        return NULL;
+        goto err_free_context;
 
     for (i = 0; i < res.count; i++)
         retval[i] = list[i].handle;
@@ -1538,6 +1538,12 @@ drm_context_t *drmGetReservedContextList(int fd, int *count)
 
     *count = res.count;
     return retval;
+
+err_free_list:
+    drmFree(list);
+err_free_context:
+    drmFree(retval);
+    return NULL;
 }
 
 void drmFreeReservedContextList(drm_context_t *pt)
