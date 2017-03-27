@@ -38,6 +38,8 @@ blink_core_sources("frame") {
     "FrameConsole.h",
     "FrameHost.cpp",
     "FrameHost.h",
+    "FrameLifecycle.cpp",
+    "FrameLifecycle.h",
     "FrameOwner.h",
     "FrameSerializer.cpp",
     "FrameSerializer.h",

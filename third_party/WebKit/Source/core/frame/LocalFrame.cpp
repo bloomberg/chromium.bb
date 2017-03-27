@@ -392,8 +392,8 @@ void LocalFrame::reload(FrameLoadType loadType,
 
 void LocalFrame::detach(FrameDetachType type) {
   // Note that detach() can be re-entered, so it's not possible to
-  // DCHECK(!m_isDetaching) here.
-  m_isDetaching = true;
+  // DCHECK(isAttached()) here.
+  m_lifecycle.advanceTo(FrameLifecycle::Detaching);
 
   if (isLocalRoot())
     m_performanceMonitor->shutdown();
@@ -452,6 +452,7 @@ void LocalFrame::detach(FrameDetachType type) {
   m_supplements.clear();
   m_frameScheduler.reset();
   WeakIdentifierMap<LocalFrame>::notifyObjectDestroyed(this);
+  m_lifecycle.advanceTo(FrameLifecycle::Detached);
 }
 
 bool LocalFrame::prepareForCommit() {

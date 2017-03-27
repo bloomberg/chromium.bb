@@ -577,7 +577,7 @@ static bool shouldSendFinishNotification(LocalFrame* frame) {
     return false;
 
   // Don't notify if the frame is being detached.
-  if (frame->isDetaching())
+  if (!frame->isAttached())
     return false;
 
   return true;

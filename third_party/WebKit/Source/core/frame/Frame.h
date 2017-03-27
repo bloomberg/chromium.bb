@@ -30,6 +30,7 @@
 #define Frame_h
 
 #include "core/CoreExport.h"
+#include "core/frame/FrameLifecycle.h"
 #include "core/frame/FrameTypes.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/page/FrameTree.h"
@@ -149,7 +150,9 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   void setDocumentHasReceivedUserGesture();
   bool hasReceivedUserGesture() const { return m_hasReceivedUserGesture; }
 
-  bool isDetaching() const { return m_isDetaching; }
+  bool isAttached() const {
+    return m_lifecycle.state() == FrameLifecycle::Attached;
+  }
 
   // Tests whether the feature-policy controlled feature is enabled by policy in
   // the given frame.
@@ -165,13 +168,15 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   Member<DOMWindow> m_domWindow;
 
   bool m_hasReceivedUserGesture = false;
-  bool m_isDetaching = false;
+
+  FrameLifecycle m_lifecycle;
 
  private:
   bool canNavigateWithoutFramebusting(const Frame&, String& errorReason);
 
   Member<FrameClient> m_client;
   const Member<WindowProxyManager> m_windowProxyManager;
+  // TODO(sashab): Investigate if this can be represented with m_lifecycle.
   bool m_isLoading;
 };
 

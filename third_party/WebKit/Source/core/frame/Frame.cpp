@@ -58,7 +58,8 @@ using namespace HTMLNames;
 
 Frame::~Frame() {
   InstanceCounters::decrementCounter(InstanceCounters::FrameCounter);
-  ASSERT(!m_owner);
+  DCHECK(!m_owner);
+  DCHECK_EQ(m_lifecycle.state(), FrameLifecycle::Detached);
 }
 
 DEFINE_TRACE(Frame) {
@@ -71,7 +72,10 @@ DEFINE_TRACE(Frame) {
 }
 
 void Frame::detach(FrameDetachType type) {
-  ASSERT(m_client);
+  DCHECK(m_client);
+  // By the time this method is called, the subclasses should have already
+  // advanced to the Detaching state.
+  DCHECK_EQ(m_lifecycle.state(), FrameLifecycle::Detaching);
   m_client->setOpener(0);
   disconnectOwnerElement();
   // After this, we must no longer talk to the client since this clears

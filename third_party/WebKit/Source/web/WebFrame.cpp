@@ -30,7 +30,7 @@ namespace blink {
 bool WebFrame::swap(WebFrame* frame) {
   using std::swap;
   Frame* oldFrame = toImplBase()->frame();
-  if (oldFrame->isDetaching())
+  if (!oldFrame->isAttached())
     return false;
 
   // Unload the current Document in this frame: this calls unload handlers,

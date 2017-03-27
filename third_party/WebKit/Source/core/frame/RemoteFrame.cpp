@@ -81,7 +81,7 @@ void RemoteFrame::reload(FrameLoadType frameLoadType,
 }
 
 void RemoteFrame::detach(FrameDetachType type) {
-  m_isDetaching = true;
+  m_lifecycle.advanceTo(FrameLifecycle::Detaching);
 
   PluginScriptForbiddenScope forbidPluginDestructorScripting;
   detachChildren();
@@ -104,6 +104,7 @@ void RemoteFrame::detach(FrameDetachType type) {
   if (m_webLayer)
     setWebLayer(nullptr);
   Frame::detach(type);
+  m_lifecycle.advanceTo(FrameLifecycle::Detached);
 }
 
 bool RemoteFrame::prepareForCommit() {
