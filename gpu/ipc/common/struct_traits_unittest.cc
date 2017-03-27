@@ -2,9 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
 #include <string>
 
 #include "base/message_loop/message_loop.h"
+#include "gpu/config/gpu_feature_type.h"
+#include "gpu/ipc/common/gpu_feature_info.mojom.h"
+#include "gpu/ipc/common/gpu_feature_info_struct_traits.h"
 #include "gpu/ipc/common/traits_test_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -440,6 +444,23 @@ TEST_F(StructTraitsTest, GpuPreferences) {
 #if defined(OS_WIN)
   EXPECT_EQ(vendor, echo.enable_accelerated_vpx_decode);
 #endif
+}
+
+TEST_F(StructTraitsTest, GpuFeatureInfo) {
+  GpuFeatureInfo input;
+  input.status_values[GPU_FEATURE_TYPE_FLASH3D] =
+      gpu::kGpuFeatureStatusBlacklisted;
+  input.status_values[GPU_FEATURE_TYPE_PANEL_FITTING] =
+      gpu::kGpuFeatureStatusUndefined;
+  input.status_values[GPU_FEATURE_TYPE_GPU_RASTERIZATION] =
+      gpu::kGpuFeatureStatusDisabled;
+
+  GpuFeatureInfo output;
+  ASSERT_TRUE(mojom::GpuFeatureInfo::Deserialize(
+      mojom::GpuFeatureInfo::Serialize(&input), &output));
+  EXPECT_TRUE(std::equal(input.status_values,
+                         input.status_values + NUMBER_OF_GPU_FEATURE_TYPES,
+                         output.status_values));
 }
 
 }  // namespace gpu

@@ -55,7 +55,9 @@ class GpuHost : public mojom::GpuHost {
   void OnBadMessageFromGpu();
 
   // mojom::GpuHost:
-  void DidInitialize(const gpu::GPUInfo& gpu_info) override;
+  void DidInitialize(const gpu::GPUInfo& gpu_info,
+                     const gpu::GpuFeatureInfo& gpu_feature_info) override;
+  void DidFailInitialize() override;
   void DidCreateOffscreenContext(const GURL& url) override;
   void DidDestroyOffscreenContext(const GURL& url) override;
   void DidDestroyChannel(int32_t client_id) override;

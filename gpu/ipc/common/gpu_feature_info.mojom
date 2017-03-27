@@ -1,0 +1,23 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// gpu/config/gpu_feature_info.h
+module gpu.mojom;
+
+// gpu::GpuFeatureStatus
+enum GpuFeatureStatus {
+  Enabled,
+  Blacklisted,
+  Disabled,
+  Undefined,
+  Max
+};
+
+// gpu:GpuFeatureInfo
+struct GpuFeatureInfo {
+  // The array should have one entry for each GpuFeatureType. The size of the
+  // array should be gpu::NUMBER_OF_GPU_FEATURE_TYPES. This is enforced during
+  // deserialization.
+  array<GpuFeatureStatus> status_values;
+};

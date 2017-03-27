@@ -188,10 +188,6 @@ GpuChildThread::GpuChildThread(
 GpuChildThread::~GpuChildThread() {
 }
 
-void GpuChildThread::Shutdown() {
-  ChildThreadImpl::Shutdown();
-}
-
 void GpuChildThread::Init(const base::Time& process_start_time) {
   gpu_service_->set_start_time(process_start_time);
 
@@ -281,6 +277,7 @@ void GpuChildThread::CreateGpuService(
   if (dead_on_arrival_) {
     LOG(ERROR) << "Exiting GPU process due to errors during initialization";
     gpu_service_.reset();
+    gpu_host->DidFailInitialize();
     base::MessageLoop::current()->QuitWhenIdle();
     return;
   }
@@ -290,7 +287,7 @@ void GpuChildThread::CreateGpuService(
   if (GetContentClient()->gpu())
     sync_point_manager = GetContentClient()->gpu()->GetSyncPointManager();
   gpu_service_->InitializeWithHost(
-      std::move(gpu_host), gpu_preferences,
+      std::move(gpu_host),
       gpu::GpuProcessActivityFlags(std::move(activity_flags)),
       sync_point_manager, ChildProcess::current()->GetShutDownEvent());
   CHECK(gpu_service_->media_gpu_channel_manager());

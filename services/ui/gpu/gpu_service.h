@@ -57,7 +57,6 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
   void UpdateGPUInfoFromPreferences(const gpu::GpuPreferences& preferences);
 
   void InitializeWithHost(mojom::GpuHostPtr gpu_host,
-                          const gpu::GpuPreferences& preferences,
                           gpu::GpuProcessActivityFlags activity_flags,
                           gpu::SyncPointManager* sync_point_manager = nullptr,
                           base::WaitableEvent* shutdown_event = nullptr);

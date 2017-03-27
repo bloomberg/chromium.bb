@@ -138,6 +138,7 @@ mojom("interfaces") {
   sources = [
     "capabilities.mojom",
     "dx_diag_node.mojom",
+    "gpu_feature_info.mojom",
     "gpu_info.mojom",
     "gpu_preferences.mojom",
     "mailbox.mojom",

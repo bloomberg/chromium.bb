@@ -4,6 +4,7 @@
 
 module ui.mojom;
 
+import "gpu/ipc/common/gpu_feature_info.mojom";
 import "gpu/ipc/common/gpu_info.mojom";
 import "gpu/ipc/common/surface_handle.mojom";
 import "services/ui/gpu/interfaces/context_lost_reason.mojom";
@@ -12,7 +13,10 @@ import "url/mojo/url.mojom";
 // Communication channel from the gpu process to the gpu host. This interface
 // should never have any sync function calls.
 interface GpuHost {
-  DidInitialize(gpu.mojom.GpuInfo gpu_info);
+  DidInitialize(gpu.mojom.GpuInfo gpu_info,
+                gpu.mojom.GpuFeatureInfo gpu_feature_info);
+  DidFailInitialize();
+
   DidCreateOffscreenContext(url.mojom.Url url);
   DidDestroyOffscreenContext(url.mojom.Url url);
 

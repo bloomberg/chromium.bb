@@ -902,8 +902,14 @@ void GpuProcessHost::OnProcessCrashed(int exit_code) {
       process_->GetTerminationStatus(true /* known_dead */, NULL));
 }
 
-void GpuProcessHost::DidInitialize(const gpu::GPUInfo& gpu_info) {
+void GpuProcessHost::DidInitialize(
+    const gpu::GPUInfo& gpu_info,
+    const gpu::GpuFeatureInfo& gpu_feature_info) {
   // TODO(sad): This should call OnInitialized().
+}
+
+void GpuProcessHost::DidFailInitialize() {
+  // TODO(sad): This should call GpuDataManagerImpl::OnGpuProcessInitFailure().
 }
 
 void GpuProcessHost::DidCreateOffscreenContext(const GURL& url) {

@@ -109,11 +109,10 @@ void GpuService::UpdateGPUInfoFromPreferences(
 }
 
 void GpuService::InitializeWithHost(mojom::GpuHostPtr gpu_host,
-                                    const gpu::GpuPreferences& preferences,
                                     gpu::GpuProcessActivityFlags activity_flags,
                                     gpu::SyncPointManager* sync_point_manager,
                                     base::WaitableEvent* shutdown_event) {
-  gpu_host->DidInitialize(gpu_info_);
+  gpu_host->DidInitialize(gpu_info_, gpu_feature_info_);
   gpu_host_ =
       mojom::ThreadSafeGpuHostPtr::Create(gpu_host.PassInterface(), io_runner_);
   if (!in_host_process_) {

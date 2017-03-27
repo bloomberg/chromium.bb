@@ -93,10 +93,13 @@ void GpuHost::OnBadMessageFromGpu() {
   NOTIMPLEMENTED();
 }
 
-void GpuHost::DidInitialize(const gpu::GPUInfo& gpu_info) {
+void GpuHost::DidInitialize(const gpu::GPUInfo& gpu_info,
+                            const gpu::GpuFeatureInfo& gpu_feature_info) {
   gpu_info_ = gpu_info;
   delegate_->OnGpuServiceInitialized();
 }
+
+void GpuHost::DidFailInitialize() {}
 
 void GpuHost::DidCreateOffscreenContext(const GURL& url) {}
 

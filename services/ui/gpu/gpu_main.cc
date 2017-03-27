@@ -237,7 +237,8 @@ void GpuMain::CreateGpuServiceOnGpuThread(
     gpu::GpuProcessActivityFlags activity_flags) {
   mojom::GpuHostPtr gpu_host;
   gpu_host.Bind(std::move(gpu_host_info));
-  gpu_service_->InitializeWithHost(std::move(gpu_host), preferences,
+  gpu_service_->UpdateGPUInfoFromPreferences(preferences);
+  gpu_service_->InitializeWithHost(std::move(gpu_host),
                                    std::move(activity_flags));
   gpu_service_->Bind(std::move(request));
 
