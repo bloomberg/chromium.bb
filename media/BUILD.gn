@@ -250,6 +250,8 @@ component("media") {
     "video/gpu_memory_buffer_video_frame_pool.h",
     "video/h264_poc.cc",
     "video/h264_poc.h",
+    "video/half_float_maker.cc",
+    "video/half_float_maker.h",
     "video/jpeg_decode_accelerator.cc",
     "video/jpeg_decode_accelerator.h",
     "video/picture.cc",
@@ -587,6 +589,7 @@ source_set("unit_tests") {
     "renderers/video_renderer_impl_unittest.cc",
     "video/gpu_memory_buffer_video_frame_pool_unittest.cc",
     "video/h264_poc_unittest.cc",
+    "video/half_float_maker_unittest.cc",
   ]
 
   data = [
