@@ -89,7 +89,7 @@ class AV1WarpFilterTest : public ::testing::TestWithParam<WarpTestParam> {
     const int stride = w + 2 * border;
     const int out_w = GET_PARAM(0), out_h = GET_PARAM(1);
     const int num_iters = GET_PARAM(2);
-    int i, j;
+    int i, j, sub_x, sub_y;
 
     uint8_t *input_ = new uint8_t[h * stride];
     uint8_t *input = input_ + border;
@@ -107,16 +107,21 @@ class AV1WarpFilterTest : public ::testing::TestWithParam<WarpTestParam> {
 
     /* Try different sizes of prediction block */
     for (i = 0; i < num_iters; ++i) {
-      generate_model(mat, &alpha, &beta, &gamma, &delta);
-      av1_warp_affine_c(mat, input, w, h, stride, output, 32, 32, out_w, out_h,
-                        out_w, 0, 0, 0, alpha, beta, gamma, delta);
-      av1_warp_affine_sse2(mat, input, w, h, stride, output2, 32, 32, out_w,
-                           out_h, out_w, 0, 0, 0, alpha, beta, gamma, delta);
+      for (sub_x = 0; sub_x < 2; ++sub_x)
+        for (sub_y = 0; sub_y < 2; ++sub_y) {
+          generate_model(mat, &alpha, &beta, &gamma, &delta);
+          av1_warp_affine_c(mat, input, w, h, stride, output, 32, 32, out_w,
+                            out_h, out_w, sub_x, sub_y, 0, alpha, beta, gamma,
+                            delta);
+          av1_warp_affine_sse2(mat, input, w, h, stride, output2, 32, 32, out_w,
+                               out_h, out_w, sub_x, sub_y, 0, alpha, beta,
+                               gamma, delta);
 
-      for (j = 0; j < out_w * out_h; ++j)
-        ASSERT_EQ(output[j], output2[j])
-            << "Pixel mismatch at index " << j << " = (" << (j % out_w) << ", "
-            << (j / out_w) << ") on iteration " << i;
+          for (j = 0; j < out_w * out_h; ++j)
+            ASSERT_EQ(output[j], output2[j])
+                << "Pixel mismatch at index " << j << " = (" << (j % out_w)
+                << ", " << (j / out_w) << ") on iteration " << i;
+        }
     }
 
     delete[] input_;
