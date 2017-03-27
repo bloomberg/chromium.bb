@@ -347,6 +347,8 @@ cvox.History.prototype.increaseOrDecreaseProperty =
 cvox.History.prototype.propertyToPercentage = function(property) { };
 /** @override */
 cvox.History.prototype.getDefaultProperty = function(property) { };
+/** @override */
+cvox.History.prototype.toggleSpeechOnOrOff = function() { };
 
 
 /** TODO: add doc comment. */

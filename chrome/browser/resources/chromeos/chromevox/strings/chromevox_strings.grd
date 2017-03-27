@@ -2714,6 +2714,15 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="Describes a command to turn the visual display on for accessibility undoing any previous request to turn off the visual display." name="IDS_CHROMEVOX_UNDARKEN_SCREEN">
         Undarken screen
       </message>
+      <message desc="Describes a command that turns text to speech feedback off." name="IDS_CHROMEVOX_SPEECH_OFF">
+        Speech off
+      </message>
+      <message desc="Describes a command that turns text to speech feedback on." name="IDS_CHROMEVOX_SPEECH_ON">
+        Speech on
+      </message>
+      <message desc="Description of a command that toggles text to speech feedback on or off." name="IDS_CHROMEVOX_SPEECH_ON_OFF_DESCRIPTION">
+        Toggle speech on or off
+      </message>
     </messages>
   </release>
 </grit>

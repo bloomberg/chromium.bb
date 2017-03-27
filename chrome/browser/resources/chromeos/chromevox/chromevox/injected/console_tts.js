@@ -75,3 +75,6 @@ cvox.ConsoleTts.prototype.setEnabled = function(enabled) {
 
 /** @override */
 cvox.ConsoleTts.prototype.getDefaultProperty = function(property) { };
+
+/** @override */
+cvox.ConsoleTts.prototype.toggleSpeechOnOrOff = function() { };

@@ -575,3 +575,9 @@ cvox.AbstractTts.repetitionReplace_ = function(match) {
 cvox.AbstractTts.prototype.getDefaultProperty = function(property) {
   return this.propertyDefault[property];
 };
+
+
+/** @override */
+cvox.AbstractTts.prototype.toggleSpeechOnOrOff = function() {
+  return true;
+};

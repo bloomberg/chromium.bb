@@ -127,3 +127,9 @@ cvox.TtsInterface.prototype.propertyToPercentage = function(property) { };
  * @return {?number} The default value.
  */
 cvox.TtsInterface.prototype.getDefaultProperty = function(property) { };
+
+/**
+ * Toggles on or off speech.
+ * @return {boolean} Whether speech is now on or off.
+ */
+cvox.TtsInterface.prototype.toggleSpeechOnOrOff = function() {};

@@ -115,3 +115,12 @@ cvox.CompositeTts.prototype.getDefaultProperty = function(property) {
   }
   return null;
 };
+
+/** @override */
+cvox.CompositeTts.prototype.toggleSpeechOnOrOff = function() {
+  var value = false;
+  this.ttsEngines_.forEach(function(engine) {
+    value |= engine.toggleSpeechOnOrOff();
+  });
+  return value;
+};

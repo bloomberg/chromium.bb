@@ -216,6 +216,10 @@ cvox.TtsBackground.prototype.speak = function(
     textString, queueMode, properties) {
   goog.base(this, 'speak', textString, queueMode, properties);
 
+  if (this.ttsProperties[cvox.AbstractTts.VOLUME] === 0) {
+    return this;
+  }
+
   if (!properties) {
     properties = {};
   }
@@ -570,6 +574,29 @@ cvox.TtsBackground.prototype.preprocess = function(text, properties) {
   text = text.replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
 
   return text;
+};
+
+
+/** @override */
+cvox.TtsBackground.prototype.toggleSpeechOnOrOff = function() {
+  var previousValue = this.ttsProperties[cvox.AbstractTts.VOLUME];
+  var toggle = function() {
+    if (previousValue == 0) {
+      this.ttsProperties[cvox.AbstractTts.VOLUME] = 1;
+    } else {
+      this.ttsProperties[cvox.AbstractTts.VOLUME] = 0;
+    }
+  }.bind(this);
+
+  if (previousValue == 0) {
+    toggle();
+  } else {
+    // Let the caller make any last minute announcements in the current call
+    // stack.
+    setTimeout(toggle, 0);
+  }
+
+  return previousValue == 0;
 };
 
 

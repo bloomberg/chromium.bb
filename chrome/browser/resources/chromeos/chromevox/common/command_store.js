@@ -190,6 +190,11 @@ cvox.CommandStore.CMD_WHITELIST = {
                     msgId: 'toggle_earcons',
                     category: 'controlling_speech'},
 
+  'toggleSpeechOnOrOff': {
+    msgId: 'speech_on_off_description',
+    category: 'controlling_speech'
+  },
+
   'handleTab': {
     allowEvents: true,
     msgId: 'handle_tab_next',

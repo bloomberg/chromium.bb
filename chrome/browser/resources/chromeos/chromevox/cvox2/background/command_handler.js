@@ -195,11 +195,15 @@ CommandHandler.onCommand = function(command) {
     case 'darkenScreen':
       chrome.accessibilityPrivate.darkenScreen(true);
       new Output().format('@darken_screen').go();
-      break;
+      return false;
     case 'undarkenScreen':
       chrome.accessibilityPrivate.darkenScreen(false);
       new Output().format('@undarken_screen').go();
-      break;
+      return false;
+    case 'toggleSpeechOnOrOff':
+      var state = cvox.ChromeVox.tts.toggleSpeechOnOrOff();
+      new Output().format(state ? '@speech_on' : '@speech_off').go();
+      return false;
     default:
       break;
   }

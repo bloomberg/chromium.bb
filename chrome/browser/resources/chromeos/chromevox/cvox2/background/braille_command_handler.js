@@ -138,6 +138,9 @@ BrailleCommandHandler.init_ = function() {
   // All cells (with 7 as mod).
   map([1, 2, 3, 4, 5, 6, 7], 'darkenScreen');
   map([1, 2, 3, 4, 5, 6], 'undarkenScreen');
+
+  // s.
+  map([2, 3, 4], 'toggleSpeechOnOrOff');
 };
 
 BrailleCommandHandler.init_();

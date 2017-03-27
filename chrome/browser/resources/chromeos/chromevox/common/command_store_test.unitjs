@@ -41,7 +41,7 @@ TEST_F('CvoxCommandStoreUnitTest', 'TableData', function() {
 
   var controllingSpeechCmds =
       cvox.CommandStore.commandsForCategory('controlling_speech');
-  assertEquals(10, controllingSpeechCmds.length);
+  assertEquals(11, controllingSpeechCmds.length);
   assertEquals('stopSpeech', controllingSpeechCmds[0]);
   assertEquals('decreaseTtsRate', controllingSpeechCmds[1]);
   assertEquals('increaseTtsRate', controllingSpeechCmds[2]);

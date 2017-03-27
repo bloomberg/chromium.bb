@@ -906,12 +906,21 @@
         }
       }
     },
-        {
+    {
       "command": "undarkenScreen",
       "sequence": {
         "cvoxModifier": true,
         "keys": {
           "keyCode": [118]
+        }
+      }
+    },
+    {
+      "command": "toggleSpeechOnOrOff",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [119]
         }
       }
     }
