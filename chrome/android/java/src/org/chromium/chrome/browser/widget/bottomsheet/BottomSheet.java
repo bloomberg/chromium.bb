@@ -69,9 +69,13 @@ public class BottomSheet
 
     /**
      * The fraction of the way to the next state the sheet must be swiped to animate there when
-     * released. A smaller value here means a smaller swipe is needed to move the sheet around.
+     * released. This is the value used when there are 3 active states. A smaller value here means
+     * a smaller swipe is needed to move the sheet around.
      */
-    private static final float THRESHOLD_TO_NEXT_STATE = 0.5f;
+    private static final float THRESHOLD_TO_NEXT_STATE_3 = 0.5f;
+
+    /** This is similar to {@link #THRESHOLD_TO_NEXT_STATE_3} but for 2 states instead of 3. */
+    private static final float THRESHOLD_TO_NEXT_STATE_2 = 0.3f;
 
     /** The minimum y/x ratio that a scroll must have to be considered vertical. */
     private static final float MIN_VERTICAL_SCROLL_SLOPE = 2.0f;
@@ -858,6 +862,9 @@ public class BottomSheet
         if (sheetHeight <= getMinOffset()) return SHEET_STATE_PEEK;
         if (sheetHeight >= getMaxOffset()) return SHEET_STATE_FULL;
 
+        // When the sheet is moving downward skip the half state.
+        boolean shouldSkipHalfState = yVelocity < 0;
+
         // First, find the two states that the sheet height is between.
         @SheetState
         int nextState = sStates[0];
@@ -865,6 +872,7 @@ public class BottomSheet
         @SheetState
         int prevState = nextState;
         for (int i = 0; i < sStates.length; i++) {
+            if (sStates[i] == SHEET_STATE_HALF && shouldSkipHalfState) continue;
             prevState = nextState;
             nextState = sStates[i];
             // The values in PanelState are ascending, they should be kept that way in order for
@@ -880,8 +888,9 @@ public class BottomSheet
         float lowerBound = getSheetHeightForState(prevState);
         float distance = getSheetHeightForState(nextState) - lowerBound;
 
-        float inverseThreshold = 1.0f - THRESHOLD_TO_NEXT_STATE;
-        float thresholdToNextState = yVelocity < 0.0f ? THRESHOLD_TO_NEXT_STATE : inverseThreshold;
+        float threshold =
+                shouldSkipHalfState ? THRESHOLD_TO_NEXT_STATE_2 : THRESHOLD_TO_NEXT_STATE_3;
+        float thresholdToNextState = yVelocity < 0.0f ? 1.0f - threshold : threshold;
 
         if ((sheetHeight - lowerBound) / distance > thresholdToNextState) {
             return nextState;
