@@ -154,7 +154,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
 
     void runConnectionMigrationTest(boolean disableConnectionMigration) {
         // URLRequest load flags at net/base/load_flags_list.h.
-        int connectionMigrationLoadFlag = 1 << 18;
+        int connectionMigrationLoadFlag = 1 << 17;
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         callback.setAutoAdvance(false);
         // Create builder, start a request, and check if default load_flags are set correctly.
