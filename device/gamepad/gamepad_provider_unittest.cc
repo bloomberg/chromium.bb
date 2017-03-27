@@ -70,7 +70,8 @@ class GamepadProviderTest : public testing::Test, public GamepadTestHelper {
   DISALLOW_COPY_AND_ASSIGN(GamepadProviderTest);
 };
 
-TEST_F(GamepadProviderTest, PollingAccess) {
+// Test is flaky. crbug.com/705367
+TEST_F(GamepadProviderTest, DISABLED_PollingAccess) {
   WebGamepads test_data;
   memset(&test_data, 0, sizeof(WebGamepads));
   test_data.items[0].connected = true;
