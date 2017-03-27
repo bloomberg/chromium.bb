@@ -871,8 +871,16 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
 
 // This test makes sure browser correctly tracks focused editable element inside
 // each RenderFrameHost.
+// Test is flaky on ChromeOS. crbug.com/705203
+#if defined(OS_CHROMEOS)
+#define MAYBE_TrackingFocusedElementForAllFrames \
+  DISABLED_TrackingFocusedElementForAllFrames
+#else
+#define MAYBE_TrackingFocusedElementForAllFrames \
+  TrackingFocusedElementForAllFrames
+#endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
-                       TrackingFocusedElementForAllFrames) {
+                       MAYBE_TrackingFocusedElementForAllFrames) {
   CreateIframePage("a(a, b(a))");
   std::vector<content::RenderFrameHost*> frames{
       GetFrame(IndexVector{}), GetFrame(IndexVector{0}),
