@@ -223,11 +223,15 @@ using std::tr1::make_tuple;
 #if HAVE_SSE2
 INSTANTIATE_TEST_CASE_P(
     SSE2, ClpfBlockTest,
-    ::testing::Values(make_tuple(&aom_clpf_block_sse2, &aom_clpf_block_c, 8, 8),
-                      make_tuple(&aom_clpf_block_sse2, &aom_clpf_block_c, 8, 4),
-                      make_tuple(&aom_clpf_block_sse2, &aom_clpf_block_c, 4, 8),
-                      make_tuple(&aom_clpf_block_sse2, &aom_clpf_block_c, 4,
-                                 4)));
+    ::testing::Values(
+        make_tuple(&aom_clpf_block_sse2, &aom_clpf_block_c, 8, 8),
+        make_tuple(&aom_clpf_block_sse2, &aom_clpf_block_c, 8, 4),
+        make_tuple(&aom_clpf_block_sse2, &aom_clpf_block_c, 4, 8),
+        make_tuple(&aom_clpf_block_sse2, &aom_clpf_block_c, 4, 4),
+        make_tuple(&aom_clpf_hblock_sse2, &aom_clpf_hblock_c, 8, 8),
+        make_tuple(&aom_clpf_hblock_sse2, &aom_clpf_hblock_c, 8, 4),
+        make_tuple(&aom_clpf_hblock_sse2, &aom_clpf_hblock_c, 4, 8),
+        make_tuple(&aom_clpf_hblock_sse2, &aom_clpf_hblock_c, 4, 4)));
 #endif
 
 #if HAVE_SSSE3
@@ -237,7 +241,11 @@ INSTANTIATE_TEST_CASE_P(
         make_tuple(&aom_clpf_block_ssse3, &aom_clpf_block_c, 8, 8),
         make_tuple(&aom_clpf_block_ssse3, &aom_clpf_block_c, 8, 4),
         make_tuple(&aom_clpf_block_ssse3, &aom_clpf_block_c, 4, 8),
-        make_tuple(&aom_clpf_block_ssse3, &aom_clpf_block_c, 4, 4)));
+        make_tuple(&aom_clpf_block_ssse3, &aom_clpf_block_c, 4, 4),
+        make_tuple(&aom_clpf_hblock_ssse3, &aom_clpf_hblock_c, 8, 8),
+        make_tuple(&aom_clpf_hblock_ssse3, &aom_clpf_hblock_c, 8, 4),
+        make_tuple(&aom_clpf_hblock_ssse3, &aom_clpf_hblock_c, 4, 8),
+        make_tuple(&aom_clpf_hblock_ssse3, &aom_clpf_hblock_c, 4, 4)));
 #endif
 
 #if HAVE_SSE4_1
@@ -247,17 +255,25 @@ INSTANTIATE_TEST_CASE_P(
         make_tuple(&aom_clpf_block_sse4_1, &aom_clpf_block_c, 8, 8),
         make_tuple(&aom_clpf_block_sse4_1, &aom_clpf_block_c, 8, 4),
         make_tuple(&aom_clpf_block_sse4_1, &aom_clpf_block_c, 4, 8),
-        make_tuple(&aom_clpf_block_sse4_1, &aom_clpf_block_c, 4, 4)));
+        make_tuple(&aom_clpf_block_sse4_1, &aom_clpf_block_c, 4, 4),
+        make_tuple(&aom_clpf_hblock_sse4_1, &aom_clpf_hblock_c, 8, 8),
+        make_tuple(&aom_clpf_hblock_sse4_1, &aom_clpf_hblock_c, 8, 4),
+        make_tuple(&aom_clpf_hblock_sse4_1, &aom_clpf_hblock_c, 4, 8),
+        make_tuple(&aom_clpf_hblock_sse4_1, &aom_clpf_hblock_c, 4, 4)));
 #endif
 
 #if HAVE_NEON
 INSTANTIATE_TEST_CASE_P(
     NEON, ClpfBlockTest,
-    ::testing::Values(make_tuple(&aom_clpf_block_neon, &aom_clpf_block_c, 8, 8),
-                      make_tuple(&aom_clpf_block_neon, &aom_clpf_block_c, 8, 4),
-                      make_tuple(&aom_clpf_block_neon, &aom_clpf_block_c, 4, 8),
-                      make_tuple(&aom_clpf_block_neon, &aom_clpf_block_c, 4,
-                                 4)));
+    ::testing::Values(
+        make_tuple(&aom_clpf_block_neon, &aom_clpf_block_c, 8, 8),
+        make_tuple(&aom_clpf_block_neon, &aom_clpf_block_c, 8, 4),
+        make_tuple(&aom_clpf_block_neon, &aom_clpf_block_c, 4, 8),
+        make_tuple(&aom_clpf_block_neon, &aom_clpf_block_c, 4, 4),
+        make_tuple(&aom_clpf_hblock_neon, &aom_clpf_hblock_c, 8, 8),
+        make_tuple(&aom_clpf_hblock_neon, &aom_clpf_hblock_c, 8, 4),
+        make_tuple(&aom_clpf_hblock_neon, &aom_clpf_hblock_c, 4, 8),
+        make_tuple(&aom_clpf_hblock_neon, &aom_clpf_hblock_c, 4, 4)));
 #endif
 
 #if CONFIG_AOM_HIGHBITDEPTH
@@ -268,7 +284,11 @@ INSTANTIATE_TEST_CASE_P(
         make_tuple(&aom_clpf_block_hbd_sse2, &aom_clpf_block_hbd_c, 8, 8),
         make_tuple(&aom_clpf_block_hbd_sse2, &aom_clpf_block_hbd_c, 8, 4),
         make_tuple(&aom_clpf_block_hbd_sse2, &aom_clpf_block_hbd_c, 4, 8),
-        make_tuple(&aom_clpf_block_hbd_sse2, &aom_clpf_block_hbd_c, 4, 4)));
+        make_tuple(&aom_clpf_block_hbd_sse2, &aom_clpf_block_hbd_c, 4, 4),
+        make_tuple(&aom_clpf_hblock_hbd_sse2, &aom_clpf_hblock_hbd_c, 8, 8),
+        make_tuple(&aom_clpf_hblock_hbd_sse2, &aom_clpf_hblock_hbd_c, 8, 4),
+        make_tuple(&aom_clpf_hblock_hbd_sse2, &aom_clpf_hblock_hbd_c, 4, 8),
+        make_tuple(&aom_clpf_hblock_hbd_sse2, &aom_clpf_hblock_hbd_c, 4, 4)));
 #endif
 
 #if HAVE_SSSE3
@@ -278,7 +298,11 @@ INSTANTIATE_TEST_CASE_P(
         make_tuple(&aom_clpf_block_hbd_ssse3, &aom_clpf_block_hbd_c, 8, 8),
         make_tuple(&aom_clpf_block_hbd_ssse3, &aom_clpf_block_hbd_c, 8, 4),
         make_tuple(&aom_clpf_block_hbd_ssse3, &aom_clpf_block_hbd_c, 4, 8),
-        make_tuple(&aom_clpf_block_hbd_ssse3, &aom_clpf_block_hbd_c, 4, 4)));
+        make_tuple(&aom_clpf_block_hbd_ssse3, &aom_clpf_block_hbd_c, 4, 4),
+        make_tuple(&aom_clpf_hblock_hbd_ssse3, &aom_clpf_hblock_hbd_c, 8, 8),
+        make_tuple(&aom_clpf_hblock_hbd_ssse3, &aom_clpf_hblock_hbd_c, 8, 4),
+        make_tuple(&aom_clpf_hblock_hbd_ssse3, &aom_clpf_hblock_hbd_c, 4, 8),
+        make_tuple(&aom_clpf_hblock_hbd_ssse3, &aom_clpf_hblock_hbd_c, 4, 4)));
 #endif
 
 #if HAVE_SSE4_1
@@ -288,7 +312,11 @@ INSTANTIATE_TEST_CASE_P(
         make_tuple(&aom_clpf_block_hbd_sse4_1, &aom_clpf_block_hbd_c, 8, 8),
         make_tuple(&aom_clpf_block_hbd_sse4_1, &aom_clpf_block_hbd_c, 8, 4),
         make_tuple(&aom_clpf_block_hbd_sse4_1, &aom_clpf_block_hbd_c, 4, 8),
-        make_tuple(&aom_clpf_block_hbd_sse4_1, &aom_clpf_block_hbd_c, 4, 4)));
+        make_tuple(&aom_clpf_block_hbd_sse4_1, &aom_clpf_block_hbd_c, 4, 4),
+        make_tuple(&aom_clpf_hblock_hbd_sse4_1, &aom_clpf_hblock_hbd_c, 8, 8),
+        make_tuple(&aom_clpf_hblock_hbd_sse4_1, &aom_clpf_hblock_hbd_c, 8, 4),
+        make_tuple(&aom_clpf_hblock_hbd_sse4_1, &aom_clpf_hblock_hbd_c, 4, 8),
+        make_tuple(&aom_clpf_hblock_hbd_sse4_1, &aom_clpf_hblock_hbd_c, 4, 4)));
 #endif
 
 #if HAVE_NEON
@@ -298,62 +326,81 @@ INSTANTIATE_TEST_CASE_P(
         make_tuple(&aom_clpf_block_hbd_neon, &aom_clpf_block_hbd_c, 8, 8),
         make_tuple(&aom_clpf_block_hbd_neon, &aom_clpf_block_hbd_c, 8, 4),
         make_tuple(&aom_clpf_block_hbd_neon, &aom_clpf_block_hbd_c, 4, 8),
-        make_tuple(&aom_clpf_block_hbd_neon, &aom_clpf_block_hbd_c, 4, 4)));
+        make_tuple(&aom_clpf_block_hbd_neon, &aom_clpf_block_hbd_c, 4, 4),
+        make_tuple(&aom_clpf_hblock_hbd_neon, &aom_clpf_hblock_hbd_c, 8, 8),
+        make_tuple(&aom_clpf_hblock_hbd_neon, &aom_clpf_hblock_hbd_c, 8, 4),
+        make_tuple(&aom_clpf_hblock_hbd_neon, &aom_clpf_hblock_hbd_c, 4, 8),
+        make_tuple(&aom_clpf_hblock_hbd_neon, &aom_clpf_hblock_hbd_c, 4, 4)));
 #endif
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
 // Test speed for all supported architectures
 #if HAVE_SSE2
-INSTANTIATE_TEST_CASE_P(SSE2, ClpfSpeedTest,
-                        ::testing::Values(make_tuple(&aom_clpf_block_sse2,
-                                                     &aom_clpf_block_c, 8, 8)));
+INSTANTIATE_TEST_CASE_P(
+    SSE2, ClpfSpeedTest,
+    ::testing::Values(make_tuple(&aom_clpf_block_sse2, &aom_clpf_block_c, 8, 8),
+                      make_tuple(&aom_clpf_hblock_sse2, &aom_clpf_hblock_c, 8,
+                                 8)));
 #endif
 
 #if HAVE_SSSE3
 INSTANTIATE_TEST_CASE_P(SSSE3, ClpfSpeedTest,
                         ::testing::Values(make_tuple(&aom_clpf_block_ssse3,
-                                                     &aom_clpf_block_c, 8, 8)));
+                                                     &aom_clpf_block_c, 8, 8),
+                                          make_tuple(&aom_clpf_hblock_ssse3,
+                                                     &aom_clpf_hblock_c, 8,
+                                                     8)));
 #endif
 
 #if HAVE_SSE4_1
 INSTANTIATE_TEST_CASE_P(SSE4_1, ClpfSpeedTest,
                         ::testing::Values(make_tuple(&aom_clpf_block_sse4_1,
-                                                     &aom_clpf_block_c, 8, 8)));
+                                                     &aom_clpf_block_c, 8, 8),
+                                          make_tuple(&aom_clpf_hblock_sse4_1,
+                                                     &aom_clpf_hblock_c, 8,
+                                                     8)));
+
 #endif
 
 #if HAVE_NEON
-INSTANTIATE_TEST_CASE_P(NEON, ClpfSpeedTest,
-                        ::testing::Values(make_tuple(&aom_clpf_block_neon,
-                                                     &aom_clpf_block_c, 8, 8)));
+INSTANTIATE_TEST_CASE_P(
+    NEON, ClpfSpeedTest,
+    ::testing::Values(make_tuple(&aom_clpf_block_neon, &aom_clpf_block_c, 8, 8),
+                      make_tuple(&aom_clpf_hblock_neon, &aom_clpf_hblock_c, 8,
+                                 8)));
 #endif
 
 #if CONFIG_AOM_HIGHBITDEPTH
 #if HAVE_SSE2
-INSTANTIATE_TEST_CASE_P(SSE2, ClpfHbdSpeedTest,
-                        ::testing::Values(make_tuple(&aom_clpf_block_hbd_sse2,
-                                                     &aom_clpf_block_hbd_c, 8,
-                                                     8)));
+INSTANTIATE_TEST_CASE_P(
+    SSE2, ClpfHbdSpeedTest,
+    ::testing::Values(
+        make_tuple(&aom_clpf_block_hbd_sse2, &aom_clpf_block_hbd_c, 8, 8),
+        make_tuple(&aom_clpf_hblock_hbd_sse2, &aom_clpf_hblock_hbd_c, 8, 8)));
 #endif
 
 #if HAVE_SSSE3
-INSTANTIATE_TEST_CASE_P(SSSE3, ClpfHbdSpeedTest,
-                        ::testing::Values(make_tuple(&aom_clpf_block_hbd_ssse3,
-                                                     &aom_clpf_block_hbd_c, 8,
-                                                     8)));
+INSTANTIATE_TEST_CASE_P(
+    SSSE3, ClpfHbdSpeedTest,
+    ::testing::Values(
+        make_tuple(&aom_clpf_block_hbd_ssse3, &aom_clpf_block_hbd_c, 8, 8),
+        make_tuple(&aom_clpf_hblock_hbd_ssse3, &aom_clpf_hblock_hbd_c, 8, 8)));
 #endif
 
 #if HAVE_SSE4_1
-INSTANTIATE_TEST_CASE_P(SSE4_1, ClpfHbdSpeedTest,
-                        ::testing::Values(make_tuple(&aom_clpf_block_hbd_sse4_1,
-                                                     &aom_clpf_block_hbd_c, 8,
-                                                     8)));
+INSTANTIATE_TEST_CASE_P(
+    SSE4_1, ClpfHbdSpeedTest,
+    ::testing::Values(
+        make_tuple(&aom_clpf_block_hbd_sse4_1, &aom_clpf_block_hbd_c, 8, 8),
+        make_tuple(&aom_clpf_hblock_hbd_sse4_1, &aom_clpf_hblock_hbd_c, 8, 8)));
 #endif
 
 #if HAVE_NEON
-INSTANTIATE_TEST_CASE_P(NEON, ClpfHbdSpeedTest,
-                        ::testing::Values(make_tuple(&aom_clpf_block_hbd_neon,
-                                                     &aom_clpf_block_hbd_c, 8,
-                                                     8)));
+INSTANTIATE_TEST_CASE_P(
+    NEON, ClpfHbdSpeedTest,
+    ::testing::Values(
+        make_tuple(&aom_clpf_block_hbd_neon, &aom_clpf_block_hbd_c, 8, 8),
+        make_tuple(&aom_clpf_hblock_hbd_neon, &aom_clpf_hblock_hbd_c, 8, 8)));
 #endif
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 #endif  // defined(_WIN64) || !defined(_MSC_VER)
