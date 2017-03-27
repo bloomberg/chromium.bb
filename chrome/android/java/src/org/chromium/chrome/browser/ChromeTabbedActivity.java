@@ -744,6 +744,10 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             return false;
         }
 
+        if (mLayoutManager != null && mLayoutManager.overviewVisible() && !isTablet()) {
+            mLayoutManager.hideOverview(false);
+        }
+
         // In cases where the tab model is initialized, attempt to reuse an existing NTP if
         // available before attempting to create a new one.
         TabModel normalTabModel = getTabModelSelector().getModel(false);
