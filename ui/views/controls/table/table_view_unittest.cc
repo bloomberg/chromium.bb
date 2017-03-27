@@ -1023,4 +1023,28 @@ TEST_F(TableViewTest, FocusAfterRemovingAnchor) {
   helper_->OnFocus();
 }
 
+// Tests that focusing the table will activate the first row, but only if
+// there's no active row.
+TEST_F(TableViewTest, InitialFocusActivatesFirstRow) {
+  EXPECT_EQ(-1, table_->selection_model().active());
+  helper_->OnFocus();
+  EXPECT_EQ(0, table_->selection_model().active());
+
+  ui::ListSelectionModel new_selection;
+  new_selection.set_active(1);
+  helper_->SetSelectionModel(new_selection);
+  EXPECT_EQ(1, table_->selection_model().active());
+  helper_->OnFocus();
+  EXPECT_EQ(1, table_->selection_model().active());
+
+  // Remove all rows; focusing should not activate a non existent first row.
+  while (model_->RowCount())
+    model_->RemoveRow(0);
+
+  new_selection.set_active(-1);
+  helper_->SetSelectionModel(new_selection);
+  helper_->OnFocus();
+  EXPECT_EQ(-1, table_->selection_model().active());
+}
+
 }  // namespace views

@@ -299,12 +299,10 @@ int TableView::ModelToView(int model_index) const {
 }
 
 int TableView::ViewToModel(int view_index) const {
-  if (!is_sorted())
-    return view_index;
   DCHECK_GE(view_index, 0) << " negative view_index " << view_index;
   DCHECK_LT(view_index, RowCount()) << " out of bounds view_index " <<
       view_index;
-  return view_to_model_[view_index];
+  return is_sorted() ? view_to_model_[view_index] : view_index;
 }
 
 void TableView::Layout() {
@@ -626,8 +624,11 @@ void TableView::OnFocus() {
   ScrollView* scroll_view = ScrollView::GetScrollViewForContents(this);
   if (scroll_view)
     scroll_view->SetHasFocusIndicator(true);
-  SchedulePaintForSelection();
 
+  if (selection_model_.active() == -1 && RowCount())
+    SelectByViewIndex(0);
+
+  SchedulePaintForSelection();
   NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, true);
 }
 

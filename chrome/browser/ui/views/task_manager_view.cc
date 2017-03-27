@@ -161,10 +161,6 @@ bool TaskManagerView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   return true;
 }
 
-views::View* TaskManagerView::GetInitiallyFocusedView() {
-  return tab_table_;
-}
-
 bool TaskManagerView::CanResize() const {
   return true;
 }
