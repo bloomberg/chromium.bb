@@ -126,7 +126,6 @@ TEST(UiScene, ParentTransformAppliesToChild) {
   const gvr::Vec3f origin({0, 0, 0});
   const gvr::Vec3f point({1, 0, 0});
 
-  // Check resulting transform with no screen tilt.
   scene.UpdateTransforms(0);
   auto new_origin = MatrixVectorMul(child->TransformMatrix(), origin);
   auto new_point = MatrixVectorMul(child->TransformMatrix(), point);

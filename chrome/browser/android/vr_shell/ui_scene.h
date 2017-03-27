@@ -20,7 +20,6 @@ namespace vr_shell {
 
 class Animation;
 struct ContentRectangle;
-struct Transform;
 
 class UiScene {
  public:
@@ -78,10 +77,7 @@ class UiScene {
   bool GetWebVrRenderingEnabled() const;
 
  private:
-  void ApplyRecursiveTransforms(const ContentRectangle& element,
-                                Transform* transform,
-                                float* opacity,
-                                bool* lock_to_fov);
+  void ApplyRecursiveTransforms(ContentRectangle* element);
   void ApplyDictToElement(const base::DictionaryValue& dict,
                           ContentRectangle* element);
 

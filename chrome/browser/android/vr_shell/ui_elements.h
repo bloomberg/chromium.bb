@@ -59,7 +59,7 @@ struct Transform {
 class WorldRectangle {
  public:
   const gvr::Mat4f& TransformMatrix() const;
-  void SetTransform(const Transform& transform);
+  Transform* mutable_transform() { return &transform_; }
 
   gvr::Vec3f GetCenter() const;
   gvr::Vec3f GetNormal() const;
@@ -153,6 +153,12 @@ struct ContentRectangle : public WorldRectangle {
   int gridline_count = 1;
 
   int draw_phase = 1;
+
+  // This transform can be used by children to derive position of its parent.
+  Transform inheritable_transform;
+
+  // A flag usable during transformation calculates to avoid duplicate work.
+  bool dirty;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ContentRectangle);

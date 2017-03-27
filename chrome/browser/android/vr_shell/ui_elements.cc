@@ -64,10 +64,6 @@ const gvr::Mat4f& WorldRectangle::TransformMatrix() const {
   return transform_.to_world;
 }
 
-void WorldRectangle::SetTransform(const Transform& transform) {
-  transform_ = transform;
-}
-
 gvr::Vec3f WorldRectangle::GetCenter() const {
   const gvr::Vec3f kOrigin = {0.0f, 0.0f, 0.0f};
   return MatrixVectorMul(transform_.to_world, kOrigin);

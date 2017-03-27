@@ -328,20 +328,13 @@ void UiScene::HandleCommands(std::unique_ptr<base::ListValue> commands,
 }
 
 void UiScene::UpdateTransforms(int64_t time_in_micro) {
-  // Process all animations before calculating object transforms.
   for (auto& element : ui_elements_) {
+    // Process all animations before calculating object transforms.
     element->Animate(time_in_micro);
+    element->dirty = true;
   }
   for (auto& element : ui_elements_) {
-    Transform transform;
-    transform.MakeIdentity();
-    transform.Scale(element->size.x, element->size.y, element->size.z);
-    element->computed_opacity = 1.0f;
-    element->computed_lock_to_fov = false;
-    ApplyRecursiveTransforms(*element.get(), &transform,
-                             &element->computed_opacity,
-                             &element->computed_lock_to_fov);
-    element->SetTransform(transform);
+    ApplyRecursiveTransforms(element.get());
   }
 }
 
@@ -399,26 +392,44 @@ UiScene::UiScene() = default;
 
 UiScene::~UiScene() = default;
 
-void UiScene::ApplyRecursiveTransforms(const ContentRectangle& element,
-                                       Transform* transform,
-                                       float* opacity,
-                                       bool* lock_to_fov) {
-  transform->Scale(element.scale.x, element.scale.y, element.scale.z);
-  transform->Rotate(element.rotation.x, element.rotation.y, element.rotation.z,
-                    element.rotation.angle);
-  transform->Translate(element.translation.x, element.translation.y,
-                       element.translation.z);
-  *opacity *= element.opacity;
-  // Head-locked state inherited from a parent element.
-  *lock_to_fov = element.lock_to_fov;
+void UiScene::ApplyRecursiveTransforms(ContentRectangle* element) {
+  if (!element->dirty)
+    return;
 
-  if (element.parent_id >= 0) {
-    const ContentRectangle* parent = GetUiElementById(element.parent_id);
+  ContentRectangle* parent = nullptr;
+  if (element->parent_id >= 0) {
+    parent = GetUiElementById(element->parent_id);
     CHECK(parent != nullptr);
-    ApplyAnchoring(*parent, element.x_anchoring, element.y_anchoring,
-                   transform);
-    ApplyRecursiveTransforms(*parent, transform, opacity, lock_to_fov);
   }
+
+  Transform* transform = element->mutable_transform();
+  transform->MakeIdentity();
+  transform->Scale(element->size.x, element->size.y, element->size.z);
+  element->computed_opacity = element->opacity;
+  element->computed_lock_to_fov = element->lock_to_fov;
+
+  // Compute an inheritable transformation that can be applied to this element,
+  // and it's children, if applicable.
+  Transform* inheritable = &element->inheritable_transform;
+  inheritable->MakeIdentity();
+  inheritable->Scale(element->scale.x, element->scale.y, element->scale.z);
+  inheritable->Rotate(element->rotation.x, element->rotation.y,
+                      element->rotation.z, element->rotation.angle);
+  inheritable->Translate(element->translation.x, element->translation.y,
+                         element->translation.z);
+  if (parent) {
+    ApplyAnchoring(*parent, element->x_anchoring, element->y_anchoring,
+                   inheritable);
+    ApplyRecursiveTransforms(parent);
+    inheritable->to_world = MatrixMul(parent->inheritable_transform.to_world,
+                                      inheritable->to_world);
+
+    element->computed_opacity *= parent->opacity;
+    element->computed_lock_to_fov = parent->lock_to_fov;
+  }
+
+  transform->to_world = MatrixMul(inheritable->to_world, transform->to_world);
+  element->dirty = false;
 }
 
 void UiScene::ApplyDictToElement(const base::DictionaryValue& dict,
