@@ -60,6 +60,7 @@ class ValidationMessageClientImpl final
                              TextDirection subMessageDir) override;
   void hideValidationMessage(const Element& anchor) override;
   bool isValidationMessageVisible(const Element& anchor) override;
+  void willUnloadDocument(const Document&) override;
   void documentDetached(const Document&) override;
   void willBeDestroyed() override;
 

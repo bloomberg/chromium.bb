@@ -111,9 +111,14 @@ bool ValidationMessageClientImpl::isValidationMessageVisible(
   return m_currentAnchor == &anchor;
 }
 
-void ValidationMessageClientImpl::documentDetached(const Document& document) {
+void ValidationMessageClientImpl::willUnloadDocument(const Document& document) {
   if (m_currentAnchor && m_currentAnchor->document() == document)
     hideValidationMessage(*m_currentAnchor);
+}
+
+void ValidationMessageClientImpl::documentDetached(const Document& document) {
+  DCHECK(!m_currentAnchor || m_currentAnchor->document() != document)
+      << "willUnloadDocument() should be called beforehand.";
 }
 
 void ValidationMessageClientImpl::checkAnchorStatus(TimerBase*) {

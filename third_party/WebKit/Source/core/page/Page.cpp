@@ -243,6 +243,11 @@ void Page::setMainFrame(Frame* mainFrame) {
   m_mainFrame = mainFrame;
 }
 
+void Page::willUnloadDocument(const Document& document) {
+  if (m_validationMessageClient)
+    m_validationMessageClient->willUnloadDocument(document);
+}
+
 void Page::documentDetached(Document* document) {
   m_pointerLockController->documentDetached(document);
   m_contextMenuController->documentDetached(document);

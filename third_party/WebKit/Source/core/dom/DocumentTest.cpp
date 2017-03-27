@@ -36,8 +36,12 @@
 #include "core/dom/SynchronousMutationObserver.h"
 #include "core/dom/Text.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLHeadElement.h"
+#include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLLinkElement.h"
+#include "core/page/Page.h"
+#include "core/page/ValidationMessageClient.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/ReferrerPolicy.h"
@@ -241,6 +245,45 @@ DEFINE_TRACE(TestSynchronousMutationObserver) {
   visitor->trace(m_updatedCharacterDataRecords);
   SynchronousMutationObserver::trace(visitor);
 }
+
+class MockValidationMessageClient
+    : public GarbageCollectedFinalized<MockValidationMessageClient>,
+      public ValidationMessageClient {
+  USING_GARBAGE_COLLECTED_MIXIN(MockValidationMessageClient);
+
+ public:
+  MockValidationMessageClient() { reset(); }
+  void reset() {
+    showValidationMessageWasCalled = false;
+    willUnloadDocumentWasCalled = false;
+    documentDetachedWasCalled = false;
+  }
+  bool showValidationMessageWasCalled;
+  bool willUnloadDocumentWasCalled;
+  bool documentDetachedWasCalled;
+
+  // ValidationMessageClient functions.
+  void showValidationMessage(const Element& anchor,
+                             const String& mainMessage,
+                             TextDirection,
+                             const String& subMessage,
+                             TextDirection) override {
+    showValidationMessageWasCalled = true;
+  }
+  void hideValidationMessage(const Element& anchor) override {}
+  bool isValidationMessageVisible(const Element& anchor) override {
+    return true;
+  }
+  void willUnloadDocument(const Document&) override {
+    willUnloadDocumentWasCalled = true;
+  }
+  void documentDetached(const Document&) override {
+    documentDetachedWasCalled = true;
+  }
+  void willBeDestroyed() override {}
+
+  // DEFINE_INLINE_VIRTUAL_TRACE() { ValidationMessageClient::trace(visitor); }
+};
 
 }  // anonymous namespace
 
@@ -650,6 +693,40 @@ TEST_F(DocumentTest, ThemeColor) {
     EXPECT_EQ(Color(0, 255, 0), document().themeColor())
         << "Theme color should be bright green.";
   }
+}
+
+TEST_F(DocumentTest, ValidationMessageCleanup) {
+  ValidationMessageClient* originalClient = &page().validationMessageClient();
+  MockValidationMessageClient* mockClient = new MockValidationMessageClient();
+  document().settings()->setScriptEnabled(true);
+  page().setValidationMessageClient(mockClient);
+  // implicitOpen()-implicitClose() makes Document.loadEventFinished()
+  // true. It's necessary to kick unload process.
+  document().implicitOpen(ForceSynchronousParsing);
+  document().implicitClose();
+  document().appendChild(document().createElement("html"));
+  setHtmlInnerHTML("<body><input required></body>");
+  Element* script = document().createElement("script");
+  script->setTextContent(
+      "window.onunload = function() {"
+      "document.querySelector('input').reportValidity(); };");
+  document().body()->appendChild(script);
+  HTMLInputElement* input = toHTMLInputElement(document().body()->firstChild());
+  DVLOG(0) << document().body()->outerHTML();
+
+  // Sanity check.
+  input->reportValidity();
+  EXPECT_TRUE(mockClient->showValidationMessageWasCalled);
+  mockClient->reset();
+
+  // prepareForCommit() unloads the document, and shutdown.
+  document().frame()->prepareForCommit();
+  EXPECT_TRUE(mockClient->willUnloadDocumentWasCalled);
+  EXPECT_TRUE(mockClient->documentDetachedWasCalled);
+  // Unload handler tried to show a validation message, but it should fail.
+  EXPECT_FALSE(mockClient->showValidationMessageWasCalled);
+
+  page().setValidationMessageClient(originalClient);
 }
 
 }  // namespace blink

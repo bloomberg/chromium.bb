@@ -3078,6 +3078,8 @@ void Document::dispatchUnloadEvents() {
     return;
 
   if (m_loadEventProgress <= UnloadEventInProgress) {
+    if (page())
+      page()->willUnloadDocument(*this);
     Element* currentFocusedElement = focusedElement();
     if (isHTMLInputElement(currentFocusedElement))
       toHTMLInputElement(*currentFocusedElement).endEditing();
