@@ -26,6 +26,8 @@ _EXCLUDED_PATHS = (
     r".*vulcanized.html$",
     r".*crisper.js$",
     r"tools[\\\/]md_browser[\\\/].*\.css$",
+    # Test pages for WebRTC telemetry tests.
+    r"tools[\\\/]perf[\\\/]page_sets[\\\/]webrtc_cases.*",
 )
 
 
