@@ -181,7 +181,6 @@ class ChromeBrowserStateIOData {
 
   std::unique_ptr<net::URLRequestJobFactory> SetUpJobFactoryDefaults(
       std::unique_ptr<net::URLRequestJobFactoryImpl> job_factory,
-      URLRequestInterceptorScopedVector request_interceptors,
       net::NetworkDelegate* network_delegate) const;
 
   // Called when the ChromeBrowserState is destroyed. |context_getters| must

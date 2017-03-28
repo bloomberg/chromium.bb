@@ -282,8 +282,7 @@ void TestChromeBrowserState::ClearNetworkingHistorySince(
 }
 
 net::URLRequestContextGetter* TestChromeBrowserState::CreateRequestContext(
-    ProtocolHandlerMap* protocol_handlers,
-    URLRequestInterceptorScopedVector request_interceptors) {
+    ProtocolHandlerMap* protocol_handlers) {
   return new net::TestURLRequestContextGetter(
       web::WebThread::GetTaskRunnerForThread(web::WebThread::IO));
 }

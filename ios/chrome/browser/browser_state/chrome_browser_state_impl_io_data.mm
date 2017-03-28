@@ -389,11 +389,7 @@ void ChromeBrowserStateImplIOData::InitializeInternal(
       new net::URLRequestJobFactoryImpl());
   InstallProtocolHandlers(main_job_factory.get(), protocol_handlers);
 
-  // TODO(crbug.com/592012): Delete request_interceptor and its handling if
-  // it's not needed in the future.
-  URLRequestInterceptorScopedVector request_interceptors;
   main_job_factory_ = SetUpJobFactoryDefaults(std::move(main_job_factory),
-                                              std::move(request_interceptors),
                                               main_context->network_delegate());
   main_context->set_job_factory(main_job_factory_.get());
   main_context->set_network_quality_estimator(
@@ -449,12 +445,8 @@ ChromeBrowserStateImplIOData::InitializeAppRequestContext(
 
   std::unique_ptr<net::URLRequestJobFactoryImpl> job_factory(
       new net::URLRequestJobFactoryImpl());
-  // TODO(crbug.com/592012): Delete request_interceptor and its handling if
-  // it's not needed in the future.
-  URLRequestInterceptorScopedVector request_interceptors;
   std::unique_ptr<net::URLRequestJobFactory> top_job_factory(
       SetUpJobFactoryDefaults(std::move(job_factory),
-                              std::move(request_interceptors),
                               main_context->network_delegate()));
   context->SetJobFactory(std::move(top_job_factory));
 

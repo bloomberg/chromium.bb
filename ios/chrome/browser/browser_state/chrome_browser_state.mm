@@ -75,9 +75,8 @@ net::URLRequestContextGetter* ChromeBrowserState::GetRequestContext() {
         linked_ptr<net::URLRequestJobFactory::ProtocolHandler>(
             web::URLDataManagerIOSBackend::CreateProtocolHandler(this)
                 .release());
-    URLRequestInterceptorScopedVector request_interceptors;
-    request_context_getter_ = make_scoped_refptr(CreateRequestContext(
-        &protocol_handlers, std::move(request_interceptors)));
+    request_context_getter_ =
+        make_scoped_refptr(CreateRequestContext(&protocol_handlers));
   }
   return request_context_getter_.get();
 }

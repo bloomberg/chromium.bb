@@ -31,7 +31,6 @@ class Time;
 
 namespace net {
 class SSLConfigService;
-class URLRequestInterceptor;
 }
 
 namespace sync_preferences {
@@ -122,10 +121,7 @@ class ChromeBrowserState : public web::BrowserState {
   // Creates the main net::URLRequestContextGetter that will be returned by
   // GetRequestContext(). Should only be called once.
   virtual net::URLRequestContextGetter* CreateRequestContext(
-      std::map<std::string,
-               linked_ptr<net::URLRequestJobFactory::ProtocolHandler>>*
-          protocol_handlers,
-      URLRequestInterceptorScopedVector request_interceptors) = 0;
+      ProtocolHandlerMap* protocol_handlers) = 0;
 
   // Creates a isolated net::URLRequestContextGetter. Should only be called once
   // per partition_path per browser state object.

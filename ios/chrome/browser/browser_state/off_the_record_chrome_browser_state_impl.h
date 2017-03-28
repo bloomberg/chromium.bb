@@ -33,8 +33,7 @@ class OffTheRecordChromeBrowserStateImpl : public ios::ChromeBrowserState {
   void ClearNetworkingHistorySince(base::Time time,
                                    const base::Closure& completion) override;
   net::URLRequestContextGetter* CreateRequestContext(
-      ProtocolHandlerMap* protocol_handlers,
-      URLRequestInterceptorScopedVector request_interceptors) override;
+      ProtocolHandlerMap* protocol_handlers) override;
   net::URLRequestContextGetter* CreateIsolatedRequestContext(
       const base::FilePath& partition_path) override;
 

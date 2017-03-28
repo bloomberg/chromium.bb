@@ -219,8 +219,7 @@ ChromeBrowserStateIOData* ChromeBrowserStateImpl::GetIOData() {
 }
 
 net::URLRequestContextGetter* ChromeBrowserStateImpl::CreateRequestContext(
-    ProtocolHandlerMap* protocol_handlers,
-    URLRequestInterceptorScopedVector request_interceptors) {
+    ProtocolHandlerMap* protocol_handlers) {
   ApplicationContext* application_context = GetApplicationContext();
   return io_data_
       ->CreateMainRequestContextGetter(

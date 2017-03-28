@@ -95,8 +95,7 @@ ChromeBrowserStateIOData* OffTheRecordChromeBrowserStateImpl::GetIOData() {
 
 net::URLRequestContextGetter*
 OffTheRecordChromeBrowserStateImpl::CreateRequestContext(
-    ProtocolHandlerMap* protocol_handlers,
-    URLRequestInterceptorScopedVector request_interceptors) {
+    ProtocolHandlerMap* protocol_handlers) {
   return io_data_->CreateMainRequestContextGetter(protocol_handlers).get();
 }
 

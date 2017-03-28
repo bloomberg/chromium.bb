@@ -394,7 +394,6 @@ void ChromeBrowserStateIOData::ApplyProfileParamsToContext(
 std::unique_ptr<net::URLRequestJobFactory>
 ChromeBrowserStateIOData::SetUpJobFactoryDefaults(
     std::unique_ptr<net::URLRequestJobFactoryImpl> job_factory,
-    URLRequestInterceptorScopedVector request_interceptors,
     net::NetworkDelegate* network_delegate) const {
   // NOTE(willchan): Keep these protocol handlers in sync with
   // ChromeBrowserStateIOData::IsHandledProtocol().
@@ -413,16 +412,8 @@ ChromeBrowserStateIOData::SetUpJobFactoryDefaults(
       url::kAboutScheme,
       base::MakeUnique<about_handler::AboutProtocolHandler>());
 
-  // Set up interceptors in the reverse order.
-  std::unique_ptr<net::URLRequestJobFactory> top_job_factory =
-      std::move(job_factory);
-  for (auto i = request_interceptors.rbegin(); i != request_interceptors.rend();
-       ++i) {
-    top_job_factory.reset(new net::URLRequestInterceptingJobFactory(
-        std::move(top_job_factory), std::move(*i)));
-  }
-  request_interceptors.clear();
-  return top_job_factory;
+  // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.
+  return std::move(job_factory);
 }
 
 void ChromeBrowserStateIOData::ShutdownOnUIThread(
