@@ -694,10 +694,17 @@ void NodeController::SendPeerMessage(const ports::NodeName& name,
     return;
   }
 
-  // If we don't know who the peer is, queue the message for delivery. If this
-  // is the first message queued for the peer, we also ask the broker to
-  // introduce us to them.
+  // If we don't know who the peer is and we are the broker, we can only assume
+  // the peer is invalid, i.e., it's either a junk name or has already been
+  // disconnected.
+  scoped_refptr<NodeChannel> broker = GetBrokerChannel();
+  if (!broker) {
+    DVLOG(1) << "Dropping message for unknown peer: " << name;
+    return;
+  }
 
+  // If we aren't the broker, assume we just need to be introduced and queue
+  // until that can be either confirmed or denied by the broker.
   bool needs_introduction = false;
   {
     base::AutoLock lock(peers_lock_);
@@ -705,18 +712,8 @@ void NodeController::SendPeerMessage(const ports::NodeName& name,
     needs_introduction = queue.empty();
     queue.emplace(std::move(channel_message));
   }
-
-  if (needs_introduction) {
-    scoped_refptr<NodeChannel> broker = GetBrokerChannel();
-    if (!broker) {
-      DVLOG(1) << "Dropping message for unknown peer: " << name;
-
-      base::AutoLock lock(peers_lock_);
-      pending_peer_messages_.erase(name);
-      return;
-    }
+  if (needs_introduction)
     broker->RequestIntroduction(name);
-  }
 }
 
 void NodeController::AcceptIncomingMessages() {
