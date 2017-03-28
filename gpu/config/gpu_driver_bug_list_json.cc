@@ -2312,13 +2312,17 @@ LONG_STRING_CONST(
 // Avoid C2026 (string too big) error on VisualStudio.
 LONG_STRING_CONST(
     {
+      // Corresponds to software rendering list #140.
       "id": 214,
       "description": "Certain versions of Qualcomm driver don't setup scissor state correctly when FBO0 is bound.",
-      "cr_bugs": [670607, 696627],
+      "cr_bugs": [670607, 696627, 698197],
       "gl_vendor": "Qualcomm.*",
       "machine_model_name": ["Nexus 7", "KFTHWI", "KFSAWI", "KFAPWI", "KFTHWA", "KFSAWA", "KFAPWA"],
       "features": [
-        "force_update_scissor_state_when_binding_fbo0"
+        "force_update_scissor_state_when_binding_fbo0",
+        // Somehow the main workaround above won't work without the one below.
+        // See https://crbug.com/698197 for details.
+        "disable_chromium_framebuffer_multisample"
       ]
     },
     {

@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "12.22",
+  "version": "12.23",
   "entries": [
     {
       "id": 1,
@@ -1527,6 +1527,17 @@ LONG_STRING_CONST(
       },
       "features": [
         "gpu_rasterization"
+      ]
+    },
+    {
+      // Corresponds to GPU driver bug #214.
+      "id": 140,
+      "description": "Some old Qualcomm scissor bug workaround needs disabling MSAA to work, which is a core part of WebGL 2.",
+      "cr_bugs": [670607, 696627, 698197],
+      "gl_vendor": "Qualcomm.*",
+      "machine_model_name": ["Nexus 7", "KFTHWI", "KFSAWI", "KFAPWI", "KFTHWA", "KFSAWA", "KFAPWA"],
+      "features": [
+        "webgl2"
       ]
     }
   ]
