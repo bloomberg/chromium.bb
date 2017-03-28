@@ -7,7 +7,5 @@
 [
     RuntimeEnabled=WebBluetooth,
 ] interface Bluetooth {
-    [CallWith=ScriptState, RaisesException, MeasureAs=WebBluetoothRequestDevice] Promise<BluetoothDevice> requestDevice (
-        RequestDeviceOptions options
-        );
+    [CallWith=ScriptState, RaisesException, MeasureAs=WebBluetoothRequestDevice] Promise<BluetoothDevice> requestDevice (optional RequestDeviceOptions options);
 };
