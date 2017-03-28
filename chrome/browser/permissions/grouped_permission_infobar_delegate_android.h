@@ -14,7 +14,6 @@
 class GURL;
 class InfoBarService;
 class PermissionPromptAndroid;
-class PermissionRequest;
 
 // An InfoBar that displays a group of permission requests, each of which can be
 // allowed or blocked independently.
@@ -24,15 +23,13 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   // Public so we can have std::unique_ptr<GroupedPermissionInfoBarDelegate>.
   ~GroupedPermissionInfoBarDelegate() override;
 
-  static infobars::InfoBar* Create(
-      PermissionPromptAndroid* permission_prompt,
-      InfoBarService* infobar_service,
-      const GURL& requesting_origin,
-      const std::vector<PermissionRequest*>& requests);
+  static infobars::InfoBar* Create(PermissionPromptAndroid* permission_prompt,
+                                   InfoBarService* infobar_service,
+                                   const GURL& requesting_origin);
 
   bool persist() const { return persist_; }
   void set_persist(bool persist) { persist_ = persist; }
-  size_t permission_count() const { return requests_.size(); }
+  size_t PermissionCount() const;
 
   // Returns true if the infobar should display a toggle to allow users to
   // opt-out of persisting their accept/deny decision.
@@ -59,10 +56,8 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   bool GetAcceptState(size_t position);
 
  private:
-  GroupedPermissionInfoBarDelegate(
-      PermissionPromptAndroid* permission_prompt,
-      const GURL& requesting_origin,
-      const std::vector<PermissionRequest*>& requests);
+  GroupedPermissionInfoBarDelegate(PermissionPromptAndroid* permission_prompt,
+                                   const GURL& requesting_origin);
 
   // ConfirmInfoBarDelegate:
   InfoBarIdentifier GetIdentifier() const override;
@@ -71,7 +66,6 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   base::string16 GetButtonLabel(InfoBarButton button) const override;
 
   const GURL requesting_origin_;
-  const std::vector<PermissionRequest*> requests_;
   // Whether the accept/deny decision is persisted.
   bool persist_;
   PermissionPromptAndroid* permission_prompt_;

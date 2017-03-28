@@ -27,7 +27,7 @@ void GroupedPermissionInfoBar::SetPermissionState(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
     const base::android::JavaParamRef<jbooleanArray>& permissions) {
-  for (size_t i = 0; i < GetDelegate()->permission_count(); i++) {
+  for (size_t i = 0; i < GetDelegate()->PermissionCount(); i++) {
     jboolean value;
     env->GetBooleanArrayRegion(permissions.obj(), i, 1, &value);
     GetDelegate()->ToggleAccept(i, value);
@@ -64,7 +64,7 @@ GroupedPermissionInfoBar::CreateRenderInfoBar(JNIEnv* env) {
   std::vector<int> permission_icons;
   std::vector<int> content_settings_types;
 
-  for (size_t i = 0; i < delegate->permission_count(); i++) {
+  for (size_t i = 0; i < delegate->PermissionCount(); i++) {
     permission_strings.push_back(delegate->GetMessageTextFragment(i));
     permission_icons.push_back(
         ResourceMapper::MapFromChromiumId(delegate->GetIconIdForPermission(i)));

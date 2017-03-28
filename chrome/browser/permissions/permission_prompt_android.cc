@@ -39,8 +39,9 @@ void PermissionPromptAndroid::Show(
   if (!infobar_service)
     return;
 
-  infobar_ = GroupedPermissionInfoBarDelegate::Create(
-      this, infobar_service, requests[0]->GetOrigin(), requests);
+  requests_ = requests;
+  infobar_ = GroupedPermissionInfoBarDelegate::Create(this, infobar_service,
+                                                      requests[0]->GetOrigin());
 }
 
 bool PermissionPromptAndroid::CanAcceptRequestUpdate() {
@@ -70,6 +71,7 @@ gfx::NativeWindow PermissionPromptAndroid::GetNativeWindow() {
 }
 
 void PermissionPromptAndroid::Closing() {
+  requests_.clear();
   if (delegate_)
     delegate_->Closing();
 }
@@ -80,13 +82,32 @@ void PermissionPromptAndroid::ToggleAccept(int index, bool value) {
 }
 
 void PermissionPromptAndroid::Accept() {
+  requests_.clear();
   if (delegate_)
     delegate_->Accept();
 }
 
 void PermissionPromptAndroid::Deny() {
+  requests_.clear();
   if (delegate_)
     delegate_->Deny();
+}
+
+ContentSettingsType PermissionPromptAndroid::GetContentSettingType(
+    size_t position) const {
+  DCHECK_LT(position, requests_.size());
+  return requests_[position]->GetContentSettingsType();
+}
+
+int PermissionPromptAndroid::GetIconIdForPermission(size_t position) const {
+  DCHECK_LT(position, requests_.size());
+  return requests_[position]->GetIconId();
+}
+
+base::string16 PermissionPromptAndroid::GetMessageTextFragment(
+    size_t position) const {
+  DCHECK_LT(position, requests_.size());
+  return requests_[position]->GetMessageTextFragment();
 }
 
 // static

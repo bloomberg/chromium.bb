@@ -5,9 +5,13 @@
 #ifndef CHROME_BROWSER_PERMISSIONS_PERMISSION_PROMPT_ANDROID_H_
 #define CHROME_BROWSER_PERMISSIONS_PERMISSION_PROMPT_ANDROID_H_
 
-#include "chrome/browser/ui/permission_bubble/permission_prompt.h"
+#include <vector>
 
-class InfoBarService;
+#include "base/strings/string16.h"
+#include "chrome/browser/ui/permission_bubble/permission_prompt.h"
+#include "components/content_settings/core/common/content_settings_types.h"
+
+class PermissionRequest;
 
 namespace content {
 class WebContents;
@@ -37,6 +41,11 @@ class PermissionPromptAndroid : public PermissionPrompt {
   void Accept();
   void Deny();
 
+  size_t permission_count() const { return requests_.size(); }
+  ContentSettingsType GetContentSettingType(size_t position) const;
+  int GetIconIdForPermission(size_t position) const;
+  base::string16 GetMessageTextFragment(size_t position) const;
+
  private:
   // PermissionPromptAndroid is owned by PermissionRequestManager, so it should
   // be safe to hold a raw WebContents pointer here because this class is
@@ -47,6 +56,8 @@ class PermissionPromptAndroid : public PermissionPrompt {
   // |infobar_| is owned by the InfoBarService; we keep a pointer here so we can
   // ask the service to remove the infobar after it is added.
   infobars::InfoBar* infobar_;
+  // The current request being displayed (if any).
+  std::vector<PermissionRequest*> requests_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionPromptAndroid);
 };

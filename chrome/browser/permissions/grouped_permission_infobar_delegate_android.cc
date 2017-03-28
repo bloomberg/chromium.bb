@@ -24,11 +24,14 @@ GroupedPermissionInfoBarDelegate::~GroupedPermissionInfoBarDelegate() {}
 infobars::InfoBar* GroupedPermissionInfoBarDelegate::Create(
     PermissionPromptAndroid* permission_prompt,
     InfoBarService* infobar_service,
-    const GURL& requesting_origin,
-    const std::vector<PermissionRequest*>& requests) {
+    const GURL& requesting_origin) {
   return infobar_service->AddInfoBar(base::MakeUnique<GroupedPermissionInfoBar>(
       base::WrapUnique(new GroupedPermissionInfoBarDelegate(
-          permission_prompt, requesting_origin, requests))));
+          permission_prompt, requesting_origin))));
+}
+
+size_t GroupedPermissionInfoBarDelegate::PermissionCount() const {
+  return permission_prompt_->permission_count();
 }
 
 bool GroupedPermissionInfoBarDelegate::ShouldShowPersistenceToggle() const {
@@ -37,25 +40,22 @@ bool GroupedPermissionInfoBarDelegate::ShouldShowPersistenceToggle() const {
 
 ContentSettingsType GroupedPermissionInfoBarDelegate::GetContentSettingType(
     size_t position) const {
-  DCHECK_LT(position, requests_.size());
-  return requests_[position]->GetContentSettingsType();
+  return permission_prompt_->GetContentSettingType(position);
 }
 
 int GroupedPermissionInfoBarDelegate::GetIconIdForPermission(
     size_t position) const {
-  DCHECK_LT(position, requests_.size());
-  return requests_[position]->GetIconId();
+  return permission_prompt_->GetIconIdForPermission(position);
 }
 
 base::string16 GroupedPermissionInfoBarDelegate::GetMessageTextFragment(
     size_t position) const {
-  DCHECK_LT(position, requests_.size());
-  return requests_[position]->GetMessageTextFragment();
+  return permission_prompt_->GetMessageTextFragment(position);
 }
 
 void GroupedPermissionInfoBarDelegate::ToggleAccept(size_t position,
                                                     bool new_value) {
-  DCHECK_LT(position, requests_.size());
+  DCHECK_LT(position, PermissionCount());
   if (permission_prompt_)
     permission_prompt_->ToggleAccept(position, new_value);
 }
@@ -89,10 +89,8 @@ void GroupedPermissionInfoBarDelegate::PermissionPromptDestroyed() {
 
 GroupedPermissionInfoBarDelegate::GroupedPermissionInfoBarDelegate(
     PermissionPromptAndroid* permission_prompt,
-    const GURL& requesting_origin,
-    const std::vector<PermissionRequest*>& requests)
+    const GURL& requesting_origin)
     : requesting_origin_(requesting_origin),
-      requests_(requests),
       persist_(true),
       permission_prompt_(permission_prompt) {
   DCHECK(permission_prompt);
@@ -113,12 +111,12 @@ int GroupedPermissionInfoBarDelegate::GetButtons() const {
   // button to allow/deny it. If there are multiple, we only show OK button
   // which means making decision for all permissions according to each accept
   // toggle.
-  return (permission_count() > 1) ? BUTTON_OK : (BUTTON_OK | BUTTON_CANCEL);
+  return (PermissionCount() > 1) ? BUTTON_OK : (BUTTON_OK | BUTTON_CANCEL);
 }
 
 base::string16 GroupedPermissionInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
-  if (permission_count() > 1) {
+  if (PermissionCount() > 1) {
     return l10n_util::GetStringUTF16((button == BUTTON_OK) ? IDS_APP_OK
                                                            : IDS_APP_CANCEL);
   }
