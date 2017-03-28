@@ -80,4 +80,6 @@ class TranslateCompactInfoBar extends InfoBar {
         mNativeTranslateInfoBarPtr = 0;
         super.onNativeDestroyed();
     }
+
+    private native void nativeApplyTranslateOptions(long nativeTranslateCompactInfoBar);
 }

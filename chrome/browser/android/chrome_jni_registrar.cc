@@ -154,6 +154,7 @@
 #include "chrome/browser/ui/android/infobars/infobar_android.h"
 #include "chrome/browser/ui/android/infobars/infobar_container_android.h"
 #include "chrome/browser/ui/android/infobars/simple_confirm_infobar_builder.h"
+#include "chrome/browser/ui/android/infobars/translate_compact_infobar.h"
 #include "chrome/browser/ui/android/infobars/translate_infobar.h"
 #include "chrome/browser/ui/android/javascript_app_modal_dialog_android.h"
 #include "chrome/browser/ui/android/omnibox/omnibox_url_emphasizer.h"
@@ -419,6 +420,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"ThumbnailProvider", ThumbnailProvider::RegisterThumbnailProvider},
     {"ToolbarModelAndroid", ToolbarModelAndroid::RegisterToolbarModelAndroid},
     {"ToolbarSceneLayer", RegisterToolbarSceneLayer},
+    {"TranslateCompactInfoBar", RegisterTranslateCompactInfoBar},
     {"TranslateInfoBarDelegate", RegisterTranslateInfoBarDelegate},
     {"TtsPlatformImpl", TtsPlatformImplAndroid::Register},
     {"UmaSessionStats", RegisterUmaSessionStats},
