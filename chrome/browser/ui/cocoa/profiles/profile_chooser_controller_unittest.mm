@@ -217,37 +217,6 @@ TEST_F(ProfileChooserControllerTest, RightClickTutorialShownAfterReopen) {
   StartProfileChooserController();
 }
 
-TEST_F(ProfileChooserControllerTest, RightClickTutorialNotShownAfterDismiss) {
-  // The welcome upgrade tutorial takes precedence so show it then close the
-  // menu. Reopening the menu should show the tutorial.
-  StartProfileChooserController();
-
-  [controller() close];
-  StartProfileChooserControllerWithTutorialMode(
-      profiles::TUTORIAL_MODE_RIGHT_CLICK_SWITCHING);
-
-  // Dismissing the tutorial should prevent it from being shown forever.
-  [controller() dismissTutorial:nil];
-  NSArray* subviews = [[[controller() window] contentView] subviews];
-  ASSERT_EQ(2U, [subviews count]);
-  subviews = [[subviews objectAtIndex:0] subviews];
-
-  // There should be 3 views since there's no tutorial. There are 2 extra
-  // buttons in the MD user menu.
-  NSUInteger viewsCount = 5;
-  ASSERT_EQ(viewsCount, [subviews count]);
-
-  // Closing and reopening the menu shouldn't show the tutorial.
-  [controller() close];
-  StartProfileChooserControllerWithTutorialMode(
-      profiles::TUTORIAL_MODE_RIGHT_CLICK_SWITCHING);
-  subviews = [[[controller() window] contentView] subviews];
-  ASSERT_EQ(2U, [subviews count]);
-  subviews = [[subviews objectAtIndex:0] subviews];
-
-  ASSERT_EQ(viewsCount, [subviews count]);
-}
-
 TEST_F(ProfileChooserControllerTest,
     LocalProfileActiveCardLinksWithNewMenu) {
   StartProfileChooserController();

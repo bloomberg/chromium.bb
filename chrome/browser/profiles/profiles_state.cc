@@ -65,9 +65,6 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kBrowserGuestModeEnabled, true);
   registry->RegisterBooleanPref(prefs::kBrowserAddPersonEnabled, true);
   registry->RegisterBooleanPref(prefs::kForceBrowserSignin, false);
-
-  registry->RegisterBooleanPref(
-      prefs::kProfileAvatarRightClickTutorialDismissed, false);
 }
 
 base::string16 GetAvatarNameForProfile(const base::FilePath& profile_path) {

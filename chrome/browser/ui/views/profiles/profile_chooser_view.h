@@ -170,9 +170,6 @@ class ProfileChooserView : public content::WebContentsDelegate,
   // Creates a tutorial card to show the errors in the last Chrome signin.
   views::View* CreateSigninErrorView();
 
-  // Creates a tutorial card telling the user about right-click user switching.
-  views::View* CreateRightClickTutorialView();
-
   views::View* CreateTutorialViewIfNeeded(const AvatarMenu::Item& item);
 
   // Creates a tutorial card. If |stack_button| is true, places the button above

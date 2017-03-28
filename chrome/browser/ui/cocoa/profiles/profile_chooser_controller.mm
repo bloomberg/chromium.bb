@@ -981,10 +981,6 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 // the previous active view. |avatar_item| refers to the current profile.
 - (NSView*)buildWelcomeUpgradeTutorialView:(const AvatarMenu::Item&)item;
 
-// Builds a tutorial card to inform the user about right-click user switching if
-// needed.
-- (NSView*)buildRightClickTutorialView;
-
 // Builds a tutorial card to have the user confirm the last Chrome signin,
 // Chrome sync will be delayed until the user either dismisses the tutorial, or
 // configures sync through the "Settings" link.
@@ -1268,12 +1264,6 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     browser_->profile()->GetPrefs()->SetInteger(
         prefs::kProfileAvatarTutorialShown,
         signin_ui_util::kUpgradeWelcomeTutorialShowMax + 1);
-  }
-
-  if(tutorialMode_ == profiles::TUTORIAL_MODE_RIGHT_CLICK_SWITCHING) {
-    PrefService* localState = g_browser_process->local_state();
-    localState->SetBoolean(
-        prefs::kProfileAvatarRightClickTutorialDismissed, true);
   }
 
   tutorialMode_ = profiles::TUTORIAL_MODE_NONE;
@@ -1633,26 +1623,6 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
                      hasCloseButton:YES
                          linkAction:@selector(showSwitchUserView:)
                        buttonAction:@selector(seeWhatsNew:)];
-}
-
-- (NSView*)buildRightClickTutorialView {
-  NSString* titleMessage = l10n_util::GetNSString(
-      IDS_PROFILES_RIGHT_CLICK_TUTORIAL_TITLE);
-  NSString* contentMessage = l10n_util::GetNSString(
-      IDS_PROFILES_RIGHT_CLICK_TUTORIAL_CONTENT_TEXT);
-  NSString* buttonMessage = l10n_util::GetNSString(
-      IDS_PROFILES_TUTORIAL_OK_BUTTON);
-
-  return
-      [self tutorialViewWithMode:profiles::TUTORIAL_MODE_RIGHT_CLICK_SWITCHING
-                             titleMessage:titleMessage
-                           contentMessage:contentMessage
-                              linkMessage:nil
-                            buttonMessage:buttonMessage
-                              stackButton:NO
-                           hasCloseButton:NO
-                               linkAction:nil
-                             buttonAction:@selector(dismissTutorial:)];
 }
 
 - (NSView*)tutorialViewWithMode:(profiles::TutorialMode)mode

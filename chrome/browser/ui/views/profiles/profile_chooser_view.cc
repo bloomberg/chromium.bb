@@ -1062,12 +1062,6 @@ void ProfileChooserView::DismissTutorial() {
         signin_ui_util::kUpgradeWelcomeTutorialShowMax + 1);
   }
 
-  if (tutorial_mode_ == profiles::TUTORIAL_MODE_RIGHT_CLICK_SWITCHING) {
-    PrefService* local_state = g_browser_process->local_state();
-    local_state->SetBoolean(
-        prefs::kProfileAvatarRightClickTutorialDismissed, true);
-  }
-
   tutorial_mode_ = profiles::TUTORIAL_MODE_NONE;
   ShowViewFromMode(profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER);
 }
@@ -1092,9 +1086,6 @@ views::View* ProfileChooserView::CreateTutorialViewIfNeeded(
 
     return CreateWelcomeUpgradeTutorialView(item);
   }
-
-  if (profiles::ShouldShowRightClickTutorial(browser_->profile()))
-    return CreateRightClickTutorialView();
 
   return nullptr;
 }
@@ -1838,19 +1829,6 @@ views::View* ProfileChooserView::CreateSigninErrorView() {
       &tutorial_learn_more_link_,
       NULL,
       &tutorial_close_button_);
-}
-
-views::View* ProfileChooserView::CreateRightClickTutorialView() {
-    return CreateTutorialView(
-      profiles::TUTORIAL_MODE_RIGHT_CLICK_SWITCHING,
-      l10n_util::GetStringUTF16(IDS_PROFILES_RIGHT_CLICK_TUTORIAL_TITLE),
-      l10n_util::GetStringUTF16(IDS_PROFILES_RIGHT_CLICK_TUTORIAL_CONTENT_TEXT),
-      base::string16(),
-      l10n_util::GetStringUTF16(IDS_PROFILES_TUTORIAL_OK_BUTTON),
-      false,
-      nullptr,
-      &tutorial_sync_settings_ok_button_,
-      nullptr);
 }
 
 views::View* ProfileChooserView::CreateSwitchUserView() {

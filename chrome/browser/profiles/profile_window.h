@@ -148,10 +148,6 @@ void BubbleViewModeFromAvatarBubbleMode(
 bool ShouldShowWelcomeUpgradeTutorial(
     Profile* profile, TutorialMode tutorial_mode);
 
-// Returns true if the tutorial informing the user about right-click user
-// switching should be shown, false otherwise.
-bool ShouldShowRightClickTutorial(Profile* profile);
-
 }  // namespace profiles
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_WINDOW_H_

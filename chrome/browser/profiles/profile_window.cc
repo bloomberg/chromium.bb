@@ -520,14 +520,4 @@ bool ShouldShowWelcomeUpgradeTutorial(
          show_count != signin_ui_util::kUpgradeWelcomeTutorialShowMax;
 }
 
-bool ShouldShowRightClickTutorial(Profile* profile) {
-  PrefService* local_state = g_browser_process->local_state();
-  const bool dismissed = local_state->GetBoolean(
-      prefs::kProfileAvatarRightClickTutorialDismissed);
-
-  // Don't show the tutorial if it's already been dismissed or if right-clicking
-  // wouldn't show any targets.
-  return !dismissed && HasProfileSwitchTargets(profile);
-}
-
 }  // namespace profiles
