@@ -4,6 +4,9 @@
 
 #include "base/trace_event/memory_dump_manager.h"
 
+#include <inttypes.h>
+#include <stdio.h>
+
 #include <algorithm>
 #include <utility>
 
@@ -82,9 +85,12 @@ const char* const kStrictThreadCheckBlacklist[] = {
 void OnGlobalDumpDone(MemoryDumpCallback wrapped_callback,
                       uint64_t dump_guid,
                       bool success) {
-  TRACE_EVENT_NESTABLE_ASYNC_END1(
-      MemoryDumpManager::kTraceCategory, "GlobalMemoryDump",
-      TRACE_ID_MANGLE(dump_guid), "success", success);
+  char guid_str[20];
+  sprintf(guid_str, "0x%" PRIx64, dump_guid);
+  TRACE_EVENT_NESTABLE_ASYNC_END2(MemoryDumpManager::kTraceCategory,
+                                  "GlobalMemoryDump", TRACE_ID_LOCAL(dump_guid),
+                                  "dump_guid", TRACE_STR_COPY(guid_str),
+                                  "success", success);
 
   if (!wrapped_callback.is_null()) {
     wrapped_callback.Run(dump_guid, success);
@@ -463,8 +469,10 @@ void MemoryDumpManager::RequestGlobalDump(
   // Creates an async event to keep track of the global dump evolution.
   // The |wrapped_callback| will generate the ASYNC_END event and then invoke
   // the real |callback| provided by the caller.
-  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(kTraceCategory, "GlobalMemoryDump",
-                                    TRACE_ID_MANGLE(guid));
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN2(
+      kTraceCategory, "GlobalMemoryDump", TRACE_ID_LOCAL(guid), "dump_type",
+      MemoryDumpTypeToString(dump_type), "level_of_detail",
+      MemoryDumpLevelOfDetailToString(level_of_detail));
   MemoryDumpCallback wrapped_callback = Bind(&OnGlobalDumpDone, callback);
 
   // The delegate will coordinate the IPC broadcast and at some point invoke
@@ -492,8 +500,11 @@ bool MemoryDumpManager::IsDumpProviderRegisteredForTesting(
 
 void MemoryDumpManager::CreateProcessDump(const MemoryDumpRequestArgs& args,
                                           const MemoryDumpCallback& callback) {
-  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(kTraceCategory, "ProcessMemoryDump",
-                                    TRACE_ID_MANGLE(args.dump_guid));
+  char guid_str[20];
+  sprintf(guid_str, "0x%" PRIx64, args.dump_guid);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(kTraceCategory, "ProcessMemoryDump",
+                                    TRACE_ID_LOCAL(args.dump_guid), "dump_guid",
+                                    TRACE_STR_COPY(guid_str));
 
   // If argument filter is enabled then only background mode dumps should be
   // allowed. In case the trace config passed for background tracing session
@@ -524,10 +535,6 @@ void MemoryDumpManager::CreateProcessDump(const MemoryDumpRequestArgs& args,
 
     MemoryDumpScheduler::GetInstance()->NotifyDumpTriggered();
   }
-
-  TRACE_EVENT_WITH_FLOW0(kTraceCategory, "MemoryDumpManager::CreateProcessDump",
-                         TRACE_ID_MANGLE(args.dump_guid),
-                         TRACE_EVENT_FLAG_FLOW_OUT);
 
   // Start the process dump. This involves task runner hops as specified by the
   // MemoryDumpProvider(s) in RegisterDumpProvider()).
@@ -672,11 +679,8 @@ void MemoryDumpManager::InvokeOnMemoryDump(
 
   if (should_dump) {
     // Invoke the dump provider.
-    TRACE_EVENT_WITH_FLOW1(kTraceCategory,
-                           "MemoryDumpManager::InvokeOnMemoryDump",
-                           TRACE_ID_MANGLE(pmd_async_state->req_args.dump_guid),
-                           TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
-                           "dump_provider.name", mdpinfo->name);
+    TRACE_EVENT1(kTraceCategory, "MemoryDumpManager::InvokeOnMemoryDump",
+                 "dump_provider.name", mdpinfo->name);
 
     // A stack allocated string with dump provider name is useful to debug
     // crashes while invoking dump after a |dump_provider| is not unregistered
@@ -754,9 +758,7 @@ void MemoryDumpManager::FinalizeDumpAndAddToTrace(
     return;
   }
 
-  TRACE_EVENT_WITH_FLOW0(kTraceCategory,
-                         "MemoryDumpManager::FinalizeDumpAndAddToTrace",
-                         TRACE_ID_MANGLE(dump_guid), TRACE_EVENT_FLAG_FLOW_IN);
+  TRACE_EVENT0(kTraceCategory, "MemoryDumpManager::FinalizeDumpAndAddToTrace");
 
   // The results struct to fill.
   // TODO(hjd): Transitional until we send the full PMD. See crbug.com/704203
@@ -822,7 +824,7 @@ void MemoryDumpManager::FinalizeDumpAndAddToTrace(
   }
 
   TRACE_EVENT_NESTABLE_ASYNC_END0(kTraceCategory, "ProcessMemoryDump",
-                                  TRACE_ID_MANGLE(dump_guid));
+                                  TRACE_ID_LOCAL(dump_guid));
 }
 
 void MemoryDumpManager::OnTraceLogEnabled() {
