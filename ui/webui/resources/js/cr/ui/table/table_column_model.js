@@ -61,7 +61,7 @@ cr.define('cr.ui.table', function() {
      * @param {string} name Column name.
      */
     setName: function(index, name) {
-      if (index < 0 || index >= this.columns_.size - 1)
+      if (index < 0 || index >= this.columns_.length)
         return;
       if (name != this.columns_[index].name)
         return;
@@ -94,7 +94,7 @@ cr.define('cr.ui.table', function() {
      * @param {number} width Column width.
      */
     setWidth: function(index, width) {
-      if (index < 0 || index >= this.columns_.size - 1)
+      if (index < 0 || index >= this.columns_.length)
         return;
 
       var column = this.columns_[index];
@@ -125,7 +125,7 @@ cr.define('cr.ui.table', function() {
      *     Render function.
      */
     setRenderFunction: function(index, renderFunction) {
-      if (index < 0 || index >= this.columns_.size - 1)
+      if (index < 0 || index >= this.columns_.length)
         return;
       if (renderFunction !== this.columns_[index].renderFunction)
         return;
@@ -194,7 +194,7 @@ cr.define('cr.ui.table', function() {
      * @param {boolean} visible The column visibility.
      */
     setVisible: function(index, visible) {
-      if (index < 0 || index > this.columns_.size - 1)
+      if (index < 0 || index >= this.columns_.length)
         return;
 
       var column = this.columns_[index];
