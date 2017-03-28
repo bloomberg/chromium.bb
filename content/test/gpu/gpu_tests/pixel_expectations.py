@@ -48,7 +48,7 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_SolidColorBackground', ['mac', 'android'], bug=624256)
 
     self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker',
-              ['mac', ('nvidia', 0xfe9)], bug=652931)
+              ['mac', ('nvidia', 0xfe9)], bug=706016)
     self.Fail('Pixel_CSSFilterEffects',
         ['mac', ('nvidia', 0xfe9)], bug=690277)
 
