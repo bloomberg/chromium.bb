@@ -1237,7 +1237,7 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 	struct weston_view *view;
 	bool texture_used;
 	pixman_box32_t *rectangles;
-	void *data;
+	uint8_t *data;
 	int i, j, n;
 
 	pixman_region32_union(&gs->texture_damage,
