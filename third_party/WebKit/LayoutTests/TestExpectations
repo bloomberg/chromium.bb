@@ -2379,6 +2379,16 @@ crbug.com/617371 external/csswg-test/selectors-4/focus-within-shadow-004.html [ 
 crbug.com/617371 external/csswg-test/selectors-4/focus-within-shadow-005.html [ Failure ]
 crbug.com/576815 external/csswg-test/selectors-4/selectors-dir-selector-ltr-001.html [ Failure ]
 crbug.com/576815 external/csswg-test/selectors-4/selectors-dir-selector-rtl-001.html [ Failure ]
+crbug.com/576815 external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/selectors4/dir-style-01a.html [ Failure ]
+crbug.com/576815 external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/selectors4/dir-style-01b.html [ Failure ]
+crbug.com/576815 external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/selectors4/dir-style-02a.html [ Failure ]
+crbug.com/576815 external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/selectors4/dir-style-02b.html [ Failure ]
+crbug.com/576815 external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/selectors4/dir-style-03a.html [ Failure ]
+crbug.com/576815 external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/selectors4/dir-style-03b.html [ Failure ]
+crbug.com/576815 external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/selectors4/dir-style-04.html [ Failure ]
+crbug.com/617371 external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/selectors4/focus-within-1.html [ Failure ]
+crbug.com/617371 external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/selectors4/focus-within-2.html [ Failure ]
+crbug.com/617371 external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/selectors4/focus-within-3.html [ Failure ]
 
 # TODO(chrishall): this is a temporary mediation step as part of the P0 issue crbug.com/657646
 # this is not meant to be here for more than a few days (from 2016-11-03 SYD)

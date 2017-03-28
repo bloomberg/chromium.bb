@@ -183,7 +183,8 @@ external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/masking [ Sk
 external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/multicol3 [ Skip ]
 external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/reftest.list [ Skip ]
 external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/ruby [ Skip ]
-external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/selectors4 [ Skip ]
+## Owners: rego@igalia.com
+# external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/selectors4 [ Pass ]
 external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/shapes1 [ Skip ]
 external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/sync-tests-filter [ Skip ]
 external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/sync-tests.sh [ Skip ]
