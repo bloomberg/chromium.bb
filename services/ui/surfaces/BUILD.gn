@@ -10,6 +10,9 @@ source_set("surfaces") {
     "display_compositor.h",
     "display_output_surface.cc",
     "display_output_surface.h",
+    "display_provider.h",
+    "mus_display_provider.cc",
+    "mus_display_provider.h",
   ]
 
   deps = [

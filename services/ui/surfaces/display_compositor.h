@@ -9,38 +9,20 @@
 
 #include <memory>
 #include <unordered_map>
-#include <vector>
 
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "cc/ipc/display_compositor.mojom.h"
 #include "cc/surfaces/frame_sink_id.h"
-#include "cc/surfaces/local_surface_id.h"
-#include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/surfaces/surface_observer.h"
 #include "components/display_compositor/gpu_compositor_frame_sink_delegate.h"
-#include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/ipc/common/surface_handle.h"
-#include "gpu/ipc/in_process_command_buffer.h"
-#include "ipc/ipc_channel_handle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
-namespace gpu {
-class GpuMemoryBufferManager;
-class ImageFactory;
-}
-
-namespace cc {
-class Display;
-class SyntheticBeginFrameSource;
-}
-
-namespace display_compositor {
-class GpuCompositorFrameSink;
-}
-
 namespace ui {
+
+class DisplayProvider;
 
 // The DisplayCompositor object is an object global to the Window Server app
 // that holds the SurfaceServer and allocates new Surfaces namespaces.
@@ -52,12 +34,9 @@ class DisplayCompositor
       public display_compositor::GpuCompositorFrameSinkDelegate,
       public cc::mojom::DisplayCompositor {
  public:
-  DisplayCompositor(
-      scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_service,
-      std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager,
-      gpu::ImageFactory* image_factory,
-      cc::mojom::DisplayCompositorRequest request,
-      cc::mojom::DisplayCompositorClientPtr client);
+  DisplayCompositor(DisplayProvider* display_provider,
+                    cc::mojom::DisplayCompositorRequest request,
+                    cc::mojom::DisplayCompositorClientPtr client);
   ~DisplayCompositor() override;
 
   cc::SurfaceManager* manager() { return &manager_; }
@@ -85,11 +64,6 @@ class DisplayCompositor
   void DropTemporaryReference(const cc::SurfaceId& surface_id) override;
 
  private:
-  std::unique_ptr<cc::Display> CreateDisplay(
-      const cc::FrameSinkId& frame_sink_id,
-      gpu::SurfaceHandle surface_handle,
-      cc::SyntheticBeginFrameSource* begin_frame_source);
-
   // It is necessary to pass |frame_sink_id| by value because the id
   // is owned by the GpuCompositorFrameSink in the map. When the sink is
   // removed from the map, |frame_sink_id| would also be destroyed if it were a
@@ -113,16 +87,13 @@ class DisplayCompositor
   // access to a valid pointer for the entirety of their liftimes.
   cc::SurfaceManager manager_;
 
-  scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_service_;
-  std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager_;
-  gpu::ImageFactory* image_factory_;
+  // Provides a cc::Display for CreateRootCompositorFrameSink().
+  DisplayProvider* const display_provider_;
 
   std::unordered_map<cc::FrameSinkId,
                      std::unique_ptr<cc::mojom::MojoCompositorFrameSink>,
                      cc::FrameSinkIdHash>
       compositor_frame_sinks_;
-
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   base::ThreadChecker thread_checker_;
 

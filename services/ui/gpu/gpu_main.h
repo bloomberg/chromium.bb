@@ -12,6 +12,7 @@
 #include "services/ui/gpu/interfaces/gpu_main.mojom.h"
 #include "services/ui/gpu/interfaces/gpu_service.mojom.h"
 #include "services/ui/surfaces/display_compositor.h"
+#include "services/ui/surfaces/display_provider.h"
 
 namespace gpu {
 class GpuMemoryBufferFactory;
@@ -84,6 +85,7 @@ class GpuMain : public gpu::GpuSandboxHelper, public mojom::GpuMain {
       pending_display_compositor_client_info_;
 
   std::unique_ptr<DisplayCompositor> display_compositor_;
+  std::unique_ptr<DisplayProvider> display_provider_;
 
   std::unique_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
 

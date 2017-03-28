@@ -15,6 +15,7 @@
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
 #include "services/ui/common/server_gpu_memory_buffer_manager.h"
 #include "services/ui/gpu/gpu_service.h"
+#include "services/ui/surfaces/mus_display_provider.h"
 
 #if defined(USE_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
@@ -213,14 +214,19 @@ void GpuMain::CreateDisplayCompositorOnCompositorThread(
 
   gpu_internal_.Bind(std::move(gpu_service_info));
 
+  display_provider_ = base::MakeUnique<MusDisplayProvider>(
+      gpu_command_service_,
+      base::MakeUnique<ServerGpuMemoryBufferManager>(gpu_internal_.get(),
+                                                     1 /* client_id */),
+      image_factory);
+
   display_compositor_ = base::MakeUnique<DisplayCompositor>(
-      gpu_command_service_, base::MakeUnique<ServerGpuMemoryBufferManager>(
-                                gpu_internal_.get(), 1 /* client_id */),
-      image_factory, std::move(request), std::move(client));
+      display_provider_.get(), std::move(request), std::move(client));
 }
 
 void GpuMain::TearDownOnCompositorThread() {
   display_compositor_.reset();
+  display_provider_.reset();
   gpu_internal_.reset();
 }
 

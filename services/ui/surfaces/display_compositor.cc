@@ -8,38 +8,22 @@
 
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "cc/base/switches.h"
-#include "cc/output/in_process_context_provider.h"
-#include "cc/output/texture_mailbox_deleter.h"
+#include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/display.h"
-#include "cc/surfaces/display_scheduler.h"
-#include "cc/surfaces/surface.h"
+#include "cc/surfaces/surface_dependency_tracker.h"
 #include "components/display_compositor/gpu_compositor_frame_sink.h"
 #include "components/display_compositor/gpu_root_compositor_frame_sink.h"
-#include "gpu/command_buffer/client/shared_memory_limits.h"
-#include "gpu/ipc/gpu_in_process_thread_service.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/ui/surfaces/display_output_surface.h"
-
-#if defined(USE_OZONE)
-#include "gpu/command_buffer/client/gles2_interface.h"
-#include "services/ui/surfaces/display_output_surface_ozone.h"
-#endif
+#include "services/ui/surfaces/display_provider.h"
 
 namespace ui {
 
 DisplayCompositor::DisplayCompositor(
-    scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_service,
-    std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager,
-    gpu::ImageFactory* image_factory,
+    DisplayProvider* display_provider,
     cc::mojom::DisplayCompositorRequest request,
     cc::mojom::DisplayCompositorClientPtr client)
     : manager_(cc::SurfaceManager::LifetimeType::REFERENCES),
-      gpu_service_(std::move(gpu_service)),
-      gpu_memory_buffer_manager_(std::move(gpu_memory_buffer_manager)),
-      image_factory_(image_factory),
-      task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      display_provider_(display_provider),
       client_(std::move(client)),
       binding_(this, std::move(request)) {
   manager_.AddObserver(this);
@@ -60,12 +44,11 @@ void DisplayCompositor::CreateRootCompositorFrameSink(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(surface_handle, gpu::kNullSurfaceHandle);
   DCHECK_EQ(0u, compositor_frame_sinks_.count(frame_sink_id));
+  DCHECK(display_provider_);
 
-  std::unique_ptr<cc::SyntheticBeginFrameSource> begin_frame_source(
-      new cc::DelayBasedBeginFrameSource(
-          base::MakeUnique<cc::DelayBasedTimeSource>(task_runner_.get())));
-  std::unique_ptr<cc::Display> display =
-      CreateDisplay(frame_sink_id, surface_handle, begin_frame_source.get());
+  std::unique_ptr<cc::BeginFrameSource> begin_frame_source;
+  std::unique_ptr<cc::Display> display = display_provider_->CreateDisplay(
+      frame_sink_id, surface_handle, &begin_frame_source);
 
   // Lazily inject a SurfaceDependencyTracker into SurfaceManager if surface
   // synchronization is enabled.
@@ -116,53 +99,6 @@ void DisplayCompositor::UnregisterFrameSinkHierarchy(
 void DisplayCompositor::DropTemporaryReference(
     const cc::SurfaceId& surface_id) {
   manager_.DropTemporaryReference(surface_id);
-}
-
-std::unique_ptr<cc::Display> DisplayCompositor::CreateDisplay(
-    const cc::FrameSinkId& frame_sink_id,
-    gpu::SurfaceHandle surface_handle,
-    cc::SyntheticBeginFrameSource* begin_frame_source) {
-  scoped_refptr<cc::InProcessContextProvider> context_provider =
-      new cc::InProcessContextProvider(
-          gpu_service_, surface_handle, gpu_memory_buffer_manager_.get(),
-          image_factory_, gpu::SharedMemoryLimits(),
-          nullptr /* shared_context */);
-
-  // TODO(rjkroege): If there is something better to do than CHECK, add it.
-  CHECK(context_provider->BindToCurrentThread());
-
-  std::unique_ptr<cc::OutputSurface> display_output_surface;
-  if (context_provider->ContextCapabilities().surfaceless) {
-#if defined(USE_OZONE)
-    display_output_surface = base::MakeUnique<DisplayOutputSurfaceOzone>(
-        std::move(context_provider), surface_handle,
-        begin_frame_source, gpu_memory_buffer_manager_.get(),
-        GL_TEXTURE_2D, GL_RGB);
-#else
-    NOTREACHED();
-#endif
-  } else {
-    display_output_surface = base::MakeUnique<DisplayOutputSurface>(
-        std::move(context_provider), begin_frame_source);
-  }
-
-  int max_frames_pending =
-      display_output_surface->capabilities().max_frames_pending;
-  DCHECK_GT(max_frames_pending, 0);
-
-  std::unique_ptr<cc::DisplayScheduler> scheduler(
-      new cc::DisplayScheduler(task_runner_.get(), max_frames_pending));
-
-  cc::RendererSettings settings;
-  settings.show_overdraw_feedback =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          cc::switches::kShowOverdrawFeedback);
-
-  return base::MakeUnique<cc::Display>(
-      nullptr /* bitmap_manager */, gpu_memory_buffer_manager_.get(), settings,
-      frame_sink_id, begin_frame_source, std::move(display_output_surface),
-      std::move(scheduler),
-      base::MakeUnique<cc::TextureMailboxDeleter>(task_runner_.get()));
 }
 
 void DisplayCompositor::DestroyCompositorFrameSink(cc::FrameSinkId sink_id) {
