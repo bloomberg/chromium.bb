@@ -173,7 +173,7 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
   int nplanes = 3;
   DECLARE_ALIGNED(32, uint16_t, inbuf[OD_DERING_INBUF_SIZE]);
   uint16_t *in;
-  DECLARE_ALIGNED(32, uint16_t, tmp_dst[MAX_MIB_SIZE * MAX_MIB_SIZE * 8 * 8]);
+  DECLARE_ALIGNED(32, uint16_t, tmp_dst[MAX_SB_SQUARE]);
   int chroma_dering =
       xd->plane[1].subsampling_x == xd->plane[1].subsampling_y &&
       xd->plane[2].subsampling_x == xd->plane[2].subsampling_y;
@@ -200,14 +200,21 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
         break;
     }
     mse[pli] = aom_malloc(sizeof(**mse) * nvsb * nhsb);
-    src[pli] = aom_memalign(32, sizeof(*src) * cm->mi_rows * cm->mi_cols * 64);
-    ref_coeff[pli] =
-        aom_memalign(32, sizeof(*ref_coeff) * cm->mi_rows * cm->mi_cols * 64);
+    src[pli] = aom_memalign(
+        32, sizeof(*src) * cm->mi_rows * cm->mi_cols * MI_SIZE * MI_SIZE);
+    ref_coeff[pli] = aom_memalign(
+        32, sizeof(*ref_coeff) * cm->mi_rows * cm->mi_cols * MI_SIZE * MI_SIZE);
     dec[pli] = xd->plane[pli].subsampling_x;
     bsize[pli] = OD_DERING_SIZE_LOG2 - dec[pli];
-    stride[pli] = cm->mi_cols << 3;
-    for (r = 0; r < cm->mi_rows << bsize[pli]; ++r) {
-      for (c = 0; c < cm->mi_cols << bsize[pli]; ++c) {
+    stride[pli] = cm->mi_cols << MI_SIZE_LOG2;
+
+    const int frame_height =
+        (cm->mi_rows * MI_SIZE) >> xd->plane[pli].subsampling_y;
+    const int frame_width =
+        (cm->mi_cols * MI_SIZE) >> xd->plane[pli].subsampling_x;
+
+    for (r = 0; r < frame_height; ++r) {
+      for (c = 0; c < frame_width; ++c) {
 #if CONFIG_AOM_HIGHBITDEPTH
         if (cm->use_highbitdepth) {
           src[pli][r * stride[pli] + c] = CONVERT_TO_SHORTPTR(
@@ -227,8 +234,8 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
   }
   in = inbuf + OD_FILT_VBORDER * OD_FILT_BSTRIDE + OD_FILT_HBORDER;
   sb_count = 0;
-  for (sbr = 0; sbr < nvsb; sbr++) {
-    for (sbc = 0; sbc < nhsb; sbc++) {
+  for (sbr = 0; sbr < nvsb; ++sbr) {
+    for (sbc = 0; sbc < nhsb; ++sbc) {
       int nvb, nhb;
       int gi;
       int dirinit = 0;
