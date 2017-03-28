@@ -11,6 +11,7 @@
 #include "cc/animation/animation_host.h"
 #include "cc/input/scrollbar_animation_controller.h"
 #include "cc/layers/append_quads_data.h"
+#include "cc/layers/painted_overlay_scrollbar_layer.h"
 #include "cc/layers/painted_scrollbar_layer.h"
 #include "cc/layers/painted_scrollbar_layer_impl.h"
 #include "cc/layers/scrollbar_layer_interface.h"
@@ -174,6 +175,75 @@ class ScrollbarLayerTest : public testing::Test {
   std::unique_ptr<FakeLayerTreeHost> layer_tree_host_;
   int scrollbar_layer_id_;
 };
+
+class FakePaintedOverlayScrollbar : public FakeScrollbar {
+ public:
+  FakePaintedOverlayScrollbar() : FakeScrollbar(true, true, true) {}
+  bool UsesNinePatchThumbResource() const override { return true; }
+  gfx::Size NinePatchThumbCanvasSize() const override {
+    return gfx::Size(3, 3);
+  }
+  gfx::Rect NinePatchThumbAperture() const override {
+    return gfx::Rect(1, 1, 1, 1);
+  }
+};
+
+// Test that a painted overlay scrollbar will repaint and recrate its resource
+// after its been disposed, even if Blink doesn't think it requires a repaint.
+// crbug.com/704656.
+TEST_F(ScrollbarLayerTest, RepaintOverlayWhenResourceDisposed) {
+  scoped_refptr<Layer> layer_tree_root = Layer::Create();
+  scoped_refptr<Layer> content_layer = Layer::Create();
+  std::unique_ptr<FakePaintedOverlayScrollbar> scrollbar(
+      new FakePaintedOverlayScrollbar);
+  FakePaintedOverlayScrollbar* fake_scrollbar = scrollbar.get();
+  scoped_refptr<PaintedOverlayScrollbarLayer> scrollbar_layer =
+      PaintedOverlayScrollbarLayer::Create(std::move(scrollbar),
+                                           layer_tree_root->id());
+
+  // Setup.
+  {
+    layer_tree_root->AddChild(content_layer);
+    layer_tree_root->AddChild(scrollbar_layer);
+    layer_tree_host_->SetRootLayer(layer_tree_root);
+    scrollbar_layer->SetIsDrawable(true);
+    scrollbar_layer->SetBounds(gfx::Size(100, 100));
+    layer_tree_root->SetBounds(gfx::Size(100, 200));
+    content_layer->SetBounds(gfx::Size(100, 200));
+    scrollbar_layer->set_visible_layer_rect(gfx::Rect(0, 0, 100, 200));
+    scrollbar_layer->SavePaintProperties();
+  }
+
+  // First call to update should create a resource. The scrollbar itself thinks
+  // it needs a repaint.
+  {
+    fake_scrollbar->set_needs_paint_thumb(true);
+    EXPECT_EQ(0u, fake_ui_resource_manager_->UIResourceCount());
+    EXPECT_TRUE(scrollbar_layer->Update());
+    EXPECT_EQ(1u, fake_ui_resource_manager_->UIResourceCount());
+  }
+
+  // Now the scrollbar has been painted and nothing else has changed, calling
+  // Update() shouldn't have an effect.
+  {
+    fake_scrollbar->set_needs_paint_thumb(false);
+    EXPECT_FALSE(scrollbar_layer->Update());
+    EXPECT_EQ(1u, fake_ui_resource_manager_->UIResourceCount());
+  }
+
+  // Detach and reattach the LayerTreeHost (this can happen during tree
+  // reconstruction). This should cause the UIResource for the scrollbar to be
+  // disposed but the scrollbar itself hasn't changed so it reports that no
+  // repaint is needed. An Update should cause us to recreate the resource
+  // though.
+  {
+    scrollbar_layer->SetLayerTreeHost(nullptr);
+    scrollbar_layer->SetLayerTreeHost(layer_tree_host_.get());
+    EXPECT_EQ(0u, fake_ui_resource_manager_->UIResourceCount());
+    EXPECT_TRUE(scrollbar_layer->Update());
+    EXPECT_EQ(1u, fake_ui_resource_manager_->UIResourceCount());
+  }
+}
 
 TEST_F(ScrollbarLayerTest, ShouldScrollNonOverlayOnMainThread) {
   // Create and attach a non-overlay scrollbar.

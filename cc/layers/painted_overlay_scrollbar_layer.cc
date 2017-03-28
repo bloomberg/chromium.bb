@@ -138,7 +138,7 @@ bool PaintedOverlayScrollbarLayer::Update() {
 }
 
 bool PaintedOverlayScrollbarLayer::PaintThumbIfNeeded() {
-  if (!scrollbar_->NeedsPaintPart(THUMB))
+  if (!scrollbar_->NeedsPaintPart(THUMB) && thumb_resource_)
     return false;
 
   gfx::Rect paint_rect = OriginThumbRectForPainting();
