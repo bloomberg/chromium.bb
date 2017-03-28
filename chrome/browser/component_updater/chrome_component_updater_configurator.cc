@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/strings/sys_string_conversions.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/version.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -22,7 +22,6 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/update_client/update_query_params.h"
-#include "content/public/browser/browser_thread.h"
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
@@ -190,10 +189,12 @@ bool ChromeConfigurator::EnabledCupSigning() const {
 // not accessing any global browser state while the code is running.
 scoped_refptr<base::SequencedTaskRunner>
 ChromeConfigurator::GetSequencedTaskRunner() const {
-  return content::BrowserThread::GetBlockingPool()
-      ->GetSequencedTaskRunnerWithShutdownBehavior(
-          base::SequencedWorkerPool::GetSequenceToken(),
-          base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
+  return base::CreateSequencedTaskRunnerWithTraits(
+      base::TaskTraits()
+          .MayBlock()
+          .WithPriority(base::TaskPriority::BACKGROUND)
+          .WithShutdownBehavior(
+              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN));
 }
 
 PrefService* ChromeConfigurator::GetPrefService() const {
