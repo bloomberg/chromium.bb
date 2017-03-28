@@ -13,36 +13,45 @@
 namespace blink {
 
 // These values map to the features which can be controlled by Feature Policy.
-// TODO(iclelland): Link to the spec where the behaviour for each of these is
-// defined.
+//
+// Features are defined in
+// https://wicg.github.io/feature-policy/#defined-features. Many of these are
+// still under development in blink behind the featurePolicyExperimentalFeatures
+// flag, see getWebFeaturePolicyFeature().
 enum class WebFeaturePolicyFeature {
   NotFound = 0,
+  // Controls access to video input devices.
+  Camera,
+  // Controls whether navigator.requestMediaKeySystemAccess is allowed.
+  Eme,
+  // Controls whether Element.requestFullscreen is allowed.
+  Fullscreen,
+  // Controls access to Geolocation interface.
+  Geolocation,
+  // Controls access to audio input devices.
+  Microphone,
+  // Controls access to requestMIDIAccess method.
+  MidiFeature,
+  // Controls access to PaymentRequest interface.
+  Payment,
+  // Controls access to audio output devices.
+  Speaker,
+  // Controls access to navigator.vibrate method.
+  Vibrate,
   // Controls access to document.cookie attribute.
   DocumentCookie,
   // Contols access to document.domain attribute.
   DocumentDomain,
   // Controls access to document.write and document.writeln methods.
   DocumentWrite,
-  // Controls whether Element.requestFullscreen is allowed.
-  Fullscreen,
-  // Controls access to Geolocation interface.
-  Geolocation,
-  // Controls access to requestMIDIAccess method.
-  MidiFeature,
   // Controls access to Notification interface.
   Notifications,
-  // Controls access to PaymentRequest interface.
-  Payment,
   // Controls access to PushManager interface.
   Push,
   // Controls whether synchronous script elements will run.
   SyncScript,
   // Controls use of synchronous XMLHTTPRequest API.
   SyncXHR,
-  // Controls access to NavigatorUserMedia interface.
-  Usermedia,
-  // Controls access to navigator.vibrate method.
-  Vibrate,
   // Controls access to RTCPeerConnection interface.
   WebRTC,
   LAST_FEATURE = WebRTC

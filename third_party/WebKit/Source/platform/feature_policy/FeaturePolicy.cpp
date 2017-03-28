@@ -19,9 +19,15 @@ WebFeaturePolicyFeature getWebFeaturePolicyFeature(const String& feature) {
     return WebFeaturePolicyFeature::Payment;
   if (feature == "vibrate")
     return WebFeaturePolicyFeature::Vibrate;
-  if (feature == "usermedia")
-    return WebFeaturePolicyFeature::Usermedia;
   if (RuntimeEnabledFeatures::featurePolicyExperimentalFeaturesEnabled()) {
+    if (feature == "camera")
+      return WebFeaturePolicyFeature::Camera;
+    if (feature == "eme")
+      return WebFeaturePolicyFeature::Eme;
+    if (feature == "microphone")
+      return WebFeaturePolicyFeature::Microphone;
+    if (feature == "speaker")
+      return WebFeaturePolicyFeature::Speaker;
     if (feature == "cookie")
       return WebFeaturePolicyFeature::DocumentCookie;
     if (feature == "domain")
