@@ -5,13 +5,12 @@
 #ifndef InlineStylePropertyMap_h
 #define InlineStylePropertyMap_h
 
-#include "core/css/cssom/MutableStylePropertyMap.h"
+#include "core/css/cssom/StylePropertyMap.h"
 #include "core/dom/Element.h"
 
 namespace blink {
 
-class CORE_EXPORT InlineStylePropertyMap final
-    : public MutableStylePropertyMap {
+class CORE_EXPORT InlineStylePropertyMap final : public StylePropertyMap {
   WTF_MAKE_NONCOPYABLE(InlineStylePropertyMap);
 
  public:
@@ -30,7 +29,7 @@ class CORE_EXPORT InlineStylePropertyMap final
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
     visitor->trace(m_ownerElement);
-    MutableStylePropertyMap::trace(visitor);
+    StylePropertyMap::trace(visitor);
   }
 
  protected:
