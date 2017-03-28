@@ -245,7 +245,7 @@ void SecurityPolicy::removeOriginAccessWhitelistEntry(
   if (index == kNotFound)
     return;
 
-  list->remove(index);
+  list->erase(index);
 
   if (list->isEmpty())
     map.erase(it);

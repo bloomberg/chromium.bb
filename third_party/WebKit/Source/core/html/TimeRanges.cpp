@@ -144,7 +144,7 @@ void TimeRanges::add(double start, double end) {
       // We need to merge the addedRange and that range.
       addedRange = addedRange.unionWithOverlappingOrContiguousRange(
           m_ranges[overlappingArcIndex]);
-      m_ranges.remove(overlappingArcIndex);
+      m_ranges.erase(overlappingArcIndex);
       overlappingArcIndex--;
     } else {
       // Check the case for which there is no more to do

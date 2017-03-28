@@ -87,7 +87,7 @@ DataObjectItem* DataObject::item(unsigned long index) {
 void DataObject::deleteItem(unsigned long index) {
   if (index >= length())
     return;
-  m_itemList.remove(index);
+  m_itemList.erase(index);
 }
 
 void DataObject::clearAll() {
@@ -125,7 +125,7 @@ void DataObject::clearData(const String& type) {
     if (m_itemList[i]->kind() == DataObjectItem::StringKind &&
         m_itemList[i]->type() == type) {
       // Per the spec, type must be unique among all items of kind 'string'.
-      m_itemList.remove(i);
+      m_itemList.erase(i);
       return;
     }
   }

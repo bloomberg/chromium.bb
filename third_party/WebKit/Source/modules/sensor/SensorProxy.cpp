@@ -261,7 +261,7 @@ void SensorProxy::onRemoveConfigurationCompleted(double frequency,
     return;
   }
 
-  m_frequenciesUsed.remove(index);
+  m_frequenciesUsed.erase(index);
 }
 
 bool SensorProxy::tryReadFromBuffer(device::SensorReading& result) {

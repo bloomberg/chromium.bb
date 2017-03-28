@@ -59,7 +59,7 @@ void StyleRuleKeyframes::wrapperAppendKeyframe(StyleRuleKeyframe* keyframe) {
 }
 
 void StyleRuleKeyframes::wrapperRemoveKeyframe(unsigned index) {
-  m_keyframes.remove(index);
+  m_keyframes.erase(index);
   styleChanged();
 }
 
@@ -126,7 +126,7 @@ void CSSKeyframesRule::deleteRule(const String& s) {
 
   if (m_childRuleCSSOMWrappers[i])
     m_childRuleCSSOMWrappers[i]->setParentRule(0);
-  m_childRuleCSSOMWrappers.remove(i);
+  m_childRuleCSSOMWrappers.erase(i);
 }
 
 CSSKeyframeRule* CSSKeyframesRule::findRule(const String& s) {

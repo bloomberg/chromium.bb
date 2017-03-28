@@ -63,7 +63,7 @@ String SVGStringList::removeItem(size_t index, ExceptionState& exceptionState) {
     return String();
 
   String oldItem = m_values.at(index);
-  m_values.remove(index);
+  m_values.erase(index);
   return oldItem;
 }
 

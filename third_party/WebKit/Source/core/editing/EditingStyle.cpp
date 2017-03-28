@@ -104,7 +104,7 @@ static const Vector<CSSPropertyID>& allEditingProperties() {
         staticEditingProperties, WTF_ARRAY_LENGTH(staticEditingProperties),
         properties);
     if (RuntimeEnabledFeatures::css3TextDecorationsEnabled())
-      properties.remove(properties.find(CSSPropertyTextDecoration));
+      properties.erase(properties.find(CSSPropertyTextDecoration));
   }
   return properties;
 }
@@ -117,7 +117,7 @@ static const Vector<CSSPropertyID>& inheritableEditingProperties() {
         properties);
     for (size_t index = 0; index < properties.size();) {
       if (!CSSPropertyMetadata::isInheritedProperty(properties[index])) {
-        properties.remove(index);
+        properties.erase(index);
         continue;
       }
       ++index;

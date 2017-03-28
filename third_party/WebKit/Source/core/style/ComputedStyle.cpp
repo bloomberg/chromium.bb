@@ -450,7 +450,7 @@ void ComputedStyle::removeCachedPseudoStyle(PseudoId pid) {
   for (size_t i = 0; i < m_cachedPseudoStyles->size(); ++i) {
     ComputedStyle* pseudoStyle = m_cachedPseudoStyles->at(i).get();
     if (pseudoStyle->styleType() == pid) {
-      m_cachedPseudoStyles->remove(i);
+      m_cachedPseudoStyles->erase(i);
       return;
     }
   }

@@ -236,7 +236,7 @@ void GraphicsLayer::removeAllChildren() {
 void GraphicsLayer::removeFromParent() {
   if (m_parent) {
     // We use reverseFind so that removeAllChildren() isn't n^2.
-    m_parent->m_children.remove(m_parent->m_children.reverseFind(this));
+    m_parent->m_children.erase(m_parent->m_children.reverseFind(this));
     setParent(0);
   }
 
@@ -1113,7 +1113,7 @@ void GraphicsLayer::addLinkHighlight(LinkHighlight* linkHighlight) {
 }
 
 void GraphicsLayer::removeLinkHighlight(LinkHighlight* linkHighlight) {
-  m_linkHighlights.remove(m_linkHighlights.find(linkHighlight));
+  m_linkHighlights.erase(m_linkHighlights.find(linkHighlight));
   updateChildList();
 }
 

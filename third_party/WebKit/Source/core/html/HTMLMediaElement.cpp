@@ -2870,7 +2870,7 @@ void HTMLMediaElement::didRemoveTrackElement(HTMLTrackElement* trackElement) {
 
   size_t index = m_textTracksWhenResourceSelectionBegan.find(textTrack);
   if (index != kNotFound)
-    m_textTracksWhenResourceSelectionBegan.remove(index);
+    m_textTracksWhenResourceSelectionBegan.erase(index);
 }
 
 void HTMLMediaElement::honorUserPreferencesForAutomaticTextTrackSelection() {

@@ -62,7 +62,7 @@ class TrackListBase : public EventTargetWithInlineData {
       m_tracks[i]->setMediaElement(0);
       scheduleEvent(
           TrackEvent::create(EventTypeNames::removetrack, m_tracks[i].get()));
-      m_tracks.remove(i);
+      m_tracks.erase(i);
       return;
     }
     NOTREACHED();

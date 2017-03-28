@@ -146,12 +146,12 @@ void VibrationController::didVibrate() {
 
   // Use the current vibration entry of the pattern as the initial interval.
   unsigned interval = m_pattern[0];
-  m_pattern.remove(0);
+  m_pattern.erase(0);
 
   // If there is another entry it is for a pause.
   if (!m_pattern.isEmpty()) {
     interval += m_pattern[0];
-    m_pattern.remove(0);
+    m_pattern.erase(0);
   }
 
   m_timerDoVibrate.startOneShot(interval / 1000.0, BLINK_FROM_HERE);

@@ -554,7 +554,7 @@ void IDBRequest::enqueueEvent(Event* event) {
 void IDBRequest::dequeueEvent(Event* event) {
   for (size_t i = 0; i < m_enqueuedEvents.size(); ++i) {
     if (m_enqueuedEvents[i].get() == event)
-      m_enqueuedEvents.remove(i);
+      m_enqueuedEvents.erase(i);
   }
 }
 

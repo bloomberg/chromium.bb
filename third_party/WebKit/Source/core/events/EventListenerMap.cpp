@@ -149,7 +149,7 @@ static bool removeListenerFromVector(
   }
   *registeredListener = *it;
   *indexOfRemovedListener = it - begin;
-  listenerVector->remove(*indexOfRemovedListener);
+  listenerVector->erase(*indexOfRemovedListener);
   return true;
 }
 
@@ -166,7 +166,7 @@ bool EventListenerMap::remove(const AtomicString& eventType,
           removeListenerFromVector(m_entries[i].second.get(), listener, options,
                                    indexOfRemovedListener, registeredListener);
       if (m_entries[i].second->isEmpty())
-        m_entries.remove(i);
+        m_entries.erase(i);
       return wasRemoved;
     }
   }

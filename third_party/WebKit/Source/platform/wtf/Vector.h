@@ -1169,8 +1169,8 @@ class Vector
   // take O(size())-time. All of the elements after the removed ones will be
   // moved to the new locations. All the iterators pointing to any element
   // after |position| will be invalidated.
-  void remove(size_t position);
-  void remove(size_t position, size_t length);
+  void erase(size_t position);
+  void erase(size_t position, size_t length);
 
   // Remove the last element. Unlike remove(), (1) this function is fast, and
   // (2) only iterators pointing to the last element will be invalidated. Other
@@ -1814,7 +1814,7 @@ inline void Vector<T, inlineCapacity, Allocator>::prependVector(
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>
-inline void Vector<T, inlineCapacity, Allocator>::remove(size_t position) {
+inline void Vector<T, inlineCapacity, Allocator>::erase(size_t position) {
   RELEASE_ASSERT(position < size());
   T* spot = begin() + position;
   spot->~T();
@@ -1825,8 +1825,8 @@ inline void Vector<T, inlineCapacity, Allocator>::remove(size_t position) {
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>
-inline void Vector<T, inlineCapacity, Allocator>::remove(size_t position,
-                                                         size_t length) {
+inline void Vector<T, inlineCapacity, Allocator>::erase(size_t position,
+                                                        size_t length) {
   SECURITY_DCHECK(position <= size());
   if (!length)
     return;

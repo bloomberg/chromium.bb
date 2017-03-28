@@ -222,7 +222,7 @@ void RejectedPromises::handlerAdded(v8::PromiseRejectMessage data) {
                      WTF::bind(&RejectedPromises::revokeNow,
                                RefPtr<RejectedPromises>(this),
                                WTF::passed(std::move(message))));
-      m_reportedAsErrors.remove(i);
+      m_reportedAsErrors.erase(i);
       return;
     }
   }
@@ -261,7 +261,7 @@ void RejectedPromises::processQueueNow(std::unique_ptr<MessageQueue> queue) {
   // Remove collected handlers.
   for (size_t i = 0; i < m_reportedAsErrors.size();) {
     if (m_reportedAsErrors.at(i)->isCollected())
-      m_reportedAsErrors.remove(i);
+      m_reportedAsErrors.erase(i);
     else
       ++i;
   }
@@ -275,7 +275,7 @@ void RejectedPromises::processQueueNow(std::unique_ptr<MessageQueue> queue) {
       message->makePromiseWeak();
       m_reportedAsErrors.push_back(std::move(message));
       if (m_reportedAsErrors.size() > maxReportedHandlersPendingResolution)
-        m_reportedAsErrors.remove(0, maxReportedHandlersPendingResolution / 10);
+        m_reportedAsErrors.erase(0, maxReportedHandlersPendingResolution / 10);
     }
   }
 }

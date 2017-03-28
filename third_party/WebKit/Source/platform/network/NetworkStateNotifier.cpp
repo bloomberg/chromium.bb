@@ -253,7 +253,7 @@ void NetworkStateNotifier::collectZeroedObservers(
   // If any observers were removed during the iteration they will have
   // 0 values, clean them up.
   for (size_t i = 0; i < list->zeroedObservers.size(); ++i)
-    list->observers.remove(list->zeroedObservers[i]);
+    list->observers.erase(list->zeroedObservers[i]);
 
   list->zeroedObservers.clear();
 

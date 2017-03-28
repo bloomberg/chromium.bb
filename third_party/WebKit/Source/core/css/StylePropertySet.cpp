@@ -230,7 +230,7 @@ bool MutableStylePropertySet::removePropertyAtIndex(int propertyIndex,
 
   // A more efficient removal strategy would involve marking entries as empty
   // and sweeping them when the vector grows too big.
-  m_propertyVector.remove(propertyIndex);
+  m_propertyVector.erase(propertyIndex);
 
   return true;
 }

@@ -75,12 +75,12 @@ void MediaStreamDescriptor::removeComponent(MediaStreamComponent* component) {
     case MediaStreamSource::TypeAudio:
       pos = m_audioComponents.find(component);
       if (pos != kNotFound)
-        m_audioComponents.remove(pos);
+        m_audioComponents.erase(pos);
       break;
     case MediaStreamSource::TypeVideo:
       pos = m_videoComponents.find(component);
       if (pos != kNotFound)
-        m_videoComponents.remove(pos);
+        m_videoComponents.erase(pos);
       break;
   }
 }

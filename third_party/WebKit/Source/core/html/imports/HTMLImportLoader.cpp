@@ -182,7 +182,7 @@ void HTMLImportLoader::didFinishLoading() {
 void HTMLImportLoader::moveToFirst(HTMLImportChild* import) {
   size_t position = m_imports.find(import);
   DCHECK_NE(kNotFound, position);
-  m_imports.remove(position);
+  m_imports.erase(position);
   m_imports.insert(0, import);
 }
 
@@ -197,7 +197,7 @@ void HTMLImportLoader::addImport(HTMLImportChild* import) {
 
 void HTMLImportLoader::removeImport(HTMLImportChild* client) {
   DCHECK_NE(kNotFound, m_imports.find(client));
-  m_imports.remove(m_imports.find(client));
+  m_imports.erase(m_imports.find(client));
 }
 
 bool HTMLImportLoader::shouldBlockScriptExecution() const {

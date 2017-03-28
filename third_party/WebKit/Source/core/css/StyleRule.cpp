@@ -329,7 +329,7 @@ void StyleRuleGroup::wrapperInsertRule(unsigned index, StyleRuleBase* rule) {
 }
 
 void StyleRuleGroup::wrapperRemoveRule(unsigned index) {
-  m_childRules.remove(index);
+  m_childRules.erase(index);
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(StyleRuleGroup) {

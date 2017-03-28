@@ -56,7 +56,7 @@ class LineBreakIteratorPool final {
     for (size_t i = 0; i < m_pool.size(); ++i) {
       if (m_pool[i].first == locale) {
         iterator = m_pool[i].second;
-        m_pool.remove(i);
+        m_pool.erase(i);
         break;
       }
     }
@@ -93,7 +93,7 @@ class LineBreakIteratorPool final {
 
     if (m_pool.size() == capacity) {
       delete (m_pool[0].second);
-      m_pool.remove(0);
+      m_pool.erase(0);
     }
 
     m_pool.push_back(Entry(m_vendedIterators.take(iterator), iterator));

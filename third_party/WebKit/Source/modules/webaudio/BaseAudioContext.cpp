@@ -666,7 +666,7 @@ void BaseAudioContext::removeFinishedSourceNodesOnMainThread() {
   for (AudioNode* node : m_finishedSourceNodes) {
     size_t i = m_activeSourceNodes.find(node);
     if (i != kNotFound)
-      m_activeSourceNodes.remove(i);
+      m_activeSourceNodes.erase(i);
   }
   m_finishedSourceNodes.clear();
 }

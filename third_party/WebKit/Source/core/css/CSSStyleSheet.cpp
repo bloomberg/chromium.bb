@@ -339,7 +339,7 @@ void CSSStyleSheet::deleteRule(unsigned index, ExceptionState& exceptionState) {
   if (!m_childRuleCSSOMWrappers.isEmpty()) {
     if (m_childRuleCSSOMWrappers[index])
       m_childRuleCSSOMWrappers[index]->setParentStyleSheet(0);
-    m_childRuleCSSOMWrappers.remove(index);
+    m_childRuleCSSOMWrappers.erase(index);
   }
 }
 

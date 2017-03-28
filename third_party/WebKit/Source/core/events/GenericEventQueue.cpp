@@ -74,7 +74,7 @@ bool GenericEventQueue::cancelEvent(Event* event) {
   if (found) {
     EventTarget* target = event->target() ? event->target() : m_owner.get();
     probe::asyncTaskCanceled(target->getExecutionContext(), event);
-    m_pendingEvents.remove(m_pendingEvents.find(event));
+    m_pendingEvents.erase(m_pendingEvents.find(event));
     TRACE_EVENT_ASYNC_END2("event", "GenericEventQueue:enqueueEvent", event,
                            "type", event->type().ascii(), "status",
                            "cancelled");

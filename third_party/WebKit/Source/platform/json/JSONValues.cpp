@@ -344,7 +344,7 @@ void JSONObject::remove(const String& name) {
   m_data.erase(name);
   for (size_t i = 0; i < m_order.size(); ++i) {
     if (m_order[i] == name) {
-      m_order.remove(i);
+      m_order.erase(i);
       break;
     }
   }

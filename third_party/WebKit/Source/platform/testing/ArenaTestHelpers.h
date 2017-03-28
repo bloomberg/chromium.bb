@@ -52,7 +52,7 @@ class TrackedAllocator final : public PODArena::FastMallocAllocator {
   void free(void* ptr) override {
     size_t slot = m_allocatedRegions.find(ptr);
     ASSERT_NE(slot, kNotFound);
-    m_allocatedRegions.remove(slot);
+    m_allocatedRegions.erase(slot);
     PODArena::FastMallocAllocator::free(ptr);
   }
 

@@ -298,7 +298,7 @@ void KeyframeEffectModelBase::PropertySpecificKeyframeGroup::
         m_keyframes[i - 1]->offset() == offset;
     bool hasSameOffsetAsNextNeighbor = m_keyframes[i + 1]->offset() == offset;
     if (hasSameOffsetAsPreviousNeighbor && hasSameOffsetAsNextNeighbor)
-      m_keyframes.remove(i);
+      m_keyframes.erase(i);
   }
   DCHECK_GE(m_keyframes.size(), 2U);
 }

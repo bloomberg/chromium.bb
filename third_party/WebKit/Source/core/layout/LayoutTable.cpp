@@ -225,7 +225,7 @@ void LayoutTable::removeCaption(const LayoutTableCaption* oldCaption) {
   if (index == kNotFound)
     return;
 
-  m_captions.remove(index);
+  m_captions.erase(index);
 }
 
 void LayoutTable::invalidateCachedColumns() {

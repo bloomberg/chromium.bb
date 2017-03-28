@@ -83,7 +83,7 @@ void ScriptPromisePropertyBase::resolveOrReject(State targetState) {
       // wrapper has died.
       // Since v8 GC can run during the iteration and clear the reference,
       // we can't move this check out of the loop.
-      m_wrappers.remove(i);
+      m_wrappers.erase(i);
       continue;
     }
     v8::Local<v8::Object> wrapper = persistent->newLocal(m_isolate);
@@ -136,7 +136,7 @@ v8::Local<v8::Object> ScriptPromisePropertyBase::ensureHolderWrapper(
       // wrapper has died.
       // Since v8 GC can run during the iteration and clear the reference,
       // we can't move this check out of the loop.
-      m_wrappers.remove(i);
+      m_wrappers.erase(i);
       continue;
     }
 

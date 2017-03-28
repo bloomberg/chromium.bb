@@ -296,7 +296,7 @@ bool StyleSheetContents::wrapperDeleteRule(unsigned index) {
     m_importRules[index]->clearParentStyleSheet();
     if (m_importRules[index]->isFontFaceRule())
       notifyRemoveFontFaceRule(toStyleRuleFontFace(m_importRules[index].get()));
-    m_importRules.remove(index);
+    m_importRules.erase(index);
     return true;
   }
   index -= m_importRules.size();
@@ -304,14 +304,14 @@ bool StyleSheetContents::wrapperDeleteRule(unsigned index) {
   if (index < m_namespaceRules.size()) {
     if (!m_childRules.isEmpty())
       return false;
-    m_namespaceRules.remove(index);
+    m_namespaceRules.erase(index);
     return true;
   }
   index -= m_namespaceRules.size();
 
   if (m_childRules[index]->isFontFaceRule())
     notifyRemoveFontFaceRule(toStyleRuleFontFace(m_childRules[index].get()));
-  m_childRules.remove(index);
+  m_childRules.erase(index);
   return true;
 }
 

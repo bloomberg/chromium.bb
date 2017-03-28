@@ -503,7 +503,7 @@ void InspectorLayerTreeAgent::didRemovePageOverlay(const GraphicsLayer* layer) {
   size_t index = m_pageOverlayLayerIds.find(layer->platformLayer()->id());
   if (index == WTF::kNotFound)
     return;
-  m_pageOverlayLayerIds.remove(index);
+  m_pageOverlayLayerIds.erase(index);
 }
 
 }  // namespace blink

@@ -508,7 +508,7 @@ DispatchEventResult IDBDatabase::dispatchEventInternal(Event* event) {
          event->type() == EventTypeNames::close);
   for (size_t i = 0; i < m_enqueuedEvents.size(); ++i) {
     if (m_enqueuedEvents[i].get() == event)
-      m_enqueuedEvents.remove(i);
+      m_enqueuedEvents.erase(i);
   }
 
   DispatchEventResult dispatchResult =

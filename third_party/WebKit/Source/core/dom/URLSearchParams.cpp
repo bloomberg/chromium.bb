@@ -166,7 +166,7 @@ void URLSearchParams::append(const String& name, const String& value) {
 void URLSearchParams::deleteAllWithName(const String& name) {
   for (size_t i = 0; i < m_params.size();) {
     if (m_params[i].first == name)
-      m_params.remove(i);
+      m_params.erase(i);
     else
       i++;
   }
@@ -209,7 +209,7 @@ void URLSearchParams::set(const String& name, const String& value) {
         m_params[i++].second = value;
         foundMatch = true;
       } else {
-        m_params.remove(i);
+        m_params.erase(i);
       }
     } else {
       i++;

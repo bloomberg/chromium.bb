@@ -5894,7 +5894,7 @@ void Document::removeFromTopLayer(Element* element) {
     return;
   size_t position = m_topLayerElements.find(element);
   DCHECK_NE(position, kNotFound);
-  m_topLayerElements.remove(position);
+  m_topLayerElements.erase(position);
   element->setIsInTopLayer(false);
 }
 

@@ -2846,7 +2846,7 @@ void WebGLRenderingContextBase::getContextAttributes(
 GLenum WebGLRenderingContextBase::getError() {
   if (!m_lostContextErrors.isEmpty()) {
     GLenum error = m_lostContextErrors.front();
-    m_lostContextErrors.remove(0);
+    m_lostContextErrors.erase(0);
     return error;
   }
 
@@ -2855,7 +2855,7 @@ GLenum WebGLRenderingContextBase::getError() {
 
   if (!m_syntheticErrors.isEmpty()) {
     GLenum error = m_syntheticErrors.front();
-    m_syntheticErrors.remove(0);
+    m_syntheticErrors.erase(0);
     return error;
   }
 

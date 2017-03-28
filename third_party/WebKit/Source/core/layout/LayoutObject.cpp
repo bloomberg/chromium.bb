@@ -2368,7 +2368,7 @@ void LayoutObject::localToAncestorRects(Vector<LayoutRect>& rects,
         localToAncestorQuad(FloatQuad(FloatRect(rect)), ancestor);
     LayoutRect containerRect = LayoutRect(containerQuad.boundingBox());
     if (containerRect.isEmpty()) {
-      rects.remove(i--);
+      rects.erase(i--);
       continue;
     }
     containerRect.moveBy(postOffset);

@@ -66,7 +66,7 @@ class NodeMutationObserverData final
 
   void removeRegistration(MutationObserverRegistration* registration) {
     DCHECK(m_registry.contains(registration));
-    m_registry.remove(m_registry.find(registration));
+    m_registry.erase(m_registry.find(registration));
   }
 
   DEFINE_INLINE_TRACE() {

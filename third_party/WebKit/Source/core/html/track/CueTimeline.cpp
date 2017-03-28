@@ -65,7 +65,7 @@ void CueTimeline::removeCueInternal(TextTrackCue* cue) {
   size_t index = m_currentlyActiveCues.find(interval);
   if (index != kNotFound) {
     DCHECK(cue->isActive());
-    m_currentlyActiveCues.remove(index);
+    m_currentlyActiveCues.erase(index);
     cue->setIsActive(false);
     // Since the cue will be removed from the media element and likely the
     // TextTrack might also be destructed, notifying the region of the cue

@@ -122,7 +122,7 @@ inline void MutableAttributeCollection::append(const QualifiedName& name,
 }
 
 inline void MutableAttributeCollection::remove(unsigned index) {
-  m_attributes.remove(index);
+  m_attributes.erase(index);
 }
 
 template <typename Container, typename ContainerMemberType>

@@ -98,7 +98,7 @@ void HTMLFormattingElementList::append(HTMLStackItem* item) {
 void HTMLFormattingElementList::remove(Element* element) {
   size_t index = m_entries.reverseFind(element);
   if (index != kNotFound)
-    m_entries.remove(index);
+    m_entries.erase(index);
 }
 
 void HTMLFormattingElementList::appendMarker() {

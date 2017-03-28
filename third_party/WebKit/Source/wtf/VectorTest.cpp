@@ -79,19 +79,19 @@ TEST(VectorTest, Remove) {
   EXPECT_EQ(2, intVector[2]);
   EXPECT_EQ(3, intVector[3]);
 
-  intVector.remove(2, 0);
+  intVector.erase(2, 0);
   EXPECT_EQ(4u, intVector.size());
   EXPECT_EQ(2, intVector[2]);
 
-  intVector.remove(2, 1);
+  intVector.erase(2, 1);
   EXPECT_EQ(3u, intVector.size());
   EXPECT_EQ(3, intVector[2]);
 
-  intVector.remove(0, 0);
+  intVector.erase(0, 0);
   EXPECT_EQ(3u, intVector.size());
   EXPECT_EQ(0, intVector[0]);
 
-  intVector.remove(0);
+  intVector.erase(0);
   EXPECT_EQ(2u, intVector.size());
   EXPECT_EQ(1, intVector[0]);
 }
@@ -188,13 +188,13 @@ TEST(VectorTest, OwnPtr) {
 
   EXPECT_EQ(0, vector[0]->get());
   EXPECT_EQ(1, vector[1]->get());
-  vector.remove(0);
+  vector.erase(0);
   EXPECT_EQ(1, vector[0]->get());
   EXPECT_EQ(1u, vector.size());
   EXPECT_EQ(1, destructNumber);
 
   std::unique_ptr<DestructCounter> ownCounter1 = std::move(vector[0]);
-  vector.remove(0);
+  vector.erase(0);
   ASSERT_EQ(counter1, ownCounter1->get());
   ASSERT_EQ(0u, vector.size());
   ASSERT_EQ(1, destructNumber);
@@ -251,12 +251,12 @@ TEST(VectorTest, MoveOnlyType) {
   ASSERT_EQ(1, vector.front().value());
   ASSERT_EQ(2, vector.back().value());
 
-  vector.remove(0);
+  vector.erase(0);
   EXPECT_EQ(2, vector[0].value());
   EXPECT_EQ(1u, vector.size());
 
   MoveOnly moveOnly(std::move(vector[0]));
-  vector.remove(0);
+  vector.erase(0);
   ASSERT_EQ(2, moveOnly.value());
   ASSERT_EQ(0u, vector.size());
 
@@ -522,7 +522,7 @@ void testDestructorAndConstructorCallsWhenSwappingWithInlineCapacity() {
         EXPECT_EQ(size2, vector2.size());
 
         vector2.push_back(&counter);
-        vector2.remove(0);
+        vector2.erase(0);
       }
     }
   }
@@ -584,7 +584,7 @@ TEST(VectorTest, UniquePtr) {
   vector.grow(4);
   ASSERT_EQ(4u, vector.size());
   EXPECT_TRUE(!vector[3]);
-  vector.remove(3);
+  vector.erase(3);
   vector[0] = Pointer(new int(-1));
   ASSERT_EQ(3u, vector.size());
   EXPECT_EQ(-1, *vector[0]);

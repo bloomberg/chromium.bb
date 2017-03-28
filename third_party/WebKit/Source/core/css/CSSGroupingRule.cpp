@@ -114,7 +114,7 @@ void CSSGroupingRule::deleteRule(unsigned index,
 
   if (m_childRuleCSSOMWrappers[index])
     m_childRuleCSSOMWrappers[index]->setParentRule(0);
-  m_childRuleCSSOMWrappers.remove(index);
+  m_childRuleCSSOMWrappers.erase(index);
 }
 
 void CSSGroupingRule::appendCSSTextForItems(StringBuilder& result) const {

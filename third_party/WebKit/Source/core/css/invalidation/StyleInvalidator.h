@@ -120,7 +120,7 @@ class CORE_EXPORT StyleInvalidator {
           m_invalidatesSlotted(data->m_invalidatesSlotted),
           m_data(data) {}
     ~RecursionCheckpoint() {
-      m_data->m_invalidationSets.remove(
+      m_data->m_invalidationSets.erase(
           m_prevInvalidationSetsSize,
           m_data->m_invalidationSets.size() - m_prevInvalidationSetsSize);
       m_data->m_invalidateCustomPseudo = m_prevInvalidateCustomPseudo;

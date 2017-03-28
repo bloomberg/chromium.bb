@@ -1121,7 +1121,7 @@ void RTCPeerConnection::removeStream(MediaStream* stream,
   if (pos == kNotFound)
     return;
 
-  m_localStreams.remove(pos);
+  m_localStreams.erase(pos);
 
   m_peerHandler->removeStream(stream->descriptor());
 }
@@ -1331,7 +1331,7 @@ void RTCPeerConnection::didRemoveRemoteStream(
 
   size_t pos = m_remoteStreams.find(stream);
   DCHECK(pos != kNotFound);
-  m_remoteStreams.remove(pos);
+  m_remoteStreams.erase(pos);
 
   scheduleDispatchEvent(
       MediaStreamEvent::create(EventTypeNames::removestream, stream));

@@ -100,7 +100,7 @@ MediaQuery::MediaQuery(RestrictorType restrictor,
     MediaQueryExp* exp = m_expressions.at(i).get();
 
     if (key && *exp == *key)
-      m_expressions.remove(i);
+      m_expressions.erase(i);
     else
       key = exp;
   }

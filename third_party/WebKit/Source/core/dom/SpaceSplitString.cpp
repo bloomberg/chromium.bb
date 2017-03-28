@@ -106,7 +106,7 @@ void SpaceSplitString::Data::add(const AtomicString& string) {
 
 void SpaceSplitString::Data::remove(unsigned index) {
   DCHECK(hasOneRef());
-  m_vector.remove(index);
+  m_vector.erase(index);
 }
 
 void SpaceSplitString::add(const AtomicString& string) {

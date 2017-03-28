@@ -3805,7 +3805,7 @@ void Element::detachAttrNodeFromElementWithValue(Attr* attrNode,
   AttrNodeList* list = attrNodeList();
   size_t index = list->find(attrNode);
   DCHECK_NE(index, kNotFound);
-  list->remove(index);
+  list->erase(index);
   if (list->isEmpty())
     removeAttrNodeList();
 }

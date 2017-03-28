@@ -240,7 +240,7 @@ void InsertionAndDeletionTest(int32_t seed, int treeSize) {
                                                      << seed;
     tree.remove(addedElements[index]);
     removedElements.push_back(addedElements[index]);
-    addedElements.remove(index);
+    addedElements.erase(index);
     ASSERT_TRUE(tree.checkInvariants()) << "Test failed for seed " << seed;
   }
   // Now randomly add or remove elements.
@@ -261,7 +261,7 @@ void InsertionAndDeletionTest(int32_t seed, int treeSize) {
 #endif
       tree.add(removedElements[index]);
       addedElements.push_back(removedElements[index]);
-      removedElements.remove(index);
+      removedElements.erase(index);
     } else {
       int index = nextRandom(addedElements.size());
 #ifdef DEBUG_INSERTION_AND_DELETION_TEST
@@ -274,7 +274,7 @@ void InsertionAndDeletionTest(int32_t seed, int treeSize) {
       ASSERT_TRUE(tree.remove(addedElements[index])) << "Test failed for seed "
                                                      << seed;
       removedElements.push_back(addedElements[index]);
-      addedElements.remove(index);
+      addedElements.erase(index);
     }
     ASSERT_TRUE(tree.checkInvariants()) << "Test failed for seed " << seed;
   }

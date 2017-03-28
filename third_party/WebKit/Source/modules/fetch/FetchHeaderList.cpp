@@ -47,7 +47,7 @@ void FetchHeaderList::set(const String& name, const String& value) {
       m_headerList[i]->second = value;
       for (size_t j = i + 1; j < m_headerList.size();) {
         if (m_headerList[j]->first == lowercasedName)
-          m_headerList.remove(j);
+          m_headerList.erase(j);
         else
           ++j;
       }
@@ -79,7 +79,7 @@ void FetchHeaderList::remove(const String& name) {
   const String lowercasedName = name.lower();
   for (size_t i = 0; i < m_headerList.size();) {
     if (m_headerList[i]->first == lowercasedName)
-      m_headerList.remove(i);
+      m_headerList.erase(i);
     else
       ++i;
   }
@@ -150,7 +150,7 @@ void FetchHeaderList::sortAndCombine() {
     if (m_headerList[index - 1]->first == m_headerList[index]->first) {
       m_headerList[index - 1]->second.append(",");
       m_headerList[index - 1]->second.append(m_headerList[index]->second);
-      m_headerList.remove(index, 1);
+      m_headerList.erase(index, 1);
     }
   }
 }

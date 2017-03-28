@@ -515,7 +515,7 @@ void Fullscreen::fullyExitFullscreen(Document& document) {
   // 3. Remove elements from |doc|'s fullscreen element stack until only the top
   // element is left.
   size_t stackSize = from(doc).m_fullscreenElementStack.size();
-  from(doc).m_fullscreenElementStack.remove(0, stackSize - 1);
+  from(doc).m_fullscreenElementStack.erase(0, stackSize - 1);
   DCHECK_EQ(from(doc).m_fullscreenElementStack.size(), 1u);
 
   // 4. Act as if the exitFullscreen() method was invoked on |doc|.
@@ -829,7 +829,7 @@ void Fullscreen::elementRemoved(Element& oldNode) {
   // stack.
   for (size_t i = 0; i < m_fullscreenElementStack.size(); ++i) {
     if (m_fullscreenElementStack[i].first.get() == &oldNode) {
-      m_fullscreenElementStack.remove(i);
+      m_fullscreenElementStack.erase(i);
       return;
     }
   }

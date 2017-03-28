@@ -474,7 +474,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element) {
     Animation& animation = *m_runningAnimations[cancelledIndices[i]]->animation;
     animation.cancel();
     animation.update(TimingUpdateOnDemand);
-    m_runningAnimations.remove(cancelledIndices[i]);
+    m_runningAnimations.erase(cancelledIndices[i]);
   }
 
   for (const auto& entry : m_pendingUpdate.newAnimations()) {

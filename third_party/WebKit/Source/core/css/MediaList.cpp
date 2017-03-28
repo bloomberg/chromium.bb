@@ -115,7 +115,7 @@ bool MediaQuerySet::remove(const String& queryStringToRemove) {
   for (size_t i = 0; i < m_queries.size(); ++i) {
     MediaQuery* query = m_queries[i].get();
     if (*query == *newQuery) {
-      m_queries.remove(i);
+      m_queries.erase(i);
       --i;
       found = true;
     }

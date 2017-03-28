@@ -195,11 +195,11 @@ class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
                 return WTF::codePointCompareLessThan(a.request, b.request);
               });
     if (m_params.skipCount > 0)
-      m_responses.remove(0, m_params.skipCount);
+      m_responses.erase(0, m_params.skipCount);
     bool hasMore = false;
     if (static_cast<size_t>(m_params.pageSize) < m_responses.size()) {
-      m_responses.remove(m_params.pageSize,
-                         m_responses.size() - m_params.pageSize);
+      m_responses.erase(m_params.pageSize,
+                        m_responses.size() - m_params.pageSize);
       hasMore = true;
     }
     std::unique_ptr<Array<DataEntry>> array = Array<DataEntry>::create();

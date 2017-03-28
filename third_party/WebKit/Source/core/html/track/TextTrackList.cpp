@@ -209,7 +209,7 @@ void TextTrackList::remove(TextTrack* track) {
   DCHECK_EQ(track->trackList(), this);
   track->setTrackList(0);
 
-  tracks->remove(index);
+  tracks->erase(index);
 
   scheduleRemoveTrackEvent(track);
 }

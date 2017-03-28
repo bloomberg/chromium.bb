@@ -56,7 +56,7 @@ void SourceBufferList::remove(SourceBuffer* buffer) {
   size_t index = m_list.find(buffer);
   if (index == kNotFound)
     return;
-  m_list.remove(index);
+  m_list.erase(index);
   scheduleEvent(EventTypeNames::removesourcebuffer);
 }
 

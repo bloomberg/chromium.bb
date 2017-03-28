@@ -285,7 +285,7 @@ void DocumentMarkerController::mergeOverlapping(
         std::min((*inserted)->startOffset(), (*i)->startOffset()));
     (*inserted)->setEndOffset(
         std::max((*inserted)->endOffset(), (*i)->endOffset()));
-    list->remove(i - list->begin());
+    list->erase(i - list->begin());
   }
 }
 
@@ -392,7 +392,7 @@ void DocumentMarkerController::removeMarkers(
       docDirty = true;
 
       // pitch the old marker
-      list->remove(i - list->begin());
+      list->erase(i - list->begin());
 
       if (shouldRemovePartiallyOverlappingMarker) {
         // Stop here. Don't add resulting slices back.
@@ -625,7 +625,7 @@ void DocumentMarkerController::removeMarkers(
       for (size_t j = list->size(); j > 0; --j) {
         if (shouldRemoveMarker(*list->at(j - 1),
                                static_cast<const Text&>(node))) {
-          list->remove(j - 1);
+          list->erase(j - 1);
           removedMarkers = true;
         }
       }

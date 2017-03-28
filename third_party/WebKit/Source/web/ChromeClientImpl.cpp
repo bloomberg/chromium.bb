@@ -1184,7 +1184,7 @@ void ChromeClientImpl::unregisterPopupOpeningObserver(
     PopupOpeningObserver* observer) {
   size_t index = m_popupOpeningObservers.find(observer);
   DCHECK_NE(index, kNotFound);
-  m_popupOpeningObservers.remove(index);
+  m_popupOpeningObservers.erase(index);
 }
 
 void ChromeClientImpl::notifyPopupOpeningObservers() const {

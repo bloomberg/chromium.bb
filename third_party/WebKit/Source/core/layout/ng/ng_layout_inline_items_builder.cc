@@ -255,7 +255,7 @@ void NGLayoutInlineItemsBuilder::RemoveTrailingCollapsibleSpace(
       if (item.Length() > 1)
         item.SetEndOffset(new_size);
       else
-        items_->remove(i);
+        items_->erase(i);
       break;
     }
     if (!item.Length()) {
