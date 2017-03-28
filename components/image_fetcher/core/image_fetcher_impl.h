@@ -46,6 +46,9 @@ class ImageFetcherImpl : public image_fetcher::ImageFetcher {
 
   void SetDesiredImageFrameSize(const gfx::Size& size) override;
 
+  void SetImageDownloadLimit(
+      base::Optional<int64_t> max_download_bytes) override;
+
   void StartOrQueueNetworkRequest(
       const std::string& id,
       const GURL& image_url,

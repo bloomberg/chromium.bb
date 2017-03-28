@@ -201,4 +201,68 @@ TEST_F(ImageDataFetcherTest, FetchImageData_MultipleRequests) {
   test_url_fetcher->delegate()->OnURLFetchComplete(test_url_fetcher);
 }
 
+TEST_F(ImageDataFetcherTest, FetchImageData_CancelFetchIfImageExceedsMaxSize) {
+  // In order to know whether the fetcher was canceled, it must notify about its
+  // deletion.
+  fetcher_factory_.set_remove_fetcher_on_delete(true);
+
+  const int64_t kMaxDownloadBytes = 1024 * 1024;
+  image_data_fetcher_.SetImageDownloadLimit(kMaxDownloadBytes);
+  image_data_fetcher_.FetchImageData(
+      GURL(kImageURL), base::Bind(&ImageDataFetcherTest::OnImageDataFetched,
+                                  base::Unretained(this)));
+
+  // Fetching an oversized image will behave like any other failed request.
+  // There will be exactly one call to OnImageDataFetched containing a response
+  // code that would be impossible for a completed fetch.
+  RequestMetadata expected_metadata;
+  expected_metadata.http_response_code = net::URLFetcher::RESPONSE_CODE_INVALID;
+  EXPECT_CALL(*this, OnImageDataFetched(std::string(), expected_metadata));
+
+  // Get and configure the TestURLFetcher.
+  net::TestURLFetcher* test_url_fetcher = fetcher_factory_.GetFetcherByID(0);
+  ASSERT_NE(nullptr, test_url_fetcher);
+
+  // Create a completely valid response that is never used. This is to make sure
+  // that the answer isn't accidentally invalid but intentionally.
+  test_url_fetcher->set_status(
+      net::URLRequestStatus(net::URLRequestStatus::SUCCESS, net::OK));
+  test_url_fetcher->SetResponseString(kURLResponseData);
+  test_url_fetcher->set_response_code(net::HTTP_OK);
+  std::string raw_header =
+      "HTTP/1.1 200 OK\n"
+      "Content-type: image/png\n\n";
+  std::replace(raw_header.begin(), raw_header.end(), '\n', '\0');
+  scoped_refptr<net::HttpResponseHeaders> headers(
+      new net::HttpResponseHeaders(raw_header));
+  test_url_fetcher->set_response_headers(headers);
+
+  test_url_fetcher->delegate()->OnURLFetchDownloadProgress(
+      test_url_fetcher,
+      /*current=*/0,                 // Bytes received up to the call.
+      /*total=*/-1,                  // not determined
+      /*current_network_bytes=*/0);  // not relevant
+  // The URL fetch should be running ...
+  ASSERT_NE(nullptr, fetcher_factory_.GetFetcherByID(0));
+
+  test_url_fetcher->delegate()->OnURLFetchDownloadProgress(
+      test_url_fetcher,
+      768 * 1024,  // Current bytes are not exeeding the limit.
+      /*total=*/-1, /*current_network_bytes=*/0);
+  // ... and running ...
+  ASSERT_NE(nullptr, fetcher_factory_.GetFetcherByID(0));
+
+  test_url_fetcher->delegate()->OnURLFetchDownloadProgress(
+      test_url_fetcher, kMaxDownloadBytes,  // Still not exeeding the limit.
+      /*total=*/-1, /*current_network_bytes=*/0);
+  // ... and running ...
+  ASSERT_NE(nullptr, fetcher_factory_.GetFetcherByID(0));
+
+  test_url_fetcher->delegate()->OnURLFetchDownloadProgress(
+      test_url_fetcher, kMaxDownloadBytes + 1,  // Limits are exceeded.
+      /*total=*/-1, /*current_network_bytes=*/0);
+  // ... and be canceled.
+  EXPECT_EQ(nullptr, fetcher_factory_.GetFetcherByID(0));
+}
+
 }  // namespace image_fetcher

@@ -43,6 +43,11 @@ void ImageFetcherImpl::SetDesiredImageFrameSize(const gfx::Size& size) {
   desired_image_frame_size_ = size;
 }
 
+void ImageFetcherImpl::SetImageDownloadLimit(
+    base::Optional<int64_t> max_download_bytes) {
+  image_data_fetcher_->SetImageDownloadLimit(max_download_bytes);
+}
+
 void ImageFetcherImpl::StartOrQueueNetworkRequest(
     const std::string& id,
     const GURL& image_url,

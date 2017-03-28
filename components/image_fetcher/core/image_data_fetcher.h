@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/image_fetcher/core/request_metadata.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -42,6 +43,10 @@ class ImageDataFetcher : public net::URLFetcherDelegate {
   // Sets a service name against which to track data usage.
   void SetDataUseServiceName(DataUseServiceName data_use_service_name);
 
+  // Sets an upper limit for image downloads.
+  // Already running downloads are affected.
+  void SetImageDownloadLimit(base::Optional<int64_t> max_download_bytes);
+
   // Fetches the raw image bytes from the given |image_url| and calls the given
   // |callback|. The callback is run even if fetching the URL fails. In case
   // of an error an empty string is passed to the callback.
@@ -57,8 +62,16 @@ class ImageDataFetcher : public net::URLFetcherDelegate {
  private:
   struct ImageDataFetcherRequest;
 
-  // Method inherited from URLFetcherDelegate
+  // Methods inherited from URLFetcherDelegate
   void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchDownloadProgress(const net::URLFetcher* source,
+                                  int64_t current,
+                                  int64_t total,
+                                  int64_t current_network_bytes) override;
+
+  void FinishRequest(const net::URLFetcher* source,
+                     const RequestMetadata& metadata,
+                     const std::string& image_data);
 
   // All active image url requests.
   std::map<const net::URLFetcher*, std::unique_ptr<ImageDataFetcherRequest>>
@@ -74,6 +87,9 @@ class ImageDataFetcher : public net::URLFetcherDelegate {
   // get individual URLFetchers and modify their state. Outside of tests this ID
   // is not used.
   int next_url_fetcher_id_;
+
+  // Upper limit for the number of bytes to download per image.
+  base::Optional<int64_t> max_download_bytes_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageDataFetcher);
 };

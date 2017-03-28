@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/image_fetcher/core/image_fetcher_delegate.h"
 #include "url/gurl.h"
@@ -43,6 +44,12 @@ class ImageFetcher {
   // Sets a service name against which to track data usage.
   virtual void SetDataUseServiceName(
       DataUseServiceName data_use_service_name) = 0;
+
+  // Sets an upper limit for image downloads that is by default disabled.
+  // Setting |max_download_bytes| to a negative value will disable the limit.
+  // Already running downloads are immediately affected.
+  virtual void SetImageDownloadLimit(
+      base::Optional<int64_t> max_download_bytes) = 0;
 
   // Sets the desired size for images with multiple frames (like .ico files).
   // By default, the image fetcher choses smaller images. Override to choose a

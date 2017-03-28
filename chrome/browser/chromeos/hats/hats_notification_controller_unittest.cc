@@ -77,6 +77,8 @@ class MockImageFetcher : public image_fetcher::ImageFetcher {
                     const ImageFetcher::ImageFetcherCallback&));
   MOCK_METHOD1(SetImageFetcherDelegate, void(ImageFetcherDelegate*));
   MOCK_METHOD1(SetDataUseServiceName, void(DataUseServiceName));
+  MOCK_METHOD1(SetImageDownloadLimit,
+               void(base::Optional<int64_t> max_download_bytes));
   MOCK_METHOD1(SetDesiredImageFrameSize, void(const gfx::Size&));
   MOCK_METHOD0(GetImageDecoder, image_fetcher::ImageDecoder*());
 

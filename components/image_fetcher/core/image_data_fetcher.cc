@@ -4,6 +4,8 @@
 
 #include "components/image_fetcher/core/image_data_fetcher.h"
 
+#include <utility>
+
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
@@ -45,6 +47,11 @@ void ImageDataFetcher::SetDataUseServiceName(
   data_use_service_name_ = data_use_service_name;
 }
 
+void ImageDataFetcher::SetImageDownloadLimit(
+    base::Optional<int64_t> max_download_bytes) {
+  max_download_bytes_ = max_download_bytes;
+}
+
 void ImageDataFetcher::FetchImageData(
     const GURL& image_url,
     const ImageDataFetcherCallback& callback) {
@@ -77,9 +84,7 @@ void ImageDataFetcher::FetchImageData(
 }
 
 void ImageDataFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
-  auto request_iter = pending_requests_.find(source);
-  DCHECK(request_iter != pending_requests_.end());
-
+  DCHECK(pending_requests_.find(source) != pending_requests_.end());
   bool success = source->GetStatus().status() == net::URLRequestStatus::SUCCESS;
 
   RequestMetadata metadata;
@@ -94,9 +99,35 @@ void ImageDataFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   if (success) {
     source->GetResponseAsString(&image_data);
   }
-  request_iter->second->callback.Run(image_data, metadata);
+  FinishRequest(source, metadata, image_data);
+}
 
-  // Remove the finished request.
+void ImageDataFetcher::OnURLFetchDownloadProgress(
+    const net::URLFetcher* source,
+    int64_t current,
+    int64_t total,
+    int64_t current_network_bytes) {
+  if (!max_download_bytes_.has_value()) {
+    return;
+  }
+  if (total <= max_download_bytes_.value() &&
+      current <= max_download_bytes_.value()) {
+    return;
+  }
+  DCHECK(pending_requests_.find(source) != pending_requests_.end());
+  DLOG(WARNING) << "Image data exceeded download size limit.";
+  RequestMetadata metadata;
+  metadata.http_response_code = net::URLFetcher::RESPONSE_CODE_INVALID;
+
+  FinishRequest(source, metadata, /*image_data=*/std::string());
+}
+
+void ImageDataFetcher::FinishRequest(const net::URLFetcher* source,
+                                     const RequestMetadata& metadata,
+                                     const std::string& image_data) {
+  auto request_iter = pending_requests_.find(source);
+  DCHECK(request_iter != pending_requests_.end());
+  request_iter->second->callback.Run(image_data, metadata);
   pending_requests_.erase(request_iter);
 }
 
