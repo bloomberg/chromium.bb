@@ -245,16 +245,6 @@ bool HTMLFrameElementBase::isHTMLContentAttribute(
          HTMLFrameOwnerElement::isHTMLContentAttribute(attribute);
 }
 
-// FIXME: Remove this code once we have input routing in the browser
-// process. See http://crbug.com/339659.
-void HTMLFrameElementBase::defaultEventHandler(Event* event) {
-  if (contentFrame() && contentFrame()->isRemoteFrame()) {
-    toRemoteFrame(contentFrame())->forwardInputEvent(event);
-    return;
-  }
-  HTMLFrameOwnerElement::defaultEventHandler(event);
-}
-
 void HTMLFrameElementBase::setScrollingMode(ScrollbarMode scrollbarMode) {
   if (m_scrollingMode == scrollbarMode)
     return;

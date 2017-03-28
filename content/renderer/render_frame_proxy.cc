@@ -485,10 +485,6 @@ void RenderFrameProxy::navigate(const blink::WebURLRequest& request,
   Send(new FrameHostMsg_OpenURL(routing_id_, params));
 }
 
-void RenderFrameProxy::forwardInputEvent(const blink::WebInputEvent* event) {
-  Send(new FrameHostMsg_ForwardInputEvent(routing_id_, event));
-}
-
 void RenderFrameProxy::frameRectsChanged(const blink::WebRect& frame_rect) {
   gfx::Rect rect = frame_rect;
   if (IsUseZoomForDSFEnabled()) {

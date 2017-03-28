@@ -122,10 +122,6 @@ bool RemoteFrame::shouldClose() {
   return true;
 }
 
-void RemoteFrame::forwardInputEvent(Event* event) {
-  client()->forwardInputEvent(event);
-}
-
 void RemoteFrame::setView(RemoteFrameView* view) {
   // Oilpan: as RemoteFrameView performs no finalization actions,
   // no explicit dispose() of it needed here. (cf. FrameView::dispose().)

@@ -46,10 +46,6 @@ class CORE_EXPORT HTMLFrameElementBase : public HTMLFrameOwnerElement {
   void didNotifySubtreeInsertionsToDocument() final;
   void attachLayoutTree(const AttachContext& = AttachContext()) override;
 
-  // FIXME: Remove this method once we have input routing in the browser
-  // process. See http://crbug.com/339659.
-  void defaultEventHandler(Event*) override;
-
   void setScrollingMode(ScrollbarMode);
   void setMarginWidth(int);
   void setMarginHeight(int);

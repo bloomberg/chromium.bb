@@ -11,7 +11,6 @@
 #include "public/web/WebFrame.h"
 
 namespace blink {
-class WebInputEvent;
 enum class WebClientRedirectPolicy;
 enum class WebFrameLoadType;
 struct WebRect;
@@ -35,10 +34,6 @@ class WebRemoteFrameClient {
   virtual void navigate(const WebURLRequest& request,
                         bool shouldReplaceCurrentEntry) {}
   virtual void reload(WebFrameLoadType, WebClientRedirectPolicy) {}
-
-  // FIXME: Remove this method once we have input routing in the browser
-  // process. See http://crbug.com/339659.
-  virtual void forwardInputEvent(const WebInputEvent*) {}
 
   virtual void frameRectsChanged(const WebRect&) {}
 

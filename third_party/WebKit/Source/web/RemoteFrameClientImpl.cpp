@@ -135,42 +135,6 @@ void RemoteFrameClientImpl::forwardPostMessage(
         WebSecurityOrigin(std::move(target)), WebDOMMessageEvent(event));
 }
 
-// FIXME: Remove this code once we have input routing in the browser
-// process. See http://crbug.com/339659.
-void RemoteFrameClientImpl::forwardInputEvent(Event* event) {
-  // It is possible for a platform event to cause the remote iframe element
-  // to be hidden, which destroys the layout object (for instance, a mouse
-  // event that moves between elements will trigger a mouseout on the old
-  // element, which might hide the new element). In that case we do not
-  // forward. This is divergent behavior from local frames, where the
-  // content of the frame can receive events even after the frame is hidden.
-  // We might need to revisit this after browser hit testing is fully
-  // implemented, since this code path will need to be removed or refactored
-  // anyway.
-  // See https://crbug.com/520705.
-  if (m_webFrame->toImplBase()->frame()->ownerLayoutItem().isNull())
-    return;
-
-  // This is only called when we have out-of-process iframes, which
-  // need to forward input events across processes.
-  // FIXME: Add a check for out-of-process iframes enabled.
-  std::unique_ptr<WebInputEvent> webEvent;
-  if (event->isKeyboardEvent())
-    webEvent = WTF::wrapUnique(
-        new WebKeyboardEventBuilder(*static_cast<KeyboardEvent*>(event)));
-  else if (event->isMouseEvent())
-    webEvent = WTF::wrapUnique(new WebMouseEventBuilder(
-        m_webFrame->frame()->view(),
-        m_webFrame->toImplBase()->frame()->ownerLayoutItem(),
-        *static_cast<MouseEvent*>(event)));
-
-  // Other or internal Blink events should not be forwarded.
-  if (!webEvent || webEvent->type() == WebInputEvent::Undefined)
-    return;
-
-  m_webFrame->client()->forwardInputEvent(webEvent.get());
-}
-
 void RemoteFrameClientImpl::frameRectsChanged(const IntRect& frameRect) {
   m_webFrame->client()->frameRectsChanged(frameRect);
 }

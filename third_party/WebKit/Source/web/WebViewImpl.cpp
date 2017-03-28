@@ -1128,13 +1128,6 @@ WebInputEventResult WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event) {
   }
 
   Frame* focusedFrame = focusedCoreFrame();
-  if (focusedFrame && focusedFrame->isRemoteFrame()) {
-    WebRemoteFrameImpl* webFrame =
-        WebRemoteFrameImpl::fromFrame(*toRemoteFrame(focusedFrame));
-    webFrame->client()->forwardInputEvent(&event);
-    return WebInputEventResult::HandledSystem;
-  }
-
   if (!focusedFrame || !focusedFrame->isLocalFrame())
     return WebInputEventResult::NotHandled;
 

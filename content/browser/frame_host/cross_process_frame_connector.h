@@ -15,7 +15,6 @@
 
 namespace blink {
 class WebGestureEvent;
-class WebInputEvent;
 }
 
 namespace cc {
@@ -141,7 +140,6 @@ class CONTENT_EXPORT CrossProcessFrameConnector {
 
  private:
   // Handlers for messages received from the parent frame.
-  void OnForwardInputEvent(const blink::WebInputEvent* event);
   void OnFrameRectChanged(const gfx::Rect& frame_rect);
   void OnUpdateViewportIntersection(const gfx::Rect& viewport_intersection);
   void OnVisibilityChanged(bool visible);

@@ -452,7 +452,6 @@ class CORE_EXPORT EmptyRemoteFrameClient
   void forwardPostMessage(MessageEvent*,
                           PassRefPtr<SecurityOrigin> target,
                           LocalFrame* sourceFrame) const override {}
-  void forwardInputEvent(Event*) override {}
   void frameRectsChanged(const IntRect& frameRect) override {}
   void updateRemoteViewportIntersection(
       const IntRect& viewportIntersection) override {}

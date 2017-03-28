@@ -1391,12 +1391,6 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_BeforeUnload_ACK,
 // Indicates that the current frame has swapped out, after a SwapOut message.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_SwapOut_ACK)
 
-// Forwards an input event to a child.
-// TODO(nick): Temporary bridge, revisit once the browser process can route
-// input directly to subframes. http://crbug.com/339659
-IPC_MESSAGE_ROUTED1(FrameHostMsg_ForwardInputEvent,
-                    IPC::WebInputEventPointer /* event */)
-
 // Tells the parent that a child's frame rect has changed (or the rect/scroll
 // position of a child's ancestor has changed).
 IPC_MESSAGE_ROUTED1(FrameHostMsg_FrameRectChanged, gfx::Rect /* frame_rect */)

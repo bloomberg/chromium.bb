@@ -171,6 +171,10 @@ crbug.com/680201 virtual/mojo-loading/http/tests/security/referrer-policy-attrib
 crbug.com/680307 http/tests/security/mixedContent/blob-url-in-iframe.html [ Failure ]
 crbug.com/680307 virtual/mojo-loading/http/tests/security/mixedContent/blob-url-in-iframe.html [ Failure ]
 
+# https://crbug.com/650348: Remove input event forwarding path from RenderFrameProxies
+# This test needs to be modified to not rely on EventSender passing mouse events directly to an OOPIF.
+crbug.com/650348 http/tests/webaudio/autoplay-crossorigin.html [ Timeout ]
+
 # TODO(lukasza, alexmos): Triage these failures.
 Bug(none) fast/frames/cached-frame-counter.html [ Timeout ]
 Bug(none) fast/frames/frame-limit.html [ Timeout ]

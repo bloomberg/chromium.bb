@@ -36,7 +36,6 @@ class RemoteFrameClientImpl final : public RemoteFrameClient {
   void forwardPostMessage(MessageEvent*,
                           PassRefPtr<SecurityOrigin> target,
                           LocalFrame* source) const override;
-  void forwardInputEvent(Event*) override;
   void frameRectsChanged(const IntRect& frameRect) override;
   void updateRemoteViewportIntersection(const IntRect&) override;
   void advanceFocus(WebFocusType, LocalFrame*) override;
