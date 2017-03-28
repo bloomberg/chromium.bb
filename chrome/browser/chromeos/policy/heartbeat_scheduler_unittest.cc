@@ -15,6 +15,7 @@
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/ip_endpoint.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -163,7 +164,7 @@ class HeartbeatSchedulerTest : public testing::Test {
         .Times(AnyNumber());
   }
 
-  base::MessageLoop loop_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
   MockGCMDriver gcm_driver_;
   chromeos::ScopedCrosSettingsTestHelper settings_helper_;
   testing::NiceMock<policy::MockCloudPolicyClient> cloud_policy_client_;

@@ -5,7 +5,6 @@
 #include <string>
 #include <utility>
 
-#include "base/message_loop/message_loop.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
@@ -19,7 +18,7 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/settings/cros_settings_names.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -42,8 +41,7 @@ const int kAutoLoginDelay2 = 180000;
 class ExistingUserControllerAutoLoginTest : public ::testing::Test {
  protected:
   ExistingUserControllerAutoLoginTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        local_state_(TestingBrowserProcess::GetGlobal()),
+      : local_state_(TestingBrowserProcess::GetGlobal()),
         mock_user_manager_(new MockUserManager()),
         scoped_user_manager_(mock_user_manager_) {}
 
@@ -144,8 +142,7 @@ class ExistingUserControllerAutoLoginTest : public ::testing::Test {
   MockLoginDisplay* mock_login_display_;
 
   std::unique_ptr<MockLoginDisplayHost> mock_login_display_host_;
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
   ScopedTestingLocalState local_state_;
 
   // Required by ExistingUserController:
