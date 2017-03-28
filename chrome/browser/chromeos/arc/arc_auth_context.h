@@ -36,6 +36,10 @@ class ArcAuthContext : public UbertokenConsumer,
   ProfileOAuth2TokenService* token_service() { return token_service_; }
   const std::string& account_id() const { return account_id_; }
 
+  // Returns full account id, including dots that are removed in CrOS for
+  // the default account id.
+  const std::string& full_account_id() const { return full_account_id_; }
+
   // Prepares the context. Calling while an inflight operation exists will
   // cancel the inflight operation.
   // On completion, |context| is passed to the callback. On error, |context|
@@ -65,6 +69,7 @@ class ArcAuthContext : public UbertokenConsumer,
   // Unowned pointer.
   ProfileOAuth2TokenService* token_service_;
   std::string account_id_;
+  std::string full_account_id_;
 
   // Owned by content::BrowserContent. Used to isolate cookies for auth server
   // communication and shared with ARC OptIn UI platform app.

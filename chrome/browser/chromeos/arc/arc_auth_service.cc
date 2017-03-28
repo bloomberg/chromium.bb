@@ -90,6 +90,7 @@ class ArcAuthService::AccountInfoNotifier {
 
   void Notify(bool is_enforced,
               const std::string& auth_info,
+              const std::string& account_name,
               mojom::ChromeAccountType account_type,
               bool is_managed) {
     switch (callback_type_) {
@@ -104,6 +105,7 @@ class ArcAuthService::AccountInfoNotifier {
       case CallbackType::ACCOUNT_INFO:
         DCHECK(!account_info_callback_.is_null());
         mojom::AccountInfoPtr account_info = mojom::AccountInfo::New();
+        account_info->account_name = account_name;
         if (account_type ==
             mojom::ChromeAccountType::ACTIVE_DIRECTORY_ACCOUNT) {
           account_info->enrollment_token = auth_info;
@@ -195,7 +197,16 @@ void ArcAuthService::ReportMetrics(mojom::MetricsType metrics_type,
       UpdateAuthTiming("ArcAuth.SignInTime",
                        base::TimeDelta::FromMilliseconds(value));
       break;
+    case mojom::MetricsType::ACCOUNT_CHECK_MILLISECONDS:
+      UpdateAuthTiming("ArcAuth.AccountCheckTime",
+                       base::TimeDelta::FromMilliseconds(value));
+      break;
   }
+}
+
+void ArcAuthService::ReportAccountCheckStatus(
+    mojom::AccountCheckStatus status) {
+  UpdateAuthAccountCheckStatus(status);
 }
 
 void ArcAuthService::OnAccountInfoReady(mojom::AccountInfoPtr account_info) {
@@ -243,7 +254,8 @@ void ArcAuthService::RequestAccountInfoInternal(
 
   if (IsArcOptInVerificationDisabled()) {
     notifier->Notify(
-        false /* = is_enforced */, std::string(), GetAccountType(),
+        false /* = is_enforced */, std::string() /* auth_info */,
+        std::string() /* auth_name */, GetAccountType(),
         policy_util::IsAccountManaged(ArcSessionManager::Get()->profile()));
     return;
   }
@@ -255,6 +267,7 @@ void ArcAuthService::RequestAccountInfoInternal(
   const user_manager::User* user = nullptr;
   if (profile)
     user = chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+
   if (user && user->IsActiveDirectoryUser()) {
     // For Active Directory enrolled devices, we get an enrollment token for a
     // managed Google Play account from DMServer.
@@ -297,6 +310,7 @@ void ArcAuthService::OnEnrollmentTokenFetched(
   switch (status) {
     case ArcAuthInfoFetcher::Status::SUCCESS:
       notifier_->Notify(true /*is_enforced*/, enrollment_token,
+                        std::string() /* account_name */,
                         mojom::ChromeAccountType::ACTIVE_DIRECTORY_ACCOUNT,
                         true);
       notifier_.reset();
@@ -324,7 +338,9 @@ void ArcAuthService::OnAuthCodeFetched(ArcAuthInfoFetcher::Status status,
   }
 
   notifier_->Notify(
-      !IsArcOptInVerificationDisabled(), auth_code, GetAccountType(),
+      !IsArcOptInVerificationDisabled(), auth_code,
+      ArcSessionManager::Get()->auth_context()->full_account_id(),
+      GetAccountType(),
       policy_util::IsAccountManaged(ArcSessionManager::Get()->profile()));
   notifier_.reset();
 }

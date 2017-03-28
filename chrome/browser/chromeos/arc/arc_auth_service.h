@@ -40,6 +40,7 @@ class ArcAuthService : public ArcService,
   void OnSignInFailed(mojom::ArcSignInFailureReason reason) override;
   void RequestAccountInfo() override;
   void ReportMetrics(mojom::MetricsType metrics_type, int32_t value) override;
+  void ReportAccountCheckStatus(mojom::AccountCheckStatus status) override;
 
   // Deprecated methods:
   // For security reason this code can be used only once and exists for specific

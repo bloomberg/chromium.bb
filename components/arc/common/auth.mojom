@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 9
+// Next MinVersion: 10
 
 module arc.mojom;
 
@@ -66,6 +66,28 @@ enum ArcSignInFailureReason {
   [MinVersion=8] NO_NETWORK_CONNECTION = 15,
 };
 
+// These values describe account check status.
+[Extensible]
+enum AccountCheckStatus {
+    // Checked account exists and is up to date.
+    [MinVersion=9] UP_TO_DATE = 0,
+
+    // Checked account is new in the system.
+    [MinVersion=9] NEW = 1,
+
+    // Checked account exists but need to be reauthorized.
+    [MinVersion=9] NEED_REAUTH = 2,
+
+    // Checked account exists but it is in unknown state.
+    [MinVersion=9] UNKNOWN = 3,
+
+    // Account check has failed.
+    [MinVersion=9] CHECK_FAILED = 4,
+
+    // NOTE: If you add any entries to this enum, you must also update the
+    // corresponding UMA callsite in Chrome arc::UpdateAuthAccountCheckStatus.
+};
+
 // These values describe the type of the Chrome account to provision.
 [Extensible]
 enum ChromeAccountType {
@@ -97,10 +119,16 @@ enum MetricsType {
 
   // Duration of waiting for sign-in completed in milliseconds.
   SIGNIN_TIME_MILLISECONDS = 3,
+
+  // Duration of checking the status of account.
+  [MinVersion=9] ACCOUNT_CHECK_MILLISECONDS = 4,
 };
 
 // The necessary information for Android to sign in and provision itself.
 struct AccountInfo {
+  // Name of account, used to map to existing Android account.
+  [MinVersion=9] string? account_name@4;
+
   // The authorization code that can be used in Android to sign in when
   // account_type is USER_ACCOUNT or ROBOT_ACCOUNT. If it is null in these
   // cases, sign-in will be skipped.
@@ -118,7 +146,7 @@ struct AccountInfo {
   bool is_managed@2;
 };
 
-// Next Method ID: 9.
+// Next Method ID: 10.
 interface AuthHost {
   // Notifies Chrome that the sign-in is completed successfully.
   [MinVersion=2] OnSignInComplete@2();
@@ -131,6 +159,9 @@ interface AuthHost {
 
   // Reports metrics to Chrome to be recorded in UMA.
   [MinVersion=7] ReportMetrics@8(MetricsType metrics_type, int32 value);
+
+  // Reports result of account check.
+  [MinVersion=9] ReportAccountCheckStatus@9(AccountCheckStatus status);
 
   // Deprecated methods:
 

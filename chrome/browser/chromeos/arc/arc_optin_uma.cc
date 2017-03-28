@@ -64,9 +64,16 @@ void UpdateAuthCheckinAttempts(int32_t num_attempts) {
   UMA_HISTOGRAM_SPARSE_SLOWLY("ArcAuth.CheckinAttempts", num_attempts);
 }
 
+void UpdateAuthAccountCheckStatus(mojom::AccountCheckStatus status) {
+  DCHECK_LE(status, mojom::AccountCheckStatus::CHECK_FAILED);
+  UMA_HISTOGRAM_ENUMERATION(
+      "ArcAuth.AccountCheckStatus", static_cast<int>(status),
+      static_cast<int>(mojom::AccountCheckStatus::CHECK_FAILED) + 1);
+}
+
 void UpdateSilentAuthCodeUMA(OptInSilentAuthCode state) {
-  UMA_HISTOGRAM_ENUMERATION("Arc.OptInSilentAuthCode", static_cast<int>(state),
-                            static_cast<int>(OptInSilentAuthCode::SIZE));
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Arc.OptInSilentAuthCode",
+                              static_cast<int>(state));
 }
 
 std::ostream& operator<<(std::ostream& os, const ProvisioningResult& result) {
