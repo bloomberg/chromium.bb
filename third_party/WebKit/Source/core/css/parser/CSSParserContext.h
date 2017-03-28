@@ -39,20 +39,19 @@ class CORE_EXPORT CSSParserContext
 
   static CSSParserContext* create(const CSSParserContext* other,
                                   const KURL& baseURLOverride,
+                                  ReferrerPolicy referrerPolicyOverride,
                                   const String& charsetOverride,
-                                  const Referrer& referrerOverride,
                                   const Document* useCounterDocument);
 
   static CSSParserContext* create(CSSParserMode,
                                   SelectorProfile = DynamicProfile,
                                   const Document* useCounterDocument = nullptr);
+  static CSSParserContext* create(const Document&);
   static CSSParserContext* create(const Document&,
-                                  const Document* useCounterDocument);
-  static CSSParserContext* create(const Document&,
-                                  const KURL& baseURLOverride = KURL(),
+                                  const KURL& baseURLOverride,
+                                  ReferrerPolicy referrerPolicyOverride,
                                   const String& charset = emptyString,
-                                  SelectorProfile = DynamicProfile,
-                                  const Document* useCounterDocument = nullptr);
+                                  SelectorProfile = DynamicProfile);
 
   bool operator==(const CSSParserContext&) const;
   bool operator!=(const CSSParserContext& other) const {

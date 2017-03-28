@@ -195,8 +195,8 @@ void ProcessingInstruction::setCSSStyleSheet(
   }
 
   DCHECK(m_isCSS);
-  CSSParserContext* parserContext =
-      CSSParserContext::create(document(), baseURL, charset);
+  CSSParserContext* parserContext = CSSParserContext::create(
+      document(), baseURL, document().getReferrerPolicy(), charset);
 
   StyleSheetContents* newSheet =
       StyleSheetContents::create(href, parserContext);

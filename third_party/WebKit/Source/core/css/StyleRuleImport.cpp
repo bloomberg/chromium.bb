@@ -78,13 +78,11 @@ void StyleRuleImport::setCSSStyleSheet(
     document = m_parentStyleSheet->singleOwnerDocument();
     context = m_parentStyleSheet->parserContext();
   }
-  context = CSSParserContext::create(
-      context, baseURL, charset,
-      (!baseURL.isNull() && document)
-          ? Referrer(baseURL.strippedForUseAsReferrer(),
-                     document->getReferrerPolicy())
-          : context->referrer(),
-      document);
+  context =
+      CSSParserContext::create(context, baseURL,
+                               document ? document->getReferrerPolicy()
+                                        : context->referrer().referrerPolicy,
+                               charset, document);
 
   m_styleSheet = StyleSheetContents::create(this, href, context);
 

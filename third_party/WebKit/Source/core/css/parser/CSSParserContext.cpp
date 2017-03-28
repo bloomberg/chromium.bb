@@ -43,12 +43,13 @@ CSSParserContext* CSSParserContext::create(const CSSParserContext* other,
 // static
 CSSParserContext* CSSParserContext::create(const CSSParserContext* other,
                                            const KURL& baseURL,
+                                           ReferrerPolicy referrerPolicy,
                                            const String& charset,
-                                           const Referrer& referrer,
                                            const Document* useCounterDocument) {
   return new CSSParserContext(
       baseURL, charset, other->m_mode, other->m_matchMode, other->m_profile,
-      referrer, other->m_isHTMLDocument,
+      Referrer(baseURL.strippedForUseAsReferrer(), referrerPolicy),
+      other->m_isHTMLDocument,
       other->m_useLegacyBackgroundSizeShorthandBehavior,
       other->m_shouldCheckContentSecurityPolicy, useCounterDocument);
 }
@@ -63,21 +64,19 @@ CSSParserContext* CSSParserContext::create(CSSParserMode mode,
 }
 
 // static
-CSSParserContext* CSSParserContext::create(const Document& document,
-                                           const Document* useCounterDocument) {
-  return CSSParserContext::create(document, KURL(), emptyString, DynamicProfile,
-                                  useCounterDocument);
+CSSParserContext* CSSParserContext::create(const Document& document) {
+  return CSSParserContext::create(document, document.baseURL(),
+                                  document.getReferrerPolicy(), emptyString,
+                                  DynamicProfile);
 }
 
 // static
-CSSParserContext* CSSParserContext::create(const Document& document,
-                                           const KURL& baseURLOverride,
-                                           const String& charset,
-                                           SelectorProfile profile,
-                                           const Document* useCounterDocument) {
-  const KURL baseURL =
-      baseURLOverride.isNull() ? document.baseURL() : baseURLOverride;
-
+CSSParserContext* CSSParserContext::create(
+    const Document& document,
+    const KURL& baseURLOverride,
+    ReferrerPolicy referrerPolicyOverride,
+    const String& charset,
+    SelectorProfile profile) {
   CSSParserMode mode =
       document.inQuirksMode() ? HTMLQuirksMode : HTMLStandardMode;
   CSSParserMode matchMode;
@@ -88,8 +87,8 @@ CSSParserContext* CSSParserContext::create(const Document& document,
     matchMode = mode;
   }
 
-  const Referrer referrer(baseURL.strippedForUseAsReferrer(),
-                          document.getReferrerPolicy());
+  const Referrer referrer(baseURLOverride.strippedForUseAsReferrer(),
+                          referrerPolicyOverride);
 
   bool useLegacyBackgroundSizeShorthandBehavior =
       document.settings()
@@ -102,10 +101,10 @@ CSSParserContext* CSSParserContext::create(const Document& document,
   else
     policyDisposition = CheckContentSecurityPolicy;
 
-  return new CSSParserContext(baseURL, charset, mode, matchMode, profile,
-                              referrer, document.isHTMLDocument(),
+  return new CSSParserContext(baseURLOverride, charset, mode, matchMode,
+                              profile, referrer, document.isHTMLDocument(),
                               useLegacyBackgroundSizeShorthandBehavior,
-                              policyDisposition, useCounterDocument);
+                              policyDisposition, &document);
 }
 
 CSSParserContext::CSSParserContext(
