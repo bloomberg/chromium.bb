@@ -396,7 +396,7 @@ public class CustomTabActivity extends ChromeActivity {
         // If extra headers have been passed, cancel any current prerender, as
         // prerendering doesn't support extra headers.
         if (IntentHandler.getExtraHeadersFromIntent(getIntent()) != null) {
-            connection.cancelPrerender(mSession);
+            connection.cancelSpeculation(mSession);
         }
 
         getTabModelSelector().getModel(false).addObserver(mTabModelObserver);

@@ -94,33 +94,39 @@ public class CustomTabsConnection {
     /** Holds the parameters for the current speculation. */
     @VisibleForTesting
     static final class SpeculationParams {
+        @VisibleForTesting
+        static final int NO_SPECULATION = 0;
+        @VisibleForTesting
+        static final int PREFETCH = 1;
+        @VisibleForTesting
+        static final int PRERENDER = 2;
+
         public final CustomTabsSessionToken session;
         public final String url;
+        public final int speculationMode;
 
         // Only for prerender.
         public final WebContents webContents;
         public final String referrer;
         public final Bundle extras;
 
-        public final boolean prefetchOnly;
+        static SpeculationParams forPrefetch(CustomTabsSessionToken session, String url) {
+            return new SpeculationParams(session, url, PREFETCH, null, null, null);
+        }
 
         static SpeculationParams forPrerender(CustomTabsSessionToken session, String url,
                 WebContents webcontents, String referrer, Bundle extras) {
-            return new SpeculationParams(session, url, webcontents, referrer, extras, false);
+            return new SpeculationParams(session, url, PRERENDER, webcontents, referrer, extras);
         }
 
-        static SpeculationParams forPrefetch(CustomTabsSessionToken session, String url) {
-            return new SpeculationParams(session, url, null, null, null, true);
-        }
-
-        private SpeculationParams(CustomTabsSessionToken session, String url,
-                WebContents webContents, String referrer, Bundle extras, boolean prefetchOnly) {
+        private SpeculationParams(CustomTabsSessionToken session, String url, int speculationMode,
+                WebContents webContents, String referrer, Bundle extras) {
             this.session = session;
             this.url = url;
+            this.speculationMode = speculationMode;
             this.webContents = webContents;
             this.referrer = referrer;
             this.extras = extras;
-            this.prefetchOnly = prefetchOnly;
         }
     }
 
@@ -189,7 +195,7 @@ public class CustomTabsConnection {
         ClientManager.DisconnectCallback onDisconnect = new ClientManager.DisconnectCallback() {
             @Override
             public void run(CustomTabsSessionToken session) {
-                cancelPrerender(session);
+                cancelSpeculation(session);
             }
         };
         PostMessageHandler handler = new PostMessageHandler(session);
@@ -315,30 +321,17 @@ public class CustomTabsConnection {
             int uid, String url, Bundle extras, List<Bundle> otherLikelyBundles) {
         ThreadUtils.assertOnUiThread();
         if (TextUtils.isEmpty(url)) {
-            cancelPrerender(session);
+            cancelSpeculation(session);
             return;
         }
-
-        WarmupManager warmupManager = WarmupManager.getInstance();
-        Profile profile = Profile.getLastUsedProfile();
 
         url = DataReductionProxySettings.getInstance().maybeRewriteWebliteUrl(url);
         int debugOverrideValue = NO_OVERRIDE;
         if (extras != null) debugOverrideValue = extras.getInt(DEBUG_OVERRIDE_KEY, NO_OVERRIDE);
 
-        boolean didStartPrerender = false, didStartPrefetch = false;
-        boolean mayPrerender = mayPrerender(session);
-        if (mayPrerender) {
-            if (debugOverrideValue == PREFETCH_ONLY) {
-                didStartPrefetch = new ResourcePrefetchPredictor(profile).startPrefetching(url);
-                if (didStartPrefetch) mSpeculation = SpeculationParams.forPrefetch(session, url);
-            } else if (debugOverrideValue != NO_PRERENDERING) {
-                didStartPrerender = prerenderUrl(session, url, extras, uid);
-            }
-        }
+        int speculationMode = getSpeculationMode(session, debugOverrideValue);
+        if (maySpeculate(session)) startSpeculation(session, url, speculationMode, extras, uid);
         preconnectUrls(otherLikelyBundles);
-        if (!didStartPrefetch) warmupManager.maybePreconnectUrlAndSubResources(profile, url);
-        if (!didStartPrerender) warmupManager.createSpareWebContents();
     }
 
     /**
@@ -587,10 +580,8 @@ public class CustomTabsConnection {
             return null;
         }
 
-        if (mSpeculation.prefetchOnly) {
-            Profile profile = Profile.getLastUsedProfile();
-            new ResourcePrefetchPredictor(profile).stopPrefetching(mSpeculation.url);
-            mSpeculation = null;
+        if (mSpeculation.speculationMode == SpeculationParams.PREFETCH) {
+            cancelSpeculation(session);
             return null;
         }
 
@@ -607,7 +598,7 @@ public class CustomTabsConnection {
             result = webContents;
             mSpeculation = null;
         } else {
-            cancelPrerender(session);
+            cancelSpeculation(session);
         }
         if (!mClientManager.usesDefaultSessionParameters(session) && webContents != null) {
             RecordHistogram.recordBooleanHistogram(
@@ -670,6 +661,14 @@ public class CustomTabsConnection {
      */
     void setSendNavigationInfoForSession(CustomTabsSessionToken session, boolean send) {
         mClientManager.setSendNavigationInfoForSession(session, send);
+    }
+
+    void setSpeculationModeForSession(CustomTabsSessionToken session, int speculationMode) {
+        mClientManager.setSpeculationModeForSession(session, speculationMode);
+    }
+
+    int getSpeculationModeForSession(CustomTabsSessionToken session) {
+        return mClientManager.getSpeculationModeForSession(session);
     }
 
     /**
@@ -887,7 +886,7 @@ public class CustomTabsConnection {
         });
     }
 
-    private boolean mayPrerender(CustomTabsSessionToken session) {
+    private boolean maySpeculate(CustomTabsSessionToken session) {
         if (!DeviceClassManager.enablePrerendering()) return false;
         // TODO(yusufo): The check for prerender in PrivacyManager now checks for the network
         // connection type as well, we should either change that or add another check for custom
@@ -900,15 +899,52 @@ public class CustomTabsConnection {
         return !cm.isActiveNetworkMetered() || shouldPrerenderOnCellularForSession(session);
     }
 
-    /** Cancels a prerender for a given session, or any session if null. */
-    void cancelPrerender(CustomTabsSessionToken session) {
+    /** Cancels the speculation for a given session, or any session if null. */
+    void cancelSpeculation(CustomTabsSessionToken session) {
         ThreadUtils.assertOnUiThread();
-        if (mSpeculation != null && (session == null || session.equals(mSpeculation.session))
-                && mSpeculation.webContents != null) {
-            mExternalPrerenderHandler.cancelCurrentPrerender();
-            mSpeculation.webContents.destroy();
+        if (mSpeculation == null) return;
+        if (session == null || session.equals(mSpeculation.session)) {
+            switch (mSpeculation.speculationMode) {
+                case SpeculationParams.PRERENDER:
+                    if (mSpeculation.webContents == null) return;
+                    mExternalPrerenderHandler.cancelCurrentPrerender();
+                    mSpeculation.webContents.destroy();
+                    break;
+                case SpeculationParams.PREFETCH:
+                    Profile profile = Profile.getLastUsedProfile();
+                    new ResourcePrefetchPredictor(profile).stopPrefetching(mSpeculation.url);
+                    break;
+                default:
+                    return;
+            }
             mSpeculation = null;
         }
+    }
+
+    /*
+     * This function will do as much as it can to have a subsequent navigation
+     * to the specified url sped up.
+     */
+    private void startSpeculation(CustomTabsSessionToken session, String url, int speculationMode,
+            Bundle extras, int uid) {
+        WarmupManager warmupManager = WarmupManager.getInstance();
+        Profile profile = Profile.getLastUsedProfile();
+        boolean preconnect = true, createSpareWebContents = true;
+        switch (speculationMode) {
+            case SpeculationParams.PREFETCH:
+                boolean didPrefetch = new ResourcePrefetchPredictor(profile).startPrefetching(url);
+                if (didPrefetch) mSpeculation = SpeculationParams.forPrefetch(session, url);
+                preconnect = !didPrefetch;
+                break;
+            case SpeculationParams.PRERENDER:
+                boolean didPrerender = prerenderUrl(session, url, extras, uid);
+                createSpareWebContents = !didPrerender;
+                break;
+            default:
+                break;
+        }
+        if (preconnect) warmupManager.maybePreconnectUrlAndSubResources(profile, url);
+        if (createSpareWebContents) warmupManager.createSpareWebContents();
     }
 
     /**
@@ -923,12 +959,8 @@ public class CustomTabsConnection {
     private boolean prerenderUrl(
             CustomTabsSessionToken session, String url, Bundle extras, int uid) {
         ThreadUtils.assertOnUiThread();
-        // Ignores mayPrerender() for an empty URL, since it cancels an existing prerender.
-        if (!mayPrerender(session) && !TextUtils.isEmpty(url)) return false;
         if (!mWarmupHasBeenCalled.get()) return false;
-        // Last one wins and cancels the previous prerender.
-        cancelPrerender(null);
-        if (TextUtils.isEmpty(url)) return false;
+
         boolean throttle = !shouldPrerenderOnCellularForSession(session);
         if (throttle && !mClientManager.isPrerenderingAllowed(uid)) return false;
 
@@ -947,18 +979,17 @@ public class CustomTabsConnection {
             referrer = getReferrerForSession(session).getUrl();
         }
         if (referrer == null) referrer = "";
-        Pair<WebContents, WebContents> webContentsPair = mExternalPrerenderHandler.addPrerender(
-                Profile.getLastUsedProfile(), url, referrer,
-                contentBounds,
-                shouldPrerenderOnCellularForSession(session));
+        Pair<WebContents, WebContents> webContentsPair =
+                mExternalPrerenderHandler.addPrerender(Profile.getLastUsedProfile(), url, referrer,
+                        contentBounds, shouldPrerenderOnCellularForSession(session));
         if (webContentsPair == null) return false;
         WebContents dummyWebContents = webContentsPair.first;
         if (webContentsPair.second != null) {
             mClientManager.resetPostMessageHandlerForSession(session, webContentsPair.second);
         }
         if (throttle) mClientManager.registerPrerenderRequest(uid, url);
-        mSpeculation = SpeculationParams.forPrerender(
-                session, url, dummyWebContents, referrer, extras);
+        mSpeculation =
+                SpeculationParams.forPrerender(session, url, dummyWebContents, referrer, extras);
 
         RecordHistogram.recordBooleanHistogram("CustomTabs.PrerenderSessionUsesDefaultParameters",
                 mClientManager.usesDefaultSessionParameters(session));
@@ -979,5 +1010,16 @@ public class CustomTabsConnection {
     @VisibleForTesting
     void setForcePrerender(boolean force) {
         mForcePrerenderForTesting = force;
+    }
+
+    private int getSpeculationMode(CustomTabsSessionToken session, int debugOverrideValue) {
+        switch (debugOverrideValue) {
+            case PREFETCH_ONLY:
+                return SpeculationParams.PREFETCH;
+            case NO_PRERENDERING:
+                return SpeculationParams.NO_SPECULATION;
+            default:
+                return getSpeculationModeForSession(session);
+        }
     }
 }

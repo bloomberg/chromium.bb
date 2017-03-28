@@ -1371,16 +1371,31 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
 
     private void sendPostMessageDuringPrerenderTransition(int requestTime)
             throws InterruptedException {
+        sendPostMessageDuringSpeculationTransition(
+                requestTime, CustomTabsConnection.SpeculationParams.PRERENDER);
+    }
+
+    private void sendPostMessageDuringSpeculationTransition(int requestTime, int speculationMode)
+            throws InterruptedException {
         final CallbackHelper messageChannelHelper = new CallbackHelper();
         final String url =
                 mWebServer.setResponse("/test.html", TITLE_FROM_POSTMESSAGE_TO_CHANNEL, null);
-        warmUpAndWait();
+        final CustomTabsConnection connection = warmUpAndWait();
+
         final CustomTabsSession session = bindWithCallback(new CustomTabsCallback() {
             @Override
             public void onMessageChannelReady(Bundle extras) {
                 messageChannelHelper.notifyCalled();
             }
         });
+
+        Intent intent = new CustomTabsIntent.Builder(session).build().intent;
+        intent.setData(Uri.parse(url));
+        intent.setComponent(new ComponentName(
+                getInstrumentation().getTargetContext(), ChromeLauncherActivity.class));
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        CustomTabsSessionToken token = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
+
         boolean channelRequested = false;
         String titleString = "";
         String currentMessage = "";
@@ -1390,11 +1405,10 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
             assertTrue(channelRequested);
         }
 
+        connection.setSpeculationModeForSession(token, speculationMode);
         session.mayLaunchUrl(Uri.parse(url), null, null);
         try {
-            ensureCompletedPrerenderForUrl(
-                    CustomTabsConnection.getInstance((Application)
-                            getInstrumentation().getTargetContext().getApplicationContext()), url);
+            ensureCompletedSpeculationForUrl(connection, url, speculationMode);
         } catch (Exception e) {
             fail();
         }
@@ -1417,11 +1431,6 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
             titleString = currentMessage;
         }
 
-        Intent intent = new CustomTabsIntent.Builder(session).build().intent;
-        intent.setData(Uri.parse(url));
-        intent.setComponent(new ComponentName(
-                getInstrumentation().getTargetContext(), ChromeLauncherActivity.class));
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         try {
             startCustomTabActivityWithIntent(intent);
         } catch (InterruptedException e) {
@@ -1489,6 +1498,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         CustomTabsSessionToken token = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
         assertTrue(connection.newSession(token));
         Bundle extras = new Bundle();
+        // Forcing no prerendering implies falling back to simply creating a spare WebContents.
         extras.putInt(
                 CustomTabsConnection.DEBUG_OVERRIDE_KEY, CustomTabsConnection.NO_PRERENDERING);
         assertTrue(connection.mayLaunchUrl(token, Uri.parse(mTestPage), extras, null));
@@ -1507,18 +1517,18 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         assertFalse(getActivity().getActivityTab().canGoBack());
     }
 
-    /** Tests that calling mayLaunchUrl() without warmup() succeeds. */
-    @SmallTest
-    @RetryOnFailure
-    public void testMayLaunchUrlWithoutWarmup() {
-        mayLaunchUrlWithoutWarmup(false);
-    }
-
     /** Tests that calling warmup() is optional without prerendering. */
     @SmallTest
     @RetryOnFailure
-    public void testMayLaunchUrlWithoutWarmupNoPrerendering() {
-        mayLaunchUrlWithoutWarmup(true);
+    public void testMayLaunchUrlWithoutWarmupNoSpeculation() {
+        mayLaunchUrlWithoutWarmup(CustomTabsConnection.SpeculationParams.NO_SPECULATION);
+    }
+
+    /** Tests that calling mayLaunchUrl() without warmup() succeeds. */
+    @SmallTest
+    @RetryOnFailure
+    public void testMayLaunchUrlWithoutWarmupPrerender() {
+        mayLaunchUrlWithoutWarmup(CustomTabsConnection.SpeculationParams.PRERENDER);
     }
 
     /**
@@ -1619,6 +1629,12 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
      */
     private void prerenderAndChangeFragment(boolean ignoreFragments, boolean wait)
             throws Exception {
+        speculateAndChangeFragment(
+                ignoreFragments, wait, CustomTabsConnection.SpeculationParams.PRERENDER);
+    }
+
+    private void speculateAndChangeFragment(
+            boolean ignoreFragments, boolean wait, int speculationMode) throws Exception {
         String testUrl = mTestServer.getURL(FRAGMENT_TEST_PAGE);
         String initialFragment = "#test";
         String initialUrl = testUrl + initialFragment;
@@ -1631,9 +1647,10 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         CustomTabsSessionToken token = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
         connection.newSession(token);
         connection.setIgnoreUrlFragmentsForSession(token, ignoreFragments);
+        connection.setSpeculationModeForSession(token, speculationMode);
         assertTrue(connection.mayLaunchUrl(token, Uri.parse(initialUrl), null, null));
 
-        if (wait) ensureCompletedPrerenderForUrl(connection, initialUrl);
+        if (wait) ensureCompletedSpeculationForUrl(connection, initialUrl, speculationMode);
 
         try {
             startCustomTabActivityWithIntent(intent);
@@ -1641,14 +1658,16 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
             fail();
         }
         final Tab tab = mActivity.getActivityTab();
-        ElementContentCriteria initialVisibilityCriteria = new ElementContentCriteria(
-                tab, "visibility", ignoreFragments ? "prerender" : "visible");
-        ElementContentCriteria initialFragmentCriteria = new ElementContentCriteria(
-                tab, "initial-fragment", ignoreFragments ? initialFragment : fragment);
-        ElementContentCriteria fragmentCriteria = new ElementContentCriteria(
-                tab, "fragment", fragment);
 
         if (wait) {
+            ElementContentCriteria initialVisibilityCriteria = new ElementContentCriteria(tab,
+                    "visibility",
+                    ignoreFragments ? getExpectedVisibilityForSpeculationMode(speculationMode)
+                                    : "visible");
+            ElementContentCriteria initialFragmentCriteria = new ElementContentCriteria(
+                    tab, "initial-fragment", ignoreFragments ? initialFragment : fragment);
+            ElementContentCriteria fragmentCriteria =
+                    new ElementContentCriteria(tab, "fragment", fragment);
             // The tab hasn't been reloaded.
             CriteriaHelper.pollInstrumentationThread(initialVisibilityCriteria, 2000, 200);
             // No reload (initial fragment is correct).
@@ -1673,12 +1692,17 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @RetryOnFailure
     public void testPrerenderingCorrectUrl() throws Exception {
+        testSpeculateCorrectUrl(CustomTabsConnection.SpeculationParams.PRERENDER);
+    }
+
+    private void testSpeculateCorrectUrl(int speculationMode) throws Exception {
         Context context = getInstrumentation().getTargetContext().getApplicationContext();
         final CustomTabsConnection connection = warmUpAndWait();
         CustomTabsSessionToken token = CustomTabsSessionToken.createDummySessionTokenForTesting();
         connection.newSession(token);
+        connection.setSpeculationModeForSession(token, speculationMode);
         assertTrue(connection.mayLaunchUrl(token, Uri.parse(mTestPage), null, null));
-        ensureCompletedPrerenderForUrl(connection, mTestPage);
+        ensureCompletedSpeculationForUrl(connection, mTestPage, speculationMode);
 
         try {
             startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
@@ -1698,9 +1722,14 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @RetryOnFailure
     public void testPrerenderingInvalidUrl() throws Exception {
+        testSpeculateInvalidUrl(CustomTabsConnection.SpeculationParams.PRERENDER);
+    }
+
+    private void testSpeculateInvalidUrl(int speculationMode) throws Exception {
         final CustomTabsConnection connection = warmUpAndWait();
         CustomTabsSessionToken token = CustomTabsSessionToken.createDummySessionTokenForTesting();
         connection.newSession(token);
+        connection.setSpeculationModeForSession(token, speculationMode);
         assertFalse(connection.mayLaunchUrl(token, Uri.parse("chrome://version"), null, null));
     }
 
@@ -1765,10 +1794,16 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @RetryOnFailure
     public void testAllocateChildConnectionWithPrerender() throws Exception {
+        testAllocateChildConnectionWithSpeculation(
+                CustomTabsConnection.SpeculationParams.PRERENDER);
+    }
+
+    private void testAllocateChildConnectionWithSpeculation(int speculationMode) throws Exception {
         Context context = getInstrumentation().getTargetContext().getApplicationContext();
         final CustomTabsConnection connection = warmUpAndWait();
         CustomTabsSessionToken token = CustomTabsSessionToken.createDummySessionTokenForTesting();
         connection.newSession(token);
+        connection.setSpeculationModeForSession(token, speculationMode);
         assertTrue(connection.mayLaunchUrl(token, Uri.parse(mTestPage), null, null));
         try {
             startCustomTabActivityWithIntent(
@@ -1822,14 +1857,20 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @RetryOnFailure
     public void testPrerenderingWithReferrer() throws Exception {
+        testSpeculatingWithReferrer(CustomTabsConnection.SpeculationParams.PRERENDER);
+    }
+
+    private void testSpeculatingWithReferrer(int speculationMode) throws Exception {
         String referrer = "android-app://com.foo.me/";
-        maybePrerenderAndLaunchWithReferrers(
-                mTestServer.getURL(FRAGMENT_TEST_PAGE), true, referrer, referrer);
+        maybeSpeculateAndLaunchWithReferrers(
+                mTestServer.getURL(FRAGMENT_TEST_PAGE), speculationMode, referrer, referrer);
 
         Tab tab = mActivity.getActivityTab();
         // The tab hasn't been reloaded.
         CriteriaHelper.pollInstrumentationThread(
-                new ElementContentCriteria(tab, "visibility", "prerender"), 2000, 200);
+                new ElementContentCriteria(tab, "visibility",
+                        getExpectedVisibilityForSpeculationMode(speculationMode)),
+                2000, 200);
         // The Referrer is correctly set.
         CriteriaHelper.pollInstrumentationThread(
                 new TabsOpenedFromExternalAppTest.ReferrerCriteria(tab, referrer), 2000, 200);
@@ -1843,10 +1884,14 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @RetryOnFailure
     public void testPrerenderingWithMismatchedReferrers() throws Exception {
+        testSpeculatingWithMismatchedReferrers(CustomTabsConnection.SpeculationParams.PRERENDER);
+    }
+
+    private void testSpeculatingWithMismatchedReferrers(int speculationMode) throws Exception {
         String prerenderReferrer = "android-app://com.foo.me/";
         String launchReferrer = "android-app://com.foo.me.i.changed.my.mind/";
-        maybePrerenderAndLaunchWithReferrers(
-                mTestServer.getURL(FRAGMENT_TEST_PAGE), true, prerenderReferrer, launchReferrer);
+        maybeSpeculateAndLaunchWithReferrers(mTestServer.getURL(FRAGMENT_TEST_PAGE),
+                speculationMode, prerenderReferrer, launchReferrer);
 
         Tab tab = mActivity.getActivityTab();
         // Prerender has been dropped.
@@ -1857,13 +1902,14 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
                 new TabsOpenedFromExternalAppTest.ReferrerCriteria(tab, launchReferrer), 2000, 200);
     }
 
-    /** Tests that a client can set a referrer, without prerendering. */
+    /** Tests that a client can set a referrer, without speculating. */
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @RetryOnFailure
     public void testClientCanSetReferrer() throws Exception {
         String referrerUrl = "android-app://com.foo.me/";
-        maybePrerenderAndLaunchWithReferrers(mTestPage, false, null, referrerUrl);
+        maybeSpeculateAndLaunchWithReferrers(mTestPage,
+                CustomTabsConnection.SpeculationParams.NO_SPECULATION, null, referrerUrl);
 
         Tab tab = mActivity.getActivityTab();
         // The Referrer is correctly set.
@@ -2034,23 +2080,24 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     }
 
     /** Maybe prerenders a URL with a referrer, then launch it with another one. */
-    private void maybePrerenderAndLaunchWithReferrers(String url, boolean prerender,
-            String prerenderReferrer, String launchReferrer) throws Exception {
+    private void maybeSpeculateAndLaunchWithReferrers(String url, int speculationMode,
+            String speculationReferrer, String launchReferrer) throws Exception {
         Context context = getInstrumentation().getTargetContext().getApplicationContext();
         CustomTabsConnection connection = null;
         CustomTabsSessionToken token = null;
         Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(context, url);
-        if (prerender) {
+        if (speculationMode != CustomTabsConnection.SpeculationParams.NO_SPECULATION) {
             connection = warmUpAndWait();
             token = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
             connection.newSession(token);
+            connection.setSpeculationModeForSession(token, speculationMode);
             Bundle extras = null;
-            if (prerenderReferrer != null) {
+            if (speculationReferrer != null) {
                 extras = new Bundle();
-                extras.putParcelable(Intent.EXTRA_REFERRER, Uri.parse(prerenderReferrer));
+                extras.putParcelable(Intent.EXTRA_REFERRER, Uri.parse(speculationReferrer));
             }
             assertTrue(connection.mayLaunchUrl(token, Uri.parse(url), extras, null));
-            ensureCompletedPrerenderForUrl(connection, url);
+            ensureCompletedSpeculationForUrl(connection, url, speculationMode);
         }
 
         if (launchReferrer != null) {
@@ -2063,18 +2110,19 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         }
     }
 
-    private void mayLaunchUrlWithoutWarmup(boolean noPrerendering) {
+    private void mayLaunchUrlWithoutWarmup(int speculationMode) {
         Context context = getInstrumentation().getTargetContext().getApplicationContext();
         CustomTabsConnection connection =
                 CustomTabsTestUtils.setUpConnection((Application) context);
         CustomTabsSessionToken token = CustomTabsSessionToken.createDummySessionTokenForTesting();
         connection.newSession(token);
         Bundle extras = null;
-        if (noPrerendering) {
+        if (speculationMode == CustomTabsConnection.SpeculationParams.NO_SPECULATION) {
             extras = new Bundle();
             extras.putInt(
                     CustomTabsConnection.DEBUG_OVERRIDE_KEY, CustomTabsConnection.NO_PRERENDERING);
         }
+        connection.setSpeculationModeForSession(token, speculationMode);
         assertTrue(connection.mayLaunchUrl(token, Uri.parse(mTestPage), extras, null));
         try {
             startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
@@ -2184,18 +2232,20 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
                         getInstrumentation().getTargetContext(), mTestPage));
     }
 
-    private static void ensureCompletedPrerenderForUrl(
-            final CustomTabsConnection connection, final String url) throws Exception {
-        CriteriaHelper.pollUiThread(new Criteria("No Prerender") {
-            @Override
-            public boolean isSatisfied() {
-                return connection.mSpeculation != null
-                        && connection.mSpeculation.webContents != null
-                        && ExternalPrerenderHandler.hasPrerenderedAndFinishedLoadingUrl(
-                                   Profile.getLastUsedProfile(), url,
-                                   connection.mSpeculation.webContents);
-            }
-        }, LONG_TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+    private static void ensureCompletedSpeculationForUrl(final CustomTabsConnection connection,
+            final String url, int speculationMode) throws Exception {
+        if (speculationMode == CustomTabsConnection.SpeculationParams.PRERENDER) {
+            CriteriaHelper.pollUiThread(new Criteria("No Prerender") {
+                @Override
+                public boolean isSatisfied() {
+                    return connection.mSpeculation != null
+                            && connection.mSpeculation.webContents != null
+                            && ExternalPrerenderHandler.hasPrerenderedAndFinishedLoadingUrl(
+                                       Profile.getLastUsedProfile(), url,
+                                       connection.mSpeculation.webContents);
+                }
+            }, LONG_TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        }
     }
 
     private CustomTabsSession bindWithCallback(final CustomTabsCallback callback) {
@@ -2281,6 +2331,15 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
                 return false;
             }
             return TextUtils.equals(mExpected, value);
+        }
+    }
+
+    private static String getExpectedVisibilityForSpeculationMode(int speculationMode) {
+        switch (speculationMode) {
+            case CustomTabsConnection.SpeculationParams.PRERENDER:
+                return "prerender";
+            default:
+                return "visible";
         }
     }
 }
