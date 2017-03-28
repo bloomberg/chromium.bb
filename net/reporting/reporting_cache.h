@@ -31,6 +31,11 @@ struct ReportingReport;
 // This corresponds roughly to the "Reporting cache" in the spec, except that
 // endpoints and clients are stored in a more structurally-convenient way, and
 // endpoint failures/retry-after are tracked in ReportingEndpointManager.
+//
+// The cache implementation has the notion of "pending" reports. These are
+// reports that are part of an active delivery attempt, so they won't be
+// actually deallocated. Any attempt to remove a pending report wil mark it
+// "doomed", which will cause it to be deallocated once it is no longer pending.
 class NET_EXPORT ReportingCache {
  public:
   ReportingCache();
