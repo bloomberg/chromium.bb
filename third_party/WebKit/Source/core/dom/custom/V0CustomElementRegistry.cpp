@@ -38,7 +38,7 @@
 #include "core/dom/custom/CustomElementRegistry.h"
 #include "core/dom/custom/V0CustomElementException.h"
 #include "core/dom/custom/V0CustomElementRegistrationContext.h"
-#include "core/frame/LocalDOMWindow.h"
+#include "core/frame/UseCounter.h"
 
 namespace blink {
 
@@ -107,6 +107,18 @@ V0CustomElementDefinition* V0CustomElementRegistry::registerElement(
         V0CustomElementException::ContextDestroyedRegisteringDefinition, type,
         exceptionState);
     return 0;
+  }
+
+  if (validNames & V0CustomElement::EmbedderNames) {
+    UseCounter::count(document,
+                      UseCounter::V0CustomElementsRegisterEmbedderElement);
+  } else if (tagName.namespaceURI() == SVGNames::svgNamespaceURI) {
+    UseCounter::count(document, UseCounter::V0CustomElementsRegisterSVGElement);
+  } else {
+    UseCounter::count(
+        document, descriptor.isTypeExtension()
+                      ? UseCounter::V0CustomElementsRegisterHTMLTypeExtension
+                      : UseCounter::V0CustomElementsRegisterHTMLCustomTag);
   }
 
   return definition;

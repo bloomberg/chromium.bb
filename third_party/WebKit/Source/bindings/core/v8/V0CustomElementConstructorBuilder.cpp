@@ -48,6 +48,7 @@
 #include "core/dom/custom/V0CustomElementDescriptor.h"
 #include "core/dom/custom/V0CustomElementException.h"
 #include "core/dom/custom/V0CustomElementProcessingStack.h"
+#include "core/frame/UseCounter.h"
 #include "wtf/Assertions.h"
 
 namespace blink {
@@ -354,6 +355,9 @@ static void constructCustomElement(
       namespaceURI, tagName,
       StringOrDictionary::fromString(maybeType->IsNull() ? nullAtom : type),
       exceptionState);
+  if (element) {
+    UseCounter::count(document, UseCounter::V0CustomElementsConstruct);
+  }
   v8SetReturnValueFast(info, element, document);
 }
 

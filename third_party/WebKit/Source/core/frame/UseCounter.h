@@ -1491,6 +1491,13 @@ class CORE_EXPORT UseCounter {
     V8Navigator_GetInstalledRelatedApps_Method = 1870,
     NamedAccessOnWindow_ChildBrowsingContext = 1871,
     NamedAccessOnWindow_ChildBrowsingContext_CrossOriginNameMismatch = 1872,
+    V0CustomElementsRegisterHTMLCustomTag = 1873,
+    V0CustomElementsRegisterHTMLTypeExtension = 1874,
+    V0CustomElementsRegisterSVGElement = 1875,
+    V0CustomElementsRegisterEmbedderElement = 1876,
+    V0CustomElementsCreateCustomTagElement = 1877,
+    V0CustomElementsCreateTypeExtensionElement = 1878,
+    V0CustomElementsConstruct = 1879,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

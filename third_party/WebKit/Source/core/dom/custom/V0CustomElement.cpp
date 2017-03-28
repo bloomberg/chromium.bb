@@ -38,6 +38,7 @@
 #include "core/dom/custom/V0CustomElementMicrotaskRunQueue.h"
 #include "core/dom/custom/V0CustomElementObserver.h"
 #include "core/dom/custom/V0CustomElementScheduler.h"
+#include "core/frame/UseCounter.h"
 
 namespace blink {
 
@@ -108,6 +109,11 @@ void V0CustomElement::define(Element* element,
       break;
 
     case Element::V0WaitingForUpgrade:
+      UseCounter::count(
+          element->document(),
+          definition->descriptor().isTypeExtension()
+              ? UseCounter::V0CustomElementsCreateTypeExtensionElement
+              : UseCounter::V0CustomElementsCreateCustomTagElement);
       element->v0SetCustomElementDefinition(definition);
       V0CustomElementScheduler::scheduleCallback(
           definition->callbacks(), element,
