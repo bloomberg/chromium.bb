@@ -190,10 +190,7 @@ typedef void(GL_BINDING_CALL* glCopyBufferSubDataProc)(GLenum readTarget,
                                                        GLsizeiptr size);
 typedef void(GL_BINDING_CALL* glCopySubTextureCHROMIUMProc)(
     GLuint sourceId,
-    GLint sourceLevel,
-    GLenum destTarget,
     GLuint destId,
-    GLint destLevel,
     GLint xoffset,
     GLint yoffset,
     GLint x,
@@ -230,10 +227,7 @@ typedef void(GL_BINDING_CALL* glCopyTexSubImage3DProc)(GLenum target,
                                                        GLsizei height);
 typedef void(GL_BINDING_CALL* glCopyTextureCHROMIUMProc)(
     GLuint sourceId,
-    GLint sourceLevel,
-    GLenum destTarget,
     GLuint destId,
-    GLint destLevel,
     GLint internalFormat,
     GLenum destType,
     GLboolean unpackFlipY,
@@ -2124,10 +2118,7 @@ class GL_EXPORT GLApi {
                                      GLintptr writeOffset,
                                      GLsizeiptr size) = 0;
   virtual void glCopySubTextureCHROMIUMFn(GLuint sourceId,
-                                          GLint sourceLevel,
-                                          GLenum destTarget,
                                           GLuint destId,
-                                          GLint destLevel,
                                           GLint xoffset,
                                           GLint yoffset,
                                           GLint x,
@@ -2163,10 +2154,7 @@ class GL_EXPORT GLApi {
                                      GLsizei width,
                                      GLsizei height) = 0;
   virtual void glCopyTextureCHROMIUMFn(GLuint sourceId,
-                                       GLint sourceLevel,
-                                       GLenum destTarget,
                                        GLuint destId,
-                                       GLint destLevel,
                                        GLint internalFormat,
                                        GLenum destType,
                                        GLboolean unpackFlipY,

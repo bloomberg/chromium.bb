@@ -3249,10 +3249,10 @@ error::Error GLES2DecoderPassthroughImpl::DoPostSubBufferCHROMIUM(
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoCopyTextureCHROMIUM(
-    GLuint source_id,
+    GLenum source_id,
     GLint source_level,
     GLenum dest_target,
-    GLuint dest_id,
+    GLenum dest_id,
     GLint dest_level,
     GLint internalformat,
     GLenum dest_type,
@@ -3264,18 +3264,17 @@ error::Error GLES2DecoderPassthroughImpl::DoCopyTextureCHROMIUM(
   }
 
   glCopyTextureCHROMIUM(GetTextureServiceID(source_id, resources_, false),
-                        source_level, dest_target,
                         GetTextureServiceID(dest_id, resources_, false),
-                        dest_level, internalformat, dest_type, unpack_flip_y,
+                        internalformat, dest_type, unpack_flip_y,
                         unpack_premultiply_alpha, unpack_unmultiply_alpha);
   return error::kNoError;
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoCopySubTextureCHROMIUM(
-    GLuint source_id,
+    GLenum source_id,
     GLint source_level,
     GLenum dest_target,
-    GLuint dest_id,
+    GLenum dest_id,
     GLint dest_level,
     GLint xoffset,
     GLint yoffset,
@@ -3290,17 +3289,16 @@ error::Error GLES2DecoderPassthroughImpl::DoCopySubTextureCHROMIUM(
     return error::kUnknownCommand;
   }
 
-  glCopySubTextureCHROMIUM(
-      GetTextureServiceID(source_id, resources_, false), source_level,
-      dest_target, GetTextureServiceID(dest_id, resources_, false), dest_level,
-      xoffset, yoffset, x, y, width, height, unpack_flip_y,
-      unpack_premultiply_alpha, unpack_unmultiply_alpha);
+  glCopySubTextureCHROMIUM(GetTextureServiceID(source_id, resources_, false),
+                           GetTextureServiceID(dest_id, resources_, false),
+                           xoffset, yoffset, x, y, width, height, unpack_flip_y,
+                           unpack_premultiply_alpha, unpack_unmultiply_alpha);
   return error::kNoError;
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoCompressedCopyTextureCHROMIUM(
-    GLuint source_id,
-    GLuint dest_id) {
+    GLenum source_id,
+    GLenum dest_id) {
   if (!feature_info_->feature_flags().chromium_copy_compressed_texture) {
     return error::kUnknownCommand;
   }

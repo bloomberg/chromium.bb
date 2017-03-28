@@ -215,10 +215,7 @@ static void GL_BINDING_CALL Mock_glCopyBufferSubData(GLenum readTarget,
                                                      GLsizeiptr size);
 static void GL_BINDING_CALL
 Mock_glCopySubTextureCHROMIUM(GLuint sourceId,
-                              GLint sourceLevel,
-                              GLenum destTarget,
                               GLuint destId,
-                              GLint destLevel,
                               GLint xoffset,
                               GLint yoffset,
                               GLint x,
@@ -255,10 +252,7 @@ static void GL_BINDING_CALL Mock_glCopyTexSubImage3D(GLenum target,
                                                      GLsizei height);
 static void GL_BINDING_CALL
 Mock_glCopyTextureCHROMIUM(GLuint sourceId,
-                           GLint sourceLevel,
-                           GLenum destTarget,
                            GLuint destId,
-                           GLint destLevel,
                            GLint internalFormat,
                            GLenum destType,
                            GLboolean unpackFlipY,

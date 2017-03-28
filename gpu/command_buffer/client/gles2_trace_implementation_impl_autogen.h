@@ -1937,10 +1937,10 @@ void GLES2TraceImplementation::PostSubBufferCHROMIUM(GLint x,
 }
 
 void GLES2TraceImplementation::CopyTextureCHROMIUM(
-    GLuint source_id,
+    GLenum source_id,
     GLint source_level,
     GLenum dest_target,
-    GLuint dest_id,
+    GLenum dest_id,
     GLint dest_level,
     GLint internalformat,
     GLenum dest_type,
@@ -1954,10 +1954,10 @@ void GLES2TraceImplementation::CopyTextureCHROMIUM(
 }
 
 void GLES2TraceImplementation::CopySubTextureCHROMIUM(
-    GLuint source_id,
+    GLenum source_id,
     GLint source_level,
     GLenum dest_target,
-    GLuint dest_id,
+    GLenum dest_id,
     GLint dest_level,
     GLint xoffset,
     GLint yoffset,
@@ -1975,8 +1975,8 @@ void GLES2TraceImplementation::CopySubTextureCHROMIUM(
                               unpack_unmultiply_alpha);
 }
 
-void GLES2TraceImplementation::CompressedCopyTextureCHROMIUM(GLuint source_id,
-                                                             GLuint dest_id) {
+void GLES2TraceImplementation::CompressedCopyTextureCHROMIUM(GLenum source_id,
+                                                             GLenum dest_id) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu",
                                 "GLES2Trace::CompressedCopyTextureCHROMIUM");
   gl_->CompressedCopyTextureCHROMIUM(source_id, dest_id);
