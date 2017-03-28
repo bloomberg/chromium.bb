@@ -16,7 +16,6 @@ import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animatable;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.compositor.layouts.eventfilter.BlackHoleEventFilter;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.ScrollDirection;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
@@ -70,7 +69,6 @@ public class ToolbarSwipeLayout extends Layout implements Animatable<ToolbarSwip
     private final float mSpaceBetweenTabs;
     private final float mCommitDistanceFromEdge;
 
-    private final BlackHoleEventFilter mBlackHoleEventFilter;
     private final TabListSceneLayer mSceneLayer;
 
     private final Interpolator mEdgeInterpolator = new DecelerateInterpolator();
@@ -81,10 +79,9 @@ public class ToolbarSwipeLayout extends Layout implements Animatable<ToolbarSwip
      * @param renderHost          The {@link LayoutRenderHost} view for this layout.
      * @param eventFilter         The {@link EventFilter} that is needed for this view.
      */
-    public ToolbarSwipeLayout(
-            Context context, LayoutUpdateHost updateHost, LayoutRenderHost renderHost) {
-        super(context, updateHost, renderHost);
-        mBlackHoleEventFilter = new BlackHoleEventFilter(context);
+    public ToolbarSwipeLayout(Context context, LayoutUpdateHost updateHost,
+            LayoutRenderHost renderHost, EventFilter eventFilter) {
+        super(context, updateHost, renderHost, eventFilter);
         Resources res = context.getResources();
         final float pxToDp = 1.0f / res.getDisplayMetrics().density;
         mCommitDistanceFromEdge = res.getDimension(R.dimen.toolbar_swipe_commit_distance) * pxToDp;
@@ -356,11 +353,6 @@ public class ToolbarSwipeLayout extends Layout implements Animatable<ToolbarSwip
 
     @Override
     public void onPropertyAnimationFinished(Property prop) {}
-
-    @Override
-    protected EventFilter getEventFilter() {
-        return mBlackHoleEventFilter;
-    }
 
     @Override
     protected SceneLayer getSceneLayer() {

@@ -80,7 +80,7 @@ public class TabStripUtils {
         base.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                manager.simulateClick(x, y, false, 0);
+                manager.click(0, x, y, false, 0);
             }
         });
     }
@@ -98,7 +98,7 @@ public class TabStripUtils {
         base.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                manager.simulateClick(x, y, false, 0);
+                manager.click(0, x, y, false, 0);
             }
         });
     }
@@ -116,7 +116,7 @@ public class TabStripUtils {
         base.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                manager.simulateLongPress(x, y);
+                manager.onLongPress(0, x, y);
             }
         });
     }
