@@ -380,9 +380,6 @@ PassRefPtr<HbFontCacheEntry> createHbFontCacheEntry(hb_face_t* face) {
   return cacheEntry;
 }
 
-// TODO: crbug.com/696570 Remove this conditional
-// once HarfBuzz on CrOS is updated.
-#if HB_VERSION_ATLEAST(1, 4, 2)
 static_assert(
     std::is_same<decltype(SkFontArguments::VariationPosition::Coordinate::axis),
                  decltype(hb_variation_t::tag)>::value &&
@@ -393,7 +390,6 @@ static_assert(
             sizeof(hb_variation_t),
     "Skia and HarfBuzz Variation parameter types must match in structure and "
     "size.");
-#endif
 
 hb_font_t* HarfBuzzFace::getScaledFont(
     PassRefPtr<UnicodeRangeSet> rangeSet) const {
@@ -406,9 +402,6 @@ hb_font_t* HarfBuzzFace::getScaledFont(
   int scale = SkiaScalarToHarfBuzzPosition(m_platformData->size());
   hb_font_set_scale(m_unscaledFont, scale, scale);
 
-// TODO: crbug.com/696570 Remove this conditional
-// once HarfBuzz on CrOS is updated.
-#if HB_VERSION_ATLEAST(1, 4, 2)
   SkTypeface* typeface = m_harfBuzzFontData->m_paint.getTypeface();
   int axisCount = typeface->getVariationDesignPosition(nullptr, 0);
   if (axisCount > 0) {
@@ -421,7 +414,6 @@ hb_font_t* HarfBuzzFace::getScaledFont(
           axisValues.size());
     }
   }
-#endif
 
   return m_unscaledFont;
 }
