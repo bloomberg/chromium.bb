@@ -613,6 +613,11 @@ shared_library("chrome") {
     deps += [ "//tools/cygprofile" ]
   }
 
+  # See crbug.com/705088 for more info.
+  if (is_android && target_cpu == "arm" && is_asan) {
+    ldflags = [ "-Wl,--long-plt" ]
+  }
+
   public_configs = extra_chrome_shared_library_configs
 }
 
