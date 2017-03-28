@@ -151,7 +151,13 @@
       Show large mouse cursor
     </message>
     <message name="IDS_SETTINGS_LARGE_MOUSE_CURSOR_SIZE_LABEL" desc="Label for a slider which changes the size of large mouse cursor.">
-      Cursor size:
+      Adjust cursor size
+    </message>
+    <message name="IDS_SETTINGS_LARGE_MOUSE_CURSOR_SIZE_SMALL_LABEL" desc="Label in the slider which indicates that this side makes the cursor small.">
+      Small
+    </message>
+    <message name="IDS_SETTINGS_LARGE_MOUSE_CURSOR_SIZE_LARGE_LABEL" desc="Label in the slider which indicates that this side makes the cursor large.">
+      Large
     </message>
     <message name="IDS_SETTINGS_HIGH_CONTRAST_LABEL" desc="Label for checkbox which enables high-contrast UI.">
       Use high contrast mode

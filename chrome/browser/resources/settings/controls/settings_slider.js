@@ -31,9 +31,11 @@ Polymer({
 
     labelMax: String,
 
+    disabled: Boolean,
+
     /** @private */
     disableSlider_: {
-      computed: 'computeDisableSlider_(pref.*)',
+      computed: 'computeDisableSlider_(pref.*, disabled)',
       type: Boolean,
     },
   },
@@ -59,7 +61,7 @@ Polymer({
 
   /** @private */
   computeDisableSlider_: function() {
-    return this.hasAttribute('disabled') || this.isPrefEnforced();
+    return this.disabled || this.isPrefEnforced();
   },
 
   /**

@@ -18,6 +18,10 @@
         -webkit-margin-start: 16px;
       }
 
+      .sub-item > .start {
+        -webkit-margin-start: var(--settings-indent-width);
+      }
+
       h2 ~ .settings-box {
         -webkit-margin-end: var(--settings-box-row-padding);
         -webkit-margin-start: var(--settings-box-row-indent);
@@ -149,12 +153,14 @@
           label="$i18n{largeMouseCursorLabel}">
       </settings-toggle-button>
       <template is="dom-if" if="[[enableAdjustableLargeCursor_]]">
-        <div class="list-item">
-          <div>$i18n{largeMouseCursorSizeLabel}</div>
+        <div class="list-item sub-item">
+          <div class="start">$i18n{largeMouseCursorSizeLabel}</div>
           <settings-slider
-             disabled="[[!prefs.settings.a11y.large_cursor_enabled.value]]"
+             disabled$="[[!prefs.settings.a11y.large_cursor_enabled.value]]"
              pref="{{prefs.settings.a11y.large_cursor_dip_size}}"
-             min="25" max="64"></settings-slider>
+             min="25" max="64" label-min="$i18n{largeMouseCursorSizeSmallLabel}"
+             label-max="$i18n{largeMouseCursorSizeLargeLabel}">
+          </settings-slider>
         </div>
       </template>
       <settings-toggle-button
