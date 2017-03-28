@@ -246,6 +246,28 @@ bool ArcNotificationManager::IsOpeningSettingsSupported() const {
   return notifications_instance != nullptr;
 }
 
+void ArcNotificationManager::SendNotificationToggleExpansionOnChrome(
+    const std::string& key) {
+  if (items_.find(key) == items_.end()) {
+    VLOG(3) << "Chrome requests to fire a click event on notification (key: "
+            << key << "), but it is gone.";
+    return;
+  }
+
+  auto* notifications_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service()->notifications(), SendNotificationEventToAndroid);
+
+  // On shutdown, the ARC channel may quit earlier than notifications.
+  if (!notifications_instance) {
+    VLOG(2) << "ARC Notification (key: " << key
+            << ") is clicked, but the ARC channel has already gone.";
+    return;
+  }
+
+  notifications_instance->SendNotificationEventToAndroid(
+      key, mojom::ArcNotificationEvent::TOGGLE_EXPANSION);
+}
+
 void ArcNotificationManager::OnToastPosted(mojom::ArcToastDataPtr data) {
   const base::string16 text16(
       base::UTF8ToUTF16(data->text.has_value() ? *data->text : std::string()));

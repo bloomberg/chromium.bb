@@ -54,6 +54,7 @@ class ArcNotificationManager
   void CloseNotificationWindow(const std::string& key);
   void OpenNotificationSettings(const std::string& key);
   bool IsOpeningSettingsSupported() const;
+  void SendNotificationToggleExpansionOnChrome(const std::string& key);
 
  private:
   const AccountId main_profile_id_;

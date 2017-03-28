@@ -156,4 +156,12 @@ void CustomNotificationView::ChildPreferredSizeChanged(View* child) {
     controller()->UpdateNotificationSize(notification_id());
 }
 
+bool CustomNotificationView::OnMousePressed(const ui::MouseEvent& event) {
+  // TODO(yhanada): This hack will be removed when HandleAccessibleAction will
+  // be used for handling click events.
+  if (contents_view_ && contents_view_->OnMousePressed(event))
+    return true;
+  return MessageView::OnMousePressed(event);
+}
+
 }  // namespace message_center

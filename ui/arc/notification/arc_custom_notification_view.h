@@ -85,6 +85,7 @@ class ArcCustomNotificationView
   void OnFocus() override;
   void OnBlur() override;
   views::FocusTraversable* GetFocusTraversable() override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
 
   // views::ButtonListener
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

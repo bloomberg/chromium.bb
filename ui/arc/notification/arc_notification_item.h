@@ -40,6 +40,7 @@ class ArcNotificationItem {
   void ButtonClick(int button_index);
   void OpenSettings();
   bool IsOpeningSettingsSupported() const;
+  void ToggleExpansion();
 
   const std::string& notification_key() const { return notification_key_; }
 

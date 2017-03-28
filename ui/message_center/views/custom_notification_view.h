@@ -46,6 +46,7 @@ class MESSAGE_CENTER_EXPORT CustomNotificationView : public MessageView {
   void OnPaint(gfx::Canvas* canvas) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   void ChildPreferredSizeChanged(View* child) override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
 
  private:
   friend class CustomNotificationViewTest;
