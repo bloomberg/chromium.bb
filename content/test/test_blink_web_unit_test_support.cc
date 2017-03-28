@@ -153,11 +153,6 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport() {
     DCHECK(file_system_root_.GetPath().empty());
   }
 
-#if defined(OS_WIN)
-  // Ensure we pick up the default theme engine.
-  SetThemeEngine(NULL);
-#endif
-
   // Test shell always exposes the GC.
   std::string flags("--expose-gc");
   v8::V8::SetFlagsFromString(flags.c_str(), static_cast<int>(flags.size()));
@@ -268,17 +263,6 @@ blink::WebString TestBlinkWebUnitTestSupport::queryLocalizedString(
 blink::WebString TestBlinkWebUnitTestSupport::defaultLocale() {
   return blink::WebString::fromASCII("en-US");
 }
-
-#if defined(OS_WIN) || defined(OS_MACOSX)
-void TestBlinkWebUnitTestSupport::SetThemeEngine(
-    blink::WebThemeEngine* engine) {
-  active_theme_engine_ = engine ? engine : BlinkPlatformImpl::themeEngine();
-}
-
-blink::WebThemeEngine* TestBlinkWebUnitTestSupport::themeEngine() {
-  return active_theme_engine_;
-}
-#endif
 
 blink::WebCompositorSupport* TestBlinkWebUnitTestSupport::compositorSupport() {
   return &compositor_support_;

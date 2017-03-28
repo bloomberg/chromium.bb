@@ -53,11 +53,6 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
       const blink::WebString& value2) override;
   blink::WebString defaultLocale() override;
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  void SetThemeEngine(blink::WebThemeEngine* engine);
-  blink::WebThemeEngine* themeEngine() override;
-#endif
-
   blink::WebCompositorSupport* compositorSupport() override;
 
   blink::WebGestureCurve* createFlingAnimationCurve(
@@ -89,9 +84,6 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
   std::unique_ptr<blink::WebThread> web_thread_;
   std::unique_ptr<cc::TestSharedBitmapManager> shared_bitmap_manager_;
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  blink::WebThemeEngine* active_theme_engine_ = nullptr;
-#endif
   DISALLOW_COPY_AND_ASSIGN(TestBlinkWebUnitTestSupport);
 };
 
