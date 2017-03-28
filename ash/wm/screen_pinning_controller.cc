@@ -169,8 +169,6 @@ bool ScreenPinningController::IsPinned() const {
 }
 
 void ScreenPinningController::SetPinnedWindow(WmWindow* pinned_window) {
-  window_dimmers_->clear();
-
   if (pinned_window->GetWindowState()->IsPinned()) {
     if (pinned_window_) {
       LOG(DFATAL) << "Pinned mode is enabled, while it is already in "
@@ -226,6 +224,8 @@ void ScreenPinningController::SetPinnedWindow(WmWindow* pinned_window) {
                                pinned_container_child_window_observer_.get());
     WmWindow::GetAuraWindow(container)->RemoveObserver(
         pinned_container_window_observer_.get());
+
+    window_dimmers_->clear();
 
     pinned_window_ = nullptr;
   }

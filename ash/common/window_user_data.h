@@ -30,9 +30,13 @@ class WindowUserData : public aura::WindowObserver {
   ~WindowUserData() override { clear(); }
 
   void clear() {
-    for (auto& pair : window_to_data_)
-      pair.first->RemoveObserver(this);
-    window_to_data_.clear();
+    // Take care to destroy the data after removing from the map.
+    while (!window_to_data_.empty()) {
+      auto iter = window_to_data_.begin();
+      iter->first->RemoveObserver(this);
+      std::unique_ptr<UserData> user_data = std::move(iter->second);
+      window_to_data_.erase(iter);
+    }
   }
 
   // Sets the data associated with window. This destroys any existing data.
