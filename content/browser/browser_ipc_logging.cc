@@ -13,7 +13,7 @@
 
 namespace content {
 
-#if defined(IPC_MESSAGE_LOG_ENABLED)
+#if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
 
 void EnableIPCLoggingForChildProcesses(bool enabled) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -46,6 +46,6 @@ void EnableIPCLogging(bool enable) {
     i.GetCurrentValue()->Send(new ChildProcessMsg_SetIPCLoggingEnabled(enable));
 }
 
-#endif  // IPC_MESSAGE_LOG_ENABLED
+#endif  // BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
 
 }  // namespace content

@@ -20,6 +20,7 @@
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/ipc/common/gpu_param_traits_macros.h"
 #include "ipc/ipc_channel_handle.h"
+#include "ipc/ipc_features.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -91,7 +92,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(base::ThreadPriority,
 // process that it's safe to shutdown.
 IPC_MESSAGE_CONTROL0(ChildProcessMsg_Shutdown)
 
-#if defined(IPC_MESSAGE_LOG_ENABLED)
+#if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
 // Tell the child process to begin or end IPC message logging.
 IPC_MESSAGE_CONTROL1(ChildProcessMsg_SetIPCLoggingEnabled,
                      bool /* on or off */)
