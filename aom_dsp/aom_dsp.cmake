@@ -162,6 +162,8 @@ endif ()
 
 if (CONFIG_DECODERS)
   set(AOM_DSP_DECODER_SOURCES
+      "${AOM_ROOT}/aom_dsp/binary_codes_reader.c"
+      "${AOM_ROOT}/aom_dsp/binary_codes_reader.h"
       "${AOM_ROOT}/aom_dsp/bitreader.h"
       "${AOM_ROOT}/aom_dsp/bitreader_buffer.c"
       "${AOM_ROOT}/aom_dsp/bitreader_buffer.h")
@@ -187,6 +189,8 @@ endif ()
 
 if (CONFIG_ENCODERS)
   set(AOM_DSP_ENCODER_SOURCES
+      "${AOM_ROOT}/aom_dsp/binary_codes_writer.c"
+      "${AOM_ROOT}/aom_dsp/binary_codes_writer.h"
       "${AOM_ROOT}/aom_dsp/bitwriter.h"
       "${AOM_ROOT}/aom_dsp/bitwriter_buffer.c"
       "${AOM_ROOT}/aom_dsp/bitwriter_buffer.h"
