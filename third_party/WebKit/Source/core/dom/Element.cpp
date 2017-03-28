@@ -3261,7 +3261,7 @@ void Element::updatePseudoElement(PseudoId pseudoId, StyleRecalcChange change) {
     // Need to clear the cached style if the PseudoElement wants a recalc so it
     // computes a new style.
     if (element->needsStyleRecalc())
-      layoutObject()->mutableStyle()->removeCachedPseudoStyle(pseudoId);
+      mutableComputedStyle()->removeCachedPseudoStyle(pseudoId);
 
     // PseudoElement styles hang off their parent element's style so if we
     // needed a style recalc we should Force one on the pseudo.  FIXME: We
@@ -3273,9 +3273,8 @@ void Element::updatePseudoElement(PseudoId pseudoId, StyleRecalcChange change) {
     // continuously create and destroy PseudoElements when
     // LayoutObject::isChildAllowed on our parent returns false for the
     // PseudoElement's layoutObject for each style recalc.
-    if (!layoutObject() ||
-        !pseudoElementLayoutObjectIsNeeded(
-            layoutObject()->getCachedPseudoStyle(pseudoId)))
+    if (!layoutObject() || !pseudoElementLayoutObjectIsNeeded(
+                               pseudoStyle(PseudoStyleRequest(pseudoId))))
       elementRareData()->setPseudoElement(pseudoId, nullptr);
   } else if (pseudoId == PseudoIdFirstLetter && element &&
              change >= UpdatePseudoElements &&
@@ -3342,6 +3341,64 @@ LayoutObject* Element::pseudoElementLayoutObject(PseudoId pseudoId) const {
   if (PseudoElement* element = pseudoElement(pseudoId))
     return element->layoutObject();
   return nullptr;
+}
+
+ComputedStyle* Element::pseudoStyle(const PseudoStyleRequest& request,
+                                    const ComputedStyle* parentStyle) {
+  ComputedStyle* style = mutableComputedStyle();
+
+  if (!style || (request.pseudoId < FirstInternalPseudoId &&
+                 !style->hasPseudoStyle(request.pseudoId))) {
+    return nullptr;
+  }
+
+  if (ComputedStyle* cached = style->getCachedPseudoStyle(request.pseudoId))
+    return cached;
+
+  RefPtr<ComputedStyle> result = getUncachedPseudoStyle(request, parentStyle);
+  if (result)
+    return style->addCachedPseudoStyle(result.release());
+  return nullptr;
+}
+
+PassRefPtr<ComputedStyle> Element::getUncachedPseudoStyle(
+    const PseudoStyleRequest& request,
+    const ComputedStyle* parentStyle) {
+  const ComputedStyle* style = computedStyle();
+  const bool isBeforeOrAfter =
+      request.pseudoId == PseudoIdBefore || request.pseudoId == PseudoIdAfter;
+
+  DCHECK(style);
+  DCHECK(!parentStyle || !isBeforeOrAfter);
+
+  if (isBeforeOrAfter) {
+    LayoutObject* parentLayoutObject = layoutObject();
+    if (!parentLayoutObject && hasDisplayContentsStyle()) {
+      parentLayoutObject =
+          LayoutTreeBuilderTraversal::parentLayoutObject(*this);
+    }
+    if (!parentLayoutObject)
+      return nullptr;
+    return document().ensureStyleResolver().pseudoStyleForElement(
+        this, request, style, parentLayoutObject->style());
+  }
+
+  if (!layoutObject())
+    return nullptr;
+
+  if (!parentStyle)
+    parentStyle = style;
+
+  if (request.pseudoId == PseudoIdFirstLineInherited) {
+    RefPtr<ComputedStyle> result =
+        document().ensureStyleResolver().styleForElement(
+            this, parentStyle, parentStyle, DisallowStyleSharing);
+    result->setStyleType(PseudoIdFirstLineInherited);
+    return result.release();
+  }
+
+  return document().ensureStyleResolver().pseudoStyleForElement(
+      this, request, parentStyle, parentStyle);
 }
 
 bool Element::matches(const AtomicString& selectors,

@@ -3079,30 +3079,8 @@ ComputedStyle* LayoutObject::cachedFirstLineStyle() const {
 ComputedStyle* LayoutObject::getCachedPseudoStyle(
     PseudoId pseudo,
     const ComputedStyle* parentStyle) const {
-  if (pseudo < FirstInternalPseudoId && !style()->hasPseudoStyle(pseudo))
-    return nullptr;
-
-  ComputedStyle* cachedStyle = style()->getCachedPseudoStyle(pseudo);
-  if (cachedStyle)
-    return cachedStyle;
-
-  RefPtr<ComputedStyle> result =
-      getUncachedPseudoStyle(PseudoStyleRequest(pseudo), parentStyle);
-  if (result)
-    return mutableStyleRef().addCachedPseudoStyle(result.release());
-  return nullptr;
-}
-
-PassRefPtr<ComputedStyle> LayoutObject::getUncachedPseudoStyle(
-    const PseudoStyleRequest& pseudoStyleRequest,
-    const ComputedStyle* parentStyle) const {
-  if (pseudoStyleRequest.pseudoId < FirstInternalPseudoId &&
-      !style()->hasPseudoStyle(pseudoStyleRequest.pseudoId))
-    return nullptr;
-
-  if (!parentStyle)
-    parentStyle = style();
-
+  DCHECK_NE(pseudo, PseudoIdBefore);
+  DCHECK_NE(pseudo, PseudoIdAfter);
   if (!node())
     return nullptr;
 
@@ -3110,16 +3088,22 @@ PassRefPtr<ComputedStyle> LayoutObject::getUncachedPseudoStyle(
   if (!element)
     return nullptr;
 
-  if (pseudoStyleRequest.pseudoId == PseudoIdFirstLineInherited) {
-    RefPtr<ComputedStyle> result =
-        document().ensureStyleResolver().styleForElement(
-            element, parentStyle, parentStyle, DisallowStyleSharing);
-    result->setStyleType(PseudoIdFirstLineInherited);
-    return result.release();
-  }
+  return element->pseudoStyle(PseudoStyleRequest(pseudo), parentStyle);
+}
 
-  return document().ensureStyleResolver().pseudoStyleForElement(
-      element, pseudoStyleRequest, parentStyle, parentStyle);
+PassRefPtr<ComputedStyle> LayoutObject::getUncachedPseudoStyle(
+    const PseudoStyleRequest& request,
+    const ComputedStyle* parentStyle) const {
+  DCHECK_NE(request.pseudoId, PseudoIdBefore);
+  DCHECK_NE(request.pseudoId, PseudoIdAfter);
+  if (!node())
+    return nullptr;
+
+  Element* element = Traversal<Element>::firstAncestorOrSelf(*node());
+  if (!element)
+    return nullptr;
+
+  return element->getUncachedPseudoStyle(request, parentStyle);
 }
 
 PassRefPtr<ComputedStyle> LayoutObject::getUncachedSelectionStyle() const {

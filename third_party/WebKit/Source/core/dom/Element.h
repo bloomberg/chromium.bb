@@ -61,6 +61,7 @@ class MutableStylePropertySet;
 class NamedNodeMap;
 class ElementIntersectionObserverData;
 class PseudoElement;
+class PseudoStyleRequest;
 class ResizeObservation;
 class ResizeObserver;
 class ScrollState;
@@ -625,6 +626,12 @@ class CORE_EXPORT Element : public ContainerNode {
 
   PseudoElement* pseudoElement(PseudoId) const;
   LayoutObject* pseudoElementLayoutObject(PseudoId) const;
+
+  ComputedStyle* pseudoStyle(const PseudoStyleRequest&,
+                             const ComputedStyle* parentStyle = nullptr);
+  PassRefPtr<ComputedStyle> getUncachedPseudoStyle(
+      const PseudoStyleRequest&,
+      const ComputedStyle* parentStyle = nullptr);
 
   virtual bool matchesDefaultPseudoClass() const { return false; }
   virtual bool matchesEnabledPseudoClass() const { return false; }
