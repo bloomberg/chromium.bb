@@ -11364,6 +11364,7 @@ PALETTE_EXIT:
 #endif  // CONFIG_REF_MV
   }
 
+#if CONFIG_REF_MV
   // Make sure that the ref_mv_idx is only nonzero when we're
   // using a mode which can support ref_mv_idx
   if (best_mbmode.ref_mv_idx != 0 &&
@@ -11371,7 +11372,6 @@ PALETTE_EXIT:
     best_mbmode.ref_mv_idx = 0;
   }
 
-#if CONFIG_REF_MV
   {
     int8_t ref_frame_type = av1_ref_frame_type(best_mbmode.ref_frame);
     int16_t mode_ctx = mbmi_ext->mode_context[ref_frame_type];
