@@ -18,6 +18,7 @@
 #include "ios/web_view/internal/web_view_network_delegate.h"
 #include "net/base/cache_type.h"
 #include "net/cert/cert_verifier.h"
+#include "net/cert/multi_log_ct_verifier.h"
 #include "net/dns/host_resolver.h"
 #include "net/extras/sqlite/sqlite_persistent_cookie_store.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -98,11 +99,15 @@ net::URLRequestContext* WebViewURLRequestContextGetter::GetURLRequestContext() {
     storage_->set_ssl_config_service(new net::SSLConfigServiceDefaults);
     storage_->set_cert_verifier(net::CertVerifier::CreateDefault());
 
-    std::unique_ptr<net::TransportSecurityState> transport_security_state =
-        base::MakeUnique<net::TransportSecurityState>();
-    storage_->set_transport_security_state(std::move(transport_security_state));
+    storage_->set_transport_security_state(
+        base::MakeUnique<net::TransportSecurityState>());
+    storage_->set_cert_transparency_verifier(
+        base::WrapUnique(new net::MultiLogCTVerifier));
+    storage_->set_ct_policy_enforcer(
+        base::WrapUnique(new net::CTPolicyEnforcer));
     transport_security_persister_.reset(new net::TransportSecurityPersister(
-        transport_security_state.get(), base_path_, file_task_runner_, false));
+        url_request_context_->transport_security_state(), base_path_,
+        file_task_runner_, false));
     storage_->set_channel_id_service(base::MakeUnique<net::ChannelIDService>(
         new net::DefaultChannelIDStore(nullptr)));
     storage_->set_http_server_properties(
@@ -121,6 +126,8 @@ net::URLRequestContext* WebViewURLRequestContextGetter::GetURLRequestContext() {
         url_request_context_->cert_verifier();
     network_session_params.transport_security_state =
         url_request_context_->transport_security_state();
+    network_session_params.cert_transparency_verifier =
+        url_request_context_->cert_transparency_verifier();
     network_session_params.channel_id_service =
         url_request_context_->channel_id_service();
     network_session_params.net_log = url_request_context_->net_log();
@@ -134,6 +141,8 @@ net::URLRequestContext* WebViewURLRequestContextGetter::GetURLRequestContext() {
         url_request_context_->http_server_properties();
     network_session_params.host_resolver =
         url_request_context_->host_resolver();
+    network_session_params.ct_policy_enforcer =
+        url_request_context_->ct_policy_enforcer();
 
     base::FilePath cache_path = base_path_.Append(FILE_PATH_LITERAL("Cache"));
     std::unique_ptr<net::HttpCache::DefaultBackend> main_backend(
