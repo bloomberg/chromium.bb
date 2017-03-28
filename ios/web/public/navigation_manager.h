@@ -152,8 +152,6 @@ class NavigationManager {
   // prompted to see if they really want to reload the page. Pass in true if the
   // reload is explicitly initiated by the user. If a transient item is showing,
   // initiates a new navigation to its URL.
-  // TODO(crbug.com/700571): implement the logic for when |reload_type| is
-  // ORIGINAL_REQUEST_URL.
   // TODO(crbug.com/700958): implement the logic for |check_for_repost|.
   virtual void Reload(ReloadType reload_type, bool check_for_repost) = 0;
 
