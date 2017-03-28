@@ -12,8 +12,8 @@ import os
 import shutil
 import sys
 
+import analyze
 import helpers
-import map2size
 
 
 # Node dictionary keys. These are output in json read by the webapp so
@@ -113,14 +113,14 @@ def _AddSymbolIntoFileNode(node, symbol_type, symbol_name, symbol_size,
   node[_NODE_SYMBOL_TYPE_KEY] = symbol_type
 
 
-def _MakeCompactTree(symbols, include_symbols):
+def _MakeCompactTree(root_group, include_symbols):
   result = {
       _NODE_NAME_KEY: '/',
       _NODE_CHILDREN_KEY: {},
       _NODE_TYPE_KEY: 'p',
       _NODE_MAX_DEPTH_KEY: 0,
   }
-  for symbol in symbols:
+  for symbol in root_group:
     file_path = symbol.path or _NAME_NO_PATH_BUCKET
     node = result
     depth = 0
@@ -131,10 +131,11 @@ def _MakeCompactTree(symbols, include_symbols):
       node = _GetOrMakeChildNode(node, _NODE_TYPE_PATH, path_part)
 
     symbol_type = symbol.section
-    if symbol.name.endswith('[vtable]'):
-      symbol_type = _NODE_SYMBOL_TYPE_VTABLE
-    elif symbol.name.endswith(']'):
-      symbol_type = _NODE_SYMBOL_TYPE_GENERATED
+    if symbol.name:
+      if symbol.name.endswith('[vtable]'):
+        symbol_type = _NODE_SYMBOL_TYPE_VTABLE
+      elif symbol.name.endswith(']'):
+        symbol_type = _NODE_SYMBOL_TYPE_GENERATED
     _AddSymbolIntoFileNode(node, symbol_type, symbol.name, symbol.size,
                            include_symbols)
     depth += 2
@@ -163,11 +164,8 @@ def _CopyTemplateFiles(dest_dir):
   shutil.copy(os.path.join(template_src, 'D3SymbolTreeMap.js'), dest_dir)
 
 
-def main(argv):
+def main():
   parser = argparse.ArgumentParser()
-  parser.add_argument('input_file',
-                      help='Path to input file. Can be a linker .map file, or '
-                           'a .size file.')
   parser.add_argument('--report-dir', metavar='PATH', required=True,
                       help='Write output to the specified directory. An HTML '
                             'report is generated here.')
@@ -176,14 +174,14 @@ def main(argv):
                            'space)')
   parser.add_argument('--include-symbols', action='store_true',
                       help='Use per-symbol granularity rather than per-file.')
-  map2size.AddOptions(parser)
-  args = helpers.AddCommonOptionsAndParseArgs(parser, argv)
+  analyze.AddOptions(parser)
+  args = helpers.AddCommonOptionsAndParseArgs(parser)
 
-  size_info = map2size.AnalyzeWithArgs(args, args.input_file)
-  symbols = size_info.symbols
+  result = analyze.AnalyzeWithArgs(args)
+  root_group = result.symbol_group
   if not args.include_bss:
-    symbols = size_info.WhereInSection('b').Inverted()
-  symbols = symbols.WhereBiggerThan(0)
+    root_group = root_group.WhereInSection('b').Inverted()
+  root_group = root_group.WhereBiggerThan(0)
 
   # Copy report boilerplate into output directory. This also proves that the
   # output directory is safe for writing, so there should be no problems writing
@@ -191,7 +189,7 @@ def main(argv):
   _CopyTemplateFiles(args.report_dir)
 
   logging.info('Creating JSON objects')
-  tree_root = _MakeCompactTree(symbols, args.include_symbols)
+  tree_root = _MakeCompactTree(root_group, args.include_symbols)
 
   logging.info('Serializing')
   with open(os.path.join(args.report_dir, 'data.js'), 'w') as out_file:
@@ -202,6 +200,5 @@ def main(argv):
 
   print 'Report saved to ' + args.report_dir + '/index.html'
 
-
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  sys.exit(main())

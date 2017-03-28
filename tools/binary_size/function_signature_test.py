@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 import logging
+import sys
 import unittest
 
 import function_signature
