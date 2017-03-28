@@ -6,12 +6,11 @@
 #define UI_EVENTS_IPC_LATENCY_INFO_PARAM_TRAITS_H_
 
 #include "base/pickle.h"
-#include "ui/events/ipc/events_ipc_export.h"
 #include "ui/events/latency_info.h"
 
 namespace IPC {
 template <>
-struct EVENTS_IPC_EXPORT ParamTraits<ui::LatencyInfo> {
+struct ParamTraits<ui::LatencyInfo> {
   typedef ui::LatencyInfo param_type;
   static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);

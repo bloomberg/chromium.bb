@@ -6,11 +6,7 @@
 #define UI_EVENTS_IPC_LATENCY_INFO_PARAM_TRAITS_MACROS_H_
 
 #include "ipc/ipc_message_macros.h"
-#include "ui/events/ipc/events_ipc_export.h"
 #include "ui/events/latency_info.h"
-
-#undef IPC_MESSAGE_EXPORT
-#define IPC_MESSAGE_EXPORT EVENTS_IPC_EXPORT
 
 IPC_ENUM_TRAITS_MAX_VALUE(ui::LatencyComponentType,
                           ui::LATENCY_COMPONENT_TYPE_LAST)
