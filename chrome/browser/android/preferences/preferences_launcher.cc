@@ -4,6 +4,9 @@
 
 #include "chrome/browser/android/preferences/preferences_launcher.h"
 
+#include "base/android/jni_android.h"
+#include "chrome/browser/android/tab_android.h"
+#include "content/public/browser/web_contents.h"
 #include "jni/PreferencesLauncher_jni.h"
 
 namespace chrome {
@@ -14,5 +17,18 @@ void PreferencesLauncher::ShowAutofillSettings() {
       base::android::AttachCurrentThread());
 }
 
-}  // android
-}  // chrome
+void PreferencesLauncher::ShowPasswordSettings() {
+  Java_PreferencesLauncher_showPasswordSettings(
+      base::android::AttachCurrentThread());
+}
+
+void PreferencesLauncher::OpenClearBrowsingData(
+    content::WebContents* web_contents) {
+  TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
+  DCHECK(tab);
+  Java_PreferencesLauncher_openClearBrowsingData(
+      base::android::AttachCurrentThread(), tab->GetJavaObject());
+}
+
+}  // namespace android
+}  // namespace chrome

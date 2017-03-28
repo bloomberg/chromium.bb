@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_ANDROID_PREFERENCES_PREFERENCES_LAUNCHER_H_
 #define CHROME_BROWSER_ANDROID_PREFERENCES_PREFERENCES_LAUNCHER_H_
 
-#include <jni.h>
 #include "base/macros.h"
+
+namespace content {
+class WebContents;
+}
 
 namespace chrome {
 namespace android {
@@ -15,6 +18,12 @@ class PreferencesLauncher {
  public:
   // Opens the autofill settings page.
   static void ShowAutofillSettings();
+
+  // Opens the password settings page.
+  static void ShowPasswordSettings();
+
+  // Open the clear browsing data UI.
+  static void OpenClearBrowsingData(content::WebContents* web_contents);
 
  private:
   PreferencesLauncher() {}

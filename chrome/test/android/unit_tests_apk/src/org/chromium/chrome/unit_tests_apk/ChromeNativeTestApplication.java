@@ -12,11 +12,6 @@ import org.chromium.chrome.browser.ChromeApplication;
 public class ChromeNativeTestApplication extends ChromeApplication {
 
     @Override
-    protected boolean areParentalControlsEnabled() {
-        return false;
-    }
-
-    @Override
     public void initCommandLine() {
     }
 }

@@ -17,6 +17,7 @@ import android.util.Log;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksReader;
@@ -57,6 +58,7 @@ public class PartnerBrowserCustomizations {
     /**
      * @return Whether incognito mode is disabled by the partner.
      */
+    @CalledByNative
     public static boolean isIncognitoDisabled() {
         return sIncognitoModeDisabled;
     }

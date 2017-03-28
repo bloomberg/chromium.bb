@@ -32,7 +32,7 @@
 #endif  // OS_WIN
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/chrome_application.h"
+#include "chrome/browser/android/partner_browser_customizations.h"
 #endif  // defined(OS_ANDROID)
 
 using content::BrowserThread;
@@ -213,7 +213,7 @@ bool IncognitoModePrefs::ArePlatformParentalControlsEnabled() {
 #if defined(OS_WIN)
   return PlatformParentalControlsValue::GetInstance()->is_enabled();
 #elif defined(OS_ANDROID)
-  return chrome::android::ChromeApplication::AreParentalControlsEnabled();
+  return chrome::android::PartnerBrowserCustomizations::IsIncognitoDisabled();
 #else
   return false;
 #endif

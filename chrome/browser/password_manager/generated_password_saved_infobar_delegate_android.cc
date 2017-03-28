@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/android/chrome_application.h"
+#include "chrome/browser/android/preferences/preferences_launcher.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/infobars/core/infobar_delegate.h"
@@ -20,7 +20,7 @@ GeneratedPasswordSavedInfoBarDelegateAndroid::
     ~GeneratedPasswordSavedInfoBarDelegateAndroid() {}
 
 void GeneratedPasswordSavedInfoBarDelegateAndroid::OnInlineLinkClicked() {
-  chrome::android::ChromeApplication::ShowPasswordSettings();
+  chrome::android::PreferencesLauncher::ShowPasswordSettings();
 }
 
 GeneratedPasswordSavedInfoBarDelegateAndroid::
