@@ -243,43 +243,22 @@ static void GLibLogHandler(const gchar* log_domain,
   if (!message)
     message = "<no message>";
 
-  if (strstr(message, "Unable to retrieve the file info for")) {
-    LOG(ERROR) << "GTK File code error: " << message;
-  } else if (strstr(message, "Could not find the icon") &&
-             strstr(log_domain, "Gtk")) {
-    LOG(ERROR) << "GTK icon error: " << message;
-  } else if (strstr(message, "Theme file for default has no") ||
-             strstr(message, "Theme directory") ||
-             strstr(message, "theme pixmap") ||
-             strstr(message, "locate theme engine")) {
-    LOG(ERROR) << "GTK theme error: " << message;
-  } else if (strstr(message, "Unable to create Ubuntu Menu Proxy") &&
-             strstr(log_domain, "<unknown>")) {
-    LOG(ERROR) << "GTK menu proxy create failed";
-  } else if (strstr(message, "Out of memory") &&
-             strstr(log_domain, "<unknown>")) {
-    LOG(ERROR) << "DBus call timeout or out of memory: "
-               << "http://crosbug.com/15496";
-  } else if (strstr(message, "Could not connect: Connection refused") &&
-             strstr(log_domain, "<unknown>")) {
-    LOG(ERROR) << "DConf settings backend could not connect to session bus: "
-               << "http://crbug.com/179797";
-  } else if (strstr(message, "Attempting to store changes into") ||
-             strstr(message, "Attempting to set the permissions of")) {
-    LOG(ERROR) << message << " (http://crbug.com/161366)";
-  } else if (strstr(message, "drawable is not a native X11 window")) {
-    LOG(ERROR) << message << " (http://crbug.com/329991)";
-  } else if (strstr(message, "Cannot do system-bus activation with no user")) {
-    LOG(ERROR) << message << " (http://crbug.com/431005)";
-  } else if (strstr(message, "deprecated")) {
-    LOG(ERROR) << message;
-  } else if (strstr(message, "Could not obtain desktop path or name")) {
-    LOG(ERROR) << message;
-  } else if (strstr(message, "Theme parsing error")) {
-    LOG(ERROR) << message;
-  } else if (strstr(message, "unknown signature")) {
-    LOG(ERROR) << message;
+  GLogLevelFlags always_fatal_flags = g_log_set_always_fatal(G_LOG_LEVEL_MASK);
+  g_log_set_always_fatal(always_fatal_flags);
+  GLogLevelFlags fatal_flags =
+      g_log_set_fatal_mask(log_domain, G_LOG_LEVEL_MASK);
+  g_log_set_fatal_mask(log_domain, fatal_flags);
+  if ((always_fatal_flags | fatal_flags) & log_level) {
+    LOG(DFATAL) << log_domain << ": " << message;
+  } else if (log_level & (G_LOG_LEVEL_ERROR | G_LOG_LEVEL_CRITICAL)) {
+    LOG(ERROR) << log_domain << ": " << message;
+  } else if (log_level & (G_LOG_LEVEL_WARNING)) {
+    LOG(WARNING) << log_domain << ": " << message;
+  } else if (log_level &
+             (G_LOG_LEVEL_MESSAGE | G_LOG_LEVEL_INFO | G_LOG_LEVEL_DEBUG)) {
+    LOG(INFO) << log_domain << ": " << message;
   } else {
+    NOTREACHED();
     LOG(DFATAL) << log_domain << ": " << message;
   }
 }
