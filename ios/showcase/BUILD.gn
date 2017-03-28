@@ -54,6 +54,7 @@ ios_eg_test("ios_showcase_egtests") {
     # Add all eg_tests targets below.
     "//ios/showcase/content_suggestions:eg_tests",
     "//ios/showcase/core:eg_tests",
+    "//ios/showcase/payments:eg_tests",
     "//ios/showcase/tab:eg_tests",
     "//ios/showcase/tab_grid:eg_tests",
 

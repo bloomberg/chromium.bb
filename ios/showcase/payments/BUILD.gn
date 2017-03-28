@@ -18,3 +18,20 @@ source_set("payments") {
   libs = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
+
+source_set("eg_tests") {
+  testonly = true
+  sources = [
+    "sc_payments_editor_egtest.mm",
+  ]
+  deps = [
+    "//base",
+    "//components/strings",
+    "//ios/chrome/browser/payments:payments_ui",
+    "//ios/chrome/browser/ui/settings",
+    "//ios/showcase/test",
+    "//ios/third_party/earl_grey",
+    "//ui/base",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}

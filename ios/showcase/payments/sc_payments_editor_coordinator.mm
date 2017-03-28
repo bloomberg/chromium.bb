@@ -27,6 +27,8 @@
 @synthesize baseViewController = _baseViewController;
 
 - (void)start {
+  [self.baseViewController setNavigationBarHidden:YES animated:YES];
+
   NSArray<EditorField*>* editorFields = [self editorFields];
   _paymentRequestEditViewController = [[PaymentRequestEditViewController alloc]
       initWithEditorFields:editorFields];
@@ -37,17 +39,23 @@
                                      animated:YES];
 }
 
+- (void)stop {
+  [self.baseViewController popViewControllerAnimated:YES];
+  _paymentRequestEditViewController = nil;
+  [self.baseViewController setNavigationBarHidden:NO animated:YES];
+}
+
 #pragma mark - PaymentRequestEditViewControllerDelegate
 
 - (void)paymentRequestEditViewController:
             (PaymentRequestEditViewController*)controller
                   didFinishEditingFields:(NSArray<EditorField*>*)fields {
-  [self.baseViewController popViewControllerAnimated:YES];
+  [self stop];
 }
 
 - (void)paymentRequestEditViewControllerDidReturn:
     (PaymentRequestEditViewController*)controller {
-  [self.baseViewController popViewControllerAnimated:YES];
+  [self stop];
 }
 
 #pragma mark - Helper methods
