@@ -6,14 +6,9 @@ import("//testing/test.gni")
 import("//build/config/locales.gni")
 import("//tools/grit/grit_rule.gni")
 
-config("internal_config") {
+config("no-newline-eof-warning") {
   if (is_clang) {
-    cflags = [
-      "-Wno-newline-eof",
-
-      # md5.cc uses "register". TODO(thakis): Fix.
-      "-Wno-deprecated-register",
-    ]
+    cflags = [ "-Wno-newline-eof" ]
   }
 }
 
@@ -31,7 +26,7 @@ grit("strings") {
     outputs += [ "address_input_strings_$locale.pak" ]
   }
 
-  configs = [ ":internal_config" ]
+  configs = [ ":no-newline-eof-warning" ]
 }
 
 config("libaddressinput_config") {
@@ -69,7 +64,7 @@ static_library("util") {
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
-    ":internal_config",
+    ":no-newline-eof-warning",
     "//build/config/compiler:no_chromium_code",
   ]
 
@@ -117,10 +112,7 @@ static_library("libaddressinput") {
   ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    ":internal_config",
-    "//build/config/compiler:no_chromium_code",
-  ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
 
   public_configs = [ ":libaddressinput_config" ]
 
@@ -146,10 +138,7 @@ source_set("test_support") {
   ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    ":internal_config",
-    "//build/config/compiler:no_chromium_code",
-  ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
 
   defines = [ "TEST_DATA_DIR=\"src/third_party/libaddressinput/src/testdata\"" ]
 
@@ -215,10 +204,7 @@ test("libaddressinput_unittests") {
   }
 
   configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    ":internal_config",
-    "//build/config/compiler:no_chromium_code",
-  ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
 
   include_dirs = [ "src/cpp/src" ]
 
