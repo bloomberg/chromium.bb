@@ -111,7 +111,7 @@ const CGFloat kHorizontalImageFixedSize = 40;
 
   CollectionViewTextItem* textHeader = [
       [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader] autorelease];
-  textHeader.text = @"MDCCollectionViewTextCell";
+  textHeader.text = @"CollectionViewTextCell";
   textHeader.textFont = [MDCTypography body2Font];
   textHeader.textColor = [[MDCPalette greyPalette] tint500];
   [model setHeader:textHeader

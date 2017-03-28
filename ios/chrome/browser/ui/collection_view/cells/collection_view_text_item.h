@@ -10,7 +10,7 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 
-// Collection view item to represent and configure an MDCCollectionViewTextCell.
+// Collection view item to represent and configure a CollectionViewTextCell.
 @interface CollectionViewTextItem : CollectionViewItem
 
 // The accessory type for the represented cell.
