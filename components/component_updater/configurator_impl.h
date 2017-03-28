@@ -38,9 +38,6 @@ class ConfiguratorImpl {
   // Delay in seconds to every subsequent update check. 0 means don't check.
   int NextCheckDelay() const;
 
-  // Delay in seconds from each task step. Used to smooth out CPU/IO usage.
-  int StepDelay() const;
-
   // Minimum delta time in seconds before an on-demand check is allowed for the
   // same component.
   int OnDemandDelay() const;

@@ -39,9 +39,6 @@ class Configurator : public base::RefCountedThreadSafe<Configurator> {
   // Delay in seconds to every subsequent update check. 0 means don't check.
   virtual int NextCheckDelay() const = 0;
 
-  // Delay in seconds from each task step. Used to smooth out CPU/IO usage.
-  virtual int StepDelay() const = 0;
-
   // Minimum delta time in seconds before an on-demand check is allowed
   // for the same component.
   virtual int OnDemandDelay() const = 0;

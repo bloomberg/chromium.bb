@@ -133,10 +133,6 @@ int ConfiguratorImpl::NextCheckDelay() const {
   return 5 * kDelayOneHour;
 }
 
-int ConfiguratorImpl::StepDelay() const {
-  return 1;
-}
-
 int ConfiguratorImpl::OnDemandDelay() const {
   return fast_update_ ? 2 : (30 * kDelayOneMinute);
 }

@@ -65,7 +65,6 @@ TEST_F(ChromeComponentUpdaterConfiguratorTest, TestFastUpdate) {
 
   CHECK_EQ(10, config->InitialDelay());
   CHECK_EQ(5 * 60 * 60, config->NextCheckDelay());
-  CHECK_EQ(1, config->StepDelay());
   CHECK_EQ(2, config->OnDemandDelay());
   CHECK_EQ(10, config->UpdateDelay());
 }

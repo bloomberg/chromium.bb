@@ -103,12 +103,10 @@ void ActionUpdate::DownloadComplete(
     OnDownloadError(item, download_result);
   } else {
     OnDownloadSuccess(item, download_result);
-    update_context_->main_task_runner->PostDelayedTask(
+    update_context_->main_task_runner->PostTask(
         FROM_HERE,
         base::Bind(&ActionUpdate::StartInstall, base::Unretained(this), item,
-                   download_result.response),
-        base::TimeDelta::FromMilliseconds(
-            update_context_->config->StepDelay()));
+                   download_result.response));
   }
 }
 
@@ -184,11 +182,10 @@ void ActionUpdate::InstallCompleteOnBlockingTaskRunner(
     int error,
     int extended_error) {
   update_client::DeleteFileAndEmptyParentDirectory(crx_path);
-  update_context_->main_task_runner->PostDelayedTask(
+  update_context_->main_task_runner->PostTask(
       FROM_HERE,
       base::Bind(&ActionUpdate::InstallComplete, base::Unretained(this),
-                 item->id, error_category, error, extended_error),
-      base::TimeDelta::FromMilliseconds(update_context_->config->StepDelay()));
+                 item->id, error_category, error, extended_error));
 }
 
 CrxInstaller::Result ActionUpdate::DoInstall(

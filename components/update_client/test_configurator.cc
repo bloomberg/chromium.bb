@@ -47,10 +47,6 @@ int TestConfigurator::NextCheckDelay() const {
   return 1;
 }
 
-int TestConfigurator::StepDelay() const {
-  return 0;
-}
-
 int TestConfigurator::OnDemandDelay() const {
   return ondemand_time_;
 }

@@ -34,10 +34,6 @@ int ChromeUpdateClientConfig::NextCheckDelay() const {
   return impl_.NextCheckDelay();
 }
 
-int ChromeUpdateClientConfig::StepDelay() const {
-  return impl_.StepDelay();
-}
-
 int ChromeUpdateClientConfig::OnDemandDelay() const {
   return impl_.OnDemandDelay();
 }

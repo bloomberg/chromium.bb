@@ -25,7 +25,6 @@ class ChromeUpdateClientConfig : public UpdateClientConfig {
 
   int InitialDelay() const override;
   int NextCheckDelay() const override;
-  int StepDelay() const override;
   int OnDemandDelay() const override;
   int UpdateDelay() const override;
   std::vector<GURL> UpdateUrl() const override;
