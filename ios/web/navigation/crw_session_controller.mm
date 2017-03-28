@@ -548,6 +548,9 @@ initiationType:(web::NavigationInitiationType)initiationType;
     _lastCommittedItemIndex--;
   if (_previousItemIndex >= index)
     _previousItemIndex--;
+
+  if (_navigationManager)
+    _navigationManager->OnNavigationItemsPruned(1U);
 }
 
 - (BOOL)isSameDocumentNavigationBetweenItem:(web::NavigationItem*)firstItem
