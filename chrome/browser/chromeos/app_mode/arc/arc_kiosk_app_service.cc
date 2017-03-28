@@ -150,15 +150,26 @@ ArcKioskAppService::~ArcKioskAppService() {
 }
 
 void ArcKioskAppService::PreconditionsChanged() {
+  VLOG(2) << "Preconditions for kiosk app changed";
   app_id_ = GetAppId();
-  if (app_id_.empty())
+  if (app_id_.empty()) {
+    VLOG(2) << "Kiosk app is not available";
     return;
+  }
   app_info_ = ArcAppListPrefs::Get(profile_)->GetApp(app_id_);
+  VLOG_IF(2, app_info_ && app_info_->ready) << "Kiosk app is ready";
+  VLOG(2) << "Maintenance session is "
+          << (maintenance_session_running_ ? "running" : "not running");
+  VLOG(2) << "Kiosk app with id: " << app_id_ << " is "
+          << (app_launcher_ ? "already launched" : "not yet launched");
   if (app_info_ && app_info_->ready && !maintenance_session_running_) {
-    if (!app_launcher_)
+    if (!app_launcher_) {
+      VLOG(2) << "Starting kiosk app";
       app_launcher_ = base::MakeUnique<ArcKioskAppLauncher>(
           profile_, ArcAppListPrefs::Get(profile_), app_id_, this);
+    }
   } else if (task_id_ != -1) {
+    VLOG(2) << "Kiosk app should be closed";
     arc::CloseTask(task_id_);
   }
 }
