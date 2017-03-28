@@ -835,9 +835,6 @@ void av1_alloc_compressor_data(AV1_COMP *cpi) {
     unsigned int tokens = get_token_alloc(cm->mb_rows, cm->mb_cols);
     CHECK_MEM_ERROR(cm, cpi->tile_tok[0][0],
                     aom_calloc(tokens, sizeof(*cpi->tile_tok[0][0])));
-#if CONFIG_ANS && !ANS_MAX_SYMBOLS
-    aom_buf_ans_alloc(&cpi->buf_ans, &cm->error, (int)tokens);
-#endif  // CONFIG_ANS
   }
 
   av1_setup_pc_tree(&cpi->common, &cpi->td);
@@ -2390,14 +2387,8 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
 #if CONFIG_HIGHBITDEPTH
   highbd_set_var_fns(cpi);
 #endif
-
 #if CONFIG_ANS && ANS_MAX_SYMBOLS
   cpi->common.ans_window_size_log2 = cpi->oxcf.ans_window_size_log2;
-  if (cpi->buf_ans.size != (1 << cpi->common.ans_window_size_log2)) {
-    aom_buf_ans_free(&cpi->buf_ans);
-    aom_buf_ans_alloc(&cpi->buf_ans, &cpi->common.error,
-                      1 << cpi->common.ans_window_size_log2);
-  }
 #endif  // CONFIG_ANS && ANS_MAX_SYMBOLS
 }
 
