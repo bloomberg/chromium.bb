@@ -58,6 +58,8 @@ struct WebFloatSize;
 
 class WebWidgetClient {
  public:
+  virtual ~WebWidgetClient() {}
+
   // Called when a region of the WebWidget needs to be re-painted.
   virtual void didInvalidateRect(const WebRect&) {}
 
@@ -179,9 +181,6 @@ class WebWidgetClient {
                              WebDragOperationsMask,
                              const WebImage& dragImage,
                              const WebPoint& dragImageOffset) {}
-
- protected:
-  ~WebWidgetClient() {}
 };
 
 }  // namespace blink

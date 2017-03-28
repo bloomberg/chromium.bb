@@ -27,7 +27,7 @@ class WebViewTestClient : public blink::WebViewClient {
   // Caller has to ensure |web_view_test_proxy_base| lives longer than |this|.
   WebViewTestClient(WebViewTestProxyBase* web_view_test_proxy_base);
 
-  virtual ~WebViewTestClient();
+  ~WebViewTestClient() override;
 
   // WebViewClient overrides needed by WebViewTestProxy.
   void showValidationMessage(const blink::WebRect& anchor_in_root_view,

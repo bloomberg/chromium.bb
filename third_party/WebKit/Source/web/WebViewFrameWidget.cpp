@@ -10,10 +10,10 @@
 
 namespace blink {
 
-WebViewFrameWidget::WebViewFrameWidget(WebWidgetClient* client,
+WebViewFrameWidget::WebViewFrameWidget(WebWidgetClient& client,
                                        WebViewImpl& webView,
                                        WebLocalFrameImpl& mainFrame)
-    : m_client(client), m_webView(&webView), m_mainFrame(&mainFrame) {
+    : m_client(&client), m_webView(&webView), m_mainFrame(&mainFrame) {
   m_mainFrame->setFrameWidget(this);
   m_webView->setCompositorVisibility(true);
 }

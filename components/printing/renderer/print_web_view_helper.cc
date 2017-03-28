@@ -589,7 +589,8 @@ void PrintWebViewHelper::PrintHeaderAndFooter(
   blink::WebLocalFrame* frame = blink::WebLocalFrame::create(
       blink::WebTreeScopeType::Document, &frame_client, nullptr, nullptr);
   web_view->setMainFrame(frame);
-  blink::WebFrameWidget::create(nullptr, web_view, frame);
+  blink::WebWidgetClient web_widget_client;
+  blink::WebFrameWidget::create(&web_widget_client, web_view, frame);
 
   base::Value html(ResourceBundle::GetSharedInstance().GetLocalizedString(
       IDR_PRINT_PREVIEW_PAGE));

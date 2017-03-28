@@ -281,7 +281,7 @@ class WebViewClient : protected WebWidgetClient {
   virtual WebWidgetClient* widgetClient() { return this; }
 
  protected:
-  ~WebViewClient() {}
+  ~WebViewClient() override {}
 };
 
 }  // namespace blink

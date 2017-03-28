@@ -27,7 +27,7 @@ class WebWidgetTestClient : public blink::WebWidgetClient {
   // live longer than |this|.
   WebWidgetTestClient(WebWidgetTestProxyBase* web_widget_test_proxy_base);
 
-  virtual ~WebWidgetTestClient();
+  ~WebWidgetTestClient() override;
 
   // WebWidgetClient overrides needed by WebWidgetTestProxy.
   blink::WebScreenInfo screenInfo() override;

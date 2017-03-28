@@ -36,7 +36,7 @@ class WebViewFrameWidget : public WebFrameWidgetBase {
   WTF_MAKE_NONCOPYABLE(WebViewFrameWidget);
 
  public:
-  explicit WebViewFrameWidget(WebWidgetClient*,
+  explicit WebViewFrameWidget(WebWidgetClient&,
                               WebViewImpl&,
                               WebLocalFrameImpl&);
   virtual ~WebViewFrameWidget();

@@ -82,6 +82,7 @@ namespace blink {
 
 WebFrameWidget* WebFrameWidget::create(WebWidgetClient* client,
                                        WebLocalFrame* localRoot) {
+  DCHECK(client) << "A valid WebWidgetClient must be supplied.";
   // Pass the WebFrameWidget's self-reference to the caller.
   return WebFrameWidgetImpl::create(client, localRoot);
 }
@@ -89,12 +90,14 @@ WebFrameWidget* WebFrameWidget::create(WebWidgetClient* client,
 WebFrameWidget* WebFrameWidget::create(WebWidgetClient* client,
                                        WebView* webView,
                                        WebLocalFrame* mainFrame) {
-  return new WebViewFrameWidget(client, toWebViewImpl(*webView),
+  DCHECK(client) << "A valid WebWidgetClient must be supplied.";
+  return new WebViewFrameWidget(*client, toWebViewImpl(*webView),
                                 toWebLocalFrameImpl(*mainFrame));
 }
 
 WebFrameWidgetImpl* WebFrameWidgetImpl::create(WebWidgetClient* client,
                                                WebLocalFrame* localRoot) {
+  DCHECK(client) << "A valid WebWidgetClient must be supplied.";
   // Pass the WebFrameWidgetImpl's self-reference to the caller.
   return new WebFrameWidgetImpl(
       client, localRoot);  // SelfKeepAlive is set in constructor.
