@@ -49,13 +49,13 @@ static int NaClThreadCreate(struct NaClThread  *ntp,
   }
   if (0 != (code = pthread_attr_init(&attr))) {
     NaClLog(LOG_ERROR,
-            "NaClThreadCtor: pthread_atr_init returned %d",
+            "NaClThreadCtor: pthread_atr_init returned %d\n",
             code);
     goto done;
   }
   if (0 != (code = pthread_attr_setstacksize(&attr, stack_size))) {
     NaClLog(LOG_ERROR,
-            "NaClThreadCtor: pthread_attr_setstacksize returned %d",
+            "NaClThreadCtor: pthread_attr_setstacksize returned %d\n",
             code);
     goto done_attr_dtor;
   }
@@ -63,7 +63,7 @@ static int NaClThreadCreate(struct NaClThread  *ntp,
     if (0 != (code = pthread_attr_setdetachstate(&attr,
                                                  PTHREAD_CREATE_DETACHED))) {
       NaClLog(LOG_ERROR,
-              "nacl_thread: pthread_attr_setdetachstate returned %d",
+              "nacl_thread: pthread_attr_setdetachstate returned %d\n",
               code);
       goto done_attr_dtor;
     }
@@ -73,7 +73,7 @@ static int NaClThreadCreate(struct NaClThread  *ntp,
                                   (void *(*)(void *)) start_fn,
                                   state))) {
     NaClLog(LOG_ERROR,
-            "nacl_thread: pthread_create returned %d",
+            "nacl_thread: pthread_create returned %d\n",
             code);
     goto done_attr_dtor;
   }
