@@ -75,12 +75,18 @@ class DoodleServiceTest : public testing::Test {
 
     task_runner_->FastForwardBy(base::TimeDelta::FromHours(12345));
 
-    RecreateService();
+    // Set the minimum refresh interval to 0 by default, so tests don't have to
+    // worry about it. The tests that care set it explicitly.
+    RecreateServiceWithZeroRefreshInterval();
   }
 
   void DestroyService() { service_ = nullptr; }
 
-  void RecreateService() {
+  void RecreateServiceWithZeroRefreshInterval() {
+    RecreateService(/*min_refresh_interval=*/base::TimeDelta());
+  }
+
+  void RecreateService(base::Optional<base::TimeDelta> refresh_interval) {
     auto expiry_timer = base::MakeUnique<base::OneShotTimer>(tick_clock_.get());
     expiry_timer->SetTaskRunner(task_runner_);
     expiry_timer_ = expiry_timer.get();
@@ -90,7 +96,8 @@ class DoodleServiceTest : public testing::Test {
 
     service_ = base::MakeUnique<DoodleService>(
         &pref_service_, std::move(fetcher), std::move(expiry_timer),
-        task_runner_->GetMockClock(), task_runner_->GetMockTickClock());
+        task_runner_->GetMockClock(), task_runner_->GetMockTickClock(),
+        refresh_interval);
   }
 
   DoodleService* service() { return service_.get(); }
@@ -154,7 +161,7 @@ TEST_F(DoodleServiceTest, PersistsConfig) {
 
   // Re-create the service. It should have persisted the config, and load it
   // again automatically.
-  RecreateService();
+  RecreateServiceWithZeroRefreshInterval();
   EXPECT_THAT(service()->config(), Eq(config));
 }
 
@@ -176,7 +183,7 @@ TEST_F(DoodleServiceTest, PersistsExpiryDate) {
   task_runner()->ClearPendingTasks();
 
   // Re-create the service. The persisted config should have been loaded again.
-  RecreateService();
+  RecreateServiceWithZeroRefreshInterval();
   EXPECT_THAT(service()->config(), Eq(config));
 
   // Its time-to-live should have been updated.
@@ -200,8 +207,35 @@ TEST_F(DoodleServiceTest, PersistedConfigExpires) {
 
   // Re-create the service. The persisted config should have been discarded
   // because it is expired.
-  RecreateService();
+  RecreateServiceWithZeroRefreshInterval();
   EXPECT_THAT(service()->config(), Eq(base::nullopt));
+}
+
+TEST_F(DoodleServiceTest, RespectsMinRefreshInterval) {
+  // Create a service with the default refresh interval.
+  RecreateService(/*min_refresh_interval=*/base::nullopt);
+
+  // Load some doodle config.
+  service()->Refresh();
+  DoodleConfig config = CreateConfig(DoodleType::SIMPLE);
+  config.large_image.url = GURL("https://doodle.com/doodle.jpg");
+  fetcher()->ServeAllCallbacks(DoodleState::AVAILABLE,
+                               base::TimeDelta::FromHours(1), config);
+  ASSERT_THAT(service()->config(), Eq(config));
+
+  // Let some time pass (less than the refresh interval).
+  task_runner()->FastForwardBy(base::TimeDelta::FromMinutes(10));
+
+  // Request a refresh. This should get ignored.
+  service()->Refresh();
+  EXPECT_THAT(fetcher()->num_pending_callbacks(), Eq(0u));
+
+  // Let more time pass, so we get past the refresh interval.
+  task_runner()->FastForwardBy(base::TimeDelta::FromMinutes(6));
+
+  // Now the refresh request should be honored again.
+  service()->Refresh();
+  EXPECT_THAT(fetcher()->num_pending_callbacks(), Eq(1u));
 }
 
 TEST_F(DoodleServiceTest, CallsObserverOnConfigReceived) {
@@ -428,10 +462,38 @@ TEST_F(DoodleServiceTest, RecordsMetricsForFailedDownload) {
   histograms.ExpectTotalCount("Doodle.ConfigDownloadTime", 0);
 }
 
+TEST_F(DoodleServiceTest, RecordsMetricsForEarlyRefreshRequest) {
+  // Create a service with some refresh interval.
+  RecreateService(/*min_refresh_interval=*/base::TimeDelta::FromMinutes(10));
+
+  // Load a doodle config as usual.
+  service()->Refresh();
+  DoodleConfig config = CreateConfig(DoodleType::SIMPLE);
+  fetcher()->ServeAllCallbacks(DoodleState::AVAILABLE,
+                               base::TimeDelta::FromHours(1), config);
+  ASSERT_THAT(service()->config(), Eq(config));
+
+  base::HistogramTester histograms;
+
+  // Request a refresh before the min refresh interval has passed.
+  task_runner()->FastForwardBy(base::TimeDelta::FromMinutes(5));
+  service()->Refresh();
+
+  // This should not have resulted in a request.
+  ASSERT_THAT(fetcher()->num_pending_callbacks(), Eq(0u));
+
+  // The outcome should still have been recorded, but not the time - we only
+  // record that for successful downloads.
+  histograms.ExpectUniqueSample("Doodle.ConfigDownloadOutcome",
+                                7,  // OUTCOME_REFRESH_INTERVAL_NOT_PASSED
+                                1);
+  histograms.ExpectTotalCount("Doodle.ConfigDownloadTime", 0);
+}
+
 TEST_F(DoodleServiceTest, DoesNotRecordMetricsAtStartup) {
   // Creating the service should not emit any histogram samples.
   base::HistogramTester histograms;
-  RecreateService();
+  RecreateServiceWithZeroRefreshInterval();
   ASSERT_THAT(service()->config(), Eq(base::nullopt));
   histograms.ExpectTotalCount("Doodle.ConfigDownloadOutcome", 0);
   histograms.ExpectTotalCount("Doodle.ConfigDownloadTime", 0);
@@ -448,7 +510,7 @@ TEST_F(DoodleServiceTest, DoesNotRecordMetricsAtStartupWithConfig) {
   // Recreating the service should not emit any histogram samples, even though
   // a config gets loaded.
   base::HistogramTester histograms;
-  RecreateService();
+  RecreateServiceWithZeroRefreshInterval();
   ASSERT_THAT(service()->config(), Eq(config));
   histograms.ExpectTotalCount("Doodle.ConfigDownloadOutcome", 0);
   histograms.ExpectTotalCount("Doodle.ConfigDownloadTime", 0);

@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "base/time/clock.h"
 #include "base/time/tick_clock.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/doodle/doodle_fetcher.h"
 #include "components/doodle/doodle_types.h"
@@ -19,10 +20,6 @@
 
 class PrefRegistrySimple;
 class PrefService;
-
-namespace base {
-class TimeDelta;
-}
 
 namespace doodle {
 
@@ -35,12 +32,14 @@ class DoodleService : public KeyedService {
 
   static void RegisterProfilePrefs(PrefRegistrySimple* pref_registry);
 
-  // All parameters must be non-null.
+  // All pointer parameters must be non-null. If |min_refresh_interval| doesn't
+  // have a value, the default value is used.
   DoodleService(PrefService* pref_service,
                 std::unique_ptr<DoodleFetcher> fetcher,
                 std::unique_ptr<base::OneShotTimer> expiry_timer,
                 std::unique_ptr<base::Clock> clock,
-                std::unique_ptr<base::TickClock> tick_clock);
+                std::unique_ptr<base::TickClock> tick_clock,
+                base::Optional<base::TimeDelta> override_min_refresh_interval);
   ~DoodleService() override;
 
   // KeyedService implementation.
@@ -73,8 +72,9 @@ class DoodleService : public KeyedService {
     OUTCOME_EXPIRED = 4,
     OUTCOME_DOWNLOAD_ERROR = 5,
     OUTCOME_PARSING_ERROR = 6,
+    OUTCOME_REFRESH_INTERVAL_NOT_PASSED = 7,
     // Insert new values here!
-    OUTCOME_COUNT = 7
+    OUTCOME_COUNT = 8
   };
 
   static bool DownloadOutcomeIsSuccess(DownloadOutcome outcome);
@@ -113,8 +113,15 @@ class DoodleService : public KeyedService {
   std::unique_ptr<base::Clock> clock_;
   std::unique_ptr<base::TickClock> tick_clock_;
 
+  // The minimum interval between server fetches. After a successful fetch,
+  // refresh requests are ignored for this period.
+  const base::TimeDelta min_refresh_interval_;
+
   // The result of the last network fetch.
   base::Optional<DoodleConfig> cached_config_;
+
+  // The time of the most recent successful fetch.
+  base::TimeTicks last_successful_fetch_;
 
   // The list of observers to be notified when the DoodleConfig changes.
   base::ObserverList<Observer> observers_;

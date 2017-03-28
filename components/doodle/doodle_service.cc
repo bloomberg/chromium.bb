@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/time/time.h"
 #include "base/values.h"
 #include "components/doodle/pref_names.h"
 #include "components/prefs/pref_registry.h"
@@ -19,7 +18,12 @@ namespace doodle {
 
 namespace {
 
+// The maximum time-to-live we'll accept; any larger values will be clamped to
+// this one. This is a last resort in case the server sends bad data.
 const int64_t kMaxTimeToLiveSecs = 30 * 24 * 60 * 60;  // 30 days
+
+// The default value for DoodleService::min_refresh_interval_.
+const int64_t kDefaultMinRefreshIntervalSecs = 15 * 60;  // 15 minutes
 
 }  // namespace
 
@@ -32,16 +36,22 @@ void DoodleService::RegisterProfilePrefs(PrefRegistrySimple* pref_registry) {
                                    PrefRegistry::LOSSY_PREF);
 }
 
-DoodleService::DoodleService(PrefService* pref_service,
-                             std::unique_ptr<DoodleFetcher> fetcher,
-                             std::unique_ptr<base::OneShotTimer> expiry_timer,
-                             std::unique_ptr<base::Clock> clock,
-                             std::unique_ptr<base::TickClock> tick_clock)
+DoodleService::DoodleService(
+    PrefService* pref_service,
+    std::unique_ptr<DoodleFetcher> fetcher,
+    std::unique_ptr<base::OneShotTimer> expiry_timer,
+    std::unique_ptr<base::Clock> clock,
+    std::unique_ptr<base::TickClock> tick_clock,
+    base::Optional<base::TimeDelta> override_min_refresh_interval)
     : pref_service_(pref_service),
       fetcher_(std::move(fetcher)),
       expiry_timer_(std::move(expiry_timer)),
       clock_(std::move(clock)),
-      tick_clock_(std::move(tick_clock)) {
+      tick_clock_(std::move(tick_clock)),
+      min_refresh_interval_(
+          override_min_refresh_interval.has_value()
+              ? override_min_refresh_interval.value()
+              : base::TimeDelta::FromSeconds(kDefaultMinRefreshIntervalSecs)) {
   DCHECK(pref_service_);
   DCHECK(fetcher_);
   DCHECK(expiry_timer_);
@@ -70,9 +80,16 @@ void DoodleService::RemoveObserver(Observer* observer) {
 }
 
 void DoodleService::Refresh() {
+  base::TimeTicks now_ticks = tick_clock_->NowTicks();
+  // Check if we have passed the minimum refresh interval.
+  base::TimeDelta time_since_fetch = now_ticks - last_successful_fetch_;
+  if (time_since_fetch < min_refresh_interval_) {
+    RecordDownloadMetrics(OUTCOME_REFRESH_INTERVAL_NOT_PASSED,
+                          base::TimeDelta());
+    return;
+  }
   fetcher_->FetchDoodle(base::BindOnce(&DoodleService::DoodleFetched,
-                                       base::Unretained(this),
-                                       tick_clock_->NowTicks()));
+                                       base::Unretained(this), now_ticks));
 }
 
 // static
@@ -86,6 +103,7 @@ bool DoodleService::DownloadOutcomeIsSuccess(DownloadOutcome outcome) {
     case OUTCOME_EXPIRED:
     case OUTCOME_DOWNLOAD_ERROR:
     case OUTCOME_PARSING_ERROR:
+    case OUTCOME_REFRESH_INTERVAL_NOT_PASSED:
       return false;
     case OUTCOME_COUNT:
       NOTREACHED();
@@ -145,8 +163,12 @@ void DoodleService::DoodleFetched(
     DoodleState state,
     base::TimeDelta time_to_live,
     const base::Optional<DoodleConfig>& doodle_config) {
-  base::TimeDelta download_time = tick_clock_->NowTicks() - start_time;
+  base::TimeTicks now_ticks = tick_clock_->NowTicks();
   DownloadOutcome outcome = HandleNewConfig(state, time_to_live, doodle_config);
+  if (DownloadOutcomeIsSuccess(outcome)) {
+    last_successful_fetch_ = now_ticks;
+  }
+  base::TimeDelta download_time = now_ticks - start_time;
   RecordDownloadMetrics(outcome, download_time);
 }
 

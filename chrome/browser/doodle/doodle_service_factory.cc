@@ -59,8 +59,10 @@ KeyedService* DoodleServiceFactory::BuildServiceInstanceFor(
       profile->GetRequestContext(),
       GoogleURLTrackerFactory::GetForProfile(profile),
       base::Bind(&safe_json::SafeJsonParser::Parse), use_gray_background);
-  return new doodle::DoodleService(profile->GetPrefs(), std::move(fetcher),
-                                   base::MakeUnique<base::OneShotTimer>(),
-                                   base::MakeUnique<base::DefaultClock>(),
-                                   base::MakeUnique<base::DefaultTickClock>());
+  return new doodle::DoodleService(
+      profile->GetPrefs(), std::move(fetcher),
+      base::MakeUnique<base::OneShotTimer>(),
+      base::MakeUnique<base::DefaultClock>(),
+      base::MakeUnique<base::DefaultTickClock>(),
+      /*override_min_refresh_interval=*/base::nullopt);
 }
