@@ -7,11 +7,20 @@
 
 #import <Foundation/Foundation.h>
 
+// TODO(crbug.com/704946): Make framework style include work everywhere and
+// remove this #if.
+#if defined(CWV_IMPLEMENTATION)
+#include "ios/web_view/public/cwv_export.h"
+#else
+#include <ChromeWebView/cwv_export.h>
+#endif
+
 @protocol CRIWVTranslateDelegate;
 @class CWVWebView;
 
 // Navigation delegate protocol for CWVWebViews.  Allows embedders to hook
 // page loading and receive events for navigation.
+CWV_EXPORT
 @protocol CWVNavigationDelegate<NSObject>
 @optional
 

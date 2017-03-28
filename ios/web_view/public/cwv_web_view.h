@@ -6,6 +6,14 @@
 
 #import <UIKit/UIKit.h>
 
+// TODO(crbug.com/704946): Make framework style include work everywhere and
+// remove this #if.
+#if defined(CWV_IMPLEMENTATION)
+#include "ios/web_view/public/cwv_export.h"
+#else
+#include <ChromeWebView/cwv_export.h>
+#endif
+
 @class CWVWebViewConfiguration;
 @protocol CWVUIDelegate;
 @protocol CWVTranslateDelegate;
@@ -18,6 +26,7 @@
 // Customizable Context Menus, and maybe more.
 //
 // Concrete instances can be created through CWV.
+CWV_EXPORT
 @interface CWVWebView : UIView
 
 // The configuration of the web view.

@@ -7,8 +7,17 @@
 
 #import <Foundation/Foundation.h>
 
+// TODO(crbug.com/704946): Make framework style include work everywhere and
+// remove this #if.
+#if defined(CWV_IMPLEMENTATION)
+#include "ios/web_view/public/cwv_export.h"
+#else
+#include <ChromeWebView/cwv_export.h>
+#endif
+
 // Interface to manage the translation flow.
 // Clients are not supposed to instantiate or subclass it.
+CWV_EXPORT
 @protocol CRIWVTranslateManager<NSObject>
 
 - (void)translate;

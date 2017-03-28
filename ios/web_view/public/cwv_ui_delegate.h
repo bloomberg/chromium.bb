@@ -8,6 +8,14 @@
 #import <CoreGraphics/CoreGraphics.h>
 #import <UIKit/UIKit.h>
 
+// TODO(crbug.com/704946): Make framework style include work everywhere and
+// remove this #if.
+#if defined(CWV_IMPLEMENTATION)
+#include "ios/web_view/public/cwv_export.h"
+#else
+#include <ChromeWebView/cwv_export.h>
+#endif
+
 @class CWVHTMLElement;
 @class CWVWebView;
 @class CWVWebViewConfiguration;
@@ -15,6 +23,7 @@
 
 // UI delegate interface for a CWVWebView.  Embedders can implement the
 // functions in order to customize library behavior.
+CWV_EXPORT
 @protocol CWVUIDelegate<NSObject>
 
 @optional

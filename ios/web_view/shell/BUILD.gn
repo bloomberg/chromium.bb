@@ -30,6 +30,15 @@ source_set("shell") {
     "translate_controller.m",
   ]
 
+  # A workaround for an issue that we need to use the form:
+  #   #include "ios/web_view/public/cwv_export.h"
+  # instead of:
+  #   #include <ChromeWebView/cwv_export.h>
+  # when building this app.
+  #
+  # TODO(crbug.com/704946): Solve the issue and remove this workaround.
+  defines = [ "CWV_IMPLEMENTATION" ]
+
   deps = [
     ":resources",
     "//ios/web_view",

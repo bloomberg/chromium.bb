@@ -41,6 +41,11 @@ source_set("internal") {
     "web_view_web_state_policy_decider.h",
     "web_view_web_state_policy_decider.mm",
   ]
+
+  # Let header files know that it is building ios/web_view library, not using
+  # it.
+  defines = [ "CWV_IMPLEMENTATION" ]
+
   deps = [
     "//base",
     "//components/pref_registry",

@@ -12,6 +12,7 @@ source_set("public") {
     "criwv_translate_manager.h",
     "cwv.h",
     "cwv_delegate.h",
+    "cwv_export.h",
     "cwv_html_element.h",
     "cwv_navigation_action.h",
     "cwv_navigation_delegate.h",

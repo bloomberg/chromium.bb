@@ -19,12 +19,14 @@ ios_framework_bundle("web_view") {
 
   sources = [
     "public/cwv.h",
+    "public/cwv_export.h",
   ]
 
   public_headers = [
     "public/criwv_translate_manager.h",
     "public/cwv.h",
     "public/cwv_delegate.h",
+    "public/cwv_export.h",
     "public/cwv_html_element.h",
     "public/cwv_navigation_action.h",
     "public/cwv_navigation_delegate.h",

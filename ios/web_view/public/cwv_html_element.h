@@ -7,8 +7,17 @@
 
 #import <Foundation/Foundation.h>
 
+// TODO(crbug.com/704946): Make framework style include work everywhere and
+// remove this #if.
+#if defined(CWV_IMPLEMENTATION)
+#include "ios/web_view/public/cwv_export.h"
+#else
+#include <ChromeWebView/cwv_export.h>
+#endif
+
 // Encapsulates information about HTML element. Used in
 // delegate methods.
+CWV_EXPORT
 @interface CWVHTMLElement : NSObject
 
 // |href| property of an HTML element.

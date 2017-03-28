@@ -7,10 +7,19 @@
 
 #import <Foundation/Foundation.h>
 
+// TODO(crbug.com/704946): Make framework style include work everywhere and
+// remove this #if.
+#if defined(CWV_IMPLEMENTATION)
+#include "ios/web_view/public/cwv_export.h"
+#else
+#include <ChromeWebView/cwv_export.h>
+#endif
+
 @class CWVUserContentController;
 @class CWVWebsiteDataStore;
 
 // Configuration used for creation of a CWVWebView.
+CWV_EXPORT
 @interface CWVWebViewConfiguration : NSObject<NSCopying>
 
 // Configuration with persistent data store which stores all data on disk.
