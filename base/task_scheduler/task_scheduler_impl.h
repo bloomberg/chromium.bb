@@ -35,9 +35,22 @@ class TaskTracker;
 class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
  public:
   // Creates and returns an initialized TaskSchedulerImpl. CHECKs on failure.
+  // |name| is used to label threads and histograms. It should identify the
+  // component that creates the TaskScheduler. |init_params| contains params to
+  // initialize worker pools.
+  //
+  // Note: The names and priority hints in |init_params| are ignored.
+  // https://crbug.com/690706
+  static std::unique_ptr<TaskSchedulerImpl> Create(
+      const std::string& name,
+      const TaskScheduler::InitParams& init_params);
+
+  // Creates and returns an initialized TaskSchedulerImpl. CHECKs on failure.
   // |worker_pool_params_vector| describes the worker pools to create.
   // |worker_pool_index_for_traits_callback| returns the index in |worker_pools|
   // of the worker pool in which a task with given traits should run.
+  //
+  // Deprecated. https://crbug.com/690706
   static std::unique_ptr<TaskSchedulerImpl> Create(
       const std::vector<SchedulerWorkerPoolParams>& worker_pool_params_vector,
       const WorkerPoolIndexForTraitsCallback&
