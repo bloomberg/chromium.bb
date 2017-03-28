@@ -23,9 +23,9 @@ PerformanceNavigationTiming::PerformanceNavigationTiming(
                                 "navigation",
                                 0.0,
                                 0.0),
+      ContextClient(frame),
       m_timeOrigin(timeOrigin),
-      m_resourceTimingInfo(info),
-      m_frame(frame) {
+      m_resourceTimingInfo(info) {
   DCHECK(frame);
   DCHECK(info);
 }
@@ -33,7 +33,7 @@ PerformanceNavigationTiming::PerformanceNavigationTiming(
 PerformanceNavigationTiming::~PerformanceNavigationTiming() {}
 
 DEFINE_TRACE(PerformanceNavigationTiming) {
-  visitor->trace(m_frame);
+  ContextClient::trace(visitor);
   PerformanceEntry::trace(visitor);
 }
 
@@ -46,11 +46,15 @@ DocumentLoadTiming* PerformanceNavigationTiming::documentLoadTiming() const {
 }
 
 DocumentLoader* PerformanceNavigationTiming::documentLoader() const {
-  return m_frame->loader().documentLoader();
+  if (!frame())
+    return nullptr;
+  return frame()->loader().documentLoader();
 }
 
 const DocumentTiming* PerformanceNavigationTiming::documentTiming() const {
-  Document* document = m_frame->document();
+  if (!frame())
+    return nullptr;
+  Document* document = frame()->document();
   if (!document)
     return nullptr;
 
@@ -86,7 +90,7 @@ AtomicString PerformanceNavigationTiming::initiatorType() const {
 }
 
 bool PerformanceNavigationTiming::getAllowRedirectDetails() const {
-  ExecutionContext* context = m_frame->document();
+  ExecutionContext* context = frame() ? frame()->document() : nullptr;
   SecurityOrigin* securityOrigin = nullptr;
   if (context)
     securityOrigin = context->getSecurityOrigin();
@@ -173,8 +177,9 @@ DOMHighResTimeStamp PerformanceNavigationTiming::loadEventEnd() const {
 
 AtomicString PerformanceNavigationTiming::type() const {
   DocumentLoader* loader = documentLoader();
-  DCHECK(loader);
-  Document* document = m_frame->document();
+  if (!loader)
+    return "navigate";
+  Document* document = frame() ? frame()->document(): nullptr;
   switch (PerformanceBase::getNavigationType(loader->getNavigationType(),
                                              document)) {
     case NavigationType::Prerender:

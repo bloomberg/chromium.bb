@@ -6,6 +6,7 @@
 #define PerformanceNavigationTiming_h
 
 #include "core/CoreExport.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMHighResTimeStamp.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/timing/PerformanceResourceTiming.h"
@@ -22,8 +23,10 @@ class ResourceTimingInfo;
 class ResourceLoadTiming;
 
 class CORE_EXPORT PerformanceNavigationTiming final
-    : public PerformanceResourceTiming {
+    : public PerformanceResourceTiming,
+      public ContextClient {
   DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(PerformanceNavigationTiming);
   friend class PerformanceNavigationTimingTest;
 
  public:
@@ -79,8 +82,6 @@ class CORE_EXPORT PerformanceNavigationTiming final
 
   double m_timeOrigin;
   RefPtr<ResourceTimingInfo> m_resourceTimingInfo;
-  // TODO(sunjian): Investigate why not using a Member instead.
-  WeakMember<LocalFrame> m_frame;
 };
 }  // namespace blink
 
