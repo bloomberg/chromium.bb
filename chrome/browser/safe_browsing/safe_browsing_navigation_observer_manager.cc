@@ -196,10 +196,8 @@ std::size_t NavigationEventList::CleanUpNavigationEvents() {
 
 // -----------------SafeBrowsingNavigationObserverManager-----------
 // static
-const base::Feature
-SafeBrowsingNavigationObserverManager::kDownloadAttribution {
-    "DownloadAttribution", base::FEATURE_DISABLED_BY_DEFAULT
-};
+const base::Feature SafeBrowsingNavigationObserverManager::kDownloadAttribution{
+    "DownloadAttribution", base::FEATURE_ENABLED_BY_DEFAULT};
 // static
 bool SafeBrowsingNavigationObserverManager::IsUserGestureExpired(
     const base::Time& timestamp) {

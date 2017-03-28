@@ -1086,7 +1086,7 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                         true,         // has_committed
                         false,        // has_server_redirect
                         nav_list->Get(0));
-  // The first one comes from NOTIFICATION_RETARGETING.
+  // The second navigation event is a retargeting navigation.
   VerifyNavigationEvent(initial_url,  // source_url
                         initial_url,  // source_main_frame_url
                         blank_url,    // original_request_url
