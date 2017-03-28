@@ -450,7 +450,7 @@ void HTMLFormElement::scheduleFormSubmission(FormSubmission* submission) {
   } else {
     submission->clearTarget();
   }
-  if (!targetFrame->host())
+  if (!targetFrame->page())
     return;
 
   UseCounter::count(document(), UseCounter::FormsSubmitted);

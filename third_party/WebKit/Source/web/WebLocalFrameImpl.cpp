@@ -2250,7 +2250,7 @@ bool WebLocalFrameImpl::find(int identifier,
     return false;
 
   // Unlikely, but just in case we try to find-in-page on a detached frame.
-  DCHECK(frame()->host());
+  DCHECK(frame()->page());
 
   // Up-to-date, clean tree is required for finding text in page, since it
   // relies on TextIterator to look over the text.

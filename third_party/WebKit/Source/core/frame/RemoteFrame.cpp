@@ -109,7 +109,7 @@ void RemoteFrame::detach(FrameDetachType type) {
 
 bool RemoteFrame::prepareForCommit() {
   detachChildren();
-  return !!host();
+  return !!page();
 }
 
 RemoteSecurityContext* RemoteFrame::securityContext() const {

@@ -1312,7 +1312,7 @@ WebInputEventResult EventHandler::handleGestureEvent(
 WebInputEventResult EventHandler::handleGestureEvent(
     const GestureEventWithHitTestResults& targetedEvent) {
   TRACE_EVENT0("input", "EventHandler::handleGestureEvent");
-  if (!m_frame->host())
+  if (!m_frame->page())
     return WebInputEventResult::NotHandled;
 
   // Propagation to inner frames is handled below this function.
@@ -1345,7 +1345,7 @@ WebInputEventResult EventHandler::handleGestureEventInFrame(
 WebInputEventResult EventHandler::handleGestureScrollEvent(
     const WebGestureEvent& gestureEvent) {
   TRACE_EVENT0("input", "EventHandler::handleGestureScrollEvent");
-  if (!m_frame->host())
+  if (!m_frame->page())
     return WebInputEventResult::NotHandled;
 
   return m_scrollManager->handleGestureScrollEvent(gestureEvent);
@@ -1353,7 +1353,7 @@ WebInputEventResult EventHandler::handleGestureScrollEvent(
 
 WebInputEventResult EventHandler::handleGestureScrollEnd(
     const WebGestureEvent& gestureEvent) {
-  if (!m_frame->host())
+  if (!m_frame->page())
     return WebInputEventResult::NotHandled;
   return m_scrollManager->handleGestureScrollEnd(gestureEvent);
 }

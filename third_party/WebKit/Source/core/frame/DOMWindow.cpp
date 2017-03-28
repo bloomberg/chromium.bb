@@ -69,7 +69,7 @@ Location* DOMWindow::location() const {
 }
 
 bool DOMWindow::closed() const {
-  return m_windowIsClosing || !frame() || !frame()->host();
+  return m_windowIsClosing || !frame() || !frame()->page();
 }
 
 unsigned DOMWindow::length() const {
@@ -118,7 +118,7 @@ DOMWindow* DOMWindow::anonymousIndexedGetter(uint32_t index) const {
 bool DOMWindow::isCurrentlyDisplayedInFrame() const {
   if (frame())
     SECURITY_CHECK(frame()->domWindow() == this);
-  return frame() && frame()->host();
+  return frame() && frame()->page();
 }
 
 bool DOMWindow::isInsecureScriptAccess(LocalDOMWindow& callingWindow,

@@ -759,7 +759,7 @@ void FrameLoader::loadInSameDocument(
   // scroll should cancel it.
   detachDocumentLoader(m_provisionalDocumentLoader);
 
-  if (!m_frame->host())
+  if (!m_frame->page())
     return;
   saveScrollState();
 
@@ -1648,7 +1648,7 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest,
 
   // beforeunload fired above, and detaching a DocumentLoader can fire events,
   // which can detach this frame.
-  if (!m_frame->host())
+  if (!m_frame->page())
     return;
 
   m_progressTracker->progressStarted(type);

@@ -4126,7 +4126,7 @@ TEST_P(WebViewTest, ClosingPageIsSuspended) {
   EXPECT_TRUE(mainFrame->domWindow()->closed());
   // EXPECT_TRUE(page->isClosing());
   // ...but not yet detached.
-  EXPECT_TRUE(mainFrame->host());
+  EXPECT_TRUE(mainFrame->page());
 
   {
     ScopedPageSuspender suspender;

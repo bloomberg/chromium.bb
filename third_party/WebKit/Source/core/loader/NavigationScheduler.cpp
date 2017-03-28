@@ -496,7 +496,7 @@ void NavigationScheduler::schedule(ScheduledNavigation* redirect) {
       m_frame->loader().provisionalDocumentLoader() &&
       m_frame->loader().provisionalDocumentLoader()->didStart()) {
     m_frame->loader().stopAllLoaders();
-    if (!m_frame->host())
+    if (!m_frame->page())
       return;
   }
 

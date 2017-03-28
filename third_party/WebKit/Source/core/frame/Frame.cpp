@@ -33,7 +33,6 @@
 #include "bindings/core/v8/WindowProxyManager.h"
 #include "core/dom/DocumentType.h"
 #include "core/events/Event.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
@@ -100,12 +99,6 @@ void Frame::disconnectOwnerElement() {
 
 Page* Frame::page() const {
   return m_page;
-}
-
-FrameHost* Frame::host() const {
-  if (m_page)
-    return &m_page->frameHost();
-  return nullptr;
 }
 
 bool Frame::isMainFrame() const {

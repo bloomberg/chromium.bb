@@ -45,7 +45,6 @@ class DOMWindow;
 class DOMWrapperWorld;
 class Document;
 class FrameClient;
-class FrameHost;
 class FrameOwner;
 class HTMLFrameOwnerElement;
 class LayoutPart;
@@ -91,10 +90,6 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   FrameClient* client() const;
 
   Page* page() const;  // Null when the frame is detached.
-
-  // Deprecated; use page() instead.
-  // TODO(sashab): Remove this method.
-  FrameHost* host() const;
 
   bool isMainFrame() const;
   bool isLocalRoot() const;

@@ -36,13 +36,13 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData,
     // - |m_frame->domWindow()| must point back to this DOMWindow. If it does
     //   not, it is easy to introduce a bug where script execution uses the
     //   wrong DOMWindow (which may be cross-origin).
-    // - |m_frame| must be attached, i.e. |m_frame->host()| must not be null.
-    //   If |m_frame->host()| is null, this indicates a bug where the frame was
+    // - |m_frame| must be attached, i.e. |m_frame->page()| must not be null.
+    //   If |m_frame->page()| is null, this indicates a bug where the frame was
     //   detached but |m_frame| was not set to null. This bug can lead to
     //   issues where executing script incorrectly schedules work on a detached
     //   frame.
     SECURITY_DCHECK(!m_frame ||
-                    (m_frame->domWindow() == this && m_frame->host()));
+                    (m_frame->domWindow() == this && m_frame->page()));
     return m_frame;
   }
 

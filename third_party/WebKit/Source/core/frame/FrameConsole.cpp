@@ -86,7 +86,7 @@ void FrameConsole::reportMessageToClient(MessageSource source,
   String url = location->url();
   String stackTrace;
   if (source == ConsoleAPIMessageSource) {
-    if (!m_frame->host())
+    if (!m_frame->page())
       return;
     if (m_frame->chromeClient().shouldReportDetailedMessageForSource(*m_frame,
                                                                      url)) {
