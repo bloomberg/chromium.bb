@@ -260,7 +260,7 @@ inline float parentTextZoomFactor(LocalFrame* frame) {
 template class CORE_TEMPLATE_EXPORT Supplement<LocalFrame>;
 
 LocalFrame* LocalFrame::create(LocalFrameClient* client,
-                               Page* page,
+                               Page& page,
                                FrameOwner* owner,
                                InterfaceProvider* interfaceProvider,
                                InterfaceRegistry* interfaceRegistry) {
@@ -845,12 +845,12 @@ bool LocalFrame::shouldThrottleRendering() const {
 }
 
 inline LocalFrame::LocalFrame(LocalFrameClient* client,
-                              Page* page,
+                              Page& page,
                               FrameOwner* owner,
                               InterfaceProvider* interfaceProvider,
                               InterfaceRegistry* interfaceRegistry)
     : Frame(client, page, owner, LocalWindowProxyManager::create(*this)),
-      m_frameScheduler(page->chromeClient().createFrameScheduler(
+      m_frameScheduler(page.chromeClient().createFrameScheduler(
           client->frameBlameContext())),
       m_loader(this),
       m_navigationScheduler(NavigationScheduler::create(this)),

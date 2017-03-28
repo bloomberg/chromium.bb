@@ -423,18 +423,16 @@ bool Frame::isFeatureEnabled(WebFeaturePolicyFeature feature) const {
 }
 
 Frame::Frame(FrameClient* client,
-             Page* page,
+             Page& page,
              FrameOwner* owner,
              WindowProxyManager* windowProxyManager)
     : m_treeNode(this),
-      m_page(page),
+      m_page(&page),
       m_owner(owner),
       m_client(client),
       m_windowProxyManager(windowProxyManager),
       m_isLoading(false) {
   InstanceCounters::incrementCounter(InstanceCounters::FrameCounter);
-
-  DCHECK(m_page);
 
   if (m_owner)
     m_owner->setContentFrame(*this);

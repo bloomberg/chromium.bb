@@ -347,7 +347,7 @@ WebLocalFrame* WebRemoteFrameImpl::createLocalChild(
 void WebRemoteFrameImpl::initializeCoreFrame(Page& page,
                                              FrameOwner* owner,
                                              const AtomicString& name) {
-  setCoreFrame(RemoteFrame::create(m_frameClient.get(), &page, owner));
+  setCoreFrame(RemoteFrame::create(m_frameClient.get(), page, owner));
   frame()->createView();
   m_frame->tree().setName(name);
 }

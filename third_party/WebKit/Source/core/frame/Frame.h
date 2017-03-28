@@ -159,7 +159,7 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   bool isFeatureEnabled(WebFeaturePolicyFeature) const;
 
  protected:
-  Frame(FrameClient*, Page*, FrameOwner*, WindowProxyManager*);
+  Frame(FrameClient*, Page&, FrameOwner*, WindowProxyManager*);
 
   mutable FrameTree m_treeNode;
 

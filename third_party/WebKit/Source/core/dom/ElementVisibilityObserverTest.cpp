@@ -70,7 +70,7 @@ TEST_F(ElementVisibilityObserverTest, ObserveElementWithoutDocumentFrame) {
 
 TEST_F(ElementVisibilityObserverTest, ObserveElementInRemoteFrame) {
   Persistent<RemoteFrame> remoteFrame =
-      RemoteFrame::create(new EmptyRemoteFrameClient(), &page(), nullptr);
+      RemoteFrame::create(new EmptyRemoteFrameClient(), page(), nullptr);
   localFrameClient()->setParent(remoteFrame);
 
   Persistent<HTMLElement> element = HTMLDivElement::create(document());

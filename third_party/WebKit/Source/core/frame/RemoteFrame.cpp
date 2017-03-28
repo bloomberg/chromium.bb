@@ -27,7 +27,7 @@
 namespace blink {
 
 inline RemoteFrame::RemoteFrame(RemoteFrameClient* client,
-                                Page* page,
+                                Page& page,
                                 FrameOwner* owner)
     : Frame(client, page, owner, RemoteWindowProxyManager::create(*this)),
       m_securityContext(RemoteSecurityContext::create()) {
@@ -35,7 +35,7 @@ inline RemoteFrame::RemoteFrame(RemoteFrameClient* client,
 }
 
 RemoteFrame* RemoteFrame::create(RemoteFrameClient* client,
-                                 Page* page,
+                                 Page& page,
                                  FrameOwner* owner) {
   return new RemoteFrame(client, page, owner);
 }

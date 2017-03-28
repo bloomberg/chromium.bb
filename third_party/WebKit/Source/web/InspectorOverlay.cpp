@@ -546,7 +546,7 @@ Page* InspectorOverlay::overlayPage() {
   overlaySettings.setAcceleratedCompositingEnabled(false);
 
   LocalFrame* frame =
-      LocalFrame::create(&dummyLocalFrameClient, m_overlayPage, 0);
+      LocalFrame::create(&dummyLocalFrameClient, *m_overlayPage, 0);
   frame->setView(FrameView::create(*frame));
   frame->init();
   FrameLoader& loader = frame->loader();

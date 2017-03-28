@@ -1525,7 +1525,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::createProvisional(
   // TODO(dcheng): This block is very similar to initializeCoreFrame. Try to
   // reuse it here.
   LocalFrame* frame = LocalFrame::create(webFrame->m_localFrameClientImpl.get(),
-                                         oldFrame->page(), tempOwner,
+                                         *oldFrame->page(), tempOwner,
                                          interfaceProvider, interfaceRegistry);
   frame->tree().setName(
       toWebRemoteFrameImpl(oldWebFrame)->frame()->tree().name());
@@ -1601,7 +1601,7 @@ void WebLocalFrameImpl::setCoreFrame(LocalFrame* frame) {
 void WebLocalFrameImpl::initializeCoreFrame(Page& page,
                                             FrameOwner* owner,
                                             const AtomicString& name) {
-  setCoreFrame(LocalFrame::create(m_localFrameClientImpl.get(), &page, owner,
+  setCoreFrame(LocalFrame::create(m_localFrameClientImpl.get(), page, owner,
                                   m_interfaceProvider, m_interfaceRegistry));
   frame()->tree().setName(name);
   // We must call init() after m_frame is assigned because it is referenced
