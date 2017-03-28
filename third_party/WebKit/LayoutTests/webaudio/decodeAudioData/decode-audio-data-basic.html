@@ -55,7 +55,8 @@
             // because decodeAudioData will detach the buffers.
             should(context.decodeAudioData(validArrayBuffer.slice(0)),
                    'Decoding a valid audio file')
-                .beResolved(),
+                .beResolved()
+                .then(buffer => referenceDecodedAudioBuffer = buffer),
             should(context.decodeAudioData(invalidArrayBuffer.slice(0)),
                    'Decoding an invalid audio file')
                 .beRejectedWith('EncodingError'),

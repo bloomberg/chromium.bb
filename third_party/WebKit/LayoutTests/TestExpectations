@@ -1778,7 +1778,6 @@ crbug.com/705125 virtual/mojo-loading/http/tests/security/cors-rfc1918/addresssp
 crbug.com/705125 virtual/mojo-loading/http/tests/security/suborigins/suborigin-invalid-options.html [ Failure ]
 crbug.com/705125 virtual/mojo-loading/http/tests/streams/readable-streams/cancel.html [ Failure ]
 crbug.com/705125 virtual/mojo-loading/http/tests/streams/readable-streams/templated.html [ Failure ]
-crbug.com/705125 webaudio/decodeAudioData/decode-audio-data-basic.html [ Failure ]
 
 # This test breaks when the feature introduced in the bug is enabled. We keep
 # this tested without the feature by using the virtual test. See
