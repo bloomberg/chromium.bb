@@ -458,8 +458,10 @@ class SingleTestRunner(object):
         if failures:
             return TestResult(self._test_name, failures, 0, has_stderr, pid=actual_driver_output.pid)
 
-        if not reference_driver_output.image_hash and not actual_driver_output.image_hash:
-            failures.append(test_failures.FailureReftestNoImagesGenerated(reference_filename))
+        if not actual_driver_output.image_hash:
+            failures.append(test_failures.FailureReftestNoImageGenerated(reference_filename))
+        elif not reference_driver_output.image_hash:
+            failures.append(test_failures.FailureReftestNoReferenceImageGenerated(reference_filename))
         elif mismatch:
             if reference_driver_output.image_hash == actual_driver_output.image_hash:
                 failures.append(test_failures.FailureReftestMismatchDidNotOccur(reference_filename))

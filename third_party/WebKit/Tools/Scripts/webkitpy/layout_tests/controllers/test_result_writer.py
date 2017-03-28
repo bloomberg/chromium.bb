@@ -70,17 +70,17 @@ def write_test_result(filesystem, port, results_directory, test_name, driver_out
             writer.write_crash_log(crashed_driver_output.crash_log)
         elif isinstance(failure, test_failures.FailureLeak):
             writer.write_leak_log(driver_output.leak_log)
-        elif isinstance(failure, test_failures.FailureReftestMismatch):
+        elif isinstance(failure, (
+                test_failures.FailureReftestMismatch,
+                test_failures.FailureReftestNoImageGenerated,
+                test_failures.FailureReftestNoReferenceImageGenerated)):
             writer.write_image_files(driver_output.image, expected_driver_output.image)
-            # FIXME: This work should be done earlier in the pipeline (e.g., when we compare images for non-ref tests).
-            # FIXME: We should always have 2 images here.
             if driver_output.image and expected_driver_output.image:
                 diff_image, _ = port.diff_image(expected_driver_output.image, driver_output.image)
                 if diff_image:
                     writer.write_image_diff_files(diff_image)
                 else:
                     _log.warning('ref test mismatch did not produce an image diff.')
-            writer.write_image_files(driver_output.image, expected_image=None)
             if filesystem.exists(failure.reference_filename):
                 writer.write_reftest(failure.reference_filename)
             else:
@@ -92,7 +92,7 @@ def write_test_result(filesystem, port, results_directory, test_name, driver_out
             else:
                 _log.warning("reference %s was not found", failure.reference_filename)
         else:
-            assert isinstance(failure, (test_failures.FailureTimeout, test_failures.FailureReftestNoImagesGenerated))
+            assert isinstance(failure, test_failures.FailureTimeout)
 
         if expected_driver_output is not None:
             writer.create_repaint_overlay_result(driver_output.text, expected_driver_output.text)

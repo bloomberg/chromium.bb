@@ -79,6 +79,19 @@ class TestResultWriterTests(unittest.TestCase):
         written_files = self.run_test(failures=[failure], files={})
         self.assertEqual(written_files, {})
 
+    def test_reftest_image_missing(self):
+        failure = test_failures.FailureReftestNoImageGenerated()
+        failure.reference_filename = '/src/exists-expected.html'
+        files = {'/src/exists-expected.html': 'yup'}
+        written_files = self.run_test(failures=[failure], files=files)
+        self.assertEqual(written_files, {'/tmp/exists-expected.html': 'yup'})
+
+        failure = test_failures.FailureReftestNoReferenceImageGenerated()
+        failure.reference_filename = '/src/exists-expected.html'
+        files = {'/src/exists-expected.html': 'yup'}
+        written_files = self.run_test(failures=[failure], files=files)
+        self.assertEqual(written_files, {'/tmp/exists-expected.html': 'yup'})
+
     def test_baseline_name(self):
         fs = MockFileSystem()
         self.assertEqual(baseline_name(fs, 'x/y/foo.html', 'txt'), 'x/y/foo-expected.txt')

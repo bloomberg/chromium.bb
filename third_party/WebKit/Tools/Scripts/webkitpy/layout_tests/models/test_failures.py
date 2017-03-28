@@ -32,9 +32,14 @@ from webkitpy.layout_tests.models import test_expectations
 
 
 def is_reftest_failure(failure_list):
-    failure_types = [type(f) for f in failure_list]
-    return set((FailureReftestMismatch, FailureReftestMismatchDidNotOccur, FailureReftestNoImagesGenerated)).intersection(
-        failure_types)
+    input_failure_types = {type(f) for f in failure_list}
+    reftest_failure_types = {
+        FailureReftestMismatch,
+        FailureReftestMismatchDidNotOccur,
+        FailureReftestNoImageGenerated,
+        FailureReftestNoReferenceImageGenerated
+    }
+    return bool(input_failure_types & reftest_failure_types)
 
 # FIXME: This is backwards.  Each TestFailure subclass should know what
 # test_expectation type it corresponds too.  Then this method just
@@ -220,14 +225,24 @@ class FailureReftestMismatchDidNotOccur(TestFailure):
         return "reference mismatch didn't happen"
 
 
-class FailureReftestNoImagesGenerated(TestFailure):
+class FailureReftestNoImageGenerated(TestFailure):
 
     def __init__(self, reference_filename=None):
-        super(FailureReftestNoImagesGenerated, self).__init__()
+        super(FailureReftestNoImageGenerated, self).__init__()
         self.reference_filename = reference_filename
 
     def message(self):
-        return "reference didn't generate pixel results."
+        return "reference test didn't generate pixel results"
+
+
+class FailureReftestNoReferenceImageGenerated(TestFailure):
+
+    def __init__(self, reference_filename=None):
+        super(FailureReftestNoReferenceImageGenerated, self).__init__()
+        self.reference_filename = reference_filename
+
+    def message(self):
+        return "-expected.html didn't generate pixel results"
 
 
 class FailureMissingAudio(TestFailure):
@@ -255,6 +270,8 @@ ALL_FAILURE_CLASSES = (FailureTimeout, FailureCrash, FailureMissingResult,
                        FailureTextMismatch, FailureMissingImageHash,
                        FailureMissingImage, FailureImageHashMismatch,
                        FailureImageHashIncorrect, FailureReftestMismatch,
-                       FailureReftestMismatchDidNotOccur, FailureReftestNoImagesGenerated,
+                       FailureReftestMismatchDidNotOccur,
+                       FailureReftestNoImageGenerated,
+                       FailureReftestNoReferenceImageGenerated,
                        FailureMissingAudio, FailureAudioMismatch,
                        FailureEarlyExit)
