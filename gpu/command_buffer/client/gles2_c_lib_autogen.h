@@ -1329,10 +1329,10 @@ void GL_APIENTRY GLES2PostSubBufferCHROMIUM(GLint x,
                                             GLint height) {
   gles2::GetGLContext()->PostSubBufferCHROMIUM(x, y, width, height);
 }
-void GL_APIENTRY GLES2CopyTextureCHROMIUM(GLenum source_id,
+void GL_APIENTRY GLES2CopyTextureCHROMIUM(GLuint source_id,
                                           GLint source_level,
                                           GLenum dest_target,
-                                          GLenum dest_id,
+                                          GLuint dest_id,
                                           GLint dest_level,
                                           GLint internalformat,
                                           GLenum dest_type,
@@ -1345,10 +1345,10 @@ void GL_APIENTRY GLES2CopyTextureCHROMIUM(GLenum source_id,
       unpack_unmultiply_alpha);
 }
 void GL_APIENTRY
-GLES2CopySubTextureCHROMIUM(GLenum source_id,
+GLES2CopySubTextureCHROMIUM(GLuint source_id,
                             GLint source_level,
                             GLenum dest_target,
-                            GLenum dest_id,
+                            GLuint dest_id,
                             GLint dest_level,
                             GLint xoffset,
                             GLint yoffset,
@@ -1364,8 +1364,8 @@ GLES2CopySubTextureCHROMIUM(GLenum source_id,
       yoffset, x, y, width, height, unpack_flip_y, unpack_premultiply_alpha,
       unpack_unmultiply_alpha);
 }
-void GL_APIENTRY GLES2CompressedCopyTextureCHROMIUM(GLenum source_id,
-                                                    GLenum dest_id) {
+void GL_APIENTRY GLES2CompressedCopyTextureCHROMIUM(GLuint source_id,
+                                                    GLuint dest_id) {
   gles2::GetGLContext()->CompressedCopyTextureCHROMIUM(source_id, dest_id);
 }
 void GL_APIENTRY GLES2DrawArraysInstancedANGLE(GLenum mode,

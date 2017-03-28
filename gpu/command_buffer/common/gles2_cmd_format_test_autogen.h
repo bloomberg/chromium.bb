@@ -4160,18 +4160,18 @@ TEST_F(GLES2FormatTest, PostSubBufferCHROMIUM) {
 TEST_F(GLES2FormatTest, CopyTextureCHROMIUM) {
   cmds::CopyTextureCHROMIUM& cmd = *GetBufferAs<cmds::CopyTextureCHROMIUM>();
   void* next_cmd =
-      cmd.Set(&cmd, static_cast<GLenum>(11), static_cast<GLint>(12),
-              static_cast<GLenum>(13), static_cast<GLenum>(14),
+      cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<GLint>(12),
+              static_cast<GLenum>(13), static_cast<GLuint>(14),
               static_cast<GLint>(15), static_cast<GLint>(16),
               static_cast<GLenum>(17), static_cast<GLboolean>(18),
               static_cast<GLboolean>(19), static_cast<GLboolean>(20));
   EXPECT_EQ(static_cast<uint32_t>(cmds::CopyTextureCHROMIUM::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLenum>(11), cmd.source_id);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.source_id);
   EXPECT_EQ(static_cast<GLint>(12), cmd.source_level);
   EXPECT_EQ(static_cast<GLenum>(13), cmd.dest_target);
-  EXPECT_EQ(static_cast<GLenum>(14), cmd.dest_id);
+  EXPECT_EQ(static_cast<GLuint>(14), cmd.dest_id);
   EXPECT_EQ(static_cast<GLint>(15), cmd.dest_level);
   EXPECT_EQ(static_cast<GLint>(16), cmd.internalformat);
   EXPECT_EQ(static_cast<GLenum>(17), cmd.dest_type);
@@ -4185,8 +4185,8 @@ TEST_F(GLES2FormatTest, CopySubTextureCHROMIUM) {
   cmds::CopySubTextureCHROMIUM& cmd =
       *GetBufferAs<cmds::CopySubTextureCHROMIUM>();
   void* next_cmd = cmd.Set(
-      &cmd, static_cast<GLenum>(11), static_cast<GLint>(12),
-      static_cast<GLenum>(13), static_cast<GLenum>(14), static_cast<GLint>(15),
+      &cmd, static_cast<GLuint>(11), static_cast<GLint>(12),
+      static_cast<GLenum>(13), static_cast<GLuint>(14), static_cast<GLint>(15),
       static_cast<GLint>(16), static_cast<GLint>(17), static_cast<GLint>(18),
       static_cast<GLint>(19), static_cast<GLsizei>(20),
       static_cast<GLsizei>(21), static_cast<GLboolean>(22),
@@ -4194,10 +4194,10 @@ TEST_F(GLES2FormatTest, CopySubTextureCHROMIUM) {
   EXPECT_EQ(static_cast<uint32_t>(cmds::CopySubTextureCHROMIUM::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLenum>(11), cmd.source_id);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.source_id);
   EXPECT_EQ(static_cast<GLint>(12), cmd.source_level);
   EXPECT_EQ(static_cast<GLenum>(13), cmd.dest_target);
-  EXPECT_EQ(static_cast<GLenum>(14), cmd.dest_id);
+  EXPECT_EQ(static_cast<GLuint>(14), cmd.dest_id);
   EXPECT_EQ(static_cast<GLint>(15), cmd.dest_level);
   EXPECT_EQ(static_cast<GLint>(16), cmd.xoffset);
   EXPECT_EQ(static_cast<GLint>(17), cmd.yoffset);
@@ -4215,12 +4215,12 @@ TEST_F(GLES2FormatTest, CompressedCopyTextureCHROMIUM) {
   cmds::CompressedCopyTextureCHROMIUM& cmd =
       *GetBufferAs<cmds::CompressedCopyTextureCHROMIUM>();
   void* next_cmd =
-      cmd.Set(&cmd, static_cast<GLenum>(11), static_cast<GLenum>(12));
+      cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<GLuint>(12));
   EXPECT_EQ(static_cast<uint32_t>(cmds::CompressedCopyTextureCHROMIUM::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLenum>(11), cmd.source_id);
-  EXPECT_EQ(static_cast<GLenum>(12), cmd.dest_id);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.source_id);
+  EXPECT_EQ(static_cast<GLuint>(12), cmd.dest_id);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 

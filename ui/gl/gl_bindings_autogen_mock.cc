@@ -522,7 +522,10 @@ MockGLInterface::Mock_glCopyBufferSubData(GLenum readTarget,
 
 void GL_BINDING_CALL MockGLInterface::Mock_glCopySubTextureCHROMIUM(
     GLuint sourceId,
+    GLint sourceLevel,
+    GLenum destTarget,
     GLuint destId,
+    GLint destLevel,
     GLint xoffset,
     GLint yoffset,
     GLint x,
@@ -534,8 +537,9 @@ void GL_BINDING_CALL MockGLInterface::Mock_glCopySubTextureCHROMIUM(
     GLboolean unpackUnmultiplyAlpha) {
   MakeFunctionUnique("glCopySubTextureCHROMIUM");
   interface_->CopySubTextureCHROMIUM(
-      sourceId, destId, xoffset, yoffset, x, y, width, height, unpackFlipY,
-      unpackPremultiplyAlpha, unpackUnmultiplyAlpha);
+      sourceId, sourceLevel, destTarget, destId, destLevel, xoffset, yoffset, x,
+      y, width, height, unpackFlipY, unpackPremultiplyAlpha,
+      unpackUnmultiplyAlpha);
 }
 
 void GL_BINDING_CALL
@@ -581,16 +585,19 @@ void GL_BINDING_CALL MockGLInterface::Mock_glCopyTexSubImage3D(GLenum target,
 
 void GL_BINDING_CALL
 MockGLInterface::Mock_glCopyTextureCHROMIUM(GLuint sourceId,
+                                            GLint sourceLevel,
+                                            GLenum destTarget,
                                             GLuint destId,
+                                            GLint destLevel,
                                             GLint internalFormat,
                                             GLenum destType,
                                             GLboolean unpackFlipY,
                                             GLboolean unpackPremultiplyAlpha,
                                             GLboolean unpackUnmultiplyAlpha) {
   MakeFunctionUnique("glCopyTextureCHROMIUM");
-  interface_->CopyTextureCHROMIUM(sourceId, destId, internalFormat, destType,
-                                  unpackFlipY, unpackPremultiplyAlpha,
-                                  unpackUnmultiplyAlpha);
+  interface_->CopyTextureCHROMIUM(
+      sourceId, sourceLevel, destTarget, destId, destLevel, internalFormat,
+      destType, unpackFlipY, unpackPremultiplyAlpha, unpackUnmultiplyAlpha);
 }
 
 void GL_BINDING_CALL MockGLInterface::Mock_glCoverFillPathInstancedNV(

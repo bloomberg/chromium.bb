@@ -2780,7 +2780,10 @@ void GLApiBase::glCopyBufferSubDataFn(GLenum readTarget,
 }
 
 void GLApiBase::glCopySubTextureCHROMIUMFn(GLuint sourceId,
+                                           GLint sourceLevel,
+                                           GLenum destTarget,
                                            GLuint destId,
+                                           GLint destLevel,
                                            GLint xoffset,
                                            GLint yoffset,
                                            GLint x,
@@ -2791,8 +2794,9 @@ void GLApiBase::glCopySubTextureCHROMIUMFn(GLuint sourceId,
                                            GLboolean unpackPremultiplyAlpha,
                                            GLboolean unpackUnmultiplyAlpha) {
   driver_->fn.glCopySubTextureCHROMIUMFn(
-      sourceId, destId, xoffset, yoffset, x, y, width, height, unpackFlipY,
-      unpackPremultiplyAlpha, unpackUnmultiplyAlpha);
+      sourceId, sourceLevel, destTarget, destId, destLevel, xoffset, yoffset, x,
+      y, width, height, unpackFlipY, unpackPremultiplyAlpha,
+      unpackUnmultiplyAlpha);
 }
 
 void GLApiBase::glCopyTexImage2DFn(GLenum target,
@@ -2833,15 +2837,18 @@ void GLApiBase::glCopyTexSubImage3DFn(GLenum target,
 }
 
 void GLApiBase::glCopyTextureCHROMIUMFn(GLuint sourceId,
+                                        GLint sourceLevel,
+                                        GLenum destTarget,
                                         GLuint destId,
+                                        GLint destLevel,
                                         GLint internalFormat,
                                         GLenum destType,
                                         GLboolean unpackFlipY,
                                         GLboolean unpackPremultiplyAlpha,
                                         GLboolean unpackUnmultiplyAlpha) {
   driver_->fn.glCopyTextureCHROMIUMFn(
-      sourceId, destId, internalFormat, destType, unpackFlipY,
-      unpackPremultiplyAlpha, unpackUnmultiplyAlpha);
+      sourceId, sourceLevel, destTarget, destId, destLevel, internalFormat,
+      destType, unpackFlipY, unpackPremultiplyAlpha, unpackUnmultiplyAlpha);
 }
 
 void GLApiBase::glCoverageModulationNVFn(GLenum components) {
@@ -5403,7 +5410,10 @@ void TraceGLApi::glCopyBufferSubDataFn(GLenum readTarget,
 }
 
 void TraceGLApi::glCopySubTextureCHROMIUMFn(GLuint sourceId,
+                                            GLint sourceLevel,
+                                            GLenum destTarget,
                                             GLuint destId,
+                                            GLint destLevel,
                                             GLint xoffset,
                                             GLint yoffset,
                                             GLint x,
@@ -5415,8 +5425,9 @@ void TraceGLApi::glCopySubTextureCHROMIUMFn(GLuint sourceId,
                                             GLboolean unpackUnmultiplyAlpha) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glCopySubTextureCHROMIUM")
   gl_api_->glCopySubTextureCHROMIUMFn(
-      sourceId, destId, xoffset, yoffset, x, y, width, height, unpackFlipY,
-      unpackPremultiplyAlpha, unpackUnmultiplyAlpha);
+      sourceId, sourceLevel, destTarget, destId, destLevel, xoffset, yoffset, x,
+      y, width, height, unpackFlipY, unpackPremultiplyAlpha,
+      unpackUnmultiplyAlpha);
 }
 
 void TraceGLApi::glCopyTexImage2DFn(GLenum target,
@@ -5460,16 +5471,19 @@ void TraceGLApi::glCopyTexSubImage3DFn(GLenum target,
 }
 
 void TraceGLApi::glCopyTextureCHROMIUMFn(GLuint sourceId,
+                                         GLint sourceLevel,
+                                         GLenum destTarget,
                                          GLuint destId,
+                                         GLint destLevel,
                                          GLint internalFormat,
                                          GLenum destType,
                                          GLboolean unpackFlipY,
                                          GLboolean unpackPremultiplyAlpha,
                                          GLboolean unpackUnmultiplyAlpha) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glCopyTextureCHROMIUM")
-  gl_api_->glCopyTextureCHROMIUMFn(sourceId, destId, internalFormat, destType,
-                                   unpackFlipY, unpackPremultiplyAlpha,
-                                   unpackUnmultiplyAlpha);
+  gl_api_->glCopyTextureCHROMIUMFn(
+      sourceId, sourceLevel, destTarget, destId, destLevel, internalFormat,
+      destType, unpackFlipY, unpackPremultiplyAlpha, unpackUnmultiplyAlpha);
 }
 
 void TraceGLApi::glCoverageModulationNVFn(GLenum components) {
@@ -8530,7 +8544,10 @@ void DebugGLApi::glCopyBufferSubDataFn(GLenum readTarget,
 }
 
 void DebugGLApi::glCopySubTextureCHROMIUMFn(GLuint sourceId,
+                                            GLint sourceLevel,
+                                            GLenum destTarget,
                                             GLuint destId,
+                                            GLint destLevel,
                                             GLint xoffset,
                                             GLint yoffset,
                                             GLint x,
@@ -8541,15 +8558,17 @@ void DebugGLApi::glCopySubTextureCHROMIUMFn(GLuint sourceId,
                                             GLboolean unpackPremultiplyAlpha,
                                             GLboolean unpackUnmultiplyAlpha) {
   GL_SERVICE_LOG("glCopySubTextureCHROMIUM"
-                 << "(" << sourceId << ", " << destId << ", " << xoffset << ", "
-                 << yoffset << ", " << x << ", " << y << ", " << width << ", "
-                 << height << ", " << GLEnums::GetStringBool(unpackFlipY)
-                 << ", " << GLEnums::GetStringBool(unpackPremultiplyAlpha)
-                 << ", " << GLEnums::GetStringBool(unpackUnmultiplyAlpha)
-                 << ")");
+                 << "(" << sourceId << ", " << sourceLevel << ", "
+                 << GLEnums::GetStringEnum(destTarget) << ", " << destId << ", "
+                 << destLevel << ", " << xoffset << ", " << yoffset << ", " << x
+                 << ", " << y << ", " << width << ", " << height << ", "
+                 << GLEnums::GetStringBool(unpackFlipY) << ", "
+                 << GLEnums::GetStringBool(unpackPremultiplyAlpha) << ", "
+                 << GLEnums::GetStringBool(unpackUnmultiplyAlpha) << ")");
   gl_api_->glCopySubTextureCHROMIUMFn(
-      sourceId, destId, xoffset, yoffset, x, y, width, height, unpackFlipY,
-      unpackPremultiplyAlpha, unpackUnmultiplyAlpha);
+      sourceId, sourceLevel, destTarget, destId, destLevel, xoffset, yoffset, x,
+      y, width, height, unpackFlipY, unpackPremultiplyAlpha,
+      unpackUnmultiplyAlpha);
 }
 
 void DebugGLApi::glCopyTexImage2DFn(GLenum target,
@@ -8604,21 +8623,26 @@ void DebugGLApi::glCopyTexSubImage3DFn(GLenum target,
 }
 
 void DebugGLApi::glCopyTextureCHROMIUMFn(GLuint sourceId,
+                                         GLint sourceLevel,
+                                         GLenum destTarget,
                                          GLuint destId,
+                                         GLint destLevel,
                                          GLint internalFormat,
                                          GLenum destType,
                                          GLboolean unpackFlipY,
                                          GLboolean unpackPremultiplyAlpha,
                                          GLboolean unpackUnmultiplyAlpha) {
   GL_SERVICE_LOG("glCopyTextureCHROMIUM"
-                 << "(" << sourceId << ", " << destId << ", " << internalFormat
-                 << ", " << GLEnums::GetStringEnum(destType) << ", "
+                 << "(" << sourceId << ", " << sourceLevel << ", "
+                 << GLEnums::GetStringEnum(destTarget) << ", " << destId << ", "
+                 << destLevel << ", " << internalFormat << ", "
+                 << GLEnums::GetStringEnum(destType) << ", "
                  << GLEnums::GetStringBool(unpackFlipY) << ", "
                  << GLEnums::GetStringBool(unpackPremultiplyAlpha) << ", "
                  << GLEnums::GetStringBool(unpackUnmultiplyAlpha) << ")");
-  gl_api_->glCopyTextureCHROMIUMFn(sourceId, destId, internalFormat, destType,
-                                   unpackFlipY, unpackPremultiplyAlpha,
-                                   unpackUnmultiplyAlpha);
+  gl_api_->glCopyTextureCHROMIUMFn(
+      sourceId, sourceLevel, destTarget, destId, destLevel, internalFormat,
+      destType, unpackFlipY, unpackPremultiplyAlpha, unpackUnmultiplyAlpha);
 }
 
 void DebugGLApi::glCoverageModulationNVFn(GLenum components) {
@@ -12468,7 +12492,10 @@ void NoContextGLApi::glCopyBufferSubDataFn(GLenum readTarget,
 
 void NoContextGLApi::glCopySubTextureCHROMIUMFn(
     GLuint sourceId,
+    GLint sourceLevel,
+    GLenum destTarget,
     GLuint destId,
+    GLint destLevel,
     GLint xoffset,
     GLint yoffset,
     GLint x,
@@ -12527,7 +12554,10 @@ void NoContextGLApi::glCopyTexSubImage3DFn(GLenum target,
 }
 
 void NoContextGLApi::glCopyTextureCHROMIUMFn(GLuint sourceId,
+                                             GLint sourceLevel,
+                                             GLenum destTarget,
                                              GLuint destId,
+                                             GLint destLevel,
                                              GLint internalFormat,
                                              GLenum destType,
                                              GLboolean unpackFlipY,

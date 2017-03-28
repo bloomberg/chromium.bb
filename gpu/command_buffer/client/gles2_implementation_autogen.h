@@ -936,10 +936,10 @@ void PostSubBufferCHROMIUM(GLint x,
                            GLint width,
                            GLint height) override;
 
-void CopyTextureCHROMIUM(GLenum source_id,
+void CopyTextureCHROMIUM(GLuint source_id,
                          GLint source_level,
                          GLenum dest_target,
-                         GLenum dest_id,
+                         GLuint dest_id,
                          GLint dest_level,
                          GLint internalformat,
                          GLenum dest_type,
@@ -947,10 +947,10 @@ void CopyTextureCHROMIUM(GLenum source_id,
                          GLboolean unpack_premultiply_alpha,
                          GLboolean unpack_unmultiply_alpha) override;
 
-void CopySubTextureCHROMIUM(GLenum source_id,
+void CopySubTextureCHROMIUM(GLuint source_id,
                             GLint source_level,
                             GLenum dest_target,
-                            GLenum dest_id,
+                            GLuint dest_id,
                             GLint dest_level,
                             GLint xoffset,
                             GLint yoffset,
@@ -962,7 +962,7 @@ void CopySubTextureCHROMIUM(GLenum source_id,
                             GLboolean unpack_premultiply_alpha,
                             GLboolean unpack_unmultiply_alpha) override;
 
-void CompressedCopyTextureCHROMIUM(GLenum source_id, GLenum dest_id) override;
+void CompressedCopyTextureCHROMIUM(GLuint source_id, GLuint dest_id) override;
 
 void DrawArraysInstancedANGLE(GLenum mode,
                               GLint first,

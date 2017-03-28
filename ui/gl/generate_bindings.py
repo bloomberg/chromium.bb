@@ -264,10 +264,10 @@ GL_FUNCTIONS = [
   'versions': [{ 'name': 'glCopySubTextureCHROMIUM',
                  'extensions': ['GL_CHROMIUM_copy_texture'], }],
   'arguments':
-      'GLuint sourceId, GLuint destId, GLint xoffset, GLint yoffset, '
-      'GLint x, GLint y, GLsizei width, GLsizei height, '
-      'GLboolean unpackFlipY, GLboolean unpackPremultiplyAlpha, '
-      'GLboolean unpackUnmultiplyAlpha', },
+      'GLuint sourceId, GLint sourceLevel, GLenum destTarget, GLuint destId, '
+      'GLint destLevel, GLint xoffset, GLint yoffset, GLint x, GLint y, '
+      'GLsizei width, GLsizei height, GLboolean unpackFlipY, '
+      'GLboolean unpackPremultiplyAlpha, GLboolean unpackUnmultiplyAlpha', },
 { 'return_type': 'void',
   'names': ['glCopyTexImage2D'],
   'arguments':
@@ -287,9 +287,10 @@ GL_FUNCTIONS = [
   'versions': [{ 'name': 'glCopyTextureCHROMIUM',
                  'extensions': ['GL_CHROMIUM_copy_texture'], }],
   'arguments':
-      'GLuint sourceId, GLuint destId, GLint internalFormat, '
-      'GLenum destType, GLboolean unpackFlipY, '
-      'GLboolean unpackPremultiplyAlpha, GLboolean unpackUnmultiplyAlpha', },
+      'GLuint sourceId, GLint sourceLevel, GLenum destTarget, GLuint destId, '
+      'GLint destLevel, GLint internalFormat, GLenum destType, '
+      'GLboolean unpackFlipY, GLboolean unpackPremultiplyAlpha, '
+      'GLboolean unpackUnmultiplyAlpha', },
 { 'return_type': 'void',
   'names': ['glCoverageModulationNV'],
   'arguments': 'GLenum components'},
