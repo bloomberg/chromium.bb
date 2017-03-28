@@ -81,6 +81,9 @@ Polymer({
       },
     },
 
+    /** @private */
+    showDisconnectDialog_: Boolean,
+
 // <if expr="chromeos">
     /**
      * True if quick unlock settings should be displayed on this machine.
@@ -184,12 +187,16 @@ Polymer({
       // If the sync status has not been fetched yet, optimistically display
       // the disconnect dialog. There is another check when the sync status is
       // fetched. The dialog will be closed then the user is not signed in.
-      if (this.syncStatus && !this.syncStatus.signedIn)
+      if (this.syncStatus && !this.syncStatus.signedIn) {
         settings.navigateToPreviousRoute();
-      else
-        this.$.disconnectDialog.showModal();
-    } else if (this.$.disconnectDialog.open) {
-      this.$.disconnectDialog.close();
+      } else {
+        this.showDisconnectDialog_ = true;
+        this.async(function() {
+          this.$$('#disconnectDialog').showModal();
+        }.bind(this));
+      }
+    } else if (this.showDisconnectDialog_) {
+      this.$$('#disconnectDialog').close();
     }
   },
 
@@ -253,8 +260,8 @@ Polymer({
       settings.ProfileInfoBrowserProxyImpl.getInstance().getProfileStatsCount();
 // </if>
 
-    if (!syncStatus.signedIn && this.$.disconnectDialog.open)
-      this.$.disconnectDialog.close();
+    if (!syncStatus.signedIn && this.showDisconnectDialog_)
+      this.$$('#disconnectDialog').close();
 
     this.syncStatus = syncStatus;
   },
@@ -300,6 +307,7 @@ Polymer({
 
   /** @private */
   onDisconnectClosed_: function() {
+    this.showDisconnectDialog_ = false;
     if (settings.getCurrentRoute() == settings.Route.SIGN_OUT)
       settings.navigateToPreviousRoute();
     this.fire('signout-dialog-closed');
@@ -312,7 +320,7 @@ Polymer({
 
   /** @private */
   onDisconnectCancel_: function() {
-    this.$.disconnectDialog.close();
+    this.$$('#disconnectDialog').close();
   },
 
   /** @private */
@@ -328,7 +336,7 @@ Polymer({
       this.syncBrowserProxy_.signOut(deleteProfile);
     }.bind(this));
 
-    this.$.disconnectDialog.close();
+    this.$$('#disconnectDialog').close();
   },
 
   /** @private */

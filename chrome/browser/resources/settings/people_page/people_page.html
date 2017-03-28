@@ -374,45 +374,51 @@
 </if>
     </settings-animated-pages>
 
-    <dialog is="cr-dialog" id="disconnectDialog" on-close="onDisconnectClosed_"
-        close-text="$i18n{close}" ignore-popstate>
-      <div class="title">$i18n{syncDisconnectTitle}</div>
-      <div class="body">
-        <div inner-h-t-m-l="[[getDisconnectExplanationHtml_(syncStatus.domain)]]">
-        </div>
-      </div>
-      <div class="button-container">
-        <paper-button on-tap="onDisconnectCancel_" class="cancel-button">
-          $i18n{cancel}
-        </paper-button>
-        <paper-button id="disconnectConfirm" class="action-button"
-            hidden="[[syncStatus.domain]]" on-tap="onDisconnectConfirm_">
-          $i18n{syncDisconnect}
-        </paper-button>
-        <paper-button id="disconnectManagedProfileConfirm" class="action-button"
-            hidden="[[!syncStatus.domain]]" on-tap="onDisconnectConfirm_">
-          $i18n{syncDisconnectConfirm}
-        </paper-button>
-      </div>
-<if expr="(not chromeos and is_posix) or is_win or is_macosx">
-      <template is="dom-if" if="[[!syncStatus.domain]]">
-        <div class="footer border-top-divider">
-          <div class="settings-box first">
-            <paper-checkbox id="deleteProfile" class="start"
-                checked="{{deleteProfile_}}">
-              $i18n{syncDisconnectDeleteProfile}
-            </paper-checkbox>
-            <cr-expand-button expanded="{{deleteProfileWarningVisible_}}"
-                alt="$i18n{deleteProfileWarningExpandA11yLabel}">
-            </cr-expand-button>
+    <template is="dom-if" if="[[showDisconnectDialog_]]" restamp>
+      <dialog is="cr-dialog" id="disconnectDialog" ignore-popstate
+          on-close="onDisconnectClosed_" close-text="$i18n{close}">
+        <div class="title">$i18n{syncDisconnectTitle}</div>
+        <div class="body">
+          <div inner-h-t-m-l="[[
+              getDisconnectExplanationHtml_(syncStatus.domain)]]">
           </div>
-          <iron-collapse opened="[[deleteProfileWarningVisible_]]">
-            <div class="delete-profile-warning">[[deleteProfileWarning_]]</div>
-          </iron-collapse>
         </div>
-      </template>
+        <div class="button-container">
+          <paper-button on-tap="onDisconnectCancel_" class="cancel-button">
+            $i18n{cancel}
+          </paper-button>
+          <paper-button id="disconnectConfirm" class="action-button"
+              hidden="[[syncStatus.domain]]" on-tap="onDisconnectConfirm_">
+            $i18n{syncDisconnect}
+          </paper-button>
+          <paper-button id="disconnectManagedProfileConfirm"
+              class="action-button" hidden="[[!syncStatus.domain]]"
+              on-tap="onDisconnectConfirm_">
+            $i18n{syncDisconnectConfirm}
+          </paper-button>
+        </div>
+<if expr="(not chromeos and is_posix) or is_win or is_macosx">
+        <template is="dom-if" if="[[!syncStatus.domain]]">
+          <div class="footer border-top-divider">
+            <div class="settings-box first">
+              <paper-checkbox id="deleteProfile" class="start"
+                  checked="{{deleteProfile_}}">
+                $i18n{syncDisconnectDeleteProfile}
+              </paper-checkbox>
+              <cr-expand-button expanded="{{deleteProfileWarningVisible_}}"
+                  alt="$i18n{deleteProfileWarningExpandA11yLabel}">
+              </cr-expand-button>
+            </div>
+            <iron-collapse opened="[[deleteProfileWarningVisible_]]">
+              <div class="delete-profile-warning">
+                [[deleteProfileWarning_]]
+              </div>
+            </iron-collapse>
+          </div>
+        </template>
 </if>
-    </dialog>
+      </dialog>
+    </template>
 
     <template is="dom-if" if="[[showImportDataDialog_]]" restamp>
       <settings-import-data-dialog prefs="{{prefs}}"

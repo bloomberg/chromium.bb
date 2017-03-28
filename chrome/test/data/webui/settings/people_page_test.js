@@ -172,16 +172,19 @@ cr.define('settings_people_page', function() {
           Polymer.dom.flush();
           disconnectButton = peoplePage.$$('#disconnectButton');
           assertTrue(!!disconnectButton);
+          assertFalse(!!peoplePage.$$('#disconnectDialog'));
 
           MockInteractions.tap(disconnectButton);
           Polymer.dom.flush();
+        }).then(function() {
+          assertTrue(peoplePage.$$('#disconnectDialog').open);
+          assertFalse(peoplePage.$$('#deleteProfile').hidden);
 
-          assertTrue(peoplePage.$.disconnectDialog.open);
           var deleteProfileCheckbox = peoplePage.$$('#deleteProfile');
           assertTrue(!!deleteProfileCheckbox);
           assertLT(0, deleteProfileCheckbox.clientHeight);
 
-          var disconnectConfirm = peoplePage.$.disconnectConfirm;
+          var disconnectConfirm = peoplePage.$$('#disconnectConfirm');
           assertTrue(!!disconnectConfirm);
           assertFalse(disconnectConfirm.hidden);
 
@@ -203,17 +206,17 @@ cr.define('settings_people_page', function() {
           });
           Polymer.dom.flush();
 
-          assertFalse(peoplePage.$.disconnectDialog.open);
+          assertFalse(!!peoplePage.$$('#disconnectDialog'));
           MockInteractions.tap(disconnectButton);
           Polymer.dom.flush();
 
-          assertTrue(peoplePage.$.disconnectDialog.open);
-          var deleteProfileCheckbox = peoplePage.$$('#deleteProfile');
-          assertTrue(!!deleteProfileCheckbox);
-          assertEquals(0, deleteProfileCheckbox.clientHeight);
+          return new Promise(function(resolve) { peoplePage.async(resolve); });
+        }).then(function() {
+          assertTrue(peoplePage.$$('#disconnectDialog').open);
+          assertFalse(!!peoplePage.$$('#deleteProfile'));
 
           var disconnectManagedProfileConfirm =
-              peoplePage.$.disconnectManagedProfileConfirm;
+              peoplePage.$$('#disconnectManagedProfileConfirm');
           assertTrue(!!disconnectManagedProfileConfirm);
           assertFalse(disconnectManagedProfileConfirm.hidden);
 
@@ -242,9 +245,10 @@ cr.define('settings_people_page', function() {
           disconnectButton = peoplePage.$$('#disconnectButton');
           assertTrue(!!disconnectButton);
           MockInteractions.tap(disconnectButton);
-          Polymer.dom.flush();
 
-          assertTrue(peoplePage.$.disconnectDialog.open);
+          return new Promise(function(resolve) { peoplePage.async(resolve); });
+        }).then(function() {
+          assertTrue(peoplePage.$$('#disconnectDialog').open);
 
           // Assert the warning message is as expected.
           var warningMessage = peoplePage.$$('.delete-profile-warning');
@@ -268,7 +272,7 @@ cr.define('settings_people_page', function() {
               warningMessage.textContent.trim());
 
           // Close the disconnect dialog.
-          MockInteractions.tap(peoplePage.$.disconnectConfirm);
+          MockInteractions.tap(peoplePage.$$('#disconnectConfirm'));
           return new Promise(function(resolve) {
             listenOnce(window, 'popstate', resolve);
           });
@@ -278,19 +282,20 @@ cr.define('settings_people_page', function() {
       test('NavigateDirectlyToSignOutURL', function() {
         // Navigate to chrome://md-settings/signOut
         settings.navigateTo(settings.Route.SIGN_OUT);
-        Polymer.dom.flush();
 
-        assertTrue(peoplePage.$.disconnectDialog.open);
-
-        return profileInfoBrowserProxy.whenCalled('getProfileStatsCount')
-            .then(function() {
+        return new Promise(
+            function(resolve) { peoplePage.async(resolve); }).then(function() {
+          assertTrue(peoplePage.$$('#disconnectDialog').open);
+          return profileInfoBrowserProxy.whenCalled('getProfileStatsCount');
+        }).then(function() {
           // 'getProfileStatsCount' can be the first message sent to the handler
           // if the user navigates directly to chrome://md-settings/signOut. if
           // so, it should not cause a crash.
           new settings.ProfileInfoBrowserProxyImpl().getProfileStatsCount();
 
           // Close the disconnect dialog.
-          MockInteractions.tap(peoplePage.$.disconnectConfirm);
+          MockInteractions.tap(peoplePage.$$('#disconnectConfirm'));
+        }).then(function() {
           return new Promise(function(resolve) {
             listenOnce(window, 'popstate', resolve);
           });
@@ -299,12 +304,10 @@ cr.define('settings_people_page', function() {
 
       test('Signout dialog suppressed when not signed in', function() {
         return browserProxy.whenCalled('getSyncStatus').then(function() {
-          Polymer.dom.flush();
-
           settings.navigateTo(settings.Route.SIGN_OUT);
-          Polymer.dom.flush();
-
-          assertTrue(peoplePage.$.disconnectDialog.open);
+          return new Promise(function(resolve) { peoplePage.async(resolve); });
+        }).then(function() {
+          assertTrue(peoplePage.$$('#disconnectDialog').open);
 
           var popstatePromise = new Promise(function(resolve) {
             listenOnce(window, 'popstate', resolve);
