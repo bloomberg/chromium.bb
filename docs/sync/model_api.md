@@ -261,6 +261,8 @@ be started again from scratch on the next client restart.
     [`ProfileSyncComponentsFactoryImpl::RegisterDataTypes`][RegisterDataTypes].
 *   Tell sync how to access your `ModelTypeSyncBridge` in
     [`ChromeSyncClient::GetSyncBridgeForModelType`][GetSyncBridge].
+*   Add your KeyedService dependency to
+    [`ProfileSyncServiceFactory`][ProfileSyncServiceFactory].
 *   Add to the [start order list][kStartOrder].
 *   Add an field for encrypted data to [`NigoriSpecifics`][NigoriSpecifics].
 *   Add to two encrypted types translation functions in
@@ -279,6 +281,7 @@ be started again from scratch on the next client restart.
 [ModelTypeController]: https://cs.chromium.org/chromium/src/components/sync/driver/model_type_controller.h
 [RegisterDataTypes]: https://cs.chromium.org/search/?q="ProfileSyncComponentsFactoryImpl::RegisterDataTypes"
 [GetSyncBridge]: https://cs.chromium.org/search/?q=GetSyncBridgeForModelType+file:chrome_sync_client.cc
+[ProfileSyncServiceFactory]: https://cs.chromium.org/search/?q=:ProfileSyncServiceFactory%5C(%5C)
 [kStartOrder]: https://cs.chromium.org/search/?q="kStartOrder[]"
 [NigoriSpecifics]: https://cs.chromium.org/chromium/src/components/sync/protocol/nigori_specifics.proto
 [nigori_util]: https://cs.chromium.org/chromium/src/components/sync/syncable/nigori_util.cc

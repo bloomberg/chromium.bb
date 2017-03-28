@@ -78,14 +78,14 @@
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "ui/app_list/app_list_switches.h"
-#endif
+#endif  // BUILDFLAG(ENABLE_APP_LIST)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/storage/settings_sync_util.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/sync/glue/extension_data_type_controller.h"
 #include "chrome/browser/sync/glue/extension_setting_data_type_controller.h"
-#endif
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/legacy/supervised_user_shared_settings_service.h"
@@ -98,16 +98,16 @@
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_sync_data_type_controller.h"
 #include "chrome/browser/supervised_user/supervised_user_whitelist_service.h"
-#endif
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
-#endif
+#endif  // BUILDFLAG(ENABLE_SPELLCHECK)
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/sync/glue/synced_window_delegates_getter_android.h"
-#endif
+#endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -118,13 +118,13 @@
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service.h"
 #include "components/sync_wifi/wifi_credential_syncable_service.h"
 #include "components/sync_wifi/wifi_credential_syncable_service_factory.h"
-#endif
+#endif  // defined(OS_CHROMEOS)
 
 using content::BrowserThread;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 using browser_sync::ExtensionDataTypeController;
 using browser_sync::ExtensionSettingDataTypeController;
-#endif
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 using browser_sync::SearchEngineDataTypeController;
 using syncer::AsyncDirectoryTypeController;
 
@@ -134,7 +134,7 @@ namespace {
 #if defined(OS_WIN)
 const base::FilePath::CharType kLoopbackServerBackendFilename[] =
     FILE_PATH_LITERAL("profile.pb");
-#endif
+#endif  // defined(OS_WIN)
 }  // namespace
 
 // Chrome implementation of SyncSessionsClient. Needs to be in a separate class
@@ -148,9 +148,9 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
         // Android doesn't have multi-profile support, so no need to pass the
         // profile in.
         new SyncedWindowDelegatesGetterAndroid());
-#else
+#else   // defined(OS_ANDROID)
         new browser_sync::BrowserSyncedWindowDelegatesGetter(profile));
-#endif
+#endif  // defined(OS_ANDROID)
   }
   ~SyncSessionsClientImpl() override {}
 
@@ -396,17 +396,17 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
     case syncer::EXTENSION_SETTINGS:
       return extensions::settings_sync_util::GetSyncableService(profile_, type)
           ->AsWeakPtr();
-#endif
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 #if BUILDFLAG(ENABLE_APP_LIST)
     case syncer::APP_LIST:
       return app_list::AppListSyncableServiceFactory::GetForProfile(profile_)->
           AsWeakPtr();
-#endif
+#endif  // BUILDFLAG(ENABLE_APP_LIST)
 #if !defined(OS_ANDROID)
     case syncer::THEMES:
       return ThemeServiceFactory::GetForProfile(profile_)->
           GetThemeSyncableService()->AsWeakPtr();
-#endif
+#endif  // !defined(OS_ANDROID)
     case syncer::HISTORY_DELETE_DIRECTIVES: {
       history::HistoryService* history = GetHistoryService();
       return history ? history->AsWeakPtr()
@@ -427,7 +427,7 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
     case syncer::DICTIONARY:
       return SpellcheckServiceFactory::GetForContext(profile_)->
           GetCustomDictionary()->AsWeakPtr();
-#endif
+#endif  // BUILDFLAG(ENABLE_SPELLCHECK)
     case syncer::FAVICON_IMAGES:
     case syncer::FAVICON_TRACKING: {
       sync_sessions::FaviconCache* favicons =
@@ -446,12 +446,12 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
     case syncer::SUPERVISED_USER_SHARED_SETTINGS:
       return SupervisedUserSharedSettingsServiceFactory::GetForBrowserContext(
           profile_)->AsWeakPtr();
-#endif
+#endif  // !defined(OS_ANDROID)
     case syncer::SUPERVISED_USER_WHITELISTS:
       return SupervisedUserServiceFactory::GetForProfile(profile_)
           ->GetWhitelistService()
           ->AsWeakPtr();
-#endif
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
     case syncer::ARTICLES: {
       dom_distiller::DomDistillerService* service =
           dom_distiller::DomDistillerServiceFactory::GetForBrowserContext(
@@ -476,7 +476,7 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
               ->AsWeakPtr();
     case syncer::ARC_PACKAGE:
       return arc::ArcPackageSyncableService::Get(profile_)->AsWeakPtr();
-#endif
+#endif  // defined(OS_CHROMEOS)
     default:
       // The following datatypes still need to be transitioned to the
       // syncer::SyncableService API:
@@ -505,7 +505,7 @@ ChromeSyncClient::GetSyncBridgeForModelType(syncer::ModelType type) {
       return chromeos::PrintersManagerFactory::GetForBrowserContext(profile_)
           ->GetSyncBridge()
           ->AsWeakPtr();
-#endif
+#endif  // defined(OS_CHROMEOS)
     default:
       NOTREACHED();
       return base::WeakPtr<syncer::ModelTypeSyncBridge>();
@@ -602,7 +602,7 @@ void ChromeSyncClient::RegisterDesktopDataTypes(
         base::MakeUnique<ExtensionDataTypeController>(
             syncer::EXTENSIONS, error_callback, this, profile_));
   }
-#endif
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if !defined(OS_ANDROID)
   // Theme sync is enabled by default.  Register unless explicitly disabled.
@@ -611,7 +611,7 @@ void ChromeSyncClient::RegisterDesktopDataTypes(
         base::MakeUnique<ThemeDataTypeController>(error_callback, this,
                                                   profile_));
   }
-#endif
+#endif  // !defined(OS_ANDROID)
 
   // Search Engine sync is enabled by default.  Register unless explicitly
   // disabled.
@@ -638,7 +638,7 @@ void ChromeSyncClient::RegisterDesktopDataTypes(
         base::MakeUnique<ExtensionSettingDataTypeController>(
             syncer::APP_SETTINGS, error_callback, this, profile_));
   }
-#endif
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if BUILDFLAG(ENABLE_APP_LIST)
   if (app_list::switches::IsAppListSyncEnabled()) {
@@ -647,7 +647,7 @@ void ChromeSyncClient::RegisterDesktopDataTypes(
             syncer::APP_LIST, error_callback, this, syncer::GROUP_UI,
             BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
   }
-#endif
+#endif  // BUILDFLAG(ENABLE_APP_LIST)
 
 #if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_CHROMEOS)
   // Dictionary sync is enabled by default.
@@ -657,7 +657,7 @@ void ChromeSyncClient::RegisterDesktopDataTypes(
             syncer::DICTIONARY, error_callback, this, syncer::GROUP_UI,
             BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
   }
-#endif
+#endif  // defined(OS_LINUX) || defined(OS_WIN) || defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   sync_service->RegisterDataTypeController(
@@ -673,7 +673,7 @@ void ChromeSyncClient::RegisterDesktopDataTypes(
       base::MakeUnique<SupervisedUserSyncDataTypeController>(
           syncer::SUPERVISED_USER_SHARED_SETTINGS, error_callback, this,
           profile_));
-#endif
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 #if defined(OS_CHROMEOS)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -689,7 +689,7 @@ void ChromeSyncClient::RegisterDesktopDataTypes(
         base::MakeUnique<ArcPackageSyncDataTypeController>(
             syncer::ARC_PACKAGE, error_callback, this, profile_));
   }
-#endif
+#endif  // defined(OS_CHROMEOS)
 }
 
 void ChromeSyncClient::RegisterAndroidDataTypes(
@@ -705,7 +705,7 @@ void ChromeSyncClient::RegisterAndroidDataTypes(
   sync_service->RegisterDataTypeController(
       base::MakeUnique<SupervisedUserSyncDataTypeController>(
           syncer::SUPERVISED_USER_WHITELISTS, error_callback, this, profile_));
-#endif
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 }
 
 }  // namespace browser_sync

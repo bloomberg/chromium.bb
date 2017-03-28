@@ -16,6 +16,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
@@ -28,9 +29,12 @@
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/sync/chrome_sync_client.h"
+#include "chrome/browser/sync/sessions/sync_sessions_web_contents_router_factory.h"
 #include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "components/browser_sync/profile_sync_components_factory_impl.h"
@@ -49,11 +53,23 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
-#endif
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/supervised_user/legacy/supervised_user_shared_settings_service_factory.h"
+#include "chrome/browser/supervised_user/legacy/supervised_user_sync_service_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
-#endif
+#endif  // !defined(OS_ANDROID)
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/printing/printers_manager_factory.h"
+#include "components/sync_wifi/wifi_credential_syncable_service_factory.h"
+#endif  // defined(OS_CHROMEOS)
 
 using browser_sync::ProfileSyncService;
 
@@ -109,23 +125,41 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   DependsOn(AboutSigninInternalsFactory::GetInstance());
   DependsOn(autofill::PersonalDataManagerFactory::GetInstance());
   DependsOn(BookmarkModelFactory::GetInstance());
+  DependsOn(BookmarkUndoServiceFactory::GetInstance());
   DependsOn(ChromeSigninClientFactory::GetInstance());
+  DependsOn(dom_distiller::DomDistillerServiceFactory::GetInstance());
   DependsOn(GaiaCookieManagerServiceFactory::GetInstance());
+  DependsOn(gcm::GCMProfileServiceFactory::GetInstance());
 #if !defined(OS_ANDROID)
   DependsOn(GlobalErrorServiceFactory::GetInstance());
   DependsOn(ThemeServiceFactory::GetInstance());
-#endif
+#endif  // !defined(OS_ANDROID)
   DependsOn(HistoryServiceFactory::GetInstance());
   DependsOn(invalidation::ProfileInvalidationProviderFactory::GetInstance());
   DependsOn(PasswordStoreFactory::GetInstance());
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
   DependsOn(SigninManagerFactory::GetInstance());
+  DependsOn(SpellcheckServiceFactory::GetInstance());
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  // TODO(skym, crbug.com/705545): Fix this circular dependency.
+  // DependsOn(SupervisedUserServiceFactory::GetInstance());
+  DependsOn(SupervisedUserSettingsServiceFactory::GetInstance());
+#if !defined(OS_ANDROID)
+  DependsOn(SupervisedUserSharedSettingsServiceFactory::GetInstance());
+  DependsOn(SupervisedUserSyncServiceFactory::GetInstance());
+#endif  // !defined(OS_ANDROID)
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  DependsOn(sync_sessions::SyncSessionsWebContentsRouterFactory::GetInstance());
   DependsOn(TemplateURLServiceFactory::GetInstance());
   DependsOn(WebDataServiceFactory::GetInstance());
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   DependsOn(
       extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
-#endif
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+#if defined(OS_CHROMEOS)
+  DependsOn(chromeos::PrintersManagerFactory::GetInstance());
+  DependsOn(sync_wifi::WifiCredentialSyncableServiceFactory::GetInstance());
+#endif  // defined(OS_CHROMEOS)
 
   // The following have not been converted to KeyedServices yet,
   // and for now they are explicitly destroyed after the

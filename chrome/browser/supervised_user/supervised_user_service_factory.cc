@@ -43,6 +43,8 @@ SupervisedUserServiceFactory::SupervisedUserServiceFactory()
       extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
 #endif
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
+
+  // TODO(skym, crbug.com/705545): Fix this circular dependency.
   DependsOn(ProfileSyncServiceFactory::GetInstance());
 }
 
