@@ -122,7 +122,7 @@ TEST_F(StackTraceTest, MAYBE_OutputToStream) {
 #endif  // define(OS_MACOSX)
 }
 
-#if !defined(OFFICIAL_BUILD)
+#if !defined(OFFICIAL_BUILD) && !defined(NO_UNWIND_TABLES)
 // Disabled in Official builds, where Link-Time Optimization can result in two
 // or fewer stack frames being available, causing the test to fail.
 TEST_F(StackTraceTest, TruncatedTrace) {
