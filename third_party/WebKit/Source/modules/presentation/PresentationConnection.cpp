@@ -152,7 +152,7 @@ PresentationConnection::PresentationConnection(LocalFrame* frame,
       m_id(id),
       m_url(url),
       m_state(WebPresentationConnectionState::Connecting),
-      m_binaryType(BinaryTypeBlob),
+      m_binaryType(BinaryTypeArrayBuffer),
       m_proxy(nullptr) {}
 
 PresentationConnection::~PresentationConnection() {
