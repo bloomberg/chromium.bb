@@ -459,7 +459,7 @@ enum class SnapshotViewOption {
   }
 }
 
-- (TabSwitcherTransitionContextContent*)transitionContextContextForTabModel:
+- (TabSwitcherTransitionContextContent*)transitionContextContentForTabModel:
     (TabModel*)tabModel {
   if ([tabModel isOffTheRecord])
     return self.transitionContext.incognitoContent;
@@ -500,7 +500,7 @@ enum class SnapshotViewOption {
   [[self view] setUserInteractionEnabled:NO];
 
   TabSwitcherTransitionContextContent* transitionContextContent =
-      [self transitionContextContextForTabModel:tabModel];
+      [self transitionContextContentForTabModel:tabModel];
   DCHECK(transitionContextContent);
 
   ToolbarController* toolbarController =
