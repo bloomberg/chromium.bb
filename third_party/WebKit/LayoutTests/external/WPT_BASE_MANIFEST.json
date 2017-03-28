@@ -8165,11 +8165,6 @@
      {}
     ]
    ],
-   "content-security-policy/img-src/img-src-4_1.html.sub.headers": [
-    [
-     {}
-    ]
-   ],
    "content-security-policy/inside-worker/support/connect-src-allow.sub.js": [
     [
      {}
@@ -8195,7 +8190,7 @@
      {}
     ]
    ],
-   "content-security-policy/media-src/media-src-7_1_2.html.sub.headers": [
+   "content-security-policy/media-src/media-src-7_1_2.sub.html.sub.headers": [
     [
      {}
     ]
@@ -8205,17 +8200,22 @@
      {}
     ]
    ],
-   "content-security-policy/media-src/media-src-7_2_2.html.sub.headers": [
+   "content-security-policy/media-src/media-src-7_2_2.sub.html.sub.headers": [
     [
      {}
     ]
    ],
-   "content-security-policy/media-src/media-src-7_3.html.sub.headers": [
+   "content-security-policy/media-src/media-src-7_3.sub.html.sub.headers": [
     [
      {}
     ]
    ],
-   "content-security-policy/media-src/media-src-7_3_2.html.sub.headers": [
+   "content-security-policy/media-src/media-src-7_3_2.sub.html.sub.headers": [
+    [
+     {}
+    ]
+   ],
+   "content-security-policy/media-src/media-src-blocked.sub.html.sub.headers": [
     [
      {}
     ]
@@ -8750,11 +8750,6 @@
      {}
     ]
    ],
-   "dom/nodes/DOMImplementation-createHTMLDocument-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "dom/nodes/DOMImplementation-createHTMLDocument.js": [
     [
      {}
@@ -9181,11 +9176,6 @@
     ]
    ],
    "dom/nodes/Node-parentNode-iframe.html": [
-    [
-     {}
-    ]
-   ],
-   "dom/nodes/Node-properties-expected.txt": [
     [
      {}
     ]
@@ -10176,6 +10166,566 @@
     ]
    ],
    "encrypted-media/util/utils.js": [
+    [
+     {}
+    ]
+   ],
+   "fetch/README.md": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/basic/integrity.js": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/basic/mode-no-cors.js": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/basic/response-url.js": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/basic/scheme-blob.js": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/basic/scheme-others.js": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/cors/cors-expose-star-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/cors/cors-expose-star-worker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/cors/cors-expose-star.js": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/cors/cors-filtering.js": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/cors/cors-multiple-origins-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/cors/cors-multiple-origins-worker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/cors/cors-multiple-origins.js": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/headers/header-values-normalize-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/headers/headers-basic-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/headers/headers-combine-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/headers/headers-idl-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/headers/headers-normalize-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/headers/headers-record-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/policies/csp-blocked-worker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/policies/csp-blocked.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/policies/csp-blocked.js": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/policies/csp-blocked.js.headers": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/policies/nested-policy.js": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/policies/nested-policy.js.headers": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/policies/referrer-no-referrer.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/policies/referrer-no-referrer.js": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/policies/referrer-no-referrer.js.headers": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/policies/referrer-origin-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/policies/referrer-origin-service-worker.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/policies/referrer-origin-when-cross-origin.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/policies/referrer-origin-when-cross-origin.js": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/policies/referrer-origin-when-cross-origin.js.headers": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/policies/referrer-origin-worker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/policies/referrer-origin.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/policies/referrer-origin.js": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/policies/referrer-origin.js.headers": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/policies/referrer-unsafe-url.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/policies/referrer-unsafe-url.js": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/policies/referrer-unsafe-url.js.headers": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/redirect/redirect-count.js": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/redirect/redirect-location.js": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/redirect/redirect-method.js": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/redirect/redirect-mode.js": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/redirect/redirect-origin.js": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/redirect/redirect-referrer-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/redirect/redirect-referrer-worker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/redirect/redirect-referrer.js": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/redirect/redirect-to-dataurl.js": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/request/multi-globals/current/current.html": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/request/multi-globals/incumbent/incumbent.html": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/request/request-cache-force-cache-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/request/request-cache-no-cache-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/request/request-cache-no-store-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/request/request-cache-only-if-cached-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/request/request-cache-reload-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/request/request-cache.js": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/request/request-clone.sub-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/request/request-consume-empty-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/request/request-consume-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/request/request-disturbed-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/request/request-error-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/request/request-idl-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/request/request-init-001.sub-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/request/request-init-003.sub-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/request/request-keepalive-quota-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/request/request-structure-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/request/resources/cache.py": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/resources/authentication.py": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/resources/bad-chunk-encoding.py": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/resources/cache.py": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/resources/clean-stash.py": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/resources/data.json": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/resources/echo-content.py": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/resources/inspect-headers.py": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/resources/method.py": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/resources/preflight.py": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/resources/redirect.py": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/resources/status.py": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/resources/top.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/resources/trickle.py": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/resources/utils.js": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/response/multi-globals/current/current.html": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/response/multi-globals/incumbent/incumbent.html": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/response/multi-globals/relevant/relevant.html": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/response/response-clone-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/response/response-consume-empty-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/response/response-consume-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/response/response-consume-stream-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/response/response-idl-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/api/response/response-trailer-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/http-cache/README.md": [
+    [
+     {}
+    ]
+   ],
+   "fetch/http-cache/cc-request-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/http-cache/heuristic-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/http-cache/http-cache.js": [
+    [
+     {}
+    ]
+   ],
+   "fetch/http-cache/invalidate-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/http-cache/partial-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/http-cache/resources/http-cache.py": [
+    [
+     {}
+    ]
+   ],
+   "fetch/http-cache/vary-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/nosniff/importscripts.js": [
+    [
+     {}
+    ]
+   ],
+   "fetch/nosniff/parsing-nosniff-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "fetch/nosniff/resources/css.py": [
+    [
+     {}
+    ]
+   ],
+   "fetch/nosniff/resources/image.py": [
+    [
+     {}
+    ]
+   ],
+   "fetch/nosniff/resources/js.py": [
+    [
+     {}
+    ]
+   ],
+   "fetch/nosniff/resources/nosniff-first.asis": [
+    [
+     {}
+    ]
+   ],
+   "fetch/nosniff/resources/nosniff-last.asis": [
+    [
+     {}
+    ]
+   ],
+   "fetch/nosniff/resources/nosniff-no-x.asis": [
+    [
+     {}
+    ]
+   ],
+   "fetch/nosniff/resources/nosniff-quoted-single.asis": [
+    [
+     {}
+    ]
+   ],
+   "fetch/nosniff/resources/nosniff-quoted.asis": [
+    [
+     {}
+    ]
+   ],
+   "fetch/nosniff/resources/nosniff-uppercase.asis": [
+    [
+     {}
+    ]
+   ],
+   "fetch/nosniff/resources/worker.py": [
+    [
+     {}
+    ]
+   ],
+   "fetch/nosniff/stylesheet-expected.txt": [
     [
      {}
     ]
@@ -11660,17 +12210,57 @@
      {}
     ]
    ],
-   "html/browsers/windows/browsing-context-names/message.html": [
+   "html/browsers/windows/browsing-context-names/resources/parent-iframe-1.html": [
     [
      {}
     ]
    ],
-   "html/browsers/windows/browsing-context-names/parent1.html": [
+   "html/browsers/windows/browsing-context-names/resources/parent-iframe-2.html": [
     [
      {}
     ]
    ],
-   "html/browsers/windows/browsing-context-names/parent2.html": [
+   "html/browsers/windows/browsing-context-names/resources/parent-iframe-3.html": [
+    [
+     {}
+    ]
+   ],
+   "html/browsers/windows/browsing-context-names/resources/parent-iframe-insensitive-1.html": [
+    [
+     {}
+    ]
+   ],
+   "html/browsers/windows/browsing-context-names/resources/parent-iframe-insensitive-2.html": [
+    [
+     {}
+    ]
+   ],
+   "html/browsers/windows/browsing-context-names/resources/parent-top-nested.html": [
+    [
+     {}
+    ]
+   ],
+   "html/browsers/windows/browsing-context-names/resources/parent-top-replace.html": [
+    [
+     {}
+    ]
+   ],
+   "html/browsers/windows/browsing-context-names/resources/parent-top.html": [
+    [
+     {}
+    ]
+   ],
+   "html/browsers/windows/browsing-context-names/resources/post-to-opener.html": [
+    [
+     {}
+    ]
+   ],
+   "html/browsers/windows/browsing-context-names/resources/post-to-top-or-close.html": [
+    [
+     {}
+    ]
+   ],
+   "html/browsers/windows/browsing-context-names/resources/post-to-top.html": [
     [
      {}
     ]
@@ -16620,6 +17210,11 @@
      {}
     ]
    ],
+   "html/rendering/non-replaced-elements/flow-content-0/dialog-display-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "html/rendering/non-replaced-elements/flow-content-0/div-align-ref.html": [
     [
      {}
@@ -17031,6 +17626,11 @@
     ]
    ],
    "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-remove-src-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-set-src-networkState-expected.txt": [
     [
      {}
     ]
@@ -23105,6 +23705,11 @@
      {}
     ]
    ],
+   "service-workers/service-worker/fetch-event-redirect.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "service-workers/service-worker/fetch-event-within-sw-manual.https-expected.txt": [
     [
      {}
@@ -23251,6 +23856,11 @@
     ]
    ],
    "service-workers/service-worker/resources/blank.html": [
+    [
+     {}
+    ]
+   ],
+   "service-workers/service-worker/resources/claim-with-redirect-iframe.html": [
     [
      {}
     ]
@@ -23920,6 +24530,11 @@
      {}
     ]
    ],
+   "service-workers/service-worker/resources/update-claim-worker.py": [
+    [
+     {}
+    ]
+   ],
    "service-workers/service-worker/resources/update-max-aged-worker-imported-script.py": [
     [
      {}
@@ -24001,6 +24616,11 @@
     ]
    ],
    "service-workers/specgen.json": [
+    [
+     {}
+    ]
+   ],
+   "shadow-dom/Document-prototype-currentScript-expected.txt": [
     [
      {}
     ]
@@ -24166,6 +24786,16 @@
     ]
    ],
    "streams/piping/multiple-propagation.sharedworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/piping/pipe-through-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/piping/pipe-through.dedicatedworker-expected.txt": [
     [
      {}
     ]
@@ -29852,6 +30482,14 @@
      {}
     ]
    ],
+   "IndexedDB/interleaved-cursors.html": [
+    [
+     "/IndexedDB/interleaved-cursors.html",
+     {
+      "timeout": "long"
+     }
+    ]
+   ],
    "IndexedDB/key-conversion-exceptions.htm": [
     [
      "/IndexedDB/key-conversion-exceptions.htm",
@@ -31132,9 +31770,39 @@
      {}
     ]
    ],
-   "content-security-policy/img-src/img-src-4_1.html": [
+   "content-security-policy/img-src/img-src-4_1.sub.html": [
     [
-     "/content-security-policy/img-src/img-src-4_1.html",
+     "/content-security-policy/img-src/img-src-4_1.sub.html",
+     {}
+    ]
+   ],
+   "content-security-policy/img-src/img-src-full-host-wildcard-blocked.sub.html": [
+    [
+     "/content-security-policy/img-src/img-src-full-host-wildcard-blocked.sub.html",
+     {}
+    ]
+   ],
+   "content-security-policy/img-src/img-src-host-partial-wildcard-allowed.sub.html": [
+    [
+     "/content-security-policy/img-src/img-src-host-partial-wildcard-allowed.sub.html",
+     {}
+    ]
+   ],
+   "content-security-policy/img-src/img-src-none-blocks.html": [
+    [
+     "/content-security-policy/img-src/img-src-none-blocks.html",
+     {}
+    ]
+   ],
+   "content-security-policy/img-src/img-src-port-wildcard-allowed.sub.html": [
+    [
+     "/content-security-policy/img-src/img-src-port-wildcard-allowed.sub.html",
+     {}
+    ]
+   ],
+   "content-security-policy/img-src/img-src-wildcard-allowed.html": [
+    [
+     "/content-security-policy/img-src/img-src-wildcard-allowed.html",
      {}
     ]
    ],
@@ -31168,9 +31836,9 @@
      {}
     ]
    ],
-   "content-security-policy/media-src/media-src-7_1_2.html": [
+   "content-security-policy/media-src/media-src-7_1_2.sub.html": [
     [
-     "/content-security-policy/media-src/media-src-7_1_2.html",
+     "/content-security-policy/media-src/media-src-7_1_2.sub.html",
      {
       "timeout": "long"
      }
@@ -31182,24 +31850,32 @@
      {}
     ]
    ],
-   "content-security-policy/media-src/media-src-7_2_2.html": [
+   "content-security-policy/media-src/media-src-7_2_2.sub.html": [
     [
-     "/content-security-policy/media-src/media-src-7_2_2.html",
+     "/content-security-policy/media-src/media-src-7_2_2.sub.html",
      {
       "timeout": "long"
      }
     ]
    ],
-   "content-security-policy/media-src/media-src-7_3.html": [
+   "content-security-policy/media-src/media-src-7_3.sub.html": [
     [
-     "/content-security-policy/media-src/media-src-7_3.html",
+     "/content-security-policy/media-src/media-src-7_3.sub.html",
      {}
     ]
    ],
-   "content-security-policy/media-src/media-src-7_3_2.html": [
+   "content-security-policy/media-src/media-src-7_3_2.sub.html": [
     [
-     "/content-security-policy/media-src/media-src-7_3_2.html",
+     "/content-security-policy/media-src/media-src-7_3_2.sub.html",
      {}
+    ]
+   ],
+   "content-security-policy/media-src/media-src-blocked.sub.html": [
+    [
+     "/content-security-policy/media-src/media-src-blocked.sub.html",
+     {
+      "timeout": "long"
+     }
     ]
    ],
    "content-security-policy/media-src/media-src-redir-bug.sub.html": [
@@ -34854,6 +35530,962 @@
      {}
     ]
    ],
+   "fetch/api/basic/accept-header.any.js": [
+    [
+     "/fetch/api/basic/accept-header.any.html",
+     {}
+    ],
+    [
+     "/fetch/api/basic/accept-header.any.worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/basic/conditional-get.html": [
+    [
+     "/fetch/api/basic/conditional-get.html",
+     {}
+    ]
+   ],
+   "fetch/api/basic/error-after-response.html": [
+    [
+     "/fetch/api/basic/error-after-response.html",
+     {}
+    ]
+   ],
+   "fetch/api/basic/integrity-sharedworker.html": [
+    [
+     "/fetch/api/basic/integrity-sharedworker.html",
+     {}
+    ]
+   ],
+   "fetch/api/basic/integrity-worker.html": [
+    [
+     "/fetch/api/basic/integrity-worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/basic/integrity.html": [
+    [
+     "/fetch/api/basic/integrity.html",
+     {}
+    ]
+   ],
+   "fetch/api/basic/mode-no-cors-worker.html": [
+    [
+     "/fetch/api/basic/mode-no-cors-worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/basic/mode-no-cors.html": [
+    [
+     "/fetch/api/basic/mode-no-cors.html",
+     {}
+    ]
+   ],
+   "fetch/api/basic/mode-same-origin.any.js": [
+    [
+     "/fetch/api/basic/mode-same-origin.any.html",
+     {}
+    ],
+    [
+     "/fetch/api/basic/mode-same-origin.any.worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/basic/referrer.any.js": [
+    [
+     "/fetch/api/basic/referrer.any.html",
+     {}
+    ],
+    [
+     "/fetch/api/basic/referrer.any.worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/basic/request-forbidden-headers.any.js": [
+    [
+     "/fetch/api/basic/request-forbidden-headers.any.html",
+     {}
+    ],
+    [
+     "/fetch/api/basic/request-forbidden-headers.any.worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/basic/request-head.any.js": [
+    [
+     "/fetch/api/basic/request-head.any.html",
+     {}
+    ],
+    [
+     "/fetch/api/basic/request-head.any.worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/basic/request-headers.any.js": [
+    [
+     "/fetch/api/basic/request-headers.any.html",
+     {}
+    ],
+    [
+     "/fetch/api/basic/request-headers.any.worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/basic/request-referrer-redirected-worker.html": [
+    [
+     "/fetch/api/basic/request-referrer-redirected-worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/basic/request-referrer.any.js": [
+    [
+     "/fetch/api/basic/request-referrer.any.html",
+     {}
+    ],
+    [
+     "/fetch/api/basic/request-referrer.any.worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/basic/request-upload.any.js": [
+    [
+     "/fetch/api/basic/request-upload.any.html",
+     {}
+    ],
+    [
+     "/fetch/api/basic/request-upload.any.worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/basic/response-url-worker.html": [
+    [
+     "/fetch/api/basic/response-url-worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/basic/response-url.html": [
+    [
+     "/fetch/api/basic/response-url.html",
+     {}
+    ]
+   ],
+   "fetch/api/basic/scheme-about.any.js": [
+    [
+     "/fetch/api/basic/scheme-about.any.html",
+     {}
+    ],
+    [
+     "/fetch/api/basic/scheme-about.any.worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/basic/scheme-blob-worker.html": [
+    [
+     "/fetch/api/basic/scheme-blob-worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/basic/scheme-blob.html": [
+    [
+     "/fetch/api/basic/scheme-blob.html",
+     {}
+    ]
+   ],
+   "fetch/api/basic/scheme-data.any.js": [
+    [
+     "/fetch/api/basic/scheme-data.any.html",
+     {}
+    ],
+    [
+     "/fetch/api/basic/scheme-data.any.worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/basic/scheme-others-worker.html": [
+    [
+     "/fetch/api/basic/scheme-others-worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/basic/scheme-others.html": [
+    [
+     "/fetch/api/basic/scheme-others.html",
+     {}
+    ]
+   ],
+   "fetch/api/basic/stream-response.any.js": [
+    [
+     "/fetch/api/basic/stream-response.any.html",
+     {}
+    ],
+    [
+     "/fetch/api/basic/stream-response.any.worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/basic/text-utf8.html": [
+    [
+     "/fetch/api/basic/text-utf8.html",
+     {}
+    ]
+   ],
+   "fetch/api/cors/cors-basic.any.js": [
+    [
+     "/fetch/api/cors/cors-basic.any.html",
+     {}
+    ],
+    [
+     "/fetch/api/cors/cors-basic.any.worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/cors/cors-cookies.any.js": [
+    [
+     "/fetch/api/cors/cors-cookies.any.html",
+     {}
+    ],
+    [
+     "/fetch/api/cors/cors-cookies.any.worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/cors/cors-expose-star-worker.html": [
+    [
+     "/fetch/api/cors/cors-expose-star-worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/cors/cors-expose-star.html": [
+    [
+     "/fetch/api/cors/cors-expose-star.html",
+     {}
+    ]
+   ],
+   "fetch/api/cors/cors-filtering-worker.html": [
+    [
+     "/fetch/api/cors/cors-filtering-worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/cors/cors-filtering.html": [
+    [
+     "/fetch/api/cors/cors-filtering.html",
+     {}
+    ]
+   ],
+   "fetch/api/cors/cors-multiple-origins-worker.html": [
+    [
+     "/fetch/api/cors/cors-multiple-origins-worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/cors/cors-multiple-origins.html": [
+    [
+     "/fetch/api/cors/cors-multiple-origins.html",
+     {}
+    ]
+   ],
+   "fetch/api/cors/cors-no-preflight.any.js": [
+    [
+     "/fetch/api/cors/cors-no-preflight.any.html",
+     {}
+    ],
+    [
+     "/fetch/api/cors/cors-no-preflight.any.worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/cors/cors-origin.any.js": [
+    [
+     "/fetch/api/cors/cors-origin.any.html",
+     {}
+    ],
+    [
+     "/fetch/api/cors/cors-origin.any.worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/cors/cors-preflight-redirect.any.js": [
+    [
+     "/fetch/api/cors/cors-preflight-redirect.any.html",
+     {}
+    ],
+    [
+     "/fetch/api/cors/cors-preflight-redirect.any.worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/cors/cors-preflight-referrer.any.js": [
+    [
+     "/fetch/api/cors/cors-preflight-referrer.any.html",
+     {}
+    ],
+    [
+     "/fetch/api/cors/cors-preflight-referrer.any.worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/cors/cors-preflight-star.any.js": [
+    [
+     "/fetch/api/cors/cors-preflight-star.any.html",
+     {}
+    ],
+    [
+     "/fetch/api/cors/cors-preflight-star.any.worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/cors/cors-preflight-status.any.js": [
+    [
+     "/fetch/api/cors/cors-preflight-status.any.html",
+     {}
+    ],
+    [
+     "/fetch/api/cors/cors-preflight-status.any.worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/cors/cors-preflight.any.js": [
+    [
+     "/fetch/api/cors/cors-preflight.any.html",
+     {}
+    ],
+    [
+     "/fetch/api/cors/cors-preflight.any.worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/cors/cors-redirect-credentials.any.js": [
+    [
+     "/fetch/api/cors/cors-redirect-credentials.any.html",
+     {}
+    ],
+    [
+     "/fetch/api/cors/cors-redirect-credentials.any.worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/cors/cors-redirect-preflight.any.js": [
+    [
+     "/fetch/api/cors/cors-redirect-preflight.any.html",
+     {}
+    ],
+    [
+     "/fetch/api/cors/cors-redirect-preflight.any.worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/cors/cors-redirect.any.js": [
+    [
+     "/fetch/api/cors/cors-redirect.any.html",
+     {}
+    ],
+    [
+     "/fetch/api/cors/cors-redirect.any.worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/credentials/authentication-basic.any.js": [
+    [
+     "/fetch/api/credentials/authentication-basic.any.html",
+     {}
+    ],
+    [
+     "/fetch/api/credentials/authentication-basic.any.worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/credentials/cookies.any.js": [
+    [
+     "/fetch/api/credentials/cookies.any.html",
+     {}
+    ],
+    [
+     "/fetch/api/credentials/cookies.any.worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/headers/header-values-normalize.html": [
+    [
+     "/fetch/api/headers/header-values-normalize.html",
+     {
+      "timeout": "long"
+     }
+    ]
+   ],
+   "fetch/api/headers/header-values.html": [
+    [
+     "/fetch/api/headers/header-values.html",
+     {
+      "timeout": "long"
+     }
+    ]
+   ],
+   "fetch/api/headers/headers-basic.html": [
+    [
+     "/fetch/api/headers/headers-basic.html",
+     {}
+    ]
+   ],
+   "fetch/api/headers/headers-casing.html": [
+    [
+     "/fetch/api/headers/headers-casing.html",
+     {}
+    ]
+   ],
+   "fetch/api/headers/headers-combine.html": [
+    [
+     "/fetch/api/headers/headers-combine.html",
+     {}
+    ]
+   ],
+   "fetch/api/headers/headers-errors.html": [
+    [
+     "/fetch/api/headers/headers-errors.html",
+     {}
+    ]
+   ],
+   "fetch/api/headers/headers-idl.html": [
+    [
+     "/fetch/api/headers/headers-idl.html",
+     {}
+    ]
+   ],
+   "fetch/api/headers/headers-normalize.html": [
+    [
+     "/fetch/api/headers/headers-normalize.html",
+     {}
+    ]
+   ],
+   "fetch/api/headers/headers-record.html": [
+    [
+     "/fetch/api/headers/headers-record.html",
+     {}
+    ]
+   ],
+   "fetch/api/headers/headers-structure.html": [
+    [
+     "/fetch/api/headers/headers-structure.html",
+     {}
+    ]
+   ],
+   "fetch/api/headers/historical.any.js": [
+    [
+     "/fetch/api/headers/historical.any.html",
+     {}
+    ],
+    [
+     "/fetch/api/headers/historical.any.worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/policies/csp-blocked-worker.html": [
+    [
+     "/fetch/api/policies/csp-blocked-worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/policies/csp-blocked.html": [
+    [
+     "/fetch/api/policies/csp-blocked.html",
+     {}
+    ]
+   ],
+   "fetch/api/policies/referrer-no-referrer-service-worker.https.html": [
+    [
+     "/fetch/api/policies/referrer-no-referrer-service-worker.https.html",
+     {}
+    ]
+   ],
+   "fetch/api/policies/referrer-no-referrer-worker.html": [
+    [
+     "/fetch/api/policies/referrer-no-referrer-worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/policies/referrer-no-referrer.html": [
+    [
+     "/fetch/api/policies/referrer-no-referrer.html",
+     {}
+    ]
+   ],
+   "fetch/api/policies/referrer-origin-service-worker.https.html": [
+    [
+     "/fetch/api/policies/referrer-origin-service-worker.https.html",
+     {}
+    ]
+   ],
+   "fetch/api/policies/referrer-origin-when-cross-origin-service-worker.https.html": [
+    [
+     "/fetch/api/policies/referrer-origin-when-cross-origin-service-worker.https.html",
+     {}
+    ]
+   ],
+   "fetch/api/policies/referrer-origin-when-cross-origin-worker.html": [
+    [
+     "/fetch/api/policies/referrer-origin-when-cross-origin-worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/policies/referrer-origin-when-cross-origin.html": [
+    [
+     "/fetch/api/policies/referrer-origin-when-cross-origin.html",
+     {}
+    ]
+   ],
+   "fetch/api/policies/referrer-origin-worker.html": [
+    [
+     "/fetch/api/policies/referrer-origin-worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/policies/referrer-origin.html": [
+    [
+     "/fetch/api/policies/referrer-origin.html",
+     {}
+    ]
+   ],
+   "fetch/api/policies/referrer-unsafe-url-service-worker.https.html": [
+    [
+     "/fetch/api/policies/referrer-unsafe-url-service-worker.https.html",
+     {}
+    ]
+   ],
+   "fetch/api/policies/referrer-unsafe-url-worker.html": [
+    [
+     "/fetch/api/policies/referrer-unsafe-url-worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/policies/referrer-unsafe-url.html": [
+    [
+     "/fetch/api/policies/referrer-unsafe-url.html",
+     {}
+    ]
+   ],
+   "fetch/api/redirect/redirect-count-worker.html": [
+    [
+     "/fetch/api/redirect/redirect-count-worker.html",
+     {
+      "timeout": "long"
+     }
+    ]
+   ],
+   "fetch/api/redirect/redirect-count.html": [
+    [
+     "/fetch/api/redirect/redirect-count.html",
+     {
+      "timeout": "long"
+     }
+    ]
+   ],
+   "fetch/api/redirect/redirect-location-worker.html": [
+    [
+     "/fetch/api/redirect/redirect-location-worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/redirect/redirect-location.html": [
+    [
+     "/fetch/api/redirect/redirect-location.html",
+     {}
+    ]
+   ],
+   "fetch/api/redirect/redirect-method-worker.html": [
+    [
+     "/fetch/api/redirect/redirect-method-worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/redirect/redirect-method.html": [
+    [
+     "/fetch/api/redirect/redirect-method.html",
+     {}
+    ]
+   ],
+   "fetch/api/redirect/redirect-mode-worker.html": [
+    [
+     "/fetch/api/redirect/redirect-mode-worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/redirect/redirect-mode.html": [
+    [
+     "/fetch/api/redirect/redirect-mode.html",
+     {}
+    ]
+   ],
+   "fetch/api/redirect/redirect-origin-worker.html": [
+    [
+     "/fetch/api/redirect/redirect-origin-worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/redirect/redirect-origin.html": [
+    [
+     "/fetch/api/redirect/redirect-origin.html",
+     {}
+    ]
+   ],
+   "fetch/api/redirect/redirect-referrer-worker.html": [
+    [
+     "/fetch/api/redirect/redirect-referrer-worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/redirect/redirect-referrer.html": [
+    [
+     "/fetch/api/redirect/redirect-referrer.html",
+     {}
+    ]
+   ],
+   "fetch/api/redirect/redirect-schemes.html": [
+    [
+     "/fetch/api/redirect/redirect-schemes.html",
+     {}
+    ]
+   ],
+   "fetch/api/redirect/redirect-to-dataurl-worker.html": [
+    [
+     "/fetch/api/redirect/redirect-to-dataurl-worker.html",
+     {}
+    ]
+   ],
+   "fetch/api/redirect/redirect-to-dataurl.html": [
+    [
+     "/fetch/api/redirect/redirect-to-dataurl.html",
+     {}
+    ]
+   ],
+   "fetch/api/request/multi-globals/url-parsing.html": [
+    [
+     "/fetch/api/request/multi-globals/url-parsing.html",
+     {}
+    ]
+   ],
+   "fetch/api/request/request-bad-port.html": [
+    [
+     "/fetch/api/request/request-bad-port.html",
+     {}
+    ]
+   ],
+   "fetch/api/request/request-cache-default-conditional.html": [
+    [
+     "/fetch/api/request/request-cache-default-conditional.html",
+     {}
+    ]
+   ],
+   "fetch/api/request/request-cache-default.html": [
+    [
+     "/fetch/api/request/request-cache-default.html",
+     {}
+    ]
+   ],
+   "fetch/api/request/request-cache-force-cache.html": [
+    [
+     "/fetch/api/request/request-cache-force-cache.html",
+     {}
+    ]
+   ],
+   "fetch/api/request/request-cache-no-cache.html": [
+    [
+     "/fetch/api/request/request-cache-no-cache.html",
+     {}
+    ]
+   ],
+   "fetch/api/request/request-cache-no-store.html": [
+    [
+     "/fetch/api/request/request-cache-no-store.html",
+     {}
+    ]
+   ],
+   "fetch/api/request/request-cache-only-if-cached.html": [
+    [
+     "/fetch/api/request/request-cache-only-if-cached.html",
+     {}
+    ]
+   ],
+   "fetch/api/request/request-cache-reload.html": [
+    [
+     "/fetch/api/request/request-cache-reload.html",
+     {}
+    ]
+   ],
+   "fetch/api/request/request-clone.sub.html": [
+    [
+     "/fetch/api/request/request-clone.sub.html",
+     {}
+    ]
+   ],
+   "fetch/api/request/request-consume-empty.html": [
+    [
+     "/fetch/api/request/request-consume-empty.html",
+     {}
+    ]
+   ],
+   "fetch/api/request/request-consume.html": [
+    [
+     "/fetch/api/request/request-consume.html",
+     {}
+    ]
+   ],
+   "fetch/api/request/request-disturbed.html": [
+    [
+     "/fetch/api/request/request-disturbed.html",
+     {}
+    ]
+   ],
+   "fetch/api/request/request-error.html": [
+    [
+     "/fetch/api/request/request-error.html",
+     {}
+    ]
+   ],
+   "fetch/api/request/request-headers.html": [
+    [
+     "/fetch/api/request/request-headers.html",
+     {}
+    ]
+   ],
+   "fetch/api/request/request-idl.html": [
+    [
+     "/fetch/api/request/request-idl.html",
+     {}
+    ]
+   ],
+   "fetch/api/request/request-init-001.sub.html": [
+    [
+     "/fetch/api/request/request-init-001.sub.html",
+     {}
+    ]
+   ],
+   "fetch/api/request/request-init-002.html": [
+    [
+     "/fetch/api/request/request-init-002.html",
+     {}
+    ]
+   ],
+   "fetch/api/request/request-init-003.sub.html": [
+    [
+     "/fetch/api/request/request-init-003.sub.html",
+     {}
+    ]
+   ],
+   "fetch/api/request/request-keepalive-quota.html": [
+    [
+     "/fetch/api/request/request-keepalive-quota.html",
+     {
+      "timeout": "long"
+     }
+    ]
+   ],
+   "fetch/api/request/request-structure.html": [
+    [
+     "/fetch/api/request/request-structure.html",
+     {}
+    ]
+   ],
+   "fetch/api/response/multi-globals/url-parsing.html": [
+    [
+     "/fetch/api/response/multi-globals/url-parsing.html",
+     {}
+    ]
+   ],
+   "fetch/api/response/response-cancel-stream.html": [
+    [
+     "/fetch/api/response/response-cancel-stream.html",
+     {}
+    ]
+   ],
+   "fetch/api/response/response-clone.html": [
+    [
+     "/fetch/api/response/response-clone.html",
+     {}
+    ]
+   ],
+   "fetch/api/response/response-consume-empty.html": [
+    [
+     "/fetch/api/response/response-consume-empty.html",
+     {}
+    ]
+   ],
+   "fetch/api/response/response-consume-stream.html": [
+    [
+     "/fetch/api/response/response-consume-stream.html",
+     {}
+    ]
+   ],
+   "fetch/api/response/response-consume.html": [
+    [
+     "/fetch/api/response/response-consume.html",
+     {}
+    ]
+   ],
+   "fetch/api/response/response-error.html": [
+    [
+     "/fetch/api/response/response-error.html",
+     {}
+    ]
+   ],
+   "fetch/api/response/response-idl.html": [
+    [
+     "/fetch/api/response/response-idl.html",
+     {}
+    ]
+   ],
+   "fetch/api/response/response-init-001.html": [
+    [
+     "/fetch/api/response/response-init-001.html",
+     {}
+    ]
+   ],
+   "fetch/api/response/response-init-002.html": [
+    [
+     "/fetch/api/response/response-init-002.html",
+     {}
+    ]
+   ],
+   "fetch/api/response/response-static-error.html": [
+    [
+     "/fetch/api/response/response-static-error.html",
+     {}
+    ]
+   ],
+   "fetch/api/response/response-static-redirect.html": [
+    [
+     "/fetch/api/response/response-static-redirect.html",
+     {}
+    ]
+   ],
+   "fetch/api/response/response-stream-disturbed-1.html": [
+    [
+     "/fetch/api/response/response-stream-disturbed-1.html",
+     {}
+    ]
+   ],
+   "fetch/api/response/response-stream-disturbed-2.html": [
+    [
+     "/fetch/api/response/response-stream-disturbed-2.html",
+     {}
+    ]
+   ],
+   "fetch/api/response/response-stream-disturbed-3.html": [
+    [
+     "/fetch/api/response/response-stream-disturbed-3.html",
+     {}
+    ]
+   ],
+   "fetch/api/response/response-stream-disturbed-4.html": [
+    [
+     "/fetch/api/response/response-stream-disturbed-4.html",
+     {}
+    ]
+   ],
+   "fetch/api/response/response-stream-disturbed-5.html": [
+    [
+     "/fetch/api/response/response-stream-disturbed-5.html",
+     {}
+    ]
+   ],
+   "fetch/api/response/response-trailer.html": [
+    [
+     "/fetch/api/response/response-trailer.html",
+     {}
+    ]
+   ],
+   "fetch/http-cache/304-update.html": [
+    [
+     "/fetch/http-cache/304-update.html",
+     {}
+    ]
+   ],
+   "fetch/http-cache/cc-request.html": [
+    [
+     "/fetch/http-cache/cc-request.html",
+     {
+      "timeout": "long"
+     }
+    ]
+   ],
+   "fetch/http-cache/freshness.html": [
+    [
+     "/fetch/http-cache/freshness.html",
+     {
+      "timeout": "long"
+     }
+    ]
+   ],
+   "fetch/http-cache/heuristic.html": [
+    [
+     "/fetch/http-cache/heuristic.html",
+     {
+      "timeout": "long"
+     }
+    ]
+   ],
+   "fetch/http-cache/invalidate.html": [
+    [
+     "/fetch/http-cache/invalidate.html",
+     {}
+    ]
+   ],
+   "fetch/http-cache/partial.html": [
+    [
+     "/fetch/http-cache/partial.html",
+     {
+      "timeout": "long"
+     }
+    ]
+   ],
+   "fetch/http-cache/status.html": [
+    [
+     "/fetch/http-cache/status.html",
+     {}
+    ]
+   ],
+   "fetch/http-cache/vary.html": [
+    [
+     "/fetch/http-cache/vary.html",
+     {}
+    ]
+   ],
+   "fetch/nosniff/image.html": [
+    [
+     "/fetch/nosniff/image.html",
+     {}
+    ]
+   ],
+   "fetch/nosniff/importscripts.html": [
+    [
+     "/fetch/nosniff/importscripts.html",
+     {}
+    ]
+   ],
+   "fetch/nosniff/parsing-nosniff.html": [
+    [
+     "/fetch/nosniff/parsing-nosniff.html",
+     {}
+    ]
+   ],
+   "fetch/nosniff/script.html": [
+    [
+     "/fetch/nosniff/script.html",
+     {}
+    ]
+   ],
+   "fetch/nosniff/stylesheet.html": [
+    [
+     "/fetch/nosniff/stylesheet.html",
+     {}
+    ]
+   ],
+   "fetch/nosniff/worker.html": [
+    [
+     "/fetch/nosniff/worker.html",
+     {}
+    ]
+   ],
    "fullscreen/api/document-exit-fullscreen-active-document.html": [
     [
      "/fullscreen/api/document-exit-fullscreen-active-document.html",
@@ -36288,9 +37920,27 @@
      {}
     ]
    ],
-   "html/browsers/windows/browsing-context-names/browsing-context-choose-parent.html": [
+   "html/browsers/windows/browsing-context-names/browsing-context-choose-parent-001.html": [
     [
-     "/html/browsers/windows/browsing-context-names/browsing-context-choose-parent.html",
+     "/html/browsers/windows/browsing-context-names/browsing-context-choose-parent-001.html",
+     {}
+    ]
+   ],
+   "html/browsers/windows/browsing-context-names/browsing-context-choose-parent-002.html": [
+    [
+     "/html/browsers/windows/browsing-context-names/browsing-context-choose-parent-002.html",
+     {}
+    ]
+   ],
+   "html/browsers/windows/browsing-context-names/browsing-context-choose-parent-003.html": [
+    [
+     "/html/browsers/windows/browsing-context-names/browsing-context-choose-parent-003.html",
+     {}
+    ]
+   ],
+   "html/browsers/windows/browsing-context-names/browsing-context-choose-parent-004.html": [
+    [
+     "/html/browsers/windows/browsing-context-names/browsing-context-choose-parent-004.html",
      {}
     ]
    ],
@@ -37537,6 +39187,12 @@
    "html/editing/activation/click.html": [
     [
      "/html/editing/activation/click.html",
+     {}
+    ]
+   ],
+   "html/editing/dnd/datastore/datatransfer-constructor-001.html": [
+    [
+     "/html/editing/dnd/datastore/datatransfer-constructor-001.html",
      {}
     ]
    ],
@@ -53244,6 +54900,12 @@
      {}
     ]
    ],
+   "service-workers/service-worker/claim-with-redirect.https.html": [
+    [
+     "/service-workers/service-worker/claim-with-redirect.https.html",
+     {}
+    ]
+   ],
    "service-workers/service-worker/client-navigate.https.html": [
     [
      "/service-workers/service-worker/client-navigate.https.html",
@@ -56798,6 +58460,12 @@
      {}
     ]
    ],
+   "webusb/idlharness.html": [
+    [
+     "/webusb/idlharness.html",
+     {}
+    ]
+   ],
    "webvr/idlharness.html": [
     [
      "/webvr/idlharness.html",
@@ -58264,7 +59932,7 @@
    "support"
   ],
   "./check_stability.py": [
-   "c971a52a42b7650562d27abe572957121a937aa6",
+   "0a76eadbdc8a007cc439a909b55f0992fd8ba549",
    "support"
   ],
   "./ci_built_diff.sh": [
@@ -59651,6 +61319,10 @@
    "7edbb0cce85708e4b578ceae18a833fd623cd976",
    "testharness"
   ],
+  "IndexedDB/interleaved-cursors.html": [
+   "131b1965caae735de9ef8893e6ca55f24ce36f81",
+   "testharness"
+  ],
   "IndexedDB/key-conversion-exceptions.htm": [
    "aed58068ec48e3fd682a195bd5b0ea3f87c5a0e7",
    "testharness"
@@ -59732,7 +61404,7 @@
    "testharness"
   ],
   "IndexedDB/support-promises.js": [
-   "174d4db1b6634baeca46c80be43552f9da81ce07",
+   "64bd991aa7b4cdd85b8c69e7d8e9c432d82cf4b5",
    "support"
   ],
   "IndexedDB/support.js": [
@@ -61583,13 +63255,29 @@
    "4a94d606c13066d1efaee4927d2f6c66492d0965",
    "support"
   ],
-  "content-security-policy/img-src/img-src-4_1.html": [
-   "af12ba7c5d335f8a34d20df3b60c319da95a11dd",
+  "content-security-policy/img-src/img-src-4_1.sub.html": [
+   "d83e0f50e07a493a8040a13b00c8890d16f1ba1e",
    "testharness"
   ],
-  "content-security-policy/img-src/img-src-4_1.html.sub.headers": [
-   "7a1f34dd845f9af02af9e3f8d71f6ae878ef1abb",
-   "support"
+  "content-security-policy/img-src/img-src-full-host-wildcard-blocked.sub.html": [
+   "78f96d966acb9374fe898dd1062206d6c43cb252",
+   "testharness"
+  ],
+  "content-security-policy/img-src/img-src-host-partial-wildcard-allowed.sub.html": [
+   "beeb624e642b426056b48c7bd8ffce386f797d16",
+   "testharness"
+  ],
+  "content-security-policy/img-src/img-src-none-blocks.html": [
+   "8bf683255681f61202a0119f7f03be29633a52b4",
+   "testharness"
+  ],
+  "content-security-policy/img-src/img-src-port-wildcard-allowed.sub.html": [
+   "dac6a06e0965db0d648cfa3e96f6efa60c612cdc",
+   "testharness"
+  ],
+  "content-security-policy/img-src/img-src-wildcard-allowed.html": [
+   "4114664a54645718ccbb5292f5103dc1942724aa",
+   "testharness"
   ],
   "content-security-policy/inside-worker/dedicated-inheritance.html": [
    "225fa2ffe085ac9b419d7ed5287cfad28f3945bf",
@@ -61624,59 +63312,67 @@
    "support"
   ],
   "content-security-policy/media-src/media-src-7_1.html": [
-   "0a388dbc492fc428fd4b96103d131447ab02317d",
+   "ce49162aecb9ca292ceeaa65b7a4206d430d21b4",
    "testharness"
   ],
   "content-security-policy/media-src/media-src-7_1.html.sub.headers": [
    "4a918e8bcec9726cd388ae1d518d6e1a4d700823",
    "support"
   ],
-  "content-security-policy/media-src/media-src-7_1_2.html": [
-   "1be089670a1a84dd159c631027af9a4c13de5926",
+  "content-security-policy/media-src/media-src-7_1_2.sub.html": [
+   "0ee3a4df705e1281c16bb0f71d24af881a1f0f60",
    "testharness"
   ],
-  "content-security-policy/media-src/media-src-7_1_2.html.sub.headers": [
+  "content-security-policy/media-src/media-src-7_1_2.sub.html.sub.headers": [
    "71308d3aaf2908bb3d40469a64ace31e8eb41c44",
    "support"
   ],
   "content-security-policy/media-src/media-src-7_2.html": [
-   "2410be8a6b26f88b49b106315e57d56014c85a60",
+   "b6c8bb9af6530ccd7ab1d1ade214d4b0b6678017",
    "testharness"
   ],
   "content-security-policy/media-src/media-src-7_2.html.sub.headers": [
    "2b3e01914edac2809467daddfe5044030244020c",
    "support"
   ],
-  "content-security-policy/media-src/media-src-7_2_2.html": [
-   "ec3faf9bb80bd585a67bda4d5f973b811280a2da",
+  "content-security-policy/media-src/media-src-7_2_2.sub.html": [
+   "e1cad846ee8e7d42a3ea130427f5b61e863a5836",
    "testharness"
   ],
-  "content-security-policy/media-src/media-src-7_2_2.html.sub.headers": [
+  "content-security-policy/media-src/media-src-7_2_2.sub.html.sub.headers": [
    "a561247903c77984842c4e4c02459d713c0de5dd",
    "support"
   ],
-  "content-security-policy/media-src/media-src-7_3.html": [
-   "636796c1617d85f0a8aa983e298b8b829af120e4",
+  "content-security-policy/media-src/media-src-7_3.sub.html": [
+   "dba52c4be3092a637eb129e626502c93322df44d",
    "testharness"
   ],
-  "content-security-policy/media-src/media-src-7_3.html.sub.headers": [
-   "f033eca95a01048474648c7213649bdff8f4bc82",
+  "content-security-policy/media-src/media-src-7_3.sub.html.sub.headers": [
+   "05bab36a991f04ab8144daaa582e396863276aba",
    "support"
   ],
-  "content-security-policy/media-src/media-src-7_3_2.html": [
-   "b01d6e49316bc0e25104ca23d8cf897cf11b5078",
+  "content-security-policy/media-src/media-src-7_3_2.sub.html": [
+   "7484051e7dc1e270e5251b5684cbb95cb900ccf7",
    "testharness"
   ],
-  "content-security-policy/media-src/media-src-7_3_2.html.sub.headers": [
+  "content-security-policy/media-src/media-src-7_3_2.sub.html.sub.headers": [
    "c7623ee2c025f15eede625064f062d927543803a",
    "support"
   ],
+  "content-security-policy/media-src/media-src-blocked.sub.html": [
+   "d7af07adf3ff35f0067f551c41c74c49d8daaa36",
+   "testharness"
+  ],
+  "content-security-policy/media-src/media-src-blocked.sub.html.sub.headers": [
+   "e87df4f2889add93d8c50b79a00e830d76309a75",
+   "support"
+  ],
   "content-security-policy/media-src/media-src-redir-bug.sub.html": [
-   "1d627e6e9d7261f170b528ed63b7eedfc615225a",
+   "581a76348d3c8cc415c2ac109f587a5a0b6ded23",
    "testharness"
   ],
   "content-security-policy/media-src/media-src-redir-bug.sub.html.sub.headers": [
-   "f9d37b963ea4c3e386f541242a851f868547edb0",
+   "578cb8e80efdf326dc8bbf43837cc1771c549352",
    "support"
   ],
   "content-security-policy/meta/meta-img-src.html": [
@@ -62732,7 +64428,7 @@
    "testharness"
   ],
   "dom/interfaces-expected.txt": [
-   "fb98fe58a52a6f759473c04b46484d15645b07b2",
+   "748d57b237ac32ba300ce035ef5806eb41c1e9e9",
    "support"
   ],
   "dom/interfaces.html": [
@@ -62840,7 +64536,7 @@
    "testharness"
   ],
   "dom/nodes/DOMImplementation-createDocument-expected.txt": [
-   "4c9ce47dae88f03f249133d27c610f44495a2795",
+   "7f7e31f95bede3b00bbce608bc7f3d93f0322119",
    "support"
   ],
   "dom/nodes/DOMImplementation-createDocument.html": [
@@ -62850,10 +64546,6 @@
   "dom/nodes/DOMImplementation-createDocumentType.html": [
    "09a9749b83780791c66d8695023165cd544ec23c",
    "testharness"
-  ],
-  "dom/nodes/DOMImplementation-createHTMLDocument-expected.txt": [
-   "98b221b17374817ba26fb756e7bc2d48e7407452",
-   "support"
   ],
   "dom/nodes/DOMImplementation-createHTMLDocument.html": [
    "90be3c69aaccfa46c4ac0e2eb04921f19999f1dd",
@@ -63588,7 +65280,7 @@
    "testharness"
   ],
   "dom/nodes/Node-cloneNode-expected.txt": [
-   "ccb60a196ab032060a830de30942494b972ab8a8",
+   "8da3d9c9deecd62806ab51fb6de864b9767245df",
    "support"
   ],
   "dom/nodes/Node-cloneNode.html": [
@@ -63678,10 +65370,6 @@
   "dom/nodes/Node-parentNode.html": [
    "53776b8cb7d51e32d1b12823490a33741187dd4f",
    "testharness"
-  ],
-  "dom/nodes/Node-properties-expected.txt": [
-   "ec8e9de43cb64280d51a5bcb8b0661d60af3b25d",
-   "support"
   ],
   "dom/nodes/Node-properties.html": [
    "3f783d0f1fdf80fb65598d4d5cb1ff4be11de4a1",
@@ -64652,7 +66340,7 @@
    "testharness"
   ],
   "editing/run/insertorderedlist-expected.txt": [
-   "8421f3b234a00a458393363edf70e958052cc069",
+   "9b8dec2c03857b51a58608bacea796818949f614",
    "support"
   ],
   "editing/run/insertorderedlist.html": [
@@ -65566,6 +67254,1010 @@
   "encrypted-media/util/utils.js": [
    "17c7a7646bd10a09035bfbc48f6a29c033b44bda",
    "support"
+  ],
+  "fetch/README.md": [
+   "cc3f679ff78bf2e3b39cf967102c257b84fd7680",
+   "support"
+  ],
+  "fetch/api/basic/accept-header.any.js": [
+   "ab322023411faca98534f620806b2418a6767e64",
+   "testharness"
+  ],
+  "fetch/api/basic/conditional-get.html": [
+   "77822a239b405b0b5c0259a335bac6cbe26b7fed",
+   "testharness"
+  ],
+  "fetch/api/basic/error-after-response.html": [
+   "54181cd222c7a5428f9468f4777c273ecc553f4f",
+   "testharness"
+  ],
+  "fetch/api/basic/integrity-sharedworker.html": [
+   "00d7eae5a324653caae19ab83bef76dd3503fb3b",
+   "testharness"
+  ],
+  "fetch/api/basic/integrity-worker.html": [
+   "1a0a6abd1c6bf8c4665a242d64f50bbbff4982f8",
+   "testharness"
+  ],
+  "fetch/api/basic/integrity.html": [
+   "aa6d9159321e410d1e96c045f8f4d8700494beeb",
+   "testharness"
+  ],
+  "fetch/api/basic/integrity.js": [
+   "cc098024968701fc4069ea3d70d2c16743731309",
+   "support"
+  ],
+  "fetch/api/basic/mode-no-cors-worker.html": [
+   "39992b8abf3ab30182dfbaa5816cc154a22ae0ad",
+   "testharness"
+  ],
+  "fetch/api/basic/mode-no-cors.html": [
+   "ff174cb1a76a63473028b72b3319602685689cb5",
+   "testharness"
+  ],
+  "fetch/api/basic/mode-no-cors.js": [
+   "311ecadfe0c44430846b2f11facf53c1fafc6df0",
+   "support"
+  ],
+  "fetch/api/basic/mode-same-origin.any.js": [
+   "1027de012d62a36a0df53bfadbfb8341a22558c0",
+   "testharness"
+  ],
+  "fetch/api/basic/referrer.any.js": [
+   "08968517620d9d0fa894972140bbbb39a340df26",
+   "testharness"
+  ],
+  "fetch/api/basic/request-forbidden-headers.any.js": [
+   "c824ae02ae31ae88fe16f3eec832e752f4e9887c",
+   "testharness"
+  ],
+  "fetch/api/basic/request-head.any.js": [
+   "f06a6509e9b781db8c5740ba5a233b23f54d31d7",
+   "testharness"
+  ],
+  "fetch/api/basic/request-headers.any.js": [
+   "76487a5843701c7ef8a6f016f7ec87360e6569b0",
+   "testharness"
+  ],
+  "fetch/api/basic/request-referrer-redirected-worker.html": [
+   "fbca6c873a6243ad760247aecb718ba131ca7bb5",
+   "testharness"
+  ],
+  "fetch/api/basic/request-referrer.any.js": [
+   "309c213b04bc716a20ca6a74f1533d4773d89161",
+   "testharness"
+  ],
+  "fetch/api/basic/request-upload.any.js": [
+   "8c85a2549ca2108b07f8065699a8dd182acc6268",
+   "testharness"
+  ],
+  "fetch/api/basic/response-url-worker.html": [
+   "3d615668cb0122600af10d80cac4a7ebfe051528",
+   "testharness"
+  ],
+  "fetch/api/basic/response-url.html": [
+   "9e7c61ac685654e355174c960ba2084d17ff7f2e",
+   "testharness"
+  ],
+  "fetch/api/basic/response-url.js": [
+   "444ef1e53b422f74a4bb322099d8b1147ed8f52b",
+   "support"
+  ],
+  "fetch/api/basic/scheme-about.any.js": [
+   "5e4ce2650ed422ae032f27d8aa1fb6f2b6fe7298",
+   "testharness"
+  ],
+  "fetch/api/basic/scheme-blob-worker.html": [
+   "adfea540164a4113484ea29007ac3738bb7456c4",
+   "testharness"
+  ],
+  "fetch/api/basic/scheme-blob.html": [
+   "5835c0c3b108f05b61ef0db945f272264b377d6c",
+   "testharness"
+  ],
+  "fetch/api/basic/scheme-blob.js": [
+   "ab29ee7bde800b3ffaade990d86816ea9b6cb2c7",
+   "support"
+  ],
+  "fetch/api/basic/scheme-data.any.js": [
+   "d312396ed3c5a90004d46c3d630525cb3e8228e1",
+   "testharness"
+  ],
+  "fetch/api/basic/scheme-others-worker.html": [
+   "4ea145afbbe3b349c227c19ac5612db94b10c61c",
+   "testharness"
+  ],
+  "fetch/api/basic/scheme-others.html": [
+   "e7594d1119e1c937663b4bb0385b69c442f1c78f",
+   "testharness"
+  ],
+  "fetch/api/basic/scheme-others.js": [
+   "e9f99ee8112a0e0983322aece2034461125a46b5",
+   "support"
+  ],
+  "fetch/api/basic/stream-response.any.js": [
+   "b989131e8cf68e37c6d27397d801bfcc9c97b7ed",
+   "testharness"
+  ],
+  "fetch/api/basic/text-utf8.html": [
+   "e767fdc6323165aaf50775185704cb66c4250ebd",
+   "testharness"
+  ],
+  "fetch/api/cors/cors-basic.any.js": [
+   "e6326b75fe6449f211ad19b98a9c1d7ed8c7c27f",
+   "testharness"
+  ],
+  "fetch/api/cors/cors-cookies.any.js": [
+   "246a6e661ef1179330f9109131cfcb2fa9f5bf64",
+   "testharness"
+  ],
+  "fetch/api/cors/cors-expose-star-expected.txt": [
+   "c865cc29164edd34514b6242684c9ace019bccfc",
+   "support"
+  ],
+  "fetch/api/cors/cors-expose-star-worker-expected.txt": [
+   "c865cc29164edd34514b6242684c9ace019bccfc",
+   "support"
+  ],
+  "fetch/api/cors/cors-expose-star-worker.html": [
+   "fff53964064bd5f0a7f216b940dda7b01854105c",
+   "testharness"
+  ],
+  "fetch/api/cors/cors-expose-star.html": [
+   "5a9f1e1fc61dc64598a943a8fafc34bb5a2f48d6",
+   "testharness"
+  ],
+  "fetch/api/cors/cors-expose-star.js": [
+   "393131f216961ca07a225d61a5b51726d8b02c51",
+   "support"
+  ],
+  "fetch/api/cors/cors-filtering-worker.html": [
+   "636a08cb1943b3f1cb6a06944bdc7675d18233f0",
+   "testharness"
+  ],
+  "fetch/api/cors/cors-filtering.html": [
+   "758f06e2f78808f3437f62c51b9fc730461c2fc1",
+   "testharness"
+  ],
+  "fetch/api/cors/cors-filtering.js": [
+   "492d0ee8c2520d6f2f8e7a824b77f94481c7d0a6",
+   "support"
+  ],
+  "fetch/api/cors/cors-multiple-origins-expected.txt": [
+   "4d15765e27f421595231e2a34d8f229016f39808",
+   "support"
+  ],
+  "fetch/api/cors/cors-multiple-origins-worker-expected.txt": [
+   "4d15765e27f421595231e2a34d8f229016f39808",
+   "support"
+  ],
+  "fetch/api/cors/cors-multiple-origins-worker.html": [
+   "d05043bda6972c41a28557cbff1294c0ac83bbed",
+   "testharness"
+  ],
+  "fetch/api/cors/cors-multiple-origins.html": [
+   "89bc503dcdc1dc32cfe42c0cf10e050859af0b10",
+   "testharness"
+  ],
+  "fetch/api/cors/cors-multiple-origins.js": [
+   "96b1f59e7c7608af442b561a09cc3f63061388b7",
+   "support"
+  ],
+  "fetch/api/cors/cors-no-preflight.any.js": [
+   "a4952e4133f893bf90ae282c0dc819cdd9099f3a",
+   "testharness"
+  ],
+  "fetch/api/cors/cors-origin.any.js": [
+   "7e1bcbd453f80a91f1d61d9a0330854cb2b8a572",
+   "testharness"
+  ],
+  "fetch/api/cors/cors-preflight-redirect.any.js": [
+   "f4800ef50b830a0dd8b036dcf3e58304c5c7bd8a",
+   "testharness"
+  ],
+  "fetch/api/cors/cors-preflight-referrer.any.js": [
+   "1b578ad1180dd6523aa1f967c59c87738eef802c",
+   "testharness"
+  ],
+  "fetch/api/cors/cors-preflight-star.any.js": [
+   "5516bbb914b5d2a847d800d5c0f49a6da23b88e7",
+   "testharness"
+  ],
+  "fetch/api/cors/cors-preflight-status.any.js": [
+   "1e997f025bea838223e62293dfd4e3799462369b",
+   "testharness"
+  ],
+  "fetch/api/cors/cors-preflight.any.js": [
+   "a805a78bf39a4e44bdd076e18374fdeaf2150545",
+   "testharness"
+  ],
+  "fetch/api/cors/cors-redirect-credentials.any.js": [
+   "274ad27ea113763ca9e94567815b9ac98ba5932f",
+   "testharness"
+  ],
+  "fetch/api/cors/cors-redirect-preflight.any.js": [
+   "12a9b8423aed77419fafeee779f2761e8218890c",
+   "testharness"
+  ],
+  "fetch/api/cors/cors-redirect.any.js": [
+   "390c57c21fccdca4711d1034e0899d079f35ec6e",
+   "testharness"
+  ],
+  "fetch/api/credentials/authentication-basic.any.js": [
+   "5d24fc1719ef796cd93f25a263b16f01121ce2ec",
+   "testharness"
+  ],
+  "fetch/api/credentials/cookies.any.js": [
+   "9c542539ac4bf0654d56bb86770810f2efcce53a",
+   "testharness"
+  ],
+  "fetch/api/headers/header-values-normalize-expected.txt": [
+   "f1013306349ed7ecb4f513e729d1df7e63e01276",
+   "support"
+  ],
+  "fetch/api/headers/header-values-normalize.html": [
+   "889c328c2677763c352ec9aa0264218e01a523d4",
+   "testharness"
+  ],
+  "fetch/api/headers/header-values.html": [
+   "c360fd3d220fc13b35e5858dd9c7ddb49256ae72",
+   "testharness"
+  ],
+  "fetch/api/headers/headers-basic-expected.txt": [
+   "79dbeb75c818cf5a6f4aa83a8770cc0b6894a0d9",
+   "support"
+  ],
+  "fetch/api/headers/headers-basic.html": [
+   "2eadcace244bb97aae5aee14657bf07f19df22aa",
+   "testharness"
+  ],
+  "fetch/api/headers/headers-casing.html": [
+   "c83fdd0119c17b30051ab437e66934dc22c8c420",
+   "testharness"
+  ],
+  "fetch/api/headers/headers-combine-expected.txt": [
+   "2603c1022fbba9b7bddfd7eaa04b3a1f3524c1c1",
+   "support"
+  ],
+  "fetch/api/headers/headers-combine.html": [
+   "0edea47e706ac6fae40ae78665f6a839f04c2b22",
+   "testharness"
+  ],
+  "fetch/api/headers/headers-errors.html": [
+   "71dc2b17b89ab6ec65f775cb6d1cab02808c0bc6",
+   "testharness"
+  ],
+  "fetch/api/headers/headers-idl-expected.txt": [
+   "e6908e18e9b16088954e80a788ef94014bc777af",
+   "support"
+  ],
+  "fetch/api/headers/headers-idl.html": [
+   "13804a9850b05753cf2ad85c926fd071f9fc1888",
+   "testharness"
+  ],
+  "fetch/api/headers/headers-normalize-expected.txt": [
+   "aefd54a621a4f7ef5ed5221d6663909bddb144a0",
+   "support"
+  ],
+  "fetch/api/headers/headers-normalize.html": [
+   "6ccdfba06f9a8692029d72ef81aee16a1996ca01",
+   "testharness"
+  ],
+  "fetch/api/headers/headers-record-expected.txt": [
+   "7dd187ab5cc9c185252088e470d9a4784fec14d0",
+   "support"
+  ],
+  "fetch/api/headers/headers-record.html": [
+   "26b2eb6cb1836f6431f16b1e60256919d9427f2b",
+   "testharness"
+  ],
+  "fetch/api/headers/headers-structure.html": [
+   "226fd13f37c7c45b7ab6d64eb12f0b7e049f3032",
+   "testharness"
+  ],
+  "fetch/api/headers/historical.any.js": [
+   "d4c5932358e07e927c5931c304ea37faa7d528ea",
+   "testharness"
+  ],
+  "fetch/api/policies/csp-blocked-worker-expected.txt": [
+   "1e850647152e8e6dcd2c14852ee0ea0ee572768d",
+   "support"
+  ],
+  "fetch/api/policies/csp-blocked-worker.html": [
+   "f4f80fee9df57af84ec792bbfcd6da0d497a25e0",
+   "testharness"
+  ],
+  "fetch/api/policies/csp-blocked.html": [
+   "ee419fc211772c43d02bd50eeeddac7137e33c52",
+   "testharness"
+  ],
+  "fetch/api/policies/csp-blocked.html.headers": [
+   "94dc6f63015b0835eb2a8c1892636bafeb1dfee7",
+   "support"
+  ],
+  "fetch/api/policies/csp-blocked.js": [
+   "b4f3a386ae796c6e494d1728c0887fdf5c96ea88",
+   "support"
+  ],
+  "fetch/api/policies/csp-blocked.js.headers": [
+   "94dc6f63015b0835eb2a8c1892636bafeb1dfee7",
+   "support"
+  ],
+  "fetch/api/policies/nested-policy.js": [
+   "57cfc2060102695b601209e4927861aaee377c4e",
+   "support"
+  ],
+  "fetch/api/policies/nested-policy.js.headers": [
+   "fab90d344cbb78bad6445288c418b87736a830ae",
+   "support"
+  ],
+  "fetch/api/policies/referrer-no-referrer-service-worker.https.html": [
+   "274797274e05e467499b98179dd23a19a960a014",
+   "testharness"
+  ],
+  "fetch/api/policies/referrer-no-referrer-worker.html": [
+   "cc9274c1b182a487dbe945e6d8754a671d78e3c4",
+   "testharness"
+  ],
+  "fetch/api/policies/referrer-no-referrer.html": [
+   "e1ecb25e8294ad2a50cf079d0b164a6d3fa6d40f",
+   "testharness"
+  ],
+  "fetch/api/policies/referrer-no-referrer.html.headers": [
+   "fab90d344cbb78bad6445288c418b87736a830ae",
+   "support"
+  ],
+  "fetch/api/policies/referrer-no-referrer.js": [
+   "13e511999d7bee96aa568479fe608434f588cd8c",
+   "support"
+  ],
+  "fetch/api/policies/referrer-no-referrer.js.headers": [
+   "fab90d344cbb78bad6445288c418b87736a830ae",
+   "support"
+  ],
+  "fetch/api/policies/referrer-origin-expected.txt": [
+   "96b4805afcb947306ce31395e61aa71faba4a3a3",
+   "support"
+  ],
+  "fetch/api/policies/referrer-origin-service-worker.https-expected.txt": [
+   "0ecc172b2019052456a7abca169538ce24e9cc0b",
+   "support"
+  ],
+  "fetch/api/policies/referrer-origin-service-worker.https.html": [
+   "cf400b001e381251b0eaca8290e975dc27f6ff0f",
+   "testharness"
+  ],
+  "fetch/api/policies/referrer-origin-when-cross-origin-service-worker.https.html": [
+   "c2d6e3abb2b4ec0342ac9c16c468adb8b03e0426",
+   "testharness"
+  ],
+  "fetch/api/policies/referrer-origin-when-cross-origin-worker.html": [
+   "3242db3a9319923287f36987f6f14581c239ced2",
+   "testharness"
+  ],
+  "fetch/api/policies/referrer-origin-when-cross-origin.html": [
+   "eb46215635a3d26d20595533c24abdc79192264f",
+   "testharness"
+  ],
+  "fetch/api/policies/referrer-origin-when-cross-origin.html.headers": [
+   "ad4eae9b2a1368f4b251579b9a246177f1c5ebbc",
+   "support"
+  ],
+  "fetch/api/policies/referrer-origin-when-cross-origin.js": [
+   "802ebd6d423099439a790c3db9b7ae37cbe5d9a0",
+   "support"
+  ],
+  "fetch/api/policies/referrer-origin-when-cross-origin.js.headers": [
+   "ad4eae9b2a1368f4b251579b9a246177f1c5ebbc",
+   "support"
+  ],
+  "fetch/api/policies/referrer-origin-worker-expected.txt": [
+   "40a033b3713cd0113a30c4071f1088534867a135",
+   "support"
+  ],
+  "fetch/api/policies/referrer-origin-worker.html": [
+   "66feccfd0f0f2e5f0a82d6e591e03621c593acc8",
+   "testharness"
+  ],
+  "fetch/api/policies/referrer-origin.html": [
+   "ae8bfdfb5b9ae86522378ec798908b7db442797d",
+   "testharness"
+  ],
+  "fetch/api/policies/referrer-origin.html.headers": [
+   "56b5f91097bb278ebc69345c0b56c65eb16cc3db",
+   "support"
+  ],
+  "fetch/api/policies/referrer-origin.js": [
+   "8ed1e2f442abec54ae856d5a40aef07ccc7e61bf",
+   "support"
+  ],
+  "fetch/api/policies/referrer-origin.js.headers": [
+   "56b5f91097bb278ebc69345c0b56c65eb16cc3db",
+   "support"
+  ],
+  "fetch/api/policies/referrer-unsafe-url-service-worker.https.html": [
+   "d2fa5c7813f57909228b51417df0267cd7ec0c20",
+   "testharness"
+  ],
+  "fetch/api/policies/referrer-unsafe-url-worker.html": [
+   "70e7ec27a61ee68fb419213be149816ed618ce24",
+   "testharness"
+  ],
+  "fetch/api/policies/referrer-unsafe-url.html": [
+   "906c41a44364be3e1bff38982ab920d85a3a3fbd",
+   "testharness"
+  ],
+  "fetch/api/policies/referrer-unsafe-url.html.headers": [
+   "9aefc6a6198eaec591e432bb5454e1ebb22e58a1",
+   "support"
+  ],
+  "fetch/api/policies/referrer-unsafe-url.js": [
+   "e1881c5f3f0a7d1705a5d2eb5d3381d8788374d8",
+   "support"
+  ],
+  "fetch/api/policies/referrer-unsafe-url.js.headers": [
+   "9aefc6a6198eaec591e432bb5454e1ebb22e58a1",
+   "support"
+  ],
+  "fetch/api/redirect/redirect-count-worker.html": [
+   "61f80dc021081bea6fee7ef6dda10498515308ad",
+   "testharness"
+  ],
+  "fetch/api/redirect/redirect-count.html": [
+   "0ef8800e90abbcccdeace87d483e9efae3444242",
+   "testharness"
+  ],
+  "fetch/api/redirect/redirect-count.js": [
+   "2c01e28adc2334a1405fc2f53481584be89dd5d5",
+   "support"
+  ],
+  "fetch/api/redirect/redirect-location-worker.html": [
+   "f3c0991345e839954459801454d22fe81df8d72d",
+   "testharness"
+  ],
+  "fetch/api/redirect/redirect-location.html": [
+   "1c50b134b8f6041c3bae1ef320d2a86570c9c7f3",
+   "testharness"
+  ],
+  "fetch/api/redirect/redirect-location.js": [
+   "793e947c027bbf8b2f11b7f2fe482f0480739220",
+   "support"
+  ],
+  "fetch/api/redirect/redirect-method-worker.html": [
+   "06954c75c2b6b64b56d674cf626e3c6220833821",
+   "testharness"
+  ],
+  "fetch/api/redirect/redirect-method.html": [
+   "4e5404d271dcd4fb59b2f80bee32e56e666f428a",
+   "testharness"
+  ],
+  "fetch/api/redirect/redirect-method.js": [
+   "d663a3e4f32d0b48cf33d31a83c841ef55b52032",
+   "support"
+  ],
+  "fetch/api/redirect/redirect-mode-worker.html": [
+   "bccd984f902bcfde3882c6202995b5efba82b792",
+   "testharness"
+  ],
+  "fetch/api/redirect/redirect-mode.html": [
+   "60ef7b28da442f7b7f008368606f7d6ef4560adc",
+   "testharness"
+  ],
+  "fetch/api/redirect/redirect-mode.js": [
+   "d5aa056ebb91e7d57ffc3cf801c9e70f0b58d3ab",
+   "support"
+  ],
+  "fetch/api/redirect/redirect-origin-worker.html": [
+   "b3bc9e04ce8a6a5383b4a93dbe092b84af0f6b7d",
+   "testharness"
+  ],
+  "fetch/api/redirect/redirect-origin.html": [
+   "7a56a9a4ebdf1d6cec0a5dfcfee9b8d53434c7aa",
+   "testharness"
+  ],
+  "fetch/api/redirect/redirect-origin.js": [
+   "ecab66c33873c5023a204616299f0d64799a72a9",
+   "support"
+  ],
+  "fetch/api/redirect/redirect-referrer-expected.txt": [
+   "98ccd74aff041d55f3998383dddaf7d53701ddac",
+   "support"
+  ],
+  "fetch/api/redirect/redirect-referrer-worker-expected.txt": [
+   "cede95a1aed3c9d2b65765a428aea0502808f189",
+   "support"
+  ],
+  "fetch/api/redirect/redirect-referrer-worker.html": [
+   "0f0e258553e0579b71e88dea5ecebbddebd1243c",
+   "testharness"
+  ],
+  "fetch/api/redirect/redirect-referrer.html": [
+   "982e3bc3c7d3c8e713d1183762b95d12b0d8c967",
+   "testharness"
+  ],
+  "fetch/api/redirect/redirect-referrer.js": [
+   "a7dfef66fc61f8340f794aac5de75aaf6c848a08",
+   "support"
+  ],
+  "fetch/api/redirect/redirect-schemes.html": [
+   "d190e3d919ec5339ab811237cb62a8e0cb0b0526",
+   "testharness"
+  ],
+  "fetch/api/redirect/redirect-to-dataurl-worker.html": [
+   "91f828ebee88acd3b37aea45666230d39ad8e1a2",
+   "testharness"
+  ],
+  "fetch/api/redirect/redirect-to-dataurl.html": [
+   "b019b8217832c5b7df482a0941e3217b3ef1a0e4",
+   "testharness"
+  ],
+  "fetch/api/redirect/redirect-to-dataurl.js": [
+   "3099fb27913f11a983f955cb2a883a882911bfe4",
+   "support"
+  ],
+  "fetch/api/request/multi-globals/current/current.html": [
+   "2d9ab238e07a88d19365f78bfd5db84d32854de1",
+   "support"
+  ],
+  "fetch/api/request/multi-globals/incumbent/incumbent.html": [
+   "c46e769bea667920346b0c6f9cd6b047ace0cf20",
+   "support"
+  ],
+  "fetch/api/request/multi-globals/url-parsing.html": [
+   "6767e1cda17192ce38b6786a214d0631f4021a18",
+   "testharness"
+  ],
+  "fetch/api/request/request-bad-port.html": [
+   "1e4fbcdad22c78c6774c2496b70f6a3ede4a7c34",
+   "testharness"
+  ],
+  "fetch/api/request/request-cache-default-conditional.html": [
+   "1248501140945b8ace6997b856b584fdac4a1d04",
+   "testharness"
+  ],
+  "fetch/api/request/request-cache-default.html": [
+   "8fb557ed59f9d2fc7b169333ea5a2af7f4d52051",
+   "testharness"
+  ],
+  "fetch/api/request/request-cache-force-cache-expected.txt": [
+   "ab45335e6a2e61c95a45186f09721e27aee3418e",
+   "support"
+  ],
+  "fetch/api/request/request-cache-force-cache.html": [
+   "290ddf79c62c0a753bc6d22e136f815662c00cc8",
+   "testharness"
+  ],
+  "fetch/api/request/request-cache-no-cache-expected.txt": [
+   "b3b2908bd15b0ad78cbe75888d963af277928ed6",
+   "support"
+  ],
+  "fetch/api/request/request-cache-no-cache.html": [
+   "457b8c8f6347f32eedf1bb7af881259a8a08e068",
+   "testharness"
+  ],
+  "fetch/api/request/request-cache-no-store-expected.txt": [
+   "289d23c919ae3c8b2775dba5ad821ece7b0b4668",
+   "support"
+  ],
+  "fetch/api/request/request-cache-no-store.html": [
+   "245129d1d5239af70fc48e0da664bba5c004ded8",
+   "testharness"
+  ],
+  "fetch/api/request/request-cache-only-if-cached-expected.txt": [
+   "5f53e1c3d64840a0b7bae6796968d7c9521d7150",
+   "support"
+  ],
+  "fetch/api/request/request-cache-only-if-cached.html": [
+   "25b18acb3552b1a431532c2b8e57b872aa511e7c",
+   "testharness"
+  ],
+  "fetch/api/request/request-cache-reload-expected.txt": [
+   "f6bce2a6f7a13fd50d4e433f5cf5bc614508bb1f",
+   "support"
+  ],
+  "fetch/api/request/request-cache-reload.html": [
+   "4abcb6f520b832b3ecb1166e5dfc2e8b6937ac34",
+   "testharness"
+  ],
+  "fetch/api/request/request-cache.js": [
+   "97463bf3078c8579b074ab2a178710daf8502a41",
+   "support"
+  ],
+  "fetch/api/request/request-clone.sub-expected.txt": [
+   "5e2fdb76977f772932671bb4a2329671d5fc2522",
+   "support"
+  ],
+  "fetch/api/request/request-clone.sub.html": [
+   "64903370f5ae73c38dbab16b07b502a3f84367cb",
+   "testharness"
+  ],
+  "fetch/api/request/request-consume-empty-expected.txt": [
+   "ffc764d46e0f708c97fc047e5fda1dd1af288da0",
+   "support"
+  ],
+  "fetch/api/request/request-consume-empty.html": [
+   "04b50f51753109fbb6ea6290f927c3905527703c",
+   "testharness"
+  ],
+  "fetch/api/request/request-consume-expected.txt": [
+   "dc394a6b0ac7905b794df8a167dbcd6199dc1fcf",
+   "support"
+  ],
+  "fetch/api/request/request-consume.html": [
+   "9525e1c130e6660020c5fedb434fa0efdf62db81",
+   "testharness"
+  ],
+  "fetch/api/request/request-disturbed-expected.txt": [
+   "91e1c23b4bed8cdc58b9cb177bdd2d34bb3fa29c",
+   "support"
+  ],
+  "fetch/api/request/request-disturbed.html": [
+   "47a1771e5ce32b63cf4b378a87c5d53ee486c246",
+   "testharness"
+  ],
+  "fetch/api/request/request-error-expected.txt": [
+   "2fcead7b3ede1c8c024dbd4b6d67dbfd7cbe6a3b",
+   "support"
+  ],
+  "fetch/api/request/request-error.html": [
+   "bfd03777a43be514a0839ab14f5206f486332fdb",
+   "testharness"
+  ],
+  "fetch/api/request/request-headers.html": [
+   "0a645876664c428f6ac8d170e991ccf257bb307e",
+   "testharness"
+  ],
+  "fetch/api/request/request-idl-expected.txt": [
+   "aff1a5ed7bfc7e8667d29cfb0ed6b490aff3d247",
+   "support"
+  ],
+  "fetch/api/request/request-idl.html": [
+   "56e19a129457bc9dcecf28fd472fd7ae608337ef",
+   "testharness"
+  ],
+  "fetch/api/request/request-init-001.sub-expected.txt": [
+   "6147709d02397edcf916a33c79345d377824a464",
+   "support"
+  ],
+  "fetch/api/request/request-init-001.sub.html": [
+   "096424b40f6a21e989a6a5d8684b29ee8cbb963e",
+   "testharness"
+  ],
+  "fetch/api/request/request-init-002.html": [
+   "e6647394acca551e354b27c16013ef713c8ba64e",
+   "testharness"
+  ],
+  "fetch/api/request/request-init-003.sub-expected.txt": [
+   "b9ea710f4199ef92c90089b194dd4182662aa5e9",
+   "support"
+  ],
+  "fetch/api/request/request-init-003.sub.html": [
+   "059edc7e857af7231abc1434f3dcebb35229f459",
+   "testharness"
+  ],
+  "fetch/api/request/request-keepalive-quota-expected.txt": [
+   "62a8f017a6b379c16c6c8ce83f5ccf965c5f2748",
+   "support"
+  ],
+  "fetch/api/request/request-keepalive-quota.html": [
+   "d839fec1d761688db807be2dfddf6b8b6932c46b",
+   "testharness"
+  ],
+  "fetch/api/request/request-structure-expected.txt": [
+   "a072b597a08f53cc4de78bd00e8645fb83b693c0",
+   "support"
+  ],
+  "fetch/api/request/request-structure.html": [
+   "f1e332f5d3a7ee414fa01411b2534884d10462e9",
+   "testharness"
+  ],
+  "fetch/api/request/resources/cache.py": [
+   "3cd7d5191fe33b2f2dab571a4b006d8332fdf42e",
+   "support"
+  ],
+  "fetch/api/resources/authentication.py": [
+   "b915aef6ecaacf3484e7a1144ed4769c4ff36539",
+   "support"
+  ],
+  "fetch/api/resources/bad-chunk-encoding.py": [
+   "a916571cccadbe7dcc59ae1fa60f968b28d1ef47",
+   "support"
+  ],
+  "fetch/api/resources/cache.py": [
+   "fe01c89d7bef1b6385f29250a0b458024b3e28ca",
+   "support"
+  ],
+  "fetch/api/resources/clean-stash.py": [
+   "beeda08c43c04dcef5c8d0f4f5d4f2c661bbee57",
+   "support"
+  ],
+  "fetch/api/resources/data.json": [
+   "6418064de426ecf8f0e508c751e60a0079ba044d",
+   "support"
+  ],
+  "fetch/api/resources/echo-content.py": [
+   "edc7a1d75d7c438ca3cca59f81d03058b3c2758f",
+   "support"
+  ],
+  "fetch/api/resources/inspect-headers.py": [
+   "c9ac2870a45253664da7de1aaf82626fdd1482bb",
+   "support"
+  ],
+  "fetch/api/resources/method.py": [
+   "9ad4c5907e6fa4d8c4bca085f637af92db0f38f3",
+   "support"
+  ],
+  "fetch/api/resources/preflight.py": [
+   "80ac2baa426c8760e4f6eb3cda3121e044988113",
+   "support"
+  ],
+  "fetch/api/resources/redirect.py": [
+   "387c35bf1e576f00a10ce5abb4cc92e78da56845",
+   "support"
+  ],
+  "fetch/api/resources/status.py": [
+   "d521bae08fa1ee19e7bbf4301157703e567ad5c6",
+   "support"
+  ],
+  "fetch/api/resources/top.txt": [
+   "af2c7b4ca07ae6c74d261bc745e174df8ab3ffef",
+   "support"
+  ],
+  "fetch/api/resources/trickle.py": [
+   "adb1bc80366cf924cfe13f6c73555d999d1d8e4f",
+   "support"
+  ],
+  "fetch/api/resources/utils.js": [
+   "1027bd5e728ae008520ce151722760dbb53a2368",
+   "support"
+  ],
+  "fetch/api/response/multi-globals/current/current.html": [
+   "2d9ab238e07a88d19365f78bfd5db84d32854de1",
+   "support"
+  ],
+  "fetch/api/response/multi-globals/incumbent/incumbent.html": [
+   "64b0018883b2ff64e0ea9183b7d513834c4174a4",
+   "support"
+  ],
+  "fetch/api/response/multi-globals/relevant/relevant.html": [
+   "38946a76b98b46be5edf2031a16c3c4cfb4caab1",
+   "support"
+  ],
+  "fetch/api/response/multi-globals/url-parsing.html": [
+   "14ab44d0a8627682afc024856c08a931c58db3d6",
+   "testharness"
+  ],
+  "fetch/api/response/response-cancel-stream.html": [
+   "3269c6c337a392f95e852d4f6904c51a90e7f652",
+   "testharness"
+  ],
+  "fetch/api/response/response-clone-expected.txt": [
+   "fcde0384d772850a5931b5a19fd34662f1ba70b0",
+   "support"
+  ],
+  "fetch/api/response/response-clone.html": [
+   "4fde2d5591959ef413f5f5695a8eebd6cb193fff",
+   "testharness"
+  ],
+  "fetch/api/response/response-consume-empty-expected.txt": [
+   "2db4eb98ff6726c6815c562a78c612176e21f8a2",
+   "support"
+  ],
+  "fetch/api/response/response-consume-empty.html": [
+   "28a00b4256364d785f491bcde677e18424b1e423",
+   "testharness"
+  ],
+  "fetch/api/response/response-consume-expected.txt": [
+   "bfae1c18842ca0c309223be8a49d770c093bc970",
+   "support"
+  ],
+  "fetch/api/response/response-consume-stream-expected.txt": [
+   "b4dedb930d46db8e590b9b7421770e4cd388417b",
+   "support"
+  ],
+  "fetch/api/response/response-consume-stream.html": [
+   "7dd429b389a997a879362629985089bad495a227",
+   "testharness"
+  ],
+  "fetch/api/response/response-consume.html": [
+   "936272bddf1a090267343fc7f8ab3669da98d27d",
+   "testharness"
+  ],
+  "fetch/api/response/response-error.html": [
+   "06489e75d56cbbdbfee903bea7e39c549310ba3e",
+   "testharness"
+  ],
+  "fetch/api/response/response-idl-expected.txt": [
+   "3418cf393722f28985e4ebc8d74f072628c87215",
+   "support"
+  ],
+  "fetch/api/response/response-idl.html": [
+   "e0e32634b7e0271ff3566cb66b358e46c9fb8d21",
+   "testharness"
+  ],
+  "fetch/api/response/response-init-001.html": [
+   "e1d9ffd41e8ff0871b27ca7d33f088a124c09f4b",
+   "testharness"
+  ],
+  "fetch/api/response/response-init-002.html": [
+   "9806050696657f48e609bbc943ba15a78d6464d1",
+   "testharness"
+  ],
+  "fetch/api/response/response-static-error.html": [
+   "96b1d4f58925cb9ba5a07aef28aa4b869c67f93b",
+   "testharness"
+  ],
+  "fetch/api/response/response-static-redirect.html": [
+   "e497388ce041fd300200d23c63caadb1fe53d1c1",
+   "testharness"
+  ],
+  "fetch/api/response/response-stream-disturbed-1.html": [
+   "366ba245dde5eb22e15b30bdf306cfe33ef392de",
+   "testharness"
+  ],
+  "fetch/api/response/response-stream-disturbed-2.html": [
+   "3523df1bc73b2eb101c6308544b831affdd0e8c4",
+   "testharness"
+  ],
+  "fetch/api/response/response-stream-disturbed-3.html": [
+   "8986c94b11ed6f9f8c5ff2b1a15826dd20e877f0",
+   "testharness"
+  ],
+  "fetch/api/response/response-stream-disturbed-4.html": [
+   "77b04e31fac6562f0daf68cf65728480bda155d8",
+   "testharness"
+  ],
+  "fetch/api/response/response-stream-disturbed-5.html": [
+   "8177830f646faeb4678a7c5706e2e9c60e1f1078",
+   "testharness"
+  ],
+  "fetch/api/response/response-trailer-expected.txt": [
+   "5642e1d2ad3dd4e1c336d8ccadef2db3a139dbaf",
+   "support"
+  ],
+  "fetch/api/response/response-trailer.html": [
+   "9597194813fc6ce3e63a7622eb61f791b8746ec7",
+   "testharness"
+  ],
+  "fetch/http-cache/304-update.html": [
+   "2571df43eb57ecbd29f55c2fc57b16f227001787",
+   "testharness"
+  ],
+  "fetch/http-cache/README.md": [
+   "b9ccc7958ae3b00cd1b9c08b1e673b49ace0ca1c",
+   "support"
+  ],
+  "fetch/http-cache/cc-request-expected.txt": [
+   "ec847d02745076024fea2ba2f06355963ca4c4b3",
+   "support"
+  ],
+  "fetch/http-cache/cc-request.html": [
+   "d4417b8fd444362a3f217d1c95d37811a608e1a7",
+   "testharness"
+  ],
+  "fetch/http-cache/freshness.html": [
+   "84016c3d56e01f8f6be52cf4d26a0e4e860b9147",
+   "testharness"
+  ],
+  "fetch/http-cache/heuristic-expected.txt": [
+   "9fb559e2568127cb99509bf702afa0a0dc6e82c5",
+   "support"
+  ],
+  "fetch/http-cache/heuristic.html": [
+   "5b0d55f891cb2e235456cd65f4e9f63e07999410",
+   "testharness"
+  ],
+  "fetch/http-cache/http-cache.js": [
+   "a61ea6705ce517f1e8e0e522026a75f1dbbe5a0e",
+   "support"
+  ],
+  "fetch/http-cache/invalidate-expected.txt": [
+   "c238df8a06f8855b9c88a2303d058bbcca47aa11",
+   "support"
+  ],
+  "fetch/http-cache/invalidate.html": [
+   "848a26000ed9bf4c61516201e4006b97839bee11",
+   "testharness"
+  ],
+  "fetch/http-cache/partial-expected.txt": [
+   "67533e199d09d884aba57040b5f43cecf4329ec6",
+   "support"
+  ],
+  "fetch/http-cache/partial.html": [
+   "243e57c39f9e45e3e2acf845b36f3a140e3763bc",
+   "testharness"
+  ],
+  "fetch/http-cache/resources/http-cache.py": [
+   "f2e102b289c8ef55628800ae07b3737367ecbf65",
+   "support"
+  ],
+  "fetch/http-cache/status.html": [
+   "dac72c83edb75519e8ef5c3324442def4f380349",
+   "testharness"
+  ],
+  "fetch/http-cache/vary-expected.txt": [
+   "0a1cf4fd674f196fd3ac8b5df49f03e33575ecb2",
+   "support"
+  ],
+  "fetch/http-cache/vary.html": [
+   "fa9a2e0554671bf2de5826e66ac0ea73de28d530",
+   "testharness"
+  ],
+  "fetch/nosniff/image.html": [
+   "da847d5aa65fc5f52313b4434a84f1938061c7f6",
+   "testharness"
+  ],
+  "fetch/nosniff/importscripts.html": [
+   "f48eb6fc81ba4d38a85f7908358fa62e29205b78",
+   "testharness"
+  ],
+  "fetch/nosniff/importscripts.js": [
+   "90f5f826fcac39388c603e10b6b76d01a9238427",
+   "support"
+  ],
+  "fetch/nosniff/parsing-nosniff-expected.txt": [
+   "cfb0f78591b3854559f6a0f53d3933f06400eb1a",
+   "support"
+  ],
+  "fetch/nosniff/parsing-nosniff.html": [
+   "fd2e9c181ca043cfe6c99650232d76cf27229ee4",
+   "testharness"
+  ],
+  "fetch/nosniff/resources/css.py": [
+   "0c3da6d761e72fe49ed883935d84cd4bc4db86bc",
+   "support"
+  ],
+  "fetch/nosniff/resources/image.py": [
+   "015a20158bb41f02a1fa30214060f522f32f6249",
+   "support"
+  ],
+  "fetch/nosniff/resources/js.py": [
+   "82dfe26fa136b2158040554a752e06bdeb503909",
+   "support"
+  ],
+  "fetch/nosniff/resources/nosniff-first.asis": [
+   "e3c535667ddc841f828d0237bd7be6723b1281d6",
+   "support"
+  ],
+  "fetch/nosniff/resources/nosniff-last.asis": [
+   "155d7b63e3242824ddf6ed99fb6a7ae460b2f67f",
+   "support"
+  ],
+  "fetch/nosniff/resources/nosniff-no-x.asis": [
+   "c88b990ce2702668091360bf65cd2dba14890e7d",
+   "support"
+  ],
+  "fetch/nosniff/resources/nosniff-quoted-single.asis": [
+   "2b5cdf98f95d045857d3930021e092a4cb08b4c3",
+   "support"
+  ],
+  "fetch/nosniff/resources/nosniff-quoted.asis": [
+   "a7619448c9035ddaaba3b766b07627d383ade078",
+   "support"
+  ],
+  "fetch/nosniff/resources/nosniff-uppercase.asis": [
+   "7592cc8f686efff71900db77f1cc5033eeeaf11d",
+   "support"
+  ],
+  "fetch/nosniff/resources/worker.py": [
+   "e6b1f991560ed3b7f09b0e78722674e83a2de870",
+   "support"
+  ],
+  "fetch/nosniff/script.html": [
+   "7701124283e0714ef4229fbc6d63a26f8e5e86b1",
+   "testharness"
+  ],
+  "fetch/nosniff/stylesheet-expected.txt": [
+   "b2646db0d28b41c428e0d143092479b9d60781e1",
+   "support"
+  ],
+  "fetch/nosniff/stylesheet.html": [
+   "e2dda6ec5981c40dcad68c933336a0358639eec3",
+   "testharness"
+  ],
+  "fetch/nosniff/worker.html": [
+   "94af02c5ca5146386acd4fae5856f89cd244bed1",
+   "testharness"
   ],
   "fullscreen/api/document-exit-fullscreen-active-document-expected.txt": [
    "0fe00e0f1b873cef51a3c142190ce821a76549ed",
@@ -67851,8 +70543,20 @@
    "381a1a09c09e8c43849a7b8f4d120507b2196aeb",
    "testharness"
   ],
-  "html/browsers/windows/browsing-context-names/browsing-context-choose-parent.html": [
-   "724ea5b3aebad434eca41f1c0893d914fdcc26f5",
+  "html/browsers/windows/browsing-context-names/browsing-context-choose-parent-001.html": [
+   "4767179a7c78a8e0798997dace46b47ec5d902ad",
+   "testharness"
+  ],
+  "html/browsers/windows/browsing-context-names/browsing-context-choose-parent-002.html": [
+   "7d1692f649951585d8ce60bd7cc9c4470f255b95",
+   "testharness"
+  ],
+  "html/browsers/windows/browsing-context-names/browsing-context-choose-parent-003.html": [
+   "61ebac870a8c1e030468f5cfd4f6e22171c015e7",
+   "testharness"
+  ],
+  "html/browsers/windows/browsing-context-names/browsing-context-choose-parent-004.html": [
+   "6341211c1c38b6b3e3b09329c71bd0b8e79e2f2f",
    "testharness"
   ],
   "html/browsers/windows/browsing-context-names/browsing-context-choose-self-1.html": [
@@ -67864,27 +70568,59 @@
    "testharness"
   ],
   "html/browsers/windows/browsing-context-names/existing.html": [
-   "8a33b052110f5ed365270f8b4c00262edda0c312",
+   "eb695cb2f8a126f0c32347d8716936fc288d0858",
    "support"
   ],
-  "html/browsers/windows/browsing-context-names/message.html": [
-   "030259f68cdb90e8e40e38d57f520bcbc451c4c8",
+  "html/browsers/windows/browsing-context-names/resources/parent-iframe-1.html": [
+   "6b1687e52c5b53e6d7a0bb4fed5bed7291154ff2",
    "support"
   ],
-  "html/browsers/windows/browsing-context-names/parent1.html": [
-   "48df85e00edb8ceef542267352a9c9795c11bcd1",
+  "html/browsers/windows/browsing-context-names/resources/parent-iframe-2.html": [
+   "95f916c7b914088b59ce6addb5c639f4dc158de1",
    "support"
   ],
-  "html/browsers/windows/browsing-context-names/parent2.html": [
-   "5cbb1add47a99c86f9190ec13a67355b2e6888d4",
+  "html/browsers/windows/browsing-context-names/resources/parent-iframe-3.html": [
+   "169dc483de493c5c4f0383063dc1d9aad2b41073",
+   "support"
+  ],
+  "html/browsers/windows/browsing-context-names/resources/parent-iframe-insensitive-1.html": [
+   "638ed0ec62a27b3acc1d0acb60bd5113a1c2988c",
+   "support"
+  ],
+  "html/browsers/windows/browsing-context-names/resources/parent-iframe-insensitive-2.html": [
+   "e6ab1f0e5aa36e69467ae1f69e4682d40ae692a7",
+   "support"
+  ],
+  "html/browsers/windows/browsing-context-names/resources/parent-top-nested.html": [
+   "03b7ece0831f8059f687135be899f4de2831568d",
+   "support"
+  ],
+  "html/browsers/windows/browsing-context-names/resources/parent-top-replace.html": [
+   "1f3d056bbb472a730ee2f40085c51fbb279ad52f",
+   "support"
+  ],
+  "html/browsers/windows/browsing-context-names/resources/parent-top.html": [
+   "e2247fbb30c24e014d1743cd9df91bf0195fbfe0",
+   "support"
+  ],
+  "html/browsers/windows/browsing-context-names/resources/post-to-opener.html": [
+   "a724ee03afea915ba9a3636e6915db8bda801212",
+   "support"
+  ],
+  "html/browsers/windows/browsing-context-names/resources/post-to-top-or-close.html": [
+   "83eae63250fb3ad9f146283e9387b0e18284d4f7",
+   "support"
+  ],
+  "html/browsers/windows/browsing-context-names/resources/post-to-top.html": [
+   "c2b557ab78403aa520346da294e1c406dd37ebda",
    "support"
   ],
   "html/browsers/windows/browsing-context-names/self1.html": [
-   "b00755b1119afe91ca94118bdb5e0f539a2c1393",
+   "7c86c871972f456c6b97be7b46fa7d6ce87a3a80",
    "support"
   ],
   "html/browsers/windows/browsing-context-names/self2.html": [
-   "174e949fcfb26b9c93463a4eeecb338115ed56b2",
+   "fd91e9250c182da49ab39220a656348c29c84048",
    "support"
   ],
   "html/browsers/windows/browsing-context-window.html": [
@@ -70010,6 +72746,10 @@
   "html/editing/dnd/datastore/058.html": [
    "3b920bebf4ac1d4f70df4f2fc7189e5d0c697e4d",
    "support"
+  ],
+  "html/editing/dnd/datastore/datatransfer-constructor-001.html": [
+   "36fcac7d7116a68f31f183def92e16b11ba8392f",
+   "testharness"
   ],
   "html/editing/dnd/datastore/helper-drop-box-here.xhtml": [
    "1e499a114f3c920085a511689b4e39cc37969957",
@@ -73215,6 +75955,10 @@
    "f4ec57281d8f32a4931599edc65941ea0db78d5f",
    "support"
   ],
+  "html/rendering/non-replaced-elements/flow-content-0/dialog-display-expected.txt": [
+   "ce7a26e4db8b397bdcfccbb161d19ec3b3711921",
+   "support"
+  ],
   "html/rendering/non-replaced-elements/flow-content-0/dialog-display.html": [
    "3adb7bbb575c26d03909a6fa105a9c035fcac801",
    "testharness"
@@ -74174,6 +76918,10 @@
   "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-set-src-in-namespace.html": [
    "db82f82f73fe633307e94df5582ef83448698c83",
    "testharness"
+  ],
+  "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-set-src-networkState-expected.txt": [
+   "e23514f33547003a351868b44af2a8f99feb1b9e",
+   "support"
   ],
   "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-set-src-networkState.html": [
    "f45e4ebd634489d9187259ae64bad04d33d5e6a2",
@@ -78656,7 +81404,7 @@
    "testharness"
   ],
   "mediacapture-streams/MediaStreamTrack-init.https-expected.txt": [
-   "455efb59deadb14445173e666a8b941c6869bef2",
+   "72eff44313d8fb45278de4da064eaa322ff63074",
    "support"
   ],
   "mediacapture-streams/MediaStreamTrack-init.https.html": [
@@ -88960,11 +91708,15 @@
    "testharness"
   ],
   "service-workers/service-worker/claim-not-using-registration.https.html": [
-   "72da19e038b6ab32ea04a0e91d117bc67d25a301",
+   "0a87c373f6ad15e8901487e71414662af5b2cee3",
    "testharness"
   ],
   "service-workers/service-worker/claim-using-registration.https.html": [
-   "fb56cc3ae802669bb7898e76ac55e75ba6ac1441",
+   "5ddaf9e70e6873bfe5029f7d5ee12c1a93356ab6",
+   "testharness"
+  ],
+  "service-workers/service-worker/claim-with-redirect.https.html": [
+   "dac61fcadc94d01fa1f46ac65d81c0405d90ecd3",
    "testharness"
   ],
   "service-workers/service-worker/client-navigate.https.html": [
@@ -89063,6 +91815,10 @@
    "ee1cd2ed2c3204af53422116289c558f5eff68d9",
    "testharness"
   ],
+  "service-workers/service-worker/fetch-event-redirect.https-expected.txt": [
+   "ddce0493064736ce95c0d901e7b79894bc527852",
+   "support"
+  ],
   "service-workers/service-worker/fetch-event-redirect.https.html": [
    "2a6f2d4f818ac325edd9c69c1b08801961728b20",
    "testharness"
@@ -89084,7 +91840,7 @@
    "testharness"
   ],
   "service-workers/service-worker/fetch-event.https-expected.txt": [
-   "c365630410e75df3d804e25764b0b1f7d1ebed73",
+   "e6f29543fe0218a5ae14607aa24169ce9d5aa30f",
    "support"
   ],
   "service-workers/service-worker/fetch-event.https.html": [
@@ -89433,6 +92189,10 @@
   ],
   "service-workers/service-worker/resources/blank.html": [
    "0ddb4f1cf84729ed673295719ec58a3e5d600a12",
+   "support"
+  ],
+  "service-workers/service-worker/resources/claim-with-redirect-iframe.html": [
+   "fdc472f4e9a591f0b471174b2aa1783107731f49",
    "support"
   ],
   "service-workers/service-worker/resources/claim-worker.js": [
@@ -89967,6 +92727,10 @@
    "feae7f538da58d45e38f6f26da5ce6af0c91857f",
    "support"
   ],
+  "service-workers/service-worker/resources/update-claim-worker.py": [
+   "cc8130f60240234fa216778dac70dd34fe4b2374",
+   "support"
+  ],
   "service-workers/service-worker/resources/update-max-aged-worker-imported-script.py": [
    "23fa131d0d35e0e5394100b4bfaa5ebf1a349b4b",
    "support"
@@ -90342,6 +93106,10 @@
   "shadow-dom/Document-prototype-adoptNode.html": [
    "073a718d72ebc7cc4c0564a4526e4ef9c3f604d7",
    "testharness"
+  ],
+  "shadow-dom/Document-prototype-currentScript-expected.txt": [
+   "5927db680d128100c42e9d24ead87feb8087e620",
+   "support"
   ],
   "shadow-dom/Document-prototype-currentScript.html": [
    "eadcbb987e528dee0bd773ce48026f64513a299e",
@@ -90971,6 +93739,14 @@
    "a2aaf43f0d2eb831bd9f8e379fbf0076eee76633",
    "testharness"
   ],
+  "streams/piping/pipe-through-expected.txt": [
+   "85af76050db0eb713c881b422d70e7d9965c2eef",
+   "support"
+  ],
+  "streams/piping/pipe-through.dedicatedworker-expected.txt": [
+   "85af76050db0eb713c881b422d70e7d9965c2eef",
+   "support"
+  ],
   "streams/piping/pipe-through.dedicatedworker.html": [
    "ed05dd7416cc07e178e481375c2372ce1094905e",
    "testharness"
@@ -91364,7 +94140,7 @@
    "testharness"
   ],
   "streams/writable-streams/aborting.js": [
-   "3810f67c1136ec1fe2d4552cf1b023a489b8b8c6",
+   "09998850911df2b907b19dd289da806f215a1f90",
    "support"
   ],
   "streams/writable-streams/aborting.serviceworker.https-expected.txt": [
@@ -91400,7 +94176,7 @@
    "testharness"
   ],
   "streams/writable-streams/bad-strategies.js": [
-   "a7a30fd91bba81c332a3447c99a5a0354dda04b4",
+   "58cf46e9e07c61e2a7d170cb93837b9e16aa66e3",
    "support"
   ],
   "streams/writable-streams/bad-strategies.serviceworker.https-expected.txt": [
@@ -91488,7 +94264,7 @@
    "testharness"
   ],
   "streams/writable-streams/close.js": [
-   "fae91aef3ae70841716304a91e603ed591e514ef",
+   "499ddcfe348fb2051d5e127e930f30150079e381",
    "support"
   ],
   "streams/writable-streams/close.serviceworker.https.html": [
@@ -91612,7 +94388,7 @@
    "testharness"
   ],
   "streams/writable-streams/reentrant-strategy.js": [
-   "e5e39b5045b532bbb9999c3c87c998ed0f6f33b1",
+   "e0fea3678e9441483cda043bff02595836a20de4",
    "support"
   ],
   "streams/writable-streams/reentrant-strategy.serviceworker.https.html": [
@@ -91640,7 +94416,7 @@
    "testharness"
   ],
   "streams/writable-streams/start.js": [
-   "35a7dc955dcfda4971dced0266ec3287d18979bd",
+   "09fcde6f0a4652c9549a6d94206e0403a7d86046",
    "support"
   ],
   "streams/writable-streams/start.serviceworker.https-expected.txt": [
@@ -93487,6 +96263,10 @@
    "19fd5ede17b9c7e9d234e855eb7dd7fe343bc73e",
    "testharness"
   ],
+  "webusb/idlharness.html": [
+   "e402105766a837cd26f6d020663ec4b50b757f86",
+   "testharness"
+  ],
   "webvr/idlharness-expected.txt": [
    "7079dade4dae2bb7e2a669f1ac0c645eb0ac4e9a",
    "support"
@@ -93768,7 +96548,7 @@
    "support"
   ],
   "webvtt/parsing/file-parsing/support/settings-line.test": [
-   "1aa0776cf32d9ef64564e566a04effd40c1e55ae",
+   "47ee8ef9abda5a4eca4c7ec7de085a915617c52a",
    "support"
   ],
   "webvtt/parsing/file-parsing/support/settings-multiple.test": [
@@ -93776,7 +96556,7 @@
    "support"
   ],
   "webvtt/parsing/file-parsing/support/settings-position.test": [
-   "55fe6a35c1a92033887099f7b0cd529606e4c4f7",
+   "844651e64e6df48f7c78bc0f4dfefc9a041cad8c",
    "support"
   ],
   "webvtt/parsing/file-parsing/support/settings-region.test": [
@@ -93984,7 +96764,7 @@
    "support"
   ],
   "webvtt/parsing/file-parsing/tests/settings-line.html": [
-   "f9ba37c2f420d3c181a5a81ad34cdf9b113fce76",
+   "6143982ba0b872f2c9646a9191a0540b5e43bc63",
    "testharness"
   ],
   "webvtt/parsing/file-parsing/tests/settings-multiple.html": [
@@ -93996,7 +96776,7 @@
    "support"
   ],
   "webvtt/parsing/file-parsing/tests/settings-position.html": [
-   "37814e276567b552b4f2a28bb6e06fffcf4b594b",
+   "5f7e3c5b64e3fd7e741ba739998647a9edb65879",
    "testharness"
   ],
   "webvtt/parsing/file-parsing/tests/settings-region-expected.txt": [
@@ -94108,7 +96888,7 @@
    "support"
   ],
   "webvtt/parsing/file-parsing/tests/support/settings-line.vtt": [
-   "2c51c8c55a3c963ffdbbc9d1a3e569a0c89499d3",
+   "5e1276af0b50c14ff95cf3d17e8024ca448d5948",
    "support"
   ],
   "webvtt/parsing/file-parsing/tests/support/settings-multiple.vtt": [
@@ -94116,7 +96896,7 @@
    "support"
   ],
   "webvtt/parsing/file-parsing/tests/support/settings-position.vtt": [
-   "688aeaff5361e68eb50dcc3d02f14f9e68227e49",
+   "bd9cceaff9886568aec16003dc714782535fbf64",
    "support"
   ],
   "webvtt/parsing/file-parsing/tests/support/settings-region.vtt": [

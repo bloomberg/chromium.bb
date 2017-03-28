@@ -1866,6 +1866,7 @@ crbug.com/695270 [ Linux ] external/csswg-test/css-writing-modes-3/overconstrain
 crbug.com/626703 external/wpt/domxpath/001.html [ Failure ]
 
 # ====== New tests from w3c-test-autoroller added here ======
+crbug.com/626703 external/wpt/html/browsers/windows/browsing-context-names/browsing-context-choose-parent-004.html [ Timeout ]
 crbug.com/626703 external/csswg-test/css-cascade-4/revert-val-001.html [ Failure ]
 crbug.com/626703 external/csswg-test/css-ui-3/box-sizing-026.html [ Failure ]
 crbug.com/626703 external/wpt/content-security-policy/connect-src/connect-src-eventsource-blocked.sub.html [ Timeout ]
@@ -2608,8 +2609,6 @@ crbug.com/705490 external/wpt/fetch/api/redirect/redirect-location-worker.html [
 crbug.com/705490 external/wpt/fetch/api/redirect/redirect-location.html [ Timeout Pass ]
 crbug.com/705490 external/wpt/fetch/api/redirect/redirect-origin-worker.html [ Timeout Pass ]
 crbug.com/705490 external/wpt/fetch/api/request/request-cache-default-conditional.html [ Timeout Pass ]
-crbug.com/705490 external/wpt/fetch/api/cors/cors-redirect-preflight-worker.html [ Timeout Pass ]
-crbug.com/705490 external/wpt/fetch/api/cors/cors-redirect-preflight.html [ Timeout Pass ]
 
 # Non-deterministic output, as the failing subtests dump timestamps.
 crbug.com/705490 external/wpt/fetch/api/request/request-cache-reload.html [ Failure ]

@@ -12,7 +12,7 @@ PASS Aborting a WritableStream passes through the given reason
 PASS Aborting a WritableStream puts it in an errored state, with a TypeError as the stored error 
 PASS Aborting a WritableStream causes any outstanding write() promises to be rejected with a TypeError 
 PASS Closing but then immediately aborting a WritableStream causes the stream to error 
-PASS Closing a WritableStream and aborting it while it closes causes the stream to error 
+FAIL Closing a WritableStream and aborting it while it closes causes the stream to ignore the abort attempt promise_test: Unhandled rejection with value: object "TypeError: The stream has been aborted"
 PASS Aborting a WritableStream after it is closed is a no-op 
 PASS WritableStream should NOT call underlying sink's close if no abort is supplied (historical) 
 PASS returning a thenable from abort() should work 
@@ -24,13 +24,13 @@ PASS close() should use error from underlying write() on abort
 PASS underlying abort() should not be called until underlying write() completes 
 PASS underlying abort() should not be called if underlying close() has started 
 PASS if underlying close() has started and then rejects, the abort() and close() promises should reject with the underlying close rejection reason 
-PASS underlying abort() should be called while closing if underlying close() has not started yet 
+PASS an abort() that happens during a write() should trigger the underlying abort() even with a close() queued 
 FAIL if a writer is created for a stream with a pending abort, its ready should be rejected with a TypeError assert_unreached: Should have rejected: ready of the second writer should be rejected with a TypeError Reached unreachable code
 PASS writer close() promise should resolve before abort() promise 
 PASS writer.ready should reject on controller error without waiting for underlying write 
-FAIL writer.abort() while there is an in-flight write, and then finish the write with rejection assert_array_equals: writePromise, abortPromise and writer.closed must reject property 1, expected "abortPromise" but got "closed"
+FAIL writer.abort() while there is an in-flight write, and then finish the write with rejection assert_throws: writePromise3 must reject with the error returned from the sink's write method function "function () { throw e }" threw object "TypeError: Cannot write to a errored writable stream" ("TypeError") expected object "error2: error2" ("error2")
 FAIL writer.abort(), controller.error() while there is an in-flight write, and then finish the write promise_test: Unhandled rejection with value: object "TypeError: Cannot error a errored writable stream"
-PASS controller.error(), writer.abort() while there is an in-flight write, and then finish the write 
+FAIL controller.error(), writer.abort() while there is an in-flight write, and then finish the write assert_throws: writePromise2 must reject with the error passed to the controller's error method function "function () { throw e }" threw object "TypeError: Cannot write to a errored writable stream" ("TypeError") expected object "error2: error2" ("error2")
 PASS releaseLock() while aborting should reject the original closed promise 
 PASS releaseLock() during delayed async abort() should create a new rejected closed promise 
 FAIL sink abort() should not be called until sink start() is done assert_array_equals: abort() should not be called during start() lengths differ, expected 0 got 2
