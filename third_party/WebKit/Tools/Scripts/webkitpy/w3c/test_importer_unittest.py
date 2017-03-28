@@ -206,3 +206,17 @@ class TestImporterTest(LoggingTestCase):
         self.assertFalse(host.filesystem.exists(dest_path + '/b-expected.txt'))
         self.assertTrue(host.filesystem.exists(dest_path + '/b.x-expected.txt'))
         self.assertTrue(host.filesystem.exists(dest_path + '/b.x.html'))
+
+    def test_keeps_owners_files_and_baselines(self):
+        host = MockHost()
+        dest_path = '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt'
+        host.filesystem.write_text_file(dest_path + '/foo-test.html', '')
+        host.filesystem.write_text_file(dest_path + '/foo-test-expected.txt', '')
+        host.filesystem.write_text_file(dest_path + '/OWNERS', '')
+        host.filesystem.write_text_file(dest_path + '/bar/baz/OWNERS', '')
+        importer = TestImporter(host)
+        importer._clear_out_dest_path(dest_path)
+        self.assertFalse(host.filesystem.exists(dest_path + '/foo-test.html'))
+        self.assertTrue(host.filesystem.exists(dest_path + '/foo-test-expected.txt'))
+        self.assertTrue(host.filesystem.exists(dest_path + '/OWNERS'))
+        self.assertTrue(host.filesystem.exists(dest_path + '/bar/baz/OWNERS'))

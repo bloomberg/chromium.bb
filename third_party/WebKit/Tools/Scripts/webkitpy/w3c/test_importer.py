@@ -233,12 +233,8 @@ class TestImporter(object):
         _, show_ref_output = self.run(['git', 'show-ref', 'origin/master'], cwd=temp_repo_path)
         master_commitish = show_ref_output.split()[0]
 
-        _log.info('Cleaning out tests from LayoutTests/external/%s.', dest_dir_name)
         dest_path = self.path_from_webkit_base('LayoutTests', 'external', dest_dir_name)
-        is_not_baseline_filter = lambda fs, dirname, basename: not self.is_baseline(basename)
-        files_to_delete = self.fs.files_under(dest_path, file_filter=is_not_baseline_filter)
-        for subpath in files_to_delete:
-            self.remove('LayoutTests', 'external', subpath)
+        self._clear_out_dest_path(dest_path)
 
         _log.info('Importing the tests.')
         test_copier = TestCopier(self.host, temp_repo_path)
@@ -254,6 +250,16 @@ class TestImporter(object):
         self.update_all_test_expectations_files(self._list_deleted_tests(), self._list_renamed_tests())
 
         return '%s@%s' % (dest_dir_name, master_commitish)
+
+    def _clear_out_dest_path(self, dest_path):
+        _log.info('Cleaning out tests from %s.', dest_path)
+        should_remove = lambda fs, dirname, basename: (
+            not self.is_baseline(basename) and
+            # See http://crbug.com/702283 for context.
+            basename != 'OWNERS')
+        files_to_delete = self.fs.files_under(dest_path, file_filter=should_remove)
+        for subpath in files_to_delete:
+            self.remove('LayoutTests', 'external', subpath)
 
     def _commit_changes(self, commit_message):
         _log.info('Committing changes.')

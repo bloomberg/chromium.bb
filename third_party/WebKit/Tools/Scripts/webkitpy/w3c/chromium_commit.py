@@ -87,7 +87,12 @@ class ChromiumCommit(object):
         ]
         qualified_blacklist = [CHROMIUM_WPT_DIR + f for f in blacklist]
 
-        return [f for f in changed_files if f not in qualified_blacklist and not self.is_baseline(f)]
+        is_ignored = lambda f: (
+            f in qualified_blacklist or
+            self.is_baseline(f) or
+            # See http://crbug.com/702283 for context.
+            self.host.filesystem.basename(f) == 'OWNERS')
+        return [f for f in changed_files if not is_ignored(f)]
 
     @staticmethod
     def is_baseline(basename):

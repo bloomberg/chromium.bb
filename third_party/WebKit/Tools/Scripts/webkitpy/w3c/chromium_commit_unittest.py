@@ -31,7 +31,7 @@ class ChromiumCommitTest(unittest.TestCase):
     def test_filtered_changed_files_blacklist(self):
         host = MockHost()
 
-        fake_files = ['file1', 'MANIFEST.json', 'file3']
+        fake_files = ['file1', 'MANIFEST.json', 'file3', 'OWNERS']
         qualified_fake_files = [CHROMIUM_WPT_DIR + f for f in fake_files]
 
         host.executive = mock_git_commands({
