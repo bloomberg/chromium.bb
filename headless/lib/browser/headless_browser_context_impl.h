@@ -98,6 +98,8 @@ class HeadlessBrowserContextImpl : public HeadlessBrowserContext,
   std::unordered_map<std::string, std::unique_ptr<HeadlessWebContents>>
       web_contents_map_;
 
+  std::unique_ptr<content::PermissionManager> permission_manager_;
+
   std::string id_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessBrowserContextImpl);

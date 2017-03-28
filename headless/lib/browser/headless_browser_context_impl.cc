@@ -17,6 +17,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "headless/lib/browser/headless_browser_context_options.h"
 #include "headless/lib/browser/headless_browser_impl.h"
+#include "headless/lib/browser/headless_permission_manager.h"
 #include "headless/lib/browser/headless_url_request_context_getter.h"
 #include "headless/public/util/black_hole_protocol_handler.h"
 #include "headless/public/util/in_memory_protocol_handler.h"
@@ -83,6 +84,7 @@ HeadlessBrowserContextImpl::HeadlessBrowserContextImpl(
     : browser_(browser),
       context_options_(std::move(context_options)),
       resource_context_(new HeadlessResourceContext),
+      permission_manager_(new HeadlessPermissionManager()),
       id_(base::GenerateGUID()) {
   InitWhileIOAllowed();
 }
@@ -199,7 +201,9 @@ HeadlessBrowserContextImpl::GetSSLHostStateDelegate() {
 }
 
 content::PermissionManager* HeadlessBrowserContextImpl::GetPermissionManager() {
-  return nullptr;
+  if (!permission_manager_.get())
+    permission_manager_.reset(new HeadlessPermissionManager());
+  return permission_manager_.get();
 }
 
 content::BackgroundSyncController*

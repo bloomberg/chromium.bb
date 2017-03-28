@@ -11,8 +11,12 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
+#include "content/public/browser/permission_manager.h"
+#include "content/public/browser/permission_type.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
+#include "headless/lib/browser/headless_browser_context_impl.h"
+#include "headless/lib/browser/headless_web_contents_impl.h"
 #include "headless/lib/headless_macros.h"
 #include "headless/public/devtools/domains/inspector.h"
 #include "headless/public/devtools/domains/network.h"
@@ -751,6 +755,29 @@ IN_PROC_BROWSER_TEST_F(CrashReporterTest, MAYBE_GenerateMinidump) {
 
   browser_context_->Close();
   browser_context_ = nullptr;
+}
+
+IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, PermissionManagerAlwaysASK) {
+  GURL url("https://example.com");
+
+  HeadlessBrowserContext* browser_context =
+      browser()->CreateBrowserContextBuilder().Build();
+
+  HeadlessWebContents* headless_web_contents =
+      browser_context->CreateWebContentsBuilder().Build();
+  EXPECT_TRUE(headless_web_contents);
+
+  HeadlessWebContentsImpl* web_contents =
+      HeadlessWebContentsImpl::From(headless_web_contents);
+
+  content::PermissionManager* permission_manager =
+      web_contents->browser_context()->GetPermissionManager();
+  EXPECT_NE(nullptr, permission_manager);
+
+  // Check that the permission manager returns ASK for a given permission type.
+  EXPECT_EQ(blink::mojom::PermissionStatus::ASK,
+            permission_manager->GetPermissionStatus(
+                content::PermissionType::NOTIFICATIONS, url, url));
 }
 
 }  // namespace headless
