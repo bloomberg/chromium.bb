@@ -78,11 +78,11 @@
       status: "experimental",
     },
     {
-      name: "Auxclick",
-      status: "stable",
+      name: "AutoplayMutedVideos",
+      settable_from_internals: true,
     },
     {
-      name: "CoalescedEvents",
+      name: "Auxclick",
       status: "stable",
     },
     {
@@ -94,8 +94,20 @@
       status: "stable",
     },
     {
+      name: "BackgroundVideoTrackOptimization",
+      status: "stable",
+    },
+    {
       name: "BackspaceDefaultHandler",
       status: "test",
+    },
+    {
+      name: "BlockCredentialedSubresources",
+      status: "stable",
+    },
+    {
+      name: "BlockLegacySubresources",
+      status: "stable",
     },
     {
       name: "BroadcastChannel",
@@ -106,16 +118,12 @@
       status: "experimental",
     },
     {
-      name: "Canvas2dFixedRenderingMode",
-      status: "test",
-    },
-    {
-      name: "EnableCanvas2dDynamicRenderingModeSwitching",
-      status: "experimental",
-    },
-    {
       name: "CanMakePayment",
       status: "stable",
+    },
+    {
+      name: "Canvas2dFixedRenderingMode",
+      status: "test",
     },
     {
       name: "Canvas2dImageChromium",
@@ -126,13 +134,7 @@
       status: "stable",
     },
     {
-      name: "CompositeOpaqueFixedPosition",
-      settable_from_internals: true,
-      status: "test",
-    },
-    {
-      name: "CompositeOpaqueScrollers",
-      settable_from_internals: true,
+      name: "CoalescedEvents",
       status: "stable",
     },
     {
@@ -147,7 +149,21 @@
       name: "CompositedSelectionUpdate",
     },
     {
+      name: "CompositeOpaqueFixedPosition",
+      settable_from_internals: true,
+      status: "test",
+    },
+    {
+      name: "CompositeOpaqueScrollers",
+      settable_from_internals: true,
+      status: "stable",
+    },
+    {
       name: "CompositorWorker",
+      status: "experimental",
+    },
+    {
+      name: "ComputedAccessibilityInfo",
       status: "experimental",
     },
     {
@@ -171,12 +187,12 @@
       status: "stable",
     },
     {
-      name: "CSSApplyAtRules",
+      name: "CSSAdditiveAnimations",
+      depends_on: ["StackedCSSPropertyAnimations"],
       status: "experimental",
     },
     {
-      name: "CSSAdditiveAnimations",
-      depends_on: ["StackedCSSPropertyAnimations"],
+      name: "CSSApplyAtRules",
       status: "experimental",
     },
     {
@@ -184,12 +200,12 @@
       status: "experimental",
     },
     {
-      name: "CSSHexAlphaColor",
-      status: "experimental",
-    },
-    {
       name: "CSSContainment",
       status: "stable",
+    },
+    {
+      name: "CSSDisplayContents",
+      status: "experimental",
     },
     {
       name: "CSSFontDisplay",
@@ -205,7 +221,7 @@
       status: "stable",
     },
     {
-      name: "CSSDisplayContents",
+      name: "CSSHexAlphaColor",
       status: "experimental",
     },
     {
@@ -229,10 +245,6 @@
       status: "experimental",
     },
     {
-      name: "CSSOMSmoothScroll",
-      status: "experimental",
-    },
-    {
       name: "CSSOffsetPositionAnchor",
       status: "experimental",
     },
@@ -245,6 +257,10 @@
       status: "stable",
     },
     {
+      name: "CSSOMSmoothScroll",
+      status: "experimental",
+    },
+    {
       name: "CSSPaintAPI",
       depends_on: ["Worklet"],
       status: "experimental",
@@ -253,6 +269,10 @@
       name: "CSSPaintAPIArguments",
       depends_on: ["CSSPaintAPI"],
       status: "experimental",
+    },
+    {
+      name: "CSSScrollSnapPoints",
+      status: "test",
     },
     {
       name: "CSSSnapSize",
@@ -285,10 +305,6 @@
     {
       name: "CSSViewport",
       status: "experimental",
-    },
-    {
-      name: "CSSScrollSnapPoints",
-      status: "test",
     },
     {
       name: "CustomElementsBuiltin",
@@ -344,22 +360,11 @@
       status: "stable",
     },
     {
-      name: "ExpensiveBackgroundTimerThrottling",
+      name: "EmbedderCSPEnforcement",
       status: "experimental",
     },
     {
-      name: "FontCacheScaling",
-      status: "test",
-    },
-    {
-      name: "ForceDisplayList2dCanvas",
-    },
-    // See crbug.com/585250.
-    {
-      name: "ForceDisable2dCanvasCopyOnWrite",
-    },
-    {
-      name: "EmbedderCSPEnforcement",
+      name: "EnableCanvas2dDynamicRenderingModeSwitching",
       status: "experimental",
     },
     {
@@ -367,7 +372,7 @@
       status: "test",
     },
     {
-      name: "ComputedAccessibilityInfo",
+      name: "ExpensiveBackgroundTimerThrottling",
       status: "experimental",
     },
     {
@@ -402,9 +407,27 @@
       status: "stable",
     },
     {
+      name: "FontCacheScaling",
+      status: "test",
+    },
+    // See crbug.com/585250.
+    {
+      name: "ForceDisable2dCanvasCopyOnWrite",
+    },
+    {
+      name: "ForceDisplayList2dCanvas",
+    },
+    // For simulating Android's overlay fullscreen video in layout tests on Linux.
+    {
+      name: "ForceOverlayFullscreenVideo",
+    },
+    {
       name: "ForeignFetch",
       origin_trial_feature_name: "ForeignFetch",
       status: "experimental",
+    },
+    {
+      name: "FractionalScrollOffsets",
     },
     {
       name: "FramebustingNeedsSameOriginOrUserGesture",
@@ -412,13 +435,13 @@
       status: "experimental",
     },
     {
+      name: "FrameTimingSupport",
+      status: "experimental",
+    },
+    {
       name: "FullscreenUnprefixed",
       settable_from_internals: true,
       status: "test",
-    },
-    {
-      name: "FrameTimingSupport",
-      status: "experimental",
     },
     {
       name: "GamepadExtensions",
@@ -441,6 +464,10 @@
     {
       name: "HeapCompaction",
       status: "stable",
+    },
+    {
+      name: "HideNonceContentAttribute",
+      status: "experimental",
     },
     {
       name: "IDBObserver",
@@ -490,19 +517,20 @@
       name: "LayoutNG",
     },
     {
+      name: "LazyParseCSS",
+      status: "experimental",
+    },
+    {
       name: "LinkServiceWorker",
       origin_trial_feature_name: "ForeignFetch",
       status: "experimental",
     },
     {
+      name: "LoadingWithMojo",
+    },
+    {
       name: "LongTaskObserver",
       status: "stable",
-    },
-    {
-      name: "FractionalScrollOffsets",
-    },
-    {
-      name: "LoadingWithMojo",
     },
     {
       name: "MediaCapabilities",
@@ -522,6 +550,10 @@
     {
       name: "MediaCaptureFromVideo",
       status: "experimental",
+    },
+    {
+      name: "MediaControlsOverlayPlayButton",
+      settable_from_internals: true,
     },
     {
       name: "MediaDocumentDownloadButton",
@@ -587,23 +619,19 @@
       name: "NavigatorContentUtils",
     },
     {
-      name: "WebNFC",
-      status: "experimental",
+      name: "NetInfoDownlinkMax",
+      status: "stable",
     },
     {
       name: "NetworkInformation",
       status: "stable",
     },
     {
-      name: "NetInfoDownlinkMax",
+      name: "NotificationBadge",
       status: "stable",
     },
     {
       name: "NotificationConstructor",
-      status: "stable",
-    },
-    {
-      name: "NotificationBadge",
       status: "stable",
     },
     {
@@ -636,10 +664,6 @@
     {
       name: "OriginTrialsSampleAPI",
       origin_trial_feature_name: "Frobulate",
-    },
-    // For simulating Android's overlay fullscreen video in layout tests on Linux.
-    {
-      name: "ForceOverlayFullscreenVideo",
     },
     {
       name: "OverlayScrollbars",
@@ -685,8 +709,16 @@
       status: "stable",
     },
     {
+      name: "PerformanceNavigationTiming2",
+      status: "stable",
+    },
+    {
       name: "PerformanceObserver",
       status: "stable",
+    },
+    {
+      name: "PerformancePaintTiming",
+      status: "test",
     },
     {
       name: "PermissionDelegation",
@@ -708,9 +740,6 @@
       name: "PreciseMemoryInfo",
     },
     {
-      name: "PrintBrowser",
-    },
-    {
       name: "PreferredImageRasterBounds",
       settable_from_internals: true,
     },
@@ -727,6 +756,9 @@
     {
       name: "PresentationReceiver",
       status: "experimental",
+    },
+    {
+      name: "PrintBrowser",
     },
     {
       name: "PushMessaging",
@@ -755,6 +787,10 @@
       name: "ResizeObserver",
       status: "experimental",
     },
+    {
+      name: "RestrictCompleteURLCharacterSet",
+      status: "experimental",
+    },
     // Handles frame scrolling via the root PaintLayer instead of the FrameView.
     // crbug.com/417782 tracks enabling this by default.
     {
@@ -770,10 +806,17 @@
       settable_from_internals: true,
       status: "experimental",
     },
+    {
+      name: "ScrollCustomization",
+    },
     // Implements documentElement.scrollTop/Left and bodyElement.scrollTop/Left
     // as per the spec, matching other Web engines.
     {
       name: "ScrollTopLeftInterop",
+      status: "experimental",
+    },
+    {
+      name: "SendBeaconThrowForBlobWithNonSimpleType",
       status: "experimental",
     },
     {
@@ -809,11 +852,21 @@
       status: "experimental",
     },
     {
+      name: "SlimmingPaintStrictCullRectClipping",
+    },
+    {
       name: "SlimmingPaintV2",
       implied_by: ["PrintBrowser"],
     },
     {
-      name: "SlimmingPaintStrictCullRectClipping",
+      name: "smil",
+      status: "stable",
+    },
+    // Do not turn this flag into stable, because many interfaces that should not
+    // be shipped would be enabled. Instead, remove the flag from the shipping
+    // interface.
+    {
+      name: "SpeculativeLaunchServiceWorker",
     },
     // Used as argument in attribute of stable-release functions/interfaces where
     // a runtime-enabled feature name is required for correct IDL syntax.
@@ -827,18 +880,12 @@
       status: "experimental",
     },
     {
-      name: "StyleSharing",
-      status: "stable",
-    },
-    // Do not turn this flag into stable, because many interfaces that should not
-    // be shipped would be enabled. Instead, remove the flag from the shipping
-    // interface.
-    {
-      name: "SpeculativeLaunchServiceWorker",
-    },
-    {
       name: "StorageEstimate",
       status: "experimental",
+    },
+    {
+      name: "StyleSharing",
+      status: "stable",
     },
     {
       name: "Suborigins",
@@ -876,6 +923,31 @@
       status: "stable",
     },
     {
+      name: "UnclosedFormControlIsInvalid",
+      status: "experimental",
+    },
+    {
+      name: "V8IdleTasks",
+    },
+    {
+      name: "VideoFullscreenDetection",
+    },
+    {
+      name: "VideoFullscreenOrientationLock",
+    },
+    {
+      name: "VisibilityChangeOnUnload",
+      status: "stable",
+    },
+    {
+      name: "VisualViewportAPI",
+      status: "experimental",
+    },
+    {
+      name: "WakeLock",
+      status: "experimental",
+    },
+    {
       name: "WebAnimationsAPI",
       status: "experimental",
     },
@@ -887,10 +959,30 @@
       name: "WebAssemblySerialization",
       status: "test",
     },
+    {
+      name: "WebAuth",
+      status: "experimental",
+    },
     // WebBluetooth is enabled by default on Android, ChromeOS and Mac.
     {
       name: "WebBluetooth",
       status: "experimental",
+    },
+    {
+      name: "WebFontsCacheAwareTimeoutAdaptation",
+      status: "experimental",
+    },
+    {
+      name: "WebFontsInterventionTrigger",
+    },
+    {
+      name: "WebFontsInterventionV2With2G",
+    },
+    {
+      name: "WebFontsInterventionV2With3G",
+    },
+    {
+      name: "WebFontsInterventionV2WithSlow2G",
     },
     {
       name: "WebGLDraftExtensions",
@@ -898,6 +990,16 @@
     },
     {
       name: "WebGLImageChromium",
+    },
+    {
+      name: "WebNFC",
+      status: "experimental",
+    },
+    {
+      name: "WebShare",
+      origin_trial_feature_name: "WebShare",
+      origin_trial_os: ["android"],
+      status: "experimental",
     },
     {
       name: "WebUSB",
@@ -920,114 +1022,12 @@
       status: "experimental",
     },
     {
-      name: "V8IdleTasks",
-    },
-    {
-      name: "VideoFullscreenOrientationLock",
-    },
-    {
-      name: "VisibilityChangeOnUnload",
-      status: "stable",
+      name: "Worklet",
+      status: "experimental",
     },
     {
       name: "XSLT",
       status: "stable",
     },
-    {
-      name: "smil",
-      status: "stable",
-    },
-    {
-      name: "ScrollCustomization",
-    },
-    {
-      name: "AutoplayMutedVideos",
-      settable_from_internals: true,
-    },
-    {
-      name: "VisualViewportAPI",
-      status: "experimental",
-    },
-    {
-      name: "WakeLock",
-      status: "experimental",
-    },
-    {
-      name: "WebAuth",
-      status: "experimental",
-    },
-    {
-      name: "WebFontsCacheAwareTimeoutAdaptation",
-      status: "experimental",
-    },
-    {
-      name: "WebFontsInterventionV2With2G",
-    },
-    {
-      name: "WebFontsInterventionV2With3G",
-    },
-    {
-      name: "WebFontsInterventionV2WithSlow2G",
-    },
-    {
-      name: "WebFontsInterventionTrigger",
-    },
-    {
-      name: "WebShare",
-      origin_trial_feature_name: "WebShare",
-      origin_trial_os: ["android"],
-      status: "experimental",
-    },
-    {
-      name: "Worklet",
-      status: "experimental",
-    },
-    {
-      name: "LazyParseCSS",
-      status: "experimental",
-    },
-    {
-      name: "SendBeaconThrowForBlobWithNonSimpleType",
-      status: "experimental",
-    },
-    {
-      name: "PerformanceNavigationTiming2",
-      status: "stable",
-    },
-    {
-      name: "BackgroundVideoTrackOptimization",
-      status: "stable",
-    },
-    {
-      name: "PerformancePaintTiming",
-      status: "test",
-    },
-    {
-      name: "HideNonceContentAttribute",
-      status: "experimental",
-    },
-    {
-      name: "BlockCredentialedSubresources",
-      status: "stable",
-    },
-    {
-      name: "UnclosedFormControlIsInvalid",
-      status: "experimental",
-    },
-    {
-      name: "RestrictCompleteURLCharacterSet",
-      status: "experimental",
-    },
-    {
-      name: "BlockLegacySubresources",
-      status: "stable",
-    },
-    {
-      name: "MediaControlsOverlayPlayButton",
-      settable_from_internals: true,
-    },
-    {
-      name: "VideoFullscreenDetection",
-    }
   ],
 }
