@@ -27,12 +27,12 @@
     },
     {
       "name": "Child Containment Layer",
-      "position": [-16777214, -16777214],
-      "bounds": [33554432, 33554432]
+      "position": [3, 3],
+      "bounds": [60, 18]
     },
     {
       "name": "LayoutBlockFlow DIV id='inner-editor'",
-      "position": [16777216, 16777218],
+      "position": [0, 1],
       "bounds": [60, 16],
       "shouldFlattenTransform": false,
       "drawsContent": true

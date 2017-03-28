@@ -210,4 +210,25 @@ TEST_F(LayoutBoxTest, LocationContainerOfSVG) {
   EXPECT_TRUE(child->hasFlippedBlocksWritingMode());
 }
 
+TEST_F(LayoutBoxTest, ControlClip) {
+  setBodyInnerHTML(
+      "<style>"
+      "  * { margin: 0; }"
+      "  #target {"
+      "    position: relative;"
+      "    width: 100px; height: 50px;"
+      "  }"
+      "</style>"
+      "<input id='target' type='button' value='some text'/>");
+  LayoutBox* target = toLayoutBox(getLayoutObjectByElementId("target"));
+  EXPECT_TRUE(target->hasControlClip());
+  EXPECT_TRUE(target->hasClipRelatedProperty());
+  EXPECT_TRUE(target->shouldClipOverflow());
+#if OS(MACOSX)
+  EXPECT_EQ(LayoutRect(0, 0, 100, 18), target->clippingRect());
+#else
+  EXPECT_EQ(LayoutRect(2, 2, 96, 46), target->clippingRect());
+#endif
+}
+
 }  // namespace blink

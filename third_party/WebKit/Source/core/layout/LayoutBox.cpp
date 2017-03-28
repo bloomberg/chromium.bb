@@ -1150,7 +1150,7 @@ IntSize LayoutBox::scrolledContentOffset() const {
 
 LayoutRect LayoutBox::clippingRect() const {
   LayoutRect result = LayoutRect(LayoutRect::infiniteIntRect());
-  if (hasOverflowClip() || style()->containsPaint())
+  if (shouldClipOverflow())
     result = overflowClipRect(LayoutPoint());
 
   if (hasClip())
