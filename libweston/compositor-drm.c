@@ -3813,6 +3813,30 @@ find_primary_gpu(struct drm_backend *b, const char *seat)
 	return drm_device;
 }
 
+static struct udev_device *
+open_specific_drm_device(struct drm_backend *b, const char *name)
+{
+	struct udev_device *device;
+
+	device = udev_device_new_from_subsystem_sysname(b->udev, "drm", name);
+	if (!device) {
+		weston_log("ERROR: could not open DRM device '%s'\n", name);
+		return NULL;
+	}
+
+	if (!drm_device_is_kms(b, device)) {
+		udev_device_unref(device);
+		weston_log("ERROR: DRM device '%s' is not a KMS device.\n", name);
+		return NULL;
+	}
+
+	/* If we're returning a device to use, we must have an open FD for
+	 * it. */
+	assert(b->drm.fd >= 0);
+
+	return device;
+}
+
 static void
 planes_binding(struct weston_keyboard *keyboard, const struct timespec *time,
 	       uint32_t key, void *data)
@@ -4064,7 +4088,10 @@ drm_backend_create(struct weston_compositor *compositor,
 	b->session_listener.notify = session_notify;
 	wl_signal_add(&compositor->session_signal, &b->session_listener);
 
-	drm_device = find_primary_gpu(b, seat_id);
+	if (config->specific_device)
+		drm_device = open_specific_drm_device(b, config->specific_device);
+	else
+		drm_device = find_primary_gpu(b, seat_id);
 	if (drm_device == NULL) {
 		weston_log("no drm device found\n");
 		goto err_udev;
