@@ -908,10 +908,10 @@ void GLES2InterfaceStub::PostSubBufferCHROMIUM(GLint /* x */,
                                                GLint /* width */,
                                                GLint /* height */) {}
 void GLES2InterfaceStub::CopyTextureCHROMIUM(
-    GLenum /* source_id */,
+    GLuint /* source_id */,
     GLint /* source_level */,
     GLenum /* dest_target */,
-    GLenum /* dest_id */,
+    GLuint /* dest_id */,
     GLint /* dest_level */,
     GLint /* internalformat */,
     GLenum /* dest_type */,
@@ -919,10 +919,10 @@ void GLES2InterfaceStub::CopyTextureCHROMIUM(
     GLboolean /* unpack_premultiply_alpha */,
     GLboolean /* unpack_unmultiply_alpha */) {}
 void GLES2InterfaceStub::CopySubTextureCHROMIUM(
-    GLenum /* source_id */,
+    GLuint /* source_id */,
     GLint /* source_level */,
     GLenum /* dest_target */,
-    GLenum /* dest_id */,
+    GLuint /* dest_id */,
     GLint /* dest_level */,
     GLint /* xoffset */,
     GLint /* yoffset */,
@@ -933,8 +933,8 @@ void GLES2InterfaceStub::CopySubTextureCHROMIUM(
     GLboolean /* unpack_flip_y */,
     GLboolean /* unpack_premultiply_alpha */,
     GLboolean /* unpack_unmultiply_alpha */) {}
-void GLES2InterfaceStub::CompressedCopyTextureCHROMIUM(GLenum /* source_id */,
-                                                       GLenum /* dest_id */) {}
+void GLES2InterfaceStub::CompressedCopyTextureCHROMIUM(GLuint /* source_id */,
+                                                       GLuint /* dest_id */) {}
 void GLES2InterfaceStub::DrawArraysInstancedANGLE(GLenum /* mode */,
                                                   GLint /* first */,
                                                   GLsizei /* count */,

@@ -12444,10 +12444,10 @@ struct CopyTextureCHROMIUM {
 
   void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(GLenum _source_id,
+  void Init(GLuint _source_id,
             GLint _source_level,
             GLenum _dest_target,
-            GLenum _dest_id,
+            GLuint _dest_id,
             GLint _dest_level,
             GLint _internalformat,
             GLenum _dest_type,
@@ -12468,10 +12468,10 @@ struct CopyTextureCHROMIUM {
   }
 
   void* Set(void* cmd,
-            GLenum _source_id,
+            GLuint _source_id,
             GLint _source_level,
             GLenum _dest_target,
-            GLenum _dest_id,
+            GLuint _dest_id,
             GLint _dest_level,
             GLint _internalformat,
             GLenum _dest_type,
@@ -12537,10 +12537,10 @@ struct CopySubTextureCHROMIUM {
 
   void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(GLenum _source_id,
+  void Init(GLuint _source_id,
             GLint _source_level,
             GLenum _dest_target,
-            GLenum _dest_id,
+            GLuint _dest_id,
             GLint _dest_level,
             GLint _xoffset,
             GLint _yoffset,
@@ -12569,10 +12569,10 @@ struct CopySubTextureCHROMIUM {
   }
 
   void* Set(void* cmd,
-            GLenum _source_id,
+            GLuint _source_id,
             GLint _source_level,
             GLenum _dest_target,
-            GLenum _dest_id,
+            GLuint _dest_id,
             GLint _dest_level,
             GLint _xoffset,
             GLint _yoffset,
@@ -12654,13 +12654,13 @@ struct CompressedCopyTextureCHROMIUM {
 
   void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(GLenum _source_id, GLenum _dest_id) {
+  void Init(GLuint _source_id, GLuint _dest_id) {
     SetHeader();
     source_id = _source_id;
     dest_id = _dest_id;
   }
 
-  void* Set(void* cmd, GLenum _source_id, GLenum _dest_id) {
+  void* Set(void* cmd, GLuint _source_id, GLuint _dest_id) {
     static_cast<ValueType*>(cmd)->Init(_source_id, _dest_id);
     return NextCmdAddress<ValueType>(cmd);
   }

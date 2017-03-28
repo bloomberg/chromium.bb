@@ -3832,10 +3832,10 @@ error::Error GLES2DecoderPassthroughImpl::HandleCopyTextureCHROMIUM(
     const volatile void* cmd_data) {
   const volatile gles2::cmds::CopyTextureCHROMIUM& c =
       *static_cast<const volatile gles2::cmds::CopyTextureCHROMIUM*>(cmd_data);
-  GLenum source_id = static_cast<GLenum>(c.source_id);
+  GLuint source_id = static_cast<GLuint>(c.source_id);
   GLint source_level = static_cast<GLint>(c.source_level);
   GLenum dest_target = static_cast<GLenum>(c.dest_target);
-  GLenum dest_id = static_cast<GLenum>(c.dest_id);
+  GLuint dest_id = static_cast<GLuint>(c.dest_id);
   GLint dest_level = static_cast<GLint>(c.dest_level);
   GLint internalformat = static_cast<GLint>(c.internalformat);
   GLenum dest_type = static_cast<GLenum>(c.dest_type);
@@ -3860,10 +3860,10 @@ error::Error GLES2DecoderPassthroughImpl::HandleCopySubTextureCHROMIUM(
   const volatile gles2::cmds::CopySubTextureCHROMIUM& c =
       *static_cast<const volatile gles2::cmds::CopySubTextureCHROMIUM*>(
           cmd_data);
-  GLenum source_id = static_cast<GLenum>(c.source_id);
+  GLuint source_id = static_cast<GLuint>(c.source_id);
   GLint source_level = static_cast<GLint>(c.source_level);
   GLenum dest_target = static_cast<GLenum>(c.dest_target);
-  GLenum dest_id = static_cast<GLenum>(c.dest_id);
+  GLuint dest_id = static_cast<GLuint>(c.dest_id);
   GLint dest_level = static_cast<GLint>(c.dest_level);
   GLint xoffset = static_cast<GLint>(c.xoffset);
   GLint yoffset = static_cast<GLint>(c.yoffset);
@@ -3892,8 +3892,8 @@ error::Error GLES2DecoderPassthroughImpl::HandleCompressedCopyTextureCHROMIUM(
   const volatile gles2::cmds::CompressedCopyTextureCHROMIUM& c =
       *static_cast<const volatile gles2::cmds::CompressedCopyTextureCHROMIUM*>(
           cmd_data);
-  GLenum source_id = static_cast<GLenum>(c.source_id);
-  GLenum dest_id = static_cast<GLenum>(c.dest_id);
+  GLuint source_id = static_cast<GLuint>(c.source_id);
+  GLuint dest_id = static_cast<GLuint>(c.dest_id);
   error::Error error = DoCompressedCopyTextureCHROMIUM(source_id, dest_id);
   if (error != error::kNoError) {
     return error;

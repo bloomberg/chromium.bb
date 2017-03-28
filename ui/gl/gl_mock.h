@@ -47,7 +47,10 @@ class MockGLInterface {
   }
 
   void CopySubTextureCHROMIUM(GLuint /*sourceId*/,
+                              GLint /*sourceLevel*/,
+                              GLenum /*destTarget*/,
                               GLuint /*destId*/,
+                              GLint /*destLevel*/,
                               GLint /*xoffset*/,
                               GLint /*yoffset*/,
                               GLint /*x*/,

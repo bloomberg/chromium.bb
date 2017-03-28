@@ -2504,10 +2504,10 @@ void PostSubBufferCHROMIUM(GLint x, GLint y, GLint width, GLint height) {
   }
 }
 
-void CopyTextureCHROMIUM(GLenum source_id,
+void CopyTextureCHROMIUM(GLuint source_id,
                          GLint source_level,
                          GLenum dest_target,
-                         GLenum dest_id,
+                         GLuint dest_id,
                          GLint dest_level,
                          GLint internalformat,
                          GLenum dest_type,
@@ -2523,10 +2523,10 @@ void CopyTextureCHROMIUM(GLenum source_id,
   }
 }
 
-void CopySubTextureCHROMIUM(GLenum source_id,
+void CopySubTextureCHROMIUM(GLuint source_id,
                             GLint source_level,
                             GLenum dest_target,
-                            GLenum dest_id,
+                            GLuint dest_id,
                             GLint dest_level,
                             GLint xoffset,
                             GLint yoffset,
@@ -2546,7 +2546,7 @@ void CopySubTextureCHROMIUM(GLenum source_id,
   }
 }
 
-void CompressedCopyTextureCHROMIUM(GLenum source_id, GLenum dest_id) {
+void CompressedCopyTextureCHROMIUM(GLuint source_id, GLuint dest_id) {
   gles2::cmds::CompressedCopyTextureCHROMIUM* c =
       GetCmdSpace<gles2::cmds::CompressedCopyTextureCHROMIUM>();
   if (c) {
