@@ -52,12 +52,6 @@ IPC_MESSAGE_CONTROL0(GpuMsg_GpuSwitched)
 // GPU Host Messages
 // These are messages to the browser.
 
-// Response from GPU to a GputMsg_Initialize message.
-IPC_MESSAGE_CONTROL3(GpuHostMsg_Initialized,
-                     bool /* result */,
-                     ::gpu::GPUInfo /* gpu_info */,
-                     ::gpu::GpuFeatureInfo /* gpu_feature_info */)
-
 // Response from GPU to a GpuMsg_CreateGpuMemoryBuffer message.
 IPC_MESSAGE_CONTROL1(GpuHostMsg_GpuMemoryBufferCreated,
                      gfx::GpuMemoryBufferHandle /* handle */)

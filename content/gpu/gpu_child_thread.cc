@@ -268,8 +268,6 @@ void GpuChildThread::CreateGpuService(
     mojo::ScopedSharedBufferHandle activity_flags) {
   gpu_service_->Bind(std::move(request));
   gpu_service_->UpdateGPUInfoFromPreferences(gpu_preferences);
-  Send(new GpuHostMsg_Initialized(!dead_on_arrival_, gpu_service_->gpu_info(),
-                                  gpu_service_->gpu_feature_info()));
   for (const LogMessage& log : deferred_messages_)
     gpu_host->RecordLogMessage(log.severity, log.header, log.message);
   deferred_messages_.clear();

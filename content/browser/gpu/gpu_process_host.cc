@@ -703,7 +703,6 @@ void GpuProcessHost::AddFilter(IPC::MessageFilter* filter) {
 bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
   DCHECK(CalledOnValidThread());
   IPC_BEGIN_MESSAGE_MAP(GpuProcessHost, message)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_Initialized, OnInitialized)
     IPC_MESSAGE_HANDLER(GpuHostMsg_GpuMemoryBufferCreated,
                         OnGpuMemoryBufferCreated)
     IPC_MESSAGE_HANDLER(GpuHostMsg_FieldTrialActivated, OnFieldTrialActivated);
@@ -804,22 +803,6 @@ void GpuProcessHost::SendDestroyingVideoSurface(int surface_id,
 }
 #endif
 
-void GpuProcessHost::OnInitialized(
-    bool result,
-    const gpu::GPUInfo& gpu_info,
-    const gpu::GpuFeatureInfo& gpu_feature_info) {
-  UMA_HISTOGRAM_BOOLEAN("GPU.GPUProcessInitialized", result);
-  initialized_ = result;
-  gpu_info_ = gpu_info;
-
-  if (!initialized_) {
-    GpuDataManagerImpl::GetInstance()->OnGpuProcessInitFailure();
-    return;
-  }
-  GpuDataManagerImpl::GetInstance()->UpdateGpuInfo(gpu_info);
-  GpuDataManagerImpl::GetInstance()->UpdateGpuFeatureInfo(gpu_feature_info);
-}
-
 void GpuProcessHost::OnChannelEstablished(
     int client_id,
     const EstablishChannelCallback& callback,
@@ -905,11 +888,17 @@ void GpuProcessHost::OnProcessCrashed(int exit_code) {
 void GpuProcessHost::DidInitialize(
     const gpu::GPUInfo& gpu_info,
     const gpu::GpuFeatureInfo& gpu_feature_info) {
-  // TODO(sad): This should call OnInitialized().
+  UMA_HISTOGRAM_BOOLEAN("GPU.GPUProcessInitialized", true);
+  initialized_ = true;
+  gpu_info_ = gpu_info;
+  GpuDataManagerImpl::GetInstance()->UpdateGpuInfo(gpu_info);
+  GpuDataManagerImpl::GetInstance()->UpdateGpuFeatureInfo(gpu_feature_info);
 }
 
 void GpuProcessHost::DidFailInitialize() {
-  // TODO(sad): This should call GpuDataManagerImpl::OnGpuProcessInitFailure().
+  UMA_HISTOGRAM_BOOLEAN("GPU.GPUProcessInitialized", false);
+  initialized_ = false;
+  GpuDataManagerImpl::GetInstance()->OnGpuProcessInitFailure();
 }
 
 void GpuProcessHost::DidCreateOffscreenContext(const GURL& url) {
