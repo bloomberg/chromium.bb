@@ -302,9 +302,14 @@ std::unique_ptr<ReadingListEntry> ReadingListEntry::FromReadingListLocal(
     update_time_us = pb_entry.update_time_us();
   }
 
-  int64_t update_title_time_us = creation_time_us;
+  int64_t update_title_time_us = 0;
   if (pb_entry.has_update_title_time_us()) {
     update_title_time_us = pb_entry.update_title_time_us();
+  }
+  if (update_title_time_us == 0) {
+    // Entries created before title could be modified don't have
+    // update_title_time_us. Set it to creation_time_us for consistency.
+    update_title_time_us = creation_time_us;
   }
 
   State state = UNSEEN;
@@ -418,9 +423,14 @@ std::unique_ptr<ReadingListEntry> ReadingListEntry::FromReadingListSpecifics(
     update_time_us = pb_entry.update_time_us();
   }
 
-  int64_t update_title_time_us = creation_time_us;
+  int64_t update_title_time_us = 0;
   if (pb_entry.has_update_title_time_us()) {
     update_title_time_us = pb_entry.update_title_time_us();
+  }
+  if (update_title_time_us == 0) {
+    // Entries created before title could be modified don't have
+    // update_title_time_us. Set it to creation_time_us for consistency.
+    update_title_time_us = creation_time_us;
   }
 
   State state = UNSEEN;
