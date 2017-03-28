@@ -9,12 +9,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "cc/paint/paint_surface.h"
 #include "content/common/content_export.h"
 #include "media/base/video_frame_pool.h"
 #include "media/base/video_types.h"
 #include "media/capture/video_capturer_source.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace base{
@@ -24,10 +24,6 @@ class SingleThreadTaskRunner;
 namespace blink {
 class WebMediaPlayer;
 }  // namespace blink
-
-namespace cc {
-class PaintCanvas;
-}  // namespace cc
 
 namespace content {
 
@@ -64,8 +60,7 @@ class CONTENT_EXPORT HtmlVideoElementCapturerSource final
   void sendNewFrame();
 
   media::VideoFramePool frame_pool_;
-  SkBitmap bitmap_;
-  std::unique_ptr<cc::PaintCanvas> canvas_;
+  sk_sp<cc::PaintSurface> surface_;
 
   const base::WeakPtr<blink::WebMediaPlayer> web_media_player_;
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;

@@ -19,7 +19,6 @@
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/image-encoders/ImageEncoderUtils.h"
 #include "public/platform/Platform.h"
-#include "third_party/skia/include/core/SkSurface.h"
 #include "wtf/MathExtras.h"
 
 namespace blink {

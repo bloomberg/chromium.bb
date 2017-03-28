@@ -34,6 +34,7 @@
 #include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/graphics/paint/PaintRecord.h"
 #include "platform/graphics/paint/PaintRecorder.h"
+#include "platform/graphics/paint/PaintSurface.h"
 #include "platform/graphics/test/MockImageDecoder.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
@@ -108,8 +109,8 @@ class DeferredImageDecoderTest : public ::testing::Test,
     m_actualDecoder = decoder.get();
     m_actualDecoder->setSize(1, 1);
     m_lazyDecoder = DeferredImageDecoder::createForTesting(std::move(decoder));
-    m_bitmap.allocPixels(SkImageInfo::MakeN32Premul(100, 100));
-    m_canvas = base::MakeUnique<cc::SkiaPaintCanvas>(m_bitmap);
+    m_surface = PaintSurface::MakeRasterN32Premul(100, 100);
+    ASSERT_TRUE(m_surface.get());
     m_decodeRequestCount = 0;
     m_repetitionCount = cAnimationNone;
     m_status = ImageFrame::FrameComplete;
@@ -142,8 +143,7 @@ class DeferredImageDecoderTest : public ::testing::Test,
   // Don't own this but saves the pointer to query states.
   MockImageDecoder* m_actualDecoder;
   std::unique_ptr<DeferredImageDecoder> m_lazyDecoder;
-  SkBitmap m_bitmap;
-  std::unique_ptr<cc::PaintCanvas> m_canvas;
+  sk_sp<PaintSurface> m_surface;
   int m_decodeRequestCount;
   RefPtr<SharedBuffer> m_data;
   size_t m_frameCount;
@@ -166,11 +166,14 @@ TEST_F(DeferredImageDecoderTest, drawIntoPaintRecord) {
   sk_sp<PaintRecord> record = recorder.finishRecordingAsPicture();
   EXPECT_EQ(0, m_decodeRequestCount);
 
-  m_canvas->drawPicture(record);
+  m_surface->getCanvas()->drawPicture(record);
   EXPECT_EQ(0, m_decodeRequestCount);
 
-  SkAutoLockPixels autoLock(m_bitmap);
-  EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255), m_bitmap.getColor(0, 0));
+  SkBitmap canvasBitmap;
+  canvasBitmap.allocN32Pixels(100, 100);
+  ASSERT_TRUE(m_surface->getCanvas()->readPixels(&canvasBitmap, 0, 0));
+  SkAutoLockPixels autoLock(canvasBitmap);
+  EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255), canvasBitmap.getColor(0, 0));
 }
 
 TEST_F(DeferredImageDecoderTest, drawIntoPaintRecordProgressive) {
@@ -184,7 +187,7 @@ TEST_F(DeferredImageDecoderTest, drawIntoPaintRecordProgressive) {
   PaintRecorder recorder;
   PaintCanvas* tempCanvas = recorder.beginRecording(100, 100);
   tempCanvas->drawImage(std::move(image), 0, 0);
-  m_canvas->drawPicture(recorder.finishRecordingAsPicture());
+  m_surface->getCanvas()->drawPicture(recorder.finishRecordingAsPicture());
 
   // Fully received the file and draw the PaintRecord again.
   m_lazyDecoder->setData(m_data, true);
@@ -192,10 +195,13 @@ TEST_F(DeferredImageDecoderTest, drawIntoPaintRecordProgressive) {
   ASSERT_TRUE(image);
   tempCanvas = recorder.beginRecording(100, 100);
   tempCanvas->drawImage(std::move(image), 0, 0);
-  m_canvas->drawPicture(recorder.finishRecordingAsPicture());
+  m_surface->getCanvas()->drawPicture(recorder.finishRecordingAsPicture());
 
-  SkAutoLockPixels autoLock(m_bitmap);
-  EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255), m_bitmap.getColor(0, 0));
+  SkBitmap canvasBitmap;
+  canvasBitmap.allocN32Pixels(100, 100);
+  ASSERT_TRUE(m_surface->getCanvas()->readPixels(&canvasBitmap, 0, 0));
+  SkAutoLockPixels autoLock(canvasBitmap);
+  EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255), canvasBitmap.getColor(0, 0));
 }
 
 static void rasterizeMain(PaintCanvas* canvas, sk_sp<PaintRecord> record) {
@@ -220,13 +226,16 @@ TEST_F(DeferredImageDecoderTest, decodeOnOtherThread) {
       WTF::wrapUnique(Platform::current()->createThread("RasterThread"));
   thread->getWebTaskRunner()->postTask(
       BLINK_FROM_HERE,
-      crossThreadBind(&rasterizeMain, crossThreadUnretained(m_canvas.get()),
-                      record));
+      crossThreadBind(&rasterizeMain,
+                      crossThreadUnretained(m_surface->getCanvas()), record));
   thread.reset();
   EXPECT_EQ(0, m_decodeRequestCount);
 
-  SkAutoLockPixels autoLock(m_bitmap);
-  EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255), m_bitmap.getColor(0, 0));
+  SkBitmap canvasBitmap;
+  canvasBitmap.allocN32Pixels(100, 100);
+  ASSERT_TRUE(m_surface->getCanvas()->readPixels(&canvasBitmap, 0, 0));
+  SkAutoLockPixels autoLock(canvasBitmap);
+  EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255), canvasBitmap.getColor(0, 0));
 }
 
 TEST_F(DeferredImageDecoderTest, singleFrameImageLoading) {
@@ -310,7 +319,7 @@ TEST_F(DeferredImageDecoderTest, decodedSize) {
   tempCanvas->drawImage(std::move(image), 0, 0);
   sk_sp<PaintRecord> record = recorder.finishRecordingAsPicture();
   EXPECT_EQ(0, m_decodeRequestCount);
-  m_canvas->drawPicture(record);
+  m_surface->getCanvas()->drawPicture(record);
   EXPECT_EQ(1, m_decodeRequestCount);
 }
 

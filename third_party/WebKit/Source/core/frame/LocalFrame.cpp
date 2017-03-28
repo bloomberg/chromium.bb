@@ -87,6 +87,7 @@
 #include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/graphics/paint/PaintRecordBuilder.h"
+#include "platform/graphics/paint/PaintSurface.h"
 #include "platform/graphics/paint/TransformDisplayItem.h"
 #include "platform/json/JSONValues.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
@@ -97,7 +98,6 @@
 #include "public/platform/WebScreenInfo.h"
 #include "public/platform/WebViewScheduler.h"
 #include "third_party/skia/include/core/SkImage.h"
-#include "third_party/skia/include/core/SkSurface.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
 
