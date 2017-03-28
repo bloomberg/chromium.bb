@@ -83,7 +83,7 @@ void ArcTracingBridge::StartTracing(
 
   std::vector<std::string> selected_categories;
   for (const auto& category : categories_) {
-    if (trace_config.IsCategoryGroupEnabled(category.full_name.c_str()))
+    if (trace_config.IsCategoryGroupEnabled(category.full_name))
       selected_categories.push_back(category.name);
   }
 
