@@ -43,8 +43,7 @@ class GpuMain;
 // the window server) over the mojom APIs. This is responsible for setting up
 // the connection to clients, allocating/free'ing gpu memory etc.
 class GpuService : public gpu::GpuChannelManagerDelegate,
-                   public mojom::GpuService,
-                   public base::NonThreadSafe {
+                   public mojom::GpuService {
  public:
   GpuService(const gpu::GPUInfo& gpu_info,
              std::unique_ptr<gpu::GpuWatchdogThread> watchdog,
@@ -153,6 +152,7 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
   void ThrowJavaException() override;
   void Stop(const StopCallback& callback) override;
 
+  scoped_refptr<base::SingleThreadTaskRunner> main_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
 
   // An event that will be signalled when we shutdown.
@@ -184,6 +184,9 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
   base::Time start_time_;
 
   mojo::BindingSet<mojom::GpuService> bindings_;
+
+  base::WeakPtr<GpuService> weak_ptr_;
+  base::WeakPtrFactory<GpuService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuService);
 };

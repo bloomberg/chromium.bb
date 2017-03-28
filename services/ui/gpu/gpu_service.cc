@@ -59,6 +59,21 @@ bool GpuLogMessageHandler(int severity,
   return false;
 }
 
+// Returns a callback which does a PostTask to run |callback| on the |runner|
+// task runner.
+template <typename Param>
+const base::Callback<void(const Param&)> WrapCallback(
+    scoped_refptr<base::SingleThreadTaskRunner> runner,
+    const base::Callback<void(const Param&)>& callback) {
+  return base::Bind(
+      [](scoped_refptr<base::SingleThreadTaskRunner> runner,
+         const base::Callback<void(const Param&)>& callback,
+         const Param& param) {
+        runner->PostTask(FROM_HERE, base::Bind(callback, param));
+      },
+      runner, callback);
+}
+
 }  // namespace
 
 GpuService::GpuService(const gpu::GPUInfo& gpu_info,
@@ -66,16 +81,21 @@ GpuService::GpuService(const gpu::GPUInfo& gpu_info,
                        gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
                        scoped_refptr<base::SingleThreadTaskRunner> io_runner,
                        const gpu::GpuFeatureInfo& gpu_feature_info)
-    : io_runner_(std::move(io_runner)),
+    : main_runner_(base::ThreadTaskRunnerHandle::Get()),
+      io_runner_(std::move(io_runner)),
       shutdown_event_(base::WaitableEvent::ResetPolicy::MANUAL,
                       base::WaitableEvent::InitialState::NOT_SIGNALED),
       watchdog_thread_(std::move(watchdog_thread)),
       gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
       gpu_info_(gpu_info),
       gpu_feature_info_(gpu_feature_info),
-      sync_point_manager_(nullptr) {}
+      sync_point_manager_(nullptr),
+      weak_ptr_factory_(this) {
+  weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
+}
 
 GpuService::~GpuService() {
+  DCHECK(main_runner_->BelongsToCurrentThread());
   logging::SetLogMessageHandler(nullptr);
   g_log_callback.Get() =
       base::Callback<void(int, size_t, const std::string&)>();
@@ -93,7 +113,7 @@ GpuService::~GpuService() {
 
 void GpuService::UpdateGPUInfoFromPreferences(
     const gpu::GpuPreferences& preferences) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(main_runner_->BelongsToCurrentThread());
   DCHECK(!gpu_host_);
   gpu_preferences_ = preferences;
   gpu_info_.video_decode_accelerator_capabilities =
@@ -112,6 +132,7 @@ void GpuService::InitializeWithHost(mojom::GpuHostPtr gpu_host,
                                     gpu::GpuProcessActivityFlags activity_flags,
                                     gpu::SyncPointManager* sync_point_manager,
                                     base::WaitableEvent* shutdown_event) {
+  DCHECK(main_runner_->BelongsToCurrentThread());
   gpu_host->DidInitialize(gpu_info_, gpu_feature_info_);
   gpu_host_ =
       mojom::ThreadSafeGpuHostPtr::Create(gpu_host.PassInterface(), io_runner_);
@@ -147,12 +168,19 @@ void GpuService::InitializeWithHost(mojom::GpuHostPtr gpu_host,
 }
 
 void GpuService::Bind(mojom::GpuServiceRequest request) {
+  if (main_runner_->BelongsToCurrentThread()) {
+    io_runner_->PostTask(FROM_HERE,
+                         base::Bind(&GpuService::Bind, base::Unretained(this),
+                                    base::Passed(std::move(request))));
+    return;
+  }
   bindings_.AddBinding(this, std::move(request));
 }
 
 void GpuService::RecordLogMessage(int severity,
                                   size_t message_start,
                                   const std::string& str) {
+  // This can be run from any thread.
   std::string header = str.substr(0, message_start);
   std::string message = str.substr(message_start);
   (*gpu_host_)->RecordLogMessage(severity, header, message);
@@ -166,7 +194,8 @@ void GpuService::CreateGpuMemoryBuffer(
     int client_id,
     gpu::SurfaceHandle surface_handle,
     const CreateGpuMemoryBufferCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(io_runner_->BelongsToCurrentThread());
+  // This needs to happen in the IO thread.
   callback.Run(gpu_memory_buffer_factory_->CreateGpuMemoryBuffer(
       id, size, format, usage, client_id, surface_handle));
 }
@@ -174,13 +203,25 @@ void GpuService::CreateGpuMemoryBuffer(
 void GpuService::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                                         int client_id,
                                         const gpu::SyncToken& sync_token) {
-  DCHECK(CalledOnValidThread());
+  if (io_runner_->BelongsToCurrentThread()) {
+    main_runner_->PostTask(
+        FROM_HERE, base::Bind(&GpuService::DestroyGpuMemoryBuffer, weak_ptr_,
+                              id, client_id, sync_token));
+    return;
+  }
   if (gpu_channel_manager_)
     gpu_channel_manager_->DestroyGpuMemoryBuffer(id, client_id, sync_token);
 }
 
 void GpuService::GetVideoMemoryUsageStats(
     const GetVideoMemoryUsageStatsCallback& callback) {
+  if (io_runner_->BelongsToCurrentThread()) {
+    auto wrap_callback = WrapCallback(io_runner_, callback);
+    main_runner_->PostTask(
+        FROM_HERE, base::Bind(&GpuService::GetVideoMemoryUsageStats, weak_ptr_,
+                              wrap_callback));
+    return;
+  }
   gpu::VideoMemoryUsageStats video_memory_usage_stats;
   if (gpu_channel_manager_) {
     gpu_channel_manager_->gpu_memory_manager()->GetVideoMemoryUsageStats(
@@ -191,6 +232,13 @@ void GpuService::GetVideoMemoryUsageStats(
 
 void GpuService::RequestCompleteGpuInfo(
     const RequestCompleteGpuInfoCallback& callback) {
+  if (io_runner_->BelongsToCurrentThread()) {
+    auto wrap_callback = WrapCallback(io_runner_, callback);
+    main_runner_->PostTask(
+        FROM_HERE, base::Bind(&GpuService::RequestCompleteGpuInfo, weak_ptr_,
+                              wrap_callback));
+    return;
+  }
   UpdateGpuInfoPlatform();
   callback.Run(gpu_info_);
 #if defined(OS_WIN)
@@ -203,6 +251,7 @@ void GpuService::RequestCompleteGpuInfo(
 
 #if defined(OS_MACOSX)
 void GpuService::UpdateGpuInfoPlatform() {
+  DCHECK(main_runner_->BelongsToCurrentThread());
   // gpu::CollectContextGraphicsInfo() is already called during gpu process
   // initialization (see GpuInit::InitializeAndStartSandbox()) on non-mac
   // platforms, and during in-browser gpu thread initialization on all platforms
@@ -230,6 +279,7 @@ void GpuService::UpdateGpuInfoPlatform() {
 }
 #elif defined(OS_WIN)
 void GpuService::UpdateGpuInfoPlatform() {
+  DCHECK(main_runner_->BelongsToCurrentThread());
   // GPU full info collection should only happen on un-sandboxed GPU process
   // or single process/in-process gpu mode on Windows.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -246,27 +296,32 @@ void GpuService::UpdateGpuInfoPlatform() {}
 #endif
 
 void GpuService::DidCreateOffscreenContext(const GURL& active_url) {
+  DCHECK(main_runner_->BelongsToCurrentThread());
   (*gpu_host_)->DidCreateOffscreenContext(active_url);
 }
 
 void GpuService::DidDestroyChannel(int client_id) {
+  DCHECK(main_runner_->BelongsToCurrentThread());
   media_gpu_channel_manager_->RemoveChannel(client_id);
   (*gpu_host_)->DidDestroyChannel(client_id);
 }
 
 void GpuService::DidDestroyOffscreenContext(const GURL& active_url) {
+  DCHECK(main_runner_->BelongsToCurrentThread());
   (*gpu_host_)->DidDestroyOffscreenContext(active_url);
 }
 
 void GpuService::DidLoseContext(bool offscreen,
                                 gpu::error::ContextLostReason reason,
                                 const GURL& active_url) {
+  DCHECK(main_runner_->BelongsToCurrentThread());
   (*gpu_host_)->DidLoseContext(offscreen, reason, active_url);
 }
 
 void GpuService::StoreShaderToDisk(int client_id,
                                    const std::string& key,
                                    const std::string& shader) {
+  DCHECK(main_runner_->BelongsToCurrentThread());
   (*gpu_host_)->StoreShaderToDisk(client_id, key, shader);
 }
 
@@ -274,11 +329,13 @@ void GpuService::StoreShaderToDisk(int client_id,
 void GpuService::SendAcceleratedSurfaceCreatedChildWindow(
     gpu::SurfaceHandle parent_window,
     gpu::SurfaceHandle child_window) {
+  DCHECK(main_runner_->BelongsToCurrentThread());
   (*gpu_host_)->SetChildSurface(parent_window, child_window);
 }
 #endif
 
 void GpuService::SetActiveURL(const GURL& url) {
+  DCHECK(main_runner_->BelongsToCurrentThread());
   constexpr char kActiveURL[] = "url-chunk";
   base::debug::SetCrashKeyValue(kActiveURL, url.possibly_invalid_spec());
 }
@@ -288,7 +345,21 @@ void GpuService::EstablishGpuChannel(
     uint64_t client_tracing_id,
     bool is_gpu_host,
     const EstablishGpuChannelCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  if (io_runner_->BelongsToCurrentThread()) {
+    EstablishGpuChannelCallback wrap_callback = base::Bind(
+        [](scoped_refptr<base::SingleThreadTaskRunner> runner,
+           const EstablishGpuChannelCallback& callback,
+           mojo::ScopedMessagePipeHandle handle) {
+          runner->PostTask(
+              FROM_HERE, base::Bind(callback, base::Passed(std::move(handle))));
+        },
+        io_runner_, callback);
+    main_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&GpuService::EstablishGpuChannel, weak_ptr_, client_id,
+                   client_tracing_id, is_gpu_host, wrap_callback));
+    return;
+  }
 
   if (!gpu_channel_manager_) {
     callback.Run(mojo::ScopedMessagePipeHandle());
@@ -308,12 +379,22 @@ void GpuService::EstablishGpuChannel(
 }
 
 void GpuService::CloseChannel(int32_t client_id) {
+  if (io_runner_->BelongsToCurrentThread()) {
+    main_runner_->PostTask(
+        FROM_HERE, base::Bind(&GpuService::CloseChannel, weak_ptr_, client_id));
+    return;
+  }
   if (!gpu_channel_manager_)
     return;
   gpu_channel_manager_->RemoveChannel(client_id);
 }
 
 void GpuService::LoadedShader(const std::string& data) {
+  if (io_runner_->BelongsToCurrentThread()) {
+    main_runner_->PostTask(
+        FROM_HERE, base::Bind(&GpuService::LoadedShader, weak_ptr_, data));
+    return;
+  }
   if (!gpu_channel_manager_)
     return;
   gpu_channel_manager_->PopulateShaderCache(data);
@@ -322,15 +403,28 @@ void GpuService::LoadedShader(const std::string& data) {
 void GpuService::DestroyingVideoSurface(
     int32_t surface_id,
     const DestroyingVideoSurfaceCallback& callback) {
+  DCHECK(io_runner_->BelongsToCurrentThread());
 #if defined(OS_ANDROID)
-  media::AVDACodecAllocator::Instance()->OnSurfaceDestroyed(surface_id);
+  main_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(
+          [](int32_t surface_id) {
+            media::AVDACodecAllocator::Instance()->OnSurfaceDestroyed(
+                surface_id);
+          },
+          surface_id),
+      callback);
 #else
   NOTREACHED() << "DestroyingVideoSurface() not supported on this platform.";
 #endif
-  callback.Run();
 }
 
 void GpuService::WakeUpGpu() {
+  if (io_runner_->BelongsToCurrentThread()) {
+    main_runner_->PostTask(FROM_HERE,
+                           base::Bind(&GpuService::WakeUpGpu, weak_ptr_));
+    return;
+  }
 #if defined(OS_ANDROID)
   if (!gpu_channel_manager_)
     return;
@@ -341,6 +435,11 @@ void GpuService::WakeUpGpu() {
 }
 
 void GpuService::DestroyAllChannels() {
+  if (io_runner_->BelongsToCurrentThread()) {
+    main_runner_->PostTask(
+        FROM_HERE, base::Bind(&GpuService::DestroyAllChannels, weak_ptr_));
+    return;
+  }
   if (!gpu_channel_manager_)
     return;
   DVLOG(1) << "GPU: Removing all contexts";
@@ -348,6 +447,7 @@ void GpuService::DestroyAllChannels() {
 }
 
 void GpuService::Crash() {
+  DCHECK(io_runner_->BelongsToCurrentThread());
   DVLOG(1) << "GPU: Simulating GPU crash";
   // Good bye, cruel world.
   volatile int* it_s_the_end_of_the_world_as_we_know_it = NULL;
@@ -355,24 +455,34 @@ void GpuService::Crash() {
 }
 
 void GpuService::Hang() {
-  DVLOG(1) << "GPU: Simulating GPU hang";
-  for (;;) {
-    // Do not sleep here. The GPU watchdog timer tracks the amount of user
-    // time this thread is using and it doesn't use much while calling Sleep.
-  }
+  DCHECK(io_runner_->BelongsToCurrentThread());
+
+  main_runner_->PostTask(FROM_HERE, base::Bind([] {
+                           DVLOG(1) << "GPU: Simulating GPU hang";
+                           for (;;) {
+                             // Do not sleep here. The GPU watchdog timer tracks
+                             // the amount of user time this thread is using and
+                             // it doesn't use much while calling Sleep.
+                           }
+                         }));
 }
 
 void GpuService::ThrowJavaException() {
+  DCHECK(io_runner_->BelongsToCurrentThread());
 #if defined(OS_ANDROID)
-  base::android::ThrowUncaughtException();
+  main_runner_->PostTask(
+      FROM_HERE, base::Bind([] { base::android::ThrowUncaughtException(); }));
 #else
   NOTREACHED() << "Java exception not supported on this platform.";
 #endif
 }
 
 void GpuService::Stop(const StopCallback& callback) {
-  base::MessageLoop::current()->QuitWhenIdle();
-  callback.Run();
+  DCHECK(io_runner_->BelongsToCurrentThread());
+  main_runner_->PostTaskAndReply(FROM_HERE, base::Bind([] {
+                                   base::MessageLoop::current()->QuitWhenIdle();
+                                 }),
+                                 callback);
 }
 
 }  // namespace ui
