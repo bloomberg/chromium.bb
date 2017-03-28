@@ -1,0 +1,65 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef COMPONENTS_PAYMENTS_CONTENT_ANDROID_JOURNEY_LOGGER_ANDROID_H_
+#define COMPONENTS_PAYMENTS_CONTENT_ANDROID_JOURNEY_LOGGER_ANDROID_H_
+
+#include <jni.h>
+
+#include "base/android/scoped_java_ref.h"
+#include "base/macros.h"
+#include "components/payments/core/journey_logger.h"
+
+namespace payments {
+
+// Forwarding calls to payments::JourneyLogger.
+class JourneyLoggerAndroid {
+ public:
+  // Registers the JNI bindings for this class.
+  static bool Register(JNIEnv* env);
+
+  JourneyLoggerAndroid();
+  ~JourneyLoggerAndroid();
+
+  // Message from Java to destroy this object.
+  void Destroy(JNIEnv* env,
+               const base::android::JavaParamRef<jobject>& jcaller);
+
+  void SetNumberOfSuggestionsShown(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller,
+      jint jsection,
+      jint jnumber);
+  void IncrementSelectionChanges(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller,
+      jint jsection);
+  void IncrementSelectionEdits(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller,
+      jint jsection);
+  void IncrementSelectionAdds(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller,
+      jint jsection);
+  void SetCanMakePaymentValue(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller,
+      jboolean jvalue);
+  void SetShowCalled(JNIEnv* env,
+                     const base::android::JavaParamRef<jobject>& jcaller);
+  void RecordJourneyStatsHistograms(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller,
+      jint jcompletion_status);
+
+ private:
+  JourneyLogger journey_logger_;
+
+  DISALLOW_COPY_AND_ASSIGN(JourneyLoggerAndroid);
+};
+
+}  // namespace payments
+
+#endif  // COMPONENTS_PAYMENTS_CONTENT_ANDROID_JOURNEY_LOGGER_ANDROID_H_

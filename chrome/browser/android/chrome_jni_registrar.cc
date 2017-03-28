@@ -176,10 +176,7 @@
 #include "components/gcm_driver/android/component_jni_registrar.h"
 #include "components/gcm_driver/instance_id/android/component_jni_registrar.h"
 #include "components/invalidation/impl/android/component_jni_registrar.h"
-#include "components/payments/content/android/currency_formatter_android.h"
-#include "components/payments/content/android/payment_details_validation_android.h"
-#include "components/payments/content/android/payment_manifest_downloader_android.h"
-#include "components/payments/content/android/payment_manifest_parser_android.h"
+#include "components/payments/content/android/component_jni_registrar.h"
 #include "components/policy/core/browser/android/component_jni_registrar.h"
 #include "components/safe_browsing_db/android/jni_registrar.h"
 #include "components/safe_json/android/component_jni_registrar.h"
@@ -222,6 +219,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"InstanceID", instance_id::android::RegisterInstanceIDJni},
     {"Invalidation", invalidation::android::RegisterInvalidationJni},
     {"OfflineContentAggregator", RegisterOfflineContentAggregatorFactoryJni},
+    {"Payments", payments::android::RegisterPayments},
     {"Policy", policy::android::RegisterPolicy},
     {"SafeJson", safe_json::android::RegisterSafeJsonJni},
     {"Signin", signin::android::RegisterSigninJni},
@@ -287,7 +285,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"CreditCardScannerBridge",
      autofill::CreditCardScannerViewAndroid::Register},
     {"CtrSuppression", RegisterCtrSuppression},
-    {"CurrencyFormatter", payments::CurrencyFormatterAndroid::Register},
     {"DataReductionPromoInfoBarDelegate",
      DataReductionPromoInfoBarDelegateAndroid::Register},
     {"DataReductionProxySettings", DataReductionProxySettingsAndroid::Register},
@@ -359,9 +356,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
      autofill::PasswordGenerationPopupViewAndroid::Register},
     {"PasswordUIViewAndroid",
      PasswordUIViewAndroid::RegisterPasswordUIViewAndroid},
-    {"PaymentManifestDownloader", payments::RegisterPaymentManifestDownloader},
-    {"PaymentManifestParser", payments::RegisterPaymentManifestParser},
-    {"PaymentValidator", payments::RegisterPaymentValidator},
     {"PermissionDialogDelegate",
      PermissionDialogDelegate::RegisterPermissionDialogDelegate},
     {"PermissionUpdateInfoBarDelegate",

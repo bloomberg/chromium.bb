@@ -19,7 +19,7 @@ using ::base::android::ConvertJavaStringToUTF8;
 
 CurrencyFormatterAndroid::CurrencyFormatterAndroid(
     JNIEnv* env,
-    jobject unused_obj,
+    jobject jcaller,
     const JavaParamRef<jstring>& currency_code,
     const JavaParamRef<jstring>& currency_system,
     const JavaParamRef<jstring>& locale_name) {
@@ -34,13 +34,13 @@ CurrencyFormatterAndroid::CurrencyFormatterAndroid(
 CurrencyFormatterAndroid::~CurrencyFormatterAndroid() {}
 
 void CurrencyFormatterAndroid::Destroy(JNIEnv* env,
-                                       const JavaParamRef<jobject>& obj) {
+                                       const JavaParamRef<jobject>& jcaller) {
   delete this;
 }
 
 base::android::ScopedJavaLocalRef<jstring> CurrencyFormatterAndroid::Format(
     JNIEnv* env,
-    const JavaParamRef<jobject>& unused_obj,
+    const JavaParamRef<jobject>& jcaller,
     const JavaParamRef<jstring>& amount) {
   base::string16 result =
       currency_formatter_->Format(ConvertJavaStringToUTF8(env, amount));

@@ -20,6 +20,9 @@ namespace autofill {
 // therefore a single instance of this wrapper.
 class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
  public:
+  // Registers the JNI bindings for this class.
+  static bool Register(JNIEnv* env);
+
   PersonalDataManagerAndroid(JNIEnv* env, jobject obj);
 
   // Returns true if personal data manager has loaded the initial data.
@@ -195,9 +198,6 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
 
   // PersonalDataManagerObserver:
   void OnPersonalDataChanged() override;
-
-  // Registers the JNI bindings for this class.
-  static bool Register(JNIEnv* env);
 
   // These functions act on the usage stats of local profiles and credit cards.
   // --------------------

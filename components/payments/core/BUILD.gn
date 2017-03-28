@@ -12,6 +12,8 @@ static_library("core") {
     "basic_card_response.h",
     "currency_formatter.cc",
     "currency_formatter.h",
+    "journey_logger.cc",
+    "journey_logger.h",
     "payment_address.cc",
     "payment_address.h",
     "payment_instrument.cc",

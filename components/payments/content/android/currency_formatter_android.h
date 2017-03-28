@@ -18,29 +18,30 @@ class CurrencyFormatter;
 // Forwarding calls to payments::CurrencyFormatter.
 class CurrencyFormatterAndroid {
  public:
+  // Registers the JNI bindings for this class.
+  static bool Register(JNIEnv* env);
+
   CurrencyFormatterAndroid(
       JNIEnv* env,
-      jobject unused_obj,
+      jobject jcaller,
       const base::android::JavaParamRef<jstring>& currency_code,
       const base::android::JavaParamRef<jstring>& currency_system,
       const base::android::JavaParamRef<jstring>& locale_name);
   ~CurrencyFormatterAndroid();
 
   // Message from Java to destroy this object.
-  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void Destroy(JNIEnv* env,
+               const base::android::JavaParamRef<jobject>& jcaller);
 
   // Refer to CurrencyFormatter::Format documentation.
   base::android::ScopedJavaLocalRef<jstring> Format(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& unused_obj,
+      const base::android::JavaParamRef<jobject>& jcaller,
       const base::android::JavaParamRef<jstring>& amount);
 
   base::android::ScopedJavaLocalRef<jstring> GetFormattedCurrencyCode(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& unused_obj);
-
-  // Registers the JNI bindings for this class.
-  static bool Register(JNIEnv* env);
+      const base::android::JavaParamRef<jobject>& jcaller);
 
  private:
   std::unique_ptr<CurrencyFormatter> currency_formatter_;

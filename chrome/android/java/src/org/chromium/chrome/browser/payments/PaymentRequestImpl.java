@@ -45,6 +45,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.components.payments.CurrencyFormatter;
+import org.chromium.components.payments.JourneyLogger;
 import org.chromium.components.payments.PaymentValidator;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.RenderFrameHost;
@@ -258,7 +259,7 @@ public class PaymentRequestImpl
     private final byte[][] mCertificateChain;
     private final AddressEditor mAddressEditor;
     private final CardEditor mCardEditor;
-    private final PaymentRequestJourneyLogger mJourneyLogger = new PaymentRequestJourneyLogger();
+    private final JourneyLogger mJourneyLogger = new JourneyLogger();
     private final boolean mIsIncognito;
 
     private PaymentRequestClient mClient;
@@ -525,7 +526,7 @@ public class PaymentRequestImpl
 
         // Log the number of suggested shipping addresses.
         mJourneyLogger.setNumberOfSuggestionsShown(
-                PaymentRequestJourneyLogger.SECTION_SHIPPING_ADDRESS, addresses.size());
+                JourneyLogger.SECTION_SHIPPING_ADDRESS, addresses.size());
 
         // Automatically select the first address if one is complete and if the merchant does
         // not require a shipping address to calculate shipping costs.
@@ -922,8 +923,7 @@ public class PaymentRequestImpl
         if (optionType == PaymentRequestUI.TYPE_SHIPPING_ADDRESSES) {
             assert option instanceof AutofillAddress;
             // Log the change of shipping address.
-            mJourneyLogger.incrementSelectionChanges(
-                    PaymentRequestJourneyLogger.SECTION_SHIPPING_ADDRESS);
+            mJourneyLogger.incrementSelectionChanges(JourneyLogger.SECTION_SHIPPING_ADDRESS);
             AutofillAddress address = (AutofillAddress) option;
             if (address.isComplete()) {
                 mShippingAddressesSection.setSelectedItem(option);
@@ -943,8 +943,7 @@ public class PaymentRequestImpl
         } else if (optionType == PaymentRequestUI.TYPE_CONTACT_DETAILS) {
             assert option instanceof AutofillContact;
             // Log the change of contact info.
-            mJourneyLogger.incrementSelectionChanges(
-                    PaymentRequestJourneyLogger.SECTION_CONTACT_INFO);
+            mJourneyLogger.incrementSelectionChanges(JourneyLogger.SECTION_CONTACT_INFO);
             AutofillContact contact = (AutofillContact) option;
 
             if (contact.isComplete()) {
@@ -957,8 +956,7 @@ public class PaymentRequestImpl
             assert option instanceof PaymentInstrument;
             if (option instanceof AutofillPaymentInstrument) {
                 // Log the change of credit card.
-                mJourneyLogger.incrementSelectionChanges(
-                        PaymentRequestJourneyLogger.SECTION_CREDIT_CARDS);
+                mJourneyLogger.incrementSelectionChanges(JourneyLogger.SECTION_CREDIT_CARDS);
                 AutofillPaymentInstrument card = (AutofillPaymentInstrument) option;
 
                 if (!card.isComplete()) {
@@ -1009,18 +1007,17 @@ public class PaymentRequestImpl
             editAddress(null);
             mPaymentInformationCallback = callback;
             // Log the add of shipping address.
-            mJourneyLogger.incrementSelectionAdds(
-                    PaymentRequestJourneyLogger.SECTION_SHIPPING_ADDRESS);
+            mJourneyLogger.incrementSelectionAdds(JourneyLogger.SECTION_SHIPPING_ADDRESS);
             return PaymentRequestUI.SELECTION_RESULT_ASYNCHRONOUS_VALIDATION;
         } else if (optionType == PaymentRequestUI.TYPE_CONTACT_DETAILS) {
             editContact(null);
             // Log the add of contact info.
-            mJourneyLogger.incrementSelectionAdds(PaymentRequestJourneyLogger.SECTION_CONTACT_INFO);
+            mJourneyLogger.incrementSelectionAdds(JourneyLogger.SECTION_CONTACT_INFO);
             return PaymentRequestUI.SELECTION_RESULT_EDITOR_LAUNCH;
         } else if (optionType == PaymentRequestUI.TYPE_PAYMENT_METHODS) {
             editCard(null);
             // Log the add of credit card.
-            mJourneyLogger.incrementSelectionAdds(PaymentRequestJourneyLogger.SECTION_CREDIT_CARDS);
+            mJourneyLogger.incrementSelectionAdds(JourneyLogger.SECTION_CREDIT_CARDS);
             return PaymentRequestUI.SELECTION_RESULT_EDITOR_LAUNCH;
         }
 
@@ -1030,8 +1027,7 @@ public class PaymentRequestImpl
     private void editAddress(final AutofillAddress toEdit) {
         if (toEdit != null) {
             // Log the edit of a shipping address.
-            mJourneyLogger.incrementSelectionEdits(
-                    PaymentRequestJourneyLogger.SECTION_SHIPPING_ADDRESS);
+            mJourneyLogger.incrementSelectionEdits(JourneyLogger.SECTION_SHIPPING_ADDRESS);
         }
         mAddressEditor.edit(toEdit, new Callback<AutofillAddress>() {
             @Override
@@ -1081,8 +1077,7 @@ public class PaymentRequestImpl
     private void editContact(final AutofillContact toEdit) {
         if (toEdit != null) {
             // Log the edit of a contact info.
-            mJourneyLogger.incrementSelectionEdits(
-                    PaymentRequestJourneyLogger.SECTION_CONTACT_INFO);
+            mJourneyLogger.incrementSelectionEdits(JourneyLogger.SECTION_CONTACT_INFO);
         }
         mContactEditor.edit(toEdit, new Callback<AutofillContact>() {
             @Override
@@ -1115,8 +1110,7 @@ public class PaymentRequestImpl
     private void editCard(final AutofillPaymentInstrument toEdit) {
         if (toEdit != null) {
             // Log the edit of a credit card.
-            mJourneyLogger.incrementSelectionEdits(
-                    PaymentRequestJourneyLogger.SECTION_CREDIT_CARDS);
+            mJourneyLogger.incrementSelectionEdits(JourneyLogger.SECTION_CREDIT_CARDS);
         }
         mCardEditor.edit(toEdit, new Callback<AutofillPaymentInstrument>() {
             @Override
@@ -1398,8 +1392,8 @@ public class PaymentRequestImpl
         }
 
         // Log the number of suggested credit cards.
-        mJourneyLogger.setNumberOfSuggestionsShown(PaymentRequestJourneyLogger.SECTION_CREDIT_CARDS,
-                mPendingAutofillInstruments.size());
+        mJourneyLogger.setNumberOfSuggestionsShown(
+                JourneyLogger.SECTION_CREDIT_CARDS, mPendingAutofillInstruments.size());
 
         // Possibly pre-select the first instrument on the list.
         int selection = SectionInformation.NO_SELECTION;
@@ -1625,7 +1619,7 @@ public class PaymentRequestImpl
         RecordHistogram.recordBooleanHistogram("PaymentRequest.CheckoutFunnel." + funnelPart, true);
 
         if (funnelPart.equals("Completed")) {
-            mJourneyLogger.recordJourneyStatsHistograms("Completed");
+            mJourneyLogger.recordJourneyStatsHistograms(JourneyLogger.COMPLETION_STATUS_COMPLETED);
         }
     }
 
@@ -1644,9 +1638,10 @@ public class PaymentRequestImpl
                 PaymentRequestMetrics.ABORT_REASON_MAX);
 
         if (abortReason == PaymentRequestMetrics.ABORT_REASON_ABORTED_BY_USER) {
-            mJourneyLogger.recordJourneyStatsHistograms("UserAborted");
+            mJourneyLogger.recordJourneyStatsHistograms(
+                    JourneyLogger.COMPLETION_STATUS_USER_ABORTED);
         } else {
-            mJourneyLogger.recordJourneyStatsHistograms("OtherAborted");
+            mJourneyLogger.recordJourneyStatsHistograms(JourneyLogger.COMPLETION_STATUS_COMPLETED);
         }
     }
 

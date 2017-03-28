@@ -9,6 +9,7 @@ import android.support.test.filters.SmallTest;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.test.util.ApplicationData;
+import org.chromium.components.payments.JourneyLogger;
 import org.chromium.content.browser.test.NativeLibraryTestBase;
 
 /**
@@ -29,23 +30,26 @@ public class PaymentRequestJourneyLoggerUnitTest extends NativeLibraryTestBase {
     @SmallTest
     @Feature({"Payments"})
     public void testRecordJourneyStatsHistograms_CanMakePaymentNotCalled_NoShow() {
-        PaymentRequestJourneyLogger logger = new PaymentRequestJourneyLogger();
+        JourneyLogger logger = new JourneyLogger();
         assertNoLogForCanMakePayment();
 
-        logger.recordJourneyStatsHistograms("");
+        logger.recordJourneyStatsHistograms(JourneyLogger.COMPLETION_STATUS_USER_ABORTED);
 
         // CanMakePayment was not used.
-        assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
-                                "PaymentRequest.CanMakePayment.Usage",
-                                PaymentRequestJourneyLogger.CAN_MAKE_PAYMENT_NOT_USED));
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CanMakePayment.Usage",
+                        JourneyLogger.CAN_MAKE_PAYMENT_NOT_USED));
 
         // There should be no completion stats since PR was not shown to the user
-        assertEquals(0, RecordHistogram.getHistogramValueCountForTesting(
-                                "PaymentRequest.CanMakePayment.NotUsed.WithShowEffectOnCompletion",
-                                PaymentRequestJourneyLogger.COMPLETION_STATUS_ABORTED));
-        assertEquals(0, RecordHistogram.getHistogramValueCountForTesting(
-                                "PaymentRequest.CanMakePayment.NotUsed.WithShowEffectOnCompletion",
-                                PaymentRequestJourneyLogger.COMPLETION_STATUS_COMPLETED));
+        assertEquals(0,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CanMakePayment.NotUsed.WithShowEffectOnCompletion",
+                        JourneyLogger.COMPLETION_STATUS_USER_ABORTED));
+        assertEquals(0,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CanMakePayment.NotUsed.WithShowEffectOnCompletion",
+                        JourneyLogger.COMPLETION_STATUS_COMPLETED));
     }
 
     /**
@@ -54,25 +58,56 @@ public class PaymentRequestJourneyLoggerUnitTest extends NativeLibraryTestBase {
      */
     @SmallTest
     @Feature({"Payments"})
-    public void testRecordJourneyStatsHistograms_CanMakePaymentNotCalled_ShowAndAbort() {
-        PaymentRequestJourneyLogger logger = new PaymentRequestJourneyLogger();
+    public void testRecordJourneyStatsHistograms_CanMakePaymentNotCalled_ShowAndUserAbort() {
+        JourneyLogger logger = new JourneyLogger();
         assertNoLogForCanMakePayment();
 
         // The merchant does not query CanMakePayment, show the PaymentRequest and the user
         // aborts it.
         logger.setShowCalled();
-        logger.recordJourneyStatsHistograms("Aborted");
+        logger.recordJourneyStatsHistograms(JourneyLogger.COMPLETION_STATUS_USER_ABORTED);
 
         // CanMakePayment was not used.
-        assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
-                                "PaymentRequest.CanMakePayment.Usage",
-                                PaymentRequestJourneyLogger.CAN_MAKE_PAYMENT_NOT_USED));
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CanMakePayment.Usage",
+                        JourneyLogger.CAN_MAKE_PAYMENT_NOT_USED));
 
         // There should be a record for an abort when CanMakePayment is not used but the PR is shown
         // to the user.
-        assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
-                                "PaymentRequest.CanMakePayment.NotUsed.WithShowEffectOnCompletion",
-                                PaymentRequestJourneyLogger.COMPLETION_STATUS_ABORTED));
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CanMakePayment.NotUsed.WithShowEffectOnCompletion",
+                        JourneyLogger.COMPLETION_STATUS_USER_ABORTED));
+    }
+
+    /**
+     * Tests the canMakePayment stats for the case where the merchant does not use it and the
+     * transaction is aborted.
+     */
+    @SmallTest
+    @Feature({"Payments"})
+    public void testRecordJourneyStatsHistograms_CanMakePaymentNotCalled_ShowAndOtherAbort() {
+        JourneyLogger logger = new JourneyLogger();
+        assertNoLogForCanMakePayment();
+
+        // The merchant does not query CanMakePayment, show the PaymentRequest and the user
+        // aborts it.
+        logger.setShowCalled();
+        logger.recordJourneyStatsHistograms(JourneyLogger.COMPLETION_STATUS_OTHER_ABORTED);
+
+        // CanMakePayment was not used.
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CanMakePayment.Usage",
+                        JourneyLogger.CAN_MAKE_PAYMENT_NOT_USED));
+
+        // There should be a record for an abort when CanMakePayment is not used but the PR is shown
+        // to the user.
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CanMakePayment.NotUsed.WithShowEffectOnCompletion",
+                        JourneyLogger.COMPLETION_STATUS_OTHER_ABORTED));
     }
 
     /**
@@ -82,24 +117,26 @@ public class PaymentRequestJourneyLoggerUnitTest extends NativeLibraryTestBase {
     @SmallTest
     @Feature({"Payments"})
     public void testRecordJourneyStatsHistograms_CanMakePaymentNotCalled_ShowAndComplete() {
-        PaymentRequestJourneyLogger logger = new PaymentRequestJourneyLogger();
+        JourneyLogger logger = new JourneyLogger();
         assertNoLogForCanMakePayment();
 
         // The merchant does not query CanMakePayment, show the PaymentRequest and the user
         // completes it.
         logger.setShowCalled();
-        logger.recordJourneyStatsHistograms("Completed");
+        logger.recordJourneyStatsHistograms(JourneyLogger.COMPLETION_STATUS_COMPLETED);
 
         // CanMakePayment was not used.
-        assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
-                                "PaymentRequest.CanMakePayment.Usage",
-                                PaymentRequestJourneyLogger.CAN_MAKE_PAYMENT_NOT_USED));
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CanMakePayment.Usage",
+                        JourneyLogger.CAN_MAKE_PAYMENT_NOT_USED));
 
         // There should be a record for a completion when CanMakePayment is not used but the PR is
         // shown to the user.
-        assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
-                                "PaymentRequest.CanMakePayment.NotUsed.WithShowEffectOnCompletion",
-                                PaymentRequestJourneyLogger.COMPLETION_STATUS_COMPLETED));
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CanMakePayment.NotUsed.WithShowEffectOnCompletion",
+                        JourneyLogger.COMPLETION_STATUS_COMPLETED));
     }
 
     /**
@@ -109,31 +146,34 @@ public class PaymentRequestJourneyLoggerUnitTest extends NativeLibraryTestBase {
     @SmallTest
     @Feature({"Payments"})
     public void testRecordJourneyStatsHistograms_CanMakePaymentCalled_FalseAndNoShow() {
-        PaymentRequestJourneyLogger logger = new PaymentRequestJourneyLogger();
+        JourneyLogger logger = new JourneyLogger();
         assertNoLogForCanMakePayment();
 
         // The user cannot make payment and the PaymentRequest is not shown.
         logger.setCanMakePaymentValue(false);
-        logger.recordJourneyStatsHistograms("");
+        logger.recordJourneyStatsHistograms(JourneyLogger.COMPLETION_STATUS_OTHER_ABORTED);
 
         // CanMakePayment was used.
-        assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
-                                "PaymentRequest.CanMakePayment.Usage",
-                                PaymentRequestJourneyLogger.CAN_MAKE_PAYMENT_USED));
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CanMakePayment.Usage",
+                        JourneyLogger.CAN_MAKE_PAYMENT_USED));
 
         // The CanMakePayment effect on show should be recorded as being false and not shown.
-        assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
-                                "PaymentRequest.CanMakePayment.Used.EffetOnShow",
-                                PaymentRequestJourneyLogger
-                                        .CMP_SHOW_COULD_NOT_MAKE_PAYMENT_AND_DID_NOT_SHOW));
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CanMakePayment.Used.EffectOnShow",
+                        JourneyLogger.CMP_SHOW_COULD_NOT_MAKE_PAYMENT_AND_DID_NOT_SHOW));
 
         // There should be no completion stats since PR was not shown to the user.
-        assertEquals(0, RecordHistogram.getHistogramValueCountForTesting(
-                                "PaymentRequest.CanMakePayment.NotUsed.WithShowEffectOnCompletion",
-                                PaymentRequestJourneyLogger.COMPLETION_STATUS_ABORTED));
-        assertEquals(0, RecordHistogram.getHistogramValueCountForTesting(
-                                "PaymentRequest.CanMakePayment.NotUsed.WithShowEffectOnCompletion",
-                                PaymentRequestJourneyLogger.COMPLETION_STATUS_COMPLETED));
+        assertEquals(0,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CanMakePayment.NotUsed.WithShowEffectOnCompletion",
+                        JourneyLogger.COMPLETION_STATUS_OTHER_ABORTED));
+        assertEquals(0,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CanMakePayment.NotUsed.WithShowEffectOnCompletion",
+                        JourneyLogger.COMPLETION_STATUS_COMPLETED));
     }
 
     /**
@@ -143,30 +183,69 @@ public class PaymentRequestJourneyLoggerUnitTest extends NativeLibraryTestBase {
     @SmallTest
     @Feature({"Payments"})
     public void testRecordJourneyStatsHistograms_CanMakePaymentCalled_TrueAndNoShow() {
-        PaymentRequestJourneyLogger logger = new PaymentRequestJourneyLogger();
+        JourneyLogger logger = new JourneyLogger();
         assertNoLogForCanMakePayment();
 
         // The user can make a payment but the Payment Request is not shown.
         logger.setCanMakePaymentValue(true);
-        logger.recordJourneyStatsHistograms("");
+        logger.recordJourneyStatsHistograms(JourneyLogger.COMPLETION_STATUS_OTHER_ABORTED);
 
         // CanMakePayment was used.
-        assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
-                                "PaymentRequest.CanMakePayment.Usage",
-                                PaymentRequestJourneyLogger.CAN_MAKE_PAYMENT_USED));
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CanMakePayment.Usage",
+                        JourneyLogger.CAN_MAKE_PAYMENT_USED));
 
         // The CanMakePayment effect on show should be recorded as being true and not shown.
-        assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
-                                "PaymentRequest.CanMakePayment.Used.EffetOnShow",
-                                PaymentRequestJourneyLogger.CMP_SHOW_COULD_MAKE_PAYMENT));
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CanMakePayment.Used.EffectOnShow",
+                        JourneyLogger.CMP_SHOW_COULD_MAKE_PAYMENT));
 
         // There should be no completion stats since PR was not shown to the user.
-        assertEquals(0, RecordHistogram.getHistogramValueCountForTesting(
-                                "PaymentRequest.CanMakePayment.NotUsed.WithShowEffectOnCompletion",
-                                PaymentRequestJourneyLogger.COMPLETION_STATUS_ABORTED));
-        assertEquals(0, RecordHistogram.getHistogramValueCountForTesting(
-                                "PaymentRequest.CanMakePayment.NotUsed.WithShowEffectOnCompletion",
-                                PaymentRequestJourneyLogger.COMPLETION_STATUS_COMPLETED));
+        assertEquals(0,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CanMakePayment.NotUsed.WithShowEffectOnCompletion",
+                        JourneyLogger.COMPLETION_STATUS_OTHER_ABORTED));
+        assertEquals(0,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CanMakePayment.NotUsed.WithShowEffectOnCompletion",
+                        JourneyLogger.COMPLETION_STATUS_COMPLETED));
+    }
+
+    /**
+     * Tests the canMakePayment stats for the case where the merchant uses it, returns false, show
+     * is called but the transaction is aborted by the user.
+     */
+    @SmallTest
+    @Feature({"Payments"})
+    public void testRecordJourneyStatsHistograms_CanMakePaymentCalled_FalseShowAndUserAbort() {
+        JourneyLogger logger = new JourneyLogger();
+        assertNoLogForCanMakePayment();
+
+        // The user cannot make a payment. the payment request is shown but aborted.
+        logger.setShowCalled();
+        logger.setCanMakePaymentValue(false);
+        logger.recordJourneyStatsHistograms(JourneyLogger.COMPLETION_STATUS_USER_ABORTED);
+
+        // CanMakePayment was used.
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CanMakePayment.Usage",
+                        JourneyLogger.CAN_MAKE_PAYMENT_USED));
+
+        // The CanMakePayment effect on show should be recorded as being true and not shown.
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CanMakePayment.Used.EffectOnShow",
+                        JourneyLogger.CMP_SHOW_DID_SHOW));
+
+        // There should be a record for an abort when CanMakePayment is false but the PR is shown to
+        // the user.
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CanMakePayment.Used.FalseWithShowEffectOnCompletion",
+                        JourneyLogger.COMPLETION_STATUS_USER_ABORTED));
     }
 
     /**
@@ -175,31 +254,33 @@ public class PaymentRequestJourneyLoggerUnitTest extends NativeLibraryTestBase {
      */
     @SmallTest
     @Feature({"Payments"})
-    public void testRecordJourneyStatsHistograms_CanMakePaymentCalled_FalseShowAndAbort() {
-        PaymentRequestJourneyLogger logger = new PaymentRequestJourneyLogger();
+    public void testRecordJourneyStatsHistograms_CanMakePaymentCalled_FalseShowAndOtherAbort() {
+        JourneyLogger logger = new JourneyLogger();
         assertNoLogForCanMakePayment();
 
         // The user cannot make a payment. the payment request is shown but aborted.
         logger.setShowCalled();
         logger.setCanMakePaymentValue(false);
-        logger.recordJourneyStatsHistograms("Aborted");
+        logger.recordJourneyStatsHistograms(JourneyLogger.COMPLETION_STATUS_OTHER_ABORTED);
 
         // CanMakePayment was used.
-        assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
-                                "PaymentRequest.CanMakePayment.Usage",
-                                PaymentRequestJourneyLogger.CAN_MAKE_PAYMENT_USED));
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CanMakePayment.Usage",
+                        JourneyLogger.CAN_MAKE_PAYMENT_USED));
 
         // The CanMakePayment effect on show should be recorded as being true and not shown.
-        assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
-                                "PaymentRequest.CanMakePayment.Used.EffetOnShow",
-                                PaymentRequestJourneyLogger.CMP_SHOW_DID_SHOW));
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CanMakePayment.Used.EffectOnShow",
+                        JourneyLogger.CMP_SHOW_DID_SHOW));
 
         // There should be a record for an abort when CanMakePayment is false but the PR is shown to
         // the user.
-        assertEquals(
-                1, RecordHistogram.getHistogramValueCountForTesting(
-                           "PaymentRequest.CanMakePayment.Used.FalseWithShowEffectOnCompletion",
-                           PaymentRequestJourneyLogger.COMPLETION_STATUS_ABORTED));
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CanMakePayment.Used.FalseWithShowEffectOnCompletion",
+                        JourneyLogger.COMPLETION_STATUS_OTHER_ABORTED));
     }
 
     /**
@@ -209,30 +290,68 @@ public class PaymentRequestJourneyLoggerUnitTest extends NativeLibraryTestBase {
     @SmallTest
     @Feature({"Payments"})
     public void testRecordJourneyStatsHistograms_CanMakePaymentCalled_FalseShowAndComplete() {
-        PaymentRequestJourneyLogger logger = new PaymentRequestJourneyLogger();
+        JourneyLogger logger = new JourneyLogger();
         assertNoLogForCanMakePayment();
 
         // The user cannot make a payment. the payment request is shown and completed.
         logger.setShowCalled();
         logger.setCanMakePaymentValue(false);
-        logger.recordJourneyStatsHistograms("Completed");
+        logger.recordJourneyStatsHistograms(JourneyLogger.COMPLETION_STATUS_COMPLETED);
 
         // CanMakePayment was used.
-        assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
-                                "PaymentRequest.CanMakePayment.Usage",
-                                PaymentRequestJourneyLogger.CAN_MAKE_PAYMENT_USED));
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CanMakePayment.Usage",
+                        JourneyLogger.CAN_MAKE_PAYMENT_USED));
 
         // The CanMakePayment effect on show should be recorded as being true and not shown.
-        assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
-                                "PaymentRequest.CanMakePayment.Used.EffetOnShow",
-                                PaymentRequestJourneyLogger.CMP_SHOW_DID_SHOW));
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CanMakePayment.Used.EffectOnShow",
+                        JourneyLogger.CMP_SHOW_DID_SHOW));
 
         // There should be a record for a completion when CanMakePayment is false and the PR is
         // shown to the user.
-        assertEquals(
-                1, RecordHistogram.getHistogramValueCountForTesting(
-                           "PaymentRequest.CanMakePayment.Used.FalseWithShowEffectOnCompletion",
-                           PaymentRequestJourneyLogger.COMPLETION_STATUS_COMPLETED));
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CanMakePayment.Used.FalseWithShowEffectOnCompletion",
+                        JourneyLogger.COMPLETION_STATUS_COMPLETED));
+    }
+
+    /**
+     * Tests the canMakePayment stats for the case where the merchant uses it, returns true, show
+     * is called but the transaction is aborted by the user.
+     */
+    @SmallTest
+    @Feature({"Payments"})
+    public void testRecordJourneyStatsHistograms_CanMakePaymentCalled_TrueShowAndUserAbort() {
+        JourneyLogger logger = new JourneyLogger();
+        assertNoLogForCanMakePayment();
+
+        // The user cannot make a payment. the payment request is shown and completed.
+        logger.setShowCalled();
+        logger.setCanMakePaymentValue(true);
+        logger.recordJourneyStatsHistograms(JourneyLogger.COMPLETION_STATUS_USER_ABORTED);
+
+        // CanMakePayment was used.
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CanMakePayment.Usage",
+                        JourneyLogger.CAN_MAKE_PAYMENT_USED));
+
+        // The CanMakePayment effect on show should be recorded as being true and not shown.
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CanMakePayment.Used.EffectOnShow",
+                        JourneyLogger.CMP_SHOW_DID_SHOW
+                                | JourneyLogger.CMP_SHOW_COULD_MAKE_PAYMENT));
+
+        // There should be a record for an abort when CanMakePayment is true and the PR is shown to
+        // the user.
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CanMakePayment.Used.TrueWithShowEffectOnCompletion",
+                        JourneyLogger.COMPLETION_STATUS_USER_ABORTED));
     }
 
     /**
@@ -241,31 +360,34 @@ public class PaymentRequestJourneyLoggerUnitTest extends NativeLibraryTestBase {
      */
     @SmallTest
     @Feature({"Payments"})
-    public void testRecordJourneyStatsHistograms_CanMakePaymentCalled_TrueShowAndAbort() {
-        PaymentRequestJourneyLogger logger = new PaymentRequestJourneyLogger();
+    public void testRecordJourneyStatsHistograms_CanMakePaymentCalled_TrueShowAndOtherAbort() {
+        JourneyLogger logger = new JourneyLogger();
         assertNoLogForCanMakePayment();
 
         // The user cannot make a payment. the payment request is shown and completed.
         logger.setShowCalled();
         logger.setCanMakePaymentValue(true);
-        logger.recordJourneyStatsHistograms("Aborted");
+        logger.recordJourneyStatsHistograms(JourneyLogger.COMPLETION_STATUS_OTHER_ABORTED);
 
         // CanMakePayment was used.
-        assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
-                                "PaymentRequest.CanMakePayment.Usage",
-                                PaymentRequestJourneyLogger.CAN_MAKE_PAYMENT_USED));
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CanMakePayment.Usage",
+                        JourneyLogger.CAN_MAKE_PAYMENT_USED));
 
         // The CanMakePayment effect on show should be recorded as being true and not shown.
-        assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
-                                "PaymentRequest.CanMakePayment.Used.EffetOnShow",
-                                PaymentRequestJourneyLogger.CMP_SHOW_DID_SHOW
-                                        | PaymentRequestJourneyLogger.CMP_SHOW_COULD_MAKE_PAYMENT));
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CanMakePayment.Used.EffectOnShow",
+                        JourneyLogger.CMP_SHOW_DID_SHOW
+                                | JourneyLogger.CMP_SHOW_COULD_MAKE_PAYMENT));
 
         // There should be a record for an abort when CanMakePayment is true and the PR is shown to
         // the user.
-        assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
-                                "PaymentRequest.CanMakePayment.Used.TrueWithShowEffectOnCompletion",
-                                PaymentRequestJourneyLogger.COMPLETION_STATUS_ABORTED));
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CanMakePayment.Used.TrueWithShowEffectOnCompletion",
+                        JourneyLogger.COMPLETION_STATUS_OTHER_ABORTED));
     }
 
     /**
@@ -275,30 +397,33 @@ public class PaymentRequestJourneyLoggerUnitTest extends NativeLibraryTestBase {
     @SmallTest
     @Feature({"Payments"})
     public void testRecordJourneyStatsHistograms_CanMakePaymentCalled_TrueShowAndComplete() {
-        PaymentRequestJourneyLogger logger = new PaymentRequestJourneyLogger();
+        JourneyLogger logger = new JourneyLogger();
         assertNoLogForCanMakePayment();
 
         // The user cannot make a payment. the payment request is shown and completed.
         logger.setShowCalled();
         logger.setCanMakePaymentValue(true);
-        logger.recordJourneyStatsHistograms("Completed");
+        logger.recordJourneyStatsHistograms(JourneyLogger.COMPLETION_STATUS_COMPLETED);
 
         // CanMakePayment was used.
-        assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
-                                "PaymentRequest.CanMakePayment.Usage",
-                                PaymentRequestJourneyLogger.CAN_MAKE_PAYMENT_USED));
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CanMakePayment.Usage",
+                        JourneyLogger.CAN_MAKE_PAYMENT_USED));
 
         // The CanMakePayment effect on show should be recorded as being true and not shown.
-        assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
-                                "PaymentRequest.CanMakePayment.Used.EffetOnShow",
-                                PaymentRequestJourneyLogger.CMP_SHOW_DID_SHOW
-                                        | PaymentRequestJourneyLogger.CMP_SHOW_COULD_MAKE_PAYMENT));
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CanMakePayment.Used.EffectOnShow",
+                        JourneyLogger.CMP_SHOW_DID_SHOW
+                                | JourneyLogger.CMP_SHOW_COULD_MAKE_PAYMENT));
 
         // There should be a record for a completion when CanMakePayment is true and the PR is shown
         // to the user.
-        assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
-                                "PaymentRequest.CanMakePayment.Used.TrueWithShowEffectOnCompletion",
-                                PaymentRequestJourneyLogger.COMPLETION_STATUS_COMPLETED));
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CanMakePayment.Used.TrueWithShowEffectOnCompletion",
+                        JourneyLogger.COMPLETION_STATUS_COMPLETED));
     }
 
     /**
@@ -308,23 +433,24 @@ public class PaymentRequestJourneyLoggerUnitTest extends NativeLibraryTestBase {
     @SmallTest
     @Feature({"Payments"})
     public void testRecordJourneyStatsHistograms_SuggestionsForEverything_Completed() {
-        PaymentRequestJourneyLogger logger = new PaymentRequestJourneyLogger();
+        JourneyLogger logger = new JourneyLogger();
 
         // Simulate that the user had suggestions for all the requested sections.
-        logger.setNumberOfSuggestionsShown(PaymentRequestJourneyLogger.SECTION_CREDIT_CARDS, 1);
+        logger.setNumberOfSuggestionsShown(JourneyLogger.SECTION_CREDIT_CARDS, 1);
 
         // Simulate that the user completes the checkout.
-        logger.recordJourneyStatsHistograms("Completed");
+        logger.recordJourneyStatsHistograms(JourneyLogger.COMPLETION_STATUS_COMPLETED);
 
         // Make sure the appropriate metric was logged.
-        assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
-                                "PaymentRequest.UserHadSuggestionsForEverything.EffectOnCompletion",
-                                PaymentRequestJourneyLogger.COMPLETION_STATUS_COMPLETED));
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.UserHadSuggestionsForEverything.EffectOnCompletion",
+                        JourneyLogger.COMPLETION_STATUS_COMPLETED));
 
         assertEquals(0,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.UserDidNotHaveSuggestionsForEverything.EffectOnCompletion",
-                        PaymentRequestJourneyLogger.COMPLETION_STATUS_COMPLETED));
+                        JourneyLogger.COMPLETION_STATUS_COMPLETED));
     }
 
     /**
@@ -333,24 +459,52 @@ public class PaymentRequestJourneyLoggerUnitTest extends NativeLibraryTestBase {
      */
     @SmallTest
     @Feature({"Payments"})
-    public void testRecordJourneyStatsHistograms_SuggestionsForEverything_Aborted() {
-        PaymentRequestJourneyLogger logger = new PaymentRequestJourneyLogger();
+    public void testRecordJourneyStatsHistograms_SuggestionsForEverything_UserAborted() {
+        JourneyLogger logger = new JourneyLogger();
 
         // Simulate that the user had suggestions for all the requested sections.
-        logger.setNumberOfSuggestionsShown(PaymentRequestJourneyLogger.SECTION_CREDIT_CARDS, 1);
+        logger.setNumberOfSuggestionsShown(JourneyLogger.SECTION_CREDIT_CARDS, 1);
 
         // Simulate that the user aborts the checkout.
-        logger.recordJourneyStatsHistograms("Aborted");
+        logger.recordJourneyStatsHistograms(JourneyLogger.COMPLETION_STATUS_USER_ABORTED);
 
         // Make sure the appropriate metric was logged.
-        assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
-                                "PaymentRequest.UserHadSuggestionsForEverything.EffectOnCompletion",
-                                PaymentRequestJourneyLogger.COMPLETION_STATUS_ABORTED));
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.UserHadSuggestionsForEverything.EffectOnCompletion",
+                        JourneyLogger.COMPLETION_STATUS_USER_ABORTED));
 
         assertEquals(0,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.UserDidNotHaveSuggestionsForEverything.EffectOnCompletion",
-                        PaymentRequestJourneyLogger.COMPLETION_STATUS_ABORTED));
+                        JourneyLogger.COMPLETION_STATUS_USER_ABORTED));
+    }
+
+    /**
+     * Tests that the completion status metrics based on whether the user had suggestions for all
+     * the requested sections are logged as correctly.
+     */
+    @SmallTest
+    @Feature({"Payments"})
+    public void testRecordJourneyStatsHistograms_SuggestionsForEverything_OtherAborted() {
+        JourneyLogger logger = new JourneyLogger();
+
+        // Simulate that the user had suggestions for all the requested sections.
+        logger.setNumberOfSuggestionsShown(JourneyLogger.SECTION_CREDIT_CARDS, 1);
+
+        // Simulate that the user aborts the checkout.
+        logger.recordJourneyStatsHistograms(JourneyLogger.COMPLETION_STATUS_OTHER_ABORTED);
+
+        // Make sure the appropriate metric was logged.
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.UserHadSuggestionsForEverything.EffectOnCompletion",
+                        JourneyLogger.COMPLETION_STATUS_OTHER_ABORTED));
+
+        assertEquals(0,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.UserDidNotHaveSuggestionsForEverything.EffectOnCompletion",
+                        JourneyLogger.COMPLETION_STATUS_OTHER_ABORTED));
     }
 
     /**
@@ -360,23 +514,24 @@ public class PaymentRequestJourneyLoggerUnitTest extends NativeLibraryTestBase {
     @SmallTest
     @Feature({"Payments"})
     public void testRecordJourneyStatsHistograms_NoSuggestionsForEverything_Completed() {
-        PaymentRequestJourneyLogger logger = new PaymentRequestJourneyLogger();
+        JourneyLogger logger = new JourneyLogger();
 
         // Simulate that the user did not have suggestions for all the requested sections.
-        logger.setNumberOfSuggestionsShown(PaymentRequestJourneyLogger.SECTION_CREDIT_CARDS, 0);
+        logger.setNumberOfSuggestionsShown(JourneyLogger.SECTION_CREDIT_CARDS, 0);
 
         // Simulate that the user completes the checkout.
-        logger.recordJourneyStatsHistograms("Completed");
+        logger.recordJourneyStatsHistograms(JourneyLogger.COMPLETION_STATUS_COMPLETED);
 
         // Make sure the appropriate metric was logged.
         assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.UserDidNotHaveSuggestionsForEverything.EffectOnCompletion",
-                        PaymentRequestJourneyLogger.COMPLETION_STATUS_COMPLETED));
+                        JourneyLogger.COMPLETION_STATUS_COMPLETED));
 
-        assertEquals(0, RecordHistogram.getHistogramValueCountForTesting(
-                                "PaymentRequest.UserHadSuggestionsForEverything.EffectOnCompletion",
-                                PaymentRequestJourneyLogger.COMPLETION_STATUS_COMPLETED));
+        assertEquals(0,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.UserHadSuggestionsForEverything.EffectOnCompletion",
+                        JourneyLogger.COMPLETION_STATUS_COMPLETED));
     }
 
     /**
@@ -385,24 +540,103 @@ public class PaymentRequestJourneyLoggerUnitTest extends NativeLibraryTestBase {
      */
     @SmallTest
     @Feature({"Payments"})
-    public void testRecordJourneyStatsHistograms_NoSuggestionsForEverything_Aborted() {
-        PaymentRequestJourneyLogger logger = new PaymentRequestJourneyLogger();
+    public void testRecordJourneyStatsHistograms_NoSuggestionsForEverything_UserAborted() {
+        JourneyLogger logger = new JourneyLogger();
 
-        // Simulate that the user had suggestions for all the requested sections.
-        logger.setNumberOfSuggestionsShown(PaymentRequestJourneyLogger.SECTION_CREDIT_CARDS, 0);
+        // Simulate that the user did not have suggestions for all the requested sections.
+        logger.setNumberOfSuggestionsShown(JourneyLogger.SECTION_CREDIT_CARDS, 0);
 
         // Simulate that the user aborts the checkout.
-        logger.recordJourneyStatsHistograms("Aborted");
+        logger.recordJourneyStatsHistograms(JourneyLogger.COMPLETION_STATUS_USER_ABORTED);
 
         // Make sure the appropriate metric was logged.
         assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.UserDidNotHaveSuggestionsForEverything.EffectOnCompletion",
-                        PaymentRequestJourneyLogger.COMPLETION_STATUS_ABORTED));
+                        JourneyLogger.COMPLETION_STATUS_USER_ABORTED));
 
-        assertEquals(0, RecordHistogram.getHistogramValueCountForTesting(
-                                "PaymentRequest.UserHadSuggestionsForEverything.EffectOnCompletion",
-                                PaymentRequestJourneyLogger.COMPLETION_STATUS_ABORTED));
+        assertEquals(0,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.UserHadSuggestionsForEverything.EffectOnCompletion",
+                        JourneyLogger.COMPLETION_STATUS_USER_ABORTED));
+    }
+
+    /**
+     * Tests that the completion status metrics based on whether the user had suggestions for all
+     * the requested sections are logged as correctly.
+     */
+    @SmallTest
+    @Feature({"Payments"})
+    public void testRecordJourneyStatsHistograms_NoSuggestionsForEverything_OtherAborted() {
+        JourneyLogger logger = new JourneyLogger();
+
+        // Simulate that the user did not have suggestions for all the requested sections.
+        logger.setNumberOfSuggestionsShown(JourneyLogger.SECTION_CREDIT_CARDS, 0);
+
+        // Simulate that the user aborts the checkout.
+        logger.recordJourneyStatsHistograms(JourneyLogger.COMPLETION_STATUS_OTHER_ABORTED);
+
+        // Make sure the appropriate metric was logged.
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.UserDidNotHaveSuggestionsForEverything.EffectOnCompletion",
+                        JourneyLogger.COMPLETION_STATUS_OTHER_ABORTED));
+
+        assertEquals(0,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.UserHadSuggestionsForEverything.EffectOnCompletion",
+                        JourneyLogger.COMPLETION_STATUS_OTHER_ABORTED));
+    }
+
+    /**
+     * Tests that the metrics are logged correctly for two simultaneous Payment Requests.
+     */
+    @SmallTest
+    @Feature({"Payments"})
+    public void testRecordJourneyStatsHistograms_TwoPaymentRequests() {
+        JourneyLogger logger1 = new JourneyLogger();
+        JourneyLogger logger2 = new JourneyLogger();
+
+        // Make the two loggers have different data.
+        logger1.setShowCalled();
+        logger2.setShowCalled();
+
+        logger1.setCanMakePaymentValue(true);
+
+        logger1.setNumberOfSuggestionsShown(JourneyLogger.SECTION_CREDIT_CARDS, 1);
+        logger2.setNumberOfSuggestionsShown(JourneyLogger.SECTION_CREDIT_CARDS, 0);
+
+        // Simulate that the user completes one checkout and aborts the other.
+        logger1.recordJourneyStatsHistograms(JourneyLogger.COMPLETION_STATUS_COMPLETED);
+        logger2.recordJourneyStatsHistograms(JourneyLogger.COMPLETION_STATUS_USER_ABORTED);
+
+        // Make sure the appropriate metric was logged for logger1.
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.UserHadSuggestionsForEverything.EffectOnCompletion",
+                        JourneyLogger.COMPLETION_STATUS_COMPLETED));
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CanMakePayment.Usage",
+                        JourneyLogger.CAN_MAKE_PAYMENT_USED));
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CanMakePayment.Used.TrueWithShowEffectOnCompletion",
+                        JourneyLogger.COMPLETION_STATUS_COMPLETED));
+
+        // Make sure the appropriate metric was logged for logger2.
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.UserDidNotHaveSuggestionsForEverything.EffectOnCompletion",
+                        JourneyLogger.COMPLETION_STATUS_USER_ABORTED));
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CanMakePayment.Usage",
+                        JourneyLogger.CAN_MAKE_PAYMENT_NOT_USED));
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CanMakePayment.NotUsed.WithShowEffectOnCompletion",
+                        JourneyLogger.COMPLETION_STATUS_USER_ABORTED));
     }
 
     /**
@@ -410,19 +644,20 @@ public class PaymentRequestJourneyLoggerUnitTest extends NativeLibraryTestBase {
      */
     private void assertNoLogForCanMakePayment() {
         // Use stats.
-        for (int i = 0; i < PaymentRequestJourneyLogger.CAN_MAKE_PAYMENT_USE_MAX; ++i) {
+        for (int i = 0; i < JourneyLogger.CAN_MAKE_PAYMENT_USE_MAX; ++i) {
             assertEquals(0, RecordHistogram.getHistogramValueCountForTesting(
                                     "PaymentRequest.CanMakePayment.Usage", i));
         }
 
         // Effect on show stats.
-        for (int i = 0; i < PaymentRequestJourneyLogger.CMP_SHOW_MAX; ++i) {
-            assertEquals(0, RecordHistogram.getHistogramValueCountForTesting(
-                                    "PaymentRequest.CanMakePayment.Used.EffetOnShow", i));
+        for (int i = 0; i < JourneyLogger.CMP_SHOW_MAX; ++i) {
+            assertEquals(0,
+                    RecordHistogram.getHistogramValueCountForTesting(
+                            "PaymentRequest.CanMakePayment.Used.EffectOnShow", i));
         }
 
         // Effect on completion stats.
-        for (int i = 0; i < PaymentRequestJourneyLogger.COMPLETION_STATUS_MAX; ++i) {
+        for (int i = 0; i < JourneyLogger.COMPLETION_STATUS_MAX; ++i) {
             assertEquals(0,
                     RecordHistogram.getHistogramValueCountForTesting(
                             "PaymentRequest.CanMakePayment.NotUsed.WithShowEffectOnCompletion", i));
