@@ -45,9 +45,7 @@ promise_test(function(test) {
     })
     .then(success => {
       // The registration had already been aborted, so aborting it again should fail.
-      // TODO(peter): This is a change-detector test, and will deliberately
-      // start failing when the browser side has been hooked up.
-      assert_true(success);
+      assert_false(success);
     });
 
 }, 'BackgroundFetchRegistration.abort() return a Promise indicating success.');

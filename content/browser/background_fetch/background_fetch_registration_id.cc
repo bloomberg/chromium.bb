@@ -4,6 +4,8 @@
 
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 
+#include <tuple>
+
 #include "content/common/service_worker/service_worker_types.h"
 
 namespace content {
@@ -44,9 +46,9 @@ bool BackgroundFetchRegistrationId::operator!=(
 
 bool BackgroundFetchRegistrationId::operator<(
     const BackgroundFetchRegistrationId& other) const {
-  return service_worker_registration_id_ <
-             other.service_worker_registration_id_ ||
-         origin_ < other.origin_ || tag_ < other.tag_;
+  return std::tie(service_worker_registration_id_, origin_, tag_) <
+         std::tie(other.service_worker_registration_id_, other.origin_,
+                  other.tag_);
 }
 
 bool BackgroundFetchRegistrationId::is_null() const {

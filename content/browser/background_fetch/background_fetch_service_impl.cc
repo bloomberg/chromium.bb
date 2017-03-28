@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
+#include "content/browser/background_fetch/background_fetch_job_controller.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -93,10 +94,15 @@ void BackgroundFetchServiceImpl::UpdateUI(
     return;
   }
 
-  // TODO(peter): Get the BackgroundFetchJobController for the
-  // {service_worker_registration_id, tag} pair and call UpdateUI() on it.
+  BackgroundFetchJobController* controller =
+      background_fetch_context_->GetActiveFetch(BackgroundFetchRegistrationId(
+          service_worker_registration_id, origin, tag));
 
-  callback.Run(blink::mojom::BackgroundFetchError::NONE);
+  if (controller)
+    controller->UpdateUI(title);
+
+  callback.Run(controller ? blink::mojom::BackgroundFetchError::NONE
+                          : blink::mojom::BackgroundFetchError::INVALID_TAG);
 }
 
 void BackgroundFetchServiceImpl::Abort(int64_t service_worker_registration_id,
@@ -109,10 +115,15 @@ void BackgroundFetchServiceImpl::Abort(int64_t service_worker_registration_id,
     return;
   }
 
-  // TODO(peter): Get the BackgroundFetchJobController for the
-  // {service_worker_registration_id, tag} pair and call Abort() on it.
+  BackgroundFetchJobController* controller =
+      background_fetch_context_->GetActiveFetch(BackgroundFetchRegistrationId(
+          service_worker_registration_id, origin, tag));
 
-  callback.Run(blink::mojom::BackgroundFetchError::NONE);
+  if (controller)
+    controller->Abort();
+
+  callback.Run(controller ? blink::mojom::BackgroundFetchError::NONE
+                          : blink::mojom::BackgroundFetchError::INVALID_TAG);
 }
 
 void BackgroundFetchServiceImpl::GetRegistration(
@@ -127,23 +138,35 @@ void BackgroundFetchServiceImpl::GetRegistration(
     return;
   }
 
-  // TODO(peter): Get the registration for {service_worker_registration_id, tag}
-  // and construct a BackgroundFetchRegistrationPtr for it.
+  BackgroundFetchJobController* controller =
+      background_fetch_context_->GetActiveFetch(BackgroundFetchRegistrationId(
+          service_worker_registration_id, origin, tag));
 
-  callback.Run(blink::mojom::BackgroundFetchError::NONE,
-               base::nullopt /* registration */);
+  if (!controller) {
+    callback.Run(blink::mojom::BackgroundFetchError::INVALID_TAG,
+                 base::nullopt /* registration */);
+    return;
+  }
+
+  // Compile the BackgroundFetchRegistration object that will be given to the
+  // developer, representing the data associated with the |controller|.
+  BackgroundFetchRegistration registration;
+  registration.tag = controller->registration_id().tag();
+  registration.icons = controller->options().icons;
+  registration.title = controller->options().title;
+  registration.total_download_size = controller->options().total_download_size;
+
+  callback.Run(blink::mojom::BackgroundFetchError::NONE, registration);
 }
 
 void BackgroundFetchServiceImpl::GetTags(int64_t service_worker_registration_id,
                                          const url::Origin& origin,
                                          const GetTagsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  // TODO(peter): Get the list of active Background Fetches associated with
-  // service_worker_registration_id and share their tags.
-
-  callback.Run(blink::mojom::BackgroundFetchError::NONE,
-               std::vector<std::string>());
+  callback.Run(
+      blink::mojom::BackgroundFetchError::NONE,
+      background_fetch_context_->GetActiveTagsForServiceWorkerRegistration(
+          service_worker_registration_id, origin));
 }
 
 bool BackgroundFetchServiceImpl::ValidateTag(const std::string& tag) {

@@ -156,7 +156,7 @@ class BackgroundFetchJobControllerTest : public ::testing::Test {
   void InitializeJobController(
       const BackgroundFetchRegistrationId& registration_id) {
     job_controller_ = base::MakeUnique<BackgroundFetchJobController>(
-        registration_id, &browser_context_,
+        registration_id, BackgroundFetchOptions(), &browser_context_,
         BrowserContext::GetDefaultStoragePartition(&browser_context_),
         data_manager_.get(),
         base::BindOnce(&BackgroundFetchJobControllerTest::DidCompleteJob,
@@ -164,10 +164,12 @@ class BackgroundFetchJobControllerTest : public ::testing::Test {
   }
 
   void DidCompleteJob(
+      const BackgroundFetchRegistrationId& original_registration_id,
       const BackgroundFetchRegistrationId& registration_id,
-      const BackgroundFetchRegistrationId& original_registration_id) {
+      bool aborted_by_developer) {
     ASSERT_EQ(registration_id, original_registration_id);
     did_complete_job_ = true;
+    did_abort_by_developer_ = aborted_by_developer;
   }
 
   void StartProcessing() {
@@ -194,6 +196,7 @@ class BackgroundFetchJobControllerTest : public ::testing::Test {
   DownloadItem::Observer* ItemObserver() const { return job_controller_.get(); }
 
   bool did_complete_job() const { return did_complete_job_; }
+  bool did_abort_by_developer() const { return did_abort_by_developer_; }
 
   FakeBackgroundFetchDataManager* data_manager() const {
     return data_manager_.get();
@@ -201,6 +204,7 @@ class BackgroundFetchJobControllerTest : public ::testing::Test {
 
  private:
   bool did_complete_job_ = false;
+  bool did_abort_by_developer_ = false;
   TestBrowserThreadBundle thread_bundle_;
   TestBrowserContext browser_context_;
   std::unique_ptr<FakeBackgroundFetchDataManager> data_manager_;
@@ -244,6 +248,7 @@ TEST_F(BackgroundFetchJobControllerTest, SingleRequestJob) {
 
   EXPECT_EQ(DownloadItem::DownloadState::COMPLETE, request_info.state());
   EXPECT_TRUE(did_complete_job());
+  EXPECT_FALSE(did_abort_by_developer());
 }
 
 TEST_F(BackgroundFetchJobControllerTest, MultipleRequestJob) {
@@ -299,6 +304,7 @@ TEST_F(BackgroundFetchJobControllerTest, MultipleRequestJob) {
   ItemObserver()->OnDownloadUpdated(item);
 
   EXPECT_TRUE(did_complete_job());
+  EXPECT_FALSE(did_abort_by_developer());
 }
 
 TEST_F(BackgroundFetchJobControllerTest, UpdateStorageState) {
@@ -336,6 +342,7 @@ TEST_F(BackgroundFetchJobControllerTest, UpdateStorageState) {
   EXPECT_EQ(123, request_info.received_bytes());
   EXPECT_TRUE(data_manager()->IsComplete(kJobGuid));
   EXPECT_TRUE(did_complete_job());
+  EXPECT_FALSE(did_abort_by_developer());
 }
 
 }  // namespace content

@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
+#include "content/common/background_fetch/background_fetch_types.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_item.h"
 
@@ -30,10 +31,12 @@ class CONTENT_EXPORT BackgroundFetchJobController
     : public DownloadItem::Observer {
  public:
   using CompletedCallback =
-      base::OnceCallback<void(const BackgroundFetchRegistrationId&)>;
+      base::OnceCallback<void(const BackgroundFetchRegistrationId&,
+                              bool /* aborted_by_developer */)>;
 
   BackgroundFetchJobController(
       const BackgroundFetchRegistrationId& registration_id,
+      const BackgroundFetchOptions& options,
       BrowserContext* browser_context,
       StoragePartition* storage_partition,
       BackgroundFetchDataManager* data_manager,
@@ -44,8 +47,23 @@ class CONTENT_EXPORT BackgroundFetchJobController
   // progress or completed from a previous chromium instance.
   void StartProcessing();
 
+  // Updates the representation of this Background Fetch in the user interface
+  // to match the given |title|.
+  void UpdateUI(const std::string& title);
+
+  // Immediately aborts this Background Fetch by request of the developer.
+  void Abort();
+
   // Called by the BackgroundFetchContext when the system is shutting down.
   void Shutdown();
+
+  // Returns the registration id for which this job is fetching data.
+  const BackgroundFetchRegistrationId& registration_id() const {
+    return registration_id_;
+  }
+
+  // Returns the options with which this job is fetching data.
+  const BackgroundFetchOptions& options() const { return options_; }
 
  private:
   // DownloadItem::Observer methods.
@@ -62,6 +80,9 @@ class CONTENT_EXPORT BackgroundFetchJobController
 
   // The registration id on behalf of which this controller is fetching data.
   BackgroundFetchRegistrationId registration_id_;
+
+  // Options for the represented background fetch registration.
+  BackgroundFetchOptions options_;
 
   // TODO(peter): Deprecated, remove in favor of |registration_id|.
   std::string job_guid_;

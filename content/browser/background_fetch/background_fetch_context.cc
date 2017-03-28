@@ -11,6 +11,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -78,12 +79,43 @@ void BackgroundFetchContext::DidCreateRegistration(
   callback.Run(blink::mojom::BackgroundFetchError::NONE, registration);
 }
 
+std::vector<std::string>
+BackgroundFetchContext::GetActiveTagsForServiceWorkerRegistration(
+    int64_t service_worker_registration_id,
+    const url::Origin& origin) const {
+  std::vector<std::string> tags;
+  for (const auto& pair : active_fetches_) {
+    const BackgroundFetchRegistrationId& registration_id =
+        pair.second->registration_id();
+
+    // Only return the tags when the origin and SW registration id match.
+    if (registration_id.origin() == origin &&
+        registration_id.service_worker_registration_id() ==
+            service_worker_registration_id) {
+      tags.push_back(pair.second->registration_id().tag());
+    }
+  }
+
+  return tags;
+}
+
+BackgroundFetchJobController* BackgroundFetchContext::GetActiveFetch(
+    const BackgroundFetchRegistrationId& registration_id) const {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  auto iter = active_fetches_.find(registration_id);
+  if (iter == active_fetches_.end())
+    return nullptr;
+
+  return iter->second.get();
+}
+
 void BackgroundFetchContext::CreateController(
     const BackgroundFetchRegistrationId& registration_id,
     const BackgroundFetchOptions& options) {
   std::unique_ptr<BackgroundFetchJobController> controller =
       base::MakeUnique<BackgroundFetchJobController>(
-          registration_id, browser_context_, storage_partition_,
+          registration_id, options, browser_context_, storage_partition_,
           background_fetch_data_manager_.get(),
           base::BindOnce(&BackgroundFetchContext::DidFinishFetch, this));
 
@@ -92,11 +124,12 @@ void BackgroundFetchContext::CreateController(
 }
 
 void BackgroundFetchContext::DidFinishFetch(
-    const BackgroundFetchRegistrationId& registration_id) {
+    const BackgroundFetchRegistrationId& registration_id,
+    bool aborted_by_developer) {
   DCHECK_GT(active_fetches_.count(registration_id), 0u);
 
   // TODO(peter): Dispatch the `backgroundfetched` or the `backgroundfetchfail`
-  // event to the Service Worker.
+  // event to the Service Worker when |aborted_by_developer| is not set.
 
   active_fetches_.erase(registration_id);
 }

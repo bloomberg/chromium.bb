@@ -20,11 +20,13 @@ namespace content {
 
 BackgroundFetchJobController::BackgroundFetchJobController(
     const BackgroundFetchRegistrationId& registration_id,
+    const BackgroundFetchOptions& options,
     BrowserContext* browser_context,
     StoragePartition* storage_partition,
     BackgroundFetchDataManager* data_manager,
     CompletedCallback completed_callback)
     : registration_id_(registration_id),
+      options_(options),
       job_guid_(base::GenerateGUID()),
       browser_context_(browser_context),
       storage_partition_(storage_partition),
@@ -60,6 +62,17 @@ void BackgroundFetchJobController::StartProcessing() {
   ProcessRequest(fetch_request);
 
   // Currently, this processes a single request at a time.
+}
+
+void BackgroundFetchJobController::UpdateUI(const std::string& title) {
+  // TODO(harkness): Update the user interface with |title|.
+}
+
+void BackgroundFetchJobController::Abort() {
+  // TODO(harkness): Abort all in-progress downloads.
+
+  std::move(completed_callback_)
+      .Run(registration_id_, true /* aborted_by_developer */);
 }
 
 void BackgroundFetchJobController::DownloadStarted(
@@ -101,7 +114,8 @@ void BackgroundFetchJobController::OnDownloadUpdated(DownloadItem* item) {
         ProcessRequest(
             data_manager_->GetNextBackgroundFetchRequestInfo(job_guid_));
       } else if (data_manager_->IsComplete(job_guid_)) {
-        std::move(completed_callback_).Run(registration_id_);
+        std::move(completed_callback_)
+            .Run(registration_id_, false /* aborted_by_developer */);
       }
       break;
     case DownloadItem::DownloadState::INTERRUPTED:

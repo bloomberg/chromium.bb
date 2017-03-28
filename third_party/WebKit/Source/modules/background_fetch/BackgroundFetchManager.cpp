@@ -176,11 +176,11 @@ void BackgroundFetchManager::didGetRegistration(
     BackgroundFetchRegistration* registration) {
   switch (error) {
     case mojom::blink::BackgroundFetchError::NONE:
+    case mojom::blink::BackgroundFetchError::INVALID_TAG:
       resolver->resolve(registration);
       return;
     case mojom::blink::BackgroundFetchError::DUPLICATED_TAG:
     case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:
-    case mojom::blink::BackgroundFetchError::INVALID_TAG:
       // Not applicable for this callback.
       break;
   }

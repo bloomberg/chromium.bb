@@ -74,11 +74,11 @@ void BackgroundFetchedEvent::didUpdateUI(
     mojom::blink::BackgroundFetchError error) {
   switch (error) {
     case mojom::blink::BackgroundFetchError::NONE:
+    case mojom::blink::BackgroundFetchError::INVALID_TAG:
       resolver->resolve();
       return;
     case mojom::blink::BackgroundFetchError::DUPLICATED_TAG:
     case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:
-    case mojom::blink::BackgroundFetchError::INVALID_TAG:
       // Not applicable for this callback.
       break;
   }

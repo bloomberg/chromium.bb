@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_BACKGROUND_FETCH_BACKGROUND_FETCH_CONTEXT_H_
 
 #include <map>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -13,6 +14,10 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/WebKit/public/platform/modules/background_fetch/background_fetch.mojom.h"
+
+namespace url {
+class Origin;
+}
 
 namespace content {
 
@@ -52,6 +57,17 @@ class CONTENT_EXPORT BackgroundFetchContext
       const BackgroundFetchOptions& options,
       const blink::mojom::BackgroundFetchService::FetchCallback& callback);
 
+  // Returns a vector with the tags of the active fetches for the given |origin|
+  // and |service_worker_registration_id|.
+  std::vector<std::string> GetActiveTagsForServiceWorkerRegistration(
+      int64_t service_worker_registration_id,
+      const url::Origin& origin) const;
+
+  // Returns the JobController that is handling the |registration_id|, or a
+  // nullptr if it does not exist. Must be immediately used by the caller.
+  BackgroundFetchJobController* GetActiveFetch(
+      const BackgroundFetchRegistrationId& registration_id) const;
+
  private:
   friend class base::DeleteHelper<BackgroundFetchContext>;
   friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
@@ -76,8 +92,10 @@ class CONTENT_EXPORT BackgroundFetchContext
       blink::mojom::BackgroundFetchError error);
 
   // Called when a Job Controller has finished processing a Background Fetch
-  // registration, as identified by |registration_id|.
-  void DidFinishFetch(const BackgroundFetchRegistrationId& registration_id);
+  // registration, as identified by |registration_id|. |aborted_by_developer|
+  // will be set to true when it finished at the developer's request.
+  void DidFinishFetch(const BackgroundFetchRegistrationId& registration_id,
+                      bool aborted_by_developer);
 
   // |this| is owned by the BrowserContext via the StoragePartitionImpl.
   BrowserContext* browser_context_;
