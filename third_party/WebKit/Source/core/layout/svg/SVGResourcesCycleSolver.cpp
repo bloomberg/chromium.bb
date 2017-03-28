@@ -35,8 +35,8 @@ namespace blink {
 SVGResourcesCycleSolver::SVGResourcesCycleSolver(LayoutObject* layoutObject,
                                                  SVGResources* resources)
     : m_layoutObject(layoutObject), m_resources(resources) {
-  ASSERT(m_layoutObject);
-  ASSERT(m_resources);
+  DCHECK(m_layoutObject);
+  DCHECK(m_resources);
 }
 
 SVGResourcesCycleSolver::~SVGResourcesCycleSolver() {}
@@ -92,7 +92,7 @@ bool SVGResourcesCycleSolver::resourceContainsCycles(
 }
 
 void SVGResourcesCycleSolver::resolveCycles() {
-  ASSERT(m_activeResources.isEmpty());
+  DCHECK(m_activeResources.isEmpty());
 
   // If the starting LayoutObject is a resource container itself, then add it
   // to the active set (to break direct self-references.)
@@ -116,7 +116,7 @@ void SVGResourcesCycleSolver::resolveCycles() {
 
 void SVGResourcesCycleSolver::breakCycle(
     LayoutSVGResourceContainer* resourceLeadingToCycle) {
-  ASSERT(resourceLeadingToCycle);
+  DCHECK(resourceLeadingToCycle);
   if (resourceLeadingToCycle == m_resources->linkedResource()) {
     m_resources->resetLinkedResource();
     return;
@@ -124,11 +124,11 @@ void SVGResourcesCycleSolver::breakCycle(
 
   switch (resourceLeadingToCycle->resourceType()) {
     case MaskerResourceType:
-      ASSERT(resourceLeadingToCycle == m_resources->masker());
+      DCHECK_EQ(resourceLeadingToCycle, m_resources->masker());
       m_resources->resetMasker();
       break;
     case MarkerResourceType:
-      ASSERT(resourceLeadingToCycle == m_resources->markerStart() ||
+      DCHECK(resourceLeadingToCycle == m_resources->markerStart() ||
              resourceLeadingToCycle == m_resources->markerMid() ||
              resourceLeadingToCycle == m_resources->markerEnd());
       if (m_resources->markerStart() == resourceLeadingToCycle)
@@ -141,7 +141,7 @@ void SVGResourcesCycleSolver::breakCycle(
     case PatternResourceType:
     case LinearGradientResourceType:
     case RadialGradientResourceType:
-      ASSERT(resourceLeadingToCycle == m_resources->fill() ||
+      DCHECK(resourceLeadingToCycle == m_resources->fill() ||
              resourceLeadingToCycle == m_resources->stroke());
       if (m_resources->fill() == resourceLeadingToCycle)
         m_resources->resetFill();
@@ -149,11 +149,11 @@ void SVGResourcesCycleSolver::breakCycle(
         m_resources->resetStroke();
       break;
     case FilterResourceType:
-      ASSERT(resourceLeadingToCycle == m_resources->filter());
+      DCHECK_EQ(resourceLeadingToCycle, m_resources->filter());
       m_resources->resetFilter();
       break;
     case ClipperResourceType:
-      ASSERT(resourceLeadingToCycle == m_resources->clipper());
+      DCHECK_EQ(resourceLeadingToCycle, m_resources->clipper());
       m_resources->resetClipper();
       break;
     default:

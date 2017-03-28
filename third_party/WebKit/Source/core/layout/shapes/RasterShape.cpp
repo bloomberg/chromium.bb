@@ -57,7 +57,8 @@ MarginIntervalGenerator::MarginIntervalGenerator(unsigned radius)
 }
 
 void MarginIntervalGenerator::set(int y, const IntShapeInterval& interval) {
-  ASSERT(y >= 0 && interval.x1() >= 0);
+  DCHECK_GE(y, 0);
+  DCHECK_GE(interval.x1(), 0);
   m_y = y;
   m_x1 = interval.x1();
   m_x2 = interval.x2();
@@ -140,7 +141,7 @@ void RasterShapeIntervals::buildBoundsPath(Path& path) const {
 }
 
 const RasterShapeIntervals& RasterShape::marginIntervals() const {
-  ASSERT(shapeMargin() >= 0);
+  DCHECK_GE(shapeMargin(), 0);
   if (!shapeMargin())
     return *m_intervals;
 
@@ -162,7 +163,7 @@ LineSegment RasterShape::getExcludedInterval(LayoutUnit logicalTop,
 
   int y1 = logicalTop.toInt();
   int y2 = (logicalTop + logicalHeight).toInt();
-  ASSERT(y2 >= y1);
+  DCHECK_GE(y2, y1);
   if (y2 < intervals.bounds().y() || y1 >= intervals.bounds().maxY())
     return LineSegment();
 

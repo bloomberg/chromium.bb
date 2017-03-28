@@ -52,13 +52,14 @@
 namespace blink {
 
 static std::unique_ptr<Shape> createInsetShape(const FloatRoundedRect& bounds) {
-  ASSERT(bounds.rect().width() >= 0 && bounds.rect().height() >= 0);
+  DCHECK_GE(bounds.rect().width(), 0);
+  DCHECK_GE(bounds.rect().height(), 0);
   return WTF::makeUnique<BoxShape>(bounds);
 }
 
 static std::unique_ptr<Shape> createCircleShape(const FloatPoint& center,
                                                 float radius) {
-  ASSERT(radius >= 0);
+  DCHECK_GE(radius, 0);
   return WTF::wrapUnique(
       new RectangleShape(FloatRect(center.x() - radius, center.y() - radius,
                                    radius * 2, radius * 2),
@@ -67,7 +68,8 @@ static std::unique_ptr<Shape> createCircleShape(const FloatPoint& center,
 
 static std::unique_ptr<Shape> createEllipseShape(const FloatPoint& center,
                                                  const FloatSize& radii) {
-  ASSERT(radii.width() >= 0 && radii.height() >= 0);
+  DCHECK_GE(radii.width(), 0);
+  DCHECK_GE(radii.height(), 0);
   return WTF::wrapUnique(new RectangleShape(
       FloatRect(center.x() - radii.width(), center.y() - radii.height(),
                 radii.width() * 2, radii.height() * 2),
@@ -112,7 +114,7 @@ std::unique_ptr<Shape> Shape::createShape(const BasicShape* basicShape,
                                           const LayoutSize& logicalBoxSize,
                                           WritingMode writingMode,
                                           float margin) {
-  ASSERT(basicShape);
+  DCHECK(basicShape);
 
   bool horizontalWritingMode = isHorizontalWritingMode(writingMode);
   float boxWidth = horizontalWritingMode ? logicalBoxSize.width().toFloat()
@@ -155,7 +157,7 @@ std::unique_ptr<Shape> Shape::createShape(const BasicShape* basicShape,
       const BasicShapePolygon* polygon = toBasicShapePolygon(basicShape);
       const Vector<Length>& values = polygon->values();
       size_t valuesSize = values.size();
-      ASSERT(!(valuesSize % 2));
+      DCHECK(!(valuesSize % 2));
       std::unique_ptr<Vector<FloatPoint>> vertices =
           WTF::wrapUnique(new Vector<FloatPoint>(valuesSize / 2));
       for (unsigned i = 0; i < valuesSize; i += 2) {
@@ -257,8 +259,8 @@ std::unique_ptr<Shape> Shape::createRasterShape(Image* image,
     unsigned pixelArrayOffset = 3;  // Each pixel is four bytes: RGBA.
     uint8_t alphaPixelThreshold = threshold * 255;
 
-    ASSERT(static_cast<unsigned>(imageRect.width() * imageRect.height() * 4) ==
-           pixelArray->length());
+    DCHECK_EQ(static_cast<unsigned>(imageRect.width() * imageRect.height() * 4),
+              pixelArray->length());
 
     int minBufferY = std::max(0, marginRect.y() - imageRect.y());
     int maxBufferY =

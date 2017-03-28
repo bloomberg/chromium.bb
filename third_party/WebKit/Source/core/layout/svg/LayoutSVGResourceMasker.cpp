@@ -45,7 +45,7 @@ void LayoutSVGResourceMasker::removeAllClientsFromCache(
 
 void LayoutSVGResourceMasker::removeClientFromCache(LayoutObject* client,
                                                     bool markForInvalidation) {
-  ASSERT(client);
+  DCHECK(client);
   markClientForInvalidation(client, markForInvalidation
                                         ? BoundariesInvalidation
                                         : ParentOnlyInvalidation);
@@ -112,7 +112,7 @@ void LayoutSVGResourceMasker::calculateMaskContentVisualRect() {
 FloatRect LayoutSVGResourceMasker::resourceBoundingBox(
     const LayoutObject* object) {
   SVGMaskElement* maskElement = toSVGMaskElement(element());
-  ASSERT(maskElement);
+  DCHECK(maskElement);
 
   FloatRect objectBoundingBox = object->objectBoundingBox();
   FloatRect maskBoundaries = SVGLengthContext::resolveRectangle<SVGMaskElement>(

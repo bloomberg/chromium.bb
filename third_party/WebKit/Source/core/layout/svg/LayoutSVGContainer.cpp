@@ -43,7 +43,7 @@ LayoutSVGContainer::LayoutSVGContainer(SVGElement* node)
 LayoutSVGContainer::~LayoutSVGContainer() {}
 
 void LayoutSVGContainer::layout() {
-  ASSERT(needsLayout());
+  DCHECK(needsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
 
   // Update the local transform in subclasses.
@@ -73,7 +73,7 @@ void LayoutSVGContainer::layout() {
     LayoutSVGModelObject::setNeedsBoundariesUpdate();
   }
 
-  ASSERT(!m_needsBoundariesUpdate);
+  DCHECK(!m_needsBoundariesUpdate);
   clearNeedsLayout();
 }
 

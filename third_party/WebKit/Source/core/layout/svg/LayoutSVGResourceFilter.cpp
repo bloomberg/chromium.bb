@@ -73,7 +73,7 @@ void LayoutSVGResourceFilter::removeAllClientsFromCache(
 
 void LayoutSVGResourceFilter::removeClientFromCache(LayoutObject* client,
                                                     bool markForInvalidation) {
-  ASSERT(client);
+  DCHECK(client);
 
   bool filterCached = m_filter.contains(client);
   if (filterCached)

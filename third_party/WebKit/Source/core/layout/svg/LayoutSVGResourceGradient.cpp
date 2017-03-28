@@ -42,7 +42,7 @@ void LayoutSVGResourceGradient::removeAllClientsFromCache(
 void LayoutSVGResourceGradient::removeClientFromCache(
     LayoutObject* client,
     bool markForInvalidation) {
-  ASSERT(client);
+  DCHECK(client);
   m_gradientMap.erase(client);
   markClientForInvalidation(
       client, markForInvalidation ? PaintInvalidation : ParentOnlyInvalidation);

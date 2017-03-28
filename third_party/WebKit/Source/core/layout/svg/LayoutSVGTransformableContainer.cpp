@@ -33,7 +33,7 @@ LayoutSVGTransformableContainer::LayoutSVGTransformableContainer(
     : LayoutSVGContainer(node), m_needsTransformUpdate(true) {}
 
 static bool hasValidPredecessor(const Node* node) {
-  ASSERT(node);
+  DCHECK(node);
   for (node = node->previousSibling(); node; node = node->previousSibling()) {
     if (node->isSVGElement() && toSVGElement(node)->isValid())
       return true;
@@ -44,7 +44,7 @@ static bool hasValidPredecessor(const Node* node) {
 bool LayoutSVGTransformableContainer::isChildAllowed(
     LayoutObject* child,
     const ComputedStyle& style) const {
-  ASSERT(element());
+  DCHECK(element());
   if (isSVGSwitchElement(*element())) {
     Node* node = child->node();
     // Reject non-SVG/non-valid elements.
@@ -77,7 +77,7 @@ void LayoutSVGTransformableContainer::setNeedsTransformUpdate() {
 
 SVGTransformChange LayoutSVGTransformableContainer::calculateLocalTransform() {
   SVGGraphicsElement* element = toSVGGraphicsElement(this->element());
-  ASSERT(element);
+  DCHECK(element);
 
   // If we're either the layoutObject for a <use> element, or for any <g>
   // element inside the shadow tree, that was created during the use/symbol/svg

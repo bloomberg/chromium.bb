@@ -28,7 +28,7 @@ namespace blink {
 SVGTextLayoutEngineBaseline::SVGTextLayoutEngineBaseline(const Font& font,
                                                          float effectiveZoom)
     : m_font(font), m_effectiveZoom(effectiveZoom) {
-  ASSERT(m_effectiveZoom);
+  DCHECK(m_effectiveZoom);
 }
 
 float SVGTextLayoutEngineBaseline::calculateBaselineShift(
@@ -59,8 +59,8 @@ EAlignmentBaseline
 SVGTextLayoutEngineBaseline::dominantBaselineToAlignmentBaseline(
     bool isVerticalText,
     LineLayoutItem textLineLayout) const {
-  ASSERT(textLineLayout);
-  ASSERT(textLineLayout.style());
+  DCHECK(textLineLayout);
+  DCHECK(textLineLayout.style());
 
   const SVGComputedStyle& style = textLineLayout.style()->svgStyle();
 
@@ -79,11 +79,11 @@ SVGTextLayoutEngineBaseline::dominantBaselineToAlignmentBaseline(
       // content.
       return AB_ALPHABETIC;
     case DB_NO_CHANGE:
-      ASSERT(textLineLayout.parent());
+      DCHECK(textLineLayout.parent());
       return dominantBaselineToAlignmentBaseline(isVerticalText,
                                                  textLineLayout.parent());
     case DB_RESET_SIZE:
-      ASSERT(textLineLayout.parent());
+      DCHECK(textLineLayout.parent());
       return dominantBaselineToAlignmentBaseline(isVerticalText,
                                                  textLineLayout.parent());
     case DB_IDEOGRAPHIC:
@@ -111,19 +111,20 @@ SVGTextLayoutEngineBaseline::dominantBaselineToAlignmentBaseline(
 float SVGTextLayoutEngineBaseline::calculateAlignmentBaselineShift(
     bool isVerticalText,
     LineLayoutItem textLineLayout) const {
-  ASSERT(textLineLayout);
-  ASSERT(textLineLayout.style());
-  ASSERT(textLineLayout.parent());
+  DCHECK(textLineLayout);
+  DCHECK(textLineLayout.style());
+  DCHECK(textLineLayout.parent());
 
   LineLayoutItem textLineLayoutParent = textLineLayout.parent();
-  ASSERT(textLineLayoutParent);
+  DCHECK(textLineLayoutParent);
 
   EAlignmentBaseline baseline =
       textLineLayout.style()->svgStyle().alignmentBaseline();
   if (baseline == AB_AUTO || baseline == AB_BASELINE) {
     baseline = dominantBaselineToAlignmentBaseline(isVerticalText,
                                                    textLineLayoutParent);
-    ASSERT(baseline != AB_AUTO && baseline != AB_BASELINE);
+    DCHECK_NE(baseline, AB_AUTO);
+    DCHECK_NE(baseline, AB_BASELINE);
   }
 
   const SimpleFontData* fontData = m_font.primaryFont();

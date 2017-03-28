@@ -300,7 +300,7 @@ inline bool requiresLineBox(
 inline void setStaticPositions(LineLayoutBlockFlow block,
                                LineLayoutBox child,
                                IndentTextOrNot indentText) {
-  ASSERT(child.isOutOfFlowPositioned());
+  DCHECK(child.isOutOfFlowPositioned());
   // FIXME: The math here is actually not really right. It's a best-guess
   // approximation that will work for the common cases
   LineLayoutItem containerBlock = child.container();
@@ -552,7 +552,7 @@ inline bool shouldSkipWhitespaceAfterStartObject(
 
 inline void BreakingContext::handleEmptyInline() {
   // This should only end up being called on empty inlines
-  ASSERT(m_current.getLineLayoutItem());
+  DCHECK(m_current.getLineLayoutItem());
 
   LineLayoutInline flowBox(m_current.getLineLayoutItem());
 
@@ -982,7 +982,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements,
   if (layoutText.isWordBreak()) {
     m_width.commit();
     m_lineBreak.moveToStartOf(m_current.getLineLayoutItem());
-    ASSERT(m_current.offset() == layoutText.textLength());
+    DCHECK_EQ(m_current.offset(), layoutText.textLength());
   }
 
   if (m_layoutTextInfo.m_text != layoutText) {

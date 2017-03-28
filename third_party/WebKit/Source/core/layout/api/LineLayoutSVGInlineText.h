@@ -62,10 +62,10 @@ class SVGInlineTextMetricsIterator {
 
   void advanceToTextStart(LineLayoutSVGInlineText textLineLayout,
                           unsigned startCharacterOffset) {
-    ASSERT(textLineLayout);
+    DCHECK(textLineLayout);
     if (!m_textLineLayout || m_textLineLayout != textLineLayout) {
       reset(textLineLayout);
-      ASSERT(!metricsList().isEmpty());
+      DCHECK(!metricsList().isEmpty());
     }
 
     if (m_characterOffset == startCharacterOffset)
@@ -78,18 +78,19 @@ class SVGInlineTextMetricsIterator {
 
     while (m_characterOffset < startCharacterOffset)
       next();
-    ASSERT(m_characterOffset == startCharacterOffset);
+    DCHECK_EQ(m_characterOffset, startCharacterOffset);
   }
 
   void next() {
     m_characterOffset += metrics().length();
-    ASSERT(m_characterOffset <= m_textLineLayout.length());
-    ASSERT(m_metricsListOffset < metricsList().size());
+    DCHECK_LE(m_characterOffset, m_textLineLayout.length());
+    DCHECK_LT(m_metricsListOffset, metricsList().size());
     ++m_metricsListOffset;
   }
 
   const SVGTextMetrics& metrics() const {
-    ASSERT(m_textLineLayout && m_metricsListOffset < metricsList().size());
+    DCHECK(m_textLineLayout);
+    DCHECK_LT(m_metricsListOffset, metricsList().size());
     return metricsList()[m_metricsListOffset];
   }
   const Vector<SVGTextMetrics>& metricsList() const {

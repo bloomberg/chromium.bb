@@ -87,16 +87,16 @@ FloatRect LayoutSVGPath::calculateUpdatedStrokeBoundingBox() const {
 }
 
 FloatRect LayoutSVGPath::markerRect(float strokeWidth) const {
-  ASSERT(!m_markerPositions.isEmpty());
+  DCHECK(!m_markerPositions.isEmpty());
 
   SVGResources* resources =
       SVGResourcesCache::cachedResourcesForLayoutObject(this);
-  ASSERT(resources);
+  DCHECK(resources);
 
   LayoutSVGResourceMarker* markerStart = resources->markerStart();
   LayoutSVGResourceMarker* markerMid = resources->markerMid();
   LayoutSVGResourceMarker* markerEnd = resources->markerEnd();
-  ASSERT(markerStart || markerMid || markerEnd);
+  DCHECK(markerStart || markerMid || markerEnd);
 
   FloatRect boundaries;
   unsigned size = m_markerPositions.size();
@@ -134,7 +134,7 @@ void LayoutSVGPath::processMarkerPositions() {
 
   SVGResources* resources =
       SVGResourcesCache::cachedResourcesForLayoutObject(this);
-  ASSERT(resources);
+  DCHECK(resources);
 
   LayoutSVGResourceMarker* markerStart = resources->markerStart();
 

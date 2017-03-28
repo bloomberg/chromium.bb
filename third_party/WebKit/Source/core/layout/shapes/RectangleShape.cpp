@@ -34,12 +34,12 @@
 namespace blink {
 
 static inline float ellipseXIntercept(float y, float rx, float ry) {
-  ASSERT(ry > 0);
+  DCHECK_GT(ry, 0);
   return rx * sqrt(1 - (y * y) / (ry * ry));
 }
 
 FloatRect RectangleShape::shapeMarginBounds() const {
-  ASSERT(shapeMargin() >= 0);
+  DCHECK_GE(shapeMargin(), 0);
   if (!shapeMargin())
     return m_bounds;
 

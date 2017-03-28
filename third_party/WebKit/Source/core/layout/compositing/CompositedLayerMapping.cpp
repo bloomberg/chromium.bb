@@ -196,7 +196,7 @@ CompositedLayerMapping::~CompositedLayerMapping() {
   for (size_t i = 0; i < m_squashedLayers.size(); ++i) {
     PaintLayer* oldSquashedLayer = m_squashedLayers[i].paintLayer;
     // Assert on incorrect mappings between layers and groups
-    ASSERT(oldSquashedLayer->groupedMapping() == this);
+    DCHECK_EQ(oldSquashedLayer->groupedMapping(), this);
     if (oldSquashedLayer->groupedMapping() == this) {
       oldSquashedLayer->setGroupedMapping(
           0, PaintLayer::DoNotInvalidateLayerAndRemoveFromMapping);
@@ -407,7 +407,7 @@ void CompositedLayerMapping::updateIsRootForIsolatedGroup() {
   bool isolate = m_owningLayer.shouldIsolateCompositedDescendants();
 
   // non stacking context layers should never isolate
-  ASSERT(m_owningLayer.stackingNode()->isStackingContext() || !isolate);
+  DCHECK(m_owningLayer.stackingNode()->isStackingContext() || !isolate);
 
   m_graphicsLayer->setIsRootForIsolatedGroup(isolate);
 }
@@ -506,8 +506,8 @@ void CompositedLayerMapping::updateContentsOpaque() {
 }
 
 void CompositedLayerMapping::updateCompositedBounds() {
-  ASSERT(m_owningLayer.compositor()->lifecycle().state() ==
-         DocumentLifecycle::InCompositingUpdate);
+  DCHECK_EQ(m_owningLayer.compositor()->lifecycle().state(),
+            DocumentLifecycle::InCompositingUpdate);
   // FIXME: if this is really needed for performance, it would be better to
   // store it on Layer.
   m_compositedBounds = m_owningLayer.boundingBoxForCompositing();
@@ -522,7 +522,7 @@ void CompositedLayerMapping::updateAfterPartResize() {
       innerCompositor->frameViewDidChangeSize();
       // We can floor this point because our frameviews are always aligned to
       // pixel boundaries.
-      ASSERT(m_compositedBounds.location() ==
+      DCHECK(m_compositedBounds.location() ==
              flooredIntPoint(m_compositedBounds.location()));
       innerCompositor->frameViewDidChangeLocation(
           flooredIntPoint(contentsBox().location()));
@@ -620,8 +620,8 @@ const PaintLayer* CompositedLayerMapping::scrollParent() {
 }
 
 bool CompositedLayerMapping::updateGraphicsLayerConfiguration() {
-  ASSERT(m_owningLayer.compositor()->lifecycle().state() ==
-         DocumentLifecycle::InCompositingUpdate);
+  DCHECK_EQ(m_owningLayer.compositor()->lifecycle().state(),
+            DocumentLifecycle::InCompositingUpdate);
 
   // Note carefully: here we assume that the compositing state of all
   // descendants have been updated already, so it is legitimate to compute and
@@ -1023,8 +1023,8 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(
     const PaintLayer* compositingContainer,
     const PaintLayer* compositingStackingContext,
     Vector<PaintLayer*>& layersNeedingPaintInvalidation) {
-  ASSERT(m_owningLayer.compositor()->lifecycle().state() ==
-         DocumentLifecycle::InCompositingUpdate);
+  DCHECK_EQ(m_owningLayer.compositor()->lifecycle().state(),
+            DocumentLifecycle::InCompositingUpdate);
 
   // Set transform property, if it is not animating. We have to do this here
   // because the transform is affected by the layer dimensions.
@@ -1044,7 +1044,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(
   // We compute everything relative to the enclosing compositing layer.
   IntRect ancestorCompositingBounds;
   if (compositingContainer) {
-    ASSERT(compositingContainer->hasCompositedLayerMapping());
+    DCHECK(compositingContainer->hasCompositedLayerMapping());
     ancestorCompositingBounds = compositingContainer->compositedLayerMapping()
                                     ->pixelSnappedCompositedBounds();
   }
@@ -1405,7 +1405,7 @@ void CompositedLayerMapping::updateScrollingLayerGeometry(
   if (!m_scrollingLayer)
     return;
 
-  ASSERT(m_scrollingContentsLayer);
+  DCHECK(m_scrollingContentsLayer);
   LayoutBox& layoutBox = toLayoutBox(layoutObject());
   IntRect overflowClipRect =
       pixelSnappedIntRect(layoutBox.overflowClipRect(LayoutPoint()));
@@ -1634,7 +1634,7 @@ void CompositedLayerMapping::updateInternalHierarchy() {
 
   // The squashing containment layer, if it exists, becomes a no-op parent.
   if (m_squashingLayer) {
-    ASSERT((m_ancestorClippingLayer && !m_squashingContainmentLayer) ||
+    DCHECK((m_ancestorClippingLayer && !m_squashingContainmentLayer) ||
            (!m_ancestorClippingLayer && m_squashingContainmentLayer));
 
     if (m_squashingContainmentLayer) {
@@ -2025,7 +2025,7 @@ template <typename Func>
 static void ApplyToGraphicsLayers(const CompositedLayerMapping* mapping,
                                   const Func& f,
                                   ApplyToGraphicsLayersMode mode) {
-  ASSERT(mode);
+  DCHECK(mode);
 
   if ((mode & ApplyToLayersAffectedByPreserve3D) &&
       mapping->childTransformLayer())
@@ -2460,9 +2460,9 @@ bool CompositedLayerMapping::updateSquashingLayers(bool needsSquashingLayers) {
       }
     }
 
-    ASSERT((m_ancestorClippingLayer && !m_squashingContainmentLayer) ||
+    DCHECK((m_ancestorClippingLayer && !m_squashingContainmentLayer) ||
            (!m_ancestorClippingLayer && m_squashingContainmentLayer));
-    ASSERT(m_squashingLayer);
+    DCHECK(m_squashingLayer);
   } else {
     if (m_squashingLayer) {
       m_squashingLayer->removeFromParent();
@@ -2474,7 +2474,8 @@ bool CompositedLayerMapping::updateSquashingLayers(bool needsSquashingLayers) {
       m_squashingContainmentLayer = nullptr;
       layersChanged = true;
     }
-    ASSERT(!m_squashingLayer && !m_squashingContainmentLayer);
+    DCHECK(!m_squashingLayer);
+    DCHECK(!m_squashingContainmentLayer);
   }
 
   return layersChanged;
@@ -2713,7 +2714,7 @@ FloatPoint3D CompositedLayerMapping::computeTransformOrigin(
 // Return the offset from the top-left of this compositing layer at which the
 // LayoutObject's contents are painted.
 LayoutSize CompositedLayerMapping::contentOffsetInCompositingLayer() const {
-  ASSERT(!m_contentOffsetInCompositingLayerDirty);
+  DCHECK(!m_contentOffsetInCompositingLayerDirty);
   return m_contentOffsetInCompositingLayer;
 }
 
@@ -2836,7 +2837,7 @@ void CompositedLayerMapping::setContentsNeedDisplayInRect(
   DCHECK(!m_owningLayer.layoutObject().usesCompositedScrolling());
   // TODO(wangxianzhu): Enable the following assert after paint invalidation for
   // spv2 is ready.
-  // ASSERT(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+  // DCHECK(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
 
   SetContentsNeedsDisplayInRectFunctor functor = {
       enclosingIntRect(LayoutRect(
@@ -2852,7 +2853,7 @@ void CompositedLayerMapping::setNonScrollingContentsNeedDisplayInRect(
   DCHECK(m_owningLayer.layoutObject().usesCompositedScrolling());
   // TODO(wangxianzhu): Enable the following assert after paint invalidation for
   // spv2 is ready.
-  // ASSERT(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+  // DCHECK(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
 
   SetContentsNeedsDisplayInRectFunctor functor = {
       enclosingIntRect(LayoutRect(
@@ -2868,7 +2869,7 @@ void CompositedLayerMapping::setScrollingContentsNeedDisplayInRect(
   DCHECK(m_owningLayer.layoutObject().usesCompositedScrolling());
   // TODO(wangxianzhu): Enable the following assert after paint invalidation for
   // spv2 is ready.
-  // ASSERT(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+  // DCHECK(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
 
   SetContentsNeedsDisplayInRectFunctor functor = {
       enclosingIntRect(LayoutRect(
@@ -2906,14 +2907,14 @@ IntRect CompositedLayerMapping::localClipRectForSquashedLayer(
   if (clippingContainer == referenceLayer.clippingContainer())
     return LayoutRect::infiniteIntRect();
 
-  ASSERT(clippingContainer);
+  DCHECK(clippingContainer);
 
   const GraphicsLayerPaintInfo* ancestorPaintInfo =
       containingSquashedLayer(clippingContainer, layers, layers.size());
   // Must be there, otherwise
   // CompositingLayerAssigner::canSquashIntoCurrentSquashingOwner would have
   // disallowed squashing.
-  ASSERT(ancestorPaintInfo);
+  DCHECK(ancestorPaintInfo);
 
   // FIXME: this is a potential performance issue. We should consider caching
   // these clip rects or otherwise optimizing.
@@ -3050,7 +3051,7 @@ IntRect CompositedLayerMapping::recomputeInterestRect(
     anchorLayoutObject = &m_squashedLayers[0].paintLayer->layoutObject();
     offsetFromAnchorLayoutObject = m_squashedLayers[0].offsetFromLayoutObject;
   } else {
-    ASSERT(graphicsLayer == m_graphicsLayer.get() ||
+    DCHECK(graphicsLayer == m_graphicsLayer.get() ||
            graphicsLayer == m_scrollingContentsLayer.get());
     anchorLayoutObject = &m_owningLayer.layoutObject();
     offsetFromAnchorLayoutObject = graphicsLayer->offsetFromLayoutObject();
@@ -3446,7 +3447,7 @@ void CompositedLayerMapping::removeLayerFromSquashingGraphicsLayer(
   }
 
   // Assert on incorrect mappings between layers and groups
-  ASSERT(layerIndex < m_squashedLayers.size());
+  DCHECK_LT(layerIndex, m_squashedLayers.size());
   if (layerIndex == m_squashedLayers.size())
     return;
 

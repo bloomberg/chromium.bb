@@ -96,7 +96,7 @@ LineSegment BoxShape::getExcludedInterval(LayoutUnit logicalTop,
     x2 = std::max<float>(x2, maxXIntercept);
   }
 
-  ASSERT(x2 >= x1);
+  DCHECK_GE(x2, x1);
   return LineSegment(x1, x2);
 }
 

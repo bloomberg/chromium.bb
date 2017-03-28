@@ -182,11 +182,11 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
   InlineBox* nextOnLine() const { return m_next; }
   InlineBox* prevOnLine() const { return m_prev; }
   void setNextOnLine(InlineBox* next) {
-    ASSERT(m_parent || !next);
+    DCHECK(m_parent || !next);
     m_next = next;
   }
   void setPrevOnLine(InlineBox* prev) {
-    ASSERT(m_parent || !prev);
+    DCHECK(m_parent || !prev);
     m_prev = prev;
   }
 
@@ -205,9 +205,12 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
   LineLayoutItem getLineLayoutItem() const { return m_lineLayoutItem; }
 
   InlineFlowBox* parent() const {
-    ASSERT(!m_hasBadParent);
+#if DCHECK_IS_ON()
+    DCHECK(!m_hasBadParent);
+#endif
     return m_parent;
   }
+
   void setParent(InlineFlowBox* par) { m_parent = par; }
 
   const RootInlineBox& root() const;

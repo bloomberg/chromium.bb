@@ -38,7 +38,8 @@ PathPositionMapper::PositionType PathPositionMapper::pointAndNormalAtLength(
     return BeforePath;
   if (length > m_pathLength)
     return AfterPath;
-  ASSERT(length >= 0 && length <= m_pathLength);
+  DCHECK_GE(length, 0);
+  DCHECK_LE(length, m_pathLength);
   m_positionCalculator.pointAndNormalAtLength(length, point, angle);
   return OnPath;
 }

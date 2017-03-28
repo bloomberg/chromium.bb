@@ -100,8 +100,8 @@ void GraphicsLayerUpdater::updateRecursive(
     if (updateType == ForceUpdate || mapping->needsGraphicsLayerUpdate()) {
       const PaintLayer* compositingContainer =
           context.compositingContainer(layer);
-      ASSERT(compositingContainer ==
-             layer.enclosingLayerWithCompositedLayerMapping(ExcludeSelf));
+      DCHECK_EQ(compositingContainer,
+                layer.enclosingLayerWithCompositedLayerMapping(ExcludeSelf));
 
       if (mapping->updateGraphicsLayerConfiguration())
         m_needsRebuildTree = true;

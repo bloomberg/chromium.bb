@@ -45,11 +45,11 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
   void slowLastChild() const = delete;
 
   LayoutObject* firstChild() const {
-    ASSERT(children() == virtualChildren());
+    DCHECK_EQ(children(), virtualChildren());
     return children()->firstChild();
   }
   LayoutObject* lastChild() const {
-    ASSERT(children() == virtualChildren());
+    DCHECK_EQ(children(), virtualChildren());
     return children()->lastChild();
   }
 

@@ -100,11 +100,11 @@ static inline unsigned countCharactersInTextNode(
 
 static SVGTextPositioningElement* positioningElementFromLayoutObject(
     LayoutObject& layoutObject) {
-  ASSERT(layoutObject.isSVGText() || layoutObject.isSVGInline());
+  DCHECK(layoutObject.isSVGText() || layoutObject.isSVGInline());
 
   Node* node = layoutObject.node();
-  ASSERT(node);
-  ASSERT(node->isSVGElement());
+  DCHECK(node);
+  DCHECK(node->isSVGElement());
 
   return isSVGTextPositioningElement(*node) ? toSVGTextPositioningElement(node)
                                             : nullptr;
@@ -112,7 +112,7 @@ static SVGTextPositioningElement* positioningElementFromLayoutObject(
 
 void SVGTextLayoutAttributesBuilder::collectTextPositioningElements(
     LayoutBoxModelObject& start) {
-  ASSERT(!start.isSVGText() || m_textPositions.isEmpty());
+  DCHECK(!start.isSVGText() || m_textPositions.isEmpty());
   SVGTextPositioningElement* element =
       positioningElementFromLayoutObject(start);
   unsigned atPosition = m_textPositions.size();
@@ -138,7 +138,7 @@ void SVGTextLayoutAttributesBuilder::collectTextPositioningElements(
 
   // Compute the length of the subtree after all children have been visited.
   TextPosition& position = m_textPositions[atPosition];
-  ASSERT(!position.length);
+  DCHECK(!position.length);
   position.length = m_characterCount - position.start;
 }
 

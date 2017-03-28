@@ -116,7 +116,7 @@ void LayoutSVGResourceClipper::removeAllClientsFromCache(
 
 void LayoutSVGResourceClipper::removeClientFromCache(LayoutObject* client,
                                                      bool markForInvalidation) {
-  ASSERT(client);
+  DCHECK(client);
   markClientForInvalidation(client, markForInvalidation
                                         ? BoundariesInvalidation
                                         : ParentOnlyInvalidation);
@@ -205,7 +205,7 @@ bool LayoutSVGResourceClipper::asPath(
 }
 
 sk_sp<const PaintRecord> LayoutSVGResourceClipper::createPaintRecord() {
-  ASSERT(frame());
+  DCHECK(frame());
   if (m_cachedPaintRecord)
     return m_cachedPaintRecord;
 

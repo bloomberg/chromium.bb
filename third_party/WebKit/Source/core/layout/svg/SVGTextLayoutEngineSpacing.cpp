@@ -27,7 +27,7 @@ namespace blink {
 SVGTextLayoutEngineSpacing::SVGTextLayoutEngineSpacing(const Font& font,
                                                        float effectiveZoom)
     : m_font(font), m_lastCharacter(0), m_effectiveZoom(effectiveZoom) {
-  ASSERT(m_effectiveZoom);
+  DCHECK(m_effectiveZoom);
 }
 
 float SVGTextLayoutEngineSpacing::calculateCSSSpacing(UChar currentCharacter) {

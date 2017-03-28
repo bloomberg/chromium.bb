@@ -117,7 +117,7 @@ bool LayoutSVGImage::updateBoundingBox() {
 }
 
 void LayoutSVGImage::layout() {
-  ASSERT(needsLayout());
+  DCHECK(needsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
 
   // Invalidate all resources of this client if our layout changed.
@@ -145,8 +145,8 @@ void LayoutSVGImage::layout() {
   if (updateParentBoundaries)
     LayoutSVGModelObject::setNeedsBoundariesUpdate();
 
-  ASSERT(!m_needsBoundariesUpdate);
-  ASSERT(!m_needsTransformUpdate);
+  DCHECK(!m_needsBoundariesUpdate);
+  DCHECK(!m_needsTransformUpdate);
   clearNeedsLayout();
 }
 

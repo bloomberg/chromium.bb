@@ -50,7 +50,7 @@ namespace blink {
 namespace {
 
 const LayoutSVGText* findTextRoot(const LayoutObject* start) {
-  ASSERT(start);
+  DCHECK(start);
   for (; start; start = start->parent()) {
     if (start->isSVGText())
       return toLayoutSVGText(start);
@@ -68,7 +68,7 @@ LayoutSVGText::LayoutSVGText(SVGTextElement* node)
       m_needsTextMetricsUpdate(false) {}
 
 LayoutSVGText::~LayoutSVGText() {
-  ASSERT(m_descendantTextNodes.isEmpty());
+  DCHECK(m_descendantTextNodes.isEmpty());
 }
 
 void LayoutSVGText::willBeDestroyed() {
@@ -111,7 +111,7 @@ void LayoutSVGText::invalidatePositioningValues(
 
 void LayoutSVGText::subtreeChildWasAdded() {
   if (beingDestroyed() || !everHadLayout()) {
-    ASSERT(m_descendantTextNodes.isEmpty());
+    DCHECK(m_descendantTextNodes.isEmpty());
     return;
   }
   if (documentBeingDestroyed())
@@ -126,7 +126,7 @@ void LayoutSVGText::subtreeChildWasAdded() {
 
 void LayoutSVGText::subtreeChildWillBeRemoved() {
   if (beingDestroyed() || !everHadLayout()) {
-    ASSERT(m_descendantTextNodes.isEmpty());
+    DCHECK(m_descendantTextNodes.isEmpty());
     return;
   }
 
@@ -138,9 +138,9 @@ void LayoutSVGText::subtreeChildWillBeRemoved() {
 }
 
 void LayoutSVGText::subtreeTextDidChange() {
-  ASSERT(!beingDestroyed());
+  DCHECK(!beingDestroyed());
   if (!everHadLayout()) {
-    ASSERT(m_descendantTextNodes.isEmpty());
+    DCHECK(m_descendantTextNodes.isEmpty());
     return;
   }
 
@@ -169,14 +169,14 @@ static inline void checkDescendantTextNodeConsistency(
 #if DCHECK_IS_ON()
   Vector<LayoutSVGInlineText*> newDescendantTextNodes;
   collectDescendantTextNodes(text, newDescendantTextNodes);
-  ASSERT(newDescendantTextNodes == expectedDescendantTextNodes);
+  DCHECK(newDescendantTextNodes == expectedDescendantTextNodes);
 #endif
 }
 
 void LayoutSVGText::layout() {
-  ASSERT(needsLayout());
+  DCHECK(needsLayout());
   // This flag is set and reset as needed only within this function.
-  ASSERT(!m_needsReordering);
+  DCHECK(!m_needsReordering);
   LayoutAnalyzer::Scope analyzer(*this);
 
   bool updateParentBoundaries = false;
@@ -223,19 +223,19 @@ void LayoutSVGText::layout() {
   // Reduced version of LayoutBlock::layoutBlock(), which only takes care of SVG
   // text. All if branches that could cause early exit in LayoutBlocks
   // layoutBlock() method are turned into assertions.
-  ASSERT(!isInline());
-  ASSERT(!simplifiedLayout());
-  ASSERT(!scrollsOverflow());
-  ASSERT(!hasControlClip());
-  ASSERT(!positionedObjects());
-  ASSERT(!isAnonymousBlock());
+  DCHECK(!isInline());
+  DCHECK(!simplifiedLayout());
+  DCHECK(!scrollsOverflow());
+  DCHECK(!hasControlClip());
+  DCHECK(!positionedObjects());
+  DCHECK(!isAnonymousBlock());
 
   if (!firstChild())
     setChildrenInline(true);
 
   // FIXME: We need to find a way to only layout the child boxes, if needed.
   FloatRect oldBoundaries = objectBoundingBox();
-  ASSERT(childrenInline());
+  DCHECK(childrenInline());
 
   rebuildFloatsFromIntruding();
 
@@ -265,10 +265,10 @@ void LayoutSVGText::layout() {
   if (updateParentBoundaries)
     LayoutSVGBlock::setNeedsBoundariesUpdate();
 
-  ASSERT(!m_needsReordering);
-  ASSERT(!m_needsTransformUpdate);
-  ASSERT(!m_needsTextMetricsUpdate);
-  ASSERT(!m_needsPositioningValuesUpdate);
+  DCHECK(!m_needsReordering);
+  DCHECK(!m_needsTransformUpdate);
+  DCHECK(!m_needsTextMetricsUpdate);
+  DCHECK(!m_needsPositioningValuesUpdate);
   clearNeedsLayout();
 }
 
@@ -331,8 +331,8 @@ PositionWithAffinity LayoutSVGText::positionForPoint(
   clippedPointInContents.clampNegativeToZero();
   clippedPointInContents.moveBy(rootBox->location());
 
-  ASSERT(!rootBox->nextRootBox());
-  ASSERT(childrenInline());
+  DCHECK(!rootBox->nextRootBox());
+  DCHECK(childrenInline());
 
   InlineBox* closestBox =
       toSVGRootInlineBox(rootBox)->closestLeafChildForPosition(
@@ -366,8 +366,8 @@ FloatRect LayoutSVGText::strokeBoundingBox() const {
   if (!svgStyle.hasStroke())
     return strokeBoundaries;
 
-  ASSERT(node());
-  ASSERT(node()->isSVGElement());
+  DCHECK(node());
+  DCHECK(node()->isSVGElement());
   SVGLengthContext lengthContext(toSVGElement(node()));
   strokeBoundaries.inflate(
       lengthContext.valueForLength(svgStyle.strokeWidth()));

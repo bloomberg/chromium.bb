@@ -54,7 +54,8 @@ static inline bool overlapsYRange(const FloatRect& rect, float y1, float y2) {
 }
 
 float OffsetPolygonEdge::xIntercept(float y) const {
-  ASSERT(y >= minY() && y <= maxY());
+  DCHECK_GE(y, minY());
+  DCHECK_LE(y, maxY());
 
   if (vertex1().y() == vertex2().y() || vertex1().x() == vertex2().x())
     return minX();
@@ -95,7 +96,7 @@ FloatShapeInterval OffsetPolygonEdge::clippedEdgeXRange(float y1,
 }
 
 static float circleXIntercept(float y, float radius) {
-  ASSERT(radius > 0);
+  DCHECK_GT(radius, 0);
   return radius * sqrt(1 - (y * y) / (radius * radius));
 }
 

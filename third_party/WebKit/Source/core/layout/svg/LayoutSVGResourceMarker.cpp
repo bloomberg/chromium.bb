@@ -32,7 +32,7 @@ LayoutSVGResourceMarker::LayoutSVGResourceMarker(SVGMarkerElement* node)
 LayoutSVGResourceMarker::~LayoutSVGResourceMarker() {}
 
 void LayoutSVGResourceMarker::layout() {
-  ASSERT(needsLayout());
+  DCHECK(needsLayout());
   if (m_isInLayout)
     return;
 
@@ -55,7 +55,7 @@ void LayoutSVGResourceMarker::removeAllClientsFromCache(
 
 void LayoutSVGResourceMarker::removeClientFromCache(LayoutObject* client,
                                                     bool markForInvalidation) {
-  ASSERT(client);
+  DCHECK(client);
   markClientForInvalidation(client, markForInvalidation
                                         ? BoundariesInvalidation
                                         : ParentOnlyInvalidation);
@@ -74,7 +74,7 @@ FloatRect LayoutSVGResourceMarker::markerBoundaries(
 
 FloatPoint LayoutSVGResourceMarker::referencePoint() const {
   SVGMarkerElement* marker = toSVGMarkerElement(element());
-  ASSERT(marker);
+  DCHECK(marker);
 
   SVGLengthContext lengthContext(marker);
   return FloatPoint(marker->refX()->currentValue()->value(lengthContext),
@@ -123,7 +123,7 @@ AffineTransform LayoutSVGResourceMarker::markerTransformation(
 bool LayoutSVGResourceMarker::shouldPaint() const {
   // An empty viewBox disables rendering.
   SVGMarkerElement* marker = toSVGMarkerElement(element());
-  ASSERT(marker);
+  DCHECK(marker);
   return !marker->viewBox()->isSpecified() ||
          !marker->viewBox()->currentValue()->isValid() ||
          !marker->viewBox()->currentValue()->value().isEmpty();
@@ -144,7 +144,7 @@ SVGTransformChange LayoutSVGResourceMarker::calculateLocalTransform() {
     return SVGTransformChange::None;
 
   SVGMarkerElement* marker = toSVGMarkerElement(element());
-  ASSERT(marker);
+  DCHECK(marker);
 
   SVGLengthContext lengthContext(marker);
   float width = marker->markerWidth()->currentValue()->value(lengthContext);

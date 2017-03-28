@@ -42,10 +42,10 @@ class ShapeInterval {
   ShapeInterval() : m_x1(-1), m_x2(-2) {
     // The initial values of m_x1,x2 don't matter (unless you're looking
     // at them in the debugger) so long as isUndefined() is true.
-    ASSERT(isUndefined());
+    DCHECK(isUndefined());
   }
 
-  ShapeInterval(T x1, T x2) : m_x1(x1), m_x2(x2) { ASSERT(x2 >= x1); }
+  ShapeInterval(T x1, T x2) : m_x1(x1), m_x2(x2) { DCHECK(x2 >= x1); }
 
   bool isUndefined() const { return m_x2 < m_x1; }
   T x1() const { return isUndefined() ? 0 : m_x1; }
@@ -54,7 +54,7 @@ class ShapeInterval {
   bool isEmpty() const { return isUndefined() ? true : m_x1 == m_x2; }
 
   void set(T x1, T x2) {
-    ASSERT(x2 >= x1);
+    DCHECK_GE(x2, x1);
     m_x1 = x1;
     m_x2 = x2;
   }

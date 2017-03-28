@@ -158,7 +158,7 @@ class RootInlineBox : public InlineFlowBox {
       bool onlyEditableLeaves = false);
 
   void appendFloat(LayoutBox* floatingBox) {
-    ASSERT(!isDirty());
+    DCHECK(!isDirty());
     if (m_floats)
       m_floats->push_back(floatingBox);
     else
@@ -166,7 +166,7 @@ class RootInlineBox : public InlineFlowBox {
   }
 
   Vector<LayoutBox*>* floatsPtr() {
-    ASSERT(!isDirty());
+    DCHECK(!isDirty());
     return m_floats.get();
   }
 

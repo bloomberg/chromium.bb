@@ -28,7 +28,7 @@ LayoutSVGHiddenContainer::LayoutSVGHiddenContainer(SVGElement* element)
     : LayoutSVGContainer(element) {}
 
 void LayoutSVGHiddenContainer::layout() {
-  ASSERT(needsLayout());
+  DCHECK(needsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
 
   // When hasRelativeLengths() is false, no descendants have relative lengths

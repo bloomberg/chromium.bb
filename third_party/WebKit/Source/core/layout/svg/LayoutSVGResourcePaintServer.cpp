@@ -59,7 +59,7 @@ void SVGPaintServer::applyToPaintFlags(PaintFlags& flags, float alpha) {
 }
 
 void SVGPaintServer::prependTransform(const AffineTransform& transform) {
-  ASSERT(m_gradient || m_pattern);
+  DCHECK(m_gradient || m_pattern);
   m_transform = transform * m_transform;
 }
 
@@ -81,7 +81,7 @@ static SVGPaintDescription requestPaint(const LayoutObject& object,
   bool applyToFill = mode == ApplyToFillMode;
   SVGPaintType paintType =
       applyToFill ? svgStyle.fillPaintType() : svgStyle.strokePaintType();
-  ASSERT(paintType != SVG_PAINTTYPE_NONE);
+  DCHECK_NE(paintType, SVG_PAINTTYPE_NONE);
 
   Color color;
   bool hasColor = false;
@@ -126,7 +126,7 @@ static SVGPaintDescription requestPaint(const LayoutObject& object,
   if (paintType < SVG_PAINTTYPE_URI_NONE) {
     // |paintType| will be either <current-color> or <rgb-color> here - both of
     // which will have a color.
-    ASSERT(hasColor);
+    DCHECK(hasColor);
     return SVGPaintDescription(color);
   }
 
@@ -159,7 +159,7 @@ SVGPaintServer SVGPaintServer::requestForLayoutObject(
     const LayoutObject& layoutObject,
     const ComputedStyle& style,
     LayoutSVGResourceMode resourceMode) {
-  ASSERT(resourceMode == ApplyToFillMode || resourceMode == ApplyToStrokeMode);
+  DCHECK(resourceMode == ApplyToFillMode || resourceMode == ApplyToStrokeMode);
 
   SVGPaintDescription paintDescription =
       requestPaint(layoutObject, style, resourceMode);

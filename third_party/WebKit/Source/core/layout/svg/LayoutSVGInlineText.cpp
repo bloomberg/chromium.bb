@@ -132,8 +132,8 @@ LayoutRect LayoutSVGInlineText::linesBoundingBox() const {
 }
 
 bool LayoutSVGInlineText::characterStartsNewTextChunk(int position) const {
-  ASSERT(position >= 0);
-  ASSERT(position < static_cast<int>(textLength()));
+  DCHECK_GE(position, 0);
+  DCHECK_LT(position, static_cast<int>(textLength()));
 
   // Each <textPath> element starts a new text chunk, regardless of any x/y
   // values.
@@ -153,7 +153,7 @@ PositionWithAffinity LayoutSVGInlineText::positionForPoint(
   if (!hasTextBoxes() || !textLength())
     return createPositionWithAffinity(0);
 
-  ASSERT(m_scalingFactor);
+  DCHECK(m_scalingFactor);
 
   const SimpleFontData* fontData = m_scaledFont.primaryFont();
   DCHECK(fontData);
@@ -161,7 +161,7 @@ PositionWithAffinity LayoutSVGInlineText::positionForPoint(
       fontData ? fontData->getFontMetrics().floatAscent() / m_scalingFactor : 0;
 
   LayoutBlock* containingBlock = this->containingBlock();
-  ASSERT(containingBlock);
+  DCHECK(containingBlock);
 
   // Map local point to absolute point, as the character origins stored in the
   // text fragments use absolute coordinates.
@@ -243,7 +243,7 @@ TextRun constructTextRun(LayoutSVGInlineText& text,
   // Propagate the maximum length of the characters buffer to the TextRun, even
   // when we're only processing a substring.
   run.setCharactersLength(text.textLength() - position);
-  ASSERT(run.charactersLength() >= run.length());
+  DCHECK_GE(run.charactersLength(), run.length());
   return run;
 }
 

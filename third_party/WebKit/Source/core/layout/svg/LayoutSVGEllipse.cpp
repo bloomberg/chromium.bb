@@ -76,7 +76,7 @@ void LayoutSVGEllipse::updateShapeFromElement() {
 }
 
 void LayoutSVGEllipse::calculateRadiiAndCenter() {
-  ASSERT(element());
+  DCHECK(element());
   SVGLengthContext lengthContext(element());
   m_center = FloatPoint(
       lengthContext.valueForLength(style()->svgStyle().cx(), styleRef(),

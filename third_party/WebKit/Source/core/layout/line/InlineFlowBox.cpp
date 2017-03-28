@@ -91,9 +91,9 @@ static inline bool hasIdenticalLineHeightProperties(
 }
 
 void InlineFlowBox::addToLine(InlineBox* child) {
-  ASSERT(!child->parent());
-  ASSERT(!child->nextOnLine());
-  ASSERT(!child->prevOnLine());
+  DCHECK(!child->parent());
+  DCHECK(!child->nextOnLine());
+  DCHECK(!child->prevOnLine());
   checkConsistency();
 
   child->setParent(this);
@@ -143,7 +143,7 @@ void InlineFlowBox::addToLine(InlineBox* child) {
         // no reason to ditch the optimization here.
         shouldClearDescendantsHaveSameLineHeightAndBaseline = true;
       } else {
-        ASSERT(isInlineFlowBox());
+        DCHECK(isInlineFlowBox());
         InlineFlowBox* childFlowBox = toInlineFlowBox(child);
         // Check the child's bit, and then also check for differences in font,
         // line-height, vertical-align
@@ -223,7 +223,7 @@ void InlineFlowBox::deleteLine() {
   InlineBox* child = firstChild();
   InlineBox* next = nullptr;
   while (child) {
-    ASSERT(this == child->parent());
+    DCHECK_EQ(this, child->parent());
     next = child->nextOnLine();
 #if DCHECK_IS_ON()
     child->setParent(nullptr);
@@ -770,7 +770,7 @@ void InlineFlowBox::placeBoxesInBlockDirection(
       newLogicalTopIncludingMargins = newLogicalTop;
       // TODO(kojii): isHorizontal() does not match to
       // m_layoutObject.isHorizontalWritingMode(). crbug.com/552954
-      // ASSERT(curr->isHorizontal() ==
+      // DCHECK_EQ(curr->isHorizontal(),
       // curr->getLineLayoutItem().style()->isHorizontalWritingMode());
       // We may flip lines in case of verticalLR mode, so we can
       // assume verticalRL for now.
@@ -1202,7 +1202,7 @@ void InlineFlowBox::computeOverflow(
     GlyphOverflowAndFallbackFontsMap& textBoxDataMap) {
   // If we know we have no overflow, we can just bail.
   if (knownToHaveNoOverflow()) {
-    ASSERT(!m_overflow);
+    DCHECK(!m_overflow);
     return;
   }
 
@@ -1264,7 +1264,7 @@ void InlineFlowBox::computeOverflow(
 
 void InlineFlowBox::setLayoutOverflow(const LayoutRect& rect,
                                       const LayoutRect& frameBox) {
-  ASSERT(!knownToHaveNoOverflow());
+  DCHECK(!knownToHaveNoOverflow());
   if (frameBox.contains(rect) || rect.isEmpty())
     return;
 
@@ -1276,7 +1276,7 @@ void InlineFlowBox::setLayoutOverflow(const LayoutRect& rect,
 
 void InlineFlowBox::setVisualOverflow(const LayoutRect& rect,
                                       const LayoutRect& frameBox) {
-  ASSERT(!knownToHaveNoOverflow());
+  DCHECK(!knownToHaveNoOverflow());
   if (frameBox.contains(rect) || rect.isEmpty())
     return;
 
@@ -1291,7 +1291,7 @@ void InlineFlowBox::setOverflowFromLogicalRects(
     const LayoutRect& logicalVisualOverflow,
     LayoutUnit lineTop,
     LayoutUnit lineBottom) {
-  ASSERT(!knownToHaveNoOverflow());
+  DCHECK(!knownToHaveNoOverflow());
   LayoutRect frameBox = frameRectIncludingLineHeight(lineTop, lineBottom);
 
   LayoutRect layoutOverflow(isHorizontal()
@@ -1355,7 +1355,7 @@ bool InlineFlowBox::nodeAtPoint(HitTestResult& result,
       bool hasSibling =
           currLayoutItem.previousSibling() || currLayoutItem.nextSibling();
       LineLayoutItem culledParent = currLayoutItem.parent();
-      ASSERT(culledParent);
+      DCHECK(culledParent);
 
       if (culledParent == getLineLayoutItem() ||
           (hasSibling && prev &&
@@ -1723,15 +1723,15 @@ void InlineFlowBox::showLineTreeAndMark(const InlineBox* markedBox1,
 #if DCHECK_IS_ON()
 void InlineFlowBox::checkConsistency() const {
 #ifdef CHECK_CONSISTENCY
-  ASSERT(!m_hasBadChildList);
+  DCHECK(!m_hasBadChildList);
   const InlineBox* prev = nullptr;
   for (const InlineBox* child = m_firstChild; child;
        child = child->nextOnLine()) {
-    ASSERT(child->parent() == this);
-    ASSERT(child->prevOnLine() == prev);
+    DCHECK_EQ(child->parent(), this);
+    DCHECK_EQ(child->prevOnLine(), prev);
     prev = child;
   }
-  ASSERT(prev == m_lastChild);
+  DCHECK_EQ(prev, m_lastChild);
 #endif
 }
 

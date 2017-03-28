@@ -61,7 +61,7 @@ void InlineTextBox::destroy() {
 }
 
 void InlineTextBox::offsetRun(int delta) {
-  ASSERT(!isDirty());
+  DCHECK(!isDirty());
   m_start += delta;
 }
 
@@ -83,7 +83,7 @@ LayoutRect InlineTextBox::logicalOverflowRect() const {
 }
 
 void InlineTextBox::setLogicalOverflowRect(const LayoutRect& rect) {
-  ASSERT(!knownToHaveNoOverflow());
+  DCHECK(!knownToHaveNoOverflow());
   DCHECK(rect != logicalFrameRect());
   if (!gTextBoxesWithOverflow)
     gTextBoxesWithOverflow = new InlineTextBoxOverflowMap;
@@ -576,8 +576,8 @@ int InlineTextBox::offsetForPosition(LayoutUnit lineOffset,
 }
 
 LayoutUnit InlineTextBox::positionForOffset(int offset) const {
-  ASSERT(offset >= m_start);
-  ASSERT(offset <= m_start + m_len);
+  DCHECK_GE(offset, m_start);
+  DCHECK_LE(offset, m_start + m_len);
 
   if (isLineBreak())
     return logicalLeft();
@@ -623,7 +623,7 @@ void InlineTextBox::characterWidths(Vector<float>& widths) const {
     return;
 
   FontCachePurgePreventer fontCachePurgePreventer;
-  ASSERT(getLineLayoutItem().text());
+  DCHECK(getLineLayoutItem().text());
 
   const ComputedStyle& styleToUse =
       getLineLayoutItem().styleRef(isFirstLineStyle());
@@ -641,7 +641,7 @@ void InlineTextBox::characterWidths(Vector<float>& widths) const {
 TextRun InlineTextBox::constructTextRun(
     const ComputedStyle& style,
     StringBuilder* charactersWithHyphen) const {
-  ASSERT(getLineLayoutItem().text());
+  DCHECK(getLineLayoutItem().text());
 
   String string = getLineLayoutItem().text();
   unsigned startPos = start();
@@ -670,7 +670,7 @@ TextRun InlineTextBox::constructTextRun(
     maximumLength = string.length();
   }
 
-  ASSERT(maximumLength >= static_cast<int>(string.length()));
+  DCHECK_GE(maximumLength, static_cast<int>(string.length()));
 
   TextRun run(string, textPos().toFloat(), expansion(), expansionBehavior(),
               direction(),
@@ -681,7 +681,7 @@ TextRun InlineTextBox::constructTextRun(
   // Propagate the maximum length of the characters buffer to the TextRun, even
   // when we're only processing a substring.
   run.setCharactersLength(maximumLength);
-  ASSERT(run.charactersLength() >= run.length());
+  DCHECK_GE(run.charactersLength(), run.length());
   return run;
 }
 

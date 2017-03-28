@@ -72,8 +72,8 @@ void AbstractInlineTextBox::willDestroy(InlineTextBox* inlineTextBox) {
 }
 
 AbstractInlineTextBox::~AbstractInlineTextBox() {
-  ASSERT(!m_lineLayoutItem);
-  ASSERT(!m_inlineTextBox);
+  DCHECK(!m_lineLayoutItem);
+  DCHECK(!m_inlineTextBox);
 }
 
 void AbstractInlineTextBox::detach() {
@@ -88,7 +88,7 @@ void AbstractInlineTextBox::detach() {
 
 PassRefPtr<AbstractInlineTextBox> AbstractInlineTextBox::nextInlineTextBox()
     const {
-  ASSERT(!m_inlineTextBox ||
+  DCHECK(!m_inlineTextBox ||
          !m_inlineTextBox->getLineLayoutItem().needsLayout());
   if (!m_inlineTextBox)
     return nullptr;
@@ -180,19 +180,19 @@ String AbstractInlineTextBox::text() const {
 }
 
 bool AbstractInlineTextBox::isFirst() const {
-  ASSERT(!m_inlineTextBox ||
+  DCHECK(!m_inlineTextBox ||
          !m_inlineTextBox->getLineLayoutItem().needsLayout());
   return !m_inlineTextBox || !m_inlineTextBox->prevTextBox();
 }
 
 bool AbstractInlineTextBox::isLast() const {
-  ASSERT(!m_inlineTextBox ||
+  DCHECK(!m_inlineTextBox ||
          !m_inlineTextBox->getLineLayoutItem().needsLayout());
   return !m_inlineTextBox || !m_inlineTextBox->nextTextBox();
 }
 
 PassRefPtr<AbstractInlineTextBox> AbstractInlineTextBox::nextOnLine() const {
-  ASSERT(!m_inlineTextBox ||
+  DCHECK(!m_inlineTextBox ||
          !m_inlineTextBox->getLineLayoutItem().needsLayout());
   if (!m_inlineTextBox)
     return nullptr;
@@ -207,7 +207,7 @@ PassRefPtr<AbstractInlineTextBox> AbstractInlineTextBox::nextOnLine() const {
 
 PassRefPtr<AbstractInlineTextBox> AbstractInlineTextBox::previousOnLine()
     const {
-  ASSERT(!m_inlineTextBox ||
+  DCHECK(!m_inlineTextBox ||
          !m_inlineTextBox->getLineLayoutItem().needsLayout());
   if (!m_inlineTextBox)
     return nullptr;

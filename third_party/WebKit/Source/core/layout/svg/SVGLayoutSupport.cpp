@@ -162,8 +162,8 @@ void SVGLayoutSupport::mapAncestorToLocal(const LayoutObject& object,
   // the former case, |object| can never be an ancestor while in the latter
   // the caller is responsible for doing the ancestor check. Because of this,
   // computing the transform to the SVG root is always what we want to do here.
-  ASSERT(ancestor != &object);
-  ASSERT(object.isSVGContainer() || object.isSVGShape() ||
+  DCHECK_NE(ancestor, &object);
+  DCHECK(object.isSVGContainer() || object.isSVGShape() ||
          object.isSVGImage() || object.isSVGText() ||
          object.isSVGForeignObject());
   AffineTransform localToSVGRoot;
@@ -267,8 +267,8 @@ const LayoutSVGRoot* SVGLayoutSupport::findTreeRootObject(
   while (start && !start->isSVGRoot())
     start = start->parent();
 
-  ASSERT(start);
-  ASSERT(start->isSVGRoot());
+  DCHECK(start);
+  DCHECK(start->isSVGRoot());
   return toLayoutSVGRoot(start);
 }
 
@@ -361,7 +361,7 @@ void SVGLayoutSupport::layoutChildren(LayoutObject* firstChild,
 }
 
 void SVGLayoutSupport::layoutResourcesIfNeeded(const LayoutObject* object) {
-  ASSERT(object);
+  DCHECK(object);
 
   SVGResources* resources =
       SVGResourcesCache::cachedResourcesForLayoutObject(object);
@@ -372,7 +372,7 @@ void SVGLayoutSupport::layoutResourcesIfNeeded(const LayoutObject* object) {
 bool SVGLayoutSupport::isOverflowHidden(const LayoutObject* object) {
   // LayoutSVGRoot should never query for overflow state - it should always clip
   // itself to the initial viewport size.
-  ASSERT(!object->isDocumentElement());
+  DCHECK(!object->isDocumentElement());
 
   return object->style()->overflowX() == EOverflow::kHidden ||
          object->style()->overflowX() == EOverflow::kScroll;
@@ -381,7 +381,7 @@ bool SVGLayoutSupport::isOverflowHidden(const LayoutObject* object) {
 void SVGLayoutSupport::adjustVisualRectWithResources(
     const LayoutObject* layoutObject,
     FloatRect& visualRect) {
-  ASSERT(layoutObject);
+  DCHECK(layoutObject);
 
   SVGResources* resources =
       SVGResourcesCache::cachedResourcesForLayoutObject(layoutObject);
@@ -449,8 +449,8 @@ void SVGLayoutSupport::applyStrokeStyleToStrokeData(StrokeData& strokeData,
                                                     const ComputedStyle& style,
                                                     const LayoutObject& object,
                                                     float dashScaleFactor) {
-  ASSERT(object.node());
-  ASSERT(object.node()->isSVGElement());
+  DCHECK(object.node());
+  DCHECK(object.node()->isSVGElement());
 
   const SVGComputedStyle& svgStyle = style.svgStyle();
 
@@ -466,7 +466,7 @@ void SVGLayoutSupport::applyStrokeStyleToStrokeData(StrokeData& strokeData,
       lengthContext.valueForLength(svgStyle.strokeDashOffset(), style);
   // Apply scaling from 'pathLength'.
   if (dashScaleFactor != 1) {
-    ASSERT(dashScaleFactor >= 0);
+    DCHECK_GE(dashScaleFactor, 0);
     dashOffset *= dashScaleFactor;
     for (auto& dashItem : dashArray)
       dashItem *= dashScaleFactor;
@@ -475,7 +475,7 @@ void SVGLayoutSupport::applyStrokeStyleToStrokeData(StrokeData& strokeData,
 }
 
 bool SVGLayoutSupport::isLayoutableTextNode(const LayoutObject* object) {
-  ASSERT(object->isText());
+  DCHECK(object->isText());
   // <br> is marked as text, but is not handled by the SVG layout code-path.
   return object->isSVGInlineText() &&
          !toLayoutSVGInlineText(object)->hasEmptyText();

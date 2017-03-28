@@ -68,15 +68,15 @@ class ShapeOutsideDeltas final {
 
   bool isValid() { return m_isValid; }
   LayoutUnit leftMarginBoxDelta() {
-    ASSERT(m_isValid);
+    DCHECK(m_isValid);
     return m_leftMarginBoxDelta;
   }
   LayoutUnit rightMarginBoxDelta() {
-    ASSERT(m_isValid);
+    DCHECK(m_isValid);
     return m_rightMarginBoxDelta;
   }
   bool lineOverlapsShape() {
-    ASSERT(m_isValid);
+    DCHECK(m_isValid);
     return m_lineOverlapsShape;
   }
 

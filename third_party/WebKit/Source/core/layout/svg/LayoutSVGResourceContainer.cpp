@@ -46,7 +46,7 @@ void LayoutSVGResourceContainer::layout() {
   // FIXME: Investigate a way to detect and break resource layout dependency
   // cycles early. Then we can remove this method altogether, and fall back onto
   // LayoutSVGHiddenContainer::layout().
-  ASSERT(needsLayout());
+  DCHECK(needsLayout());
   if (m_isInLayout)
     return;
 
@@ -146,8 +146,8 @@ void LayoutSVGResourceContainer::markAllClientsForInvalidation(
 void LayoutSVGResourceContainer::markClientForInvalidation(
     LayoutObject* client,
     InvalidationMode mode) {
-  ASSERT(client);
-  ASSERT(!m_clients.isEmpty());
+  DCHECK(client);
+  DCHECK(!m_clients.isEmpty());
 
   switch (mode) {
     case LayoutAndBoundariesInvalidation:
@@ -171,13 +171,13 @@ void LayoutSVGResourceContainer::markClientForInvalidation(
 }
 
 void LayoutSVGResourceContainer::addClient(LayoutObject* client) {
-  ASSERT(client);
+  DCHECK(client);
   m_clients.insert(client);
   clearInvalidationMask();
 }
 
 void LayoutSVGResourceContainer::removeClient(LayoutObject* client) {
-  ASSERT(client);
+  DCHECK(client);
   removeClientFromCache(client, false);
   m_clients.erase(client);
 }
@@ -198,7 +198,7 @@ void LayoutSVGResourceContainer::invalidateCacheAndMarkForLayout(
 static inline void removeFromCacheAndInvalidateDependencies(
     LayoutObject* object,
     bool needsLayout) {
-  ASSERT(object);
+  DCHECK(object);
   if (SVGResources* resources =
           SVGResourcesCache::cachedResourcesForLayoutObject(object)) {
     resources->removeClientFromCacheAffectingObjectBounds(object);
@@ -237,8 +237,8 @@ static inline void removeFromCacheAndInvalidateDependencies(
 void LayoutSVGResourceContainer::markForLayoutAndParentResourceInvalidation(
     LayoutObject* object,
     bool needsLayout) {
-  ASSERT(object);
-  ASSERT(object->node());
+  DCHECK(object);
+  DCHECK(object->node());
 
   if (needsLayout && !object->documentBeingDestroyed())
     object->setNeedsLayoutAndFullPaintInvalidation(

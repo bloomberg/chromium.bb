@@ -88,13 +88,13 @@ PaintLayerCompositor::PaintLayerCompositor(LayoutView& layoutView)
 }
 
 PaintLayerCompositor::~PaintLayerCompositor() {
-  ASSERT(m_rootLayerAttachment == RootLayerUnattached);
+  DCHECK_EQ(m_rootLayerAttachment, RootLayerUnattached);
 }
 
 bool PaintLayerCompositor::inCompositingMode() const {
   // FIXME: This should assert that lifecycle is >= CompositingClean since
   // the last step of updateIfNeeded can set this bit to false.
-  ASSERT(m_layoutView.layer()->isAllowedToQueryCompositingState());
+  DCHECK(m_layoutView.layer()->isAllowedToQueryCompositingState());
   return m_compositing;
 }
 
@@ -211,7 +211,7 @@ void PaintLayerCompositor::updateIfNeededRecursiveInternal() {
 
   TRACE_EVENT0("blink", "PaintLayerCompositor::updateIfNeededRecursive");
 
-  ASSERT(!m_layoutView.needsLayout());
+  DCHECK(!m_layoutView.needsLayout());
 
   ScriptForbiddenScope forbidScript;
 
@@ -241,7 +241,7 @@ void PaintLayerCompositor::updateIfNeededRecursiveInternal() {
   }
 
 #if DCHECK_IS_ON()
-  ASSERT(lifecycle().state() == DocumentLifecycle::CompositingClean);
+  DCHECK_EQ(lifecycle().state(), DocumentLifecycle::CompositingClean);
   assertNoUnresolvedDirtyBits();
   for (Frame* child = m_layoutView.frameView()->frame().tree().firstChild();
        child; child = child->tree().nextSibling()) {
@@ -258,7 +258,7 @@ void PaintLayerCompositor::updateIfNeededRecursiveInternal() {
 
 void PaintLayerCompositor::setNeedsCompositingUpdate(
     CompositingUpdateType updateType) {
-  ASSERT(updateType != CompositingUpdateNone);
+  DCHECK_NE(updateType, CompositingUpdateNone);
   m_pendingUpdateType = std::max(m_pendingUpdateType, updateType);
   if (Page* page = this->page())
     page->animator().scheduleVisualUpdate(m_layoutView.frame());
@@ -280,8 +280,8 @@ void PaintLayerCompositor::didLayout() {
 #if DCHECK_IS_ON()
 
 void PaintLayerCompositor::assertNoUnresolvedDirtyBits() {
-  ASSERT(m_pendingUpdateType == CompositingUpdateNone);
-  ASSERT(!m_rootShouldAlwaysCompositeDirty);
+  DCHECK_EQ(m_pendingUpdateType, CompositingUpdateNone);
+  DCHECK(!m_rootShouldAlwaysCompositeDirty);
 }
 
 #endif
@@ -326,7 +326,7 @@ void PaintLayerCompositor::applyOverlayFullscreenVideoAdjustmentIfNeeded() {
 
 void PaintLayerCompositor::updateWithoutAcceleratedCompositing(
     CompositingUpdateType updateType) {
-  ASSERT(!hasAcceleratedCompositing());
+  DCHECK(!hasAcceleratedCompositing());
 
   if (updateType >= CompositingUpdateAfterCompositingInputChange)
     CompositingInputsUpdater(rootLayer()).update();
@@ -501,7 +501,7 @@ bool PaintLayerCompositor::allocateOrClearCompositedLayerMapping(
   // updated compositing requirements fully.
   switch (compositedLayerUpdate) {
     case AllocateOwnCompositedLayerMapping:
-      ASSERT(!layer->hasCompositedLayerMapping());
+      DCHECK(!layer->hasCompositedLayerMapping());
       setCompositingModeEnabled(true);
 
       // If we need to issue paint invalidations, do so before allocating the
@@ -690,7 +690,7 @@ bool PaintLayerCompositor::scrollingLayerDidChange(PaintLayer* layer) {
 
 std::unique_ptr<JSONObject> PaintLayerCompositor::layerTreeAsJSON(
     LayerTreeFlags flags) const {
-  ASSERT(lifecycle().state() >= DocumentLifecycle::PaintInvalidationClean ||
+  DCHECK(lifecycle().state() >= DocumentLifecycle::PaintInvalidationClean ||
          m_layoutView.frameView()->shouldThrottleRendering());
 
   // We skip dumping the scroll and clip layers to keep layerTreeAsText output
@@ -987,7 +987,7 @@ void PaintLayerCompositor::setTracksRasterInvalidations(
     bool tracksRasterInvalidations) {
 #if DCHECK_IS_ON()
   FrameView* view = m_layoutView.frameView();
-  ASSERT(lifecycle().state() == DocumentLifecycle::PaintClean ||
+  DCHECK(lifecycle().state() == DocumentLifecycle::PaintClean ||
          (view && view->shouldThrottleRendering()));
 #endif
 
@@ -1109,8 +1109,8 @@ void PaintLayerCompositor::ensureRootLayer() {
   }
 
   if (shouldCreateOwnLayers && !m_overflowControlsHostLayer) {
-    ASSERT(!m_scrollLayer);
-    ASSERT(!m_containerLayer);
+    DCHECK(!m_scrollLayer);
+    DCHECK(!m_containerLayer);
 
     // Create a layer to host the clipping layer and the overflow controls
     // layers.
@@ -1183,7 +1183,7 @@ void PaintLayerCompositor::destroyRootLayer() {
     m_containerLayer = nullptr;
     m_scrollLayer = nullptr;
   }
-  ASSERT(!m_scrollLayer);
+  DCHECK(!m_scrollLayer);
   m_rootContentLayer = nullptr;
 }
 

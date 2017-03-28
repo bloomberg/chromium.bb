@@ -73,7 +73,7 @@ int SVGInlineTextBox::offsetForPositionInFragment(
       LineLayoutSVGInlineText(this->getLineLayoutItem());
 
   float scalingFactor = lineLayoutItem.scalingFactor();
-  ASSERT(scalingFactor);
+  DCHECK(scalingFactor);
 
   const ComputedStyle& style = lineLayoutItem.styleRef();
 
@@ -103,13 +103,13 @@ FloatRect SVGInlineTextBox::selectionRectForTextFragment(
     int startPosition,
     int endPosition,
     const ComputedStyle& style) const {
-  ASSERT(startPosition < endPosition);
+  DCHECK_LT(startPosition, endPosition);
 
   LineLayoutSVGInlineText lineLayoutItem =
       LineLayoutSVGInlineText(this->getLineLayoutItem());
 
   float scalingFactor = lineLayoutItem.scalingFactor();
-  ASSERT(scalingFactor);
+  DCHECK(scalingFactor);
 
   const Font& scaledFont = lineLayoutItem.scaledFont();
   const SimpleFontData* fontData = scaledFont.primaryFont();
@@ -207,7 +207,7 @@ TextRun SVGInlineTextBox::constructTextRun(
   // Propagate the maximum length of the characters buffer to the TextRun, even
   // when we're only processing a substring.
   run.setCharactersLength(text.textLength() - fragment.characterOffset);
-  ASSERT(run.charactersLength() >= run.length());
+  DCHECK_GE(run.charactersLength(), run.length());
   return run;
 }
 
@@ -268,7 +268,7 @@ LayoutRect SVGInlineTextBox::calculateBoundaries() const {
     return LayoutRect();
 
   float scalingFactor = lineLayoutItem.scalingFactor();
-  ASSERT(scalingFactor);
+  DCHECK(scalingFactor);
   LayoutUnit baseline(fontData->getFontMetrics().floatAscent() / scalingFactor);
 
   LayoutRect textBoundingRect;
@@ -284,7 +284,7 @@ bool SVGInlineTextBox::nodeAtPoint(HitTestResult& result,
                                    LayoutUnit,
                                    LayoutUnit) {
   // FIXME: integrate with InlineTextBox::nodeAtPoint better.
-  ASSERT(!isLineBreak());
+  DCHECK(!isLineBreak());
 
   PointerEventsHitRules hitRules(PointerEventsHitRules::SVG_TEXT_HITTESTING,
                                  result.hitTestRequest(),

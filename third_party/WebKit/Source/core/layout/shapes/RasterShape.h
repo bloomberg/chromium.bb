@@ -52,14 +52,14 @@ class RasterShapeIntervals {
   bool isEmpty() const { return m_bounds.isEmpty(); }
 
   IntShapeInterval& intervalAt(int y) {
-    ASSERT(y + m_offset >= 0 &&
-           static_cast<unsigned>(y + m_offset) < m_intervals.size());
+    DCHECK_GE(y + m_offset, 0);
+    DCHECK_LT(static_cast<unsigned>(y + m_offset), m_intervals.size());
     return m_intervals[y + m_offset];
   }
 
   const IntShapeInterval& intervalAt(int y) const {
-    ASSERT(y + m_offset >= 0 &&
-           static_cast<unsigned>(y + m_offset) < m_intervals.size());
+    DCHECK_GE(y + m_offset, 0);
+    DCHECK_LT(static_cast<unsigned>(y + m_offset), m_intervals.size());
     return m_intervals[y + m_offset];
   }
 

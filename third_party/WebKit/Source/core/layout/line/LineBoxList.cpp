@@ -42,8 +42,8 @@ namespace blink {
 
 #if DCHECK_IS_ON()
 LineBoxList::~LineBoxList() {
-  ASSERT(!m_firstLineBox);
-  ASSERT(!m_lastLineBox);
+  DCHECK(!m_firstLineBox);
+  DCHECK(!m_lastLineBox);
 }
 #endif
 
@@ -372,10 +372,10 @@ void LineBoxList::checkConsistency() const {
   const InlineFlowBox* prev = nullptr;
   for (const InlineFlowBox* child = m_firstLineBox; child;
        child = child->nextLineBox()) {
-    ASSERT(child->prevLineBox() == prev);
+    DCHECK_EQ(child->prevLineBox(), prev);
     prev = child;
   }
-  ASSERT(prev == m_lastLineBox);
+  DCHECK_EQ(prev, m_lastLineBox);
 #endif
 }
 

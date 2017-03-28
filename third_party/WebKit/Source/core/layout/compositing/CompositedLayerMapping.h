@@ -265,7 +265,8 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
 
 #if DCHECK_IS_ON()
   void assertNeedsToUpdateGraphicsLayerBitsCleared() {
-    ASSERT(m_pendingUpdateScope == GraphicsLayerUpdateNone);
+    DCHECK_EQ(m_pendingUpdateScope,
+              static_cast<unsigned>(GraphicsLayerUpdateNone));
   }
 #endif
 

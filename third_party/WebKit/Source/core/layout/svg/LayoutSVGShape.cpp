@@ -109,7 +109,7 @@ FloatRect LayoutSVGShape::hitTestStrokeBoundingBox() const {
 }
 
 bool LayoutSVGShape::shapeDependentStrokeContains(const FloatPoint& point) {
-  ASSERT(m_path);
+  DCHECK(m_path);
   StrokeData strokeData;
   SVGLayoutSupport::applyStrokeStyleToStrokeData(strokeData, styleRef(), *this,
                                                  dashScaleFactor());
@@ -206,9 +206,9 @@ void LayoutSVGShape::layout() {
   if (updateParentBoundaries)
     LayoutSVGModelObject::setNeedsBoundariesUpdate();
 
-  ASSERT(!m_needsShapeUpdate);
-  ASSERT(!m_needsBoundariesUpdate);
-  ASSERT(!m_needsTransformUpdate);
+  DCHECK(!m_needsShapeUpdate);
+  DCHECK(!m_needsBoundariesUpdate);
+  DCHECK(!m_needsTransformUpdate);
   clearNeedsLayout();
 }
 
@@ -301,7 +301,7 @@ FloatRect LayoutSVGShape::calculateObjectBoundingBox() const {
 }
 
 FloatRect LayoutSVGShape::calculateStrokeBoundingBox() const {
-  ASSERT(m_path);
+  DCHECK(m_path);
   FloatRect strokeBoundingBox = m_fillBoundingBox;
 
   if (style()->svgStyle().hasStroke()) {

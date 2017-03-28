@@ -97,7 +97,7 @@ static bool checkShapeImageOrigin(Document& document,
   if (styleImage.isGeneratedImage())
     return true;
 
-  ASSERT(styleImage.cachedImage());
+  DCHECK(styleImage.cachedImage());
   ImageResourceContent& imageResource = *(styleImage.cachedImage());
   if (imageResource.isAccessAllowed(document.getSecurityOrigin()))
     return true;
@@ -163,7 +163,7 @@ std::unique_ptr<Shape> ShapeOutsideInfo::createShapeForImage(
     return Shape::createEmptyRasterShape(writingMode, margin);
   }
 
-  ASSERT(!styleImage->isPendingImage());
+  DCHECK(!styleImage->isPendingImage());
   RefPtr<Image> image =
       styleImage->image(m_layoutBox, flooredIntSize(imageSize),
                         m_layoutBox.style()->effectiveZoom());
@@ -179,7 +179,7 @@ const Shape& ShapeOutsideInfo::computedShape() const {
   AutoReset<bool> isInComputingShape(&m_isComputingShape, true);
 
   const ComputedStyle& style = *m_layoutBox.style();
-  ASSERT(m_layoutBox.containingBlock());
+  DCHECK(m_layoutBox.containingBlock());
   const ComputedStyle& containingBlockStyle =
       *m_layoutBox.containingBlock()->style();
 
@@ -196,17 +196,17 @@ const Shape& ShapeOutsideInfo::computedShape() const {
                                      maximumValue.toFloat());
 
   float shapeImageThreshold = style.shapeImageThreshold();
-  ASSERT(style.shapeOutside());
+  DCHECK(style.shapeOutside());
   const ShapeValue& shapeValue = *style.shapeOutside();
 
   switch (shapeValue.type()) {
     case ShapeValue::Shape:
-      ASSERT(shapeValue.shape());
+      DCHECK(shapeValue.shape());
       m_shape = Shape::createShape(
           shapeValue.shape(), m_referenceBoxLogicalSize, writingMode, margin);
       break;
     case ShapeValue::Image:
-      ASSERT(shapeValue.isImageValid());
+      DCHECK(shapeValue.isImageValid());
       m_shape = createShapeForImage(shapeValue.image(), shapeImageThreshold,
                                     writingMode, margin);
       break;
@@ -219,7 +219,7 @@ const Shape& ShapeOutsideInfo::computedShape() const {
     }
   }
 
-  ASSERT(m_shape);
+  DCHECK(m_shape);
   return *m_shape;
 }
 
@@ -349,7 +349,7 @@ ShapeOutsideDeltas ShapeOutsideInfo::computeDeltasForContainingBlockLine(
     const FloatingObject& floatingObject,
     LayoutUnit lineTop,
     LayoutUnit lineHeight) {
-  ASSERT(lineHeight >= 0);
+  DCHECK_GE(lineHeight, 0);
 
   LayoutUnit borderBoxTop = containingBlock.logicalTopForFloat(floatingObject) +
                             containingBlock.marginBeforeForChild(m_layoutBox);

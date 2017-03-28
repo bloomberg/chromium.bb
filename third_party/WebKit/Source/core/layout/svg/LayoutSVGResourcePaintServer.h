@@ -80,7 +80,7 @@ struct SVGPaintDescription {
       : resource(nullptr), color(color), isValid(true), hasFallback(false) {}
   SVGPaintDescription(LayoutSVGResourcePaintServer* resource)
       : resource(resource), isValid(true), hasFallback(false) {
-    ASSERT(resource);
+    DCHECK(resource);
   }
   SVGPaintDescription(LayoutSVGResourcePaintServer* resource,
                       Color fallbackColor)
@@ -88,7 +88,7 @@ struct SVGPaintDescription {
         color(fallbackColor),
         isValid(true),
         hasFallback(true) {
-    ASSERT(resource);
+    DCHECK(resource);
   }
 
   LayoutSVGResourcePaintServer* resource;

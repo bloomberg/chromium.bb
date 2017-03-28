@@ -654,7 +654,7 @@ LayoutUnit RootInlineBox::verticalPositionForBox(
     return box->parent()->logicalTop();
 
   LineLayoutBoxModel boxModel = box->boxModelObject();
-  ASSERT(boxModel.isInline());
+  DCHECK(boxModel.isInline());
   if (!boxModel.isInline())
     return LayoutUnit();
 

@@ -156,7 +156,7 @@ LayoutUnit InlineBox::logicalHeight() const {
     return isHorizontal() ? LineLayoutBox(getLineLayoutItem()).size().height()
                           : LineLayoutBox(getLineLayoutItem()).size().width();
 
-  ASSERT(isInlineFlowBox());
+  DCHECK(isInlineFlowBox());
   LineLayoutBoxModel flowObject = boxModelObject();
   DCHECK(fontData);
   LayoutUnit result(fontData ? fontData->getFontMetrics().height() : 0);
@@ -247,14 +247,14 @@ bool InlineBox::nodeAtPoint(HitTestResult& result,
 const RootInlineBox& InlineBox::root() const {
   if (m_parent)
     return m_parent->root();
-  ASSERT(isRootInlineBox());
+  DCHECK(isRootInlineBox());
   return static_cast<const RootInlineBox&>(*this);
 }
 
 RootInlineBox& InlineBox::root() {
   if (m_parent)
     return m_parent->root();
-  ASSERT(isRootInlineBox());
+  DCHECK(isRootInlineBox());
   return static_cast<RootInlineBox&>(*this);
 }
 

@@ -68,7 +68,7 @@ class TrailingObjects {
   TrailingObjects() : m_whitespace(nullptr) {}
 
   void setTrailingWhitespace(LineLayoutText whitespace) {
-    ASSERT(whitespace);
+    DCHECK(whitespace);
     m_whitespace = whitespace;
   }
 

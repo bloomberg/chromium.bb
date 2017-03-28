@@ -54,12 +54,12 @@ static inline InlineFlowBox* flowBoxForLayoutObject(
 
   if (layoutObject->isLayoutBlock()) {
     // If we're given a block element, it has to be a LayoutSVGText.
-    ASSERT(layoutObject->isSVGText());
+    DCHECK(layoutObject->isSVGText());
     LayoutBlockFlow* layoutBlockFlow = toLayoutBlockFlow(layoutObject);
 
     // LayoutSVGText only ever contains a single line box.
     InlineFlowBox* flowBox = layoutBlockFlow->firstLineBox();
-    ASSERT(flowBox == layoutBlockFlow->lastLineBox());
+    DCHECK_EQ(flowBox, layoutBlockFlow->lastLineBox());
     return flowBox;
   }
 
@@ -70,7 +70,7 @@ static inline InlineFlowBox* flowBoxForLayoutObject(
 
     // LayoutSVGInline only ever contains a single line box.
     InlineFlowBox* flowBox = layoutInline->firstLineBox();
-    ASSERT(flowBox == layoutInline->lastLineBox());
+    DCHECK_EQ(flowBox, layoutInline->lastLineBox());
     return flowBox;
   }
 
@@ -162,7 +162,7 @@ static void logicalQuery(LayoutObject* queryRoot,
 
     LineLayoutSVGInlineText textLineLayout =
         LineLayoutSVGInlineText(toLayoutSVGInlineText(layoutObject));
-    ASSERT(textLineLayout.style());
+    DCHECK(textLineLayout.style());
 
     // TODO(fs): Allow filtering the search earlier, since we should be
     // able to trivially reject (prune) at least some of the queries.
@@ -243,7 +243,7 @@ MetricsList::const_iterator findMetricsForCharacter(
       break;
     ++metrics;
   }
-  ASSERT(metrics <= metricsList.end());
+  DCHECK_LE(metrics, metricsList.end());
   return metrics;
 }
 
@@ -465,7 +465,7 @@ static inline FloatRect calculateGlyphBoundaries(
     const SVGTextFragment& fragment,
     int startPosition) {
   const float scalingFactor = queryData->textLineLayout.scalingFactor();
-  ASSERT(scalingFactor);
+  DCHECK(scalingFactor);
   const SimpleFontData* fontData =
       queryData->textLineLayout.scaledFont().primaryFont();
   DCHECK(fontData);
@@ -531,7 +531,7 @@ int CharacterNumberAtPositionData::characterNumberWithin(
   // "If no such character exists, a value of -1 is returned."
   if (!hitLayoutItem)
     return -1;
-  ASSERT(queryRoot);
+  DCHECK(queryRoot);
   int characterNumber = offsetInTextNode;
 
   // Accumulate the lengths of all the text nodes preceding the target layout
@@ -551,9 +551,9 @@ static unsigned logicalOffsetInTextNode(LineLayoutSVGInlineText textLineLayout,
   Vector<SVGInlineTextBox*> textBoxes;
   collectTextBoxesInLogicalOrder(textLineLayout, textBoxes);
 
-  ASSERT(startTextBox);
+  DCHECK(startTextBox);
   size_t index = textBoxes.find(startTextBox);
-  ASSERT(index != kNotFound);
+  DCHECK_NE(index, kNotFound);
 
   unsigned offset = fragmentOffset;
   while (index) {
@@ -569,7 +569,7 @@ static bool characterNumberAtPositionCallback(QueryData* queryData,
       static_cast<CharacterNumberAtPositionData*>(queryData);
 
   const float scalingFactor = data->textLineLayout.scalingFactor();
-  ASSERT(scalingFactor);
+  DCHECK(scalingFactor);
 
   const SimpleFontData* fontData =
       data->textLineLayout.scaledFont().primaryFont();

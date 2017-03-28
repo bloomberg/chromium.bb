@@ -56,11 +56,11 @@ class LayoutSVGResourceClipper final : public LayoutSVGResourceContainer {
 
   bool hasCycle() { return m_inClipExpansion; }
   void beginClipExpansion() {
-    ASSERT(!m_inClipExpansion);
+    DCHECK(!m_inClipExpansion);
     m_inClipExpansion = true;
   }
   void endClipExpansion() {
-    ASSERT(m_inClipExpansion);
+    DCHECK(m_inClipExpansion);
     m_inClipExpansion = false;
   }
 

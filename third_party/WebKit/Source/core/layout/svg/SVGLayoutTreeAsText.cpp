@@ -246,7 +246,7 @@ static TextStream& operator<<(TextStream& ts, const SVGSpreadMethodType& type) {
 static void writeSVGPaintingResource(
     TextStream& ts,
     const SVGPaintDescription& paintDescription) {
-  ASSERT(paintDescription.isValid);
+  DCHECK(paintDescription.isValid);
   if (!paintDescription.resource) {
     ts << "[type=SOLID] [color=" << paintDescription.color << "]";
     return;
@@ -255,7 +255,7 @@ static void writeSVGPaintingResource(
   LayoutSVGResourcePaintServer* paintServerContainer =
       paintDescription.resource;
   SVGElement* element = paintServerContainer->element();
-  ASSERT(element);
+  DCHECK(element);
 
   if (paintServerContainer->resourceType() == PatternResourceType)
     ts << "[type=PATTERN]";
@@ -279,7 +279,7 @@ static void writeStyle(TextStream& ts, const LayoutObject& object) {
                     ComputedStyle::initialOpacity());
   if (object.isSVGShape()) {
     const LayoutSVGShape& shape = static_cast<const LayoutSVGShape&>(object);
-    ASSERT(shape.element());
+    DCHECK(shape.element());
 
     SVGPaintDescription strokePaintDescription =
         LayoutSVGResourcePaintServer::requestPaintDescription(
@@ -339,7 +339,7 @@ static TextStream& operator<<(TextStream& ts, const LayoutSVGShape& shape) {
   writePositionAndStyle(ts, shape);
 
   SVGElement* svgElement = shape.element();
-  ASSERT(svgElement);
+  DCHECK(svgElement);
   SVGLengthContext lengthContext(svgElement);
 
   if (isSVGRectElement(*svgElement)) {
@@ -536,7 +536,7 @@ void writeSVGResourceContainer(TextStream& ts,
 
   LayoutSVGResourceContainer* resource =
       toLayoutSVGResourceContainer(const_cast<LayoutObject*>(&object));
-  ASSERT(resource);
+  DCHECK(resource);
 
   if (resource->resourceType() == MaskerResourceType) {
     LayoutSVGResourceMasker* masker = toLayoutSVGResourceMasker(resource);
@@ -700,8 +700,8 @@ void writeSVGGradientStop(TextStream& ts,
   writeStandardPrefix(ts, stop, indent);
 
   SVGStopElement* stopElement = toSVGStopElement(stop.node());
-  ASSERT(stopElement);
-  ASSERT(stop.style());
+  DCHECK(stopElement);
+  DCHECK(stop.style());
 
   ts << " [offset=" << stopElement->offset()->currentValue()->value()
      << "] [color=" << stopElement->stopColorIncludingOpacity() << "]\n";

@@ -49,7 +49,7 @@ void TrailingObjects::updateMidpointsForTrailingObjects(
                    .getLineLayoutItem() != m_whitespace;
          --trailingSpaceMidpoint) {
     }
-    ASSERT(trailingSpaceMidpoint >= 0);
+    DCHECK_GE(trailingSpaceMidpoint, 0);
     if (collapseFirstSpace == CollapseFirstSpace)
       lineMidpointState.midpoints()[trailingSpaceMidpoint].setOffset(
           lineMidpointState.midpoints()[trailingSpaceMidpoint].offset() - 1);
@@ -63,15 +63,15 @@ void TrailingObjects::updateMidpointsForTrailingObjects(
         ensureLineBoxInsideIgnoredSpaces(&lineMidpointState,
                                          LineLayoutItem(m_objects[i]));
       } else {
-        ASSERT(lineMidpointState.midpoints()[currentMidpoint]
+        DCHECK(lineMidpointState.midpoints()[currentMidpoint]
                    .getLineLayoutItem() == m_objects[i]);
-        ASSERT(lineMidpointState.midpoints()[currentMidpoint + 1]
+        DCHECK(lineMidpointState.midpoints()[currentMidpoint + 1]
                    .getLineLayoutItem() == m_objects[i]);
       }
       currentMidpoint += 2;
     }
   } else if (!lBreak.getLineLayoutItem()) {
-    ASSERT(collapseFirstSpace == CollapseFirstSpace);
+    DCHECK_EQ(collapseFirstSpace, CollapseFirstSpace);
     // Add a new end midpoint that stops right at the very end.
     unsigned length = m_whitespace.textLength();
     unsigned pos = length >= 2 ? length - 2 : UINT_MAX;

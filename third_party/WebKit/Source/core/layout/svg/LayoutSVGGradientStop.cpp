@@ -58,7 +58,7 @@ void LayoutSVGGradientStop::layout() {
 
 SVGGradientElement* LayoutSVGGradientStop::gradientElement() const {
   ContainerNode* parentNode = node()->parentNode();
-  ASSERT(parentNode);
+  DCHECK(parentNode);
   return isSVGGradientElement(*parentNode) ? toSVGGradientElement(parentNode)
                                            : 0;
 }

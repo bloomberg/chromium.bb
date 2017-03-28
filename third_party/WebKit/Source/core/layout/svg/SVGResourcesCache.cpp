@@ -35,8 +35,8 @@ SVGResourcesCache::~SVGResourcesCache() {}
 void SVGResourcesCache::addResourcesFromLayoutObject(
     LayoutObject* object,
     const ComputedStyle& style) {
-  ASSERT(object);
-  ASSERT(!m_cache.contains(object));
+  DCHECK(object);
+  DCHECK(!m_cache.contains(object));
 
   // Build a list of all resources associated with the passed LayoutObject.
   std::unique_ptr<SVGResources> newResources =
@@ -80,7 +80,7 @@ static inline SVGResourcesCache& resourcesCache(Document& document) {
 
 SVGResources* SVGResourcesCache::cachedResourcesForLayoutObject(
     const LayoutObject* layoutObject) {
-  ASSERT(layoutObject);
+  DCHECK(layoutObject);
   return resourcesCache(layoutObject->document()).m_cache.at(layoutObject);
 }
 
@@ -96,7 +96,7 @@ void SVGResourcesCache::clientLayoutChanged(LayoutObject* object) {
 }
 
 static inline bool layoutObjectCanHaveResources(LayoutObject* layoutObject) {
-  ASSERT(layoutObject);
+  DCHECK(layoutObject);
   return layoutObject->node() && layoutObject->node()->isSVGElement() &&
          !layoutObject->isSVGInlineText();
 }
@@ -115,9 +115,9 @@ static inline bool isLayoutObjectOfResourceContainer(LayoutObject* layoutObject)
 void SVGResourcesCache::clientStyleChanged(LayoutObject* layoutObject,
                                            StyleDifference diff,
                                            const ComputedStyle& newStyle) {
-  ASSERT(layoutObject);
-  ASSERT(layoutObject->node());
-  ASSERT(layoutObject->node()->isSVGElement());
+  DCHECK(layoutObject);
+  DCHECK(layoutObject->node());
+  DCHECK(layoutObject->node()->isSVGElement());
 
   if (!diff.hasDifference() || !layoutObject->parent())
     return;
@@ -176,7 +176,7 @@ void SVGResourcesCache::clientWillBeRemovedFromTree(
 }
 
 void SVGResourcesCache::clientDestroyed(LayoutObject* layoutObject) {
-  ASSERT(layoutObject);
+  DCHECK(layoutObject);
 
   SVGResources* resources = cachedResourcesForLayoutObject(layoutObject);
   if (resources)

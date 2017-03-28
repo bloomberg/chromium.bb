@@ -94,7 +94,7 @@ void LayoutSVGForeignObject::computeLogicalHeight(
 }
 
 void LayoutSVGForeignObject::layout() {
-  ASSERT(needsLayout());
+  DCHECK(needsLayout());
 
   SVGForeignObjectElement* foreign = toSVGForeignObjectElement(node());
 
@@ -118,7 +118,7 @@ void LayoutSVGForeignObject::layout() {
 
   bool layoutChanged = everHadLayout() && selfNeedsLayout();
   LayoutBlock::layout();
-  ASSERT(!needsLayout());
+  DCHECK(!needsLayout());
 
   // If our bounds changed, notify the parents.
   if (!updateCachedBoundariesInParents)

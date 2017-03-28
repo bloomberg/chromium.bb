@@ -48,7 +48,7 @@ SVGTextLayoutEngine::SVGTextLayoutEngine(
       m_textPathDisplacement(0),
       m_textPathSpacing(0),
       m_textPathScaling(1) {
-  ASSERT(!m_descendantTextNodes.isEmpty());
+  DCHECK(!m_descendantTextNodes.isEmpty());
 }
 
 SVGTextLayoutEngine::~SVGTextLayoutEngine() = default;
@@ -121,7 +121,7 @@ void SVGTextLayoutEngine::computeCurrentFragmentMetrics(
                                           m_currentTextFragment);
 
   float scalingFactor = textLineLayout.scalingFactor();
-  ASSERT(scalingFactor);
+  DCHECK(scalingFactor);
   const Font& scaledFont = textLineLayout.scaledFont();
   FloatRect glyphOverflowBounds;
 
@@ -146,7 +146,7 @@ void SVGTextLayoutEngine::computeCurrentFragmentMetrics(
 }
 
 void SVGTextLayoutEngine::recordTextFragment(SVGInlineTextBox* textBox) {
-  ASSERT(!m_currentTextFragment.length);
+  DCHECK(!m_currentTextFragment.length);
 
   // Figure out length of fragment.
   m_currentTextFragment.length = m_visualMetricsIterator.characterOffset() -
@@ -220,13 +220,13 @@ void SVGTextLayoutEngine::endTextPathLayout() {
 }
 
 void SVGTextLayoutEngine::layoutInlineTextBox(SVGInlineTextBox* textBox) {
-  ASSERT(textBox);
+  DCHECK(textBox);
 
   LineLayoutSVGInlineText textLineLayout =
       LineLayoutSVGInlineText(textBox->getLineLayoutItem());
-  ASSERT(textLineLayout.parent());
-  ASSERT(textLineLayout.parent().node());
-  ASSERT(textLineLayout.parent().node()->isSVGElement());
+  DCHECK(textLineLayout.parent());
+  DCHECK(textLineLayout.parent().node());
+  DCHECK(textLineLayout.parent().node()->isSVGElement());
 
   const ComputedStyle& style = textLineLayout.styleRef();
 
@@ -259,7 +259,7 @@ void SVGTextLayoutEngine::layoutCharactersInTextBoxes(InlineFlowBox* start) {
   for (InlineBox* child = start->firstChild(); child;
        child = child->nextOnLine()) {
     if (child->isSVGInlineTextBox()) {
-      ASSERT(child->getLineLayoutItem().isSVGInlineText());
+      DCHECK(child->getLineLayoutItem().isSVGInlineText());
       layoutInlineTextBox(toSVGInlineTextBox(child));
     } else {
       // Skip generated content.
@@ -294,7 +294,7 @@ void SVGTextLayoutEngine::finishLayout() {
 }
 
 const LayoutSVGInlineText* SVGTextLayoutEngine::nextLogicalTextNode() {
-  ASSERT(m_currentLogicalTextNodeIndex < m_descendantTextNodes.size());
+  DCHECK_LT(m_currentLogicalTextNodeIndex, m_descendantTextNodes.size());
   ++m_currentLogicalTextNodeIndex;
   if (m_currentLogicalTextNodeIndex == m_descendantTextNodes.size())
     return nullptr;
@@ -314,7 +314,7 @@ const LayoutSVGInlineText* SVGTextLayoutEngine::currentLogicalCharacterMetrics(
       m_descendantTextNodes[m_currentLogicalTextNodeIndex];
   const Vector<SVGTextMetrics>* metricsList = &logicalTextNode->metricsList();
   unsigned metricsListSize = metricsList->size();
-  ASSERT(m_logicalMetricsListOffset <= metricsListSize);
+  DCHECK(m_logicalMetricsListOffset <= metricsListSize);
 
   // Find the next non-collapsed text metrics cell.
   while (true) {
@@ -331,7 +331,7 @@ const LayoutSVGInlineText* SVGTextLayoutEngine::currentLogicalCharacterMetrics(
       continue;
     }
 
-    ASSERT(metricsListSize);
+    DCHECK(metricsListSize);
     logicalMetrics = metricsList->at(m_logicalMetricsListOffset);
     // Stop if we found the next valid logical text metrics object.
     if (!logicalMetrics.isEmpty())
@@ -489,8 +489,8 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(
 
     // Eventually start a new fragment, if not yet done.
     if (!didStartTextFragment || shouldStartNewFragment) {
-      ASSERT(!m_currentTextFragment.characterOffset);
-      ASSERT(!m_currentTextFragment.length);
+      DCHECK(!m_currentTextFragment.characterOffset);
+      DCHECK(!m_currentTextFragment.length);
 
       didStartTextFragment = true;
       m_currentTextFragment.characterOffset =

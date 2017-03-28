@@ -61,7 +61,7 @@ void LayoutSVGResourcePattern::removeAllClientsFromCache(
 
 void LayoutSVGResourcePattern::removeClientFromCache(LayoutObject* client,
                                                      bool markForInvalidation) {
-  ASSERT(client);
+  DCHECK(client);
   m_patternMap.erase(client);
   markClientForInvalidation(
       client, markForInvalidation ? PaintInvalidation : ParentOnlyInvalidation);
@@ -69,7 +69,7 @@ void LayoutSVGResourcePattern::removeClientFromCache(LayoutObject* client,
 
 PatternData* LayoutSVGResourcePattern::patternForLayoutObject(
     const LayoutObject& object) {
-  ASSERT(!m_shouldCollectPatternAttributes);
+  DCHECK(!m_shouldCollectPatternAttributes);
 
   // FIXME: the double hash lookup is needed to guard against paint-time
   // invalidation (painting animated images may trigger layout invals which
@@ -93,7 +93,7 @@ std::unique_ptr<PatternData> LayoutSVGResourcePattern::buildPatternData(
   if (attributes.hasViewBox() && attributes.viewBox().isEmpty())
     return nullptr;
 
-  ASSERT(element());
+  DCHECK(element());
   // Compute tile metrics.
   FloatRect clientBoundingBox = object.objectBoundingBox();
   FloatRect tileBounds = SVGLengthContext::resolveRectangle(
@@ -166,7 +166,7 @@ SVGPaintServer LayoutSVGResourcePattern::preparePaintServer(
 
 const LayoutSVGResourceContainer*
 LayoutSVGResourcePattern::resolveContentElement() const {
-  ASSERT(attributes().patternContentElement());
+  DCHECK(attributes().patternContentElement());
   LayoutSVGResourceContainer* expectedLayoutObject =
       toLayoutSVGResourceContainer(
           attributes().patternContentElement()->layoutObject());
@@ -195,7 +195,7 @@ LayoutSVGResourcePattern::resolveContentElement() const {
 sk_sp<PaintRecord> LayoutSVGResourcePattern::asPaintRecord(
     const FloatRect& tileBounds,
     const AffineTransform& tileTransform) const {
-  ASSERT(!m_shouldCollectPatternAttributes);
+  DCHECK(!m_shouldCollectPatternAttributes);
 
   AffineTransform contentTransform;
   if (attributes().patternContentUnits() ==
@@ -207,7 +207,8 @@ sk_sp<PaintRecord> LayoutSVGResourcePattern::asPaintRecord(
 
   const LayoutSVGResourceContainer* patternLayoutObject =
       resolveContentElement();
-  ASSERT(patternLayoutObject && !patternLayoutObject->needsLayout());
+  DCHECK(patternLayoutObject);
+  DCHECK(!patternLayoutObject->needsLayout());
 
   SubtreeContentTransformScope contentTransformScope(contentTransform);
 

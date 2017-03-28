@@ -44,7 +44,7 @@ void LayoutSVGRect::updateShapeFromElement() {
   m_strokeBoundingBox = FloatRect();
   m_usePathFallback = false;
   SVGRectElement* rect = toSVGRectElement(element());
-  ASSERT(rect);
+  DCHECK(rect);
 
   SVGLengthContext lengthContext(rect);
   FloatSize boundingBoxSize(

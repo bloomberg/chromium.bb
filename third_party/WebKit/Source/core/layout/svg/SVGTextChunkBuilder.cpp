@@ -126,7 +126,7 @@ void SVGTextChunkBuilder::processTextChunks(
     if (!foundStart) {
       foundStart = true;
     } else {
-      ASSERT(boxIter != chunkStartBox);
+      DCHECK_NE(boxIter, chunkStartBox);
       handleTextChunk(chunkStartBox, boxIter);
     }
     chunkStartBox = boxIter;
@@ -168,7 +168,7 @@ static float computeTextLengthBias(const SVGTextFragment& fragment,
 
 void SVGTextChunkBuilder::handleTextChunk(BoxListConstIterator boxStart,
                                           BoxListConstIterator boxEnd) {
-  ASSERT(*boxStart);
+  DCHECK(*boxStart);
 
   const LineLayoutSVGInlineText textLineLayout =
       LineLayoutSVGInlineText((*boxStart)->getLineLayoutItem());
@@ -225,7 +225,7 @@ void SVGTextChunkBuilder::handleTextChunk(BoxListConstIterator boxStart,
         lengthAccumulator.processRange(boxStart, boxEnd);
       }
     } else {
-      ASSERT(lengthAdjust == SVGLengthAdjustSpacingAndGlyphs);
+      DCHECK_EQ(lengthAdjust, SVGLengthAdjustSpacingAndGlyphs);
       float textLengthScale = desiredTextLength / chunkLength;
       float textLengthBias = 0;
 
@@ -281,7 +281,7 @@ void SVGTextChunkBuilder::applyTextLengthScaleAdjustment(
     float textLengthBias,
     Vector<SVGTextFragment>& fragments) {
   for (SVGTextFragment& fragment : fragments) {
-    ASSERT(fragment.lengthAdjustScale == 1);
+    DCHECK_EQ(fragment.lengthAdjustScale, 1u);
     fragment.lengthAdjustScale = textLengthScale;
     fragment.lengthAdjustBias = textLengthBias;
   }

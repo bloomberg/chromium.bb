@@ -62,7 +62,7 @@ InlineIterator LineBreaker::nextLineBreak(InlineBidiResolver& resolver,
                                           WordMeasurements& wordMeasurements) {
   reset();
 
-  ASSERT(resolver.position().root() == m_block);
+  DCHECK(resolver.position().root() == m_block);
 
   bool appliedStartWidth = resolver.position().offset() > 0;
 

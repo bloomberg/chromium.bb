@@ -49,7 +49,7 @@ LayoutSVGRoot::LayoutSVGRoot(SVGElement* node)
       m_hasNonIsolatedBlendingDescendants(false),
       m_hasNonIsolatedBlendingDescendantsDirty(false) {
   SVGSVGElement* svg = toSVGSVGElement(node);
-  ASSERT(svg);
+  DCHECK(svg);
 
   LayoutSize intrinsicSize(svg->intrinsicWidth(), svg->intrinsicHeight());
   if (!svg->hasIntrinsicWidth())
@@ -66,7 +66,7 @@ void LayoutSVGRoot::computeIntrinsicSizingInfo(
   // https://www.w3.org/TR/SVG/coords.html#IntrinsicSizing
 
   SVGSVGElement* svg = toSVGSVGElement(node());
-  ASSERT(svg);
+  DCHECK(svg);
 
   intrinsicSizingInfo.size =
       FloatSize(svg->intrinsicWidth(), svg->intrinsicHeight());
@@ -138,7 +138,7 @@ LayoutUnit LayoutSVGRoot::computeReplacedLogicalHeight(
 }
 
 void LayoutSVGRoot::layout() {
-  ASSERT(needsLayout());
+  DCHECK(needsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
 
   LayoutSize oldSize = size();
@@ -179,7 +179,7 @@ void LayoutSVGRoot::layout() {
   }
 
   SVGSVGElement* svg = toSVGSVGElement(node());
-  ASSERT(svg);
+  DCHECK(svg);
   // When hasRelativeLengths() is false, no descendants have relative lengths
   // (hence no one is interested in viewport size changes).
   m_isLayoutSizeChanged = viewportMayHaveChanged && svg->hasRelativeLengths();
@@ -350,7 +350,7 @@ PositionWithAffinity LayoutSVGRoot::positionForPoint(const LayoutPoint& point) {
 SVGTransformChange LayoutSVGRoot::buildLocalToBorderBoxTransform() {
   SVGTransformChangeDetector changeDetector(m_localToBorderBoxTransform);
   SVGSVGElement* svg = toSVGSVGElement(node());
-  ASSERT(svg);
+  DCHECK(svg);
   float scale = style()->effectiveZoom();
   m_localToBorderBoxTransform = svg->viewBoxToViewTransform(
       contentWidth() / scale, contentHeight() / scale);

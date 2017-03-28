@@ -269,8 +269,8 @@ void CompositingInputsUpdater::updateRecursive(PaintLayer* layer,
 
 void CompositingInputsUpdater::assertNeedsCompositingInputsUpdateBitsCleared(
     PaintLayer* layer) {
-  ASSERT(!layer->childNeedsCompositingInputsUpdate());
-  ASSERT(!layer->needsCompositingInputsUpdate());
+  DCHECK(!layer->childNeedsCompositingInputsUpdate());
+  DCHECK(!layer->needsCompositingInputsUpdate());
 
   for (PaintLayer* child = layer->firstChild(); child;
        child = child->nextSibling())

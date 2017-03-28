@@ -399,9 +399,9 @@ static inline LineLayoutItem bidiFirstIncludingEmptyInlines(
 }
 
 inline void InlineIterator::fastIncrementInTextNode() {
-  ASSERT(m_lineLayoutItem);
-  ASSERT(m_lineLayoutItem.isText());
-  ASSERT(m_pos <= LineLayoutText(m_lineLayoutItem).textLength());
+  DCHECK(m_lineLayoutItem);
+  DCHECK(m_lineLayoutItem.isText());
+  DCHECK_LE(m_pos, LineLayoutText(m_lineLayoutItem).textLength());
   if (m_pos < INT_MAX)
     m_pos++;
 }
@@ -567,7 +567,7 @@ static inline int findFirstTrailingSpace(LineLayoutText lastText,
 
 template <>
 inline int InlineBidiResolver::findFirstTrailingSpaceAtRun(BidiRun* run) {
-  ASSERT(run);
+  DCHECK(run);
   LineLayoutItem lastObject = LineLayoutItem(run->m_lineLayoutItem);
   if (!lastObject.isText())
     return run->m_stop;
@@ -614,21 +614,21 @@ inline bool InlineBidiResolver::needsToApplyL1Rule(BidiRunList<BidiRun>& runs) {
 }
 
 static inline bool isIsolatedInline(LineLayoutItem object) {
-  ASSERT(object);
+  DCHECK(object);
   return object.isLayoutInline() && treatAsIsolated(object.styleRef());
 }
 
 static inline LineLayoutItem highestContainingIsolateWithinRoot(
     LineLayoutItem object,
     LineLayoutItem root) {
-  ASSERT(object);
+  DCHECK(object);
   LineLayoutItem containingIsolateObj(nullptr);
   while (object && object != root) {
     if (isIsolatedInline(object))
       containingIsolateObj = LineLayoutItem(object);
 
     object = object.parent();
-    ASSERT(object);
+    DCHECK(object);
   }
   return containingIsolateObj;
 }
@@ -653,7 +653,7 @@ static inline BidiRun* addPlaceholderRunForIsolatedInline(
     LineLayoutItem obj,
     unsigned pos,
     LineLayoutItem root) {
-  ASSERT(obj);
+  DCHECK(obj);
   BidiRun* isolatedRun =
       new BidiRun(resolver.context()->override(), resolver.context()->level(),
                   pos, pos, obj, resolver.dir(), resolver.context()->dir());
@@ -693,7 +693,7 @@ class IsolateTracker {
 
   void enterIsolate() { m_nestedIsolateCount++; }
   void exitIsolate() {
-    ASSERT(m_nestedIsolateCount >= 1);
+    DCHECK_GE(m_nestedIsolateCount, 1u);
     m_nestedIsolateCount--;
     if (!inIsolate())
       m_haveAddedFakeRunForRootIsolate = false;
