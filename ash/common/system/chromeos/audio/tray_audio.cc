@@ -5,7 +5,6 @@
 #include "ash/common/system/chromeos/audio/tray_audio.h"
 
 #include "ash/common/system/chromeos/audio/audio_detailed_view.h"
-#include "ash/common/system/chromeos/audio/tray_audio_delegate_chromeos.h"
 #include "ash/common/system/chromeos/audio/volume_view.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/tray_constants.h"
@@ -22,12 +21,9 @@ namespace ash {
 
 using chromeos::CrasAudioHandler;
 using chromeos::DBusThreadManager;
-using system::TrayAudioDelegate;
-using system::TrayAudioDelegateChromeOs;
 
 TrayAudio::TrayAudio(SystemTray* system_tray)
     : TrayImageItem(system_tray, kSystemTrayVolumeMuteIcon, UMA_AUDIO),
-      audio_delegate_(new TrayAudioDelegateChromeOs()),
       volume_view_(nullptr),
       pop_up_volume_view_(false),
       audio_detail_view_(nullptr) {
@@ -58,17 +54,17 @@ void TrayAudio::ShowPopUpVolumeView() {
 }
 
 bool TrayAudio::GetInitialVisibility() {
-  return audio_delegate_->IsOutputAudioMuted();
+  return CrasAudioHandler::Get()->IsOutputMuted();
 }
 
 views::View* TrayAudio::CreateDefaultView(LoginStatus status) {
-  volume_view_ = new tray::VolumeView(this, audio_delegate_.get(), true);
+  volume_view_ = new tray::VolumeView(this, true);
   return volume_view_;
 }
 
 views::View* TrayAudio::CreateDetailedView(LoginStatus status) {
   if (pop_up_volume_view_) {
-    volume_view_ = new tray::VolumeView(this, audio_delegate_.get(), false);
+    volume_view_ = new tray::VolumeView(this, false);
     return volume_view_;
   } else {
     WmShell::Get()->RecordUserMetricsAction(
@@ -97,8 +93,7 @@ bool TrayAudio::ShouldShowShelf() const {
 
 void TrayAudio::OnOutputNodeVolumeChanged(uint64_t /* node_id */,
                                           int /* volume */) {
-  float percent =
-      static_cast<float>(audio_delegate_->GetOutputVolumeLevel()) / 100.0f;
+  float percent = CrasAudioHandler::Get()->GetOutputVolumePercent() / 100.0f;
   if (tray_view())
     tray_view()->SetVisible(GetInitialVisibility());
 
@@ -138,16 +133,14 @@ void TrayAudio::OnActiveInputNodeChanged() {
 
 void TrayAudio::ChangeInternalSpeakerChannelMode() {
   // Swap left/right channel only if it is in Yoga mode.
-  system::TrayAudioDelegate::AudioChannelMode channel_mode =
-      system::TrayAudioDelegate::NORMAL;
+  bool swap = false;
   if (display::Display::HasInternalDisplay()) {
     const display::ManagedDisplayInfo& display_info =
         WmShell::Get()->GetDisplayInfo(display::Display::InternalDisplayId());
     if (display_info.GetActiveRotation() == display::Display::ROTATE_180)
-      channel_mode = system::TrayAudioDelegate::LEFT_RIGHT_SWAPPED;
+      swap = true;
   }
-
-  audio_delegate_->SetInternalSpeakerChannelMode(channel_mode);
+  CrasAudioHandler::Get()->SwapInternalSpeakerLeftRightChannel(swap);
 }
 
 void TrayAudio::OnDisplayAdded(const display::Display& new_display) {
@@ -158,7 +151,7 @@ void TrayAudio::OnDisplayAdded(const display::Display& new_display) {
   // This event will be triggered when the lid of the device is opened to exit
   // the docked mode, we should always start or re-start HDMI re-discovering
   // grace period right after this event.
-  audio_delegate_->SetActiveHDMIOutoutRediscoveringIfNecessary(true);
+  CrasAudioHandler::Get()->SetActiveHDMIOutoutRediscoveringIfNecessary(true);
 }
 
 void TrayAudio::OnDisplayRemoved(const display::Display& old_display) {
@@ -169,7 +162,7 @@ void TrayAudio::OnDisplayRemoved(const display::Display& old_display) {
   // This event will be triggered when the lid of the device is closed to enter
   // the docked mode, we should always start or re-start HDMI re-discovering
   // grace period right after this event.
-  audio_delegate_->SetActiveHDMIOutoutRediscoveringIfNecessary(true);
+  CrasAudioHandler::Get()->SetActiveHDMIOutoutRediscoveringIfNecessary(true);
 }
 
 void TrayAudio::OnDisplayMetricsChanged(const display::Display& display,
@@ -183,14 +176,14 @@ void TrayAudio::OnDisplayMetricsChanged(const display::Display& display,
   // The event could be triggered multiple times during the HDMI display
   // transition, we don't need to restart HDMI re-discovering grace period
   // it is already started earlier.
-  audio_delegate_->SetActiveHDMIOutoutRediscoveringIfNecessary(false);
+  CrasAudioHandler::Get()->SetActiveHDMIOutoutRediscoveringIfNecessary(false);
 }
 
 void TrayAudio::SuspendDone(const base::TimeDelta& sleep_duration) {
   // This event is triggered when the device resumes after earlier suspension,
   // we should always start or re-start HDMI re-discovering
   // grace period right after this event.
-  audio_delegate_->SetActiveHDMIOutoutRediscoveringIfNecessary(true);
+  CrasAudioHandler::Get()->SetActiveHDMIOutoutRediscoveringIfNecessary(true);
 }
 
 void TrayAudio::Update() {
@@ -198,7 +191,7 @@ void TrayAudio::Update() {
     tray_view()->SetVisible(GetInitialVisibility());
   if (volume_view_) {
     volume_view_->SetVolumeLevel(
-        static_cast<float>(audio_delegate_->GetOutputVolumeLevel()) / 100.0f);
+        CrasAudioHandler::Get()->GetOutputVolumePercent() / 100.0f);
     volume_view_->Update();
   }
 

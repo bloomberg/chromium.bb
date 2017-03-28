@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "ash/common/metrics/user_metrics_action.h"
-#include "ash/common/system/chromeos/audio/tray_audio_delegate.h"
 #include "ash/common/system/tray/actionable_view.h"
 #include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/system/tray/tray_constants.h"
@@ -16,6 +15,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "chromeos/audio/cras_audio_handler.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -27,30 +27,44 @@
 #include "ui/views/controls/slider.h"
 #include "ui/views/layout/fill_layout.h"
 
+using chromeos::CrasAudioHandler;
+
+namespace ash {
 namespace {
 
 const gfx::VectorIcon* const kVolumeLevelIcons[] = {
-    &ash::kSystemMenuVolumeMuteIcon,    // Muted.
-    &ash::kSystemMenuVolumeLowIcon,     // Low volume.
-    &ash::kSystemMenuVolumeMediumIcon,  // Medium volume.
-    &ash::kSystemMenuVolumeHighIcon,    // High volume.
-    &ash::kSystemMenuVolumeHighIcon,    // Full volume.
+    &kSystemMenuVolumeMuteIcon,    // Muted.
+    &kSystemMenuVolumeLowIcon,     // Low volume.
+    &kSystemMenuVolumeMediumIcon,  // Medium volume.
+    &kSystemMenuVolumeHighIcon,    // High volume.
+    &kSystemMenuVolumeHighIcon,    // Full volume.
 };
+
+const gfx::VectorIcon& GetActiveOutputDeviceVectorIcon() {
+  chromeos::AudioDevice device;
+  if (CrasAudioHandler::Get()->GetPrimaryActiveOutputDevice(&device)) {
+    if (device.type == chromeos::AUDIO_TYPE_HEADPHONE)
+      return kSystemMenuHeadsetIcon;
+    if (device.type == chromeos::AUDIO_TYPE_USB)
+      return kSystemMenuUsbIcon;
+    if (device.type == chromeos::AUDIO_TYPE_BLUETOOTH)
+      return kSystemMenuBluetoothIcon;
+    if (device.type == chromeos::AUDIO_TYPE_HDMI)
+      return kSystemMenuHdmiIcon;
+  }
+  return gfx::kNoneIcon;
+}
 
 }  // namespace
 
-namespace ash {
 namespace tray {
 
 class VolumeButton : public ButtonListenerActionableView {
  public:
-  VolumeButton(SystemTrayItem* owner,
-               views::ButtonListener* listener,
-               system::TrayAudioDelegate* audio_delegate)
+  VolumeButton(SystemTrayItem* owner, views::ButtonListener* listener)
       : ButtonListenerActionableView(owner,
                                      TrayPopupInkDropStyle::HOST_CENTERED,
                                      listener),
-        audio_delegate_(audio_delegate),
         image_(TrayPopupUtils::CreateMainImageView()),
         image_index_(-1) {
     TrayPopupUtils::ConfigureContainer(TriView::Container::START, this);
@@ -64,11 +78,11 @@ class VolumeButton : public ButtonListenerActionableView {
   ~VolumeButton() override {}
 
   void Update() {
-    float level =
-        static_cast<float>(audio_delegate_->GetOutputVolumeLevel()) / 100.0f;
+    CrasAudioHandler* audio_handler = CrasAudioHandler::Get();
+    float level = audio_handler->GetOutputVolumePercent() / 100.0f;
     int volume_levels = arraysize(kVolumeLevelIcons) - 1;
     int image_index =
-        audio_delegate_->IsOutputAudioMuted()
+        audio_handler->IsOutputMuted()
             ? 0
             : (level == 1.0 ? volume_levels
                             : std::max(1, static_cast<int>(std::ceil(
@@ -85,11 +99,10 @@ class VolumeButton : public ButtonListenerActionableView {
     node_data->SetName(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_VOLUME_MUTE));
     node_data->role = ui::AX_ROLE_TOGGLE_BUTTON;
-    if (audio_delegate_->IsOutputAudioMuted())
+    if (CrasAudioHandler::Get()->IsOutputMuted())
       node_data->AddStateFlag(ui::AX_STATE_PRESSED);
   }
 
-  system::TrayAudioDelegate* audio_delegate_;
   views::ImageView* image_;
   int image_index_;
 
@@ -97,11 +110,9 @@ class VolumeButton : public ButtonListenerActionableView {
 };
 
 VolumeView::VolumeView(SystemTrayItem* owner,
-                       system::TrayAudioDelegate* audio_delegate,
                        bool is_default_view)
     : owner_(owner),
       tri_view_(TrayPopupUtils::CreateMultiTargetRowView()),
-      audio_delegate_(audio_delegate),
       more_button_(nullptr),
       icon_(nullptr),
       slider_(nullptr),
@@ -110,12 +121,11 @@ VolumeView::VolumeView(SystemTrayItem* owner,
   SetLayoutManager(new views::FillLayout);
   AddChildView(tri_view_);
 
-  icon_ = new VolumeButton(owner, this, audio_delegate_);
+  icon_ = new VolumeButton(owner, this);
   tri_view_->AddView(TriView::Container::START, icon_);
 
   slider_ = TrayPopupUtils::CreateSlider(this);
-  slider_->SetValue(
-      static_cast<float>(audio_delegate_->GetOutputVolumeLevel()) / 100.0f);
+  slider_->SetValue(CrasAudioHandler::Get()->GetOutputVolumePercent() / 100.0f);
   slider_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_VOLUME));
   tri_view_->AddView(TriView::Container::CENTER, slider_);
@@ -151,7 +161,7 @@ VolumeView::~VolumeView() {}
 
 void VolumeView::Update() {
   icon_->Update();
-  slider_->UpdateState(!audio_delegate_->IsOutputAudioMuted());
+  slider_->UpdateState(!CrasAudioHandler::Get()->IsOutputMuted());
   UpdateDeviceTypeAndMore();
   Layout();
 }
@@ -175,13 +185,15 @@ void VolumeView::SetVolumeLevel(float percent) {
 }
 
 void VolumeView::UpdateDeviceTypeAndMore() {
-  bool show_more = is_default_view_ && audio_delegate_->HasAlternativeSources();
+  CrasAudioHandler* audio_handler = CrasAudioHandler::Get();
+  bool show_more =
+      is_default_view_ && (audio_handler->has_alternative_output() ||
+                           audio_handler->has_alternative_input());
 
   if (!show_more)
     return;
 
-  const gfx::VectorIcon& device_icon =
-      audio_delegate_->GetActiveOutputDeviceVectorIcon();
+  const gfx::VectorIcon& device_icon = GetActiveOutputDeviceVectorIcon();
   const bool target_visibility = !device_icon.is_empty();
   if (target_visibility)
     device_type_->SetImage(gfx::CreateVectorIcon(device_icon, kMenuIconColor));
@@ -192,30 +204,33 @@ void VolumeView::UpdateDeviceTypeAndMore() {
 }
 
 void VolumeView::HandleVolumeUp(int level) {
-  audio_delegate_->SetOutputVolumeLevel(level);
-  if (audio_delegate_->IsOutputAudioMuted() &&
-      level > audio_delegate_->GetOutputDefaultVolumeMuteLevel()) {
-    audio_delegate_->SetOutputAudioIsMuted(false);
+  CrasAudioHandler* audio_handler = CrasAudioHandler::Get();
+  audio_handler->SetOutputVolumePercent(level);
+  if (audio_handler->IsOutputMuted() &&
+      level > audio_handler->GetOutputDefaultVolumeMuteThreshold()) {
+    audio_handler->SetOutputMute(false);
   }
 }
 
 void VolumeView::HandleVolumeDown(int level) {
-  audio_delegate_->SetOutputVolumeLevel(level);
-  if (!audio_delegate_->IsOutputAudioMuted() &&
-      level <= audio_delegate_->GetOutputDefaultVolumeMuteLevel()) {
-    audio_delegate_->SetOutputAudioIsMuted(true);
-  } else if (audio_delegate_->IsOutputAudioMuted() &&
-             level > audio_delegate_->GetOutputDefaultVolumeMuteLevel()) {
-    audio_delegate_->SetOutputAudioIsMuted(false);
+  CrasAudioHandler* audio_handler = CrasAudioHandler::Get();
+  audio_handler->SetOutputVolumePercent(level);
+  if (!audio_handler->IsOutputMuted() &&
+      level <= audio_handler->GetOutputDefaultVolumeMuteThreshold()) {
+    audio_handler->SetOutputMute(true);
+  } else if (audio_handler->IsOutputMuted() &&
+             level > audio_handler->GetOutputDefaultVolumeMuteThreshold()) {
+    audio_handler->SetOutputMute(false);
   }
 }
 
 void VolumeView::ButtonPressed(views::Button* sender, const ui::Event& event) {
   if (sender == icon_) {
-    bool mute_on = !audio_delegate_->IsOutputAudioMuted();
-    audio_delegate_->SetOutputAudioIsMuted(mute_on);
+    CrasAudioHandler* audio_handler = CrasAudioHandler::Get();
+    bool mute_on = !audio_handler->IsOutputMuted();
+    audio_handler->SetOutputMute(mute_on);
     if (!mute_on)
-      audio_delegate_->AdjustOutputVolumeToAudibleLevel();
+      audio_handler->AdjustOutputVolumeToAudibleLevel();
     icon_->Update();
   } else if (sender == more_button_) {
     owner_->TransitionDetailedView();
@@ -230,7 +245,7 @@ void VolumeView::SliderValueChanged(views::Slider* sender,
                                     views::SliderChangeReason reason) {
   if (reason == views::VALUE_CHANGED_BY_USER) {
     int new_volume = static_cast<int>(value * 100);
-    int current_volume = audio_delegate_->GetOutputVolumeLevel();
+    int current_volume = CrasAudioHandler::Get()->GetOutputVolumePercent();
     if (new_volume == current_volume)
       return;
     WmShell::Get()->RecordUserMetricsAction(

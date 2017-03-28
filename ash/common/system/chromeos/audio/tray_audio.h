@@ -7,8 +7,6 @@
 
 #include <stdint.h>
 
-#include <memory>
-
 #include "ash/ash_export.h"
 #include "ash/common/system/tray/tray_image_item.h"
 #include "base/macros.h"
@@ -17,10 +15,6 @@
 #include "ui/display/display_observer.h"
 
 namespace ash {
-
-namespace system {
-class TrayAudioDelegate;
-}
 
 namespace tray {
 class AudioDetailedView;
@@ -76,8 +70,6 @@ class ASH_EXPORT TrayAudio : public TrayImageItem,
   // Updates the UI views.
   void Update();
 
-  // TODO(jamescook): Remove this delegate and inline all the code.
-  std::unique_ptr<system::TrayAudioDelegate> audio_delegate_;
   tray::VolumeView* volume_view_;
 
   // True if VolumeView should be created for accelerator pop up;

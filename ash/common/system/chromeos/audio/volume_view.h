@@ -19,10 +19,6 @@ namespace ash {
 class SystemTrayItem;
 class TriView;
 
-namespace system {
-class TrayAudioDelegate;
-}
-
 namespace tray {
 class VolumeButton;
 
@@ -30,9 +26,7 @@ class VolumeView : public views::View,
                    public views::SliderListener,
                    public views::ButtonListener {
  public:
-  VolumeView(SystemTrayItem* owner,
-             system::TrayAudioDelegate* audio_delegate,
-             bool is_default_view);
+  VolumeView(SystemTrayItem* owner, bool is_default_view);
 
   ~VolumeView() override;
 
@@ -60,7 +54,6 @@ class VolumeView : public views::View,
   // The only immediate child view of |this|. All other view elements are added
   // to the |tri_view_| to handle layout.
   TriView* tri_view_;
-  system::TrayAudioDelegate* audio_delegate_;
   views::CustomButton* more_button_;
   VolumeButton* icon_;
   views::Slider* slider_;
