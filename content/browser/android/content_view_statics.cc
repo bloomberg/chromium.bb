@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include <jni.h>
-#include <vector>
+#include <set>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
@@ -54,24 +54,21 @@ class SuspendedProcessWatcher : public content::RenderProcessHostObserver {
 
   // Suspends timers in all current render processes.
   void SuspendWebKitSharedTimers() {
-    DCHECK(suspended_processes_.empty());
-
     for (content::RenderProcessHost::iterator i(
             content::RenderProcessHost::AllHostsIterator());
          !i.IsAtEnd(); i.Advance()) {
       content::RenderProcessHost* host = i.GetCurrentValue();
-      host->AddObserver(this);
-      host->GetRendererInterface()->SetWebKitSharedTimersSuspended(true);
-      suspended_processes_.push_back(host->GetID());
+      if (suspended_processes_.insert(host->GetID()).second) {
+        host->AddObserver(this);
+        host->GetRendererInterface()->SetWebKitSharedTimersSuspended(true);
+      }
     }
   }
 
   // Resumes timers in processes that were previously stopped.
   void ResumeWebkitSharedTimers() {
-    for (std::vector<int>::const_iterator it = suspended_processes_.begin();
-         it != suspended_processes_.end(); ++it) {
-      content::RenderProcessHost* host =
-          content::RenderProcessHost::FromID(*it);
+    for (auto id : suspended_processes_) {
+      content::RenderProcessHost* host = content::RenderProcessHost::FromID(id);
       DCHECK(host);
       host->RemoveObserver(this);
       host->GetRendererInterface()->SetWebKitSharedTimersSuspended(false);
@@ -81,15 +78,13 @@ class SuspendedProcessWatcher : public content::RenderProcessHostObserver {
 
  private:
   void StopWatching(content::RenderProcessHost* host) {
-    std::vector<int>::iterator pos = std::find(suspended_processes_.begin(),
-                                               suspended_processes_.end(),
-                                               host->GetID());
+    auto pos = suspended_processes_.find(host->GetID());
     DCHECK(pos != suspended_processes_.end());
     host->RemoveObserver(this);
     suspended_processes_.erase(pos);
   }
 
-  std::vector<int /* RenderProcessHost id */> suspended_processes_;
+  std::set<int /* RenderProcessHost id */> suspended_processes_;
 };
 
 base::LazyInstance<SuspendedProcessWatcher>::DestructorAtExit

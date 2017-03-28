@@ -653,10 +653,9 @@ public class AwContentsTest extends AwTestBase {
      */
     @Feature({"AndroidWebView"})
     @SmallTest
-    @CommandLineFlags
-            .Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
-            @ParameterizedTest.Set
-            public void testRendererPriorityStartsHigh() throws Throwable {
+    @CommandLineFlags.Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
+    @ParameterizedTest.Set
+    public void testRendererPriorityStartsHigh() throws Throwable {
         MockBindingManager bindingManager = new MockBindingManager();
         ChildProcessLauncher.setBindingManagerForTesting(bindingManager);
         assertFalse(bindingManager.isChildProcessCreated());
@@ -676,10 +675,9 @@ public class AwContentsTest extends AwTestBase {
      */
     @Feature({"AndroidWebView"})
     @SmallTest
-    @CommandLineFlags
-            .Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
-            @ParameterizedTest.Set
-            public void testRendererPriorityLow() throws Throwable {
+    @CommandLineFlags.Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
+    @ParameterizedTest.Set
+    public void testRendererPriorityLow() throws Throwable {
         MockBindingManager bindingManager = new MockBindingManager();
         ChildProcessLauncher.setBindingManagerForTesting(bindingManager);
         assertFalse(bindingManager.isChildProcessCreated());
@@ -707,10 +705,9 @@ public class AwContentsTest extends AwTestBase {
      */
     @Feature({"AndroidWebView"})
     @SmallTest
-    @CommandLineFlags
-            .Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
-            @ParameterizedTest.Set
-            public void testRendererPriorityManaged() throws Throwable {
+    @CommandLineFlags.Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
+    @ParameterizedTest.Set
+    public void testRendererPriorityManaged() throws Throwable {
         MockBindingManager bindingManager = new MockBindingManager();
         ChildProcessLauncher.setBindingManagerForTesting(bindingManager);
         assertFalse(bindingManager.isChildProcessCreated());
@@ -736,5 +733,20 @@ public class AwContentsTest extends AwTestBase {
             }
         });
         bindingManager.assertSetInForegroundCall(false);
+    }
+
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    @UiThreadTest
+    @CommandLineFlags.Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
+    @ParameterizedTest.Set
+    public void testPauseDestroyResume() throws Throwable {
+        AwContents awContents;
+        awContents = createAwTestContainerView(mContentsClient).getAwContents();
+        awContents.pauseTimers();
+        awContents.pauseTimers();
+        awContents.destroy();
+        awContents = createAwTestContainerView(mContentsClient).getAwContents();
+        awContents.resumeTimers();
     }
 }
