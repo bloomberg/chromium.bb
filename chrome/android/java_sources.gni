@@ -841,6 +841,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/preferences/password/PasswordEntryEditor.java",
   "java/src/org/chromium/chrome/browser/preferences/password/SavePasswordsPreferences.java",
   "java/src/org/chromium/chrome/browser/preferences/privacy/BandwidthType.java",
+  "java/src/org/chromium/chrome/browser/preferences/privacy/BrowsingDataBridge.java",
   "java/src/org/chromium/chrome/browser/preferences/privacy/BrowsingDataCounterBridge.java",
   "java/src/org/chromium/chrome/browser/preferences/privacy/ClearBrowsingDataPreferences.java",
   "java/src/org/chromium/chrome/browser/preferences/privacy/ClearBrowsingDataPreferencesAdvanced.java",

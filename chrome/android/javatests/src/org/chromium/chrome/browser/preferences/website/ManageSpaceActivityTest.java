@@ -17,7 +17,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.preferences.privacy.BrowsingDataBridge;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -124,7 +124,7 @@ public class ManageSpaceActivityTest extends ChromeActivityTestCaseBase<ChromeAc
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                PrefServiceBridge.markOriginAsImportantForTesting(serverOrigin);
+                BrowsingDataBridge.markOriginAsImportantForTesting(serverOrigin);
             }
         });
 

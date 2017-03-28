@@ -16,6 +16,7 @@
 #include "chrome/browser/android/bookmarks/bookmark_bridge.h"
 #include "chrome/browser/android/bookmarks/partner_bookmarks_reader.h"
 #include "chrome/browser/android/bottombar/overlay_panel_content.h"
+#include "chrome/browser/android/browsing_data/browsing_data_bridge.h"
 #include "chrome/browser/android/browsing_data/browsing_data_counter_bridge.h"
 #include "chrome/browser/android/browsing_data/url_filter_bridge.h"
 #include "chrome/browser/android/chrome_application.h"
@@ -250,6 +251,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
      offline_pages::android::RegisterBackgroundSchedulerBridge},
     {"BluetoothChooserAndroid", BluetoothChooserAndroid::Register},
     {"BookmarkBridge", BookmarkBridge::RegisterBookmarkBridge},
+    {"BrowsingDataBridge", RegisterBrowsingDataBridge},
     {"BrowsingDataCounterBridge", BrowsingDataCounterBridge::Register},
     {"BrowsingHistoryBridge", RegisterBrowsingHistoryBridge},
     {"CardUnmaskPrompt", autofill::CardUnmaskPromptViewAndroid::Register},

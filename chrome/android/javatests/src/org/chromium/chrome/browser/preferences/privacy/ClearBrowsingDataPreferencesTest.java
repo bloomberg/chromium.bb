@@ -444,7 +444,7 @@ public class ClearBrowsingDataPreferencesTest
             @Override
             public void run() {
                 for (String origin : importantOrigins) {
-                    PrefServiceBridge.markOriginAsImportantForTesting(origin);
+                    BrowsingDataBridge.markOriginAsImportantForTesting(origin);
                 }
             }
         };

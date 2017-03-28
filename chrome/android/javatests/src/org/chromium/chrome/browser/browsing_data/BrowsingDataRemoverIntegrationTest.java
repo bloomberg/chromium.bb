@@ -12,8 +12,8 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge.OnClearBrowsingDataListener;
+import org.chromium.chrome.browser.preferences.privacy.BrowsingDataBridge;
+import org.chromium.chrome.browser.preferences.privacy.BrowsingDataBridge.OnClearBrowsingDataListener;
 import org.chromium.chrome.browser.webapps.TestFetchStorageCallback;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
@@ -97,7 +97,7 @@ public class BrowsingDataRemoverIntegrationTest extends ChromeActivityTestCaseBa
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                PrefServiceBridge.getInstance().clearBrowsingDataExcludingDomains(
+                BrowsingDataBridge.getInstance().clearBrowsingDataExcludingDomains(
                         new OnClearBrowsingDataListener() {
                             @Override
                             public void onBrowsingDataCleared() {
@@ -122,7 +122,7 @@ public class BrowsingDataRemoverIntegrationTest extends ChromeActivityTestCaseBa
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                PrefServiceBridge.getInstance().clearBrowsingData(
+                BrowsingDataBridge.getInstance().clearBrowsingData(
                         new OnClearBrowsingDataListener() {
                             @Override
                             public void onBrowsingDataCleared() {

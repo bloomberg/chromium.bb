@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.metrics.VariationsSession;
 import org.chromium.chrome.browser.notifications.NotificationPlatformBridge;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.preferences.privacy.BrowsingDataBridge;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -183,17 +184,16 @@ public class ChromeActivitySessionTracker {
      * {@link #onStart} instead of {@link #initialize}.
      */
     private void updateAcceptLanguages() {
-        PrefServiceBridge instance = PrefServiceBridge.getInstance();
         String localeString = LocaleUtils.getDefaultLocaleListString();
         if (hasLocaleChanged(localeString)) {
-            instance.resetAcceptLanguages(localeString);
+            PrefServiceBridge.getInstance().resetAcceptLanguages(localeString);
             // Clear cache so that accept-languages change can be applied immediately.
             // TODO(changwan): The underlying BrowsingDataRemover::Remove() is an asynchronous call.
             // So cache-clearing may not be effective if URL rendering can happen before
             // OnBrowsingDataRemoverDone() is called, in which case we may have to reload as well.
             // Check if it can happen.
-            instance.clearBrowsingData(
-                    null, new int[]{ BrowsingDataType.CACHE }, TimePeriod.ALL_TIME);
+            BrowsingDataBridge.getInstance().clearBrowsingData(
+                    null, new int[] {BrowsingDataType.CACHE}, TimePeriod.ALL_TIME);
         }
     }
 

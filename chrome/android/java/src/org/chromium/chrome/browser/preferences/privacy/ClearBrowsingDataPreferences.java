@@ -47,9 +47,9 @@ import java.util.EnumSet;
  * from which to clear data.
  */
 public class ClearBrowsingDataPreferences extends PreferenceFragment
-        implements PrefServiceBridge.ImportantSitesCallback,
-                   PrefServiceBridge.OnClearBrowsingDataListener,
-                   PrefServiceBridge.OtherFormsOfBrowsingHistoryListener,
+        implements BrowsingDataBridge.ImportantSitesCallback,
+                   BrowsingDataBridge.OnClearBrowsingDataListener,
+                   BrowsingDataBridge.OtherFormsOfBrowsingHistoryListener,
                    Preference.OnPreferenceClickListener, Preference.OnPreferenceChangeListener {
     /**
      * Represents a single item in the dialog.
@@ -314,11 +314,11 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
                 ((SpinnerPreference) findPreference(PREF_TIME_RANGE)).getSelectedOption();
         int timePeriod = ((TimePeriodSpinnerOption) spinnerSelection).getTimePeriod();
         if (blacklistedDomains != null && blacklistedDomains.length != 0) {
-            PrefServiceBridge.getInstance().clearBrowsingDataExcludingDomains(this, dataTypes,
+            BrowsingDataBridge.getInstance().clearBrowsingDataExcludingDomains(this, dataTypes,
                     timePeriod, blacklistedDomains, blacklistedDomainReasons, ignoredDomains,
                     ignoredDomainReasons);
         } else {
-            PrefServiceBridge.getInstance().clearBrowsingData(this, dataTypes, timePeriod);
+            BrowsingDataBridge.getInstance().clearBrowsingData(this, dataTypes, timePeriod);
         }
 
         // Clear all reported entities.
@@ -499,8 +499,8 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         RecordUserAction.record("ClearBrowsingData_DialogCreated");
-        mMaxImportantSites = PrefServiceBridge.getMaxImportantSites();
-        PrefServiceBridge.getInstance().requestInfoAboutOtherFormsOfBrowsingHistory(this);
+        mMaxImportantSites = BrowsingDataBridge.getMaxImportantSites();
+        BrowsingDataBridge.getInstance().requestInfoAboutOtherFormsOfBrowsingHistory(this);
         getActivity().setTitle(R.string.clear_browsing_data_title);
         addPreferencesFromResource(getPreferenceXmlId());
         DialogOption[] options = getDialogOptions();
@@ -556,7 +556,7 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
         initFootnote();
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.IMPORTANT_SITES_IN_CBD)) {
-            PrefServiceBridge.fetchImportantSites(this);
+            BrowsingDataBridge.fetchImportantSites(this);
         }
     }
 
