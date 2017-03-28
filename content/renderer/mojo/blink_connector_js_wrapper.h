@@ -15,12 +15,14 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "v8/include/v8.h"
 
+namespace service_manager {
+class Connector;
+}
+
 namespace content {
 
-class BlinkConnectorImpl;
-
-// A JS wrapper around blink::Connector that allows connecting to remote
-// services.
+// A JS wrapper around service_manager::Connector that allows connecting to
+// remote services.
 class CONTENT_EXPORT BlinkConnectorJsWrapper
     : public gin::Wrappable<BlinkConnectorJsWrapper> {
  public:
@@ -28,7 +30,7 @@ class CONTENT_EXPORT BlinkConnectorJsWrapper
   static gin::Handle<BlinkConnectorJsWrapper> Create(
       v8::Isolate* isolate,
       v8::Handle<v8::Context> context,
-      BlinkConnectorImpl* remote_interfaces);
+      service_manager::Connector* remote_interfaces);
 
   // gin::Wrappable<BlinkConnectorJsWrapper> overrides.
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
@@ -51,7 +53,7 @@ class CONTENT_EXPORT BlinkConnectorJsWrapper
 
   BlinkConnectorJsWrapper(v8::Isolate* isolate,
                           v8::Handle<v8::Context> context,
-                          base::WeakPtr<BlinkConnectorImpl> connector);
+                          base::WeakPtr<service_manager::Connector> connector);
 
   void CallJsFactory(const ScopedJsFactory& factory,
                      mojo::ScopedMessagePipeHandle pipe);
@@ -61,7 +63,7 @@ class CONTENT_EXPORT BlinkConnectorJsWrapper
 
   v8::Isolate* isolate_;
   v8::Global<v8::Context> context_;
-  base::WeakPtr<BlinkConnectorImpl> connector_;
+  base::WeakPtr<service_manager::Connector> connector_;
 
   base::WeakPtrFactory<BlinkConnectorJsWrapper> weak_factory_;
 

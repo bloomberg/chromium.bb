@@ -64,6 +64,10 @@ namespace gpu {
 class GpuMemoryBufferManager;
 }
 
+namespace service_manager {
+class Connector;
+}
+
 namespace v8 {
 class Context;
 template <class T>
@@ -72,7 +76,6 @@ class Local;
 
 namespace blink {
 
-class Connector;
 class InterfaceProvider;
 class WebAudioBus;
 class WebAudioLatencyHint;
@@ -601,7 +604,7 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Mojo ---------------------------------------------------------------
 
-  virtual Connector* connector();
+  virtual service_manager::Connector* connector();
 
   virtual InterfaceProvider* interfaceProvider();
 

@@ -38,11 +38,15 @@ class Connector {
    public:
     using Binder = base::Callback<void(mojo::ScopedMessagePipeHandle)>;
     explicit TestApi(Connector* connector) : connector_(connector) {}
+
     // Allows caller to specify a callback to bind requests for |interface_name|
-    // locally, rather than passing the request through the Service Manager.
-    void OverrideBinderForTesting(const std::string& interface_name,
+    // from |service_name| locally, rather than passing the request through the
+    // Service Manager.
+    void OverrideBinderForTesting(const std::string& service_name,
+                                  const std::string& interface_name,
                                   const Binder& binder) {
-      connector_->OverrideBinderForTesting(interface_name, binder);
+      connector_->OverrideBinderForTesting(service_name, interface_name,
+                                           binder);
     }
     void ClearBinderOverrides() { connector_->ClearBinderOverrides(); }
 
@@ -106,7 +110,8 @@ class Connector {
   virtual base::WeakPtr<Connector> GetWeakPtr() = 0;
 
  protected:
-  virtual void OverrideBinderForTesting(const std::string& interface_name,
+  virtual void OverrideBinderForTesting(const std::string& service_name,
+                                        const std::string& interface_name,
                                         const TestApi::Binder& binder) = 0;
   virtual void ClearBinderOverrides() = 0;
 };

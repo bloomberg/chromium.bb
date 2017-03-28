@@ -36,18 +36,21 @@ class ConnectorImpl : public Connector {
   std::unique_ptr<Connector> Clone() override;
   void BindConnectorRequest(mojom::ConnectorRequest request) override;
   base::WeakPtr<Connector> GetWeakPtr() override;
-  void OverrideBinderForTesting(const std::string& interface_name,
+  void OverrideBinderForTesting(const std::string& service_name,
+                                const std::string& interface_name,
                                 const TestApi::Binder& binder) override;
   void ClearBinderOverrides() override;
 
   bool BindConnectorIfNecessary();
+
+  using BinderOverrideMap = std::map<std::string, TestApi::Binder>;
 
   mojom::ConnectorPtrInfo unbound_state_;
   mojom::ConnectorPtr connector_;
 
   base::ThreadChecker thread_checker_;
 
-  std::map<std::string, TestApi::Binder> local_binder_overrides_;
+  std::map<std::string, BinderOverrideMap> local_binder_overrides_;
 
   base::WeakPtrFactory<Connector> weak_factory_;
 

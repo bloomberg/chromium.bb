@@ -86,7 +86,8 @@ void InterfaceProviderJsWrapper::AddOverrideForTesting(
     test_api.SetBinderForName(interface_name, callback);
   } else if (connector_) {
     service_manager::Connector::TestApi test_api(connector_.get());
-    test_api.OverrideBinderForTesting(interface_name, callback);
+    test_api.OverrideBinderForTesting(mojom::kBrowserServiceName,
+                                      interface_name, callback);
   }
 }
 

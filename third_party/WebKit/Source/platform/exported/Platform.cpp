@@ -30,6 +30,8 @@
 
 #include "public/platform/Platform.h"
 
+#include <memory>
+
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "platform/Histogram.h"
@@ -39,12 +41,29 @@
 #include "platform/heap/BlinkGCMemoryDumpProvider.h"
 #include "platform/heap/GCTaskRunner.h"
 #include "platform/instrumentation/tracing/MemoryCacheDumpProvider.h"
-#include "public/platform/Connector.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/WebPrerenderingSupport.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "wtf/HashMap.h"
 
 namespace blink {
+
+namespace {
+
+class DefaultConnector {
+ public:
+  DefaultConnector() {
+    service_manager::mojom::ConnectorRequest request;
+    m_connector = service_manager::Connector::Create(&request);
+  }
+
+  service_manager::Connector* get() { return m_connector.get(); }
+
+ private:
+  std::unique_ptr<service_manager::Connector> m_connector;
+};
+
+}  // namespace
 
 static Platform* s_platform = nullptr;
 
@@ -120,8 +139,9 @@ WebThread* Platform::mainThread() const {
   return m_mainThread;
 }
 
-Connector* Platform::connector() {
-  return Connector::getEmptyConnector();
+service_manager::Connector* Platform::connector() {
+  DEFINE_STATIC_LOCAL(DefaultConnector, connector, ());
+  return connector.get();
 }
 
 InterfaceProvider* Platform::interfaceProvider() {

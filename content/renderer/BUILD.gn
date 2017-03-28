@@ -265,8 +265,6 @@ target(link_target_type, "renderer") {
     "media/webmediaplayer_ms_compositor.h",
     "menu_item_builder.cc",
     "menu_item_builder.h",
-    "mojo/blink_connector_impl.cc",
-    "mojo/blink_connector_impl.h",
     "mojo/blink_connector_js_wrapper.cc",
     "mojo/blink_connector_js_wrapper.h",
     "mojo/blink_interface_provider_impl.cc",

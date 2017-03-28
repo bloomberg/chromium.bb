@@ -7,8 +7,9 @@
 #include <memory>
 #include <utility>
 
-#include "content/renderer/mojo/blink_connector_impl.h"
 #include "mojo/edk/js/handle.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/interfaces/connector.mojom.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace content {
@@ -24,7 +25,7 @@ BlinkConnectorJsWrapper::~BlinkConnectorJsWrapper() {}
 gin::Handle<BlinkConnectorJsWrapper> BlinkConnectorJsWrapper::Create(
     v8::Isolate* isolate,
     v8::Handle<v8::Context> context,
-    BlinkConnectorImpl* connector) {
+    service_manager::Connector* connector) {
   return gin::CreateHandle(
       isolate,
       new BlinkConnectorJsWrapper(isolate, context, connector->GetWeakPtr()));
@@ -45,8 +46,10 @@ mojo::Handle BlinkConnectorJsWrapper::BindInterface(
     const std::string& interface_name) {
   mojo::MessagePipe pipe;
   if (connector_) {
-    connector_->bindInterface(service_name.c_str(), interface_name.c_str(),
-                              std::move(pipe.handle0));
+    connector_->BindInterface(
+        service_manager::Identity(service_name,
+                                  service_manager::mojom::kInheritUserID),
+        interface_name, std::move(pipe.handle0));
   }
   return pipe.handle1.release();
 }
@@ -56,20 +59,22 @@ void BlinkConnectorJsWrapper::AddOverrideForTesting(
     const std::string& interface_name,
     v8::Local<v8::Function> service_factory) {
   ScopedJsFactory factory(v8::Isolate::GetCurrent(), service_factory);
-  connector_->AddOverrideForTesting(
+  service_manager::Connector::TestApi test_api(connector_.get());
+  test_api.OverrideBinderForTesting(
       service_name, interface_name,
       base::Bind(&BlinkConnectorJsWrapper::CallJsFactory,
                  weak_factory_.GetWeakPtr(), factory));
 }
 
 void BlinkConnectorJsWrapper::ClearOverridesForTesting() {
-  connector_->ClearOverridesForTesting();
+  service_manager::Connector::TestApi test_api(connector_.get());
+  test_api.ClearBinderOverrides();
 }
 
 BlinkConnectorJsWrapper::BlinkConnectorJsWrapper(
     v8::Isolate* isolate,
     v8::Handle<v8::Context> context,
-    base::WeakPtr<BlinkConnectorImpl> connector)
+    base::WeakPtr<service_manager::Connector> connector)
     : isolate_(isolate),
       context_(isolate, context),
       connector_(connector),

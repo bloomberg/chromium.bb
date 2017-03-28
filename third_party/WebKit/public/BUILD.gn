@@ -90,7 +90,6 @@ if (is_android) {
 source_set("blink_headers") {
   sources = [
     "platform/BlameContext.h",
-    "platform/Connector.h",
     "platform/FilePathConversion.h",
     "platform/InterfaceProvider.h",
     "platform/InterfaceRegistry.h",

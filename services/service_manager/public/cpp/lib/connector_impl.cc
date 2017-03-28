@@ -76,10 +76,13 @@ void ConnectorImpl::BindInterface(
   if (!BindConnectorIfNecessary())
     return;
 
-  if (!local_binder_overrides_.empty() &&
-      local_binder_overrides_.count(interface_name)) {
-    local_binder_overrides_[interface_name].Run(std::move(interface_pipe));
-    return;
+  auto service_overrides_iter = local_binder_overrides_.find(target.name());
+  if (service_overrides_iter != local_binder_overrides_.end()) {
+    auto override_iter = service_overrides_iter->second.find(interface_name);
+    if (override_iter != service_overrides_iter->second.end()) {
+      override_iter->second.Run(std::move(interface_pipe));
+      return;
+    }
   }
 
   connector_->BindInterface(target, interface_name, std::move(interface_pipe),
@@ -106,9 +109,10 @@ base::WeakPtr<Connector> ConnectorImpl::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-void ConnectorImpl::OverrideBinderForTesting(const std::string& interface_name,
+void ConnectorImpl::OverrideBinderForTesting(const std::string& service_name,
+                                             const std::string& interface_name,
                                              const TestApi::Binder& binder) {
-  local_binder_overrides_[interface_name] = binder;
+  local_binder_overrides_[service_name][interface_name] = binder;
 }
 
 void ConnectorImpl::ClearBinderOverrides() {

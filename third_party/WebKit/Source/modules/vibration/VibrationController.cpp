@@ -25,9 +25,9 @@
 #include "core/frame/Navigator.h"
 #include "core/page/Page.h"
 #include "platform/mojo/MojoHelper.h"
-#include "public/platform/Connector.h"
 #include "public/platform/Platform.h"
 #include "services/device/public/interfaces/constants.mojom-blink.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 // Maximum number of entries in a vibration pattern.
 const unsigned kVibrationPatternLengthMax = 99;
@@ -85,7 +85,7 @@ VibrationController::VibrationController(Document& document)
       m_isRunning(false),
       m_isCallingCancel(false),
       m_isCallingVibrate(false) {
-  Platform::current()->connector()->bindInterface(
+  Platform::current()->connector()->BindInterface(
       device::mojom::blink::kServiceName,
       mojo::MakeRequest(&m_vibrationManager));
 }

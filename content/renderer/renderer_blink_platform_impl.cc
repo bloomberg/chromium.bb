@@ -251,7 +251,6 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
       loading_task_runner_(renderer_scheduler->LoadingTaskRunner()),
       web_scrollbar_behavior_(new WebScrollbarBehaviorImpl),
       renderer_scheduler_(renderer_scheduler),
-      blink_connector_(new BlinkConnectorImpl(nullptr)),
       blink_interface_provider_(new BlinkInterfaceProviderImpl(connector)) {
 #if !defined(OS_ANDROID) && !defined(OS_WIN)
   if (g_sandbox_enabled && sandboxEnabled()) {
@@ -263,10 +262,10 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
 
   // RenderThread may not exist in some tests.
   if (RenderThreadImpl::current()) {
-    blink_connector_->SetConnector(RenderThreadImpl::current()
-                                       ->GetServiceManagerConnection()
-                                       ->GetConnector()
-                                       ->Clone());
+    connector_ = RenderThreadImpl::current()
+                     ->GetServiceManagerConnection()
+                     ->GetConnector()
+                     ->Clone();
     sync_message_filter_ = RenderThreadImpl::current()->sync_message_filter();
     thread_safe_sender_ = RenderThreadImpl::current()->thread_safe_sender();
     quota_message_filter_ = RenderThreadImpl::current()->quota_message_filter();
@@ -280,6 +279,9 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
         RenderThreadImpl::current()->GetIOTaskRunner().get()));
     web_database_observer_impl_.reset(
         new WebDatabaseObserverImpl(sync_message_filter_.get()));
+  } else {
+    service_manager::mojom::ConnectorRequest request;
+    connector_ = service_manager::Connector::Create(&request);
   }
 
   top_level_blame_context_.Initialize();
@@ -1161,8 +1163,8 @@ void RendererBlinkPlatformImpl::SetPlatformEventObserverForTesting(
   platform_event_observers_.AddWithID(std::move(observer), type);
 }
 
-BlinkConnectorImpl* RendererBlinkPlatformImpl::connector() {
-  return blink_connector_.get();
+service_manager::Connector* RendererBlinkPlatformImpl::connector() {
+  return connector_.get();
 }
 
 blink::InterfaceProvider* RendererBlinkPlatformImpl::interfaceProvider() {

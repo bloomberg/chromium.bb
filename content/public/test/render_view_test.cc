@@ -128,6 +128,7 @@ class RendererBlinkPlatformImplTestOverrideImpl
 
 RenderViewTest::RendererBlinkPlatformImplTestOverride::
     RendererBlinkPlatformImplTestOverride() {
+  InitializeMojo();
   renderer_scheduler_ = blink::scheduler::RendererScheduler::Create();
   blink_platform_impl_.reset(
       new RendererBlinkPlatformImplTestOverrideImpl(renderer_scheduler_.get()));
@@ -227,8 +228,6 @@ void RenderViewTest::GoForward(const GURL& url, const PageState& state) {
 }
 
 void RenderViewTest::SetUp() {
-  // Initialize mojo firstly to enable Blink initialization to use it.
-  InitializeMojo();
   test_io_thread_.reset(new base::TestIOThread(base::TestIOThread::kAutoStart));
   ipc_support_.reset(new mojo::edk::ScopedIPCSupport(
       test_io_thread_->task_runner(),
