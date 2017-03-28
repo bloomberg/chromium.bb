@@ -60,10 +60,14 @@ int sb_compute_dering_list(const AV1_COMMON *const cm, int mi_row, int mi_col,
   if (maxr > MAX_MIB_SIZE) maxr = MAX_MIB_SIZE;
   if (maxc > MAX_MIB_SIZE) maxc = MAX_MIB_SIZE;
 #endif
-  for (r = 0; r < maxr; r++) {
+
+  const int r_step = mi_size_high[BLOCK_8X8];
+  const int c_step = mi_size_wide[BLOCK_8X8];
+
+  for (r = 0; r < maxr; r += r_step) {
     MODE_INFO **grid_row;
     grid_row = &grid[(mi_row + r) * cm->mi_stride + mi_col];
-    for (c = 0; c < maxc; c++) {
+    for (c = 0; c < maxc; c += c_step) {
       if (!grid_row[c]->mbmi.skip) {
         dlist[count].by = r;
         dlist[count].bx = c;

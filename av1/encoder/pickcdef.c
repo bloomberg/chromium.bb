@@ -127,14 +127,14 @@ uint64_t compute_dering_mse(uint16_t *dst, int dstride, uint16_t *src,
       by = dlist[bi].by;
       bx = dlist[bi].bx;
       sum += mse_8x8_16bit(&dst[(by << 3) * dstride + (bx << 3)], dstride,
-                           &src[bi << 2 * bsize], 1 << bsize);
+                           &src[bi << 2 * bsize], 8);
     }
   } else {
     for (bi = 0; bi < dering_count; bi++) {
       by = dlist[bi].by;
       bx = dlist[bi].bx;
       sum += mse_4x4_16bit(&dst[(by << 2) * dstride + (bx << 2)], dstride,
-                           &src[bi << 2 * bsize], 1 << bsize);
+                           &src[bi << 2 * bsize], 4);
     }
   }
   return sum >> 2 * coeff_shift;
@@ -151,6 +151,8 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
   int var[OD_DERING_NBLOCKS][OD_DERING_NBLOCKS] = { { 0 } };
   int stride[3];
   int bsize[3];
+  int mi_wide_l2[3];
+  int mi_high_l2[3];
   int dec[3];
   int pli;
   int dering_count;
@@ -207,6 +209,8 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
     dec[pli] = xd->plane[pli].subsampling_x;
     bsize[pli] = OD_DERING_SIZE_LOG2 - dec[pli];
     stride[pli] = cm->mi_cols << MI_SIZE_LOG2;
+    mi_wide_l2[pli] = MI_SIZE_LOG2 - xd->plane[pli].subsampling_x;
+    mi_high_l2[pli] = MI_SIZE_LOG2 - xd->plane[pli].subsampling_y;
 
     const int frame_height =
         (cm->mi_rows * MI_SIZE) >> xd->plane[pli].subsampling_y;
@@ -258,16 +262,17 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
              would add special cases for any future vectorization. */
           int yoff = OD_FILT_VBORDER * (sbr != 0);
           int xoff = OD_FILT_HBORDER * (sbc != 0);
-          int ysize =
-              (nvb << bsize[pli]) + OD_FILT_VBORDER * (sbr != nvsb - 1) + yoff;
-          int xsize =
-              (nhb << bsize[pli]) + OD_FILT_HBORDER * (sbc != nhsb - 1) + xoff;
+          int ysize = (nvb << mi_high_l2[pli]) +
+                      OD_FILT_VBORDER * (sbr != nvsb - 1) + yoff;
+          int xsize = (nhb << mi_wide_l2[pli]) +
+                      OD_FILT_HBORDER * (sbc != nhsb - 1) + xoff;
           clpf_strength = gi % CLPF_STRENGTHS;
           if (clpf_strength == 0)
             copy_sb16_16(&in[(-yoff * OD_FILT_BSTRIDE - xoff)], OD_FILT_BSTRIDE,
-                         src[pli], (sbr * MAX_MIB_SIZE << bsize[pli]) - yoff,
-                         (sbc * MAX_MIB_SIZE << bsize[pli]) - xoff, stride[pli],
-                         ysize, xsize);
+                         src[pli],
+                         (sbr * MAX_MIB_SIZE << mi_high_l2[pli]) - yoff,
+                         (sbc * MAX_MIB_SIZE << mi_wide_l2[pli]) - xoff,
+                         stride[pli], ysize, xsize);
           od_dering(clpf_strength ? NULL : (uint8_t *)in, OD_FILT_BSTRIDE,
                     tmp_dst, in, dec[pli], dir, &dirinit, var, pli, dlist,
                     dering_count, threshold,
@@ -275,8 +280,8 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
                     coeff_shift, clpf_strength != 0, 1);
           mse[pli][sb_count][gi] = compute_dering_mse(
               ref_coeff[pli] +
-                  (sbr * MAX_MIB_SIZE << bsize[pli]) * stride[pli] +
-                  (sbc * MAX_MIB_SIZE << bsize[pli]),
+                  (sbr * MAX_MIB_SIZE << mi_high_l2[pli]) * stride[pli] +
+                  (sbc * MAX_MIB_SIZE << mi_wide_l2[pli]),
               stride[pli], tmp_dst, dlist, dering_count, bsize[pli],
               coeff_shift);
           sb_index[sb_count] =
