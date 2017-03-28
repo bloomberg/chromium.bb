@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_timeouts.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -19,6 +20,7 @@
 #include "components/guest_view/browser/guest_view_manager_delegate.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
 #include "components/security_state/core/security_state.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/focused_node_details.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_details.h"
@@ -1242,12 +1244,32 @@ class FocusedEditableNodeChangedObserver : content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(FocusedEditableNodeChangedObserver);
 };
 
+// Waits until transforming |sample_point| from |render_frame_host| coordinates
+// to its root frame's view's coordinates matches |transformed_point| within a
+// reasonable error margin less than or equal to |bound|. This method is used to
+// verify CSS changes on OOPIFs have been applied properly and the corresponding
+// compositor frame is updated as well. This way we can rest assured that the
+// future transformed and reported bounds for the elements inside
+// |render_frame_host| are correct.
+void WaitForFramePositionUpdated(content::RenderFrameHost* render_frame_host,
+                                 const gfx::Point& sample_point,
+                                 const gfx::Point& transformed_point,
+                                 float bound) {
+  while ((transformed_point -
+          render_frame_host->GetView()->TransformPointToRootCoordSpace(
+              sample_point))
+             .Length() > bound) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+  }
+}
 // This test verifies that displacements (margin, etc) in the position of an
 // OOPIF is considered when showing an AutofillClient warning pop-up for
 // unsecure web sites.
-// Test is flaky. crbug.com/705914
 IN_PROC_BROWSER_TEST_F(SitePerProcessAutofillTest,
-                       DISABLED_PasswordAutofillPopupPositionInsideOOPIF) {
+                       PasswordAutofillPopupPositionInsideOOPIF) {
   SetupMainTab();
   ASSERT_TRUE(
       base::FeatureList::IsEnabled(security_state::kHttpFormWarningFeature));
@@ -1261,8 +1283,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessAutofillTest,
   ASSERT_TRUE(content::ExecuteScript(
       active_web_contents,
       base::StringPrintf("var iframe = document.querySelector('iframe');"
-                         "iframe.style.marginTop = '%dpx';"
-                         "iframe.style.marginLeft = '%dpx';",
+                         "iframe.style.position = 'fixed';"
+                         "iframe.style.border = 'none';"
+                         "iframe.style.top = '%dpx';"
+                         "iframe.style.left = '%dpx';",
                          kIframeTopDisplacement, kIframeLeftDisplacement)));
 
   // Navigate the <iframe> to a simple page.
@@ -1270,6 +1294,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessAutofillTest,
   EXPECT_TRUE(NavigateIframeToURL(active_web_contents, "test", frame_url));
   content::RenderFrameHost* child_frame = content::FrameMatchingPredicate(
       active_web_contents, base::Bind(&content::FrameIsChildOfMainFrame));
+
+  WaitForFramePositionUpdated(
+      child_frame, gfx::Point(),
+      gfx::Point(kIframeLeftDisplacement, kIframeTopDisplacement), 1.4143f);
 
   // We will need to listen to focus changes to find out about the container
   // bounds of any focused <input> elements on the page.
