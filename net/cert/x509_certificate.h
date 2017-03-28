@@ -127,7 +127,11 @@ class NET_EXPORT X509Certificate
   };
 
   // Create an X509Certificate from a handle to the certificate object in the
-  // underlying crypto library.
+  // underlying crypto library. Returns NULL on failure to parse or extract
+  // data from the the certificate. Note that this does not guarantee the
+  // certificate is fully parsed and validated, only that the members of this
+  // class, such as subject, issuer, expiry times, and serial number, could be
+  // successfully initialized from the certificate.
   static scoped_refptr<X509Certificate> CreateFromHandle(
       OSCertHandle cert_handle,
       const OSCertHandles& intermediates);

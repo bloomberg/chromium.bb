@@ -303,6 +303,8 @@ scoped_refptr<X509Certificate> CreateVerifiedCertChain(
 
   scoped_refptr<X509Certificate> result = X509Certificate::CreateFromHandle(
       target_cert->os_cert_handle(), intermediates);
+  // |target_cert| was already successfully parsed, so this should never fail.
+  DCHECK(result);
 
   for (const X509Certificate::OSCertHandle handle : intermediates)
     X509Certificate::FreeOSCertHandle(handle);

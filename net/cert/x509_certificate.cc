@@ -445,7 +445,10 @@ CertificateList X509Certificate::CreateCertificateListFromBytes(
 
   for (OSCertHandles::iterator it = certificates.begin();
        it != certificates.end(); ++it) {
-    results.push_back(CreateFromHandle(*it, OSCertHandles()));
+    scoped_refptr<X509Certificate> cert =
+        CreateFromHandle(*it, OSCertHandles());
+    if (cert)
+      results.push_back(std::move(cert));
     FreeOSCertHandle(*it);
   }
 
