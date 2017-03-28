@@ -90,7 +90,6 @@ source_set("config_sources") {
   include_dirs = [ "//third_party/mesa/src/include" ]
 
   if (is_win) {
-    deps += [ "//third_party/libxml" ]
     libs = [
       "dxguid.lib",
       "setupapi.lib",
