@@ -1,9 +1,6 @@
 include_rules = [
-    "+third_party/WebKit/Source/bindings",
-    "+third_party/WebKit/Source/core",
-    "+third_party/WebKit/Source/platform/heap",
-    "-third_party/WebKit/Source/modules",
-    "+third_party/WebKit/Source/modules/csspaint",
-    "+third_party/WebKit/Source/platform",
-    "-third_party/WebKit/Source/web",
+    "-modules",
+    "+modules/ModulesExport.h",
+    "+modules/canvas2d/BaseRenderingContext2D.h",
+    "+modules/csspaint",
 ]

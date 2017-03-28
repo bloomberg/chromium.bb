@@ -1,5 +1,4 @@
 include_rules = [
-    "+bindings",
     "-modules",
     "+modules/media_capabilities",
 ]

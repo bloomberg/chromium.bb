@@ -1,18 +1,12 @@
 include_rules = [
-    "+bindings",
-    "+core",
-    "+heap",
     "-modules",
     "+modules/ModulesExport.h",
     "+modules/canvas2d",
     "+modules/imagecapture/Point2D.h",
     "+modules/shapedetection",
-    "+platform",
-    "+public/platform",
     "+services/shape_detection",
     "+skia/public/interfaces/bitmap.mojom-blink.h",
     "+third_party/skia/include/core/SkImage.h",
     "+third_party/skia/include/core/SkImageInfo.h",
     "+ui/gfx/geometry",
-    "-web",
 ]

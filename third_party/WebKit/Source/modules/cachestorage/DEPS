@@ -1,6 +1,4 @@
 include_rules = [
-    "+bindings",
-    "+core",
     "-modules",
     "+modules/EventModules.h",
     "+modules/EventTargetModules.h",
@@ -8,7 +6,4 @@ include_rules = [
     "+modules/cachestorage",
     "+modules/fetch",
     "+modules/serviceworkers",
-    "+platform",
-    "+public/platform",
-    "-web",
 ]

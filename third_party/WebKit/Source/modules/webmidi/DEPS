@@ -1,6 +1,4 @@
 include_rules = [
-    "+bindings",
-    "+core",
     "+media/midi/midi_service.mojom-blink.h",
     "-modules",
     "+modules/EventModules.h",
@@ -8,7 +6,4 @@ include_rules = [
     "+modules/ModulesExport.h",
     "+modules/permissions",
     "+modules/webmidi",
-    "+platform",
-    "+public/platform",
-    "-web",
 ]
