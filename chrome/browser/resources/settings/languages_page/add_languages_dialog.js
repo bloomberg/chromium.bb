@@ -73,6 +73,19 @@ Polymer({
   },
 
   /**
+   * @param {!chrome.languageSettingsPrivate.Language} language
+   * @return {string} The text to be displayed.
+   * @private
+   */
+  getDisplayText_: function(language) {
+     var displayText = language.displayName;
+     // If the native name is different, add it.
+     if (language.displayName != language.nativeDisplayName)
+       displayText += ' - ' + language.nativeDisplayName;
+     return displayText;
+  },
+
+  /**
    * True if the user has chosen to add this language (checked its checkbox).
    * @param {string} languageCode
    * @return {boolean}

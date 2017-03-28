@@ -45,7 +45,7 @@
                 title$="[[item.nativeDisplayName]]"
                 on-change="onLanguageCheckboxChange_"
                 tabindex$="[[tabIndex]]">
-              [[item.displayName]]
+              [[getDisplayText_(item)]]
             </paper-checkbox>
           </template>
         </iron-list>
