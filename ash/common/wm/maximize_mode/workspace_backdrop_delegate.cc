@@ -21,7 +21,7 @@ namespace ash {
 namespace {
 
 // The opacity of the backdrop.
-const float kBackdropOpacity = 0.5f;
+const float kBackdropOpacity = 1.0f;
 
 }  // namespace
 
