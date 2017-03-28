@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 10
+// Next MinVersion: 11
 
 module arc.mojom;
 
@@ -20,6 +20,8 @@ enum ArcNotificationEvent {
   BUTTON_3_CLICKED = 4,
   BUTTON_4_CLICKED = 5,
   BUTTON_5_CLICKED = 6,
+  // expand/collapse the bundled notification
+  [MinVersion=10] TOGGLE_EXPANSION = 7,
 };
 
 // These values must be matched with the NOTIFICATION_TYPE_* constants in
@@ -34,6 +36,13 @@ enum ArcNotificationType {
 struct ArcNotificationButton {
   // Title
   string label;
+};
+
+[Extensible, MinVersion=10]
+enum ArcNotificationExpandState {
+  FIXED_SIZE = 0,
+  COLLAPSED = 1,
+  EXPANDED = 2,
 };
 
 struct ArcNotificationData {
@@ -86,6 +95,9 @@ struct ArcNotificationData {
   // Accessibility text
   [MinVersion=8]
   string? accessible_name;
+  // Flag if the notification is expandable
+  [MinVersion=10]
+  ArcNotificationExpandState expand_state;
 };
 
 [MinVersion=2]

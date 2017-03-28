@@ -50,9 +50,14 @@ class ArcCustomNotificationItem : public ArcNotificationItem {
 
   bool pinned() const { return pinned_; }
   const gfx::ImageSkia& snapshot() const { return snapshot_; }
+  mojom::ArcNotificationExpandState expand_state() const {
+    return expand_state_;
+  }
 
  private:
   bool pinned_ = false;
+  mojom::ArcNotificationExpandState expand_state_ =
+      mojom::ArcNotificationExpandState::FIXED_SIZE;
   gfx::ImageSkia snapshot_;
   int window_ref_count_ = 0;
 
