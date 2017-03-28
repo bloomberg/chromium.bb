@@ -305,7 +305,8 @@ IN_PROC_BROWSER_TEST_F(SRTFetcherTest, RanRecently) {
   ExpectToRunAgain(kDaysBetweenSuccessfulSwReporterRuns);
 }
 
-IN_PROC_BROWSER_TEST_F(SRTFetcherTest, WaitForBrowser) {
+// Test is flaky. crbug.com/705608
+IN_PROC_BROWSER_TEST_F(SRTFetcherTest, DISABLED_WaitForBrowser) {
   Profile* profile = browser()->profile();
 
   // Ensure that even though we're closing the last browser, we don't enter the
