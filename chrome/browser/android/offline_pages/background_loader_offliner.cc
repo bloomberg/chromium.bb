@@ -14,6 +14,7 @@
 #include "components/offline_pages/core/offline_page_model.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -21,6 +22,7 @@ namespace offline_pages {
 
 namespace {
 const long kOfflinePageDelayMs = 2000;
+const long kOfflineDomContentLoadedMs = 25000;
 
 class OfflinerData : public content::WebContentsUserData<OfflinerData> {
  public:
@@ -153,9 +155,6 @@ bool BackgroundLoaderOffliner::LoadAndSave(
   if (!loader_)
     ResetState();
 
-  // Invalidate ptrs for all delayed/saving tasks.
-  weak_ptr_factory_.InvalidateWeakPtrs();
-
   // Track copy of pending request.
   pending_request_.reset(new SavePageRequest(request));
   completion_callback_ = completion_callback;
@@ -169,12 +168,16 @@ bool BackgroundLoaderOffliner::LoadAndSave(
   // Load page attempt.
   loader_.get()->LoadPage(request.url());
 
+  snapshot_controller_.reset(
+      new SnapshotController(base::ThreadTaskRunnerHandle::Get(), this,
+                             kOfflineDomContentLoadedMs, page_delay_ms_));
+
   return true;
 }
 
 void BackgroundLoaderOffliner::Cancel(const CancelCallback& callback) {
   // TODO(chili): We are not able to cancel a pending
-  // OfflinePageModel::SavePage() operation. We will notify caller that
+  // OfflinePageModel::SaveSnapshot() operation. We will notify caller that
   // cancel completed once the SavePage operation returns.
   if (!pending_request_) {
     callback.Run(0LL);
@@ -198,21 +201,20 @@ bool BackgroundLoaderOffliner::HandleTimeout(const SavePageRequest& request) {
   return false;
 }
 
+void BackgroundLoaderOffliner::DocumentLoadedInFrame(
+    content::RenderFrameHost* render_host) {
+  // Inform snapshot controller if in main frame.
+  if (!render_host->GetParent())
+    snapshot_controller_->DocumentAvailableInMainFrame();
+}
+
 void BackgroundLoaderOffliner::DidStopLoading() {
   if (!pending_request_.get()) {
     DVLOG(1) << "DidStopLoading called even though no pending request.";
     return;
   }
 
-  // Invalidate ptrs for any ongoing save operation.
-  weak_ptr_factory_.InvalidateWeakPtrs();
-
-  // Post SavePage task with 2 second delay.
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&BackgroundLoaderOffliner::SavePage,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMilliseconds(page_delay_ms_));
+  snapshot_controller_->DocumentOnLoadCompletedInMainFrame();
 }
 
 void BackgroundLoaderOffliner::RenderProcessGone(
@@ -286,18 +288,6 @@ void BackgroundLoaderOffliner::DidFinishNavigation(
         page_load_state_ = RETRIABLE;
     }
   }
-
-  // If the document is not the same invalidate any pending save tasks.
-  //
-  // Downloads or 204/205 response codes do not commit (no new navigation)
-  // Same-Document (committed) navigations are:
-  // - reference fragment navigations
-  // - pushState/replaceState
-  // - same document history navigation
-  if (navigation_handle->HasCommitted() &&
-      !navigation_handle->IsSameDocument()) {
-    weak_ptr_factory_.InvalidateWeakPtrs();
-  }
 }
 
 void BackgroundLoaderOffliner::SetPageDelayForTest(long delay_ms) {
@@ -311,7 +301,7 @@ void BackgroundLoaderOffliner::OnNetworkBytesChanged(int64_t bytes) {
   }
 }
 
-void BackgroundLoaderOffliner::SavePage() {
+void BackgroundLoaderOffliner::StartSnapshot() {
   if (!pending_request_.get()) {
     DVLOG(1) << "Pending request was cleared during delay.";
     return;
@@ -382,6 +372,8 @@ void BackgroundLoaderOffliner::OnPageSaved(SavePageResult save_result,
   }
 
   save_state_ = NONE;
+  // Prevent snapshot controller from making any more snapshots.
+  snapshot_controller_->Stop();
 
   Offliner::RequestStatus save_status;
   if (save_result == SavePageResult::SUCCESS)
@@ -394,6 +386,7 @@ void BackgroundLoaderOffliner::OnPageSaved(SavePageResult save_result,
 
 void BackgroundLoaderOffliner::ResetState() {
   pending_request_.reset();
+  snapshot_controller_.reset();
   page_load_state_ = SUCCESS;
   network_bytes_ = 0LL;
   // TODO(chili): Remove after RequestCoordinator can handle multiple offliners.
