@@ -578,7 +578,7 @@ scoped_refptr<SyncMessageFilter> SyncChannel::CreateSyncMessageFilter() {
 }
 
 bool SyncChannel::Send(Message* message) {
-#if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
+#ifdef IPC_MESSAGE_LOG_ENABLED
   std::string name;
   Logging::GetInstance()->GetMessageText(
       message->type(), &name, message, nullptr);

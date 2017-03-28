@@ -22,7 +22,7 @@ ServiceIPCServer::ServiceIPCServer(
 }
 
 bool ServiceIPCServer::Init() {
-#if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
+#ifdef IPC_MESSAGE_LOG_ENABLED
   IPC::Logging::GetInstance()->SetIPCSender(this);
 #endif
   CreateChannel();
@@ -39,7 +39,7 @@ void ServiceIPCServer::CreateChannel() {
 }
 
 ServiceIPCServer::~ServiceIPCServer() {
-#if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
+#ifdef IPC_MESSAGE_LOG_ENABLED
   IPC::Logging::GetInstance()->SetIPCSender(NULL);
 #endif
 }
