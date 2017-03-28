@@ -90,10 +90,6 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
         return mRecyclerView.computeVerticalScrollOffset();
     }
 
-    public ContextMenuManager getContextMenuManager() {
-        return mContextMenuManager;
-    }
-
     @Override
     public void destroy() {
         mSuggestionsManager.onDestroy();

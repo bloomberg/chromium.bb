@@ -251,12 +251,6 @@ public class NewTabPage
             if (mFakeboxDelegate == null) return false;
             return mFakeboxDelegate.isCurrentPage(NewTabPage.this);
         }
-
-        @Override
-        public ContextMenuManager getContextMenuManager() {
-            assert !mIsDestroyed;
-            return mNewTabPageView.getContextMenuManager();
-        }
     }
 
     /**

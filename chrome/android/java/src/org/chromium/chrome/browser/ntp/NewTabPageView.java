@@ -152,13 +152,6 @@ public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
          * displayed to the user.
          */
         boolean isCurrentPage();
-
-        /**
-         * @return The context menu manager. Will be {@code null} if the {@link NewTabPageView} is
-         * not done initialising.
-         */
-        @Nullable
-        ContextMenuManager getContextMenuManager();
     }
 
     /**
@@ -897,11 +890,6 @@ public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
      */
     public int getScrollPosition() {
         return mRecyclerView.getScrollPosition();
-    }
-
-    /** @return the context menu manager. */
-    public ContextMenuManager getContextMenuManager() {
-        return mContextMenuManager;
     }
 
     // TileGroup.Observer interface.
