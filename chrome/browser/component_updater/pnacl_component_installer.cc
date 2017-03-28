@@ -185,7 +185,7 @@ bool CheckPnaclComponentManifest(const base::DictionaryValue& manifest,
     LOG(WARNING) << "'version' field is missing from manifest!";
     return false;
   }
-  base::Version version(proposed_version.c_str());
+  base::Version version(proposed_version);
   if (!version.IsValid()) {
     LOG(WARNING) << "'version' field in manifest is invalid "
                  << version.GetString();

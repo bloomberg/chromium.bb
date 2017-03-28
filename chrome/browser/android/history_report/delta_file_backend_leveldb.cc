@@ -119,12 +119,12 @@ bool DeltaFileBackend::EnsureInitialized() {
 
 void DeltaFileBackend::PageAdded(const GURL& url) {
   if (!EnsureInitialized()) return;
-  SaveChange(db_.get(), url.spec().c_str(), "add");
+  SaveChange(db_.get(), url.spec(), "add");
 }
 
 void DeltaFileBackend::PageDeleted(const GURL& url) {
   if (!EnsureInitialized()) return;
-  SaveChange(db_.get(), url.spec().c_str(), "del");
+  SaveChange(db_.get(), url.spec(), "del");
 }
 
 int64_t DeltaFileBackend::Trim(int64_t lower_bound) {

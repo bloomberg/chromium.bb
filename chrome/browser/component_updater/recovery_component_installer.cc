@@ -173,7 +173,7 @@ void DoElevatedInstallRecoveryComponent(const base::FilePath& path) {
     return;
   std::string proposed_version;
   manifest->GetStringASCII("version", &proposed_version);
-  const base::Version version(proposed_version.c_str());
+  const base::Version version(proposed_version);
   if (!version.IsValid())
     return;
 
@@ -418,7 +418,7 @@ bool RecoveryComponentInstaller::DoInstall(
     return false;
   std::string proposed_version;
   manifest.GetStringASCII("version", &proposed_version);
-  base::Version version(proposed_version.c_str());
+  base::Version version(proposed_version);
   if (!version.IsValid())
     return false;
   if (current_version_.CompareTo(version) >= 0)

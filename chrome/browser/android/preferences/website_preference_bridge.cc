@@ -557,8 +557,7 @@ class SiteDataDeleteHelper :
       RecursivelyFindSiteAndDelete(node->GetChild(i - 1));
 
     if (info.node_type == CookieTreeNode::DetailedInfo::TYPE_COOKIE &&
-        info.cookie &&
-        domain_.DomainIs(info.cookie->Domain().c_str()))
+        info.cookie && domain_.DomainIs(info.cookie->Domain()))
       cookies_tree_model_->DeleteCookieNode(node);
   }
 

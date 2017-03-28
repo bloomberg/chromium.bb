@@ -82,14 +82,14 @@ jfloat CtrSuppression::GetPrevious28DayCtr(JNIEnv* env,
 int CtrSuppression::ReadStorage(std::string storage_bucket) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_storage_bucket =
-      ConvertUTF8ToJavaString(env, storage_bucket.c_str());
+      ConvertUTF8ToJavaString(env, storage_bucket);
   return Java_CtrSuppression_readInt(env, java_object_, j_storage_bucket);
 }
 
 void CtrSuppression::WriteStorage(std::string storage_bucket, int value) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_storage_bucket =
-      ConvertUTF8ToJavaString(env, storage_bucket.c_str());
+      ConvertUTF8ToJavaString(env, storage_bucket);
   Java_CtrSuppression_writeInt(env, java_object_, j_storage_bucket, value);
 }
 
