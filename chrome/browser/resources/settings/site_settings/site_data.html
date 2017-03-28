@@ -46,7 +46,8 @@
     </div>
     <div class="list-frame vertical-list">
       <template is="dom-repeat" id="list" items="[[sites]]" filter="showItem_"
-          rendered-item-count="{{renderedItemCount}}">
+          rendered-item-count="{{renderedItemCount::dom-change}}"
+          notify-dom-change>
         <div class="list-item two-line" on-tap="onSiteTap_" actionable>
           <div class="favicon-image" style$="[[computeSiteIcon(item.site)]]">
           </div>
