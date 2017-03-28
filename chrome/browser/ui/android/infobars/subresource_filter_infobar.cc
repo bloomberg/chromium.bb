@@ -9,6 +9,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/memory/ptr_util.h"
+#include "jni/SubresourceFilterExperimentalInfoBar_jni.h"
 #include "jni/SubresourceFilterInfoBar_jni.h"
 
 using base::android::JavaParamRef;
@@ -34,6 +35,11 @@ SubresourceFilterInfoBar::CreateRenderInfoBar(JNIEnv* env) {
   ScopedJavaLocalRef<jstring> explanation_message = ConvertUTF16ToJavaString(
       env, subresource_filter_delegate->GetExplanationText());
 
+  if (subresource_filter_delegate->ShouldShowExperimentalInfobar()) {
+    return Java_SubresourceFilterExperimentalInfoBar_show(
+        env, GetEnumeratedIconId(), message_text, ok_button_text,
+        reload_button_text, explanation_message);
+  }
   return Java_SubresourceFilterInfoBar_show(
       env, GetEnumeratedIconId(), message_text, ok_button_text,
       reload_button_text, explanation_message);

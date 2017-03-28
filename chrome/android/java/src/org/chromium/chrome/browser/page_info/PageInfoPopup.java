@@ -665,8 +665,8 @@ public class PageInfoPopup implements OnClickListener {
 
         if (isConnectionDetailsLinkVisible()) {
             messageBuilder.append(" ");
-            SpannableString detailsText = new SpannableString(
-                    mContext.getString(R.string.page_info_details_link));
+            SpannableString detailsText =
+                    new SpannableString(mContext.getString(R.string.details_link));
             final ForegroundColorSpan blueSpan = new ForegroundColorSpan(
                     ApiCompatibilityUtils.getColor(mContext.getResources(),
                             R.color.page_info_popup_text_link));

@@ -24,6 +24,8 @@ class SubresourceFilterInfobarDelegate : public ConfirmInfoBarDelegate {
 
   base::string16 GetExplanationText() const;
 
+  bool ShouldShowExperimentalInfobar() const;
+
   // ConfirmInfoBarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   int GetIconId() const override;

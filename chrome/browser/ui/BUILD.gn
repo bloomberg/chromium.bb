@@ -2173,6 +2173,7 @@ split_static_library("ui") {
   if (is_android) {
     deps += [
       "//components/navigation_interception",
+      "//components/subresource_filter/core/browser:browser",
       "//crypto:platform",
       "//device/usb/mojo",
       "//device/usb/public/interfaces",

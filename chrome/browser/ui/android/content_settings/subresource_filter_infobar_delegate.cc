@@ -12,6 +12,7 @@
 #include "components/infobars/core/infobar.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
+#include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -29,6 +30,11 @@ SubresourceFilterInfobarDelegate::~SubresourceFilterInfobarDelegate() {}
 base::string16 SubresourceFilterInfobarDelegate::GetExplanationText() const {
   return l10n_util::GetStringUTF16(
       IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_EXPLANATION);
+}
+
+bool SubresourceFilterInfobarDelegate::ShouldShowExperimentalInfobar() const {
+  return base::FeatureList::IsEnabled(
+      subresource_filter::kSafeBrowsingSubresourceFilterExperimentalUI);
 }
 
 infobars::InfoBarDelegate::InfoBarIdentifier

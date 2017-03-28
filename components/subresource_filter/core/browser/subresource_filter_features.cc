@@ -17,6 +17,9 @@ namespace subresource_filter {
 const base::Feature kSafeBrowsingSubresourceFilter{
     "SubresourceFilter", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kSafeBrowsingSubresourceFilterExperimentalUI{
+    "SubresourceFilterExperimentalUI", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Legacy name `activation_state` is used in variation parameters.
 const char kActivationLevelParameterName[] = "activation_state";
 const char kActivationLevelDryRun[] = "dryrun";

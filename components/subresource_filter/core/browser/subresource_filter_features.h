@@ -15,6 +15,9 @@ namespace subresource_filter {
 // The master toggle to enable/disable the Safe Browsing Subresource Filter.
 extern const base::Feature kSafeBrowsingSubresourceFilter;
 
+// Enables the new experimental UI for the Subresource Filter.
+extern const base::Feature kSafeBrowsingSubresourceFilterExperimentalUI;
+
 // Name/values of the variation parameter controlling maximum activation level.
 extern const char kActivationLevelParameterName[];
 extern const char kActivationLevelDryRun[];
