@@ -2100,11 +2100,15 @@ void Document::updateStyle() {
 
   if (Element* documentElement = this->documentElement()) {
     inheritHtmlAndBodyElementStyles(change);
-    if (documentElement->shouldCallRecalcStyle(change))
+    if (documentElement->shouldCallRecalcStyle(change)) {
+      TRACE_EVENT0("blink,blink_style", "Document::recalcStyle");
       documentElement->recalcStyle(change);
+    }
     if (documentElement->needsReattachLayoutTree() ||
-        documentElement->childNeedsReattachLayoutTree())
+        documentElement->childNeedsReattachLayoutTree()) {
+      TRACE_EVENT0("blink,blink_style", "Document::rebuildLayoutTree");
       documentElement->rebuildLayoutTree();
+    }
   }
 
   view()->recalcOverflowAfterStyleChange();
