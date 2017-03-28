@@ -129,9 +129,6 @@ class NetworkListView::SectionHeaderRowView : public views::View,
 
  private:
   void InitializeLayout() {
-    // TODO(mohsen): Consider using TriView class and adding a utility function
-    // to TrayPopupUtils to simplify creation of the following layout. See
-    // https://crbug.com/614453.
     TrayPopupUtils::ConfigureAsStickyHeader(this);
     SetLayoutManager(new views::FillLayout);
     container_ = TrayPopupUtils::CreateSubHeaderRowView();
