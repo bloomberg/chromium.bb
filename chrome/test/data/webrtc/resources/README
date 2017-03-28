@@ -3,7 +3,7 @@ solution in your .gclient to make downloading happen automatically:
 
 {
   "name"        : "webrtc.DEPS",
-  "url"         : "svn://svn.chromium.org/chrome/trunk/deps/third_party/webrtc/webrtc.DEPS",
+  "url"         : "https://chromium.googlesource.com/chromium/deps/webrtc/webrtc.DEPS",
 },
 
 The reference video files of the various resolutions must be frame-by-frame
@@ -13,3 +13,4 @@ around the .y4m files.
 
 If you're not a googler, you'll have to comment out the download hook that
 downloads from the chrome-webrtc-resources and provide those resources yourself.
+
