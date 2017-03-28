@@ -5,9 +5,13 @@
 #include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/android/content_settings/subresource_filter_infobar_delegate.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings.h"
 
 ChromeSubresourceFilterClient::ChromeSubresourceFilterClient(
     content::WebContents* web_contents)
@@ -35,4 +39,17 @@ void ChromeSubresourceFilterClient::ToggleNotificationVisibility(
     content_settings->SetSubresourceBlockageIndicated();
   }
 #endif
+}
+
+bool ChromeSubresourceFilterClient::IsWhitelistedByContentSettings(
+    const GURL& url) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+  DCHECK(profile);
+  HostContentSettingsMap* settings_map =
+      HostContentSettingsMapFactory::GetForProfile(profile);
+  ContentSetting setting = settings_map->GetContentSetting(
+      url, url, ContentSettingsType::CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER,
+      std::string());
+  return setting == CONTENT_SETTING_BLOCK;
 }

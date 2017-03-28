@@ -180,6 +180,10 @@ class MockSubresourceFilterClient : public SubresourceFilterClient {
 
   ~MockSubresourceFilterClient() override = default;
 
+  bool IsWhitelistedByContentSettings(const GURL& url) override {
+    return false;
+  }
+
   MOCK_METHOD1(ToggleNotificationVisibility, void(bool));
 
  private:

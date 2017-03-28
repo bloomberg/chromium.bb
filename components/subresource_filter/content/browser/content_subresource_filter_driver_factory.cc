@@ -123,7 +123,8 @@ void ContentSubresourceFilterDriverFactory::OnDocumentLoadStatistics(
 
 bool ContentSubresourceFilterDriverFactory::IsWhitelisted(
     const GURL& url) const {
-  return whitelisted_hosts_.find(url.host()) != whitelisted_hosts_.end();
+  return whitelisted_hosts_.find(url.host()) != whitelisted_hosts_.end() ||
+         client_->IsWhitelistedByContentSettings(url);
 }
 
 void ContentSubresourceFilterDriverFactory::

@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SUBRESOURCE_FILTER_CORE_BROWSER_SUBRESOURCE_FILTER_CLIENT_H_
 #define COMPONENTS_SUBRESOURCE_FILTER_CORE_BROWSER_SUBRESOURCE_FILTER_CLIENT_H_
 
+class GURL;
+
 namespace subresource_filter {
 
 class SubresourceFilterClient {
@@ -18,6 +20,10 @@ class SubresourceFilterClient {
   // a bubble is shown that explains the feature and alalows the user to turn it
   // off.
   virtual void ToggleNotificationVisibility(bool visibility) = 0;
+
+  // Returns true if the given URL is whitelisted from activation via content
+  // settings. This should only be called for main frame URLs.
+  virtual bool IsWhitelistedByContentSettings(const GURL& url) = 0;
 };
 
 }  // namespace subresource_filter
