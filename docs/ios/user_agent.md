@@ -6,16 +6,16 @@ user agent, with `CriOS/<ChromeRevision>` instead of
 
 Here’s an example of the **Chrome** UA on iPhone:
 
-<pre>
+```
 Mozilla/5.0 (iPhone; CPU iPhone OS 10_3 like Mac OS X)
-AppleWebKit/602.1.50 (KHTML, like Gecko) <b>CriOS/56.0.2924.75</b>
+AppleWebKit/602.1.50 (KHTML, like Gecko) CriOS/56.0.2924.75
 Mobile/14E5239e Safari/602.1
-</pre>
+```
 
 For comparison, the **Safari** UA:
 
-<pre>
+```
 Mozilla/5.0 (iPhone; CPU iPhone OS 10_3 like Mac OS X)
 AppleWebKit/603.1.23 (KHTML, like Gecko) Version/10.0
 Mobile/14E5239e Safari/602.1
-</pre>
+```
