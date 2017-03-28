@@ -391,9 +391,15 @@ void AccessibilityManager::UpdateLargeCursorFromPref() {
   const bool enabled =
       profile_->GetPrefs()->GetBoolean(prefs::kAccessibilityLargeCursorEnabled);
 
+  // Clear cursor size if large cursor is disabled.
+  if (enabled != large_cursor_enabled_ && !enabled) {
+    profile_->GetPrefs()->ClearPref(prefs::kAccessibilityLargeCursorDipSize);
+  }
+
   const int large_cursor_size_in_dip =
       profile_->GetPrefs()->GetInteger(prefs::kAccessibilityLargeCursorDipSize);
 
+  // Do nothing if nothing has changed.
   if (large_cursor_enabled_ == enabled &&
       large_cursor_size_in_dip_ == large_cursor_size_in_dip) {
     return;
