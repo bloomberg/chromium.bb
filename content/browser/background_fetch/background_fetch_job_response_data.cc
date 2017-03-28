@@ -22,7 +22,7 @@ void BackgroundFetchJobResponseData::AddResponse(
     const BackgroundFetchRequestInfo& request_info,
     std::unique_ptr<BlobHandle> response) {
   auto urls = base::MakeUnique<std::vector<GURL>>(std::vector<GURL>());
-  urls->push_back(request_info.url());
+  urls->push_back(request_info.GetURL());
 
   // TODO(harkness): Fill in headers and status code/text.
   auto headers = base::MakeUnique<ServiceWorkerHeaderMap>();

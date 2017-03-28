@@ -10,6 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "content/common/content_export.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "url/gurl.h"
@@ -20,15 +21,16 @@ namespace content {
 class CONTENT_EXPORT BackgroundFetchRequestInfo {
  public:
   BackgroundFetchRequestInfo();
-  BackgroundFetchRequestInfo(const GURL& url, const std::string& tag);
+  explicit BackgroundFetchRequestInfo(
+      const ServiceWorkerFetchRequest& fetch_request);
   // TODO(harkness): Remove copy constructor once the final (non-map-based)
   // state management is in place.
   BackgroundFetchRequestInfo(const BackgroundFetchRequestInfo& request);
   ~BackgroundFetchRequestInfo();
 
   const std::string& guid() const { return guid_; }
-  const GURL& url() const { return url_; }
-  const std::string& tag() const { return tag_; }
+
+  const GURL& GetURL() const;
 
   DownloadItem::DownloadState state() const { return state_; }
   void set_state(DownloadItem::DownloadState state) { state_ = state; }
@@ -56,9 +58,9 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo {
   bool IsComplete() const;
 
  private:
+  ServiceWorkerFetchRequest fetch_request_;
+
   std::string guid_;
-  GURL url_;
-  std::string tag_;
   std::string download_guid_;
 
   // The following members do not need to be persisted, they can be reset after

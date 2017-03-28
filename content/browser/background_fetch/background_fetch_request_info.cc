@@ -13,15 +13,14 @@ namespace content {
 
 BackgroundFetchRequestInfo::BackgroundFetchRequestInfo() = default;
 
-BackgroundFetchRequestInfo::BackgroundFetchRequestInfo(const GURL& url,
-                                                       const std::string& tag)
-    : guid_(base::GenerateGUID()), url_(url), tag_(tag) {}
+BackgroundFetchRequestInfo::BackgroundFetchRequestInfo(
+    const ServiceWorkerFetchRequest& fetch_request)
+    : fetch_request_(fetch_request), guid_(base::GenerateGUID()) {}
 
 BackgroundFetchRequestInfo::BackgroundFetchRequestInfo(
     const BackgroundFetchRequestInfo& request)
-    : guid_(request.guid_),
-      url_(request.url_),
-      tag_(request.tag_),
+    : fetch_request_(request.fetch_request_),
+      guid_(request.guid_),
       download_guid_(request.download_guid_),
       state_(request.state_),
       interrupt_reason_(request.interrupt_reason_),
@@ -32,6 +31,10 @@ BackgroundFetchRequestInfo::~BackgroundFetchRequestInfo() {}
 bool BackgroundFetchRequestInfo::IsComplete() const {
   return (state_ == DownloadItem::DownloadState::COMPLETE ||
           state_ == DownloadItem::DownloadState::CANCELLED);
+}
+
+const GURL& BackgroundFetchRequestInfo::GetURL() const {
+  return fetch_request_.url;
 }
 
 }  // namespace content

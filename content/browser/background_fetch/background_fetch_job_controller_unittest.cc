@@ -17,6 +17,7 @@
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
 #include "content/browser/background_fetch/background_fetch_job_info.h"
 #include "content/browser/background_fetch/background_fetch_request_info.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/fake_download_item.h"
 #include "content/public/test/mock_download_manager.h"
@@ -211,7 +212,10 @@ TEST_F(BackgroundFetchJobControllerTest, SingleRequestJob) {
   BackgroundFetchRegistrationId registration_id(
       kServiceWorkerRegistrationId, url::Origin(GURL(kOrigin)), kTag);
 
-  BackgroundFetchRequestInfo request_info(GURL(kTestUrl), kJobGuid);
+  ServiceWorkerHeaderMap headers;
+  ServiceWorkerFetchRequest request(GURL(kTestUrl), "GET", headers, Referrer(),
+                                    false /* is_reload */);
+  BackgroundFetchRequestInfo request_info(request);
   request_info.set_state(DownloadItem::DownloadState::IN_PROGRESS);
   data_manager()->set_next_request(&request_info);
   InitializeJobController(registration_id);
@@ -248,7 +252,10 @@ TEST_F(BackgroundFetchJobControllerTest, MultipleRequestJob) {
 
   std::vector<BackgroundFetchRequestInfo> request_infos;
   for (int i = 0; i < 10; i++) {
-    request_infos.emplace_back(GURL(kTestUrl), base::IntToString(i));
+    ServiceWorkerHeaderMap headers;
+    ServiceWorkerFetchRequest request(GURL(kTestUrl), "GET", headers,
+                                      Referrer(), false /* is_reload */);
+    request_infos.emplace_back(request);
   }
   data_manager()->set_next_request(&request_infos[0]);
   InitializeJobController(registration_id);
@@ -298,7 +305,10 @@ TEST_F(BackgroundFetchJobControllerTest, UpdateStorageState) {
   BackgroundFetchRegistrationId registration_id(
       kServiceWorkerRegistrationId, url::Origin(GURL(kOrigin)), kTag);
 
-  BackgroundFetchRequestInfo request_info(GURL(kTestUrl), kJobGuid);
+  ServiceWorkerHeaderMap headers;
+  ServiceWorkerFetchRequest request(GURL(kTestUrl), "GET", headers, Referrer(),
+                                    false /* is_reload */);
+  BackgroundFetchRequestInfo request_info(request);
   request_info.set_state(DownloadItem::DownloadState::IN_PROGRESS);
   data_manager()->set_next_request(&request_info);
   InitializeJobController(registration_id);

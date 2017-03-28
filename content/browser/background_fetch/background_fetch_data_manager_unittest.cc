@@ -76,12 +76,15 @@ class BackgroundFetchDataManagerTest : public BackgroundFetchTestBase {
     // Create |num_requests| BackgroundFetchRequestInfo's.
     std::vector<std::unique_ptr<BackgroundFetchRequestInfo>> request_infos;
     for (int i = 0; i < num_requests; i++) {
+      ServiceWorkerHeaderMap headers;
+      ServiceWorkerFetchRequest request(GURL(kResource), "GET", headers,
+                                        Referrer(), false /* is_reload */);
       request_infos.push_back(
-          base::MakeUnique<BackgroundFetchRequestInfo>(GURL(kResource), kTag));
+          base::MakeUnique<BackgroundFetchRequestInfo>(request));
     }
     std::unique_ptr<BackgroundFetchJobInfo> job_info =
         base::MakeUnique<BackgroundFetchJobInfo>(
-            "tag", url::Origin(GURL(kJobOrigin)), kServiceWorkerRegistrationId);
+            kTag, url::Origin(GURL(kJobOrigin)), kServiceWorkerRegistrationId);
     job_info->set_num_requests(num_requests);
 
     job_guid_ = job_info->guid();

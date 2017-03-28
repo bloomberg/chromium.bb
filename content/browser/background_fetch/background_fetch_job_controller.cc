@@ -130,7 +130,7 @@ void BackgroundFetchJobController::ProcessRequest(
   // Set up the download parameters and the OnStartedCallback.
   std::unique_ptr<DownloadUrlParameters> params(
       base::MakeUnique<DownloadUrlParameters>(
-          fetch_request.url(), storage_partition_->GetURLRequestContext()));
+          fetch_request.GetURL(), storage_partition_->GetURLRequestContext()));
   params->set_callback(
       base::Bind(&BackgroundFetchJobController::DownloadStarted,
                  weak_ptr_factory_.GetWeakPtr(), fetch_request.guid()));
