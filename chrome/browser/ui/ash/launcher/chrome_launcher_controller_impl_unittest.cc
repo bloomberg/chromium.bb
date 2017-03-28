@@ -146,7 +146,7 @@ class TestShelfModelObserver : public ash::ShelfModelObserver {
     last_index_ = index;
   }
 
-  void ShelfItemRemoved(int index, ash::ShelfID id) override {
+  void ShelfItemRemoved(int index, const ash::ShelfItem& old_item) override {
     ++removed_;
     last_index_ = index;
   }

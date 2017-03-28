@@ -1501,8 +1501,8 @@ void ShelfView::ShelfItemAdded(int model_index) {
   }
 }
 
-void ShelfView::ShelfItemRemoved(int model_index, ShelfID id) {
-  if (id == context_menu_id_)
+void ShelfView::ShelfItemRemoved(int model_index, const ShelfItem& old_item) {
+  if (old_item.id == context_menu_id_)
     launcher_menu_runner_->Cancel();
   {
     base::AutoReset<bool> cancelling_drag(&cancelling_drag_model_changed_,
@@ -1594,9 +1594,7 @@ void ShelfView::ShelfItemMoved(int start_index, int target_index) {
     AnimateToIdealBounds();
 }
 
-void ShelfView::OnSetShelfItemDelegate(
-    ShelfID id,
-    mojom::ShelfItemDelegate* item_delegate) {}
+void ShelfView::OnSetShelfItemDelegate(ShelfID, mojom::ShelfItemDelegate*) {}
 
 void ShelfView::AfterItemSelected(
     const ShelfItem& item,

@@ -21,9 +21,9 @@ class ASH_EXPORT ShelfModelObserver {
   // Invoked after an item has been added to the model.
   virtual void ShelfItemAdded(int index) = 0;
 
-  // Invoked after an item has been removed. |index| is the index the item was
-  // at.
-  virtual void ShelfItemRemoved(int index, ShelfID id) = 0;
+  // Invoked after an item has been removed from the model. |index| is the index
+  // the item was at before removal, |old_item| is the item before removal.
+  virtual void ShelfItemRemoved(int index, const ShelfItem& old_item) = 0;
 
   // Invoked after an item has been moved. See ShelfModel::Move() for details
   // of the arguments.

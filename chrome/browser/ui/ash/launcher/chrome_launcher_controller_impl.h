@@ -244,7 +244,7 @@ class ChromeLauncherControllerImpl
 
   // ash::ShelfModelObserver:
   void ShelfItemAdded(int index) override;
-  void ShelfItemRemoved(int index, ash::ShelfID id) override;
+  void ShelfItemRemoved(int index, const ash::ShelfItem& old_item) override;
   void ShelfItemMoved(int start_index, int target_index) override;
   void ShelfItemChanged(int index, const ash::ShelfItem& old_item) override;
   void OnSetShelfItemDelegate(

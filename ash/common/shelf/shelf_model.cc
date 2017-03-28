@@ -67,14 +67,14 @@ int ShelfModel::AddAt(int index, const ShelfItem& item) {
 
 void ShelfModel::RemoveItemAt(int index) {
   DCHECK(index >= 0 && index < item_count());
-  ShelfID id = items_[index].id;
+  ShelfItem old_item(items_[index]);
   items_.erase(items_.begin() + index);
-  RemoveShelfItemDelegate(id);
+  RemoveShelfItemDelegate(old_item.id);
   // TODO(jamescook): Fold this into ShelfItemRemoved in existing observers.
   for (auto& observer : observers_)
-    observer.OnSetShelfItemDelegate(id, nullptr);
+    observer.OnSetShelfItemDelegate(old_item.id, nullptr);
   for (auto& observer : observers_)
-    observer.ShelfItemRemoved(index, id);
+    observer.ShelfItemRemoved(index, old_item);
 }
 
 void ShelfModel::Move(int index, int target_index) {

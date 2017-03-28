@@ -287,11 +287,10 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // Overridden from ShelfModelObserver:
   void ShelfItemAdded(int model_index) override;
-  void ShelfItemRemoved(int model_index, ShelfID id) override;
+  void ShelfItemRemoved(int model_index, const ShelfItem& old_item) override;
   void ShelfItemChanged(int model_index, const ShelfItem& old_item) override;
   void ShelfItemMoved(int start_index, int target_index) override;
-  void OnSetShelfItemDelegate(ShelfID id,
-                              mojom::ShelfItemDelegate* item_delegate) override;
+  void OnSetShelfItemDelegate(ShelfID, mojom::ShelfItemDelegate*) override;
 
   // Handles the result of an item selection, records the |action| taken and
   // optionally shows an application menu with the given |menu_items|.

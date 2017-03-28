@@ -18,11 +18,7 @@ namespace {
 // ShelfModelObserver implementation that tracks what message are invoked.
 class TestShelfModelObserver : public ShelfModelObserver {
  public:
-  TestShelfModelObserver()
-      : added_count_(0),
-        removed_count_(0),
-        changed_count_(0),
-        moved_count_(0) {}
+  TestShelfModelObserver() {}
 
   // Returns a string description of the changes that have occurred since this
   // was last invoked. Resets state to initial state.
@@ -37,17 +33,11 @@ class TestShelfModelObserver : public ShelfModelObserver {
   }
 
   // ShelfModelObserver overrides:
-  void ShelfItemAdded(int index) override { added_count_++; }
-  void ShelfItemRemoved(int index, ShelfID id) override { removed_count_++; }
-  void ShelfItemChanged(int index, const ShelfItem& old_item) override {
-    changed_count_++;
-  }
-  void ShelfItemMoved(int start_index, int target_index) override {
-    moved_count_++;
-  }
-  void OnSetShelfItemDelegate(
-      ShelfID id,
-      mojom::ShelfItemDelegate* item_delegate) override {}
+  void ShelfItemAdded(int) override { added_count_++; }
+  void ShelfItemRemoved(int, const ShelfItem&) override { removed_count_++; }
+  void ShelfItemChanged(int, const ShelfItem&) override { changed_count_++; }
+  void ShelfItemMoved(int, int) override { moved_count_++; }
+  void OnSetShelfItemDelegate(ShelfID, mojom::ShelfItemDelegate*) override {}
 
  private:
   void AddToResult(const std::string& format, int count, std::string* result) {
@@ -58,10 +48,10 @@ class TestShelfModelObserver : public ShelfModelObserver {
     *result += base::StringPrintf(format.c_str(), count);
   }
 
-  int added_count_;
-  int removed_count_;
-  int changed_count_;
-  int moved_count_;
+  int added_count_ = 0;
+  int removed_count_ = 0;
+  int changed_count_ = 0;
+  int moved_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestShelfModelObserver);
 };

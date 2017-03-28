@@ -1363,15 +1363,17 @@ void ChromeLauncherControllerImpl::ReleaseProfile() {
 
 void ChromeLauncherControllerImpl::ShelfItemAdded(int index) {}
 
-void ChromeLauncherControllerImpl::ShelfItemRemoved(int index,
-                                                    ash::ShelfID id) {
+void ChromeLauncherControllerImpl::ShelfItemRemoved(
+    int index,
+    const ash::ShelfItem& old_item) {
   // TODO(skuhne): This fixes crbug.com/429870, but it does not answer why we
   // get into this state in the first place.
-  IDToItemControllerMap::iterator iter = id_to_item_controller_map_.find(id);
+  IDToItemControllerMap::iterator iter =
+      id_to_item_controller_map_.find(old_item.id);
   if (iter == id_to_item_controller_map_.end())
     return;
 
-  LOG(ERROR) << "Unexpected removal of shelf item, id: " << id;
+  LOG(ERROR) << "Unexpected removal of shelf item, id: " << old_item.id;
   id_to_item_controller_map_.erase(iter);
 }
 
