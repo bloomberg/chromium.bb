@@ -339,6 +339,30 @@ NavigationItemList NavigationManagerImpl::GetForwardItems() const {
 
 void NavigationManagerImpl::Reload(ReloadType reload_type,
                                    bool check_for_reposts) {
+  if (!GetTransientItem() && !GetPendingItem() && !GetLastCommittedItem())
+    return;
+
+  // Reload with ORIGINAL_REQUEST_URL type should reload with the original
+  // request url of the transient item, or pending item if transient doesn't
+  // exist, or last committed item if both of them don't exist. The reason is
+  // that a server side redirect may change the item's url.
+  // For example, the user visits www.chromium.org and is then redirected
+  // to m.chromium.org, when the user wants to refresh the page with a different
+  // configuration (e.g. user agent), the user would be expecting to visit
+  // www.chromium.org instead of m.chromium.org.
+  if (reload_type == web::ReloadType::ORIGINAL_REQUEST_URL) {
+    NavigationItem* reload_item = nullptr;
+    if (GetTransientItem())
+      reload_item = GetTransientItem();
+    else if (GetPendingItem())
+      reload_item = GetPendingItem();
+    else
+      reload_item = GetLastCommittedItem();
+    DCHECK(reload_item);
+
+    reload_item->SetURL(reload_item->GetOriginalRequestURL());
+  }
+
   delegate_->Reload();
 }
 
@@ -434,7 +458,7 @@ void NavigationManagerImpl::OverrideDesktopUserAgentForNextPendingItem() {
 }
 
 bool NavigationManagerImpl::IsRedirectItemAtIndex(int index) const {
-  DCHECK_GT(index, 0);
+  DCHECK_GE(index, 0);
   DCHECK_LT(index, GetItemCount());
   ui::PageTransition transition = GetItemAtIndex(index)->GetTransitionType();
   return transition & ui::PAGE_TRANSITION_IS_REDIRECT_MASK;

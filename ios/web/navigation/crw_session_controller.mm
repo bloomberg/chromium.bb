@@ -373,7 +373,7 @@ initiationType:(web::NavigationInitiationType)initiationType;
   if (_previousItemIndex >= forwardItemStartIndex)
     _previousItemIndex = -1;
 
-  // Remove the NavigationItems and notify the NavigationManater
+  // Remove the NavigationItems and notify the NavigationManager.
   _items.erase(_items.begin() + forwardItemStartIndex, _items.end());
   if (_navigationManager) {
     _navigationManager->OnNavigationItemsPruned(itemCount -

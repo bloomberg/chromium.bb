@@ -12,9 +12,10 @@ enum class ReloadType : short {
   // Reloads the visible item.
   NORMAL = 0,
 
-  // Reloads the visible item using the original URL used to create it. This
-  // is used for cases where the user wants to refresh a page using a different
-  // user agent after following a redirect.
+  // Reloads the transient item, or pending item if transient doesn't exist, or
+  // last committed item if both of them don't exist, using the original URL
+  // used to create it. This is used for cases where the user wants to refresh a
+  // page using a different configuration (e.g. user agent).
   ORIGINAL_REQUEST_URL,
 };
 

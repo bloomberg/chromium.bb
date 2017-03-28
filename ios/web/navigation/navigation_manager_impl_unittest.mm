@@ -18,13 +18,20 @@ namespace web {
 namespace {
 // Stub class for NavigationManagerDelegate.
 class TestNavigationManagerDelegate : public NavigationManagerDelegate {
+ public:
+  bool reload_called() { return reload_called_; }
+
+ private:
+  // NavigationManagerDelegate overrides.
   void GoToIndex(int index) override {}
   void LoadURLWithParams(const NavigationManager::WebLoadParams&) override {}
-  void Reload() override {}
+  void Reload() override { reload_called_ = true; }
   void OnNavigationItemsPruned(size_t pruned_item_count) override {}
   void OnNavigationItemChanged() override{};
   void OnNavigationItemCommitted(const LoadCommittedDetails&) override {}
   WebState* GetWebState() override { return nullptr; }
+
+  bool reload_called_ = false;
 };
 }  // namespace
 
@@ -40,6 +47,9 @@ class NavigationManagerTest : public PlatformTest {
   }
   CRWSessionController* session_controller() { return controller_.get(); }
   NavigationManagerImpl* navigation_manager() { return manager_.get(); }
+  TestNavigationManagerDelegate navigation_manager_delegate() {
+    return delegate_;
+  }
 
  private:
   TestBrowserState browser_state_;
@@ -598,20 +608,231 @@ TEST_F(NavigationManagerTest, UserAgentTypePropagationPastNativeItems) {
   EXPECT_EQ(item2->GetUserAgentType(), item3->GetUserAgentType());
 }
 
-// Tests that calling |Reload| on NavigationManager leaves the Url of the
-// visible item unchanged.
-TEST_F(NavigationManagerTest, ReloadWithNormalReloadType) {
+// Tests that calling |Reload| with web::ReloadType::NORMAL is no-op when there
+// are no transient, pending and committed items.
+TEST_F(NavigationManagerTest, ReloadEmptyWithNormalType) {
+  ASSERT_FALSE(navigation_manager()->GetTransientItem());
+  ASSERT_FALSE(navigation_manager()->GetPendingItem());
+  ASSERT_FALSE(navigation_manager()->GetLastCommittedItem());
+
+  navigation_manager()->Reload(web::ReloadType::NORMAL,
+                               false /* check_for_repost */);
+  EXPECT_FALSE(navigation_manager_delegate().reload_called());
+
+  ASSERT_FALSE(navigation_manager()->GetTransientItem());
+  ASSERT_FALSE(navigation_manager()->GetPendingItem());
+  ASSERT_FALSE(navigation_manager()->GetLastCommittedItem());
+}
+
+// Tests that calling |Reload| with web::ReloadType::NORMAL leaves the url of
+// the renderer initiated pending item unchanged when there is one.
+TEST_F(NavigationManagerTest, ReloadRendererPendingItemWithNormalType) {
+  GURL url_before_reload = GURL("http://www.url.com");
+  navigation_manager()->AddPendingItem(
+      url_before_reload, Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::RENDERER_INITIATED);
+
+  navigation_manager()->Reload(web::ReloadType::NORMAL,
+                               false /* check_for_repost */);
+  EXPECT_TRUE(navigation_manager_delegate().reload_called());
+
+  ASSERT_TRUE(navigation_manager()->GetPendingItem());
+  EXPECT_EQ(url_before_reload,
+            navigation_manager()->GetPendingItem()->GetURL());
+}
+
+// Tests that calling |Reload| with web::ReloadType::NORMAL leaves the url of
+// the user initiated pending item unchanged when there is one.
+TEST_F(NavigationManagerTest, ReloadUserPendingItemWithNormalType) {
+  GURL url_before_reload = GURL("http://www.url.com");
+  navigation_manager()->AddPendingItem(
+      url_before_reload, Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED);
+
+  navigation_manager()->Reload(web::ReloadType::NORMAL,
+                               false /* check_for_repost */);
+  EXPECT_TRUE(navigation_manager_delegate().reload_called());
+
+  ASSERT_TRUE(navigation_manager()->GetPendingItem());
+  EXPECT_EQ(url_before_reload,
+            navigation_manager()->GetPendingItem()->GetURL());
+}
+
+// Tests that calling |Reload| with web::ReloadType::NORMAL leaves the url of
+// the last committed item unchanged when there is no pending item.
+TEST_F(NavigationManagerTest, ReloadLastCommittedItemWithNormalType) {
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED);
+  [session_controller() commitPendingItem];
+
+  GURL url_before_reload = GURL("http://www.url.com/1");
+  navigation_manager()->AddPendingItem(
+      url_before_reload, Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED);
+  [session_controller() commitPendingItem];
+
+  navigation_manager()->Reload(web::ReloadType::NORMAL,
+                               false /* check_for_repost */);
+  EXPECT_TRUE(navigation_manager_delegate().reload_called());
+
+  ASSERT_TRUE(navigation_manager()->GetLastCommittedItem());
+  EXPECT_EQ(url_before_reload,
+            navigation_manager()->GetLastCommittedItem()->GetURL());
+}
+
+// Tests that calling |Reload| with web::ReloadType::NORMAL leaves the url of
+// the last committed item unchanged when there is no pending item, but there
+// forward items after last committed item.
+TEST_F(NavigationManagerTest,
+       ReloadLastCommittedItemWithNormalTypeWithForwardItems) {
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED);
+  [session_controller() commitPendingItem];
+
+  GURL url_before_reload = GURL("http://www.url.com/1");
+  navigation_manager()->AddPendingItem(
+      url_before_reload, Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED);
+  [session_controller() commitPendingItem];
+
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/2"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED);
+  [session_controller() commitPendingItem];
+
+  [session_controller() goToItemAtIndex:1];
+  EXPECT_EQ(1, navigation_manager()->GetLastCommittedItemIndex());
+
+  navigation_manager()->Reload(web::ReloadType::NORMAL,
+                               false /* check_for_repost */);
+  EXPECT_TRUE(navigation_manager_delegate().reload_called());
+
+  ASSERT_TRUE(navigation_manager()->GetLastCommittedItem());
+  EXPECT_EQ(url_before_reload,
+            navigation_manager()->GetLastCommittedItem()->GetURL());
+}
+
+// Tests that calling |Reload| with web::ReloadType::ORIGINAL_REQUEST_URL is
+// no-op when there are no transient, pending and committed items.
+TEST_F(NavigationManagerTest, ReloadEmptyWithOriginalType) {
+  ASSERT_FALSE(navigation_manager()->GetTransientItem());
+  ASSERT_FALSE(navigation_manager()->GetPendingItem());
+  ASSERT_FALSE(navigation_manager()->GetLastCommittedItem());
+
+  navigation_manager()->Reload(web::ReloadType::ORIGINAL_REQUEST_URL,
+                               false /* check_for_repost */);
+  EXPECT_FALSE(navigation_manager_delegate().reload_called());
+
+  ASSERT_FALSE(navigation_manager()->GetTransientItem());
+  ASSERT_FALSE(navigation_manager()->GetPendingItem());
+  ASSERT_FALSE(navigation_manager()->GetLastCommittedItem());
+}
+
+// Tests that calling |Reload| with web::ReloadType::ORIGINAL_REQUEST_URL
+// changes the renderer initiated pending item's url to its original request url
+// when there is one.
+TEST_F(NavigationManagerTest, ReloadRendererPendingItemWithOriginalType) {
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::RENDERER_INITIATED);
+  ASSERT_TRUE(navigation_manager()->GetPendingItem());
+  GURL expected_original_url = GURL("http://www.url.com/original");
+  navigation_manager()->GetPendingItem()->SetOriginalRequestURL(
+      expected_original_url);
+
+  navigation_manager()->Reload(web::ReloadType::ORIGINAL_REQUEST_URL,
+                               false /* check_for_repost */);
+  EXPECT_TRUE(navigation_manager_delegate().reload_called());
+
+  ASSERT_TRUE(navigation_manager()->GetPendingItem());
+  EXPECT_EQ(expected_original_url,
+            navigation_manager()->GetPendingItem()->GetURL());
+}
+
+// Tests that calling |Reload| with web::ReloadType::ORIGINAL_REQUEST_URL
+// changes the user initiated pending item's url to its original request url
+// when there is one.
+TEST_F(NavigationManagerTest, ReloadUserPendingItemWithOriginalType) {
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED);
-  ASSERT_TRUE(navigation_manager()->GetVisibleItem());
+  ASSERT_TRUE(navigation_manager()->GetPendingItem());
+  GURL expected_original_url = GURL("http://www.url.com/original");
+  navigation_manager()->GetPendingItem()->SetOriginalRequestURL(
+      expected_original_url);
 
-  GURL url_before_reload = navigation_manager()->GetVisibleItem()->GetURL();
-  navigation_manager()->Reload(web::ReloadType::NORMAL,
+  navigation_manager()->Reload(web::ReloadType::ORIGINAL_REQUEST_URL,
                                false /* check_for_repost */);
+  EXPECT_TRUE(navigation_manager_delegate().reload_called());
 
-  EXPECT_EQ(url_before_reload,
-            navigation_manager()->GetVisibleItem()->GetURL());
+  ASSERT_TRUE(navigation_manager()->GetPendingItem());
+  EXPECT_EQ(expected_original_url,
+            navigation_manager()->GetPendingItem()->GetURL());
+}
+
+// Tests that calling |Reload| with web::ReloadType::ORIGINAL_REQUEST_URL
+// changes the last committed item's url to its original request url when there
+// is no pending item.
+TEST_F(NavigationManagerTest, ReloadLastCommittedItemWithOriginalType) {
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED);
+  [session_controller() commitPendingItem];
+
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/1"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED);
+  GURL expected_original_url = GURL("http://www.url.com/1/original");
+  ASSERT_TRUE(navigation_manager()->GetPendingItem());
+  navigation_manager()->GetPendingItem()->SetOriginalRequestURL(
+      expected_original_url);
+  [session_controller() commitPendingItem];
+
+  navigation_manager()->Reload(web::ReloadType::ORIGINAL_REQUEST_URL,
+                               false /* check_for_repost */);
+  EXPECT_TRUE(navigation_manager_delegate().reload_called());
+
+  ASSERT_TRUE(navigation_manager()->GetLastCommittedItem());
+  EXPECT_EQ(expected_original_url,
+            navigation_manager()->GetLastCommittedItem()->GetURL());
+}
+
+// Tests that calling |Reload| with web::ReloadType::ORIGINAL_REQUEST_URL
+// changes the last committed item's url to its original request url when there
+// is no pending item, but there are forward items after last committed item.
+TEST_F(NavigationManagerTest,
+       ReloadLastCommittedItemWithOriginalTypeWithForwardItems) {
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED);
+  [session_controller() commitPendingItem];
+
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/1"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED);
+  GURL expected_original_url = GURL("http://www.url.com/1/original");
+  ASSERT_TRUE(navigation_manager()->GetPendingItem());
+  navigation_manager()->GetPendingItem()->SetOriginalRequestURL(
+      expected_original_url);
+  [session_controller() commitPendingItem];
+
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/2"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED);
+  [session_controller() commitPendingItem];
+
+  [session_controller() goToItemAtIndex:1];
+  EXPECT_EQ(1, navigation_manager()->GetLastCommittedItemIndex());
+
+  navigation_manager()->Reload(web::ReloadType::ORIGINAL_REQUEST_URL,
+                               false /* check_for_repost */);
+  EXPECT_TRUE(navigation_manager_delegate().reload_called());
+
+  ASSERT_TRUE(navigation_manager()->GetLastCommittedItem());
+  EXPECT_EQ(expected_original_url,
+            navigation_manager()->GetLastCommittedItem()->GetURL());
 }
 
 }  // namespace web
