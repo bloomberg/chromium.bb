@@ -483,4 +483,8 @@ void WebLayerImpl::setHasWillChangeTransformHint(bool has_will_change) {
   layer_->SetHasWillChangeTransformHint(has_will_change);
 }
 
+void WebLayerImpl::showScrollbars() {
+  layer_->ShowScrollbars();
+}
+
 }  // namespace cc_blink

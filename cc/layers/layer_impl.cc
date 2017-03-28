@@ -80,7 +80,8 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       debug_info_(nullptr),
       has_will_change_transform_hint_(false),
       needs_push_properties_(false),
-      scrollbars_hidden_(false) {
+      scrollbars_hidden_(false),
+      needs_show_scrollbars_(false) {
   DCHECK_GT(layer_id_, 0);
 
   DCHECK(layer_tree_impl_);
@@ -338,6 +339,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->scroll_tree_index_ = scroll_tree_index_;
   layer->has_will_change_transform_hint_ = has_will_change_transform_hint_;
   layer->scrollbars_hidden_ = scrollbars_hidden_;
+  layer->needs_show_scrollbars_ = needs_show_scrollbars_;
 
   if (layer_property_changed_) {
     layer->layer_tree_impl()->set_needs_update_draw_properties();
@@ -360,6 +362,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
     layer->SetDebugInfo(std::move(owned_debug_info_));
 
   // Reset any state that should be cleared for the next update.
+  needs_show_scrollbars_ = false;
   layer_property_changed_ = false;
   needs_push_properties_ = false;
   update_rect_ = gfx::Rect();

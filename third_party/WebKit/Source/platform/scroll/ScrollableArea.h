@@ -304,6 +304,8 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin,
   bool hasLayerForScrollCorner() const;
 
   void layerForScrollingDidChange(CompositorAnimationTimeline*);
+  bool needsShowScrollbarLayers() const { return m_needsShowScrollbarLayers; }
+  void didShowScrollbarLayers() { m_needsShowScrollbarLayers = false; }
 
   void cancelScrollAnimation();
   virtual void cancelProgrammaticScrollAnimation();
@@ -445,6 +447,10 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin,
   unsigned m_scrollbarsHidden : 1;
   unsigned m_scrollbarCaptured : 1;
   unsigned m_mouseOverScrollbar : 1;
+
+  // Indicates that the next compositing update needs to call
+  // WebLayer::showScrollbars on our scroll layer. Ignored if not composited.
+  unsigned m_needsShowScrollbarLayers : 1;
 
   // There are 6 possible combinations of writing mode and direction. Scroll
   // origin will be non-zero in the x or y axis if there is any reversed

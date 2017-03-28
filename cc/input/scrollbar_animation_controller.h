@@ -85,6 +85,10 @@ class CC_EXPORT ScrollbarAnimationController {
   void DidMouseLeave();
   void DidMouseMoveNear(ScrollbarOrientation, float);
 
+  // Called when Blink wants to show the scrollbars (via
+  // ScrollableArea::showOverlayScrollbars).
+  void DidRequestShowFromMainThread();
+
   bool MouseIsOverScrollbar(ScrollbarOrientation orientation) const;
   bool MouseIsNearScrollbar(ScrollbarOrientation orientation) const;
   bool MouseIsNearAnyScrollbar() const;

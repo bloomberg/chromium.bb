@@ -1926,6 +1926,12 @@ bool CompositedLayerMapping::updateOverflowControlsLayers(
       toggleScrollbarLayerIfNeeded(m_layerForVerticalScrollbar, false,
                                    CompositingReasonLayerForVerticalScrollbar);
     scrollableArea->resetRebuildScrollbarLayerFlags();
+
+    if (m_scrollingContentsLayer &&
+        scrollableArea->needsShowScrollbarLayers()) {
+      m_scrollingContentsLayer->platformLayer()->showScrollbars();
+      scrollableArea->didShowScrollbarLayers();
+    }
   }
 
   // If the subtree is invisible, we don't actually need scrollbar layers.

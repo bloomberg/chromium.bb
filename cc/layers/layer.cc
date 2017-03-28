@@ -92,6 +92,7 @@ Layer::Layer()
       subtree_property_changed_(false),
       may_contain_video_(false),
       is_scroll_clip_layer_(false),
+      needs_show_scrollbars_(false),
       safe_opaque_background_color_(0),
       draw_blend_mode_(SkBlendMode::kSrcOver),
       num_unclipped_descendants_(0) {}
@@ -1185,6 +1186,9 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
         ->property_trees()
         ->scroll_tree.SetScrollOffsetClobberActiveValue(layer->id());
 
+  if (needs_show_scrollbars_)
+    layer->set_needs_show_scrollbars(true);
+
   // If the main thread commits multiple times before the impl thread actually
   // draws, then damage tracking will become incorrect if we simply clobber the
   // update_rect here. The LayerImpl's update_rect needs to accumulate (i.e.
@@ -1196,6 +1200,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetNeedsPushProperties();
 
   // Reset any state that should be cleared for the next update.
+  needs_show_scrollbars_ = false;
   subtree_property_changed_ = false;
   inputs_.update_rect = gfx::Rect();
 

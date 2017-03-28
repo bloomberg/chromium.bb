@@ -649,6 +649,8 @@ void PaintLayerCompositor::frameViewDidScroll() {
   else
     m_scrollLayer->setPosition(IntPoint(-scrollOffset));
 
+  showScrollbarLayersIfNeeded();
+
   DEFINE_STATIC_LOCAL(EnumerationHistogram, acceleratedBackgroundHistogram,
                       ("Renderer.AcceleratedFixedRootBackground",
                        AcceleratedFixedRootBackgroundHistogramMax));
@@ -1078,6 +1080,15 @@ void PaintLayerCompositor::updateOverflowControlsLayers() {
   }
 
   m_layoutView.frameView()->positionScrollbarLayers();
+  showScrollbarLayersIfNeeded();
+}
+
+void PaintLayerCompositor::showScrollbarLayersIfNeeded() {
+  FrameView* frameView = m_layoutView.frameView();
+  if (m_scrollLayer && frameView->needsShowScrollbarLayers()) {
+    m_scrollLayer->platformLayer()->showScrollbars();
+    frameView->didShowScrollbarLayers();
+  }
 }
 
 void PaintLayerCompositor::ensureRootLayer() {

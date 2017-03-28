@@ -225,6 +225,7 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
   bool requiresHorizontalScrollbarLayer() const;
   bool requiresVerticalScrollbarLayer() const;
   bool requiresScrollCornerLayer() const;
+  void showScrollbarLayersIfNeeded();
 
   void applyOverlayFullscreenVideoAdjustmentIfNeeded();
 

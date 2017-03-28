@@ -67,7 +67,8 @@ ScrollableArea::ScrollableArea()
       m_scrollCornerNeedsPaintInvalidation(false),
       m_scrollbarsHidden(false),
       m_scrollbarCaptured(false),
-      m_mouseOverScrollbar(false) {}
+      m_mouseOverScrollbar(false),
+      m_needsShowScrollbarLayers(false) {}
 
 ScrollableArea::~ScrollableArea() {}
 
@@ -565,6 +566,7 @@ void ScrollableArea::showOverlayScrollbars() {
     return;
 
   setScrollbarsHidden(false);
+  m_needsShowScrollbarLayers = true;
 
   const double timeUntilDisable =
       ScrollbarTheme::theme().overlayScrollbarFadeOutDelaySeconds() +

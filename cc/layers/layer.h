@@ -437,6 +437,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   LayerTreeHost* layer_tree_host() const { return layer_tree_host_; }
 
+  // Called on the scroll layer to trigger showing the overlay scrollbars.
+  void ShowScrollbars() { needs_show_scrollbars_ = true; }
+
  protected:
   friend class LayerImpl;
   friend class TreeSynchronizer;
@@ -632,6 +635,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   bool subtree_property_changed_ : 1;
   bool may_contain_video_ : 1;
   bool is_scroll_clip_layer_ : 1;
+  bool needs_show_scrollbars_ : 1;
   SkColor safe_opaque_background_color_;
   // draw_blend_mode may be different than blend_mode_,
   // when a RenderSurface re-parents the layer's blend_mode.

@@ -222,6 +222,9 @@ class WebLayer {
   virtual uint32_t compositorMutableProperties() const = 0;
 
   virtual void setHasWillChangeTransformHint(bool) = 0;
+
+  // Called on the scroll layer to trigger showing the overlay scrollbars.
+  virtual void showScrollbars() = 0;
 };
 
 }  // namespace blink

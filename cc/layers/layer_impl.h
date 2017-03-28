@@ -439,6 +439,9 @@ class CC_EXPORT LayerImpl {
 
   ElementListType GetElementTypeForAnimation() const;
 
+  void set_needs_show_scrollbars(bool yes) { needs_show_scrollbars_ = yes; }
+  bool needs_show_scrollbars() { return needs_show_scrollbars_; }
+
  protected:
   LayerImpl(LayerTreeImpl* layer_impl,
             int id,
@@ -555,6 +558,11 @@ class CC_EXPORT LayerImpl {
   bool has_will_change_transform_hint_ : 1;
   bool needs_push_properties_ : 1;
   bool scrollbars_hidden_ : 1;
+
+  // The needs_show_scrollbars_ bit tracks a pending request from Blink to show
+  // the overlay scrollbars. It's set on the scroll layer (not the scrollbar
+  // layers) and consumed by LayerTreeImpl::PushPropertiesTo during activation.
+  bool needs_show_scrollbars_ : 1;
 
   DISALLOW_COPY_AND_ASSIGN(LayerImpl);
 };

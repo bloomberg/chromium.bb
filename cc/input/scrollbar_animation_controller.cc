@@ -225,6 +225,10 @@ void ScrollbarAnimationController::WillUpdateScroll() {
     DidScrollUpdate();
 }
 
+void ScrollbarAnimationController::DidRequestShowFromMainThread() {
+  DidScrollUpdate();
+}
+
 void ScrollbarAnimationController::DidResize() {
   StopAnimation();
   Show();

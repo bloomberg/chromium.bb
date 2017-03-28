@@ -541,6 +541,23 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
     target_tree->set_hud_layer(NULL);
 
   target_tree->has_ever_been_drawn_ = false;
+
+  // Note: this needs to happen after SetPropertyTrees.
+  target_tree->ShowScrollbars();
+}
+
+void LayerTreeImpl::ShowScrollbars() {
+  LayerTreeHostCommon::CallFunctionForEveryLayer(this, [this](
+                                                           LayerImpl* layer) {
+    if (!layer->needs_show_scrollbars())
+      return;
+    ScrollbarAnimationController* controller =
+        layer_tree_host_impl_->ScrollbarAnimationControllerForId(layer->id());
+    if (controller) {
+      controller->DidRequestShowFromMainThread();
+      layer->set_needs_show_scrollbars(false);
+    }
+  });
 }
 
 void LayerTreeImpl::MoveChangeTrackingToLayers() {
