@@ -295,11 +295,11 @@ struct zcr_remote_shell_v1_interface {
 /**
  * @ingroup iface_zcr_remote_shell_v1
  */
-#define ZCR_REMOTE_SHELL_V1_WORKSPACE_SINCE_VERSION 1
+#define ZCR_REMOTE_SHELL_V1_WORKSPACE_SINCE_VERSION 3
 /**
  * @ingroup iface_zcr_remote_shell_v1
  */
-#define ZCR_REMOTE_SHELL_V1_CONFIGURE_SINCE_VERSION 1
+#define ZCR_REMOTE_SHELL_V1_CONFIGURE_SINCE_VERSION 3
 
 /**
  * @ingroup iface_zcr_remote_shell_v1

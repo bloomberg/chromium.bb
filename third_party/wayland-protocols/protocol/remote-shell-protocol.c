@@ -63,8 +63,8 @@ static const struct wl_message zcr_remote_shell_v1_requests[] = {
 static const struct wl_message zcr_remote_shell_v1_events[] = {
 	{ "activated", "?o?o", types + 18 },
 	{ "configuration_changed", "iiifiiiiu", types + 0 },
-	{ "workspace", "uuiiiiiiiiif", types + 0 },
-	{ "configure", "u", types + 0 },
+	{ "workspace", "3uuiiiiiiiiif", types + 0 },
+	{ "configure", "3u", types + 0 },
 };
 
 WL_EXPORT const struct wl_interface zcr_remote_shell_v1_interface = {

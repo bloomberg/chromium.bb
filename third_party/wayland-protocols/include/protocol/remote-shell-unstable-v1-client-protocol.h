@@ -265,6 +265,7 @@ struct zcr_remote_shell_v1_listener {
 	 * Defines an area of the remote shell used for layout. Each
 	 * series of "workspace" events must be terminated by a "configure"
 	 * event.
+	 * @since 3
 	 */
 	void (*workspace)(void *data,
 			  struct zcr_remote_shell_v1 *zcr_remote_shell_v1,
@@ -285,6 +286,7 @@ struct zcr_remote_shell_v1_listener {
 	 *
 	 * Suggests a new configuration of the remote shell. Preceded by
 	 * a series of "workspace" events.
+	 * @since 3
 	 */
 	void (*configure)(void *data,
 			  struct zcr_remote_shell_v1 *zcr_remote_shell_v1,
@@ -317,11 +319,11 @@ zcr_remote_shell_v1_add_listener(struct zcr_remote_shell_v1 *zcr_remote_shell_v1
 /**
  * @ingroup iface_zcr_remote_shell_v1
  */
-#define ZCR_REMOTE_SHELL_V1_WORKSPACE_SINCE_VERSION 1
+#define ZCR_REMOTE_SHELL_V1_WORKSPACE_SINCE_VERSION 3
 /**
  * @ingroup iface_zcr_remote_shell_v1
  */
-#define ZCR_REMOTE_SHELL_V1_CONFIGURE_SINCE_VERSION 1
+#define ZCR_REMOTE_SHELL_V1_CONFIGURE_SINCE_VERSION 3
 
 /**
  * @ingroup iface_zcr_remote_shell_v1

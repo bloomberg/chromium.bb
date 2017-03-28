@@ -142,7 +142,7 @@
 
     <!-- Version 3 additions -->
 
-    <event name="workspace" version="3">
+    <event name="workspace" since="3">
       <description summary="area of remote shell">
 	Defines an area of the remote shell used for layout. Each series of
 	"workspace" events must be terminated by a "configure" event.
@@ -161,7 +161,7 @@
       <arg name="scale_factor" type="fixed"/>
     </event>
 
-    <event name="configure" version="3">
+    <event name="configure" since="3">
       <description summary="suggests configuration of remote shell">
 	Suggests a new configuration of the remote shell. Preceded by a series
 	of "workspace" events.
