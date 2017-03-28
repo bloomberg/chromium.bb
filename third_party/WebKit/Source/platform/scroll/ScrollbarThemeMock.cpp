@@ -87,4 +87,9 @@ void ScrollbarThemeMock::paintScrollCorner(GraphicsContext& context,
   context.fillRect(cornerRect, Color::white);
 }
 
+int ScrollbarThemeMock::minimumThumbLength(
+    const ScrollbarThemeClient& scrollbar) {
+  return scrollbarThickness(scrollbar.controlSize());
+}
+
 }  // namespace blink

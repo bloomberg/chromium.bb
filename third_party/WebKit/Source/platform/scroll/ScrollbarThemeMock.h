@@ -63,6 +63,8 @@ class PLATFORM_EXPORT ScrollbarThemeMock : public ScrollbarTheme {
                          const DisplayItemClient&,
                          const IntRect& cornerRect) override;
 
+  int minimumThumbLength(const ScrollbarThemeClient&) override;
+
  private:
   bool isMockTheme() const final { return true; }
 };

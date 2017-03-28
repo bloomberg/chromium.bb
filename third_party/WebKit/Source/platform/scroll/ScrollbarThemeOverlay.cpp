@@ -270,4 +270,19 @@ IntRect ScrollbarThemeOverlay::ninePatchThumbAperture(
   return Platform::current()->themeEngine()->ninePatchAperture(part);
 }
 
+int ScrollbarThemeOverlay::minimumThumbLength(
+    const ScrollbarThemeClient& scrollbar) {
+  if (scrollbar.orientation() == VerticalScrollbar) {
+    return Platform::current()
+        ->themeEngine()
+        ->getSize(WebThemeEngine::PartScrollbarVerticalThumb)
+        .height;
+  }
+
+  return Platform::current()
+      ->themeEngine()
+      ->getSize(WebThemeEngine::PartScrollbarHorizontalThumb)
+      .width;
+}
+
 }  // namespace blink
