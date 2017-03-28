@@ -20,6 +20,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.banners.InstallerDelegate;
+import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.util.IntentUtils;
 
 import java.io.File;
@@ -107,16 +108,18 @@ public class WebApkInstaller {
     @CalledByNative
     private void installWebApkFromGooglePlayAsync(
             String packageName, int version, String title, String token, String url) {
-        if (mGooglePlayWebApkInstallDelegate == null) {
-            notify(WebApkInstallResult.FAILURE);
-            return;
-        }
-
         // Check whether the WebAPK package is already installed. The WebAPK may have been installed
         // by another Chrome version (e.g. Chrome Dev). We have to do this check because the Play
         // install API fails silently if the package is already installed.
         if (isWebApkInstalled(packageName)) {
             notify(WebApkInstallResult.SUCCESS);
+            return;
+        }
+
+        if (mGooglePlayWebApkInstallDelegate == null) {
+            notify(WebApkInstallResult.FAILURE);
+            WebApkUma.recordGooglePlayInstallResult(
+                    WebApkUma.GOOGLE_PLAY_INSTALL_FAILED_NO_DELEGATE);
             return;
         }
 
