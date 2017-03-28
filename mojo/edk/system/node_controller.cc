@@ -710,6 +710,9 @@ void NodeController::SendPeerMessage(const ports::NodeName& name,
     scoped_refptr<NodeChannel> broker = GetBrokerChannel();
     if (!broker) {
       DVLOG(1) << "Dropping message for unknown peer: " << name;
+
+      base::AutoLock lock(peers_lock_);
+      pending_peer_messages_.erase(name);
       return;
     }
     broker->RequestIntroduction(name);
@@ -935,6 +938,16 @@ void NodeController::OnAcceptParent(const ports::NodeName& from_node,
     return;
   }
 
+  {
+    base::AutoLock lock(reserved_ports_lock_);
+    auto it = pending_child_tokens_.find(from_node);
+    if (it != pending_child_tokens_.end()) {
+      std::string token = std::move(it->second);
+      pending_child_tokens_.erase(it);
+      pending_child_tokens_[child_name] = std::move(token);
+    }
+  }
+
   scoped_refptr<NodeChannel> channel = it->second;
   pending_children_.erase(it);
 
@@ -1155,6 +1168,7 @@ void NodeController::OnRequestPortMerge(
       return;
     }
     local_port = it->second.port;
+    reserved_ports_.erase(it);
   }
 
   int rv = node_->MergePorts(local_port, from_node, connector_port_name);
