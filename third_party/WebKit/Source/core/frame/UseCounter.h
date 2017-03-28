@@ -1234,7 +1234,6 @@ class CORE_EXPORT UseCounter {
     DocumentCreateTouchWindowWrongType = 1608,
     DocumentCreateTouchTargetNull = 1609,
     DocumentCreateTouchTargetWrongType = 1610,
-    DocumentCreateTouchLessThanSevenArguments = 1611,
     DocumentCreateTouchMoreThanSevenArguments = 1612,
     LongTaskObserver = 1615,
     CSSMotionInEffect = 1616,

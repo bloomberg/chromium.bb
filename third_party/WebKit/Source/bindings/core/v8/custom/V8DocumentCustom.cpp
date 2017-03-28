@@ -122,11 +122,6 @@ void V8Document::createTouchMethodPrologueCustom(
     UseCounter::count(currentExecutionContext(info.GetIsolate()),
                       UseCounter::DocumentCreateTouchTargetWrongType);
   }
-
-  if (info.Length() < 7) {
-    UseCounter::count(currentExecutionContext(info.GetIsolate()),
-                      UseCounter::DocumentCreateTouchLessThanSevenArguments);
-  }
 }
 
 }  // namespace blink
