@@ -343,7 +343,11 @@ void GetCandidateEVPolicy(const X509Certificate* cert_input,
   for (const der::Input& policy_oid : policies) {
     if (metadata->IsEVPolicyOID(policy_oid)) {
       *ev_policy_oid = policy_oid.AsString();
-      return;
+
+      // De-prioritize the CA/Browser forum Extended Validation policy
+      // (2.23.140.1.1). See crbug.com/705285.
+      if (!EVRootCAMetadata::IsCaBrowserForumEvOid(policy_oid))
+        break;
     }
   }
 }

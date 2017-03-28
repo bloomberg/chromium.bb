@@ -946,7 +946,11 @@ int CertVerifyProcWin::VerifyInternal(
           chain_para.RequestedIssuancePolicy.Usage.cUsageIdentifier = 1;
           chain_para.RequestedIssuancePolicy.Usage.rgpszUsageIdentifier =
               &ev_policy_oid;
-          break;
+
+          // De-prioritize the CA/Browser forum Extended Validation policy
+          // (2.23.140.1.1). See crbug.com/705285.
+          if (!EVRootCAMetadata::IsCaBrowserForumEvOid(ev_policy_oid))
+            break;
         }
       }
     }
