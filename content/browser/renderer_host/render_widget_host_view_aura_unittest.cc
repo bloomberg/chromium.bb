@@ -1876,7 +1876,7 @@ cc::CompositorFrame MakeDelegatedFrame(float scale_factor,
                                        gfx::Rect damage) {
   cc::CompositorFrame frame;
   frame.metadata.device_scale_factor = scale_factor;
-  frame.metadata.begin_frame_ack = cc::BeginFrameAck(0, 1, 1, 0, true);
+  frame.metadata.begin_frame_ack = cc::BeginFrameAck(0, 1, 1, true);
 
   std::unique_ptr<cc::RenderPass> pass = cc::RenderPass::Create();
   pass->SetNew(1, gfx::Rect(size), damage, gfx::Transform());
@@ -2792,7 +2792,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardsBeginFrameAcks) {
     source.TestOnBeginFrame(args);
 
     // Ack from CompositorFrame is forwarded.
-    cc::BeginFrameAck ack(source_id, 5, 4, 0, true);
+    cc::BeginFrameAck ack(source_id, 5, 4, true);
     cc::CompositorFrame frame = MakeDelegatedFrame(1.f, frame_size, view_rect);
     frame.metadata.begin_frame_ack = ack;
     view_->OnSwapCompositorFrame(0, kArbitraryLocalSurfaceId, std::move(frame));
@@ -2806,7 +2806,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardsBeginFrameAcks) {
     source.TestOnBeginFrame(args);
 
     // Explicit ack through OnBeginFrameDidNotSwap is forwarded.
-    cc::BeginFrameAck ack(source_id, 6, 4, 0, false);
+    cc::BeginFrameAck ack(source_id, 6, 4, false);
     view_->OnBeginFrameDidNotSwap(ack);
     EXPECT_EQ(ack, source.LastAckForObserver(observer_tracker.last_observer_));
   }
@@ -2823,7 +2823,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardsBeginFrameAcks) {
 
     // Ack from CompositorFrame is forwarded with old
     // latest_confirmed_sequence_number and without damage.
-    cc::BeginFrameAck ack(source_id, 7, 7, 0, true);
+    cc::BeginFrameAck ack(source_id, 7, 7, true);
     gfx::Rect dropped_damage_rect(10, 20, 30, 40);
     cc::CompositorFrame frame =
         MakeDelegatedFrame(1.f, frame_size, dropped_damage_rect);
@@ -2846,7 +2846,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardsBeginFrameAcks) {
 
     // Ack from CompositorFrame is forwarded with invalid
     // latest_confirmed_sequence_number and without damage.
-    cc::BeginFrameAck ack(source_id, 10, 10, 0, true);
+    cc::BeginFrameAck ack(source_id, 10, 10, true);
     gfx::Rect dropped_damage_rect(10, 20, 30, 40);
     cc::CompositorFrame frame =
         MakeDelegatedFrame(1.f, frame_size, dropped_damage_rect);
@@ -2866,7 +2866,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardsBeginFrameAcks) {
 
     // Explicit ack through OnBeginFrameDidNotSwap is forwarded with invalid
     // latest_confirmed_sequence_number.
-    cc::BeginFrameAck ack(source_id, 11, 11, 0, false);
+    cc::BeginFrameAck ack(source_id, 11, 11, false);
     view_->OnBeginFrameDidNotSwap(ack);
     ack.latest_confirmed_sequence_number =
         cc::BeginFrameArgs::kInvalidFrameNumber;
@@ -2882,7 +2882,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardsBeginFrameAcks) {
     source.TestOnBeginFrame(args);
 
     // Ack from CompositorFrame is forwarded.
-    cc::BeginFrameAck ack(source_id, 12, 12, 0, true);
+    cc::BeginFrameAck ack(source_id, 12, 12, true);
     cc::CompositorFrame frame = MakeDelegatedFrame(1.f, frame_size, view_rect);
     frame.metadata.begin_frame_ack = ack;
     view_->OnSwapCompositorFrame(0, kArbitraryLocalSurfaceId, std::move(frame));
@@ -2896,7 +2896,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardsBeginFrameAcks) {
     source.TestOnBeginFrame(args);
 
     // Explicit ack through OnBeginFrameDidNotSwap is forwarded.
-    cc::BeginFrameAck ack(source_id, 13, 13, 0, false);
+    cc::BeginFrameAck ack(source_id, 13, 13, false);
     view_->OnBeginFrameDidNotSwap(ack);
     EXPECT_EQ(ack, source.LastAckForObserver(observer_tracker.last_observer_));
   }

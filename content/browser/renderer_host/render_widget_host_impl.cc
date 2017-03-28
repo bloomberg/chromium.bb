@@ -1878,9 +1878,8 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
         bad_message::RWH_INVALID_BEGIN_FRAME_ACK_COMPOSITOR_FRAME);
     return false;
   }
-  // |has_damage| and |remaining_frames| are not transmitted.
+  // |has_damage| is not transmitted.
   frame.metadata.begin_frame_ack.has_damage = true;
-  frame.metadata.begin_frame_ack.remaining_frames = 0;
 
   if (!ui::LatencyInfo::Verify(frame.metadata.latency_info,
                                "RenderWidgetHostImpl::OnSwapCompositorFrame")) {
@@ -1942,10 +1941,9 @@ void RenderWidgetHostImpl::OnBeginFrameDidNotSwap(
     return;
   }
 
-  // |has_damage| and |remaining_frames| are not transmitted.
+  // |has_damage| is not transmitted.
   cc::BeginFrameAck modified_ack = ack;
   modified_ack.has_damage = false;
-  modified_ack.remaining_frames = 0;
 
   if (view_)
     view_->OnBeginFrameDidNotSwap(modified_ack);

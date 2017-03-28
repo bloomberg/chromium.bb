@@ -170,7 +170,7 @@ class CC_EXPORT SyntheticBeginFrameSource : public BeginFrameSource {
 };
 
 // A frame source which calls BeginFrame (at the next possible time) as soon as
-// remaining frames reaches zero.
+// an observer acknowledges the prior BeginFrame.
 class CC_EXPORT BackToBackBeginFrameSource : public SyntheticBeginFrameSource,
                                              public DelayBasedTimeSourceClient {
  public:

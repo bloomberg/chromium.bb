@@ -342,7 +342,7 @@ TEST_F(SurfaceTest, SendsBeginFrameAcks) {
   RunAllPendingInMessageLoop();
 
   cc::BeginFrameAck expected_ack(args.source_id, args.sequence_number,
-                                 args.sequence_number, 0, true);
+                                 args.sequence_number, true);
   EXPECT_EQ(expected_ack, source.LastAckForObserver(surface.get()));
 
   const cc::CompositorFrame& frame = GetFrameFromSurface(surface.get());

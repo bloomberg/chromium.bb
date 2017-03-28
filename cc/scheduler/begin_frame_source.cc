@@ -103,7 +103,7 @@ void BackToBackBeginFrameSource::RemoveObserver(BeginFrameObserver* obs) {
 
 void BackToBackBeginFrameSource::DidFinishFrame(BeginFrameObserver* obs,
                                                 const BeginFrameAck& ack) {
-  if (ack.remaining_frames == 0 && observers_.find(obs) != observers_.end()) {
+  if (observers_.find(obs) != observers_.end()) {
     pending_begin_frame_observers_.insert(obs);
     time_source_->SetActive(true);
   }
@@ -437,7 +437,7 @@ void ExternalBeginFrameSource::FinishFrame() {
 
   BeginFrameAck ack(missed_begin_frame_args_.source_id,
                     missed_begin_frame_args_.sequence_number,
-                    ack_tracker_.LatestConfirmedSequenceNumber(), 0,
+                    ack_tracker_.LatestConfirmedSequenceNumber(),
                     ack_tracker_.AnyObserversHadDamage());
   client_->OnDidFinishFrame(ack);
 }

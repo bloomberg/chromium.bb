@@ -455,7 +455,7 @@ void Scheduler::SendBeginFrameAck(const BeginFrameArgs& args,
   }
 
   BeginFrameAck ack(args.source_id, args.sequence_number,
-                    latest_confirmed_sequence_number, 0, did_submit);
+                    latest_confirmed_sequence_number, did_submit);
   begin_frame_source_->DidFinishFrame(this, ack);
 }
 
@@ -802,7 +802,7 @@ BeginFrameAck Scheduler::CurrentBeginFrameAckForActiveTree() const {
   return BeginFrameAck(
       begin_main_frame_args_.source_id, begin_main_frame_args_.sequence_number,
       state_machine_.last_begin_frame_sequence_number_active_tree_was_fresh(),
-      0, true);
+      true);
 }
 
 }  // namespace cc

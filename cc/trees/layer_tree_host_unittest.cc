@@ -7199,12 +7199,11 @@ class LayerTreeHostTestBeginFrameSequenceNumbers : public LayerTreeHostTest {
       return;
     compositor_frame_submitted_ = true;
 
-    EXPECT_EQ(
-        BeginFrameAck(current_begin_frame_args_.source_id,
-                      current_begin_frame_args_.sequence_number,
-                      current_begin_main_frame_args_on_impl_.sequence_number, 0,
-                      true),
-        frame.metadata.begin_frame_ack);
+    EXPECT_EQ(BeginFrameAck(
+                  current_begin_frame_args_.source_id,
+                  current_begin_frame_args_.sequence_number,
+                  current_begin_main_frame_args_on_impl_.sequence_number, true),
+              frame.metadata.begin_frame_ack);
   }
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
@@ -7214,12 +7213,11 @@ class LayerTreeHostTestBeginFrameSequenceNumbers : public LayerTreeHostTest {
 
     EXPECT_TRUE(frame_data_);
     EXPECT_TRUE(compositor_frame_submitted_);
-    EXPECT_EQ(
-        BeginFrameAck(current_begin_frame_args_.source_id,
-                      current_begin_frame_args_.sequence_number,
-                      current_begin_main_frame_args_on_impl_.sequence_number, 0,
-                      true),
-        frame_data_->begin_frame_ack);
+    EXPECT_EQ(BeginFrameAck(
+                  current_begin_frame_args_.source_id,
+                  current_begin_frame_args_.sequence_number,
+                  current_begin_main_frame_args_on_impl_.sequence_number, true),
+              frame_data_->begin_frame_ack);
     EndTest();
   }
 

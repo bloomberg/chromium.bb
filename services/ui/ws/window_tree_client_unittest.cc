@@ -2211,8 +2211,7 @@ TEST_F(WindowTreeClientTest, SurfaceIdPropagation) {
   render_pass->SetNew(1, frame_rect, frame_rect, gfx::Transform());
   compositor_frame.render_pass_list.push_back(std::move(render_pass));
   compositor_frame.metadata.device_scale_factor = 1.f;
-  compositor_frame.metadata.begin_frame_ack =
-      cc::BeginFrameAck(0, 1, 1, 0, true);
+  compositor_frame.metadata.begin_frame_ack = cc::BeginFrameAck(0, 1, 1, true);
   cc::LocalSurfaceId local_surface_id(1, base::UnguessableToken::Create());
   surface_ptr->SubmitCompositorFrame(local_surface_id,
                                      std::move(compositor_frame));

@@ -74,7 +74,7 @@ TEST_F(BackToBackBeginFrameSourceTest, AddObserverSendsBeginFrame) {
                           1100 + kDeadline, kInterval);
   now_src_->Advance(base::TimeDelta::FromMicroseconds(100));
   source_->DidFinishFrame(obs_.get(),
-                          BeginFrameAck(source_->source_id(), 1, 1, 0, true));
+                          BeginFrameAck(source_->source_id(), 1, 1, true));
   task_runner_->RunPendingTasks();
 }
 
@@ -88,7 +88,7 @@ TEST_F(BackToBackBeginFrameSourceTest,
 
   source_->RemoveObserver(obs_.get());
   source_->DidFinishFrame(obs_.get(),
-                          BeginFrameAck(source_->source_id(), 1, 1, 0, true));
+                          BeginFrameAck(source_->source_id(), 1, 1, true));
 
   // Verify no BeginFrame is sent to |obs_|. There is a pending task in the
   // task_runner_ as a BeginFrame was posted, but it gets aborted since |obs_|
@@ -107,7 +107,7 @@ TEST_F(BackToBackBeginFrameSourceTest,
 
   now_src_->Advance(base::TimeDelta::FromMicroseconds(100));
   source_->DidFinishFrame(obs_.get(),
-                          BeginFrameAck(source_->source_id(), 1, 1, 0, true));
+                          BeginFrameAck(source_->source_id(), 1, 1, true));
   source_->RemoveObserver(obs_.get());
 
   EXPECT_TRUE(task_runner_->HasPendingTasks());
@@ -131,7 +131,7 @@ TEST_F(BackToBackBeginFrameSourceTest,
 
   now_src_->Advance(base::TimeDelta::FromMicroseconds(10));
   source_->DidFinishFrame(obs_.get(),
-                          BeginFrameAck(source_->source_id(), 1, 1, 0, true));
+                          BeginFrameAck(source_->source_id(), 1, 1, true));
 
   now_src_->Advance(base::TimeDelta::FromMicroseconds(10));
   // The begin frame is posted at the time when the observer was added,
@@ -152,7 +152,7 @@ TEST_F(BackToBackBeginFrameSourceTest,
 
   now_src_->Advance(base::TimeDelta::FromMicroseconds(100));
   source_->DidFinishFrame(obs_.get(),
-                          BeginFrameAck(source_->source_id(), 1, 1, 0, true));
+                          BeginFrameAck(source_->source_id(), 1, 1, true));
 
   now_src_->Advance(base::TimeDelta::FromMicroseconds(10));
   source_->RemoveObserver(obs_.get());
@@ -175,40 +175,8 @@ TEST_F(BackToBackBeginFrameSourceTest, DidFinishFrameNoObserver) {
   source_->AddObserver(obs_.get());
   source_->RemoveObserver(obs_.get());
   source_->DidFinishFrame(obs_.get(),
-                          BeginFrameAck(source_->source_id(), 1, 1, 0, true));
+                          BeginFrameAck(source_->source_id(), 1, 1, true));
   EXPECT_FALSE(task_runner_->RunPendingTasks());
-}
-
-TEST_F(BackToBackBeginFrameSourceTest, DidFinishFrameRemainingFrames) {
-  EXPECT_BEGIN_FRAME_SOURCE_PAUSED(*obs_, false);
-  source_->AddObserver(obs_.get());
-  EXPECT_BEGIN_FRAME_USED(*obs_, source_->source_id(), 1, 1000,
-                          1000 + kDeadline, kInterval);
-  // Runs the pending begin frame.
-  task_runner_->RunPendingTasks();
-  // While running the begin frame, the next frame was cancelled, this
-  // runs the next frame, sees it was cancelled, and goes to sleep.
-  task_runner_->RunPendingTasks();
-  EXPECT_FALSE(task_runner_->HasPendingTasks());
-
-  now_src_->Advance(base::TimeDelta::FromMicroseconds(100));
-
-  source_->DidFinishFrame(obs_.get(),
-                          BeginFrameAck(source_->source_id(), 1, 1, 3, true));
-  EXPECT_FALSE(task_runner_->HasPendingTasks());
-  source_->DidFinishFrame(obs_.get(),
-                          BeginFrameAck(source_->source_id(), 1, 1, 2, true));
-  EXPECT_FALSE(task_runner_->HasPendingTasks());
-  source_->DidFinishFrame(obs_.get(),
-                          BeginFrameAck(source_->source_id(), 1, 1, 1, true));
-  EXPECT_FALSE(task_runner_->HasPendingTasks());
-
-  EXPECT_BEGIN_FRAME_USED(*obs_, source_->source_id(), 2, 1100,
-                          1100 + kDeadline, kInterval);
-  source_->DidFinishFrame(obs_.get(),
-                          BeginFrameAck(source_->source_id(), 1, 1, 0, true));
-  EXPECT_EQ(base::TimeDelta(), task_runner_->DelayToNextTaskTime());
-  task_runner_->RunPendingTasks();
 }
 
 TEST_F(BackToBackBeginFrameSourceTest, DidFinishFrameMultipleCallsIdempotent) {
@@ -220,22 +188,22 @@ TEST_F(BackToBackBeginFrameSourceTest, DidFinishFrameMultipleCallsIdempotent) {
 
   now_src_->Advance(base::TimeDelta::FromMicroseconds(100));
   source_->DidFinishFrame(obs_.get(),
-                          BeginFrameAck(source_->source_id(), 1, 1, 0, true));
+                          BeginFrameAck(source_->source_id(), 1, 1, true));
   source_->DidFinishFrame(obs_.get(),
-                          BeginFrameAck(source_->source_id(), 1, 1, 0, true));
+                          BeginFrameAck(source_->source_id(), 1, 1, true));
   source_->DidFinishFrame(obs_.get(),
-                          BeginFrameAck(source_->source_id(), 1, 1, 0, true));
+                          BeginFrameAck(source_->source_id(), 1, 1, true));
   EXPECT_BEGIN_FRAME_USED(*obs_, source_->source_id(), 2, 1100,
                           1100 + kDeadline, kInterval);
   task_runner_->RunPendingTasks();
 
   now_src_->Advance(base::TimeDelta::FromMicroseconds(100));
   source_->DidFinishFrame(obs_.get(),
-                          BeginFrameAck(source_->source_id(), 2, 2, 0, true));
+                          BeginFrameAck(source_->source_id(), 2, 2, true));
   source_->DidFinishFrame(obs_.get(),
-                          BeginFrameAck(source_->source_id(), 2, 2, 0, true));
+                          BeginFrameAck(source_->source_id(), 2, 2, true));
   source_->DidFinishFrame(obs_.get(),
-                          BeginFrameAck(source_->source_id(), 2, 2, 0, true));
+                          BeginFrameAck(source_->source_id(), 2, 2, true));
   EXPECT_BEGIN_FRAME_USED(*obs_, source_->source_id(), 3, 1200,
                           1200 + kDeadline, kInterval);
   task_runner_->RunPendingTasks();
@@ -250,7 +218,7 @@ TEST_F(BackToBackBeginFrameSourceTest, DelayInPostedTaskProducesCorrectFrame) {
 
   now_src_->Advance(base::TimeDelta::FromMicroseconds(100));
   source_->DidFinishFrame(obs_.get(),
-                          BeginFrameAck(source_->source_id(), 1, 1, 0, true));
+                          BeginFrameAck(source_->source_id(), 1, 1, true));
   now_src_->Advance(base::TimeDelta::FromMicroseconds(50));
   // Ticks at the time the last frame finished, so ignores the last change to
   // "now".
@@ -277,9 +245,9 @@ TEST_F(BackToBackBeginFrameSourceTest, MultipleObserversSynchronized) {
 
   now_src_->Advance(base::TimeDelta::FromMicroseconds(100));
   source_->DidFinishFrame(&obs1,
-                          BeginFrameAck(source_->source_id(), 1, 1, 0, true));
+                          BeginFrameAck(source_->source_id(), 1, 1, true));
   source_->DidFinishFrame(&obs2,
-                          BeginFrameAck(source_->source_id(), 1, 1, 0, true));
+                          BeginFrameAck(source_->source_id(), 1, 1, true));
   EXPECT_BEGIN_FRAME_USED(obs1, source_->source_id(), 2, 1100, 1100 + kDeadline,
                           kInterval);
   EXPECT_BEGIN_FRAME_USED(obs2, source_->source_id(), 2, 1100, 1100 + kDeadline,
@@ -288,9 +256,9 @@ TEST_F(BackToBackBeginFrameSourceTest, MultipleObserversSynchronized) {
 
   now_src_->Advance(base::TimeDelta::FromMicroseconds(100));
   source_->DidFinishFrame(&obs1,
-                          BeginFrameAck(source_->source_id(), 2, 2, 0, true));
+                          BeginFrameAck(source_->source_id(), 2, 2, true));
   source_->DidFinishFrame(&obs2,
-                          BeginFrameAck(source_->source_id(), 2, 2, 0, true));
+                          BeginFrameAck(source_->source_id(), 2, 2, true));
   EXPECT_TRUE(task_runner_->HasPendingTasks());
   source_->RemoveObserver(&obs1);
   source_->RemoveObserver(&obs2);
@@ -315,13 +283,13 @@ TEST_F(BackToBackBeginFrameSourceTest, MultipleObserversInterleaved) {
 
   now_src_->Advance(base::TimeDelta::FromMicroseconds(100));
   source_->DidFinishFrame(&obs1,
-                          BeginFrameAck(source_->source_id(), 1, 1, 0, true));
+                          BeginFrameAck(source_->source_id(), 1, 1, true));
   EXPECT_BEGIN_FRAME_USED(obs1, source_->source_id(), 3, 1200, 1200 + kDeadline,
                           kInterval);
   task_runner_->RunPendingTasks();
 
   source_->DidFinishFrame(&obs1,
-                          BeginFrameAck(source_->source_id(), 3, 3, 0, true));
+                          BeginFrameAck(source_->source_id(), 3, 3, true));
   source_->RemoveObserver(&obs1);
   // Removing all finished observers should disable the time source.
   EXPECT_FALSE(delay_based_time_source_->Active());
@@ -331,13 +299,13 @@ TEST_F(BackToBackBeginFrameSourceTest, MultipleObserversInterleaved) {
 
   now_src_->Advance(base::TimeDelta::FromMicroseconds(100));
   source_->DidFinishFrame(&obs2,
-                          BeginFrameAck(source_->source_id(), 2, 2, 0, true));
+                          BeginFrameAck(source_->source_id(), 2, 2, true));
   EXPECT_BEGIN_FRAME_USED(obs2, source_->source_id(), 4, 1300, 1300 + kDeadline,
                           kInterval);
   task_runner_->RunPendingTasks();
 
   source_->DidFinishFrame(&obs2,
-                          BeginFrameAck(source_->source_id(), 4, 4, 0, true));
+                          BeginFrameAck(source_->source_id(), 4, 4, true));
   source_->RemoveObserver(&obs2);
 }
 
@@ -357,12 +325,12 @@ TEST_F(BackToBackBeginFrameSourceTest, MultipleObserversAtOnce) {
   // |obs1| finishes first.
   now_src_->Advance(base::TimeDelta::FromMicroseconds(100));
   source_->DidFinishFrame(&obs1,
-                          BeginFrameAck(source_->source_id(), 1, 1, 0, true));
+                          BeginFrameAck(source_->source_id(), 1, 1, true));
 
   // |obs2| finishes also, before getting to the newly posted begin frame.
   now_src_->Advance(base::TimeDelta::FromMicroseconds(100));
   source_->DidFinishFrame(&obs2,
-                          BeginFrameAck(source_->source_id(), 1, 1, 0, true));
+                          BeginFrameAck(source_->source_id(), 1, 1, true));
 
   // Because the begin frame source already ticked when |obs1| finished,
   // we see it as the frame time for both observers.
@@ -373,10 +341,10 @@ TEST_F(BackToBackBeginFrameSourceTest, MultipleObserversAtOnce) {
   task_runner_->RunPendingTasks();
 
   source_->DidFinishFrame(&obs1,
-                          BeginFrameAck(source_->source_id(), 2, 2, 0, true));
+                          BeginFrameAck(source_->source_id(), 2, 2, true));
   source_->RemoveObserver(&obs1);
   source_->DidFinishFrame(&obs2,
-                          BeginFrameAck(source_->source_id(), 2, 2, 0, true));
+                          BeginFrameAck(source_->source_id(), 2, 2, true));
   source_->RemoveObserver(&obs2);
 }
 
@@ -647,7 +615,7 @@ TEST_F(BeginFrameObserverAckTrackerTest, CorrectnessWith1Observer) {
   // When the observer finishes and confirms, the BeginFrame is finished
   // and confirmed.
   obs1_.OnBeginFrame(current_args_);
-  tracker_->OnObserverFinishedFrame(&obs1_, BeginFrameAck(0, 1, 1, 0, false));
+  tracker_->OnObserverFinishedFrame(&obs1_, BeginFrameAck(0, 1, 1, false));
   EXPECT_ACK_TRACKER_STATE(true, false, 1u);
 
   // A new BeginFrame is initially not finished or confirmed.
@@ -656,13 +624,13 @@ TEST_F(BeginFrameObserverAckTrackerTest, CorrectnessWith1Observer) {
   EXPECT_ACK_TRACKER_STATE(false, false, 1u);
 
   // Stray ACK for an old BeginFrame is ignored.
-  tracker_->OnObserverFinishedFrame(&obs1_, BeginFrameAck(0, 1, 1, 0, false));
+  tracker_->OnObserverFinishedFrame(&obs1_, BeginFrameAck(0, 1, 1, false));
   EXPECT_ACK_TRACKER_STATE(false, false, 1u);
 
   // When the observer finishes but doesn't confirm, the BeginFrame is finished
   // but not confirmed.
   obs1_.OnBeginFrame(current_args_);
-  tracker_->OnObserverFinishedFrame(&obs1_, BeginFrameAck(0, 2, 1, 0, false));
+  tracker_->OnObserverFinishedFrame(&obs1_, BeginFrameAck(0, 2, 1, false));
   EXPECT_ACK_TRACKER_STATE(true, false, 1u);
 
   // Damage from ACK propagates.
@@ -670,7 +638,7 @@ TEST_F(BeginFrameObserverAckTrackerTest, CorrectnessWith1Observer) {
   tracker_->OnBeginFrame(current_args_);
   EXPECT_ACK_TRACKER_STATE(false, false, 1u);
   obs1_.OnBeginFrame(current_args_);
-  tracker_->OnObserverFinishedFrame(&obs1_, BeginFrameAck(0, 3, 3, 0, true));
+  tracker_->OnObserverFinishedFrame(&obs1_, BeginFrameAck(0, 3, 3, true));
   EXPECT_ACK_TRACKER_STATE(true, true, 3u);
 
   // Removing an out-of-date observer confirms the latest BeginFrame.
@@ -678,7 +646,7 @@ TEST_F(BeginFrameObserverAckTrackerTest, CorrectnessWith1Observer) {
   tracker_->OnBeginFrame(current_args_);
   EXPECT_ACK_TRACKER_STATE(false, false, 3u);
   obs1_.OnBeginFrame(current_args_);
-  tracker_->OnObserverFinishedFrame(&obs1_, BeginFrameAck(0, 4, 3, 0, false));
+  tracker_->OnObserverFinishedFrame(&obs1_, BeginFrameAck(0, 4, 3, false));
   EXPECT_ACK_TRACKER_STATE(true, false, 3u);
   tracker_->OnObserverRemoved(&obs1_);
   EXPECT_ACK_TRACKER_STATE(true, false, 4u);
@@ -702,11 +670,11 @@ TEST_F(BeginFrameObserverAckTrackerTest, CorrectnessWith2Observers) {
 
   // When one observer finishes and confirms, nothing changes.
   obs1_.OnBeginFrame(current_args_);
-  tracker_->OnObserverFinishedFrame(&obs1_, BeginFrameAck(0, 1, 1, 0, false));
+  tracker_->OnObserverFinishedFrame(&obs1_, BeginFrameAck(0, 1, 1, false));
   EXPECT_ACK_TRACKER_STATE(false, false, 0u);
   // When both finish and confirm, the BeginFrame is finished and confirmed.
   obs2_.OnBeginFrame(current_args_);
-  tracker_->OnObserverFinishedFrame(&obs2_, BeginFrameAck(0, 1, 1, 0, false));
+  tracker_->OnObserverFinishedFrame(&obs2_, BeginFrameAck(0, 1, 1, false));
   EXPECT_ACK_TRACKER_STATE(true, false, 1u);
 
   // A new BeginFrame is not finished or confirmed.
@@ -717,10 +685,10 @@ TEST_F(BeginFrameObserverAckTrackerTest, CorrectnessWith2Observers) {
   // When both observers finish but only one confirms, the BeginFrame is
   // finished but not confirmed.
   obs1_.OnBeginFrame(current_args_);
-  tracker_->OnObserverFinishedFrame(&obs1_, BeginFrameAck(0, 2, 2, 0, false));
+  tracker_->OnObserverFinishedFrame(&obs1_, BeginFrameAck(0, 2, 2, false));
   EXPECT_ACK_TRACKER_STATE(false, false, 1u);
   obs2_.OnBeginFrame(current_args_);
-  tracker_->OnObserverFinishedFrame(&obs2_, BeginFrameAck(0, 2, 1, 0, false));
+  tracker_->OnObserverFinishedFrame(&obs2_, BeginFrameAck(0, 2, 1, false));
   EXPECT_ACK_TRACKER_STATE(true, false, 1u);
 
   // With reversed confirmations in the next ACKs, the latest confirmed frame
@@ -729,10 +697,10 @@ TEST_F(BeginFrameObserverAckTrackerTest, CorrectnessWith2Observers) {
   tracker_->OnBeginFrame(current_args_);
   EXPECT_ACK_TRACKER_STATE(false, false, 1u);
   obs1_.OnBeginFrame(current_args_);
-  tracker_->OnObserverFinishedFrame(&obs1_, BeginFrameAck(0, 3, 2, 0, false));
+  tracker_->OnObserverFinishedFrame(&obs1_, BeginFrameAck(0, 3, 2, false));
   EXPECT_ACK_TRACKER_STATE(false, false, 1u);
   obs2_.OnBeginFrame(current_args_);
-  tracker_->OnObserverFinishedFrame(&obs2_, BeginFrameAck(0, 3, 3, 0, false));
+  tracker_->OnObserverFinishedFrame(&obs2_, BeginFrameAck(0, 3, 3, false));
   EXPECT_ACK_TRACKER_STATE(true, false, 2u);
 
   // Only a single ACK with damage suffices.
@@ -740,10 +708,10 @@ TEST_F(BeginFrameObserverAckTrackerTest, CorrectnessWith2Observers) {
   tracker_->OnBeginFrame(current_args_);
   EXPECT_ACK_TRACKER_STATE(false, false, 2u);
   obs1_.OnBeginFrame(current_args_);
-  tracker_->OnObserverFinishedFrame(&obs1_, BeginFrameAck(0, 4, 4, 0, true));
+  tracker_->OnObserverFinishedFrame(&obs1_, BeginFrameAck(0, 4, 4, true));
   EXPECT_ACK_TRACKER_STATE(false, true, 3u);
   obs2_.OnBeginFrame(current_args_);
-  tracker_->OnObserverFinishedFrame(&obs2_, BeginFrameAck(0, 4, 4, 0, false));
+  tracker_->OnObserverFinishedFrame(&obs2_, BeginFrameAck(0, 4, 4, false));
   EXPECT_ACK_TRACKER_STATE(true, true, 4u);
 
   // Removing the damaging observer makes no difference in this case.
@@ -765,10 +733,10 @@ TEST_F(BeginFrameObserverAckTrackerTest, CorrectnessWith2Observers) {
   EXPECT_ACK_TRACKER_STATE(false, false, 4u);
   // Both observers need to finish for the BeginFrame to be finished.
   obs1_.OnBeginFrame(current_args_);
-  tracker_->OnObserverFinishedFrame(&obs1_, BeginFrameAck(0, 5, 5, 0, false));
+  tracker_->OnObserverFinishedFrame(&obs1_, BeginFrameAck(0, 5, 5, false));
   EXPECT_ACK_TRACKER_STATE(false, false, 4u);
   obs2_.OnBeginFrame(current_args_);
-  tracker_->OnObserverFinishedFrame(&obs2_, BeginFrameAck(0, 5, 5, 0, false));
+  tracker_->OnObserverFinishedFrame(&obs2_, BeginFrameAck(0, 5, 5, false));
   EXPECT_ACK_TRACKER_STATE(true, false, 5u);
 }
 
@@ -785,7 +753,7 @@ TEST_F(BeginFrameObserverAckTrackerTest, ChangingSourceIdOnBeginFrame) {
   tracker_->OnObserverAdded(&obs1_);
   EXPECT_ACK_TRACKER_STATE(false, false, 9u);  // up to date to previous frame.
   obs1_.OnBeginFrame(current_args_);
-  tracker_->OnObserverFinishedFrame(&obs1_, BeginFrameAck(1, 10, 10, 0, true));
+  tracker_->OnObserverFinishedFrame(&obs1_, BeginFrameAck(1, 10, 10, true));
   EXPECT_ACK_TRACKER_STATE(true, true, 10u);
 
   // Changing source id with an observer sets confirmed BeginFrame to invalid.
@@ -821,7 +789,7 @@ class ExternalBeginFrameSourceTest : public ::testing::Test {
 };
 
 TEST_F(ExternalBeginFrameSourceTest, CallsOnDidFinishFrameWithoutObservers) {
-  EXPECT_CALL((*client_), OnDidFinishFrame(BeginFrameAck(0, 2, 2, 0, false)))
+  EXPECT_CALL((*client_), OnDidFinishFrame(BeginFrameAck(0, 2, 2, false)))
       .Times(1);
   source_->OnBeginFrame(CreateBeginFrameArgsForTesting(
       BEGINFRAME_FROM_HERE, 0, 2, base::TimeTicks::FromInternalValue(10000)));
@@ -838,18 +806,18 @@ TEST_F(ExternalBeginFrameSourceTest,
   EXPECT_BEGIN_FRAME_ARGS_USED(*obs_, args);
   source_->OnBeginFrame(args);
 
-  EXPECT_CALL((*client_), OnDidFinishFrame(BeginFrameAck(0, 2, 2, 0, true)))
+  EXPECT_CALL((*client_), OnDidFinishFrame(BeginFrameAck(0, 2, 2, true)))
       .Times(1);
-  source_->DidFinishFrame(obs_.get(), BeginFrameAck(0, 2, 2, 0, true));
+  source_->DidFinishFrame(obs_.get(), BeginFrameAck(0, 2, 2, true));
 
   args = CreateBeginFrameArgsForTesting(
       BEGINFRAME_FROM_HERE, 0, 3, base::TimeTicks::FromInternalValue(20000));
   EXPECT_BEGIN_FRAME_ARGS_USED(*obs_, args);
   source_->OnBeginFrame(args);
 
-  EXPECT_CALL((*client_), OnDidFinishFrame(BeginFrameAck(0, 3, 2, 0, false)))
+  EXPECT_CALL((*client_), OnDidFinishFrame(BeginFrameAck(0, 3, 2, false)))
       .Times(1);
-  source_->DidFinishFrame(obs_.get(), BeginFrameAck(0, 3, 2, 0, false));
+  source_->DidFinishFrame(obs_.get(), BeginFrameAck(0, 3, 2, false));
 }
 
 TEST_F(ExternalBeginFrameSourceTest,
@@ -862,9 +830,9 @@ TEST_F(ExternalBeginFrameSourceTest,
       BEGINFRAME_FROM_HERE, 0, 2, base::TimeTicks::FromInternalValue(10000));
   EXPECT_BEGIN_FRAME_ARGS_DROP(*obs_, args);
   source_->OnBeginFrame(args);
-  EXPECT_CALL((*client_), OnDidFinishFrame(BeginFrameAck(0, 2, 0, 0, false)))
+  EXPECT_CALL((*client_), OnDidFinishFrame(BeginFrameAck(0, 2, 0, false)))
       .Times(1);
-  source_->DidFinishFrame(obs_.get(), BeginFrameAck(0, 2, 0, 0, false));
+  source_->DidFinishFrame(obs_.get(), BeginFrameAck(0, 2, 0, false));
 }
 
 TEST_F(ExternalBeginFrameSourceTest, CallsOnDidFinishFrameWhenObserverRemoved) {
@@ -877,7 +845,7 @@ TEST_F(ExternalBeginFrameSourceTest, CallsOnDidFinishFrameWhenObserverRemoved) {
   EXPECT_BEGIN_FRAME_ARGS_USED(*obs_, args);
   source_->OnBeginFrame(args);
 
-  EXPECT_CALL((*client_), OnDidFinishFrame(BeginFrameAck(0, 2, 2, 0, false)))
+  EXPECT_CALL((*client_), OnDidFinishFrame(BeginFrameAck(0, 2, 2, false)))
       .Times(1);
   EXPECT_CALL((*client_), OnNeedsBeginFrames(false)).Times(1);
   source_->RemoveObserver(obs_.get());
@@ -895,7 +863,7 @@ TEST_F(ExternalBeginFrameSourceTest, OnBeginFrameChecksBeginFrameContinuity) {
   source_->OnBeginFrame(args);
 
   // Providing same args again to OnBeginFrame() should not notify observer.
-  EXPECT_CALL((*client_), OnDidFinishFrame(BeginFrameAck(0, 2, 0, 0, false)))
+  EXPECT_CALL((*client_), OnDidFinishFrame(BeginFrameAck(0, 2, 0, false)))
       .Times(1);
   source_->OnBeginFrame(args);
 

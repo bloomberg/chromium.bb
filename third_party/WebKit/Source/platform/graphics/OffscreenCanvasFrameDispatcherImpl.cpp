@@ -407,7 +407,7 @@ void OffscreenCanvasFrameDispatcherImpl::OnBeginFrame(
   // TODO(eseckler): Set correct |latest_confirmed_sequence_number|.
   m_currentBeginFrameAck = cc::BeginFrameAck(
       beginFrameArgs.source_id, beginFrameArgs.sequence_number,
-      beginFrameArgs.sequence_number, 0, false);
+      beginFrameArgs.sequence_number, false);
   client()->beginFrame();
   // TODO(eseckler): Tell |m_sink| if we did not draw during the BeginFrame.
   m_currentBeginFrameAck.sequence_number =

@@ -201,13 +201,11 @@ TEST_F(StructTraitsTest, BeginFrameAck) {
   const uint32_t source_id = 5;
   const uint64_t sequence_number = 10;
   const uint64_t latest_confirmed_sequence_number = 8;
-  const uint32_t remaining_frames = 1;
   const bool has_damage = true;
   BeginFrameAck input;
   input.source_id = source_id;
   input.sequence_number = sequence_number;
   input.latest_confirmed_sequence_number = latest_confirmed_sequence_number;
-  input.remaining_frames = remaining_frames;
   input.has_damage = has_damage;
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
   BeginFrameAck output;
@@ -216,8 +214,7 @@ TEST_F(StructTraitsTest, BeginFrameAck) {
   EXPECT_EQ(sequence_number, output.sequence_number);
   EXPECT_EQ(latest_confirmed_sequence_number,
             output.latest_confirmed_sequence_number);
-  // |remaining_frames| and |has_damage| are not transmitted.
-  EXPECT_EQ(0u, output.remaining_frames);
+  // |has_damage| is not transmitted.
   EXPECT_FALSE(output.has_damage);
 }
 
@@ -279,7 +276,7 @@ TEST_F(StructTraitsTest, CompositorFrame) {
   const float page_scale_factor = 1337.5f;
   const gfx::SizeF scrollable_viewport_size(1337.7f, 1234.5f);
   const uint32_t content_source_id = 3;
-  const BeginFrameAck begin_frame_ack(5, 10, 8, 0, false);
+  const BeginFrameAck begin_frame_ack(5, 10, 8, false);
 
   CompositorFrame input;
   input.metadata.device_scale_factor = device_scale_factor;

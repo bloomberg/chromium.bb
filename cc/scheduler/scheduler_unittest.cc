@@ -2868,7 +2868,7 @@ TEST_F(SchedulerTest, SynchronousCompositorCommitAndVerifyBeginFrameAcks) {
   EXPECT_EQ(
       BeginFrameAck(fake_external_begin_frame_source_->source_id(),
                     last_begin_frame_number, latest_confirmed_sequence_number,
-                    0, has_damage),
+                    has_damage),
       fake_external_begin_frame_source_->LastAckForObserver(scheduler_.get()));
 
   scheduler_->SetNeedsBeginMainFrame();
@@ -2885,7 +2885,7 @@ TEST_F(SchedulerTest, SynchronousCompositorCommitAndVerifyBeginFrameAcks) {
   has_damage = false;
   EXPECT_EQ(
       BeginFrameAck(args.source_id, args.sequence_number,
-                    latest_confirmed_sequence_number, 0, has_damage),
+                    latest_confirmed_sequence_number, has_damage),
       fake_external_begin_frame_source_->LastAckForObserver(scheduler_.get()));
 
   scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
@@ -2900,7 +2900,7 @@ TEST_F(SchedulerTest, SynchronousCompositorCommitAndVerifyBeginFrameAcks) {
   has_damage = false;
   EXPECT_EQ(
       BeginFrameAck(args.source_id, args.sequence_number,
-                    latest_confirmed_sequence_number, 0, has_damage),
+                    latest_confirmed_sequence_number, has_damage),
       fake_external_begin_frame_source_->LastAckForObserver(scheduler_.get()));
 
   scheduler_->NotifyReadyToCommit();
@@ -2925,7 +2925,7 @@ TEST_F(SchedulerTest, SynchronousCompositorCommitAndVerifyBeginFrameAcks) {
   has_damage = false;
   EXPECT_EQ(
       BeginFrameAck(args.source_id, args.sequence_number,
-                    latest_confirmed_sequence_number, 0, has_damage),
+                    latest_confirmed_sequence_number, has_damage),
       fake_external_begin_frame_source_->LastAckForObserver(scheduler_.get()));
 
   // Android onDraw.
@@ -2948,7 +2948,7 @@ TEST_F(SchedulerTest, SynchronousCompositorCommitAndVerifyBeginFrameAcks) {
   has_damage = false;
   EXPECT_EQ(
       BeginFrameAck(args.source_id, args.sequence_number,
-                    latest_confirmed_sequence_number, 0, has_damage),
+                    latest_confirmed_sequence_number, has_damage),
       fake_external_begin_frame_source_->LastAckForObserver(scheduler_.get()));
 }
 
@@ -3386,7 +3386,7 @@ TEST_F(SchedulerTest, BeginFrameAckForFinishedImplFrame) {
   EXPECT_EQ(
       BeginFrameAck(fake_external_begin_frame_source_->source_id(),
                     last_begin_frame_number, latest_confirmed_sequence_number,
-                    0, has_damage),
+                    has_damage),
       fake_external_begin_frame_source_->LastAckForObserver(scheduler_.get()));
 
   // Run a successful redraw and verify that a new ack is sent.
@@ -3411,7 +3411,7 @@ TEST_F(SchedulerTest, BeginFrameAckForFinishedImplFrame) {
   has_damage = true;
   EXPECT_EQ(
       BeginFrameAck(args.source_id, args.sequence_number,
-                    latest_confirmed_sequence_number, 0, has_damage),
+                    latest_confirmed_sequence_number, has_damage),
       fake_external_begin_frame_source_->LastAckForObserver(scheduler_.get()));
 
   // Request another redraw, but fail it. Verify that a new ack is sent, but
@@ -3439,7 +3439,7 @@ TEST_F(SchedulerTest, BeginFrameAckForFinishedImplFrame) {
   has_damage = false;
   EXPECT_EQ(
       BeginFrameAck(args.source_id, args.sequence_number,
-                    latest_confirmed_sequence_number, 0, has_damage),
+                    latest_confirmed_sequence_number, has_damage),
       fake_external_begin_frame_source_->LastAckForObserver(scheduler_.get()));
 }
 
@@ -3472,7 +3472,7 @@ TEST_F(SchedulerTest, BeginFrameAckForSkippedImplFrame) {
   bool has_damage = true;
   EXPECT_EQ(
       BeginFrameAck(args.source_id, args.sequence_number,
-                    latest_confirmed_sequence_number, 0, has_damage),
+                    latest_confirmed_sequence_number, has_damage),
       fake_external_begin_frame_source_->LastAckForObserver(scheduler_.get()));
 
   // Request another redraw that will be skipped because the swap ack is still
@@ -3491,7 +3491,7 @@ TEST_F(SchedulerTest, BeginFrameAckForSkippedImplFrame) {
   has_damage = false;
   EXPECT_EQ(
       BeginFrameAck(args.source_id, args.sequence_number,
-                    latest_confirmed_sequence_number, 0, has_damage),
+                    latest_confirmed_sequence_number, has_damage),
       fake_external_begin_frame_source_->LastAckForObserver(scheduler_.get()));
 }
 
@@ -3528,7 +3528,7 @@ TEST_F(SchedulerTest, BeginFrameAckForBeginFrameBeforeLastDeadline) {
   bool has_damage = false;
   EXPECT_EQ(
       BeginFrameAck(args.source_id, args.sequence_number,
-                    latest_confirmed_sequence_number, 0, has_damage),
+                    latest_confirmed_sequence_number, has_damage),
       fake_external_begin_frame_source_->LastAckForObserver(scheduler_.get()));
 }
 
@@ -3565,7 +3565,7 @@ TEST_F(SchedulerTest, BeginFrameAckForDroppedBeginFrame) {
   bool has_damage = false;
   EXPECT_EQ(
       BeginFrameAck(second_args.source_id, second_args.sequence_number,
-                    latest_confirmed_sequence_number, 0, has_damage),
+                    latest_confirmed_sequence_number, has_damage),
       fake_external_begin_frame_source_->LastAckForObserver(scheduler_.get()));
 
   task_runner().RunPendingTasks();  // Run deadline of prior BeginFrame.
@@ -3578,7 +3578,7 @@ TEST_F(SchedulerTest, BeginFrameAckForDroppedBeginFrame) {
   has_damage = false;
   EXPECT_EQ(
       BeginFrameAck(first_args.source_id, first_args.sequence_number,
-                    latest_confirmed_sequence_number, 0, has_damage),
+                    latest_confirmed_sequence_number, has_damage),
       fake_external_begin_frame_source_->LastAckForObserver(scheduler_.get()));
 }
 
@@ -3610,7 +3610,7 @@ TEST_F(SchedulerTest, BeginFrameAckForLateMissedBeginFrame) {
   bool has_damage = false;
   EXPECT_EQ(
       BeginFrameAck(args.source_id, args.sequence_number,
-                    latest_confirmed_sequence_number, 0, has_damage),
+                    latest_confirmed_sequence_number, has_damage),
       fake_external_begin_frame_source_->LastAckForObserver(scheduler_.get()));
 }
 
@@ -3643,7 +3643,7 @@ TEST_F(SchedulerTest, BeginFrameAckForFinishedBeginFrameWithNewSourceId) {
   bool has_damage = true;
   EXPECT_EQ(
       BeginFrameAck(args.source_id, args.sequence_number,
-                    latest_confirmed_sequence_number, 0, has_damage),
+                    latest_confirmed_sequence_number, has_damage),
       fake_external_begin_frame_source_->LastAckForObserver(scheduler_.get()));
 }
 
@@ -3676,7 +3676,7 @@ TEST_F(SchedulerTest,
   bool has_damage = false;
   EXPECT_EQ(
       BeginFrameAck(args.source_id, args.sequence_number,
-                    latest_confirmed_sequence_number, 0, has_damage),
+                    latest_confirmed_sequence_number, has_damage),
       fake_external_begin_frame_source_->LastAckForObserver(scheduler_.get()));
 }
 

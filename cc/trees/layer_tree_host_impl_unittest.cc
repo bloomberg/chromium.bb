@@ -96,7 +96,7 @@ namespace {
 struct TestFrameData : public LayerTreeHostImpl::FrameData {
   TestFrameData() {
     // Set ack to something valid, so DCHECKs don't complain.
-    begin_frame_ack = BeginFrameAck(0, 1, 1, 0, true);
+    begin_frame_ack = BeginFrameAck(0, 1, 1, true);
   }
 };
 

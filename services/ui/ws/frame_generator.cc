@@ -102,7 +102,7 @@ void FrameGenerator::SetExternalTilePriorityConstraints(
 void FrameGenerator::OnBeginFrame(const cc::BeginFrameArgs& begin_frame_args) {
   current_begin_frame_ack_ = cc::BeginFrameAck(
       begin_frame_args.source_id, begin_frame_args.sequence_number,
-      begin_frame_args.sequence_number, 0, false);
+      begin_frame_args.sequence_number, false);
   if (begin_frame_args.type == cc::BeginFrameArgs::MISSED) {
     begin_frame_source_->DidFinishFrame(this, current_begin_frame_ack_);
     return;

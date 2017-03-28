@@ -75,8 +75,6 @@ void CompositorFrameSinkSupport::BeginFrameDidNotSwap(
   DCHECK_LE(BeginFrameArgs::kStartingFrameNumber, ack.sequence_number);
   // |has_damage| is not transmitted, but false by default.
   DCHECK(!ack.has_damage);
-  // |remaining_frames| is not transmitted, but 0 by default.
-  DCHECK_EQ(0u, ack.remaining_frames);
   if (begin_frame_source_)
     begin_frame_source_->DidFinishFrame(this, ack);
 }
@@ -93,9 +91,8 @@ void CompositorFrameSinkSupport::SubmitCompositorFrame(
     frame.metadata.begin_frame_ack.sequence_number =
         BeginFrameArgs::kStartingFrameNumber;
   }
-  // |has_damage| and |remaining_frames| are not transmitted.
+  // |has_damage| is not transmitted.
   frame.metadata.begin_frame_ack.has_damage = true;
-  frame.metadata.begin_frame_ack.remaining_frames = 0;
 
   surface_factory_.SubmitCompositorFrame(
       local_surface_id, std::move(frame),

@@ -73,14 +73,14 @@ SurfaceId MakeSurfaceId(const FrameSinkId& frame_sink_id, uint32_t local_id) {
 
 CompositorFrame MakeCompositorFrame() {
   CompositorFrame compositor_frame;
-  compositor_frame.metadata.begin_frame_ack = BeginFrameAck(0, 1, 1, 0, true);
+  compositor_frame.metadata.begin_frame_ack = BeginFrameAck(0, 1, 1, true);
   return compositor_frame;
 }
 
 CompositorFrame MakeCompositorFrame(
     std::vector<SurfaceId> referenced_surfaces) {
   CompositorFrame compositor_frame;
-  compositor_frame.metadata.begin_frame_ack = BeginFrameAck(0, 1, 1, 0, true);
+  compositor_frame.metadata.begin_frame_ack = BeginFrameAck(0, 1, 1, true);
   compositor_frame.metadata.referenced_surfaces =
       std::move(referenced_surfaces);
   return compositor_frame;
@@ -90,7 +90,7 @@ CompositorFrame MakeCompositorFrameWithResources(
     std::vector<SurfaceId> referenced_surfaces,
     TransferableResourceArray resource_list) {
   CompositorFrame compositor_frame;
-  compositor_frame.metadata.begin_frame_ack = BeginFrameAck(0, 1, 1, 0, true);
+  compositor_frame.metadata.begin_frame_ack = BeginFrameAck(0, 1, 1, true);
   compositor_frame.metadata.referenced_surfaces =
       std::move(referenced_surfaces);
   compositor_frame.resource_list = std::move(resource_list);
@@ -968,7 +968,7 @@ TEST_F(CompositorFrameSinkSupportTest, PassesOnBeginFrameAcks) {
 
   // Check that the support forwards a BeginFrameDidNotSwap ack to the
   // BeginFrameSource.
-  BeginFrameAck ack(0, 1, 1, 0, false);
+  BeginFrameAck ack(0, 1, 1, false);
   display_support().BeginFrameDidNotSwap(ack);
   EXPECT_EQ(ack, begin_frame_source()->LastAckForObserver(&display_support()));
 

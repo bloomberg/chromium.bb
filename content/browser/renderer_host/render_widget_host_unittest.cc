@@ -231,7 +231,7 @@ namespace  {
 cc::CompositorFrame MakeCompositorFrame(float scale_factor, gfx::Size size) {
   cc::CompositorFrame frame;
   frame.metadata.device_scale_factor = scale_factor;
-  frame.metadata.begin_frame_ack = cc::BeginFrameAck(0, 1, 1, 0, true);
+  frame.metadata.begin_frame_ack = cc::BeginFrameAck(0, 1, 1, true);
 
   std::unique_ptr<cc::RenderPass> pass = cc::RenderPass::Create();
   pass->SetNew(1, gfx::Rect(size), gfx::Rect(), gfx::Transform());
@@ -1336,7 +1336,7 @@ TEST_F(RenderWidgetHostTest, SwapCompositorFrameWithBadSourceId) {
   {
     // First swap a frame with an invalid ID.
     cc::CompositorFrame frame = MakeCompositorFrame(1.f, frame_size);
-    frame.metadata.begin_frame_ack = cc::BeginFrameAck(0, 1, 1, 0, true);
+    frame.metadata.begin_frame_ack = cc::BeginFrameAck(0, 1, 1, true);
     frame.metadata.content_source_id = 99;
     host_->OnMessageReceived(ViewHostMsg_SwapCompositorFrame(
         0, 0, local_surface_id, frame, std::vector<IPC::Message>()));

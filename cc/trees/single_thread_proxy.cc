@@ -495,7 +495,7 @@ void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
     LayerTreeHostImpl::FrameData frame;
     frame.begin_frame_ack = BeginFrameAck(
         begin_frame_args.source_id, begin_frame_args.sequence_number,
-        begin_frame_args.sequence_number, 0, true);
+        begin_frame_args.sequence_number, true);
     DoComposite(&frame);
 
     // DoComposite could abort, but because this is a synchronous composite
