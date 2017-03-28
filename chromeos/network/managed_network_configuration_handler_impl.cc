@@ -354,14 +354,58 @@ void ManagedNetworkConfigurationHandlerImpl::CreateConfiguration(
     const base::DictionaryValue& properties,
     const network_handler::ServiceResultCallback& callback,
     const network_handler::ErrorCallback& error_callback) const {
-  const Policies* policies = GetPoliciesForUser(userhash);
+  // Validate the ONC dictionary. We are liberal and ignore unknown field
+  // names. User settings are only partial ONC, thus we ignore missing fields.
+  onc::Validator validator(false,   // Ignore unknown fields.
+                           false,   // Ignore invalid recommended field names.
+                           false,   // Ignore missing fields.
+                           false);  // This ONC does not come from policy.
+
+  onc::Validator::Result validation_result;
+  std::unique_ptr<base::DictionaryValue> validated_properties =
+      validator.ValidateAndRepairObject(&onc::kNetworkConfigurationSignature,
+                                        properties, &validation_result);
+
+  if (validation_result == onc::Validator::INVALID) {
+    InvokeErrorCallback("", error_callback, kInvalidUserSettings);
+    return;
+  }
+
+  if (validation_result == onc::Validator::VALID_WITH_WARNINGS)
+    LOG(WARNING) << "Validation of ONC user settings produced warnings.";
+
+  // Fill in HexSSID field from contents of SSID field if not set already - this
+  // is required to properly match the configuration against existing policies.
+  if (validated_properties) {
+    onc::FillInHexSSIDFieldsInOncObject(onc::kNetworkConfigurationSignature,
+                                        validated_properties.get());
+  }
+
+  // Make sure the network is not configured through a user policy.
+  const Policies* policies = nullptr;
+  if (!userhash.empty()) {
+    policies = GetPoliciesForUser(userhash);
+    if (!policies) {
+      InvokeErrorCallback("", error_callback, kPoliciesNotInitialized);
+      return;
+    }
+
+    if (policy_util::FindMatchingPolicy(policies->per_network_config,
+                                        *validated_properties)) {
+      InvokeErrorCallback("", error_callback, kNetworkAlreadyConfigured);
+      return;
+    }
+  }
+
+  // Make user the network is not configured through a device policy.
+  policies = GetPoliciesForUser("");
   if (!policies) {
     InvokeErrorCallback("", error_callback, kPoliciesNotInitialized);
     return;
   }
 
   if (policy_util::FindMatchingPolicy(policies->per_network_config,
-                                      properties)) {
+                                      *validated_properties)) {
     InvokeErrorCallback("", error_callback, kNetworkAlreadyConfigured);
     return;
   }
@@ -384,7 +428,7 @@ void ManagedNetworkConfigurationHandlerImpl::CreateConfiguration(
       policy_util::CreateShillConfiguration(*profile, guid,
                                             NULL,  // no global policy
                                             NULL,  // no network policy
-                                            &properties));
+                                            validated_properties.get()));
 
   network_configuration_handler_->CreateShillConfiguration(
       *shill_dictionary, NetworkConfigurationObserver::SOURCE_USER_ACTION,
