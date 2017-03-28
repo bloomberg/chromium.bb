@@ -993,10 +993,10 @@ void PasswordAutofillAgent::OnDynamicFormsSeen() {
 }
 
 void PasswordAutofillAgent::AJAXSucceeded() {
-  OnSamePageNavigationCompleted();
+  OnSameDocumentNavigationCompleted();
 }
 
-void PasswordAutofillAgent::OnSamePageNavigationCompleted() {
+void PasswordAutofillAgent::OnSameDocumentNavigationCompleted() {
   if (!provisionally_saved_form_.IsPasswordValid())
     return;
 
@@ -1154,9 +1154,10 @@ void PasswordAutofillAgent::WillCommitProvisionalLoad() {
 }
 
 void PasswordAutofillAgent::DidCommitProvisionalLoad(
-    bool is_new_navigation, bool is_same_page_navigation) {
-  if (is_same_page_navigation) {
-    OnSamePageNavigationCompleted();
+    bool is_new_navigation,
+    bool is_same_document_navigation) {
+  if (is_same_document_navigation) {
+    OnSameDocumentNavigationCompleted();
   }
 }
 

@@ -43,7 +43,7 @@ class ChromeRenderFrameObserver
   void DidStartProvisionalLoad(blink::WebDataSource* data_source) override;
   void DidFinishLoad() override;
   void DidCommitProvisionalLoad(bool is_new_navigation,
-                                bool is_same_page_navigation) override;
+                                bool is_same_document_navigation) override;
   void DidMeaningfulLayout(blink::WebMeaningfulLayout layout_type) override;
   void OnDestruct() override;
 

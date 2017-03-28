@@ -2602,7 +2602,7 @@ TEST_F(PasswordAutofillAgentTest, SuggestWhenJavaScriptUpdatesFieldNames) {
   CheckSuggestions("", false);
 }
 
-// Checks that an in-page navigation form submission could have an empty
+// Checks that a same-document navigation form submission could have an empty
 // username.
 TEST_F(PasswordAutofillAgentTest, InPageNavigationSubmissionUsernameIsEmpty) {
   username_element_.setValue(WebString());

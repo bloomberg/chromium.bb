@@ -124,11 +124,12 @@ void NetErrorHelper::DidStartProvisionalLoad(
                      GetLoadingPageType(data_source));
 }
 
-void NetErrorHelper::DidCommitProvisionalLoad(bool is_new_navigation,
-                                              bool is_same_page_navigation) {
-  // If this is a "same page" navigation, it's not a real navigation.  There
+void NetErrorHelper::DidCommitProvisionalLoad(
+    bool is_new_navigation,
+    bool is_same_document_navigation) {
+  // If this is a "same-document" navigation, it's not a real navigation.  There
   // wasn't a start event for it, either, so just ignore it.
-  if (is_same_page_navigation)
+  if (is_same_document_navigation)
     return;
 
   // Invalidate weak pointers from old error page controllers. If loading a new

@@ -47,7 +47,7 @@ class ManifestManager : public RenderFrameObserver {
   bool OnMessageReceived(const IPC::Message& message) override;
   void DidChangeManifest() override;
   void DidCommitProvisionalLoad(bool is_new_navigation,
-                                bool is_same_page_navigation) override;
+                                bool is_same_document_navigation) override;
 
  private:
   enum ResolveState {

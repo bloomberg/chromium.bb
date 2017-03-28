@@ -143,8 +143,8 @@ void SubresourceFilterAgent::OnDestruct() {
 
 void SubresourceFilterAgent::DidCommitProvisionalLoad(
     bool is_new_navigation,
-    bool is_same_page_navigation) {
-  if (is_same_page_navigation)
+    bool is_same_document_navigation) {
+  if (is_same_document_navigation)
     return;
 
   filter_for_last_committed_load_.reset();

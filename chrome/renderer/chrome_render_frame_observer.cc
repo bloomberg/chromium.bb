@@ -273,7 +273,7 @@ void ChromeRenderFrameObserver::DidStartProvisionalLoad(
 
 void ChromeRenderFrameObserver::DidCommitProvisionalLoad(
     bool is_new_navigation,
-    bool is_same_page_navigation) {
+    bool is_same_document_navigation) {
   WebLocalFrame* frame = render_frame()->GetWebFrame();
 
   // Don't do anything for subframes.

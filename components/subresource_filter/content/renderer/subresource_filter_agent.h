@@ -68,7 +68,7 @@ class SubresourceFilterAgent
   // content::RenderFrameObserver:
   void OnDestruct() override;
   void DidCommitProvisionalLoad(bool is_new_navigation,
-                                bool is_same_page_navigation) override;
+                                bool is_same_document_navigation) override;
   void DidFailProvisionalLoad(const blink::WebURLError& error) override;
   void DidFinishLoad() override;
   bool OnMessageReceived(const IPC::Message& message) override;

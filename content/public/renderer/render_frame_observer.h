@@ -62,7 +62,7 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   // dispatched just before the Javascript unload event.
   virtual void WillCommitProvisionalLoad() {}
   virtual void DidCommitProvisionalLoad(bool is_new_navigation,
-                                        bool is_same_page_navigation) {}
+                                        bool is_same_document_navigation) {}
   virtual void DidStartProvisionalLoad(blink::WebDataSource* data_source) {}
   virtual void DidFailProvisionalLoad(const blink::WebURLError& error) {}
   virtual void DidFinishLoad() {}

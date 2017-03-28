@@ -124,7 +124,7 @@ class SubresourceFilterAgentTest : public ::testing::Test {
   void StartLoadWithoutSettingActivationLevel() {
     agent_as_rfo()->DidStartProvisionalLoad(nullptr);
     agent_as_rfo()->DidCommitProvisionalLoad(
-        true /* is_new_navigation */, false /* is_same_page_navigation */);
+        true /* is_new_navigation */, false /* is_same_document_navigation */);
   }
 
   void PerformSamePageNavigationWithoutSettingActivationLevel() {
@@ -141,7 +141,7 @@ class SubresourceFilterAgentTest : public ::testing::Test {
         SubresourceFilterMsg_ActivateForNextCommittedLoad(
             0, activation_level, measure_performance)));
     agent_as_rfo()->DidCommitProvisionalLoad(
-        true /* is_new_navigation */, false /* is_same_page_navigation */);
+        true /* is_new_navigation */, false /* is_same_document_navigation */);
   }
 
   void FinishLoad() { agent_as_rfo()->DidFinishLoad(); }
@@ -420,8 +420,8 @@ TEST_F(SubresourceFilterAgentTest,
           0, ActivationLevel::ENABLED, true)));
   agent_as_rfo()->DidFailProvisionalLoad(blink::WebURLError());
   agent_as_rfo()->DidStartProvisionalLoad(nullptr);
-  agent_as_rfo()->DidCommitProvisionalLoad(true /* is_new_navigation */,
-                                           false /* is_same_page_navigation */);
+  agent_as_rfo()->DidCommitProvisionalLoad(
+      true /* is_new_navigation */, false /* is_same_document_navigation */);
   FinishLoad();
 }
 

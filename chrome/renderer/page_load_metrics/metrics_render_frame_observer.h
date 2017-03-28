@@ -35,7 +35,7 @@ class MetricsRenderFrameObserver : public content::RenderFrameObserver {
   void DidObserveLoadingBehavior(
       blink::WebLoadingBehaviorFlag behavior) override;
   void DidCommitProvisionalLoad(bool is_new_navigation,
-                                bool is_same_page_navigation) override;
+                                bool is_same_document_navigation) override;
   void OnDestruct() override;
 
   // Invoked when a frame is going away. This is our last chance to send IPCs

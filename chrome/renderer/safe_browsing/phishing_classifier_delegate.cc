@@ -144,7 +144,7 @@ void PhishingClassifierDelegate::OnStartPhishingDetection(const GURL& url) {
 
 void PhishingClassifierDelegate::DidCommitProvisionalLoad(
     bool is_new_navigation,
-    bool is_same_page_navigation) {
+    bool is_same_document_navigation) {
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   // A new page is starting to load, so cancel classificaiton.
   //

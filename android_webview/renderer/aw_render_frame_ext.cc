@@ -139,8 +139,9 @@ AwRenderFrameExt::AwRenderFrameExt(content::RenderFrame* render_frame)
 AwRenderFrameExt::~AwRenderFrameExt() {
 }
 
-void AwRenderFrameExt::DidCommitProvisionalLoad(bool is_new_navigation,
-                                                bool is_same_page_navigation) {
+void AwRenderFrameExt::DidCommitProvisionalLoad(
+    bool is_new_navigation,
+    bool is_same_document_navigation) {
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   content::DocumentState* document_state =
       content::DocumentState::FromDataSource(frame->dataSource());

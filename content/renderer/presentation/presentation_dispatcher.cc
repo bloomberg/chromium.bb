@@ -389,10 +389,10 @@ void PresentationDispatcher::setReceiver(
 
 void PresentationDispatcher::DidCommitProvisionalLoad(
     bool is_new_navigation,
-    bool is_same_page_navigation) {
+    bool is_same_document_navigation) {
   blink::WebFrame* frame = render_frame()->GetWebFrame();
   // If not top-level navigation.
-  if (frame->parent() || is_same_page_navigation)
+  if (frame->parent() || is_same_document_navigation)
     return;
 
   // Remove all pending send message requests.

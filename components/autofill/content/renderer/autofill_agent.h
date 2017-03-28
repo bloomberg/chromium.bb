@@ -149,7 +149,7 @@ class AutofillAgent : public content::RenderFrameObserver,
 
   // content::RenderFrameObserver:
   void DidCommitProvisionalLoad(bool is_new_navigation,
-                                bool is_same_page_navigation) override;
+                                bool is_same_document_navigation) override;
   void DidFinishDocumentLoad() override;
   void WillSendSubmitEvent(const blink::WebFormElement& form) override;
   void WillSubmitForm(const blink::WebFormElement& form) override;
@@ -189,8 +189,8 @@ class AutofillAgent : public content::RenderFrameObserver,
   void firstUserGestureObserved() override;
   void ajaxSucceeded() override;
 
-  // Called when a same-page navigation is detected.
-  void OnSamePageNavigationCompleted();
+  // Called when a same-document navigation is detected.
+  void OnSameDocumentNavigationCompleted();
   // Helper method which collects unowned elements (i.e., those not inside a
   // form tag) and writes them into |output|. Returns true if the process is
   // successful, and all conditions for firing events are true.

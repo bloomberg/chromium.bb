@@ -62,7 +62,7 @@ class PhishingClassifierDelegate : public content::RenderFrameObserver {
   // cancelled.  However, if the navigation is within the same page, we
   // continue running the current classification.
   void DidCommitProvisionalLoad(bool is_new_navigation,
-                                bool is_same_page_navigation) override;
+                                bool is_same_document_navigation) override;
 
  private:
   friend class PhishingClassifierDelegateTest;

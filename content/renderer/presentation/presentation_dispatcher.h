@@ -151,9 +151,8 @@ class CONTENT_EXPORT PresentationDispatcher
       const blink::WebVector<blink::WebURL>& presentationUrls) override;
 
   // RenderFrameObserver implementation.
-  void DidCommitProvisionalLoad(
-      bool is_new_navigation,
-      bool is_same_page_navigation) override;
+  void DidCommitProvisionalLoad(bool is_new_navigation,
+                                bool is_same_document_navigation) override;
   void OnDestruct() override;
   void WidgetWillClose() override;
 

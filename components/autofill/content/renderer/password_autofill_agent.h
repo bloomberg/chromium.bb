@@ -200,7 +200,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   void DidStartProvisionalLoad(blink::WebDataSource* data_source) override;
   void WillCommitProvisionalLoad() override;
   void DidCommitProvisionalLoad(bool is_new_navigation,
-                                bool is_same_page_navigation) override;
+                                bool is_same_document_navigation) override;
   void WillSendSubmitEvent(const blink::WebFormElement& form) override;
   void WillSubmitForm(const blink::WebFormElement& form) override;
   void OnDestruct() override;
@@ -251,8 +251,8 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
                                  const blink::WebInputElement& input,
                                  ProvisionallySaveRestriction restriction);
 
-  // Helper function called when in-page navigation completed
-  void OnSamePageNavigationCompleted();
+  // Helper function called when same-document navigation completed
+  void OnSameDocumentNavigationCompleted();
 
   const mojom::AutofillDriverPtr& GetAutofillDriver();
 

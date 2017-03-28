@@ -181,12 +181,12 @@ bool ContentSettingsObserver::OnMessageReceived(const IPC::Message& message) {
 
 void ContentSettingsObserver::DidCommitProvisionalLoad(
     bool is_new_navigation,
-    bool is_same_page_navigation) {
+    bool is_same_document_navigation) {
   WebFrame* frame = render_frame()->GetWebFrame();
   if (frame->parent())
     return;  // Not a top-level navigation.
 
-  if (!is_same_page_navigation) {
+  if (!is_same_document_navigation) {
     // Clear "block" flags for the new page. This needs to happen before any of
     // |allowScript()|, |allowScriptFromSource()|, |allowImage()|, or
     // |allowPlugins()| is called for the new page so that these functions can

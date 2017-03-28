@@ -183,15 +183,15 @@ bool AutofillAgent::FormDataCompare::operator()(const FormData& lhs,
 }
 
 void AutofillAgent::DidCommitProvisionalLoad(bool is_new_navigation,
-                                             bool is_same_page_navigation) {
+                                             bool is_same_document_navigation) {
   blink::WebFrame* frame = render_frame()->GetWebFrame();
   // TODO(dvadym): check if we need to check if it is main frame navigation
   // http://crbug.com/443155
   if (frame->parent())
     return;  // Not a top-level navigation.
 
-  if (is_same_page_navigation) {
-    OnSamePageNavigationCompleted();
+  if (is_same_document_navigation) {
+    OnSameDocumentNavigationCompleted();
   } else {
     // Navigation to a new page or a page refresh.
     form_cache_.Reset();
@@ -579,7 +579,7 @@ void AutofillAgent::ShowNotSecureWarning(
   is_popup_possibly_visible_ = true;
 }
 
-void AutofillAgent::OnSamePageNavigationCompleted() {
+void AutofillAgent::OnSameDocumentNavigationCompleted() {
   if (last_interacted_form_.isNull()) {
     // If no last interacted form is available (i.e., there is no form tag),
     // we check if all the elements the user has interacted with are gone,
@@ -781,7 +781,7 @@ void AutofillAgent::didAssociateFormControlsDynamically() {
 }
 
 void AutofillAgent::ajaxSucceeded() {
-  OnSamePageNavigationCompleted();
+  OnSameDocumentNavigationCompleted();
   password_autofill_agent_->AJAXSucceeded();
 }
 
