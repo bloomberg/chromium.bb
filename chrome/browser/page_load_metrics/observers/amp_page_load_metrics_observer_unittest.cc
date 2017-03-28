@@ -41,21 +41,22 @@ class AMPPageLoadMetricsObserverTest
 
   void ValidateHistograms(bool expect_histograms) {
     ValidateHistogramsFor(
-        "PageLoad.Clients.AMPCache.DocumentTiming."
+        "PageLoad.Clients.AMPCache2.DocumentTiming."
         "NavigationToDOMContentLoadedEventFired",
         timing_.dom_content_loaded_event_start, expect_histograms);
     ValidateHistogramsFor(
-        "PageLoad.Clients.AMPCache.DocumentTiming.NavigationToFirstLayout",
+        "PageLoad.Clients.AMPCache2.DocumentTiming.NavigationToFirstLayout",
         timing_.first_layout, expect_histograms);
     ValidateHistogramsFor(
-        "PageLoad.Clients.AMPCache.DocumentTiming.NavigationToLoadEventFired",
+        "PageLoad.Clients.AMPCache2.DocumentTiming."
+        "NavigationToLoadEventFired",
         timing_.load_event_start, expect_histograms);
     ValidateHistogramsFor(
-        "PageLoad.Clients.AMPCache.PaintTiming."
+        "PageLoad.Clients.AMPCache2.PaintTiming."
         "NavigationToFirstContentfulPaint",
         timing_.first_contentful_paint, expect_histograms);
     ValidateHistogramsFor(
-        "PageLoad.Clients.AMPCache.ParseTiming.NavigationToParseStart",
+        "PageLoad.Clients.AMPCache2.ParseTiming.NavigationToParseStart",
         timing_.parse_start, expect_histograms);
   }
 

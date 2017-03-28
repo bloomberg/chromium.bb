@@ -18,16 +18,17 @@
 namespace {
 
 const char kHistogramAMPDOMContentLoadedEventFired[] =
-    "PageLoad.Clients.AMPCache.DocumentTiming."
+    "PageLoad.Clients.AMPCache2.DocumentTiming."
     "NavigationToDOMContentLoadedEventFired";
 const char kHistogramAMPFirstLayout[] =
-    "PageLoad.Clients.AMPCache.DocumentTiming.NavigationToFirstLayout";
+    "PageLoad.Clients.AMPCache2.DocumentTiming.NavigationToFirstLayout";
 const char kHistogramAMPLoadEventFired[] =
-    "PageLoad.Clients.AMPCache.DocumentTiming.NavigationToLoadEventFired";
+    "PageLoad.Clients.AMPCache2.DocumentTiming.NavigationToLoadEventFired";
 const char kHistogramAMPFirstContentfulPaint[] =
-    "PageLoad.Clients.AMPCache.PaintTiming.NavigationToFirstContentfulPaint";
+    "PageLoad.Clients.AMPCache2.PaintTiming."
+    "NavigationToFirstContentfulPaint";
 const char kHistogramAMPParseStart[] =
-    "PageLoad.Clients.AMPCache.ParseTiming.NavigationToParseStart";
+    "PageLoad.Clients.AMPCache2.ParseTiming.NavigationToParseStart";
 
 // Host pattern for AMP Cache URLs.
 // See https://developers.google.com/amp/cache/overview#amp-cache-url-format
@@ -73,8 +74,8 @@ void AMPPageLoadMetricsObserver::OnDomContentLoadedEventStart(
 void AMPPageLoadMetricsObserver::OnLoadEventStart(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  if (!WasStartedInForegroundOptionalEventInForeground(
-          timing.dom_content_loaded_event_start, info)) {
+  if (!WasStartedInForegroundOptionalEventInForeground(timing.load_event_start,
+                                                       info)) {
     return;
   }
   PAGE_LOAD_HISTOGRAM(kHistogramAMPLoadEventFired,
@@ -84,8 +85,8 @@ void AMPPageLoadMetricsObserver::OnLoadEventStart(
 void AMPPageLoadMetricsObserver::OnFirstLayout(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  if (!WasStartedInForegroundOptionalEventInForeground(
-          timing.dom_content_loaded_event_start, info)) {
+  if (!WasStartedInForegroundOptionalEventInForeground(timing.first_layout,
+                                                       info)) {
     return;
   }
   PAGE_LOAD_HISTOGRAM(kHistogramAMPFirstLayout, timing.first_layout.value());
@@ -95,7 +96,7 @@ void AMPPageLoadMetricsObserver::OnFirstContentfulPaint(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (!WasStartedInForegroundOptionalEventInForeground(
-          timing.dom_content_loaded_event_start, info)) {
+          timing.first_contentful_paint, info)) {
     return;
   }
   PAGE_LOAD_HISTOGRAM(kHistogramAMPFirstContentfulPaint,
@@ -105,8 +106,8 @@ void AMPPageLoadMetricsObserver::OnFirstContentfulPaint(
 void AMPPageLoadMetricsObserver::OnParseStart(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  if (!WasStartedInForegroundOptionalEventInForeground(
-          timing.dom_content_loaded_event_start, info)) {
+  if (!WasStartedInForegroundOptionalEventInForeground(timing.parse_start,
+                                                       info)) {
     return;
   }
   PAGE_LOAD_HISTOGRAM(kHistogramAMPParseStart, timing.parse_start.value());
