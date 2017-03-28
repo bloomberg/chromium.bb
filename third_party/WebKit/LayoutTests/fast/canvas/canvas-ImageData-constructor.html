@@ -47,6 +47,7 @@ test(function(t) {
     assert_throws(null, function() {new ImageData(new Uint8ClampedArray(27), 2)});
     assert_throws(null, function() {new ImageData(new Uint8ClampedArray(28), 7, 0)});
     assert_throws(null, function() {new ImageData(new Uint8ClampedArray(104), 14)});
+    assert_throws(null, function() {new ImageData(new Uint8ClampedArray([12, 34, 168, 65328]), 1, 151)});
     assert_throws(null, function() {new ImageData(self, 4, 4)});
     assert_throws(null, function() {new ImageData(null, 4, 4)});
     assert_throws(null, function() {new ImageData(imageData.data, 0)});

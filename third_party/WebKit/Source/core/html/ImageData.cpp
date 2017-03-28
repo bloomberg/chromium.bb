@@ -114,7 +114,7 @@ bool ImageData::validateConstructorArguments(const unsigned& paramFlags,
           "The input data length is not a multiple of (4 * width).");
     }
 
-    if ((paramFlags & kParamHeight & kParamWidth) &&
+    if ((paramFlags & kParamWidth) && (paramFlags & kParamHeight) &&
         height != dataLength / (4 * width))
       return RaiseDOMExceptionAndReturnFalse(
           exceptionState, IndexSizeError,

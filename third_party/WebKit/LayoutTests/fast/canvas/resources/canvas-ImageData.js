@@ -43,6 +43,7 @@ shouldThrow("new ImageData(new Uint8Array(100), 25)");
 shouldThrow("new ImageData(new Uint8ClampedArray(27), 2)");
 shouldThrow("new ImageData(new Uint8ClampedArray(28), 7, 0)");
 shouldThrow("new ImageData(new Uint8ClampedArray(104), 14)");
+shouldThrow("new ImageData(new Uint8ClampedArray([12, 34, 168, 65328]), 1, 151)");
 shouldThrow("new ImageData(self, 4, 4)");
 shouldThrow("new ImageData(null, 4, 4)");
 shouldThrow("new ImageData(imageData.data, 0)");
