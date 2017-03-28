@@ -34,6 +34,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/persistent_histogram_allocator.h"
 #include "base/metrics/persistent_memory_allocator.h"
+#include "base/metrics/user_metrics.h"
 #include "base/process/process_handle.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
@@ -152,7 +153,6 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/resource_context.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/worker_service.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/connection_filter.h"
@@ -2968,7 +2968,7 @@ scoped_refptr<AudioRendererHost> RenderProcessHostImpl::audio_renderer_host()
 
 void RenderProcessHostImpl::OnUserMetricsRecordAction(
     const std::string& action) {
-  RecordComputedAction(action);
+  base::RecordComputedAction(action);
 }
 
 void RenderProcessHostImpl::OnCloseACK(int old_route_id) {

@@ -38,7 +38,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/native_web_keyboard_event.h"
-#include "content/public/browser/user_metrics.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/cocoa/a11y_util.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"

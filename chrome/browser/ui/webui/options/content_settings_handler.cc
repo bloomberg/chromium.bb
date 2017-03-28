@@ -18,6 +18,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -64,7 +65,6 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_switches.h"
@@ -1262,7 +1262,7 @@ void ContentSettingsHandler::SetContentFilter(const base::ListValue* args) {
   const ExceptionsInfoMap& exceptions_info_map = GetExceptionsInfoMap();
   const auto& it = exceptions_info_map.find(content_type);
   if (it != exceptions_info_map.end())
-    content::RecordAction(it->second.uma);
+    base::RecordAction(it->second.uma);
 }
 
 void ContentSettingsHandler::RemoveException(const base::ListValue* args) {

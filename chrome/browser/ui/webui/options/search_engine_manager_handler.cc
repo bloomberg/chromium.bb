@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/options/search_engine_manager_handler.h"
 
 #include "base/bind.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -17,7 +18,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
@@ -226,8 +226,7 @@ void SearchEngineManagerHandler::SetDefaultSearchEngine(
 
   list_controller_->MakeDefaultTemplateURL(index);
 
-  content::RecordAction(
-      base::UserMetricsAction("Options_SearchEngineSetDefault"));
+  base::RecordAction(base::UserMetricsAction("Options_SearchEngineSetDefault"));
 }
 
 void SearchEngineManagerHandler::RemoveSearchEngine(
@@ -242,8 +241,7 @@ void SearchEngineManagerHandler::RemoveSearchEngine(
 
   if (list_controller_->CanRemove(list_controller_->GetTemplateURL(index))) {
     list_controller_->RemoveTemplateURL(index);
-    content::RecordAction(
-        base::UserMetricsAction("Options_SearchEngineRemoved"));
+    base::RecordAction(base::UserMetricsAction("Options_SearchEngineRemoved"));
   }
 }
 

@@ -14,6 +14,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -63,7 +64,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -352,14 +352,14 @@ void InlineSigninHelper::ConfirmEmailAction(
   Browser* browser = chrome::FindLastActiveWithProfile(profile_);
   switch (action) {
     case SigninEmailConfirmationDialog::CREATE_NEW_USER:
-      content::RecordAction(
+      base::RecordAction(
           base::UserMetricsAction("Signin_ImportDataPrompt_DontImport"));
       CreateSyncStarter(browser, web_contents, current_url_, GURL(),
                         refresh_token, OneClickSigninSyncStarter::NEW_PROFILE,
                         start_mode, confirmation_required);
       break;
     case SigninEmailConfirmationDialog::START_SYNC:
-      content::RecordAction(
+      base::RecordAction(
           base::UserMetricsAction("Signin_ImportDataPrompt_ImportData"));
       CreateSyncStarter(browser, web_contents, current_url_, GURL(),
                         refresh_token,
@@ -367,7 +367,7 @@ void InlineSigninHelper::ConfirmEmailAction(
                         confirmation_required);
       break;
     case SigninEmailConfirmationDialog::CLOSE:
-      content::RecordAction(
+      base::RecordAction(
           base::UserMetricsAction("Signin_ImportDataPrompt_Cancel"));
       if (handler_) {
         handler_->SyncStarterCallback(

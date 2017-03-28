@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/user_metrics.h"
 #include "base/time/default_tick_clock.h"
 
 namespace content {

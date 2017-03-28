@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/user_metrics.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -52,7 +53,6 @@
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/signin/core/common/signin_switches.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/user_metrics.h"
 #include "extensions/features/features.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -1009,7 +1009,7 @@ void SupervisedUserService::Shutdown() {
   DCHECK(!did_shutdown_);
   did_shutdown_ = true;
   if (ProfileIsSupervised()) {
-    content::RecordAction(UserMetricsAction("ManagedUsers_QuitBrowser"));
+    base::RecordAction(UserMetricsAction("ManagedUsers_QuitBrowser"));
   }
   SetActive(false);
   sync_blocker_.reset();
@@ -1307,9 +1307,9 @@ void SupervisedUserService::OnStateChanged(syncer::SyncService* sync) {
 void SupervisedUserService::OnBrowserSetLastActive(Browser* browser) {
   bool profile_became_active = profile_->IsSameProfile(browser->profile());
   if (!is_profile_active_ && profile_became_active)
-    content::RecordAction(UserMetricsAction("ManagedUsers_OpenProfile"));
+    base::RecordAction(UserMetricsAction("ManagedUsers_OpenProfile"));
   else if (is_profile_active_ && !profile_became_active)
-    content::RecordAction(UserMetricsAction("ManagedUsers_SwitchProfile"));
+    base::RecordAction(UserMetricsAction("ManagedUsers_SwitchProfile"));
 
   is_profile_active_ = profile_became_active;
 }

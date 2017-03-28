@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/metrics/user_metrics.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -30,7 +31,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -170,7 +170,7 @@ void ConflictsDOMHandler::OnScanCompleted() {
 ///////////////////////////////////////////////////////////////////////////////
 
 ConflictsUI::ConflictsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
-  content::RecordAction(UserMetricsAction("ViewAboutConflicts"));
+  base::RecordAction(UserMetricsAction("ViewAboutConflicts"));
   web_ui->AddMessageHandler(base::MakeUnique<ConflictsDOMHandler>());
 
   // Set up the about:conflicts source.

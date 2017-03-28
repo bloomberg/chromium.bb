@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/metrics/histogram_macros.h"
-#include "content/public/browser/user_metrics.h"
+#include "base/metrics/user_metrics.h"
 #include "ui/message_center/message_center.h"
 
 MessageCenterStatsCollector::NotificationStats::NotificationStats() {}
@@ -110,8 +110,7 @@ void MessageCenterStatsCollector::OnNotificationButtonClicked(
 }
 
 void MessageCenterStatsCollector::OnNotificationSettingsClicked() {
-  content::RecordAction(
-      base::UserMetricsAction("Notifications.ShowSiteSettings"));
+  base::RecordAction(base::UserMetricsAction("Notifications.ShowSiteSettings"));
 }
 
 void MessageCenterStatsCollector::OnNotificationDisplayed(
@@ -131,22 +130,19 @@ void MessageCenterStatsCollector::OnCenterVisibilityChanged(
     case message_center::VISIBILITY_TRANSIENT:
       break;
     case message_center::VISIBILITY_MESSAGE_CENTER:
-      content::RecordAction(
+      base::RecordAction(
           base::UserMetricsAction("Notifications.ShowMessageCenter"));
       break;
     case message_center::VISIBILITY_SETTINGS:
-      content::RecordAction(
-          base::UserMetricsAction("Notifications.ShowSettings"));
+      base::RecordAction(base::UserMetricsAction("Notifications.ShowSettings"));
       break;
   }
 }
 
 void MessageCenterStatsCollector::OnQuietModeChanged(bool in_quiet_mode) {
   if (in_quiet_mode) {
-    content::RecordAction(
-        base::UserMetricsAction("Notifications.Mute"));
+    base::RecordAction(base::UserMetricsAction("Notifications.Mute"));
   } else {
-    content::RecordAction(
-        base::UserMetricsAction("Notifications.Unmute"));
+    base::RecordAction(base::UserMetricsAction("Notifications.Unmute"));
   }
 }

@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -33,7 +34,6 @@
 #include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/extension_pref_value_map.h"
 #include "extensions/browser/extension_pref_value_map_factory.h"
@@ -322,7 +322,7 @@ void CoreOptionsHandler::ClearPref(const std::string& pref_name,
   pref_service->ClearPref(pref_name);
 
   if (!metric.empty())
-    content::RecordComputedAction(metric);
+    base::RecordComputedAction(metric);
 }
 
 void CoreOptionsHandler::ProcessUserMetric(const base::Value* value,
@@ -337,7 +337,7 @@ void CoreOptionsHandler::ProcessUserMetric(const base::Value* value,
     metric_string += bool_value ? "_Enable" : "_Disable";
   }
 
-  content::RecordComputedAction(metric_string);
+  base::RecordComputedAction(metric_string);
 }
 
 void CoreOptionsHandler::NotifyPrefChanged(
@@ -627,7 +627,7 @@ void CoreOptionsHandler::HandleClearPref(const base::ListValue* args) {
 void CoreOptionsHandler::HandleUserMetricsAction(const base::ListValue* args) {
   std::string metric = base::UTF16ToUTF8(ExtractStringValue(args));
   if (!metric.empty())
-    content::RecordComputedAction(metric);
+    base::RecordComputedAction(metric);
 }
 
 void CoreOptionsHandler::HandleDisableExtension(const base::ListValue* args) {

@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
@@ -34,7 +35,6 @@
 #include "chrome/common/url_constants.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/core/common/profile_management_switches.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/constants.h"
@@ -70,8 +70,8 @@ const char kHashMark[] = "#";
 void OpenBookmarkManagerWithHash(Browser* browser,
                                  const std::string& action,
                                  int64_t node_id) {
-  content::RecordAction(UserMetricsAction("ShowBookmarkManager"));
-  content::RecordAction(UserMetricsAction("ShowBookmarks"));
+  base::RecordAction(UserMetricsAction("ShowBookmarkManager"));
+  base::RecordAction(UserMetricsAction("ShowBookmarks"));
   NavigateParams params(GetSingletonTabNavigateParams(
       browser,
       GURL(kChromeUIBookmarksURL).Resolve(base::StringPrintf(
@@ -91,7 +91,7 @@ void NavigateToSingletonTab(Browser* browser, const GURL& url) {
 // shown in the last active browser. If there is no such browser, a new browser
 // is created.
 void ShowHelpImpl(Browser* browser, Profile* profile, HelpSource source) {
-  content::RecordAction(UserMetricsAction("ShowHelpTab"));
+  base::RecordAction(UserMetricsAction("ShowHelpTab"));
 #if defined(OS_CHROMEOS) && defined(OFFICIAL_BUILD)
   const extensions::Extension* extension =
       extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
@@ -183,8 +183,8 @@ std::string GenerateContentSettingsSearchQueryPath(int query_message_id) {
 }  // namespace
 
 void ShowBookmarkManager(Browser* browser) {
-  content::RecordAction(UserMetricsAction("ShowBookmarkManager"));
-  content::RecordAction(UserMetricsAction("ShowBookmarks"));
+  base::RecordAction(UserMetricsAction("ShowBookmarkManager"));
+  base::RecordAction(UserMetricsAction("ShowBookmarks"));
   ShowSingletonTabOverwritingNTP(
       browser,
       GetSingletonTabNavigateParams(browser, GURL(kChromeUIBookmarksURL)));
@@ -195,7 +195,7 @@ void ShowBookmarkManagerForNode(Browser* browser, int64_t node_id) {
 }
 
 void ShowHistory(Browser* browser) {
-  content::RecordAction(UserMetricsAction("ShowHistory"));
+  base::RecordAction(UserMetricsAction("ShowHistory"));
   NavigateParams params(
       GetSingletonTabNavigateParams(browser, GURL(kChromeUIHistoryURL)));
   params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
@@ -203,7 +203,7 @@ void ShowHistory(Browser* browser) {
 }
 
 void ShowDownloads(Browser* browser) {
-  content::RecordAction(UserMetricsAction("ShowDownloads"));
+  base::RecordAction(UserMetricsAction("ShowDownloads"));
   if (browser->window() && browser->window()->IsDownloadShelfVisible())
     browser->window()->GetDownloadShelf()->Close(DownloadShelf::USER_ACTION);
 
@@ -214,7 +214,7 @@ void ShowDownloads(Browser* browser) {
 
 void ShowExtensions(Browser* browser,
                     const std::string& extension_to_highlight) {
-  content::RecordAction(UserMetricsAction("ShowExtensions"));
+  base::RecordAction(UserMetricsAction("ShowExtensions"));
   NavigateParams params(
       GetSingletonTabNavigateParams(browser, GURL(kChromeUIExtensionsURL)));
   params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
@@ -239,7 +239,7 @@ void ShowConflicts(Browser* browser) {
   }
 #endif
 
-  content::RecordAction(UserMetricsAction("AboutConflicts"));
+  base::RecordAction(UserMetricsAction("AboutConflicts"));
   ShowSingletonTab(browser, GURL(kChromeUIConflictsURL));
 }
 
@@ -328,7 +328,7 @@ void ShowSettingsSubPageForProfile(Profile* profile,
 #endif
 
   if (::switches::SettingsWindowEnabled()) {
-    content::RecordAction(base::UserMetricsAction("ShowOptions"));
+    base::RecordAction(base::UserMetricsAction("ShowOptions"));
     SettingsWindowManager::GetInstance()->ShowChromePageForProfile(
         profile, GetSettingsUrl(sub_page_path));
     return;
@@ -342,7 +342,7 @@ void ShowSettingsSubPageForProfile(Profile* profile,
 
 void ShowSettingsSubPageInTabbedBrowser(Browser* browser,
                                         const std::string& sub_page) {
-  content::RecordAction(UserMetricsAction("ShowOptions"));
+  base::RecordAction(UserMetricsAction("ShowOptions"));
   GURL gurl = GetSettingsUrl(sub_page);
   NavigateParams params(GetSingletonTabNavigateParams(browser, gurl));
   params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
@@ -372,22 +372,22 @@ void ShowContentSettings(Browser* browser,
 }
 
 void ShowClearBrowsingDataDialog(Browser* browser) {
-  content::RecordAction(UserMetricsAction("ClearBrowsingData_ShowDlg"));
+  base::RecordAction(UserMetricsAction("ClearBrowsingData_ShowDlg"));
   ShowSettingsSubPage(browser, kClearBrowserDataSubPage);
 }
 
 void ShowPasswordManager(Browser* browser) {
-  content::RecordAction(UserMetricsAction("Options_ShowPasswordManager"));
+  base::RecordAction(UserMetricsAction("Options_ShowPasswordManager"));
   ShowSettingsSubPage(browser, kPasswordManagerSubPage);
 }
 
 void ShowImportDialog(Browser* browser) {
-  content::RecordAction(UserMetricsAction("Import_ShowDlg"));
+  base::RecordAction(UserMetricsAction("Import_ShowDlg"));
   ShowSettingsSubPage(browser, kImportDataSubPage);
 }
 
 void ShowAboutChrome(Browser* browser) {
-  content::RecordAction(UserMetricsAction("AboutChrome"));
+  base::RecordAction(UserMetricsAction("AboutChrome"));
   if (::switches::SettingsWindowEnabled()) {
     SettingsWindowManager::GetInstance()->ShowChromePageForProfile(
         browser->profile(), GURL(kChromeUIHelpURL));
@@ -400,7 +400,7 @@ void ShowAboutChrome(Browser* browser) {
 }
 
 void ShowSearchEngineSettings(Browser* browser) {
-  content::RecordAction(UserMetricsAction("EditSearchEngines"));
+  base::RecordAction(UserMetricsAction("EditSearchEngines"));
   ShowSettingsSubPage(browser, kSearchEnginesSubPage);
 }
 

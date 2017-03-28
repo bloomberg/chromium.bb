@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "chrome/browser/after_startup_task_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
@@ -20,7 +21,6 @@
 #include "components/sync_sessions/sync_sessions_metrics.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 
 namespace {
@@ -114,7 +114,7 @@ void NTPUserDataLogger::LogMostVisitedNavigation(
 
   // Records the action. This will be available as a time-stamped stream
   // server-side and can be used to compute time-to-long-dwell.
-  content::RecordAction(base::UserMetricsAction("MostVisited_Clicked"));
+  base::RecordAction(base::UserMetricsAction("MostVisited_Clicked"));
 }
 
 NTPUserDataLogger::NTPUserDataLogger(content::WebContents* contents)

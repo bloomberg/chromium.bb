@@ -23,6 +23,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -58,7 +59,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/url_data_source.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "media/audio/sounds/sounds_manager.h"
@@ -186,7 +186,7 @@ void ScreenLocker::Init() {
 }
 
 void ScreenLocker::OnAuthFailure(const AuthFailure& error) {
-  content::RecordAction(UserMetricsAction("ScreenLocker_OnLoginFailure"));
+  base::RecordAction(UserMetricsAction("ScreenLocker_OnLoginFailure"));
   if (authentication_start_time_.is_null()) {
     LOG(ERROR) << "Start time is not set at authentication failure";
   } else {
@@ -362,7 +362,7 @@ void ScreenLocker::ClearErrors() {
 
 void ScreenLocker::Signout() {
   web_ui()->ClearErrors();
-  content::RecordAction(UserMetricsAction("ScreenLocker_Signout"));
+  base::RecordAction(UserMetricsAction("ScreenLocker_Signout"));
   // We expect that this call will not wait for any user input.
   // If it changes at some point, we will need to force exit.
   chrome::AttemptUserExit();
@@ -429,7 +429,7 @@ void ScreenLocker::HandleLockScreenRequest() {
 
 // static
 void ScreenLocker::Show() {
-  content::RecordAction(UserMetricsAction("ScreenLocker_Show"));
+  base::RecordAction(UserMetricsAction("ScreenLocker_Show"));
   DCHECK(base::MessageLoopForUI::IsCurrent());
 
   // Check whether the currently logged in user is a guest account and if so,

@@ -7,6 +7,7 @@
 #include "ash/common/system/system_notifier.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "base/command_line.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/helper.h"
@@ -32,7 +33,6 @@
 #include "chromeos/network/network_state_handler.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/browser/user_metrics.h"
 #include "extensions/browser/extension_registry.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -171,7 +171,7 @@ void NotificationClicked(const std::string& network_id,
         ProfileManager::GetPrimaryUserProfile());
     chrome::ShowSingletonTab(displayer.browser(), GURL(info_url));
     if (info_url == kDataSaverExtensionUrl)
-      content::RecordAction(base::UserMetricsAction("DataSaverPrompt_Clicked"));
+      base::RecordAction(base::UserMetricsAction("DataSaverPrompt_Clicked"));
   } else {
     SystemTrayClient::Get()->ShowNetworkSettings(network_id);
   }
@@ -309,7 +309,7 @@ bool DataPromoNotification::ShowDataSaverNotification() {
           kDataSaverNotificationId, title, message, icon,
           ash::system_notifier::kNotifierNetwork,
           base::Bind(&NotificationClicked, "", kDataSaverExtensionUrl)));
-  content::RecordAction(base::UserMetricsAction("DataSaverPrompt_Shown"));
+  base::RecordAction(base::UserMetricsAction("DataSaverPrompt_Shown"));
 
   if (DataSaverSwitchDemoMode()) {
     SetDataSaverPromptsShown(0);  // demo mode resets times shown counts.

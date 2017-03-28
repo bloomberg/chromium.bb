@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/uma_browsing_activity_observer.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -18,7 +19,6 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/user_metrics.h"
 
 namespace chrome {
 namespace {
@@ -57,7 +57,7 @@ void UMABrowsingActivityObserver::Observe(
       content::Source<content::NavigationController>(source).ptr();
     // Track whether the page loaded is a search results page (SRP). Track
     // the non-SRP navigations as well so there is a control.
-    content::RecordAction(base::UserMetricsAction("NavEntryCommitted"));
+    base::RecordAction(base::UserMetricsAction("NavEntryCommitted"));
     // Attempting to determine the cause of a crash originating from
     // IsSearchResultsPageFromDefaultSearchProvider but manifesting in
     // TemplateURLRef::ExtractSearchTermsFromURL(...).
@@ -67,7 +67,7 @@ void UMABrowsingActivityObserver::Observe(
             Profile::FromBrowserContext(controller->GetBrowserContext()))->
             IsSearchResultsPageFromDefaultSearchProvider(
                 load.entry->GetURL())) {
-      content::RecordAction(base::UserMetricsAction("NavEntryCommitted.SRP"));
+      base::RecordAction(base::UserMetricsAction("NavEntryCommitted.SRP"));
     }
 
     if (!load.is_navigation_to_different_page())

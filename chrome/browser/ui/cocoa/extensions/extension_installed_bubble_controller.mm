@@ -11,6 +11,7 @@
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_action.h"
@@ -44,7 +45,6 @@
 #include "components/bubble/bubble_ui.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/user_metrics.h"
 #include "extensions/browser/install/extension_install_ui.h"
 #include "extensions/common/extension.h"
 #import "skia/ext/skia_utils_mac.h"
@@ -271,7 +271,7 @@ std::unique_ptr<BubbleUi> ExtensionInstalledBubble::BuildBubbleUi() {
   [self updateAnchorPosition];
 
   if (syncPromoController_) {
-    content::RecordAction(base::UserMetricsAction(
+    base::RecordAction(base::UserMetricsAction(
         "Signin_Impression_FromExtensionInstallBubble"));
   }
   [super showWindow:sender];

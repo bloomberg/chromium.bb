@@ -30,7 +30,6 @@
 #include "components/storage_monitor/media_storage_util.h"
 #include "components/storage_monitor/storage_info.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/user_metrics.h"
 
 using content::BrowserThread;
 

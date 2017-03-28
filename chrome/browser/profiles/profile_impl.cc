@@ -112,7 +112,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/url_data_source.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/page_zoom.h"
 #include "extensions/features/features.h"
@@ -167,7 +166,6 @@
 
 using base::Time;
 using base::TimeDelta;
-using base::UserMetricsAction;
 using bookmarks::BookmarkModel;
 using content::BrowserThread;
 using content::DownloadManagerDelegate;

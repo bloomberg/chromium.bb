@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -101,7 +102,6 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/menu_item.h"
 #include "content/public/common/url_utils.h"
@@ -2186,7 +2186,7 @@ void RenderViewContextMenu::ExecProtocolHandler(int event_flags,
   if (handlers.empty())
     return;
 
-  content::RecordAction(
+  base::RecordAction(
       UserMetricsAction("RegisterProtocolHandler.ContextMenu_Open"));
   WindowOpenDisposition disposition =
       ForceNewTabDispositionFromEventFlags(event_flags);
@@ -2225,7 +2225,7 @@ void RenderViewContextMenu::ExecOpenLinkInProfile(int profile_index) {
 }
 
 void RenderViewContextMenu::ExecInspectElement() {
-  content::RecordAction(UserMetricsAction("DevTools_InspectElement"));
+  base::RecordAction(UserMetricsAction("DevTools_InspectElement"));
   RenderFrameHost* render_frame_host = GetRenderFrameHost();
   if (!render_frame_host)
     return;
@@ -2339,9 +2339,9 @@ void RenderViewContextMenu::ExecLoadOriginalImage() {
 void RenderViewContextMenu::ExecPlayPause() {
   bool play = !!(params_.media_flags & WebContextMenuData::MediaPaused);
   if (play)
-    content::RecordAction(UserMetricsAction("MediaContextMenu_Play"));
+    base::RecordAction(UserMetricsAction("MediaContextMenu_Play"));
   else
-    content::RecordAction(UserMetricsAction("MediaContextMenu_Pause"));
+    base::RecordAction(UserMetricsAction("MediaContextMenu_Pause"));
 
   MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
                       WebMediaPlayerAction(
@@ -2351,9 +2351,9 @@ void RenderViewContextMenu::ExecPlayPause() {
 void RenderViewContextMenu::ExecMute() {
   bool mute = !(params_.media_flags & WebContextMenuData::MediaMuted);
   if (mute)
-    content::RecordAction(UserMetricsAction("MediaContextMenu_Mute"));
+    base::RecordAction(UserMetricsAction("MediaContextMenu_Mute"));
   else
-    content::RecordAction(UserMetricsAction("MediaContextMenu_Unmute"));
+    base::RecordAction(UserMetricsAction("MediaContextMenu_Unmute"));
 
   MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
                       WebMediaPlayerAction(
@@ -2361,7 +2361,7 @@ void RenderViewContextMenu::ExecMute() {
 }
 
 void RenderViewContextMenu::ExecLoop() {
-  content::RecordAction(UserMetricsAction("MediaContextMenu_Loop"));
+  base::RecordAction(UserMetricsAction("MediaContextMenu_Loop"));
   MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
                       WebMediaPlayerAction(
                           WebMediaPlayerAction::Loop,
@@ -2369,7 +2369,7 @@ void RenderViewContextMenu::ExecLoop() {
 }
 
 void RenderViewContextMenu::ExecControls() {
-  content::RecordAction(UserMetricsAction("MediaContextMenu_Controls"));
+  base::RecordAction(UserMetricsAction("MediaContextMenu_Controls"));
   MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
                       WebMediaPlayerAction(
                           WebMediaPlayerAction::Controls,
@@ -2377,13 +2377,13 @@ void RenderViewContextMenu::ExecControls() {
 }
 
 void RenderViewContextMenu::ExecRotateCW() {
-  content::RecordAction(UserMetricsAction("PluginContextMenu_RotateClockwise"));
+  base::RecordAction(UserMetricsAction("PluginContextMenu_RotateClockwise"));
   PluginActionAt(gfx::Point(params_.x, params_.y),
                  WebPluginAction(WebPluginAction::Rotate90Clockwise, true));
 }
 
 void RenderViewContextMenu::ExecRotateCCW() {
-  content::RecordAction(
+  base::RecordAction(
       UserMetricsAction("PluginContextMenu_RotateCounterclockwise"));
   PluginActionAt(gfx::Point(params_.x, params_.y),
                  WebPluginAction(WebPluginAction::Rotate90Counterclockwise,
@@ -2482,7 +2482,7 @@ void RenderViewContextMenu::ExecLanguageSettings(int event_flags) {
 }
 
 void RenderViewContextMenu::ExecProtocolHandlerSettings(int event_flags) {
-  content::RecordAction(
+  base::RecordAction(
       UserMetricsAction("RegisterProtocolHandler.ContextMenu_Settings"));
   WindowOpenDisposition disposition =
       ForceNewTabDispositionFromEventFlags(event_flags);

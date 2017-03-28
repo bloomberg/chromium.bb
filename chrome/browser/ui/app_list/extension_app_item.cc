@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/macros.h"
+#include "base/metrics/user_metrics.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/launch_util.h"
@@ -19,7 +20,6 @@
 #include "chrome/grit/theme_resources.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/model/string_ordinal.h"
-#include "content/public/browser/user_metrics.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -279,7 +279,7 @@ void ExtensionAppItem::Activate(int event_flags) {
   if (RunExtensionEnableFlow())
     return;
 
-  content::RecordAction(base::UserMetricsAction("AppList_ClickOnApp"));
+  base::RecordAction(base::UserMetricsAction("AppList_ClickOnApp"));
   extensions::RecordAppListMainLaunch(extension);
   GetController()->ActivateApp(profile(),
                                extension,

@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
@@ -20,7 +21,6 @@
 #include "chrome/browser/chromeos/file_manager/url_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/user_metrics.h"
 #include "extensions/browser/api/file_handlers/directory_util.h"
 #include "extensions/browser/api/file_handlers/mime_util.h"
 #include "extensions/browser/entry_info.h"
@@ -70,7 +70,7 @@ void OpenFileManagerWithInternalActionId(Profile* profile,
   DCHECK(action_id == "open" || action_id == "select");
   if (!shell_operations_allowed)
     return;
-  content::RecordAction(base::UserMetricsAction("ShowFileBrowserFullTab"));
+  base::RecordAction(base::UserMetricsAction("ShowFileBrowserFullTab"));
 
   file_tasks::TaskDescriptor task(kFileManagerAppId,
                                   file_tasks::TASK_TYPE_FILE_BROWSER_HANDLER,

@@ -13,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -47,7 +48,6 @@
 #include "components/signin/core/common/signin_pref_names.h"
 #include "components/signin/core/common/signin_switches.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/user_metrics.h"
 #include "extensions/features/features.h"
 #include "net/base/escape.h"
 
@@ -220,7 +220,7 @@ void FindOrCreateNewWindowForProfile(
     }
   }
 
-  content::RecordAction(UserMetricsAction("NewWindow"));
+  base::RecordAction(UserMetricsAction("NewWindow"));
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   StartupBrowserCreator browser_creator;
   browser_creator.LaunchBrowser(

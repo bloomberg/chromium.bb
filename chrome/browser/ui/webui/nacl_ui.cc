@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/user_metrics.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -40,7 +41,6 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -388,7 +388,7 @@ void NaClDomHandler::MaybeRespondToPage() {
 ///////////////////////////////////////////////////////////////////////////////
 
 NaClUI::NaClUI(content::WebUI* web_ui) : WebUIController(web_ui) {
-  content::RecordAction(UserMetricsAction("ViewAboutNaCl"));
+  base::RecordAction(UserMetricsAction("ViewAboutNaCl"));
 
   web_ui->AddMessageHandler(base::MakeUnique<NaClDomHandler>());
 

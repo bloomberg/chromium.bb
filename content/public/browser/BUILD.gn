@@ -246,7 +246,6 @@ source_set("browser_sources") {
     "tracing_delegate.h",
     "url_data_source.cc",
     "url_data_source.h",
-    "user_metrics.h",
     "utility_process_host.h",
     "utility_process_mojo_client.h",
     "vpn_service_proxy.h",

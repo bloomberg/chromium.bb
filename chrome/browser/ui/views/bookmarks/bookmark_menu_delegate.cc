@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/bookmarks/bookmark_menu_delegate.h"
 
+#include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -20,7 +21,6 @@
 #include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/page_navigator.h"
-#include "content/public/browser/user_metrics.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/window_open_disposition.h"
@@ -336,7 +336,7 @@ void BookmarkMenuDelegate::WriteDragData(MenuItemView* sender,
                                          ui::OSExchangeData* data) {
   DCHECK(sender && data);
 
-  content::RecordAction(UserMetricsAction("BookmarkBar_DragFromFolder"));
+  base::RecordAction(UserMetricsAction("BookmarkBar_DragFromFolder"));
 
   BookmarkNodeData drag_data(menu_id_to_node_map_[sender->GetCommand()]);
   drag_data.Write(profile_->GetPath(), data);

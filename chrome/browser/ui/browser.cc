@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/process/process_info.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
@@ -189,7 +190,6 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/ssl_status.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
@@ -394,7 +394,7 @@ Browser::Browser(const CreateParams& params)
   // TODO(mlerman): After this hits stable channel, see if there are counts
   // for this metric. If not, change the DCHECK above to a CHECK.
   if (profile_->IsSystemProfile())
-    content::RecordAction(base::UserMetricsAction("BrowserForSystemProfile"));
+    base::RecordAction(base::UserMetricsAction("BrowserForSystemProfile"));
 
   // TODO(jeremy): Move to initializer list once flag is removed.
   if (IsFastTabUnloadEnabled())
@@ -868,7 +868,7 @@ bool Browser::CanSupportWindowFeature(WindowFeature feature) const {
 }
 
 void Browser::OpenFile() {
-  content::RecordAction(UserMetricsAction("OpenFile"));
+  base::RecordAction(UserMetricsAction("OpenFile"));
   select_file_dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(
           tab_strip_model_->GetActiveWebContents()));
@@ -1062,7 +1062,7 @@ void Browser::ActiveTabChanged(WebContents* old_contents,
       new_view->SetBackgroundColor(old_view->background_color());
   }
 
-  content::RecordAction(UserMetricsAction("ActiveTabChanged"));
+  base::RecordAction(UserMetricsAction("ActiveTabChanged"));
 
   // Update the bookmark state, since the BrowserWindow may query it during
   // OnActiveTabChanged() below.

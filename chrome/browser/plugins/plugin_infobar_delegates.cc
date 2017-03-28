@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/metrics/user_metrics.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -30,7 +31,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -65,31 +65,29 @@ OutdatedPluginInfoBarDelegate::OutdatedPluginInfoBarDelegate(
       identifier_(plugin_metadata->identifier()),
       plugin_metadata_(std::move(plugin_metadata)),
       message_(message) {
-  content::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Shown"));
+  base::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Shown"));
   std::string name = base::UTF16ToUTF8(plugin_metadata_->name());
   if (name == PluginMetadata::kJavaGroupName) {
-    content::RecordAction(
-        UserMetricsAction("OutdatedPluginInfobar.Shown.Java"));
+    base::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Shown.Java"));
   } else if (name == PluginMetadata::kQuickTimeGroupName) {
-    content::RecordAction(
+    base::RecordAction(
         UserMetricsAction("OutdatedPluginInfobar.Shown.QuickTime"));
   } else if (name == PluginMetadata::kShockwaveGroupName) {
-    content::RecordAction(
+    base::RecordAction(
         UserMetricsAction("OutdatedPluginInfobar.Shown.Shockwave"));
   } else if (name == PluginMetadata::kRealPlayerGroupName) {
-    content::RecordAction(
+    base::RecordAction(
         UserMetricsAction("OutdatedPluginInfobar.Shown.RealPlayer"));
   } else if (name == PluginMetadata::kSilverlightGroupName) {
-    content::RecordAction(
+    base::RecordAction(
         UserMetricsAction("OutdatedPluginInfobar.Shown.Silverlight"));
   } else if (name == PluginMetadata::kAdobeReaderGroupName) {
-    content::RecordAction(
-        UserMetricsAction("OutdatedPluginInfobar.Shown.Reader"));
+    base::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Shown.Reader"));
   }
 }
 
 OutdatedPluginInfoBarDelegate::~OutdatedPluginInfoBarDelegate() {
-  content::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Closed"));
+  base::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Closed"));
 }
 
 infobars::InfoBarDelegate::InfoBarIdentifier
@@ -98,7 +96,7 @@ OutdatedPluginInfoBarDelegate::GetIdentifier() const {
 }
 
 void OutdatedPluginInfoBarDelegate::InfoBarDismissed() {
-  content::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Dismissed"));
+  base::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Dismissed"));
 }
 
 const gfx::VectorIcon& OutdatedPluginInfoBarDelegate::GetVectorIcon() const {
@@ -116,7 +114,7 @@ base::string16 OutdatedPluginInfoBarDelegate::GetButtonLabel(
 }
 
 bool OutdatedPluginInfoBarDelegate::Accept() {
-  content::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Update"));
+  base::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Update"));
   // A call to any of |OpenDownloadURL()| or |StartInstalling()| will
   // result in deleting ourselves. Accordingly, we make sure to
   // not pass a reference to an object that can go away.
@@ -131,8 +129,7 @@ bool OutdatedPluginInfoBarDelegate::Accept() {
 }
 
 bool OutdatedPluginInfoBarDelegate::Cancel() {
-  content::RecordAction(
-      UserMetricsAction("OutdatedPluginInfobar.AllowThisTime"));
+  base::RecordAction(UserMetricsAction("OutdatedPluginInfobar.AllowThisTime"));
 
   content::WebContents* web_contents =
       InfoBarService::WebContentsFromInfoBar(infobar());

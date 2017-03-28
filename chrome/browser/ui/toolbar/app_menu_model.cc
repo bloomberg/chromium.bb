@@ -13,6 +13,7 @@
 #include "base/i18n/number_formatting.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -59,7 +60,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
@@ -510,7 +510,7 @@ void AppMenuModel::LogMenuMetrics(int command_id) {
       }
       break;
     case IDC_FULLSCREEN:
-      content::RecordAction(UserMetricsAction("EnterFullScreenWithWrenchMenu"));
+      base::RecordAction(UserMetricsAction("EnterFullScreenWithWrenchMenu"));
 
       if (!uma_action_recorded_) {
         UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.EnterFullScreen",
@@ -553,7 +553,7 @@ void AppMenuModel::LogMenuMetrics(int command_id) {
 
     // Help menu.
     case IDC_HELP_PAGE_VIA_MENU:
-      content::RecordAction(UserMetricsAction("ShowHelpTabViaWrenchMenu"));
+      base::RecordAction(UserMetricsAction("ShowHelpTabViaWrenchMenu"));
 
       if (!uma_action_recorded_)
         UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.HelpPage", delta);
@@ -792,7 +792,7 @@ bool AppMenuModel::AddGlobalErrorMenuItems() {
               error->MenuItemIcon());
       menu_items_added = true;
       if (IDC_SHOW_SIGNIN_ERROR == error->MenuItemCommandID()) {
-        content::RecordAction(
+        base::RecordAction(
             base::UserMetricsAction("Signin_Impression_FromMenu"));
       }
     }

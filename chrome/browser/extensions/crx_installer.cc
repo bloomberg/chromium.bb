@@ -41,7 +41,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_dispatcher_host.h"
-#include "content/public/browser/user_metrics.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -68,7 +67,6 @@
 #include "components/user_manager/user_manager.h"
 #endif
 
-using base::UserMetricsAction;
 using content::BrowserThread;
 
 namespace extensions {

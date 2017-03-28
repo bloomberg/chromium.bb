@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bubble_controller.h"
 
 #include "base/mac/bundle_locations.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bubble_observer.h"
 #include "chrome/browser/ui/browser.h"
@@ -25,7 +26,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/user_metrics.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -76,7 +76,7 @@ using bookmarks::BookmarkNode;
 
   Browser* browser = chrome::FindBrowserWithWindow(self.parentWindow);
   if (SyncPromoUI::ShouldShowSyncPromo(browser->profile())) {
-    content::RecordAction(
+    base::RecordAction(
         base::UserMetricsAction("Signin_Impression_FromBookmarkBubble"));
 
     syncPromoController_.reset(
@@ -201,7 +201,7 @@ using bookmarks::BookmarkNode;
 }
 
 - (IBAction)edit:(id)sender {
-  content::RecordAction(UserMetricsAction("BookmarkBubble_Edit"));
+  base::RecordAction(UserMetricsAction("BookmarkBubble_Edit"));
   [self showEditor];
 }
 
@@ -224,7 +224,7 @@ using bookmarks::BookmarkNode;
 
 - (IBAction)remove:(id)sender {
   bookmarks::RemoveAllBookmarks(model_, node_->url());
-  content::RecordAction(UserMetricsAction("BookmarkBubble_Unstar"));
+  base::RecordAction(UserMetricsAction("BookmarkBubble_Unstar"));
   node_ = NULL;  // no longer valid
   [self ok:sender];
 }
@@ -241,8 +241,7 @@ using bookmarks::BookmarkNode;
   NSMenuItem* selected = [folderPopUpButton_ selectedItem];
   if ([selected representedObject] ==
       [[self class] chooseAnotherFolderObject]) {
-    content::RecordAction(
-        UserMetricsAction("BookmarkBubble_EditFromCombobox"));
+    base::RecordAction(UserMetricsAction("BookmarkBubble_EditFromCombobox"));
     [self showEditor];
   }
 }
@@ -270,8 +269,7 @@ using bookmarks::BookmarkNode;
   NSString* newTitle = [nameTextField_ stringValue];
   if (![oldTitle isEqual:newTitle]) {
     model_->SetTitle(node_, base::SysNSStringToUTF16(newTitle));
-    content::RecordAction(
-        UserMetricsAction("BookmarkBubble_ChangeTitleInBubble"));
+    base::RecordAction(UserMetricsAction("BookmarkBubble_ChangeTitleInBubble"));
   }
   // Then the parent folder.
   const BookmarkNode* oldParent = node_->parent();
@@ -287,7 +285,7 @@ using bookmarks::BookmarkNode;
   if (oldParent != newParent) {
     int index = newParent->child_count();
     model_->Move(node_, newParent, index);
-    content::RecordAction(UserMetricsAction("BookmarkBubble_ChangeParent"));
+    base::RecordAction(UserMetricsAction("BookmarkBubble_ChangeParent"));
   }
 }
 

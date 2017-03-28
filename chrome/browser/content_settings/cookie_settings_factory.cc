@@ -5,6 +5,7 @@
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 
 #include "base/logging.h"
+#include "base/metrics/user_metrics.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -14,7 +15,6 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/user_metrics.h"
 #include "extensions/common/constants.h"
 
 using base::UserMetricsAction;
@@ -59,10 +59,9 @@ CookieSettingsFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
   if (profile->GetPrefs()->GetBoolean(prefs::kBlockThirdPartyCookies)) {
-    content::RecordAction(UserMetricsAction("ThirdPartyCookieBlockingEnabled"));
+    base::RecordAction(UserMetricsAction("ThirdPartyCookieBlockingEnabled"));
   } else {
-    content::RecordAction(
-        UserMetricsAction("ThirdPartyCookieBlockingDisabled"));
+    base::RecordAction(UserMetricsAction("ThirdPartyCookieBlockingDisabled"));
   }
   return new content_settings::CookieSettings(
       HostContentSettingsMapFactory::GetForProfile(profile),

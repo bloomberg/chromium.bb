@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -23,7 +24,6 @@
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -177,7 +177,7 @@ void BackForwardMenuModel::ActivatedAt(int index, int event_flags) {
 
   // Execute the command for the last item: "Show Full History".
   if (index == GetItemCount() - 1) {
-    content::RecordComputedAction(BuildActionName("ShowFullHistory", -1));
+    base::RecordComputedAction(BuildActionName("ShowFullHistory", -1));
     chrome::ShowSingletonTabOverwritingNTP(browser_,
         chrome::GetSingletonTabNavigateParams(
             browser_, GURL(chrome::kChromeUIHistoryURL)));
@@ -186,10 +186,9 @@ void BackForwardMenuModel::ActivatedAt(int index, int event_flags) {
 
   // Log whether it was a history or chapter click.
   if (index < GetHistoryItemCount()) {
-    content::RecordComputedAction(
-        BuildActionName("HistoryClick", index));
+    base::RecordComputedAction(BuildActionName("HistoryClick", index));
   } else {
-    content::RecordComputedAction(
+    base::RecordComputedAction(
         BuildActionName("ChapterClick", index - GetHistoryItemCount() - 1));
   }
 
@@ -204,7 +203,7 @@ void BackForwardMenuModel::ActivatedAt(int index, int event_flags) {
 }
 
 void BackForwardMenuModel::MenuWillShow() {
-  content::RecordComputedAction(BuildActionName("Popup", -1));
+  base::RecordComputedAction(BuildActionName("Popup", -1));
   requested_favicons_.clear();
   cancelable_task_tracker_.TryCancelAll();
 }

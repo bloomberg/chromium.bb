@@ -10,6 +10,7 @@
 #include "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/mac/sdk_forward_declarations.h"
+#include "base/metrics/user_metrics.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_window.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_view_cocoa.h"
@@ -18,7 +19,6 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "components/bookmarks/browser/bookmark_model.h"
-#include "content/public/browser/user_metrics.h"
 #include "ui/base/clipboard/clipboard_util_mac.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/nsview_additions.h"
@@ -202,9 +202,9 @@ BookmarkButton* gDraggedButton = nil; // Weak
   const BookmarkNode* node = [self bookmarkNode];
   const BookmarkNode* parent = node->parent();
   if (parent && parent->type() == BookmarkNode::FOLDER) {
-    content::RecordAction(UserMetricsAction("BookmarkBarFolder_DragStart"));
+    base::RecordAction(UserMetricsAction("BookmarkBarFolder_DragStart"));
   } else {
-    content::RecordAction(UserMetricsAction("BookmarkBar_DragStart"));
+    base::RecordAction(UserMetricsAction("BookmarkBar_DragStart"));
   }
 
   dragMouseOffset_ = [self convertPoint:[event locationInWindow] fromView:nil];

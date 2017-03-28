@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/metrics/user_metrics.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
@@ -70,7 +71,6 @@
 #include "content/public/browser/plugin_data_remover.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/browser/user_metrics.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
@@ -351,16 +351,16 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   }
 
   if (origin_type_mask & BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB) {
-    content::RecordAction(
+    base::RecordAction(
         UserMetricsAction("ClearBrowsingData_MaskContainsUnprotectedWeb"));
   }
   if (origin_type_mask & BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB) {
-    content::RecordAction(
+    base::RecordAction(
         UserMetricsAction("ClearBrowsingData_MaskContainsProtectedWeb"));
   }
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (origin_type_mask & ORIGIN_TYPE_EXTENSION) {
-    content::RecordAction(
+    base::RecordAction(
         UserMetricsAction("ClearBrowsingData_MaskContainsExtension"));
   }
 #endif
@@ -412,7 +412,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
             profile_, ServiceAccessType::EXPLICIT_ACCESS);
     if (history_service) {
       // TODO(dmurph): Support all backends with filter (crbug.com/113621).
-      content::RecordAction(UserMetricsAction("ClearBrowsingData_History"));
+      base::RecordAction(UserMetricsAction("ClearBrowsingData_History"));
       clear_history_.Start();
       history_service->ExpireLocalAndRemoteHistoryBetween(
           WebHistoryServiceFactory::GetForProfile(profile_), std::set<GURL>(),
@@ -647,7 +647,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   // between UNPROTECTED_WEB and PROTECTED_WEB.
   if (remove_mask & BrowsingDataRemover::DATA_TYPE_COOKIES &&
       origin_type_mask & BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB) {
-    content::RecordAction(UserMetricsAction("ClearBrowsingData_Cookies"));
+    base::RecordAction(UserMetricsAction("ClearBrowsingData_Cookies"));
 
     // Clear the safebrowsing cookies only if time period is for "all time".  It
     // doesn't make sense to apply the time period of deleting in the last X
@@ -720,7 +720,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   //////////////////////////////////////////////////////////////////////////////
   // Password manager
   if (remove_mask & DATA_TYPE_PASSWORDS) {
-    content::RecordAction(UserMetricsAction("ClearBrowsingData_Passwords"));
+    base::RecordAction(UserMetricsAction("ClearBrowsingData_Passwords"));
     password_manager::PasswordStore* password_store =
         PasswordStoreFactory::GetForProfile(
             profile_, ServiceAccessType::EXPLICIT_ACCESS).get();
@@ -773,7 +773,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   // DATA_TYPE_FORM_DATA
   // TODO(dmurph): Support all backends with filter (crbug.com/113621).
   if (remove_mask & DATA_TYPE_FORM_DATA) {
-    content::RecordAction(UserMetricsAction("ClearBrowsingData_Autofill"));
+    base::RecordAction(UserMetricsAction("ClearBrowsingData_Autofill"));
     scoped_refptr<autofill::AutofillWebDataService> web_data_service =
         WebDataServiceFactory::GetAutofillWebDataForProfile(
             profile_, ServiceAccessType::EXPLICIT_ACCESS);
@@ -889,7 +889,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   // check the origin_type_mask_ to prevent unintended deletion.
   if (remove_mask & DATA_TYPE_PLUGIN_DATA &&
       origin_type_mask & BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB) {
-    content::RecordAction(UserMetricsAction("ClearBrowsingData_LSOData"));
+    base::RecordAction(UserMetricsAction("ClearBrowsingData_LSOData"));
     clear_plugin_data_count_ = 1;
 
     if (filter_builder.IsEmptyBlacklist()) {
@@ -919,8 +919,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   if (remove_mask & BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES) {
     // TODO(jrummell): This UMA should be renamed to indicate it is for Media
     // Licenses.
-    content::RecordAction(
-        UserMetricsAction("ClearBrowsingData_ContentLicenses"));
+    base::RecordAction(UserMetricsAction("ClearBrowsingData_ContentLicenses"));
 
 #if BUILDFLAG(ENABLE_PLUGINS)
     clear_flash_content_licenses_.Start();

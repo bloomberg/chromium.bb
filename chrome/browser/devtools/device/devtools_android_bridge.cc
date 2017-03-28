@@ -46,7 +46,6 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_external_agent_proxy.h"
 #include "content/public/browser/devtools_external_agent_proxy_delegate.h"
-#include "content/public/browser/user_metrics.h"
 #include "net/base/escape.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"

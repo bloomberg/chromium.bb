@@ -1410,7 +1410,6 @@ source_set("browser") {
     "tracing/tracing_controller_impl_data_sinks.cc",
     "tracing/tracing_ui.cc",
     "tracing/tracing_ui.h",
-    "user_metrics.cc",
     "utility_process_host_impl.cc",
     "utility_process_host_impl.h",
     "wake_lock/wake_lock_context_host.cc",

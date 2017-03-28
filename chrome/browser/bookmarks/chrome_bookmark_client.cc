@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/user_metrics.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -17,7 +18,6 @@
 #include "components/favicon/core/favicon_util.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/url_database.h"
-#include "content/public/browser/user_metrics.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/offline_pages/offline_page_bookmark_observer.h"
@@ -97,7 +97,7 @@ bool ChromeBookmarkClient::IsPermanentNodeVisible(
 }
 
 void ChromeBookmarkClient::RecordAction(const base::UserMetricsAction& action) {
-  content::RecordAction(action);
+  base::RecordAction(action);
 }
 
 bookmarks::LoadExtraCallback ChromeBookmarkClient::GetLoadExtraNodesCallback() {

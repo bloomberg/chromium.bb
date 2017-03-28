@@ -9,7 +9,6 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/user_metrics.h"
 #include "base/time/time.h"
 #include "components/sessions/core/session_types.h"
 #include "components/sync_sessions/sessions_sync_manager.h"

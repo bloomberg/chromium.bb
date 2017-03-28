@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -36,7 +37,6 @@
 #include "components/password_manager/sync/browser/password_sync_util.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
@@ -190,7 +190,7 @@ void PasswordManagerPresenter::RemoveSavedPassword(size_t index) {
   RemoveDuplicates(*password_list_[index], &password_duplicates_, store,
                    PasswordEntryType::SAVED);
   store->RemoveLogin(*password_list_[index]);
-  content::RecordAction(
+  base::RecordAction(
       base::UserMetricsAction("PasswordManager_RemoveSavedPassword"));
 }
 
@@ -209,7 +209,7 @@ void PasswordManagerPresenter::RemovePasswordException(size_t index) {
                    &password_exception_duplicates_, store,
                    PasswordEntryType::BLACKLISTED);
   store->RemoveLogin(*password_exception_list_[index]);
-  content::RecordAction(
+  base::RecordAction(
       base::UserMetricsAction("PasswordManager_RemovePasswordException"));
 }
 
@@ -236,7 +236,7 @@ void PasswordManagerPresenter::RequestShowPassword(size_t index) {
   if (password_manager::sync_util::IsSyncAccountCredential(
           *password_list_[index], sync_service,
           SigninManagerFactory::GetForProfile(password_view_->GetProfile()))) {
-    content::RecordAction(
+    base::RecordAction(
         base::UserMetricsAction("PasswordManager_SyncCredentialShown"));
   }
 

@@ -14,10 +14,8 @@
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 
-using base::UserMetricsAction;
 using content::InterstitialPage;
 using content::WebContents;
 using security_interstitials::SafeBrowsingErrorUI;

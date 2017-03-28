@@ -673,12 +673,10 @@
                   '|chrome/browser/extensions/api/metrics_private/'\
                   '|chrome/browser/ui/webui/metrics_handler'\
                   '|chromecast/browser/metrics/'\
-                  '|content/browser/user_metrics.cc'\
                   '|components/metrics/'\
                   '|components/metrics_services_manager/'\
                   '|components/rappor/'\
                   '|components/variations/'\
-                  '|content/public/browser/user_metrics.h'\
                   # Exclude XML files; in particular, histograms.xml.
                   '|tools/metrics/[^.]*([.](?!xml$).*)?$',
     },

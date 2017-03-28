@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -32,7 +33,6 @@
 #include "components/cloud_devices/common/cloud_devices_urls.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
 #include "printing/features/features.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -557,8 +557,7 @@ void LocalDiscoveryUIHandler::OnCloudPrintPrefsChanged() {
 
 void LocalDiscoveryUIHandler::ShowCloudPrintSetupDialog(
     const base::ListValue* args) {
-  content::RecordAction(
-      base::UserMetricsAction("Options_EnableCloudPrintProxy"));
+  base::RecordAction(base::UserMetricsAction("Options_EnableCloudPrintProxy"));
   // Open the connector enable page in the current tab.
   content::OpenURLParams params(cloud_devices::GetCloudPrintEnableURL(
                                     GetCloudPrintProxyService()->proxy_id()),
@@ -570,8 +569,7 @@ void LocalDiscoveryUIHandler::ShowCloudPrintSetupDialog(
 
 void LocalDiscoveryUIHandler::HandleDisableCloudPrintConnector(
     const base::ListValue* args) {
-  content::RecordAction(
-      base::UserMetricsAction("Options_DisableCloudPrintProxy"));
+  base::RecordAction(base::UserMetricsAction("Options_DisableCloudPrintProxy"));
   GetCloudPrintProxyService()->DisableForUser();
 }
 

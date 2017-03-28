@@ -5,8 +5,8 @@
 #include "chrome/browser/bookmarks/bookmark_stats.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "components/bookmarks/browser/bookmark_model.h"
-#include "content/public/browser/user_metrics.h"
 
 using bookmarks::BookmarkNode;
 
@@ -14,8 +14,7 @@ void RecordBookmarkLaunch(const BookmarkNode* node,
                           BookmarkLaunchLocation location) {
   if (location == BOOKMARK_LAUNCH_LOCATION_DETACHED_BAR ||
       location == BOOKMARK_LAUNCH_LOCATION_ATTACHED_BAR) {
-    content::RecordAction(
-        base::UserMetricsAction("ClickedBookmarkBarURLButton"));
+    base::RecordAction(base::UserMetricsAction("ClickedBookmarkBarURLButton"));
   }
   UMA_HISTOGRAM_ENUMERATION(
       "Bookmarks.LaunchLocation", location, BOOKMARK_LAUNCH_LOCATION_LIMIT);
@@ -37,15 +36,14 @@ void RecordBookmarkLaunch(const BookmarkNode* node,
 void RecordBookmarkFolderOpen(BookmarkLaunchLocation location) {
   if (location == BOOKMARK_LAUNCH_LOCATION_DETACHED_BAR ||
       location == BOOKMARK_LAUNCH_LOCATION_ATTACHED_BAR) {
-    content::RecordAction(
-        base::UserMetricsAction("ClickedBookmarkBarFolder"));
+    base::RecordAction(base::UserMetricsAction("ClickedBookmarkBarFolder"));
   }
 }
 
 void RecordBookmarkAppsPageOpen(BookmarkLaunchLocation location) {
   if (location == BOOKMARK_LAUNCH_LOCATION_DETACHED_BAR ||
       location == BOOKMARK_LAUNCH_LOCATION_ATTACHED_BAR) {
-    content::RecordAction(
+    base::RecordAction(
         base::UserMetricsAction("ClickedBookmarkBarAppsShortcutButton"));
   }
 }

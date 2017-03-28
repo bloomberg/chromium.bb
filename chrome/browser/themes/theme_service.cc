@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/metrics/user_metrics.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
@@ -33,7 +34,6 @@
 #include "components/grit/components_scaled_resources.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/user_metrics.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -291,7 +291,7 @@ void ThemeService::SetTheme(const Extension* extension) {
   SaveThemeID(extension->id());
 
   NotifyThemeChanged();
-  content::RecordAction(UserMetricsAction("Themes_Installed"));
+  base::RecordAction(UserMetricsAction("Themes_Installed"));
 
   if (previous_theme_id != kDefaultThemeID &&
       previous_theme_id != extension->id() &&
@@ -309,7 +309,7 @@ void ThemeService::SetTheme(const Extension* extension) {
 
 void ThemeService::UseDefaultTheme() {
   if (ready_)
-    content::RecordAction(UserMetricsAction("Themes_Reset"));
+    base::RecordAction(UserMetricsAction("Themes_Reset"));
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   if (IsSupervisedUser()) {
     SetSupervisedUserTheme();
@@ -586,7 +586,7 @@ void ThemeService::LoadThemePrefs() {
   }
 
   if (loaded_pack) {
-    content::RecordAction(UserMetricsAction("Themes.Loaded"));
+    base::RecordAction(UserMetricsAction("Themes.Loaded"));
     set_ready();
   }
   // Else: wait for the extension service to be ready so that the theme pack
@@ -815,11 +815,11 @@ void ThemeService::MigrateTheme() {
   if (extension) {
     DLOG(ERROR) << "Migrating theme";
     BuildFromExtension(extension);
-    content::RecordAction(UserMetricsAction("Themes.Migrated"));
+    base::RecordAction(UserMetricsAction("Themes.Migrated"));
   } else {
     DLOG(ERROR) << "Theme is mysteriously gone.";
     ClearAllThemeData();
-    content::RecordAction(UserMetricsAction("Themes.Gone"));
+    base::RecordAction(UserMetricsAction("Themes.Gone"));
   }
 }
 

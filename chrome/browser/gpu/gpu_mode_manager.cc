@@ -6,12 +6,12 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/gpu_data_manager.h"
-#include "content/public/browser/user_metrics.h"
 
 using base::UserMetricsAction;
 
@@ -56,9 +56,9 @@ GpuModeManager::GpuModeManager()
     UMA_HISTOGRAM_BOOLEAN("GPU.HardwareAccelerationModeEnabled",
                           initial_gpu_mode_pref_);
     if (previous_gpu_mode_pref && !initial_gpu_mode_pref_)
-      content::RecordAction(UserMetricsAction("GpuAccelerationDisabled"));
+      base::RecordAction(UserMetricsAction("GpuAccelerationDisabled"));
     if (!previous_gpu_mode_pref && initial_gpu_mode_pref_)
-      content::RecordAction(UserMetricsAction("GpuAccelerationEnabled"));
+      base::RecordAction(UserMetricsAction("GpuAccelerationEnabled"));
 
     if (!initial_gpu_mode_pref_) {
       content::GpuDataManager* gpu_data_manager =

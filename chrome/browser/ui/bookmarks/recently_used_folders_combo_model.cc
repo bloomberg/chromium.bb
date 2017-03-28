@@ -6,10 +6,10 @@
 
 #include <stddef.h>
 
+#include "base/metrics/user_metrics.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
-#include "content/public/browser/user_metrics.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model_observer.h"
 
@@ -233,8 +233,7 @@ void RecentlyUsedFoldersComboModel::MaybeChangeParent(
 
   const BookmarkNode* new_parent = GetNodeAt(selected_index);
   if (new_parent != node->parent()) {
-    content::RecordAction(
-        base::UserMetricsAction("BookmarkBubble_ChangeParent"));
+    base::RecordAction(base::UserMetricsAction("BookmarkBubble_ChangeParent"));
     bookmark_model_->Move(node, new_parent, new_parent->child_count());
   }
 }

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/browser_instant_controller.h"
 
 #include "base/bind.h"
+#include "base/metrics/user_metrics.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
@@ -24,7 +25,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/common/referrer.h"
@@ -159,7 +159,7 @@ void BrowserInstantController::ModelChanged(
     // the full story, it's necessary to look at other UMA actions as well,
     // such as tab switches.
     if (new_mode.is_ntp())
-      content::RecordAction(base::UserMetricsAction("InstantExtended.ShowNTP"));
+      base::RecordAction(base::UserMetricsAction("InstantExtended.ShowNTP"));
 
     instant_.SearchModeChanged(old_state.mode, new_mode);
   }

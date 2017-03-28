@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 
 #include "base/macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -21,7 +22,6 @@
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
-#include "content/public/browser/user_metrics.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -574,7 +574,7 @@ ManagePasswordsBubbleView::SignInPromoView::SignInPromoView(
   layout->AddView(no_button_);
 
   parent_->set_initially_focused_view(signin_button_);
-  content::RecordAction(
+  base::RecordAction(
       base::UserMetricsAction("Signin_Impression_FromPasswordBubble"));
 }
 

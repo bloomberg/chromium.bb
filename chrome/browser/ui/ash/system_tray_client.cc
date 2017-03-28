@@ -39,7 +39,6 @@
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/common/service_manager_connection.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "extensions/browser/api/vpn_provider/vpn_service.h"
@@ -241,7 +240,7 @@ void SystemTrayClient::ShowBluetoothPairingDialog(
 }
 
 void SystemTrayClient::ShowDateSettings() {
-  content::RecordAction(base::UserMetricsAction("ShowDateOptions"));
+  base::RecordAction(base::UserMetricsAction("ShowDateOptions"));
   // Everybody can change the time zone (even though it is a device setting).
   chrome::ShowSettingsSubPageForProfile(ProfileManager::GetActiveUserProfile(),
                                         chrome::kDateTimeSubPage);
@@ -252,12 +251,12 @@ void SystemTrayClient::ShowSetTimeDialog() {
 }
 
 void SystemTrayClient::ShowDisplaySettings() {
-  content::RecordAction(base::UserMetricsAction("ShowDisplayOptions"));
+  base::RecordAction(base::UserMetricsAction("ShowDisplayOptions"));
   ShowSettingsSubPageForActiveUser(chrome::kDisplaySubPage);
 }
 
 void SystemTrayClient::ShowPowerSettings() {
-  content::RecordAction(base::UserMetricsAction("Tray_ShowPowerOptions"));
+  base::RecordAction(base::UserMetricsAction("Tray_ShowPowerOptions"));
   ShowSettingsSubPageForActiveUser(chrome::kPowerSubPage);
 }
 
@@ -268,7 +267,7 @@ void SystemTrayClient::ShowChromeSlow() {
 }
 
 void SystemTrayClient::ShowIMESettings() {
-  content::RecordAction(base::UserMetricsAction("OpenLanguageOptionsDialog"));
+  base::RecordAction(base::UserMetricsAction("OpenLanguageOptionsDialog"));
   ShowSettingsSubPageForActiveUser(chrome::kLanguageOptionsSubPage);
 }
 
@@ -284,7 +283,7 @@ void SystemTrayClient::ShowAccessibilityHelp() {
 }
 
 void SystemTrayClient::ShowAccessibilitySettings() {
-  content::RecordAction(base::UserMetricsAction("ShowAccessibilitySettings"));
+  base::RecordAction(base::UserMetricsAction("ShowAccessibilitySettings"));
   ShowSettingsSubPageForActiveUser(chrome::kAccessibilitySubPage);
 }
 
@@ -296,7 +295,7 @@ void SystemTrayClient::ShowPaletteHelp() {
 }
 
 void SystemTrayClient::ShowPaletteSettings() {
-  content::RecordAction(base::UserMetricsAction("ShowPaletteOptions"));
+  base::RecordAction(base::UserMetricsAction("ShowPaletteOptions"));
   ShowSettingsSubPageForActiveUser(chrome::kStylusSubPage);
 }
 
@@ -354,7 +353,7 @@ void SystemTrayClient::ShowNetworkSettings(const std::string& network_id) {
       page = chrome::kNetworkDetailSubPage;
     page += "?guid=" + net::EscapeUrlEncodedData(network_id, true);
   }
-  content::RecordAction(base::UserMetricsAction("OpenInternetOptionsDialog"));
+  base::RecordAction(base::UserMetricsAction("OpenInternetOptionsDialog"));
   ShowSettingsSubPageForActiveUser(page);
 }
 

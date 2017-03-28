@@ -5,13 +5,13 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button_cell.h"
 
 #include "base/logging.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_context_menu_cocoa_controller.h"
 #include "chrome/grit/generated_resources.h"
 #import "components/bookmarks/browser/bookmark_model.h"
-#include "content/public/browser/user_metrics.h"
 #import "ui/base/cocoa/nsview_additions.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -260,9 +260,9 @@ const int kDefaultFontSize = 12;
 
   if (node && node->parent() &&
       node->parent()->type() == BookmarkNode::FOLDER) {
-    content::RecordAction(UserMetricsAction("BookmarkBarFolder_CtxMenu"));
+    base::RecordAction(UserMetricsAction("BookmarkBarFolder_CtxMenu"));
   } else {
-    content::RecordAction(UserMetricsAction("BookmarkBar_CtxMenu"));
+    base::RecordAction(UserMetricsAction("BookmarkBar_CtxMenu"));
   }
   return [menuController_ menuForBookmarkNode:node];
 }

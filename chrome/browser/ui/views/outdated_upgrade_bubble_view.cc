@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/outdated_upgrade_bubble_view.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -16,7 +17,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/page_navigator.h"
-#include "content/public/browser/user_metrics.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
@@ -64,9 +64,10 @@ void OutdatedUpgradeBubbleView::ShowBubble(views::View* anchor_view,
   g_upgrade_bubble = new OutdatedUpgradeBubbleView(anchor_view, navigator,
                                                    auto_update_enabled);
   views::BubbleDialogDelegateView::CreateBubble(g_upgrade_bubble)->Show();
-  content::RecordAction(auto_update_enabled ?
-      base::UserMetricsAction("OutdatedUpgradeBubble.Show") :
-      base::UserMetricsAction("OutdatedUpgradeBubble.ShowNoAU"));
+  base::RecordAction(
+      auto_update_enabled
+          ? base::UserMetricsAction("OutdatedUpgradeBubble.Show")
+          : base::UserMetricsAction("OutdatedUpgradeBubble.ShowNoAU"));
 }
 
 bool OutdatedUpgradeBubbleView::IsAvailable() {
@@ -99,7 +100,7 @@ base::string16 OutdatedUpgradeBubbleView::GetWindowTitle() const {
 }
 
 bool OutdatedUpgradeBubbleView::Cancel() {
-  content::RecordAction(base::UserMetricsAction("OutdatedUpgradeBubble.Later"));
+  base::RecordAction(base::UserMetricsAction("OutdatedUpgradeBubble.Later"));
   return true;
 }
 
@@ -112,7 +113,7 @@ bool OutdatedUpgradeBubbleView::Accept() {
     UMA_HISTOGRAM_CUSTOM_COUNTS("OutdatedUpgradeBubble.NumLaterPerReinstall",
                                 g_num_ignored_bubbles, 1, kMaxIgnored,
                                 kNumIgnoredBuckets);
-    content::RecordAction(
+    base::RecordAction(
         base::UserMetricsAction("OutdatedUpgradeBubble.Reinstall"));
     navigator_->OpenURL(
         content::OpenURLParams(GURL(kDownloadChromeUrl), content::Referrer(),
@@ -124,7 +125,7 @@ bool OutdatedUpgradeBubbleView::Accept() {
     UMA_HISTOGRAM_CUSTOM_COUNTS("OutdatedUpgradeBubble.NumLaterPerEnableAU",
                                 g_num_ignored_bubbles, 1, kMaxIgnored,
                                 kNumIgnoredBuckets);
-    content::RecordAction(
+    base::RecordAction(
         base::UserMetricsAction("OutdatedUpgradeBubble.EnableAU"));
     // Record that the autoupdate flavour of the dialog has been shown.
     if (g_browser_process->local_state()) {

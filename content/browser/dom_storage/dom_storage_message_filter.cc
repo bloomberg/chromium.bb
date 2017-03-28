@@ -16,7 +16,6 @@
 #include "content/browser/dom_storage/dom_storage_namespace.h"
 #include "content/browser/dom_storage/dom_storage_task_runner.h"
 #include "content/common/dom_storage/dom_storage_messages.h"
-#include "content/public/browser/user_metrics.h"
 #include "url/gurl.h"
 
 namespace content {

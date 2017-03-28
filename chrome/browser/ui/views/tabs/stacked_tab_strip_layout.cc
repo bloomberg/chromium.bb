@@ -7,8 +7,8 @@
 #include <stdio.h>
 
 #include "base/logging.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/string_number_conversions.h"
-#include "content/public/browser/user_metrics.h"
 
 using base::UserMetricsAction;
 
@@ -78,7 +78,7 @@ void StackedTabStripLayout::DragActiveTab(int delta) {
   if (delta == 0 || !requires_stacking())
     return;
 
-  content::RecordAction(UserMetricsAction("StackedTab_DragActiveTab"));
+  base::RecordAction(UserMetricsAction("StackedTab_DragActiveTab"));
   int initial_x = ideal_x(active_index());
   // If we're at a particular edge and start dragging, expose all the tabs after
   // the tab (or before when dragging to the left).

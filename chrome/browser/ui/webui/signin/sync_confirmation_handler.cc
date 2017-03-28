@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/metrics/user_metrics.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -15,7 +16,6 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "url/gurl.h"
@@ -33,7 +33,7 @@ SyncConfirmationHandler::~SyncConfirmationHandler() {
   // sync confirmation dialog are taken by the user.
   if (!did_user_explicitly_interact) {
     HandleUndo(nullptr);
-    content::RecordAction(base::UserMetricsAction("Signin_Abort_Signin"));
+    base::RecordAction(base::UserMetricsAction("Signin_Abort_Signin"));
   }
 }
 
@@ -63,7 +63,7 @@ void SyncConfirmationHandler::HandleGoToSettings(const base::ListValue* args) {
 
 void SyncConfirmationHandler::HandleUndo(const base::ListValue* args) {
   did_user_explicitly_interact = true;
-  content::RecordAction(base::UserMetricsAction("Signin_Undo_Signin"));
+  base::RecordAction(base::UserMetricsAction("Signin_Undo_Signin"));
   Browser* browser = signin::GetDesktopBrowser(web_ui());
   if (browser) {
     LoginUIServiceFactory::GetForProfile(browser->profile())->

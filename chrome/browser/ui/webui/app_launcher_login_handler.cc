@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -36,7 +37,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/host_zoom_map.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/page_zoom.h"
@@ -211,7 +211,7 @@ void AppLauncherLoginHandler::UpdateLogin() {
       sub_header = l10n_util::GetStringFUTF16(
           IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_SUB_HEADER, signed_in_link);
 
-      content::RecordAction(
+      base::RecordAction(
           web_ui()->GetWebContents()->GetURL().spec() ==
                   chrome::kChromeUIAppsURL
               ? base::UserMetricsAction("Signin_Impression_FromAppsPageLink")

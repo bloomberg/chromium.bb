@@ -7,6 +7,7 @@
 #include <limits.h>
 
 #include "base/bind.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -24,7 +25,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -89,93 +89,92 @@ void InlineLoginHandler::RecordSigninUserActionForAccessPoint(
     signin_metrics::AccessPoint access_point) {
   switch (access_point) {
     case signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE:
-      content::RecordAction(
+      base::RecordAction(
           base::UserMetricsAction("Signin_Signin_FromStartPage"));
       break;
     case signin_metrics::AccessPoint::ACCESS_POINT_NTP_LINK:
-      content::RecordAction(base::UserMetricsAction("Signin_Signin_FromNTP"));
+      base::RecordAction(base::UserMetricsAction("Signin_Signin_FromNTP"));
       break;
     case signin_metrics::AccessPoint::ACCESS_POINT_MENU:
-      content::RecordAction(base::UserMetricsAction("Signin_Signin_FromMenu"));
+      base::RecordAction(base::UserMetricsAction("Signin_Signin_FromMenu"));
       break;
     case signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS:
-      content::RecordAction(
-          base::UserMetricsAction("Signin_Signin_FromSettings"));
+      base::RecordAction(base::UserMetricsAction("Signin_Signin_FromSettings"));
       break;
     case signin_metrics::AccessPoint::ACCESS_POINT_SUPERVISED_USER:
-      content::RecordAction(
+      base::RecordAction(
           base::UserMetricsAction("Signin_Signin_FromSupervisedUser"));
       break;
     case signin_metrics::AccessPoint::ACCESS_POINT_EXTENSION_INSTALL_BUBBLE:
-      content::RecordAction(
+      base::RecordAction(
           base::UserMetricsAction("Signin_Signin_FromExtensionInstallBubble"));
       break;
     case signin_metrics::AccessPoint::ACCESS_POINT_EXTENSIONS:
-      content::RecordAction(
+      base::RecordAction(
           base::UserMetricsAction("Signin_Signin_FromExtensions"));
       break;
     case signin_metrics::AccessPoint::ACCESS_POINT_APPS_PAGE_LINK:
-      content::RecordAction(
+      base::RecordAction(
           base::UserMetricsAction("Signin_Signin_FromAppsPageLink"));
       break;
     case signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE:
-      content::RecordAction(
+      base::RecordAction(
           base::UserMetricsAction("Signin_Signin_FromBookmarkBubble"));
       break;
     case signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER:
-      content::RecordAction(
+      base::RecordAction(
           base::UserMetricsAction("Signin_Signin_FromBookmarkManager"));
       break;
     case signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN:
-      content::RecordAction(
+      base::RecordAction(
           base::UserMetricsAction("Signin_Signin_FromAvatarBubbleSignin"));
       break;
     case signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER:
-      content::RecordAction(
+      base::RecordAction(
           base::UserMetricsAction("Signin_Signin_FromUserManager"));
       break;
     case signin_metrics::AccessPoint::ACCESS_POINT_DEVICES_PAGE:
-      content::RecordAction(
+      base::RecordAction(
           base::UserMetricsAction("Signin_Signin_FromDevicesPage"));
       break;
     case signin_metrics::AccessPoint::ACCESS_POINT_CLOUD_PRINT:
-      content::RecordAction(
+      base::RecordAction(
           base::UserMetricsAction("Signin_Signin_FromCloudPrint"));
       break;
     case signin_metrics::AccessPoint::ACCESS_POINT_CONTENT_AREA:
-      content::RecordAction(
+      base::RecordAction(
           base::UserMetricsAction("Signin_Signin_FromContentArea"));
       break;
     case signin_metrics::AccessPoint::ACCESS_POINT_SIGNIN_PROMO:
-      content::RecordAction(
+      base::RecordAction(
           base::UserMetricsAction("Signin_Signin_FromSigninPromo"));
       break;
     case signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS:
-      content::RecordAction(
+      base::RecordAction(
           base::UserMetricsAction("Signin_Signin_FromRecentTabs"));
       break;
     case signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN:
-      content::RecordAction(
+      base::RecordAction(
           base::UserMetricsAction("Signin_Signin_FromUnknownAccessPoint"));
       break;
     case signin_metrics::AccessPoint::ACCESS_POINT_PASSWORD_BUBBLE:
-      content::RecordAction(
+      base::RecordAction(
           base::UserMetricsAction("Signin_Signin_FromPasswordBubble"));
       break;
     case signin_metrics::AccessPoint::ACCESS_POINT_AUTOFILL_DROPDOWN:
-      content::RecordAction(
+      base::RecordAction(
           base::UserMetricsAction("Signin_Signin_FromAutofillDropdown"));
       break;
     case signin_metrics::AccessPoint::ACCESS_POINT_NTP_CONTENT_SUGGESTIONS:
-      content::RecordAction(
+      base::RecordAction(
           base::UserMetricsAction("Signin_Signin_FromNTPContentSuggestions"));
       break;
     case signin_metrics::AccessPoint::ACCESS_POINT_RESIGNIN_INFOBAR:
-      content::RecordAction(
+      base::RecordAction(
           base::UserMetricsAction("Signin_Signin_FromReSigninInfobar"));
       break;
     case signin_metrics::AccessPoint::ACCESS_POINT_TAB_SWITCHER:
-      content::RecordAction(
+      base::RecordAction(
           base::UserMetricsAction("Signin_Signin_FromTabSwitcher"));
       break;
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
@@ -204,7 +203,7 @@ void InlineLoginHandler::ContinueHandleInitializeMessage() {
       reason != signin_metrics::Reason::REASON_ADD_SECONDARY_ACCOUNT) {
     signin_metrics::LogSigninAccessPointStarted(access_point);
     RecordSigninUserActionForAccessPoint(access_point);
-    content::RecordAction(base::UserMetricsAction("Signin_SigninPage_Loading"));
+    base::RecordAction(base::UserMetricsAction("Signin_SigninPage_Loading"));
     params.SetBoolean("isLoginPrimaryAccount", true);
   }
 

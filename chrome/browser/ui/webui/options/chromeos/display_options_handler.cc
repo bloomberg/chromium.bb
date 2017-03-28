@@ -20,13 +20,13 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/display/display_preferences.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
@@ -407,8 +407,7 @@ void DisplayOptionsHandler::HandleMirroring(const base::ListValue* args) {
   bool is_mirroring = false;
   if (!args->GetBoolean(0, &is_mirroring))
     NOTREACHED();
-  content::RecordAction(
-      base::UserMetricsAction("Options_DisplayToggleMirroring"));
+  base::RecordAction(base::UserMetricsAction("Options_DisplayToggleMirroring"));
   GetDisplayConfigurationController()->SetMirrorMode(is_mirroring);
 }
 
@@ -418,7 +417,7 @@ void DisplayOptionsHandler::HandleSetPrimary(const base::ListValue* args) {
   if (display_id == display::kInvalidDisplayId)
     return;
 
-  content::RecordAction(base::UserMetricsAction("Options_DisplaySetPrimary"));
+  base::RecordAction(base::UserMetricsAction("Options_DisplaySetPrimary"));
   GetDisplayConfigurationController()->SetPrimaryDisplayId(display_id);
 }
 
@@ -427,7 +426,7 @@ void DisplayOptionsHandler::HandleSetDisplayLayout(
   const base::ListValue* layouts = nullptr;
   if (!args->GetList(0, &layouts))
     NOTREACHED();
-  content::RecordAction(base::UserMetricsAction("Options_DisplayRearrange"));
+  base::RecordAction(base::UserMetricsAction("Options_DisplayRearrange"));
 
   display::DisplayManager* display_manager = GetDisplayManager();
   display::DisplayLayoutBuilder builder(
@@ -488,8 +487,7 @@ void DisplayOptionsHandler::HandleSetDisplayMode(const base::ListValue* args) {
   if (!mode)
     return;
 
-  content::RecordAction(
-      base::UserMetricsAction("Options_DisplaySetResolution"));
+  base::RecordAction(base::UserMetricsAction("Options_DisplaySetResolution"));
   display::DisplayManager* display_manager = GetDisplayManager();
   scoped_refptr<display::ManagedDisplayMode> current_mode =
       display_manager->GetActiveModeForDisplayId(display_id);
@@ -530,8 +528,7 @@ void DisplayOptionsHandler::HandleSetRotation(const base::ListValue* args) {
   else if (rotation_value != 0)
     LOG(ERROR) << "Invalid rotation: " << rotation_value << " Falls back to 0";
 
-  content::RecordAction(
-      base::UserMetricsAction("Options_DisplaySetOrientation"));
+  base::RecordAction(base::UserMetricsAction("Options_DisplaySetOrientation"));
   GetDisplayConfigurationController()->SetDisplayRotation(
       display_id, new_rotation, display::Display::ROTATION_SOURCE_USER);
 }
@@ -560,8 +557,7 @@ void DisplayOptionsHandler::HandleSetColorProfile(const base::ListValue* args) {
     return;
   }
 
-  content::RecordAction(
-      base::UserMetricsAction("Options_DisplaySetColorProfile"));
+  base::RecordAction(base::UserMetricsAction("Options_DisplaySetColorProfile"));
   GetDisplayManager()->SetColorCalibrationProfile(
       display_id, static_cast<display::ColorCalibrationProfile>(profile_id));
 

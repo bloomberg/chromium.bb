@@ -4,6 +4,7 @@
 
 #include "chrome/browser/pepper_broker_infobar_delegate.h"
 
+#include "base/metrics/user_metrics.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -18,7 +19,6 @@
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/plugin_service.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/webplugininfo.h"
@@ -49,8 +49,7 @@ void PepperBrokerInfoBarDelegate::Create(
                                           std::string());
 
   if (setting == CONTENT_SETTING_ASK) {
-    content::RecordAction(
-        base::UserMetricsAction("PPAPI.BrokerInfobarDisplayed"));
+    base::RecordAction(base::UserMetricsAction("PPAPI.BrokerInfobarDisplayed"));
     InfoBarService* infobar_service =
         InfoBarService::FromWebContents(web_contents);
     infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
@@ -61,9 +60,9 @@ void PepperBrokerInfoBarDelegate::Create(
   }
 
   bool allowed = (setting == CONTENT_SETTING_ALLOW);
-  content::RecordAction(allowed ?
-      base::UserMetricsAction("PPAPI.BrokerSettingAllow") :
-      base::UserMetricsAction("PPAPI.BrokerSettingDeny"));
+  base::RecordAction(allowed
+                         ? base::UserMetricsAction("PPAPI.BrokerSettingAllow")
+                         : base::UserMetricsAction("PPAPI.BrokerSettingDeny"));
   tab_content_settings->SetPepperBrokerAllowed(allowed);
   callback.Run(allowed);
 }
@@ -134,9 +133,9 @@ GURL PepperBrokerInfoBarDelegate::GetLinkURL() const {
 }
 
 void PepperBrokerInfoBarDelegate::DispatchCallback(bool result) {
-  content::RecordAction(result ?
-      base::UserMetricsAction("PPAPI.BrokerInfobarClickedAllow") :
-      base::UserMetricsAction("PPAPI.BrokerInfobarClickedDeny"));
+  base::RecordAction(
+      result ? base::UserMetricsAction("PPAPI.BrokerInfobarClickedAllow")
+             : base::UserMetricsAction("PPAPI.BrokerInfobarClickedDeny"));
   callback_.Run(result);
   callback_ = base::Callback<void(bool)>();
   content_settings_->SetContentSettingDefaultScope(

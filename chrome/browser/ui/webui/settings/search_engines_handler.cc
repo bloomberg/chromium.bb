@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -26,7 +27,6 @@
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -301,8 +301,7 @@ void SearchEnginesHandler::HandleSetDefaultSearchEngine(
   // Hotword status may have changed.
   SendHotwordInfo();
 
-  content::RecordAction(
-      base::UserMetricsAction("Options_SearchEngineSetDefault"));
+  base::RecordAction(base::UserMetricsAction("Options_SearchEngineSetDefault"));
 }
 
 void SearchEnginesHandler::HandleRemoveSearchEngine(
@@ -317,8 +316,7 @@ void SearchEnginesHandler::HandleRemoveSearchEngine(
 
   if (list_controller_.CanRemove(list_controller_.GetTemplateURL(index))) {
     list_controller_.RemoveTemplateURL(index);
-    content::RecordAction(
-        base::UserMetricsAction("Options_SearchEngineRemoved"));
+    base::RecordAction(base::UserMetricsAction("Options_SearchEngineRemoved"));
   }
 }
 

@@ -16,6 +16,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -118,7 +119,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -2463,7 +2463,7 @@ void BrowserView::UpdateAcceleratorMetrics(const ui::Accelerator& accelerator,
                                            int command_id) {
   const ui::KeyboardCode key_code = accelerator.key_code();
   if (command_id == IDC_HELP_PAGE_VIA_KEYBOARD && key_code == ui::VKEY_F1)
-    content::RecordAction(UserMetricsAction("ShowHelpTabViaF1"));
+    base::RecordAction(UserMetricsAction("ShowHelpTabViaF1"));
 
   if (command_id == IDC_BOOKMARK_PAGE)
     UMA_HISTOGRAM_ENUMERATION("Bookmarks.EntryPoint",
@@ -2476,34 +2476,34 @@ void BrowserView::UpdateAcceleratorMetrics(const ui::Accelerator& accelerator,
   switch (command_id) {
     case IDC_BACK:
       if (key_code == ui::VKEY_BROWSER_BACK)
-        content::RecordAction(UserMetricsAction("Accel_Back_F1"));
+        base::RecordAction(UserMetricsAction("Accel_Back_F1"));
       else if (key_code == ui::VKEY_LEFT)
-        content::RecordAction(UserMetricsAction("Accel_Back_Left"));
+        base::RecordAction(UserMetricsAction("Accel_Back_Left"));
       break;
     case IDC_FORWARD:
       if (key_code == ui::VKEY_BROWSER_FORWARD)
-        content::RecordAction(UserMetricsAction("Accel_Forward_F2"));
+        base::RecordAction(UserMetricsAction("Accel_Forward_F2"));
       else if (key_code == ui::VKEY_RIGHT)
-        content::RecordAction(UserMetricsAction("Accel_Forward_Right"));
+        base::RecordAction(UserMetricsAction("Accel_Forward_Right"));
       break;
     case IDC_RELOAD:
     case IDC_RELOAD_BYPASSING_CACHE:
       if (key_code == ui::VKEY_R)
-        content::RecordAction(UserMetricsAction("Accel_Reload_R"));
+        base::RecordAction(UserMetricsAction("Accel_Reload_R"));
       else if (key_code == ui::VKEY_BROWSER_REFRESH)
-        content::RecordAction(UserMetricsAction("Accel_Reload_F3"));
+        base::RecordAction(UserMetricsAction("Accel_Reload_F3"));
       break;
     case IDC_FOCUS_LOCATION:
       if (key_code == ui::VKEY_D)
-        content::RecordAction(UserMetricsAction("Accel_FocusLocation_D"));
+        base::RecordAction(UserMetricsAction("Accel_FocusLocation_D"));
       else if (key_code == ui::VKEY_L)
-        content::RecordAction(UserMetricsAction("Accel_FocusLocation_L"));
+        base::RecordAction(UserMetricsAction("Accel_FocusLocation_L"));
       break;
     case IDC_FOCUS_SEARCH:
       if (key_code == ui::VKEY_E)
-        content::RecordAction(UserMetricsAction("Accel_FocusSearch_E"));
+        base::RecordAction(UserMetricsAction("Accel_FocusSearch_E"));
       else if (key_code == ui::VKEY_K)
-        content::RecordAction(UserMetricsAction("Accel_FocusSearch_K"));
+        base::RecordAction(UserMetricsAction("Accel_FocusSearch_K"));
       break;
     default:
       // Do nothing.

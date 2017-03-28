@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/i18n/number_formatting.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -56,7 +57,6 @@
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -682,7 +682,7 @@ void ToolbarView::UpdateSeverity(AppMenuIconController::IconType type,
 
   if (type == AppMenuIconController::IconType::INCOMPATIBILITY_WARNING) {
     if (!was_showing) {
-      content::RecordAction(UserMetricsAction("ConflictBadge"));
+      base::RecordAction(UserMetricsAction("ConflictBadge"));
 #if defined(OS_WIN)
       ConflictingModuleView::MaybeShow(browser_, app_menu_button_);
 #endif

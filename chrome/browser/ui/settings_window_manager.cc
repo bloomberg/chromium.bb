@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/settings_window_manager_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
 

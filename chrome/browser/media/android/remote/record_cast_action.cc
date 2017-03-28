@@ -7,13 +7,11 @@
 #include <jni.h>
 
 #include "base/metrics/histogram_macros.h"
-#include "content/public/browser/user_metrics.h"
+#include "base/metrics/user_metrics.h"
 #include "jni/RecordCastAction_jni.h"
 #include "media/base/container_names.h"
 
-using base::UserMetricsAction;
 using base::android::JavaParamRef;
-using content::RecordAction;
 
 namespace {
 
@@ -52,7 +50,7 @@ static void RecordRemotePlaybackDeviceSelected(JNIEnv*,
 }
 
 static void RecordCastPlayRequested(JNIEnv*, const JavaParamRef<jclass>&) {
-  RecordAction(UserMetricsAction("Cast_Sender_CastPlayRequested"));
+  base::RecordAction(base::UserMetricsAction("Cast_Sender_CastPlayRequested"));
 }
 
 static void RecordCastDefaultPlayerResult(JNIEnv*,

@@ -5,11 +5,11 @@
 #include "chrome/browser/ui/views/tabs/alert_indicator_button.h"
 
 #include "base/macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
-#include "content/public/browser/user_metrics.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
@@ -183,7 +183,7 @@ bool AlertIndicatorButton::OnMouseDragged(const ui::MouseEvent& event) {
   const bool ret = ImageButton::OnMouseDragged(event);
   if (previous_state != views::CustomButton::STATE_NORMAL &&
       state() == views::CustomButton::STATE_NORMAL)
-    content::RecordAction(UserMetricsAction("AlertIndicatorButton_Dragged"));
+    base::RecordAction(UserMetricsAction("AlertIndicatorButton_Dragged"));
   return ret;
 }
 
@@ -248,11 +248,11 @@ void AlertIndicatorButton::NotifyClick(const ui::Event& event) {
   // TransitionToAlertState() will be called again, via another code path, to
   // set the image to be consistent with the final outcome.
   if (alert_state_ == TabAlertState::AUDIO_PLAYING) {
-    content::RecordAction(UserMetricsAction("AlertIndicatorButton_Mute"));
+    base::RecordAction(UserMetricsAction("AlertIndicatorButton_Mute"));
     TransitionToAlertState(TabAlertState::AUDIO_MUTING);
   } else {
     DCHECK(alert_state_ == TabAlertState::AUDIO_MUTING);
-    content::RecordAction(UserMetricsAction("AlertIndicatorButton_Unmute"));
+    base::RecordAction(UserMetricsAction("AlertIndicatorButton_Unmute"));
     TransitionToAlertState(TabAlertState::AUDIO_PLAYING);
   }
 

@@ -15,6 +15,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/metrics/user_metrics.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
@@ -22,9 +23,7 @@
 #include "components/metrics/serialization/metric_sample.h"
 #include "components/metrics/serialization/serialization_utils.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/user_metrics.h"
 
-using base::UserMetricsAction;
 using content::BrowserThread;
 
 namespace chromeos {
@@ -73,7 +72,7 @@ scoped_refptr<ExternalMetrics> ExternalMetrics::CreateForTesting(
 }
 
 void ExternalMetrics::RecordActionUI(const std::string& action_string) {
-  content::RecordComputedAction(action_string);
+  base::RecordComputedAction(action_string);
 }
 
 void ExternalMetrics::RecordAction(const std::string& action) {

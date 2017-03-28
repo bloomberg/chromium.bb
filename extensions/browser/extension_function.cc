@@ -12,11 +12,11 @@
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/metrics/user_metrics.h"
 #include "base/synchronization/lock.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/bad_message.h"
@@ -80,7 +80,7 @@ void LogUma(bool success,
 }
 
 void LogBadMessage(extensions::functions::HistogramValue histogram_value) {
-  content::RecordAction(base::UserMetricsAction("BadMessageTerminate_EFD"));
+  base::RecordAction(base::UserMetricsAction("BadMessageTerminate_EFD"));
   // Track the specific function's |histogram_value|, as this may indicate a
   // bug in that API's implementation.
   UMA_HISTOGRAM_ENUMERATION("Extensions.BadMessageFunctionName",

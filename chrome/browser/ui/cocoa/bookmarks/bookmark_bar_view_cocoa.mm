@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_view_cocoa.h"
 
+#include "base/metrics/user_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/themes/theme_properties.h"
 #import "chrome/browser/themes/theme_service.h"
@@ -17,7 +18,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_pasteboard_helper_mac.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
-#include "content/public/browser/user_metrics.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "ui/base/clipboard/clipboard_util_mac.h"
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"
@@ -324,7 +324,7 @@ static const CGFloat kTextFieldTrailingPadding = 5;
     rtn = [controller_ dragButton:button
                                to:[info draggingLocation]
                              copy:copy];
-    content::RecordAction(UserMetricsAction("BookmarkBar_DragEnd"));
+    base::RecordAction(UserMetricsAction("BookmarkBar_DragEnd"));
   }
   return rtn;
 }

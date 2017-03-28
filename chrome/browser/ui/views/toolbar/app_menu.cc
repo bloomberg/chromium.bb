@@ -13,6 +13,7 @@
 #include "base/i18n/number_formatting.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -40,7 +41,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/feature_switch.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -826,7 +826,7 @@ void AppMenu::RunMenu(views::MenuButton* host) {
   gfx::Point screen_loc;
   views::View::ConvertPointToScreen(host, &screen_loc);
   gfx::Rect bounds(screen_loc, host->size());
-  content::RecordAction(UserMetricsAction("ShowAppMenu"));
+  base::RecordAction(UserMetricsAction("ShowAppMenu"));
   menu_runner_->RunMenuAt(host->GetWidget(), host, bounds,
                           views::MENU_ANCHOR_TOPRIGHT, ui::MENU_SOURCE_NONE);
 }

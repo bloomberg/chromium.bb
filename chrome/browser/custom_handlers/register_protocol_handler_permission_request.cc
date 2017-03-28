@@ -4,11 +4,11 @@
 
 #include "chrome/browser/custom_handlers/register_protocol_handler_permission_request.h"
 
+#include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/grit/generated_resources.h"
-#include "content/public/browser/user_metrics.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/vector_icons/vector_icons.h"
 
@@ -61,19 +61,19 @@ GURL RegisterProtocolHandlerPermissionRequest::GetOrigin() const {
 }
 
 void RegisterProtocolHandlerPermissionRequest::PermissionGranted() {
-  content::RecordAction(
+  base::RecordAction(
       base::UserMetricsAction("RegisterProtocolHandler.Infobar_Accept"));
   registry_->OnAcceptRegisterProtocolHandler(handler_);
 }
 
 void RegisterProtocolHandlerPermissionRequest::PermissionDenied() {
-  content::RecordAction(
+  base::RecordAction(
       base::UserMetricsAction("RegisterProtocolHandler.InfoBar_Deny"));
   registry_->OnIgnoreRegisterProtocolHandler(handler_);
 }
 
 void RegisterProtocolHandlerPermissionRequest::Cancelled() {
-  content::RecordAction(
+  base::RecordAction(
       base::UserMetricsAction("RegisterProtocolHandler.InfoBar_Deny"));
   registry_->OnIgnoreRegisterProtocolHandler(handler_);
 }

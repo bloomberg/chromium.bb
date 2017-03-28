@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/search/extension_app_result.h"
 
+#include "base/metrics/user_metrics.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
@@ -11,7 +12,6 @@
 #include "chrome/browser/ui/app_list/search/search_util.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/common/extensions/extension_metrics.h"
-#include "content/public/browser/user_metrics.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -78,8 +78,7 @@ void ExtensionAppResult::Open(int event_flags) {
 
   if (display_type() != DISPLAY_RECOMMENDATION) {
     extensions::RecordAppListSearchLaunch(extension);
-    content::RecordAction(
-        base::UserMetricsAction("AppList_ClickOnAppFromSearch"));
+    base::RecordAction(base::UserMetricsAction("AppList_ClickOnAppFromSearch"));
   }
 
   controller()->ActivateApp(

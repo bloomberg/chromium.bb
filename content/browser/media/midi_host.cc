@@ -14,7 +14,6 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/common/media/midi_messages.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/user_metrics.h"
 #include "media/midi/message_util.h"
 #include "media/midi/midi_message_queue.h"
 #include "media/midi/midi_service.h"

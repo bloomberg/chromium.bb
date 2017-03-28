@@ -7,10 +7,10 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/threading/thread_task_runner_handle.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
-#include "content/public/browser/user_metrics.h"
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/image/image.h"
@@ -241,11 +241,11 @@ class FadeAnimationDelegate : public gfx::AnimationDelegate {
   // set the image to be consistent with the final outcome.
   using base::UserMetricsAction;
   if (alertState_ == TabAlertState::AUDIO_PLAYING) {
-    content::RecordAction(UserMetricsAction("AlertIndicatorButton_Mute"));
+    base::RecordAction(UserMetricsAction("AlertIndicatorButton_Mute"));
     [self transitionToAlertState:TabAlertState::AUDIO_MUTING];
   } else {
     DCHECK(alertState_ == TabAlertState::AUDIO_MUTING);
-    content::RecordAction(UserMetricsAction("AlertIndicatorButton_Unmute"));
+    base::RecordAction(UserMetricsAction("AlertIndicatorButton_Unmute"));
     [self transitionToAlertState:TabAlertState::AUDIO_PLAYING];
   }
 

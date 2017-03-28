@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
@@ -36,7 +37,6 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_observer.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/zoom/zoom_event_manager.h"
-#include "content/public/browser/user_metrics.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/geometry/size.h"
@@ -364,7 +364,7 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
       viewWithTag:IDC_ZOOM_PLUS] image]
         setAccessibilityDescription:l10n_util::GetNSString(
               IDS_TEXT_BIGGER_MAC)];
-  content::RecordAction(UserMetricsAction("ShowAppMenu"));
+  base::RecordAction(UserMetricsAction("ShowAppMenu"));
 
   NSImage* icon = [self appMenuModel]->browser()->window()->IsFullscreen()
                       ? [NSImage imageNamed:NSImageNameExitFullScreenTemplate]

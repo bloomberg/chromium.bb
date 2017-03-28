@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
@@ -20,7 +21,6 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/url_constants.h"
 #include "components/user_manager/user_manager.h"
-#include "content/public/browser/user_metrics.h"
 #include "extensions/common/api/virtual_keyboard_private.h"
 #include "media/audio/audio_system.h"
 #include "ui/aura/window_tree_host.h"
@@ -163,7 +163,7 @@ bool ChromeVirtualKeyboardDelegate::SendKeyEvent(const std::string& type,
 
 bool ChromeVirtualKeyboardDelegate::ShowLanguageSettings() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  content::RecordAction(base::UserMetricsAction("OpenLanguageOptionsDialog"));
+  base::RecordAction(base::UserMetricsAction("OpenLanguageOptionsDialog"));
   chrome::ShowSettingsSubPageForProfile(ProfileManager::GetActiveUserProfile(),
                                         chrome::kLanguageOptionsSubPage);
   return true;

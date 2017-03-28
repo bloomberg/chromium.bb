@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -25,7 +26,6 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/strings/grit/components_strings.h"
-#include "content/public/browser/user_metrics.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -240,7 +240,7 @@ views::View* BookmarkBubbleView::CreateFootnoteView() {
   if (!SyncPromoUI::ShouldShowSyncPromo(profile_))
     return nullptr;
 
-  content::RecordAction(
+  base::RecordAction(
       base::UserMetricsAction("Signin_Impression_FromBookmarkBubble"));
 
   return new BubbleSyncPromoView(delegate_.get(), IDS_BOOKMARK_SYNC_PROMO_LINK,
@@ -297,20 +297,20 @@ void BookmarkBubbleView::ButtonPressed(views::Button* sender,
 
 void BookmarkBubbleView::OnPerformAction(views::Combobox* combobox) {
   if (combobox->selected_index() + 1 == parent_model_.GetItemCount()) {
-    content::RecordAction(UserMetricsAction("BookmarkBubble_EditFromCombobox"));
+    base::RecordAction(UserMetricsAction("BookmarkBubble_EditFromCombobox"));
     ShowEditor();
   }
 }
 
 void BookmarkBubbleView::HandleButtonPressed(views::Button* sender) {
   if (sender == remove_button_) {
-    content::RecordAction(UserMetricsAction("BookmarkBubble_Unstar"));
+    base::RecordAction(UserMetricsAction("BookmarkBubble_Unstar"));
     // Set this so we remove the bookmark after the window closes.
     remove_bookmark_ = true;
     apply_edits_ = false;
     GetWidget()->Close();
   } else if (sender == edit_button_) {
-    content::RecordAction(UserMetricsAction("BookmarkBubble_Edit"));
+    base::RecordAction(UserMetricsAction("BookmarkBubble_Edit"));
     ShowEditor();
   } else {
     DCHECK_EQ(close_button_, sender);
@@ -347,7 +347,7 @@ void BookmarkBubbleView::ApplyEdits() {
     const base::string16 new_title = title_tf_->text();
     if (new_title != node->GetTitle()) {
       model->SetTitle(node, new_title);
-      content::RecordAction(
+      base::RecordAction(
           UserMetricsAction("BookmarkBubble_ChangeTitleInBubble"));
     }
     parent_model_.MaybeChangeParent(node, parent_combobox_->selected_index());

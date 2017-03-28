@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -32,7 +33,6 @@
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
@@ -208,7 +208,7 @@ void CrosLanguageOptionsHandler::SetApplicationLocale(
 }
 
 void CrosLanguageOptionsHandler::RestartCallback(const base::ListValue* args) {
-  content::RecordAction(UserMetricsAction("LanguageOptions_SignOut"));
+  base::RecordAction(UserMetricsAction("LanguageOptions_SignOut"));
   chrome::AttemptUserExit();
 }
 
@@ -218,7 +218,7 @@ void CrosLanguageOptionsHandler::InputMethodDisableCallback(
       base::UTF16ToASCII(ExtractStringValue(args));
   const std::string action = base::StringPrintf(
       "LanguageOptions_DisableInputMethod_%s", input_method_id.c_str());
-  content::RecordComputedAction(action);
+  base::RecordComputedAction(action);
 }
 
 void CrosLanguageOptionsHandler::InputMethodEnableCallback(
@@ -227,7 +227,7 @@ void CrosLanguageOptionsHandler::InputMethodEnableCallback(
       base::UTF16ToASCII(ExtractStringValue(args));
   const std::string action = base::StringPrintf(
       "LanguageOptions_EnableInputMethod_%s", input_method_id.c_str());
-  content::RecordComputedAction(action);
+  base::RecordComputedAction(action);
 }
 
 void CrosLanguageOptionsHandler::InputMethodOptionsOpenCallback(

@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -26,7 +27,6 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/browser/user_metrics.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_network_session.h"
@@ -392,7 +392,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(
   //////////////////////////////////////////////////////////////////////////////
   // DATA_TYPE_DOWNLOADS
   if ((remove_mask & DATA_TYPE_DOWNLOADS) && may_delete_history) {
-    content::RecordAction(UserMetricsAction("ClearBrowsingData_Downloads"));
+    base::RecordAction(UserMetricsAction("ClearBrowsingData_Downloads"));
     content::DownloadManager* download_manager =
         BrowserContext::GetDownloadManager(browser_context_);
     download_manager->RemoveDownloadsByURLAndTime(filter,
@@ -405,8 +405,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(
   // origins. We check the origin_type_mask_ to prevent unintended deletion.
   if (remove_mask & DATA_TYPE_CHANNEL_IDS &&
       origin_type_mask_ & ORIGIN_TYPE_UNPROTECTED_WEB) {
-    content::RecordAction(
-        UserMetricsAction("ClearBrowsingData_ChannelIDs"));
+    base::RecordAction(UserMetricsAction("ClearBrowsingData_ChannelIDs"));
     // Since we are running on the UI thread don't call GetURLRequestContext().
     scoped_refptr<net::URLRequestContextGetter> rq_context =
         content::BrowserContext::GetDefaultStoragePartition(browser_context_)->
@@ -513,7 +512,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(
   //////////////////////////////////////////////////////////////////////////////
   // CACHE
   if (remove_mask & DATA_TYPE_CACHE) {
-    content::RecordAction(UserMetricsAction("ClearBrowsingData_Cache"));
+    base::RecordAction(UserMetricsAction("ClearBrowsingData_Cache"));
 
     // TODO(msramek): Clear the cache of all renderers.
 
@@ -525,7 +524,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(
         clear_cache_.GetCompletionCallback());
 
     // Tell the shader disk cache to clear.
-    content::RecordAction(UserMetricsAction("ClearBrowsingData_ShaderCache"));
+    base::RecordAction(UserMetricsAction("ClearBrowsingData_ShaderCache"));
     storage_partition_remove_mask |=
         content::StoragePartition::REMOVE_DATA_MASK_SHADER_CACHE;
   }

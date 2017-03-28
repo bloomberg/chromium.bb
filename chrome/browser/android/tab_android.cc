@@ -10,6 +10,7 @@
 #include "base/android/jni_string.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/layers/layer.h"
 #include "chrome/browser/android/compositor/tab_content_manager.h"
@@ -70,7 +71,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_controls_state.h"
 #include "content/public/common/resource_request_body.h"
@@ -494,7 +494,7 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(
     // Record UMA "ShowHistory" here. That way it'll pick up both user
     // typing chrome://history as well as selecting from the drop down menu.
     if (fixed_url.spec() == chrome::kChromeUIHistoryURL) {
-      content::RecordAction(base::UserMetricsAction("ShowHistory"));
+      base::RecordAction(base::UserMetricsAction("ShowHistory"));
     }
 
     content::NavigationController::LoadURLParams load_params(fixed_url);

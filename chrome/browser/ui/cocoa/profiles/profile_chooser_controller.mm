@@ -66,7 +66,6 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_widget_host_view.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -2098,7 +2097,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     [container setFrameSize:NSMakeSize(rect.size.width,
                                        NSMaxY([promo frame]) +
                                            kRelatedControllVerticalSpacing)];
-    content::RecordAction(
+    base::RecordAction(
         base::UserMetricsAction("Signin_Impression_FromAvatarBubbleSignin"));
   }
 

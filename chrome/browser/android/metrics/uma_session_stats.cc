@@ -8,6 +8,7 @@
 #include "base/android/jni_string.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
@@ -24,7 +25,6 @@
 #include "components/variations/metrics_util.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/user_metrics.h"
 #include "jni/UmaSessionStats_jni.h"
 
 using base::android::ConvertJavaStringToUTF8;
@@ -223,15 +223,14 @@ static void RecordPageLoaded(JNIEnv*,
                              const JavaParamRef<jclass>&,
                              jboolean is_desktop_user_agent) {
   // Should be called whenever a page has been loaded.
-  content::RecordAction(UserMetricsAction("MobilePageLoaded"));
+  base::RecordAction(UserMetricsAction("MobilePageLoaded"));
   if (is_desktop_user_agent) {
-    content::RecordAction(
-        UserMetricsAction("MobilePageLoadedDesktopUserAgent"));
+    base::RecordAction(UserMetricsAction("MobilePageLoadedDesktopUserAgent"));
   }
 }
 
 static void RecordPageLoadedWithKeyboard(JNIEnv*, const JavaParamRef<jclass>&) {
-  content::RecordAction(UserMetricsAction("MobilePageLoadedWithKeyboard"));
+  base::RecordAction(UserMetricsAction("MobilePageLoadedWithKeyboard"));
 }
 
 static jlong Init(JNIEnv* env, const JavaParamRef<jclass>& obj) {

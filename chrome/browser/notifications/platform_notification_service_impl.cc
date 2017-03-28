@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -35,7 +36,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_notification_delegate.h"
 #include "content/public/browser/notification_event_dispatcher.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/common/notification_resources.h"
 #include "content/public/common/platform_notification_data.h"
 #include "extensions/features/features.h"
@@ -134,16 +134,16 @@ void PlatformNotificationServiceImpl::OnPersistentNotificationClick(
   // TODO(peter): Change this to a CHECK() when Issue 555572 is resolved.
   // Also change this method to be const again.
   if (permission_status != blink::mojom::PermissionStatus::GRANTED) {
-    content::RecordAction(base::UserMetricsAction(
+    base::RecordAction(base::UserMetricsAction(
         "Notifications.Persistent.ClickedWithoutPermission"));
     return;
   }
 
   if (action_index == -1) {
-    content::RecordAction(base::UserMetricsAction(
-        "Notifications.Persistent.Clicked"));
+    base::RecordAction(
+        base::UserMetricsAction("Notifications.Persistent.Clicked"));
   } else {
-    content::RecordAction(base::UserMetricsAction(
+    base::RecordAction(base::UserMetricsAction(
         "Notifications.Persistent.ClickedActionButton"));
   }
 
@@ -177,10 +177,10 @@ void PlatformNotificationServiceImpl::OnPersistentNotificationClose(
     return;
 
   if (by_user) {
-    content::RecordAction(base::UserMetricsAction(
-        "Notifications.Persistent.ClosedByUser"));
+    base::RecordAction(
+        base::UserMetricsAction("Notifications.Persistent.ClosedByUser"));
   } else {
-    content::RecordAction(base::UserMetricsAction(
+    base::RecordAction(base::UserMetricsAction(
         "Notifications.Persistent.ClosedProgrammatically"));
   }
   content::NotificationEventDispatcher::GetInstance()
@@ -363,8 +363,7 @@ void PlatformNotificationServiceImpl::DisplayPersistentNotification(
 
   GetNotificationDisplayService(profile)->Display(
       NotificationCommon::PERSISTENT, notification_id, notification);
-  content::RecordAction(
-      base::UserMetricsAction("Notifications.Persistent.Shown"));
+  base::RecordAction(base::UserMetricsAction("Notifications.Persistent.Shown"));
 }
 
 void PlatformNotificationServiceImpl::ClosePersistentNotification(

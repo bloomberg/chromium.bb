@@ -7,11 +7,11 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/metrics/user_metrics.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/importer/importer_lock_dialog.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "content/public/browser/user_metrics.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 using base::UserMetricsAction;
@@ -33,7 +33,7 @@ void ShowImportLockDialog(gfx::NativeWindow parent,
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(callback, [lock_alert runModal] == NSAlertFirstButtonReturn));
-  content::RecordAction(UserMetricsAction("ImportLockDialogCocoa_Shown"));
+  base::RecordAction(UserMetricsAction("ImportLockDialogCocoa_Shown"));
 }
 
 }  // namespace importer

@@ -13,6 +13,7 @@
 #include "base/debug/profiler.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "base/metrics/user_metrics.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
@@ -49,7 +50,6 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/service_manager_connection.h"
@@ -335,23 +335,22 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       NewIncognitoWindow(browser_);
       break;
     case IDC_CLOSE_WINDOW:
-      content::RecordAction(base::UserMetricsAction("CloseWindowByKey"));
+      base::RecordAction(base::UserMetricsAction("CloseWindowByKey"));
       CloseWindow(browser_);
       break;
     case IDC_NEW_TAB:
       NewTab(browser_);
       break;
     case IDC_CLOSE_TAB:
-      content::RecordAction(base::UserMetricsAction("CloseTabByKey"));
+      base::RecordAction(base::UserMetricsAction("CloseTabByKey"));
       CloseTab(browser_);
       break;
     case IDC_SELECT_NEXT_TAB:
-      content::RecordAction(base::UserMetricsAction("Accel_SelectNextTab"));
+      base::RecordAction(base::UserMetricsAction("Accel_SelectNextTab"));
       SelectNextTab(browser_);
       break;
     case IDC_SELECT_PREVIOUS_TAB:
-      content::RecordAction(
-          base::UserMetricsAction("Accel_SelectPreviousTab"));
+      base::RecordAction(base::UserMetricsAction("Accel_SelectPreviousTab"));
       SelectPreviousTab(browser_);
       break;
     case IDC_MOVE_TAB_NEXT:
@@ -368,11 +367,11 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_SELECT_TAB_5:
     case IDC_SELECT_TAB_6:
     case IDC_SELECT_TAB_7:
-      content::RecordAction(base::UserMetricsAction("Accel_SelectNumberedTab"));
+      base::RecordAction(base::UserMetricsAction("Accel_SelectNumberedTab"));
       SelectNumberedTab(browser_, id - IDC_SELECT_TAB_0);
       break;
     case IDC_SELECT_LAST_TAB:
-      content::RecordAction(base::UserMetricsAction("Accel_SelectNumberedTab"));
+      base::RecordAction(base::UserMetricsAction("Accel_SelectNumberedTab"));
       SelectLastTab(browser_);
       break;
     case IDC_DUPLICATE_TAB:
@@ -435,7 +434,7 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
 
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
     case IDC_BASIC_PRINT:
-      content::RecordAction(base::UserMetricsAction("Accel_Advanced_Print"));
+      base::RecordAction(base::UserMetricsAction("Accel_Advanced_Print"));
       BasicPrint(browser_);
       break;
 #endif  // ENABLE_BASIC_PRINTING
@@ -481,23 +480,22 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
 
     // Focus various bits of UI
     case IDC_FOCUS_TOOLBAR:
-      content::RecordAction(base::UserMetricsAction("Accel_Focus_Toolbar"));
+      base::RecordAction(base::UserMetricsAction("Accel_Focus_Toolbar"));
       FocusToolbar(browser_);
       break;
     case IDC_FOCUS_LOCATION:
-      content::RecordAction(base::UserMetricsAction("Accel_Focus_Location"));
+      base::RecordAction(base::UserMetricsAction("Accel_Focus_Location"));
       FocusLocationBar(browser_);
       break;
     case IDC_FOCUS_SEARCH:
-      content::RecordAction(base::UserMetricsAction("Accel_Focus_Search"));
+      base::RecordAction(base::UserMetricsAction("Accel_Focus_Search"));
       FocusSearch(browser_);
       break;
     case IDC_FOCUS_MENU_BAR:
       FocusAppMenu(browser_);
       break;
     case IDC_FOCUS_BOOKMARKS:
-      content::RecordAction(
-          base::UserMetricsAction("Accel_Focus_Bookmarks"));
+      base::RecordAction(base::UserMetricsAction("Accel_Focus_Bookmarks"));
       FocusBookmarksToolbar(browser_);
       break;
     case IDC_FOCUS_INFOBARS:
@@ -559,7 +557,7 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       ShowBookmarkManager(browser_);
       break;
     case IDC_SHOW_APP_MENU:
-      content::RecordAction(base::UserMetricsAction("Accel_Show_App_Menu"));
+      base::RecordAction(base::UserMetricsAction("Accel_Show_App_Menu"));
       ShowAppMenu(browser_);
       break;
     case IDC_SHOW_AVATAR_MENU:

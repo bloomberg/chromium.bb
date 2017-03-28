@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -40,7 +41,6 @@
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/plugin_service.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -388,7 +388,7 @@ void FlashDOMHandler::MaybeRespondToPage() {
 ///////////////////////////////////////////////////////////////////////////////
 
 FlashUI::FlashUI(content::WebUI* web_ui) : WebUIController(web_ui) {
-  content::RecordAction(UserMetricsAction("ViewAboutFlash"));
+  base::RecordAction(UserMetricsAction("ViewAboutFlash"));
 
   web_ui->AddMessageHandler(base::MakeUnique<FlashDOMHandler>());
 

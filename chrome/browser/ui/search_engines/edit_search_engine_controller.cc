@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
@@ -13,7 +14,6 @@
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/url_formatter/url_fixer.h"
-#include "content/public/browser/user_metrics.h"
 #include "url/gurl.h"
 
 using base::UserMetricsAction;
@@ -108,7 +108,7 @@ void EditSearchEngineController::AcceptAddOrEdit(
     template_url_service->AddWithOverrides(base::WrapUnique(template_url_),
                                            title_input, keyword_input,
                                            url_string);
-    content::RecordAction(UserMetricsAction("KeywordEditor_AddKeywordJS"));
+    base::RecordAction(UserMetricsAction("KeywordEditor_AddKeywordJS"));
   } else {
     // Adding or modifying an entry via the Delegate.
     edit_keyword_delegate_->OnEditedKeyword(template_url_, title_input,

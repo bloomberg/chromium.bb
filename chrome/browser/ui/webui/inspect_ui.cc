@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/user_metrics.h"
 #include "chrome/browser/devtools/devtools_targets_ui.h"
 #include "chrome/browser/devtools/devtools_ui_bindings.h"
 #include "chrome/browser/devtools/devtools_window.h"
@@ -24,7 +25,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -434,7 +434,7 @@ void InspectUI::InspectBrowserWithCustomFrontend(
 }
 
 void InspectUI::InspectDevices(Browser* browser) {
-  content::RecordAction(base::UserMetricsAction("InspectDevices"));
+  base::RecordAction(base::UserMetricsAction("InspectDevices"));
   chrome::NavigateParams params(chrome::GetSingletonTabNavigateParams(
       browser, GURL(chrome::kChromeUIInspectURL)));
   params.path_behavior = chrome::NavigateParams::IGNORE_AND_NAVIGATE;

@@ -9,6 +9,7 @@
 
 #include "base/i18n/rtl.h"
 #include "base/mac/bundle_locations.h"
+#include "base/metrics/user_metrics.h"
 #import "chrome/browser/themes/theme_properties.h"
 #import "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/cocoa/l10n_util.h"
@@ -17,7 +18,6 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_controller_target.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
-#include "content/public/browser/user_metrics.h"
 #import "extensions/common/extension.h"
 #import "ui/base/cocoa/menu_controller.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -200,15 +200,15 @@ static const CGFloat kTabElementYOrigin = 6;
 
   if (alertIndicatorButton_ && ![alertIndicatorButton_ isHidden]) {
     if ([alertIndicatorButton_ isEnabled]) {
-      content::RecordAction(UserMetricsAction("CloseTab_MuteToggleAvailable"));
+      base::RecordAction(UserMetricsAction("CloseTab_MuteToggleAvailable"));
     } else if ([alertIndicatorButton_ showingAlertState] ==
                    TabAlertState::AUDIO_PLAYING) {
-      content::RecordAction(UserMetricsAction("CloseTab_AudioIndicator"));
+      base::RecordAction(UserMetricsAction("CloseTab_AudioIndicator"));
     } else {
-      content::RecordAction(UserMetricsAction("CloseTab_RecordingIndicator"));
+      base::RecordAction(UserMetricsAction("CloseTab_RecordingIndicator"));
     }
   } else {
-    content::RecordAction(UserMetricsAction("CloseTab_NoAlertIndicator"));
+    base::RecordAction(UserMetricsAction("CloseTab_NoAlertIndicator"));
   }
 
   if ([[self target] respondsToSelector:@selector(closeTab:)]) {

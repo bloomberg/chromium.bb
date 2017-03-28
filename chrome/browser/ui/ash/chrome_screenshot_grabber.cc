@@ -15,6 +15,7 @@
 #include "base/files/file_util.h"
 #include "base/i18n/time_formatting.h"
 #include "base/macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -36,7 +37,6 @@
 #include "components/drive/chromeos/file_system_interface.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/user_metrics.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -68,7 +68,7 @@ void CopyScreenshotToClipboard(scoped_refptr<base::RefCountedString> png_data) {
     html += kImageClipboardFormatSuffix;
     scw.WriteHTML(base::UTF8ToUTF16(html), std::string());
   }
-  content::RecordAction(base::UserMetricsAction("Screenshot_CopyClipboard"));
+  base::RecordAction(base::UserMetricsAction("Screenshot_CopyClipboard"));
 }
 
 void ReadFileAndCopyToClipboardLocal(const base::FilePath& screenshot_path) {
@@ -140,7 +140,7 @@ class ScreenshotGrabberNotificationDelegate : public NotificationDelegate {
         chromeos::NoteTakingHelper* helper = chromeos::NoteTakingHelper::Get();
         if (helper->IsAppAvailable(profile_)) {
           helper->LaunchAppForNewNote(profile_, screenshot_path_);
-          content::RecordAction(base::UserMetricsAction("Screenshot_Annotate"));
+          base::RecordAction(base::UserMetricsAction("Screenshot_Annotate"));
         }
         break;
       }
@@ -327,7 +327,7 @@ void ChromeScreenshotGrabber::HandleTakeScreenshotForAllRootWindows() {
         screenshot_directory.AppendASCII(basename + ".png");
     screenshot_grabber_->TakeScreenshot(root_window, rect, screenshot_path);
   }
-  content::RecordAction(base::UserMetricsAction("Screenshot_TakeFull"));
+  base::RecordAction(base::UserMetricsAction("Screenshot_TakeFull"));
 }
 
 void ChromeScreenshotGrabber::HandleTakePartialScreenshot(
@@ -350,7 +350,7 @@ void ChromeScreenshotGrabber::HandleTakePartialScreenshot(
   base::FilePath screenshot_path =
       screenshot_directory.AppendASCII(GetScreenshotBaseFilename() + ".png");
   screenshot_grabber_->TakeScreenshot(window, rect, screenshot_path);
-  content::RecordAction(base::UserMetricsAction("Screenshot_TakePartial"));
+  base::RecordAction(base::UserMetricsAction("Screenshot_TakePartial"));
 }
 
 void ChromeScreenshotGrabber::HandleTakeWindowScreenshot(aura::Window* window) {
@@ -373,7 +373,7 @@ void ChromeScreenshotGrabber::HandleTakeWindowScreenshot(aura::Window* window) {
   screenshot_grabber_->TakeScreenshot(window,
                                       gfx::Rect(window->bounds().size()),
                                       screenshot_path);
-  content::RecordAction(base::UserMetricsAction("Screenshot_TakeWindow"));
+  base::RecordAction(base::UserMetricsAction("Screenshot_TakeWindow"));
 }
 
 bool ChromeScreenshotGrabber::CanTakeScreenshot() {

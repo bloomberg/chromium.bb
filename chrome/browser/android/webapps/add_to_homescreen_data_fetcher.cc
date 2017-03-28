@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/string16.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -25,7 +26,6 @@
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/favicon_types.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/manifest.h"
@@ -127,15 +127,15 @@ void AddToHomescreenDataFetcher::OnDidGetWebApplicationInfo(
   // Record what type of shortcut was added by the user.
   switch (web_app_info.mobile_capable) {
     case WebApplicationInfo::MOBILE_CAPABLE:
-      content::RecordAction(
+      base::RecordAction(
           base::UserMetricsAction("webapps.AddShortcut.AppShortcut"));
       break;
     case WebApplicationInfo::MOBILE_CAPABLE_APPLE:
-      content::RecordAction(
+      base::RecordAction(
           base::UserMetricsAction("webapps.AddShortcut.AppShortcutApple"));
       break;
     case WebApplicationInfo::MOBILE_CAPABLE_UNSPECIFIED:
-      content::RecordAction(
+      base::RecordAction(
           base::UserMetricsAction("webapps.AddShortcut.Bookmark"));
       break;
   }
@@ -220,8 +220,7 @@ void AddToHomescreenDataFetcher::OnDidPerformInstallableCheck(
   }
 
   if (!data.manifest.IsEmpty()) {
-    content::RecordAction(
-        base::UserMetricsAction("webapps.AddShortcut.Manifest"));
+    base::RecordAction(base::UserMetricsAction("webapps.AddShortcut.Manifest"));
     shortcut_info_.UpdateFromManifest(data.manifest);
     shortcut_info_.manifest_url = data.manifest_url;
 

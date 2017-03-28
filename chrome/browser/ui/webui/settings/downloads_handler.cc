@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/settings/downloads_handler.h"
 
+#include "base/metrics/user_metrics.h"
 #include "base/values.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -13,7 +14,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/download_manager.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -74,7 +74,7 @@ void DownloadsHandler::SendAutoOpenDownloadsToJavascript() {
 
 void DownloadsHandler::HandleResetAutoOpenFileTypes(
     const base::ListValue* args) {
-  content::RecordAction(UserMetricsAction("Options_ResetAutoOpenFiles"));
+  base::RecordAction(UserMetricsAction("Options_ResetAutoOpenFiles"));
   content::DownloadManager* manager =
       content::BrowserContext::GetDownloadManager(profile_);
   if (manager)
@@ -99,7 +99,7 @@ void DownloadsHandler::HandleSelectDownloadLocation(
 void DownloadsHandler::FileSelected(const base::FilePath& path,
                                     int index,
                                     void* params) {
-  content::RecordAction(UserMetricsAction("Options_SetDownloadDirectory"));
+  base::RecordAction(UserMetricsAction("Options_SetDownloadDirectory"));
   PrefService* pref_service = profile_->GetPrefs();
   pref_service->SetFilePath(prefs::kDownloadDefaultDirectory, path);
   pref_service->SetFilePath(prefs::kSaveFileDefaultDirectory, path);

@@ -5,6 +5,7 @@
 #include "chrome/browser/media/protected_media_identifier_permission_context.h"
 
 #include "base/command_line.h"
+#include "base/metrics/user_metrics.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/permissions/permission_util.h"
@@ -13,7 +14,6 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #if defined(OS_CHROMEOS)
 #include <utility>
@@ -212,14 +212,14 @@ void ProtectedMediaIdentifierPermissionContext::
       break;
     case PlatformVerificationDialog::CONSENT_RESPONSE_ALLOW:
       VLOG(1) << "Platform verification accepted by user.";
-      content::RecordAction(
+      base::RecordAction(
           base::UserMetricsAction("PlatformVerificationAccepted"));
       content_setting = CONTENT_SETTING_ALLOW;
       persist = true;
       break;
     case PlatformVerificationDialog::CONSENT_RESPONSE_DENY:
       VLOG(1) << "Platform verification denied by user.";
-      content::RecordAction(
+      base::RecordAction(
           base::UserMetricsAction("PlatformVerificationRejected"));
       content_setting = CONTENT_SETTING_BLOCK;
       persist = true;

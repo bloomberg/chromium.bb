@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -51,7 +52,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/origin_util.h"
@@ -519,7 +519,7 @@ void ContentSettingPluginBubbleModel::OnLearnMoreLinkClicked() {
 }
 
 void ContentSettingPluginBubbleModel::OnCustomLinkClicked() {
-  content::RecordAction(UserMetricsAction("ClickToPlay_LoadAll_Bubble"));
+  base::RecordAction(UserMetricsAction("ClickToPlay_LoadAll_Bubble"));
   content_settings::RecordPluginsAction(
       content_settings::PLUGINS_ACTION_CLICKED_RUN_ALL_PLUGINS_THIS_TIME);
 

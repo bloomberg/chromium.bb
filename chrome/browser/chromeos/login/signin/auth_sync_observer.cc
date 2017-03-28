@@ -15,7 +15,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
-#include "content/public/browser/user_metrics.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 class Profile;
@@ -79,8 +78,8 @@ void AuthSyncObserver::OnStateChanged(syncer::SyncService* sync) {
               profile_,
               base::Bind(&AuthSyncObserver::OnSupervisedTokenLoaded,
                          base::Unretained(this)));
-       content::RecordAction(
-           base::UserMetricsAction("ManagedUsers_Chromeos_Sync_Invalidated"));
+      base::RecordAction(
+          base::UserMetricsAction("ManagedUsers_Chromeos_Sync_Invalidated"));
     }
   } else if (state == GoogleServiceAuthError::NONE) {
     if (user->GetType() == user_manager::USER_TYPE_SUPERVISED &&
@@ -90,8 +89,8 @@ void AuthSyncObserver::OnStateChanged(syncer::SyncService* sync) {
           "Got an incorrectly invalidated token case, restoring token status.";
       user_manager::UserManager::Get()->SaveUserOAuthStatus(
           user->GetAccountId(), user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
-       content::RecordAction(
-           base::UserMetricsAction("ManagedUsers_Chromeos_Sync_Recovered"));
+      base::RecordAction(
+          base::UserMetricsAction("ManagedUsers_Chromeos_Sync_Recovered"));
     }
   }
 }

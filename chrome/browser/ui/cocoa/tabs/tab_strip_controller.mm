@@ -16,6 +16,7 @@
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
@@ -59,7 +60,6 @@
 #include "components/url_formatter/url_fixer.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
@@ -638,7 +638,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 
 // (Private) Handles a click on the new tab button.
 - (void)clickNewTabButton:(id)sender {
-  content::RecordAction(UserMetricsAction("NewTab_Button"));
+  base::RecordAction(UserMetricsAction("NewTab_Button"));
   UMA_HISTOGRAM_ENUMERATION("Tab.NewTab", TabStripModel::NEW_TAB_BUTTON,
                             TabStripModel::NEW_TAB_ENUM_COUNT);
   tabStripModel_->delegate()->AddTabAt(GURL(), -1, true);
@@ -814,7 +814,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   if (!tabStripModel_->ContainsIndex(index))
     return;
 
-  content::RecordAction(UserMetricsAction("CloseTab_Mouse"));
+  base::RecordAction(UserMetricsAction("CloseTab_Mouse"));
   const NSInteger numberOfOpenTabs = [self numberOfOpenTabs];
   if (numberOfOpenTabs > 1) {
     bool isClosingLastTab = index == numberOfOpenTabs - 1;
@@ -2121,7 +2121,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   switch (disposition) {
     case WindowOpenDisposition::NEW_FOREGROUND_TAB:
     case WindowOpenDisposition::NEW_BACKGROUND_TAB: {
-      content::RecordAction(UserMetricsAction("Tab_DropURLBetweenTabs"));
+      base::RecordAction(UserMetricsAction("Tab_DropURLBetweenTabs"));
       chrome::NavigateParams params(browser_, *url,
                                     ui::PAGE_TRANSITION_TYPED);
       params.disposition = disposition;
@@ -2132,7 +2132,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
       break;
     }
     case WindowOpenDisposition::CURRENT_TAB: {
-      content::RecordAction(UserMetricsAction("Tab_DropURLOnTab"));
+      base::RecordAction(UserMetricsAction("Tab_DropURLOnTab"));
       OpenURLParams params(*url, Referrer(), WindowOpenDisposition::CURRENT_TAB,
                            ui::PAGE_TRANSITION_TYPED, false);
       tabStripModel_->GetWebContentsAt(index)->OpenURL(params);

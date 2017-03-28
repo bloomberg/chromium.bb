@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/critical_notification_bubble_view.h"
 
+#include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -14,7 +15,6 @@
 #include "chrome/grit/locale_settings.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/browser/user_metrics.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -67,8 +67,7 @@ void CriticalNotificationBubbleView::OnCountdown() {
     // Time's up!
     upgrade_detector->acknowledge_critical_update();
 
-    content::RecordAction(
-        UserMetricsAction("CriticalNotification_AutoRestart"));
+    base::RecordAction(UserMetricsAction("CriticalNotification_AutoRestart"));
     refresh_timer_.Stop();
     chrome::AttemptRestart();
   }
@@ -94,7 +93,7 @@ void CriticalNotificationBubbleView::WindowClosing() {
 
 bool CriticalNotificationBubbleView::Cancel() {
   UpgradeDetector::GetInstance()->acknowledge_critical_update();
-  content::RecordAction(UserMetricsAction("CriticalNotification_Ignore"));
+  base::RecordAction(UserMetricsAction("CriticalNotification_Ignore"));
   // If the counter reaches 0, we set a restart flag that must be cleared if
   // the user selects, for example, "Stay on this page" during an
   // onbeforeunload handler.
@@ -106,7 +105,7 @@ bool CriticalNotificationBubbleView::Cancel() {
 
 bool CriticalNotificationBubbleView::Accept() {
   UpgradeDetector::GetInstance()->acknowledge_critical_update();
-  content::RecordAction(UserMetricsAction("CriticalNotification_Restart"));
+  base::RecordAction(UserMetricsAction("CriticalNotification_Restart"));
   chrome::AttemptRestart();
   return true;
 }
@@ -135,7 +134,7 @@ void CriticalNotificationBubbleView::Init() {
       base::TimeDelta::FromMilliseconds(kRefreshBubbleEvery),
       this, &CriticalNotificationBubbleView::OnCountdown);
 
-  content::RecordAction(UserMetricsAction("CriticalNotificationShown"));
+  base::RecordAction(UserMetricsAction("CriticalNotificationShown"));
 }
 
 void CriticalNotificationBubbleView::GetAccessibleNodeData(

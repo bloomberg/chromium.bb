@@ -7,13 +7,13 @@
 #include <memory>
 
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/startup/default_browser_prompt.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
-#include "content/public/browser/user_metrics.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chrome {
@@ -42,8 +42,7 @@ DefaultBrowserInfoBarDelegate::DefaultBrowserInfoBarDelegate(Profile* profile)
 
 DefaultBrowserInfoBarDelegate::~DefaultBrowserInfoBarDelegate() {
   if (!action_taken_) {
-    content::RecordAction(
-        base::UserMetricsAction("DefaultBrowserInfoBar_Ignore"));
+    base::RecordAction(base::UserMetricsAction("DefaultBrowserInfoBar_Ignore"));
     UMA_HISTOGRAM_ENUMERATION("DefaultBrowser.InfoBar.UserInteraction",
                               IGNORE_INFO_BAR,
                               NUM_INFO_BAR_USER_INTERACTION_TYPES);
@@ -78,8 +77,7 @@ void DefaultBrowserInfoBarDelegate::InfoBarDismissed() {
   // |profile_| may be null in tests.
   if (profile_)
     chrome::DefaultBrowserPromptDeclined(profile_);
-  content::RecordAction(
-      base::UserMetricsAction("DefaultBrowserInfoBar_Dismiss"));
+  base::RecordAction(base::UserMetricsAction("DefaultBrowserInfoBar_Dismiss"));
   UMA_HISTOGRAM_ENUMERATION("DefaultBrowser.InfoBar.UserInteraction",
                             DISMISS_INFO_BAR,
                             NUM_INFO_BAR_USER_INTERACTION_TYPES);
@@ -108,8 +106,7 @@ bool DefaultBrowserInfoBarDelegate::OKButtonTriggersUACPrompt() const {
 
 bool DefaultBrowserInfoBarDelegate::Accept() {
   action_taken_ = true;
-  content::RecordAction(
-      base::UserMetricsAction("DefaultBrowserInfoBar_Accept"));
+  base::RecordAction(base::UserMetricsAction("DefaultBrowserInfoBar_Accept"));
   UMA_HISTOGRAM_ENUMERATION("DefaultBrowser.InfoBar.UserInteraction",
                             ACCEPT_INFO_BAR,
                             NUM_INFO_BAR_USER_INTERACTION_TYPES);

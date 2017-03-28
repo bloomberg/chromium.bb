@@ -52,7 +52,6 @@
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/sync/driver/sync_error_controller.h"
 #include "content/public/browser/render_widget_host_view.h"
-#include "content/public/browser/user_metrics.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -1428,7 +1427,7 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
                       IDS_SYNC_START_SYNC_BUTTON_LABEL,
                       l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
     extra_links_view->AddChildView(signin_current_profile_button_);
-    content::RecordAction(
+    base::RecordAction(
         base::UserMetricsAction("Signin_Impression_FromAvatarBubbleSignin"));
     extra_links_view->SetBorder(views::CreateEmptyBorder(
         0, 0, views::kRelatedControlSmallVerticalSpacing, 0));

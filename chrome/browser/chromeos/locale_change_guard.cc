@@ -9,6 +9,7 @@
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
@@ -22,7 +23,6 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -85,7 +85,7 @@ void LocaleChangeGuard::RevertLocaleChange() {
   if (reverted_)
     return;
   reverted_ = true;
-  content::RecordAction(UserMetricsAction("LanguageChange_Revert"));
+  base::RecordAction(UserMetricsAction("LanguageChange_Revert"));
   profile_->ChangeAppLocale(
       from_locale_, Profile::APP_LOCALE_CHANGED_VIA_REVERT);
   chrome::AttemptUserExit();
@@ -226,7 +226,7 @@ void LocaleChangeGuard::AcceptLocaleChange() {
   }
   if (prefs->GetString(prefs::kApplicationLocale) != to_locale_)
     return;
-  content::RecordAction(UserMetricsAction("LanguageChange_Accept"));
+  base::RecordAction(UserMetricsAction("LanguageChange_Accept"));
   prefs->SetString(prefs::kApplicationLocaleBackup, to_locale_);
   prefs->SetString(prefs::kApplicationLocaleAccepted, to_locale_);
 }

@@ -18,6 +18,7 @@
 #include "base/memory/singleton.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -101,7 +102,6 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/url_data_source.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_zoom.h"
 #include "extensions/browser/extension_registry.h"
@@ -1279,7 +1279,7 @@ void BrowserOptionsHandler::BecomeDefaultBrowser(const base::ListValue* args) {
   if (IsDisabledByPolicy(default_browser_policy_))
     return;
 
-  content::RecordAction(UserMetricsAction("Options_SetAsDefaultBrowser"));
+  base::RecordAction(UserMetricsAction("Options_SetAsDefaultBrowser"));
   UMA_HISTOGRAM_COUNTS("Settings.StartSetAsDefault", true);
 
   // Callback takes care of updating UI.
@@ -1384,7 +1384,7 @@ void BrowserOptionsHandler::SetDefaultSearchEngine(
     template_url_service_->SetUserSelectedDefaultSearchProvider(
         model_urls[selected_index]);
 
-  content::RecordAction(UserMetricsAction("Options_SearchEngineChanged"));
+  base::RecordAction(UserMetricsAction("Options_SearchEngineChanged"));
 }
 
 void BrowserOptionsHandler::AddTemplateUrlServiceObserver() {
@@ -1541,13 +1541,13 @@ void BrowserOptionsHandler::ObserveThemeChanged() {
 
 void BrowserOptionsHandler::ThemesReset(const base::ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
-  content::RecordAction(UserMetricsAction("Options_ThemesReset"));
+  base::RecordAction(UserMetricsAction("Options_ThemesReset"));
   ThemeServiceFactory::GetForProfile(profile)->UseDefaultTheme();
 }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 void BrowserOptionsHandler::ThemesSetNative(const base::ListValue* args) {
-  content::RecordAction(UserMetricsAction("Options_GtkThemeSet"));
+  base::RecordAction(UserMetricsAction("Options_GtkThemeSet"));
   Profile* profile = Profile::FromWebUI(web_ui());
   ThemeServiceFactory::GetForProfile(profile)->UseSystemTheme();
 }
@@ -1683,7 +1683,7 @@ void BrowserOptionsHandler::HandleSelectDownloadLocation(
 
 void BrowserOptionsHandler::FileSelected(const base::FilePath& path, int index,
                                          void* params) {
-  content::RecordAction(UserMetricsAction("Options_SetDownloadDirectory"));
+  base::RecordAction(UserMetricsAction("Options_SetDownloadDirectory"));
   PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
   pref_service->SetFilePath(prefs::kDownloadDefaultDirectory, path);
   pref_service->SetFilePath(prefs::kSaveFileDefaultDirectory, path);
@@ -1746,7 +1746,7 @@ void BrowserOptionsHandler::OnSigninAllowedPrefChange() {
 }
 
 void BrowserOptionsHandler::HandleAutoOpenButton(const base::ListValue* args) {
-  content::RecordAction(UserMetricsAction("Options_ResetAutoOpenFiles"));
+  base::RecordAction(UserMetricsAction("Options_ResetAutoOpenFiles"));
   DownloadManager* manager = BrowserContext::GetDownloadManager(
       web_ui()->GetWebContents()->GetBrowserContext());
   if (manager)
@@ -1788,7 +1788,7 @@ void BrowserOptionsHandler::HandleRequestProfilesInfo(
 #if !defined(OS_CHROMEOS)
 void BrowserOptionsHandler::ShowNetworkProxySettings(
     const base::ListValue* args) {
-  content::RecordAction(UserMetricsAction("Options_ShowProxySettings"));
+  base::RecordAction(UserMetricsAction("Options_ShowProxySettings"));
   settings_utils::ShowNetworkProxySettings(web_ui()->GetWebContents());
 }
 #endif
@@ -1796,7 +1796,7 @@ void BrowserOptionsHandler::ShowNetworkProxySettings(
 #if defined(OS_WIN) || defined(OS_MACOSX)
 void BrowserOptionsHandler::ShowManageSSLCertificates(
     const base::ListValue* args) {
-  content::RecordAction(UserMetricsAction("Options_ManageSSLCertificates"));
+  base::RecordAction(UserMetricsAction("Options_ManageSSLCertificates"));
   settings_utils::ShowManageSSLCertificates(web_ui()->GetWebContents());
 }
 #endif
@@ -1815,7 +1815,7 @@ void BrowserOptionsHandler::ShowCupsPrintDevicesPage(
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
 void BrowserOptionsHandler::ShowCloudPrintDevicesPage(
     const base::ListValue* args) {
-  content::RecordAction(UserMetricsAction("Options_CloudPrintDevicesPage"));
+  base::RecordAction(UserMetricsAction("Options_CloudPrintDevicesPage"));
   // Navigate in current tab to devices page.
   OpenURLParams params(GURL(chrome::kChromeUIDevicesURL), Referrer(),
                        WindowOpenDisposition::CURRENT_TAB,

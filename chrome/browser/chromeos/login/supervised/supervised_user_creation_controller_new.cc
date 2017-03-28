@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
@@ -31,7 +32,6 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/user_metrics.h"
 #include "crypto/random.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
@@ -391,7 +391,7 @@ void SupervisedUserCreationControllerNew::OnSupervisedUserFilesStored(
   ChromeUserManager::Get()
       ->GetSupervisedUserManager()
       ->CommitCreationTransaction();
-  content::RecordAction(
+  base::RecordAction(
       base::UserMetricsAction("ManagedMode_LocallyManagedUserCreated"));
 
   stage_ = TRANSACTION_COMMITTED;

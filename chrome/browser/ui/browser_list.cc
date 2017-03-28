@@ -8,6 +8,7 @@
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
+#include "base/metrics/user_metrics.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -18,7 +19,6 @@
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/user_metrics.h"
 
 using base::UserMetricsAction;
 using content::WebContents;
@@ -233,7 +233,7 @@ void BrowserList::MoveBrowsersInWorkspaceToFront(
 
 // static
 void BrowserList::SetLastActive(Browser* browser) {
-  content::RecordAction(UserMetricsAction("ActiveBrowserChanged"));
+  base::RecordAction(UserMetricsAction("ActiveBrowserChanged"));
 
   RemoveBrowserFrom(browser, &GetInstance()->last_active_browsers_);
   GetInstance()->last_active_browsers_.push_back(browser);

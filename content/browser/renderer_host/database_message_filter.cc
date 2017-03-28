@@ -16,7 +16,6 @@
 #include "build/build_config.h"
 #include "content/browser/bad_message.h"
 #include "content/common/database_messages.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/result_codes.h"
 #include "storage/browser/database/database_util.h"

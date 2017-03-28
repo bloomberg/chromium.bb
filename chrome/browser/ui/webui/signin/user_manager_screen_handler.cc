@@ -13,6 +13,7 @@
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -58,7 +59,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
@@ -311,7 +311,7 @@ UserManagerScreenHandler::UserManagerScreenHandler() : weak_ptr_factory_(this) {
        add_person_enabled_pref->HasUserSetting())) {
     service->ClearPref(guest_mode_enabled_pref->name());
     service->ClearPref(add_person_enabled_pref->name());
-    content::RecordAction(
+    base::RecordAction(
         base::UserMetricsAction("UserManager_Cleared_Legacy_User_Prefs"));
   }
 }

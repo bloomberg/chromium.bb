@@ -10,6 +10,7 @@
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/certificate_viewer.h"
@@ -47,7 +48,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
@@ -467,7 +467,7 @@ void DevToolsWindow::OpenDevToolsWindowForWorker(
 // static
 DevToolsWindow* DevToolsWindow::CreateDevToolsWindowForWorker(
     Profile* profile) {
-  content::RecordAction(base::UserMetricsAction("DevTools_InspectWorker"));
+  base::RecordAction(base::UserMetricsAction("DevTools_InspectWorker"));
   return Create(profile, nullptr, kFrontendWorker, std::string(), false, "",
                 "");
 }
@@ -604,8 +604,7 @@ void DevToolsWindow::ToggleDevToolsWindow(
   if (!window) {
     Profile* profile = Profile::FromBrowserContext(
         inspected_web_contents->GetBrowserContext());
-    content::RecordAction(
-        base::UserMetricsAction("DevTools_InspectRenderer"));
+    base::RecordAction(base::UserMetricsAction("DevTools_InspectRenderer"));
     std::string panel = "";
     switch (action.type()) {
       case DevToolsToggleAction::kInspect:

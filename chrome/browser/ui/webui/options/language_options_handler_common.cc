@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -34,7 +35,6 @@
 #include "components/spellcheck/common/spellcheck_common.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -205,7 +205,7 @@ LanguageOptionsHandlerCommon::GetSpellCheckLanguageCodeSet() {
 
 void LanguageOptionsHandlerCommon::LanguageOptionsOpenCallback(
     const base::ListValue* args) {
-  content::RecordAction(UserMetricsAction("LanguageOptions_Open"));
+  base::RecordAction(UserMetricsAction("LanguageOptions_Open"));
   SpellcheckService* service = GetSpellcheckService();
   if (!service)
     return;
@@ -230,7 +230,7 @@ void LanguageOptionsHandlerCommon::UiLanguageChangeCallback(
   CHECK(!language_code.empty());
   const std::string action = base::StringPrintf(
       "LanguageOptions_UiLanguageChange_%s", language_code.c_str());
-  content::RecordComputedAction(action);
+  base::RecordComputedAction(action);
   SetApplicationLocale(language_code);
   base::Value language_value(language_code);
   web_ui()->CallJavascriptFunctionUnsafe(
@@ -243,7 +243,7 @@ void LanguageOptionsHandlerCommon::SpellCheckLanguageChangeCallback(
       base::UTF16ToASCII(ExtractStringValue(args));
   const std::string action = base::StringPrintf(
       "LanguageOptions_SpellCheckLanguageChange_%s", language_code.c_str());
-  content::RecordComputedAction(action);
+  base::RecordComputedAction(action);
 
   SpellcheckService* service = GetSpellcheckService();
   if (!service)

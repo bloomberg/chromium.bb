@@ -8,12 +8,12 @@
 
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/user_metrics.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/guest_view/browser/guest_view_event.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/user_metrics.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
@@ -21,6 +21,7 @@
 #include "extensions/browser/guest_view/web_view/web_view_permission_types.h"
 #include "ppapi/features/features.h"
 
+using base::UserMetricsAction;
 using content::BrowserPluginGuestDelegate;
 using content::RenderViewHost;
 using guest_view::GuestViewEvent;
@@ -65,39 +66,38 @@ void RecordUserInitiatedUMA(
     // have geolocation access on its own.
     switch (info.permission_type) {
       case WEB_VIEW_PERMISSION_TYPE_DOWNLOAD:
-        content::RecordAction(
+        base::RecordAction(
             UserMetricsAction("WebView.PermissionAllow.Download"));
         break;
       case WEB_VIEW_PERMISSION_TYPE_FILESYSTEM:
-        content::RecordAction(
+        base::RecordAction(
             UserMetricsAction("WebView.PermissionAllow.FileSystem"));
         break;
       case WEB_VIEW_PERMISSION_TYPE_FULLSCREEN:
-        content::RecordAction(
+        base::RecordAction(
             UserMetricsAction("WebView.PermissionAllow.Fullscreen"));
         break;
       case WEB_VIEW_PERMISSION_TYPE_GEOLOCATION:
-        content::RecordAction(
+        base::RecordAction(
             UserMetricsAction("WebView.PermissionAllow.Geolocation"));
         break;
       case WEB_VIEW_PERMISSION_TYPE_JAVASCRIPT_DIALOG:
-        content::RecordAction(
+        base::RecordAction(
             UserMetricsAction("WebView.PermissionAllow.JSDialog"));
         break;
       case WEB_VIEW_PERMISSION_TYPE_LOAD_PLUGIN:
-        content::RecordAction(
+        base::RecordAction(
             UserMetricsAction("WebView.Guest.PermissionAllow.PluginLoad"));
         break;
       case WEB_VIEW_PERMISSION_TYPE_MEDIA:
-        content::RecordAction(
-            UserMetricsAction("WebView.PermissionAllow.Media"));
+        base::RecordAction(UserMetricsAction("WebView.PermissionAllow.Media"));
         break;
       case WEB_VIEW_PERMISSION_TYPE_NEW_WINDOW:
-        content::RecordAction(
+        base::RecordAction(
             UserMetricsAction("BrowserPlugin.PermissionAllow.NewWindow"));
         break;
       case WEB_VIEW_PERMISSION_TYPE_POINTER_LOCK:
-        content::RecordAction(
+        base::RecordAction(
             UserMetricsAction("WebView.PermissionAllow.PointerLock"));
         break;
       default:
@@ -106,39 +106,38 @@ void RecordUserInitiatedUMA(
   } else {
     switch (info.permission_type) {
       case WEB_VIEW_PERMISSION_TYPE_DOWNLOAD:
-        content::RecordAction(
+        base::RecordAction(
             UserMetricsAction("WebView.PermissionDeny.Download"));
         break;
       case WEB_VIEW_PERMISSION_TYPE_FILESYSTEM:
-        content::RecordAction(
+        base::RecordAction(
             UserMetricsAction("WebView.PermissionDeny.FileSystem"));
         break;
       case WEB_VIEW_PERMISSION_TYPE_FULLSCREEN:
-        content::RecordAction(
+        base::RecordAction(
             UserMetricsAction("WebView.PermissionDeny.Fullscreen"));
         break;
       case WEB_VIEW_PERMISSION_TYPE_GEOLOCATION:
-        content::RecordAction(
+        base::RecordAction(
             UserMetricsAction("WebView.PermissionDeny.Geolocation"));
         break;
       case WEB_VIEW_PERMISSION_TYPE_JAVASCRIPT_DIALOG:
-        content::RecordAction(
+        base::RecordAction(
             UserMetricsAction("WebView.PermissionDeny.JSDialog"));
         break;
       case WEB_VIEW_PERMISSION_TYPE_LOAD_PLUGIN:
-        content::RecordAction(
+        base::RecordAction(
             UserMetricsAction("WebView.Guest.PermissionDeny.PluginLoad"));
         break;
       case WEB_VIEW_PERMISSION_TYPE_MEDIA:
-        content::RecordAction(
-            UserMetricsAction("WebView.PermissionDeny.Media"));
+        base::RecordAction(UserMetricsAction("WebView.PermissionDeny.Media"));
         break;
       case WEB_VIEW_PERMISSION_TYPE_NEW_WINDOW:
-        content::RecordAction(
+        base::RecordAction(
             UserMetricsAction("BrowserPlugin.PermissionDeny.NewWindow"));
         break;
       case WEB_VIEW_PERMISSION_TYPE_POINTER_LOCK:
-        content::RecordAction(
+        base::RecordAction(
             UserMetricsAction("WebView.PermissionDeny.PointerLock"));
         break;
       default:

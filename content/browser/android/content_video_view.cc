@@ -9,7 +9,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/media/android/browser_media_player_manager.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
 #include "jni/ContentVideoView_jni.h"
 
@@ -19,8 +18,6 @@ using base::android::JavaParamRef;
 using base::android::JavaRef;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
-using base::UserMetricsAction;
-using content::RecordAction;
 
 namespace content {
 

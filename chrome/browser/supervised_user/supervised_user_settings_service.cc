@@ -12,6 +12,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
@@ -22,7 +23,6 @@
 #include "components/sync/model/sync_error_factory.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/user_metrics.h"
 
 using base::DictionaryValue;
 using base::JSONReader;
@@ -148,7 +148,7 @@ void SupervisedUserSettingsService::PushItemToSync(
   std::string key_suffix = key;
   base::DictionaryValue* dict = nullptr;
   if (sync_processor_) {
-    content::RecordAction(UserMetricsAction("ManagedUsers_UploadItem_Syncing"));
+    base::RecordAction(UserMetricsAction("ManagedUsers_UploadItem_Syncing"));
     dict = GetDictionaryAndSplitKey(&key_suffix);
     DCHECK(GetQueuedItems()->empty());
     SyncChangeList change_list;
@@ -163,7 +163,7 @@ void SupervisedUserSettingsService::PushItemToSync(
   } else {
     // Queue the item up to be uploaded when we start syncing
     // (in MergeDataAndStartSyncing()).
-    content::RecordAction(UserMetricsAction("ManagedUsers_UploadItem_Queued"));
+    base::RecordAction(UserMetricsAction("ManagedUsers_UploadItem_Queued"));
     dict = GetQueuedItems();
   }
   dict->SetWithoutPathExpansion(key_suffix, std::move(value));

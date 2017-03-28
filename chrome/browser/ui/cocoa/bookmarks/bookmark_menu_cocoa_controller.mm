@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_cocoa_controller.h"
 
 #import "base/mac/foundation_util.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"  // IDC_BOOKMARK_MENU
 #import "chrome/browser/app_controller_mac.h"
@@ -16,7 +17,6 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
-#include "content/public/browser/user_metrics.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/menu_controller.h"
 
@@ -123,12 +123,11 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
   chrome::OpenAll(NULL, browser, node, disposition, browser->profile());
 
   if (disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB) {
-    content::RecordAction(UserMetricsAction("OpenAllBookmarks"));
+    base::RecordAction(UserMetricsAction("OpenAllBookmarks"));
   } else if (disposition == WindowOpenDisposition::NEW_WINDOW) {
-    content::RecordAction(UserMetricsAction("OpenAllBookmarksNewWindow"));
+    base::RecordAction(UserMetricsAction("OpenAllBookmarksNewWindow"));
   } else {
-    content::RecordAction(
-        UserMetricsAction("OpenAllBookmarksIncognitoWindow"));
+    base::RecordAction(UserMetricsAction("OpenAllBookmarksIncognitoWindow"));
   }
 }
 
