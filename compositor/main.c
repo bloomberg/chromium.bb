@@ -565,6 +565,7 @@ usage(int error_code)
 		"Options for drm-backend.so:\n\n"
 		"  --seat=SEAT\t\tThe seat that weston should run on\n"
 		"  --tty=TTY\t\tThe tty to use\n"
+		"  --drm-device=CARD\tThe DRM device to use, e.g. \"card0\".\n"
 		"  --use-pixman\t\tUse the pixman (CPU) renderer\n"
 		"  --current-mode\tPrefer current KMS mode over EDID preferred mode\n\n");
 #endif
@@ -1225,6 +1226,7 @@ load_drm_backend(struct weston_compositor *c,
 	const struct weston_option options[] = {
 		{ WESTON_OPTION_STRING, "seat", 0, &config.seat_id },
 		{ WESTON_OPTION_INTEGER, "tty", 0, &config.tty },
+		{ WESTON_OPTION_STRING, "drm-device", 0, &config.specific_device },
 		{ WESTON_OPTION_BOOLEAN, "current-mode", 0, &wet->drm_use_current_mode },
 		{ WESTON_OPTION_BOOLEAN, "use-pixman", 0, &config.use_pixman },
 	};
