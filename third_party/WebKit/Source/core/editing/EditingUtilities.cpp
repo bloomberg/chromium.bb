@@ -374,26 +374,6 @@ Element* rootEditableElement(const Node& node) {
   return toElement(const_cast<Node*>(result));
 }
 
-bool selectionHasFocus(const SelectionInFlatTree& selection) {
-  if (selection.isNone())
-    return false;
-
-  const Document* document = selection.base().document();
-  const Element* focus = document->focusedElement();
-  if (!focus) {
-    // No focused element means document root has focus.
-    focus = document->documentElement();
-  }
-
-  const Node* const nodeWhereSelectionStarts =
-      selection.base().computeContainerNode();
-  const Node* const nodeWhereSelectionEnds =
-      selection.extent().computeContainerNode();
-
-  return focus->containsIncludingHostElements(*nodeWhereSelectionStarts) ||
-         focus->containsIncludingHostElements(*nodeWhereSelectionEnds);
-}
-
 ContainerNode* highestEditableRoot(
     const Position& position,
     Element* (*rootEditableElementOf)(const Position&),

@@ -1040,10 +1040,6 @@ bool FocusController::advanceFocusInDocumentOrder(
 
   setFocusedFrame(newDocument.frame());
 
-  if (!element->isTextControl() && !hasEditableStyle(*element->toNode())) {
-    // TODO(editing-dev): Remove this clear(), crbug.com/692898.
-    focusedFrame()->selection().clear();
-  }
   element->focus(
       FocusParams(SelectionBehaviorOnFocus::Reset, type, sourceCapabilities));
   return true;
@@ -1068,6 +1064,35 @@ Element* FocusController::findFocusableElementInShadowHost(
 static bool relinquishesEditingFocus(const Element& element) {
   DCHECK(hasEditableStyle(element));
   return element.document().frame() && rootEditableElement(element);
+}
+
+static void clearSelectionIfNeeded(LocalFrame* oldFocusedFrame,
+                                   LocalFrame* newFocusedFrame,
+                                   Element* newFocusedElement) {
+  if (!oldFocusedFrame || !newFocusedFrame)
+    return;
+
+  if (oldFocusedFrame->document() != newFocusedFrame->document())
+    return;
+
+  FrameSelection& selection = oldFocusedFrame->selection();
+  const SelectionInDOMTree& selectionInDOMTree = selection.selectionInDOMTree();
+  if (selectionInDOMTree.isNone())
+    return;
+
+  Node* selectionStartNode = selectionInDOMTree.base().anchorNode();
+  if (selectionStartNode == newFocusedElement ||
+      selectionStartNode->isDescendantOf(newFocusedElement))
+    return;
+
+  if (!enclosingTextControl(selectionStartNode))
+    return;
+
+  if (selectionStartNode->isInShadowTree() &&
+      selectionStartNode->ownerShadowHost() == newFocusedElement)
+    return;
+
+  selection.clear();
 }
 
 bool FocusController::setFocusedElement(Element* element,
@@ -1105,6 +1130,10 @@ bool FocusController::setFocusedElement(Element* element,
   if (newDocument && oldDocument == newDocument &&
       newDocument->focusedElement() == element)
     return true;
+
+  if (newFocusedFrame && newFocusedFrame->isLocalFrame())
+    clearSelectionIfNeeded(oldFocusedFrame, toLocalFrame(newFocusedFrame),
+                           element);
 
   if (oldDocument && oldDocument != newDocument)
     oldDocument->clearFocusedElement();
@@ -1326,10 +1355,6 @@ bool FocusController::advanceFocusDirectionallyInContainer(
   Element* element = toElement(focusCandidate.focusableNode);
   DCHECK(element);
 
-  if (!element->isTextControl() && !hasEditableStyle(*element->toNode())) {
-    // TODO(editing-dev): Remove this clear(), crbug.com/692898.
-    focusedFrame()->selection().clear();
-  }
   element->focus(FocusParams(SelectionBehaviorOnFocus::Reset, type, nullptr));
   return true;
 }
