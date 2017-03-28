@@ -302,23 +302,23 @@ PASS SVGStringList interface: operation insertItemBefore(DOMString,unsigned long
 PASS SVGStringList interface: operation replaceItem(DOMString,unsigned long) 
 PASS SVGStringList interface: operation removeItem(unsigned long) 
 PASS SVGStringList interface: operation appendItem(DOMString) 
-PASS SVGStringList must be primary interface of a.requiredFeatures 
-PASS Stringification of a.requiredFeatures 
-PASS SVGStringList interface: a.requiredFeatures must inherit property "length" with the proper type (0) 
-PASS SVGStringList interface: a.requiredFeatures must inherit property "numberOfItems" with the proper type (1) 
-PASS SVGStringList interface: a.requiredFeatures must inherit property "clear" with the proper type (2) 
-PASS SVGStringList interface: a.requiredFeatures must inherit property "initialize" with the proper type (3) 
-PASS SVGStringList interface: calling initialize(DOMString) on a.requiredFeatures with too few arguments must throw TypeError 
-PASS SVGStringList interface: a.requiredFeatures must inherit property "getItem" with the proper type (4) 
-PASS SVGStringList interface: calling getItem(unsigned long) on a.requiredFeatures with too few arguments must throw TypeError 
-PASS SVGStringList interface: a.requiredFeatures must inherit property "insertItemBefore" with the proper type (5) 
-PASS SVGStringList interface: calling insertItemBefore(DOMString,unsigned long) on a.requiredFeatures with too few arguments must throw TypeError 
-PASS SVGStringList interface: a.requiredFeatures must inherit property "replaceItem" with the proper type (6) 
-PASS SVGStringList interface: calling replaceItem(DOMString,unsigned long) on a.requiredFeatures with too few arguments must throw TypeError 
-PASS SVGStringList interface: a.requiredFeatures must inherit property "removeItem" with the proper type (7) 
-PASS SVGStringList interface: calling removeItem(unsigned long) on a.requiredFeatures with too few arguments must throw TypeError 
-PASS SVGStringList interface: a.requiredFeatures must inherit property "appendItem" with the proper type (8) 
-PASS SVGStringList interface: calling appendItem(DOMString) on a.requiredFeatures with too few arguments must throw TypeError 
+PASS SVGStringList must be primary interface of a.requiredExtensions 
+PASS Stringification of a.requiredExtensions 
+PASS SVGStringList interface: a.requiredExtensions must inherit property "length" with the proper type (0) 
+PASS SVGStringList interface: a.requiredExtensions must inherit property "numberOfItems" with the proper type (1) 
+PASS SVGStringList interface: a.requiredExtensions must inherit property "clear" with the proper type (2) 
+PASS SVGStringList interface: a.requiredExtensions must inherit property "initialize" with the proper type (3) 
+PASS SVGStringList interface: calling initialize(DOMString) on a.requiredExtensions with too few arguments must throw TypeError 
+PASS SVGStringList interface: a.requiredExtensions must inherit property "getItem" with the proper type (4) 
+PASS SVGStringList interface: calling getItem(unsigned long) on a.requiredExtensions with too few arguments must throw TypeError 
+PASS SVGStringList interface: a.requiredExtensions must inherit property "insertItemBefore" with the proper type (5) 
+PASS SVGStringList interface: calling insertItemBefore(DOMString,unsigned long) on a.requiredExtensions with too few arguments must throw TypeError 
+PASS SVGStringList interface: a.requiredExtensions must inherit property "replaceItem" with the proper type (6) 
+PASS SVGStringList interface: calling replaceItem(DOMString,unsigned long) on a.requiredExtensions with too few arguments must throw TypeError 
+PASS SVGStringList interface: a.requiredExtensions must inherit property "removeItem" with the proper type (7) 
+PASS SVGStringList interface: calling removeItem(unsigned long) on a.requiredExtensions with too few arguments must throw TypeError 
+PASS SVGStringList interface: a.requiredExtensions must inherit property "appendItem" with the proper type (8) 
+PASS SVGStringList interface: calling appendItem(DOMString) on a.requiredExtensions with too few arguments must throw TypeError 
 PASS SVGUnitTypes interface: existence and properties of interface object 
 PASS SVGUnitTypes interface object length 
 PASS SVGUnitTypes interface object name 
