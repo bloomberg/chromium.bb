@@ -25,11 +25,7 @@ _CHROMITE_DIR = _FindChromiteDir()
 
 # _VIRTUALENV_DIR contains the scripts for working with venvs
 _VIRTUALENV_DIR = os.path.join(_CHROMITE_DIR, '..', 'infra_virtualenv')
-_CREATE_VENV_PATH = os.path.join(_VIRTUALENV_DIR, 'create_venv')
-
-# _VENV_DIR is the virtualenv dir that contains bin/activate.
-_VENV_DIR = os.path.join(_CHROMITE_DIR, 'venv', '.venv')
-_VENV_PYTHON = os.path.join(_VENV_DIR, 'bin', 'python')
+_CREATE_VENV_PATH = os.path.join(_VIRTUALENV_DIR, 'bin', 'create_venv')
 _REQUIREMENTS = os.path.join(_CHROMITE_DIR, 'venv', 'requirements.txt')
 
 _VENV_MARKER = 'INSIDE_CHROMITE_VENV'
@@ -39,28 +35,29 @@ def main():
   if _IsInsideVenv(os.environ):
     wrapper.DoMain()
   else:
-    _CreateVenv()
-    _ExecInVenv(sys.argv)
+    venvdir = _CreateVenv()
+    _ExecInVenv(venvdir, sys.argv)
 
 
 def _CreateVenv():
   """Create or update chromite venv."""
-  subprocess.check_call([
+  return subprocess.check_output([
       _CREATE_VENV_PATH,
-      _VENV_DIR,
       _REQUIREMENTS,
-  ], stdout=sys.stderr)
+  ]).rstrip()
 
 
-def _ExecInVenv(args):
+def _ExecInVenv(venvdir, args):
   """Exec command in chromite venv.
 
   Args:
+    venvdir: virtualenv directory
     args: Sequence of arguments.
   """
+  venv_python = os.path.join(venvdir, 'bin', 'python')
   os.execve(
-      _VENV_PYTHON,
-      [_VENV_PYTHON] + list(args),
+      venv_python,
+      [venv_python] + list(args),
       _CreateVenvEnvironment(os.environ))
 
 

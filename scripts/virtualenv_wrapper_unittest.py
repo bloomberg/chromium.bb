@@ -26,7 +26,7 @@ class VirtualEnvTest(cros_test_lib.TestCase):
     # be provided inside the chromite virtualenv.
     six = __import__('six')
     req_path = os.path.dirname(os.path.realpath(six.__file__))
-    self.assertIn(virtualenv_wrapper._VENV_DIR, req_path)
+    self.assertIn('/.cache/cros_venv/', req_path)
 
 
   def testInsideVenv(self):
