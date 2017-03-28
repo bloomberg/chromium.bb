@@ -725,7 +725,7 @@ net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
 net::URLRequestContext* ProfileImplIOData::InitializeMediaRequestContext(
     net::URLRequestContext* original_context,
     const StoragePartitionDescriptor& partition_descriptor,
-    const std::string& name) const {
+    const char* name) const {
   // Copy most state from the original context.
   MediaRequestContext* context = new MediaRequestContext(name);
   context->CopyFrom(original_context);

@@ -178,7 +178,7 @@ class ProfileImplIOData : public ProfileIOData {
   net::URLRequestContext* InitializeMediaRequestContext(
       net::URLRequestContext* original_context,
       const StoragePartitionDescriptor& partition_descriptor,
-      const std::string& name) const override;
+      const char* name) const override;
   net::URLRequestContext* AcquireMediaRequestContext() const override;
   net::URLRequestContext* AcquireIsolatedAppRequestContext(
       net::URLRequestContext* main_context,

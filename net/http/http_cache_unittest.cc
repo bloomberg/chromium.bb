@@ -8243,13 +8243,14 @@ TEST_P(HttpCacheMemoryDumpTest, DumpMemoryStats) {
   std::unique_ptr<base::trace_event::ProcessMemoryDump> process_memory_dump(
       new base::trace_event::ProcessMemoryDump(nullptr, dump_args));
   base::trace_event::MemoryAllocatorDump* parent_dump =
-      process_memory_dump->CreateAllocatorDump("net/url_request_context_0x123");
+      process_memory_dump->CreateAllocatorDump(
+          "net/url_request_context/main/0x123");
   cache.http_cache()->DumpMemoryStats(process_memory_dump.get(),
                                       parent_dump->absolute_name());
 
   const base::trace_event::MemoryAllocatorDump* dump =
       process_memory_dump->GetAllocatorDump(
-          "net/url_request_context_0x123/http_cache");
+          "net/url_request_context/main/0x123/http_cache");
   ASSERT_NE(nullptr, dump);
   std::unique_ptr<base::Value> raw_attrs =
       dump->attributes_for_testing()->ToBaseValue();

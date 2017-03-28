@@ -359,7 +359,7 @@ net::URLRequestContext*
 OffTheRecordProfileIOData::InitializeMediaRequestContext(
     net::URLRequestContext* original_context,
     const StoragePartitionDescriptor& partition_descriptor,
-    const std::string& name) const {
+    const char* name) const {
   NOTREACHED();
   return NULL;
 }

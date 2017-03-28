@@ -272,7 +272,7 @@ class ProfileIOData {
     // |name| is used to describe this context. Currently there are two kinds of
     // media request context -- main media request context ("main_meda") and
     // isolated app media request context ("isolated_media").
-    explicit MediaRequestContext(const std::string& name);
+    explicit MediaRequestContext(const char* name);
 
     void SetHttpTransactionFactory(
         std::unique_ptr<net::HttpTransactionFactory> http_factory);
@@ -492,7 +492,7 @@ class ProfileIOData {
   virtual net::URLRequestContext* InitializeMediaRequestContext(
       net::URLRequestContext* original_context,
       const StoragePartitionDescriptor& details,
-      const std::string& name) const = 0;
+      const char* name) const = 0;
 
   // These functions are used to transfer ownership of the lazily initialized
   // context from ProfileIOData to the URLRequestContextGetter.

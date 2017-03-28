@@ -543,8 +543,7 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   BrowserContext::EnsureResourceContextInitialized(profile);
 }
 
-ProfileIOData::MediaRequestContext::MediaRequestContext(
-    const std::string& name) {
+ProfileIOData::MediaRequestContext::MediaRequestContext(const char* name) {
   set_name(name);
 }
 
