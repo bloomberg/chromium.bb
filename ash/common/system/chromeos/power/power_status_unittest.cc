@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -199,66 +200,70 @@ TEST_F(PowerStatusTest, GetBatteryImageInfo) {
 TEST_F(PowerStatusTest, BatteryImageInfoIconBadge) {
   PowerSupplyProperties prop;
 
-  // A charging battery connected to AC power should have an ICON_BADGE_BOLT.
+  // A charging battery connected to AC power should have a bolt badge.
   prop.set_external_power(PowerSupplyProperties::AC);
   prop.set_battery_state(PowerSupplyProperties::CHARGING);
   prop.set_battery_percent(98.0);
   power_status_->SetProtoForTesting(prop);
-  EXPECT_EQ(
-      PowerStatus::ICON_BADGE_BOLT,
-      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).icon_badge);
+  const gfx::VectorIcon* bolt_icon =
+      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).icon_badge;
+  EXPECT_TRUE(bolt_icon);
 
-  // A discharging battery connected to AC should also have an ICON_BADGE_BOLT.
+  // A discharging battery connected to AC should also have a bolt badge.
   prop.set_battery_state(PowerSupplyProperties::DISCHARGING);
   power_status_->SetProtoForTesting(prop);
   EXPECT_EQ(
-      PowerStatus::ICON_BADGE_BOLT,
+      bolt_icon,
       power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).icon_badge);
 
   // A charging battery connected to USB power should have an
-  // ICON_BADGE_UNRELIABLE.
+  // unreliable badge.
   prop.set_external_power(PowerSupplyProperties::USB);
   prop.set_battery_state(PowerSupplyProperties::CHARGING);
   power_status_->SetProtoForTesting(prop);
-  EXPECT_EQ(
-      PowerStatus::ICON_BADGE_UNRELIABLE,
-      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).icon_badge);
+  const gfx::VectorIcon* unreliable_icon =
+      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).icon_badge;
+  EXPECT_NE(unreliable_icon, bolt_icon);
+  EXPECT_TRUE(unreliable_icon);
 
   // A discharging battery connected to USB power should also have an
-  // ICON_BADGE_UNRELIABLE.
+  // unreliable badge.
   prop.set_battery_state(PowerSupplyProperties::DISCHARGING);
   power_status_->SetProtoForTesting(prop);
   EXPECT_EQ(
-      PowerStatus::ICON_BADGE_UNRELIABLE,
+      unreliable_icon,
       power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).icon_badge);
 
-  // Show an ICON_BADGE_X when no battery is present.
+  // Show the right icon when no battery is present.
   prop.set_external_power(PowerSupplyProperties::DISCONNECTED);
   prop.set_battery_state(PowerSupplyProperties::NOT_PRESENT);
   power_status_->SetProtoForTesting(prop);
-  EXPECT_EQ(
-      PowerStatus::ICON_BADGE_X,
-      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).icon_badge);
+  const gfx::VectorIcon* x_icon =
+      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).icon_badge;
+  EXPECT_TRUE(x_icon);
+  EXPECT_NE(bolt_icon, x_icon);
+  EXPECT_NE(unreliable_icon, x_icon);
 
   // Do not show a badge when the battery is discharging.
   prop.set_battery_state(PowerSupplyProperties::DISCHARGING);
   power_status_->SetProtoForTesting(prop);
-  EXPECT_EQ(
-      PowerStatus::ICON_BADGE_NONE,
+  EXPECT_FALSE(
       power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).icon_badge);
 
-  // Show ICON_BADGE_ALERT for a discharging battery when it falls below
-  // a charge level of PowerStatus::kCriticalBatteryChargePercentageMd.
-  prop.set_battery_percent(PowerStatus::kCriticalBatteryChargePercentageMd);
+  // Show the right icon for a discharging battery when it falls below
+  // a charge level of PowerStatus::kCriticalBatteryChargePercentage.
+  prop.set_battery_percent(PowerStatus::kCriticalBatteryChargePercentage);
   power_status_->SetProtoForTesting(prop);
-  EXPECT_EQ(
-      PowerStatus::ICON_BADGE_NONE,
+  EXPECT_FALSE(
       power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).icon_badge);
-  prop.set_battery_percent(PowerStatus::kCriticalBatteryChargePercentageMd - 1);
+  prop.set_battery_percent(PowerStatus::kCriticalBatteryChargePercentage - 1);
   power_status_->SetProtoForTesting(prop);
-  EXPECT_EQ(
-      PowerStatus::ICON_BADGE_ALERT,
-      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).icon_badge);
+  const gfx::VectorIcon* alert_icon =
+      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).icon_badge;
+  EXPECT_TRUE(alert_icon);
+  EXPECT_NE(bolt_icon, alert_icon);
+  EXPECT_NE(unreliable_icon, alert_icon);
+  EXPECT_NE(x_icon, alert_icon);
 }
 
 // Tests that the |charge_level| member of BatteryImageInfo is set correctly
