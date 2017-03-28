@@ -22,7 +22,6 @@ class ASH_EXPORT DefaultSystemTrayDelegate : public SystemTrayDelegate {
   bool IsUserSupervised() const override;
   bool ShouldShowSettings() const override;
   bool ShouldShowNotificationTray() const override;
-  int GetSystemTrayMenuWidth() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DefaultSystemTrayDelegate);

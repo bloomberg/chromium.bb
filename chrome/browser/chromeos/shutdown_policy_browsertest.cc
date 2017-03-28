@@ -6,8 +6,6 @@
 #include <string>
 
 #include "ash/common/login_status.h"
-#include "ash/common/system/date/date_default_view.h"
-#include "ash/common/system/date/tray_date.h"
 #include "ash/common/system/tiles/tiles_default_view.h"
 #include "ash/common/system/tiles/tray_tiles.h"
 #include "ash/common/system/tray/system_tray.h"

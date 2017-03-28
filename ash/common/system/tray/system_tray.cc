@@ -10,7 +10,6 @@
 
 #include "ash/common/key_event_watcher.h"
 #include "ash/common/login_status.h"
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_controller.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_util.h"
@@ -30,7 +29,6 @@
 #include "ash/common/system/chromeos/supervised/tray_supervised_user.h"
 #include "ash/common/system/chromeos/tray_caps_lock.h"
 #include "ash/common/system/chromeos/tray_tracing.h"
-#include "ash/common/system/date/tray_date.h"
 #include "ash/common/system/date/tray_system_info.h"
 #include "ash/common/system/ime/tray_ime_chromeos.h"
 #include "ash/common/system/tiles/tray_tiles.h"
@@ -221,21 +219,18 @@ SystemTray::SystemTray(WmShelf* wm_shelf)
       tray_accessibility_(nullptr),
       tray_audio_(nullptr),
       tray_cast_(nullptr),
-      tray_date_(nullptr),
       tray_network_(nullptr),
       tray_tiles_(nullptr),
       tray_system_info_(nullptr),
       tray_update_(nullptr),
       screen_capture_tray_item_(nullptr),
       screen_share_tray_item_(nullptr) {
-  if (MaterialDesignController::IsShelfMaterial()) {
-    SetInkDropMode(InkDropMode::ON);
+  SetInkDropMode(InkDropMode::ON);
 
-    // Since user avatar is on the right hand side of System tray of a
-    // horizontal shelf and that is sufficient to indicate separation, no
-    // separator is required.
-    set_separator_visibility(false);
-  }
+  // Since user avatar is on the right hand side of System tray of a
+  // horizontal shelf and that is sufficient to indicate separation, no
+  // separator is required.
+  set_separator_visibility(false);
 }
 
 SystemTray::~SystemTray() {
@@ -262,8 +257,6 @@ void SystemTray::Shutdown() {
 }
 
 void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
-  const bool use_md = MaterialDesignController::IsSystemTrayMenuMaterial();
-
   // Create user items for each possible user.
   const int maximum_user_profiles =
       Shell::Get()->session_controller()->GetMaximumNumberOfLoggedInUsers();
@@ -275,8 +268,6 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   AddTrayItem(base::MakeUnique<PaddingTrayItem>());
 
   tray_accessibility_ = new TrayAccessibility(this);
-  if (!use_md)
-    tray_date_ = new TrayDate(this);
   tray_update_ = new TrayUpdate(this);
 
   AddTrayItem(base::MakeUnique<TraySessionLengthLimit>(this));
@@ -309,16 +300,12 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   if (tray_rotation_lock)
     AddTrayItem(std::move(tray_rotation_lock));
   AddTrayItem(base::WrapUnique(tray_update_));
-  if (use_md) {
-    tray_tiles_ = new TrayTiles(this);
-    AddTrayItem(base::WrapUnique(tray_tiles_));
-    tray_system_info_ = new TraySystemInfo(this);
-    AddTrayItem(base::WrapUnique(tray_system_info_));
-    // Leading padding.
-    AddTrayItem(base::MakeUnique<PaddingTrayItem>());
-  } else {
-    AddTrayItem(base::WrapUnique(tray_date_));
-  }
+  tray_tiles_ = new TrayTiles(this);
+  AddTrayItem(base::WrapUnique(tray_tiles_));
+  tray_system_info_ = new TraySystemInfo(this);
+  AddTrayItem(base::WrapUnique(tray_system_info_));
+  // Leading padding.
+  AddTrayItem(base::MakeUnique<PaddingTrayItem>());
 }
 
 void SystemTray::AddTrayItem(std::unique_ptr<SystemTrayItem> item) {
@@ -440,9 +427,7 @@ bool SystemTray::CloseSystemBubble() const {
 }
 
 views::View* SystemTray::GetHelpButtonView() const {
-  if (MaterialDesignController::IsSystemTrayMenuMaterial())
-    return tray_tiles_->GetHelpButtonView();
-  return tray_date_->GetHelpButtonView();
+  return tray_tiles_->GetHelpButtonView();
 }
 
 TrayAudio* SystemTray::GetTrayAudio() const {
@@ -507,17 +492,8 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
     // (like network) replaces most of the menu.
     full_system_tray_menu_ = items.size() > 1;
 
-    // The menu width is fixed for all languages in material design.
-    int menu_width = kTrayMenuMinimumWidthMd;
-    if (!MaterialDesignController::IsSystemTrayMenuMaterial()) {
-      // The menu width is fixed, and it is a per language setting.
-      menu_width = std::max(
-          kTrayMenuMinimumWidth,
-          Shell::Get()->system_tray_delegate()->GetSystemTrayMenuWidth());
-    }
-
-    TrayBubbleView::InitParams init_params(GetAnchorAlignment(), menu_width,
-                                           kTrayPopupMaxWidth);
+    TrayBubbleView::InitParams init_params(
+        GetAnchorAlignment(), kTrayMenuMinimumWidthMd, kTrayPopupMaxWidth);
     // TODO(oshima): Change TrayBubbleView itself.
     init_params.can_activate = false;
     if (detailed) {
@@ -670,10 +646,6 @@ views::View* SystemTray::GetTrayItemViewForTest(SystemTrayItem* item) {
 
 TrayCast* SystemTray::GetTrayCastForTesting() const {
   return tray_cast_;
-}
-
-TrayDate* SystemTray::GetTrayDateForTesting() const {
-  return tray_date_;
 }
 
 TrayNetwork* SystemTray::GetTrayNetworkForTesting() const {

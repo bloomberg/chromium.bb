@@ -34,9 +34,4 @@ bool DefaultSystemTrayDelegate::ShouldShowNotificationTray() const {
   return true;
 }
 
-int DefaultSystemTrayDelegate::GetSystemTrayMenuWidth() {
-  // This is the default width for English languages.
-  return 300;
-}
-
 }  // namespace ash

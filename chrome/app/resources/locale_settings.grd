@@ -151,13 +151,6 @@
         55
       </message>
 
-      <if expr="is_win or is_linux or chromeos">
-        <!-- The width of the ash/ChromeOS system tray menu in pixels. -->
-        <message name="IDS_SYSTEM_TRAY_MENU_BUBBLE_WIDTH_PIXELS" use_name_for_id="true">
-          300
-        </message>
-      </if>
-
       <if expr="is_win">
         <!-- The width of the Conflicting Module bubble in characters (See above). -->
         <message name="IDS_CONFLICTING_MODULE_BUBBLE_WIDTH_CHARS" use_name_for_id="true">

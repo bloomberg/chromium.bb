@@ -30,13 +30,9 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_PHANTOM_WINDOW_TOP_RIGHT" file="common/phantom_window_top_right.png" />
 
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_ACCESSIBILITY_DARK" file="cros/status/status_accessibility_dark.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_HELP" file="cros/status/status_help.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_HELP_HOVER" file="cros/status/status_help_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_IME" file="cros/status/status_ime.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LESS" file="cros/status/status_less.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOCALE" file="cros/status/status_locale.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOCKSCREEN" file="cros/status/status_lockscreen.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOCKSCREEN_HOVER" file="cros/status/status_lockscreen_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_CONTROLLED" file="cros/network/status_captive_portal_access.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_FAILED" file="cros/network/status_network_failed.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_FAILED_CELLULAR" file="cros/network/status_cellular_failed.png" />
@@ -46,8 +42,6 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_NOTIFICATION_LTE" file="cros/network/notification_lte.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SCREENSHARE" file="cros/status/status_screenshare.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SCREENSHARE_DARK" file="cros/status/status_screenshare_dark.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SHUTDOWN" file="cros/status/status_shutdown.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SHUTDOWN_HOVER" file="cros/status/status_shutdown_hover.png" />
 
       <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_BATTERY_CRITICAL" file="cros/notification/notification_battery_critical_icon.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_BATTERY_FLUCTUATING" file="cros/notification/notification_battery_fluctuating_icon.png" />

@@ -27,7 +27,6 @@ class SystemTrayItem;
 class TrayAccessibility;
 class TrayAudio;
 class TrayCast;
-class TrayDate;
 class TrayNetwork;
 class TraySystemInfo;
 class TrayTiles;
@@ -145,7 +144,6 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   views::View* GetTrayItemViewForTest(SystemTrayItem* tray_item);
 
   TrayCast* GetTrayCastForTesting() const;
-  TrayDate* GetTrayDateForTesting() const;
   TrayNetwork* GetTrayNetworkForTesting() const;
   TraySystemInfo* GetTraySystemInfoForTesting() const;
   TrayTiles* GetTrayTilesForTesting() const;
@@ -231,7 +229,6 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   TrayAccessibility* tray_accessibility_;
   TrayAudio* tray_audio_;  // May be null.
   TrayCast* tray_cast_;
-  TrayDate* tray_date_;    // null for material design.
   TrayNetwork* tray_network_;
   TrayTiles* tray_tiles_;  // only used in material design.
   TraySystemInfo* tray_system_info_;  // only used in material design.

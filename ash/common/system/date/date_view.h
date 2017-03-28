@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/common/system/date/tray_date.h"
 #include "ash/common/system/tray/actionable_view.h"
 #include "base/i18n/time_formatting.h"
 #include "base/macros.h"
@@ -92,11 +91,6 @@ class ASH_EXPORT DateView : public BaseDateTimeView {
 
   // ActionableView:
   bool PerformAction(const ui::Event& event) override;
-
-  // views::View:
-  void OnMouseEntered(const ui::MouseEvent& event) override;
-  void OnMouseExited(const ui::MouseEvent& event) override;
-  void OnGestureEvent(ui::GestureEvent* event) override;
 
   views::Label* date_label_;
 

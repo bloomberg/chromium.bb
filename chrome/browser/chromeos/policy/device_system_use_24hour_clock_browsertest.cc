@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "ash/common/login_status.h"
-#include "ash/common/system/date/date_default_view.h"
 #include "ash/common/system/date/date_view.h"
 #include "ash/common/system/date/system_info_default_view.h"
 #include "ash/common/system/date/tray_system_info.h"
