@@ -345,8 +345,8 @@ void ComputedStyle::copyNonInheritedFromCached(const ComputedStyle& other) {
   // The flags are copied one-by-one because m_nonInheritedData.m_contains a
   // bunch of stuff other than real style data.
   // See comments for each skipped flag below.
-  m_nonInheritedData.m_originalDisplay =
-      other.m_nonInheritedData.m_originalDisplay;
+  setOriginalDisplay(
+      other.originalDisplay());  // Not generated in ComputedStyleBase.
   m_nonInheritedData.m_verticalAlign = other.m_nonInheritedData.m_verticalAlign;
   m_nonInheritedData.m_hasViewportUnits =
       other.m_nonInheritedData.m_hasViewportUnits;
@@ -481,6 +481,8 @@ bool ComputedStyle::loadingCustomFontsEqual(const ComputedStyle& other) const {
 bool ComputedStyle::nonInheritedEqual(const ComputedStyle& other) const {
   // compare everything except the pseudoStyle pointer
   return ComputedStyleBase::nonInheritedEqual(other) &&
+         originalDisplay() ==
+             other.originalDisplay() &&  // Not generated in ComputedStyleBase
          m_nonInheritedData == other.m_nonInheritedData &&
          m_box == other.m_box && m_visual == other.m_visual &&
          m_background == other.m_background && m_surround == other.m_surround &&
@@ -787,8 +789,7 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(
   if (overflowX() != other.overflowX() || overflowY() != other.overflowY() ||
       clear() != other.clear() || getUnicodeBidi() != other.getUnicodeBidi() ||
       floating() != other.floating() ||
-      m_nonInheritedData.m_originalDisplay !=
-          other.m_nonInheritedData.m_originalDisplay)
+      originalDisplay() != other.originalDisplay())
     return true;
 
   if (isDisplayTableType(display())) {

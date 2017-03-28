@@ -20,6 +20,13 @@ from name_utilities import (
 NONPROPERTIES = [
     {'name': 'IsLink', 'field_template': 'monotonic_flag',
      'inherited': False, 'independent': False},
+    {'name': 'OriginalDisplay', 'field_template': 'keyword', 'initial_keyword': 'inline',
+     'type_name': 'EDisplay', 'inherited': False, 'independent': False,
+     'keywords': [
+         "inline", "block", "list-item", "inline-block", "table", "inline-table", "table-row-group", "table-header-group",
+         "table-footer-group", "table-row", "table-column-group", "table-column", "table-cell", "table-caption", "-webkit-box",
+         "-webkit-inline-box", "flex", "inline-flex", "grid", "inline-grid", "contents", "flow-root", "none"
+     ]},
     {'name': 'InsideLink', 'field_template': 'keyword', 'initial_keyword': 'not-inside-link',
      'keywords': ['not-inside-link', 'inside-unvisited-link', 'inside-visited-link'],
      'inherited': True, 'independent': False},

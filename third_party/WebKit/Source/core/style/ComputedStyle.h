@@ -206,8 +206,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // don't inherit
   struct NonInheritedData {
     NonInheritedData()
-        : m_originalDisplay(static_cast<unsigned>(initialDisplay())),
-          m_verticalAlign(static_cast<unsigned>(initialVerticalAlign())),
+        : m_verticalAlign(static_cast<unsigned>(initialVerticalAlign())),
           m_hasViewportUnits(false),
           m_hasRemUnits(false) {}
 
@@ -215,8 +214,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     // should not cause an inequality.
     bool operator==(const NonInheritedData& other) const {
       // Generated properties are compared in ComputedStyleBase
-      return m_originalDisplay == other.m_originalDisplay &&
-             m_verticalAlign == other.m_verticalAlign;
+      return m_verticalAlign == other.m_verticalAlign;
       // Differences in the following fields do not cause inequality:
       // hasViewportUnits
       // styleType
@@ -236,7 +234,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
       return !(*this == other);
     }
 
-    unsigned m_originalDisplay : 5;   // EDisplay
     unsigned m_verticalAlign : 4;     // EVerticalAlign
 
     // This is set if we used viewport units when resolving a length.
@@ -798,14 +795,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     return m_rareNonInheritedData->m_content.get();
   }
   void setContent(ContentData*);
-
-  // display
-  EDisplay originalDisplay() const {
-    return static_cast<EDisplay>(m_nonInheritedData.m_originalDisplay);
-  }
-  void setOriginalDisplay(EDisplay v) {
-    m_nonInheritedData.m_originalDisplay = static_cast<unsigned>(v);
-  }
 
   // Flex properties.
   // flex-basis (aka -webkit-flex-basis)
