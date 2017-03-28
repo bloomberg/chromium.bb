@@ -39,7 +39,7 @@ class ProfileSyncServiceHarness {
     UI_SIGNIN
   };
 
-  static ProfileSyncServiceHarness* Create(
+  static std::unique_ptr<ProfileSyncServiceHarness> Create(
       Profile* profile,
       const std::string& username,
       const std::string& password,

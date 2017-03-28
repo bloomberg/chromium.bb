@@ -4,10 +4,12 @@
 
 #include "components/spellcheck/browser/spellcheck_message_filter_platform.h"
 
+#include <memory>
 #include <tuple>
+#include <vector>
 
 #include "base/command_line.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -26,12 +28,12 @@ class TestingSpellCheckMessageFilter : public SpellCheckMessageFilterPlatform {
       : SpellCheckMessageFilterPlatform(0), quit_closure_(quit_closure) {}
 
   bool Send(IPC::Message* message) override {
-    sent_messages_.push_back(message);
+    sent_messages_.push_back(base::WrapUnique(message));
     main_thread_task_runner_->PostTask(FROM_HERE, quit_closure_);
     return true;
   }
 
-  ScopedVector<IPC::Message> sent_messages_;
+  std::vector<std::unique_ptr<IPC::Message>> sent_messages_;
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_ =
       base::ThreadTaskRunnerHandle::Get();
   const base::Closure quit_closure_;
@@ -58,7 +60,7 @@ IN_PROC_BROWSER_TEST_F(SpellCheckMessageFilterPlatformMacBrowserTest,
 
   SpellCheckMsg_RespondTextCheck::Param params;
   bool ok = SpellCheckMsg_RespondTextCheck::Read(
-      target->sent_messages_[0], &params);
+      target->sent_messages_[0].get(), &params);
   std::vector<SpellCheckResult> sent_results = std::get<2>(params);
 
   EXPECT_TRUE(ok);

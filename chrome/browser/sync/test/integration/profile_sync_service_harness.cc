@@ -11,6 +11,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -98,15 +99,13 @@ class SyncSetupChecker : public SingleClientStatusChangeChecker {
 }  // namespace
 
 // static
-ProfileSyncServiceHarness* ProfileSyncServiceHarness::Create(
+std::unique_ptr<ProfileSyncServiceHarness> ProfileSyncServiceHarness::Create(
     Profile* profile,
     const std::string& username,
     const std::string& password,
     SigninType signin_type) {
-  return new ProfileSyncServiceHarness(profile,
-                                       username,
-                                       password,
-                                       signin_type);
+  return base::WrapUnique(
+      new ProfileSyncServiceHarness(profile, username, password, signin_type));
 }
 
 ProfileSyncServiceHarness::ProfileSyncServiceHarness(

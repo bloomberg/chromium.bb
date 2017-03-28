@@ -5,11 +5,11 @@
 #define CHROME_BROWSER_BITMAP_FETCHER_BITMAP_FETCHER_SERVICE_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/containers/mru_cache.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_delegate.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -96,7 +96,7 @@ class BitmapFetcherService : public KeyedService,
   std::vector<std::unique_ptr<chrome::BitmapFetcher>> active_fetchers_;
 
   // Currently active requests.
-  ScopedVector<BitmapFetcherRequest> requests_;
+  std::vector<std::unique_ptr<BitmapFetcherRequest>> requests_;
 
   // Cache of retrieved images.
   struct CacheEntry {

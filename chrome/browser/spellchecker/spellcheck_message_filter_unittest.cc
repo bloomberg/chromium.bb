@@ -5,9 +5,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <tuple>
+#include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_message_filter.h"
@@ -26,7 +29,7 @@ class TestingSpellCheckMessageFilter : public SpellCheckMessageFilter {
         spellcheck_(new SpellcheckService(&profile_)) {}
 
   bool Send(IPC::Message* message) override {
-    sent_messages.push_back(message);
+    sent_messages.push_back(base::WrapUnique(message));
     return true;
   }
 
@@ -45,7 +48,7 @@ class TestingSpellCheckMessageFilter : public SpellCheckMessageFilter {
   }
 #endif
 
-  ScopedVector<IPC::Message> sent_messages;
+  std::vector<std::unique_ptr<IPC::Message>> sent_messages;
 
  private:
   ~TestingSpellCheckMessageFilter() override {}
@@ -105,7 +108,7 @@ TEST(SpellCheckMessageFilterTest, OnTextCheckCompleteTestCustomDictionary) {
 
   SpellCheckMsg_RespondSpellingService::Param params;
   bool ok = SpellCheckMsg_RespondSpellingService::Read(
-      filter->sent_messages[0], &params);
+      filter->sent_messages[0].get(), &params);
   int sent_identifier = std::get<0>(params);
   bool sent_success = std::get<1>(params);
   base::string16 sent_text = std::get<2>(params);
@@ -136,7 +139,7 @@ TEST(SpellCheckMessageFilterTest, OnTextCheckCompleteTest) {
 
   SpellCheckMsg_RespondSpellingService::Param params;
   bool ok = SpellCheckMsg_RespondSpellingService::Read(
-      filter->sent_messages[0], & params);
+      filter->sent_messages[0].get(), &params);
   base::string16 sent_text = std::get<2>(params);
   std::vector<SpellCheckResult> sent_results = std::get<3>(params);
   EXPECT_TRUE(ok);

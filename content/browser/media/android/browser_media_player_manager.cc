@@ -466,7 +466,7 @@ void BrowserMediaPlayerManager::ReleaseResources(int player_id) {
 
 std::unique_ptr<MediaPlayerAndroid> BrowserMediaPlayerManager::SwapPlayer(
     int player_id,
-    MediaPlayerAndroid* player) {
+    std::unique_ptr<MediaPlayerAndroid> player) {
   std::unique_ptr<MediaPlayerAndroid> previous_player;
   for (auto it = players_.begin(); it != players_.end(); ++it) {
     if ((*it)->player_id() == player_id) {
@@ -475,7 +475,7 @@ std::unique_ptr<MediaPlayerAndroid> BrowserMediaPlayerManager::SwapPlayer(
           ->DisconnectMediaSession(render_frame_host_,
                                    player_id_to_delegate_id_map_[player_id]);
       players_.erase(it);
-      players_.push_back(base::WrapUnique(player));
+      players_.push_back(std::move(player));
       break;
     }
   }

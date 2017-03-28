@@ -10,6 +10,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -18,7 +19,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -131,11 +131,12 @@ class PrefMapping {
     return indicator_selector_;
   }
 
-  const ScopedVector<IndicatorTestCase>& indicator_test_cases() const {
+  const std::vector<std::unique_ptr<IndicatorTestCase>>& indicator_test_cases()
+      const {
     return indicator_test_cases_;
   }
-  void AddIndicatorTestCase(IndicatorTestCase* test_case) {
-    indicator_test_cases_.push_back(test_case);
+  void AddIndicatorTestCase(std::unique_ptr<IndicatorTestCase> test_case) {
+    indicator_test_cases_.push_back(std::move(test_case));
   }
 
  private:
@@ -146,7 +147,7 @@ class PrefMapping {
   const std::string indicator_test_url_;
   const std::string indicator_test_setup_js_;
   const std::string indicator_selector_;
-  ScopedVector<IndicatorTestCase> indicator_test_cases_;
+  std::vector<std::unique_ptr<IndicatorTestCase>> indicator_test_cases_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefMapping);
 };
@@ -202,11 +203,11 @@ class PolicyTestCase {
     test_policy_.MergeDictionary(&policy);
   }
 
-  const ScopedVector<PrefMapping>& pref_mappings() const {
+  const std::vector<std::unique_ptr<PrefMapping>>& pref_mappings() const {
     return pref_mappings_;
   }
-  void AddPrefMapping(PrefMapping* pref_mapping) {
-    pref_mappings_.push_back(pref_mapping);
+  void AddPrefMapping(std::unique_ptr<PrefMapping> pref_mapping) {
+    pref_mappings_.push_back(std::move(pref_mapping));
   }
 
   const std::string& indicator_selector() const { return indicator_selector_; }
@@ -217,7 +218,7 @@ class PolicyTestCase {
   bool can_be_recommended_;
   std::vector<std::string> supported_os_;
   base::DictionaryValue test_policy_;
-  ScopedVector<PrefMapping> pref_mappings_;
+  std::vector<std::unique_ptr<PrefMapping>> pref_mappings_;
   std::string indicator_selector_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyTestCase);
@@ -339,13 +340,9 @@ class PolicyTestCases {
                                      &indicator_test_setup_js);
         std::string indicator_selector;
         pref_mapping_dict->GetString("indicator_selector", &indicator_selector);
-        PrefMapping* pref_mapping = new PrefMapping(pref,
-                                                    is_local_state,
-                                                    check_for_mandatory,
-                                                    check_for_recommended,
-                                                    indicator_test_url,
-                                                    indicator_test_setup_js,
-                                                    indicator_selector);
+        auto pref_mapping = base::MakeUnique<PrefMapping>(
+            pref, is_local_state, check_for_mandatory, check_for_recommended,
+            indicator_test_url, indicator_test_setup_js, indicator_selector);
         const base::ListValue* indicator_tests = NULL;
         if (pref_mapping_dict->GetList("indicator_tests", &indicator_tests)) {
           for (size_t i = 0; i < indicator_tests->GetSize(); ++i) {
@@ -362,10 +359,10 @@ class PolicyTestCases {
             bool readonly = false;
             indicator_test_dict->GetBoolean("readonly", &readonly);
             pref_mapping->AddIndicatorTestCase(
-                new IndicatorTestCase(*policy, value, readonly));
+                base::MakeUnique<IndicatorTestCase>(*policy, value, readonly));
           }
         }
-        policy_test_case->AddPrefMapping(pref_mapping);
+        policy_test_case->AddPrefMapping(std::move(pref_mapping));
       }
     }
     return policy_test_case;
@@ -557,38 +554,34 @@ IN_PROC_BROWSER_TEST_F(PolicyPrefsTest, PolicyToPrefsMapping) {
              policy->second.begin();
          test_case != policy->second.end();
          ++test_case) {
-      const ScopedVector<PrefMapping>& pref_mappings =
-          (*test_case)->pref_mappings();
+      const auto& pref_mappings = (*test_case)->pref_mappings();
       if (!(*test_case)->IsSupported() || pref_mappings.empty())
         continue;
 
       LOG(INFO) << "Testing policy: " << policy->first;
 
-      for (ScopedVector<PrefMapping>::const_iterator pref_mapping =
-               pref_mappings.begin();
-           pref_mapping != pref_mappings.end();
-           ++pref_mapping) {
+      for (const auto& pref_mapping : pref_mappings) {
         // Skip Chrome OS preferences that use a different backend and cannot be
         // retrieved through the prefs mechanism.
-        if (base::StartsWith((*pref_mapping)->pref(), kCrosSettingsPrefix,
+        if (base::StartsWith(pref_mapping->pref(), kCrosSettingsPrefix,
                              base::CompareCase::SENSITIVE))
           continue;
 
         // Skip preferences that should not be checked when the policy is set to
         // a mandatory value.
-        if (!(*pref_mapping)->check_for_mandatory())
+        if (!pref_mapping->check_for_mandatory())
           continue;
 
         PrefService* prefs =
-            (*pref_mapping)->is_local_state() ? local_state : user_prefs;
+            pref_mapping->is_local_state() ? local_state : user_prefs;
         // The preference must have been registered.
         const PrefService::Preference* pref =
-            prefs->FindPreference((*pref_mapping)->pref().c_str());
+            prefs->FindPreference(pref_mapping->pref().c_str());
         ASSERT_TRUE(pref);
 
         // Verify that setting the policy overrides the pref.
         ClearProviderPolicy();
-        prefs->ClearPref((*pref_mapping)->pref().c_str());
+        prefs->ClearPref(pref_mapping->pref().c_str());
         EXPECT_TRUE(pref->IsDefaultValue());
         EXPECT_TRUE(pref->IsUserModifiable());
         EXPECT_FALSE(pref->IsUserControlled());
@@ -632,19 +625,15 @@ IN_PROC_BROWSER_TEST_P(PolicyPrefIndicatorTest, CheckPolicyIndicators) {
       PolicyTestCase* policy_test_case = *test_case;
       if (!policy_test_case->IsSupported())
         continue;
-      const ScopedVector<PrefMapping>& pref_mappings =
-          policy_test_case->pref_mappings();
+      const auto& pref_mappings = policy_test_case->pref_mappings();
       if (policy_test_case->indicator_selector().empty()) {
         bool has_pref_indicator_tests = false;
-        for (ScopedVector<PrefMapping>::const_iterator pref_mapping =
-                 pref_mappings.begin();
-             pref_mapping != pref_mappings.end();
-             ++pref_mapping) {
+        for (const auto& pref_mapping : pref_mappings) {
           PrefService* prefs =
-              (*pref_mapping)->is_local_state() ? local_state : user_prefs;
-          if (prefs->FindPreference((*pref_mapping)->pref()))
-            prefs->ClearPref((*pref_mapping)->pref());
-          if (!(*pref_mapping)->indicator_test_cases().empty()) {
+              pref_mapping->is_local_state() ? local_state : user_prefs;
+          if (prefs->FindPreference(pref_mapping->pref()))
+            prefs->ClearPref(pref_mapping->pref());
+          if (!pref_mapping->indicator_test_cases().empty()) {
             has_pref_indicator_tests = true;
             break;
           }
@@ -686,19 +675,15 @@ IN_PROC_BROWSER_TEST_P(PolicyPrefIndicatorTest, CheckPolicyIndicators) {
             false);
       }
 
-      for (ScopedVector<PrefMapping>::const_iterator
-               pref_mapping = pref_mappings.begin();
-           pref_mapping != pref_mappings.end();
-           ++pref_mapping) {
-        const ScopedVector<IndicatorTestCase>& indicator_test_cases =
-            (*pref_mapping)->indicator_test_cases();
+      for (const auto& pref_mapping : pref_mappings) {
+        const auto& indicator_test_cases = pref_mapping->indicator_test_cases();
         if (indicator_test_cases.empty())
           continue;
 
-        if (!(*pref_mapping)->indicator_test_setup_js().empty()) {
+        if (!pref_mapping->indicator_test_setup_js().empty()) {
           ASSERT_TRUE(content::ExecuteScript(
               browser()->tab_strip_model()->GetActiveWebContents(),
-              (*pref_mapping)->indicator_test_setup_js()));
+              pref_mapping->indicator_test_setup_js()));
         }
 
         // A non-empty indicator_test_url is expected to be used in very
@@ -708,16 +693,15 @@ IN_PROC_BROWSER_TEST_P(PolicyPrefIndicatorTest, CheckPolicyIndicators) {
         // indicator_test_url, this would be inefficient. We could consider
         // navigting to a specific indicator_test_url once for many test cases
         // instead.
-        if (!(*pref_mapping)->indicator_test_url().empty()) {
+        if (!pref_mapping->indicator_test_url().empty()) {
           ui_test_utils::NavigateToURL(
-              browser(), GURL((*pref_mapping)->indicator_test_url()));
+              browser(), GURL(pref_mapping->indicator_test_url()));
         }
 
-        std::string indicator_selector = (*pref_mapping)->indicator_selector();
+        std::string indicator_selector = pref_mapping->indicator_selector();
         if (indicator_selector.empty())
-          indicator_selector = "[pref=\"" + (*pref_mapping)->pref() + "\"]";
-        for (ScopedVector<IndicatorTestCase>::const_iterator
-                 indicator_test_case = indicator_test_cases.begin();
+          indicator_selector = "[pref=\"" + pref_mapping->pref() + "\"]";
+        for (auto indicator_test_case = indicator_test_cases.begin();
              indicator_test_case != indicator_test_cases.end();
              ++indicator_test_case) {
           // Check that no controlled setting indicator is visible when no value
@@ -729,7 +713,7 @@ IN_PROC_BROWSER_TEST_P(PolicyPrefIndicatorTest, CheckPolicyIndicators) {
                                             std::string(),
                                             false);
 
-          if ((*pref_mapping)->check_for_mandatory()) {
+          if (pref_mapping->check_for_mandatory()) {
             // Check that the appropriate controlled setting indicator is shown
             // when a value is enforced by policy.
             SetProviderPolicy((*indicator_test_case)->policy(),
@@ -744,15 +728,15 @@ IN_PROC_BROWSER_TEST_P(PolicyPrefIndicatorTest, CheckPolicyIndicators) {
           }
 
           if (!policy_test_case->can_be_recommended() ||
-              !(*pref_mapping)->check_for_recommended()) {
+              !pref_mapping->check_for_recommended()) {
             continue;
           }
 
           PrefService* prefs =
-              (*pref_mapping)->is_local_state() ? local_state : user_prefs;
+              pref_mapping->is_local_state() ? local_state : user_prefs;
           // The preference must have been registered.
           const PrefService::Preference* pref =
-              prefs->FindPreference((*pref_mapping)->pref().c_str());
+              prefs->FindPreference(pref_mapping->pref().c_str());
           ASSERT_TRUE(pref);
 
           // Check that the appropriate controlled setting indicator is shown
@@ -768,16 +752,16 @@ IN_PROC_BROWSER_TEST_P(PolicyPrefIndicatorTest, CheckPolicyIndicators) {
           // Check that the appropriate controlled setting indicator is shown
           // when a value is recommended by policy and the user has overridden
           // the recommendation.
-          prefs->Set((*pref_mapping)->pref().c_str(), *pref->GetValue());
+          prefs->Set(pref_mapping->pref().c_str(), *pref->GetValue());
           VerifyControlledSettingIndicators(browser(),
                                             indicator_selector,
                                             (*indicator_test_case)->value(),
                                             "hasRecommendation",
                                             (*indicator_test_case)->readonly());
-          prefs->ClearPref((*pref_mapping)->pref().c_str());
+          prefs->ClearPref(pref_mapping->pref().c_str());
         }
 
-        if (!(*pref_mapping)->indicator_test_url().empty())
+        if (!pref_mapping->indicator_test_url().empty())
           ui_test_utils::NavigateToURL(browser(), GURL(kMainSettingsPage));
       }
     }

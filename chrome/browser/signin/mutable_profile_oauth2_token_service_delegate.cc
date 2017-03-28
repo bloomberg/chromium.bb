@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/profiler/scoped_tracker.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_metrics.h"
@@ -100,9 +101,13 @@ void MutableProfileOAuth2TokenServiceDelegate::RevokeServerRefreshToken::
     OnOAuth2RevokeTokenCompleted() {
   // |this| pointer will be deleted when removed from the vector, so don't
   // access any members after call to erase().
-  token_service_delegate_->server_revokes_.erase(
-      std::find(token_service_delegate_->server_revokes_.begin(),
-                token_service_delegate_->server_revokes_.end(), this));
+  token_service_delegate_->server_revokes_.erase(std::find_if(
+      token_service_delegate_->server_revokes_.begin(),
+      token_service_delegate_->server_revokes_.end(),
+      [this](const std::unique_ptr<MutableProfileOAuth2TokenServiceDelegate::
+                                       RevokeServerRefreshToken>& item) {
+        return item.get() == this;
+      }));
 }
 
 MutableProfileOAuth2TokenServiceDelegate::AccountStatus::AccountStatus(
@@ -542,7 +547,8 @@ void MutableProfileOAuth2TokenServiceDelegate::RevokeCredentialsOnServer(
     const std::string& refresh_token) {
   // Keep track or all server revoke requests.  This way they can be deleted
   // before the token service is shutdown and won't outlive the profile.
-  server_revokes_.push_back(new RevokeServerRefreshToken(this, refresh_token));
+  server_revokes_.push_back(
+      base::MakeUnique<RevokeServerRefreshToken>(this, refresh_token));
 }
 
 void MutableProfileOAuth2TokenServiceDelegate::CancelWebTokenFetch() {

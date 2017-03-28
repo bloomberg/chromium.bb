@@ -7,9 +7,9 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "chrome/browser/supervised_user/permission_request_creator.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -52,7 +52,7 @@ class PermissionRequestCreatorApiary : public PermissionRequestCreator,
 
  private:
   struct Request;
-  using RequestIterator = ScopedVector<Request>::iterator;
+  using RequestIterator = std::vector<std::unique_ptr<Request>>::iterator;
 
   // OAuth2TokenService::Consumer implementation:
   void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
@@ -82,7 +82,7 @@ class PermissionRequestCreatorApiary : public PermissionRequestCreator,
   net::URLRequestContextGetter* context_;
   int url_fetcher_id_;
 
-  ScopedVector<Request> requests_;
+  std::vector<std::unique_ptr<Request>> requests_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionRequestCreatorApiary);
 };

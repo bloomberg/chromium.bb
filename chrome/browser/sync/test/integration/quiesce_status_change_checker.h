@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_SYNC_TEST_INTEGRATION_QUIESCE_STATUS_CHANGE_CHECKER_H_
 #define CHROME_BROWSER_SYNC_TEST_INTEGRATION_QUIESCE_STATUS_CHANGE_CHECKER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "chrome/browser/sync/test/integration/status_change_checker.h"
 
@@ -47,7 +47,7 @@ class QuiesceStatusChangeChecker : public StatusChangeChecker {
 
  private:
   std::vector<browser_sync::ProfileSyncService*> services_;
-  ScopedVector<ProgressMarkerWatcher> observers_;
+  std::vector<std::unique_ptr<ProgressMarkerWatcher>> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(QuiesceStatusChangeChecker);
 };

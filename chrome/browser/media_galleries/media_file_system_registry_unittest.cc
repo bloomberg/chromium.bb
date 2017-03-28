@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <memory>
 #include <set>
+#include <vector>
 
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -19,7 +20,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -280,6 +280,10 @@ base::string16 GetExpectedFolderName(const base::FilePath& path) {
 
 class MediaFileSystemRegistryTest : public ChromeRenderViewHostTestHarness {
  public:
+  MediaFileSystemRegistryTest() = default;
+
+  ~MediaFileSystemRegistryTest() override = default;
+
   void CreateProfileState(size_t profile_count);
 
   ProfileState* GetProfileState(size_t i);
@@ -380,7 +384,9 @@ class MediaFileSystemRegistryTest : public ChromeRenderViewHostTestHarness {
 
   MockProfileSharedRenderProcessHostFactory rph_factory_;
 
-  ScopedVector<ProfileState> profile_states_;
+  std::vector<std::unique_ptr<ProfileState>> profile_states_;
+
+  DISALLOW_COPY_AND_ASSIGN(MediaFileSystemRegistryTest);
 };
 
 namespace {
@@ -604,13 +610,12 @@ int ProfileState::GetAndClearComparisonCount() {
 
 void MediaFileSystemRegistryTest::CreateProfileState(size_t profile_count) {
   for (size_t i = 0; i < profile_count; ++i) {
-    ProfileState* state = new ProfileState(&rph_factory_);
-    profile_states_.push_back(state);
+    profile_states_.push_back(base::MakeUnique<ProfileState>(&rph_factory_));
   }
 }
 
 ProfileState* MediaFileSystemRegistryTest::GetProfileState(size_t i) {
-  return profile_states_[i];
+  return profile_states_[i].get();
 }
 
 MediaGalleriesPreferences* MediaFileSystemRegistryTest::GetPreferences(

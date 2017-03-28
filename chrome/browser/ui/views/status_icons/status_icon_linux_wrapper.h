@@ -35,7 +35,7 @@ class StatusIconLinuxWrapper : public StatusIcon,
   // StatusIconMenuModel::Observer overrides:
   void OnMenuStateChanged() override;
 
-  static StatusIconLinuxWrapper* CreateWrappedStatusIcon(
+  static std::unique_ptr<StatusIconLinuxWrapper> CreateWrappedStatusIcon(
       const gfx::ImageSkia& image,
       const base::string16& tool_tip);
 
@@ -49,7 +49,8 @@ class StatusIconLinuxWrapper : public StatusIcon,
  private:
   // A status icon wrapper should only be created by calling
   // CreateWrappedStatusIcon().
-  explicit StatusIconLinuxWrapper(views::StatusIconLinux* status_icon);
+  explicit StatusIconLinuxWrapper(
+      std::unique_ptr<views::StatusIconLinux> status_icon);
 
   // Notification balloon.
   DesktopNotificationBalloon notification_;

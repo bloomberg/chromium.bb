@@ -7,10 +7,12 @@
 
 #include <stddef.h>
 
+#include <memory>
+#include <vector>
+
 #include "base/callback_forward.h"
 #include "base/containers/mru_cache.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -63,7 +65,7 @@ class SafeSearchURLChecker : net::URLFetcherDelegate {
   net::URLRequestContextGetter* context_;
   const net::NetworkTrafficAnnotationTag traffic_annotation_;
 
-  ScopedVector<Check> checks_in_progress_;
+  std::vector<std::unique_ptr<Check>> checks_in_progress_;
 
   base::MRUCache<GURL, CheckResult> cache_;
   base::TimeDelta cache_timeout_;

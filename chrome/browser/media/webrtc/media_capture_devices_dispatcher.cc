@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -88,19 +89,24 @@ MediaCaptureDevicesDispatcher::MediaCaptureDevicesDispatcher()
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #if defined(OS_CHROMEOS)
   // Wrapper around ExtensionMediaAccessHandler used in Public Sessions.
-  media_access_handlers_.push_back(new PublicSessionMediaAccessHandler());
+  media_access_handlers_.push_back(
+      base::MakeUnique<PublicSessionMediaAccessHandler>());
 #else
-  media_access_handlers_.push_back(new ExtensionMediaAccessHandler());
+  media_access_handlers_.push_back(
+      base::MakeUnique<ExtensionMediaAccessHandler>());
 #endif
-  media_access_handlers_.push_back(new DesktopCaptureAccessHandler());
+  media_access_handlers_.push_back(
+      base::MakeUnique<DesktopCaptureAccessHandler>());
 #if defined(OS_CHROMEOS)
   // Wrapper around TabCaptureAccessHandler used in Public Sessions.
-  media_access_handlers_.push_back(new PublicSessionTabCaptureAccessHandler());
+  media_access_handlers_.push_back(
+      base::MakeUnique<PublicSessionTabCaptureAccessHandler>());
 #else
-  media_access_handlers_.push_back(new TabCaptureAccessHandler());
+  media_access_handlers_.push_back(base::MakeUnique<TabCaptureAccessHandler>());
 #endif
 #endif
-  media_access_handlers_.push_back(new PermissionBubbleMediaAccessHandler());
+  media_access_handlers_.push_back(
+      base::MakeUnique<PermissionBubbleMediaAccessHandler>());
 }
 
 MediaCaptureDevicesDispatcher::~MediaCaptureDevicesDispatcher() {}
@@ -158,7 +164,7 @@ void MediaCaptureDevicesDispatcher::ProcessMediaAccessRequest(
     const extensions::Extension* extension) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  for (MediaAccessHandler* handler : media_access_handlers_) {
+  for (const auto& handler : media_access_handlers_) {
     if (handler->SupportsStreamType(request.video_type, extension) ||
         handler->SupportsStreamType(request.audio_type, extension)) {
       handler->HandleRequest(web_contents, request, callback, extension);
@@ -184,7 +190,7 @@ bool MediaCaptureDevicesDispatcher::CheckMediaAccessPermission(
     content::MediaStreamType type,
     const extensions::Extension* extension) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  for (MediaAccessHandler* handler : media_access_handlers_) {
+  for (const auto& handler : media_access_handlers_) {
     if (handler->SupportsStreamType(type, extension)) {
       return handler->CheckMediaAccessPermission(web_contents, security_origin,
                                                  type, extension);
@@ -355,7 +361,7 @@ void MediaCaptureDevicesDispatcher::UpdateMediaRequestStateOnUIThread(
     const GURL& security_origin,
     content::MediaStreamType stream_type,
     content::MediaRequestState state) {
-  for (MediaAccessHandler* handler : media_access_handlers_) {
+  for (const auto& handler : media_access_handlers_) {
     if (handler->SupportsStreamType(stream_type, nullptr)) {
       handler->UpdateMediaRequestState(render_process_id, render_frame_id,
                                        page_request_id, stream_type, state);
@@ -393,13 +399,14 @@ bool MediaCaptureDevicesDispatcher::IsInsecureCapturingInProgress(
     int render_frame_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  for (MediaAccessHandler* handler : media_access_handlers_) {
+  for (const auto& handler : media_access_handlers_) {
     if (handler->SupportsStreamType(content::MEDIA_DESKTOP_VIDEO_CAPTURE,
                                     nullptr) ||
         handler->SupportsStreamType(content::MEDIA_TAB_VIDEO_CAPTURE,
                                     nullptr)) {
-      if (ToCaptureAccessHandlerBase(handler)->IsInsecureCapturingInProgress(
-              render_process_id, render_frame_id))
+      if (ToCaptureAccessHandlerBase(handler.get())
+              ->IsInsecureCapturingInProgress(render_process_id,
+                                              render_frame_id))
         return true;
     }
   }
@@ -447,10 +454,11 @@ void MediaCaptureDevicesDispatcher::UpdateCapturingLinkSecured(
     return;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  for (MediaAccessHandler* handler : media_access_handlers_) {
+  for (const auto& handler : media_access_handlers_) {
     if (handler->SupportsStreamType(stream_type, nullptr)) {
-      ToCaptureAccessHandlerBase(handler)->UpdateCapturingLinkSecured(
-          render_process_id, render_frame_id, page_request_id, is_secure);
+      ToCaptureAccessHandlerBase(handler.get())
+          ->UpdateCapturingLinkSecured(render_process_id, render_frame_id,
+                                       page_request_id, is_secure);
       break;
     }
   }

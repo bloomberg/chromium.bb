@@ -4,13 +4,13 @@
 
 #include "chrome/browser/ui/views/status_icons/status_icon_linux_wrapper.h"
 
+#include "base/memory/ptr_util.h"
 #include "ui/message_center/notifier_settings.h"
 #include "ui/views/linux_ui/linux_ui.h"
 
 StatusIconLinuxWrapper::StatusIconLinuxWrapper(
-    views::StatusIconLinux* status_icon)
-    : menu_model_(NULL) {
-  status_icon_.reset(status_icon);
+    std::unique_ptr<views::StatusIconLinux> status_icon)
+    : status_icon_(std::move(status_icon)), menu_model_(nullptr) {
   status_icon_->set_delegate(this);
 }
 
@@ -47,17 +47,19 @@ void StatusIconLinuxWrapper::OnMenuStateChanged() {
   status_icon_->RefreshPlatformContextMenu();
 }
 
-StatusIconLinuxWrapper* StatusIconLinuxWrapper::CreateWrappedStatusIcon(
+std::unique_ptr<StatusIconLinuxWrapper>
+StatusIconLinuxWrapper::CreateWrappedStatusIcon(
     const gfx::ImageSkia& image,
     const base::string16& tool_tip) {
   const views::LinuxUI* linux_ui = views::LinuxUI::instance();
   if (linux_ui) {
-    std::unique_ptr<views::StatusIconLinux> status_icon =
-        linux_ui->CreateLinuxStatusIcon(image, tool_tip);
-    if (status_icon.get())
-      return new StatusIconLinuxWrapper(status_icon.release());
+    auto status_icon = linux_ui->CreateLinuxStatusIcon(image, tool_tip);
+    if (status_icon) {
+      return base::WrapUnique(
+          new StatusIconLinuxWrapper(std::move(status_icon)));
+    }
   }
-  return NULL;
+  return nullptr;
 }
 
 void StatusIconLinuxWrapper::UpdatePlatformContextMenu(

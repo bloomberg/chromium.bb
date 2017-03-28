@@ -11,7 +11,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/process/process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -156,9 +155,8 @@ class SyncTest : public InProcessBrowserTest {
   // and manages its lifetime.
   ProfileSyncServiceHarness* GetClient(int index);
 
-  // Returns a reference to the collection of sync clients. Callee owns the
-  // object and manages its lifetime.
-  std::vector<ProfileSyncServiceHarness*>& clients() { return clients_.get(); }
+  // Returns a list of the collection of sync clients.
+  std::vector<ProfileSyncServiceHarness*> GetSyncClients();
 
   // Returns a ProfileSyncService at the given index.
   browser_sync::ProfileSyncService* GetSyncService(int index);
@@ -422,21 +420,23 @@ class SyncTest : public InProcessBrowserTest {
 
   // Collection of pointers to the browser objects used by a test. One browser
   // instance is created for each sync profile. Browser object lifetime is
-  // managed by BrowserList, so we don't use a ScopedVector here.
+  // managed by BrowserList, so we don't use a std::vector<std::unique_ptr<>>
+  // here.
   std::vector<Browser*> browsers_;
 
   // Collection of sync clients used by a test. A sync client is associated with
   // a sync profile, and implements methods that sync the contents of the
   // profile with the server.
-  ScopedVector<ProfileSyncServiceHarness> clients_;
+  std::vector<std::unique_ptr<ProfileSyncServiceHarness>> clients_;
 
   // A set of objects to listen for commit activity and broadcast notifications
   // of this activity to its peer sync clients.
-  ScopedVector<P2PInvalidationForwarder> invalidation_forwarders_;
+  std::vector<std::unique_ptr<P2PInvalidationForwarder>>
+      invalidation_forwarders_;
 
   // A set of objects to listen for commit activity and broadcast refresh
   // notifications of this activity to its peer sync clients.
-  ScopedVector<P2PSyncRefresher> sync_refreshers_;
+  std::vector<std::unique_ptr<P2PSyncRefresher>> sync_refreshers_;
 
   // Collection of pointers to FakeServerInvalidation objects for each profile.
   std::vector<fake_server::FakeServerInvalidationService*>

@@ -15,7 +15,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "device/usb/usb_device_handle.h"
 
@@ -161,7 +160,7 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
   std::queue<BulkMessage> outgoing_queue_;
 
   // Outgoing messages pending connect
-  typedef ScopedVector<AdbMessage> PendingMessages;
+  using PendingMessages = std::vector<std::unique_ptr<AdbMessage>>;
   PendingMessages pending_messages_;
 
   base::WeakPtrFactory<AndroidUsbDevice> weak_factory_;

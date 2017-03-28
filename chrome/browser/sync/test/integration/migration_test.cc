@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+#include <vector>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/migration_waiter.h"
@@ -81,8 +84,8 @@ class MigrationTest : public SyncTest  {
       return false;
 
     for (int i = 0; i < num_clients(); ++i) {
-      MigrationWatcher* watcher = new MigrationWatcher(GetClient(i));
-      migration_watchers_.push_back(watcher);
+      migration_watchers_.push_back(
+          base::MakeUnique<MigrationWatcher>(GetClient(i)));
     }
     return true;
   }
@@ -160,7 +163,7 @@ class MigrationTest : public SyncTest  {
   void AwaitMigration(syncer::ModelTypeSet migrate_types) {
     for (int i = 0; i < num_clients(); ++i) {
       ASSERT_TRUE(
-          MigrationWaiter(migrate_types, migration_watchers_[i]).Wait());
+          MigrationWaiter(migrate_types, migration_watchers_[i].get()).Wait());
     }
   }
 
@@ -216,7 +219,7 @@ class MigrationTest : public SyncTest  {
 
  private:
   // Used to keep track of the migration progress for each sync client.
-  ScopedVector<MigrationWatcher> migration_watchers_;
+  std::vector<std::unique_ptr<MigrationWatcher>> migration_watchers_;
 
   DISALLOW_COPY_AND_ASSIGN(MigrationTest);
 };

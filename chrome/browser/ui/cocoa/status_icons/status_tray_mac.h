@@ -15,9 +15,10 @@ class StatusTrayMac : public StatusTray {
 
  protected:
   // Factory method for creating a status icon.
-  StatusIcon* CreatePlatformStatusIcon(StatusIconType type,
-                                       const gfx::ImageSkia& image,
-                                       const base::string16& tool_tip) override;
+  std::unique_ptr<StatusIcon> CreatePlatformStatusIcon(
+      StatusIconType type,
+      const gfx::ImageSkia& image,
+      const base::string16& tool_tip) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StatusTrayMac);

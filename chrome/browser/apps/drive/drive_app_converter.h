@@ -5,12 +5,13 @@
 #ifndef CHROME_BROWSER_APPS_DRIVE_DRIVE_APP_CONVERTER_H_
 #define CHROME_BROWSER_APPS_DRIVE_DRIVE_APP_CONVERTER_H_
 
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "chrome/browser/extensions/install_observer.h"
 #include "chrome/common/web_application_info.h"
 #include "components/drive/drive_app_registry.h"
@@ -63,7 +64,7 @@ class DriveAppConverter : public extensions::InstallObserver {
   const extensions::Extension* extension_;
   bool is_new_install_;
 
-  ScopedVector<IconFetcher> fetchers_;
+  std::vector<std::unique_ptr<IconFetcher>> fetchers_;
   scoped_refptr<extensions::CrxInstaller> crx_installer_;
 
   FinishedCallback finished_callback_;

@@ -460,10 +460,9 @@ void SyncFileSystemService::Initialize(
   local_service_ = std::move(local_service);
   remote_service_ = std::move(remote_service);
 
-  std::unique_ptr<LocalSyncRunner> local_syncer(
-      new LocalSyncRunner(kLocalSyncName, this));
-  std::unique_ptr<RemoteSyncRunner> remote_syncer(
-      new RemoteSyncRunner(kRemoteSyncName, this, remote_service_.get()));
+  auto local_syncer = base::MakeUnique<LocalSyncRunner>(kLocalSyncName, this);
+  auto remote_syncer = base::MakeUnique<RemoteSyncRunner>(
+      kRemoteSyncName, this, remote_service_.get());
 
   local_service_->AddChangeObserver(local_syncer.get());
   local_service_->SetLocalChangeProcessorCallback(
@@ -473,8 +472,8 @@ void SyncFileSystemService::Initialize(
   remote_service_->AddFileStatusObserver(this);
   remote_service_->SetRemoteChangeProcessor(local_service_.get());
 
-  local_sync_runners_.push_back(local_syncer.release());
-  remote_sync_runners_.push_back(remote_syncer.release());
+  local_sync_runners_.push_back(std::move(local_syncer));
+  remote_sync_runners_.push_back(std::move(remote_syncer));
 
   syncer::SyncService* profile_sync_service =
       ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile_);
@@ -756,14 +755,12 @@ void SyncFileSystemService::UpdateSyncEnabledStatus(
 
 void SyncFileSystemService::RunForEachSyncRunners(
     void(SyncProcessRunner::*method)()) {
-  for (ScopedVector<SyncProcessRunner>::iterator iter =
-           local_sync_runners_.begin();
+  for (auto iter = local_sync_runners_.begin();
        iter != local_sync_runners_.end(); ++iter)
-    ((*iter)->*method)();
-  for (ScopedVector<SyncProcessRunner>::iterator iter =
-           remote_sync_runners_.begin();
+    (iter->get()->*method)();
+  for (auto iter = remote_sync_runners_.begin();
        iter != remote_sync_runners_.end(); ++iter)
-    ((*iter)->*method)();
+    (iter->get()->*method)();
 }
 
 }  // namespace sync_file_system

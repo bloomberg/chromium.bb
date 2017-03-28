@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/threading/thread.h"
@@ -161,18 +162,18 @@ LRESULT CALLBACK StatusTrayWin::WndProc(HWND hwnd,
     // We need to reset all of our icons because the taskbar went away.
     for (StatusIcons::const_iterator i(status_icons().begin());
          i != status_icons().end(); ++i) {
-      StatusIconWin* win_icon = static_cast<StatusIconWin*>(*i);
+      StatusIconWin* win_icon = static_cast<StatusIconWin*>(i->get());
       win_icon->ResetIcon();
     }
     return TRUE;
   } else if (message == kStatusIconMessage) {
-    StatusIconWin* win_icon = NULL;
+    StatusIconWin* win_icon = nullptr;
 
     // Find the selected status icon.
     for (StatusIcons::const_iterator i(status_icons().begin());
          i != status_icons().end();
          ++i) {
-      StatusIconWin* current_win_icon = static_cast<StatusIconWin*>(*i);
+      StatusIconWin* current_win_icon = static_cast<StatusIconWin*>(i->get());
       if (current_win_icon->icon_id() == wparam) {
         win_icon = current_win_icon;
         break;
@@ -209,7 +210,7 @@ LRESULT CALLBACK StatusTrayWin::WndProc(HWND hwnd,
   return ::DefWindowProc(hwnd, message, wparam, lparam);
 }
 
-StatusIcon* StatusTrayWin::CreatePlatformStatusIcon(
+std::unique_ptr<StatusIcon> StatusTrayWin::CreatePlatformStatusIcon(
     StatusTray::StatusIconType type,
     const gfx::ImageSkia& image,
     const base::string16& tool_tip) {
@@ -219,12 +220,12 @@ StatusIcon* StatusTrayWin::CreatePlatformStatusIcon(
   else
     next_icon_id = ReservedIconId(type);
 
-  StatusIcon* icon =
-      new StatusIconWin(this, next_icon_id, window_, kStatusIconMessage);
+  auto icon = base::MakeUnique<StatusIconWin>(this, next_icon_id, window_,
+                                              kStatusIconMessage);
 
   icon->SetImage(image);
   icon->SetToolTip(tool_tip);
-  return icon;
+  return std::move(icon);
 }
 
 UINT StatusTrayWin::NextIconId() {

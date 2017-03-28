@@ -10,10 +10,10 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "components/feedback/feedback_common.h"
 
@@ -83,7 +83,7 @@ class SystemLogsFetcherBase
   void AddResponse(const std::string& source_name,
                    SystemLogsResponse* response);
 
-  ScopedVector<SystemLogsSource> data_sources_;
+  std::vector<std::unique_ptr<SystemLogsSource>> data_sources_;
   SysLogsFetcherCallback callback_;
 
   std::unique_ptr<SystemLogsResponse> response_;  // The actual response data.

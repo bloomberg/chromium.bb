@@ -72,7 +72,7 @@ class BitmapFetcherServiceTest : public testing::Test,
     images_changed_ = 0;
   }
 
-  const ScopedVector<BitmapFetcherRequest>& requests() const {
+  const std::vector<std::unique_ptr<BitmapFetcherRequest>>& requests() const {
     return service_->requests_;
   }
   const std::vector<std::unique_ptr<chrome::BitmapFetcher>>& active_fetchers()

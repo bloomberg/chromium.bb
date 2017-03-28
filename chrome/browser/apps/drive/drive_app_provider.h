@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "components/drive/drive_app_registry_observer.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -99,7 +98,7 @@ class DriveAppProvider : public drive::DriveAppRegistryObserver,
   bool drive_app_registry_updated_;
 
   // Tracks the pending web app convertions.
-  ScopedVector<DriveAppConverter> pending_converters_;
+  std::vector<std::unique_ptr<DriveAppConverter>> pending_converters_;
 
   base::WeakPtrFactory<DriveAppProvider> weak_ptr_factory_;
 

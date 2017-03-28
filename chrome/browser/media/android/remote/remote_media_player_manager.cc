@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/android/remote/remote_media_player_manager.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/common/chrome_content_client.h"
 #include "content/common/media/media_player_messages_android.h"
@@ -24,10 +25,10 @@ RemoteMediaPlayerManager::RemoteMediaPlayerManager(
 }
 
 RemoteMediaPlayerManager::~RemoteMediaPlayerManager() {
-  for (MediaPlayerAndroid* player : alternative_players_)
-    player->DeleteOnCorrectThread();
+  for (auto& player : alternative_players_)
+    player.release()->DeleteOnCorrectThread();
 
-  alternative_players_.weak_clear();
+  alternative_players_.clear();
 }
 
 void RemoteMediaPlayerManager::OnStart(int player_id) {
@@ -142,11 +143,12 @@ void RemoteMediaPlayerManager::DidDownloadPoster(
 
 RemoteMediaPlayerBridge* RemoteMediaPlayerManager::CreateRemoteMediaPlayer(
     int player_id) {
-  RemoteMediaPlayerBridge* player =
-      new RemoteMediaPlayerBridge(player_id, GetUserAgent(), this);
-  alternative_players_.push_back(player);
-  player->Initialize();
-  return player;
+  alternative_players_.push_back(base::MakeUnique<RemoteMediaPlayerBridge>(
+      player_id, GetUserAgent(), this));
+  RemoteMediaPlayerBridge* remote =
+      static_cast<RemoteMediaPlayerBridge*>(alternative_players_.back().get());
+  remote->Initialize();
+  return remote;
 }
 
 bool RemoteMediaPlayerManager::SwapCurrentPlayer(int player_id) {
@@ -155,17 +157,15 @@ bool RemoteMediaPlayerManager::SwapCurrentPlayer(int player_id) {
   if (it == alternative_players_.end())
     return false;
 
-  MediaPlayerAndroid* new_player = *it;
+  // Release ownership of the alternative player.
   std::unique_ptr<MediaPlayerAndroid> old_player =
-      SwapPlayer(player_id, new_player);
+      SwapPlayer(player_id, std::move(*it));
+  alternative_players_.erase(it);
   if (!old_player) {
-    // There's no player to swap with, destroy the alternative player and exit.
-    alternative_players_.erase(it);
     return false;
   }
 
-  alternative_players_.weak_erase(it);
-  alternative_players_.push_back(old_player.release());
+  alternative_players_.push_back(std::move(old_player));
   return true;
 }
 
@@ -248,7 +248,7 @@ void RemoteMediaPlayerManager::OnPaused(int player_id) {
   Send(new MediaPlayerMsg_DidMediaPlayerPause(RoutingID(),player_id));
 }
 
-ScopedVector<MediaPlayerAndroid>::iterator
+std::vector<std::unique_ptr<MediaPlayerAndroid>>::iterator
 RemoteMediaPlayerManager::GetAlternativePlayer(int player_id) {
   for (auto it = alternative_players_.begin(); it != alternative_players_.end();
        ++it) {
@@ -266,7 +266,7 @@ RemoteMediaPlayerBridge* RemoteMediaPlayerManager::GetRemotePlayer(
   auto it = GetAlternativePlayer(player_id);
   if (it == alternative_players_.end())
     return nullptr;
-  return static_cast<RemoteMediaPlayerBridge*>(*it);
+  return static_cast<RemoteMediaPlayerBridge*>(it->get());
 }
 
 MediaPlayerAndroid* RemoteMediaPlayerManager::GetLocalPlayer(int player_id) {
@@ -275,7 +275,7 @@ MediaPlayerAndroid* RemoteMediaPlayerManager::GetLocalPlayer(int player_id) {
   auto it = GetAlternativePlayer(player_id);
   if (it == alternative_players_.end())
     return nullptr;
-  return *it;
+  return it->get();
 }
 
 void RemoteMediaPlayerManager::OnMediaMetadataChanged(int player_id,

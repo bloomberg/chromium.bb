@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_vector.h"
 #include "storage/browser/fileapi/file_system_context.h"
 
 namespace base {

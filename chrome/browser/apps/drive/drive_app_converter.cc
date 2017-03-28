@@ -12,6 +12,7 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/crx_installer.h"
@@ -153,9 +154,9 @@ void DriveAppConverter::Start() {
 
     pending_sizes.insert(icon_size);
     const GURL& icon_url = drive_app_info_.app_icons[i].second;
-    IconFetcher* fetcher = new IconFetcher(this, icon_url, icon_size);
-    fetchers_.push_back(fetcher);  // Pass ownership to |fetchers|.
-    fetcher->Start();
+    fetchers_.push_back(
+        base::MakeUnique<IconFetcher>(this, icon_url, icon_size));
+    fetchers_.back()->Start();
   }
 
   if (fetchers_.empty())
@@ -182,7 +183,11 @@ void DriveAppConverter::OnIconFetchComplete(const IconFetcher* fetcher) {
     web_app_.icons.push_back(icon_info);
   }
 
-  fetchers_.erase(std::find(fetchers_.begin(), fetchers_.end(), fetcher));
+  fetchers_.erase(
+      std::find_if(fetchers_.begin(), fetchers_.end(),
+                   [fetcher](const std::unique_ptr<IconFetcher>& item) {
+                     return item.get() == fetcher;
+                   }));
 
   if (fetchers_.empty())
     StartInstall();

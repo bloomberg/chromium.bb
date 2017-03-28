@@ -15,7 +15,6 @@
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/task_manager/providers/task_provider.h"

@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_vector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/multi_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"

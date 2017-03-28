@@ -15,7 +15,6 @@
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
@@ -458,7 +457,7 @@ class SupervisedUserService : public KeyedService,
   std::vector<scoped_refptr<SupervisedUserSiteList>> whitelists_;
 
   // Used to create permission requests.
-  ScopedVector<PermissionRequestCreator> permissions_creators_;
+  std::vector<std::unique_ptr<PermissionRequestCreator>> permissions_creators_;
 
   // Used to report inappropriate URLs to SafeSarch API.
   std::unique_ptr<SafeSearchURLReporter> url_reporter_;
@@ -475,6 +474,8 @@ class SupervisedUserService : public KeyedService,
   std::unique_ptr<syncer::SyncSetupInProgressHandle> sync_blocker_;
 
   base::WeakPtrFactory<SupervisedUserService> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(SupervisedUserService);
 };
 
 #endif  // CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USER_SERVICE_H_

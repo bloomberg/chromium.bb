@@ -8,10 +8,10 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/sync_file_system/conflict_resolution_policy.h"
@@ -172,8 +172,8 @@ class SyncFileSystemService
   std::unique_ptr<RemoteFileSyncService> remote_service_;
 
   // Holds all SyncProcessRunners.
-  ScopedVector<SyncProcessRunner> local_sync_runners_;
-  ScopedVector<SyncProcessRunner> remote_sync_runners_;
+  std::vector<std::unique_ptr<SyncProcessRunner>> local_sync_runners_;
+  std::vector<std::unique_ptr<SyncProcessRunner>> remote_sync_runners_;
 
   // Indicates if sync is currently enabled or not.
   bool sync_enabled_;

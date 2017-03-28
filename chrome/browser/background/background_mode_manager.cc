@@ -16,6 +16,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -975,11 +976,10 @@ void BackgroundModeManager::UpdateStatusTrayIconContextMenu() {
       // We should only display the profile in the status icon if it has at
       // least one background app.
       if (bmd->GetBackgroundClientCount() > 0) {
-        StatusIconMenuModel* submenu = new StatusIconMenuModel(bmd);
         // The submenu constructor caller owns the lifetime of the submenu.
         // The containing menu does not handle the lifetime.
-        submenus.push_back(submenu);
-        bmd->BuildProfileMenu(submenu, menu.get());
+        submenus.push_back(base::MakeUnique<StatusIconMenuModel>(bmd));
+        bmd->BuildProfileMenu(submenus.back().get(), menu.get());
         profiles_using_background_mode++;
       }
     }

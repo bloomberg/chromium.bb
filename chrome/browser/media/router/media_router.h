@@ -12,7 +12,6 @@
 
 #include "base/callback.h"
 #include "base/callback_list.h"
-#include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "chrome/browser/media/router/issue.h"
 #include "chrome/browser/media/router/media_route.h"

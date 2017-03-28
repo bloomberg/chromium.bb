@@ -4,11 +4,12 @@
 
 #include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
 
+#include <memory>
 #include <tuple>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/common/mac/app_shim_messages.h"
 #include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,15 +23,15 @@ class TestingAppShimHost : public AppShimHost {
 
   bool ReceiveMessage(IPC::Message* message);
 
-  const std::vector<IPC::Message*>& sent_messages() {
-    return sent_messages_.get();
+  const std::vector<std::unique_ptr<IPC::Message>>& sent_messages() {
+    return sent_messages_;
   }
 
  protected:
   bool Send(IPC::Message* message) override;
 
  private:
-  ScopedVector<IPC::Message> sent_messages_;
+  std::vector<std::unique_ptr<IPC::Message>> sent_messages_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingAppShimHost);
 };
@@ -42,7 +43,7 @@ bool TestingAppShimHost::ReceiveMessage(IPC::Message* message) {
 }
 
 bool TestingAppShimHost::Send(IPC::Message* message) {
-  sent_messages_.push_back(message);
+  sent_messages_.push_back(base::WrapUnique(message));
   return true;
 }
 
@@ -71,7 +72,7 @@ class AppShimHostTest : public testing::Test,
 
   apps::AppShimLaunchResult GetLaunchResult() {
     EXPECT_EQ(1u, host()->sent_messages().size());
-    IPC::Message* message = host()->sent_messages()[0];
+    IPC::Message* message = host()->sent_messages()[0].get();
     EXPECT_EQ(AppShimMsg_LaunchApp_Done::ID, message->type());
     AppShimMsg_LaunchApp_Done::Param param;
     AppShimMsg_LaunchApp_Done::Read(message, &param);

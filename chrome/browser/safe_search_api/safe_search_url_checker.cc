@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/json/json_reader.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
@@ -167,7 +168,7 @@ bool SafeSearchURLChecker::CheckURL(const GURL& url,
   }
 
   // See if we already have a check in progress for this URL.
-  for (Check* check : checks_in_progress_) {
+  for (const auto& check : checks_in_progress_) {
     if (check->url == url) {
       DVLOG(1) << "Adding to pending check for " << url.spec();
       check->callbacks.push_back(callback);
@@ -180,19 +181,20 @@ bool SafeSearchURLChecker::CheckURL(const GURL& url,
   std::unique_ptr<URLFetcher> fetcher(
       CreateFetcher(this, context_, api_key, url, traffic_annotation_));
   fetcher->Start();
-  checks_in_progress_.push_back(new Check(url, std::move(fetcher), callback));
+  checks_in_progress_.push_back(
+      base::MakeUnique<Check>(url, std::move(fetcher), callback));
   return false;
 }
 
 void SafeSearchURLChecker::OnURLFetchComplete(const net::URLFetcher* source) {
-  ScopedVector<Check>::iterator it = checks_in_progress_.begin();
+  auto it = checks_in_progress_.begin();
   while (it != checks_in_progress_.end()) {
     if (source == (*it)->fetcher.get())
       break;
     ++it;
   }
   DCHECK(it != checks_in_progress_.end());
-  Check* check = *it;
+  Check* check = it->get();
 
   const URLRequestStatus& status = source->GetStatus();
   if (!status.is_success()) {

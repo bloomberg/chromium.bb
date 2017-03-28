@@ -468,7 +468,14 @@ ProfileSyncServiceHarness* SyncTest::GetClient(int index) {
     LOG(FATAL) << "SetupClients() has not yet been called.";
   if (index < 0 || index >= static_cast<int>(clients_.size()))
     LOG(FATAL) << "GetClient(): Index is out of bounds.";
-  return clients_[index];
+  return clients_[index].get();
+}
+
+std::vector<ProfileSyncServiceHarness*> SyncTest::GetSyncClients() {
+  std::vector<ProfileSyncServiceHarness*> clients(clients_.size());
+  for (size_t i = 0; i < clients_.size(); ++i)
+    clients[i] = clients_[i].get();
+  return clients;
 }
 
 ProfileSyncService* SyncTest::GetSyncService(int index) {
@@ -585,6 +592,7 @@ void SyncTest::InitializeProfile(int index, Profile* profile) {
           ? ProfileSyncServiceHarness::SigninType::UI_SIGNIN
           : ProfileSyncServiceHarness::SigninType::FAKE_SIGNIN;
 
+  DCHECK(!clients_[index]);
   clients_[index] =
       ProfileSyncServiceHarness::Create(GetProfile(index),
                                         username_,
@@ -629,9 +637,10 @@ void SyncTest::InitializeInvalidations(int index) {
                                 GetInvalidationService());
     p2p_invalidation_service->UpdateCredentials(username_, password_);
     // Start listening for and emitting notifications of commits.
+    DCHECK(!invalidation_forwarders_[index]);
     invalidation_forwarders_[index] =
-        new P2PInvalidationForwarder(clients_[index]->service(),
-                                     p2p_invalidation_service);
+        base::MakeUnique<P2PInvalidationForwarder>(clients_[index]->service(),
+                                                   p2p_invalidation_service);
   }
 }
 
@@ -687,8 +696,9 @@ bool SyncTest::SetupSync() {
   // client set up.
   if (UsingExternalServers()) {
     for (int i = 0; i < num_clients_; ++i) {
-      sync_refreshers_[i] =
-          new P2PSyncRefresher(GetProfile(i), clients_[i]->service());
+      DCHECK(!sync_refreshers_[i]);
+      sync_refreshers_[i] = base::MakeUnique<P2PSyncRefresher>(
+          GetProfile(i), clients_[i]->service());
     }
 
     // OneClickSigninSyncStarter observer is created with a real user sign in.
@@ -1084,7 +1094,7 @@ bool SyncTest::AwaitEncryptionComplete(int index) {
 }
 
 bool SyncTest::AwaitQuiescence() {
-  return ProfileSyncServiceHarness::AwaitQuiescence(clients());
+  return ProfileSyncServiceHarness::AwaitQuiescence(GetSyncClients());
 }
 
 bool SyncTest::UsingExternalServers() {

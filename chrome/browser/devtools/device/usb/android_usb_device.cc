@@ -379,11 +379,10 @@ void AndroidUsbDevice::Send(uint32_t command,
                             uint32_t arg0,
                             uint32_t arg1,
                             const std::string& body) {
-  std::unique_ptr<AdbMessage> message(
-      new AdbMessage(command, arg0, arg1, body));
+  auto message = base::MakeUnique<AdbMessage>(command, arg0, arg1, body);
   // Delay open request if not yet connected.
   if (!is_connected_) {
-    pending_messages_.push_back(message.release());
+    pending_messages_.push_back(std::move(message));
     return;
   }
   Queue(std::move(message));
@@ -600,10 +599,8 @@ void AndroidUsbDevice::HandleIncoming(std::unique_ptr<AdbMessage> message) {
         is_connected_ = true;
         PendingMessages pending;
         pending.swap(pending_messages_);
-        for (PendingMessages::iterator it = pending.begin();
-             it != pending.end(); ++it) {
-          Queue(base::WrapUnique(*it));
-        }
+        for (auto& msg : pending)
+          Queue(std::move(msg));
       }
       break;
     case AdbMessage::kCommandOKAY:

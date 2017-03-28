@@ -71,8 +71,7 @@ BitmapFetcherService::~BitmapFetcherService() {
 }
 
 void BitmapFetcherService::CancelRequest(int request_id) {
-  ScopedVector<BitmapFetcherRequest>::iterator iter;
-  for (iter = requests_.begin(); iter != requests_.end(); ++iter) {
+  for (auto iter = requests_.begin(); iter != requests_.end(); ++iter) {
     if ((*iter)->request_id() == request_id) {
       requests_.erase(iter);
       // Deliberately leave the associated fetcher running to populate cache.
@@ -90,8 +89,7 @@ BitmapFetcherService::RequestId BitmapFetcherService::RequestImage(
   if (current_request_id_ == REQUEST_ID_INVALID)
     ++current_request_id_;
   int request_id = current_request_id_;
-  std::unique_ptr<BitmapFetcherRequest> request(
-      new BitmapFetcherRequest(request_id, observer));
+  auto request = base::MakeUnique<BitmapFetcherRequest>(request_id, observer);
 
   // Reject invalid URLs.
   if (!url.is_valid())
@@ -116,7 +114,7 @@ BitmapFetcherService::RequestId BitmapFetcherService::RequestImage(
       EnsureFetcherForUrl(url, traffic_annotation);
   request->set_fetcher(fetcher);
 
-  requests_.push_back(request.release());
+  requests_.push_back(std::move(request));
   return requests_.back()->request_id();
 }
 
@@ -182,7 +180,7 @@ void BitmapFetcherService::OnFetchComplete(const GURL& url,
   DCHECK(fetcher);
 
   // Notify all attached requests of completion.
-  ScopedVector<BitmapFetcherRequest>::iterator iter = requests_.begin();
+  auto iter = requests_.begin();
   while (iter != requests_.end()) {
     if ((*iter)->get_fetcher() == fetcher) {
       (*iter)->NotifyImageChanged(bitmap);

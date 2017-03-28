@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "chrome/browser/media/android/remote/remote_media_player_bridge.h"
 #include "content/browser/media/android/browser_media_player_manager.h"
 #include "media/base/android/media_player_android.h"
@@ -106,8 +105,8 @@ class RemoteMediaPlayerManager : public content::BrowserMediaPlayerManager {
   int GetTabId();
 
   // Get the player that is not currently selected
-  ScopedVector<media::MediaPlayerAndroid>::iterator GetAlternativePlayer(
-      int player_id);
+  std::vector<std::unique_ptr<media::MediaPlayerAndroid>>::iterator
+  GetAlternativePlayer(int player_id);
 
   // Get the remote player for a given player id, whether or not it is currently
   // playing remotely.
@@ -120,7 +119,7 @@ class RemoteMediaPlayerManager : public content::BrowserMediaPlayerManager {
   // Contains the alternative players that are not currently in use, i.e. the
   // remote players for videos that are playing locally, and the local players
   // for videos that are playing remotely.
-  ScopedVector<media::MediaPlayerAndroid> alternative_players_;
+  std::vector<std::unique_ptr<media::MediaPlayerAndroid>> alternative_players_;
 
   std::set<int> players_playing_remotely_;
   std::unordered_map<int, GURL> poster_urls_;

@@ -128,7 +128,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   // was replaced.
   std::unique_ptr<media::MediaPlayerAndroid> SwapPlayer(
       int player_id,
-      media::MediaPlayerAndroid* player);
+      std::unique_ptr<media::MediaPlayerAndroid> player);
 
   // Called to request decoder resources. Returns true if the request is
   // permitted, or false otherwise. The manager object maintains a list

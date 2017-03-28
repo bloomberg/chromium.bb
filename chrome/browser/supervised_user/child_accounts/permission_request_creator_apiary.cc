@@ -158,9 +158,9 @@ void PermissionRequestCreatorApiary::CreateRequest(
     const std::string& request_type,
     const std::string& object_ref,
     const SuccessCallback& callback) {
-  requests_.push_back(
-      new Request(request_type, object_ref, callback, url_fetcher_id_));
-  StartFetching(requests_.back());
+  requests_.push_back(base::MakeUnique<Request>(request_type, object_ref,
+                                                callback, url_fetcher_id_));
+  StartFetching(requests_.back().get());
 }
 
 void PermissionRequestCreatorApiary::StartFetching(Request* request) {
@@ -174,7 +174,7 @@ void PermissionRequestCreatorApiary::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
     const std::string& access_token,
     const base::Time& expiration_time) {
-  RequestIterator it = requests_.begin();
+  auto it = requests_.begin();
   while (it != requests_.end()) {
     if (request == (*it)->access_token_request.get())
       break;
@@ -238,7 +238,7 @@ void PermissionRequestCreatorApiary::OnGetTokenSuccess(
 void PermissionRequestCreatorApiary::OnGetTokenFailure(
     const OAuth2TokenService::Request* request,
     const GoogleServiceAuthError& error) {
-  RequestIterator it = requests_.begin();
+  auto it = requests_.begin();
   while (it != requests_.end()) {
     if (request == (*it)->access_token_request.get())
       break;
@@ -251,7 +251,7 @@ void PermissionRequestCreatorApiary::OnGetTokenFailure(
 
 void PermissionRequestCreatorApiary::OnURLFetchComplete(
     const URLFetcher* source) {
-  RequestIterator it = requests_.begin();
+  auto it = requests_.begin();
   while (it != requests_.end()) {
     if (source == (*it)->url_fetcher.get())
       break;
@@ -273,7 +273,7 @@ void PermissionRequestCreatorApiary::OnURLFetchComplete(
     scopes.insert(GetApiScope());
     oauth2_token_service_->InvalidateAccessToken(account_id_, scopes,
                                                  (*it)->access_token);
-    StartFetching(*it);
+    StartFetching(it->get());
     return;
   }
 

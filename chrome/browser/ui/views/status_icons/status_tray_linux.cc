@@ -16,7 +16,7 @@ StatusTrayLinux::StatusTrayLinux() {
 StatusTrayLinux::~StatusTrayLinux() {
 }
 
-StatusIcon* StatusTrayLinux::CreatePlatformStatusIcon(
+std::unique_ptr<StatusIcon> StatusTrayLinux::CreatePlatformStatusIcon(
     StatusIconType type,
     const gfx::ImageSkia& image,
     const base::string16& tool_tip) {
@@ -29,10 +29,10 @@ StatusTray* StatusTray::Create() {
   // Only create a status tray if we can actually create status icons.
   if (linux_ui && linux_ui->IsStatusIconSupported())
     return new StatusTrayLinux();
-  return NULL;
+  return nullptr;
 }
 #else  // defined(OS_CHROMEOS)
 StatusTray* StatusTray::Create() {
-  return NULL;
+  return nullptr;
 }
 #endif

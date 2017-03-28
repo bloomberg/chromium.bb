@@ -12,6 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -148,7 +149,7 @@ void DriveAppProvider::SchedulePendingConverters() {
 
 void DriveAppProvider::OnLocalAppConverted(const DriveAppConverter* converter,
                                            bool success) {
-  DCHECK_EQ(pending_converters_.front(), converter);
+  DCHECK_EQ(pending_converters_.front().get(), converter);
 
   if (success) {
     const bool was_generated =
@@ -199,7 +200,7 @@ void DriveAppProvider::AddOrUpdateDriveApp(
   if (IsMappedUrlAppUpToDate(drive_app))
     return;
 
-  ScopedVector<DriveAppConverter>::iterator it = pending_converters_.begin();
+  auto it = pending_converters_.begin();
   while (it != pending_converters_.end()) {
     if (!(*it)->IsStarted() &&
         (*it)->drive_app_info().app_id == drive_app.app_id) {
@@ -209,11 +210,10 @@ void DriveAppProvider::AddOrUpdateDriveApp(
     }
   }
 
-  pending_converters_.push_back(
-      new DriveAppConverter(profile_,
-                            drive_app,
-                            base::Bind(&DriveAppProvider::OnLocalAppConverted,
-                                       base::Unretained(this))));
+  pending_converters_.push_back(base::MakeUnique<DriveAppConverter>(
+      profile_, drive_app,
+      base::Bind(&DriveAppProvider::OnLocalAppConverted,
+                 base::Unretained(this))));
 }
 
 void DriveAppProvider::ProcessRemovedDriveApp(const std::string& drive_app_id) {

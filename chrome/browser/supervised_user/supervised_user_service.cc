@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
@@ -415,7 +416,7 @@ void SupervisedUserService::RemoveObserver(
 
 void SupervisedUserService::AddPermissionRequestCreator(
     std::unique_ptr<PermissionRequestCreator> creator) {
-  permissions_creators_.push_back(creator.release());
+  permissions_creators_.push_back(std::move(creator));
 }
 
 void SupervisedUserService::SetSafeSearchURLReporter(
@@ -569,13 +570,14 @@ void SupervisedUserService::SetActive(bool active) {
       token_service->LoadCredentials(
           supervised_users::kSupervisedUserPseudoEmail);
 
-      permissions_creators_.push_back(new PermissionRequestCreatorSync(
-          GetSettingsService(),
-          SupervisedUserSharedSettingsServiceFactory::GetForBrowserContext(
-              profile_),
-          ProfileSyncServiceFactory::GetForProfile(profile_),
-          GetSupervisedUserName(),
-          profile_->GetPrefs()->GetString(prefs::kSupervisedUserId)));
+      permissions_creators_.push_back(
+          base::MakeUnique<PermissionRequestCreatorSync>(
+              GetSettingsService(),
+              SupervisedUserSharedSettingsServiceFactory::GetForBrowserContext(
+                  profile_),
+              ProfileSyncServiceFactory::GetForProfile(profile_),
+              GetSupervisedUserName(),
+              profile_->GetPrefs()->GetString(prefs::kSupervisedUserId)));
 
       SetupSync();
 #else
@@ -786,10 +788,10 @@ void SupervisedUserService::AddPermissionRequestInternal(
   }
 
   create_request.Run(
-      permissions_creators_[next_index],
+      permissions_creators_[next_index].get(),
       base::Bind(&SupervisedUserService::OnPermissionRequestIssued,
-                 weak_ptr_factory_.GetWeakPtr(), create_request,
-                 callback, next_index));
+                 weak_ptr_factory_.GetWeakPtr(), create_request, callback,
+                 next_index));
 }
 
 void SupervisedUserService::OnPermissionRequestIssued(

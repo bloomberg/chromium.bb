@@ -10,10 +10,10 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "content/public/browser/media_observer.h"
@@ -207,7 +207,7 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver {
   std::unique_ptr<DesktopStreamsRegistry> desktop_streams_registry_;
 
   // Handlers for processing media access requests.
-  ScopedVector<MediaAccessHandler> media_access_handlers_;
+  std::vector<std::unique_ptr<MediaAccessHandler>> media_access_handlers_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaCaptureDevicesDispatcher);
 };

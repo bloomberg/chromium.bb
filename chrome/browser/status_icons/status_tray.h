@@ -5,8 +5,10 @@
 #ifndef CHROME_BROWSER_STATUS_ICONS_STATUS_TRAY_H_
 #define CHROME_BROWSER_STATUS_ICONS_STATUS_TRAY_H_
 
+#include <memory>
+#include <vector>
+
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
 
 namespace gfx {
@@ -44,12 +46,12 @@ class StatusTray {
   void RemoveStatusIcon(StatusIcon* icon);
 
  protected:
-  typedef ScopedVector<StatusIcon> StatusIcons;
+  using StatusIcons = std::vector<std::unique_ptr<StatusIcon>>;
 
   StatusTray();
 
   // Factory method for creating a status icon for this platform.
-  virtual StatusIcon* CreatePlatformStatusIcon(
+  virtual std::unique_ptr<StatusIcon> CreatePlatformStatusIcon(
       StatusIconType type,
       const gfx::ImageSkia& image,
       const base::string16& tool_tip) = 0;
