@@ -26,6 +26,7 @@
 #include "cc/paint/paint_surface.h"
 #include "cc/paint/transform_display_item.h"
 #include "cc/test/geometry_test_utils.h"
+#include "cc/test/pixel_test_utils.h"
 #include "cc/test/skia_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -40,6 +41,32 @@
 namespace cc {
 
 namespace {
+
+bool CompareN32Pixels(void* actual_pixels,
+                      void* expected_pixels,
+                      int width,
+                      int height) {
+  if (memcmp(actual_pixels, expected_pixels, 4 * width * height) == 0)
+    return true;
+
+  SkImageInfo actual_info = SkImageInfo::MakeN32Premul(width, height);
+  SkBitmap actual_bitmap;
+  actual_bitmap.installPixels(actual_info, actual_pixels,
+                              actual_info.minRowBytes());
+
+  SkImageInfo expected_info = SkImageInfo::MakeN32Premul(width, height);
+  SkBitmap expected_bitmap;
+  expected_bitmap.installPixels(expected_info, expected_pixels,
+                                expected_info.minRowBytes());
+
+  std::string gen_bmp_data_url = GetPNGDataUrl(actual_bitmap);
+  std::string ref_bmp_data_url = GetPNGDataUrl(expected_bitmap);
+
+  LOG(ERROR) << "Pixels do not match!";
+  LOG(ERROR) << "Actual: " << gen_bmp_data_url;
+  LOG(ERROR) << "Expected: " << ref_bmp_data_url;
+  return false;
+}
 
 const gfx::Rect kVisualRect(0, 0, 42, 42);
 
@@ -109,7 +136,7 @@ TEST(DisplayItemListTest, SingleDrawingItem) {
                        75.f + offset.y()),
       blue_flags);
 
-  EXPECT_EQ(0, memcmp(pixels, expected_pixels, 4 * 100 * 100));
+  EXPECT_TRUE(CompareN32Pixels(pixels, expected_pixels, 100, 100));
 }
 
 TEST(DisplayItemListTest, ClipItem) {
@@ -166,7 +193,7 @@ TEST(DisplayItemListTest, ClipItem) {
                        75.f + second_offset.x(), 75.f + second_offset.y()),
       blue_flags);
 
-  EXPECT_EQ(0, memcmp(pixels, expected_pixels, 4 * 100 * 100));
+  EXPECT_TRUE(CompareN32Pixels(pixels, expected_pixels, 100, 100));
 }
 
 TEST(DisplayItemListTest, TransformItem) {
@@ -223,7 +250,7 @@ TEST(DisplayItemListTest, TransformItem) {
                        75.f + second_offset.x(), 75.f + second_offset.y()),
       blue_flags);
 
-  EXPECT_EQ(0, memcmp(pixels, expected_pixels, 4 * 100 * 100));
+  EXPECT_TRUE(CompareN32Pixels(pixels, expected_pixels, 100, 100));
 }
 
 TEST(DisplayItemListTest, FilterItem) {
@@ -287,7 +314,7 @@ TEST(DisplayItemListTest, FilterItem) {
   SkiaPaintCanvas expected_canvas(expected_bitmap);
   expected_canvas.drawRect(RectFToSkRect(filter_bounds), paint);
 
-  EXPECT_EQ(0, memcmp(pixels, expected_pixels, 4 * 100 * 100));
+  EXPECT_TRUE(CompareN32Pixels(pixels, expected_pixels, 100, 100));
 }
 
 TEST(DisplayItemListTest, ApproximateMemoryUsage) {
