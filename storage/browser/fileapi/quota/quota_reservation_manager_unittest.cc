@@ -52,8 +52,7 @@ void SetFileSize(const base::FilePath& path, int64_t size) {
 class FakeBackend : public QuotaReservationManager::QuotaBackend {
  public:
   FakeBackend()
-      : on_memory_usage_(kInitialFileSize),
-        on_disk_usage_(kInitialFileSize) {}
+      : on_memory_usage_(kInitialFileSize), on_disk_usage_(kInitialFileSize) {}
   ~FakeBackend() override {}
 
   void ReserveQuota(const GURL& origin,
@@ -154,9 +153,7 @@ class FakeWriter {
     dirty_ = false;
   }
 
-  void ClearWithoutUsageReport() {
-    handle_.reset();
-  }
+  void ClearWithoutUsageReport() { handle_.reset(); }
 
  private:
   std::unique_ptr<OpenFileHandle> handle_;
@@ -208,9 +205,7 @@ class QuotaReservationManagerTest : public testing::Test {
     return reservation_manager_.get();
   }
 
-  const base::FilePath& file_path() const {
-    return file_path_;
-  }
+  const base::FilePath& file_path() const { return file_path_; }
 
  private:
   base::MessageLoop message_loop_;

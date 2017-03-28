@@ -242,6 +242,8 @@ test("storage_unittests") {
     "fileapi/local_file_stream_reader_unittest.cc",
     "fileapi/local_file_stream_writer_unittest.cc",
     "fileapi/native_file_util_unittest.cc",
+    "fileapi/quota/quota_backend_impl_unittest.cc",
+    "fileapi/quota/quota_reservation_manager_unittest.cc",
     "fileapi/sandbox_isolated_origin_database_unittest.cc",
     "fileapi/sandbox_prioritized_origin_database_unittest.cc",
     "fileapi/timed_task_helper_unittest.cc",
@@ -254,5 +256,6 @@ test("storage_unittests") {
     "//net:test_support",
     "//sql:test_support",
     "//testing/gtest",
+    "//third_party/leveldatabase",
   ]
 }

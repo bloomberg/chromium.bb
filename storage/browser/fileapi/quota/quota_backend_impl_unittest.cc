@@ -48,7 +48,8 @@ class MockQuotaManagerProxy : public storage::QuotaManagerProxy {
   MockQuotaManagerProxy()
       : QuotaManagerProxy(NULL, NULL),
         storage_modified_count_(0),
-        usage_(0), quota_(0) {}
+        usage_(0),
+        quota_(0) {}
 
   // We don't mock them.
   void NotifyOriginInUse(const GURL& origin) override {}
@@ -103,8 +104,7 @@ class QuotaBackendImplTest : public testing::Test {
     in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
     file_util_.reset(ObfuscatedFileUtil::CreateForTesting(
         NULL, data_dir_.GetPath(), in_memory_env_.get(), file_task_runner()));
-    backend_.reset(new QuotaBackendImpl(file_task_runner(),
-                                        file_util_.get(),
+    backend_.reset(new QuotaBackendImpl(file_task_runner(), file_util_.get(),
                                         &file_system_usage_cache_,
                                         quota_manager_proxy_.get()));
   }
@@ -140,8 +140,7 @@ class QuotaBackendImplTest : public testing::Test {
   base::FilePath GetUsageCachePath(const GURL& origin,
                                    storage::FileSystemType type) {
     base::FilePath path;
-    base::File::Error error =
-        backend_->GetUsageCachePath(origin, type, &path);
+    base::File::Error error = backend_->GetUsageCachePath(origin, type, &path);
     EXPECT_EQ(base::File::FILE_OK, error);
     EXPECT_FALSE(path.empty());
     return path;
