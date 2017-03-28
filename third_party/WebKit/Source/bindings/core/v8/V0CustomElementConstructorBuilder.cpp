@@ -37,8 +37,8 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8Document.h"
 #include "bindings/core/v8/V8HTMLElement.h"
-#include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8PerContextData.h"
+#include "bindings/core/v8/V8PrivateProperty.h"
 #include "bindings/core/v8/V8SVGElement.h"
 #include "core/HTMLNames.h"
 #include "core/SVGNames.h"
@@ -193,19 +193,13 @@ bool V0CustomElementConstructorBuilder::createConstructor(
     v8Type = v8::Null(isolate);
 
   v8::Local<v8::Object> data = v8::Object::New(isolate);
-  V8HiddenValue::setHiddenValue(m_scriptState.get(), data,
-                                V8HiddenValue::customElementDocument(isolate),
-                                ToV8(document, context->Global(), isolate));
-  V8HiddenValue::setHiddenValue(
-      m_scriptState.get(), data,
-      V8HiddenValue::customElementNamespaceURI(isolate),
-      v8String(isolate, descriptor.namespaceURI()));
-  V8HiddenValue::setHiddenValue(m_scriptState.get(), data,
-                                V8HiddenValue::customElementTagName(isolate),
-                                v8TagName);
-  V8HiddenValue::setHiddenValue(m_scriptState.get(), data,
-                                V8HiddenValue::customElementType(isolate),
-                                v8Type);
+  V8PrivateProperty::getCustomElementDocument(isolate).set(
+      context, data, ToV8(document, context->Global(), isolate));
+  V8PrivateProperty::getCustomElementNamespaceURI(isolate).set(
+      context, data, v8String(isolate, descriptor.namespaceURI()));
+  V8PrivateProperty::getCustomElementTagName(isolate).set(context, data,
+                                                          v8TagName);
+  V8PrivateProperty::getCustomElementType(isolate).set(context, data, v8Type);
 
   v8::Local<v8::FunctionTemplate> constructorTemplate =
       v8::FunctionTemplate::New(isolate);
@@ -245,10 +239,8 @@ bool V0CustomElementConstructorBuilder::createConstructor(
           m_constructor->SetPrototype(context, constructorPrototype)))
     return false;
 
-  V8HiddenValue::setHiddenValue(
-      m_scriptState.get(), m_prototype,
-      V8HiddenValue::customElementIsInterfacePrototypeObject(isolate),
-      v8::True(isolate));
+  V8PrivateProperty::getCustomElementIsInterfacePrototypeObject(isolate).set(
+      context, m_prototype, v8::True(isolate));
   if (!v8CallBoolean(m_prototype->DefineOwnProperty(
           context, v8String(isolate, "constructor"), m_constructor,
           v8::DontEnum)))
@@ -260,12 +252,12 @@ bool V0CustomElementConstructorBuilder::createConstructor(
 bool V0CustomElementConstructorBuilder::prototypeIsValid(
     const AtomicString& type,
     ExceptionState& exceptionState) const {
+  v8::Isolate* isolate = m_scriptState->isolate();
+  v8::Local<v8::Context> context = m_scriptState->context();
+
   if (m_prototype->InternalFieldCount() ||
-      !V8HiddenValue::getHiddenValue(
-           m_scriptState.get(), m_prototype,
-           V8HiddenValue::customElementIsInterfacePrototypeObject(
-               m_scriptState->isolate()))
-           .IsEmpty()) {
+      V8PrivateProperty::getCustomElementIsInterfacePrototypeObject(isolate)
+          .hasValue(context, m_prototype)) {
     V0CustomElementException::throwException(
         V0CustomElementException::PrototypeInUse, type, exceptionState);
     return false;
@@ -273,8 +265,7 @@ bool V0CustomElementConstructorBuilder::prototypeIsValid(
 
   v8::PropertyAttribute propertyAttribute;
   if (!v8Call(m_prototype->GetPropertyAttributes(
-                  m_scriptState->context(),
-                  v8String(m_scriptState->isolate(), "constructor")),
+                  context, v8String(isolate, "constructor")),
               propertyAttribute) ||
       (propertyAttribute & v8::DontDelete)) {
     V0CustomElementException::throwException(
@@ -332,20 +323,19 @@ static void constructCustomElement(
 
   ScriptState* scriptState = ScriptState::current(isolate);
   v8::Local<v8::Object> data = v8::Local<v8::Object>::Cast(info.Data());
-  Document* document = V8Document::toImpl(
-      V8HiddenValue::getHiddenValue(
-          scriptState, data, V8HiddenValue::customElementDocument(isolate))
-          .As<v8::Object>());
+  v8::Local<v8::Context> context = scriptState->context();
+  Document* document =
+      V8Document::toImpl(V8PrivateProperty::getCustomElementDocument(isolate)
+                             .get(context, data)
+                             .As<v8::Object>());
   TOSTRING_VOID(V8StringResource<>, namespaceURI,
-                V8HiddenValue::getHiddenValue(
-                    scriptState, data,
-                    V8HiddenValue::customElementNamespaceURI(isolate)));
+                V8PrivateProperty::getCustomElementNamespaceURI(isolate).get(
+                    context, data));
   TOSTRING_VOID(
       V8StringResource<>, tagName,
-      V8HiddenValue::getHiddenValue(
-          scriptState, data, V8HiddenValue::customElementTagName(isolate)));
-  v8::Local<v8::Value> maybeType = V8HiddenValue::getHiddenValue(
-      scriptState, data, V8HiddenValue::customElementType(isolate));
+      V8PrivateProperty::getCustomElementTagName(isolate).get(context, data));
+  v8::Local<v8::Value> maybeType =
+      V8PrivateProperty::getCustomElementType(isolate).get(context, data);
   TOSTRING_VOID(V8StringResource<>, type, maybeType);
 
   ExceptionState exceptionState(

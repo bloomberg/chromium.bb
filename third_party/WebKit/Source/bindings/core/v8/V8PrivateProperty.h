@@ -23,10 +23,15 @@ class ScriptWrappable;
 // Apply |X| for each pair of (InterfaceName, PrivateKeyName).
 #define V8_PRIVATE_PROPERTY_FOR_EACH(X)               \
   X(CustomEvent, Detail)                              \
-  X(CustomElement, ConnectedCallback)                 \
-  X(CustomElement, DisconnectedCallback)              \
   X(CustomElement, AdoptedCallback)                   \
   X(CustomElement, AttributeChangedCallback)          \
+  X(CustomElement, ConnectedCallback)                 \
+  X(CustomElement, DisconnectedCallback)              \
+  X(CustomElement, Document)                          \
+  X(CustomElement, IsInterfacePrototypeObject)        \
+  X(CustomElement, NamespaceURI)                      \
+  X(CustomElement, TagName)                           \
+  X(CustomElement, Type)                              \
   X(DOMException, Error)                              \
   X(ErrorEvent, Error)                                \
   X(IDBObserver, Callback)                            \

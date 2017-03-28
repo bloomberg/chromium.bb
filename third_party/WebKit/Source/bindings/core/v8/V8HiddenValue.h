@@ -24,11 +24,6 @@ class ScriptWrappable;
   V(customElementAttributeChangedCallback)   \
   V(customElementCreatedCallback)            \
   V(customElementDetachedCallback)           \
-  V(customElementDocument)                   \
-  V(customElementIsInterfacePrototypeObject) \
-  V(customElementNamespaceURI)               \
-  V(customElementTagName)                    \
-  V(customElementType)                       \
   V(customElementsRegistryMap)               \
   V(event)                                   \
   V(idbCursorRequest)                        \
