@@ -160,12 +160,11 @@ weston_mode_switch_finish(struct weston_output *output,
 	if (!mode_changed && !scale_changed)
 		return;
 
-	head = &output->head;
-
 	/* notify clients of the changes */
-	weston_mode_switch_send_events(head, mode_changed, scale_changed);
+	wl_list_for_each(head, &output->head_list, output_link)
+		weston_mode_switch_send_events(head,
+					       mode_changed, scale_changed);
 }
-
 
 static void
 weston_compositor_reflow_outputs(struct weston_compositor *compositor,
@@ -363,13 +362,22 @@ weston_presentation_feedback_present(
 	uint32_t tv_sec_hi;
 	uint32_t tv_sec_lo;
 	uint32_t tv_nsec;
+	bool done = false;
 
-	head = &output->head;
-	wl_resource_for_each(o, &head->resource_list) {
-		if (wl_resource_get_client(o) != client)
-			continue;
+	wl_list_for_each(head, &output->head_list, output_link) {
+		wl_resource_for_each(o, &head->resource_list) {
+			if (wl_resource_get_client(o) != client)
+				continue;
 
-		wp_presentation_feedback_send_sync_output(feedback->resource, o);
+			wp_presentation_feedback_send_sync_output(feedback->resource, o);
+			done = true;
+		}
+
+		/* For clone mode, send it for just one wl_output global,
+		 * they are all equivalent anyway.
+		 */
+		if (done)
+			break;
 	}
 
 	timespec_to_proto(ts, &tv_sec_hi, &tv_sec_lo, &tv_nsec);
@@ -989,6 +997,7 @@ weston_surface_update_output_mask(struct weston_surface *es, uint32_t mask)
 	uint32_t left = es->output_mask & different;
 	uint32_t output_bit;
 	struct weston_output *output;
+	struct weston_head *head;
 
 	es->output_mask = mask;
 	if (es->resource == NULL)
@@ -1001,9 +1010,11 @@ weston_surface_update_output_mask(struct weston_surface *es, uint32_t mask)
 		if (!(output_bit & different))
 			continue;
 
-		weston_surface_send_enter_leave(es, &output->head,
-						output_bit & entered,
-						output_bit & left);
+		wl_list_for_each(head, &output->head_list, output_link) {
+			weston_surface_send_enter_leave(es, head,
+							output_bit & entered,
+							output_bit & left);
+		}
 	}
 }
 
@@ -4388,6 +4399,98 @@ weston_head_from_resource(struct wl_resource *resource)
 	return wl_resource_get_user_data(resource);
 }
 
+/** Initialize a pre-allocated weston_head
+ *
+ * \param head The head to initialize.
+ *
+ * The head will be safe to attach, detach and release.
+ *
+ * \memberof weston_head
+ * \internal
+ */
+static void
+weston_head_init(struct weston_head *head)
+{
+	/* Add some (in)sane defaults which can be used
+	 * for checking if an output was properly configured
+	 */
+	memset(head, 0, sizeof *head);
+
+	wl_list_init(&head->output_link);
+	wl_list_init(&head->resource_list);
+}
+
+/** Attach a head to an inactive output
+ *
+ * \param output The output to attach to.
+ * \param head The head that is not yet attached.
+ * \return 0 on success, -1 on failure.
+ *
+ * Attaches the given head to the output. All heads of an output are clones
+ * and share the resolution and timings.
+ *
+ * Cloning heads this way uses less resources than creating an output for
+ * each head, but is not always possible due to environment, driver and hardware
+ * limitations.
+ *
+ * On failure, the head remains unattached. Success of this function does not
+ * guarantee the output configuration is actually valid. The final checks are
+ * made on weston_output_enable().
+ *
+ * \memberof weston_output
+ */
+static int
+weston_output_attach_head(struct weston_output *output,
+			  struct weston_head *head)
+{
+	if (output->enabled)
+		return -1;
+
+	if (!wl_list_empty(&head->output_link))
+		return -1;
+
+	/* XXX: no support for multi-head yet */
+	if (!wl_list_empty(&output->head_list))
+		return -1;
+
+	head->output = output;
+	wl_list_insert(output->head_list.prev, &head->output_link);
+
+	return 0;
+}
+
+/** Detach a head from its output
+ *
+ * \param head The head to detach.
+ *
+ * It is safe to detach a non-attached head.
+ *
+ * \memberof weston_head
+ */
+static void
+weston_head_detach(struct weston_head *head)
+{
+	wl_list_remove(&head->output_link);
+	wl_list_init(&head->output_link);
+	head->output = NULL;
+}
+
+/** Destroy a head
+ *
+ * \param head The head to be released.
+ *
+ * Destroys the head. The caller is responsible for freeing the memory pointed
+ * to by \c head.
+ *
+ * \memberof weston_head
+ * \internal
+ */
+static void
+weston_head_release(struct weston_head *head)
+{
+	weston_head_detach(head);
+}
+
 /** Store monitor make, model and serial number
  *
  * \param head The head to modify.
@@ -4583,8 +4686,9 @@ weston_output_init_geometry(struct weston_output *output, int x, int y)
 WL_EXPORT void
 weston_output_move(struct weston_output *output, int x, int y)
 {
-	struct weston_head *head = &output->head;
+	struct weston_head *head;
 	struct wl_resource *resource;
+	int ver;
 
 	output->move_x = x - output->x;
 	output->move_y = y - output->y;
@@ -4600,19 +4704,22 @@ weston_output_move(struct weston_output *output, int x, int y)
 	wl_signal_emit(&output->compositor->output_moved_signal, output);
 
 	/* Notify clients of the change for output position. */
-	wl_resource_for_each(resource, &head->resource_list) {
-		wl_output_send_geometry(resource,
-					output->x,
-					output->y,
-					head->mm_width,
-					head->mm_height,
-					head->subpixel,
-					head->make,
-					head->model,
-					output->transform);
+	wl_list_for_each(head, &output->head_list, output_link) {
+		wl_resource_for_each(resource, &head->resource_list) {
+			wl_output_send_geometry(resource,
+						output->x,
+						output->y,
+						head->mm_width,
+						head->mm_height,
+						head->subpixel,
+						head->make,
+						head->model,
+						output->transform);
 
-		if (wl_resource_get_version(resource) >= WL_OUTPUT_DONE_SINCE_VERSION)
-			wl_output_send_done(resource);
+			ver = wl_resource_get_version(resource);
+			if (ver >= WL_OUTPUT_DONE_SINCE_VERSION)
+				wl_output_send_done(resource);
+		}
 	}
 }
 
@@ -4652,11 +4759,11 @@ weston_compositor_add_output(struct weston_compositor *compositor,
 	wl_list_insert(compositor->output_list.prev, &output->link);
 	output->enabled = true;
 
-	head = &output->head;
-	head->output = output;
-	head->global = wl_global_create(compositor->wl_display,
-					&wl_output_interface, 3,
-					head, bind_output);
+	wl_list_for_each(head, &output->head_list, output_link) {
+		head->global = wl_global_create(compositor->wl_display,
+						&wl_output_interface, 3,
+						head, bind_output);
+	}
 
 	wl_signal_emit(&compositor->output_created_signal, output);
 
@@ -4749,11 +4856,12 @@ weston_compositor_remove_output(struct weston_output *output)
 	wl_signal_emit(&compositor->output_destroyed_signal, output);
 	wl_signal_emit(&output->destroy_signal, output);
 
-	head = &output->head;
-	wl_global_destroy(head->global);
-	head->global = NULL;
-	wl_resource_for_each(resource, &head->resource_list) {
-		wl_resource_set_destructor(resource, NULL);
+	wl_list_for_each(head, &output->head_list, output_link) {
+		wl_global_destroy(head->global);
+		head->global = NULL;
+
+		wl_resource_for_each(resource, &head->resource_list)
+			wl_resource_set_destructor(resource, NULL);
 	}
 
 	compositor->output_id_pool &= ~(1u << output->id);
@@ -4803,7 +4911,8 @@ weston_output_set_transform(struct weston_output *output,
 	struct weston_seat *seat;
 	pixman_region32_t old_region;
 	int mid_x, mid_y;
-	struct weston_head *head = &output->head;
+	struct weston_head *head;
+	int ver;
 
 	if (!output->enabled && output->transform == UINT32_MAX) {
 		output->transform = transform;
@@ -4820,19 +4929,22 @@ weston_output_set_transform(struct weston_output *output,
 	output->dirty = 1;
 
 	/* Notify clients of the change for output transform. */
-	wl_resource_for_each(resource, &head->resource_list) {
-		wl_output_send_geometry(resource,
-					output->x,
-					output->y,
-					head->mm_width,
-					head->mm_height,
-					head->subpixel,
-					head->make,
-					head->model,
-					output->transform);
+	wl_list_for_each(head, &output->head_list, output_link) {
+		wl_resource_for_each(resource, &head->resource_list) {
+			wl_output_send_geometry(resource,
+						output->x,
+						output->y,
+						head->mm_width,
+						head->mm_height,
+						head->subpixel,
+						head->make,
+						head->model,
+						output->transform);
 
-		if (wl_resource_get_version(resource) >= WL_OUTPUT_DONE_SINCE_VERSION)
-			wl_output_send_done(resource);
+			ver = wl_resource_get_version(resource);
+			if (ver >= WL_OUTPUT_DONE_SINCE_VERSION)
+				wl_output_send_done(resource);
+		}
 	}
 
 	/* we must ensure that pointers are inside output, otherwise they disappear */
@@ -4875,19 +4987,19 @@ weston_output_init(struct weston_output *output,
 		   struct weston_compositor *compositor,
 		   const char *name)
 {
-	struct weston_head *head = &output->head;
-
 	output->compositor = compositor;
 	output->destroying = 0;
 	output->name = strdup(name);
 	wl_list_init(&output->link);
 	output->enabled = false;
 
+	wl_list_init(&output->head_list);
+
+	weston_head_init(&output->head);
+
 	/* Add some (in)sane defaults which can be used
 	 * for checking if an output was properly configured
 	 */
-	head->mm_width = 0;
-	head->mm_height = 0;
 	output->scale = 0;
 	/* Can't use -1 on uint32_t and 0 is valid enum value */
 	output->transform = UINT32_MAX;
@@ -4961,6 +5073,7 @@ weston_output_enable(struct weston_output *output)
 	struct weston_compositor *c = output->compositor;
 	struct weston_output *iterator;
 	int x = 0, y = 0;
+	int ret;
 
 	if (output->enabled) {
 		weston_log("Error: attempt to enable an enabled output '%s'\n",
@@ -4994,8 +5107,13 @@ weston_output_enable(struct weston_output *output)
 	wl_signal_init(&output->frame_signal);
 	wl_signal_init(&output->destroy_signal);
 	wl_list_init(&output->animation_list);
-	wl_list_init(&output->head.resource_list);
 	wl_list_init(&output->feedback_list);
+
+	/* XXX: Temporary until all backends are converted. */
+	if (wl_list_empty(&output->head_list)) {
+		ret = weston_output_attach_head(output, &output->head);
+		assert(ret == 0);
+	}
 
 	/* Enable the output (set up the crtc or create a
 	 * window representing the output, set up the
@@ -5088,6 +5206,8 @@ weston_pending_output_coldplug(struct weston_compositor *compositor)
 WL_EXPORT void
 weston_output_release(struct weston_output *output)
 {
+	struct weston_head *head, *tmp;
+
 	output->destroying = 1;
 
 	if (output->enabled)
@@ -5096,6 +5216,12 @@ weston_output_release(struct weston_output *output)
 	pixman_region32_fini(&output->region);
 	pixman_region32_fini(&output->previous_damage);
 	wl_list_remove(&output->link);
+
+	wl_list_for_each_safe(head, tmp, &output->head_list, output_link)
+		weston_head_detach(head);
+
+	weston_head_release(&output->head);
+
 	free(output->name);
 }
 
