@@ -348,8 +348,8 @@ void TraceEventETWExport::AddCompleteEndEvent(const char* name) {
 
 // static
 bool TraceEventETWExport::IsCategoryGroupEnabled(
-    StringPiece category_group_name) {
-  DCHECK(!category_group_name.empty());
+    const char* category_group_name) {
+  DCHECK(category_group_name);
   auto* instance = GetInstance();
   if (instance == nullptr)
     return false;
@@ -357,11 +357,12 @@ bool TraceEventETWExport::IsCategoryGroupEnabled(
   if (!instance->IsETWExportEnabled())
     return false;
 
-  CStringTokenizer category_group_tokens(category_group_name.begin(),
-                                         category_group_name.end(), ",");
+  CStringTokenizer category_group_tokens(
+      category_group_name, category_group_name + strlen(category_group_name),
+      ",");
   while (category_group_tokens.GetNext()) {
-    StringPiece category_group_token = category_group_tokens.token_piece();
-    if (instance->IsCategoryEnabled(category_group_token)) {
+    std::string category_group_token = category_group_tokens.token();
+    if (instance->IsCategoryEnabled(category_group_token.c_str())) {
       return true;
     }
   }
@@ -405,7 +406,7 @@ bool TraceEventETWExport::UpdateEnabledCategories() {
   return true;
 }
 
-bool TraceEventETWExport::IsCategoryEnabled(StringPiece category_name) const {
+bool TraceEventETWExport::IsCategoryEnabled(const char* category_name) const {
   DCHECK_EQ(kNumberOfCategories, categories_status_.size());
   // Try to find the category and return its status if found
   auto it = categories_status_.find(category_name);
@@ -414,7 +415,7 @@ bool TraceEventETWExport::IsCategoryEnabled(StringPiece category_name) const {
 
   // Otherwise return the corresponding default status by first checking if the
   // category is disabled by default.
-  if (category_name.starts_with("disabled-by-default")) {
+  if (StringPiece(category_name).starts_with("disabled-by-default")) {
     DCHECK(categories_status_.find(kDisabledOtherEventsGroupName) !=
            categories_status_.end());
     return categories_status_.find(kDisabledOtherEventsGroupName)->second;
