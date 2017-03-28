@@ -39,6 +39,7 @@ IPC_STRUCT_TRAITS_BEGIN(ui::AXActionData)
   IPC_STRUCT_TRAITS_MEMBER(target_rect)
   IPC_STRUCT_TRAITS_MEMBER(target_point)
   IPC_STRUCT_TRAITS_MEMBER(value)
+  IPC_STRUCT_TRAITS_MEMBER(hit_test_event_to_fire)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::AXContentNodeData)
@@ -142,9 +143,10 @@ IPC_MESSAGE_ROUTED1(AccessibilityMsg_PerformAction,
 // result is an iframe element), it responds with
 // AccessibilityHostMsg_ChildFrameHitTestResult so that the
 // hit test can be performed recursively on the child frame. Otherwise
-// it fires an accessibility event of type ui::AX_EVENT_HOVER on the target.
-IPC_MESSAGE_ROUTED1(AccessibilityMsg_HitTest,
-                    gfx::Point /* location to test */)
+// it fires an accessibility event of type |event_to_fire| on the target.
+IPC_MESSAGE_ROUTED2(AccessibilityMsg_HitTest,
+                    gfx::Point /* location to test */,
+                    ui::AXEvent /* event to fire */)
 
 // Relay a request from assistive technology to set accessibility focus
 // to a given node. On platforms where this is used (currently Android),
@@ -205,9 +207,10 @@ IPC_MESSAGE_ROUTED1(
     AccessibilityHostMsg_FindInPageResultParams)
 
 // Sent in response to AccessibilityMsg_HitTest.
-IPC_MESSAGE_ROUTED2(AccessibilityHostMsg_ChildFrameHitTestResult,
+IPC_MESSAGE_ROUTED3(AccessibilityHostMsg_ChildFrameHitTestResult,
                     gfx::Point /* location tested */,
-                    int /* node id of result */)
+                    int /* node id of result */,
+                    ui::AXEvent /* event to fire */)
 
 // Sent in response to AccessibilityMsg_SnapshotTree. The callback id that was
 // passed to the request will be returned in |callback_id|, along with

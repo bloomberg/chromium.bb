@@ -458,7 +458,8 @@ void BrowserAccessibilityManager::OnFindInPageResult(
 
 void BrowserAccessibilityManager::OnChildFrameHitTestResult(
     const gfx::Point& point,
-    int hit_obj_id) {
+    int hit_obj_id,
+    ui::AXEvent event_to_fire) {
   BrowserAccessibility* obj = GetFromID(hit_obj_id);
   if (!obj || !obj->HasIntAttribute(ui::AX_ATTR_CHILD_TREE_ID))
     return;
@@ -472,6 +473,7 @@ void BrowserAccessibilityManager::OnChildFrameHitTestResult(
   ui::AXActionData action_data;
   action_data.target_point = point;
   action_data.action = ui::AX_ACTION_HIT_TEST;
+  action_data.hit_test_event_to_fire = event_to_fire;
   return child_manager->delegate()->AccessibilityPerformAction(action_data);
 }
 
@@ -729,6 +731,7 @@ void BrowserAccessibilityManager::HitTest(const gfx::Point& point) {
   ui::AXActionData action_data;
   action_data.action = ui::AX_ACTION_HIT_TEST;
   action_data.target_point = point;
+  action_data.hit_test_event_to_fire = ui::AX_EVENT_HOVER;
   delegate_->AccessibilityPerformAction(action_data);
 }
 

@@ -681,6 +681,10 @@
     // original size.
     static void getImageData(long maxWidth, long maxHeight);
 
+    // Does a hit test of the given global screen coordinates, and fires
+    // eventToFire on the resulting object.
+    static void hitTest(long x, long y, EventType eventToFire);
+
     // Scrolls this node to make it visible.
     static void makeVisible();
 

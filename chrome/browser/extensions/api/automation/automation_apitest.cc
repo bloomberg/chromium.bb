@@ -280,4 +280,10 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, DocumentSelection) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, HitTest) {
+  StartEmbeddedTestServer();
+  ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "hit_test.html"))
+      << message_;
+}
+
 }  // namespace extensions

@@ -471,7 +471,8 @@ void RenderAccessibilityImpl::OnPerformAction(
       OnGetImageData(target, data.target_rect.size());
       break;
     case ui::AX_ACTION_HIT_TEST:
-      OnHitTest(data.target_point);
+      DCHECK(data.hit_test_event_to_fire != ui::AX_EVENT_NONE);
+      OnHitTest(data.target_point, data.hit_test_event_to_fire);
       break;
     case ui::AX_ACTION_INCREMENT:
       target.increment();
@@ -535,7 +536,8 @@ void RenderAccessibilityImpl::OnFatalError() {
   CHECK(false) << "Invalid accessibility tree.";
 }
 
-void RenderAccessibilityImpl::OnHitTest(const gfx::Point& point) {
+void RenderAccessibilityImpl::OnHitTest(const gfx::Point& point,
+                                        ui::AXEvent event_to_fire) {
   const WebDocument& document = GetMainDocument();
   if (document.isNull())
     return;
@@ -556,13 +558,13 @@ void RenderAccessibilityImpl::OnHitTest(const gfx::Point& point) {
   if (data.HasContentIntAttribute(AX_CONTENT_ATTR_CHILD_ROUTING_ID) ||
       data.HasContentIntAttribute(
           AX_CONTENT_ATTR_CHILD_BROWSER_PLUGIN_INSTANCE_ID)) {
-    Send(new AccessibilityHostMsg_ChildFrameHitTestResult(routing_id(), point,
-                                                          obj.axID()));
+    Send(new AccessibilityHostMsg_ChildFrameHitTestResult(
+        routing_id(), point, obj.axID(), event_to_fire));
     return;
   }
 
-  // Otherwise, send a HOVER event on the node that was hit.
-  HandleAXEvent(obj, ui::AX_EVENT_HOVER);
+  // Otherwise, send an event on the node that was hit.
+  HandleAXEvent(obj, event_to_fire);
 }
 
 void RenderAccessibilityImpl::OnSetAccessibilityFocus(

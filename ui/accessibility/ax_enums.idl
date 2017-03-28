@@ -258,7 +258,7 @@
     get_image_data,
 
     // Given a point, find the object it corresponds to and fire a
-    // HOVER event on it in response.
+    // |AXActionData.hit_test_event_to_fire| event on it in response.
     hit_test,
 
     // Increment a slider or range control by one step value.

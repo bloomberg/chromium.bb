@@ -231,7 +231,9 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   // Called in response to a hit test, when the object hit has a child frame
   // (like an iframe element or browser plugin), and we need to do another
   // hit test recursively.
-  void OnChildFrameHitTestResult(const gfx::Point& point, int hit_obj_id);
+  void OnChildFrameHitTestResult(const gfx::Point& point,
+                                 int hit_obj_id,
+                                 ui::AXEvent event_to_fire);
 
   // This is called when the user has committed to a find in page query,
   // e.g. by pressing enter or tapping on the next / previous result buttons.

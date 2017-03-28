@@ -755,7 +755,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnAccessibilityFindInPageResult(
       const AccessibilityHostMsg_FindInPageResultParams& params);
   void OnAccessibilityChildFrameHitTestResult(const gfx::Point& point,
-                                              int hit_obj_id);
+                                              int hit_obj_id,
+                                              ui::AXEvent event_to_fire);
   void OnAccessibilitySnapshotResponse(
       int callback_id,
       const AXContentTreeUpdate& snapshot);

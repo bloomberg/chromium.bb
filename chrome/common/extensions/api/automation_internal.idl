@@ -32,6 +32,7 @@ namespace automationInternal {
     focus,
     doDefault,
     getImageData,
+    hitTest,
     makeVisible,
     resumeMedia,
     setAccessibilityFocus,
@@ -72,10 +73,17 @@ namespace automationInternal {
     long? tabID;
   };
 
-  // Arguments for the getImageData function.
+  // Arguments for the getImageData action.
   dictionary GetImageDataParams {
     long maxWidth;
     long maxHeight;
+  };
+
+  // Arguments for the hitTest action.
+  dictionary HitTestParams {
+    long x;
+    long y;
+    DOMString eventToFire;
   };
 
   // Returns the accessibility tree id of the web contents who's accessibility

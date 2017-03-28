@@ -23,28 +23,36 @@ class AccessibilityHitTestingBrowserTest : public ContentBrowserTest {
   ~AccessibilityHitTestingBrowserTest() override {}
 
  protected:
-  BrowserAccessibility* HitTestAndWaitForResult(const gfx::Point& point) {
+  BrowserAccessibility* HitTestAndWaitForResultWithEvent(
+      const gfx::Point& point,
+      ui::AXEvent event_to_fire) {
     WebContentsImpl* web_contents =
         static_cast<WebContentsImpl*>(shell()->web_contents());
     FrameTree* frame_tree = web_contents->GetFrameTree();
     BrowserAccessibilityManager* manager =
         web_contents->GetRootBrowserAccessibilityManager();
 
-    AccessibilityNotificationWaiter hover_waiter(shell()->web_contents(),
-                                                 kAccessibilityModeComplete,
-                                                 ui::AX_EVENT_HOVER);
+    AccessibilityNotificationWaiter event_waiter(
+        shell()->web_contents(), kAccessibilityModeComplete, event_to_fire);
     for (FrameTreeNode* node : frame_tree->Nodes())
-      hover_waiter.ListenToAdditionalFrame(node->current_frame_host());
-    manager->HitTest(point);
-    hover_waiter.WaitForNotification();
+      event_waiter.ListenToAdditionalFrame(node->current_frame_host());
+    ui::AXActionData action_data;
+    action_data.action = ui::AX_ACTION_HIT_TEST;
+    action_data.target_point = point;
+    action_data.hit_test_event_to_fire = event_to_fire;
+    manager->delegate()->AccessibilityPerformAction(action_data);
+    event_waiter.WaitForNotification();
 
-    RenderFrameHostImpl* target_frame = hover_waiter.event_render_frame_host();
+    RenderFrameHostImpl* target_frame = event_waiter.event_render_frame_host();
     BrowserAccessibilityManager* target_manager =
         target_frame->browser_accessibility_manager();
-    int hover_target_id = hover_waiter.event_target_id();
-    BrowserAccessibility* hovered_node =
-        target_manager->GetFromID(hover_target_id);
-    return hovered_node;
+    int event_target_id = event_waiter.event_target_id();
+    BrowserAccessibility* hit_node = target_manager->GetFromID(event_target_id);
+    return hit_node;
+  }
+
+  BrowserAccessibility* HitTestAndWaitForResult(const gfx::Point& point) {
+    return HitTestAndWaitForResultWithEvent(point, ui::AX_EVENT_HOVER);
   }
 
   BrowserAccessibility* CallCachingAsyncHitTest(const gfx::Point& point) {
@@ -90,10 +98,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
   NavigateToURL(shell(), url);
   waiter.WaitForNotification();
 
-  BrowserAccessibility* hovered_node =
-      HitTestAndWaitForResult(gfx::Point(-1, -1));
-  ASSERT_TRUE(hovered_node != NULL);
-  ASSERT_EQ(ui::AX_ROLE_ROOT_WEB_AREA, hovered_node->GetRole());
+  BrowserAccessibility* hit_node = HitTestAndWaitForResult(gfx::Point(-1, -1));
+  ASSERT_TRUE(hit_node != NULL);
+  ASSERT_EQ(ui::AX_ROLE_ROOT_WEB_AREA, hit_node->GetRole());
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
@@ -121,38 +128,43 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
   // correct object.
 
   // (50, 50) -> "Button"
-  BrowserAccessibility* hovered_node;
-  hovered_node = HitTestAndWaitForResult(gfx::Point(50, 50));
-  ASSERT_TRUE(hovered_node != NULL);
-  ASSERT_EQ(ui::AX_ROLE_BUTTON, hovered_node->GetRole());
-  ASSERT_EQ("Button", hovered_node->GetStringAttribute(ui::AX_ATTR_NAME));
-  gfx::Rect bounds = hovered_node->GetScreenBoundsRect();
+  BrowserAccessibility* hit_node;
+  hit_node = HitTestAndWaitForResult(gfx::Point(50, 50));
+  ASSERT_TRUE(hit_node != NULL);
+  ASSERT_EQ(ui::AX_ROLE_BUTTON, hit_node->GetRole());
+  ASSERT_EQ("Button", hit_node->GetStringAttribute(ui::AX_ATTR_NAME));
+  gfx::Rect bounds = hit_node->GetScreenBoundsRect();
   EXPECT_EQ(250, bounds.width());
   EXPECT_EQ(50, bounds.height());
 
   // (50, 305) -> div in first iframe
-  hovered_node = HitTestAndWaitForResult(gfx::Point(50, 305));
-  ASSERT_TRUE(hovered_node != NULL);
-  ASSERT_EQ(ui::AX_ROLE_DIV, hovered_node->GetRole());
+  hit_node = HitTestAndWaitForResult(gfx::Point(50, 305));
+  ASSERT_TRUE(hit_node != NULL);
+  ASSERT_EQ(ui::AX_ROLE_DIV, hit_node->GetRole());
 
   // (50, 350) -> "Ordinary Button"
-  hovered_node = HitTestAndWaitForResult(gfx::Point(50, 350));
-  ASSERT_TRUE(hovered_node != NULL);
-  ASSERT_EQ(ui::AX_ROLE_BUTTON, hovered_node->GetRole());
-  ASSERT_EQ("Ordinary Button",
-            hovered_node->GetStringAttribute(ui::AX_ATTR_NAME));
+  hit_node = HitTestAndWaitForResult(gfx::Point(50, 350));
+  ASSERT_TRUE(hit_node != NULL);
+  ASSERT_EQ(ui::AX_ROLE_BUTTON, hit_node->GetRole());
+  ASSERT_EQ("Ordinary Button", hit_node->GetStringAttribute(ui::AX_ATTR_NAME));
 
   // (50, 455) -> "Scrolled Button"
-  hovered_node = HitTestAndWaitForResult(gfx::Point(50, 455));
-  ASSERT_TRUE(hovered_node != NULL);
-  ASSERT_EQ(ui::AX_ROLE_BUTTON, hovered_node->GetRole());
-  ASSERT_EQ("Scrolled Button",
-            hovered_node->GetStringAttribute(ui::AX_ATTR_NAME));
+  hit_node = HitTestAndWaitForResult(gfx::Point(50, 455));
+  ASSERT_TRUE(hit_node != NULL);
+  ASSERT_EQ(ui::AX_ROLE_BUTTON, hit_node->GetRole());
+  ASSERT_EQ("Scrolled Button", hit_node->GetStringAttribute(ui::AX_ATTR_NAME));
 
   // (50, 505) -> div in second iframe
-  hovered_node = HitTestAndWaitForResult(gfx::Point(50, 505));
-  ASSERT_TRUE(hovered_node != NULL);
-  ASSERT_EQ(ui::AX_ROLE_DIV, hovered_node->GetRole());
+  hit_node = HitTestAndWaitForResult(gfx::Point(50, 505));
+  ASSERT_TRUE(hit_node != NULL);
+  ASSERT_EQ(ui::AX_ROLE_DIV, hit_node->GetRole());
+
+  // (50, 505) -> div in second iframe
+  // but with a different event
+  hit_node =
+      HitTestAndWaitForResultWithEvent(gfx::Point(50, 505), ui::AX_EVENT_ALERT);
+  ASSERT_NE(hit_node, nullptr);
+  ASSERT_EQ(ui::AX_ROLE_DIV, hit_node->GetRole());
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
@@ -183,44 +195,42 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
   // HOVER event to be received).
 
   // (50, 50) -> "Button"
-  BrowserAccessibility* hovered_node;
-  hovered_node = CallCachingAsyncHitTest(gfx::Point(50, 50));
-  ASSERT_TRUE(hovered_node != NULL);
-  ASSERT_NE(ui::AX_ROLE_BUTTON, hovered_node->GetRole());
-  hovered_node = CallCachingAsyncHitTest(gfx::Point(50, 50));
-  ASSERT_EQ("Button", hovered_node->GetStringAttribute(ui::AX_ATTR_NAME));
+  BrowserAccessibility* hit_node;
+  hit_node = CallCachingAsyncHitTest(gfx::Point(50, 50));
+  ASSERT_TRUE(hit_node != NULL);
+  ASSERT_NE(ui::AX_ROLE_BUTTON, hit_node->GetRole());
+  hit_node = CallCachingAsyncHitTest(gfx::Point(50, 50));
+  ASSERT_EQ("Button", hit_node->GetStringAttribute(ui::AX_ATTR_NAME));
 
   // (50, 305) -> div in first iframe
-  hovered_node = CallCachingAsyncHitTest(gfx::Point(50, 305));
-  ASSERT_TRUE(hovered_node != NULL);
-  ASSERT_NE(ui::AX_ROLE_DIV, hovered_node->GetRole());
-  hovered_node = CallCachingAsyncHitTest(gfx::Point(50, 305));
-  ASSERT_EQ(ui::AX_ROLE_DIV, hovered_node->GetRole());
+  hit_node = CallCachingAsyncHitTest(gfx::Point(50, 305));
+  ASSERT_TRUE(hit_node != NULL);
+  ASSERT_NE(ui::AX_ROLE_DIV, hit_node->GetRole());
+  hit_node = CallCachingAsyncHitTest(gfx::Point(50, 305));
+  ASSERT_EQ(ui::AX_ROLE_DIV, hit_node->GetRole());
 
   // (50, 350) -> "Ordinary Button"
-  hovered_node = CallCachingAsyncHitTest(gfx::Point(50, 350));
-  ASSERT_TRUE(hovered_node != NULL);
-  ASSERT_NE(ui::AX_ROLE_BUTTON, hovered_node->GetRole());
-  hovered_node = CallCachingAsyncHitTest(gfx::Point(50, 350));
-  ASSERT_EQ(ui::AX_ROLE_BUTTON, hovered_node->GetRole());
-  ASSERT_EQ("Ordinary Button",
-            hovered_node->GetStringAttribute(ui::AX_ATTR_NAME));
+  hit_node = CallCachingAsyncHitTest(gfx::Point(50, 350));
+  ASSERT_TRUE(hit_node != NULL);
+  ASSERT_NE(ui::AX_ROLE_BUTTON, hit_node->GetRole());
+  hit_node = CallCachingAsyncHitTest(gfx::Point(50, 350));
+  ASSERT_EQ(ui::AX_ROLE_BUTTON, hit_node->GetRole());
+  ASSERT_EQ("Ordinary Button", hit_node->GetStringAttribute(ui::AX_ATTR_NAME));
 
   // (50, 455) -> "Scrolled Button"
-  hovered_node = CallCachingAsyncHitTest(gfx::Point(50, 455));
-  ASSERT_TRUE(hovered_node != NULL);
-  ASSERT_NE(ui::AX_ROLE_BUTTON, hovered_node->GetRole());
-  hovered_node = CallCachingAsyncHitTest(gfx::Point(50, 455));
-  ASSERT_EQ(ui::AX_ROLE_BUTTON, hovered_node->GetRole());
-  ASSERT_EQ("Scrolled Button",
-            hovered_node->GetStringAttribute(ui::AX_ATTR_NAME));
+  hit_node = CallCachingAsyncHitTest(gfx::Point(50, 455));
+  ASSERT_TRUE(hit_node != NULL);
+  ASSERT_NE(ui::AX_ROLE_BUTTON, hit_node->GetRole());
+  hit_node = CallCachingAsyncHitTest(gfx::Point(50, 455));
+  ASSERT_EQ(ui::AX_ROLE_BUTTON, hit_node->GetRole());
+  ASSERT_EQ("Scrolled Button", hit_node->GetStringAttribute(ui::AX_ATTR_NAME));
 
   // (50, 505) -> div in second iframe
-  hovered_node = CallCachingAsyncHitTest(gfx::Point(50, 505));
-  ASSERT_TRUE(hovered_node != NULL);
-  ASSERT_NE(ui::AX_ROLE_DIV, hovered_node->GetRole());
-  hovered_node = CallCachingAsyncHitTest(gfx::Point(50, 505));
-  ASSERT_EQ(ui::AX_ROLE_DIV, hovered_node->GetRole());
+  hit_node = CallCachingAsyncHitTest(gfx::Point(50, 505));
+  ASSERT_TRUE(hit_node != NULL);
+  ASSERT_NE(ui::AX_ROLE_DIV, hit_node->GetRole());
+  hit_node = CallCachingAsyncHitTest(gfx::Point(50, 505));
+  ASSERT_EQ(ui::AX_ROLE_DIV, hit_node->GetRole());
 }
 
 #if defined(OS_WIN)

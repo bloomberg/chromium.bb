@@ -349,6 +349,19 @@ AutomationInternalPerformActionFunction::ConvertToAXActionData(
                                       get_image_data_params.max_height);
       break;
     }
+    case api::automation_internal::ACTION_TYPE_HITTEST: {
+      api::automation_internal::HitTestParams hit_test_params;
+      EXTENSION_FUNCTION_VALIDATE(
+          api::automation_internal::HitTestParams::Populate(
+              params->opt_args.additional_properties, &hit_test_params));
+      action->action = ui::AX_ACTION_HIT_TEST;
+      action->target_point = gfx::Point(hit_test_params.x, hit_test_params.y);
+      action->hit_test_event_to_fire =
+          ui::ParseAXEvent(hit_test_params.event_to_fire);
+      if (action->hit_test_event_to_fire == ui::AX_EVENT_NONE)
+        return RespondNow(NoArguments());
+      break;
+    }
     case api::automation_internal::ACTION_TYPE_MAKEVISIBLE:
       action->action = ui::AX_ACTION_SCROLL_TO_MAKE_VISIBLE;
       break;

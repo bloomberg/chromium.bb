@@ -22,8 +22,8 @@ AXActionData::AXActionData()
       anchor_node_id(-1),
       anchor_offset(-1),
       focus_node_id(-1),
-      focus_offset(-1) {
-}
+      focus_offset(-1),
+      hit_test_event_to_fire(AX_EVENT_NONE) {}
 
 AXActionData::AXActionData(const AXActionData& other) = default;
 
