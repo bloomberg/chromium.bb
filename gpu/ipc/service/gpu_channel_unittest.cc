@@ -10,7 +10,6 @@
 #include "gpu/ipc/service/gpu_channel.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_channel_test_common.h"
-#include "gpu/test_message_loop_type.h"
 #include "ipc/ipc_test_sink.h"
 #include "ui/gl/gl_surface_stub.h"
 #include "ui/gl/init/gl_factory.h"
@@ -20,9 +19,7 @@ namespace gpu {
 
 class GpuChannelTest : public GpuChannelTestCommon {
  public:
-  GpuChannelTest()
-      : GpuChannelTestCommon(),
-        message_loop_(test::GetMessageLoopTypeForGpu()) {}
+  GpuChannelTest() : GpuChannelTestCommon() {}
   ~GpuChannelTest() override {}
 
   void SetUp() override {
