@@ -97,5 +97,6 @@ public abstract class CustomTabActivityTestBase extends
         }, STARTUP_TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
         assertNotNull(tab);
         assertNotNull(tab.getView());
+        assertTrue(tab.isCurrentlyACustomTab());
     }
 }

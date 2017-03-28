@@ -49,6 +49,11 @@ class DefaultDelegate: public offline_pages::RecentTabHelper::Delegate {
   }
   bool IsLowEndDevice() override { return is_low_end_device_; }
 
+  bool IsCustomTab(content::WebContents* web_contents) override {
+    return offline_pages::OfflinePageUtils::CurrentlyShownInCustomTab(
+        web_contents);
+  }
+
  private:
   // Cached value of whether low end device.
   bool is_low_end_device_;
@@ -125,11 +130,6 @@ void RecentTabHelper::ObserveAndDownloadCurrentPage(
   // cancel the Background Offliner request.
   // TODO(carlosk): it might be better to make the decision to schedule or not
   // the background request here. See https://crbug.com/686165.
-  // TODO(carlosk): there is an edge case that happens when the ongoing request
-  // was automatically and transparently scheduled by a navigation event and
-  // this call happens due to the user pressing the download button. The user's
-  // request to download the page will be immediately dismissed. See
-  // https://crbug.com/686283.
   if (downloads_ongoing_snapshot_info_) {
     DVLOG(1) << "Ongoing request exist; ignored download request for: "
              << web_contents()->GetLastCommittedURL().spec();
@@ -266,13 +266,17 @@ void RecentTabHelper::WasHidden() {
   if (!IsOffliningRecentPagesEnabled())
     return;
 
-  // Return immediately if last_n is not listening to tab hidden events, if a
-  // last_n snapshot is currently being saved or if the tab is closing.
+  // Do not save a snapshots if any of these are true:
+  // - Last_n is not listening to tab hidden events.
+  // - A last_n snapshot is currently being saved.
+  // - The tab is in the process of being closed.
+  // - The tab is currently presented as a custom tab.
   if (!last_n_listen_to_tab_hidden_ || last_n_ongoing_snapshot_info_ ||
-      tab_is_closing_) {
+      tab_is_closing_ || delegate_->IsCustomTab(web_contents())) {
     DVLOG(1) << "Will not snapshot for last_n (reasons: "
              << !last_n_listen_to_tab_hidden_ << ", "
              << !!last_n_ongoing_snapshot_info_ << ", " << tab_is_closing_
+             << ", " << delegate_->IsCustomTab(web_contents())
              << ") for: " << web_contents()->GetLastCommittedURL().spec();
     return;
   }

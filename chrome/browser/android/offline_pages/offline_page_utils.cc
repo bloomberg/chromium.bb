@@ -158,6 +158,14 @@ bool OfflinePageUtils::GetTabId(content::WebContents* web_contents,
 }
 
 // static
+bool OfflinePageUtils::CurrentlyShownInCustomTab(
+    content::WebContents* web_contents) {
+  TabAndroid* tab_android = TabAndroid::FromWebContents(web_contents);
+  DCHECK(tab_android);
+  return tab_android && tab_android->IsCurrentlyACustomTab();
+}
+
+// static
 void OfflinePageUtils::CheckExistenceOfPagesWithURL(
     content::BrowserContext* browser_context,
     const std::string name_space,

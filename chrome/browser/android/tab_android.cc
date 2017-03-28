@@ -318,6 +318,11 @@ void TabAndroid::OnFaviconUpdated(favicon::FaviconDriver* favicon_driver,
                               gfx::ConvertToJavaBitmap(&favicon));
 }
 
+bool TabAndroid::IsCurrentlyACustomTab() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_Tab_isCurrentlyACustomTab(env, weak_java_tab_.get(env));
+}
+
 void TabAndroid::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   delete this;
 }

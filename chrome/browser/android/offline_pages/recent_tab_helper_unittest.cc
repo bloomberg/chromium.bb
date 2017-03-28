@@ -53,6 +53,9 @@ class TestDelegate: public RecentTabHelper::Delegate {
     // There is no expectations that tab_id is always present.
   bool GetTabId(content::WebContents* web_contents, int* tab_id) override;
   bool IsLowEndDevice() override { return is_low_end_device_; }
+  bool IsCustomTab(content::WebContents* web_contents) override {
+    return is_custom_tab_;
+  }
 
   void set_archive_result(
       offline_pages::OfflinePageArchiver::ArchiverResult result) {
@@ -62,6 +65,8 @@ class TestDelegate: public RecentTabHelper::Delegate {
   void set_archive_size(int64_t size) { archive_size_ = size; }
 
   void SetAsLowEndDevice() { is_low_end_device_ = true; }
+
+  void set_is_custom_tab(bool is_custom_tab) { is_custom_tab_ = is_custom_tab; }
 
  private:
   OfflinePageTestArchiver::Observer* observer_;  // observer owns this.
@@ -74,6 +79,7 @@ class TestDelegate: public RecentTabHelper::Delegate {
       offline_pages::OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED;
   int64_t archive_size_ = kArchiveSizeToReport;
   bool is_low_end_device_ = false;
+  bool is_custom_tab_ = false;
 };
 
 class RecentTabHelperTest
@@ -367,6 +373,41 @@ TEST_F(RecentTabHelperTest, LastNDisabledOnSvelte) {
   RunUntilIdle();
   EXPECT_EQ(1U, page_added_count());
   ASSERT_EQ(1U, GetAllPages().size());
+}
+
+// Checks that last_n will not save a snapshot if the tab while the tab is
+// presented as a custom tab. Download requests should be unaffected though.
+TEST_F(RecentTabHelperTest, LastNWontSaveCustomTab) {
+  // Simulates the tab running as a custom tab.
+  default_test_delegate()->set_is_custom_tab(true);
+
+  // Navigate and finish loading then hide the tab. Nothing should be saved.
+  NavigateAndCommit(kTestPageUrl);
+  recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
+  FastForwardSnapshotController();
+  recent_tab_helper()->WasHidden();
+  RunUntilIdle();
+  EXPECT_TRUE(model()->is_loaded());
+  EXPECT_EQ(0U, page_added_count());
+  ASSERT_EQ(0U, GetAllPages().size());
+
+  // But the following download request should work normally
+  recent_tab_helper()->ObserveAndDownloadCurrentPage(NewDownloadClientId(),
+                                                     123L);
+  RunUntilIdle();
+  EXPECT_EQ(1U, page_added_count());
+  ASSERT_EQ(1U, GetAllPages().size());
+
+  // Simulates the tab being transfered from the CustomTabActivity back to a
+  // ChromeActivity.
+  default_test_delegate()->set_is_custom_tab(false);
+
+  // Upon the next hide a last_n snapshot should be saved.
+  recent_tab_helper()->WasHidden();
+  RunUntilIdle();
+  EXPECT_TRUE(model()->is_loaded());
+  EXPECT_EQ(2U, page_added_count());
+  ASSERT_EQ(2U, GetAllPages().size());
 }
 
 // Triggers two last_n snapshot captures during a single page load. Should end

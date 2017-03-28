@@ -68,6 +68,10 @@ class OfflinePageUtils {
   // ID of the tab.
   static bool GetTabId(content::WebContents* web_contents, int* tab_id);
 
+  // Returns true if the |web_contents| is currently being presented inside a
+  // custom tab.
+  static bool CurrentlyShownInCustomTab(content::WebContents* web_contents);
+
   // Performs a check, whether pages with specified |url| and |name_space|
   // already exist. Result is returned in a |callback|, where first parameter
   // indicates whether offline pages exist, while second is a helper value to

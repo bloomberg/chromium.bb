@@ -2229,6 +2229,18 @@ public class Tab
 
         for (TabObserver observer : mObservers) observer.onFaviconUpdated(this, icon);
     }
+
+    /**
+     * Checks if this tab is currently presented in the context of custom tabs. Tabs can be moved
+     * between different activities so the returned value might change over the lifetime of the tab.
+     * @return true if this is currently a custom tab.
+     */
+    @CalledByNative
+    public boolean isCurrentlyACustomTab() {
+        ChromeActivity activity = getActivity();
+        return activity != null && activity.isCustomTab();
+    }
+
     /**
      * Called when the navigation entry containing the history item changed,
      * for example because of a scroll offset or form field change.
