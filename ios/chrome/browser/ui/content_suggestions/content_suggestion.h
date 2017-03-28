@@ -17,6 +17,10 @@ class GURL;
 
 // Enum defining the type of a ContentSuggestions.
 typedef NS_ENUM(NSInteger, ContentSuggestionType) {
+  // Use this type to pass information about an empty section. Suggestion of
+  // this type are empty and should not be displayed. The informations to be
+  // displayed are contained in the SectionInfo.
+  ContentSuggestionTypeEmpty,
   ContentSuggestionTypeArticle
 };
 

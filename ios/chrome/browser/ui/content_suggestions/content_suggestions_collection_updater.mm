@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/time/time.h"
+#include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
@@ -16,6 +17,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_favicon_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_footer_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_stack_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_text_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestion.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_sink.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_source.h"
@@ -23,6 +25,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestions_section_information.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
@@ -31,6 +34,10 @@
 #endif
 
 namespace {
+
+using CSCollectionViewItem =
+    CollectionViewItem<ContentSuggestionIdentification>;
+using CSCollectionViewModel = CollectionViewModel<CSCollectionViewItem*>;
 
 // Enum defining the ItemType of this ContentSuggestionsCollectionUpdater.
 typedef NS_ENUM(NSInteger, ItemType) {
@@ -41,6 +48,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeFavicon,
   ItemTypeFooter,
   ItemTypeHeader,
+  ItemTypeEmpty,
 };
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
@@ -53,16 +61,20 @@ ItemType ItemTypeForContentSuggestionType(ContentSuggestionType type) {
   switch (type) {
     case ContentSuggestionTypeArticle:
       return ItemTypeArticle;
+    case ContentSuggestionTypeEmpty:
+      return ItemTypeEmpty;
   }
 }
 
 ContentSuggestionType ContentSuggestionTypeForItemType(NSInteger type) {
   if (type == ItemTypeArticle)
     return ContentSuggestionTypeArticle;
+  if (type == ItemTypeEmpty)
+    return ContentSuggestionTypeEmpty;
   // Add new type here
 
   // Default type.
-  return ContentSuggestionTypeArticle;
+  return ContentSuggestionTypeEmpty;
 }
 
 // Returns the section identifier corresponding to the section |info|.
@@ -124,7 +136,7 @@ SectionIdentifier SectionIdentifierForInfo(
     (ContentSuggestionsSectionInformation*)sectionInfo {
   SectionIdentifier sectionIdentifier = SectionIdentifierForInfo(sectionInfo);
 
-  CollectionViewModel* model =
+  CSCollectionViewModel* model =
       self.collectionViewController.collectionViewModel;
   if ([model hasSectionForSectionIdentifier:sectionIdentifier] &&
       [model itemsInSectionWithIdentifier:sectionIdentifier].count > 0) {
@@ -144,13 +156,12 @@ SectionIdentifier SectionIdentifierForInfo(
     return;
   }
 
-  NSArray<CollectionViewItem<ContentSuggestionIdentification>*>*
-      itemsInSection = [self.collectionViewController.collectionViewModel
+  NSArray<CSCollectionViewItem*>* itemsInSection =
+      [self.collectionViewController.collectionViewModel
           itemsInSectionWithIdentifier:sectionIdentifier];
 
-  CollectionViewItem<ContentSuggestionIdentification>* correspondingItem = nil;
-  for (CollectionViewItem<ContentSuggestionIdentification>* item in
-           itemsInSection) {
+  CSCollectionViewItem* correspondingItem = nil;
+  for (CSCollectionViewItem* item in itemsInSection) {
     if (item.suggestionIdentifier == suggestionIdentifier) {
       correspondingItem = item;
       break;
@@ -206,33 +217,47 @@ SectionIdentifier SectionIdentifierForInfo(
     return [NSArray array];
   }
 
-  CollectionViewModel* model =
-      self.collectionViewController.collectionViewModel;
-
   NSMutableArray<NSIndexPath*>* indexPaths = [NSMutableArray array];
   for (ContentSuggestion* suggestion in suggestions) {
-    NSInteger sectionIdentifier =
-        SectionIdentifierForInfo(suggestion.suggestionIdentifier.sectionInfo);
+    ContentSuggestionsSectionInformation* sectionInfo =
+        suggestion.suggestionIdentifier.sectionInfo;
+    NSInteger sectionIdentifier = SectionIdentifierForInfo(sectionInfo);
+    CSCollectionViewModel* model =
+        self.collectionViewController.collectionViewModel;
 
-    ContentSuggestionsArticleItem* articleItem =
-        [[ContentSuggestionsArticleItem alloc]
-            initWithType:ItemTypeForContentSuggestionType(suggestion.type)
-                   title:suggestion.title
-                subtitle:suggestion.text
-                delegate:self
-                     url:suggestion.url];
+    switch (suggestion.type) {
+      case ContentSuggestionTypeEmpty: {
+        if ([model hasSectionForSectionIdentifier:sectionIdentifier] &&
+            [model numberOfItemsInSection:[model sectionForSectionIdentifier:
+                                                     sectionIdentifier]] == 0) {
+          CSCollectionViewItem* item =
+              [self emptyItemForSectionInfo:sectionInfo];
+          NSIndexPath* addedIndexPath =
+              [self addItem:item toSectionWithIdentifier:sectionIdentifier];
+          [indexPaths addObject:addedIndexPath];
+        }
+        break;
+      }
+      case ContentSuggestionTypeArticle: {
+        ContentSuggestionsArticleItem* articleItem =
+            [[ContentSuggestionsArticleItem alloc]
+                initWithType:ItemTypeForContentSuggestionType(suggestion.type)
+                       title:suggestion.title
+                    subtitle:suggestion.text
+                    delegate:self
+                         url:suggestion.url];
 
-    articleItem.publisher = suggestion.publisher;
-    articleItem.publishDate = suggestion.publishDate;
+        articleItem.publisher = suggestion.publisher;
+        articleItem.publishDate = suggestion.publishDate;
 
-    articleItem.suggestionIdentifier = suggestion.suggestionIdentifier;
+        articleItem.suggestionIdentifier = suggestion.suggestionIdentifier;
 
-    NSInteger section = [model sectionForSectionIdentifier:sectionIdentifier];
-    NSInteger itemNumber = [model numberOfItemsInSection:section];
-    [model addItem:articleItem toSectionWithIdentifier:sectionIdentifier];
-
-    [indexPaths
-        addObject:[NSIndexPath indexPathForItem:itemNumber inSection:section]];
+        NSIndexPath* addedIndexPath = [self addItem:articleItem
+                            toSectionWithIdentifier:sectionIdentifier];
+        [indexPaths addObject:addedIndexPath];
+        break;
+      }
+    }
   }
 
   return indexPaths;
@@ -242,23 +267,38 @@ SectionIdentifier SectionIdentifierForInfo(
     (NSArray<ContentSuggestion*>*)suggestions {
   NSMutableIndexSet* indexSet = [NSMutableIndexSet indexSet];
 
-  CollectionViewModel* model =
+  CSCollectionViewModel* model =
       self.collectionViewController.collectionViewModel;
   for (ContentSuggestion* suggestion in suggestions) {
     ContentSuggestionsSectionInformation* sectionInfo =
         suggestion.suggestionIdentifier.sectionInfo;
     NSInteger sectionIdentifier = SectionIdentifierForInfo(sectionInfo);
 
-    if (![model hasSectionForSectionIdentifier:sectionIdentifier]) {
-      [model addSectionWithIdentifier:sectionIdentifier];
-      self.sectionInfoBySectionIdentifier[@(sectionIdentifier)] = sectionInfo;
-      [indexSet addIndex:[model sectionForSectionIdentifier:sectionIdentifier]];
-
-      [self addHeader:suggestion.suggestionIdentifier.sectionInfo];
-      [self addFooterIfNeeded:suggestion.suggestionIdentifier.sectionInfo];
+    if ([model hasSectionForSectionIdentifier:sectionIdentifier] ||
+        (suggestion.type == ContentSuggestionTypeEmpty &&
+         !sectionInfo.showIfEmpty)) {
+      continue;
     }
+
+    [model addSectionWithIdentifier:sectionIdentifier];
+    self.sectionInfoBySectionIdentifier[@(sectionIdentifier)] = sectionInfo;
+    [indexSet addIndex:[model sectionForSectionIdentifier:sectionIdentifier]];
+
+    [self addHeader:sectionInfo];
+    [self addFooterIfNeeded:sectionInfo];
   }
   return indexSet;
+}
+
+- (NSIndexPath*)addEmptyItemForSection:(NSInteger)section {
+  CSCollectionViewModel* model =
+      self.collectionViewController.collectionViewModel;
+  NSInteger sectionIdentifier = [model sectionIdentifierForSection:section];
+  ContentSuggestionsSectionInformation* sectionInfo =
+      self.sectionInfoBySectionIdentifier[@(sectionIdentifier)];
+
+  CSCollectionViewItem* item = [self emptyItemForSectionInfo:sectionInfo];
+  return [self addItem:item toSectionWithIdentifier:sectionIdentifier];
 }
 
 #pragma mark - ContentSuggestionsArticleItemDelegate
@@ -345,12 +385,13 @@ SectionIdentifier SectionIdentifierForInfo(
   NSMutableArray<ContentSuggestionIdentifier*>* knownSuggestionIdentifiers =
       [NSMutableArray array];
 
-  NSArray<CollectionViewItem<ContentSuggestionIdentification>*>*
-      knownSuggestions = [self.collectionViewController.collectionViewModel
+  NSArray<CSCollectionViewItem*>* knownSuggestions =
+      [self.collectionViewController.collectionViewModel
           itemsInSectionWithIdentifier:sectionIdentifier];
-  for (CollectionViewItem<ContentSuggestionIdentification>* suggestion in
-           knownSuggestions) {
-    [knownSuggestionIdentifiers addObject:suggestion.suggestionIdentifier];
+  for (CSCollectionViewItem* suggestion in knownSuggestions) {
+    if (suggestion.type != ItemTypeEmpty) {
+      [knownSuggestionIdentifiers addObject:suggestion.suggestionIdentifier];
+    }
   }
 
   __weak ContentSuggestionsCollectionUpdater* weakSelf = self;
@@ -366,6 +407,31 @@ SectionIdentifier SectionIdentifierForInfo(
 // the same sectionInfo.
 - (void)moreSuggestionsFetched:(NSArray<ContentSuggestion*>*)suggestions {
   [self.collectionViewController addSuggestions:suggestions];
+}
+
+// Returns a item to be displayed when the section identified by |sectionInfo|
+// is empty.
+- (CSCollectionViewItem*)emptyItemForSectionInfo:
+    (ContentSuggestionsSectionInformation*)sectionInfo {
+  ContentSuggestionsTextItem* item =
+      [[ContentSuggestionsTextItem alloc] initWithType:ItemTypeEmpty];
+  item.text = l10n_util::GetNSString(IDS_NTP_TITLE_NO_SUGGESTIONS);
+  item.detailText = sectionInfo.emptyText;
+
+  return item;
+}
+
+// Adds |item| to |sectionIdentifier| section of the model of the
+// CollectionView. Returns the IndexPath of the newly added item.
+- (NSIndexPath*)addItem:(CSCollectionViewItem*)item
+    toSectionWithIdentifier:(NSInteger)sectionIdentifier {
+  CSCollectionViewModel* model =
+      self.collectionViewController.collectionViewModel;
+  NSInteger section = [model sectionForSectionIdentifier:sectionIdentifier];
+  NSInteger itemNumber = [model numberOfItemsInSection:section];
+  [model addItem:item toSectionWithIdentifier:sectionIdentifier];
+
+  return [NSIndexPath indexPathForItem:itemNumber inSection:section];
 }
 
 @end

@@ -97,10 +97,9 @@ ContentSuggestionsSectionInformation* SectionInformationFromCategoryInfo(
           initWithSectionID:SectionIDForCategory(category)];
   if (categoryInfo) {
     sectionInfo.layout = SectionLayoutForLayout(categoryInfo->card_layout());
-    if (categoryInfo->show_if_empty()) {
-      // TODO(crbug.com/686728): Creates an item to display information when the
-      // section is empty.
-    }
+    sectionInfo.showIfEmpty = categoryInfo->show_if_empty();
+    sectionInfo.emptyText =
+        base::SysUTF16ToNSString(categoryInfo->no_suggestions_message());
     if (categoryInfo->additional_action() !=
         ntp_snippets::ContentSuggestionsAdditionalAction::NONE) {
       sectionInfo.footerTitle =
@@ -316,8 +315,8 @@ ntp_snippets::ContentSuggestion::ID SuggestionIDForSectionID(
             (const std::vector<ntp_snippets::ContentSuggestion>&)suggestions
           fromCategory:(ntp_snippets::Category&)category
                toArray:(NSMutableArray<ContentSuggestion*>*)contentArray {
-  if (self.contentService->GetCategoryStatus(category) !=
-      ntp_snippets::CategoryStatus::AVAILABLE) {
+  if (!ntp_snippets::IsCategoryStatusAvailable(
+          self.contentService->GetCategoryStatus(category))) {
     return;
   }
 
@@ -332,6 +331,17 @@ ntp_snippets::ContentSuggestion::ID SuggestionIDForSectionID(
 
     suggestion.type = TypeForCategory(category);
 
+    suggestion.suggestionIdentifier.sectionInfo =
+        self.sectionInformationByCategory[categoryWrapper];
+
+    [contentArray addObject:suggestion];
+  }
+
+  if (suggestions.size() == 0) {
+    ContentSuggestion* suggestion = [[ContentSuggestion alloc] init];
+    suggestion.type = ContentSuggestionTypeEmpty;
+    suggestion.suggestionIdentifier =
+        [[ContentSuggestionIdentifier alloc] init];
     suggestion.suggestionIdentifier.sectionInfo =
         self.sectionInformationByCategory[categoryWrapper];
 

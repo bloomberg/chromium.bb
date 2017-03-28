@@ -45,6 +45,10 @@
 - (NSArray<NSIndexPath*>*)addSuggestionsToModel:
     (NSArray<ContentSuggestion*>*)suggestions;
 
+// Adds the empty item to this |section| and returns its index path. The updater
+// does not do any check about the number of elements in the section.
+- (NSIndexPath*)addEmptyItemForSection:(NSInteger)section;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_COLLECTION_UPDATER_H_

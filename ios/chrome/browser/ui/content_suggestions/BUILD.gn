@@ -17,6 +17,7 @@ source_set("content_suggestions") {
   ]
   deps = [
     "//base",
+    "//components/strings",
     "//ios/chrome/browser/ui/collection_view",
     "//ios/chrome/browser/ui/content_suggestions/cells",
     "//ios/chrome/browser/ui/content_suggestions/identifier",
@@ -25,6 +26,22 @@ source_set("content_suggestions") {
   ]
   public_deps = [
     "//ios/third_party/material_components_ios",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "content_suggestions_collection_updater_unittest.mm",
+  ]
+  deps = [
+    ":content_suggestions",
+    "//base",
+    "//ios/chrome/browser/ui/collection_view",
+    "//ios/chrome/browser/ui/content_suggestions/identifier",
+    "//testing/gtest",
+    "//third_party/ocmock",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }

@@ -65,6 +65,9 @@ const NSTimeInterval kAnimationDuration = 0.35;
         willDeleteItemsAtIndexPaths:@[ indexPath ]];
 
     [self.collectionView deleteItemsAtIndexPaths:@[ indexPath ]];
+
+    // Check if the section is now empty.
+    [self addEmptySectionPlaceholderIfNeeded:indexPath.section];
   }
       completion:^(BOOL) {
         // The context menu could be displayed for the deleted entry.
@@ -139,6 +142,8 @@ const NSTimeInterval kAnimationDuration = 0.35;
   switch ([self.collectionUpdater contentSuggestionTypeForItem:item]) {
     case ContentSuggestionTypeArticle:
       [self openArticle:item];
+      break;
+    case ContentSuggestionTypeEmpty:
       break;
   }
 }
@@ -265,6 +270,17 @@ const NSTimeInterval kAnimationDuration = 0.35;
       displayContextMenuForArticle:articleItem
                            atPoint:touchLocation
                        atIndexPath:touchedItemIndexPath];
+}
+
+// Checks if the |section| is empty and add an empty element if it is the case.
+// Must be called from inside a performBatchUpdates: block.
+- (void)addEmptySectionPlaceholderIfNeeded:(NSInteger)section {
+  if ([self.collectionViewModel numberOfItemsInSection:section] > 0)
+    return;
+
+  NSIndexPath* emptyItem =
+      [self.collectionUpdater addEmptyItemForSection:section];
+  [self.collectionView insertItemsAtIndexPaths:@[ emptyItem ]];
 }
 
 @end

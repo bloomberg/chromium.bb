@@ -16,6 +16,8 @@
 @synthesize sectionID = _sectionID;
 @synthesize title = _title;
 @synthesize footerTitle = _footerTitle;
+@synthesize emptyText = _emptyText;
+@synthesize showIfEmpty = _showIfEmpty;
 
 - (instancetype)initWithSectionID:(ContentSuggestionsSectionID)sectionID {
   self = [super init];

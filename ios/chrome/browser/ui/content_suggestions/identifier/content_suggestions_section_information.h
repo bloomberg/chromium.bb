@@ -43,6 +43,12 @@ typedef NS_ENUM(NSInteger, ContentSuggestionsSectionID) {
 @property(nonatomic, copy) NSString* title;
 // Title of the section's footer. If it is nil, no footer is created.
 @property(nonatomic, copy) NSString* footerTitle;
+// Text to be displayed when the section is empty.
+@property(nonatomic, copy) NSString* emptyText;
+// If the section should be shown when empty at loading. If the section becomes
+// empty because the user dismissed suggestions, the |emptyText| must be shown
+// in both cases.
+@property(nonatomic, assign) BOOL showIfEmpty;
 
 @end
 
