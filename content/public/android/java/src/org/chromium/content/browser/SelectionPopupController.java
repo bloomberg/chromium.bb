@@ -191,22 +191,24 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
         // Just refreshes the view if it is already showing.
         if (isActionModeValid()) {
-            invalidateActionMode();
+            // Try/catch necessary for framework bug, crbug.com/446717.
+            try {
+                mActionMode.invalidate();
+            } catch (NullPointerException e) {
+                Log.w(TAG, "Ignoring NPE from ActionMode.invalidate() as workaround for L", e);
+            }
+            hideActionMode(false);
             return true;
         }
-
-        if (mView.getParent() != null) {
-             // On ICS, startActionMode throws an NPE when getParent() is null.
-            assert mWebContents != null;
-            ActionMode actionMode = supportsFloatingActionMode()
-                    ? startFloatingActionMode()
-                    : mView.startActionMode(mCallback);
-            if (actionMode != null) {
-                // This is to work around an LGE email issue. See crbug.com/651706 for more details.
-                LGEmailActionModeWorkaround.runIfNecessary(mContext, actionMode);
-            }
-            mActionMode = actionMode;
+        assert mWebContents != null;
+        ActionMode actionMode = supportsFloatingActionMode()
+                ? startFloatingActionMode()
+                : mView.startActionMode(mCallback);
+        if (actionMode != null) {
+            // This is to work around an LGE email issue. See crbug.com/651706 for more details.
+            LGEmailActionModeWorkaround.runIfNecessary(mContext, actionMode);
         }
+        mActionMode = actionMode;
         mUnselectAllOnDismiss = true;
         return isActionModeValid();
     }
@@ -288,27 +290,6 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
             // Should be nulled out in case #onDestroyActionMode() is not invoked in response.
             mActionMode = null;
-        }
-    }
-
-    /**
-     * @see ActionMode#invalidate()
-     * Note that invalidation will also reset visibility state. The caller
-     * should account for this when making subsequent visibility updates.
-     */
-    private void invalidateActionMode() {
-        if (!isActionModeValid()) return;
-        if (mHidden) {
-            assert canHideActionMode();
-            mHidden = false;
-            mView.removeCallbacks(mRepeatingHideRunnable);
-        }
-
-        // Try/catch necessary for framework bug, crbug.com/446717.
-        try {
-            mActionMode.invalidate();
-        } catch (NullPointerException e) {
-            Log.w(TAG, "Ignoring NPE from ActionMode.invalidate() as workaround for L", e);
         }
     }
 
