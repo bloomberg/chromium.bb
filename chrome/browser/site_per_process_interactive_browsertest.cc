@@ -1245,8 +1245,9 @@ class FocusedEditableNodeChangedObserver : content::NotificationObserver {
 // This test verifies that displacements (margin, etc) in the position of an
 // OOPIF is considered when showing an AutofillClient warning pop-up for
 // unsecure web sites.
+// Test is flaky. crbug.com/705914
 IN_PROC_BROWSER_TEST_F(SitePerProcessAutofillTest,
-                       PasswordAutofillPopupPositionInsideOOPIF) {
+                       DISABLED_PasswordAutofillPopupPositionInsideOOPIF) {
   SetupMainTab();
   ASSERT_TRUE(
       base::FeatureList::IsEnabled(security_state::kHttpFormWarningFeature));
