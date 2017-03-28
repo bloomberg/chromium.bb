@@ -40,6 +40,8 @@ using base::android::ToJavaByteArray;
 
 namespace {
 
+const int64_t kMaxImageDownloadBytes = 1024 * 1024;
+
 ScopedJavaLocalRef<jobject> MakeJavaLogo(JNIEnv* env,
                                          const SkBitmap* bitmap,
                                          const GURL& on_click_url,
@@ -201,6 +203,7 @@ LogoBridge::LogoBridge(jobject j_profile)
     image_fetcher_ = base::MakeUnique<image_fetcher::ImageFetcherImpl>(
         base::MakeUnique<suggestions::ImageDecoderImpl>(),
         profile->GetRequestContext());
+    image_fetcher_->SetImageDownloadLimit(kMaxImageDownloadBytes);
 
     doodle_observer_.Add(doodle_service_);
   } else {
