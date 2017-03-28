@@ -3038,20 +3038,21 @@ static int scale_down(AV1_COMP *cpi, int q) {
 }
 
 #if CONFIG_GLOBAL_MOTION
+#define GM_RECODE_LOOP_NUM4X4_FACTOR 256
 static int recode_loop_test_global_motion(AV1_COMP *cpi) {
-  static const int min_blocks[TRANS_TYPES] = { 0, 60, 120, 180, 180, 180, 240 };
   int i;
   int recode = 0;
   AV1_COMMON *const cm = &cpi->common;
   for (i = LAST_FRAME; i <= ALTREF_FRAME; ++i) {
     if (cm->global_motion[i].wmtype != IDENTITY &&
-        cpi->global_motion_used[i][1] <
-            min_blocks[cm->global_motion[i].wmtype]) {
+        cpi->global_motion_used[i] * GM_RECODE_LOOP_NUM4X4_FACTOR <
+            cpi->gmparams_cost[i]) {
       set_default_gmparams(&cm->global_motion[i]);
+      cpi->gmparams_cost[i] = 0;
 #if CONFIG_REF_MV
       recode = 1;
 #else
-      recode |= (cpi->global_motion_used[i][1] > 0);
+      recode |= (cpi->global_motion_used[i] > 0);
 #endif
     }
   }

@@ -1029,14 +1029,11 @@ static void update_global_motion_used(PREDICTION_MODE mode, BLOCK_SIZE bsize,
       || mode == ZERO_ZEROMV
 #endif
       ) {
-    const int num_4x4s = bsize >= BLOCK_8X8
-                             ? num_4x4_blocks_wide_lookup[bsize] *
-                                   num_4x4_blocks_high_lookup[bsize]
-                             : 1;
+    const int num_4x4s =
+        num_4x4_blocks_wide_lookup[bsize] * num_4x4_blocks_high_lookup[bsize];
     int ref;
     for (ref = 0; ref < 1 + has_second_ref(mbmi); ++ref) {
-      ++cpi->global_motion_used[mbmi->ref_frame[ref]][0];
-      cpi->global_motion_used[mbmi->ref_frame[ref]][1] += num_4x4s;
+      cpi->global_motion_used[mbmi->ref_frame[ref]] += num_4x4s;
     }
   }
 }
@@ -5021,6 +5018,45 @@ static int input_fpmb_stats(FIRSTPASS_MB_STATS *firstpass_mb_stats,
 }
 #endif
 
+#if CONFIG_GLOBAL_MOTION
+static int gm_get_params_cost(WarpedMotionParams *gm) {
+  assert(gm->wmtype < GLOBAL_TRANS_TYPES);
+  int params_cost = 0;
+  switch (gm->wmtype) {
+    case HOMOGRAPHY:
+    case HORTRAPEZOID:
+    case VERTRAPEZOID:
+      if (gm->wmtype != HORTRAPEZOID)
+        params_cost += gm->wmmat[6] == 0 ? 1 : (GM_ABS_ROW3HOMO_BITS + 2);
+      if (gm->wmtype != VERTRAPEZOID)
+        params_cost += gm->wmmat[7] == 0 ? 1 : (GM_ABS_ROW3HOMO_BITS + 2);
+    // Fallthrough intended
+    case AFFINE:
+    case ROTZOOM:
+      params_cost += gm->wmmat[2] == (1 << WARPEDMODEL_PREC_BITS)
+                         ? 1
+                         : (GM_ABS_ALPHA_BITS + 2);
+      if (gm->wmtype != VERTRAPEZOID)
+        params_cost += gm->wmmat[3] == 0 ? 1 : (GM_ABS_ALPHA_BITS + 2);
+      if (gm->wmtype >= AFFINE) {
+        if (gm->wmtype != HORTRAPEZOID)
+          params_cost += gm->wmmat[4] == 0 ? 1 : (GM_ABS_ALPHA_BITS + 2);
+        params_cost += gm->wmmat[5] == (1 << WARPEDMODEL_PREC_BITS)
+                           ? 1
+                           : (GM_ABS_ALPHA_BITS + 2);
+      }
+    // Fallthrough intended
+    case TRANSLATION:
+      params_cost += gm->wmmat[0] == 0 ? 1 : (GM_ABS_TRANS_BITS + 2);
+      params_cost += gm->wmmat[1] == 0 ? 1 : (GM_ABS_TRANS_BITS + 2);
+    // Fallthrough intended
+    case IDENTITY: break;
+    default: assert(0);
+  }
+  return (params_cost << AV1_PROB_COST_SHIFT);
+}
+#endif  // CONFIG_GLOBAL_MOTION
+
 static void encode_frame_internal(AV1_COMP *cpi) {
   ThreadData *const td = &cpi->td;
   MACROBLOCK *const x = &td->mb;
@@ -5115,6 +5151,10 @@ static void encode_frame_internal(AV1_COMP *cpi) {
         }
         aom_clear_system_state();
       }
+      cpi->gmparams_cost[frame] =
+          gm_get_params_cost(&cm->global_motion[frame]) +
+          cpi->gmtype_cost[cm->global_motion[frame].wmtype] -
+          cpi->gmtype_cost[IDENTITY];
     }
     cpi->global_motion_search_done = 1;
   }

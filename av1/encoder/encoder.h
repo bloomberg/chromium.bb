@@ -596,6 +596,7 @@ typedef struct AV1_COMP {
 #endif  // CONFIG_LOOP_RESTORATION
 #if CONFIG_GLOBAL_MOTION
   int gmtype_cost[TRANS_TYPES];
+  int gmparams_cost[TOTAL_REFS_PER_FRAME];
 #endif  // CONFIG_GLOBAL_MOTION
 
   int multi_arf_allowed;
@@ -654,9 +655,8 @@ typedef struct AV1_COMP {
   int arf_map[MAX_EXT_ARFS + 1];
 #endif  // CONFIG_EXT_REFS
 #if CONFIG_GLOBAL_MOTION
-  // Stores number of prediction blocks using global motion and the
-  // number of 4x4 blocks using it per reference frame.
-  int global_motion_used[TOTAL_REFS_PER_FRAME][2];
+  // Stores number of 4x4 blocks using global motion per reference frame.
+  int global_motion_used[TOTAL_REFS_PER_FRAME];
   int global_motion_search_done;
 #endif
 #if CONFIG_REFERENCE_BUFFER
