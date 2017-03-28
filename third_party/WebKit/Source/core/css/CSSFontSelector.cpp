@@ -74,12 +74,8 @@ void CSSFontSelector::dispatchInvalidationCallbacks() {
 
   HeapVector<Member<CSSFontSelectorClient>> clients;
   copyToVector(m_clients, clients);
-  for (auto& client : clients) {
-    // This should not be nullptr, but to see if checking nullptr can suppress
-    // crashes. crbug.com/581698
-    if (client)
-      client->fontsNeedUpdate(this);
-  }
+  for (auto& client : clients)
+    client->fontsNeedUpdate(this);
 }
 
 void CSSFontSelector::fontFaceInvalidated() {
