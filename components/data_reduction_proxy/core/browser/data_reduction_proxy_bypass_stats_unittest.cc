@@ -684,8 +684,10 @@ TEST_F(DataReductionProxyBypassStatsEndToEndTest,
                             kErrorBody.c_str(), "HTTP/1.1 200 OK\r\n\r\n",
                             kBody.c_str());
 
-    histogram_tester.ExpectUniqueSample(
-        "DataReductionProxy.ConfigService.HTTPRequests", 1, 1);
+    EXPECT_LT(
+        0u, histogram_tester
+                .GetAllSamples("DataReductionProxy.ConfigService.HTTPRequests")
+                .size());
 
     // The first request caused the proxy to be marked as bad, so this second
     // request should not come through the proxy.
@@ -701,10 +703,8 @@ TEST_F(DataReductionProxyBypassStatsEndToEndTest,
     ExpectOtherBypassedBytesHistogramsEmpty(histogram_tester,
                                             test_case.histogram_name);
 
-    // "DataReductionProxy.ConfigService.HTTPRequests" should not be recorded
-    // for bypassed requests.
-    histogram_tester.ExpectUniqueSample(
-        "DataReductionProxy.ConfigService.HTTPRequests", 1, 1);
+    histogram_tester.ExpectBucketCount(
+        "DataReductionProxy.ConfigService.HTTPRequests", 0, 0);
   }
 }
 

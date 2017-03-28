@@ -772,7 +772,7 @@ TEST_F(DataReductionProxyDelegateTest, OnResolveProxyHandler) {
   // Another proxy is used. It should be used afterwards.
   result.Use(other_proxy_info);
   OnResolveProxyHandler(url, "GET", data_reduction_proxy_config,
-                        empty_proxy_retry_info, config(), nullptr, &result);
+                        empty_proxy_retry_info, *config(), nullptr, &result);
   EXPECT_EQ(other_proxy_info.proxy_server(), result.proxy_server());
 
   // A direct connection is used. The data reduction proxy should be used
@@ -781,7 +781,7 @@ TEST_F(DataReductionProxyDelegateTest, OnResolveProxyHandler) {
   result.Use(direct_proxy_info);
   net::ProxyConfig::ID prev_id = result.config_id();
   OnResolveProxyHandler(url, "GET", data_reduction_proxy_config,
-                        empty_proxy_retry_info, config(), nullptr, &result);
+                        empty_proxy_retry_info, *config(), nullptr, &result);
   EXPECT_EQ(data_reduction_proxy_info.proxy_server(), result.proxy_server());
   // Only the proxy list should be updated, not the proxy info.
   EXPECT_EQ(result.config_id(), prev_id);
@@ -792,7 +792,7 @@ TEST_F(DataReductionProxyDelegateTest, OnResolveProxyHandler) {
   prev_id = result.config_id();
   OnResolveProxyHandler(
       GURL("ws://echo.websocket.org/"), "GET", data_reduction_proxy_config,
-      data_reduction_proxy_retry_info, config(), nullptr, &result);
+      data_reduction_proxy_retry_info, *config(), nullptr, &result);
   EXPECT_TRUE(result.proxy_server().is_direct());
   EXPECT_EQ(result.config_id(), prev_id);
 
@@ -800,30 +800,30 @@ TEST_F(DataReductionProxyDelegateTest, OnResolveProxyHandler) {
   result.UseDirect();
   OnResolveProxyHandler(GURL("wss://echo.websocket.org/"), "GET",
                         data_reduction_proxy_config, empty_proxy_retry_info,
-                        config(), nullptr, &result);
+                        *config(), nullptr, &result);
   EXPECT_TRUE(result.is_direct());
 
   result.UseDirect();
   OnResolveProxyHandler(GURL("wss://echo.websocket.org/"), "GET",
                         data_reduction_proxy_config, empty_proxy_retry_info,
-                        config(), nullptr, &result);
+                        *config(), nullptr, &result);
   EXPECT_TRUE(result.is_direct());
 
   // POST methods go direct.
   result.UseDirect();
   OnResolveProxyHandler(url, "POST", data_reduction_proxy_config,
-                        empty_proxy_retry_info, config(), nullptr, &result);
+                        empty_proxy_retry_info, *config(), nullptr, &result);
   EXPECT_TRUE(result.is_direct());
 
   // Without DataCompressionProxyCriticalBypass Finch trial set, the
   // BYPASS_DATA_REDUCTION_PROXY load flag should be ignored.
   result.UseDirect();
   OnResolveProxyHandler(url, "GET", data_reduction_proxy_config,
-                        empty_proxy_retry_info, config(), nullptr, &result);
+                        empty_proxy_retry_info, *config(), nullptr, &result);
   EXPECT_FALSE(result.is_direct());
 
   OnResolveProxyHandler(url, "GET", data_reduction_proxy_config,
-                        empty_proxy_retry_info, config(), nullptr,
+                        empty_proxy_retry_info, *config(), nullptr,
                         &other_proxy_info);
   EXPECT_FALSE(other_proxy_info.is_direct());
 }
@@ -907,15 +907,14 @@ TEST_F(DataReductionProxyDelegateTest, HTTPRequests) {
     net::ProxyInfo result;
     result.Use(direct_proxy_info);
     OnResolveProxyHandler(url, "GET", data_reduction_proxy_config,
-                          empty_proxy_retry_info, config(), nullptr, &result);
+                          empty_proxy_retry_info, *config(), nullptr, &result);
     histogram_tester.ExpectTotalCount(
         "DataReductionProxy.ConfigService.HTTPRequests",
         test.expect_histogram ? 1 : 0);
 
     if (test.expect_histogram) {
       histogram_tester.ExpectUniqueSample(
-          "DataReductionProxy.ConfigService.HTTPRequests",
-          test.use_direct_proxy ? 0 : 1, 1);
+          "DataReductionProxy.ConfigService.HTTPRequests", 1, 1);
     }
   }
 }

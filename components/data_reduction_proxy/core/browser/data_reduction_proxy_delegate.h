@@ -157,7 +157,7 @@ void OnResolveProxyHandler(
     const std::string& method,
     const net::ProxyConfig& proxy_config,
     const net::ProxyRetryInfoMap& proxy_retry_info,
-    const DataReductionProxyConfig* data_reduction_proxy_config,
+    const DataReductionProxyConfig& data_reduction_proxy_config,
     DataReductionProxyIOData* io_data,
     net::ProxyInfo* result);
 }  // namespace data_reduction_proxy

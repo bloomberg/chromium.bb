@@ -99,7 +99,7 @@ void DataReductionProxyDelegate::OnResolveProxy(
       !config_->secure_proxy_allowed(), proxies_for_http);
 
   OnResolveProxyHandler(url, method, proxy_config,
-                        proxy_service.proxy_retry_info(), config_, io_data_,
+                        proxy_service.proxy_retry_info(), *config_, io_data_,
                         result);
 
   if (!first_data_saver_request_recorded_ && !result->is_empty() &&
@@ -277,12 +277,11 @@ void OnResolveProxyHandler(
     const std::string& method,
     const net::ProxyConfig& proxy_config,
     const net::ProxyRetryInfoMap& proxy_retry_info,
-    const DataReductionProxyConfig* data_reduction_proxy_config,
+    const DataReductionProxyConfig& data_reduction_proxy_config,
     DataReductionProxyIOData* io_data,
     net::ProxyInfo* result) {
-  DCHECK(data_reduction_proxy_config);
   DCHECK(result->is_empty() || result->is_direct() ||
-         !data_reduction_proxy_config->IsDataReductionProxy(
+         !data_reduction_proxy_config.IsDataReductionProxy(
              result->proxy_server(), NULL));
 
   if (!util::EligibleForDataReductionProxy(*result, url, method))
@@ -306,12 +305,12 @@ void OnResolveProxyHandler(
   // The |proxy_config| must be valid otherwise the proxy cannot be used.
   DCHECK(proxy_config.is_valid() || !data_saver_proxy_used);
 
-  if (data_reduction_proxy_config->enabled_by_user_and_reachable() &&
-      url.SchemeIsHTTPOrHTTPS() && !url.SchemeIsCryptographic() &&
-      !net::IsLocalhost(url.host()) &&
-      (!proxy_config.is_valid() || data_saver_proxy_used)) {
-    UMA_HISTOGRAM_BOOLEAN("DataReductionProxy.ConfigService.HTTPRequests",
-                          data_saver_proxy_used);
+  if (data_reduction_proxy_config.enabled_by_user_and_reachable() &&
+      url.SchemeIs(url::kHttpScheme) && !net::IsLocalhost(url.host_piece()) &&
+      !params::IsIncludedInHoldbackFieldTrial()) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "DataReductionProxy.ConfigService.HTTPRequests",
+        !data_reduction_proxy_config.GetProxiesForHttp().empty());
   }
 }
 
