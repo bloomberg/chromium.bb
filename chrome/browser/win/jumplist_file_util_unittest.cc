@@ -4,7 +4,6 @@
 
 #include "chrome/browser/win/jumplist_file_util.h"
 
-#include <Shlwapi.h>
 #include <string>
 
 #include "base/files/file_util.h"
@@ -94,10 +93,10 @@ TEST_F(JumpListFileUtilTest, DeleteMaxFilesAllowed) {
   // Sine the maximum files allowed to delete is 1, only 1 out of the 2
   // files is deleted. Therefore, the directory is not empty yet.
   ASSERT_EQ(DeleteDirectoryContent(dir_path, kFileDeleteLimitForTest), SUCCEED);
-  EXPECT_FALSE(::PathIsDirectoryEmpty(dir_path.value().c_str()));
+  EXPECT_FALSE(base::IsDirectoryEmpty(dir_path));
 
   // Delete another file, and now the directory is empty.
   ASSERT_EQ(DeleteDirectoryContent(dir_path, kFileDeleteLimitForTest), SUCCEED);
-  EXPECT_TRUE(::PathIsDirectoryEmpty(dir_path.value().c_str()));
+  EXPECT_TRUE(base::IsDirectoryEmpty(dir_path));
   EXPECT_TRUE(DirectoryExists(dir_path));
 }

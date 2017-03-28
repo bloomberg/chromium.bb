@@ -4,8 +4,6 @@
 
 #include "chrome/browser/win/jumplist.h"
 
-#include <Shlwapi.h>
-
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -260,30 +258,34 @@ void RunUpdateOnFileThread(
   UMA_HISTOGRAM_ENUMERATION("WinJumplist.DeleteStatusJumpListIcons",
                             delete_status, END);
 
-  // If JumpListIcons directory is not empty, skip jumplist update and return
-  // early. If the directory doesn't exist which shouldn't though, try to create
-  // a new JumpListIcons directory. If the creation fails, return early.
-  if (base::DirectoryExists(icon_dir)) {
-    DirectoryEmptyStatus empty_status =
-        ::PathIsDirectoryEmpty(icon_dir.value().c_str()) ? EMPTY : NON_EMPTY;
-    UMA_HISTOGRAM_ENUMERATION("WinJumplist.EmptyStatusJumpListIcons",
-                              empty_status, EMPTY_STATUS_END);
-    if (empty_status == NON_EMPTY)
-      return;
-  } else if (!base::CreateDirectory(icon_dir)) {
-    return;
+  // If JumpListIcons directory is not empty, skip updating the jumplist icons.
+  // If the directory doesn't exist which shouldn't though, try to create
+  // a new JumpListIcons directory. If the creation fails, skip updating the
+  // jumplist icons. The jumplist links should be updated anyway, as it doesn't
+  // involve disk IO.
+
+  DirectoryStatus dir_status = NON_EXIST;
+  if (base::DirectoryExists(icon_dir))
+    dir_status = base::IsDirectoryEmpty(icon_dir) ? EMPTY : NON_EMPTY;
+
+  if (dir_status == NON_EXIST && base::CreateDirectory(icon_dir))
+    dir_status = EMPTY;
+
+  UMA_HISTOGRAM_ENUMERATION("WinJumplist.DirectoryStatusJumpListIcons",
+                            dir_status, DIRECTORY_STATUS_END);
+
+  if (dir_status == EMPTY) {
+    // Create icon files for shortcuts in the "Most Visited" category.
+    CreateIconFiles(icon_dir, local_most_visited_pages);
+
+    // Create icon files for shortcuts in the "Recently Closed"
+    // category.
+    CreateIconFiles(icon_dir, local_recently_closed_pages);
   }
 
-  // Create temporary icon files for shortcuts in the "Most Visited" category.
-  CreateIconFiles(icon_dir, local_most_visited_pages);
-
-  // Create temporary icon files for shortcuts in the "Recently Closed"
-  // category.
-  CreateIconFiles(icon_dir, local_recently_closed_pages);
-
-  // We finished collecting all resources needed for updating an application
-  // JumpList. So, create a new JumpList and replace the current JumpList
-  // with it.
+  // Create a new JumpList and replace the current JumpList with it. The
+  // jumplist links are updated anyway, while the jumplist icons may not as
+  // mentioned above.
   UpdateJumpList(app_id.c_str(), local_most_visited_pages,
                  local_recently_closed_pages, incognito_availability);
 

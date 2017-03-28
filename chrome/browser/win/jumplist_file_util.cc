@@ -4,10 +4,10 @@
 
 #include "chrome/browser/win/jumplist_file_util.h"
 
-#include <Shlwapi.h>
 #include <windows.h>
 
 #include "base/files/file_enumerator.h"
+#include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_restrictions.h"
 
@@ -100,7 +100,7 @@ FolderDeleteResult DeleteDirectory(const base::FilePath& path,
   // files, its return value cannot indicate if |path| is empty or not.
   // Instead, use PathIsDirectoryEmpty to check if |path| is empty and remove it
   // if it is.
-  if (::PathIsDirectoryEmpty(path.value().c_str()) &&
+  if (base::IsDirectoryEmpty(path) &&
       !::RemoveDirectory(path.value().c_str())) {
     delete_status = FAIL_REMOVE_RAW_DIRECTORY;
   }
@@ -112,4 +112,11 @@ void DeleteDirectoryAndLogResults(const base::FilePath& path,
   FolderDeleteResult delete_status = DeleteDirectory(path, max_file_deleted);
   UMA_HISTOGRAM_ENUMERATION("WinJumplist.DeleteStatusJumpListIconsOld",
                             delete_status, END);
+
+  DirectoryStatus dir_status = NON_EXIST;
+  if (base::DirectoryExists(path))
+    dir_status = base::IsDirectoryEmpty(path) ? EMPTY : NON_EMPTY;
+
+  UMA_HISTOGRAM_ENUMERATION("WinJumplist.DirectoryStatusJumpListIconsOld",
+                            dir_status, DIRECTORY_STATUS_END);
 }

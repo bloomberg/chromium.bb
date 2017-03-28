@@ -8,7 +8,7 @@
 #include "base/files/file_path.h"
 
 // Maximum number of icon files allowed to delete per jumplist update.
-const int kFileDeleteLimit = 100;
+const int kFileDeleteLimit = 60;
 
 // Folder delete status enumeration, used in Delete* methods below.
 // This is used for UMA. Do not delete entries, and keep in sync with
@@ -36,14 +36,15 @@ enum FolderDeleteResult {
   END
 };
 
-// An enumeration indicating if a directory is empty or not.
+// An enumeration indicating if a directory exists or if it is empty or not.
 // This is used for UMA. Do not delete entries, and keep in sync with
 // histograms.xml.
-enum DirectoryEmptyStatus {
+enum DirectoryStatus {
   EMPTY = 0,
   NON_EMPTY,
+  NON_EXIST,
   // Add new items before this one, always keep this one at the end.
-  EMPTY_STATUS_END
+  DIRECTORY_STATUS_END
 };
 
 // This method is similar to base::DeleteFileRecursive in
