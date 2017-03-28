@@ -3299,14 +3299,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       [space.authenticationMethod isEqual:NSURLAuthenticationMethodNTLM] ||
       [space.authenticationMethod isEqual:NSURLAuthenticationMethodHTTPDigest]);
 
-  if (self.shouldSuppressDialogs) {
-    // TODO(crbug.com/702381): Web Controller should not assume that embedder
-    // handles HTTP Authentication by showing the dialog.
-    _webStateImpl->OnDialogSuppressed();
-    completionHandler(NSURLSessionAuthChallengeRejectProtectionSpace, nil);
-    return;
-  }
-
   _webStateImpl->OnAuthRequired(
       space, challenge.proposedCredential,
       base::BindBlock(^(NSString* user, NSString* password) {

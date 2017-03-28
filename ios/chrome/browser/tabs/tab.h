@@ -349,6 +349,10 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // Evaluates U2F result.
 - (void)evaluateU2FResultFromURL:(const GURL&)url;
 
+// Cancels prerendering. It is an error to call this on anything except a
+// prerender tab (where |isPrerenderTab| is set to YES).
+- (void)discardPrerender;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_TABS_TAB_H_

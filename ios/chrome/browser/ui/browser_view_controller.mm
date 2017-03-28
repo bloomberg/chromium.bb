@@ -2638,6 +2638,15 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
                       proposedCredential:(NSURLCredential*)proposedCredential
                        completionHandler:(void (^)(NSString* username,
                                                    NSString* password))handler {
+  Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
+  if ([tab isPrerenderTab]) {
+    [tab discardPrerender];
+    if (handler) {
+      handler(nil, nil);
+    }
+    return;
+  }
+
   [self.dialogPresenter runAuthDialogForProtectionSpace:protectionSpace
                                      proposedCredential:proposedCredential
                                                webState:webState
