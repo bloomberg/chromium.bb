@@ -11,17 +11,15 @@
 #include "base/command_line.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/search/instant_io_context.h"
 #include "chrome/browser/search/local_files_ntp_source.h"
-#include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -37,8 +35,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/ui_base_switches.h"
-#include "ui/base/webui/jstemplate_builder.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "url/gurl.h"
@@ -95,21 +91,10 @@ void AddString(base::DictionaryValue* dictionary,
   dictionary->SetString(key, l10n_util::GetStringUTF16(resource_id));
 }
 
-// Adds a localized string for the Google searchbox placeholder text.
-void AddGoogleSearchboxPlaceholderString(base::DictionaryValue* dictionary) {
-  // TODO(treib): Remove the param from the string; it's only ever used with
-  // "Google".
-  base::string16 placeholder = l10n_util::GetStringFUTF16(
-      IDS_SEARCH_BOX_EMPTY_HINT,
-      base::ASCIIToUTF16("Google"));
-  dictionary->SetString("searchboxPlaceholder", placeholder);
-}
-
 // Populates |translated_strings| dictionary for the local NTP. |is_google|
-// indicates that this page is the Google Local NTP.
+// indicates that this page is the Google local NTP.
 std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
-  std::unique_ptr<base::DictionaryValue> translated_strings(
-      new base::DictionaryValue());
+  auto translated_strings = base::MakeUnique<base::DictionaryValue>();
 
   AddString(translated_strings.get(), "thumbnailRemovedNotification",
             IDS_NEW_TAB_THUMBNAIL_REMOVED_NOTIFICATION);
@@ -122,8 +107,10 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
   AddString(translated_strings.get(), "attributionIntro",
             IDS_NEW_TAB_ATTRIBUTION_INTRO);
   AddString(translated_strings.get(), "title", IDS_NEW_TAB_TITLE);
-  if (is_google)
-    AddGoogleSearchboxPlaceholderString(translated_strings.get());
+  if (is_google) {
+    AddString(translated_strings.get(), "searchboxPlaceholder",
+              IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT);
+  }
 
   return translated_strings;
 }
@@ -132,8 +119,7 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
 std::string GetConfigData(Profile* profile) {
   base::DictionaryValue config_data;
   bool is_google = DefaultSearchProviderIsGoogle(profile);
-  config_data.Set("translatedStrings",
-                  GetTranslatedStrings(is_google).release());
+  config_data.Set("translatedStrings", GetTranslatedStrings(is_google));
   config_data.SetBoolean("isGooglePage", is_google);
 
   // Serialize the dictionary.
@@ -166,11 +152,9 @@ std::string GetLocalNtpPath() {
 
 }  // namespace
 
-LocalNtpSource::LocalNtpSource(Profile* profile) : profile_(profile) {
-}
+LocalNtpSource::LocalNtpSource(Profile* profile) : profile_(profile) {}
 
-LocalNtpSource::~LocalNtpSource() {
-}
+LocalNtpSource::~LocalNtpSource() = default;
 
 std::string LocalNtpSource::GetSource() const {
   return chrome::kChromeSearchLocalNtpHost;
