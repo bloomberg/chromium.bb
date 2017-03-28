@@ -1224,9 +1224,6 @@ crbug.com/658305 css3/filters/filter-effect-removed.html [ Failure Pass ]
 crbug.com/267206 [ Mac ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 crbug.com/267206 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 
-crbug.com/704292 paint/invalidation/invalidate-caret-in-composited-scrolling-container.html [ NeedsRebaseline ]
-crbug.com/704292 virtual/disable-spinvalidation/paint/invalidation/invalidate-caret-in-composited-scrolling-container.html [ NeedsRebaseline ]
-
 
 crbug.com/524160 [ Debug ] http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-default-buffers.html [ Timeout ]
 crbug.com/524160 [ Debug ] virtual/mojo-loading/http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-default-buffers.html [ Timeout ]
