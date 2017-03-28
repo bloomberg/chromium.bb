@@ -258,7 +258,8 @@ external/wpt/dpub-aria [ Skip ]
 external/wpt/encrypted-media/Google [ Skip ]
 external/wpt/eventsource [ Skip ]
 external/wpt/ext-xhtml-pubid [ Skip ]
-external/wpt/fetch [ Skip ]
+## Owners: tyoshino@chromium.org,yhirano@chromium.org,mkwst@chromium.org,japhet@chromium.org
+# external/wpt/fetch [ Pass ]
 external/wpt/fonts [ Skip ]
 ## Owners: foolip@chromium.org
 # external/wpt/fullscreen [ Pass ]

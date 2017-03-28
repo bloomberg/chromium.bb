@@ -1,0 +1,9 @@
+This is a testharness.js-based test.
+FAIL Fetching about:blank (GET) is OK promise_test: Unhandled rejection with value: object "TypeError: Failed to fetch"
+FAIL Fetching about:blank (PUT) is OK promise_test: Unhandled rejection with value: object "TypeError: Failed to fetch"
+FAIL Fetching about:blank (POST) is OK promise_test: Unhandled rejection with value: object "TypeError: Failed to fetch"
+PASS Fetching about:invalid.com is KO 
+PASS Fetching about:config is KO 
+PASS Fetching about:unicorn is KO 
+Harness: the test ran to completion.
+
