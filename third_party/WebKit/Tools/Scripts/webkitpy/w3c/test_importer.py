@@ -23,7 +23,7 @@ from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.common.net.buildbot import current_build_link
 from webkitpy.layout_tests.models.test_expectations import TestExpectations, TestExpectationParser
 from webkitpy.layout_tests.port.base import Port
-from webkitpy.w3c.common import WPT_REPO_URL, CSS_REPO_URL, WPT_DEST_NAME, CSS_DEST_NAME, exportable_commits_since
+from webkitpy.w3c.common import WPT_REPO_URL, WPT_DEST_NAME, exportable_commits_since
 from webkitpy.w3c.directory_owners_extractor import DirectoryOwnersExtractor
 from webkitpy.w3c.local_wpt import LocalWPT
 from webkitpy.w3c.test_copier import TestCopier
@@ -62,21 +62,17 @@ class TestImporter(object):
         _, show_ref_output = self.run(['git', 'show-ref', 'HEAD'])
         chromium_commit = show_ref_output.split()[0]
 
-        assert options.target in ('wpt', 'css')
         dest_dir_name = WPT_DEST_NAME
         repo_url = WPT_REPO_URL
-        if options.target != 'wpt':
-            dest_dir_name = CSS_DEST_NAME
-            repo_url = CSS_REPO_URL
 
         # TODO(qyearsley): Simplify this to use LocalWPT.fetch when csswg-test
-        # is merged into web-platform-tests.
+        # is merged into web-platform-tests (crbug.com/706118).
         temp_repo_path = self.path_from_webkit_base(dest_dir_name)
         _log.info('Cloning repo: %s', repo_url)
         _log.info('Local path: %s', temp_repo_path)
         self.run(['git', 'clone', repo_url, temp_repo_path])
 
-        if options.target == 'wpt' and not options.ignore_exportable_commits:
+        if not options.ignore_exportable_commits:
             commits = self.exportable_but_not_exported_commits(temp_repo_path)
             if commits:
                 # If there are exportable commits, then there's no more work
@@ -93,8 +89,7 @@ class TestImporter(object):
 
         self.clean_up_temp_repo(temp_repo_path)
 
-        if options.target == 'wpt':
-            self._copy_resources()
+        self._copy_resources()
 
         has_changes = self._has_changes()
         if not has_changes:
@@ -120,8 +115,6 @@ class TestImporter(object):
                             help='allow script to run even if we have local commits')
         parser.add_argument('-r', dest='revision', action='store',
                             help='Target revision.')
-        parser.add_argument('target', choices=['css', 'wpt'],
-                            help='Target repository.  "css" for csswg-test, "wpt" for web-platform-tests.')
         parser.add_argument('--auto-update', action='store_true',
                             help='uploads CL and initiates commit queue.')
         parser.add_argument('--auth-refresh-token-json',
@@ -130,7 +123,10 @@ class TestImporter(object):
                                  'generally not necessary on developer machines')
         parser.add_argument('--ignore-exportable-commits', action='store_true',
                             help='Continue even if there are exportable commits that may be overwritten.')
-        return parser.parse_args(argv)
+        # TODO(qyearsley): Change this back to parse_args once this script
+        # is no longer being called with the "wpt" argument. See crbug.com/706118.
+        args, _ = parser.parse_known_args(argv)
+        return args
 
     def checkout_is_okay(self, allow_local_commits):
         git_diff_retcode, _ = self.run(['git', 'diff', '--quiet', 'HEAD'], exit_on_failure=False)
@@ -145,10 +141,6 @@ class TestImporter(object):
 
         if self.fs.exists(self.path_from_webkit_base(WPT_DEST_NAME)):
             _log.warning('WebKit/%s exists; aborting.', WPT_DEST_NAME)
-            return False
-
-        if self.fs.exists(self.path_from_webkit_base(CSS_DEST_NAME)):
-            _log.warning('WebKit/%s repo exists; aborting.', CSS_DEST_NAME)
             return False
 
         return True
@@ -200,9 +192,6 @@ class TestImporter(object):
         Runs the (newly-updated) manifest command if it's found, and then
         stages the generated MANIFEST.json in the git index, ready to commit.
         """
-        if 'css' in dest_path:
-            # Do nothing for csswg-test.
-            return
         _log.info('Generating MANIFEST.json')
         WPTManifest.generate_manifest(self.host, dest_path)
         manifest_path = self.fs.join(dest_path, 'MANIFEST.json')

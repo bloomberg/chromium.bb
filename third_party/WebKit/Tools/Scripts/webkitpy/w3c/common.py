@@ -11,16 +11,14 @@ from webkitpy.w3c.chromium_finder import absolute_chromium_dir
 
 
 WPT_DEST_NAME = 'wpt'
-CSS_DEST_NAME = 'csswg-test'
 WPT_GH_REPO_URL_TEMPLATE = 'https://{}@github.com/w3c/web-platform-tests.git'
 
 # TODO(qyearsley): This directory should be able to be constructed with
 # WebKitFinder and WPT_DEST_NAME, plus the string "external".
 CHROMIUM_WPT_DIR = 'third_party/WebKit/LayoutTests/external/wpt/'
 
-# Our mirrors of the official w3c repos, which we pull from.
+# Our mirrors of the official wpt repo, which we pull from.
 WPT_REPO_URL = 'https://chromium.googlesource.com/external/w3c/web-platform-tests.git'
-CSS_REPO_URL = 'https://chromium.googlesource.com/external/w3c/csswg-test.git'
 
 
 _log = logging.getLogger(__name__)
