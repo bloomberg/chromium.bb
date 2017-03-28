@@ -118,23 +118,23 @@ static INLINE uint64_t mse_4x4_16bit(uint16_t *dst, int dstride, uint16_t *src,
 
 /* Compute MSE only on the blocks we filtered. */
 uint64_t compute_dering_mse(uint16_t *dst, int dstride, uint16_t *src,
-                            dering_list *dlist, int dering_count, int bsize,
-                            int coeff_shift) {
+                            dering_list *dlist, int dering_count,
+                            BLOCK_SIZE bsize, int coeff_shift) {
   uint64_t sum = 0;
   int bi, bx, by;
-  if (bsize == 3) {
+  if (bsize == BLOCK_8X8) {
     for (bi = 0; bi < dering_count; bi++) {
       by = dlist[bi].by;
       bx = dlist[bi].bx;
       sum += mse_8x8_16bit(&dst[(by << 3) * dstride + (bx << 3)], dstride,
-                           &src[bi << 2 * bsize], 8);
+                           &src[bi << (2 * 3)], 8);
     }
   } else {
     for (bi = 0; bi < dering_count; bi++) {
       by = dlist[bi].by;
       bx = dlist[bi].bx;
       sum += mse_4x4_16bit(&dst[(by << 2) * dstride + (bx << 2)], dstride,
-                           &src[bi << 2 * bsize], 4);
+                           &src[bi << (2 * 2)], 4);
     }
   }
   return sum >> 2 * coeff_shift;
@@ -207,7 +207,7 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
     ref_coeff[pli] = aom_memalign(
         32, sizeof(*ref_coeff) * cm->mi_rows * cm->mi_cols * MI_SIZE * MI_SIZE);
     dec[pli] = xd->plane[pli].subsampling_x;
-    bsize[pli] = OD_DERING_SIZE_LOG2 - dec[pli];
+    bsize[pli] = dec[pli] ? BLOCK_4X4 : BLOCK_8X8;
     stride[pli] = cm->mi_cols << MI_SIZE_LOG2;
     mi_wide_l2[pli] = MI_SIZE_LOG2 - xd->plane[pli].subsampling_x;
     mi_high_l2[pli] = MI_SIZE_LOG2 - xd->plane[pli].subsampling_y;
