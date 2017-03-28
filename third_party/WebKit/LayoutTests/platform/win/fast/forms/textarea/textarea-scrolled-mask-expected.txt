@@ -20,3 +20,4 @@ layer at (8,28) size 181x38 clip at (9,29) size 164x36 transparent scrollY 48.00
         text run at (0,48) width 8: "4"
         text run at (8,48) width 0: " "
       LayoutBR {BR} at (0,64) size 0x16
+caret: position 0 of child 1 {BR} of child 0 {DIV} of {#document-fragment} of child 3 {TEXTAREA} of body

@@ -785,7 +785,7 @@ public class ImeTest extends ContentShellTestBase {
         DOMUtils.longPressNode(mContentViewCore, "input_text");
         assertWaitForKeyboardStatus(true);
         assertWaitForSelectActionBarStatus(true);
-        DOMUtils.clickNode(mContentViewCore, "input_radio");
+        DOMUtils.clickNode(mContentViewCore, "plain_text");
         assertWaitForKeyboardStatus(false);
         assertWaitForSelectActionBarStatus(false);
     }
@@ -1317,7 +1317,7 @@ public class ImeTest extends ContentShellTestBase {
     @Feature({"TextInput"})
     public void testContentEditableEvents_ComposingText() throws Throwable {
         focusElementAndWaitForStateUpdate("contenteditable_event");
-        waitForEventLogs("selectionchange,selectionchange");
+        waitForEventLogs("selectionchange");
         clearEventLogs();
 
         setComposingText("a", 1);
@@ -1352,7 +1352,7 @@ public class ImeTest extends ContentShellTestBase {
     @Feature({"TextInput"})
     public void testContentEditableEvents_CommitText() throws Throwable {
         focusElementAndWaitForStateUpdate("contenteditable_event");
-        waitForEventLogs("selectionchange,selectionchange");
+        waitForEventLogs("selectionchange");
         clearEventLogs();
 
         commitText("a", 1);
@@ -1374,7 +1374,7 @@ public class ImeTest extends ContentShellTestBase {
     @Feature({"TextInput"})
     public void testContentEditableEvents_DeleteSurroundingText() throws Throwable {
         focusElementAndWaitForStateUpdate("contenteditable_event");
-        waitForEventLogs("selectionchange,selectionchange");
+        waitForEventLogs("selectionchange");
         clearEventLogs();
 
         commitText("hello", 1);
@@ -1416,7 +1416,7 @@ public class ImeTest extends ContentShellTestBase {
     @Feature({"TextInput"})
     public void testContentEditableEvents_DeleteSurroundingTextInCodePoints() throws Throwable {
         focusElementAndWaitForStateUpdate("contenteditable_event");
-        waitForEventLogs("selectionchange,selectionchange");
+        waitForEventLogs("selectionchange");
         clearEventLogs();
 
         commitText("hello", 1);

@@ -34,7 +34,6 @@ Sending GestureTap
 Received mouseout on target
 PASS tapHandled is false
 Received selectionchange on #document anchor=#text[0]
-Received selectionchange on #document anchor=#text[0]
 PASS isFocused(target) is false
 
 PASS successfullyParsed is true
