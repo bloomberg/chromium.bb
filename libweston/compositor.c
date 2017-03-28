@@ -76,15 +76,45 @@ weston_output_transform_scale_init(struct weston_output *output,
 static void
 weston_compositor_build_view_list(struct weston_compositor *compositor);
 
-static void weston_mode_switch_finish(struct weston_output *output,
-				      int mode_changed,
-				      int scale_changed)
+/** Send wl_output events for mode and scale changes
+ *
+ * \param head Send on all resources bound to this head.
+ * \param mode_changed If true, send the current mode.
+ * \param scale_changed If true, send the current scale.
+ */
+static void
+weston_mode_switch_send_events(struct weston_head *head,
+			       bool mode_changed, bool scale_changed)
+{
+	struct weston_output *output = head->output;
+	struct wl_resource *resource;
+	int version;
+
+	wl_resource_for_each(resource, &head->resource_list) {
+		if (mode_changed) {
+			wl_output_send_mode(resource,
+					    output->current_mode->flags,
+					    output->current_mode->width,
+					    output->current_mode->height,
+					    output->current_mode->refresh);
+		}
+
+		version = wl_resource_get_version(resource);
+		if (version >= WL_OUTPUT_SCALE_SINCE_VERSION && scale_changed)
+			wl_output_send_scale(resource, output->current_scale);
+
+		if (version >= WL_OUTPUT_DONE_SINCE_VERSION)
+			wl_output_send_done(resource);
+	}
+}
+
+static void
+weston_mode_switch_finish(struct weston_output *output,
+			  int mode_changed, int scale_changed)
 {
 	struct weston_seat *seat;
 	struct weston_head *head;
-	struct wl_resource *resource;
 	pixman_region32_t old_output_region;
-	int version;
 
 	pixman_region32_init(&old_output_region);
 	pixman_region32_copy(&old_output_region, &output->region);
@@ -133,22 +163,7 @@ static void weston_mode_switch_finish(struct weston_output *output,
 	head = &output->head;
 
 	/* notify clients of the changes */
-	wl_resource_for_each(resource, &head->resource_list) {
-		if (mode_changed) {
-			wl_output_send_mode(resource,
-					    output->current_mode->flags,
-					    output->current_mode->width,
-					    output->current_mode->height,
-					    output->current_mode->refresh);
-		}
-
-		version = wl_resource_get_version(resource);
-		if (version >= WL_OUTPUT_SCALE_SINCE_VERSION && scale_changed)
-			wl_output_send_scale(resource, output->current_scale);
-
-		if (version >= WL_OUTPUT_DONE_SINCE_VERSION)
-			wl_output_send_done(resource);
-	}
+	weston_mode_switch_send_events(head, mode_changed, scale_changed);
 }
 
 
