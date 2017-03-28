@@ -640,22 +640,6 @@ void RenderThreadImpl::Init(
   shared_bitmap_manager_.reset(
       new ChildSharedBitmapManager(thread_safe_render_message_filter_));
 
-  memory_pressure_listener_.reset(new base::MemoryPressureListener(
-      base::Bind(&RenderThreadImpl::OnMemoryPressure, base::Unretained(this)),
-      base::Bind(&RenderThreadImpl::OnSyncMemoryPressure,
-                 base::Unretained(this))));
-
-  if (base::FeatureList::IsEnabled(features::kMemoryCoordinator)) {
-    // Disable MemoryPressureListener when memory coordinator is enabled.
-    base::MemoryPressureListener::SetNotificationsSuppressed(true);
-
-    mojom::MemoryCoordinatorHandlePtr parent_coordinator;
-    GetConnector()->BindInterface(mojom::kBrowserServiceName,
-                                  mojo::MakeRequest(&parent_coordinator));
-    memory_coordinator_ =
-        CreateChildMemoryCoordinator(std::move(parent_coordinator), this);
-  }
-
   InitializeWebKit(resource_task_queue);
 
   // In single process the single process is all there is.
@@ -839,6 +823,25 @@ void RenderThreadImpl::Init(
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableNewVp9CodecString)) {
     media::EnableNewVp9CodecStringSupport();
+  }
+
+  memory_pressure_listener_.reset(new base::MemoryPressureListener(
+      base::Bind(&RenderThreadImpl::OnMemoryPressure, base::Unretained(this)),
+      base::Bind(&RenderThreadImpl::OnSyncMemoryPressure,
+                 base::Unretained(this))));
+
+  if (base::FeatureList::IsEnabled(features::kMemoryCoordinator)) {
+    // Disable MemoryPressureListener when memory coordinator is enabled.
+    base::MemoryPressureListener::SetNotificationsSuppressed(true);
+
+    // TODO(bashi): Revisit how to manage the lifetime of
+    // ChildMemoryCoordinatorImpl.
+    // https://codereview.chromium.org/2094583002/#msg52
+    mojom::MemoryCoordinatorHandlePtr parent_coordinator;
+    GetConnector()->BindInterface(mojom::kBrowserServiceName,
+                                  mojo::MakeRequest(&parent_coordinator));
+    memory_coordinator_ = CreateChildMemoryCoordinator(
+        std::move(parent_coordinator), this);
   }
 
   int num_raster_threads = 0;
