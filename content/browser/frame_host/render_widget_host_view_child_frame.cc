@@ -406,6 +406,11 @@ void RenderWidgetHostViewChildFrame::OnSwapCompositorFrame(
                          std::move(frame));
 }
 
+void RenderWidgetHostViewChildFrame::OnBeginFrameDidNotSwap(
+    const cc::BeginFrameAck& ack) {
+  support_->BeginFrameDidNotSwap(ack);
+}
+
 void RenderWidgetHostViewChildFrame::ProcessFrameSwappedCallbacks() {
   // We only use callbacks once, therefore we make a new list for registration
   // before we start, and discard the old list entries when we are done.

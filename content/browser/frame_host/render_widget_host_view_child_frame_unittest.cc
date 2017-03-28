@@ -14,10 +14,13 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
+#include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/surfaces/surface_sequence.h"
+#include "cc/test/begin_frame_args_test.h"
+#include "cc/test/fake_external_begin_frame_source.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/gpu/compositor_util.h"
@@ -231,6 +234,52 @@ TEST_F(RenderWidgetHostViewChildFrameTest, FrameEviction) {
       CreateDelegatedFrame(scale_factor, view_size, view_rect));
   EXPECT_EQ(kArbitraryLocalSurfaceId, GetLocalSurfaceId());
   EXPECT_TRUE(view_->has_frame());
+}
+
+// Tests that BeginFrameAcks are forwarded correctly from the
+// SwapCompositorFrame and OnBeginFrameDidNotSwap IPCs through the
+// CompositorFrameSinkSupport.
+TEST_F(RenderWidgetHostViewChildFrameTest, ForwardsBeginFrameAcks) {
+  gfx::Size view_size(100, 100);
+  gfx::Rect view_rect(view_size);
+  float scale_factor = 1.f;
+
+  view_->SetSize(view_size);
+  view_->Show();
+
+  // Replace BeginFrameSource so that we can observe acknowledgments.
+  cc::FakeExternalBeginFrameSource source(0.f, false);
+  uint32_t source_id = source.source_id();
+  static_cast<cc::SurfaceFactoryClient*>(view_->support_.get())
+      ->SetBeginFrameSource(&source);
+  view_->SetNeedsBeginFrames(true);
+
+  {
+    cc::BeginFrameArgs args =
+        cc::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, source_id, 5u);
+    source.TestOnBeginFrame(args);
+
+    // Ack from CompositorFrame is forwarded.
+    cc::BeginFrameAck ack(source_id, 5, 4, true);
+    cc::CompositorFrame frame =
+        CreateDelegatedFrame(scale_factor, view_size, view_rect);
+    frame.metadata.begin_frame_ack = ack;
+    view_->OnSwapCompositorFrame(0, kArbitraryLocalSurfaceId, std::move(frame));
+    EXPECT_EQ(ack, source.LastAckForObserver(view_->support_.get()));
+  }
+
+  {
+    cc::BeginFrameArgs args =
+        cc::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, source_id, 6u);
+    source.TestOnBeginFrame(args);
+
+    // Explicit ack through OnBeginFrameDidNotSwap is forwarded.
+    cc::BeginFrameAck ack(source_id, 6, 4, false);
+    view_->OnBeginFrameDidNotSwap(ack);
+    EXPECT_EQ(ack, source.LastAckForObserver(view_->support_.get()));
+  }
+
+  view_->SetNeedsBeginFrames(false);
 }
 
 }  // namespace content

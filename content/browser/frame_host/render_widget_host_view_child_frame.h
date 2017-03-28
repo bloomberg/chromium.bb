@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "cc/resources/returned_resource.h"
@@ -108,6 +109,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void OnSwapCompositorFrame(uint32_t compositor_frame_sink_id,
                              const cc::LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame) override;
+  void OnBeginFrameDidNotSwap(const cc::BeginFrameAck& ack) override;
   // Since the URL of content rendered by this class is not displayed in
   // the URL bar, this method does not need an implementation.
   void ClearCompositorFrame() override {}
@@ -186,6 +188,8 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   friend class RenderWidgetHostView;
   friend class RenderWidgetHostViewChildFrameTest;
   friend class RenderWidgetHostViewGuestSurfaceTest;
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewChildFrameTest,
+                           ForwardsBeginFrameAcks);
 
   explicit RenderWidgetHostViewChildFrame(RenderWidgetHost* widget);
   void Init();
