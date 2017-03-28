@@ -8,6 +8,11 @@ import("//build/util/process_version.gni")
 import("//extensions/features/features.gni")
 import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
+if (is_mac) {
+  import("//build/config/mac/rules.gni")
+  import("//third_party/icu/config.gni")
+  import("//v8/gni/v8.gni")
+}
 
 assert(enable_extensions)
 
@@ -212,33 +217,43 @@ source_set("app_shell_lib") {
   }
 }
 
-executable("app_shell") {
-  # testonly because :app_shell_lib is testonly. See :app_shell_lib comment.
-  testonly = true
-  sources = [
-    "app/shell_main.cc",
-  ]
-
-  deps = [
-    ":app_shell_lib",
-    "//build/config/sanitizers:deps",
-    "//build/win:default_exe_manifest",
-    "//extensions:shell_and_test_pak",
-  ]
-
-  if (is_win) {
-    configs += [ "//build/config/win:windowed" ]
-    configs -= [ "//build/config/win:console" ]
-  }
-
-  if (is_mac) {
+if (is_mac) {
+  mac_app_bundle("app_shell") {
+    testonly = true
     output_name = "App Shell"
+    sources = [
+      "app/shell_main.cc",
+    ]
+    deps = [
+      ":app_shell_framework_bundle_data",
+      "//build/config/sanitizers:deps",
+      "//extensions:shell_and_test_pak",
+    ]
+    ldflags = [
+      "-rpath",
+      "@executable_path/../",
+    ]
+    info_plist = "app/app-Info.plist"
+  }
+} else {
+  executable("app_shell") {
+    # testonly because :app_shell_lib is testonly. See :app_shell_lib comment.
+    testonly = true
+    sources = [
+      "app/shell_main.cc",
+    ]
 
-    # TODO(GYP): Mac bundling. See also content_shell which this is basically
-    # a copy-paste of.
-    deps += [ ":app_shell_framework" ]
+    deps = [
+      ":app_shell_lib",
+      "//build/config/sanitizers:deps",
+      "//build/win:default_exe_manifest",
+      "//extensions:shell_and_test_pak",
+    ]
 
-    # TODO(GYP): Mac app_shell_helper stuff.
+    if (is_win) {
+      configs += [ "//build/config/win:windowed" ]
+      configs -= [ "//build/config/win:console" ]
+    }
   }
 }
 
@@ -303,17 +318,83 @@ process_version("version_header") {
 }
 
 if (is_mac) {
-  # TODO(GYP) this should be a bundle. Lots of other stuff in this target.
-  # Should be able to copy content shell framework (this is basically a
-  # copy-paste of that target).
-  shared_library("app_shell_framework") {
+  bundle_data("app_shell_framework_resources") {
+    sources = [
+      "$root_gen_dir/extensions/shell/app_shell_resources.pak",
+      "$root_out_dir/extensions_shell_and_test.pak",
+    ]
+    public_deps = [
+      ":resources_grit",
+      "//extensions:shell_and_test_pak",
+    ]
+    if (icu_use_data_file) {
+      sources += [ "$root_out_dir/icudtl.dat" ]
+      public_deps += [ "//third_party/icu:icudata" ]
+    }
+    if (v8_use_external_startup_data) {
+      sources += [
+        "$root_out_dir/natives_blob.bin",
+        "$root_out_dir/snapshot_blob.bin",
+      ]
+      public_deps += [ "//v8" ]
+    }
+    outputs = [
+      "{{bundle_resources_dir}}/{{source_file_part}}",
+    ]
+  }
+
+  mac_framework_bundle("app_shell_framework") {
     testonly = true
+    output_name = "App Shell Framework"
     sources = [
       "app/shell_main_mac.cc",
       "app/shell_main_mac.h",
     ]
-    deps = [
+    public_deps = [
       ":app_shell_lib",
+    ]
+    deps = [
+      ":app_shell_framework_resources",
+    ]
+    ldflags = [ "-Wl,-install_name,@rpath/Frameworks/App Shell Framework.framework/App Shell Framework" ]
+    if (is_component_build) {
+      ldflags += [
+        "-rpath",
+        "@loader_path/../../../..",
+      ]
+    }
+    info_plist = "app/framework-Info.plist"
+  }
+
+  mac_app_bundle("app_shell_helper_app") {
+    testonly = true
+    output_name = "App Shell Helper"
+    sources = [
+      "app/shell_main.cc",
+    ]
+    deps = [
+      ":app_shell_framework+link",
+      "//build/config/sanitizers:deps",
+    ]
+    ldflags = [
+      "-rpath",
+      "@executable_path/../../../..",
+    ]
+    info_plist = "app/helper-Info.plist"
+  }
+
+  bundle_data("app_shell_framework_bundle_data") {
+    testonly = true
+    sources = [
+      "$root_out_dir/App Shell Framework.framework",
+      "$root_out_dir/App Shell Helper.app",
+    ]
+    outputs = [
+      "{{bundle_root_dir}}/Frameworks/{{source_file_part}}",
+    ]
+    public_deps = [
+      ":app_shell_framework+link",
+      ":app_shell_helper_app",
     ]
   }
 }
