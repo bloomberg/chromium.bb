@@ -8,7 +8,11 @@
 #include <stdint.h>
 #include <vector>
 
+#include "base/big_endian.h"
+#include "base/md5.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string16.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/printing/printer_configuration.h"
@@ -46,6 +50,63 @@ std::string CupsURIEscape(const std::string& uri_in) {
     }
   }
   return std::string(buf.data(), buf.size());
+}
+
+// Incorporate the bytes of |val| into the incremental hash carried in |ctx| in
+// big-endian order.  |val| must be a simple integer type
+template <typename T>
+void MD5UpdateBigEndian(base::MD5Context* ctx, T val) {
+  static_assert(std::is_integral<T>::value, "Value must be an integer");
+  char buf[sizeof(T)];
+  base::WriteBigEndian(buf, val);
+  base::MD5Update(ctx, base::StringPiece(buf, sizeof(T)));
+}
+
+// Update the hash with the contents of |str|.
+//
+// UTF-16 strings are a bit fraught for consistency in memory representation;
+// endianness is an issue, but more importantly, there are *optional* prefix
+// codepoints to identify the endianness of the string.
+//
+// This is a long way to say "UTF-16 is hard to hash, let's just convert
+// to UTF-8 and hash that", which avoids all of these issues.
+void MD5UpdateString16(base::MD5Context* ctx, const base::string16& str) {
+  std::string tmp = base::UTF16ToUTF8(str);
+  base::MD5Update(ctx, base::StringPiece(tmp.data(), tmp.size()));
+}
+
+// Get the usb printer id for |device|.  This is used both as the identifier for
+// the printer in the user's PrintersManager and as the name of the printer in
+// CUPS, so it has to satisfy the naming restrictions of both.  CUPS in
+// particular is intolerant of much more than [a-z0-9_-], so we use that
+// character set.  This needs to be stable for a given device, but as unique as
+// possible for that device.  So we basically toss every bit of stable
+// information from the device into an MD5 hash, and then hexify the hash value
+// as a suffix to "usb-" as the final printer id.
+std::string UsbPrinterId(const device::UsbDevice& device) {
+  // Paranoid checks; in the unlikely event someone messes with the USB device
+  // definition, our (supposedly stable) hashes will change.
+  static_assert(sizeof(device.device_class()) == 1, "Class size changed");
+  static_assert(sizeof(device.device_subclass()) == 1, "Subclass size changed");
+  static_assert(sizeof(device.device_protocol()) == 1, "Protocol size changed");
+  static_assert(sizeof(device.vendor_id()) == 2, "Vendor id size changed");
+  static_assert(sizeof(device.product_id()) == 2, "Product id size changed");
+  static_assert(sizeof(device.device_version()) == 2, "Version size changed");
+
+  base::MD5Context ctx;
+  base::MD5Init(&ctx);
+  MD5UpdateBigEndian(&ctx, device.device_class());
+  MD5UpdateBigEndian(&ctx, device.device_subclass());
+  MD5UpdateBigEndian(&ctx, device.device_protocol());
+  MD5UpdateBigEndian(&ctx, device.vendor_id());
+  MD5UpdateBigEndian(&ctx, device.product_id());
+  MD5UpdateBigEndian(&ctx, device.device_version());
+  MD5UpdateString16(&ctx, device.manufacturer_string());
+  MD5UpdateString16(&ctx, device.product_string());
+  MD5UpdateString16(&ctx, device.serial_number());
+  base::MD5Digest digest;
+  base::MD5Final(&digest, &ctx);
+  return base::StringPrintf("usb-%s", base::MD5DigestToBase16(digest).c_str());
 }
 
 }  // namespace
@@ -97,8 +158,8 @@ std::unique_ptr<Printer> UsbDeviceToPrinter(const device::UsbDevice& device) {
                                                printer->manufacturer().c_str(),
                                                printer->model().c_str()));
   printer->set_description(printer->display_name());
-
   printer->set_uri(UsbPrinterUri(device));
+  printer->set_id(UsbPrinterId(device));
   return printer;
 }
 
