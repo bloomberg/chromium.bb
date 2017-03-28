@@ -7,7 +7,7 @@
 
 #include <string>
 
-#import "ios/web_view/public/criwv_translate_manager.h"
+#import "ios/web_view/public/cwv_translate_manager.h"
 
 namespace translate {
 class TranslateManager;
@@ -15,7 +15,7 @@ class TranslateManager;
 
 // CWVTranslateManagerImpl is mostly an Objective-C wrapper around
 // translate::TranslateUIDelegate.
-@interface CWVTranslateManagerImpl : NSObject<CRIWVTranslateManager>
+@interface CWVTranslateManagerImpl : NSObject<CWVTranslateManager>
 
 - (instancetype)init NS_UNAVAILABLE;
 

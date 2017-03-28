@@ -15,7 +15,7 @@
 #include <ChromeWebView/cwv_export.h>
 #endif
 
-@protocol CRIWVTranslateManager;
+@protocol CWVTranslateManager;
 
 typedef NS_ENUM(NSInteger, CRIWVTransateStep) {
   CRIWVTransateStepBeforeTranslate,
@@ -30,7 +30,7 @@ CWV_EXPORT
 @protocol CWVTranslateDelegate
 
 - (void)translateStepChanged:(CRIWVTransateStep)step
-                     manager:(id<CRIWVTranslateManager>)manager;
+                     manager:(id<CWVTranslateManager>)manager;
 
 @end
 

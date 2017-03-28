@@ -28,7 +28,7 @@
   return self;
 }
 
-#pragma mark CRIWVTranslateManager methods
+#pragma mark CWVTranslateManager methods
 
 - (void)translate {
   _translateUIDelegate->Translate();

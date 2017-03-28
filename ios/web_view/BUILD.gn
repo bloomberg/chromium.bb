@@ -23,7 +23,6 @@ ios_framework_bundle("web_view") {
   ]
 
   public_headers = [
-    "public/criwv_translate_manager.h",
     "public/cwv.h",
     "public/cwv_delegate.h",
     "public/cwv_export.h",
@@ -31,6 +30,7 @@ ios_framework_bundle("web_view") {
     "public/cwv_navigation_action.h",
     "public/cwv_navigation_delegate.h",
     "public/cwv_translate_delegate.h",
+    "public/cwv_translate_manager.h",
     "public/cwv_ui_delegate.h",
     "public/cwv_user_content_controller.h",
     "public/cwv_user_script.h",

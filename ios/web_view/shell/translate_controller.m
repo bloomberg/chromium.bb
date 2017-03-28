@@ -6,7 +6,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/web_view/public/criwv_translate_manager.h"
+#import "ios/web_view/public/cwv_translate_manager.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -16,7 +16,7 @@
 // Action Sheet to prompt user whether or not the page should be translated.
 @property(nonatomic, strong) UIAlertController* beforeTranslateActionSheet;
 // Manager which performs the translation of the content.
-@property(nonatomic, strong) id<CRIWVTranslateManager> translateManager;
+@property(nonatomic, strong) id<CWVTranslateManager> translateManager;
 @end
 
 @implementation TranslateController
@@ -32,7 +32,7 @@
 #pragma mark CWVTranslateDelegate methods
 
 - (void)translateStepChanged:(CRIWVTransateStep)step
-                     manager:(id<CRIWVTranslateManager>)manager {
+                     manager:(id<CWVTranslateManager>)manager {
   if (step == CRIWVTransateStepBeforeTranslate) {
     self.translateManager = manager;
     self.beforeTranslateActionSheet = [UIAlertController

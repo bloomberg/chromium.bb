@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_VIEW_PUBLIC_CRIWV_TRANSLATE_MANAGER_H_
-#define IOS_WEB_VIEW_PUBLIC_CRIWV_TRANSLATE_MANAGER_H_
+#ifndef IOS_WEB_VIEW_PUBLIC_CWV_TRANSLATE_MANAGER_H_
+#define IOS_WEB_VIEW_PUBLIC_CWV_TRANSLATE_MANAGER_H_
 
 #import <Foundation/Foundation.h>
 
@@ -18,7 +18,7 @@
 // Interface to manage the translation flow.
 // Clients are not supposed to instantiate or subclass it.
 CWV_EXPORT
-@protocol CRIWVTranslateManager<NSObject>
+@protocol CWVTranslateManager<NSObject>
 
 - (void)translate;
 
@@ -26,4 +26,4 @@ CWV_EXPORT
 
 @end
 
-#endif  // IOS_WEB_VIEW_PUBLIC_CRIWV_TRANSLATE_MANAGER_H_
+#endif  // IOS_WEB_VIEW_PUBLIC_CWV_TRANSLATE_MANAGER_H_

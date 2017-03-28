@@ -9,7 +9,6 @@ source_set("public") {
   ]
 
   sources = [
-    "criwv_translate_manager.h",
     "cwv.h",
     "cwv_delegate.h",
     "cwv_export.h",
@@ -17,6 +16,7 @@ source_set("public") {
     "cwv_navigation_action.h",
     "cwv_navigation_delegate.h",
     "cwv_translate_delegate.h",
+    "cwv_translate_manager.h",
     "cwv_ui_delegate.h",
     "cwv_user_content_controller.h",
     "cwv_user_script.h",
