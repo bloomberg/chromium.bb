@@ -16,7 +16,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "net/log/net_log.h"
@@ -24,6 +23,7 @@
 #include "net/log/net_log_event_type.h"
 #include "net/spdy/platform/api/spdy_estimate_memory_usage.h"
 #include "net/spdy/platform/api/spdy_string_piece.h"
+#include "net/spdy/platform/api/spdy_string_utils.h"
 #include "net/spdy/spdy_buffer_producer.h"
 #include "net/spdy/spdy_http_utils.h"
 #include "net/spdy/spdy_session.h"
@@ -288,10 +288,10 @@ void SpdyStream::IncreaseSendWindowSize(int32_t delta_window_size) {
     int32_t max_delta_window_size =
         std::numeric_limits<int32_t>::max() - send_window_size_;
     if (delta_window_size > max_delta_window_size) {
-      std::string desc = base::StringPrintf(
+      std::string desc = SpdyStringPrintf(
           "Received WINDOW_UPDATE [delta: %d] for stream %d overflows "
-          "send_window_size_ [current: %d]", delta_window_size, stream_id_,
-          send_window_size_);
+          "send_window_size_ [current: %d]",
+          delta_window_size, stream_id_, send_window_size_);
       session_->ResetStream(stream_id_, ERROR_CODE_FLOW_CONTROL_ERROR, desc);
       return;
     }
@@ -936,9 +936,9 @@ void SpdyStream::SaveResponseHeaders(const SpdyHeaderBlock& response_headers) {
     delegate_->OnHeadersReceived(response_headers_);
 }
 
-#define STATE_CASE(s) \
-  case s: \
-    description = base::StringPrintf("%s (0x%08X)", #s, s); \
+#define STATE_CASE(s)                                     \
+  case s:                                                 \
+    description = SpdyStringPrintf("%s (0x%08X)", #s, s); \
     break
 
 std::string SpdyStream::DescribeState(State state) {
@@ -950,8 +950,7 @@ std::string SpdyStream::DescribeState(State state) {
     STATE_CASE(STATE_HALF_CLOSED_LOCAL);
     STATE_CASE(STATE_CLOSED);
     default:
-      description = base::StringPrintf("Unknown state 0x%08X (%u)", state,
-                                       state);
+      description = SpdyStringPrintf("Unknown state 0x%08X (%u)", state, state);
       break;
   }
   return description;
