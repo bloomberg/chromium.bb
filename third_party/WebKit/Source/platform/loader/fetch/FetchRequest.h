@@ -105,8 +105,10 @@ class PLATFORM_EXPORT FetchRequest {
 
   double preloadDiscoveryTime() { return m_preloadDiscoveryTime; }
 
-  bool isLinkPreload() const { return m_linkPreload; }
-  void setLinkPreload(bool isLinkPreload) { m_linkPreload = isLinkPreload; }
+  bool isLinkPreload() const { return m_options.initiatorInfo.isLinkPreload; }
+  void setLinkPreload(bool isLinkPreload) {
+    m_options.initiatorInfo.isLinkPreload = isLinkPreload;
+  }
 
   void setContentSecurityCheck(
       ContentSecurityPolicyDisposition contentSecurityPolicyOption) {
@@ -157,7 +159,6 @@ class PLATFORM_EXPORT FetchRequest {
   String m_charset;
   ResourceLoaderOptions m_options;
   bool m_speculativePreload;
-  bool m_linkPreload;
   double m_preloadDiscoveryTime;
   DeferOption m_defer;
   OriginRestriction m_originRestriction;

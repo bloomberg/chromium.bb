@@ -35,13 +35,17 @@ namespace blink {
 struct FetchInitiatorInfo {
   DISALLOW_NEW();
   FetchInitiatorInfo()
-      : name(), position(TextPosition::belowRangePosition()), startTime(0.0) {}
+      : name(),
+        position(TextPosition::belowRangePosition()),
+        startTime(0.0),
+        isLinkPreload(false) {}
 
   // When adding members, CrossThreadFetchInitiatorInfoData should be
   // updated.
   AtomicString name;
   TextPosition position;
   double startTime;
+  bool isLinkPreload;
 };
 
 // Encode AtomicString as String to cross threads.
@@ -50,19 +54,22 @@ struct CrossThreadFetchInitiatorInfoData {
   explicit CrossThreadFetchInitiatorInfoData(const FetchInitiatorInfo& info)
       : name(info.name.getString().isolatedCopy()),
         position(info.position),
-        startTime(info.startTime) {}
+        startTime(info.startTime),
+        isLinkPreload(info.isLinkPreload) {}
 
   operator FetchInitiatorInfo() const {
     FetchInitiatorInfo info;
     info.name = AtomicString(name);
     info.position = position;
     info.startTime = startTime;
+    info.isLinkPreload = isLinkPreload;
     return info;
   }
 
   String name;
   TextPosition position;
   double startTime;
+  bool isLinkPreload;
 };
 
 }  // namespace blink

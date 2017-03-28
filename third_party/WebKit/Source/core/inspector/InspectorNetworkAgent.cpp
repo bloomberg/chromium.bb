@@ -637,6 +637,8 @@ void InspectorNetworkAgent::willSendRequestInternal(
       MixedContentChecker::contextTypeForInspector(frame, request)));
 
   requestInfo->setReferrerPolicy(referrerPolicy(request.getReferrerPolicy()));
+  if (initiatorInfo.isLinkPreload)
+    requestInfo->setIsLinkPreload(true);
 
   String resourceType = InspectorPageAgent::resourceTypeJson(type);
   frontend()->requestWillBeSent(
