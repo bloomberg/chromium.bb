@@ -63,12 +63,17 @@ class CacheManager(object):
 
     Returns a context manager that must be closed as soon as possible.
     """
-    state_path = os.path.join(self.root_dir, u'state.json')
     with self._lock:
+      state_path = os.path.join(self.root_dir, u'state.json')
+      assert self._lru is None, 'acquired lock, but self._lru is not None'
       if os.path.isfile(state_path):
-        self._lru = lru.LRUDict.load(state_path)
-      else:
-        self._lru = lru.LRUDict()
+        try:
+          self._lru = lru.LRUDict.load(state_path)
+        except ValueError:
+          logging.exception('failed to load named cache state file')
+          logging.warning('deleting named caches')
+          file_path.rmtree(self.root_dir)
+      self._lru = self._lru or lru.LRUDict()
       if time_fn:
         self._lru.time_fn = time_fn
       try:
