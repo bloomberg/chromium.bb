@@ -481,7 +481,6 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
   pepper_playback_observer_.reset(new PepperPlaybackObserver(this));
 #endif
 
-  wake_lock_context_host_.reset(new WakeLockContextHost(this));
   loader_io_thread_notifier_.reset(new LoaderIOThreadNotifier(this));
   host_zoom_map_observer_.reset(new HostZoomMapObserver(this));
 }
@@ -2491,6 +2490,8 @@ WebContentsImpl::GetGeolocationServiceContext() {
 }
 
 device::mojom::WakeLockContext* WebContentsImpl::GetWakeLockServiceContext() {
+  if (!wake_lock_context_host_)
+    wake_lock_context_host_.reset(new WakeLockContextHost(this));
   return wake_lock_context_host_->GetWakeLockContext();
 }
 
