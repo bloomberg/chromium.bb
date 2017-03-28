@@ -30,11 +30,14 @@ import android.view.animation.OvershootInterpolator;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.content.R;
 
 /**
- * PopupZoomer is used to show the on-demand link zooming popup. It handles manipulation of the
- * canvas and touch events to display the on-demand zoom magnifier.
+ * PopupZoomer is used to show the tap disambiguation popup.  When a tap lands ambiguously
+ * between two tiny touch targets (usually links) on a desktop site viewed on a phone,
+ * a magnified view of the content is shown, the screen is grayed out and the user
+ * must re-tap the magnified content in order to clarify their intent.
  */
 class PopupZoomer extends View {
     private static final String TAG = "cr.PopupZoomer";
@@ -45,6 +48,21 @@ class PopupZoomer extends View {
     private static final int ZOOM_BOUNDS_MARGIN = 25;
     // Time it takes for the animation to finish in ms.
     private static final long ANIMATION_DURATION = 300;
+
+    // Note that these values should be cross-checked against
+    // tools/metrics/histograms/histograms.xml.  Values should only be appended,
+    // not changed or removed.
+    private static final String UMA_TAPDISAMBIGUATION = "Touchscreen.TapDisambiguation";
+    private static final int UMA_TAPDISAMBIGUATION_OTHER = 0;
+    private static final int UMA_TAPDISAMBIGUATION_BACKBUTTON = 1;
+    private static final int UMA_TAPDISAMBIGUATION_TAPPEDOUTSIDE = 2;
+    private static final int UMA_TAPDISAMBIGUATION_TAPPEDINSIDE = 3;
+    private static final int UMA_TAPDISAMBIGUATION_COUNT = 4;
+
+    private void recordHistogram(int value) {
+        RecordHistogram.recordEnumeratedHistogram(
+                UMA_TAPDISAMBIGUATION, value, UMA_TAPDISAMBIGUATION_COUNT);
+    }
 
     /**
      * Interface to be implemented to listen for touch events inside the zoomed area.
@@ -188,7 +206,7 @@ class PopupZoomer extends View {
                         if (mAnimating) return true;
 
                         if (isTouchOutsideArea(e1.getX(), e1.getY())) {
-                            hide(true);
+                            tappedOutside();
                         } else {
                             scroll(distanceX, distanceY);
                         }
@@ -211,8 +229,7 @@ class PopupZoomer extends View {
                         float x = e.getX();
                         float y = e.getY();
                         if (isTouchOutsideArea(x, y)) {
-                            // User clicked on area outside the popup.
-                            hide(true);
+                            tappedOutside();
                         } else if (mOnTapListener != null) {
                             PointF converted = convertTouchPoint(x, y);
                             MotionEvent event = MotionEvent.obtainNoHistory(e);
@@ -222,7 +239,7 @@ class PopupZoomer extends View {
                             } else {
                                 mOnTapListener.onSingleTap(PopupZoomer.this, event);
                             }
-                            hide(true);
+                            tappedInside();
                         }
                         return true;
                     }
@@ -509,17 +526,39 @@ class PopupZoomer extends View {
     }
 
     /**
-     * Hide the PopupZoomer view.
+     * Hide the PopupZoomer view because of some external event such as focus
+     * change, JS-originating scroll, etc.
      * @param animation true if hide with animation.
      */
     public void hide(boolean animation) {
         if (!mShowing) return;
+        recordHistogram(UMA_TAPDISAMBIGUATION_OTHER);
 
         if (animation) {
             startAnimation(false);
         } else {
             hideImmediately();
         }
+    }
+    private void tappedInside() {
+        if (!mShowing) return;
+        recordHistogram(UMA_TAPDISAMBIGUATION_TAPPEDINSIDE);
+
+        startAnimation(false);
+    }
+
+    private void tappedOutside() {
+        if (!mShowing) return;
+        recordHistogram(UMA_TAPDISAMBIGUATION_TAPPEDOUTSIDE);
+
+        startAnimation(false);
+    }
+
+    public void backButtonPressed() {
+        if (!mShowing) return;
+        recordHistogram(UMA_TAPDISAMBIGUATION_BACKBUTTON);
+
+        startAnimation(false);
     }
 
     /**

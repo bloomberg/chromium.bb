@@ -1374,7 +1374,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
      */
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (mPopupZoomer.isShowing() && keyCode == KeyEvent.KEYCODE_BACK) {
-            mPopupZoomer.hide(true);
+            mPopupZoomer.backButtonPressed();
             return true;
         }
         return mContainerViewInternals.super_onKeyUp(keyCode, event);
