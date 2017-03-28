@@ -4,14 +4,7 @@
 
 import logging
 
-import symbols
-
-
-class ParseResult(object):
-  """Return value for Parse() methods."""
-  def __init__(self, symbol_list, section_sizes=None):
-    self.symbol_group = symbols.SymbolGroup(symbol_list)
-    self.section_sizes = section_sizes  # E.g. {'.text': 0}
+import models
 
 
 class MapFileParser(object):
@@ -31,7 +24,7 @@ class MapFileParser(object):
       lines: Iterable of lines.
 
     Returns:
-      A ParseResult object.
+      A SizeInfo object.
     """
     self._lines = iter(lines)
     logging.info('Parsing common symbols')
@@ -39,7 +32,8 @@ class MapFileParser(object):
     logging.debug('.bss common entries: %d', len(self._symbols))
     logging.info('Parsing section symbols')
     self._ParseSections()
-    return ParseResult(self._symbols, self._section_sizes)
+    return models.SizeInfo(models.SymbolGroup(self._symbols),
+                           self._section_sizes)
 
   def _SkipToLineWithPrefix(self, prefix):
     for l in self._lines:
@@ -73,7 +67,7 @@ class MapFileParser(object):
         break
       name, size_str, path = parts
       self._symbols.append(
-          symbols.Symbol('.bss', 0, int(size_str[2:], 16), name, path))
+          models.Symbol('.bss',  int(size_str[2:], 16), name=name, path=path))
 
   def _ParseSections(self):
 # .text           0x0028c600  0x22d3468
@@ -103,6 +97,7 @@ class MapFileParser(object):
 # ** common      0x02db5700   0x13ab48
     self._SkipToLineWithPrefix('Memory map')
     syms = self._symbols
+    symbol_gap_count = 0
     while True:
       line = self._SkipToLineWithPrefix('.')
       if not line:
@@ -145,37 +140,18 @@ class MapFileParser(object):
               size = int(size_str[2:], 16)
               path = None
               syms.append(
-                  symbols.Symbol(section_name, address, size, name, path))
+                  models.Symbol(section_name, size, address=address, name=name,
+                                path=path))
             else:
               # A normal symbol entry.
               subsection_name, address_str, size_str, path = (
                   self._ParsePossiblyWrappedParts(line, 4))
               size = int(size_str[2:], 16)
-              if address_str == '0xffffffffffffffff':
-                # The section needs special handling (e.g., a merge section)
-                # It also generally has a large offset after it, so don't
-                # penalize the subsequent symbol for this gap (e.g. a 50kb gap).
-                # TODO(agrieve): Learn more about why this happens.
-                address = -1
-                if syms and syms[-1].address > 0:
-                  merge_symbol_start_address = syms[-1].end_address
-                merge_symbol_start_address += size
-              else:
-                address = int(address_str[2:], 16)
-                # Finish off active address gap / merge section.
-                if merge_symbol_start_address:
-                  merge_size = address - merge_symbol_start_address
-                  sym = symbols.Symbol(
-                      section_name, merge_symbol_start_address, merge_size,
-                      '** merged symbol: %s' % syms[-1].name, syms[-1].path)
-                  logging.debug('Merge symbol of size %d found at:\n  %r',
-                                merge_size, syms[-1])
-                  syms.append(sym)
-                  merge_symbol_start_address = 0
               assert subsection_name.startswith(section_name), (
                   'subsection name was: ' + subsection_name)
               mangled_name = subsection_name[prefix_len:]
               name = None
+              address_str2 = None
               while True:
                 line = next(self._lines).rstrip()
                 if not line or line.startswith(' .'):
@@ -191,14 +167,40 @@ class MapFileParser(object):
                   break
                 elif name is None:
                   address_str2, name = self._ParsePossiblyWrappedParts(line, 2)
-                  if address == -1:
-                    address = int(address_str2[2:], 16) - 1
 
+              if address_str == '0xffffffffffffffff':
+                # The section needs special handling (e.g., a merge section)
+                # It also generally has a large offset after it, so don't
+                # penalize the subsequent symbol for this gap (e.g. a 50kb gap).
+                # There seems to be no corelation between where these gaps occur
+                # and the symbols they come in-between.
+                # TODO(agrieve): Learn more about why this happens.
+                address = -1
+                if syms and syms[-1].address > 0:
+                  merge_symbol_start_address = syms[-1].end_address
+                merge_symbol_start_address += size
+              else:
+                address = int(address_str[2:], 16)
+                # Finish off active address gap / merge section.
+                if merge_symbol_start_address:
+                  merge_size = address - merge_symbol_start_address
+                  logging.debug('Merge symbol of size %d found at:\n  %r',
+                                merge_size, syms[-1])
+                  sym = models.Symbol(
+                      section_name, merge_size,
+                      address=merge_symbol_start_address,
+                      name='** symbol gap %d' % symbol_gap_count, path=path)
+                  symbol_gap_count += 1
+                  syms.append(sym)
+                  merge_symbol_start_address = 0
+
+              if address == -1 and address_str2:
+                address = int(address_str2[2:], 16) - 1
               # Merge sym with no second line showing real address.
               if address == -1:
                 address = syms[-1].end_address
-              syms.append(symbols.Symbol(section_name, address, size,
-                                         name or mangled_name, path))
+              syms.append(models.Symbol(section_name, size, address=address,
+                                        name=name or mangled_name, path=path))
           logging.debug('Symbol count for %s: %d', section_name,
                         len(syms) - sym_count_at_start)
       except:
