@@ -770,8 +770,8 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeName, OnDidChangeName)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidSetFeaturePolicyHeader,
                         OnDidSetFeaturePolicyHeader)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidAddContentSecurityPolicy,
-                        OnDidAddContentSecurityPolicy)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_DidAddContentSecurityPolicies,
+                        OnDidAddContentSecurityPolicies)
     IPC_MESSAGE_HANDLER(FrameHostMsg_EnforceInsecureRequestPolicy,
                         OnEnforceInsecureRequestPolicy)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateToUniqueOrigin,
@@ -1926,12 +1926,14 @@ void RenderFrameHostImpl::OnDidSetFeaturePolicyHeader(
   feature_policy_->SetHeaderPolicy(parsed_header);
 }
 
-void RenderFrameHostImpl::OnDidAddContentSecurityPolicy(
-    const ContentSecurityPolicyHeader& header,
+void RenderFrameHostImpl::OnDidAddContentSecurityPolicies(
     const std::vector<ContentSecurityPolicy>& policies) {
-  frame_tree_node()->AddContentSecurityPolicy(header);
-  for (const ContentSecurityPolicy& policy : policies)
+  std::vector<ContentSecurityPolicyHeader> headers;
+  for (const ContentSecurityPolicy& policy : policies) {
     AddContentSecurityPolicy(policy);
+    headers.push_back(policy.header);
+  }
+  frame_tree_node()->AddContentSecurityPolicies(headers);
 }
 
 void RenderFrameHostImpl::OnEnforceInsecureRequestPolicy(

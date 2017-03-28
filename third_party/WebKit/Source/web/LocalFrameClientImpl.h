@@ -188,11 +188,8 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void didChangeSandboxFlags(Frame* childFrame, SandboxFlags) override;
   void didSetFeaturePolicyHeader(
       const WebParsedFeaturePolicy& parsedHeader) override;
-  void didAddContentSecurityPolicy(
-      const String& headerValue,
-      ContentSecurityPolicyHeaderType,
-      ContentSecurityPolicyHeaderSource,
-      const std::vector<WebContentSecurityPolicy>&) override;
+  void didAddContentSecurityPolicies(
+      const blink::WebVector<WebContentSecurityPolicy>&) override;
   void didChangeFrameOwnerProperties(HTMLFrameElementBase*) override;
 
   void dispatchWillStartUsingPeerConnectionHandler(

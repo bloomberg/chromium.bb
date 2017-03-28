@@ -20,15 +20,19 @@ class CSPContextTest : public CSPContext {
   std::string console_message_;
 };
 
+ContentSecurityPolicyHeader EmptyCspHeader() {
+  return ContentSecurityPolicyHeader(std::string(),
+                                     blink::WebContentSecurityPolicyTypeEnforce,
+                                     blink::WebContentSecurityPolicySourceHTTP);
+}
+
 }  // namespace
 
 TEST(ContentSecurityPolicy, NoDirective) {
   CSPContextTest context;
   std::vector<std::string> report_end_points;  // empty
-  ContentSecurityPolicy policy(blink::WebContentSecurityPolicyTypeEnforce,
-                               blink::WebContentSecurityPolicySourceHTTP,
-                               std::vector<CSPDirective>(), report_end_points,
-                               "" /* header */);
+  ContentSecurityPolicy policy(EmptyCspHeader(), std::vector<CSPDirective>(),
+                               report_end_points);
 
   EXPECT_TRUE(ContentSecurityPolicy::Allow(policy, CSPDirective::FormAction,
                                            GURL("http://www.example.com"),
@@ -45,9 +49,8 @@ TEST(ContentSecurityPolicy, ReportViolation) {
   CSPSourceList source_list(false, false, {source});
   CSPDirective directive(CSPDirective::FormAction, source_list);
   std::vector<std::string> report_end_points;  // empty
-  ContentSecurityPolicy policy(blink::WebContentSecurityPolicyTypeEnforce,
-                               blink::WebContentSecurityPolicySourceHTTP,
-                               {directive}, report_end_points, "" /* header */);
+  ContentSecurityPolicy policy(EmptyCspHeader(), {directive},
+                               report_end_points);
 
   EXPECT_FALSE(ContentSecurityPolicy::Allow(policy, CSPDirective::FormAction,
                                             GURL("http://www.not-example.com"),
@@ -71,10 +74,9 @@ TEST(ContentSecurityPolicy, DirectiveFallback) {
   {
     CSPContextTest context;
     ContentSecurityPolicy policy(
-        blink::WebContentSecurityPolicyTypeEnforce,
-        blink::WebContentSecurityPolicySourceHTTP,
+        EmptyCspHeader(),
         {CSPDirective(CSPDirective::DefaultSrc, source_list_a)},
-        report_end_points, "" /* header */);
+        report_end_points);
     EXPECT_FALSE(ContentSecurityPolicy::Allow(policy, CSPDirective::FrameSrc,
                                               GURL("http://b.com"), &context));
     const char console_message[] =
@@ -89,10 +91,8 @@ TEST(ContentSecurityPolicy, DirectiveFallback) {
   {
     CSPContextTest context;
     ContentSecurityPolicy policy(
-        blink::WebContentSecurityPolicyTypeEnforce,
-        blink::WebContentSecurityPolicySourceHTTP,
-        {CSPDirective(CSPDirective::ChildSrc, source_list_a)},
-        report_end_points, "" /* header */);
+        EmptyCspHeader(), {CSPDirective(CSPDirective::ChildSrc, source_list_a)},
+        report_end_points);
     EXPECT_FALSE(ContentSecurityPolicy::Allow(policy, CSPDirective::FrameSrc,
                                               GURL("http://b.com"), &context));
     const char console_message[] =
@@ -108,11 +108,10 @@ TEST(ContentSecurityPolicy, DirectiveFallback) {
     CSPContextTest context;
     CSPSourceList source_list(false, false, {source_a, source_b});
     ContentSecurityPolicy policy(
-        blink::WebContentSecurityPolicyTypeEnforce,
-        blink::WebContentSecurityPolicySourceHTTP,
+        EmptyCspHeader(),
         {CSPDirective(CSPDirective::FrameSrc, {source_list_a}),
          CSPDirective(CSPDirective::ChildSrc, {source_list_b})},
-        report_end_points, "" /* header */);
+        report_end_points);
     EXPECT_TRUE(ContentSecurityPolicy::Allow(policy, CSPDirective::FrameSrc,
                                              GURL("http://a.com"), &context));
     EXPECT_FALSE(ContentSecurityPolicy::Allow(policy, CSPDirective::FrameSrc,

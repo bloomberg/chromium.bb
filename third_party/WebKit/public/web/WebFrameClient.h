@@ -235,11 +235,8 @@ class BLINK_EXPORT WebFrameClient {
   // document.  This can be triggered by handling of HTTP headers, handling
   // of <meta> element, or by inheriting CSP from the parent (in case of
   // about:blank).
-  virtual void didAddContentSecurityPolicy(
-      const WebString& headerValue,
-      WebContentSecurityPolicyType type,
-      WebContentSecurityPolicySource source,
-      const std::vector<WebContentSecurityPolicy>& policies) {}
+  virtual void didAddContentSecurityPolicies(
+      const WebVector<WebContentSecurityPolicy>& policies) {}
 
   // Some frame owner properties have changed for a child frame of this frame.
   // Frame owner properties currently include: scrolling, marginwidth and

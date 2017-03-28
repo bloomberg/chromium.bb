@@ -280,14 +280,12 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual void didSetFeaturePolicyHeader(
       const WebParsedFeaturePolicy& parsedHeader) {}
 
-  // Called when a new Content Security Policy is added to the frame's document.
-  // This can be triggered by handling of HTTP headers, handling of <meta>
-  // element, or by inheriting CSP from the parent (in case of about:blank).
-  virtual void didAddContentSecurityPolicy(
-      const String& headerValue,
-      ContentSecurityPolicyHeaderType,
-      ContentSecurityPolicyHeaderSource,
-      const std::vector<WebContentSecurityPolicy>&) {}
+  // Called when a set of new Content Security Policies is added to the frame's
+  // document. This can be triggered by handling of HTTP headers, handling of
+  // <meta> element, or by inheriting CSP from the parent (in case of
+  // about:blank).
+  virtual void didAddContentSecurityPolicies(
+      const blink::WebVector<WebContentSecurityPolicy>&) {}
 
   virtual void didChangeFrameOwnerProperties(HTMLFrameElementBase*) {}
 

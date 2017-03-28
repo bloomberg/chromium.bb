@@ -921,16 +921,10 @@ void LocalFrameClientImpl::didSetFeaturePolicyHeader(
     m_webFrame->client()->didSetFeaturePolicyHeader(parsedHeader);
 }
 
-void LocalFrameClientImpl::didAddContentSecurityPolicy(
-    const String& headerValue,
-    ContentSecurityPolicyHeaderType type,
-    ContentSecurityPolicyHeaderSource source,
-    const std::vector<WebContentSecurityPolicy>& policies) {
-  if (m_webFrame->client()) {
-    m_webFrame->client()->didAddContentSecurityPolicy(
-        headerValue, static_cast<WebContentSecurityPolicyType>(type),
-        static_cast<WebContentSecurityPolicySource>(source), policies);
-  }
+void LocalFrameClientImpl::didAddContentSecurityPolicies(
+    const blink::WebVector<WebContentSecurityPolicy>& policies) {
+  if (m_webFrame->client())
+    m_webFrame->client()->didAddContentSecurityPolicies(policies);
 }
 
 void LocalFrameClientImpl::didChangeFrameOwnerProperties(

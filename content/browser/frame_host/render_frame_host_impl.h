@@ -100,7 +100,6 @@ class ResourceRequestBody;
 class StreamHandle;
 class TimeoutMonitor;
 class WebBluetoothServiceImpl;
-struct ContentSecurityPolicyHeader;
 struct ContextMenuParams;
 struct FileChooserParams;
 struct FrameOwnerProperties;
@@ -730,12 +729,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnDidSetFeaturePolicyHeader(
       const ParsedFeaturePolicyHeader& parsed_header);
 
-  // A CSP |header| has been added.
-  // RFC2616, section 4.2 specifies that headers appearing multiple times can be
-  // combined with a comma. Hence zero, one or several |policies| are added to
-  // the document.
-  void OnDidAddContentSecurityPolicy(
-      const ContentSecurityPolicyHeader& header,
+  // A new set of CSP |policies| has been added to the document.
+  void OnDidAddContentSecurityPolicies(
       const std::vector<ContentSecurityPolicy>& policies);
 
   void OnEnforceInsecureRequestPolicy(blink::WebInsecureRequestPolicy policy);

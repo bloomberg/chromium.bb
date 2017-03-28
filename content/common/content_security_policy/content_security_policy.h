@@ -23,19 +23,15 @@ class CSPContext;
 // enforced upon requests.
 struct CONTENT_EXPORT ContentSecurityPolicy {
   ContentSecurityPolicy();
-  ContentSecurityPolicy(blink::WebContentSecurityPolicyType disposition,
-                        blink::WebContentSecurityPolicySource source,
+  ContentSecurityPolicy(const ContentSecurityPolicyHeader& header,
                         const std::vector<CSPDirective>& directives,
-                        const std::vector<std::string>& report_endpoints,
-                        const std::string& header);
+                        const std::vector<std::string>& report_endpoints);
   ContentSecurityPolicy(const ContentSecurityPolicy&);
   ~ContentSecurityPolicy();
 
-  blink::WebContentSecurityPolicyType disposition;
-  blink::WebContentSecurityPolicySource source;
+  ContentSecurityPolicyHeader header;
   std::vector<CSPDirective> directives;
   std::vector<std::string> report_endpoints;
-  std::string header;
 
   std::string ToString() const;
 

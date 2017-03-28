@@ -231,8 +231,7 @@ void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
     web_frame_->setHasReceivedUserGesture();
 
   web_frame_->resetReplicatedContentSecurityPolicy();
-  for (const auto& header : state.accumulated_csp_headers)
-    OnAddContentSecurityPolicy(header);
+  OnAddContentSecurityPolicies(state.accumulated_csp_headers);
 }
 
 // Update the proxy's SecurityContext and FrameOwner with new sandbox flags
@@ -276,8 +275,8 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateSandboxFlags, OnDidUpdateSandboxFlags)
     IPC_MESSAGE_HANDLER(FrameMsg_DispatchLoad, OnDispatchLoad)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateName, OnDidUpdateName)
-    IPC_MESSAGE_HANDLER(FrameMsg_AddContentSecurityPolicy,
-                        OnAddContentSecurityPolicy)
+    IPC_MESSAGE_HANDLER(FrameMsg_AddContentSecurityPolicies,
+                        OnAddContentSecurityPolicies)
     IPC_MESSAGE_HANDLER(FrameMsg_ResetContentSecurityPolicy,
                         OnResetContentSecurityPolicy)
     IPC_MESSAGE_HANDLER(FrameMsg_EnforceInsecureRequestPolicy,
@@ -351,11 +350,13 @@ void RenderFrameProxy::OnDidUpdateName(const std::string& name,
   unique_name_ = unique_name;
 }
 
-void RenderFrameProxy::OnAddContentSecurityPolicy(
-    const ContentSecurityPolicyHeader& header) {
-  web_frame_->addReplicatedContentSecurityPolicyHeader(
-      blink::WebString::fromUTF8(header.header_value), header.type,
-      header.source);
+void RenderFrameProxy::OnAddContentSecurityPolicies(
+    const std::vector<ContentSecurityPolicyHeader>& headers) {
+  for (const auto& header : headers) {
+    web_frame_->addReplicatedContentSecurityPolicyHeader(
+        blink::WebString::fromUTF8(header.header_value), header.type,
+        header.source);
+  }
 }
 
 void RenderFrameProxy::OnResetContentSecurityPolicy() {

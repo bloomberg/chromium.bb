@@ -46,11 +46,10 @@ ContentSecurityPolicy BuildContentSecurityPolicy(
   for (const blink::WebString& endpoint : policy.reportEndpoints)
     report_endpoints.push_back(endpoint.utf8());
 
-  return ContentSecurityPolicy(policy.disposition,     // disposition
-                               policy.source,          // source
-                               directives,             // directives
-                               report_endpoints,       // report_endpoints
-                               policy.header.utf8());  // header
+  return ContentSecurityPolicy(
+      ContentSecurityPolicyHeader(policy.header.utf8(), policy.disposition,
+                                  policy.source),
+      directives, report_endpoints);
 }
 
 blink::WebContentSecurityPolicyViolation BuildWebContentSecurityPolicyViolation(

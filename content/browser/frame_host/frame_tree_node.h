@@ -168,9 +168,9 @@ class CONTENT_EXPORT FrameTreeNode {
   // Clear any feature policy header associated with the frame.
   void ResetFeaturePolicyHeader();
 
-  // Add CSP header to replication state, notify proxies about the update and
-  // enforce it on the browser.
-  void AddContentSecurityPolicy(const ContentSecurityPolicyHeader& header);
+  // Add CSP headers to replication state, notify proxies about the update.
+  void AddContentSecurityPolicies(
+      const std::vector<ContentSecurityPolicyHeader>& headers);
 
   // Discards previous CSP headers and notifies proxies about the update.
   // Typically invoked after committing navigation to a new document (since the

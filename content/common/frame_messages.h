@@ -570,11 +570,9 @@ IPC_STRUCT_TRAITS_BEGIN(content::CSPDirective)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::ContentSecurityPolicy)
-  IPC_STRUCT_TRAITS_MEMBER(disposition)
-  IPC_STRUCT_TRAITS_MEMBER(source)
+  IPC_STRUCT_TRAITS_MEMBER(header)
   IPC_STRUCT_TRAITS_MEMBER(directives)
   IPC_STRUCT_TRAITS_MEMBER(report_endpoints)
-  IPC_STRUCT_TRAITS_MEMBER(header)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::ContentSecurityPolicyHeader)
@@ -823,8 +821,8 @@ IPC_MESSAGE_ROUTED2(FrameMsg_DidUpdateName,
                     std::string /* unique_name */)
 
 // Updates replicated ContentSecurityPolicy in a frame proxy.
-IPC_MESSAGE_ROUTED1(FrameMsg_AddContentSecurityPolicy,
-                    content::ContentSecurityPolicyHeader)
+IPC_MESSAGE_ROUTED1(FrameMsg_AddContentSecurityPolicies,
+                    std::vector<content::ContentSecurityPolicyHeader>)
 
 // Resets ContentSecurityPolicy in a frame proxy / in RemoteSecurityContext.
 IPC_MESSAGE_ROUTED0(FrameMsg_ResetContentSecurityPolicy)
@@ -1109,9 +1107,8 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_DidSetFeaturePolicyHeader,
 // headers and/or policies that might have been inherited from the parent frame)
 // or when a new policy has been discovered afterwards (i.e. found in a
 // dynamically added or a static <meta> element).
-IPC_MESSAGE_ROUTED2(FrameHostMsg_DidAddContentSecurityPolicy,
-                    content::ContentSecurityPolicyHeader,
-                    std::vector<content::ContentSecurityPolicy>)
+IPC_MESSAGE_ROUTED1(FrameHostMsg_DidAddContentSecurityPolicies,
+                    std::vector<content::ContentSecurityPolicy> /* policies */)
 
 // Sent when the frame starts enforcing an insecure request policy. Sending
 // this information in DidCommitProvisionalLoad isn't sufficient; this

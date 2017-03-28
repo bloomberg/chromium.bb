@@ -6,6 +6,8 @@
 #define CONTENT_COMMON_CONTENT_SECURITY_POLICY_HEADER_
 
 #include <string>
+
+#include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebContentSecurityPolicy.h"
 
 namespace content {
@@ -13,7 +15,12 @@ namespace content {
 // Represents a single Content Security Policy header (i.e. coming from
 // a single Content-Security-Policy header in an HTTP response, or from
 // a single <meta http-equiv="Content-Security-Policy"...> element).
-struct ContentSecurityPolicyHeader {
+struct CONTENT_EXPORT ContentSecurityPolicyHeader {
+  ContentSecurityPolicyHeader();
+  ContentSecurityPolicyHeader(const std::string& header_value,
+                              blink::WebContentSecurityPolicyType type,
+                              blink::WebContentSecurityPolicySource source);
+
   std::string header_value;
   blink::WebContentSecurityPolicyType type;
   blink::WebContentSecurityPolicySource source;

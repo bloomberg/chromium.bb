@@ -170,7 +170,8 @@ class CONTENT_EXPORT RenderFrameProxy
   void OnDidUpdateSandboxFlags(blink::WebSandboxFlags flags);
   void OnDispatchLoad();
   void OnDidUpdateName(const std::string& name, const std::string& unique_name);
-  void OnAddContentSecurityPolicy(const ContentSecurityPolicyHeader& header);
+  void OnAddContentSecurityPolicies(
+      const std::vector<ContentSecurityPolicyHeader>& header);
   void OnResetContentSecurityPolicy();
   void OnEnforceInsecureRequestPolicy(blink::WebInsecureRequestPolicy policy);
   void OnSetFrameOwnerProperties(const FrameOwnerProperties& properties);

@@ -3253,22 +3253,14 @@ void RenderFrameImpl::didSetFeaturePolicyHeader(
       routing_id_, FeaturePolicyHeaderFromWeb(parsed_header)));
 }
 
-void RenderFrameImpl::didAddContentSecurityPolicy(
-    const blink::WebString& header_value,
-    blink::WebContentSecurityPolicyType type,
-    blink::WebContentSecurityPolicySource source,
-    const std::vector<blink::WebContentSecurityPolicy>& policies) {
-  ContentSecurityPolicyHeader header;
-  header.header_value = header_value.utf8();
-  header.type = type;
-  header.source = source;
-
+void RenderFrameImpl::didAddContentSecurityPolicies(
+    const blink::WebVector<blink::WebContentSecurityPolicy>& policies) {
   std::vector<ContentSecurityPolicy> content_policies;
   for (const auto& policy : policies)
     content_policies.push_back(BuildContentSecurityPolicy(policy));
 
-  Send(new FrameHostMsg_DidAddContentSecurityPolicy(routing_id_, header,
-                                                    content_policies));
+  Send(new FrameHostMsg_DidAddContentSecurityPolicies(routing_id_,
+                                                      content_policies));
 }
 
 void RenderFrameImpl::didChangeFrameOwnerProperties(

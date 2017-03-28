@@ -51,7 +51,7 @@ void ReportViolation(CSPContext* context,
 
   std::stringstream message;
 
-  if (policy.disposition == blink::WebContentSecurityPolicyTypeReport)
+  if (policy.header.type == blink::WebContentSecurityPolicyTypeReport)
     message << "[Report Only] ";
 
   if (directive_name == CSPDirective::FormAction)
@@ -77,7 +77,8 @@ void ReportViolation(CSPContext* context,
   context->ReportContentSecurityPolicyViolation(CSPViolationParams(
       CSPDirective::NameToString(directive.name),
       CSPDirective::NameToString(directive_name), message.str(), url,
-      policy.report_endpoints, policy.header, policy.disposition, is_redirect));
+      policy.report_endpoints, policy.header.header_value, policy.header.type,
+      is_redirect));
 }
 
 bool AllowDirective(CSPContext* context,
@@ -96,20 +97,17 @@ bool AllowDirective(CSPContext* context,
 }  // namespace
 
 ContentSecurityPolicy::ContentSecurityPolicy()
-    : disposition(blink::WebContentSecurityPolicyTypeEnforce),
-      source(blink::WebContentSecurityPolicySourceHTTP) {}
+    : header(std::string(),
+             blink::WebContentSecurityPolicyTypeEnforce,
+             blink::WebContentSecurityPolicySourceHTTP) {}
 
 ContentSecurityPolicy::ContentSecurityPolicy(
-    blink::WebContentSecurityPolicyType disposition,
-    blink::WebContentSecurityPolicySource source,
+    const ContentSecurityPolicyHeader& header,
     const std::vector<CSPDirective>& directives,
-    const std::vector<std::string>& report_endpoints,
-    const std::string& header)
-    : disposition(disposition),
-      source(source),
+    const std::vector<std::string>& report_endpoints)
+    : header(header),
       directives(directives),
-      report_endpoints(report_endpoints),
-      header(header) {}
+      report_endpoints(report_endpoints) {}
 
 ContentSecurityPolicy::ContentSecurityPolicy(const ContentSecurityPolicy&) =
     default;
@@ -128,7 +126,7 @@ bool ContentSecurityPolicy::Allow(const ContentSecurityPolicy& policy,
         bool allowed = AllowDirective(context, policy, directive,
                                       directive_name, url, is_redirect);
         return allowed ||
-               policy.disposition == blink::WebContentSecurityPolicyTypeReport;
+               policy.header.type == blink::WebContentSecurityPolicyTypeReport;
       }
     }
     current_directive_name = CSPFallback(current_directive_name);

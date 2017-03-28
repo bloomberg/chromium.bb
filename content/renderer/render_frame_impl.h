@@ -527,11 +527,8 @@ class CONTENT_EXPORT RenderFrameImpl
                              blink::WebSandboxFlags flags) override;
   void didSetFeaturePolicyHeader(
       const blink::WebParsedFeaturePolicy& parsed_header) override;
-  void didAddContentSecurityPolicy(
-      const blink::WebString& header_value,
-      blink::WebContentSecurityPolicyType type,
-      blink::WebContentSecurityPolicySource source,
-      const std::vector<blink::WebContentSecurityPolicy>&) override;
+  void didAddContentSecurityPolicies(
+      const blink::WebVector<blink::WebContentSecurityPolicy>&) override;
   void didChangeFrameOwnerProperties(
       blink::WebFrame* child_frame,
       const blink::WebFrameOwnerProperties& frame_owner_properties) override;

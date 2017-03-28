@@ -324,11 +324,10 @@ void ContentSecurityPolicy::reportAccumulatedHeaders(
   // navigation got committed.  See comments in
   // addAndReportPolicyFromHeaderValue for more details and context.
   DCHECK(client);
-  for (const auto& policy : m_policies) {
-    client->didAddContentSecurityPolicy(
-        policy->header(), policy->headerType(), policy->headerSource(),
-        {policy->exposeForNavigationalChecks()});
-  }
+  WebVector<WebContentSecurityPolicy> policies(m_policies.size());
+  for (size_t i = 0; i < m_policies.size(); ++i)
+    policies[i] = m_policies[i]->exposeForNavigationalChecks();
+  client->didAddContentSecurityPolicies(policies);
 }
 
 void ContentSecurityPolicy::addAndReportPolicyFromHeaderValue(
@@ -345,15 +344,15 @@ void ContentSecurityPolicy::addAndReportPolicyFromHeaderValue(
     // 2) enforce CSP in the browser process (long-term - see
     // https://crbug.com/376522).
     // TODO(arthursonzogni): policies are actually replicated (1) and some of
-    // them are (or will) be enforced on the browser process (2). Stop doing (1)
-    // when (2) is finished.
-
-    // Zero, one or several policies could be produced by only one header.
-    std::vector<blink::WebContentSecurityPolicy> policies;
-    for (size_t i = previousPolicyCount; i < m_policies.size(); ++i)
-      policies.push_back(m_policies[i]->exposeForNavigationalChecks());
-    document()->frame()->client()->didAddContentSecurityPolicy(
-        header, type, source, policies);
+    // them are enforced on the browser process (2). Stop doing (1) when (2) is
+    // finished.
+    WebVector<WebContentSecurityPolicy> policies(m_policies.size() -
+                                                 previousPolicyCount);
+    for (size_t i = previousPolicyCount; i < m_policies.size(); ++i) {
+      policies[i - previousPolicyCount] =
+          m_policies[i]->exposeForNavigationalChecks();
+    }
+    document()->frame()->client()->didAddContentSecurityPolicies(policies);
   }
 }
 

@@ -35,11 +35,11 @@ class CSPContextTest : public CSPContext {
 ContentSecurityPolicy BuildPolicy(CSPDirective::Name directive_name,
                                   std::vector<CSPSource> sources) {
   return ContentSecurityPolicy(
-      blink::WebContentSecurityPolicyTypeEnforce,
-      blink::WebContentSecurityPolicySourceHTTP,
+      ContentSecurityPolicyHeader(std::string(),  // header
+                                  blink::WebContentSecurityPolicyTypeEnforce,
+                                  blink::WebContentSecurityPolicySourceHTTP),
       {CSPDirective(directive_name, CSPSourceList(false, false, sources))},
-      std::vector<std::string>(),  // report_end_points
-      std::string());              // header
+      std::vector<std::string>());  // report_end_points
 }
 
 }  // namespace;
