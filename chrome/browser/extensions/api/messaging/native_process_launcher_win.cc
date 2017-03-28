@@ -152,7 +152,7 @@ bool NativeProcessLauncher::LaunchNativeProcess(
   base::LaunchOptions options;
   options.start_hidden = true;
   options.current_directory = command_line.GetProgram().DirName();
-  base::Process cmd_process = base::LaunchProcess(command.c_str(), options);
+  base::Process cmd_process = base::LaunchProcess(command, options);
   if (!cmd_process.IsValid()) {
     LOG(ERROR) << "Error launching process "
                << command_line.GetProgram().MaybeAsASCII();

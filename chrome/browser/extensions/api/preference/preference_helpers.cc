@@ -61,8 +61,7 @@ const char* GetLevelOfControl(
                                  : profile->GetPrefs();
   bool from_incognito = false;
   bool* from_incognito_ptr = incognito ? &from_incognito : NULL;
-  const PrefService::Preference* pref =
-      prefs->FindPreference(browser_pref.c_str());
+  const PrefService::Preference* pref = prefs->FindPreference(browser_pref);
   CHECK(pref);
 
   if (!pref->IsExtensionModifiable())

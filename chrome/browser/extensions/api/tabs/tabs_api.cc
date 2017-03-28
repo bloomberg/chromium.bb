@@ -1789,7 +1789,7 @@ void TabsDetectLanguageFunction::Observe(
 }
 
 void TabsDetectLanguageFunction::GotLanguage(const std::string& language) {
-  SetResult(base::MakeUnique<base::Value>(language.c_str()));
+  SetResult(base::MakeUnique<base::Value>(language));
   SendResponse(true);
 
   Release();  // Balanced in Run()

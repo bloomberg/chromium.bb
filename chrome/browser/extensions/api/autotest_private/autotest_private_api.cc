@@ -62,7 +62,7 @@ base::ListValue* GetAPIPermissions(const Extension* ext) {
       ext->permissions_data()->active_permissions().GetAPIsAsStrings();
   for (std::set<std::string>::const_iterator perm = perm_list.begin();
        perm != perm_list.end(); ++perm) {
-    permissions->AppendString(perm->c_str());
+    permissions->AppendString(*perm);
   }
   return permissions;
 }

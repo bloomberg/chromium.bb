@@ -381,7 +381,7 @@ void PreferenceEventRouter::OnPrefChanged(PrefService* pref_service,
 
   base::ListValue args;
   const PrefService::Preference* pref =
-      pref_service->FindPreference(browser_pref.c_str());
+      pref_service->FindPreference(browser_pref);
   CHECK(pref);
   PrefTransformerInterface* transformer =
       PrefMapping::GetInstance()->FindTransformerForBrowserPref(browser_pref);
@@ -425,7 +425,7 @@ void PreferenceAPIBase::SetExtensionControlledPref(
     base::Value* value) {
 #ifndef NDEBUG
   const PrefService::Preference* pref =
-      extension_prefs()->pref_service()->FindPreference(pref_key.c_str());
+      extension_prefs()->pref_service()->FindPreference(pref_key);
   DCHECK(pref) << "Extension controlled preference key " << pref_key
                << " not registered.";
   DCHECK_EQ(pref->GetType(), value->GetType())
@@ -453,7 +453,7 @@ void PreferenceAPIBase::RemoveExtensionControlledPref(
     const std::string& extension_id,
     const std::string& pref_key,
     ExtensionPrefsScope scope) {
-  DCHECK(extension_prefs()->pref_service()->FindPreference(pref_key.c_str()))
+  DCHECK(extension_prefs()->pref_service()->FindPreference(pref_key))
       << "Extension controlled preference key " << pref_key
       << " not registered.";
 
@@ -474,7 +474,7 @@ bool PreferenceAPIBase::CanExtensionControlPref(
      const std::string& extension_id,
      const std::string& pref_key,
      bool incognito) {
-  DCHECK(extension_prefs()->pref_service()->FindPreference(pref_key.c_str()))
+  DCHECK(extension_prefs()->pref_service()->FindPreference(pref_key))
       << "Extension controlled preference key " << pref_key
       << " not registered.";
 
@@ -486,7 +486,7 @@ bool PreferenceAPIBase::DoesExtensionControlPref(
     const std::string& extension_id,
     const std::string& pref_key,
     bool* from_incognito) {
-  DCHECK(extension_prefs()->pref_service()->FindPreference(pref_key.c_str()))
+  DCHECK(extension_prefs()->pref_service()->FindPreference(pref_key))
       << "Extension controlled preference key " << pref_key
       << " not registered.";
 
@@ -617,8 +617,7 @@ ExtensionFunction::ResponseAction GetPreferenceFunction::Run() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
   PrefService* prefs =
       incognito ? profile->GetOffTheRecordPrefs() : profile->GetPrefs();
-  const PrefService::Preference* pref =
-      prefs->FindPreference(browser_pref.c_str());
+  const PrefService::Preference* pref = prefs->FindPreference(browser_pref);
   CHECK(pref);
 
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue);
@@ -706,7 +705,7 @@ ExtensionFunction::ResponseAction SetPreferenceFunction::Run() {
 
   ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context());
   const PrefService::Preference* pref =
-      prefs->pref_service()->FindPreference(browser_pref.c_str());
+      prefs->pref_service()->FindPreference(browser_pref);
   CHECK(pref);
 
   // Validate new value.
