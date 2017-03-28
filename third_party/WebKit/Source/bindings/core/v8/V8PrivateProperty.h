@@ -154,12 +154,6 @@ class CORE_EXPORT V8PrivateProperty {
   V8_PRIVATE_PROPERTY_FOR_EACH(V8_PRIVATE_PROPERTY_DEFINE_GETTER)
 #undef V8_PRIVATE_PROPERTY_DEFINE_GETTER
 
-  static Symbol createSymbol(v8::Isolate* isolate,
-                             const char* symbol,
-                             size_t length) {
-    return Symbol(createV8Private(isolate, symbol, length));
-  }
-
  private:
   V8PrivateProperty() {}
 
