@@ -43,6 +43,9 @@ class LayerTreeHostClient {
       const gfx::Vector2dF& elastic_overscroll_delta,
       float page_scale,
       float top_controls_delta) = 0;
+  virtual void RecordWheelAndTouchScrollingCount(
+      bool has_scrolled_by_wheel,
+      bool has_scrolled_by_touch) = 0;
   // Request an CompositorFrameSink from the client. When the client has one it
   // should call LayerTreeHost::SetCompositorFrameSink.  This will result in
   // either DidFailToInitializeCompositorFrameSink or

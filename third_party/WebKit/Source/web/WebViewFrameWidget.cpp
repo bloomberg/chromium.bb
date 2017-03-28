@@ -107,6 +107,13 @@ void WebViewFrameWidget::applyViewportDeltas(
       scaleFactor, browserControlsShownRatioDelta);
 }
 
+void WebViewFrameWidget::recordWheelAndTouchScrollingCount(
+    bool hasScrolledByWheel,
+    bool hasScrolledByTouch) {
+  return m_webView->recordWheelAndTouchScrollingCount(hasScrolledByWheel,
+                                                      hasScrolledByTouch);
+}
+
 void WebViewFrameWidget::mouseCaptureLost() {
   return m_webView->mouseCaptureLost();
 }

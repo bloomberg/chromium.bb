@@ -1062,6 +1062,13 @@ void RenderWidgetCompositor::ApplyViewportDeltas(
                                  top_controls_delta);
 }
 
+void RenderWidgetCompositor::RecordWheelAndTouchScrollingCount(
+    bool has_scrolled_by_wheel,
+    bool has_scrolled_by_touch) {
+  delegate_->RecordWheelAndTouchScrollingCount(has_scrolled_by_wheel,
+                                               has_scrolled_by_touch);
+}
+
 void RenderWidgetCompositor::RequestNewCompositorFrameSink() {
   // If the host is closing, then no more compositing is possible.  This
   // prevents shutdown races between handling the close message and

@@ -1,0 +1,77 @@
+<!DOCTYPE HTML>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<style>
+
+  ::-webkit-scrollbar {
+    display: none;
+  }
+  body {
+    margin: 0px;
+    height: 1000px;
+    width: 1000px;
+  }
+  #scrollable {
+    background-color: #FF7F7F;
+    height: 600px;
+    width: 600px;
+    overflow: scroll;
+  }
+  #content {
+    height: 700px;
+    width: 700px;
+  }
+ 
+</style>
+
+<div id="scrollable">
+	<div id="content"></div>
+</div>
+
+<script>
+
+var div = document.getElementById('scrollable');
+var rect = div.getBoundingClientRect();
+
+const TOUCH_SOURCE_TYPE = 1; // TOUCH_INPUT from synthetic_gesture_params.h
+const WHEEL_SOURCE_TYPE = 2; // MOUSE_INPUT from synthetic_gesture_params.h
+
+var ScrollByTouch = 1847; // from enum Feature in UseCounter.h
+var ScrollByWheel = 1848; // from enum Feature in UseCounter.h
+
+setup({ explicit_done: true });
+test(() => {
+    // Skip touch scroll use count test on mac since touch smoothScrollBy
+    // is not supported for mac.
+    if (navigator.platform.indexOf('Mac') == 0) {
+      scrollByWheel();
+    } else {
+      chrome.gpuBenchmarking.smoothScrollBy(50, waitForTouchScrollAndCheck,
+                                            (rect.left + rect.right) / 2,
+                                            (rect.top + rect.bottom) / 2,
+                                            TOUCH_SOURCE_TYPE, "down", 4000);
+    }
+}, "Scrolling by touch/wheel on main/compositor should update usecounters.");
+
+function waitForTouchScrollAndCheck() {
+  if (internals.isUseCounted(document, ScrollByTouch))
+    scrollByWheel();
+  else
+    requestAnimationFrame(waitForTouchScrollAndCheck);
+}
+
+function scrollByWheel() {
+  chrome.gpuBenchmarking.smoothScrollBy(50, waitForWheelScrollAndCheck,
+                                        (rect.left + rect.right) / 2,
+                                        (rect.top + rect.bottom) / 2,
+                                        WHEEL_SOURCE_TYPE, "down", 4000);
+}
+
+function waitForWheelScrollAndCheck() {
+  if (internals.isUseCounted(document, ScrollByWheel))
+    done();
+  else
+    requestAnimationFrame(waitForWheelScrollAndCheck);
+}
+
+</script>

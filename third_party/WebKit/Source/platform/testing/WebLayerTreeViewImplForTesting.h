@@ -86,6 +86,8 @@ class WebLayerTreeViewImplForTesting
                            const gfx::Vector2dF& elasticOverscrollDelta,
                            float pageScale,
                            float browserControlsDelta) override;
+  void RecordWheelAndTouchScrollingCount(bool hasScrolledByWheel,
+                                         bool hasScrolledByTouch) override;
   void RequestNewCompositorFrameSink() override;
   void DidInitializeCompositorFrameSink() override {}
   void DidFailToInitializeCompositorFrameSink() override;

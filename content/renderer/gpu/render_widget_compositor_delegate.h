@@ -39,6 +39,12 @@ class CONTENT_EXPORT RenderWidgetCompositorDelegate {
       float page_scale,
       float top_controls_delta) = 0;
 
+  // Record use count of wheel/touch sources for scrolling on the compositor
+  // thread.
+  virtual void RecordWheelAndTouchScrollingCount(
+      bool has_scrolled_by_wheel,
+      bool has_scrolled_by_touch) = 0;
+
   // Notifies that the compositor has issed a BeginMainFrame.
   virtual void BeginMainFrame(double frame_time_sec) = 0;
 

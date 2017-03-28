@@ -175,6 +175,8 @@ struct CC_EXPORT ScrollAndScaleSet {
   float top_controls_delta;
   std::vector<LayerTreeHostCommon::ScrollbarsUpdateInfo> scrollbars;
   std::vector<std::unique_ptr<SwapPromise>> swap_promises;
+  bool has_scrolled_by_wheel;
+  bool has_scrolled_by_touch;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScrollAndScaleSet);

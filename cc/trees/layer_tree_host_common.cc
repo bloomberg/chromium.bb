@@ -180,8 +180,10 @@ bool LayerTreeHostCommon::ScrollbarsUpdateInfo::operator==(
 }
 
 ScrollAndScaleSet::ScrollAndScaleSet()
-    : page_scale_delta(1.f), top_controls_delta(0.f) {
-}
+    : page_scale_delta(1.f),
+      top_controls_delta(0.f),
+      has_scrolled_by_wheel(false),
+      has_scrolled_by_touch(false) {}
 
 ScrollAndScaleSet::~ScrollAndScaleSet() {}
 

@@ -42,6 +42,8 @@ class StubRenderWidgetCompositorDelegate
                            const gfx::Vector2dF& elastic_overscroll_delta,
                            float page_scale,
                            float top_controls_delta) override {}
+  void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
+                                         bool has_scrolled_by_touch) override {}
   void BeginMainFrame(double frame_time_sec) override {}
   void RequestNewCompositorFrameSink(
       bool fallback,

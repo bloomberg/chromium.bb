@@ -322,6 +322,9 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
                                      top_controls_delta);
   }
 
+  void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
+                                         bool has_scrolled_by_touch) override {}
+
   void RequestNewCompositorFrameSink() override {
     test_hooks_->RequestNewCompositorFrameSink();
   }

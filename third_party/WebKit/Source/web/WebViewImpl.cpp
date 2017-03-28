@@ -4012,6 +4012,17 @@ void WebViewImpl::applyViewportDeltas(
     mainFrameImpl()->frameView()->didUpdateElasticOverscroll();
 }
 
+void WebViewImpl::recordWheelAndTouchScrollingCount(bool hasScrolledByWheel,
+                                                    bool hasScrolledByTouch) {
+  if (!page() || !page()->mainFrame())
+    return;
+
+  if (hasScrolledByWheel)
+    UseCounter::count(page()->mainFrame(), UseCounter::ScrollByWheel);
+  if (hasScrolledByTouch)
+    UseCounter::count(page()->mainFrame(), UseCounter::ScrollByTouch);
+}
+
 void WebViewImpl::updateLayerTreeViewport() {
   if (!page() || !m_layerTreeView)
     return;

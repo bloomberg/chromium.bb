@@ -239,7 +239,9 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       requires_high_res_to_draw_(false),
       is_likely_to_require_a_draw_(false),
       has_valid_compositor_frame_sink_(false),
-      mutator_(nullptr) {
+      mutator_(nullptr),
+      has_scrolled_by_wheel_(false),
+      has_scrolled_by_touch_(false) {
   DCHECK(mutator_host_);
   mutator_host_->SetMutatorHostClient(this);
 
@@ -2697,6 +2699,8 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
   client_->RenewTreePriority();
   RecordCompositorSlowScrollMetric(type, CC_THREAD);
 
+  UpdateScrollSourceInfo(wheel_scrolling_);
+
   return scroll_status;
 }
 
@@ -3517,6 +3521,11 @@ std::unique_ptr<ScrollAndScaleSet> LayerTreeHostImpl::ProcessScrollDeltas() {
       active_tree_->elastic_overscroll()->PullDeltaForMainThread();
   scroll_info->swap_promises.swap(swap_promises_for_main_thread_scroll_update_);
 
+  // Record and reset scroll source flags.
+  scroll_info->has_scrolled_by_wheel = has_scrolled_by_wheel_;
+  scroll_info->has_scrolled_by_touch = has_scrolled_by_touch_;
+  has_scrolled_by_wheel_ = has_scrolled_by_touch_ = false;
+
   return scroll_info;
 }
 
@@ -4279,6 +4288,13 @@ void LayerTreeHostImpl::SetContextVisibility(bool is_visible) {
           std::move(worker_context_visibility_));
     }
   }
+}
+
+void LayerTreeHostImpl::UpdateScrollSourceInfo(bool is_wheel_scroll) {
+  if (is_wheel_scroll)
+    has_scrolled_by_wheel_ = true;
+  else
+    has_scrolled_by_touch_ = true;
 }
 
 }  // namespace cc

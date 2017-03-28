@@ -756,6 +756,16 @@ void LayerTreeHost::ApplyViewportDeltas(ScrollAndScaleSet* info) {
   SetNeedsUpdateLayers();
 }
 
+void LayerTreeHost::RecordWheelAndTouchScrollingCount(ScrollAndScaleSet* info) {
+  bool has_scrolled_by_wheel = info->has_scrolled_by_wheel;
+  bool has_scrolled_by_touch = info->has_scrolled_by_touch;
+
+  if (has_scrolled_by_wheel || has_scrolled_by_touch) {
+    client_->RecordWheelAndTouchScrollingCount(has_scrolled_by_wheel,
+                                               has_scrolled_by_touch);
+  }
+}
+
 void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
   for (auto& swap_promise : info->swap_promises) {
     TRACE_EVENT_WITH_FLOW1("input,benchmark", "LatencyInfo.Flow",
@@ -786,6 +796,8 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
   // controls from clamping the layout viewport both on the compositor and
   // on the main thread.
   ApplyViewportDeltas(info);
+
+  RecordWheelAndTouchScrollingCount(info);
 }
 
 const base::WeakPtr<InputHandler>& LayerTreeHost::GetInputHandler()

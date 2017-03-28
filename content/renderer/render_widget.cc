@@ -864,6 +864,13 @@ void RenderWidget::ApplyViewportDeltas(
                                       top_controls_delta);
 }
 
+void RenderWidget::RecordWheelAndTouchScrollingCount(
+    bool has_scrolled_by_wheel,
+    bool has_scrolled_by_touch) {
+  GetWebWidget()->recordWheelAndTouchScrollingCount(has_scrolled_by_wheel,
+                                                    has_scrolled_by_touch);
+}
+
 void RenderWidget::BeginMainFrame(double frame_time_sec) {
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   // render_thread may be NULL in tests.

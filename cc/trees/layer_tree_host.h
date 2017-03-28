@@ -506,6 +506,7 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
   enum { kNumFramesToConsiderBeforeGpuRasterization = 60 };
 
   void ApplyViewportDeltas(ScrollAndScaleSet* info);
+  void RecordWheelAndTouchScrollingCount(ScrollAndScaleSet* info);
   void ApplyPageScaleDeltaFromImplSide(float page_scale_delta);
   void InitializeProxy(std::unique_ptr<Proxy> proxy);
 

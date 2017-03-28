@@ -140,6 +140,10 @@ void WebLayerTreeViewImplForTesting::ApplyViewportDeltas(
     float pageScale,
     float browserControlsDelta) {}
 
+void WebLayerTreeViewImplForTesting::RecordWheelAndTouchScrollingCount(
+    bool hasScrolledByWheel,
+    bool hasScrolledByTouch) {}
+
 void WebLayerTreeViewImplForTesting::RequestNewCompositorFrameSink() {
   // Intentionally do not create and set an CompositorFrameSink.
 }

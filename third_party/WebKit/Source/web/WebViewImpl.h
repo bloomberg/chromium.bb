@@ -149,6 +149,8 @@ class WEB_EXPORT WebViewImpl final
                            const WebFloatSize& elasticOverscrollDelta,
                            float pageScaleDelta,
                            float browserControlsShownRatioDelta) override;
+  void recordWheelAndTouchScrollingCount(bool hasScrolledByWheel,
+                                         bool hasScrolledByTouch) override;
   void mouseCaptureLost() override;
   void setFocus(bool enable) override;
   WebRange compositionRange() override;

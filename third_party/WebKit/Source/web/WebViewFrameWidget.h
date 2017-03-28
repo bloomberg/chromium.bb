@@ -63,6 +63,8 @@ class WebViewFrameWidget : public WebFrameWidgetBase {
                            const WebFloatSize& elasticOverscrollDelta,
                            float scaleFactor,
                            float browserControlsShownRatioDelta) override;
+  void recordWheelAndTouchScrollingCount(bool hasScrolledByWheel,
+                                         bool hasScrolledByTouch) override;
   void mouseCaptureLost() override;
   void setFocus(bool) override;
   WebRange compositionRange() override;

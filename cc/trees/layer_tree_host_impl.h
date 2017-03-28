@@ -707,6 +707,14 @@ class CC_EXPORT LayerTreeHostImpl
   void ImageDecodeFinished(const base::Callback<void(bool)>& embedder_callback,
                            bool decode_succeeded);
 
+  // This function keeps track of sources of scrolls that are handled in the
+  // compositor side. The information gets shared by the main thread as part of
+  // the begin_main_frame_state. Finally Use counters are updated in the main
+  // thread side to keep track of the frequency of scrolling with different
+  // sources per page load. TODO(crbug.com/691886): Use GRC API to plumb the
+  // scroll source info for Use Counters.
+  void UpdateScrollSourceInfo(bool is_wheel_scroll);
+
   using UIResourceMap = std::unordered_map<UIResourceId, UIResourceData>;
   UIResourceMap ui_resource_map_;
 
@@ -852,6 +860,11 @@ class CC_EXPORT LayerTreeHostImpl
   // These callbacks are stored here to be transfered to the main thread when we
   // begin main frame. These callbacks must only be called on the main thread.
   std::vector<base::Closure> completed_image_decode_callbacks_;
+
+  // These are used to transfer usage of touch and wheel scrolls to the main
+  // thread.
+  bool has_scrolled_by_wheel_;
+  bool has_scrolled_by_touch_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHostImpl);
 };

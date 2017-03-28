@@ -134,6 +134,9 @@ class WebWidget {
                                    float scaleFactor,
                                    float browserControlsShownRatioDelta) {}
 
+  virtual void recordWheelAndTouchScrollingCount(bool hasScrolledByWheel,
+                                                 bool hasScrolledByTouch) {}
+
   // Called to inform the WebWidget that mouse capture was lost.
   virtual void mouseCaptureLost() {}
 

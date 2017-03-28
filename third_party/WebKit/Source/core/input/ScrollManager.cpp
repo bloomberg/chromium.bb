@@ -235,6 +235,12 @@ WebInputEventResult ScrollManager::handleGestureScrollBegin(
       m_deltaConsumedForScrollSequence;
   ScrollState* scrollState = ScrollState::create(std::move(scrollStateData));
   customizedScroll(*m_scrollGestureHandlingNode.get(), *scrollState);
+
+  if (gestureEvent.sourceDevice == WebGestureDeviceTouchscreen)
+    UseCounter::count(m_frame->document(), UseCounter::ScrollByTouch);
+  else
+    UseCounter::count(m_frame->document(), UseCounter::ScrollByWheel);
+
   return WebInputEventResult::HandledSystem;
 }
 
