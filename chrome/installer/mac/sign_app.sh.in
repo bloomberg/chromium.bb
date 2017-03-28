@@ -7,7 +7,7 @@
 # Using codesign, sign the application. After signing, the signatures on the
 # inner bundle components are verified, and the application's own signature is
 # verified. Inner bundle components are expected to be signed before this
-# script is called. See sign_versioned_dir.sh.
+# script is called. See sign_versioned_dir.sh.in.
 
 set -eu
 
@@ -44,6 +44,8 @@ framework="${versioned_dir}/@MAC_PRODUCT_NAME@ Framework.framework"
 notification_service="${framework}/XPCServices/AlertNotificationService.xpc"
 crashpad_handler="${framework}/Helpers/crashpad_handler"
 helper_app="${versioned_dir}/@MAC_PRODUCT_NAME@ Helper.app"
+app_mode_loader_app="${framework}/Resources/app_mode_loader.app"
+app_mode_loader="${app_mode_loader_app}/Contents/MacOS/app_mode_loader"
 
 requirement_string="\
 designated => \
@@ -58,22 +60,25 @@ certificate leaf = H\"c9a99324ca3fcb23dbcc36bd5fd4f9753305130a\") \
 enforcement_flags="restrict"
 
 codesign --sign "${codesign_id}" --keychain "${codesign_keychain}" \
-    "${browser_app}" --resource-rules "${browser_app_rules}" \
-    -r="${requirement_string}" --options "${enforcement_flags}"
+    "${browser_app}" \
+    --options "${enforcement_flags}" \
+    --resource-rules "${browser_app_rules}" \
+    -r="${requirement_string}"
 
 # Show the signature.
-codesign --display -r- -vvvvvv "${browser_app}"
+codesign --display --verbose=5 -r- "${browser_app}"
 
 # Verify everything. Check the framework and helper apps to make sure that the
-# signatures are present and weren't altered by the signing process. Don't use
-# --deep on the framework because Keystone's signature is in a transitional
-# state (b/18474911). Use --no-strict on the app because it uses custom resource
-# rules.
-codesign --verify --deep -vvvvvv "${crashpad_handler}"
-codesign --verify --deep -vvvvvv "${notification_service}"
-codesign --verify -vvvvvv "${framework}"
-codesign --verify --deep -vvvvvv "${helper_app}"
-codesign --verify --deep --no-strict -vvvvvv "${browser_app}"
+# signatures are present and weren't altered by the signing process. Use
+# --ignore-resources on the app mode loader because its signature only covers
+# the main executable, not its containing .app bundle. Use --no-strict on the
+# outermost browser .app because it uses custom resource rules.
+codesign --verify --verbose=6 --deep --no-strict "${browser_app}"
+codesign --verify --verbose=6 --deep "${crashpad_handler}"
+codesign --verify --verbose=6 --ignore-resources "${app_mode_loader}"
+codesign --verify --verbose=6 --deep "${notification_service}"
+codesign --verify --verbose=6 --deep "${framework}"
+codesign --verify --verbose=6 --deep "${helper_app}"
 
 # Verify with spctl, which uses the same rules that Gatekeeper does for
 # validation. This is unreliable on 10.11 where syspolicyd caches assessments

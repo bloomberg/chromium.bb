@@ -23,6 +23,16 @@ export -n SHELLOPTS
 ME="$(basename "${0}")"
 readonly ME
 
+codesign_display_and_verify() {
+  path=${1}
+  shift
+
+  # --verbose can go up to 6 for --display, but that just shows the hash of each
+  # ordinary page in the executable, which is more noise than anything else.
+  codesign --display --verbose=5 -r- "${path}"
+  codesign --verify --verbose=6 "${@}" "${path}"
+}
+
 if [[ ${#} -ne 3 ]]; then
   echo "usage: ${ME} app_path codesign_keychain codesign_id" >& 2
   exit 1
@@ -48,37 +58,42 @@ app_mode_loader_app="${framework}/Resources/app_mode_loader.app"
 app_mode_loader="${app_mode_loader_app}/Contents/MacOS/app_mode_loader"
 
 requirement_suffix="\
-and certificate leaf = H\"85cee8254216185620ddc8851c7a9fc4dfe120ef\"\
+and (certificate leaf = H\"85cee8254216185620ddc8851c7a9fc4dfe120ef\" or \
+certificate leaf = H\"c9a99324ca3fcb23dbcc36bd5fd4f9753305130a\") \
 "
 
-enforcement_flags="restrict"
+enforcement_flags_app="restrict"
+enforcement_flags="${enforcement_flags_app},library"
 
 codesign --sign "${codesign_id}" --keychain "${codesign_keychain}" \
     "${crashpad_handler}" \
+    --options "${enforcement_flags}" \
     -r="designated => identifier \"crashpad_handler\" \
-${requirement_suffix}" --options "${enforcement_flags}"
+${requirement_suffix}"
 
 # The app mode loader bundle is modified dynamically at runtime. Just sign the
 # executable, which shouldn't change. In order to do this, the executable needs
 # to be copied out of the bundle, signed, and then copied back in. The resulting
 # bundle's signature won't validate normally, but if the executable file is
-# verified in isolation or with --ignore-resources, it will. Because the
-# bundle's signature won't validate on its own, don't set any of the enforcement
-# flags.
+# verified in isolation or with --ignore-resources, it will.
 app_mode_loader_tmp="$(mktemp -t app_mode_loader)"
 cp "${app_mode_loader}" "${app_mode_loader_tmp}"
 codesign --sign "${codesign_id}" --keychain "${codesign_keychain}" \
     "${app_mode_loader_tmp}" \
+    --identifier app_mode_loader \
+    --options "${enforcement_flags}" \
     -r="designated => identifier \"app_mode_loader\" \
 ${requirement_suffix}"
 cp "${app_mode_loader_tmp}" "${app_mode_loader}"
 rm -f "${app_mode_loader_tmp}"
 
 codesign --sign "${codesign_id}" --keychain "${codesign_keychain}" \
-         "${notification_service}" \
-         -r="designated => identifier \"com.google.Chrome.framework.AlertNotificationService\" \
+    "${notification_service}" \
+    --options "${enforcement_flags}" \
+    -r="designated => identifier \"com.google.Chrome.framework.AlertNotificationService\" \
 ${requirement_suffix}"
 
+# The framework is a dylib, so ${enforcement_flags} are meaningless.
 codesign --sign "${codesign_id}" --keychain "${codesign_keychain}" \
     "${framework}" \
     -r="designated => identifier \"com.google.Chrome.framework\" \
@@ -86,15 +101,13 @@ ${requirement_suffix}"
 
 codesign --sign "${codesign_id}" --keychain "${codesign_keychain}" \
     "${helper_app}" \
+    --options "${enforcement_flags_app}" \
     -r="designated => identifier \"com.google.Chrome.helper\" \
-${requirement_suffix}" --options "${enforcement_flags}"
+${requirement_suffix}"
 
-# Verify everything. Don't use --deep on the framework because Keystone's
-# signature is in a transitional state (radar 18474911). Don't verify
-# app_mode_loader independently because --ignore-resources is unrecognized
-# before 10.11 (bug 565859).
-codesign --verify --deep "${crashpad_handler}"
-# codesign --verify --ignore-resources "${app_mode_loader}"
-codesign --verify --deep "${notification_service}"
-codesign --verify "${framework}"
-codesign --verify --deep "${helper_app}"
+# Show the signatures and verify everything.
+codesign_display_and_verify "${crashpad_handler}" --deep
+codesign_display_and_verify "${app_mode_loader}" --ignore-resources
+codesign_display_and_verify "${notification_service}" --deep
+codesign_display_and_verify "${framework}" --deep
+codesign_display_and_verify "${helper_app}" --deep
