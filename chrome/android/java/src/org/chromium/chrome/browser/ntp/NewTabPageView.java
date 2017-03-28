@@ -101,6 +101,7 @@ public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
     private TileGroup mTileGroup;
     private UiConfig mUiConfig;
     private Runnable mSnapScrollRunnable;
+    private Runnable mUpdateSearchBoxOnScrollRunnable;
     private boolean mFirstShow = true;
     private boolean mSearchProviderHasLogo = true;
     private boolean mPendingSnapScroll;
@@ -196,12 +197,34 @@ public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
 
         mRecyclerView.setItemAnimator(new DefaultItemAnimator() {
             @Override
+            public boolean animateMove(ViewHolder holder, int fromX, int fromY, int toX, int toY) {
+                // If |mNewTabPageLayout| is animated by the RecyclerView because an item below it
+                // was dismissed, avoid also manipulating its vertical offset in our scroll handling
+                // at the same time. The onScrolled() method is called when an item is dismissed and
+                // the item at the top of the viewport is repositioned.
+                if (holder.itemView == mNewTabPageLayout) setUrlFocusAnimationsDisabled(true);
+
+                // Cancel any pending scroll update handling, a new one will be scheduled in
+                // onAnimationFinished().
+                mRecyclerView.removeCallbacks(mUpdateSearchBoxOnScrollRunnable);
+
+                return super.animateMove(holder, fromX, fromY, toX, toY);
+            }
+
+            @Override
             public void onAnimationFinished(ViewHolder viewHolder) {
                 super.onAnimationFinished(viewHolder);
-                // When removing sections, because the animations are all translations, the
-                // scroll events don't fire and we can get in the situation where the toolbar
-                // buttons disappear.
-                updateSearchBoxOnScroll();
+
+                // When an item is dismissed, the items at the top of the viewport might not move,
+                // and onScrolled() might not be called. We can get in the situation where the
+                // toolbar buttons disappear, so schedule an update for it. This can be cancelled
+                // from animateMove() in case |mNewTabPageLayout| will be moved. We don't know that
+                // from here, as the RecyclerView will animate multiple items when one is dismissed,
+                // and some will "finish" synchronously if they are already in the correct place,
+                // before other moves have even been scheduled.
+                if (viewHolder.itemView == mNewTabPageLayout) setUrlFocusAnimationsDisabled(false);
+                mRecyclerView.removeCallbacks(mUpdateSearchBoxOnScrollRunnable);
+                mRecyclerView.post(mUpdateSearchBoxOnScrollRunnable);
             }
         });
 
@@ -231,6 +254,7 @@ public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
         mNoSearchLogoSpacer = mNewTabPageLayout.findViewById(R.id.no_search_logo_spacer);
 
         mSnapScrollRunnable = new SnapScrollRunnable();
+        mUpdateSearchBoxOnScrollRunnable = new UpdateSearchBoxOnScrollRunnable();
 
         initializeSearchBoxTextView();
         initializeVoiceSearchButton();
@@ -933,6 +957,13 @@ public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
             mPendingSnapScroll = false;
 
             mRecyclerView.snapScroll(mSearchBoxView, getHeight());
+        }
+    }
+
+    private class UpdateSearchBoxOnScrollRunnable implements Runnable {
+        @Override
+        public void run() {
+            updateSearchBoxOnScroll();
         }
     }
 }
