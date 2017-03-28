@@ -63,7 +63,7 @@ window.Audit = (function () {
       case 'object':
         // Handle Arrays.
         if (target instanceof Array || target instanceof Float32Array ||
-            target instanceof Float64Array) {
+            target instanceof Float64Array || target instanceof Uint8Array) {
           let arrayElements = target.length < options.numberOfArrayElements
               ? String(target)
               : String(target.slice(0, options.numberOfArrayElements)) + '...';

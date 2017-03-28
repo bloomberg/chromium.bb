@@ -65,6 +65,17 @@
       }
     );
 
+    audit.define({
+        label: 'numerical typed arrays',
+        description: 'Numerical assertion unit test with typed arrays.'
+      }, function (task, should) {
+      let testValues = [1,2,3];
+      should(Uint8Array.from(testValues), 'Uint8Array').beEqualToArray(testValues);
+      should(Float32Array.from(testValues), 'Float32Array').beEqualToArray(testValues);
+      should(Float64Array.from(testValues), 'Float64Array').beEqualToArray(testValues);
+      task.done();
+    });
+
     // Test Audit.loadFileFromUrl() within |should| assertion.
     // See: crbug.com/701813
     audit.define({ 
@@ -103,8 +114,8 @@
 
     // You can enumerate tasks you want to execute in the order, or simply pass
     // no argument to run all the defined tasks.
-    audit.run('numerical', 'basic', 'load-file-in-should',
-              'dummy-label-string', 'dummy-label-object');
+    audit.run('numerical', 'numerical typed arrays', 'basic',
+              'load-file-in-should', 'dummy-label-string', 'dummy-label-object');
   </script>
 </body>
 </html>

@@ -11,6 +11,11 @@ PASS   [1,1,1] is identical to the array [1,1,1].
 PASS   [1,1,1,1,2,2,3,3,3] contains all the expected values in the correct order: one, two, three. 
 PASS   [0.5,0.5,0.55,0.5,0.45,0.5] has no glitch above the threshold of 0.06. 
 PASS < [numerical] All assertions passed. (total 7 assertions) 
+PASS > [numerical typed arrays] Numerical assertion unit test with typed arrays. 
+PASS   Uint8Array is identical to the array [1,2,3]. 
+PASS   Float32Array is identical to the array [1,2,3]. 
+PASS   Float64Array is identical to the array [1,2,3]. 
+PASS < [numerical typed arrays] All assertions passed. (total 3 assertions) 
 PASS > [basic] Simple unit tests for basic assertions. 
 PASS   OfflineAudioContext does exist. 
 PASS   Setting foo1 to 0 did not throw an exception. 
@@ -40,6 +45,6 @@ PASS > [dummy-label-string]
 PASS < [dummy-label-string] All assertions passed. (total 0 assertions) 
 PASS > [dummy-label-object]  
 PASS < [dummy-label-object] All assertions passed. (total 0 assertions) 
-PASS # AUDIT TASK RUNNER FINISHED: 5 tasks ran successfully. 
+PASS # AUDIT TASK RUNNER FINISHED: 6 tasks ran successfully. 
 Harness: the test ran to completion.
 
