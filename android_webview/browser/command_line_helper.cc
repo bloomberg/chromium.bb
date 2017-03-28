@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/stl_util.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "content/public/common/content_switches.h"
 
@@ -34,9 +35,9 @@ void AddFeatureToList(base::CommandLine& command_line,
     return;
   }
 
-  vector<string> features =
+  vector<base::StringPiece> features =
       base::FeatureList::SplitFeatureListString(features_list);
-  vector<string> other_features =
+  vector<base::StringPiece> other_features =
       base::FeatureList::SplitFeatureListString(other_features_list);
 
   if (!base::ContainsValue(features, feature_name) &&

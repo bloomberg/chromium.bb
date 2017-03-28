@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -58,8 +59,8 @@ class MainThreadEventQueueTest : public testing::TestWithParam<unsigned>,
       : main_task_runner_(new base::TestSimpleTaskRunner()),
         raf_aligned_input_setting_(GetParam()),
         needs_main_frame_(false) {
-    std::vector<std::string> features;
-    std::vector<std::string> disabled_features;
+    std::vector<base::StringPiece> features;
+    std::vector<base::StringPiece> disabled_features;
     if (raf_aligned_input_setting_ & kRafAlignedEnabledTouch) {
       features.push_back(features::kRafAlignedTouchInputEvents.name);
     } else {

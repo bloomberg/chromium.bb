@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
@@ -60,27 +61,28 @@ namespace {
 // Expands language codes to make these more suitable for Accept-Language.
 // Example: ['en-US', 'ja', 'en-CA'] => ['en-US', 'en', 'ja', 'en-CA'].
 // 'en' won't appear twice as this function eliminates duplicates.
+// The StringPieces in |expanded_languages| are references to the strings in
+// |languages|.
 void ExpandLanguageCodes(const std::vector<std::string>& languages,
-                         std::vector<std::string>* expanded_languages) {
+                         std::vector<base::StringPiece>* expanded_languages) {
   DCHECK(expanded_languages);
   DCHECK(expanded_languages->empty());
 
   // used to eliminate duplicates.
-  std::set<std::string> seen;
+  std::set<base::StringPiece> seen;
 
-  for (std::vector<std::string>::const_iterator it = languages.begin();
-       it != languages.end(); ++it) {
-    const std::string& language = *it;
+  for (const auto& language : languages) {
     if (seen.find(language) == seen.end()) {
       expanded_languages->push_back(language);
       seen.insert(language);
     }
 
-    std::vector<std::string> tokens = base::SplitString(
+    std::vector<base::StringPiece> tokens = base::SplitStringPiece(
         language, "-", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     if (tokens.size() == 0)
       continue;
-    const std::string& main_part = tokens[0];
+
+    base::StringPiece main_part = tokens[0];
     if (seen.find(main_part) == seen.end()) {
       expanded_languages->push_back(main_part);
       seen.insert(main_part);
@@ -416,7 +418,7 @@ void TranslatePrefs::UpdateLanguageList(
   // Save the same language list as accept languages preference as well, but we
   // need to expand the language list, to make it more acceptable. For instance,
   // some web sites don't understand 'en-US' but 'en'. See crosbug.com/9884.
-  std::vector<std::string> accept_languages;
+  std::vector<base::StringPiece> accept_languages;
   ExpandLanguageCodes(languages, &accept_languages);
   std::string accept_languages_str = base::JoinString(accept_languages, ",");
   prefs_->SetString(accept_languages_pref_.c_str(), accept_languages_str);

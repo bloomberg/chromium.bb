@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <string>
 
-#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -25,8 +24,8 @@ const char* const kRemovedPrefixes[] = {"m.", "mobile.", "www."};
 }  // namespace
 
 std::string SplitByDotAndReverse(base::StringPiece host) {
-  std::vector<std::string> parts =
-      base::SplitString(host, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::vector<base::StringPiece> parts = base::SplitStringPiece(
+      host, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   std::reverse(parts.begin(), parts.end());
   return base::JoinString(parts, ".");
 }

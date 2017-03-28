@@ -14,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/syslog_logging.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -174,13 +175,12 @@ GURL ChromeContentVerifierDelegate::GetSignatureFetchUrl(
     const base::Version& version) {
   // TODO(asargent) Factor out common code from the extension updater's
   // ManifestFetchData class that can be shared for use here.
-  std::vector<std::string> parts;
-  parts.push_back("uc");
-  parts.push_back("installsource=signature");
-  parts.push_back("id=" + extension_id);
-  parts.push_back("v=" + version.GetString());
-  std::string x_value =
-      net::EscapeQueryParamValue(base::JoinString(parts, "&"), true);
+  std::string id_part = "id=" + extension_id;
+  std::string version_part = "v=" + version.GetString();
+  std::string x_value = net::EscapeQueryParamValue(
+      base::JoinString({"uc", "installsource=signature", id_part, version_part},
+                       "&"),
+      true);
   std::string query = "response=redirect&x=" + x_value;
 
   GURL base_url = extension_urls::GetWebstoreUpdateUrl();

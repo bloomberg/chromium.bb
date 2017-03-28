@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/stl_util.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -389,13 +390,13 @@ void FlagsState::RemoveFlagsSwitches(
     const std::string& existing_value_utf8 = existing_value;
 #endif
 
-    std::vector<std::string> features =
+    std::vector<base::StringPiece> features =
         base::FeatureList::SplitFeatureListString(existing_value_utf8);
-    std::vector<std::string> remaining_features;
+    std::vector<base::StringPiece> remaining_features;
     // For any featrue name in |features| that is not in |switch_added_values| -
     // i.e. it wasn't added by about_flags code, add it to |remaining_features|.
-    for (const std::string& feature : features) {
-      if (!base::ContainsKey(switch_added_values, feature))
+    for (const auto& feature : features) {
+      if (!base::ContainsKey(switch_added_values, feature.as_string()))
         remaining_features.push_back(feature);
     }
 
@@ -683,7 +684,7 @@ void FlagsState::MergeFeatureCommandLineSwitch(
     base::CommandLine* command_line) {
   std::string original_switch_value =
       command_line->GetSwitchValueASCII(switch_name);
-  std::vector<std::string> features =
+  std::vector<base::StringPiece> features =
       base::FeatureList::SplitFeatureListString(original_switch_value);
   // Only add features that don't already exist in the lists.
   // Note: The base::ContainsValue() call results in O(n^2) performance, but in

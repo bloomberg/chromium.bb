@@ -26,6 +26,7 @@
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -130,9 +131,9 @@ base::string16 SanitizeCreditCardFieldValue(const base::string16& value) {
 // want the logic of which variations of names are considered to be the same to
 // exactly match the logic applied on the Payments server.
 base::string16 RemoveMiddleInitial(const base::string16& name) {
-  std::vector<base::string16> parts =
-      base::SplitString(name, base::kWhitespaceUTF16, base::KEEP_WHITESPACE,
-                        base::SPLIT_WANT_NONEMPTY);
+  std::vector<base::StringPiece16> parts =
+      base::SplitStringPiece(name, base::kWhitespaceUTF16,
+                             base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   if (parts.size() == 3 && (parts[1].length() == 1 ||
                             (parts[1].length() == 2 &&
                              base::EndsWith(parts[1], base::ASCIIToUTF16("."),

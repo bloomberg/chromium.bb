@@ -14,6 +14,7 @@
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "extensions/common/permissions/api_permission.h"
@@ -158,9 +159,9 @@ bool SocketPermissionEntry::ParseHostPattern(
     result.pattern_.host = base::ToLowerASCII(result.pattern_.host);
 
     // The first component can optionally be '*' to match all subdomains.
-    std::vector<std::string> host_components =
-        base::SplitString(result.pattern_.host, std::string(1, kDot),
-                          base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+    std::vector<base::StringPiece> host_components =
+        base::SplitStringPiece(result.pattern_.host, std::string{kDot},
+                               base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     DCHECK(!host_components.empty());
 
     if (host_components[0] == kWildcard || host_components[0].empty()) {

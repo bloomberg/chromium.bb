@@ -140,7 +140,7 @@ Feature* FeatureProvider::GetParent(Feature* feature) const {
   if (feature->no_parent())
     return nullptr;
 
-  std::vector<std::string> split = base::SplitString(
+  std::vector<base::StringPiece> split = base::SplitStringPiece(
       feature->name(), ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (split.size() < 2)
     return nullptr;

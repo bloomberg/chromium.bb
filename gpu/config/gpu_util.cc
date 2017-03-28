@@ -11,6 +11,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -108,23 +109,28 @@ void ApplyGpuDriverBugWorkarounds(const GPUInfo& gpu_info,
                                     IntSetToString(workarounds));
   }
 
-  std::set<std::string> disabled_extensions;
   std::vector<std::string> buglist_disabled_extensions =
       list->GetDisabledExtensions();
-  disabled_extensions.insert(buglist_disabled_extensions.begin(),
-                             buglist_disabled_extensions.end());
+  std::set<base::StringPiece> disabled_extensions(
+      buglist_disabled_extensions.begin(), buglist_disabled_extensions.end());
 
+  // Must be outside if statement to remain in scope (referenced by
+  // |disabled_extensions|).
+  std::string command_line_disable_gl_extensions;
   if (command_line->HasSwitch(switches::kDisableGLExtensions)) {
-    std::vector<std::string> existing_disabled_extensions = base::SplitString(
-        command_line->GetSwitchValueASCII(switches::kDisableGLExtensions), " ",
-        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    command_line_disable_gl_extensions =
+        command_line->GetSwitchValueASCII(switches::kDisableGLExtensions);
+    std::vector<base::StringPiece> existing_disabled_extensions =
+        base::SplitStringPiece(command_line_disable_gl_extensions, " ",
+                               base::TRIM_WHITESPACE,
+                               base::SPLIT_WANT_NONEMPTY);
     disabled_extensions.insert(existing_disabled_extensions.begin(),
                                existing_disabled_extensions.end());
   }
 
   if (!disabled_extensions.empty()) {
-    std::vector<std::string> v(disabled_extensions.begin(),
-                               disabled_extensions.end());
+    std::vector<base::StringPiece> v(disabled_extensions.begin(),
+                                     disabled_extensions.end());
     command_line->AppendSwitchASCII(switches::kDisableGLExtensions,
                                     base::JoinString(v, " "));
   }

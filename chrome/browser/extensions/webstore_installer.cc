@@ -20,6 +20,7 @@
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -213,10 +214,12 @@ GURL WebstoreInstaller::GetWebstoreInstallURL(
     return GURL(base::StringPrintf(download_url.c_str(),
                                    extension_id.c_str()));
   }
-  std::vector<std::string> params;
-  params.push_back("id=" + extension_id);
+  std::vector<base::StringPiece> params;
+  std::string extension_param = "id=" + extension_id;
+  std::string installsource_param = "installsource=" + install_source;
+  params.push_back(extension_param);
   if (!install_source.empty())
-    params.push_back("installsource=" + install_source);
+    params.push_back(installsource_param);
   params.push_back("uc");
   std::string url_string = extension_urls::GetWebstoreUpdateUrl().spec();
 

@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
@@ -197,7 +198,7 @@ std::string GetSecureDirectiveValues(
     const std::string& directive_name,
     const std::vector<base::StringPiece>& directive_values,
     std::vector<InstallWarning>* warnings) {
-  std::vector<std::string> sane_csp_parts(1, directive_name);
+  std::vector<base::StringPiece> sane_csp_parts{directive_name};
   for (base::StringPiece source_literal : directive_values) {
     std::string source_lower = base::ToLowerASCII(source_literal);
     bool is_secure_csp_token = false;
@@ -231,7 +232,7 @@ std::string GetSecureDirectiveValues(
     }
 
     if (is_secure_csp_token) {
-      sane_csp_parts.push_back(source_literal.as_string());
+      sane_csp_parts.push_back(source_literal);
     } else if (warnings) {
       warnings->push_back(CSPInstallWarning(ErrorUtils::FormatErrorMessage(
           manifest_errors::kInvalidCSPInsecureValue, source_literal.as_string(),
@@ -241,7 +242,9 @@ std::string GetSecureDirectiveValues(
   // End of CSP directive that was started at the beginning of this method. If
   // none of the values are secure, the policy will be empty and default to
   // 'none', which is secure.
-  sane_csp_parts.back().push_back(kDirectiveSeparator);
+  std::string last_part = sane_csp_parts.back().as_string();
+  last_part.push_back(kDirectiveSeparator);
+  sane_csp_parts.back() = last_part;
   return base::JoinString(sane_csp_parts, " ");
 }
 
@@ -253,7 +256,7 @@ std::string GetAppSandboxSecureDirectiveValues(
     const std::string& directive_name,
     const std::vector<base::StringPiece>& directive_values,
     std::vector<InstallWarning>* warnings) {
-  std::vector<std::string> sane_csp_parts(1, directive_name);
+  std::vector<std::string> sane_csp_parts{directive_name};
   bool seen_self_or_none = false;
   for (base::StringPiece source_literal : directive_values) {
     std::string source_lower = base::ToLowerASCII(source_literal);

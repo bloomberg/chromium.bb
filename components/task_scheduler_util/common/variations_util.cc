@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/task_scheduler/initialization_util.h"
@@ -133,7 +132,7 @@ void AddVariationParamsToCommandLine(base::StringPiece key_prefix,
   if (!variations::GetVariationParams("BrowserScheduler", &variation_params))
     return;
 
-  std::vector<std::string> parts;
+  std::vector<base::StringPiece> parts;
   for (const auto& key_value : variation_params) {
     if (base::StartsWith(key_value.first, key_prefix,
                          base::CompareCase::SENSITIVE)) {

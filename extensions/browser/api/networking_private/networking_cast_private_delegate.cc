@@ -24,9 +24,8 @@ NetworkingCastPrivateDelegate::Credentials::Credentials(
       signed_data_(signed_data),
       device_bssid_(device_bssid),
       public_key_(public_key) {
-  std::vector<std::string> data_parts(
-      {device_ssid, device_serial, device_bssid, public_key, nonce});
-  unsigned_data_ = base::JoinString(data_parts, ",");
+  unsigned_data_ = base::JoinString(
+      {device_ssid, device_serial, device_bssid, public_key, nonce}, ",");
 }
 
 NetworkingCastPrivateDelegate::Credentials::~Credentials() {}

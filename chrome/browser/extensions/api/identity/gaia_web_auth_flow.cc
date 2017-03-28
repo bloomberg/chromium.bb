@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/identity/gaia_web_auth_flow.h"
 
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -55,9 +56,9 @@ GaiaWebAuthFlow::GaiaWebAuthFlow(Delegate* delegate,
       "&device_id=%s&"
       "device_type=chrome";
 
-  std::vector<std::string> scopes(token_key->scopes.begin(),
-                                  token_key->scopes.end());
-  std::vector<std::string> client_id_parts = base::SplitString(
+  std::vector<base::StringPiece> scopes(token_key->scopes.begin(),
+                                        token_key->scopes.end());
+  std::vector<base::StringPiece> client_id_parts = base::SplitStringPiece(
       oauth2_client_id, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   std::reverse(client_id_parts.begin(), client_id_parts.end());
   redirect_scheme_ = base::JoinString(client_id_parts, ".");

@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -51,13 +52,13 @@ const StringToConstant kDataReductionProxyBypassActionTypeTable[] = {
 };
 
 std::string JoinListValueStrings(base::ListValue* list_value) {
-  std::vector<std::string> values;
+  std::vector<base::StringPiece> values;
   for (const auto& value : *list_value) {
-    std::string value_string;
+    base::StringPiece value_string;
     if (!value->GetAsString(&value_string))
       return std::string();
 
-    values.push_back(std::move(value_string));
+    values.push_back(value_string);
   }
 
   return base::JoinString(values, ";");

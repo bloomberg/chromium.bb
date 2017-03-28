@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner.h"
@@ -95,12 +96,12 @@ std::string CheckAndResolveLocales(const std::string& languages) {
 }
 
 // Appends tokens from |src| that are not in |dest| to |dest|.
-void MergeLists(std::vector<std::string>* dest,
-                const std::vector<std::string>& src) {
+void MergeLists(std::vector<base::StringPiece>* dest,
+                const std::vector<base::StringPiece>& src) {
   // Keep track of already-added tokens.
-  std::set<std::string> unique_tokens(dest->begin(), dest->end());
+  std::set<base::StringPiece> unique_tokens(dest->begin(), dest->end());
 
-  for (const std::string& token : src) {
+  for (const auto& token : src) {
     // Skip token if it's already in |dest|.
     if (binary_search(unique_tokens.begin(), unique_tokens.end(), token))
       continue;
@@ -178,45 +179,50 @@ void InputMethodSyncer::MergeSyncedPrefs() {
   prefs_->SetBoolean(prefs::kLanguageShouldMergeInputMethods, false);
   merging_ = true;
 
-  std::string preferred_languages_syncable =
-      preferred_languages_syncable_.GetValue();
-  std::string preload_engines_syncable =
-      preload_engines_syncable_.GetValue();
-  std::string enabled_extension_imes_syncable =
-      enabled_extension_imes_syncable_.GetValue();
-
-  std::vector<std::string> synced_tokens;
-  std::vector<std::string> new_tokens;
+  std::vector<base::StringPiece> synced_tokens;
+  std::vector<base::StringPiece> new_tokens;
 
   // First, set the syncable prefs to the union of the local and synced prefs.
+  std::string preferred_languages_syncable =
+      preferred_languages_syncable_.GetValue();
   synced_tokens =
-      base::SplitString(preferred_languages_syncable_.GetValue(), ",",
-                        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  new_tokens = base::SplitString(preferred_languages_.GetValue(), ",",
-                                 base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+      base::SplitStringPiece(preferred_languages_syncable, ",",
+                             base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::string preferred_languages = preferred_languages_.GetValue();
+  new_tokens = base::SplitStringPiece(
+      preferred_languages, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   // Append the synced values to the current values.
   MergeLists(&new_tokens, synced_tokens);
   preferred_languages_syncable_.SetValue(base::JoinString(new_tokens, ","));
 
+  std::string enabled_extension_imes_syncable =
+      enabled_extension_imes_syncable_.GetValue();
   synced_tokens =
-      base::SplitString(enabled_extension_imes_syncable_.GetValue(), ",",
-                        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  new_tokens = base::SplitString(enabled_extension_imes_.GetValue(), ",",
-                                 base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+      base::SplitStringPiece(enabled_extension_imes_syncable, ",",
+                             base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::string enabled_extension_imes = enabled_extension_imes_.GetValue();
+  new_tokens = base::SplitStringPiece(
+      enabled_extension_imes, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   MergeLists(&new_tokens, synced_tokens);
   enabled_extension_imes_syncable_.SetValue(base::JoinString(new_tokens, ","));
 
   // Revert preload engines to legacy component IDs.
-  new_tokens = base::SplitString(preload_engines_.GetValue(), ",",
-                                 base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  std::transform(new_tokens.begin(), new_tokens.end(), new_tokens.begin(),
+  std::string preload_engines = preload_engines_.GetValue();
+  std::vector<std::string> new_token_values;
+  new_token_values = base::SplitString(
+      preload_engines, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::transform(new_token_values.begin(), new_token_values.end(),
+                 new_token_values.begin(),
                  extension_ime_util::GetComponentIDByInputMethodID);
+  std::string preload_engines_syncable = preload_engines_syncable_.GetValue();
   synced_tokens =
-      base::SplitString(preload_engines_syncable_.GetValue(), ",",
-                        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+      base::SplitStringPiece(preload_engines_syncable, ",",
+                             base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
+  new_tokens = std::vector<base::StringPiece>(new_token_values.begin(),
+                                              new_token_values.end());
   MergeLists(&new_tokens, synced_tokens);
   preload_engines_syncable_.SetValue(base::JoinString(new_tokens, ","));
 
@@ -246,9 +252,9 @@ std::string InputMethodSyncer::AddSupportedInputMethodValues(
     const std::string& pref,
     const std::string& synced_pref,
     const char* pref_name) {
-  std::vector<std::string> old_tokens =
-      base::SplitString(pref, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  std::vector<std::string> new_tokens = base::SplitString(
+  std::vector<base::StringPiece> old_tokens = base::SplitStringPiece(
+      pref, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::vector<std::string> new_token_values = base::SplitString(
       synced_pref, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   // Check and convert the new tokens.
@@ -273,13 +279,15 @@ std::string InputMethodSyncer::AddSupportedInputMethodValues(
       supported_descriptors.reset(new input_method::InputMethodDescriptors);
       ime_state_->GetInputMethodExtensions(supported_descriptors.get());
     }
-    CheckAndResolveInputMethodIDs(*supported_descriptors, &new_tokens);
+    CheckAndResolveInputMethodIDs(*supported_descriptors, &new_token_values);
   } else if (pref_name != prefs::kLanguagePreferredLanguages) {
     NOTREACHED() << "Attempting to merge an invalid preference.";
     // kLanguagePreferredLanguages is checked in CheckAndResolveLocales().
   }
 
   // Do the actual merging.
+  std::vector<base::StringPiece> new_tokens(new_token_values.begin(),
+                                            new_token_values.end());
   MergeLists(&old_tokens, new_tokens);
   return base::JoinString(old_tokens, ",");
 }

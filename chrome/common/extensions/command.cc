@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -263,7 +264,7 @@ std::string NormalizeShortcutSuggestion(const std::string& suggestion,
   if (!normalize)
     return suggestion;
 
-  std::vector<std::string> tokens = base::SplitString(
+  std::vector<base::StringPiece> tokens = base::SplitStringPiece(
       suggestion, "+", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   for (size_t i = 0; i < tokens.size(); i++) {
     if (tokens[i] == values::kKeyCtrl)

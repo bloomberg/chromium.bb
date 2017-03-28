@@ -29,6 +29,7 @@
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
@@ -996,12 +997,12 @@ void AccessibilityManager::UpdateBrailleImeState() {
   if (!profile_)
     return;
   PrefService* pref_service = profile_->GetPrefs();
-  std::vector<std::string> preload_engines =
-      base::SplitString(pref_service->GetString(prefs::kLanguagePreloadEngines),
-                        ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  std::vector<std::string>::iterator it =
-      std::find(preload_engines.begin(),
-                preload_engines.end(),
+  std::string preload_engines_str =
+      pref_service->GetString(prefs::kLanguagePreloadEngines);
+  std::vector<base::StringPiece> preload_engines = base::SplitStringPiece(
+      preload_engines_str, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::vector<base::StringPiece>::iterator it =
+      std::find(preload_engines.begin(), preload_engines.end(),
                 extension_misc::kBrailleImeEngineId);
   bool is_enabled = (it != preload_engines.end());
   bool should_be_enabled =

@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/lazy_instance.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -230,9 +231,8 @@ void BluetoothPrivateSetAdapterStateFunction::SendError() {
   DCHECK(pending_properties_.empty());
   DCHECK(!failed_properties_.empty());
 
-  std::vector<std::string> failed_vector;
-  std::copy(failed_properties_.begin(), failed_properties_.end(),
-            std::back_inserter(failed_vector));
+  std::vector<base::StringPiece> failed_vector(failed_properties_.begin(),
+                                               failed_properties_.end());
 
   std::vector<std::string> replacements(1);
   replacements[0] = base::JoinString(failed_vector, ", ");

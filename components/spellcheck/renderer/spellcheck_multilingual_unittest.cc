@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/path_service.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -137,12 +138,13 @@ TEST_F(MultilingualSpellCheckTest, MultilingualSpellCheckWord) {
   // A sorted list of languages. This must start sorted to get all possible
   // permutations.
   std::string languages = "el-GR,en-US,es-ES,ru-RU";
-  std::vector<std::string> permuted_languages = base::SplitString(
+  std::vector<base::StringPiece> permuted_languages = base::SplitStringPiece(
       languages, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   do {
-    languages = base::JoinString(permuted_languages, ",");
-    ExpectSpellCheckWordResults(languages, kTestCases, arraysize(kTestCases));
+    std::string reordered_languages = base::JoinString(permuted_languages, ",");
+    ExpectSpellCheckWordResults(reordered_languages, kTestCases,
+                                arraysize(kTestCases));
   } while (std::next_permutation(permuted_languages.begin(),
                                  permuted_languages.end()));
 }

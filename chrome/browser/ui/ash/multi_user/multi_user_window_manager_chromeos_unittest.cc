@@ -26,6 +26,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
@@ -379,7 +380,7 @@ MultiUserWindowManagerChromeOSTest::GetOwnersOfVisibleWindowsAsString() {
   std::set<AccountId> owners;
   multi_user_window_manager_->GetOwnersOfVisibleWindows(&owners);
 
-  std::vector<std::string> owner_list;
+  std::vector<base::StringPiece> owner_list;
   for (auto& owner : owners)
     owner_list.push_back(owner.GetUserEmail());
   return base::JoinString(owner_list, " ");

@@ -17,6 +17,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -748,8 +749,8 @@ void FakeGaia::HandleTokenInfo(const HttpRequest& request,
     response_dict.SetString("issued_to", token_info->issued_to);
     response_dict.SetString("audience", token_info->audience);
     response_dict.SetString("user_id", token_info->user_id);
-    std::vector<std::string> scope_vector(token_info->scopes.begin(),
-                                          token_info->scopes.end());
+    std::vector<base::StringPiece> scope_vector(token_info->scopes.begin(),
+                                                token_info->scopes.end());
     response_dict.SetString("scope", base::JoinString(scope_vector, " "));
     response_dict.SetInteger("expires_in", token_info->expires_in);
     response_dict.SetString("email", token_info->email);

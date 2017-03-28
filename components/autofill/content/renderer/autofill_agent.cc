@@ -15,6 +15,7 @@
 #include "base/location.h"
 #include "base/metrics/field_trial.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -434,13 +435,13 @@ void AutofillAgent::DoAcceptDataListSuggestion(
   // If this element takes multiple values then replace the last part with
   // the suggestion.
   if (input_element->isMultiple() && input_element->isEmailField()) {
-    std::vector<base::string16> parts = base::SplitString(
+    std::vector<base::StringPiece16> parts = base::SplitStringPiece(
         input_element->editingValue().utf16(), base::ASCIIToUTF16(","),
         base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
     if (parts.size() == 0)
-      parts.push_back(base::string16());
+      parts.push_back(base::StringPiece16());
 
-    base::string16 last_part = parts.back();
+    base::string16 last_part = parts.back().as_string();
     // We want to keep just the leading whitespace.
     for (size_t i = 0; i < last_part.size(); ++i) {
       if (!base::IsUnicodeWhitespace(last_part[i])) {

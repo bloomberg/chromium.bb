@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -247,7 +246,7 @@ URLPattern::ParseResult URLPattern::Parse(base::StringPiece pattern) {
         .CopyToString(&host_);
 
     // The first component can optionally be '*' to match all subdomains.
-    std::vector<std::string> host_components = base::SplitString(
+    std::vector<base::StringPiece> host_components = base::SplitStringPiece(
         host_, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
     // Could be empty if the host only consists of whitespace characters.

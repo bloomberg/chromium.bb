@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
@@ -86,8 +87,8 @@ AutofillProfile ProfileFromSpecifics(
   AutofillProfile profile(AutofillProfile::SERVER_PROFILE, std::string());
 
   // AutofillProfile stores multi-line addresses with newline separators.
-  std::vector<std::string> street_address(address.street_address().begin(),
-                                          address.street_address().end());
+  std::vector<base::StringPiece> street_address(
+      address.street_address().begin(), address.street_address().end());
   profile.SetRawInfo(ADDRESS_HOME_STREET_ADDRESS,
                      base::UTF8ToUTF16(base::JoinString(street_address, "\n")));
 

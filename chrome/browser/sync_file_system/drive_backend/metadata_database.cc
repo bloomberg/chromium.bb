@@ -20,6 +20,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_restrictions.h"
@@ -1746,7 +1747,7 @@ std::unique_ptr<base::ListValue> MetadataDatabase::DumpMetadata() {
       dict->SetString("missing", details.missing() ? "true" : "false");
       dict->SetString("change_id", base::Int64ToString(details.change_id()));
 
-      std::vector<std::string> parents;
+      std::vector<base::StringPiece> parents;
       for (int i = 0; i < details.parent_folder_ids_size(); ++i)
         parents.push_back(details.parent_folder_ids(i));
       dict->SetString("parents", base::JoinString(parents, ","));

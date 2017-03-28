@@ -13,6 +13,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -37,7 +38,7 @@ namespace {
 const char kBuiltinKeywordVersion[] = "Builtin Keyword Version";
 
 const std::string ColumnsForVersion(int version, bool concatenated) {
-  std::vector<std::string> columns;
+  std::vector<base::StringPiece> columns;
 
   columns.push_back("id");
   columns.push_back("short_name");

@@ -31,6 +31,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
@@ -851,8 +852,8 @@ void ChromeBrowserMainParts::SetupOriginTrialsCommandLine() {
     const base::ListValue* override_disabled_feature_list =
         local_state_->GetList(prefs::kOriginTrialDisabledFeatures);
     if (override_disabled_feature_list) {
-      std::vector<std::string> disabled_features;
-      std::string disabled_feature;
+      std::vector<base::StringPiece> disabled_features;
+      base::StringPiece disabled_feature;
       for (const auto& item : *override_disabled_feature_list) {
         if (item->GetAsString(&disabled_feature)) {
           disabled_features.push_back(disabled_feature);
@@ -870,8 +871,8 @@ void ChromeBrowserMainParts::SetupOriginTrialsCommandLine() {
     const base::ListValue* disabled_token_list =
         local_state_->GetList(prefs::kOriginTrialDisabledTokens);
     if (disabled_token_list) {
-      std::vector<std::string> disabled_tokens;
-      std::string disabled_token;
+      std::vector<base::StringPiece> disabled_tokens;
+      base::StringPiece disabled_token;
       for (const auto& item : *disabled_token_list) {
         if (item->GetAsString(&disabled_token)) {
           disabled_tokens.push_back(disabled_token);

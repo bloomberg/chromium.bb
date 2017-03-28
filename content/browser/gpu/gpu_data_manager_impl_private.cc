@@ -16,6 +16,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
@@ -660,14 +661,19 @@ void GpuDataManagerImplPrivate::UpdateGpuInfoHelper() {
     UpdateBlacklistedFeatures(features);
   }
 
-  std::set<std::string> disabled_ext_set;
+  std::string command_line_disable_gl_extensions;
+  std::vector<std::string> disabled_driver_bug_exts;
+  // Holds references to strings in the above two variables.
+  std::set<base::StringPiece> disabled_ext_set;
 
   // Merge disabled extensions from the command line with gpu driver bug list.
   if (command_line) {
-    const std::vector<std::string>& disabled_command_line_exts =
-        base::SplitString(
-            command_line->GetSwitchValueASCII(switches::kDisableGLExtensions),
-            ", ;", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    command_line_disable_gl_extensions =
+        command_line->GetSwitchValueASCII(switches::kDisableGLExtensions);
+    std::vector<base::StringPiece> disabled_command_line_exts =
+        base::SplitStringPiece(command_line_disable_gl_extensions, ", ;",
+                               base::KEEP_WHITESPACE,
+                               base::SPLIT_WANT_NONEMPTY);
     disabled_ext_set.insert(disabled_command_line_exts.begin(),
                             disabled_command_line_exts.end());
   }
@@ -676,14 +682,13 @@ void GpuDataManagerImplPrivate::UpdateGpuInfoHelper() {
     gpu_driver_bugs_ = gpu_driver_bug_list_->MakeDecision(
         gpu::GpuControlList::kOsAny, os_version, gpu_info_);
 
-    const std::vector<std::string>& disabled_driver_bug_exts =
-        gpu_driver_bug_list_->GetDisabledExtensions();
+    disabled_driver_bug_exts = gpu_driver_bug_list_->GetDisabledExtensions();
     disabled_ext_set.insert(disabled_driver_bug_exts.begin(),
                             disabled_driver_bug_exts.end());
   }
   disabled_extensions_ =
-      base::JoinString(std::vector<std::string>(disabled_ext_set.begin(),
-                                                disabled_ext_set.end()),
+      base::JoinString(std::vector<base::StringPiece>(disabled_ext_set.begin(),
+                                                      disabled_ext_set.end()),
                        " ");
 
   gpu::GpuDriverBugList::AppendWorkaroundsFromCommandLine(

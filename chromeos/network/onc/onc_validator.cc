@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chromeos/network/onc/onc_signature.h"
@@ -315,8 +316,7 @@ namespace {
 
 std::string JoinStringRange(const std::vector<const char*>& strings,
                             const std::string& separator) {
-  std::vector<std::string> string_vector;
-  std::copy(strings.begin(), strings.end(), std::back_inserter(string_vector));
+  std::vector<base::StringPiece> string_vector(strings.begin(), strings.end());
   return base::JoinString(string_vector, separator);
 }
 

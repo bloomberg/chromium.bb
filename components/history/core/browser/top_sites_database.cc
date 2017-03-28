@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "components/history/core/browser/history_types.h"
@@ -87,9 +88,9 @@ bool InitTables(sql::Connection* db) {
 
 // Encodes redirects into a string.
 std::string GetRedirects(const MostVisitedURL& url) {
-  std::vector<std::string> redirects;
-  for (size_t i = 0; i < url.redirects.size(); i++)
-    redirects.push_back(url.redirects[i].spec());
+  std::vector<base::StringPiece> redirects;
+  for (const auto& redirect : url.redirects)
+    redirects.push_back(redirect.spec());
   return base::JoinString(redirects, " ");
 }
 

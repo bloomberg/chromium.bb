@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
@@ -129,9 +130,9 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest {
   std::string GetMultilingualDictionaries() {
     const base::ListValue* list_value =
         prefs_->GetList(spellcheck::prefs::kSpellCheckDictionaries);
-    std::vector<std::string> dictionaries;
+    std::vector<base::StringPiece> dictionaries;
     for (const auto& item_value : *list_value) {
-      std::string dictionary;
+      base::StringPiece dictionary;
       EXPECT_TRUE(item_value->GetAsString(&dictionary));
       dictionaries.push_back(dictionary);
     }

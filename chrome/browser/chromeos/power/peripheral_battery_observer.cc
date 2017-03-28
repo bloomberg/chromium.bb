@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -64,7 +65,7 @@ std::string ExtractBluetoothAddress(const std::string& path) {
     return std::string();
   std::string reverse_address =
       base::ToLowerASCII(path.substr(header_size, key_len));
-  std::vector<std::string> result = base::SplitString(
+  std::vector<base::StringPiece> result = base::SplitStringPiece(
       reverse_address, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   std::reverse(result.begin(), result.end());
   std::string address = base::JoinString(result, ":");

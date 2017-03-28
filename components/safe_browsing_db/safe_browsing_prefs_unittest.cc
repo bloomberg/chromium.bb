@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -41,8 +42,8 @@ class SafeBrowsingPrefsTest : public ::testing::Test {
   }
 
   void ResetExperiments(bool can_show_scout, bool only_show_scout) {
-    std::vector<std::string> enabled_features;
-    std::vector<std::string> disabled_features;
+    std::vector<base::StringPiece> enabled_features;
+    std::vector<base::StringPiece> disabled_features;
 
     auto* target_vector =
         can_show_scout ? &enabled_features : &disabled_features;
