@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 #include <vector>
 
-#include "base/memory/ref_counted.h"
 #include "base/optional.h"
 
 namespace base {
@@ -26,10 +26,13 @@ struct UsbDeviceFilter {
   UsbDeviceFilter(const UsbDeviceFilter& other);
   ~UsbDeviceFilter();
 
-  bool Matches(scoped_refptr<UsbDevice> device) const;
+  // Returns true if |device| matches this filter.
+  bool Matches(const UsbDevice& device) const;
   std::unique_ptr<base::Value> ToValue() const;
 
-  static bool MatchesAny(scoped_refptr<UsbDevice> device,
+  // Returns true if device matches any filter in |filters|, or if |filters| is
+  // empty.
+  static bool MatchesAny(const UsbDevice& device,
                          const std::vector<UsbDeviceFilter>& filters);
 
   base::Optional<uint16_t> vendor_id;

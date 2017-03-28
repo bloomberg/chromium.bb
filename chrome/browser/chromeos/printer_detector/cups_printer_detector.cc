@@ -102,7 +102,7 @@ class CupsPrinterDetectorImpl : public PrinterDetector,
   // UsbService::observer override.
   void OnDeviceRemoved(scoped_refptr<device::UsbDevice> device) override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    if (!UsbDeviceIsPrinter(device)) {
+    if (!UsbDeviceIsPrinter(*device)) {
       return;
     }
     known_printers_.erase(device->guid());
@@ -132,7 +132,7 @@ class CupsPrinterDetectorImpl : public PrinterDetector,
                         bool hotplugged) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-    if (!UsbDeviceIsPrinter(device) ||
+    if (!UsbDeviceIsPrinter(*device) ||
         base::ContainsKey(known_printers_, device->guid())) {
       return;
     }

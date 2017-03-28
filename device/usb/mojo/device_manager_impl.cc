@@ -7,7 +7,9 @@
 #include <stddef.h>
 
 #include <memory>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
@@ -92,7 +94,7 @@ void DeviceManagerImpl::OnGetDevices(
 
   std::vector<DeviceInfoPtr> device_infos;
   for (const auto& device : devices) {
-    if (UsbDeviceFilter::MatchesAny(device, filters)) {
+    if (UsbDeviceFilter::MatchesAny(*device, filters)) {
       if (permission_provider_ &&
           permission_provider_->HasDevicePermission(device)) {
         device_infos.push_back(DeviceInfo::From(*device));

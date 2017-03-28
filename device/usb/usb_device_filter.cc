@@ -31,22 +31,22 @@ UsbDeviceFilter::UsbDeviceFilter(const UsbDeviceFilter& other) = default;
 
 UsbDeviceFilter::~UsbDeviceFilter() = default;
 
-bool UsbDeviceFilter::Matches(scoped_refptr<UsbDevice> device) const {
+bool UsbDeviceFilter::Matches(const UsbDevice& device) const {
   if (vendor_id) {
-    if (device->vendor_id() != *vendor_id)
+    if (device.vendor_id() != *vendor_id)
       return false;
 
-    if (product_id && device->product_id() != *product_id)
+    if (product_id && device.product_id() != *product_id)
       return false;
   }
 
   if (serial_number &&
-      device->serial_number() != base::UTF8ToUTF16(*serial_number)) {
+      device.serial_number() != base::UTF8ToUTF16(*serial_number)) {
     return false;
   }
 
   if (interface_class) {
-    for (const UsbConfigDescriptor& config : device->configurations()) {
+    for (const UsbConfigDescriptor& config : device.configurations()) {
       for (const UsbInterfaceDescriptor& iface : config.interfaces) {
         if (iface.interface_class == *interface_class &&
             (!interface_subclass ||
@@ -86,7 +86,7 @@ std::unique_ptr<base::Value> UsbDeviceFilter::ToValue() const {
 }
 
 // static
-bool UsbDeviceFilter::MatchesAny(scoped_refptr<UsbDevice> device,
+bool UsbDeviceFilter::MatchesAny(const UsbDevice& device,
                                  const std::vector<UsbDeviceFilter>& filters) {
   if (filters.empty())
     return true;

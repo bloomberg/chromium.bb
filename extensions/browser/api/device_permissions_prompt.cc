@@ -47,7 +47,7 @@ void NoopUsbCallback(const std::vector<scoped_refptr<device::UsbDevice>>&) {}
 
 class UsbDeviceInfo : public DevicePermissionsPrompt::Prompt::DeviceInfo {
  public:
-  UsbDeviceInfo(scoped_refptr<UsbDevice> device) : device_(device) {
+  explicit UsbDeviceInfo(scoped_refptr<UsbDevice> device) : device_(device) {
     name_ = DevicePermissionsManager::GetPermissionMessage(
         device->vendor_id(), device->product_id(),
         device->manufacturer_string(), device->product_string(),
@@ -120,7 +120,7 @@ class UsbDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
 
   // device::UsbService::Observer implementation:
   void OnDeviceAdded(scoped_refptr<UsbDevice> device) override {
-    if (!UsbDeviceFilter::MatchesAny(device, filters_))
+    if (!UsbDeviceFilter::MatchesAny(*device, filters_))
       return;
 
     std::unique_ptr<DeviceInfo> device_info(new UsbDeviceInfo(device));
@@ -158,7 +158,8 @@ class UsbDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
 
 class HidDeviceInfo : public DevicePermissionsPrompt::Prompt::DeviceInfo {
  public:
-  HidDeviceInfo(scoped_refptr<device::HidDeviceInfo> device) : device_(device) {
+  explicit HidDeviceInfo(scoped_refptr<device::HidDeviceInfo> device)
+      : device_(device) {
     name_ = DevicePermissionsManager::GetPermissionMessage(
         device->vendor_id(), device->product_id(),
         base::string16(),  // HID devices include manufacturer in product name.

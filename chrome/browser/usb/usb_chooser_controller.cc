@@ -228,7 +228,7 @@ void UsbChooserController::GotUsbDeviceList(
 
 bool UsbChooserController::DisplayDevice(
     scoped_refptr<UsbDevice> device) const {
-  if (!UsbDeviceFilter::MatchesAny(device, filters_))
+  if (!UsbDeviceFilter::MatchesAny(*device, filters_))
     return false;
 
   if (UsbBlocklist::Get().IsExcluded(device))

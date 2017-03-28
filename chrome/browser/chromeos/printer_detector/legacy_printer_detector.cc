@@ -230,7 +230,7 @@ class LegacyPrinterDetectorImpl : public PrinterDetector,
       return;
     }
 
-    if (!UsbDeviceIsPrinter(device)) {
+    if (!UsbDeviceIsPrinter(*device)) {
       return;
     }
 

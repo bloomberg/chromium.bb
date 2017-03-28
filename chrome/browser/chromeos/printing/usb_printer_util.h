@@ -20,7 +20,7 @@ namespace chromeos {
 
 class Printer;
 
-bool UsbDeviceIsPrinter(scoped_refptr<device::UsbDevice> usb_device);
+bool UsbDeviceIsPrinter(const device::UsbDevice& usb_device);
 
 // Convert the interesting details of a device to a string, for
 // logging/debugging.

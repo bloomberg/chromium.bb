@@ -4,6 +4,8 @@
 
 #include "extensions/common/api/printer_provider/usb_printer_manifest_data.h"
 
+#include <memory>
+
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "device/usb/usb_device.h"
@@ -69,7 +71,7 @@ std::unique_ptr<UsbPrinterManifestData> UsbPrinterManifestData::FromValue(
 bool UsbPrinterManifestData::SupportsDevice(
     const scoped_refptr<device::UsbDevice>& device) const {
   for (const auto& filter : filters_) {
-    if (filter.Matches(device))
+    if (filter.Matches(*device))
       return true;
   }
 

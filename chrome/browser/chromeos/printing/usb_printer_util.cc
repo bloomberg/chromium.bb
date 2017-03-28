@@ -50,7 +50,7 @@ std::string CupsURIEscape(const std::string& uri_in) {
 
 }  // namespace
 
-bool UsbDeviceIsPrinter(scoped_refptr<device::UsbDevice> usb_device) {
+bool UsbDeviceIsPrinter(const device::UsbDevice& usb_device) {
   device::UsbDeviceFilter printer_filter;
   printer_filter.interface_class = kPrinterInterfaceClass;
   return printer_filter.Matches(usb_device);
