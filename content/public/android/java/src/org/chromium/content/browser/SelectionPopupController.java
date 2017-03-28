@@ -91,7 +91,6 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     private int mAllowedMenuItems;
 
     private boolean mHidden;
-    private boolean mPendingInvalidateContentRect;
 
     private boolean mEditable;
     private boolean mIsPasswordType;
@@ -307,7 +306,6 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
             assert canHideActionMode();
             mHidden = false;
             mView.removeCallbacks(mRepeatingHideRunnable);
-            mPendingInvalidateContentRect = false;
         }
 
         // Try/catch necessary for framework bug, crbug.com/446717.
@@ -322,13 +320,8 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
      * @see ActionMode#invalidateContentRect()
      */
     public void invalidateContentRect() {
-        if (supportsFloatingActionMode()) {
-            if (mHidden) {
-                mPendingInvalidateContentRect = true;
-            } else {
-                mPendingInvalidateContentRect = false;
-                if (isActionModeValid()) mActionMode.invalidateContentRect();
-            }
+        if (supportsFloatingActionMode() && isActionModeValid()) {
+            mActionMode.invalidateContentRect();
         }
     }
 
@@ -356,10 +349,6 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
             mHidden = false;
             mView.removeCallbacks(mRepeatingHideRunnable);
             hideActionModeTemporarily(SHOW_DELAY_MS);
-            if (mPendingInvalidateContentRect) {
-                mPendingInvalidateContentRect = false;
-                invalidateContentRect();
-            }
         }
     }
 
