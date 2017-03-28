@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-#include "ash/display/window_tree_host_manager.h"
+#include "ash/common/wm_display_observer.h"
 #include "base/macros.h"
 
 namespace aura {
@@ -18,7 +18,6 @@ class Window;
 namespace ash {
 
 class WindowDimmer;
-class WindowTreeHostManager;
 class WmWindow;
 
 template <typename UserData>
@@ -31,10 +30,9 @@ class WindowUserData;
 // Android, or a single-purpose or kiosk application."
 // https://developer.android.com/about/versions/android-5.0.html#ScreenPinning
 // See also ArcKioskAppLauncher::CheckAndPinWindow().
-class ScreenPinningController : public WindowTreeHostManager::Observer {
+class ScreenPinningController : public WmDisplayObserver {
  public:
-  explicit ScreenPinningController(
-      WindowTreeHostManager* window_tree_host_manager);
+  ScreenPinningController();
   ~ScreenPinningController() override;
 
   // Sets a pinned window. It is not allowed to call this when there already
@@ -84,7 +82,7 @@ class ScreenPinningController : public WindowTreeHostManager::Observer {
   // Returns the window from WindowDimmer.
   WmWindow* CreateWindowDimmer(WmWindow* container);
 
-  // WindowTreeHostManager::Observer:
+  // WmDisplayObserver:
   void OnDisplayConfigurationChanged() override;
 
   // Pinned window should be on top in the parent window.
@@ -97,11 +95,6 @@ class ScreenPinningController : public WindowTreeHostManager::Observer {
 
   // Set true only when restacking done by this controller.
   bool in_restacking_ = false;
-
-  // Keep references to remove this as a observer.
-  // While this controller is alive, it needs to be ensured that the instances
-  // refered from the pointers should be alive.
-  WindowTreeHostManager* window_tree_host_manager_;
 
   // Window observers to translate events for the window to this controller.
   std::unique_ptr<PinnedContainerWindowObserver>

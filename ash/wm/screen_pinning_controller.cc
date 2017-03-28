@@ -11,8 +11,8 @@
 #include "ash/common/wm/container_finder.h"
 #include "ash/common/wm/window_dimmer.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "base/auto_reset.h"
@@ -147,10 +147,8 @@ class ScreenPinningController::SystemModalContainerWindowObserver
   DISALLOW_COPY_AND_ASSIGN(SystemModalContainerWindowObserver);
 };
 
-ScreenPinningController::ScreenPinningController(
-    WindowTreeHostManager* window_tree_host_manager)
+ScreenPinningController::ScreenPinningController()
     : window_dimmers_(base::MakeUnique<WindowUserData<WindowDimmer>>()),
-      window_tree_host_manager_(window_tree_host_manager),
       pinned_container_window_observer_(
           base::MakeUnique<PinnedContainerWindowObserver>(this)),
       pinned_container_child_window_observer_(
@@ -159,11 +157,11 @@ ScreenPinningController::ScreenPinningController(
           base::MakeUnique<SystemModalContainerWindowObserver>(this)),
       system_modal_container_child_window_observer_(
           base::MakeUnique<SystemModalContainerChildWindowObserver>(this)) {
-  window_tree_host_manager_->AddObserver(this);
+  WmShell::Get()->AddDisplayObserver(this);
 }
 
 ScreenPinningController::~ScreenPinningController() {
-  window_tree_host_manager_->RemoveObserver(this);
+  WmShell::Get()->RemoveDisplayObserver(this);
 }
 
 bool ScreenPinningController::IsPinned() const {

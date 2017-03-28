@@ -978,10 +978,8 @@ void Shell::Init(const ShellInitParams& init_params) {
   }
 
   sticky_keys_controller_.reset(new StickyKeysController);
-  if (!is_mash) {
-    screen_pinning_controller_.reset(
-        new ScreenPinningController(window_tree_host_manager_.get()));
-  }
+  if (!is_mash)
+    screen_pinning_controller_ = base::MakeUnique<ScreenPinningController>();
 
   lock_state_controller_ =
       base::MakeUnique<LockStateController>(shutdown_controller_.get());
