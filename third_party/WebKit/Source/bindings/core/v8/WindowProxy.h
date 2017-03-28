@@ -103,9 +103,9 @@ class ScriptController;
 // frame were cross-origin. This is due to complexities in the process
 // allocation model for renderer processes. See https://crbug.com/601629.
 //
-// ====== LocalWindowProxy/RemoteWindowProxy ======
-// Currently, the prototype chain for LocalWindowProxy and RemoteWindowProxy
-// look the same:
+// ====== LocalWindowProxy ======
+// Since a LocalWindowProxy can represent a same-origin or cross-origin frame,
+// the entire prototype chain must be available:
 //
 //   outer global proxy
 //     -- has prototype --> inner global object
@@ -117,8 +117,26 @@ class ScriptController;
 //
 // [1] WindowProperties is the named properties object of the Window interface.
 //
-// There is work in progress to refactor RemoteWindowProxy to use remote v8
-// contexts, to reduce the overhead of remote frames.
+// ====== RemoteWindowProxy ======
+// Since a RemoteWindowProxy only represents a cross-origin frame, it has a much
+// simpler prototype chain.
+//
+//   outer global proxy
+//     -- has prototype --> inner global object
+//     -- has prototype --> null
+//
+// Property access to get/set attributes and methods on the outer global proxy
+// are redirected through the cross-origin interceptors, since any access will
+// fail the security check, by definition.
+//
+// However, note that method invocations still use the inner global object as
+// the receiver object. Blink bindings use v8::Signature to perform a strict
+// receiver check, which requires that the FunctionTemplate used to instantiate
+// the receiver object matches exactly. However, when creating a new context,
+// only inner global object is instantiated using Blink's global template, so by
+// definition, it is the only receiver object in the prototype chain that will
+// match.
+//
 //
 // ====== References ======
 // https://wiki.mozilla.org/Gecko:SplitWindow
