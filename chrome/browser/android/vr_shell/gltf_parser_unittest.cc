@@ -19,10 +19,9 @@ namespace vr_shell {
 
 class GltfParserTest : public testing::Test {
  protected:
-  void SetUp() override {
-    test::RegisterPathProvider();
-    PathService::Get(test::DIR_TEST_DATA, &data_dir_);
-  }
+  static void SetUpTestCase() { test::RegisterPathProvider(); }
+
+  void SetUp() override { PathService::Get(test::DIR_TEST_DATA, &data_dir_); }
 
   base::FilePath data_dir_;
 
