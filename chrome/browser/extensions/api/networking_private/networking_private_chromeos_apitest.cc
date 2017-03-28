@@ -599,6 +599,37 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, CreateNetwork) {
   EXPECT_TRUE(RunNetworkingSubtest("createNetwork")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
+                       CreateNetworkForPolicyControlledNetwork) {
+  const std::string user_policy_blob =
+      R"({
+           "NetworkConfigurations": [{
+             "GUID": "stub_wifi2",
+             "Type": "WiFi",
+             "Name": "My WiFi Network",
+             "WiFi": {
+               "HexSSID": "77696669325F50534B",
+               "Passphrase": "passphrase",
+               "Recommended": [ "AutoConnect", "Passphrase" ],
+               "Security": "WPA-PSK"
+             }
+           }],
+           "Certificates": [],
+           "Type": "UnencryptedConfiguration"
+         })";
+
+  policy::PolicyMap policy;
+  policy.Set(policy::key::kOpenNetworkConfiguration,
+             policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+             policy::POLICY_SOURCE_CLOUD,
+             base::WrapUnique(new base::Value(user_policy_blob)), nullptr);
+  provider_.UpdateChromePolicy(policy);
+
+  content::RunAllPendingInMessageLoop();
+
+  EXPECT_TRUE(RunNetworkingSubtest("createNetworkForPolicyControlledNetwork"));
+}
+
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, ForgetNetwork) {
   EXPECT_TRUE(RunNetworkingSubtest("forgetNetwork")) << message_;
 }
