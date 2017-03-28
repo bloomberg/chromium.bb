@@ -224,7 +224,9 @@ unsigned DOMSelection::rangeCount() const {
   if (isSelectionOfDocument())
     return 1;
   // In ShadowRoot, we need to try adjustment.
-  return createRangeFromSelectionEditor() ? 1 : 0;
+  if (createRangeFromSelectionEditor().isNotNull())
+    return 1;
+  return 0;
 }
 
 // https://www.w3.org/TR/selection-api/#dom-selection-collapse
@@ -530,7 +532,7 @@ Range* DOMSelection::getRangeAt(unsigned index,
   if (Range* cachedRange = documentCachedRange())
     return cachedRange;
 
-  Range* range = createRangeFromSelectionEditor();
+  Range* range = createRange(createRangeFromSelectionEditor());
   cacheRangeIfSelectionOfDocument(range);
   return range;
 }
@@ -539,23 +541,24 @@ Range* DOMSelection::primaryRangeOrNull() const {
   return rangeCount() > 0 ? getRangeAt(0, ASSERT_NO_EXCEPTION) : nullptr;
 }
 
-Range* DOMSelection::createRangeFromSelectionEditor() const {
+EphemeralRange DOMSelection::createRangeFromSelectionEditor() const {
   const VisibleSelection& selection = visibleSelection();
   const Position& anchor = blink::anchorPosition(selection);
   if (isSelectionOfDocument() && !anchor.anchorNode()->isInShadowTree())
-    return createRange(firstEphemeralRangeOf(selection));
+    return firstEphemeralRangeOf(selection);
 
-  Node* const node = shadowAdjustedNode(anchor);
-  if (!node)  // crbug.com/595100
-    return nullptr;
+  Node* const anchorNode = shadowAdjustedNode(anchor);
+  if (!anchorNode)  // crbug.com/595100
+    return EphemeralRange();
+
   const Position& focus = focusPosition(selection);
-  if (!selection.isBaseFirst()) {
-    return Range::create(*anchor.document(), shadowAdjustedNode(focus),
-                         shadowAdjustedOffset(focus), node,
-                         shadowAdjustedOffset(anchor));
-  }
-  return Range::create(*anchor.document(), node, shadowAdjustedOffset(anchor),
-                       shadowAdjustedNode(focus), shadowAdjustedOffset(focus));
+  const Position shadowAdjustedFocus =
+      Position(shadowAdjustedNode(focus), shadowAdjustedOffset(focus));
+  const Position shadowAdjustedAnchor =
+      Position(anchorNode, shadowAdjustedOffset(anchor));
+  if (selection.isBaseFirst())
+    return EphemeralRange(shadowAdjustedAnchor, shadowAdjustedFocus);
+  return EphemeralRange(shadowAdjustedFocus, shadowAdjustedAnchor);
 }
 
 bool DOMSelection::isSelectionOfDocument() const {

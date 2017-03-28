@@ -122,7 +122,7 @@ class CORE_EXPORT DOMSelection final : public GarbageCollected<DOMSelection>,
 
   void addConsoleError(const String& message);
   Range* primaryRangeOrNull() const;
-  Range* createRangeFromSelectionEditor() const;
+  EphemeralRange createRangeFromSelectionEditor() const;
 
   bool isSelectionOfDocument() const;
   void cacheRangeIfSelectionOfDocument(Range*) const;
