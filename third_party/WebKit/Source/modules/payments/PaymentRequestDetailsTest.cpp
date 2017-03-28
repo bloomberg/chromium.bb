@@ -35,9 +35,9 @@ class DetailsTestCase {
 
   ~DetailsTestCase() {}
 
-  PaymentDetailsInit buildDetails() const {
-    return buildPaymentDetailsInitForTest(m_detail, m_data, m_modType,
-                                          m_valueToUse);
+  PaymentDetails buildDetails() const {
+    return buildPaymentDetailsForTest(m_detail, m_data, m_modType,
+                                      m_valueToUse);
   }
 
   bool expectException() const { return m_expectException; }

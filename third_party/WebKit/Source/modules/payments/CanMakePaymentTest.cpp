@@ -22,7 +22,7 @@ TEST(CanMakePaymentTest, RejectPromiseOnUserCancel) {
   makePaymentRequestOriginSecure(scope.document());
   PaymentRequest* request = PaymentRequest::create(
       scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsInitForTest(), scope.getExceptionState());
+      buildPaymentDetailsForTest(), scope.getExceptionState());
 
   request->canMakePayment(scope.getScriptState())
       .then(funcs.expectNoCall(), funcs.expectCall());
@@ -37,7 +37,7 @@ TEST(CanMakePaymentTest, RejectPromiseOnUnknownError) {
   makePaymentRequestOriginSecure(scope.document());
   PaymentRequest* request = PaymentRequest::create(
       scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsInitForTest(), scope.getExceptionState());
+      buildPaymentDetailsForTest(), scope.getExceptionState());
 
   request->canMakePayment(scope.getScriptState())
       .then(funcs.expectNoCall(), funcs.expectCall());
@@ -52,7 +52,7 @@ TEST(CanMakePaymentTest, RejectDuplicateRequest) {
   makePaymentRequestOriginSecure(scope.document());
   PaymentRequest* request = PaymentRequest::create(
       scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsInitForTest(), scope.getExceptionState());
+      buildPaymentDetailsForTest(), scope.getExceptionState());
   request->canMakePayment(scope.getScriptState());
 
   request->canMakePayment(scope.getScriptState())
@@ -65,7 +65,7 @@ TEST(CanMakePaymentTest, RejectQueryQuotaExceeded) {
   makePaymentRequestOriginSecure(scope.document());
   PaymentRequest* request = PaymentRequest::create(
       scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsInitForTest(), scope.getExceptionState());
+      buildPaymentDetailsForTest(), scope.getExceptionState());
 
   request->canMakePayment(scope.getScriptState())
       .then(funcs.expectNoCall(), funcs.expectCall());
@@ -80,7 +80,7 @@ TEST(CanMakePaymentTest, ReturnCannotMakeCanMakePayment) {
   makePaymentRequestOriginSecure(scope.document());
   PaymentRequest* request = PaymentRequest::create(
       scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsInitForTest(), scope.getExceptionState());
+      buildPaymentDetailsForTest(), scope.getExceptionState());
   String captor;
   request->canMakePayment(scope.getScriptState())
       .then(funcs.expectCall(&captor), funcs.expectNoCall());
@@ -98,7 +98,7 @@ TEST(CanMakePaymentTest, ReturnCanMakePayment) {
   makePaymentRequestOriginSecure(scope.document());
   PaymentRequest* request = PaymentRequest::create(
       scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsInitForTest(), scope.getExceptionState());
+      buildPaymentDetailsForTest(), scope.getExceptionState());
   String captor;
   request->canMakePayment(scope.getScriptState())
       .then(funcs.expectCall(&captor), funcs.expectNoCall());

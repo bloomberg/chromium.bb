@@ -8,8 +8,7 @@
 #include "bindings/core/v8/ScriptFunction.h"
 #include "bindings/core/v8/V8DOMException.h"
 #include "components/payments/content/payment_request.mojom-blink.h"
-#include "modules/payments/PaymentDetailsInit.h"
-#include "modules/payments/PaymentDetailsUpdate.h"
+#include "modules/payments/PaymentDetails.h"
 #include "modules/payments/PaymentItem.h"
 #include "modules/payments/PaymentShippingOption.h"
 #include "platform/heap/HeapAllocator.h"
@@ -67,19 +66,13 @@ PaymentDetailsModifier buildPaymentDetailsModifierForTest(
     PaymentTestModificationType = PaymentTestOverwriteValue,
     const String& valueToUse = String());
 
-PaymentDetailsInit buildPaymentDetailsInitForTest(
+PaymentDetails buildPaymentDetailsForTest(
     PaymentTestDetailToChange = PaymentTestDetailNone,
     PaymentTestDataToChange = PaymentTestDataNone,
     PaymentTestModificationType = PaymentTestOverwriteValue,
     const String& valueToUse = String());
 
-PaymentDetailsUpdate buildPaymentDetailsUpdateForTest(
-    PaymentTestDetailToChange = PaymentTestDetailNone,
-    PaymentTestDataToChange = PaymentTestDataNone,
-    PaymentTestModificationType = PaymentTestOverwriteValue,
-    const String& valueToUse = String());
-
-PaymentDetailsUpdate buildPaymentDetailsErrorMsgForTest(
+PaymentDetails buildPaymentDetailsErrorMsgForTest(
     const String& valueToUse = String());
 
 HeapVector<PaymentMethodData> buildPaymentMethodDataForTest();
