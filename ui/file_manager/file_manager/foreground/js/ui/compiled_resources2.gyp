@@ -169,14 +169,24 @@
       ],
       'includes': ['../../../../compile_js2.gypi'],
     },
-#    {
-#      'target_name': 'multi_profile_share_dialog',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'progress_center_panel',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'multi_profile_share_dialog',
+      'dependencies': [
+        '../../../common/js/compiled_resources2.gyp:util',
+        '<(EXTERNS_GYP):file_manager_private',
+        'file_manager_dialog_base',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'progress_center_panel',
+      'dependencies': [
+        '../../../../externs/compiled_resources2.gyp:css_rule',
+        '../../../common/js/compiled_resources2.gyp:progress_center_common',
+        '../compiled_resources2.gyp:progress_center_item_group',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
 #    {
 #      'target_name': 'providers_menu',
 #      'includes': ['../../../../compile_js2.gypi'],

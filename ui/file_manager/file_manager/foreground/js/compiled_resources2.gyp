@@ -176,14 +176,23 @@
       ],
       'includes': ['../../../compile_js2.gypi'],
     },
-#    {
-#      'target_name': 'progress_center_item_group',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'providers_model',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'progress_center_item_group',
+      'dependencies': [
+        '../../common/js/compiled_resources2.gyp:progress_center_common',
+        '../../common/js/compiled_resources2.gyp:util',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'providers_model',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+        '<(EXTERNS_GYP):file_manager_private',
+        'volume_manager_wrapper',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
 #    {
 #      'target_name': 'quick_view_controller',
 #      'includes': ['../../../compile_js2.gypi'],
