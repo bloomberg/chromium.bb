@@ -363,9 +363,6 @@ def ToEpoch(value):
 def main(argv):
   parser = GetParser()
   options = parser.parse_args(argv)
-  builds = [tuple(x.split(',')) for x in options.builds]
-  if not builds:
-    builds = constants.SOM_BUILDS[options.som_tree]
 
   # Determine which hosts to connect to.
   db = cidb.CIDBConnection(options.cred_dir)
@@ -378,6 +375,10 @@ def main(argv):
       summary_json = f.read()
       print(summary_json)
   else:
+    builds = [tuple(x.split(',')) for x in options.builds]
+    if not builds:
+      builds = constants.SOM_BUILDS[options.som_tree]
+
     # Generate the set of alerts to send.
     logdog_client = logdog.LogdogClient(options.service_acct_json,
                                         host=options.logdog_host)
