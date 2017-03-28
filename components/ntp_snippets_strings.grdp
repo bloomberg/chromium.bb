@@ -46,6 +46,14 @@
     Your nearby suggestions appear here
   </message>
 
+  <message name="IDS_NTP_READING_LIST_SUGGESTIONS_SECTION_HEADER" desc="Header of the Reading List section. The Reading List section shows a list of unread pages from the Reading List.">
+    Reading list
+  </message>
+
+  <message name="IDS_NTP_READING_LIST_SUGGESTIONS_SECTION_EMPTY" desc="On the New Tab Page, text of the card explaining to the user that they can expect to see Reading List articles in this area in the future.">
+    Pages from your reading list appear here
+  </message>
+
   <message name="IDS_NTP_RECENT_TAB_SUGGESTIONS_SECTION_HEADER" desc="Header of the recent tabs section, which is a list of recent open tabs, which are currently opened and were automatically saved for offline consumption. This list is displayed as cards on the New Tab Page. The saved version is opened only if there are problems with the data connection (e.g. slow or absent).">
     Open tabs
   </message>
