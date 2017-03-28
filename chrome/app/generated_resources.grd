@@ -1628,7 +1628,7 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
       <if expr="chromeos">
         <message name="IDS_PROMPT_BLOCKED_MALICIOUS_DOWNLOAD_TITLE"
                  desc="In the download notification, a title of message shown for blocked download">
-          Malicious download blocked
+          Dangerous download blocked
         </message>
       </if>
       <message name="IDS_CONFIRM_KEEP_DANGEROUS_DOWNLOAD_TITLE"
