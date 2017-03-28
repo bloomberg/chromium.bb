@@ -57,7 +57,7 @@ public class DownloadUmaStatsEntry {
                 long wasted = 0;
                 if (values.length == 7) {
                     lastReceived = Long.parseLong(values[5].trim());
-                    wasted = Integer.parseInt(values[6].trim());
+                    wasted = Long.parseLong(values[6].trim());
                 }
                 return new DownloadUmaStatsEntry(
                         id, downloadStartTime, numInterruptions, isPaused, useDownloadManager,
