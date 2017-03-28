@@ -61,6 +61,29 @@ static bool colorIsDerivedFromElement(const CSSIdentifierValue& value) {
       return false;
   }
 }
+
+bool appendPosition(StringBuilder& result,
+                    const CSSValue* x,
+                    const CSSValue* y,
+                    bool wroteSomething) {
+  if (!x && !y)
+    return false;
+
+  if (wroteSomething)
+    result.append(' ');
+  result.append("at ");
+
+  if (x) {
+    result.append(x->cssText());
+    if (y)
+      result.append(' ');
+  }
+
+  if (y)
+    result.append(y->cssText());
+
+  return true;
+}
 }
 
 DEFINE_TRACE(CSSGradientColorStop) {
@@ -93,12 +116,23 @@ PassRefPtr<Image> CSSGradientValue::image(const LayoutObject& layoutObject,
   CSSToLengthConversionData conversionData(
       layoutObject.style(), rootStyle, LayoutViewItem(layoutObject.view()),
       layoutObject.style()->effectiveZoom());
-  if (isLinearGradientValue())
-    gradient = toCSSLinearGradientValue(this)->createGradient(
-        conversionData, size, layoutObject);
-  else
-    gradient = toCSSRadialGradientValue(this)->createGradient(
-        conversionData, size, layoutObject);
+
+  switch (getClassType()) {
+    case LinearGradientClass:
+      gradient = toCSSLinearGradientValue(this)->createGradient(
+          conversionData, size, layoutObject);
+      break;
+    case RadialGradientClass:
+      gradient = toCSSRadialGradientValue(this)->createGradient(
+          conversionData, size, layoutObject);
+      break;
+    case ConicGradientClass:
+      gradient = toCSSConicGradientValue(this)->createGradient(
+          conversionData, size, layoutObject);
+      break;
+    default:
+      NOTREACHED();
+  }
 
   RefPtr<Image> newImage = GradientGeneratedImage::create(gradient, size);
   if (cacheable)
@@ -447,6 +481,8 @@ void CSSGradientValue::addStops(CSSGradientValue::GradientDesc& desc,
                        ->toCalcValue(conversionData)
                        ->evaluate(gradientLength);
         stops[i].offset = (gradientLength > 0) ? length / gradientLength : 0;
+      } else if (stop.m_position->isAngle()) {
+        stops[i].offset = stop.m_position->computeDegrees() / 360.0f;
       } else {
         ASSERT_NOT_REACHED();
         stops[i].offset = 0;
@@ -739,20 +775,7 @@ String CSSLinearGradientValue::customCSSText() const {
       wroteSomething = true;
     }
 
-    if (wroteSomething)
-      result.append(", ");
-
-    for (unsigned i = 0; i < m_stops.size(); i++) {
-      const CSSGradientColorStop& stop = m_stops[i];
-      if (i)
-        result.append(", ");
-      if (stop.m_color)
-        result.append(stop.m_color->cssText());
-      if (stop.m_color && stop.m_position)
-        result.append(' ');
-      if (stop.m_position)
-        result.append(stop.m_position->cssText());
-    }
+    appendCSSTextForColorStops(result, wroteSomething);
   }
 
   result.append(')');
@@ -950,7 +973,26 @@ DEFINE_TRACE_AFTER_DISPATCH(CSSLinearGradientValue) {
   CSSGradientValue::traceAfterDispatch(visitor);
 }
 
-inline void CSSGradientValue::appendCSSTextForDeprecatedColorStops(
+void CSSGradientValue::appendCSSTextForColorStops(
+    StringBuilder& result,
+    bool requiresSeparator) const {
+  if (requiresSeparator)
+    result.append(", ");
+
+  for (unsigned i = 0; i < m_stops.size(); i++) {
+    const CSSGradientColorStop& stop = m_stops[i];
+    if (i)
+      result.append(", ");
+    if (stop.m_color)
+      result.append(stop.m_color->cssText());
+    if (stop.m_color && stop.m_position)
+      result.append(' ');
+    if (stop.m_position)
+      result.append(stop.m_position->cssText());
+  }
+}
+
+void CSSGradientValue::appendCSSTextForDeprecatedColorStops(
     StringBuilder& result) const {
   for (unsigned i = 0; i < m_stops.size(); i++) {
     const CSSGradientColorStop& stop = m_stops[i];
@@ -1070,35 +1112,10 @@ String CSSRadialGradientValue::customCSSText() const {
       wroteSomething = true;
     }
 
-    if (m_firstX || m_firstY) {
-      if (wroteSomething)
-        result.append(' ');
-      result.append("at ");
-      if (m_firstX && m_firstY) {
-        result.append(m_firstX->cssText());
-        result.append(' ');
-        result.append(m_firstY->cssText());
-      } else if (m_firstX)
-        result.append(m_firstX->cssText());
-      else
-        result.append(m_firstY->cssText());
-      wroteSomething = true;
-    }
+    wroteSomething |=
+        appendPosition(result, m_firstX, m_firstY, wroteSomething);
 
-    if (wroteSomething)
-      result.append(", ");
-
-    for (unsigned i = 0; i < m_stops.size(); i++) {
-      const CSSGradientColorStop& stop = m_stops[i];
-      if (i)
-        result.append(", ");
-      if (stop.m_color)
-        result.append(stop.m_color->cssText());
-      if (stop.m_color && stop.m_position)
-        result.append(' ');
-      if (stop.m_position)
-        result.append(stop.m_position->cssText());
-    }
+    appendCSSTextForColorStops(result, wroteSomething);
   }
 
   result.append(')');
@@ -1342,6 +1359,52 @@ DEFINE_TRACE_AFTER_DISPATCH(CSSRadialGradientValue) {
   visitor->trace(m_sizingBehavior);
   visitor->trace(m_endHorizontalSize);
   visitor->trace(m_endVerticalSize);
+  CSSGradientValue::traceAfterDispatch(visitor);
+}
+
+String CSSConicGradientValue::customCSSText() const {
+  StringBuilder result;
+
+  if (m_repeating)
+    result.append("repeating-");
+  result.append("conic-gradient(");
+
+  bool wroteSomething = false;
+
+  if (m_fromAngle) {
+    result.append("from ");
+    result.append(m_fromAngle->cssText());
+    wroteSomething = true;
+  }
+
+  wroteSomething |= appendPosition(result, m_firstX, m_firstY, wroteSomething);
+
+  appendCSSTextForColorStops(result, wroteSomething);
+
+  result.append(')');
+  return result.toString();
+}
+
+PassRefPtr<Gradient> CSSConicGradientValue::createGradient(
+    const CSSToLengthConversionData& conversionData,
+    const IntSize& size,
+    const LayoutObject& object) {
+  DCHECK(!size.isEmpty());
+
+  // TODO(fmalita): implement
+  return Gradient::create(FloatPoint(), FloatPoint());
+}
+
+bool CSSConicGradientValue::equals(const CSSConicGradientValue& other) const {
+  return m_repeating == other.m_repeating &&
+         dataEquivalent(m_firstX, other.m_firstX) &&
+         dataEquivalent(m_firstY, other.m_firstY) &&
+         dataEquivalent(m_fromAngle, other.m_fromAngle) &&
+         m_stops == other.m_stops;
+}
+
+DEFINE_TRACE_AFTER_DISPATCH(CSSConicGradientValue) {
+  visitor->trace(m_fromAngle);
   CSSGradientValue::traceAfterDispatch(visitor);
 }
 

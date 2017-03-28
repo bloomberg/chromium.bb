@@ -174,6 +174,8 @@ bool CSSValue::operator==(const CSSValue& other) const {
         return compareCSSValues<CSSLinearGradientValue>(*this, other);
       case RadialGradientClass:
         return compareCSSValues<CSSRadialGradientValue>(*this, other);
+      case ConicGradientClass:
+        return compareCSSValues<CSSConicGradientValue>(*this, other);
       case CrossfadeClass:
         return compareCSSValues<CSSCrossfadeValue>(*this, other);
       case PaintClass:
@@ -270,6 +272,8 @@ String CSSValue::cssText() const {
       return toCSSLinearGradientValue(this)->customCSSText();
     case RadialGradientClass:
       return toCSSRadialGradientValue(this)->customCSSText();
+    case ConicGradientClass:
+      return toCSSConicGradientValue(this)->customCSSText();
     case CrossfadeClass:
       return toCSSCrossfadeValue(this)->customCSSText();
     case PaintClass:
@@ -377,6 +381,9 @@ void CSSValue::finalizeGarbageCollectedObject() {
       return;
     case RadialGradientClass:
       toCSSRadialGradientValue(this)->~CSSRadialGradientValue();
+      return;
+    case ConicGradientClass:
+      toCSSConicGradientValue(this)->~CSSConicGradientValue();
       return;
     case CrossfadeClass:
       toCSSCrossfadeValue(this)->~CSSCrossfadeValue();
@@ -513,6 +520,9 @@ DEFINE_TRACE(CSSValue) {
       return;
     case RadialGradientClass:
       toCSSRadialGradientValue(this)->traceAfterDispatch(visitor);
+      return;
+    case ConicGradientClass:
+      toCSSConicGradientValue(this)->traceAfterDispatch(visitor);
       return;
     case CrossfadeClass:
       toCSSCrossfadeValue(this)->traceAfterDispatch(visitor);

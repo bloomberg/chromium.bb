@@ -44,7 +44,8 @@ enum CSSGradientType {
   CSSPrefixedLinearGradient,
   CSSPrefixedRadialGradient,
   CSSLinearGradient,
-  CSSRadialGradient
+  CSSRadialGradient,
+  CSSConicGradient
 };
 enum CSSGradientRepeat { NonRepeating, Repeating };
 
@@ -60,7 +61,7 @@ struct CSSGradientColorStop {
 
  public:
   CSSGradientColorStop() : m_colorIsDerivedFromElement(false) {}
-  Member<CSSPrimitiveValue> m_position;  // percentage or length
+  Member<CSSPrimitiveValue> m_position;  // percentage | length | angle
   Member<CSSValue> m_color;
   bool m_colorIsDerivedFromElement;
   bool operator==(const CSSGradientColorStop& other) const {
@@ -95,8 +96,6 @@ class CSSGradientValue : public CSSImageGeneratorValue {
   void addStop(const CSSGradientColorStop& stop) { m_stops.push_back(stop); }
 
   unsigned stopCount() const { return m_stops.size(); }
-
-  void appendCSSTextForDeprecatedColorStops(StringBuilder&) const;
 
   bool isRepeating() const { return m_repeating; }
 
@@ -137,6 +136,9 @@ class CSSGradientValue : public CSSImageGeneratorValue {
                              const IntSize&);
 
   bool isCacheable() const;
+
+  void appendCSSTextForColorStops(StringBuilder&, bool requiresSeparator) const;
+  void appendCSSTextForDeprecatedColorStops(StringBuilder&) const;
 
   // Points. Some of these may be null.
   Member<CSSValue> m_firstX;
@@ -239,6 +241,34 @@ class CSSRadialGradientValue final : public CSSGradientValue {
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSRadialGradientValue, isRadialGradientValue());
+
+class CSSConicGradientValue final : public CSSGradientValue {
+ public:
+  static CSSConicGradientValue* create(CSSGradientRepeat repeat) {
+    return new CSSConicGradientValue(repeat);
+  }
+
+  String customCSSText() const;
+
+  // Create the gradient for a given size.
+  PassRefPtr<Gradient> createGradient(const CSSToLengthConversionData&,
+                                      const IntSize&,
+                                      const LayoutObject&);
+
+  void setFromAngle(CSSPrimitiveValue* val) { m_fromAngle = val; }
+
+  bool equals(const CSSConicGradientValue&) const;
+
+  DECLARE_TRACE_AFTER_DISPATCH();
+
+ private:
+  CSSConicGradientValue(CSSGradientRepeat repeat)
+      : CSSGradientValue(ConicGradientClass, repeat, CSSConicGradient) {}
+
+  Member<CSSPrimitiveValue> m_fromAngle;
+};
+
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSConicGradientValue, isConicGradientValue());
 
 }  // namespace blink
 

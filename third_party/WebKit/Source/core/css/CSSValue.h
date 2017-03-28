@@ -93,11 +93,11 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
   bool isFunctionValue() const { return m_classType == FunctionClass; }
   bool isCustomIdentValue() const { return m_classType == CustomIdentClass; }
   bool isImageGeneratorValue() const {
-    return m_classType >= CrossfadeClass && m_classType <= RadialGradientClass;
+    return m_classType >= CrossfadeClass && m_classType <= ConicGradientClass;
   }
   bool isGradientValue() const {
     return m_classType >= LinearGradientClass &&
-           m_classType <= RadialGradientClass;
+           m_classType <= ConicGradientClass;
   }
   bool isImageSetValue() const { return m_classType == ImageSetClass; }
   bool isImageValue() const { return m_classType == ImageClass; }
@@ -114,6 +114,9 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
   bool isQuadValue() const { return m_classType == QuadClass; }
   bool isRadialGradientValue() const {
     return m_classType == RadialGradientClass;
+  }
+  bool isConicGradientValue() const {
+    return m_classType == ConicGradientClass;
   }
   bool isReflectValue() const { return m_classType == ReflectClass; }
   bool isShadowValue() const { return m_classType == ShadowClass; }
@@ -193,6 +196,7 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
     PaintClass,
     LinearGradientClass,
     RadialGradientClass,
+    ConicGradientClass,
 
     // Timing function classes.
     CubicBezierTimingFunctionClass,

@@ -125,6 +125,8 @@ PassRefPtr<Image> CSSImageGeneratorValue::image(
       return toCSSPaintValue(this)->image(layoutObject, size, zoom);
     case RadialGradientClass:
       return toCSSRadialGradientValue(this)->image(layoutObject, size);
+    case ConicGradientClass:
+      return toCSSConicGradientValue(this)->image(layoutObject, size);
     default:
       ASSERT_NOT_REACHED();
   }
@@ -141,6 +143,8 @@ bool CSSImageGeneratorValue::isFixedSize() const {
       return toCSSPaintValue(this)->isFixedSize();
     case RadialGradientClass:
       return toCSSRadialGradientValue(this)->isFixedSize();
+    case ConicGradientClass:
+      return toCSSConicGradientValue(this)->isFixedSize();
     default:
       ASSERT_NOT_REACHED();
   }
@@ -159,6 +163,8 @@ IntSize CSSImageGeneratorValue::fixedSize(const LayoutObject& layoutObject,
       return toCSSPaintValue(this)->fixedSize(layoutObject);
     case RadialGradientClass:
       return toCSSRadialGradientValue(this)->fixedSize(layoutObject);
+    case ConicGradientClass:
+      return toCSSConicGradientValue(this)->fixedSize(layoutObject);
     default:
       ASSERT_NOT_REACHED();
   }
@@ -175,6 +181,8 @@ bool CSSImageGeneratorValue::isPending() const {
       return toCSSPaintValue(this)->isPending();
     case RadialGradientClass:
       return toCSSRadialGradientValue(this)->isPending();
+    case ConicGradientClass:
+      return toCSSConicGradientValue(this)->isPending();
     default:
       ASSERT_NOT_REACHED();
   }
@@ -192,6 +200,8 @@ bool CSSImageGeneratorValue::knownToBeOpaque(
       return toCSSPaintValue(this)->knownToBeOpaque(layoutObject);
     case RadialGradientClass:
       return toCSSRadialGradientValue(this)->knownToBeOpaque(layoutObject);
+    case ConicGradientClass:
+      return toCSSConicGradientValue(this)->knownToBeOpaque(layoutObject);
     default:
       ASSERT_NOT_REACHED();
   }
@@ -211,6 +221,9 @@ void CSSImageGeneratorValue::loadSubimages(const Document& document) {
       break;
     case RadialGradientClass:
       toCSSRadialGradientValue(this)->loadSubimages(document);
+      break;
+    case ConicGradientClass:
+      toCSSConicGradientValue(this)->loadSubimages(document);
       break;
     default:
       ASSERT_NOT_REACHED();

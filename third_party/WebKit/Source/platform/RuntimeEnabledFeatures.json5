@@ -167,6 +167,10 @@
       status: "experimental",
     },
     {
+      name: "ConicGradient",
+      status: "experimental",
+    },
+    {
       name: "ContextMenu",
       status: "test",
     },
