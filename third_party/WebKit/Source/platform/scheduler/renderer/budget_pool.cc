@@ -32,17 +32,88 @@ std::string PointerToId(void* pointer) {
 
 }  // namespace
 
+BudgetPool::BudgetPool(const char* name,
+                       BudgetPoolController* budget_pool_controller)
+    : name_(name),
+      budget_pool_controller_(budget_pool_controller),
+      is_enabled_(true) {}
+
 BudgetPool::~BudgetPool() {}
+
+const char* BudgetPool::Name() const {
+  return name_;
+}
+
+void BudgetPool::AddQueue(base::TimeTicks now, TaskQueue* queue) {
+  budget_pool_controller_->AddQueueToBudgetPool(queue, this);
+  associated_task_queues_.insert(queue);
+
+  if (!is_enabled_ || !budget_pool_controller_->IsThrottled(queue))
+    return;
+
+  budget_pool_controller_->BlockQueue(now, queue);
+}
+
+void BudgetPool::RemoveQueue(base::TimeTicks now, TaskQueue* queue) {
+  budget_pool_controller_->RemoveQueueFromBudgetPool(queue, this);
+  associated_task_queues_.erase(queue);
+
+  if (!is_enabled_ || !budget_pool_controller_->IsThrottled(queue))
+    return;
+
+  budget_pool_controller_->UnblockQueue(now, queue);
+}
+
+void BudgetPool::EnableThrottling(LazyNow* lazy_now) {
+  if (is_enabled_)
+    return;
+  is_enabled_ = true;
+
+  TRACE_EVENT0("renderer.scheduler", "BudgetPool_EnableThrottling");
+
+  BlockThrottledQueues(lazy_now->Now());
+}
+
+void BudgetPool::DisableThrottling(LazyNow* lazy_now) {
+  if (!is_enabled_)
+    return;
+  is_enabled_ = false;
+
+  TRACE_EVENT0("renderer.scheduler", "BudgetPool_DisableThrottling");
+
+  for (TaskQueue* queue : associated_task_queues_) {
+    if (!budget_pool_controller_->IsThrottled(queue))
+      continue;
+
+    budget_pool_controller_->UnblockQueue(lazy_now->Now(), queue);
+  }
+
+  // TODO(altimin): We need to disable TimeBudgetQueues here or they will
+  // regenerate extra time budget when they are disabled.
+}
+
+bool BudgetPool::IsThrottlingEnabled() const {
+  return is_enabled_;
+}
+
+void BudgetPool::Close() {
+  DCHECK_EQ(0u, associated_task_queues_.size());
+
+  budget_pool_controller_->UnregisterBudgetPool(this);
+}
+
+void BudgetPool::BlockThrottledQueues(base::TimeTicks now) {
+  for (TaskQueue* queue : associated_task_queues_)
+    budget_pool_controller_->BlockQueue(now, queue);
+}
 
 CPUTimeBudgetPool::CPUTimeBudgetPool(
     const char* name,
     BudgetPoolController* budget_pool_controller,
     base::TimeTicks now)
-    : name_(name),
-      budget_pool_controller_(budget_pool_controller),
+    : BudgetPool(name, budget_pool_controller),
       last_checkpoint_(now),
-      cpu_percentage_(1),
-      is_enabled_(true) {}
+      cpu_percentage_(1) {}
 
 CPUTimeBudgetPool::~CPUTimeBudgetPool() {}
 
@@ -76,58 +147,6 @@ void CPUTimeBudgetPool::SetTimeBudgetRecoveryRate(base::TimeTicks now,
   EnforceBudgetLevelRestrictions();
 }
 
-void CPUTimeBudgetPool::AddQueue(base::TimeTicks now, TaskQueue* queue) {
-  budget_pool_controller_->AddQueueToBudgetPool(queue, this);
-  associated_task_queues_.insert(queue);
-
-  if (!is_enabled_ || !budget_pool_controller_->IsThrottled(queue))
-    return;
-
-  budget_pool_controller_->BlockQueue(now, queue);
-}
-
-void CPUTimeBudgetPool::RemoveQueue(base::TimeTicks now, TaskQueue* queue) {
-  budget_pool_controller_->RemoveQueueFromBudgetPool(queue, this);
-  associated_task_queues_.erase(queue);
-
-  if (!is_enabled_ || !budget_pool_controller_->IsThrottled(queue))
-    return;
-
-  budget_pool_controller_->UnblockQueue(now, queue);
-}
-
-void CPUTimeBudgetPool::EnableThrottling(LazyNow* lazy_now) {
-  if (is_enabled_)
-    return;
-  is_enabled_ = true;
-
-  TRACE_EVENT0("renderer.scheduler", "CPUTimeBudgetPool_EnableThrottling");
-
-  BlockThrottledQueues(lazy_now->Now());
-}
-
-void CPUTimeBudgetPool::DisableThrottling(LazyNow* lazy_now) {
-  if (!is_enabled_)
-    return;
-  is_enabled_ = false;
-
-  TRACE_EVENT0("renderer.scheduler", "CPUTimeBudgetPool_DisableThrottling");
-
-  for (TaskQueue* queue : associated_task_queues_) {
-    if (!budget_pool_controller_->IsThrottled(queue))
-      continue;
-
-    budget_pool_controller_->UnblockQueue(lazy_now->Now(), queue);
-  }
-
-  // TODO(altimin): We need to disable TimeBudgetQueues here or they will
-  // regenerate extra time budget when they are disabled.
-}
-
-bool CPUTimeBudgetPool::IsThrottlingEnabled() const {
-  return is_enabled_;
-}
-
 void CPUTimeBudgetPool::GrantAdditionalBudget(base::TimeTicks now,
                                               base::TimeDelta budget_level) {
   Advance(now);
@@ -138,12 +157,6 @@ void CPUTimeBudgetPool::GrantAdditionalBudget(base::TimeTicks now,
 void CPUTimeBudgetPool::SetReportingCallback(
     base::Callback<void(base::TimeDelta)> reporting_callback) {
   reporting_callback_ = reporting_callback;
-}
-
-void CPUTimeBudgetPool::Close() {
-  DCHECK_EQ(0u, associated_task_queues_.size());
-
-  budget_pool_controller_->UnregisterBudgetPool(this);
 }
 
 bool CPUTimeBudgetPool::HasEnoughBudgetToRun(base::TimeTicks now) {
@@ -175,10 +188,6 @@ void CPUTimeBudgetPool::RecordTaskRunTime(base::TimeTicks start_time,
       reporting_callback_.Run(-current_budget_level_ / cpu_percentage_);
     }
   }
-}
-
-const char* CPUTimeBudgetPool::Name() const {
-  return name_;
 }
 
 void CPUTimeBudgetPool::AsValueInto(base::trace_event::TracedValue* state,
@@ -221,11 +230,6 @@ void CPUTimeBudgetPool::Advance(base::TimeTicks now) {
     }
     last_checkpoint_ = now;
   }
-}
-
-void CPUTimeBudgetPool::BlockThrottledQueues(base::TimeTicks now) {
-  for (TaskQueue* queue : associated_task_queues_)
-    budget_pool_controller_->BlockQueue(now, queue);
 }
 
 void CPUTimeBudgetPool::EnforceBudgetLevelRestrictions() {
