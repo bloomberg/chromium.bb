@@ -310,6 +310,41 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, TestRequestNotBlacklisted) {
       "Permissions.AutoBlocker.SafeBrowsingResponseTime", 1);
 }
 
+// Check that we do not apply embargo to the plugins content type, as prompts
+// should be triggered only when necessary by Html5ByDefault.
+TEST_F(PermissionDecisionAutoBlockerUnitTest,
+       PluginsNotEmbargoedByMultipleDismisses) {
+  GURL url("https://www.google.com");
+  autoblocker()->RecordDismissAndEmbargo(url, CONTENT_SETTINGS_TYPE_PLUGINS);
+  autoblocker()->RecordDismissAndEmbargo(url, CONTENT_SETTINGS_TYPE_PLUGINS);
+  PermissionResult result =
+      autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_PLUGINS);
+
+  EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
+  EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
+  EXPECT_EQ(2,
+            autoblocker()->GetDismissCount(url, CONTENT_SETTINGS_TYPE_PLUGINS));
+
+  // The third dismiss would normally embargo, but this shouldn't happen for
+  // plugins.
+  autoblocker()->RecordDismissAndEmbargo(url, CONTENT_SETTINGS_TYPE_PLUGINS);
+  result = autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_PLUGINS);
+
+  EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
+  EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
+  EXPECT_EQ(3,
+            autoblocker()->GetDismissCount(url, CONTENT_SETTINGS_TYPE_PLUGINS));
+
+  // Extra one for sanity checking.
+  autoblocker()->RecordDismissAndEmbargo(url, CONTENT_SETTINGS_TYPE_PLUGINS);
+  result = autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_PLUGINS);
+
+  EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
+  EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
+  EXPECT_EQ(4,
+            autoblocker()->GetDismissCount(url, CONTENT_SETTINGS_TYPE_PLUGINS));
+}
+
 // Check that GetEmbargoResult returns the correct value when the embargo is set
 // and expires.
 TEST_F(PermissionDecisionAutoBlockerUnitTest, CheckEmbargoStatus) {

@@ -279,7 +279,17 @@ bool PermissionDecisionAutoBlocker::RecordDismissAndEmbargo(
   int current_dismissal_count = RecordActionInWebsiteSettings(
       url, permission, kPromptDismissCountKey, profile_);
 
+  // TODO(dominickn): ideally we would have a method
+  // PermissionContextBase::ShouldEmbargoAfterRepeatedDismissals() to specify
+  // if a permission is opted in. This is difficult right now because:
+  // 1. PermissionQueueController needs to call this method at a point where it
+  //    does not have a PermissionContextBase available
+  // 2. Not calling RecordDismissAndEmbargo means no repeated dismissal metrics
+  //    are recorded
+  // For now, only plugins are explicitly opted out. We should think about how
+  // to make this nicer once PermissionQueueController is removed.
   if (base::FeatureList::IsEnabled(features::kBlockPromptsIfDismissedOften) &&
+      permission != CONTENT_SETTINGS_TYPE_PLUGINS &&
       current_dismissal_count >= g_prompt_dismissals_before_block) {
     PlaceUnderEmbargo(url, permission, kPermissionDismissalEmbargoKey);
     return true;
