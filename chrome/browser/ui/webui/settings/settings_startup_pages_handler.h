@@ -55,10 +55,6 @@ class StartupPagesHandler : public SettingsPageUIHandler,
   // Sets the startup page set to the current pages.
   void HandleSetStartupPagesToCurrentPages(const base::ListValue* args);
 
-  // Handles the "validateStartupPage" message. Passed a URL that might be a
-  // valid startup page.
-  void HandleValidateStartupPage(const base::ListValue* args);
-
   // Stores the current state of the startup page preferences.
   void SaveStartupPagesPref();
 

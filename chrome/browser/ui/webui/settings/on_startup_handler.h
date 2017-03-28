@@ -28,6 +28,10 @@ class OnStartupHandler : public SettingsPageUIHandler {
   // Handler for the "getNtpExtension" message. No arguments.
   void HandleGetNtpExtension(const base::ListValue* /*args*/);
 
+  // Handles the "validateStartupPage" message. Passed a URL that might be a
+  // valid startup page.
+  void HandleValidateStartupPage(const base::ListValue* args);
+
   DISALLOW_COPY_AND_ASSIGN(OnStartupHandler);
 };
 

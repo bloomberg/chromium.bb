@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "chrome/browser/extensions/settings_api_helpers.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/settings_utils.h"
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/management_policy.h"
@@ -23,6 +24,10 @@ void OnStartupHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getNtpExtension", base::Bind(&OnStartupHandler::HandleGetNtpExtension,
                                     base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "validateStartupPage",
+      base::Bind(&OnStartupHandler::HandleValidateStartupPage,
+                 base::Unretained(this)));
 }
 
 void OnStartupHandler::HandleGetNtpExtension(const base::ListValue* args) {
@@ -48,6 +53,21 @@ void OnStartupHandler::HandleGetNtpExtension(const base::ListValue* args) {
                        ->management_policy()
                        ->MustRemainEnabled(ntp_extension, nullptr));
   ResolveJavascriptCallback(*callback_id, dict);
+}
+
+void OnStartupHandler::HandleValidateStartupPage(const base::ListValue* args) {
+  AllowJavascript();
+
+  CHECK_EQ(args->GetSize(), 2U);
+
+  const base::Value* callback_id;
+  CHECK(args->Get(0, &callback_id));
+
+  std::string url_string;
+  CHECK(args->GetString(1, &url_string));
+
+  bool valid = settings_utils::FixupAndValidateStartupPage(url_string, nullptr);
+  ResolveJavascriptCallback(*callback_id, base::Value(valid));
 }
 
 }  // namespace settings
