@@ -18,7 +18,7 @@ TEST(CompleteTest, CannotCallCompleteTwice) {
   makePaymentRequestOriginSecure(scope.document());
   PaymentRequest* request = PaymentRequest::create(
       scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsForTest(), scope.getExceptionState());
+      buildPaymentDetailsInitForTest(), scope.getExceptionState());
   EXPECT_FALSE(scope.getExceptionState().hadException());
   request->show(scope.getScriptState());
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
@@ -35,7 +35,7 @@ TEST(CompleteTest, RejectCompletePromiseOnError) {
   makePaymentRequestOriginSecure(scope.document());
   PaymentRequest* request = PaymentRequest::create(
       scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsForTest(), scope.getExceptionState());
+      buildPaymentDetailsInitForTest(), scope.getExceptionState());
   EXPECT_FALSE(scope.getExceptionState().hadException());
   request->show(scope.getScriptState());
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
@@ -60,7 +60,7 @@ TEST(CompleteTest, RejectCompletePromiseAfterError) {
   makePaymentRequestOriginSecure(scope.document());
   PaymentRequest* request = PaymentRequest::create(
       scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsForTest(), scope.getExceptionState());
+      buildPaymentDetailsInitForTest(), scope.getExceptionState());
   EXPECT_FALSE(scope.getExceptionState().hadException());
   request->show(scope.getScriptState());
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
@@ -78,7 +78,7 @@ TEST(CompleteTest, ResolvePromiseOnComplete) {
   makePaymentRequestOriginSecure(scope.document());
   PaymentRequest* request = PaymentRequest::create(
       scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsForTest(), scope.getExceptionState());
+      buildPaymentDetailsInitForTest(), scope.getExceptionState());
   EXPECT_FALSE(scope.getExceptionState().hadException());
   request->show(scope.getScriptState());
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
@@ -97,7 +97,7 @@ TEST(CompleteTest, RejectCompletePromiseOnUpdateDetailsFailure) {
   makePaymentRequestOriginSecure(scope.document());
   PaymentRequest* request = PaymentRequest::create(
       scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsForTest(), scope.getExceptionState());
+      buildPaymentDetailsInitForTest(), scope.getExceptionState());
   EXPECT_FALSE(scope.getExceptionState().hadException());
   request->show(scope.getScriptState())
       .then(funcs.expectCall(), funcs.expectNoCall());
@@ -120,7 +120,7 @@ TEST(CompleteTest, RejectCompletePromiseAfterTimeout) {
   makePaymentRequestOriginSecure(scope.document());
   PaymentRequest* request = PaymentRequest::create(
       scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsForTest(), scope.getExceptionState());
+      buildPaymentDetailsInitForTest(), scope.getExceptionState());
   EXPECT_FALSE(scope.getExceptionState().hadException());
   request->show(scope.getScriptState())
       .then(funcs.expectCall(), funcs.expectNoCall());

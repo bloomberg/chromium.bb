@@ -55,6 +55,40 @@ void setValues(PaymentItemOrPaymentShippingOption& original,
   }
 }
 
+void buildPaymentDetailsBase(PaymentTestDetailToChange detail,
+                             PaymentTestDataToChange data,
+                             PaymentTestModificationType modificationType,
+                             const String& valueToUse,
+                             PaymentDetailsBase* details) {
+  PaymentItem item;
+  if (detail == PaymentTestDetailItem)
+    item = buildPaymentItemForTest(data, modificationType, valueToUse);
+  else
+    item = buildPaymentItemForTest();
+
+  PaymentShippingOption shippingOption;
+  if (detail == PaymentTestDetailShippingOption) {
+    shippingOption =
+        buildShippingOptionForTest(data, modificationType, valueToUse);
+  } else {
+    shippingOption = buildShippingOptionForTest();
+  }
+
+  PaymentDetailsModifier modifier;
+  if (detail == PaymentTestDetailModifierTotal ||
+      detail == PaymentTestDetailModifierItem) {
+    modifier = buildPaymentDetailsModifierForTest(detail, data,
+                                                  modificationType, valueToUse);
+  } else {
+    modifier = buildPaymentDetailsModifierForTest();
+  }
+
+  details->setDisplayItems(HeapVector<PaymentItem>(1, item));
+  details->setShippingOptions(
+      HeapVector<PaymentShippingOption>(1, shippingOption));
+  details->setModifiers(HeapVector<PaymentDetailsModifier>(1, modifier));
+}
+
 }  // namespace
 
 PaymentItem buildPaymentItemForTest(
@@ -106,54 +140,50 @@ PaymentDetailsModifier buildPaymentDetailsModifierForTest(
   return modifier;
 }
 
-PaymentDetails buildPaymentDetailsForTest(
+PaymentDetailsInit buildPaymentDetailsInitForTest(
     PaymentTestDetailToChange detail,
     PaymentTestDataToChange data,
     PaymentTestModificationType modificationType,
     const String& valueToUse) {
-  PaymentItem total;
-  if (detail == PaymentTestDetailTotal)
-    total = buildPaymentItemForTest(data, modificationType, valueToUse);
-  else
-    total = buildPaymentItemForTest();
+  PaymentDetailsInit details;
+  buildPaymentDetailsBase(detail, data, modificationType, valueToUse, &details);
 
-  PaymentItem item;
-  if (detail == PaymentTestDetailItem)
-    item = buildPaymentItemForTest(data, modificationType, valueToUse);
-  else
-    item = buildPaymentItemForTest();
+  if (detail == PaymentTestDetailTotal) {
+    details.setTotal(
+        buildPaymentItemForTest(data, modificationType, valueToUse));
+  } else {
+    details.setTotal(buildPaymentItemForTest());
+  }
 
-  PaymentShippingOption shippingOption;
-  if (detail == PaymentTestDetailShippingOption)
-    shippingOption =
-        buildShippingOptionForTest(data, modificationType, valueToUse);
-  else
-    shippingOption = buildShippingOptionForTest();
-
-  PaymentDetailsModifier modifier;
-  if (detail == PaymentTestDetailModifierTotal ||
-      detail == PaymentTestDetailModifierItem)
-    modifier = buildPaymentDetailsModifierForTest(detail, data,
-                                                  modificationType, valueToUse);
-  else
-    modifier = buildPaymentDetailsModifierForTest();
-
-  PaymentDetails result;
-  result.setTotal(total);
-  result.setDisplayItems(HeapVector<PaymentItem>(1, item));
-  result.setShippingOptions(
-      HeapVector<PaymentShippingOption>(1, shippingOption));
-  result.setModifiers(HeapVector<PaymentDetailsModifier>(1, modifier));
-
-  if (detail == PaymentTestDetailError)
-    result.setError(valueToUse);
-
-  return result;
+  return details;
 }
 
-PaymentDetails buildPaymentDetailsErrorMsgForTest(const String& valueToUse) {
-  return buildPaymentDetailsForTest(PaymentTestDetailError, PaymentTestDataNone,
-                                    PaymentTestOverwriteValue, valueToUse);
+PaymentDetailsUpdate buildPaymentDetailsUpdateForTest(
+    PaymentTestDetailToChange detail,
+    PaymentTestDataToChange data,
+    PaymentTestModificationType modificationType,
+    const String& valueToUse) {
+  PaymentDetailsUpdate details;
+  buildPaymentDetailsBase(detail, data, modificationType, valueToUse, &details);
+
+  if (detail == PaymentTestDetailTotal) {
+    details.setTotal(
+        buildPaymentItemForTest(data, modificationType, valueToUse));
+  } else {
+    details.setTotal(buildPaymentItemForTest());
+  }
+
+  if (detail == PaymentTestDetailError)
+    details.setError(valueToUse);
+
+  return details;
+}
+
+PaymentDetailsUpdate buildPaymentDetailsErrorMsgForTest(
+    const String& valueToUse) {
+  return buildPaymentDetailsUpdateForTest(
+      PaymentTestDetailError, PaymentTestDataNone, PaymentTestOverwriteValue,
+      valueToUse);
 }
 
 HeapVector<PaymentMethodData> buildPaymentMethodDataForTest() {

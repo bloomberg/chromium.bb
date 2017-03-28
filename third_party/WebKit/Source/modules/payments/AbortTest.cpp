@@ -20,7 +20,7 @@ TEST(AbortTest, CannotAbortBeforeShow) {
   makePaymentRequestOriginSecure(scope.document());
   PaymentRequest* request = PaymentRequest::create(
       scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsForTest(), scope.getExceptionState());
+      buildPaymentDetailsInitForTest(), scope.getExceptionState());
 
   request->abort(scope.getScriptState())
       .then(funcs.expectNoCall(), funcs.expectCall());
@@ -34,7 +34,7 @@ TEST(AbortTest, CannotAbortTwiceConcurrently) {
   makePaymentRequestOriginSecure(scope.document());
   PaymentRequest* request = PaymentRequest::create(
       scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsForTest(), scope.getExceptionState());
+      buildPaymentDetailsInitForTest(), scope.getExceptionState());
   request->show(scope.getScriptState());
   request->abort(scope.getScriptState());
 
@@ -50,7 +50,7 @@ TEST(AbortTest, CanAbortAfterShow) {
   makePaymentRequestOriginSecure(scope.document());
   PaymentRequest* request = PaymentRequest::create(
       scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsForTest(), scope.getExceptionState());
+      buildPaymentDetailsInitForTest(), scope.getExceptionState());
   request->show(scope.getScriptState());
 
   request->abort(scope.getScriptState())
@@ -65,7 +65,7 @@ TEST(AbortTest, FailedAbortShouldRejectAbortPromise) {
   makePaymentRequestOriginSecure(scope.document());
   PaymentRequest* request = PaymentRequest::create(
       scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsForTest(), scope.getExceptionState());
+      buildPaymentDetailsInitForTest(), scope.getExceptionState());
   request->show(scope.getScriptState());
 
   request->abort(scope.getScriptState())
@@ -83,7 +83,7 @@ TEST(AbortTest, CanAbortAgainAfterFirstAbortRejected) {
   makePaymentRequestOriginSecure(scope.document());
   PaymentRequest* request = PaymentRequest::create(
       scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsForTest(), scope.getExceptionState());
+      buildPaymentDetailsInitForTest(), scope.getExceptionState());
   request->show(scope.getScriptState());
   request->abort(scope.getScriptState());
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)->OnAbort(
@@ -101,7 +101,7 @@ TEST(AbortTest, SuccessfulAbortShouldRejectShowPromiseAndResolveAbortPromise) {
   makePaymentRequestOriginSecure(scope.document());
   PaymentRequest* request = PaymentRequest::create(
       scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsForTest(), scope.getExceptionState());
+      buildPaymentDetailsInitForTest(), scope.getExceptionState());
 
   request->show(scope.getScriptState())
       .then(funcs.expectNoCall(), funcs.expectCall());

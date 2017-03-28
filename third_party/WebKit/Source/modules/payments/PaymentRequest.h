@@ -13,7 +13,6 @@
 #include "core/events/EventTarget.h"
 #include "modules/ModulesExport.h"
 #include "modules/payments/PaymentCompleter.h"
-#include "modules/payments/PaymentDetails.h"
 #include "modules/payments/PaymentMethodData.h"
 #include "modules/payments/PaymentOptions.h"
 #include "modules/payments/PaymentUpdater.h"
@@ -31,6 +30,7 @@ namespace blink {
 class ExceptionState;
 class ExecutionContext;
 class PaymentAddress;
+class PaymentDetailsInit;
 class ScriptPromiseResolver;
 class ScriptState;
 
@@ -48,11 +48,11 @@ class MODULES_EXPORT PaymentRequest final
  public:
   static PaymentRequest* create(ExecutionContext*,
                                 const HeapVector<PaymentMethodData>&,
-                                const PaymentDetails&,
+                                const PaymentDetailsInit&,
                                 ExceptionState&);
   static PaymentRequest* create(ExecutionContext*,
                                 const HeapVector<PaymentMethodData>&,
-                                const PaymentDetails&,
+                                const PaymentDetailsInit&,
                                 const PaymentOptions&,
                                 ExceptionState&);
 
@@ -91,7 +91,7 @@ class MODULES_EXPORT PaymentRequest final
  private:
   PaymentRequest(ExecutionContext*,
                  const HeapVector<PaymentMethodData>&,
-                 const PaymentDetails&,
+                 const PaymentDetailsInit&,
                  const PaymentOptions&,
                  ExceptionState&);
 
