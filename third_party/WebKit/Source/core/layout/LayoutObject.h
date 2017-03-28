@@ -2134,10 +2134,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   static bool isAllowedToModifyLayoutTreeStructure(Document&);
 
-  // Returns the parent for paint invalidation. For LayoutView, returns the
-  // owner layout object in the containing frame if any, or nullptr.
-  inline LayoutObject* paintInvalidationParent() const;
-  LayoutObject* slowPaintInvalidationParentForTesting() const;
+  // Returns the parent LayoutObject, or nullptr. This has a special case for
+  // LayoutView to return the owning LayoutObject in the containing frame.
+  inline LayoutObject* parentCrossingFrames() const;
 
   void invalidatePaintForSelection();
   void applyPseudoStyleChanges(const ComputedStyle& oldStyle);

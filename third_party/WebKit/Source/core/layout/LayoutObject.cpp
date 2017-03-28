@@ -620,11 +620,11 @@ PaintLayer* LayoutObject::enclosingLayer() const {
 
 PaintLayer* LayoutObject::paintingLayer() const {
   for (const LayoutObject* current = this; current;
-       // Use containingBlock instead of paintInvalidationParent for floating
-       // object to omit any self-painting layers of inline objects that don't
+       // Use containingBlock instead of parentCrossingFrames for floating
+       // objects to omit any self-painting layers of inline objects that don't
        // paint the floating object.
        current = current->isFloating() ? current->containingBlock()
-                                       : current->paintInvalidationParent()) {
+                                       : current->parentCrossingFrames()) {
     if (current->hasLayer() &&
         toLayoutBoxModelObject(current)->layer()->isSelfPaintingLayer()) {
       return toLayoutBoxModelObject(current)->layer();
@@ -2584,14 +2584,10 @@ LayoutObject* LayoutObject::container(AncestorSkipInfo* skipInfo) const {
   return parent();
 }
 
-inline LayoutObject* LayoutObject::paintInvalidationParent() const {
+inline LayoutObject* LayoutObject::parentCrossingFrames() const {
   if (isLayoutView())
-    return LayoutAPIShim::layoutObjectFrom(frame()->ownerLayoutItem());
+    return frame()->ownerLayoutObject();
   return parent();
-}
-
-LayoutObject* LayoutObject::slowPaintInvalidationParentForTesting() const {
-  return paintInvalidationParent();
 }
 
 bool LayoutObject::isSelectionBorder() const {
@@ -2804,18 +2800,18 @@ void LayoutObject::willBeRemovedFromTree() {
 void LayoutObject::setNeedsPaintPropertyUpdate() {
   m_bitfields.setNeedsPaintPropertyUpdate(true);
 
-  LayoutObject* ancestor = paintInvalidationParent();
+  LayoutObject* ancestor = parentCrossingFrames();
   while (ancestor && !ancestor->descendantNeedsPaintPropertyUpdate()) {
     ancestor->m_bitfields.setDescendantNeedsPaintPropertyUpdate(true);
-    ancestor = ancestor->paintInvalidationParent();
+    ancestor = ancestor->parentCrossingFrames();
   }
 }
 
 void LayoutObject::setAncestorsNeedPaintPropertyUpdateForMainThreadScrolling() {
-  LayoutObject* ancestor = paintInvalidationParent();
+  LayoutObject* ancestor = parentCrossingFrames();
   while (ancestor) {
     ancestor->setNeedsPaintPropertyUpdate();
-    ancestor = ancestor->paintInvalidationParent();
+    ancestor = ancestor->parentCrossingFrames();
   }
 }
 
@@ -3418,9 +3414,9 @@ static PaintInvalidationReason documentLifecycleBasedPaintInvalidationReason(
 }
 
 inline void LayoutObject::markAncestorsForPaintInvalidation() {
-  for (LayoutObject* parent = this->paintInvalidationParent();
+  for (LayoutObject* parent = this->parentCrossingFrames();
        parent && !parent->shouldCheckForPaintInvalidation();
-       parent = parent->paintInvalidationParent())
+       parent = parent->parentCrossingFrames())
     parent->m_bitfields.setMayNeedPaintInvalidation(true);
 }
 
@@ -3429,7 +3425,7 @@ inline void LayoutObject::setNeedsPaintOffsetAndVisualRectUpdate() {
     return;
   for (auto* object = this;
        object && !object->needsPaintOffsetAndVisualRectUpdate();
-       object = object->paintInvalidationParent()) {
+       object = object->parentCrossingFrames()) {
     object->m_bitfields.setNeedsPaintOffsetAndVisualRectUpdate(true);
 
     // Focus ring is special because continuations affect shape of focus ring.
