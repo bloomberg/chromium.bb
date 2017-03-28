@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CLEAN_CHROME_BROWSER_UI_ACTIONS_NAVIGATION_ACTIONS_H_
-#define IOS_CLEAN_CHROME_BROWSER_UI_ACTIONS_NAVIGATION_ACTIONS_H_
+#ifndef IOS_CLEAN_CHROME_BROWSER_UI_COMMANDS_NAVIGATION_COMMANDS_H_
+#define IOS_CLEAN_CHROME_BROWSER_UI_COMMANDS_NAVIGATION_COMMANDS_H_
 
 // Target/Action methods relating to web page navigation.
 // (Actions should only be used to communicate into or between the View
 // Controller layer).
-@protocol NavigationActions
+@protocol NavigationCommands
 @optional
 // Goes back to the previous visited page.
-- (void)goBack:(id)sender;
+- (void)goBack;
 // Goes forward to the next page.
-- (void)goForward:(id)sender;
+- (void)goForward;
 // Reloads the current page.
-- (void)reload:(id)sender;
+- (void)reloadPage;
 // Stops loading the page.
-- (void)stop:(id)sender;
+- (void)stopLoadingPage;
 @end
 
-#endif  // IOS_CLEAN_CHROME_BROWSER_UI_ACTIONS_NAVIGATION_ACTIONS_H_
+#endif  // IOS_CLEAN_CHROME_BROWSER_UI_COMMANDS_NAVIGATION_COMMANDS_H_

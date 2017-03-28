@@ -11,6 +11,7 @@
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_consumer.h"
 
 @protocol ToolbarCommands;
+@protocol NavigationCommands;
 
 // View controller for a toolbar, which will show a horizontal row of
 // controls and/or labels.
@@ -20,8 +21,8 @@
 @interface ToolbarViewController
     : UIViewController<ZoomTransitionDelegate, ToolbarConsumer>
 
-// The action delegate for this view controller.
-@property(nonatomic, weak) id<ToolbarCommands> toolbarCommandHandler;
+// The dispatcher for this view controller
+@property(nonatomic, weak) id<ToolbarCommands, NavigationCommands> dispatcher;
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_VIEW_CONTROLLER_H_

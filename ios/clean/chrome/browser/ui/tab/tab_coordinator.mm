@@ -89,6 +89,11 @@ const BOOL kUseBottomToolbar = NO;
 
 - (void)stop {
   [super stop];
+  // PLACEHOLDER: Stop child coordinators here for now. We might deal with this
+  // differently later on.
+  for (BrowserCoordinator* child in self.children) {
+    [child stop];
+  }
   [self.viewController.presentingViewController
       dismissViewControllerAnimated:self.context.animated
                          completion:nil];

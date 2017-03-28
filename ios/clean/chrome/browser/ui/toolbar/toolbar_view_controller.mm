@@ -5,10 +5,10 @@
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_view_controller.h"
 
 #import "base/mac/foundation_util.h"
-#import "ios/clean/chrome/browser/ui/actions/navigation_actions.h"
 #import "ios/clean/chrome/browser/ui/actions/tab_grid_actions.h"
 #import "ios/clean/chrome/browser/ui/actions/tab_strip_actions.h"
 #import "ios/clean/chrome/browser/ui/actions/tools_menu_actions.h"
+#import "ios/clean/chrome/browser/ui/commands/navigation_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/toolbar_commands.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_button+factory.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_component_options.h"
@@ -38,7 +38,7 @@ CGFloat kHorizontalMargin = 8.0f;
 @end
 
 @implementation ToolbarViewController
-@synthesize toolbarCommandHandler = _toolbarCommandHandler;
+@synthesize dispatcher = _dispatcher;
 @synthesize stackView = _stackView;
 @synthesize omnibox = _omnibox;
 @synthesize backButton = _backButton;
@@ -95,12 +95,6 @@ CGFloat kHorizontalMargin = 8.0f;
         constraintEqualToAnchor:self.view.trailingAnchor
                        constant:-kHorizontalMargin],
   ]];
-}
-
-- (void)viewWillLayoutSubviews {
-  // This forces the ToolMenu to close whenever a Device Rotation, iPad
-  // Multitasking change, etc. happens.
-  [self.toolbarCommandHandler closeToolsMenu];
 }
 
 #pragma mark - Components Setup
@@ -216,11 +210,29 @@ CGFloat kHorizontalMargin = 8.0f;
 #pragma mark - ToolsMenuActions
 
 - (void)showToolsMenu:(id)sender {
-  [self.toolbarCommandHandler showToolsMenu];
+  [self.dispatcher showToolsMenu];
 }
 
 - (void)closeToolsMenu:(id)sender {
-  [self.toolbarCommandHandler closeToolsMenu];
+  [self.dispatcher closeToolsMenu];
+}
+
+#pragma mark - NavigationActions
+
+- (void)goBack:(id)sender {
+  [self.dispatcher goBack];
+}
+
+- (void)goForward:(id)sender {
+  [self.dispatcher goForward];
+}
+
+- (void)stop:(id)sender {
+  [self.dispatcher stopLoadingPage];
+}
+
+- (void)reload:(id)sender {
+  [self.dispatcher reloadPage];
 }
 
 #pragma mark - TabStripEvents
