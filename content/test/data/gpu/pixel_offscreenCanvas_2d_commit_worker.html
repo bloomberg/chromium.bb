@@ -38,12 +38,12 @@ self.onmessage = function(e) {
 
 function startTest() {
   g_ctx1.fillStyle = "green";
-  g_ctx1.fillRect(0, 0, 300, 300);
+  g_ctx1.fillRect(0, 0, 200, 200);
   // The promise returned by this g_ctx1.commit() must be resolved at
   // about the same time as the other g_ctx2.commit() below as they are in the
   // same JS task.
   g_ctx1.commit().then(function() {
-    g_ctx2.fillRect(0, 0, 300, 300);
+    g_ctx2.fillRect(0, 0, 200, 200);
     // This g_ctx2.commit() must happen after the other g_ctx2.commit() below.
     g_ctx2.commit();
     if (--g_asyncCallbackNumber == 0) self.postMessage("");
@@ -79,13 +79,13 @@ function startTest() {
 
   // Do something complex to g_ctx2.
   g_ctx2.fillStyle = "blue";
-  g_ctx2.fillRect(0, 0, 300, 300);
-  drawStar(g_ctx2, 150, 150, 25, 80, 60);
+  g_ctx2.fillRect(0, 0, 200, 200);
+  drawStar(g_ctx2, 100, 100, 25, 60, 40);
   // This g_ctx2.commit() must be resolved at about the same time as the first
   // g_ctx1.commit() above because they are in the same JS task, no matter how
   // complex the drawing operation is.
   g_ctx2.commit().then(function() {
-    drawStar(g_ctx1, 100, 100, 7, 80, 30);
+    drawStar(g_ctx1, 80, 80, 7, 60, 30);
     g_ctx1.commit();
 
     // The following fill is never committed
@@ -135,11 +135,11 @@ function main()
 </script>
 </head>
 <body onload="main()">
-<div style="position:relative; width:600px; height:300px; background-color:white">
+<div style="position:relative; width:400px; height:200px; background-color:white">
 </div>
 <div id="container" style="position:absolute; top:0px; left:0px">
-<canvas id="canvas1" width="300" height="300" class="nomargin"></canvas>
-<canvas id="canvas2" width="300" height="300" class="nomargin"></canvas>
+<canvas id="canvas1" width="200" height="200" class="nomargin"></canvas>
+<canvas id="canvas2" width="200" height="200" class="nomargin"></canvas>
 </div>
 </body>
 </html>
