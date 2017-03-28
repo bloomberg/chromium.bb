@@ -31,6 +31,8 @@
 #ifndef ShapeResult_h
 #define ShapeResult_h
 
+#include <memory>
+#include "platform/LayoutUnit.h"
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/text/TextDirection.h"
@@ -38,7 +40,6 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
-#include <memory>
 
 struct hb_buffer_t;
 
@@ -64,12 +65,14 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   ~ShapeResult();
 
   float width() const { return m_width; }
+  LayoutUnit snappedWidth() const { return LayoutUnit::fromFloatCeil(m_width); }
   const FloatRect& bounds() const { return m_glyphBoundingBox; }
   unsigned numCharacters() const { return m_numCharacters; }
   void fallbackFonts(HashSet<const SimpleFontData*>*) const;
-  bool rtl() const {
-    return static_cast<TextDirection>(m_direction) == TextDirection::kRtl;
+  TextDirection direction() const {
+    return static_cast<TextDirection>(m_direction);
   }
+  bool rtl() const { return direction() == TextDirection::kRtl; }
   bool hasVerticalOffsets() const { return m_hasVerticalOffsets; }
 
   // For memory reporting.
@@ -77,9 +80,17 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
 
   unsigned offsetForPosition(float targetX, bool includePartialGlyphs) const;
   float positionForOffset(unsigned offset) const;
+  LayoutUnit snappedStartPositionForOffset(unsigned offset) const {
+    return LayoutUnit::fromFloatFloor(positionForOffset(offset));
+  }
+  LayoutUnit snappedEndPositionForOffset(unsigned offset) const {
+    return LayoutUnit::fromFloatCeil(positionForOffset(offset));
+  }
 
   PassRefPtr<ShapeResult> applySpacingToCopy(ShapeResultSpacing&,
                                              const TextRun&) const;
+
+  void copyRange(unsigned start, unsigned end, ShapeResult*) const;
 
  protected:
   struct RunInfo;

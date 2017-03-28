@@ -417,6 +417,30 @@ void ShapeResult::insertRun(std::unique_ptr<ShapeResult::RunInfo> runToInsert,
     m_runs.push_back(std::move(run));
 }
 
+void ShapeResult::copyRange(unsigned startOffset,
+                            unsigned endOffset,
+                            ShapeResult* target) const {
+  unsigned index = target->m_numCharacters;
+  for (const auto& run : m_runs) {
+    unsigned runStart = (*run).m_startIndex;
+    unsigned runEnd = runStart + (*run).m_numCharacters;
+
+    if (startOffset < runEnd && endOffset > runStart) {
+      unsigned start = startOffset > runStart ? startOffset - runStart : 0;
+      unsigned end = std::min(endOffset - runStart, runEnd);
+      DCHECK(end > start);
+
+      ShapeResult::RunInfo* subRun = (*run).createSubRun(start, end);
+      subRun->m_startIndex = index;
+      target->m_runs.push_back(WTF::wrapUnique(subRun));
+      target->m_width += subRun->m_width;
+      index += subRun->m_numCharacters;
+    }
+  }
+
+  target->m_numCharacters = index;
+}
+
 PassRefPtr<ShapeResult> ShapeResult::createForTabulationCharacters(
     const Font* font,
     const TextRun& textRun,

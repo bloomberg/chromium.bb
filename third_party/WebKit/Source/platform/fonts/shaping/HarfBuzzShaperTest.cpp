@@ -4,13 +4,15 @@
 
 #include "platform/fonts/shaping/HarfBuzzShaper.h"
 
+#include <unicode/uscript.h>
 #include "platform/fonts/Font.h"
 #include "platform/fonts/FontCache.h"
+#include "platform/fonts/shaping/ShapeResultInlineHeaders.h"
 #include "platform/fonts/shaping/ShapeResultTestInfo.h"
+#include "platform/text/TextBreakIterator.h"
 #include "platform/text/TextRun.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/Vector.h"
-#include <unicode/uscript.h>
 
 namespace blink {
 
@@ -46,7 +48,7 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsLatin) {
   HarfBuzzShaper shaper(latinCommon.characters16(), 8);
   RefPtr<ShapeResult> result = shaper.shape(&font, TextDirection::kLtr);
 
-  ASSERT_EQ(1u, testInfo(result)->numberOfRunsForTesting());
+  EXPECT_EQ(1u, testInfo(result)->numberOfRunsForTesting());
   ASSERT_TRUE(
       testInfo(result)->runInfoForTesting(0, startIndex, numGlyphs, script));
   EXPECT_EQ(0u, startIndex);
@@ -59,7 +61,7 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsLeadingCommon) {
   HarfBuzzShaper shaper(leadingCommon.characters16(), 8);
   RefPtr<ShapeResult> result = shaper.shape(&font, TextDirection::kLtr);
 
-  ASSERT_EQ(1u, testInfo(result)->numberOfRunsForTesting());
+  EXPECT_EQ(1u, testInfo(result)->numberOfRunsForTesting());
   ASSERT_TRUE(
       testInfo(result)->runInfoForTesting(0, startIndex, numGlyphs, script));
   EXPECT_EQ(0u, startIndex);
@@ -112,7 +114,7 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsDevanagariCommon) {
   HarfBuzzShaper shaper(devanagariCommonLatin.characters16(), 6);
   RefPtr<ShapeResult> result = shaper.shape(&font, TextDirection::kLtr);
 
-  ASSERT_EQ(2u, testInfo(result)->numberOfRunsForTesting());
+  EXPECT_EQ(2u, testInfo(result)->numberOfRunsForTesting());
   ASSERT_TRUE(
       testInfo(result)->runInfoForTesting(0, startIndex, numGlyphs, script));
   EXPECT_EQ(0u, startIndex);
@@ -132,7 +134,7 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsDevanagariCommonLatinCommon) {
   HarfBuzzShaper shaper(devanagariCommonLatinString, 7);
   RefPtr<ShapeResult> result = shaper.shape(&font, TextDirection::kLtr);
 
-  ASSERT_EQ(3u, testInfo(result)->numberOfRunsForTesting());
+  EXPECT_EQ(3u, testInfo(result)->numberOfRunsForTesting());
   ASSERT_TRUE(
       testInfo(result)->runInfoForTesting(0, startIndex, numGlyphs, script));
   EXPECT_EQ(0u, startIndex);
@@ -157,7 +159,7 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsArabicThaiHanLatin) {
   HarfBuzzShaper shaper(mixedString, 6);
   RefPtr<ShapeResult> result = shaper.shape(&font, TextDirection::kLtr);
 
-  ASSERT_EQ(4u, testInfo(result)->numberOfRunsForTesting());
+  EXPECT_EQ(4u, testInfo(result)->numberOfRunsForTesting());
   ASSERT_TRUE(
       testInfo(result)->runInfoForTesting(0, startIndex, numGlyphs, script));
   EXPECT_EQ(0u, startIndex);
@@ -187,12 +189,12 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsArabicThaiHanLatinTwice) {
   UChar mixedString[] = {0x628, 0x64A, 0x629, 0xE20, 0x65E5, 0x62};
   HarfBuzzShaper shaper(mixedString, 6);
   RefPtr<ShapeResult> result = shaper.shape(&font, TextDirection::kLtr);
-  ASSERT_EQ(4u, testInfo(result)->numberOfRunsForTesting());
+  EXPECT_EQ(4u, testInfo(result)->numberOfRunsForTesting());
 
   // Shape again on the same shape object and check the number of runs.
   // Should be equal if no state was retained between shape calls.
   RefPtr<ShapeResult> result2 = shaper.shape(&font, TextDirection::kLtr);
-  ASSERT_EQ(4u, testInfo(result2)->numberOfRunsForTesting());
+  EXPECT_EQ(4u, testInfo(result2)->numberOfRunsForTesting());
 }
 
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsArabic) {
@@ -200,7 +202,7 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsArabic) {
   HarfBuzzShaper shaper(arabicString, 3);
   RefPtr<ShapeResult> result = shaper.shape(&font, TextDirection::kRtl);
 
-  ASSERT_EQ(1u, testInfo(result)->numberOfRunsForTesting());
+  EXPECT_EQ(1u, testInfo(result)->numberOfRunsForTesting());
   ASSERT_TRUE(
       testInfo(result)->runInfoForTesting(0, startIndex, numGlyphs, script));
   EXPECT_EQ(0u, startIndex);
@@ -274,7 +276,7 @@ TEST_F(HarfBuzzShaperTest, PositionForOffsetLatin) {
   RefPtr<ShapeResult> first = shaper.shape(&font, direction, 0, 5);    // Hello
   RefPtr<ShapeResult> second = shaper.shape(&font, direction, 6, 11);  // World
 
-  ASSERT_EQ(0.0f, result->positionForOffset(0));
+  EXPECT_EQ(0.0f, result->positionForOffset(0));
   ASSERT_NEAR(first->width(), result->positionForOffset(5), 1);
   ASSERT_NEAR(second->width(),
               result->positionForOffset(11) - result->positionForOffset(6), 1);
@@ -288,7 +290,7 @@ TEST_F(HarfBuzzShaperTest, PositionForOffsetArabic) {
   HarfBuzzShaper shaper(arabicString, 3);
   RefPtr<ShapeResult> result = shaper.shape(&font, direction);
 
-  ASSERT_EQ(0.0f, result->positionForOffset(3));
+  EXPECT_EQ(0.0f, result->positionForOffset(3));
   ASSERT_NEAR(result->width(), result->positionForOffset(0), 0.1);
 }
 
@@ -300,21 +302,21 @@ TEST_F(HarfBuzzShaperTest, OffsetForPositionMatchesPositionForOffsetLatin) {
   RefPtr<ShapeResult> result = shaper.shape(&font, direction);
 
   // Last argument is includePartialGlyphs
-  ASSERT_EQ(0u, result->offsetForPosition(result->positionForOffset(0), true));
-  ASSERT_EQ(1u, result->offsetForPosition(result->positionForOffset(1), true));
-  ASSERT_EQ(2u, result->offsetForPosition(result->positionForOffset(2), true));
-  ASSERT_EQ(3u, result->offsetForPosition(result->positionForOffset(3), true));
-  ASSERT_EQ(4u, result->offsetForPosition(result->positionForOffset(4), true));
-  ASSERT_EQ(5u, result->offsetForPosition(result->positionForOffset(5), true));
-  ASSERT_EQ(6u, result->offsetForPosition(result->positionForOffset(6), true));
-  ASSERT_EQ(7u, result->offsetForPosition(result->positionForOffset(7), true));
-  ASSERT_EQ(8u, result->offsetForPosition(result->positionForOffset(8), true));
-  ASSERT_EQ(9u, result->offsetForPosition(result->positionForOffset(9), true));
-  ASSERT_EQ(10u,
+  EXPECT_EQ(0u, result->offsetForPosition(result->positionForOffset(0), true));
+  EXPECT_EQ(1u, result->offsetForPosition(result->positionForOffset(1), true));
+  EXPECT_EQ(2u, result->offsetForPosition(result->positionForOffset(2), true));
+  EXPECT_EQ(3u, result->offsetForPosition(result->positionForOffset(3), true));
+  EXPECT_EQ(4u, result->offsetForPosition(result->positionForOffset(4), true));
+  EXPECT_EQ(5u, result->offsetForPosition(result->positionForOffset(5), true));
+  EXPECT_EQ(6u, result->offsetForPosition(result->positionForOffset(6), true));
+  EXPECT_EQ(7u, result->offsetForPosition(result->positionForOffset(7), true));
+  EXPECT_EQ(8u, result->offsetForPosition(result->positionForOffset(8), true));
+  EXPECT_EQ(9u, result->offsetForPosition(result->positionForOffset(9), true));
+  EXPECT_EQ(10u,
             result->offsetForPosition(result->positionForOffset(10), true));
-  ASSERT_EQ(11u,
+  EXPECT_EQ(11u,
             result->offsetForPosition(result->positionForOffset(11), true));
-  ASSERT_EQ(12u,
+  EXPECT_EQ(12u,
             result->offsetForPosition(result->positionForOffset(12), true));
 }
 
@@ -326,10 +328,10 @@ TEST_F(HarfBuzzShaperTest, OffsetForPositionMatchesPositionForOffsetArabic) {
   RefPtr<ShapeResult> result = shaper.shape(&font, direction);
 
   // Last argument is includePartialGlyphs
-  ASSERT_EQ(0u, result->offsetForPosition(result->positionForOffset(0), true));
-  ASSERT_EQ(1u, result->offsetForPosition(result->positionForOffset(1), true));
-  ASSERT_EQ(2u, result->offsetForPosition(result->positionForOffset(2), true));
-  ASSERT_EQ(3u, result->offsetForPosition(result->positionForOffset(3), true));
+  EXPECT_EQ(0u, result->offsetForPosition(result->positionForOffset(0), true));
+  EXPECT_EQ(1u, result->offsetForPosition(result->positionForOffset(1), true));
+  EXPECT_EQ(2u, result->offsetForPosition(result->positionForOffset(2), true));
+  EXPECT_EQ(3u, result->offsetForPosition(result->positionForOffset(3), true));
 }
 
 TEST_F(HarfBuzzShaperTest, OffsetForPositionMatchesPositionForOffsetMixed) {
@@ -338,13 +340,223 @@ TEST_F(HarfBuzzShaperTest, OffsetForPositionMatchesPositionForOffsetMixed) {
   RefPtr<ShapeResult> result = shaper.shape(&font, TextDirection::kLtr);
 
   // Last argument is includePartialGlyphs
-  ASSERT_EQ(0u, result->offsetForPosition(result->positionForOffset(0), true));
-  ASSERT_EQ(1u, result->offsetForPosition(result->positionForOffset(1), true));
-  ASSERT_EQ(2u, result->offsetForPosition(result->positionForOffset(2), true));
-  ASSERT_EQ(3u, result->offsetForPosition(result->positionForOffset(3), true));
-  ASSERT_EQ(4u, result->offsetForPosition(result->positionForOffset(4), true));
-  ASSERT_EQ(5u, result->offsetForPosition(result->positionForOffset(5), true));
-  ASSERT_EQ(6u, result->offsetForPosition(result->positionForOffset(6), true));
+  EXPECT_EQ(0u, result->offsetForPosition(result->positionForOffset(0), true));
+  EXPECT_EQ(1u, result->offsetForPosition(result->positionForOffset(1), true));
+  EXPECT_EQ(2u, result->offsetForPosition(result->positionForOffset(2), true));
+  EXPECT_EQ(3u, result->offsetForPosition(result->positionForOffset(3), true));
+  EXPECT_EQ(4u, result->offsetForPosition(result->positionForOffset(4), true));
+  EXPECT_EQ(5u, result->offsetForPosition(result->positionForOffset(5), true));
+  EXPECT_EQ(6u, result->offsetForPosition(result->positionForOffset(6), true));
+}
+
+TEST_F(HarfBuzzShaperTest, ShapeLineLatin) {
+  String string = to16Bit(
+      "Test run with multiple words and breaking "
+      "opportunities.",
+      56);
+  const AtomicString locale = "en-US";
+  TextDirection direction = TextDirection::kLtr;
+  LineBreakType breakType = LineBreakType::Normal;
+
+  HarfBuzzShaper shaper(string.characters16(), 56);
+  RefPtr<ShapeResult> result = shaper.shape(&font, direction);
+
+  // "Test run with multiple"
+  RefPtr<ShapeResult> first4 = shaper.shape(&font, direction, 0, 22);
+  ASSERT_LT(first4->snappedWidth(), result->snappedWidth());
+
+  // "Test run with"
+  RefPtr<ShapeResult> first3 = shaper.shape(&font, direction, 0, 13);
+  ASSERT_LT(first3->snappedWidth(), first4->snappedWidth());
+
+  // "Test run"
+  RefPtr<ShapeResult> first2 = shaper.shape(&font, direction, 0, 8);
+  ASSERT_LT(first2->snappedWidth(), first3->snappedWidth());
+
+  // "Test"
+  RefPtr<ShapeResult> first1 = shaper.shape(&font, direction, 0, 4);
+  ASSERT_LT(first1->snappedWidth(), first2->snappedWidth());
+
+  // Test the case where the entire string fits.
+  unsigned breakOffset = 0;
+  RefPtr<ShapeResult> line =
+      shaper.shapeLine(&font, result.get(), 0, locale, breakType,
+                       result->snappedWidth(), &breakOffset);
+  EXPECT_EQ(56u, breakOffset);  // After the end of the string.
+  EXPECT_EQ(result->snappedWidth(), line->snappedWidth());
+
+  // Test cases where we break between words.
+  line = shaper.shapeLine(&font, result.get(), 0, locale, breakType,
+                          first4->snappedWidth(), &breakOffset);
+  EXPECT_EQ(22u, breakOffset);  // Between "multiple" and " words"
+  EXPECT_EQ(first4->snappedWidth(), line->snappedWidth());
+
+  line = shaper.shapeLine(&font, result.get(), 0, locale, breakType,
+                          first4->snappedWidth() + 10, &breakOffset);
+  EXPECT_EQ(22u, breakOffset);  // Between "multiple" and " words"
+  EXPECT_EQ(first4->snappedWidth(), line->snappedWidth());
+
+  line = shaper.shapeLine(&font, result.get(), 0, locale, breakType,
+                          first4->snappedWidth() - 1, &breakOffset);
+  EXPECT_EQ(13u, breakOffset);  // Between "width" and "multiple"
+  EXPECT_EQ(first3->snappedWidth(), line->snappedWidth());
+
+  line = shaper.shapeLine(&font, result.get(), 0, locale, breakType,
+                          first3->snappedWidth(), &breakOffset);
+  EXPECT_EQ(13u, breakOffset);  // Between "width" and "multiple"
+  EXPECT_EQ(first3->snappedWidth(), line->snappedWidth());
+
+  line = shaper.shapeLine(&font, result.get(), 0, locale, breakType,
+                          first3->snappedWidth() - 1, &breakOffset);
+  EXPECT_EQ(8u, breakOffset);  // Between "run" and "width"
+  EXPECT_EQ(first2->snappedWidth(), line->snappedWidth());
+
+  line = shaper.shapeLine(&font, result.get(), 0, locale, breakType,
+                          first2->snappedWidth(), &breakOffset);
+  EXPECT_EQ(8u, breakOffset);  // Between "run" and "width"
+  EXPECT_EQ(first2->snappedWidth(), line->snappedWidth());
+
+  line = shaper.shapeLine(&font, result.get(), 0, locale, breakType,
+                          first2->snappedWidth() - 1, &breakOffset);
+  EXPECT_EQ(4u, breakOffset);  // Between "Test" and "run"
+  EXPECT_EQ(first1->snappedWidth(), line->snappedWidth());
+
+  line = shaper.shapeLine(&font, result.get(), 0, locale, breakType,
+                          first1->snappedWidth(), &breakOffset);
+  EXPECT_EQ(4u, breakOffset);  // Between "Test" and "run"
+  EXPECT_EQ(first1->snappedWidth(), line->snappedWidth());
+
+  // Test the case where we cannot break earlier.
+  line = shaper.shapeLine(&font, result.get(), 0, locale, breakType,
+                          first1->snappedWidth() - 1, &breakOffset);
+  EXPECT_EQ(4u, breakOffset);  // Between "Test" and "run"
+  EXPECT_EQ(first1->snappedWidth(), line->snappedWidth());
+}
+
+TEST_F(HarfBuzzShaperTest, ShapeLineLatinMultiLine) {
+  String string = to16Bit("Line breaking test case.", 24);
+  const AtomicString locale = "en-US";
+  TextDirection direction = TextDirection::kLtr;
+  LineBreakType breakType = LineBreakType::Normal;
+
+  HarfBuzzShaper shaper(string.characters16(), 24);
+  RefPtr<ShapeResult> result = shaper.shape(&font, direction);
+  RefPtr<ShapeResult> first = shaper.shape(&font, direction, 0, 4);
+  RefPtr<ShapeResult> midThird = shaper.shape(&font, direction, 0, 16);
+
+  unsigned breakOffset = 0;
+  shaper.shapeLine(&font, result.get(), 0, locale, breakType,
+                   result->snappedWidth() - 1, &breakOffset);
+  EXPECT_EQ(18u, breakOffset);
+
+  shaper.shapeLine(&font, result.get(), 0, locale, breakType,
+                   first->snappedWidth(), &breakOffset);
+  EXPECT_EQ(4u, breakOffset);
+
+  shaper.shapeLine(&font, result.get(), 0, locale, breakType,
+                   midThird->snappedWidth(), &breakOffset);
+  EXPECT_EQ(13u, breakOffset);
+
+  shaper.shapeLine(&font, result.get(), 13u, locale, breakType,
+                   midThird->snappedWidth(), &breakOffset);
+  EXPECT_EQ(24u, breakOffset);
+}
+
+TEST_F(HarfBuzzShaperTest, ShapeLineLatinBreakAll) {
+  String string = to16Bit("Testing break type-break all.", 29);
+  const AtomicString locale = "en-US";
+  TextDirection direction = TextDirection::kLtr;
+  LineBreakType breakType = LineBreakType::BreakAll;
+
+  HarfBuzzShaper shaper(string.characters16(), 29);
+  RefPtr<ShapeResult> result = shaper.shape(&font, direction);
+  RefPtr<ShapeResult> midpoint = shaper.shape(&font, direction, 0, 16);
+
+  unsigned breakOffset = 0;
+  RefPtr<ShapeResult> line =
+      shaper.shapeLine(&font, result.get(), 0, locale, breakType,
+                       midpoint->snappedWidth(), &breakOffset);
+  EXPECT_EQ(16u, breakOffset);
+  EXPECT_EQ(midpoint->snappedWidth(), line->snappedWidth());
+
+  shaper.shapeLine(&font, result.get(), 16, locale, breakType,
+                   result->snappedWidth(), &breakOffset);
+  EXPECT_EQ(29u, breakOffset);
+  EXPECT_GE(midpoint->snappedWidth(), line->snappedWidth());
+}
+
+TEST_F(HarfBuzzShaperTest, ShapeLineArabicThaiHanLatinBreakAll) {
+  UChar mixedString[] = {0x628, 0x20, 0x64A, 0x629, 0x20, 0xE20, 0x65E5, 0x62};
+  const AtomicString locale = "ar_AE";
+  TextDirection direction = TextDirection::kRtl;
+  LineBreakType breakType = LineBreakType::BreakAll;
+
+  HarfBuzzShaper shaper(mixedString, 8);
+  RefPtr<ShapeResult> result = shaper.shape(&font, direction);
+  unsigned breakOffset = 0;
+  shaper.shapeLine(&font, result.get(), 3, locale, breakType,
+                   result->snappedWidth() / LayoutUnit(2), &breakOffset);
+}
+
+TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeIntoLatin) {
+  String string = to16Bit("Testing ShapeResult::createSubRun", 33);
+  TextDirection direction = TextDirection::kLtr;
+
+  HarfBuzzShaper shaper(string.characters16(), 33);
+  RefPtr<ShapeResult> result = shaper.shape(&font, direction);
+
+  RefPtr<ShapeResult> compositeResult =
+      ShapeResult::create(&font, 0, direction);
+  result->copyRange(0, 10, compositeResult.get());
+  result->copyRange(10, 20, compositeResult.get());
+  result->copyRange(20, 30, compositeResult.get());
+  result->copyRange(30, 33, compositeResult.get());
+
+  EXPECT_EQ(result->numCharacters(), compositeResult->numCharacters());
+  EXPECT_EQ(result->snappedWidth(), compositeResult->snappedWidth());
+  EXPECT_EQ(result->snappedStartPositionForOffset(0),
+            compositeResult->snappedStartPositionForOffset(0));
+  EXPECT_EQ(result->snappedStartPositionForOffset(15),
+            compositeResult->snappedStartPositionForOffset(15));
+  EXPECT_EQ(result->snappedStartPositionForOffset(30),
+            compositeResult->snappedStartPositionForOffset(30));
+  EXPECT_EQ(result->snappedStartPositionForOffset(33),
+            compositeResult->snappedStartPositionForOffset(33));
+}
+
+TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeIntoArabicThaiHanLatin) {
+  UChar mixedString[] = {0x628, 0x20, 0x64A, 0x629, 0x20, 0xE20, 0x65E5, 0x62};
+  TextDirection direction = TextDirection::kLtr;
+
+  HarfBuzzShaper shaper(mixedString, 8);
+  RefPtr<ShapeResult> result = shaper.shape(&font, direction);
+
+  RefPtr<ShapeResult> compositeResult =
+      ShapeResult::create(&font, 0, direction);
+  result->copyRange(0, 4, compositeResult.get());
+  result->copyRange(4, 6, compositeResult.get());
+  result->copyRange(6, 8, compositeResult.get());
+
+  EXPECT_EQ(result->numCharacters(), compositeResult->numCharacters());
+  EXPECT_EQ(result->snappedWidth(), compositeResult->snappedWidth());
+  EXPECT_EQ(result->snappedStartPositionForOffset(0),
+            compositeResult->snappedStartPositionForOffset(0));
+  EXPECT_EQ(result->snappedStartPositionForOffset(1),
+            compositeResult->snappedStartPositionForOffset(1));
+  EXPECT_EQ(result->snappedStartPositionForOffset(2),
+            compositeResult->snappedStartPositionForOffset(2));
+  EXPECT_EQ(result->snappedStartPositionForOffset(3),
+            compositeResult->snappedStartPositionForOffset(3));
+  EXPECT_EQ(result->snappedStartPositionForOffset(4),
+            compositeResult->snappedStartPositionForOffset(4));
+  EXPECT_EQ(result->snappedStartPositionForOffset(5),
+            compositeResult->snappedStartPositionForOffset(5));
+  EXPECT_EQ(result->snappedStartPositionForOffset(6),
+            compositeResult->snappedStartPositionForOffset(6));
+  EXPECT_EQ(result->snappedStartPositionForOffset(7),
+            compositeResult->snappedStartPositionForOffset(7));
+  EXPECT_EQ(result->snappedStartPositionForOffset(8),
+            compositeResult->snappedStartPositionForOffset(8));
 }
 
 }  // namespace blink

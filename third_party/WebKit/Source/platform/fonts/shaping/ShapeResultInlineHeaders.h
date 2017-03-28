@@ -98,6 +98,52 @@ struct ShapeResult::RunInfo {
     return sizeof(this) + m_glyphData.size() * sizeof(HarfBuzzRunGlyphData);
   }
 
+  // Creates a new RunInfo instance representing a subset of the current run.
+  RunInfo* createSubRun(unsigned start, unsigned end) {
+    DCHECK(end > start);
+    unsigned numberOfCharacters = std::min(end - start, m_numCharacters);
+
+    // This ends up looping over the glyphs twice if we don't know the glyph
+    // count up front. Once to count the number of glyphs and allocate the new
+    // RunInfo object and then a second time to copy the glyphs over.
+    // TODO: Compared to the cost of allocation and copying the extra loop is
+    // probably fine but we might want to try to eliminate it if we can.
+    unsigned numberOfGlyphs;
+    if (start == 0 && end == m_numCharacters) {
+      numberOfGlyphs = m_glyphData.size();
+    } else {
+      numberOfGlyphs = 0;
+      forEachGlyphInRange(
+          0, m_startIndex + start, m_startIndex + end, 0,
+          [&](const HarfBuzzRunGlyphData&, float, uint16_t) -> bool {
+            numberOfGlyphs++;
+            return true;
+          });
+    }
+
+    RunInfo* run =
+        new RunInfo(m_fontData.get(), m_direction, m_script,
+                    m_startIndex + start, numberOfGlyphs, numberOfCharacters);
+
+    unsigned subGlyphIndex = 0;
+    float totalAdvance = 0;
+    forEachGlyphInRange(
+        0, m_startIndex + start, m_startIndex + end, 0,
+        [&](const HarfBuzzRunGlyphData& glyphData, float, uint16_t) -> bool {
+          HarfBuzzRunGlyphData& subGlyph = run->m_glyphData[subGlyphIndex++];
+          subGlyph.glyph = glyphData.glyph;
+          subGlyph.characterIndex = glyphData.characterIndex - start;
+          subGlyph.advance = glyphData.advance;
+          subGlyph.offset = glyphData.offset;
+          totalAdvance += glyphData.advance;
+          return true;
+        });
+
+    run->m_width = totalAdvance;
+    run->m_numCharacters = numberOfCharacters;
+    return run;
+  }
+
   // Iterates over, and applies the functor to all the glyphs in this run.
   // Also tracks (and returns) a seeded total advance.
   //
