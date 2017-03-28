@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/payments/content/android/utility/payment_manifest_parser.h"
+#include "components/payments/content/utility/payment_manifest_parser.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -19,7 +19,7 @@ void ExpectParsed(
     const std::string& input,
     const std::string& expected_package_name,
     int expected_version,
-    const std::vector<std::vector<uint8_t>>& expected_fingerprints = {}) {
+    const std::vector<std::vector<uint8_t>>& expected_fingerprints) {
   std::vector<mojom::PaymentManifestSectionPtr> actual_output =
       PaymentManifestParser::ParseIntoVector(input);
   ASSERT_EQ(1U, actual_output.size());
@@ -67,7 +67,8 @@ TEST(PaymentManifestParserTest, NoPackageNameIsMalformed) {
 }
 
 TEST(PaymentManifestParserTest, OnlyPackageNameIsWellFormed) {
-  ExpectParsed("{\"android\": [{\"package\": \"*\"}]}", "*", 0);
+  ExpectParsed("{\"android\": [{\"package\": \"*\"}]}", "*", 0,
+               std::vector<std::vector<uint8_t>>());
 }
 
 TEST(PaymentManifestParserTest, WellFormed) {

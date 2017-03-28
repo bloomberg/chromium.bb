@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/payments/content/android/utility/payment_manifest_parser.h"
+#include "components/payments/content/utility/payment_manifest_parser.h"
 
 #include <stddef.h>
 
@@ -13,7 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "components/payments/content/android/utility/fingerprint_parser.h"
+#include "components/payments/content/utility/fingerprint_parser.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace payments {

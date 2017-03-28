@@ -16,6 +16,7 @@
 #include "chrome/common/file_patcher.mojom.h"
 #include "chrome/utility/media_router/dial_device_description_parser_impl.h"
 #include "chrome/utility/utility_message_handler.h"
+#include "components/payments/content/utility/payment_manifest_parser.h"
 #include "components/safe_json/utility/safe_json_parser_mojo_impl.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_info.h"
@@ -34,8 +35,6 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/proxy/mojo_proxy_resolver_factory_impl.h"
 #include "net/proxy/proxy_resolver_v8.h"
-#else
-#include "components/payments/content/android/utility/payment_manifest_parser.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -280,9 +279,8 @@ void ChromeContentUtilityClient::ExposeInterfacesToBrowser(
       base::Bind(CreateProxyResolverFactory));
   registry->AddInterface(base::Bind(CreateResourceUsageReporter));
   registry->AddInterface(base::Bind(&ProfileImportHandler::Create));
-#else
-  registry->AddInterface(base::Bind(&payments::PaymentManifestParser::Create));
 #endif
+  registry->AddInterface(base::Bind(&payments::PaymentManifestParser::Create));
   registry->AddInterface(
       base::Bind(&safe_json::SafeJsonParserMojoImpl::Create));
 #if defined(OS_WIN)

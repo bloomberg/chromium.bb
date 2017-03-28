@@ -11,7 +11,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "components/payments/content/android/payment_manifest_downloader.h"
+#include "components/payments/content/payment_manifest_downloader.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"

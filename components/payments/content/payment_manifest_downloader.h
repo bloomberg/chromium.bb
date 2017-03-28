@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PAYMENTS_CONTENT_ANDROID_PAYMENT_MANIFEST_DOWNLOADER_H_
-#define COMPONENTS_PAYMENTS_CONTENT_ANDROID_PAYMENT_MANIFEST_DOWNLOADER_H_
+#ifndef COMPONENTS_PAYMENTS_CONTENT_PAYMENT_MANIFEST_DOWNLOADER_H_
+#define COMPONENTS_PAYMENTS_CONTENT_PAYMENT_MANIFEST_DOWNLOADER_H_
 
 #include <memory>
 #include <string>
@@ -95,4 +95,4 @@ class PaymentManifestDownloader : public net::URLFetcherDelegate {
 
 }  // namespace payments
 
-#endif  // COMPONENTS_PAYMENTS_CONTENT_ANDROID_PAYMENT_MANIFEST_DOWNLOADER_H_
+#endif  // COMPONENTS_PAYMENTS_CONTENT_PAYMENT_MANIFEST_DOWNLOADER_H_

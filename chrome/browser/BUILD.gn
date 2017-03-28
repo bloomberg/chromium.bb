@@ -1497,8 +1497,8 @@ split_static_library("browser") {
     "//components/password_manager/core/browser",
     "//components/password_manager/core/common",
     "//components/password_manager/sync/browser",
-    "//components/payments/content:payment_app",
-    "//components/payments/content:payment_request",
+    "//components/payments/content:mojom",
+    "//components/payments/content:mojom_payment_app",
     "//components/physical_web/eddystone",
     "//components/policy:generated",
     "//components/policy/core/browser",
@@ -3692,7 +3692,7 @@ split_static_library("browser") {
       "payments/payment_request_factory.cc",
       "payments/payment_request_factory.h",
     ]
-    deps += [ "//components/payments/content:payment_request_impl" ]
+    deps += [ "//components/payments/content" ]
   }
 
   if (is_linux || is_win) {

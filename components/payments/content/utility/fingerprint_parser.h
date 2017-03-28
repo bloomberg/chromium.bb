@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PAYMENTS_CONTENT_ANDROID_UTILITY_FINGERPRINT_PARSER_H_
-#define COMPONENTS_PAYMENTS_CONTENT_ANDROID_UTILITY_FINGERPRINT_PARSER_H_
+#ifndef COMPONENTS_PAYMENTS_CONTENT_UTILITY_FINGERPRINT_PARSER_H_
+#define COMPONENTS_PAYMENTS_CONTENT_UTILITY_FINGERPRINT_PARSER_H_
 
 #include <stddef.h>
 
@@ -18,4 +18,4 @@ std::vector<uint8_t> FingerprintStringToByteArray(const std::string& input);
 
 }  // namespace payments
 
-#endif  // COMPONENTS_PAYMENTS_CONTENT_ANDROID_UTILITY_FINGERPRINT_PARSER_H_
+#endif  // COMPONENTS_PAYMENTS_CONTENT_UTILITY_FINGERPRINT_PARSER_H_

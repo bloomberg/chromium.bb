@@ -1,7 +1,13 @@
 include_rules = [
   "-components/payments/content/android",
+  "-components/payments/content/utility",
   "+components/autofill",
+  "+components/data_use_measurement",
+  "+components/link_header_util",
+  "+components/strings",
   "+content/public",
   "+mojo/public/cpp",
+  "+net",
   "+third_party/re2",
+  "+ui/base",
 ]

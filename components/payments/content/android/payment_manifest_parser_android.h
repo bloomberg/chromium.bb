@@ -13,16 +13,12 @@
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "components/payments/content/android/payment_manifest_parser.mojom.h"
-
-namespace content {
-template <class MojoInterface>
-class UtilityProcessMojoClient;
-}
+#include "components/payments/content/payment_manifest_parser_host.h"
 
 namespace payments {
 
-// Host of the utility process that parses manifest contents.
+// Android wrapper for the host of the utility process that parses manifest
+// contents.
 class PaymentManifestParserAndroid {
  public:
   PaymentManifestParserAndroid();
@@ -42,19 +38,7 @@ class PaymentManifestParserAndroid {
                           const base::android::JavaParamRef<jobject>& jcaller);
 
  private:
-  class ParseCallback;
-
-  // The |callback_identifier| parameter is a pointer to one of the owned
-  // elements in the |pending_callbacks_| list.
-  void OnParse(ParseCallback* callback_identifier,
-               std::vector<mojom::PaymentManifestSectionPtr> manifest);
-
-  void OnUtilityProcessStopped();
-
-  std::unique_ptr<
-      content::UtilityProcessMojoClient<mojom::PaymentManifestParser>>
-      mojo_client_;
-  std::vector<std::unique_ptr<ParseCallback>> pending_callbacks_;
+  PaymentManifestParserHost host_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentManifestParserAndroid);
 };

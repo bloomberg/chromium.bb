@@ -319,7 +319,7 @@ source_set("unit_tests") {
   deps = [
     ":modules",
     ":modules_testing",
-    "//components/payments/content:payment_request_blink",
+    "//components/payments/content:mojom_blink",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",

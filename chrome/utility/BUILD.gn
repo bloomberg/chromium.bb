@@ -38,6 +38,7 @@ static_library("utility") {
     "//chrome:strings",
     "//chrome/common",
     "//chrome/common:mojo_bindings",
+    "//components/payments/content/utility",
     "//components/safe_json/utility",
     "//components/search_engines",
     "//components/strings",
@@ -96,10 +97,6 @@ static_library("utility") {
       "//net:net_utility_services",
       "//services/data_decoder:lib",
     ]
-  }
-
-  if (is_android) {
-    deps += [ "//components/payments/content/android/utility" ]
   }
 
   if (enable_extensions) {

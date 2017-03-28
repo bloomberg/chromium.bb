@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PAYMENTS_CONTENT_ANDROID_UTILITY_PAYMENT_MANIFEST_PARSER_H_
-#define COMPONENTS_PAYMENTS_CONTENT_ANDROID_UTILITY_PAYMENT_MANIFEST_PARSER_H_
+#ifndef COMPONENTS_PAYMENTS_CONTENT_UTILITY_PAYMENT_MANIFEST_PARSER_H_
+#define COMPONENTS_PAYMENTS_CONTENT_UTILITY_PAYMENT_MANIFEST_PARSER_H_
 
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "components/payments/content/android/payment_manifest_parser.mojom.h"
+#include "components/payments/content/payment_manifest_parser.mojom.h"
 
 namespace payments {
 
@@ -48,4 +48,4 @@ class PaymentManifestParser : public mojom::PaymentManifestParser {
 
 }  // namespace payments
 
-#endif  // COMPONENTS_PAYMENTS_CONTENT_ANDROID_UTILITY_PAYMENT_MANIFEST_PARSER_H_
+#endif  // COMPONENTS_PAYMENTS_CONTENT_UTILITY_PAYMENT_MANIFEST_PARSER_H_
