@@ -40,7 +40,6 @@
 
 namespace blink {
 
-class BrowserControls;
 class Page;
 
 // FrameHost is the set of global data shared between multiple frames
@@ -60,12 +59,6 @@ class CORE_EXPORT FrameHost final
  public:
   static FrameHost* create(Page&);
   ~FrameHost();
-
-  Page& page();
-  const Page& page() const;
-
-  BrowserControls& browserControls();
-  const BrowserControls& browserControls() const;
 
   DECLARE_TRACE();
 

@@ -30,10 +30,7 @@
 
 #include "core/frame/FrameHost.h"
 
-#include "core/frame/FrameView.h"
 #include "core/page/Page.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebScheduler.h"
 
 namespace blink {
 
@@ -45,22 +42,6 @@ FrameHost::FrameHost(Page& page) : m_page(&page) {}
 
 // Explicitly in the .cpp to avoid default constructor in .h
 FrameHost::~FrameHost() {}
-
-Page& FrameHost::page() {
-  return *m_page;
-}
-
-const Page& FrameHost::page() const {
-  return *m_page;
-}
-
-BrowserControls& FrameHost::browserControls() {
-  return m_page->browserControls();
-}
-
-const BrowserControls& FrameHost::browserControls() const {
-  return m_page->browserControls();
-}
 
 DEFINE_TRACE(FrameHost) {
   visitor->trace(m_page);
