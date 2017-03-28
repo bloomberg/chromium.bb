@@ -16,6 +16,7 @@ import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.chrome.browser.UrlConstants;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -95,8 +96,12 @@ public class DownloadManagerDelegate {
                 Class[] args = {String.class, String.class, boolean.class, String.class,
                         String.class, long.class, boolean.class, Uri.class, Uri.class};
                 Method method = c.getMethod("addCompletedDownload", args);
-                // OriginalUri has to be null or non-empty.
+                // OriginalUri has to be null or non-empty, and cannot be file scheme.
                 Uri originalUri = TextUtils.isEmpty(originalUrl) ? null : Uri.parse(originalUrl);
+                if (originalUri != null && UrlConstants.FILE_SCHEME.equals(
+                        originalUri.normalizeScheme().getScheme())) {
+                    originalUri = null;
+                }
                 Uri refererUri = TextUtils.isEmpty(referer) ? null : Uri.parse(referer);
                 downloadId = (Long) method.invoke(manager, fileName, description, true, mimeType,
                         path, length, useSystemNotification, originalUri, refererUri);
