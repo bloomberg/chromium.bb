@@ -81,7 +81,7 @@ void WorkerSchedulerImpl::RemoveTaskObserver(
 void WorkerSchedulerImpl::Shutdown() {
   DCHECK(initialized_);
   base::TimeTicks end_time = helper_.scheduler_tqm_delegate()->NowTicks();
-  base::TimeDelta delta = thread_start_time_ - end_time;
+  base::TimeDelta delta = end_time - thread_start_time_;
 
   // The lifetime could be radically different for different workers,
   // some workers could be short-lived (but last at least 1 sec in
