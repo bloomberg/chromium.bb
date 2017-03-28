@@ -441,6 +441,7 @@ void CardUnmaskPromptViews::InitIfNecessary() {
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC));
   cvc_input_->set_controller(this);
   cvc_input_->set_default_width_in_chars(8);
+  cvc_input_->SetTextInputType(ui::TextInputType::TEXT_INPUT_TYPE_NUMBER);
   input_row_->AddChildView(cvc_input_);
 
   views::ImageView* cvc_image = new views::ImageView();
