@@ -56,7 +56,7 @@ AudioCodec StringToAudioCodec(const std::string& codec_id) {
     return kCodecAC3;
   if (codec_id == "ec-3" || codec_id == "mp4a.A6" || codec_id == "mp4a.a6")
     return kCodecEAC3;
-  if (codec_id == "mp3")
+  if (codec_id == "mp3" || codec_id == "mp4a.69" || codec_id == "mp4a.6B")
     return kCodecMP3;
   if (codec_id == "alac")
     return kCodecALAC;

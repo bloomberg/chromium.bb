@@ -604,8 +604,11 @@ ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
   std::unique_ptr<media::StreamParser> stream_parser(
       StreamParserFactory::Create(type, parsed_codec_ids, media_log_));
 
-  if (!stream_parser)
+  if (!stream_parser) {
+    DVLOG(1) << __func__ << " failed: unsupported mime_type=" << type
+             << " codecs=" << codecs;
     return ChunkDemuxer::kNotSupported;
+  }
 
   std::unique_ptr<FrameProcessor> frame_processor(
       new FrameProcessor(base::Bind(&ChunkDemuxer::IncreaseDurationIfNecessary,

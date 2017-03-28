@@ -298,13 +298,23 @@ static StreamParser* BuildADTSParser(const std::vector<std::string>& codecs,
 }
 
 #if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
-static const CodecInfo* kVideoMP2TCodecs[] = {
-  &kH264AVC1CodecInfo,
-  &kH264AVC3CodecInfo,
-  &kMPEG4AACCodecInfo,
-  &kMPEG2AACLCCodecInfo,
-  NULL
-};
+// These codec ids correspond to object types registered with MP4RA and are the
+// same as MP3 audio codec ids in media/base/mime_util_internal.cc.
+// From http://www.mp4ra.org/object.html:
+// 69   Audio ISO/IEC 13818-3
+// 6B   Audio ISO/IEC 11172-3
+static const CodecInfo kMPEG2TS_MP3CodecInfo1 = {
+    "mp4a.69", CodecInfo::AUDIO, NULL, CodecInfo::HISTOGRAM_MP3};
+static const CodecInfo kMPEG2TS_MP3CodecInfo2 = {
+    "mp4a.6B", CodecInfo::AUDIO, NULL, CodecInfo::HISTOGRAM_MP3};
+
+static const CodecInfo* kVideoMP2TCodecs[] = {&kH264AVC1CodecInfo,
+                                              &kH264AVC3CodecInfo,
+                                              &kMPEG2TS_MP3CodecInfo1,
+                                              &kMPEG2TS_MP3CodecInfo2,
+                                              &kMPEG4AACCodecInfo,
+                                              &kMPEG2AACLCCodecInfo,
+                                              NULL};
 
 static StreamParser* BuildMP2TParser(const std::vector<std::string>& codecs,
                                      const scoped_refptr<MediaLog>& media_log) {

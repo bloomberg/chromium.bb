@@ -48,6 +48,8 @@ const int64_t kSampleAESPrivateDataIndicatorAAC = 0x61616364;
 enum StreamType {
   // ISO-13818.1 / ITU H.222 Table 2.34 "Stream type assignments"
   kStreamTypeMpeg1Audio = 0x3,
+  // ISO/IEC 13818-3 Audio (MPEG-2)
+  kStreamTypeMpeg2Audio = 0x4,
   kStreamTypeAAC = 0xf,
   kStreamTypeAVC = 0x1b,
 #if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
@@ -421,7 +423,8 @@ void Mp2tStreamParser::RegisterPes(int pmt_pid,
                        pes_pid),
             sbr_in_mimetype_));
     is_audio = true;
-  } else if (stream_type == kStreamTypeMpeg1Audio) {
+  } else if (stream_type == kStreamTypeMpeg1Audio ||
+             stream_type == kStreamTypeMpeg2Audio) {
     es_parser.reset(new EsParserMpeg1Audio(
         base::Bind(&Mp2tStreamParser::OnAudioConfigChanged,
                    base::Unretained(this), pes_pid),
