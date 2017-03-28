@@ -1,4 +1,4 @@
-# Opening links in Chrome for iOS</h1>
+# Opening links in Chrome for iOS
 
 The easiest way to have your iOS app open links in Chrome is to use the
 [OpenInChromeController](https://github.com/GoogleChrome/OpenInChrome) class.
@@ -13,8 +13,8 @@ the URL to open.
 
 ### Methods
 
-* `isChromeInstalled`: returns YES if Chrome is installed</li>
-* `openInChrome`: opens a given URL in Chrome</li>
+* `isChromeInstalled`: returns YES if Chrome is installed
+* `openInChrome`: opens a given URL in Chrome
 
 For example, use the OpenInChromeController class as follows:
 
