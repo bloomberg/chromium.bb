@@ -101,7 +101,9 @@ LIBAOM_TEST_SRCS-yes                   += partial_idct_test.cc
 LIBAOM_TEST_SRCS-yes                   += superframe_test.cc
 LIBAOM_TEST_SRCS-yes                   += tile_independence_test.cc
 LIBAOM_TEST_SRCS-yes                   += ethread_test.cc
+ifneq ($(CONFIG_ANS),yes)
 LIBAOM_TEST_SRCS-yes                   += binary_codes_test.cc
+endif
 ifeq ($(CONFIG_EXT_TILE),yes)
 LIBAOM_TEST_SRCS-yes                   += av1_ext_tile_test.cc
 endif
