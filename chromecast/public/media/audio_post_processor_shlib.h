@@ -1,0 +1,66 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROMECAST_PUBLIC_MEDIA_AUDIO_POST_PROCESSOR_SHLIB_H_
+#define CHROMECAST_PUBLIC_MEDIA_AUDIO_POST_PROCESSOR_SHLIB_H_
+
+#include <string>
+
+#include "chromecast_export.h"
+
+namespace chromecast {
+namespace media {
+class AudioPostProcessor;
+}  // namespace media
+}  // namespace chromecast
+
+// Creates an AudioPostProcessor.
+// This is applicable only to Alsa CMA backend.
+// Please refer to
+// chromecast/media/cma/backend/alsa/post_processors/governor_shlib.cc
+// as an example, but OEM's implementations should not have any
+// Chromium dependencies.
+// Called from StreamMixerAlsa when shared objects are listed in
+// /etc/cast_audio.json
+extern "C" CHROMECAST_EXPORT chromecast::media::AudioPostProcessor*
+AudioPostProcessorShlib_Create(const std::string& config, int channels);
+
+namespace chromecast {
+namespace media {
+
+// Interface for AudioPostProcessors used for applying DSP in StreamMixerAlsa.
+class AudioPostProcessor {
+ public:
+  // Updates the sample rate of the processor.
+  // Returns |false| if the processor cannot support |sample_rate|
+  // Returning false will result in crashing cast_shell.
+  virtual bool SetSampleRate(int sample_rate) = 0;
+
+  // Processes audio frames from |data|, overwriting contents.
+  // |data| will always be 32-bit interleaved float.
+  // Always provides |frames| frames of data back (may output 0’s)
+  // |volume| is the current attenuation level of the stream.
+  // AudioPostProcessor should assume that it has already been applied.
+  // Returns the current rendering delay of the filter in frames,
+  // or negative if an error occurred during processing.
+  // If an error occurred during processing, |data| should be unchanged.
+  virtual int ProcessFrames(uint8_t* data, int frames, float volume) = 0;
+
+  // Returns the number of frames of silence it will take for the
+  // processor to come to rest.
+  // This may be the actual number of frames stored,
+  // or may be calculated from internal resonators or similar.
+  // When inputs are paused, at least this |GetRingingTimeInFrames()| of
+  // silence will be passed through the processor.
+  // This is not expected to be real-time;
+  // It should only change when SetSampleRate is called.
+  virtual int GetRingingTimeInFrames() = 0;
+
+  virtual ~AudioPostProcessor() = default;
+};
+
+}  // namespace media
+}  // namespace chromecast
+
+#endif  // CHROMECAST_PUBLIC_MEDIA_AUDIO_POST_PROCESSOR_SHLIB_H_

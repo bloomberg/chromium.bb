@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "chromecast/media/cma/backend/alsa/audio_filter_factory.h"
+#include "base/values.h"
 #include "chromecast/media/cma/backend/alsa/stream_mixer_alsa.h"
 #include "chromecast/public/volume_control.h"
 
@@ -23,6 +23,8 @@ class AudioBus;
 
 namespace chromecast {
 namespace media {
+
+class PostProcessingPipeline;
 
 // FilterGroup contains state for an AudioFilter.
 // It takes multiple StreamMixerAlsa::InputQueues,
@@ -37,16 +39,17 @@ class FilterGroup {
   // entry in |input_types| to be processed by this group.
   // |filter_type| is passed to AudioFilterFactory to create an AudioFilter.
   FilterGroup(const std::unordered_set<std::string>& input_types,
-              AudioFilterFactory::FilterType filter_type,
-              AudioContentType content_type);
+              AudioContentType content_type,
+              int channels,
+              const base::ListValue* filter_list);
   ~FilterGroup();
 
   AudioContentType content_type() const { return content_type_; }
 
   void set_volume(float volume) { volume_ = volume; }
 
-  // Sets the sample rate and format in the AudioFilter.
-  void Initialize(int output_samples_per_second, ::media::SampleFormat format);
+  // Sets the sample rate of the post-processors.
+  void Initialize(int output_samples_per_second);
 
   // Returns |true| if this FilterGroup is appropriate to process |input|.
   bool CanProcessInput(StreamMixerAlsa::InputQueue* input);
@@ -74,10 +77,10 @@ class FilterGroup {
 
   const std::unordered_set<std::string> input_types_;
   const AudioContentType content_type_;
+  const int channels_;
   std::vector<StreamMixerAlsa::InputQueue*> active_inputs_;
 
   int output_samples_per_second_;
-  ::media::SampleFormat sample_format_;
 
   float volume_ = 0.0f;
 
@@ -88,12 +91,12 @@ class FilterGroup {
   std::unique_ptr<::media::AudioBus> mixed_;
   std::vector<uint8_t> interleaved_;
 
-  std::unique_ptr<AudioFilterInterface> audio_filter_;
-  int silence_frames_filtered_;
+  std::unique_ptr<PostProcessingPipeline> post_processing_pipeline_;
 
   DISALLOW_COPY_AND_ASSIGN(FilterGroup);
 };
 
 }  // namespace media
 }  // namespace chromecast
+
 #endif  // CHROMECAST_MEDIA_CMA_BACKEND_ALSA_FILTER_GROUP_H_

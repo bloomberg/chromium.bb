@@ -22,8 +22,8 @@
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/media/base/audio_device_ids.h"
 #include "chromecast/media/cma/backend/alsa/alsa_wrapper.h"
-#include "chromecast/media/cma/backend/alsa/audio_filter_factory.h"
 #include "chromecast/media/cma/backend/alsa/filter_group.h"
+#include "chromecast/media/cma/backend/alsa/post_processing_pipeline_parser.h"
 #include "chromecast/media/cma/backend/alsa/stream_mixer_alsa_input_impl.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_bus.h"
@@ -215,25 +215,35 @@ StreamMixerAlsa::StreamMixerAlsa()
           ? kLowSampleRateCutoff
           : 0;
 
+  // Read post-processing configuration file
+  PostProcessingPipelineParser pipeline_parser;
+  pipeline_parser.Initialize();
+
   // Create filter groups.
   // TODO(bshaya): Switch to filter groups based on AudioContentType.
   filter_groups_.push_back(base::MakeUnique<FilterGroup>(
       std::unordered_set<std::string>(
           {::media::AudioDeviceDescription::kCommunicationsDeviceId}),
-      AudioFilterFactory::COMMUNICATION_AUDIO_FILTER,
-      AudioContentType::kMedia));
+      AudioContentType::kMedia, kNumOutputChannels,
+      pipeline_parser.GetPipelineByDeviceId(
+          ::media::AudioDeviceDescription::kCommunicationsDeviceId)));
   filter_groups_.push_back(base::MakeUnique<FilterGroup>(
       std::unordered_set<std::string>({kAlarmAudioDeviceId}),
-      AudioFilterFactory::ALARM_AUDIO_FILTER, AudioContentType::kAlarm));
+      AudioContentType::kAlarm, kNumOutputChannels,
+      pipeline_parser.GetPipelineByDeviceId(kAlarmAudioDeviceId)));
   filter_groups_.push_back(base::MakeUnique<FilterGroup>(
       std::unordered_set<std::string>({kTtsAudioDeviceId}),
-      AudioFilterFactory::TTS_AUDIO_FILTER, AudioContentType::kCommunication));
+      AudioContentType::kCommunication, kNumOutputChannels,
+      pipeline_parser.GetPipelineByDeviceId(kTtsAudioDeviceId)));
   filter_groups_.push_back(base::MakeUnique<FilterGroup>(
       std::unordered_set<std::string>(
           {::media::AudioDeviceDescription::kDefaultDeviceId,
            kLocalAudioDeviceId, ""}),
-      AudioFilterFactory::MEDIA_AUDIO_FILTER, AudioContentType::kMedia));
+      AudioContentType::kMedia, kNumOutputChannels,
+      pipeline_parser.GetPipelineByDeviceId(
+          ::media::AudioDeviceDescription::kDefaultDeviceId)));
 
+  // TODO(bshaya): Add support for final mix AudioPostProcessor.
   DefineAlsaParameters();
 }
 
@@ -499,8 +509,7 @@ void StreamMixerAlsa::Start() {
 
   // Initialize filters
   for (auto&& filter_group : filter_groups_) {
-    filter_group->Initialize(output_samples_per_second_,
-                             ::media::SampleFormat::kSampleFormatS32);
+    filter_group->Initialize(output_samples_per_second_);
   }
 
   RETURN_REPORT_ERROR(PcmPrepare, pcm_);
@@ -887,6 +896,7 @@ void StreamMixerAlsa::UpdateRenderingDelay(int newly_pushed_frames) {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   CHECK_PCM_INITIALIZED();
 
+  // TODO(bshaya): Add rendering delay from post-processors.
   if (alsa_->PcmStatus(pcm_, pcm_status_) != 0 ||
       alsa_->PcmStatusGetState(pcm_status_) != SND_PCM_STATE_RUNNING) {
     rendering_delay_.timestamp_microseconds = kNoTimestamp;
