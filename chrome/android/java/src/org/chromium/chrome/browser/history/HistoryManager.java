@@ -182,8 +182,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
             return true;
         } else if (item.getItemId() == R.id.selection_mode_copy_link) {
             recordUserActionWithOptionalSearch("CopyLink");
-            Clipboard clipboard = new Clipboard(mActivity);
-            clipboard.setText(mSelectionDelegate.getSelectedItems().get(0).getUrl());
+            Clipboard.getInstance().setText(mSelectionDelegate.getSelectedItems().get(0).getUrl());
             mSelectionDelegate.clearSelection();
             Snackbar snackbar = Snackbar.make(mActivity.getString(R.string.copied), this,
                     Snackbar.TYPE_NOTIFICATION, Snackbar.UMA_HISTORY_LINK_COPIED);

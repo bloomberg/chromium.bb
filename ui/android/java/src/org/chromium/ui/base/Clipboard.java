@@ -8,6 +8,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.SuppressFBWarnings;
@@ -15,11 +16,12 @@ import org.chromium.ui.R;
 import org.chromium.ui.widget.Toast;
 
 /**
- * Simple proxy that provides C++ code with an access pathway to the Android
- * clipboard.
+ * Simple proxy that provides C++ code with an access pathway to the Android clipboard.
  */
 @JNINamespace("ui")
 public class Clipboard {
+    private static Clipboard sInstance;
+
     // Necessary for coercing clipboard contents to text if they require
     // access to network resources, etceteras (e.g., URI in clipboard)
     private final Context mContext;
@@ -27,25 +29,21 @@ public class Clipboard {
     private final ClipboardManager mClipboardManager;
 
     /**
-     * Use the factory constructor instead.
-     *
-     * @param context for accessing the clipboard
-     */
-    public Clipboard(final Context context) {
-        mContext = context;
-        mClipboardManager = (ClipboardManager)
-                context.getSystemService(Context.CLIPBOARD_SERVICE);
-    }
-
-    /**
-     * Returns a new Clipboard object bound to the specified context.
-     *
-     * @param context for accessing the clipboard
-     * @return the new object
+     * Get the singleton Clipboard instance (creating it if needed).
      */
     @CalledByNative
-    private static Clipboard create(final Context context) {
-        return new Clipboard(context);
+    public static Clipboard getInstance() {
+        if (sInstance == null) {
+            sInstance = new Clipboard();
+        }
+        return sInstance;
+    }
+
+    private Clipboard() {
+        mContext = ContextUtils.getApplicationContext();
+        mClipboardManager =
+                (ClipboardManager) ContextUtils.getApplicationContext().getSystemService(
+                        Context.CLIPBOARD_SERVICE);
     }
 
     /**

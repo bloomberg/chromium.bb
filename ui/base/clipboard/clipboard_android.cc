@@ -4,7 +4,6 @@
 
 #include "ui/base/clipboard/clipboard_android.h"
 
-#include "base/android/context_utils.h"
 #include "base/android/jni_string.h"
 #include "base/lazy_instance.h"
 #include "base/stl_util.h"
@@ -64,8 +63,7 @@ class ClipboardMap {
 base::LazyInstance<ClipboardMap>::Leaky g_map = LAZY_INSTANCE_INITIALIZER;
 
 ClipboardMap::ClipboardMap() {
-  clipboard_manager_.Reset(Java_Clipboard_create(
-      AttachCurrentThread(), base::android::GetApplicationContext()));
+  clipboard_manager_.Reset(Java_Clipboard_getInstance(AttachCurrentThread()));
   DCHECK(clipboard_manager_.obj());
 }
 
