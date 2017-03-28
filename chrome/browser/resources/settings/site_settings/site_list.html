@@ -1,6 +1,7 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
-<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_indicator.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
@@ -76,17 +77,19 @@
               <div class="selectable secondary text-elide" id="siteDescription"
                   >[[computeSiteDescription_(item)]]</div>
             </div>
-
-            <template is="dom-if" if="[[!!computeIconControlledBy_(item)]]">
-              <iron-icon icon="[[computeIconControlledBy_(item)]]"></iron-icon>
+            <template is="dom-if" if="[[item.controlledBy]]">
+              <cr-policy-pref-indicator pref="[[item]]"
+                  icon-aria-label="[[label]]">
+              </cr-policy-pref-indicator>
             </template>
 
             <paper-icon-button id="resetSite" icon="cr:delete"
-                hidden="[[isResetButtonHidden_(item.source, readOnlyList)]]"
+                hidden="[[isResetButtonHidden_(
+                    item.enforcement, readOnlyList)]]"
                 on-tap="onResetButtonTap_" alt="$i18n{siteSettingsActionReset}">
             </paper-icon-button>
             <paper-icon-button id="actionMenuButton" icon="cr:more-vert"
-                hidden="[[isActionMenuHidden_(item.source, readOnlyList)]]"
+                hidden="[[isActionMenuHidden_(item.enforcement, readOnlyList)]]"
                 on-tap="onShowActionMenuTap_" title="$i18n{moreActions}">
             </paper-icon-button>
             <template is="dom-if" if="[[enableSiteSettings_]]">

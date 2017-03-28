@@ -3,6 +3,33 @@
 // found in the LICENSE file.
 
 /**
+ * Only used for tests.
+ * @typedef {{
+ *   auto_downloads: !Array<!RawSiteException>},
+ *   background_sync: !Array<!RawSiteException>},
+ *   camera: !Array<!RawSiteException>},
+ *   cookies: !Array<!RawSiteException>},
+ *   geolocation: !Array<!RawSiteException>},
+ *   javascript: !Array<!RawSiteException>},
+ *   mic: !Array<!RawSiteException>},
+ *   midiDevices: !Array<!RawSiteException>},
+ *   notifications: !Array<!RawSiteException>},
+ *   plugins: !Array<!RawSiteException>},
+ *   popups: !Array<!RawSiteException>},
+ *   unsandboxed_plugins: !Array<!RawSiteException>},
+ * }}
+ */
+var ExceptionListPref;
+
+/**
+ * In the real (non-test) code, these data come from the C++ handler.
+ * Only used for tests.
+ * @typedef {{defaults: CategoryDefaultsPref,
+ *            exceptions: ExceptionListPref}}
+ */
+var SiteSettingsPref;
+
+/**
  * An example empty pref.
  * @type {SiteSettingsPref}
  */

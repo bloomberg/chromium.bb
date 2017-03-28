@@ -3,18 +3,6 @@
 // found in the LICENSE file.
 
 /**
- * Enumeration mapping all possible controlled-by values for exceptions to
- * icons.
- * @enum {string}
- */
-var iconControlledBy = {
-  'extension': 'cr:extension',
-  'HostedApp': 'cr:extension',
-  'platform_app': 'cr:extension',
-  'policy' : 'cr20:domain',
-};
-
-/**
  * @fileoverview
  * 'site-list' shows a list of Allowed and Blocked sites for a given
  * category.
@@ -180,19 +168,6 @@ Polymer({
   },
 
   /**
-   * Returns which icon, if any, should represent the fact that this exception
-   * is controlled.
-   * @param {!SiteException} item The item from the list we're computing the
-   *    icon for.
-   * @return {string} The icon to show (or blank, if none).
-   */
-  computeIconControlledBy_: function(item) {
-    if (this.allSites)
-      return '';
-    return iconControlledBy[item.source] || '';
-  },
-
-  /**
    * Whether there are any site exceptions added for this content setting.
    * @return {boolean}
    * @private
@@ -202,24 +177,26 @@ Polymer({
   },
 
   /**
-   * @param {string} source Where the setting came from.
+   * @param {chrome.settingsPrivate.Enforcement} enforcement The level of
+   *     enforcement.
    * @param {boolean} readOnlyList Whether the site exception list is read-only.
    * @return {boolean}
    * @private
    */
-  isResetButtonHidden_: function(source, readOnlyList) {
-    return this.isExceptionControlled_(source) || this.allSites ||
-        !readOnlyList;
+  isResetButtonHidden_: function(enforcement, readOnlyList) {
+    return enforcement == chrome.settingsPrivate.Enforcement.ENFORCED ||
+        this.allSites || !readOnlyList;
   },
 
   /**
-   * @param {string} source Where the setting came from.
+   * @param {string} enforcement Whether the exception is controlled.
    * @param {boolean} readOnlyList Whether the site exception list is read-only.
    * @return {boolean}
    * @private
    */
-  isActionMenuHidden_: function(source, readOnlyList) {
-    return this.isExceptionControlled_(source) || this.allSites || readOnlyList;
+  isActionMenuHidden_: function(enforcement, readOnlyList) {
+    return enforcement == chrome.settingsPrivate.Enforcement.ENFORCED ||
+        this.allSites || readOnlyList;
   },
 
   /**
@@ -263,14 +240,24 @@ Polymer({
 
   /**
    * Process the exception list returned from the native layer.
-   * @param {!Array<!Array<SiteException>>} data List of sites (exceptions) to
-   *     process.
+   * @param {!Array<!Array<RawSiteException>>} data List of sites (exceptions)
+   *     to process.
    * @private
    */
   processExceptions_: function(data) {
-    var sites = [];
-    for (var i = 0; i < data.length; ++i)
-      sites = this.appendSiteList_(sites, data[i]);
+    var sites = /** @type {!Array<RawSiteException>} */ ([]);
+    for (var i = 0; i < data.length; ++i) {
+      var exceptionList = data[i];
+      for (var k = 0; k < exceptionList.length; ++k) {
+        if (!this.allSites &&
+            (exceptionList[k].setting == settings.PermissionValues.DEFAULT ||
+             exceptionList[k].setting != this.categorySubtype)) {
+          continue;
+        }
+
+        sites.push(exceptionList[k]);
+      }
+    }
     this.sites = this.toSiteArray_(sites);
   },
 
@@ -301,34 +288,11 @@ Polymer({
   },
 
   /**
-   * Appends to |list| the sites for a given category and subtype.
-   * @param {!Array<SiteException>} sites The site list to add to.
-   * @param {!Array<SiteException>} exceptionList List of sites (exceptions) to
-   *     add.
-   * @return {!Array<SiteException>} The list of sites.
-   * @private
-   */
-  appendSiteList_: function(sites, exceptionList) {
-    for (var i = 0; i < exceptionList.length; ++i) {
-      if (!this.allSites) {
-        if (exceptionList[i].setting == settings.PermissionValues.DEFAULT)
-          continue;
-
-        if (exceptionList[i].setting != this.categorySubtype)
-          continue;
-      }
-
-      sites.push(exceptionList[i]);
-    }
-    return sites;
-  },
-
-  /**
    * Converts a list of exceptions received from the C++ handler to
    * full SiteException objects. If this site-list is used as an all sites
    * view, the list is sorted by site name, then protocol and port and de-duped
    * (by origin).
-   * @param {!Array<SiteException>} sites A list of sites to convert.
+   * @param {!Array<RawSiteException>} sites A list of sites to convert.
    * @return {!Array<SiteException>} A list of full SiteExceptions. Sorted and
    *    deduped if allSites is set.
    * @private

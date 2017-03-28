@@ -6,6 +6,21 @@
  * @fileoverview Behavior common to Site Settings classes.
  */
 
+
+/**
+ * The source information on site exceptions doesn't exactly match the
+ * controlledBy values.
+ * TODO(dschuyler): Can they be unified (and this dictionary removed)?
+ * @type {!Object}
+ */
+var kControlledByLookup = {
+  'extension': chrome.settingsPrivate.ControlledBy.EXTENSION,
+  'HostedApp': chrome.settingsPrivate.ControlledBy.EXTENSION,
+  'platform_app': chrome.settingsPrivate.ControlledBy.EXTENSION,
+  'policy': chrome.settingsPrivate.ControlledBy.USER_POLICY,
+};
+
+
 /** @polymerBehavior */
 var SiteSettingsBehaviorImpl = {
   properties: {
@@ -39,7 +54,8 @@ var SiteSettingsBehaviorImpl = {
    * @return {string} The URL with a scheme, or an empty string.
    */
   ensureUrlHasScheme: function(url) {
-    if (url.length == 0) return url;
+    if (url.length == 0)
+      return url;
     return url.includes('://') ? url : 'http://' + url;
   },
 
@@ -94,17 +110,6 @@ var SiteSettingsBehaviorImpl = {
   },
 
   /**
-   * Returns true if this exception is controlled by, for example, a policy or
-   * set by an extension.
-   * @param {string} source The source controlling the extension
-   * @return {boolean} Whether it is being controlled.
-   * @protected
-   */
-  isExceptionControlled_: function(source) {
-    return source != undefined && source != 'preference';
-  },
-
-  /**
    * Returns the icon to use for a given site.
    * @param {string} site The url of the site to fetch the icon for.
    * @return {string} The background-image style with the favicon.
@@ -148,7 +153,7 @@ var SiteSettingsBehaviorImpl = {
    * Convert an exception (received from the C++ handler) to a full
    * SiteException.
    * @param {!RawSiteException} exception The raw site exception from C++.
-   * @return {SiteException} The expanded (full) SiteException.
+   * @return {!SiteException} The expanded (full) SiteException.
    * @private
    */
   expandSiteException: function(exception) {
@@ -160,6 +165,12 @@ var SiteSettingsBehaviorImpl = {
           this.getEmbedderString(embeddingOrigin, this.category);
     }
 
+    var enforcement = '';
+    if (exception.source == 'policy' || exception.source == 'extension')
+      enforcement = chrome.settingsPrivate.Enforcement.ENFORCED;
+
+    var controlledBy = kControlledByLookup[exception.source] || '';
+
     return {
       category: this.category,
       origin: origin,
@@ -168,7 +179,8 @@ var SiteSettingsBehaviorImpl = {
       embeddingDisplayName: embeddingDisplayName,
       incognito: exception.incognito,
       setting: exception.setting,
-      source: exception.source,
+      enforcement: enforcement,
+      controlledBy: controlledBy,
     };
   },
 

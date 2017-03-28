@@ -41,7 +41,8 @@ var RawSiteException;
  *            origin: string,
  *            displayName: string,
  *            setting: string,
- *            source: string}}
+ *            enforcement: string,
+ *            controlledBy: string}}
  */
 var SiteException;
 
@@ -56,18 +57,6 @@ var CategoryDefaultsPref;
  *            source: ContentSettingProvider}}
  */
 var DefaultContentSetting;
-
-/**
- * @typedef {{location: Array<SiteException>,
- *            notifications: Array<SiteException>}}
- */
-var ExceptionListPref;
-
-/**
- * @typedef {{defaults: CategoryDefaultsPref,
- *            exceptions: ExceptionListPref}}
- */
-var SiteSettingsPref;
 
 /**
  * @typedef {{name: string,

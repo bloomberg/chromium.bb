@@ -18,28 +18,24 @@ cr.define('site_list', function() {
       cookies: [],
       geolocation: [
         {
-          category: 'geolocation',
           embeddingOrigin: 'https://bar-allow.com:443',
           origin: 'https://bar-allow.com:443',
           setting: 'allow',
           source: 'preference',
         },
         {
-          category: 'geolocation',
           embeddingOrigin: 'https://foo-allow.com:443',
           origin: 'https://foo-allow.com:443',
           setting: 'allow',
           source: 'preference',
         },
         {
-          category: 'geolocation',
           embeddingOrigin: 'https://bar-block.com:443',
           origin: 'https://bar-block.com:443',
           setting: 'block',
           source: 'preference',
         },
         {
-          category: 'geolocation',
           embeddingOrigin: 'https://foo-block.com:443',
           origin: 'https://foo-block.com:443',
           setting: 'block',
@@ -66,7 +62,6 @@ cr.define('site_list', function() {
     exceptions: {
       plugins: [
         {
-          category: 'plugins',
           embeddingOrigin: 'http://foo-block.com',
           origin: 'http://foo-block.com',
           setting: 'block',
@@ -84,14 +79,12 @@ cr.define('site_list', function() {
     exceptions: {
       geolocation: [
         {
-          category: 'geolocation',
           embeddingOrigin: 'https://foo-allow.com',
           origin: 'https://foo-allow.com',
           setting: 'allow',
           source: 'preference',
         },
         {
-          category: 'geolocation',
           embeddingOrigin: 'bar-allow.com',
           origin: 'bar-allow.com',
           setting: 'allow',
@@ -111,21 +104,18 @@ cr.define('site_list', function() {
     exceptions: {
       geolocation: [
         {
-          category: 'geolocation',
           embeddingOrigin: 'https://[*.]foo.com',
           origin: 'https://[*.]foo.com',
           setting: 'block',
           source: 'policy',
         },
         {
-          category: 'geolocation',
           embeddingOrigin: 'https://bar.foo.com',
           origin: 'https://bar.foo.com',
           setting: 'block',
           source: 'preference',
         },
         {
-          category: 'geolocation',
           embeddingOrigin: 'https://[*.]foo.com',
           origin: 'https://[*.]foo.com',
           setting: 'block',
@@ -147,7 +137,6 @@ cr.define('site_list', function() {
       cookies: [],
       geolocation: [
         {
-          category: 'geolocation',
           origin: 'https://foo.com',
           embeddingOrigin: '*',
           setting: 'allow',
@@ -157,7 +146,6 @@ cr.define('site_list', function() {
       images: [],
       javascript: [
         {
-          category: 'javascript',
           origin: 'https://[*.]foo.com',
           embeddingOrigin: '*',
           setting: 'allow',
@@ -187,7 +175,6 @@ cr.define('site_list', function() {
       cookies: [],
       geolocation: [
         {
-          category: 'geolocation',
           embeddingOrigin: 'https://foo.com',
           incognito: false,
           origin: 'https://foo.com',
@@ -195,7 +182,6 @@ cr.define('site_list', function() {
           source: 'preference',
         },
         {
-          category: 'geolocation',
           embeddingOrigin: 'https://bar.com',
           incognito: false,
           origin: 'https://bar.com',
@@ -209,7 +195,6 @@ cr.define('site_list', function() {
       midiDevices: [],
       notifications: [
         {
-          category: 'notifications',
           embeddingOrigin: 'https://google.com',
           incognito: false,
           origin: 'https://google.com',
@@ -217,7 +202,6 @@ cr.define('site_list', function() {
           source: 'preference',
         },
         {
-          category: 'notifications',
           embeddingOrigin: 'https://bar.com',
           incognito: false,
           origin: 'https://bar.com',
@@ -225,7 +209,6 @@ cr.define('site_list', function() {
           source: 'preference',
         },
         {
-          category: 'notifications',
           embeddingOrigin: 'https://foo.com',
           incognito: false,
           origin: 'https://foo.com',
@@ -248,7 +231,6 @@ cr.define('site_list', function() {
     exceptions: {
       geolocation: [
         {
-          category: 'geolocation',
           embeddingOrigin: 'https://foo-allow.com:443',
           incognito: false,
           origin: 'https://foo-allow.com:443',
@@ -267,7 +249,6 @@ cr.define('site_list', function() {
     exceptions: {
       geolocation: [
         {
-          category: 'geolocation',
           embeddingOrigin: 'https://foo-block.com:443',
           incognito: false,
           origin: 'https://foo-block.com:443',
@@ -286,7 +267,6 @@ cr.define('site_list', function() {
     exceptions: {
       cookies: [
         {
-          category: 'cookies',
           embeddingOrigin: 'http://foo-block.com',
           incognito: false,
           origin: 'http://foo-block.com',
@@ -294,7 +274,6 @@ cr.define('site_list', function() {
           source: 'preference',
         },
         {
-          category: 'cookies',
           embeddingOrigin: 'http://foo-allow.com',
           incognito: false,
           origin: 'http://foo-allow.com',
@@ -302,7 +281,6 @@ cr.define('site_list', function() {
           source: 'preference',
         },
         {
-          category: 'cookies',
           embeddingOrigin: 'http://foo-session.com',
           incognito: false,
           origin: 'http://foo-session.com',
@@ -322,7 +300,6 @@ cr.define('site_list', function() {
       cookies: [
         // foo.com is blocked for regular sessions.
         {
-          category: 'cookies',
           embeddingOrigin: 'http://foo.com',
           incognito: false,
           origin: 'http://foo.com',
@@ -331,7 +308,6 @@ cr.define('site_list', function() {
         },
         // bar.com is an allowed incognito item without an embedder.
         {
-          category: 'cookies',
           embeddingOrigin: '',
           incognito: true,
           origin: 'http://bar.com',
@@ -340,7 +316,6 @@ cr.define('site_list', function() {
         },
         // foo.com is allowed in incognito (overridden).
         {
-          category: 'cookies',
           embeddingOrigin: 'http://foo.com',
           incognito: true,
           origin: 'http://foo.com',
@@ -360,7 +335,6 @@ cr.define('site_list', function() {
     exceptions: {
       javascript: [
         {
-          category: 'javascript',
           embeddingOrigin: '',
           incognito: false,
           origin: 'chrome-extension://cfhgfbfpcbnnbibfphagcjmgjfjmojfa/',
@@ -575,8 +549,8 @@ cr.define('site_list', function() {
       test('exceptions are not reordered in non-ALL_SITES', function() {
         setUpCategory(settings.ContentSettingsTypes.GEOLOCATION,
             settings.PermissionValues.BLOCK, prefsMixedProvider);
-        return browserProxy.whenCalled('getExceptionList').then(
-            function(contentType) {
+        return browserProxy.whenCalled('getExceptionList')
+            .then(function(contentType) {
               assertEquals(
                   settings.ContentSettingsTypes.GEOLOCATION, contentType);
 
@@ -586,8 +560,9 @@ cr.define('site_list', function() {
                     prefsMixedProvider.exceptions.geolocation[0].origin,
                     testElement.sites[0].origin);
                 assertEquals(
-                    prefsMixedProvider.exceptions.geolocation[0].source,
-                    testElement.sites[0].source);
+                    kControlledByLookup
+                        [prefsMixedProvider.exceptions.geolocation[0].source],
+                    testElement.sites[0].controlledBy);
               }
             });
       });
@@ -1082,7 +1057,20 @@ cr.define('site_list', function() {
 
   suite('EditExceptionDialog', function() {
     var dialog;
-    var cookieException = prefsIncognito.exceptions.cookies[0];
+    /**
+     * The dialog tests don't call |getExceptionList| so the exception needs to
+     * be processes as a |SiteSettingsPref|.
+     * @type {SiteSettingsPref}
+     */
+    var cookieException = {
+      category: 'cookies',
+      embeddingOrigin: 'http://foo.com',
+      incognito: false,
+      origin: 'http://foo.com',
+      setting: 'block',
+      enforcement: '',
+      controlledBy: 'USER_POLICY',
+    };
 
     setup(function() {
       browserProxy = new TestSiteSettingsPrefsBrowserProxy();
@@ -1128,16 +1116,16 @@ cr.define('site_list', function() {
       assertFalse(actionButton.disabled);
 
       MockInteractions.tap(actionButton);
-
-      return browserProxy.whenCalled('resetCategoryPermissionForOrigin').then(
-          function(args) {
+      return browserProxy.whenCalled('resetCategoryPermissionForOrigin')
+          .then(function(args) {
             assertEquals(cookieException.origin, args[0]);
             assertEquals(cookieException.embeddingOrigin, args[1]);
             assertEquals(settings.ContentSettingsTypes.COOKIES, args[2]);
             assertEquals(cookieException.incognito, args[3]);
 
             return browserProxy.whenCalled('setCategoryPermissionForOrigin');
-          }).then(function(args) {
+          })
+          .then(function(args) {
             assertEquals(newValue, args[0]);
             assertEquals(newValue, args[1]);
             assertEquals(settings.ContentSettingsTypes.COOKIES, args[2]);
