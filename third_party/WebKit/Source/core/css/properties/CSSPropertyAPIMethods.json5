@@ -1,49 +1,49 @@
 {
-	// This file specifies all the methods in CSSPropertyAPI.h and the necessary
-	// information for code generation of the API and it's related classes.
-	parameters: {
-		// - name
-		// The name of this method in camel case.
-		name: {
-			default: "",
-			valid_type: "str",
-		},
+  // This file specifies all the methods in CSSPropertyAPI.h and the necessary
+  // information for code generation of the API and it's related classes.
+  parameters: {
+    // - name
+    // The name of this method in camel case.
+    name: {
+      default: "",
+      valid_type: "str",
+    },
 
-		// - return_type
-		// Return type of this method.
-		return_type: {
-			default: "",
-			valid_type: "str",
-		},
+    // - return_type
+    // Return type of this method.
+    return_type: {
+      default: "",
+      valid_type: "str",
+    },
 
-		// - parameters
-		// The parameters of this method. This string should be the types of
-		// all parameters, inside brackets and comma separated.
-		parameters: {
-			default: "",
-			valid_type: "str",
-		},
+    // - parameters
+    // The parameters of this method. This string should be the types of
+    // all parameters, inside brackets and comma separated.
+    parameters: {
+      default: "",
+      valid_type: "str",
+    },
 
-		// - description
-		// A string comment describing the API method. This comment will be
-		// placed in the code above the method definition in CSSPropertyAPI.h.
-		description: {
-			default: "",
-			valid_type: "str",
-		},
-	},
-	data: [
-		{
-		  name: "parseSingleValue",
-		  return_type: "const CSSValue*",
-		  parameters: "(CSSParserTokenRange&, const CSSParserContext*)",
-		  description: "Parses a single CSS property and returns the corresponding CSSValue. If the input is invalid it returns nullptr.",
-		},
-		{
-		  name: "parseShorthand",
-		  return_type: "bool",
-		  parameters: "(bool, CSSParserTokenRange&, const CSSParserContext*)",
-		  description: "Returns true if the property can be parsed as a shorthand.",
-		},
-	]
+    // - description
+    // A string comment describing the API method. This comment will be
+    // placed in the code above the method definition in CSSPropertyAPI.h.
+    description: {
+      default: "",
+      valid_type: "str",
+    },
+  },
+  data: [
+    {
+      name: "parseSingleValue",
+      return_type: "const CSSValue*",
+      parameters: "(CSSParserTokenRange&, const CSSParserContext*)",
+      description: "Parses a single CSS property and returns the corresponding CSSValue. If the input is invalid it returns nullptr.",
+    },
+    {
+      name: "parseShorthand",
+      return_type: "bool",
+      parameters: "(bool, CSSParserTokenRange&, const CSSParserContext*)",
+      description: "Returns true if the property can be parsed as a shorthand.",
+    },
+  ]
 }
