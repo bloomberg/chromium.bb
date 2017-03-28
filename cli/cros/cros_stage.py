@@ -238,7 +238,8 @@ NOTES:
     with remote_access.ChromiumOSDeviceHandler(self.options.remote) as device:
       device.RunCommand(['mkdir', '-p', self.stage_directory])
       for f in os.listdir(tempdir):
-        device.CopyToDevice(os.path.join(tempdir, f), self.stage_directory)
+        device.CopyToDevice(os.path.join(tempdir, f), self.stage_directory,
+                            mode='rsync')
       device.RunCommand(['chown', '-R', 'moblab:moblab',
                          MOBLAB_TMP_DIR])
       # Delete this image from the Devserver in case it was previously staged.

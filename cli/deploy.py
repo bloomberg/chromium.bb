@@ -743,7 +743,7 @@ def _Emerge(device, pkg_path, root, extra_args=None):
 
   # This message is read by BrilloDeployOperation.
   logging.notice('Copying %s to device.', pkg_name)
-  device.CopyToDevice(pkg_path, pkg_dir, remote_sudo=True)
+  device.CopyToDevice(pkg_path, pkg_dir, mode='rsync', remote_sudo=True)
 
   logging.info('Use portage temp dir %s', portage_tmpdir)
 

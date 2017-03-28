@@ -245,6 +245,8 @@ class DeployChrome(object):
     logging.info('Copying Chrome to %s on device...', self.options.target_dir)
     # Show the output (status) for this command.
     dest_path = _CHROME_DIR
+    # CopyToDevice will fall back to scp if rsync is corrupted on stateful.
+    # This does not work for deploy.
     if not self.device.HasRsync():
       raise DeployFailure(
           'rsync is not found on the device.\n'

@@ -686,7 +686,7 @@ class RemoteDevice(object):
 
     self.tempdir.Cleanup()
 
-  def CopyToDevice(self, src, dest, mode='scp', **kwargs):
+  def CopyToDevice(self, src, dest, mode, **kwargs):
     """Copy path to device.
 
     @param mode: can be either 'rsync' or 'scp'.
@@ -700,6 +700,7 @@ class RemoteDevice(object):
         * Use scp when we have incompressible files (say already compressed),
         especially if we know no previous version exist at the destination.
     """
+    assert mode in ['rsync', 'scp']
     msg = 'Could not copy %s to device.' % src
     # Fall back to scp if device has no rsync. Happens when stateful is cleaned.
     if not self.HasRsync():
