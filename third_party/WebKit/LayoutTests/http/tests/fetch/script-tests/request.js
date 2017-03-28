@@ -403,6 +403,19 @@ test(function() {
   }, 'Request without RequestInit.');
 
 test(function() {
+  assert_equals(new Request(URL, {referrer: undefined}).referrer,
+               'about:client');
+  assert_equals(new Request(URL).referrerPolicy, '');
+}, 'Request with referrer equals to undefined.');
+
+test(function() {
+  var expected = location.href.slice(0, location.href.lastIndexOf('/')) +
+    '/null';
+  assert_equals(new Request(URL, {referrer: null}).referrer, expected);
+  assert_equals(new Request(URL).referrerPolicy, '');
+}, 'Request with referrer equals to null.');
+
+test(function() {
     var req = new Request(URL, {referrer: 'about:client'});
 
     assert_equals(req.referrer, 'about:client',

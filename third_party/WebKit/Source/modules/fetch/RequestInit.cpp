@@ -25,6 +25,8 @@
 
 namespace blink {
 
+// TODO(yiyix): Verify if any DictionaryHelper::get should be replaced with
+// DictionaryHelper::getWithUndefinedCheck.
 RequestInit::RequestInit(ExecutionContext* context,
                          const Dictionary& options,
                          ExceptionState& exceptionState)
@@ -45,8 +47,8 @@ RequestInit::RequestInit(ExecutionContext* context,
   areAnyMembersSet |= DictionaryHelper::get(options, "mode", mode);
   areAnyMembersSet |= DictionaryHelper::get(options, "redirect", redirect);
   AtomicString referrerString;
-  bool isReferrerStringSet =
-      DictionaryHelper::get(options, "referrer", referrerString);
+  bool isReferrerStringSet = DictionaryHelper::getWithUndefinedCheck(
+      options, "referrer", referrerString);
   areAnyMembersSet |= isReferrerStringSet;
   areAnyMembersSet |= DictionaryHelper::get(options, "integrity", integrity);
   AtomicString referrerPolicyString;

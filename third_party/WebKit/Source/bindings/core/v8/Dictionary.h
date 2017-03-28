@@ -133,11 +133,12 @@ struct DictionaryHelper {
                   T& value,
                   ExceptionState&);
   template <typename T>
-  static bool getWithUndefinedOrNullCheck(const Dictionary& dictionary,
-                                          const StringView& key,
-                                          T& value) {
+  static bool getWithUndefinedCheck(const Dictionary& dictionary,
+                                    const StringView& key,
+                                    T& value) {
     v8::Local<v8::Value> v8Value;
-    if (!dictionary.get(key, v8Value) || isUndefinedOrNull(v8Value))
+    if (!dictionary.get(key, v8Value) || v8Value.IsEmpty() ||
+        v8Value->IsUndefined())
       return false;
     return DictionaryHelper::get(dictionary, key, value);
   }

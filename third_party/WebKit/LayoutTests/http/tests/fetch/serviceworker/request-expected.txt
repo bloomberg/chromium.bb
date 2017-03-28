@@ -17,6 +17,8 @@ PASS Request construction without body behavior regardning "bodyUsed"
 PASS Request construction without body behavior regardning "bodyUsed" 
 PASS Request construction failure should not set "bodyUsed" 
 PASS Request without RequestInit. 
+PASS Request with referrer equals to undefined. 
+PASS Request with referrer equals to null. 
 PASS Request with referrer=about:client. 
 PASS Request with no-referrer. 
 PASS Request with a url referrer 
