@@ -2309,8 +2309,6 @@ public class Tab
         newContentViewCore.onShow();
         setContentViewCore(newContentViewCore);
 
-        mContentViewCore.attachImeAdapter();
-
         // If the URL has already committed (e.g. prerendering), tell process management logic that
         // it can rely on the process visibility signal for binding management.
         // TODO: Call ChildProcessLauncher#determinedVisibility() at a more intuitive time.
