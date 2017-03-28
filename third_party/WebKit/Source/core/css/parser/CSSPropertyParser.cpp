@@ -43,6 +43,7 @@
 #include "core/css/properties/CSSPropertyAPI.h"
 #include "core/css/properties/CSSPropertyAlignmentUtils.h"
 #include "core/css/properties/CSSPropertyColumnUtils.h"
+#include "core/css/properties/CSSPropertyCounterUtils.h"
 #include "core/css/properties/CSSPropertyDescriptor.h"
 #include "core/css/properties/CSSPropertyFontUtils.h"
 #include "core/css/properties/CSSPropertyLengthUtils.h"
@@ -313,26 +314,6 @@ static CSSValue* consumeFontVariantList(CSSParserTokenRange& range) {
     return values;
 
   return nullptr;
-}
-
-static CSSValue* consumeCounter(CSSParserTokenRange& range, int defaultValue) {
-  if (range.peek().id() == CSSValueNone)
-    return consumeIdent(range);
-
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
-  do {
-    CSSCustomIdentValue* counterName = consumeCustomIdent(range);
-    if (!counterName)
-      return nullptr;
-    int i = defaultValue;
-    if (CSSPrimitiveValue* counterValue = consumeInteger(range))
-      i = clampTo<int>(counterValue->getDoubleValue());
-    list->append(*CSSValuePair::create(
-        counterName,
-        CSSPrimitiveValue::create(i, CSSPrimitiveValue::UnitType::Integer),
-        CSSValuePair::DropIdenticalValues));
-  } while (!range.atEnd());
-  return list;
 }
 
 static CSSValue* consumeLocale(CSSParserTokenRange& range) {
@@ -1864,9 +1845,11 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyFontWeight:
       return CSSPropertyFontUtils::consumeFontWeight(m_range);
     case CSSPropertyCounterIncrement:
-      return consumeCounter(m_range, 1);
+      return CSSPropertyCounterUtils::consumeCounter(
+          m_range, CSSPropertyCounterUtils::kIncrementDefaultValue);
     case CSSPropertyCounterReset:
-      return consumeCounter(m_range, 0);
+      return CSSPropertyCounterUtils::consumeCounter(
+          m_range, CSSPropertyCounterUtils::kResetDefaultValue);
     case CSSPropertyMaxWidth:
     case CSSPropertyMaxHeight:
       return CSSPropertyLengthUtils::consumeMaxWidthOrHeight(
