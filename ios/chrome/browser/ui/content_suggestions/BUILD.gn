@@ -16,6 +16,7 @@ source_set("content_suggestions") {
     "content_suggestions_view_controller.mm",
   ]
   deps = [
+    ":resources",
     "//base",
     "//components/strings",
     "//ios/chrome/browser/ui/collection_view",
@@ -44,4 +45,15 @@ source_set("unit_tests") {
     "//third_party/ocmock",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+bundle_data("resources") {
+  sources = [
+    "resources/content_suggestions_no_image.png",
+    "resources/content_suggestions_no_image@2x.png",
+    "resources/content_suggestions_no_image@3x.png",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/{{source_file_part}}",
+  ]
 }

@@ -52,8 +52,11 @@ class GURL;
 
 @property(nonatomic, readonly, strong) UILabel* titleLabel;
 @property(nonatomic, readonly, strong) UILabel* subtitleLabel;
-@property(nonatomic, readonly, strong) UIImageView* imageView;
 
+// Sets an |image| to illustrate the article, replacing the "no image" icon.
+- (void)setContentImage:(UIImage*)image;
+
+// Sets the publisher |name| and |date|.
 - (void)setPublisherName:(NSString*)publisherName date:(base::Time)publishDate;
 
 @end

@@ -34,13 +34,15 @@ TEST(ContentSuggestionsArticleItemTest, CellIsConfiguredWithoutImage) {
   ContentSuggestionsArticleCell* cell = [[[item cellClass] alloc] init];
   ASSERT_EQ([ContentSuggestionsArticleCell class], [cell class]);
   ASSERT_EQ(url, item.articleURL);
-  ASSERT_NE(nil, item.image);
+  ASSERT_EQ(nil, item.image);
+  id cellMock = OCMPartialMock(cell);
+  OCMExpect([cellMock setContentImage:item.image]);
 
   // Action.
   [item configureCell:cell];
 
   // Tests.
-  EXPECT_EQ(item.image, cell.imageView.image);
+  EXPECT_OCMOCK_VERIFY(cellMock);
   EXPECT_EQ(title, cell.titleLabel.text);
   EXPECT_EQ(subtitle, cell.subtitleLabel.text);
   EXPECT_OCMOCK_VERIFY(delegateMock);
@@ -61,6 +63,7 @@ TEST(ContentSuggestionsArticleItemTest, DontFetchImageIsImageIsBeingFetched) {
                                                  subtitle:subtitle
                                                  delegate:niceDelegateMock
                                                       url:url];
+  item.image = [[UIImage alloc] init];
 
   OCMExpect([niceDelegateMock loadImageForArticleItem:item]);
   ContentSuggestionsArticleCell* cell = [[[item cellClass] alloc] init];
@@ -71,12 +74,14 @@ TEST(ContentSuggestionsArticleItemTest, DontFetchImageIsImageIsBeingFetched) {
   id strictDelegateMock =
       OCMStrictProtocolMock(@protocol(ContentSuggestionsArticleItemDelegate));
   item.delegate = strictDelegateMock;
+  id cellMock = OCMPartialMock(cell);
+  OCMExpect([cellMock setContentImage:item.image]);
 
   // Action.
   [item configureCell:cell];
 
   // Tests.
-  EXPECT_EQ(item.image, cell.imageView.image);
+  EXPECT_OCMOCK_VERIFY(cellMock);
   EXPECT_EQ(title, cell.titleLabel.text);
   EXPECT_EQ(subtitle, cell.subtitleLabel.text);
 }

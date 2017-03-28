@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/i18n_string.h"
+#import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "url/gurl.h"
 
@@ -19,6 +20,16 @@ namespace {
 const CGFloat kImageSize = 72;
 // When updating this, make sure to update |layoutSubviews|.
 const CGFloat kStandardSpacing = 16;
+// Size of the icon displayed when there is not image.
+const CGFloat kIconSize = 24;
+// Name of the icon displayed when there is not image.
+NSString* const kNoImageIconName = @"content_suggestions_no_image";
+// No image icon percentage of white.
+const CGFloat kNoImageIconWhite = 0.38;
+// No image background percentage of white.
+const CGFloat kNoImageBackgroundWhite = 0.95;
+// Duration of the animation to display the image for the article.
+const CGFloat kAnimationDuration = 0.3;
 }
 
 @interface ContentSuggestionsArticleItem ()
@@ -57,7 +68,6 @@ const CGFloat kStandardSpacing = 16;
     _subtitle = [subtitle copy];
     _articleURL = url;
     _delegate = delegate;
-    _image = [self emptyImageBackground];
   }
   return self;
 }
@@ -71,23 +81,8 @@ const CGFloat kStandardSpacing = 16;
   }
   cell.titleLabel.text = self.title;
   cell.subtitleLabel.text = self.subtitle;
-  cell.imageView.image = self.image;
+  [cell setContentImage:self.image];
   [cell setPublisherName:self.publisher date:self.publishDate];
-}
-
-#pragma mark - Private
-
-- (UIImage*)emptyImageBackground {
-  // TODO(crbug.com/698171): Remove this function once we have real background
-  // image.
-  UIColor* color = [UIColor lightGrayColor];
-  CGRect rect = CGRectMake(0, 0, 1, 1);
-  UIGraphicsBeginImageContext(rect.size);
-  [color setFill];
-  UIRectFill(rect);
-  UIImage* image = UIGraphicsGetImageFromCurrentImageContext();
-  UIGraphicsEndImageContext();
-  return image;
 }
 
 @end
@@ -97,6 +92,14 @@ const CGFloat kStandardSpacing = 16;
 @interface ContentSuggestionsArticleCell ()
 
 @property(nonatomic, strong) UILabel* publisherLabel;
+// Contains the no-image icon or the image.
+@property(nonatomic, strong) UIView* imageContainer;
+// The no-image icon displayed when there is no image.
+@property(nonatomic, strong) UIImageView* noImageIcon;
+// Displays the image associated with this article. It is added to the
+// imageContainer only if there is an image to display, hiding the no-image
+// icon.
+@property(nonatomic, strong) UIImageView* contentImageView;
 
 // Applies the constraints on the elements. Called in the init.
 - (void)applyConstraints;
@@ -107,15 +110,18 @@ const CGFloat kStandardSpacing = 16;
 
 @synthesize titleLabel = _titleLabel;
 @synthesize subtitleLabel = _subtitleLabel;
-@synthesize imageView = _imageView;
+@synthesize imageContainer = _imageContainer;
+@synthesize noImageIcon = _noImageIcon;
 @synthesize publisherLabel = _publisherLabel;
+@synthesize contentImageView = _contentImageView;
 
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
     _titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     _subtitleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
-    _imageView = [[UIImageView alloc] initWithFrame:CGRectZero];
+    _imageContainer = [[UIView alloc] initWithFrame:CGRectZero];
+    _noImageIcon = [[UIImageView alloc] initWithFrame:CGRectZero];
     _publisherLabel = [[UILabel alloc] initWithFrame:CGRectZero];
 
     _titleLabel.numberOfLines = 2;
@@ -124,18 +130,26 @@ const CGFloat kStandardSpacing = 16;
                                       forAxis:UILayoutConstraintAxisVertical];
     [_titleLabel setContentHuggingPriority:UILayoutPriorityDefaultHigh
                                    forAxis:UILayoutConstraintAxisVertical];
-    _imageView.contentMode = UIViewContentModeScaleAspectFill;
-    _imageView.clipsToBounds = YES;
 
-    _imageView.translatesAutoresizingMaskIntoConstraints = NO;
+    _imageContainer.translatesAutoresizingMaskIntoConstraints = NO;
+    _noImageIcon.translatesAutoresizingMaskIntoConstraints = NO;
     _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
     _subtitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
     _publisherLabel.translatesAutoresizingMaskIntoConstraints = NO;
 
-    [self.contentView addSubview:_imageView];
+    [self.contentView addSubview:_imageContainer];
     [self.contentView addSubview:_titleLabel];
     [self.contentView addSubview:_subtitleLabel];
     [self.contentView addSubview:_publisherLabel];
+
+    [_imageContainer addSubview:_noImageIcon];
+
+    _imageContainer.backgroundColor =
+        [UIColor colorWithWhite:kNoImageBackgroundWhite alpha:1];
+    _noImageIcon.image = [[UIImage imageNamed:kNoImageIconName]
+        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    [_noImageIcon
+        setTintColor:[UIColor colorWithWhite:kNoImageIconWhite alpha:1]];
 
     _titleLabel.font = [MDCTypography subheadFont];
     _subtitleLabel.font = [MDCTypography body1Font];
@@ -149,6 +163,25 @@ const CGFloat kStandardSpacing = 16;
   return self;
 }
 
+- (void)setContentImage:(UIImage*)image {
+  if (!image)
+    return;
+  self.contentImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
+  self.contentImageView.translatesAutoresizingMaskIntoConstraints = NO;
+  self.contentImageView.contentMode = UIViewContentModeScaleAspectFill;
+  self.contentImageView.clipsToBounds = YES;
+  self.contentImageView.image = image;
+
+  self.contentImageView.alpha = 0;
+  [self.imageContainer addSubview:self.contentImageView];
+  AddSameSizeConstraint(self.contentImageView, self.imageContainer);
+
+  [UIView animateWithDuration:kAnimationDuration
+                   animations:^{
+                     self.contentImageView.alpha = 1;
+                   }];
+}
+
 - (void)setPublisherName:(NSString*)publisherName date:(base::Time)publishDate {
   NSDate* date = [NSDate dateWithTimeIntervalSince1970:publishDate.ToDoubleT()];
   NSString* dateString =
@@ -158,6 +191,10 @@ const CGFloat kStandardSpacing = 16;
 
   self.publisherLabel.text = AdjustStringForLocaleDirection(
       [NSString stringWithFormat:@"%@ - %@.", publisherName, dateString]);
+}
+
+- (void)prepareForReuse {
+  [self.contentImageView removeFromSuperview];
 }
 
 #pragma mark - UIView
@@ -185,15 +222,24 @@ const CGFloat kStandardSpacing = 16;
 
 - (void)applyConstraints {
   [NSLayoutConstraint activateConstraints:@[
-    [_imageView.widthAnchor constraintEqualToConstant:kImageSize],
-    [_imageView.heightAnchor constraintEqualToAnchor:_imageView.widthAnchor],
-    [_imageView.topAnchor constraintEqualToAnchor:_titleLabel.topAnchor],
+    [_imageContainer.widthAnchor constraintEqualToConstant:kImageSize],
+    [_imageContainer.heightAnchor
+        constraintEqualToAnchor:_imageContainer.widthAnchor],
+    [_imageContainer.topAnchor constraintEqualToAnchor:_titleLabel.topAnchor],
     [_publisherLabel.topAnchor
-        constraintGreaterThanOrEqualToAnchor:_imageView.bottomAnchor
+        constraintGreaterThanOrEqualToAnchor:_imageContainer.bottomAnchor
                                     constant:kStandardSpacing],
     [_publisherLabel.topAnchor
         constraintGreaterThanOrEqualToAnchor:_subtitleLabel.bottomAnchor
                                     constant:kStandardSpacing],
+
+    // No image icon.
+    [_noImageIcon.centerXAnchor
+        constraintEqualToAnchor:_imageContainer.centerXAnchor],
+    [_noImageIcon.centerYAnchor
+        constraintEqualToAnchor:_imageContainer.centerYAnchor],
+    [_noImageIcon.widthAnchor constraintEqualToConstant:kIconSize],
+    [_noImageIcon.heightAnchor constraintEqualToAnchor:_noImageIcon.widthAnchor]
   ]];
 
   ApplyVisualConstraintsWithMetrics(
@@ -205,7 +251,7 @@ const CGFloat kStandardSpacing = 16;
         @"V:[publish]-|",
       ],
       @{
-        @"image" : _imageView,
+        @"image" : _imageContainer,
         @"title" : _titleLabel,
         @"text" : _subtitleLabel,
         @"publish" : _publisherLabel,
