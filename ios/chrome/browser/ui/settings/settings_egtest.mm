@@ -593,10 +593,12 @@ bool IsCertificateCleared() {
   // Set the network to use a cellular network, which should disable uploading
   // when the wifi-only flag is set.
   chrome_test_util::SetWWANStateTo(YES);
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   [self assertMetricsServiceEnabledButNotUploading:serviceType];
 
   // Turn off cellular network usage, which should enable uploading.
   chrome_test_util::SetWWANStateTo(NO);
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   [self assertMetricsServiceEnabled:serviceType];
 
   // kMetricsReportingEnabled ON and kMetricsReportingWifiOnly OFF
