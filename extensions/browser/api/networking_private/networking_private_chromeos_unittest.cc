@@ -5,7 +5,6 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_device_client.h"
@@ -16,7 +15,6 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "components/onc/onc_constants.h"
 #include "extensions/browser/api/networking_private/networking_private_api.h"
 #include "extensions/browser/api_unittest.h"
 #include "extensions/common/value_builder.h"
@@ -38,12 +36,6 @@ const char kSharedWifiName[] = "shared_wifi";
 const char kPrivateWifiServicePath[] = "/service/private_wifi";
 const char kPrivateWifiGuid[] = "private_wifi_guid";
 const char kPrivateWifiName[] = "private_wifi";
-
-const char kManagedUserWifiGuid[] = "managed_user_wifi_guid";
-const char kManagedUserWifiSsid[] = "managed_user_wifi";
-
-const char kManagedDeviceWifiGuid[] = "managed_device_wifi_guid";
-const char kManagedDeviceWifiSsid[] = "managed_device_wifi";
 
 }  // namespace
 
@@ -136,45 +128,11 @@ class NetworkingPrivateApiTest : public ApiUnitTest {
         chromeos::NetworkHandler::Get()
             ->managed_network_configuration_handler();
 
-    const std::string user_policy_ssid = kManagedUserWifiSsid;
-    std::unique_ptr<base::ListValue> user_policy_onc =
-        ListBuilder()
-            .Append(DictionaryBuilder()
-                        .Set("GUID", kManagedUserWifiGuid)
-                        .Set("Type", "WiFi")
-                        .Set("WiFi",
-                             DictionaryBuilder()
-                                 .Set("Passphrase", "fake")
-                                 .Set("SSID", user_policy_ssid)
-                                 .Set("HexSSID",
-                                      base::HexEncode(user_policy_ssid.c_str(),
-                                                      user_policy_ssid.size()))
-                                 .Set("Security", "WPA-PSK")
-                                 .Build())
-                        .Build())
-            .Build();
-
     config_handler->SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUserHash,
-                              *user_policy_onc, base::DictionaryValue());
+                              base::ListValue(), base::DictionaryValue());
 
-    const std::string device_policy_ssid = kManagedDeviceWifiSsid;
-    std::unique_ptr<base::ListValue> device_policy_onc =
-        ListBuilder()
-            .Append(DictionaryBuilder()
-                        .Set("GUID", kManagedDeviceWifiGuid)
-                        .Set("Type", "WiFi")
-                        .Set("WiFi",
-                             DictionaryBuilder()
-                                 .Set("SSID", device_policy_ssid)
-                                 .Set("HexSSID", base::HexEncode(
-                                                     device_policy_ssid.c_str(),
-                                                     device_policy_ssid.size()))
-                                 .Set("Security", "None")
-                                 .Build())
-                        .Build())
-            .Build();
     config_handler->SetPolicy(::onc::ONC_SOURCE_DEVICE_POLICY, "",
-                              *device_policy_onc, base::DictionaryValue());
+                              base::ListValue(), base::DictionaryValue());
   }
 
   void AddSharedNetworkToUserProfile() {
@@ -214,7 +172,7 @@ TEST_F(NetworkingPrivateApiTest, SetSharedNetworkProperties) {
             RunFunctionAndReturnError(
                 new NetworkingPrivateSetPropertiesFunction(),
                 base::StringPrintf(
-                    R"(["%s", {"WiFi": {"Passphrase": "passphrase"}}])",
+                    "[\"%s\", {\"WiFi\": {\"Passphrase\": \"passphrase\"}}]",
                     kSharedWifiGuid)));
 }
 
@@ -225,7 +183,7 @@ TEST_F(NetworkingPrivateApiTest, SetPrivateNetworkPropertiesWebUI) {
 
   RunFunction(
       set_properties.get(),
-      base::StringPrintf(R"(["%s", {"Priority": 0}])", kSharedWifiGuid));
+      base::StringPrintf("[\"%s\", {\"Priority\": 0}]", kSharedWifiGuid));
   EXPECT_EQ(ExtensionFunction::SUCCEEDED, *set_properties->response_type());
 
   const chromeos::NetworkState* network =
@@ -242,7 +200,7 @@ TEST_F(NetworkingPrivateApiTest, SetPrivateNetworkProperties) {
       new NetworkingPrivateSetPropertiesFunction();
   RunFunction(
       set_properties.get(),
-      base::StringPrintf(R"(["%s", {"Priority": 0}])", kPrivateWifiGuid));
+      base::StringPrintf("[\"%s\", {\"Priority\": 0}]", kPrivateWifiGuid));
   EXPECT_EQ(ExtensionFunction::SUCCEEDED, *set_properties->response_type());
 
   const chromeos::NetworkState* network =
@@ -258,13 +216,12 @@ TEST_F(NetworkingPrivateApiTest, CreateSharedNetwork) {
   EXPECT_EQ(
       networking_private::kErrorAccessToSharedConfig,
       RunFunctionAndReturnError(new NetworkingPrivateCreateNetworkFunction(),
-                                R"([true, {
-                                     "Type": "WiFi",
-                                     "WiFi": {
-                                       "SSID": "New network",
-                                       "Security": "None"
-                                     }
-                                   }])"));
+                                "[true, {"
+                                "  \"Type\": \"WiFi\","
+                                "  \"WiFi\": {"
+                                "    \"SSID\": \"New network\","
+                                "    \"Security\": \"None\""
+                                "}}]"));
 }
 
 TEST_F(NetworkingPrivateApiTest, CreateSharedNetworkWebUI) {
@@ -274,14 +231,13 @@ TEST_F(NetworkingPrivateApiTest, CreateSharedNetworkWebUI) {
 
   std::unique_ptr<base::Value> result =
       RunFunctionAndReturnValue(create_network.get(),
-                                R"([true, {
-                                     "Priority": 1,
-                                     "Type": "WiFi",
-                                     "WiFi": {
-                                       "SSID": "New network",
-                                       "Security": "None"
-                                     }
-                                   }])");
+                                "[true, {"
+                                "  \"Priority\": 1,"
+                                "  \"Type\": \"WiFi\","
+                                "  \"WiFi\": {"
+                                "    \"SSID\": \"New network\","
+                                "    \"Security\": \"None\""
+                                "}}]");
 
   ASSERT_TRUE(result);
   ASSERT_TRUE(result->is_string());
@@ -298,14 +254,13 @@ TEST_F(NetworkingPrivateApiTest, CreateSharedNetworkWebUI) {
 TEST_F(NetworkingPrivateApiTest, CreatePrivateNetwork) {
   std::unique_ptr<base::Value> result =
       RunFunctionAndReturnValue(new NetworkingPrivateCreateNetworkFunction(),
-                                R"([false, {
-                                     "Priority": 1,
-                                     "Type": "WiFi",
-                                     "WiFi": {
-                                       "SSID": "New WiFi",
-                                       "Security": "WPA-PSK"
-                                     }
-                                   }])");
+                                "[false, {"
+                                "  \"Priority\": 1,"
+                                "  \"Type\": \"WiFi\","
+                                "  \"WiFi\": {"
+                                "    \"SSID\": \"New WiFi\","
+                                "    \"Security\": \"WPA-PSK\""
+                                "}}]");
 
   ASSERT_TRUE(result);
   ASSERT_TRUE(result->is_string());
@@ -323,146 +278,10 @@ TEST_F(NetworkingPrivateApiTest, CreatePrivateNetwork) {
       new NetworkingPrivateSetPropertiesFunction();
 
   RunFunction(set_properties.get(),
-              base::StringPrintf(R"(["%s", {"Priority": 2}])", guid.c_str()));
+              base::StringPrintf("[\"%s\", {\"Priority\": 2}]", guid.c_str()));
   EXPECT_EQ(ExtensionFunction::SUCCEEDED, *set_properties->response_type());
 
   EXPECT_EQ(2, GetNetworkPriority(network));
-}
-
-TEST_F(NetworkingPrivateApiTest, CreatePrivateNetwork_NonMatchingSsids) {
-  const std::string network_ssid = "new_wifi_config";
-  const std::string network_hex_ssid =
-      base::HexEncode(network_ssid.c_str(), network_ssid.size());
-  std::unique_ptr<base::Value> result =
-      RunFunctionAndReturnValue(new NetworkingPrivateCreateNetworkFunction(),
-                                base::StringPrintf(R"([false, {
-                                                        "Priority": 1,
-                                                        "Type": "WiFi",
-                                                        "WiFi": {
-                                                          "SSID": "New WiFi",
-                                                          "HexSSID": "%s",
-                                                          "Security": "WPA-PSK"
-                                                        }
-                                                      }])",
-                                                   network_hex_ssid.c_str()));
-
-  ASSERT_TRUE(result);
-  ASSERT_TRUE(result->is_string());
-
-  // Test the created config can be changed now.
-  const std::string guid = result->GetString();
-  const chromeos::NetworkState* network = chromeos::NetworkHandler::Get()
-                                              ->network_state_handler()
-                                              ->GetNetworkStateFromGuid(guid);
-  ASSERT_TRUE(network);
-  EXPECT_TRUE(network->IsPrivate());
-  EXPECT_EQ(1, GetNetworkPriority(network));
-  EXPECT_EQ(network_hex_ssid, network->GetHexSsid());
-  EXPECT_EQ(network_ssid, network->name());
-}
-
-TEST_F(NetworkingPrivateApiTest,
-       CreateAlreadyConfiguredUserPrivateNetwork_BySsid) {
-  EXPECT_EQ(
-      "NetworkAlreadyConfigured",
-      RunFunctionAndReturnError(new NetworkingPrivateCreateNetworkFunction(),
-                                base::StringPrintf(R"([false, {
-                                                        "Priority": 1,
-                                                        "Type": "WiFi",
-                                                        "WiFi": {
-                                                          "SSID": "%s",
-                                                          "Security": "WPA-PSK"
-                                                        }
-                                                      }])",
-                                                   kManagedUserWifiSsid)));
-}
-
-TEST_F(NetworkingPrivateApiTest,
-       CreateAlreadyConfiguredUserPrivateNetwork_ByHexSsid) {
-  std::string network_hex_ssid =
-      base::HexEncode(kManagedUserWifiSsid, sizeof(kManagedUserWifiSsid) - 1);
-  EXPECT_EQ(
-      "NetworkAlreadyConfigured",
-      RunFunctionAndReturnError(new NetworkingPrivateCreateNetworkFunction(),
-                                base::StringPrintf(R"([false, {
-                                                        "Priority": 1,
-                                                        "Type": "WiFi",
-                                                        "WiFi": {
-                                                          "HexSSID": "%s",
-                                                          "Security": "WPA-PSK"
-                                                        }
-                                                      }])",
-                                                   network_hex_ssid.c_str())));
-}
-
-TEST_F(NetworkingPrivateApiTest,
-       CreateAlreadyConfiguredUserPrivateNetwork_NonMatchingSsids) {
-  std::string network_hex_ssid =
-      base::HexEncode(kManagedUserWifiSsid, sizeof(kManagedUserWifiSsid) - 1);
-  // HexSSID should take presedence over SSID.
-  EXPECT_EQ(
-      "NetworkAlreadyConfigured",
-      RunFunctionAndReturnError(new NetworkingPrivateCreateNetworkFunction(),
-                                base::StringPrintf(R"([false, {
-                                                        "Priority": 1,
-                                                        "Type": "WiFi",
-                                                        "WiFi": {
-                                                          "SSID": "wrong_ssid",
-                                                          "HexSSID": "%s",
-                                                          "Security": "WPA-PSK"
-                                                        }
-                                                      }])",
-                                                   network_hex_ssid.c_str())));
-}
-
-TEST_F(NetworkingPrivateApiTest,
-       CreateAlreadyConfiguredUserPrivateNetwork_ByHexSSID) {
-  std::string network_hex_ssid =
-      base::HexEncode(kManagedUserWifiSsid, sizeof(kManagedUserWifiSsid) - 1);
-  EXPECT_EQ(
-      "NetworkAlreadyConfigured",
-      RunFunctionAndReturnError(new NetworkingPrivateCreateNetworkFunction(),
-                                base::StringPrintf(R"([false, {
-                                                        "Priority": 1,
-                                                        "Type": "WiFi",
-                                                        "WiFi": {
-                                                          "HexSSID": "%s",
-                                                          "Security": "WPA-PSK"
-                                                        }
-                                                      }])",
-                                                   network_hex_ssid.c_str())));
-}
-
-TEST_F(NetworkingPrivateApiTest, CreateAlreadyConfiguredDeviceNetwork) {
-  EXPECT_EQ(
-      "NetworkAlreadyConfigured",
-      RunFunctionAndReturnError(new NetworkingPrivateCreateNetworkFunction(),
-                                base::StringPrintf(R"([false, {
-                                                        "Priority": 1,
-                                                        "Type": "WiFi",
-                                                        "WiFi": {
-                                                          "SSID": "%s"
-                                                        }
-                                                      }])",
-                                                   kManagedDeviceWifiSsid)));
-}
-
-TEST_F(NetworkingPrivateApiTest,
-       CreateAlreadyConfiguredDeviceNetwork_ByHexSSID) {
-  std::string network_hex_ssid = base::HexEncode(
-      kManagedDeviceWifiSsid, sizeof(kManagedDeviceWifiSsid) - 1);
-  EXPECT_EQ(
-      "NetworkAlreadyConfigured",
-      RunFunctionAndReturnError(new NetworkingPrivateCreateNetworkFunction(),
-                                base::StringPrintf(R"([false, {
-                                                        "Priority": 1,
-                                                        "Type": "WiFi",
-                                                        "WiFi": {
-                                                          "HexSSID": "%s",
-                                                          "Security": "WPA-PSK"
-                                                        }
-                                                      }])",
-                                                   network_hex_ssid.c_str())));
 }
 
 }  // namespace extensions
