@@ -54,7 +54,8 @@ void SelectionEditor::clearVisibleSelection() {
   m_selection = SelectionInDOMTree();
   m_cachedVisibleSelectionInDOMTree = VisibleSelection();
   m_cachedVisibleSelectionInFlatTree = VisibleSelectionInFlatTree();
-  m_cacheIsDirty = false;
+  m_cachedVisibleSelectionInDOMTreeIsDirty = false;
+  m_cachedVisibleSelectionInFlatTreeIsDirty = false;
   if (!shouldAlwaysUseDirectionalSelection())
     return;
   m_selection.m_isDirectional = true;
@@ -85,7 +86,7 @@ const VisibleSelectionInFlatTree&
 SelectionEditor::computeVisibleSelectionInFlatTree() const {
   DCHECK_EQ(frame()->document(), document());
   DCHECK_EQ(frame(), document().frame());
-  updateCachedVisibleSelectionIfNeeded();
+  updateCachedVisibleSelectionInFlatTreeIfNeeded();
   if (m_cachedVisibleSelectionInFlatTree.isNone())
     return m_cachedVisibleSelectionInFlatTree;
   DCHECK_EQ(m_cachedVisibleSelectionInFlatTree.base().document(), document());
@@ -110,11 +111,14 @@ bool SelectionEditor::isContentRichlyEditable() const {
 }
 
 void SelectionEditor::markCacheDirty() {
-  if (m_cacheIsDirty)
-    return;
-  m_cachedVisibleSelectionInFlatTree = VisibleSelectionInFlatTree();
-  m_cachedVisibleSelectionInDOMTree = VisibleSelection();
-  m_cacheIsDirty = true;
+  if (!m_cachedVisibleSelectionInDOMTreeIsDirty) {
+    m_cachedVisibleSelectionInDOMTree = VisibleSelection();
+    m_cachedVisibleSelectionInDOMTreeIsDirty = true;
+  }
+  if (!m_cachedVisibleSelectionInFlatTreeIsDirty) {
+    m_cachedVisibleSelectionInFlatTree = VisibleSelectionInFlatTree();
+    m_cachedVisibleSelectionInFlatTreeIsDirty = true;
+  }
 }
 
 void SelectionEditor::setSelection(const SelectionInDOMTree& newSelection) {
@@ -150,18 +154,21 @@ void SelectionEditor::didFinishDOMMutation() {
 void SelectionEditor::documentAttached(Document* document) {
   DCHECK(document);
   DCHECK(!lifecycleContext()) << lifecycleContext();
-  m_styleVersion = static_cast<uint64_t>(-1);
+  m_styleVersionForDOMTree = static_cast<uint64_t>(-1);
+  m_styleVersionForFlatTree = static_cast<uint64_t>(-1);
   clearVisibleSelection();
   setContext(document);
 }
 
 void SelectionEditor::contextDestroyed(Document*) {
   dispose();
-  m_styleVersion = static_cast<uint64_t>(-1);
+  m_styleVersionForDOMTree = static_cast<uint64_t>(-1);
+  m_styleVersionForFlatTree = static_cast<uint64_t>(-1);
   m_selection = SelectionInDOMTree();
   m_cachedVisibleSelectionInDOMTree = VisibleSelection();
   m_cachedVisibleSelectionInFlatTree = VisibleSelectionInFlatTree();
-  m_cacheIsDirty = false;
+  m_cachedVisibleSelectionInDOMTreeIsDirty = false;
+  m_cachedVisibleSelectionInFlatTreeIsDirty = false;
 }
 
 static Position computePositionForChildrenRemoval(const Position& position,
@@ -353,7 +360,8 @@ bool SelectionEditor::shouldAlwaysUseDirectionalSelection() const {
 }
 
 bool SelectionEditor::needsUpdateVisibleSelection() const {
-  return m_cacheIsDirty || m_styleVersion != document().styleVersion();
+  return m_cachedVisibleSelectionInDOMTreeIsDirty ||
+         m_styleVersionForDOMTree != document().styleVersion();
 }
 
 void SelectionEditor::updateCachedVisibleSelectionIfNeeded() const {
@@ -365,14 +373,32 @@ void SelectionEditor::updateCachedVisibleSelectionIfNeeded() const {
   assertSelectionValid();
   if (!needsUpdateVisibleSelection())
     return;
-
-  m_styleVersion = document().styleVersion();
-  m_cacheIsDirty = false;
+  m_styleVersionForDOMTree = document().styleVersion();
+  m_cachedVisibleSelectionInDOMTreeIsDirty = false;
   m_cachedVisibleSelectionInDOMTree = createVisibleSelection(m_selection);
-  if (m_cachedVisibleSelectionInDOMTree.isNone()) {
-    m_cachedVisibleSelectionInFlatTree = VisibleSelectionInFlatTree();
+  if (!m_cachedVisibleSelectionInDOMTree.isNone())
     return;
-  }
+  m_styleVersionForFlatTree = document().styleVersion();
+  m_cachedVisibleSelectionInFlatTreeIsDirty = false;
+  m_cachedVisibleSelectionInFlatTree = VisibleSelectionInFlatTree();
+}
+
+bool SelectionEditor::needsUpdateVisibleSelectionInFlatTree() const {
+  return m_cachedVisibleSelectionInFlatTreeIsDirty ||
+         m_styleVersionForFlatTree != document().styleVersion();
+}
+
+void SelectionEditor::updateCachedVisibleSelectionInFlatTreeIfNeeded() const {
+  // Note: Since we |FrameCaret::updateApperance()| is called from
+  // |FrameView::performPostLayoutTasks()|, we check lifecycle against
+  // |AfterPerformLayout| instead of |LayoutClean|.
+  DCHECK_GE(document().lifecycle().state(),
+            DocumentLifecycle::AfterPerformLayout);
+  assertSelectionValid();
+  if (!needsUpdateVisibleSelectionInFlatTree())
+    return;
+  m_styleVersionForFlatTree = document().styleVersion();
+  m_cachedVisibleSelectionInFlatTreeIsDirty = false;
   m_cachedVisibleSelectionInFlatTree = createVisibleSelection(
       SelectionInFlatTree::Builder()
           .setBaseAndExtent(toPositionInFlatTree(m_selection.base()),
@@ -382,6 +408,11 @@ void SelectionEditor::updateCachedVisibleSelectionIfNeeded() const {
           .setGranularity(m_selection.granularity())
           .setIsDirectional(m_selection.isDirectional())
           .build());
+  if (!m_cachedVisibleSelectionInFlatTree.isNone())
+    return;
+  m_styleVersionForDOMTree = document().styleVersion();
+  m_cachedVisibleSelectionInDOMTreeIsDirty = false;
+  m_cachedVisibleSelectionInDOMTree = VisibleSelection();
 }
 
 void SelectionEditor::cacheRangeOfDocument(Range* range) {

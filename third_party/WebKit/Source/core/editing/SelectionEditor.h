@@ -81,7 +81,9 @@ class SelectionEditor final : public GarbageCollectedFinalized<SelectionEditor>,
 
   // VisibleSelection cache related
   bool needsUpdateVisibleSelection() const;
+  bool needsUpdateVisibleSelectionInFlatTree() const;
   void updateCachedVisibleSelectionIfNeeded() const;
+  void updateCachedVisibleSelectionInFlatTreeIfNeeded() const;
 
   void didFinishTextChange(const Position& base, const Position& extent);
   void didFinishDOMMutation();
@@ -110,8 +112,10 @@ class SelectionEditor final : public GarbageCollectedFinalized<SelectionEditor>,
 
   mutable VisibleSelection m_cachedVisibleSelectionInDOMTree;
   mutable VisibleSelectionInFlatTree m_cachedVisibleSelectionInFlatTree;
-  mutable uint64_t m_styleVersion = static_cast<uint64_t>(-1);
-  mutable bool m_cacheIsDirty = false;
+  mutable uint64_t m_styleVersionForDOMTree = static_cast<uint64_t>(-1);
+  mutable uint64_t m_styleVersionForFlatTree = static_cast<uint64_t>(-1);
+  mutable bool m_cachedVisibleSelectionInDOMTreeIsDirty = false;
+  mutable bool m_cachedVisibleSelectionInFlatTreeIsDirty = false;
 };
 
 }  // namespace blink
