@@ -3055,6 +3055,8 @@ drm_device_is_kms(struct drm_backend *b, struct udev_device *device)
 	b->drm.id = id;
 	b->drm.filename = strdup(filename);
 
+	drmModeFreeResources(res);
+
 	return true;
 
 out_res:
