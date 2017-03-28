@@ -66,6 +66,14 @@ source_set("reading_list_remover") {
     "//components/reading_list/core",
     "//ios/chrome/browser/browser_state",
   ]
+  public_deps = [
+    # This is required because this target includes
+    # reading_list_download_service.h from :reading_list that includes
+    # a protobuf header from dom_distiller.
+    # the inclusion of reading_list_download_service.h is allowed using
+    # allow_circular_includes_from.
+    "//ios/chrome/browser/dom_distiller",
+  ]
 }
 
 source_set("unit_tests") {
