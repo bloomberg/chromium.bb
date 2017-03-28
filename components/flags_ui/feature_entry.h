@@ -15,6 +15,12 @@ struct Feature;
 
 namespace flags_ui {
 
+// Generic experiment choice option names.
+extern const char kGenericExperimentChoiceDefault[];
+extern const char kGenericExperimentChoiceEnabled[];
+extern const char kGenericExperimentChoiceDisabled[];
+extern const char kGenericExperimentChoiceAutomatic[];
+
 // FeatureEntry is used to describe an experimental feature.
 //
 // Note that features should eventually be either turned on by default with no
@@ -82,8 +88,8 @@ struct FeatureEntry {
   // Used for MULTI_VALUE types to describe one of the possible values the user
   // can select.
   struct Choice {
-    // ID of the message containing the choice name.
-    int description_id;
+    // The message containing the choice name.
+    const char* description;
 
     // Command line switch and value to enabled for this choice.
     const char* command_line_switch;
@@ -120,11 +126,11 @@ struct FeatureEntry {
   // name of existing flags.
   const char* internal_name;
 
-  // String id of the message containing the feature's name.
-  int visible_name_id;
+  // The feature's name.
+  const char* visible_name;
 
-  // String id of the message containing the feature's description.
-  int visible_description_id;
+  // The feature's description.
+  const char* visible_description;
 
   // The platforms the feature is available on.
   // Needs to be more than a compile-time #ifdef because of profile sync.

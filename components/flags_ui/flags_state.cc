@@ -511,9 +511,9 @@ void FlagsState::GetFlagFeatureEntries(
 
     std::unique_ptr<base::DictionaryValue> data(new base::DictionaryValue());
     data->SetString("internal_name", entry.internal_name);
-    data->SetString("name", l10n_util::GetStringUTF16(entry.visible_name_id));
+    data->SetString("name", base::StringPiece(entry.visible_name));
     data->SetString("description",
-                    l10n_util::GetStringUTF16(entry.visible_description_id));
+                    base::StringPiece(entry.visible_description));
 
     base::ListValue* supported_platforms = new base::ListValue();
     AddOsStrings(entry.supported_platforms, supported_platforms);

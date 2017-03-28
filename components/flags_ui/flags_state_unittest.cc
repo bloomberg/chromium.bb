@@ -83,10 +83,8 @@ const FeatureEntry::FeatureVariation kTestVariations1[] = {
 const FeatureEntry::FeatureVariation kTestVariations2[] = {
     {"dummy description 2", kTestVariationOther2, 1, nullptr}};
 
-// Those have to be valid ids for the translation system but the value are
-// never used, so pick one at random from the current component.
-const int kDummyNameId = IDS_FLAGS_UI_WARNING_HEADER;
-const int kDummyDescriptionId = IDS_FLAGS_UI_WARNING_TEXT;
+const char* kDummyName = nullptr;
+const char* kDummyDescription = nullptr;
 
 bool SkipFeatureEntry(const FeatureEntry& feature_entry) {
   return false;
@@ -95,50 +93,50 @@ bool SkipFeatureEntry(const FeatureEntry& feature_entry) {
 }  // namespace
 
 const FeatureEntry::Choice kMultiChoices[] = {
-    {kDummyDescriptionId, "", ""},
-    {kDummyDescriptionId, kMultiSwitch1, ""},
-    {kDummyDescriptionId, kMultiSwitch2, kValueForMultiSwitch2},
+    {kDummyDescription, "", ""},
+    {kDummyDescription, kMultiSwitch1, ""},
+    {kDummyDescription, kMultiSwitch2, kValueForMultiSwitch2},
 };
 
 // The entries that are set for these tests. The 3rd entry is not supported on
 // the current platform, all others are.
 static FeatureEntry kEntries[] = {
-    {kFlags1, kDummyNameId, kDummyDescriptionId,
+    {kFlags1, kDummyName, kDummyDescription,
      0,  // Ends up being mapped to the current platform.
      FeatureEntry::SINGLE_VALUE, kSwitch1, "", nullptr, nullptr, nullptr, 0,
      nullptr, nullptr, nullptr},
-    {kFlags2, kDummyNameId, kDummyDescriptionId,
+    {kFlags2, kDummyName, kDummyDescription,
      0,  // Ends up being mapped to the current platform.
      FeatureEntry::SINGLE_VALUE, kSwitch2, kValueForSwitch2, nullptr, nullptr,
      nullptr, 0, nullptr, nullptr, nullptr},
-    {kFlags3, kDummyNameId, kDummyDescriptionId,
+    {kFlags3, kDummyName, kDummyDescription,
      0,  // This ends up enabling for an OS other than the current.
      FeatureEntry::SINGLE_VALUE, kSwitch3, "", nullptr, nullptr, nullptr, 0,
      nullptr, nullptr, nullptr},
-    {kFlags4, kDummyNameId, kDummyDescriptionId,
+    {kFlags4, kDummyName, kDummyDescription,
      0,  // Ends up being mapped to the current platform.
      FeatureEntry::MULTI_VALUE, "", "", "", "", nullptr,
      arraysize(kMultiChoices), kMultiChoices, nullptr, nullptr},
-    {kFlags5, kDummyNameId, kDummyDescriptionId,
+    {kFlags5, kDummyName, kDummyDescription,
      0,  // Ends up being mapped to the current platform.
      FeatureEntry::ENABLE_DISABLE_VALUE, kSwitch1, kEnableDisableValue1,
      kSwitch2, kEnableDisableValue2, nullptr, 3, nullptr, nullptr, nullptr},
-    {kFlags6, kDummyNameId, kDummyDescriptionId, 0,
+    {kFlags6, kDummyName, kDummyDescription, 0,
      FeatureEntry::SINGLE_DISABLE_VALUE, kSwitch6, "", nullptr, nullptr,
      nullptr, 0, nullptr, nullptr, nullptr},
-    {kFlags7, kDummyNameId, kDummyDescriptionId,
+    {kFlags7, kDummyName, kDummyDescription,
      0,  // Ends up being mapped to the current platform.
      FeatureEntry::FEATURE_VALUE, nullptr, nullptr, nullptr, nullptr,
      &kTestFeature1, 3, nullptr, nullptr, nullptr},
-    {kFlags8, kDummyNameId, kDummyDescriptionId,
+    {kFlags8, kDummyName, kDummyDescription,
      0,  // Ends up being mapped to the current platform.
      FeatureEntry::FEATURE_WITH_PARAMS_VALUE, nullptr, nullptr, nullptr,
      nullptr, &kTestFeature1, 4, nullptr, kTestVariations1, kTestTrial},
-    {kFlags9, kDummyNameId, kDummyDescriptionId,
+    {kFlags9, kDummyName, kDummyDescription,
      0,  // Ends up being mapped to the current platform.
      FeatureEntry::FEATURE_WITH_PARAMS_VALUE, nullptr, nullptr, nullptr,
      nullptr, &kTestFeature1, 4, nullptr, kTestVariations1, kTestTrial},
-    {kFlags10, kDummyNameId, kDummyDescriptionId,
+    {kFlags10, kDummyName, kDummyDescription,
      0,  // Ends up being mapped to the current platform.
      FeatureEntry::FEATURE_WITH_PARAMS_VALUE, nullptr, nullptr, nullptr,
      nullptr, &kTestFeature2, 4, nullptr, kTestVariations2, kTestTrial},

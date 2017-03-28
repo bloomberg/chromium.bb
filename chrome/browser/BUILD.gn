@@ -406,6 +406,8 @@ split_static_library("browser") {
     "file_select_helper.cc",
     "file_select_helper.h",
     "file_select_helper_mac.mm",
+    "flag_descriptions.cc",
+    "flag_descriptions.h",
     "fullscreen.h",
     "fullscreen_chromeos.cc",
     "fullscreen_mac.mm",

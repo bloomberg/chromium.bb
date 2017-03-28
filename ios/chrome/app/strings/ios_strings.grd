@@ -635,24 +635,6 @@ To adjust your search term, long press to select. To refine your search, slide t
       <message name="IDS_IOS_FIRSTRUN_OPT_IN_ACCEPT_BUTTON" desc="User metrics opt-in acceptance button label [iOS only]">
         Accept &amp; Continue
       </message>
-      <message name="IDS_IOS_FLAGS_BROWSER_TASK_SCHEDULER_DESCRIPTION" desc="Description of about:flag option to control redirection to the task scheduler." translateable="false">
-        Enables redirection of some task posting APIs to the task scheduler.
-      </message>
-      <message name="IDS_IOS_FLAGS_BROWSER_TASK_SCHEDULER_NAME" desc="Name of about:flag option to control redirection to the task scheduler." translateable="false">
-        Task Scheduler
-      </message>
-      <message name="IDS_IOS_FLAGS_CONTEXTUAL_SEARCH" desc="Title for the flag to enable Contextual Search.">
-        Contextual Search
-      </message>
-      <message name="IDS_IOS_FLAGS_CONTEXTUAL_SEARCH_DESCRIPTION" desc="Description for the flag to enable Contextual Search.">
-        Whether or not Contextual Search is enabled.
-      </message>
-      <message name="IDS_IOS_FLAGS_PHYSICAL_WEB" desc="Title for the flag to enable Physical Web in the omnibox.">
-        Physical Web
-      </message>
-      <message name="IDS_IOS_FLAGS_PHYSICAL_WEB_DESCRIPTION" desc="Description for the flag to enable Physical Web in the omnibox.">
-        When enabled, the omnibox will include suggestions for web pages broadcast by devices near you.
-      </message>
       <message name="IDS_IOS_GENERATED_PASSWORD_ACCEPT" desc="The text of the button that accepts the generated password. [Length: 20em] [iOS only]">
         Use Password
       </message>

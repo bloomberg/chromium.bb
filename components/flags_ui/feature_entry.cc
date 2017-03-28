@@ -7,10 +7,14 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace flags_ui {
+
+const char kGenericExperimentChoiceDefault[] = "Default";
+const char kGenericExperimentChoiceEnabled[] = "Enabled";
+const char kGenericExperimentChoiceDisabled[] = "Disabled";
+const char kGenericExperimentChoiceAutomatic[] = "Automatic";
 
 std::string FeatureEntry::NameForOption(int index) const {
   DCHECK(type == FeatureEntry::MULTI_VALUE ||
@@ -28,35 +32,35 @@ base::string16 FeatureEntry::DescriptionForOption(int index) const {
          type == FeatureEntry::FEATURE_VALUE ||
          type == FeatureEntry::FEATURE_WITH_PARAMS_VALUE);
   DCHECK_LT(index, num_options);
-  int description_id;
+  const char* description = nullptr;
   if (type == FeatureEntry::ENABLE_DISABLE_VALUE ||
       type == FeatureEntry::FEATURE_VALUE) {
-    const int kEnableDisableDescriptionIds[] = {
-        IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT,
-        IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
-        IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    const char* kEnableDisableDescriptions[] = {
+        kGenericExperimentChoiceDefault, kGenericExperimentChoiceEnabled,
+        kGenericExperimentChoiceDisabled,
     };
-    description_id = kEnableDisableDescriptionIds[index];
+    description = kEnableDisableDescriptions[index];
   } else if (type == FeatureEntry::FEATURE_WITH_PARAMS_VALUE) {
     if (index == 0) {
-      description_id = IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT;
+      description = kGenericExperimentChoiceDefault;
     } else if (index == 1) {
-      description_id = IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED;
+      description = kGenericExperimentChoiceEnabled;
     } else if (index < num_options - 1) {
       // First two options do not have variations params.
       int variation_index = index - 2;
-      return l10n_util::GetStringUTF16(IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED) +
+      return base::ASCIIToUTF16(
+                 base::StringPiece(kGenericExperimentChoiceEnabled)) +
              base::ASCIIToUTF16(" ") +
              base::ASCIIToUTF16(
                  feature_variations[variation_index].description_text);
     } else {
       DCHECK_EQ(num_options - 1, index);
-      description_id = IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED;
+      description = kGenericExperimentChoiceDisabled;
     }
   } else {
-    description_id = choices[index].description_id;
+    description = choices[index].description;
   }
-  return l10n_util::GetStringUTF16(description_id);
+  return base::ASCIIToUTF16(base::StringPiece(description));
 }
 
 const FeatureEntry::Choice& FeatureEntry::ChoiceForOption(int index) const {
