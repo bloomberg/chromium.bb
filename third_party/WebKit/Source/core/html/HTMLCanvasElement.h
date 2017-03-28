@@ -321,6 +321,7 @@ class CORE_EXPORT HTMLCanvasElement final
 
   int m_numFramesSinceLastRenderingModeSwitch;
   bool m_pendingRenderingModeSwitch;
+  bool m_didNotifyListenersForCurrentFrame = false;
 };
 
 }  // namespace blink

@@ -329,7 +329,17 @@ void HTMLCanvasElement::didDraw(const FloatRect& rect) {
 void HTMLCanvasElement::finalizeFrame() {
   if (hasImageBuffer())
     m_imageBuffer->finalizeFrame();
-  notifyListenersCanvasChanged();
+
+  // If the canvas is visible, notifying listeners is taken
+  // care of in the in doDeferredPaintInvalidation, which allows
+  // the frame to be grabbed prior to compositing, which is
+  // critically important because compositing may clear the canvas's
+  // image. (e.g. WebGL context with preserveDrawingBuffer=false).
+  // If the canvas is not visible, doDeferredPaintInvalidation
+  // will not get called, so we need to take care of business here.
+  if (!m_didNotifyListenersForCurrentFrame)
+    notifyListenersCanvasChanged();
+  m_didNotifyListenersForCurrentFrame = false;
 }
 
 void HTMLCanvasElement::didDisableAcceleration() {
@@ -370,6 +380,9 @@ void HTMLCanvasElement::doDeferredPaintInvalidation() {
 
   if (m_dirtyRect.isEmpty())
     return;
+
+  notifyListenersCanvasChanged();
+  m_didNotifyListenersForCurrentFrame = true;
 
   // Propagate the m_dirtyRect accumulated so far to the compositor
   // before restarting with a blank dirty rect.

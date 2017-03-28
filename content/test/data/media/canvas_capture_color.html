@@ -5,8 +5,10 @@
 </head>
 <body>
   <div>Canvas capture Color Test.</div>
-  <canvas id='canvas' width=10 height=10></canvas>
-  <video id='local-view' autoplay></video>
+  <canvas id='canvas-2d' width=10 height=10></canvas>
+  <video id='canvas-2d-local-view' autoplay></video>
+  <canvas id='canvas-webgl' width=10 height=10></canvas>
+  <video id='canvas-webgl-local-view' autoplay></video>
   <canvas id='local-view-canvas' width=10 height=10></canvas>
 <script type="text/javascript" src="mediarecorder_test_utils.js"></script>
 <script>
@@ -24,16 +26,28 @@ const MAX_ALPHA = 255;
 // The RGBA to YUV conversion is not perfectly reversible, so it is expected
 // that there will be some color info lost when converting RGBA to YUV and then
 // later YUV to RGBA.
-const TOLERANCE = 5;
+const TOLERANCE = 10;
 
 // This function draws a colored rectangle on the canvas.
-function draw(canvasId, colorRgba) {
+function draw(canvasId, contextType, colorRgba) {
   return new Promise(function(resolve, reject) {
-    var context = canvasId.getContext('2d');
-    context.clearRect(0, 0, canvasId.clientWidth, canvasId.clientHeight);
-    context.fillStyle = 'rgba(' + colorRgba.join() + ')';
-    context.fillRect(0, 0, canvasId.clientWidth, canvasId.clientHeight);
-    resolve();
+    // Wrapping the update in requestAnimationFrame is required for this to be
+    // a regression test for crbug.com/702446. requestAnimationFrame exposes
+    // this use case to a potential race between the frame capture and the
+    // frame clear that is caused by the {preserveDrawingBuffer: false} option
+    // on webgl contexts.
+    requestAnimationFrame(function() {
+      var context = canvasId.getContext(contextType);
+      if (contextType == '2d') {
+        context.clearRect(0, 0, canvasId.clientWidth, canvasId.clientHeight);
+        context.fillStyle = 'rgba(' + colorRgba.join() + ')';
+        context.fillRect(0, 0, canvasId.clientWidth, canvasId.clientHeight);
+      } else {
+        context.clearColor(colorRgba[0] / 255, colorRgba[1] / 255, colorRgba[2] / 255, colorRgba[3]);
+        context.clear(context.COLOR_BUFFER_BIT);
+      }
+      resolve();
+    });
   });
 }
 
@@ -80,23 +94,60 @@ function isPixelColor(pixel, color) {
   return true;
 }
 
+function connectStream(contextType) {
+  var canvas = document.getElementById('canvas-' + contextType);
+  var video = document.getElementById('canvas-' + contextType + '-local-view');
+  var stream = canvas.captureStream();
+  video.src = URL.createObjectURL(stream);
+  video.load();
+}
+
 // This function runs the canvas capture rgba color checks.
-function testCanvasCaptureColors() {
-  doCanvasCaptureAndCheckRgba(RED)
+function testCanvas2DCaptureColors() {
+  connectStream('2d');
+
+  doCanvasCaptureAndCheckRgba('2d', RED)
       .then(function() {
-        return doCanvasCaptureAndCheckRgba(GREEN);
+        return doCanvasCaptureAndCheckRgba('2d', GREEN);
       })
       .then(function() {
-        return doCanvasCaptureAndCheckRgba(BLUE);
+        return doCanvasCaptureAndCheckRgba('2d', BLUE);
       })
       .then(function() {
-        return doCanvasCaptureAndCheckRgba(RED_WITH_ALPHA);
+        return doCanvasCaptureAndCheckRgba('2d', RED_WITH_ALPHA);
       })
       .then(function() {
-        return doCanvasCaptureAndCheckRgba(GREEN_WITH_ALPHA);
+        return doCanvasCaptureAndCheckRgba('2d', GREEN_WITH_ALPHA);
       })
       .then(function() {
-        return doCanvasCaptureAndCheckRgba(BLUE_WITH_ALPHA);
+        return doCanvasCaptureAndCheckRgba('2d', BLUE_WITH_ALPHA);
+      })
+      .catch(function(err) {
+        window.domAutomationController.send(err);
+      })
+      .then(function() {
+        window.domAutomationController.send('OK');
+      });
+}
+
+function testCanvasWebGLCaptureColors() {
+  connectStream('webgl');
+
+  doCanvasCaptureAndCheckRgba('webgl', RED)
+      .then(function() {
+        return doCanvasCaptureAndCheckRgba('webgl', GREEN);
+      })
+      .then(function() {
+        return doCanvasCaptureAndCheckRgba('webgl', BLUE);
+      })
+      .then(function() {
+        return doCanvasCaptureAndCheckRgba('webgl', RED_WITH_ALPHA);
+      })
+      .then(function() {
+        return doCanvasCaptureAndCheckRgba('webgl', GREEN_WITH_ALPHA);
+      })
+      .then(function() {
+        return doCanvasCaptureAndCheckRgba('webgl', BLUE_WITH_ALPHA);
       })
       .catch(function(err) {
         window.domAutomationController.send(err);
@@ -109,15 +160,13 @@ function testCanvasCaptureColors() {
 // This function fills a canvas with one rgba color and canvas-captures it
 // to a video element. We then snapshot the video element to
 // another canvas and checks the color is what we expect.
-function doCanvasCaptureAndCheckRgba(colorRgba) {
+function doCanvasCaptureAndCheckRgba(contextType, colorRgba) {
   return new Promise(function(resolve, reject) {
-    var canvas = document.getElementById('canvas');
-    var video = document.getElementById('local-view');
+    var canvas = document.getElementById('canvas-' + contextType);
+    var video = document.getElementById('canvas-' + contextType + '-local-view');
     var snapshotCanvas = document.getElementById('local-view-canvas');
-    var stream = canvas.captureStream();
-    video.src = URL.createObjectURL(stream);
-    video.load();
-    draw(canvas, colorRgba)
+
+    draw(canvas, contextType, colorRgba)
         .then(function() {
           return waitFor('Verify the canvas color is as expected',
               function() {
