@@ -198,6 +198,12 @@ void RenderingHelper::InitializeOneOff(base::WaitableEvent* done) {
   cmd_line->AppendSwitchASCII(switches::kUseGL, gl::kGLImplementationEGLName);
 #endif
 
+#if defined(USE_OZONE)
+  ui::OzonePlatform::InitParams params;
+  params.single_process = true;
+  ui::OzonePlatform::InitializeForGPU(params);
+#endif
+
   if (!gl::init::InitializeGLOneOff())
     LOG(FATAL) << "Could not initialize GL";
   done->Signal();
