@@ -1324,6 +1324,7 @@ source_set("unit_tests") {
     "layout/ng/ng_relative_utils_test.cc",
     "layout/ng/ng_space_utils_test.cc",
     "layout/shapes/BoxShapeTest.cpp",
+    "layout/svg/LayoutSVGForeignObjectTest.cpp",
     "layout/svg/LayoutSVGRootTest.cpp",
     "loader/DocumentLoadTimingTest.cpp",
     "loader/FrameFetchContextTest.cpp",
