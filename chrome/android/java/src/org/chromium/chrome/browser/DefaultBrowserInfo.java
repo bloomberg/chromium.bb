@@ -23,7 +23,7 @@ import java.util.concurrent.ExecutionException;
  * A utility class for querying information about the default browser setting.
  */
 public class DefaultBrowserInfo {
-    private static final String SAMPLE_URL = "http://www.madeupdomainforcheck123.com/";
+    private static final String SAMPLE_URL = "https://www.madeupdomainforcheck123.com/";
 
     /** A lock to synchronize background tasks to retrieve browser information. */
     private static final Object sDirCreationLock = new Object();
