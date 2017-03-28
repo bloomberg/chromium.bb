@@ -93,6 +93,12 @@ void CardUnmaskPromptViewAndroid::OnNewCardLinkClicked(
                                controller_->ShouldRequestExpirationDate());
 }
 
+int CardUnmaskPromptViewAndroid::GetExpectedCvcLength(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  return controller_->GetExpectedCvcLength();
+}
+
 void CardUnmaskPromptViewAndroid::PromptDismissed(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {

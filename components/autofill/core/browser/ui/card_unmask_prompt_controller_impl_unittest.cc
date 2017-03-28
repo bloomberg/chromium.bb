@@ -15,6 +15,7 @@
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/ui/card_unmask_prompt_view.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -70,6 +71,10 @@ class TestCardUnmaskPromptController : public CardUnmaskPromptControllerImpl {
   bool CanStoreLocally() const override { return can_store_locally_; }
 
   void set_can_store_locally(bool can) { can_store_locally_ = can; }
+
+  void SetCreditCardForTesting(CreditCard card) {
+    CardUnmaskPromptControllerImpl::SetCreditCardForTesting(card);
+  }
 
   base::WeakPtr<TestCardUnmaskPromptController> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();

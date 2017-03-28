@@ -15,6 +15,10 @@ class Time;
 
 namespace autofill {
 
+// Constants for the length of a CVC.
+static const size_t GENERAL_CVC_LENGTH = 3;
+static const size_t AMEX_CVC_LENGTH = 4;
+
 // Returns true if |year| and |month| describe a date later than |now|.
 // |year| must have 4 digits.
 bool IsValidCreditCardExpirationDate(int year,
@@ -62,6 +66,9 @@ bool IsSSN(const base::string16& text);
 bool IsValidForType(const base::string16& value,
                     ServerFieldType type,
                     base::string16* error_message);
+
+// Returns the expected CVC length based on the |card_type|.
+size_t GetCvcLengthForCardType(const base::StringPiece card_type);
 
 }  // namespace autofill
 

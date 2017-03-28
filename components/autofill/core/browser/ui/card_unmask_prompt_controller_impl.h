@@ -52,11 +52,13 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
   bool InputCvcIsValid(const base::string16& input_text) const override;
   bool InputExpirationIsValid(const base::string16& month,
                               const base::string16& year) const override;
+  int GetExpectedCvcLength() const override;
   base::TimeDelta GetSuccessMessageDuration() const override;
 
  protected:
   // Exposed for testing.
   CardUnmaskPromptView* view() { return card_unmask_view_; }
+  void SetCreditCardForTesting(CreditCard test_card) { card_ = test_card; }
 
  private:
   bool AllowsRetry(AutofillClient::PaymentsRpcResult result);

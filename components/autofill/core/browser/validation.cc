@@ -95,8 +95,7 @@ bool IsValidCreditCardNumber(const base::string16& text) {
 
 bool IsValidCreditCardSecurityCode(const base::string16& code,
                                    const base::StringPiece card_type) {
-  size_t required_length = card_type == kAmericanExpressCard ? 4 : 3;
-  return code.length() == required_length &&
+  return code.length() == GetCvcLengthForCardType(card_type) &&
          base::ContainsOnlyChars(code, base::ASCIIToUTF16("0123456789"));
 }
 
@@ -313,6 +312,13 @@ bool IsValidForType(const base::string16& value,
       break;
   }
   return false;
+}
+
+size_t GetCvcLengthForCardType(const base::StringPiece card_type) {
+  if (card_type == kAmericanExpressCard)
+    return AMEX_CVC_LENGTH;
+
+  return GENERAL_CVC_LENGTH;
 }
 
 }  // namespace autofill

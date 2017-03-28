@@ -309,6 +309,10 @@ bool CardUnmaskPromptControllerImpl::InputExpirationIsValid(
                                          AutofillClock::Now());
 }
 
+int CardUnmaskPromptControllerImpl::GetExpectedCvcLength() const {
+  return GetCvcLengthForCardType(card_.type());
+}
+
 base::TimeDelta CardUnmaskPromptControllerImpl::GetSuccessMessageDuration()
     const {
   return base::TimeDelta::FromMilliseconds(

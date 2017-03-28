@@ -412,4 +412,35 @@ INSTANTIATE_TEST_CASE_P(
                      false,
                      IDS_PAYMENTS_VALIDATION_UNSUPPORTED_CREDIT_CARD_TYPE)));
 
+struct GetCvcLengthForCardTypeCase {
+  GetCvcLengthForCardTypeCase(const char* card_type, size_t expected_length)
+      : card_type(card_type), expected_length(expected_length) {}
+  ~GetCvcLengthForCardTypeCase() {}
+
+  const char* const card_type;
+  const size_t expected_length;
+};
+
+class AutofillGetCvcLengthForCardType
+    : public testing::TestWithParam<GetCvcLengthForCardTypeCase> {};
+
+TEST_P(AutofillGetCvcLengthForCardType, GetCvcLengthForCardType) {
+  EXPECT_EQ(GetParam().expected_length,
+            GetCvcLengthForCardType(GetParam().card_type));
+}
+
+INSTANTIATE_TEST_CASE_P(
+    CreditCardCvcLength,
+    AutofillGetCvcLengthForCardType,
+    testing::Values(
+        GetCvcLengthForCardTypeCase{kAmericanExpressCard, AMEX_CVC_LENGTH},
+        GetCvcLengthForCardTypeCase{kDinersCard, GENERAL_CVC_LENGTH},
+        GetCvcLengthForCardTypeCase{kDiscoverCard, GENERAL_CVC_LENGTH},
+        GetCvcLengthForCardTypeCase{kGenericCard, GENERAL_CVC_LENGTH},
+        GetCvcLengthForCardTypeCase{kJCBCard, GENERAL_CVC_LENGTH},
+        GetCvcLengthForCardTypeCase{kMasterCard, GENERAL_CVC_LENGTH},
+        GetCvcLengthForCardTypeCase{kMirCard, GENERAL_CVC_LENGTH},
+        GetCvcLengthForCardTypeCase{kUnionPay, GENERAL_CVC_LENGTH},
+        GetCvcLengthForCardTypeCase{kVisaCard, GENERAL_CVC_LENGTH}));
+
 }  // namespace autofill
