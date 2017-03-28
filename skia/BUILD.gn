@@ -41,10 +41,7 @@ config("skia_config") {
     "//third_party/skia/include/utils",
   ]
 
-  defines = [ "SK_IGNORE_DW_GRAY_FIX" ]
-  defines += skia_for_chromium_defines
-
-  defines += []
+  defines = skia_for_chromium_defines
 
   if (is_component_build) {
     defines += [
