@@ -149,6 +149,21 @@ def BuildFileList(override_dir):
         if tail.count(WIN_VERSION) == 0:
           continue
       to = os.path.join('win_sdk', tail)
+      # The versions of dbghelp.dll that ship with the latest 10.0.14393.0 SDK
+      # (yes, there are multiple versions) as of the VS 2017 launch cannot
+      # handle /debug:fastlink binaries created by VS 2017. This leads to hangs
+      # during symbol lookup, as reported here:
+      # https://developercommunity.visualstudio.com/content/problem/36255/chromes-base-unittests-fails-with-vs-2017-due-to-s.html
+      # The recommended fix is to copy dbghelp.dll from the VS install instead,
+      # as done here:
+      if VS_VERSION == '2017' and combined.endswith('dbghelp.dll'):
+        good_dbghelp_path = os.path.join(vs_path, 'Common7', 'IDE',
+                                'CommonExtensions', 'Microsoft', 'TestWindow',
+                                'Extensions', 'CppUnitFramework')
+        if combined.count('\\x64\\') > 0:
+          combined = os.path.join(good_dbghelp_path, 'x64', 'dbghelp.dll')
+        else:
+          combined = os.path.join(good_dbghelp_path, 'dbghelp.dll')
       result.append((combined, to))
 
   # Copy the x86 ucrt DLLs to all directories with 32-bit binaries that are
