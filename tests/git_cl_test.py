@@ -185,6 +185,40 @@ class TestGitClBasic(unittest.TestCase):
     self.assertEquals(cl.GetDescription(force=True), 'y')
     self.assertEquals(cl.GetDescription(), 'y')
 
+  def test_description_footers(self):
+    cl = git_cl.Changelist(issue=1, codereview='gerrit',
+                           codereview_host='host')
+    cl.description = '\n'.join([
+      'This is some message',
+      '',
+      'It has some lines',
+      'and, also',
+      '',
+      'Some: Really',
+      'Awesome: Footers',
+    ])
+    cl.has_description = True
+    cl._codereview_impl.UpdateDescriptionRemote = lambda *a, **kw: 'y'
+    msg, footers = cl.GetDescriptionFooters()
+    self.assertEquals(
+      msg, ['This is some message', '', 'It has some lines', 'and, also'])
+    self.assertEquals(footers, [('Some', 'Really'), ('Awesome', 'Footers')])
+
+    msg.append('wut')
+    footers.append(('gnarly-dude', 'beans'))
+    cl.UpdateDescriptionFooters(msg, footers)
+    self.assertEquals(cl.GetDescription().splitlines(), [
+      'This is some message',
+      '',
+      'It has some lines',
+      'and, also',
+      'wut'
+      '',
+      'Some: Really',
+      'Awesome: Footers',
+      'Gnarly-Dude: beans',
+    ])
+
   def _test_ParseIssueUrl(self, func, url, issue, patchset, hostname, fail):
     parsed = urlparse.urlparse(url)
     result = func(parsed)

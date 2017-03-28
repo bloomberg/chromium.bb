@@ -1402,6 +1402,22 @@ class Changelist(object):
       return '\n'.join([wrapper.fill(line) for line in lines])
     return self.description
 
+  def GetDescriptionFooters(self):
+    """Returns (non_footer_lines, footers) for the commit message.
+
+    Returns:
+      non_footer_lines (list(str)) - Simple list of description lines without
+        any footer. The lines do not contain newlines, nor does the list contain
+        the empty line between the message and the footers.
+      footers (list(tuple(KEY, VALUE))) - List of parsed footers, e.g.
+        [("Change-Id", "Ideadbeef...."), ...]
+    """
+    raw_description = self.GetDescription()
+    msg_lines, _, footers = git_footers.split_footers(raw_description)
+    if footers:
+      msg_lines = msg_lines[:len(msg_lines)-1]
+    return msg_lines, footers
+
   def GetPatchset(self):
     """Returns the patchset number as a int or None if not set."""
     if self.patchset is None and not self.lookedup_patchset:
@@ -1496,6 +1512,29 @@ class Changelist(object):
     self._codereview_impl.UpdateDescriptionRemote(description, force=force)
     self.description = description
     self.has_description = True
+
+  def UpdateDescriptionFooters(self, description_lines, footers, force=False):
+    """Sets the description for this CL remotely.
+
+    You can get description_lines and footers with GetDescriptionFooters.
+
+    Args:
+      description_lines (list(str)) - List of CL description lines without
+        newline characters.
+      footers (list(tuple(KEY, VALUE))) - List of footers, as returned by
+        GetDescriptionFooters. Key must conform to the git footers format (i.e.
+        `List-Of-Tokens`). It will be case-normalized so that each token is
+        title-cased.
+    """
+    new_description = '\n'.join(description_lines)
+    if footers:
+      new_description += '\n'
+      for k, v in footers:
+        foot = '%s: %s' % (git_footers.normalize_name(k), v)
+        if not git_footers.FOOTER_PATTERN.match(foot):
+          raise ValueError('Invalid footer %r' % foot)
+        new_description += foot + '\n'
+    self.UpdateDescription(new_description, force)
 
   def RunHook(self, committing, may_prompt, verbose, change):
     """Calls sys.exit() if the hook fails; returns a HookResults otherwise."""
