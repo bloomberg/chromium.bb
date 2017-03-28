@@ -356,7 +356,7 @@ void FoundVisiblePasswordAndVisibleUsernameBeforePassword(
         !input_element->isTextField())
       continue;
 
-    if (!form_util::IsWebNodeVisible(*input_element))
+    if (!form_util::IsWebElementVisible(*input_element))
       continue;
 
     if (input_element->isPasswordField()) {
@@ -430,7 +430,7 @@ bool GetPasswordForm(
     if (HasCreditCardAutocompleteAttributes(*input_element))
       continue;
 
-    bool element_is_invisible = !form_util::IsWebNodeVisible(*input_element);
+    bool element_is_invisible = !form_util::IsWebElementVisible(*input_element);
     if (input_element->isTextField()) {
       if (input_element->isPasswordField()) {
         if (element_is_invisible && ignore_invisible_passwords)

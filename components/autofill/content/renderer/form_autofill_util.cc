@@ -1258,7 +1258,7 @@ bool IsFormVisible(blink::WebFrame* frame,
 bool IsSomeControlElementVisible(
     const WebVector<WebFormControlElement>& control_elements) {
   for (const WebFormControlElement& control_element : control_elements) {
-    if (IsWebNodeVisible(control_element))
+    if (IsWebElementVisible(control_element))
       return true;
   }
   return false;
@@ -1333,14 +1333,13 @@ const base::string16 GetFormIdentifier(const WebFormElement& form) {
   return identifier;
 }
 
-bool IsWebNodeVisible(const blink::WebNode& node) {
-  // TODO(esprehn): This code doesn't really check if the node is visible, just
-  // if the node takes up space in the layout. Does it want to check opacity,
-  // transform, and visibility too?
-  if (!node.isElementNode())
-    return false;
-  const WebElement element = node.toConst<WebElement>();
-  return element.hasNonEmptyLayoutSize();
+bool IsWebElementVisible(const blink::WebElement& element) {
+  // hasNonEmptyLayoutSize might trigger layout, but it didn't cause problems so
+  // far. If the layout is prohibited, hasNonEmptyLayoutSize is still used. See
+  // details in crbug.com/595078.
+  bool res = g_prevent_layout ? element.hasNonEmptyLayoutSize()
+                              : element.isFocusable();
+  return res;
 }
 
 std::vector<blink::WebFormControlElement> ExtractAutofillableElementsFromSet(

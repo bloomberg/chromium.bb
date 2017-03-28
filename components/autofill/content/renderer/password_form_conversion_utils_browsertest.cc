@@ -103,9 +103,6 @@ class PasswordFormBuilder {
   // Append a text field with "display: none".
   void AddNonDisplayedTextField(const char* name_and_id,
                                 const char* value) {
-    // TODO(crbug.com/570628): Add tests with style="visibility: hidden;" too
-    // when IsWebNodeVisible in form_autofill_util.cc has changed according to
-    // esprehn's TODO in the function. Now tests with visibility attribute fail.
     base::StringAppendF(
             &html_,
             "<INPUT type=\"text\" name=\"%s\" id=\"%s\" value=\"%s\""
@@ -121,6 +118,24 @@ class PasswordFormBuilder {
             "<INPUT type=\"password\" name=\"%s\" id=\"%s\" value=\"%s\""
             "style=\"display: none;\"/>",
             name_and_id, name_and_id, value);
+  }
+
+  // Append a text field with "visibility: hidden".
+  void AddNonVisibleTextField(const char* name_and_id, const char* value) {
+    base::StringAppendF(
+        &html_,
+        "<INPUT type=\"text\" name=\"%s\" id=\"%s\" value=\"%s\""
+        "style=\"visibility: hidden;\"/>",
+        name_and_id, name_and_id, value);
+  }
+
+  // Append a password field with "visibility: hidden".
+  void AddNonVisiblePasswordField(const char* name_and_id, const char* value) {
+    base::StringAppendF(
+        &html_,
+        "<INPUT type=\"password\" name=\"%s\" id=\"%s\" value=\"%s\""
+        "style=\"visibility: hidden;\"/>",
+        name_and_id, name_and_id, value);
   }
 
   // Appends a new submit-type field at the end of the form with the specified
@@ -893,12 +908,14 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
   }
 }
 
-TEST_F(MAYBE_PasswordFormConversionUtilsTest, IgnoreNonDisplayedTextFields) {
+TEST_F(MAYBE_PasswordFormConversionUtilsTest, IgnoreInvisibledTextFields) {
   PasswordFormBuilder builder(kTestFormActionURL);
 
   builder.AddNonDisplayedTextField("nondisplayed1", "nodispalyed_value1");
+  builder.AddNonVisibleTextField("nonvisible1", "nonvisible_value1");
   builder.AddTextField("username", "johnsmith", nullptr);
   builder.AddNonDisplayedTextField("nondisplayed2", "nodispalyed_value2");
+  builder.AddNonVisiblePasswordField("nonvisible2", "nonvisible_value2");
   builder.AddPasswordField("password", "secret", nullptr);
   builder.AddPasswordField("password", "secret", nullptr);
   builder.AddSubmitButton("submit");
@@ -914,12 +931,16 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, IgnoreNonDisplayedTextFields) {
   EXPECT_EQ(base::UTF8ToUTF16("secret"), password_form->new_password_value);
 }
 
-TEST_F(MAYBE_PasswordFormConversionUtilsTest, IgnoreNonDisplayedLoginPairs) {
+TEST_F(MAYBE_PasswordFormConversionUtilsTest, IgnoreInvisiblLoginPairs) {
   PasswordFormBuilder builder(kTestFormActionURL);
 
   builder.AddNonDisplayedTextField("nondisplayed1", "nodispalyed_value1");
   builder.AddNonDisplayedPasswordField("nondisplayed2", "nodispalyed_value2");
+  builder.AddNonVisibleTextField("nonvisible1", "nonvisible_value1");
+  builder.AddNonVisiblePasswordField("nonvisible2", "nonvisible_value2");
   builder.AddTextField("username", "johnsmith", nullptr);
+  builder.AddNonVisibleTextField("nonvisible3", "nonvisible_value3");
+  builder.AddNonVisiblePasswordField("nonvisible4", "nonvisible_value4");
   builder.AddNonDisplayedTextField("nondisplayed3", "nodispalyed_value3");
   builder.AddNonDisplayedPasswordField("nondisplayed4", "nodispalyed_value4");
   builder.AddPasswordField("password", "secret", nullptr);
@@ -956,6 +977,23 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, OnlyNonDisplayedLoginPair) {
             password_form->password_element);
   EXPECT_EQ(base::UTF8ToUTF16("secret"),
             password_form->password_value);
+}
+
+TEST_F(MAYBE_PasswordFormConversionUtilsTest, OnlyNonVisibleLoginPair) {
+  PasswordFormBuilder builder(kTestFormActionURL);
+
+  builder.AddNonVisibleTextField("username", "William");
+  builder.AddNonVisiblePasswordField("password", "secret");
+  builder.AddSubmitButton("submit");
+  std::string html = builder.ProduceHTML();
+
+  std::unique_ptr<PasswordForm> password_form =
+      LoadHTMLAndConvertForm(html, nullptr, false);
+  ASSERT_TRUE(password_form);
+  EXPECT_EQ(base::UTF8ToUTF16("username"), password_form->username_element);
+  EXPECT_EQ(base::UTF8ToUTF16("William"), password_form->username_value);
+  EXPECT_EQ(base::UTF8ToUTF16("password"), password_form->password_element);
+  EXPECT_EQ(base::UTF8ToUTF16("secret"), password_form->password_value);
 }
 
 TEST_F(MAYBE_PasswordFormConversionUtilsTest,

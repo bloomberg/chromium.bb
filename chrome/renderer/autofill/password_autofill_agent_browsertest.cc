@@ -96,6 +96,16 @@ const char kEmptyFormHTML[] =
     "<body> <form> </form> </body>";
 
 const char kNonVisibleFormHTML[] =
+    "<head> <style> form {visibility: hidden;} </style> </head>"
+    "<body>"
+    "  <form>"
+    "    <div>"
+    "      <input type='password' id='password'/>"
+    "    </div>"
+    "  </form>"
+    "</body>";
+
+const char kNonDisplayedFormHTML[] =
     "<head> <style> form {display: none;} </style> </head>"
     "<body>"
     "  <form>"
@@ -817,27 +827,34 @@ TEST_F(PasswordAutofillAgentTest, WaitUsername) {
   CheckTextFieldsState(kAliceUsername, false, std::string(), false);
 }
 
-TEST_F(PasswordAutofillAgentTest, IsWebNodeVisibleTest) {
+TEST_F(PasswordAutofillAgentTest, IsWebElementVisibleTest) {
   blink::WebVector<WebFormElement> forms1, forms2, forms3;
+  blink::WebVector<blink::WebFormControlElement> web_control_elements;
   blink::WebFrame* frame;
 
   LoadHTML(kVisibleFormWithNoUsernameHTML);
   frame = GetMainFrame();
   frame->document().forms(forms1);
   ASSERT_EQ(1u, forms1.size());
-  EXPECT_TRUE(form_util::IsWebNodeVisible(forms1[0]));
-
-  LoadHTML(kEmptyFormHTML);
-  frame = GetMainFrame();
-  frame->document().forms(forms2);
-  ASSERT_EQ(1u, forms2.size());
-  EXPECT_FALSE(form_util::IsWebNodeVisible(forms2[0]));
+  forms1[0].getFormControlElements(web_control_elements);
+  ASSERT_EQ(1u, web_control_elements.size());
+  EXPECT_TRUE(form_util::IsWebElementVisible(web_control_elements[0]));
 
   LoadHTML(kNonVisibleFormHTML);
   frame = GetMainFrame();
+  frame->document().forms(forms2);
+  ASSERT_EQ(1u, forms2.size());
+  forms2[0].getFormControlElements(web_control_elements);
+  ASSERT_EQ(1u, web_control_elements.size());
+  EXPECT_FALSE(form_util::IsWebElementVisible(web_control_elements[0]));
+
+  LoadHTML(kNonDisplayedFormHTML);
+  frame = GetMainFrame();
   frame->document().forms(forms3);
   ASSERT_EQ(1u, forms3.size());
-  EXPECT_FALSE(form_util::IsWebNodeVisible(forms3[0]));
+  forms3[0].getFormControlElements(web_control_elements);
+  ASSERT_EQ(1u, web_control_elements.size());
+  EXPECT_FALSE(form_util::IsWebElementVisible(web_control_elements[0]));
 }
 
 TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest) {
@@ -850,6 +867,13 @@ TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest) {
 
   fake_driver_.reset_password_forms_rendered();
   LoadHTML(kEmptyFormHTML);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(fake_driver_.called_password_forms_rendered());
+  ASSERT_TRUE(static_cast<bool>(fake_driver_.password_forms_rendered()));
+  EXPECT_TRUE(fake_driver_.password_forms_rendered()->empty());
+
+  fake_driver_.reset_password_forms_rendered();
+  LoadHTML(kNonDisplayedFormHTML);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(fake_driver_.called_password_forms_rendered());
   ASSERT_TRUE(static_cast<bool>(fake_driver_.password_forms_rendered()));

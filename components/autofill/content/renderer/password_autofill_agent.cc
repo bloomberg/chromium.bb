@@ -129,7 +129,7 @@ bool IsUnownedPasswordFormVisible(blink::WebFrame* frame,
                                   const GURL& origin,
                                   const FormData& form_data,
                                   const FormsPredictionsMap& form_predictions) {
-  if (!input_element.isNull() && form_util::IsWebNodeVisible(input_element))
+  if (!input_element.isNull() && form_util::IsWebElementVisible(input_element))
     return true;
 
   std::unique_ptr<PasswordForm> unowned_password_form(
@@ -202,7 +202,7 @@ bool FindFormInputElement(
     if (found_input) {
       // For change password form keep only the first password field entry.
       if (does_password_field_has_ambigous_or_empty_name) {
-        if (!form_util::IsWebNodeVisible((*result)[field_name])) {
+        if (!form_util::IsWebElementVisible((*result)[field_name])) {
           // If a previously chosen field was invisible then take the current
           // one.
           (*result)[field_name] = input_element;

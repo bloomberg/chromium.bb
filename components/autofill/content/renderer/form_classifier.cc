@@ -91,7 +91,7 @@ bool FindCaptchaInImgElements(const blink::WebElement& form,
       form.getElementsByHTMLTagName(kImageTag);
   for (blink::WebElement element = img_elements.firstItem(); !element.isNull();
        element = img_elements.nextItem()) {
-    if (ingnore_invisible && !form_util::IsWebNodeVisible(element))
+    if (ingnore_invisible && !form_util::IsWebElementVisible(element))
       continue;
     if (FindTextFeaturesForClass(element, kCaptchaFeatures,
                                  kNumberOfCaptchaFeatures)) {
@@ -161,7 +161,7 @@ bool FormContainsVisiblePasswordFields(const blink::WebFormElement& form) {
     if (!input_element)
       continue;
     if (input_element->isPasswordField() &&
-        form_util::IsWebNodeVisible(*input_element)) {
+        form_util::IsWebElementVisible(*input_element)) {
       return true;
     }
   }
@@ -199,7 +199,7 @@ bool ClassifyFormAndFindGenerationField(const blink::WebFormElement& form,
     if (IsHiddenElement(control_element))
       continue;
     if (ignore_invisible_elements) {
-      if (!form_util::IsWebNodeVisible(control_element))
+      if (!form_util::IsWebElementVisible(control_element))
         continue;
     }
 
