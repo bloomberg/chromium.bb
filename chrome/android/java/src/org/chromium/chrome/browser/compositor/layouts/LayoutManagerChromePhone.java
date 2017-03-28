@@ -39,8 +39,7 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
         LayoutRenderHost renderHost = host.getLayoutRenderHost();
 
         // Build Layouts
-        mSimpleAnimationLayout =
-                new SimpleAnimationLayout(context, this, renderHost, mBlackHoleEventFilter);
+        mSimpleAnimationLayout = new SimpleAnimationLayout(context, this, renderHost);
 
         // Set up layout parameters
         mStaticLayout.setLayoutHandlesTabLifecycles(false);

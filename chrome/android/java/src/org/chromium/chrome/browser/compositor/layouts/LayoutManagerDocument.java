@@ -22,7 +22,6 @@ import org.chromium.chrome.browser.compositor.layouts.components.VirtualView;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EmptyEdgeSwipeHandler;
-import org.chromium.chrome.browser.compositor.layouts.eventfilter.GestureHandler;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.ScrollDirection;
 import org.chromium.chrome.browser.compositor.overlays.SceneOverlay;
 import org.chromium.chrome.browser.compositor.scene_layer.ToolbarSceneLayer;
@@ -57,10 +56,6 @@ public class LayoutManagerDocument extends LayoutManager
     // Event Filters
     private final EdgeSwipeHandler mToolbarSwipeHandler;
 
-    // Event Filter Handlers
-    /** A {@link GestureHandler} that will delegate all events to {@link #getActiveLayout()}. */
-    protected final GestureHandler mGestureHandler;
-
     // Internal State
     private final SparseArray<LayoutTab> mTabCache = new SparseArray<LayoutTab>();
     private final ContextualSearchPanel mContextualSearchPanel;
@@ -86,7 +81,6 @@ public class LayoutManagerDocument extends LayoutManager
         mToolbarOverlay = new ToolbarSceneLayer(mContext, this, renderHost);
 
         // Build Event Filter Handlers
-        mGestureHandler = new GestureHandlerLayoutDelegate(this);
         mToolbarSwipeHandler = new ToolbarSwipeHandler(this);
 
         mOverlayPanelManager = new OverlayPanelManager();

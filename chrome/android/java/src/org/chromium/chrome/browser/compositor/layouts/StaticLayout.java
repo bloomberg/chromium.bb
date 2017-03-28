@@ -61,12 +61,11 @@ public class StaticLayout extends Layout {
      * @param context             The current Android's context.
      * @param updateHost          The {@link LayoutUpdateHost} view for this layout.
      * @param renderHost          The {@link LayoutRenderHost} view for this layout.
-     * @param eventFilter         The {@link EventFilter} that is needed for this view.
      * @param panelManager        The {@link OverlayPanelManager} responsible for showing panels.
      */
     public StaticLayout(Context context, LayoutUpdateHost updateHost, LayoutRenderHost renderHost,
             EventFilter eventFilter, OverlayPanelManager panelManager) {
-        super(context, updateHost, renderHost, eventFilter);
+        super(context, updateHost, renderHost);
 
         mHandler = new Handler();
         mUnstallRunnable = new UnstallRunnable();
@@ -211,6 +210,11 @@ public class StaticLayout extends Layout {
     @Override
     public boolean isTabInteractive() {
         return mLayoutTabs != null && mLayoutTabs.length > 0;
+    }
+
+    @Override
+    protected EventFilter getEventFilter() {
+        return null;
     }
 
     @Override
