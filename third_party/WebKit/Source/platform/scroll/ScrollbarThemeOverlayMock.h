@@ -63,8 +63,6 @@ class PLATFORM_EXPORT ScrollbarThemeOverlayMock : public ScrollbarThemeOverlay {
     return false;
   }
 
-  int minimumThumbLength(const ScrollbarThemeClient&) override { return 7; }
-
  private:
   double m_delayInSeconds;
   bool isMockTheme() const final { return true; }

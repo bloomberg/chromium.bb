@@ -39,15 +39,13 @@ static ui::NativeTheme::Part NativeThemePart(WebThemeEngine::Part part) {
     case WebThemeEngine::PartScrollbarUpArrow:
       return ui::NativeTheme::kScrollbarUpArrow;
     case WebThemeEngine::PartScrollbarHorizontalThumb:
-      return ui::NativeTheme::kScrollbarHorizontalThumb;
     case WebThemeEngine::PartScrollbarVerticalThumb:
-      return ui::NativeTheme::kScrollbarVerticalThumb;
     case WebThemeEngine::PartScrollbarHorizontalTrack:
-      return ui::NativeTheme::kScrollbarHorizontalTrack;
     case WebThemeEngine::PartScrollbarVerticalTrack:
-      return ui::NativeTheme::kScrollbarVerticalTrack;
     case WebThemeEngine::PartScrollbarCorner:
-      return ui::NativeTheme::kScrollbarCorner;
+      // Android doesn't draw scrollbars.
+      NOTREACHED();
+      return static_cast<ui::NativeTheme::Part>(0);
     case WebThemeEngine::PartCheckbox:
       return ui::NativeTheme::kCheckbox;
     case WebThemeEngine::PartRadio:
@@ -169,21 +167,9 @@ static void GetNativeThemeExtraParams(
 }
 
 blink::WebSize WebThemeEngineImpl::getSize(WebThemeEngine::Part part) {
-  switch (part) {
-    case ui::NativeTheme::kScrollbarHorizontalThumb:
-    case ui::NativeTheme::kScrollbarVerticalThumb: {
-      // Minimum length for scrollbar thumb is the scrollbar thickness.
-      ScrollbarStyle style;
-      getOverlayScrollbarStyle(&style);
-      int scrollbarThickness = style.thumbThickness + style.scrollbarMargin;
-      return gfx::Size(scrollbarThickness, scrollbarThickness);
-    }
-    default: {
-      ui::NativeTheme::ExtraParams extra;
-      return ui::NativeTheme::GetInstanceForWeb()->GetPartSize(
-          NativeThemePart(part), ui::NativeTheme::kNormal, extra);
-    }
-  }
+  ui::NativeTheme::ExtraParams extra;
+  return ui::NativeTheme::GetInstanceForWeb()->GetPartSize(
+      NativeThemePart(part), ui::NativeTheme::kNormal, extra);
 }
 
 void WebThemeEngineImpl::getOverlayScrollbarStyle(ScrollbarStyle* style) {

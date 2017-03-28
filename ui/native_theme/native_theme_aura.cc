@@ -33,7 +33,7 @@ namespace {
 // Constants for painting overlay scrollbars. Other properties needed outside
 // this painting code are defined in overlay_scrollbar_constants_aura.h.
 constexpr int kOverlayScrollbarStrokeWidth = 1;
-constexpr int kOverlayScrollbarMinimumLength = 32;
+constexpr int kOverlayScrollbarMinimumLength = 12;
 
 // 2 pixel border with 1 pixel center patch. The border is 2 pixels despite the
 // stroke width being 1 so that the inner pixel can match the center tile

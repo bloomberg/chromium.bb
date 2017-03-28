@@ -359,6 +359,10 @@ int ScrollbarTheme::thumbThickness(const ScrollbarThemeClient& scrollbar) {
                                                         : track.width();
 }
 
+int ScrollbarTheme::minimumThumbLength(const ScrollbarThemeClient& scrollbar) {
+  return scrollbarThickness(scrollbar.controlSize());
+}
+
 void ScrollbarTheme::splitTrack(const ScrollbarThemeClient& scrollbar,
                                 const IntRect& unconstrainedTrackRect,
                                 IntRect& beforeThumbRect,

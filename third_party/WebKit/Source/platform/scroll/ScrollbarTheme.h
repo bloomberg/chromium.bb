@@ -146,7 +146,7 @@ class PLATFORM_EXPORT ScrollbarTheme {
   virtual IntRect thumbRect(const ScrollbarThemeClient&);
   virtual int thumbThickness(const ScrollbarThemeClient&);
 
-  virtual int minimumThumbLength(const ScrollbarThemeClient&) = 0;
+  virtual int minimumThumbLength(const ScrollbarThemeClient&);
 
   virtual void splitTrack(const ScrollbarThemeClient&,
                           const IntRect& track,
