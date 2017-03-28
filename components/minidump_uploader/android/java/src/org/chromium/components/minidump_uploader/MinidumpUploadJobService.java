@@ -50,7 +50,7 @@ public abstract class MinidumpUploadJobService extends JobService {
         JobScheduler scheduler =
                 (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
         JobInfo uploadJob =
-                jobInfoBuilder
+                jobInfoBuilder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_UNMETERED)
                         .setBackoffCriteria(JOB_INITIAL_BACKOFF_TIME_IN_MS, JOB_BACKOFF_POLICY)
                         .build();
         int result = scheduler.schedule(uploadJob);

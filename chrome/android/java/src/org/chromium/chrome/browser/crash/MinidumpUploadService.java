@@ -105,7 +105,6 @@ public class MinidumpUploadService extends IntentService {
                 new JobInfo
                         .Builder(TaskIds.CHROME_MINIDUMP_UPLOADING_JOB_ID,
                                 new ComponentName(context, ChromeMinidumpUploadJobService.class))
-                        .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
                         .setExtras(permissions);
         MinidumpUploadJobService.scheduleUpload(context, builder);
     }

@@ -99,11 +99,8 @@ public class CrashReceiverService extends Service {
     }
 
     private void scheduleNewJob() {
-        JobInfo.Builder builder =
-                new JobInfo
-                        .Builder(TaskIds.WEBVIEW_MINIDUMP_UPLOADING_JOB_ID,
-                                new ComponentName(this, AwMinidumpUploadJobService.class))
-                        .setRequiredNetworkType(JobInfo.NETWORK_TYPE_UNMETERED);
+        JobInfo.Builder builder = new JobInfo.Builder(TaskIds.WEBVIEW_MINIDUMP_UPLOADING_JOB_ID,
+                new ComponentName(this, AwMinidumpUploadJobService.class));
         MinidumpUploadJobService.scheduleUpload(this, builder);
     }
 

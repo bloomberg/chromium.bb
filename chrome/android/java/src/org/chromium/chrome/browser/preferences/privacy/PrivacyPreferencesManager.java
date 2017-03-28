@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.physicalweb.PhysicalWeb;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.components.minidump_uploader.util.CrashReportingPermissionManager;
+import org.chromium.components.minidump_uploader.util.NetworkPermissionUtil;
 
 /**
  * Reads, writes, and migrates preferences related to network usage and privacy.
@@ -184,22 +185,11 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
         sharedPreferencesEditor.apply();
     }
 
-    private NetworkInfo getActiveNetworkInfo() {
+    protected boolean isNetworkAvailable() {
         ConnectivityManager connectivityManager =
                 (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-        return connectivityManager.getActiveNetworkInfo();
-    }
-
-    protected boolean isNetworkAvailable() {
-        NetworkInfo networkInfo = getActiveNetworkInfo();
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
         return (networkInfo != null && networkInfo.isConnected());
-    }
-
-    protected boolean isWiFiOrEthernetNetwork() {
-        NetworkInfo networkInfo = getActiveNetworkInfo();
-        return networkInfo != null
-                && (networkInfo.getType() == ConnectivityManager.TYPE_WIFI
-                        || networkInfo.getType() == ConnectivityManager.TYPE_ETHERNET);
     }
 
     protected boolean isMobileNetworkCapable() {
@@ -274,7 +264,9 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
      */
     @Override
     public boolean isNetworkAvailableForCrashUploads() {
-        return isNetworkAvailable() && isWiFiOrEthernetNetwork();
+        ConnectivityManager connectivityManager =
+                (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        return NetworkPermissionUtil.isNetworkUnmetered(connectivityManager);
     }
 
     /**

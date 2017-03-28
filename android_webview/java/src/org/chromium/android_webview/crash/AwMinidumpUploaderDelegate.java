@@ -6,7 +6,6 @@ package org.chromium.android_webview.crash;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.webkit.ValueCallback;
 
 import org.chromium.android_webview.PlatformServiceBridge;
@@ -16,6 +15,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.components.minidump_uploader.MinidumpUploaderDelegate;
 import org.chromium.components.minidump_uploader.util.CrashReportingPermissionManager;
+import org.chromium.components.minidump_uploader.util.NetworkPermissionUtil;
 
 import java.io.File;
 
@@ -54,14 +54,10 @@ public class AwMinidumpUploaderDelegate implements MinidumpUploaderDelegate {
             }
             @Override
             public boolean isNetworkAvailableForCrashUploads() {
-                // JobScheduler will call onStopJob causing our upload to be interrupted when our
-                // network requirements no longer hold.
-                // TODO(isherman): This code should really be shared with Chrome. Chrome currently
-                // checks only whether the network is WiFi (or ethernet) vs. cellular. Most likely,
-                // Chrome should instead check whether the network is metered, as is done here.
-                NetworkInfo networkInfo = mConnectivityManager.getActiveNetworkInfo();
-                if (networkInfo == null || !networkInfo.isConnected()) return false;
-                return !mConnectivityManager.isActiveNetworkMetered();
+                // Note that this is the same critierion that the JobScheduler uses to schedule the
+                // job. JobScheduler will call onStopJob causing our upload to be interrupted when
+                // our network requirements no longer hold.
+                return NetworkPermissionUtil.isNetworkUnmetered(mConnectivityManager);
             }
             @Override
             public boolean isUsageAndCrashReportingPermittedByUser() {
