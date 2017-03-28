@@ -28,6 +28,13 @@ bool CreateFileResourceFromValue(const base::Value* value,
   return !!*file;
 }
 
+bool CreateTeamDriveResourceFromValue(
+    const base::Value* value,
+    std::unique_ptr<TeamDriveResource>* file) {
+  *file = TeamDriveResource::CreateFrom(*value);
+  return !!*file;
+}
+
 // Converts |url_string| to |result|.  Always returns true to be used
 // for JSONValueConverter::RegisterCustomField method.
 // TODO(mukai): make it return false in case of invalid |url_string|.
@@ -191,13 +198,27 @@ const char kNextLink[] = "nextLink";
 // Change Resource
 // https://developers.google.com/drive/v2/reference/changes
 const char kChangeKind[] = "drive#change";
+const char kType[] = "type";
 const char kFileId[] = "fileId";
 const char kDeleted[] = "deleted";
 const char kFile[] = "file";
+const char kTeamDrive[] = "teamDrive";
+const char kTeamDriveId[] = "teamDriveId";
 
 // Changes List
 // https://developers.google.com/drive/v2/reference/changes/list
 const char kChangeListKind[] = "drive#changeList";
+
+// Maps category name to enum ChangeType.
+struct ChangeTypeMap {
+  ChangeResource::ChangeType type;
+  const char* type_name;
+};
+
+constexpr ChangeTypeMap kChangeTypeMap[] = {
+  { ChangeResource::FILE, "file" },
+  { ChangeResource::TEAM_DRIVE, "teamDrive" },
+};
 
 // Maps category name to enum IconCategory.
 struct AppIconCategoryMap {
@@ -205,7 +226,7 @@ struct AppIconCategoryMap {
   const char* category_name;
 };
 
-const AppIconCategoryMap kAppIconCategoryMap[] = {
+constexpr AppIconCategoryMap kAppIconCategoryMap[] = {
   { DriveAppIcon::DOCUMENT, "document" },
   { DriveAppIcon::APPLICATION, "application" },
   { DriveAppIcon::SHARED_DOCUMENT, "documentShared" },
@@ -428,6 +449,9 @@ TeamDriveCapabilities::TeamDriveCapabilities()
       can_rename_team_drive_(false),
       can_share_(false) {
 }
+
+TeamDriveCapabilities::TeamDriveCapabilities(const TeamDriveCapabilities& src) =
+    default;
 
 TeamDriveCapabilities::~TeamDriveCapabilities(){}
 
@@ -658,7 +682,8 @@ bool FileList::Parse(const base::Value& value) {
 ////////////////////////////////////////////////////////////////////////////////
 // ChangeResource implementation
 
-ChangeResource::ChangeResource() : change_id_(0), deleted_(false) {}
+ChangeResource::ChangeResource()
+    : change_id_(0), type_(UNKNOWN), deleted_(false) {}
 
 ChangeResource::~ChangeResource() {}
 
@@ -667,6 +692,8 @@ void ChangeResource::RegisterJSONConverter(
     base::JSONValueConverter<ChangeResource>* converter) {
   converter->RegisterCustomField<int64_t>(kId, &ChangeResource::change_id_,
                                           &base::StringToInt64);
+  converter->RegisterCustomField<ChangeType>(kType, &ChangeResource::type_,
+                                             &ChangeResource::GetType);
   converter->RegisterStringField(kFileId, &ChangeResource::file_id_);
   converter->RegisterBoolField(kDeleted, &ChangeResource::deleted_);
   converter->RegisterCustomValueField(kFile, &ChangeResource::file_,
@@ -674,6 +701,9 @@ void ChangeResource::RegisterJSONConverter(
   converter->RegisterCustomField<base::Time>(
       kModificationDate, &ChangeResource::modification_date_,
       &util::GetTimeFromString);
+  converter->RegisterStringField(kTeamDriveId, &ChangeResource::team_drive_id_);
+  converter->RegisterCustomValueField(kTeamDrive, &ChangeResource::team_drive_,
+                                      &CreateTeamDriveResourceFromValue);
 }
 
 // static
@@ -694,6 +724,19 @@ bool ChangeResource::Parse(const base::Value& value) {
     return false;
   }
   return true;
+}
+
+// static
+bool ChangeResource::GetType(const base::StringPiece& type_name,
+                             ChangeResource::ChangeType* result) {
+  for (size_t i = 0; i < arraysize(kChangeTypeMap); i++) {
+    if (type_name == kChangeTypeMap[i].type_name) {
+      *result = kChangeTypeMap[i].type;
+      return true;
+    }
+  }
+  DVLOG(1) << "Unknown change type" << type_name;
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

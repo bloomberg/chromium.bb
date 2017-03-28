@@ -219,6 +219,7 @@ TEST(ResourceEntryConversionTest,
 
 TEST(ResourceEntryConversionTest, ConvertChangeResourceToResourceEntry) {
   google_apis::ChangeResource change_resource;
+  change_resource.set_type(google_apis::ChangeResource::FILE);
   change_resource.set_file(base::WrapUnique(new google_apis::FileResource));
   change_resource.set_file_id("resource_id");
   change_resource.set_modification_date(GetTestTime());
@@ -248,6 +249,7 @@ TEST(ResourceEntryConversionTest, ConvertChangeResourceToResourceEntry) {
 TEST(ResourceEntryConversionTest,
      ConvertChangeResourceToResourceEntry_Trashed) {
   google_apis::ChangeResource change_resource;
+  change_resource.set_type(google_apis::ChangeResource::FILE);
   change_resource.set_file(base::WrapUnique(new google_apis::FileResource));
   change_resource.set_file_id("resource_id");
   change_resource.set_modification_date(GetTestTime());
@@ -278,6 +280,7 @@ TEST(ResourceEntryConversionTest,
 TEST(ResourceEntryConversionTest,
      ConvertChangeResourceToResourceEntry_Deleted) {
   google_apis::ChangeResource change_resource;
+  change_resource.set_type(google_apis::ChangeResource::FILE);
   change_resource.set_deleted(true);
   change_resource.set_file_id("resource_id");
   change_resource.set_modification_date(GetTestTime());

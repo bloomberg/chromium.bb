@@ -117,12 +117,14 @@ const char kFileListFields[] =
     "parents(id,parentLink),alternateLink,"
     "modifiedDate,lastViewedByMeDate,shared),nextLink";
 const char kChangeListFields[] =
-    "kind,items(file(kind,id,title,createdDate,sharedWithMeDate,"
+    "kind,items(type,file(kind,id,title,createdDate,sharedWithMeDate,"
     "mimeType,md5Checksum,fileSize,labels/trashed,labels/starred,"
     "imageMediaMetadata/width,"
     "imageMediaMetadata/height,imageMediaMetadata/rotation,etag,"
     "parents(id,parentLink),alternateLink,modifiedDate,"
-    "lastViewedByMeDate,shared),deleted,id,fileId,modificationDate),nextLink,"
+    "lastViewedByMeDate,shared),teamDrive(kind,id,name,capabilities),"
+    "teamDriveId,"
+    "deleted,id,fileId,modificationDate),nextLink,"
     "largestChangeId";
 
 void ExtractOpenUrlAndRun(const std::string& app_id,

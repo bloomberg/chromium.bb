@@ -427,6 +427,7 @@ class MetadataDatabaseTest : public testing::TestWithParam<bool> {
     std::unique_ptr<google_apis::ChangeResource> change(
         new google_apis::ChangeResource);
     change->set_change_id(file.details().change_id());
+    change->set_type(google_apis::ChangeResource::FILE);
     change->set_file_id(file.file_id());
     change->set_deleted(file.details().missing());
     if (change->is_deleted())

@@ -9,6 +9,7 @@
   {
    "kind": "drive#change",
    "id": "8421",
+   "type": "file",
    "fileId": "1Pc8jzfU1ErbN_eucMMqdqzY3eBm0v8sxXm_1CtLxABC",
    "selfLink": "https://www.googleapis.com/drive/v2/changes/8421",
    "deleted": false,
@@ -69,6 +70,7 @@
   {
    "kind": "drive#change",
    "id": "8424",
+   "type": "file",
    "fileId": "0B4v7G8yEYAWHUmRrU2lMS2hLABC",
    "selfLink": "https://www.googleapis.com/drive/v2/changes/8424",
    "deleted": false,
@@ -128,6 +130,7 @@
   {
    "kind": "drive#change",
    "id": "8429",
+   "type": "file",
    "fileId": "0B4v7G8yEYAWHYW1OcExsUVZLABC",
    "selfLink": "https://www.googleapis.com/drive/v2/changes/8429",
    "deleted": false,
@@ -181,10 +184,28 @@
   {
     "kind": "drive#change",
     "id": "8430",
+    "type": "file",
     "fileId": "ABCv7G8yEYAWHc3Y5X0hMSkJYXYZ",
     "selfLink": "https://www.googleapis.com/drive/v2/changes/16429",
     "deleted": true,
     "modificationDate": "2012-07-27T12:34:56.789Z"
+  },
+  {
+    "teamDrive": {
+      "kind": "drive#teamDrive",
+      "id": "id-of-team-drive-test-data",
+      "name": "Test Team Drive",
+      "capabilities": {
+        "canShare": true
+      }
+    },
+    "kind": "drive#change",
+    "id": "8431",
+    "type": "teamDrive",
+    "deleted": false,
+    "modificationDate": "2017-07-27T12:34:56.789Z",
+    "teamDriveId": "id-of-team-drive-test-data",
+    "selfLink": "https://www.googleapis.com/drive/v2/changes/8431"
   }
  ]
 }

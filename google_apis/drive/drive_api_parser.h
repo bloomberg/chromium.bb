@@ -331,6 +331,7 @@ class AppList {
 class TeamDriveCapabilities {
  public:
   TeamDriveCapabilities();
+  TeamDriveCapabilities(const TeamDriveCapabilities& src);
   ~TeamDriveCapabilities();
 
   // Registers the mapping between JSON field names and the members in this
@@ -750,6 +751,11 @@ class FileList {
 // https://developers.google.com/drive/v2/reference/changes
 class ChangeResource {
  public:
+  enum ChangeType {
+    UNKNOWN,  // Uninitialized state.
+    FILE,
+    TEAM_DRIVE,
+  };
   ChangeResource();
   ~ChangeResource();
 
@@ -765,20 +771,52 @@ class ChangeResource {
   // number.
   int64_t change_id() const { return change_id_; }
 
+  // Returns whether this is a change of a file or a team drive.
+  ChangeType type() const { return type_; }
+
   // Returns a string file ID for corresponding file of the change.
-  const std::string& file_id() const { return file_id_; }
+  // Valid only when type == FILE.
+  const std::string& file_id() const {
+    DCHECK_EQ(FILE, type_);
+    return file_id_;
+  }
 
   // Returns true if this file is deleted in the change.
   bool is_deleted() const { return deleted_; }
 
   // Returns FileResource of the file which the change refers to.
-  const FileResource* file() const { return file_.get(); }
-  FileResource* mutable_file() { return file_.get(); }
+  // Valid only when type == FILE.
+  const FileResource* file() const {
+    DCHECK_EQ(FILE, type_);
+    return file_.get();
+  }
+  FileResource* mutable_file() {
+    DCHECK_EQ(FILE, type_);
+    return file_.get();
+  }
+
+  // Returns TeamDriveResource which the change refers to.
+  // Valid only when type == TEAM_DRIVE.
+  const TeamDriveResource* team_drive() const {
+    DCHECK_EQ(TEAM_DRIVE, type_);
+    return team_drive_.get();
+  }
+  TeamDriveResource* mutable_team_drive() {
+    DCHECK_EQ(TEAM_DRIVE, type_);
+    return team_drive_.get();
+  }
+
+  // Returns the ID of the Team Drive. Valid only when type == TEAM_DRIVE.
+  const std::string& team_drive_id() const {
+    DCHECK_EQ(TEAM_DRIVE, type_);
+    return team_drive_id_;
+  }
 
   // Returns the time of this modification.
   const base::Time& modification_date() const { return modification_date_; }
 
   void set_change_id(int64_t change_id) { change_id_ = change_id; }
+  void set_type(ChangeType type) { type_ = type; }
   void set_file_id(const std::string& file_id) {
     file_id_ = file_id;
   }
@@ -786,6 +824,9 @@ class ChangeResource {
     deleted_ = deleted;
   }
   void set_file(std::unique_ptr<FileResource> file) { file_ = std::move(file); }
+  void set_team_drive(std::unique_ptr<TeamDriveResource> team_drive) {
+    team_drive_ = std::move(team_drive);
+  }
   void set_modification_date(const base::Time& modification_date) {
     modification_date_ = modification_date;
   }
@@ -798,11 +839,19 @@ class ChangeResource {
   // Return false if parsing fails.
   bool Parse(const base::Value& value);
 
+  // Extracts the change type from the given string. Returns false and does
+  // not change |result| when |type_name| has an unrecognizable value.
+  static bool GetType(const base::StringPiece& type_name,
+                      ChangeResource::ChangeType* result);
+
   int64_t change_id_;
+  ChangeType type_;
   std::string file_id_;
   bool deleted_;
   std::unique_ptr<FileResource> file_;
   base::Time modification_date_;
+  std::string team_drive_id_;
+  std::unique_ptr<TeamDriveResource> team_drive_;
 
   DISALLOW_COPY_AND_ASSIGN(ChangeResource);
 };

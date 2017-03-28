@@ -63,6 +63,7 @@ using google_apis::HTTP_SUCCESS;
 using google_apis::InitiateUploadCallback;
 using google_apis::ParentReference;
 using google_apis::ProgressCallback;
+using google_apis::TeamDriveResource;
 using google_apis::UploadRangeResponse;
 using google_apis::drive::UploadRangeCallback;
 namespace test_util = google_apis::test_util;
@@ -837,6 +838,7 @@ CancelCallback FakeDriveService::CopyResource(
   std::unique_ptr<EntryInfo> copied_entry(new EntryInfo);
   copied_entry->content_data = entry->content_data;
   copied_entry->share_url = entry->share_url;
+  copied_entry->change_resource.set_type(ChangeResource::FILE);
   copied_entry->change_resource.set_file(
       base::MakeUnique<FileResource>(*entry->change_resource.file()));
 
@@ -1596,6 +1598,7 @@ const FakeDriveService::EntryInfo* FakeDriveService::AddNewEntry(
   std::unique_ptr<EntryInfo> new_entry(new EntryInfo);
   ChangeResource* new_change = &new_entry->change_resource;
   FileResource* new_file = new FileResource;
+  new_change->set_type(ChangeResource::FILE);
   new_change->set_file(base::WrapUnique(new_file));
 
   // Set the resource ID and the title
@@ -1716,11 +1719,16 @@ void FakeDriveService::GetChangeListInternal(
 
     if (!should_exclude) {
       std::unique_ptr<ChangeResource> entry_copied(new ChangeResource);
+      entry_copied->set_type(entry.type());
       entry_copied->set_change_id(entry.change_id());
       entry_copied->set_file_id(entry.file_id());
       entry_copied->set_deleted(entry.is_deleted());
-      if (entry.file()) {
+      if (entry.type() == ChangeResource::FILE && entry.file()) {
         entry_copied->set_file(base::MakeUnique<FileResource>(*entry.file()));
+      }
+      if (entry.type() == ChangeResource::TEAM_DRIVE && entry.team_drive()) {
+        entry_copied->set_team_drive(
+            base::MakeUnique<TeamDriveResource>(*entry.team_drive()));
       }
       entry_copied->set_modification_date(entry.modification_date());
       entries.push_back(std::move(entry_copied));
