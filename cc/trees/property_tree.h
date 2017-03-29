@@ -163,9 +163,8 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   void clear();
 
   TransformNode* FindNodeFromElementId(ElementId id);
-  void OnTransformAnimated(const gfx::Transform& transform,
-                           int id,
-                           LayerTreeImpl* layer_tree_impl);
+  bool OnTransformAnimated(ElementId element_id,
+                           const gfx::Transform& transform);
   // Computes the change of basis transform from node |source_id| to |dest_id|.
   // This is used by scroll children to compute transform from their scroll
   // parent space (source) to their parent space (destination) and it can atmost
@@ -361,10 +360,8 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
   void UpdateSurfaceContentsScale(EffectNode* node);
 
   EffectNode* FindNodeFromElementId(ElementId id);
-  void OnOpacityAnimated(float opacity, int id, LayerTreeImpl* layer_tree_impl);
-  void OnFilterAnimated(const FilterOperations& filters,
-                        int id,
-                        LayerTreeImpl* layer_tree_impl);
+  bool OnOpacityAnimated(ElementId id, float opacity);
+  bool OnFilterAnimated(ElementId id, const FilterOperations& filters);
 
   void UpdateEffects(int id);
 

@@ -255,15 +255,6 @@ class CC_EXPORT LayerTreeHostImpl
   // virtual for testing.
   virtual void InvalidateContentOnImplSide();
 
-  void SetTreeLayerFilterMutated(ElementId element_id,
-                                 LayerTreeImpl* tree,
-                                 const FilterOperations& filters);
-  void SetTreeLayerOpacityMutated(ElementId element_id,
-                                  LayerTreeImpl* tree,
-                                  float opacity);
-  void SetTreeLayerTransformMutated(ElementId element_id,
-                                    LayerTreeImpl* tree,
-                                    const gfx::Transform& transform);
   void SetTreeLayerScrollOffsetMutated(ElementId element_id,
                                        LayerTreeImpl* tree,
                                        const gfx::ScrollOffset& scroll_offset);

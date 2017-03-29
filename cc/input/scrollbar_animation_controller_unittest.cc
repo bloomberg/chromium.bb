@@ -1185,11 +1185,7 @@ class VerticalScrollbarAnimationControllerAndroidTest
 };
 
 TEST_F(ScrollbarAnimationControllerAndroidTest, DelayAnimationOnResize) {
-  scrollbar_layer_->layer_tree_impl()
-      ->property_trees()
-      ->effect_tree.OnOpacityAnimated(0.0f,
-                                      scrollbar_layer_->effect_tree_index(),
-                                      scrollbar_layer_->layer_tree_impl());
+  scrollbar_layer_->SetOverlayScrollbarLayerOpacityAnimated(0.f);
   // We should use the gesture delay rather than the resize delay if we're in a
   // gesture scroll, even if it is resizing.
   scrollbar_controller_->DidScrollBegin();
@@ -1199,11 +1195,7 @@ TEST_F(ScrollbarAnimationControllerAndroidTest, DelayAnimationOnResize) {
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
   EXPECT_EQ(delay_, base::TimeDelta::FromSeconds(2));
 
-  scrollbar_layer_->layer_tree_impl()
-      ->property_trees()
-      ->effect_tree.OnOpacityAnimated(0.0f,
-                                      scrollbar_layer_->effect_tree_index(),
-                                      scrollbar_layer_->layer_tree_impl());
+  scrollbar_layer_->SetOverlayScrollbarLayerOpacityAnimated(0.f);
   scrollbar_controller_->DidResize();
   // Delay animation on resize to 5 seconds.
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
@@ -1211,22 +1203,14 @@ TEST_F(ScrollbarAnimationControllerAndroidTest, DelayAnimationOnResize) {
 }
 
 TEST_F(ScrollbarAnimationControllerAndroidTest, HiddenInBegin) {
-  scrollbar_layer_->layer_tree_impl()
-      ->property_trees()
-      ->effect_tree.OnOpacityAnimated(0.0f,
-                                      scrollbar_layer_->effect_tree_index(),
-                                      scrollbar_layer_->layer_tree_impl());
+  scrollbar_layer_->SetOverlayScrollbarLayerOpacityAnimated(0.f);
   scrollbar_controller_->Animate(base::TimeTicks());
   EXPECT_FLOAT_EQ(0.0f, scrollbar_layer_->Opacity());
 }
 
 TEST_F(ScrollbarAnimationControllerAndroidTest,
        HiddenAfterNonScrollingGesture) {
-  scrollbar_layer_->layer_tree_impl()
-      ->property_trees()
-      ->effect_tree.OnOpacityAnimated(0.0f,
-                                      scrollbar_layer_->effect_tree_index(),
-                                      scrollbar_layer_->layer_tree_impl());
+  scrollbar_layer_->SetOverlayScrollbarLayerOpacityAnimated(0.f);
   scrollbar_controller_->DidScrollBegin();
 
   base::TimeTicks time;

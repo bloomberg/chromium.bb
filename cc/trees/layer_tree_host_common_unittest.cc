@@ -1422,6 +1422,7 @@ TEST_F(LayerTreeHostCommonTest,
   render_surface1->test_properties()->background_filters = filters;
   child->SetBounds(gfx::Size(10, 10));
   child->SetDrawsContent(true);
+  root->layer_tree_impl()->SetElementIdsForTesting();
 
   {
     LayerImplList render_surface_layer_list;
@@ -1443,10 +1444,9 @@ TEST_F(LayerTreeHostCommonTest,
   EXPECT_TRUE(node->is_drawn);
 
   // When root is transparent, the layer should not be drawn.
-  effect_tree.OnOpacityAnimated(0.f, root->effect_tree_index(),
-                                root->layer_tree_impl());
-  effect_tree.OnOpacityAnimated(1.f, render_surface1->effect_tree_index(),
-                                root->layer_tree_impl());
+  root->layer_tree_impl()->SetOpacityMutated(root->element_id(), 0.f);
+  root->layer_tree_impl()->SetOpacityMutated(render_surface1->element_id(),
+                                             1.f);
   render_surface1->set_visible_layer_rect(gfx::Rect());
   {
     LayerImplList render_surface_layer_list;
@@ -6371,6 +6371,7 @@ TEST_F(LayerTreeHostCommonTest, TransformAnimationUpdatesBackfaceVisibility) {
   render_surface2->test_properties()->double_sided = false;
   render_surface2->test_properties()->force_render_surface = true;
   render_surface2->test_properties()->sorting_context_id = 1;
+  SetElementIdsForTesting();
   ExecuteCalculateDrawProperties(root);
 
   const EffectTree& tree =
@@ -6380,21 +6381,18 @@ TEST_F(LayerTreeHostCommonTest, TransformAnimationUpdatesBackfaceVisibility) {
   EXPECT_TRUE(tree.Node(render_surface2->effect_tree_index())
                   ->hidden_by_backface_visibility);
 
-  root->layer_tree_impl()->property_trees()->transform_tree.OnTransformAnimated(
-      gfx::Transform(), back_facing->transform_tree_index(),
-      root->layer_tree_impl());
-  root->layer_tree_impl()->property_trees()->transform_tree.OnTransformAnimated(
-      rotate_about_y, render_surface2->transform_tree_index(),
-      root->layer_tree_impl());
+  root->layer_tree_impl()->SetTransformMutated(back_facing->element_id(),
+                                               gfx::Transform());
+  root->layer_tree_impl()->SetTransformMutated(render_surface2->element_id(),
+                                               rotate_about_y);
   ExecuteCalculateDrawProperties(root);
   EXPECT_FALSE(tree.Node(render_surface1->effect_tree_index())
                    ->hidden_by_backface_visibility);
   EXPECT_TRUE(tree.Node(render_surface2->effect_tree_index())
                   ->hidden_by_backface_visibility);
 
-  root->layer_tree_impl()->property_trees()->transform_tree.OnTransformAnimated(
-      rotate_about_y, render_surface1->transform_tree_index(),
-      root->layer_tree_impl());
+  root->layer_tree_impl()->SetTransformMutated(render_surface1->element_id(),
+                                               rotate_about_y);
   ExecuteCalculateDrawProperties(root);
   EXPECT_TRUE(tree.Node(render_surface1->effect_tree_index())
                   ->hidden_by_backface_visibility);
@@ -8741,11 +8739,8 @@ TEST_F(LayerTreeHostCommonTest, AnimationScales) {
 
   // Correctly updates animation scale when layer property changes.
   child1_layer->test_properties()->transform = gfx::Transform();
-  root_layer->layer_tree_impl()
-      ->property_trees()
-      ->transform_tree.OnTransformAnimated(gfx::Transform(),
-                                           child1_layer->transform_tree_index(),
-                                           root_layer->layer_tree_impl());
+  root_layer->layer_tree_impl()->SetTransformMutated(child1_layer->element_id(),
+                                                     gfx::Transform());
   root_layer->layer_tree_impl()->property_trees()->needs_rebuild = false;
   ExecuteCalculateDrawProperties(root_layer);
   EXPECT_FLOAT_EQ(8.f, GetMaximumAnimationScale(child2_layer));
@@ -9021,8 +9016,8 @@ TEST_F(LayerTreeHostCommonTest,
 
   gfx::Transform zero_matrix;
   zero_matrix.Scale3d(0.f, 0.f, 0.f);
-  root->layer_tree_impl()->property_trees()->transform_tree.OnTransformAnimated(
-      zero_matrix, animated->transform_tree_index(), root->layer_tree_impl());
+  root->layer_tree_impl()->SetTransformMutated(animated->element_id(),
+                                               zero_matrix);
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root);
 
   // The animated layer will be treated as fully visible when we combine clips
@@ -9522,8 +9517,8 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayerImpl) {
   EXPECT_EQ(gfx::Rect(0, 0), grandchild_ptr->visible_layer_rect());
   child_ptr->test_properties()->hide_layer_and_subtree = false;
 
-  child_ptr->layer_tree_impl()->property_trees()->effect_tree.OnOpacityAnimated(
-      0.f, child_ptr->effect_tree_index(), child_ptr->layer_tree_impl());
+  child_ptr->test_properties()->opacity = 0.f;
+  host_impl.active_tree()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root_ptr);
   EXPECT_EQ(gfx::Rect(0, 0), grandchild_ptr->visible_layer_rect());
   child_ptr->test_properties()->opacity = 1.f;

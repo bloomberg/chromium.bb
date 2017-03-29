@@ -4033,55 +4033,6 @@ void LayerTreeHostImpl::SetMutatorsNeedCommit() {}
 
 void LayerTreeHostImpl::SetMutatorsNeedRebuildPropertyTrees() {}
 
-void LayerTreeHostImpl::SetTreeLayerFilterMutated(
-    ElementId element_id,
-    LayerTreeImpl* tree,
-    const FilterOperations& filters) {
-  if (!tree)
-    return;
-
-  PropertyTrees* property_trees = tree->property_trees();
-  DCHECK_EQ(1u,
-            property_trees->element_id_to_effect_node_index.count(element_id));
-  const int effect_node_index =
-      property_trees->element_id_to_effect_node_index[element_id];
-  property_trees->effect_tree.OnFilterAnimated(filters, effect_node_index,
-                                               tree);
-}
-
-void LayerTreeHostImpl::SetTreeLayerOpacityMutated(ElementId element_id,
-                                                   LayerTreeImpl* tree,
-                                                   float opacity) {
-  if (!tree)
-    return;
-
-  PropertyTrees* property_trees = tree->property_trees();
-  DCHECK_EQ(1u,
-            property_trees->element_id_to_effect_node_index.count(element_id));
-  const int effect_node_index =
-      property_trees->element_id_to_effect_node_index[element_id];
-  property_trees->effect_tree.OnOpacityAnimated(opacity, effect_node_index,
-                                                tree);
-}
-
-void LayerTreeHostImpl::SetTreeLayerTransformMutated(
-    ElementId element_id,
-    LayerTreeImpl* tree,
-    const gfx::Transform& transform) {
-  if (!tree)
-    return;
-
-  PropertyTrees* property_trees = tree->property_trees();
-  DCHECK_EQ(
-      1u, property_trees->element_id_to_transform_node_index.count(element_id));
-  const int transform_node_index =
-      property_trees->element_id_to_transform_node_index[element_id];
-  property_trees->transform_tree.OnTransformAnimated(
-      transform, transform_node_index, tree);
-  if (LayerImpl* layer = tree->LayerByElementId(element_id))
-    layer->set_was_ever_ready_since_last_transform_animation(false);
-}
-
 void LayerTreeHostImpl::SetTreeLayerScrollOffsetMutated(
     ElementId element_id,
     LayerTreeImpl* tree,
@@ -4115,10 +4066,12 @@ void LayerTreeHostImpl::SetElementFilterMutated(
     ElementListType list_type,
     const FilterOperations& filters) {
   if (list_type == ElementListType::ACTIVE) {
-    SetTreeLayerFilterMutated(element_id, active_tree(), filters);
+    active_tree()->SetFilterMutated(element_id, filters);
   } else {
-    SetTreeLayerFilterMutated(element_id, pending_tree(), filters);
-    SetTreeLayerFilterMutated(element_id, recycle_tree(), filters);
+    if (pending_tree())
+      pending_tree()->SetFilterMutated(element_id, filters);
+    if (recycle_tree())
+      recycle_tree()->SetFilterMutated(element_id, filters);
   }
 }
 
@@ -4126,10 +4079,12 @@ void LayerTreeHostImpl::SetElementOpacityMutated(ElementId element_id,
                                                  ElementListType list_type,
                                                  float opacity) {
   if (list_type == ElementListType::ACTIVE) {
-    SetTreeLayerOpacityMutated(element_id, active_tree(), opacity);
+    active_tree()->SetOpacityMutated(element_id, opacity);
   } else {
-    SetTreeLayerOpacityMutated(element_id, pending_tree(), opacity);
-    SetTreeLayerOpacityMutated(element_id, recycle_tree(), opacity);
+    if (pending_tree())
+      pending_tree()->SetOpacityMutated(element_id, opacity);
+    if (recycle_tree())
+      recycle_tree()->SetOpacityMutated(element_id, opacity);
   }
 }
 
@@ -4138,10 +4093,12 @@ void LayerTreeHostImpl::SetElementTransformMutated(
     ElementListType list_type,
     const gfx::Transform& transform) {
   if (list_type == ElementListType::ACTIVE) {
-    SetTreeLayerTransformMutated(element_id, active_tree(), transform);
+    active_tree()->SetTransformMutated(element_id, transform);
   } else {
-    SetTreeLayerTransformMutated(element_id, pending_tree(), transform);
-    SetTreeLayerTransformMutated(element_id, recycle_tree(), transform);
+    if (pending_tree())
+      pending_tree()->SetTransformMutated(element_id, transform);
+    if (recycle_tree())
+      recycle_tree()->SetTransformMutated(element_id, transform);
   }
 }
 

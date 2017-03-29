@@ -1128,8 +1128,7 @@ class LayerTreeHostTestPropertyTreesChangedSync : public LayerTreeHostTest {
       case OPACITY:
         index_++;
         impl->active_tree()->ResetAllChangeTracking();
-        impl->active_tree()->property_trees()->effect_tree.OnOpacityAnimated(
-            0.5f, root->effect_tree_index(), impl->active_tree());
+        impl->active_tree()->SetOpacityMutated(root->element_id(), 0.5f);
         PostSetNeedsCommitToMainThread();
         break;
       case TRANSFORM:
@@ -1145,10 +1144,7 @@ class LayerTreeHostTestPropertyTreesChangedSync : public LayerTreeHostTest {
                          ->LayerById(child_->id())
                          ->LayerPropertyChanged());
         transform.Translate(10, 10);
-        impl->active_tree()
-            ->property_trees()
-            ->transform_tree.OnTransformAnimated(
-                transform, root->transform_tree_index(), impl->active_tree());
+        impl->active_tree()->SetTransformMutated(root->element_id(), transform);
         PostSetNeedsCommitToMainThread();
         break;
       case FILTER:
@@ -1163,8 +1159,7 @@ class LayerTreeHostTestPropertyTreesChangedSync : public LayerTreeHostTest {
                          ->LayerById(child_->id())
                          ->LayerPropertyChanged());
         filters.Append(FilterOperation::CreateOpacityFilter(0.5f));
-        impl->active_tree()->property_trees()->effect_tree.OnFilterAnimated(
-            filters, root->effect_tree_index(), impl->active_tree());
+        impl->active_tree()->SetFilterMutated(root->element_id(), filters);
         PostSetNeedsCommitToMainThread();
         break;
       case END:
@@ -1238,8 +1233,7 @@ class LayerTreeHostTestEffectTreeSync : public LayerTreeHostTest {
     EffectNode* node = effect_tree.Node(root->effect_tree_index());
     switch (impl->sync_tree()->source_frame_number()) {
       case 0:
-        effect_tree.OnOpacityAnimated(0.75f, root->effect_tree_index(),
-                                      impl->sync_tree());
+        impl->sync_tree()->SetOpacityMutated(root->element_id(), 0.75f);
         PostSetNeedsCommitToMainThread();
         break;
       case 1:
@@ -1248,8 +1242,7 @@ class LayerTreeHostTestEffectTreeSync : public LayerTreeHostTest {
         break;
       case 2:
         EXPECT_EQ(node->opacity, 0.75f);
-        effect_tree.OnOpacityAnimated(0.75f, root->effect_tree_index(),
-                                      impl->sync_tree());
+        impl->sync_tree()->SetOpacityMutated(root->element_id(), 0.75f);
         PostSetNeedsCommitToMainThread();
         break;
       case 3:
@@ -1258,8 +1251,8 @@ class LayerTreeHostTestEffectTreeSync : public LayerTreeHostTest {
         break;
       case 4:
         EXPECT_EQ(node->opacity, 0.25f);
-        impl->sync_tree()->property_trees()->effect_tree.OnFilterAnimated(
-            brightness_filter_, root->effect_tree_index(), impl->sync_tree());
+        impl->sync_tree()->SetFilterMutated(root->element_id(),
+                                            brightness_filter_);
         PostSetNeedsCommitToMainThread();
         break;
       case 5:
@@ -1268,8 +1261,8 @@ class LayerTreeHostTestEffectTreeSync : public LayerTreeHostTest {
         break;
       case 6:
         EXPECT_EQ(node->filters, brightness_filter_);
-        impl->sync_tree()->property_trees()->effect_tree.OnFilterAnimated(
-            brightness_filter_, root->effect_tree_index(), impl->sync_tree());
+        impl->sync_tree()->SetFilterMutated(root->element_id(),
+                                            brightness_filter_);
         PostSetNeedsCommitToMainThread();
         break;
       case 7:
@@ -1331,16 +1324,17 @@ class LayerTreeHostTestTransformTreeSync : public LayerTreeHostTest {
   void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
     TransformTree& transform_tree =
         impl->sync_tree()->property_trees()->transform_tree;
-    TransformNode* node = transform_tree.Node(
-        impl->sync_tree()->root_layer_for_testing()->transform_tree_index());
+    const LayerImpl* root_layer = impl->sync_tree()->root_layer_for_testing();
+    const TransformNode* node =
+        transform_tree.Node(root_layer->transform_tree_index());
     gfx::Transform rotate10;
     rotate10.Rotate(10.f);
     gfx::Transform rotate20;
     rotate20.Rotate(20.f);
     switch (impl->sync_tree()->source_frame_number()) {
       case 0:
-        impl->sync_tree()->property_trees()->transform_tree.OnTransformAnimated(
-            rotate20, node->id, impl->sync_tree());
+        impl->sync_tree()->SetTransformMutated(root_layer->element_id(),
+                                               rotate20);
         PostSetNeedsCommitToMainThread();
         break;
       case 1:
@@ -1349,8 +1343,8 @@ class LayerTreeHostTestTransformTreeSync : public LayerTreeHostTest {
         break;
       case 2:
         EXPECT_EQ(node->local, rotate20);
-        impl->sync_tree()->property_trees()->transform_tree.OnTransformAnimated(
-            rotate20, node->id, impl->sync_tree());
+        impl->sync_tree()->SetTransformMutated(root_layer->element_id(),
+                                               rotate20);
         PostSetNeedsCommitToMainThread();
         break;
       case 3:
@@ -1434,8 +1428,7 @@ class LayerTreeHostTestTransformTreeDamageIsUpdated : public LayerTreeHostTest {
     if (impl->active_tree()->source_frame_number() == 0) {
       gfx::Transform scale;
       scale.Scale(2.0, 2.0);
-      impl->active_tree()->property_trees()->transform_tree.OnTransformAnimated(
-          scale, child_->transform_tree_index(), impl->active_tree());
+      impl->active_tree()->SetTransformMutated(child_->element_id(), scale);
     }
   }
 

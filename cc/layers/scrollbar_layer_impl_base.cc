@@ -5,6 +5,7 @@
 #include "cc/layers/scrollbar_layer_impl_base.h"
 
 #include <algorithm>
+#include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
@@ -198,6 +199,37 @@ gfx::Rect ScrollbarLayerImplBase::ComputeThumbQuadRect() const {
   }
 
   return gfx::ToEnclosingRect(thumb_rect);
+}
+
+void ScrollbarLayerImplBase::SetOverlayScrollbarLayerOpacityAnimated(
+    float opacity) {
+  DCHECK(is_overlay_scrollbar());
+  if (!layer_tree_impl())
+    return;
+
+  PropertyTrees* property_trees = layer_tree_impl()->property_trees();
+  int effect_node_index =
+      property_trees->effect_tree.FindNodeIndexFromOwningLayerId(id());
+  // If this method is called during LayerImpl::PushPropertiesTo, we may not yet
+  // have valid owning_layer_id_to_node_index entries in effect tree as property
+  // trees are pushed after layers during activation. We can skip updating
+  // opacity in that case as we are only registering a scrollbar and because
+  // opacity will be overwritten anyway when property trees are pushed.
+  if (effect_node_index == EffectTree::kInvalidNodeId ||
+      effect_node_index != effect_tree_index())
+    return;
+
+  EffectNode* node = property_trees->effect_tree.Node(effect_tree_index());
+  if (node->opacity == opacity)
+    return;
+
+  layer_tree_impl()->AddToOpacityAnimationsMap(id(), opacity);
+
+  node->opacity = opacity;
+  node->effect_changed = true;
+  property_trees->changed = true;
+  property_trees->effect_tree.set_needs_update(true);
+  layer_tree_impl()->set_needs_update_draw_properties();
 }
 
 }  // namespace cc

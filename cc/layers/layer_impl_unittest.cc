@@ -179,23 +179,17 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
 
   // Changing these properties affects the entire subtree of layers.
   EXECUTE_AND_VERIFY_NO_NEED_TO_PUSH_PROPERTIES_AND_SUBTREE_CHANGED(
-      host_impl.active_tree()->property_trees()->effect_tree.OnFilterAnimated(
-          arbitrary_filters, root->effect_tree_index(),
-          host_impl.active_tree()));
+      host_impl.active_tree()->SetFilterMutated(root->element_id(),
+                                                arbitrary_filters));
   EXECUTE_AND_VERIFY_NO_NEED_TO_PUSH_PROPERTIES_AND_SUBTREE_CHANGED(
-      host_impl.active_tree()->property_trees()->effect_tree.OnFilterAnimated(
-          FilterOperations(), root->effect_tree_index(),
-          host_impl.active_tree()));
+      host_impl.active_tree()->SetFilterMutated(root->element_id(),
+                                                FilterOperations()));
   EXECUTE_AND_VERIFY_NO_NEED_TO_PUSH_PROPERTIES_AND_SUBTREE_CHANGED(
-      host_impl.active_tree()->property_trees()->effect_tree.OnOpacityAnimated(
-          arbitrary_number, root->effect_tree_index(),
-          host_impl.active_tree()));
+      host_impl.active_tree()->SetOpacityMutated(root->element_id(),
+                                                 arbitrary_number));
   EXECUTE_AND_VERIFY_NO_NEED_TO_PUSH_PROPERTIES_AND_SUBTREE_CHANGED(
-      host_impl.active_tree()
-          ->property_trees()
-          ->transform_tree.OnTransformAnimated(arbitrary_transform,
-                                               root->transform_tree_index(),
-                                               host_impl.active_tree()));
+      host_impl.active_tree()->SetTransformMutated(root->element_id(),
+                                                   arbitrary_transform));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->ScrollBy(arbitrary_vector2d);
                                      root->SetNeedsPushProperties());
   // SetBoundsDelta changes subtree only when masks_to_bounds is true and it
@@ -284,22 +278,15 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
 
   // Related filter functions.
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
-      host_impl.active_tree()->property_trees()->effect_tree.OnFilterAnimated(
-          arbitrary_filters, root->effect_tree_index(),
-          host_impl.active_tree()));
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(host_impl.active_tree()->SetFilterMutated(
+      root->element_id(), arbitrary_filters));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
-      host_impl.active_tree()->property_trees()->effect_tree.OnFilterAnimated(
-          arbitrary_filters, root->effect_tree_index(),
-          host_impl.active_tree()));
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
-      host_impl.active_tree()->property_trees()->effect_tree.OnFilterAnimated(
-          FilterOperations(), root->effect_tree_index(),
-          host_impl.active_tree()));
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
-      host_impl.active_tree()->property_trees()->effect_tree.OnFilterAnimated(
-          arbitrary_filters, root->effect_tree_index(),
-          host_impl.active_tree()));
+      host_impl.active_tree()->SetFilterMutated(root->element_id(),
+                                                arbitrary_filters));
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(host_impl.active_tree()->SetFilterMutated(
+      root->element_id(), FilterOperations()));
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(host_impl.active_tree()->SetFilterMutated(
+      root->element_id(), arbitrary_filters));
 
   // Related scrolling functions.
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetBounds(large_size));
@@ -333,15 +320,11 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
       layer->SetBackgroundColor(arbitrary_color));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
-      host_impl.active_tree()->property_trees()->effect_tree.OnOpacityAnimated(
-          arbitrary_number, layer->effect_tree_index(),
-          host_impl.active_tree()));
+      host_impl.active_tree()->SetOpacityMutated(layer->element_id(),
+                                                 arbitrary_number));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
-      host_impl.active_tree()
-          ->property_trees()
-          ->transform_tree.OnTransformAnimated(arbitrary_transform,
-                                               layer->transform_tree_index(),
-                                               host_impl.active_tree()));
+      host_impl.active_tree()->SetTransformMutated(layer->element_id(),
+                                                   arbitrary_transform));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetBounds(arbitrary_size);
                                       layer->NoteLayerPropertyChanged());
 
@@ -349,9 +332,8 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   layer->test_properties()->filters = arbitrary_filters;
   host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
-      host_impl.active_tree()->property_trees()->effect_tree.OnFilterAnimated(
-          arbitrary_filters, layer->effect_tree_index(),
-          host_impl.active_tree()));
+      host_impl.active_tree()->SetFilterMutated(layer->element_id(),
+                                                arbitrary_filters));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetMasksToBounds(true));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetContentsOpaque(true));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(

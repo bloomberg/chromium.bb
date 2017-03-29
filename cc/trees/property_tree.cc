@@ -184,21 +184,18 @@ TransformNode* TransformTree::FindNodeFromElementId(ElementId id) {
   return Node(iterator->second);
 }
 
-void TransformTree::OnTransformAnimated(const gfx::Transform& transform,
-                                        int id,
-                                        LayerTreeImpl* layer_tree_impl) {
-  TransformNode* node = Node(id);
-  layer_tree_impl->AddToTransformAnimationsMap(node->owning_layer_id,
-                                               transform);
-  if (node->local == transform) {
-    return;
-  }
+bool TransformTree::OnTransformAnimated(ElementId element_id,
+                                        const gfx::Transform& transform) {
+  TransformNode* node = FindNodeFromElementId(element_id);
+  DCHECK(node);
+  if (node->local == transform)
+    return false;
   node->local = transform;
   node->needs_local_transform_update = true;
   node->transform_changed = true;
   property_trees()->changed = true;
   set_needs_update(true);
-  layer_tree_impl->set_needs_update_draw_properties();
+  return true;
 }
 
 bool TransformTree::NeedsSourceToParentUpdate(TransformNode* node) {
@@ -863,32 +860,29 @@ EffectNode* EffectTree::FindNodeFromElementId(ElementId id) {
   return Node(iterator->second);
 }
 
-void EffectTree::OnOpacityAnimated(float opacity,
-                                   int id,
-                                   LayerTreeImpl* layer_tree_impl) {
-  EffectNode* node = Node(id);
-  layer_tree_impl->AddToOpacityAnimationsMap(node->owning_layer_id, opacity);
+bool EffectTree::OnOpacityAnimated(ElementId id, float opacity) {
+  EffectNode* node = FindNodeFromElementId(id);
+  DCHECK(node);
   if (node->opacity == opacity)
-    return;
+    return false;
   node->opacity = opacity;
   node->effect_changed = true;
   property_trees()->changed = true;
   property_trees()->effect_tree.set_needs_update(true);
-  layer_tree_impl->set_needs_update_draw_properties();
+  return true;
 }
 
-void EffectTree::OnFilterAnimated(const FilterOperations& filters,
-                                  int id,
-                                  LayerTreeImpl* layer_tree_impl) {
-  EffectNode* node = Node(id);
-  layer_tree_impl->AddToFilterAnimationsMap(node->owning_layer_id, filters);
+bool EffectTree::OnFilterAnimated(ElementId id,
+                                  const FilterOperations& filters) {
+  EffectNode* node = FindNodeFromElementId(id);
+  DCHECK(node);
   if (node->filters == filters)
-    return;
+    return false;
   node->filters = filters;
   node->effect_changed = true;
   property_trees()->changed = true;
   property_trees()->effect_tree.set_needs_update(true);
-  layer_tree_impl->set_needs_update_draw_properties();
+  return true;
 }
 
 void EffectTree::UpdateEffects(int id) {

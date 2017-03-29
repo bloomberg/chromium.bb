@@ -145,9 +145,14 @@ class CC_EXPORT LayerTreeImpl {
   LayerImplList::reverse_iterator rbegin();
   LayerImplList::reverse_iterator rend();
 
+  // TODO(crbug.com/702832): This won't be needed if overlay scrollbars have
+  // element ids.
   void AddToOpacityAnimationsMap(int id, float opacity);
-  void AddToTransformAnimationsMap(int id, gfx::Transform transform);
-  void AddToFilterAnimationsMap(int id, const FilterOperations& filters);
+
+  void SetTransformMutated(ElementId element_id,
+                           const gfx::Transform& transform);
+  void SetOpacityMutated(ElementId element_id, float opacity);
+  void SetFilterMutated(ElementId element_id, const FilterOperations& filters);
 
   int source_frame_number() const { return source_frame_number_; }
   void set_source_frame_number(int frame_number) {

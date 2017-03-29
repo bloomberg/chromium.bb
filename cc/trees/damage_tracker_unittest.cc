@@ -99,6 +99,7 @@ class DamageTrackerTest : public testing::Test {
       root->test_properties()->AddChild(std::move(child));
     }
     host_impl_.active_tree()->SetRootLayerForTesting(std::move(root));
+    host_impl_.active_tree()->SetElementIdsForTesting();
 
     return host_impl_.active_tree()->root_layer_for_testing();
   }
@@ -150,6 +151,7 @@ class DamageTrackerTest : public testing::Test {
     root->test_properties()->AddChild(std::move(child1));
     root->test_properties()->AddChild(std::move(child2));
     host_impl_.active_tree()->SetRootLayerForTesting(std::move(root));
+    host_impl_.active_tree()->SetElementIdsForTesting();
 
     return host_impl_.active_tree()->root_layer_for_testing();
   }
@@ -386,8 +388,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForPropertyChanges) {
   EmulateDrawingOneFrame(root);
   ClearDamageForAllSurfaces(root);
   child->SetUpdateRect(gfx::Rect(10, 11, 12, 13));
-  root->layer_tree_impl()->property_trees()->effect_tree.OnOpacityAnimated(
-      0.5f, child->effect_tree_index(), root->layer_tree_impl());
+  root->layer_tree_impl()->SetOpacityMutated(child->element_id(), 0.5f);
   EmulateDrawingOneFrame(root);
 
   ASSERT_EQ(2u, root->GetRenderSurface()->layer_list().size());
@@ -416,8 +417,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForPropertyChanges) {
   ClearDamageForAllSurfaces(root);
   gfx::Transform translation;
   translation.Translate(100.f, 130.f);
-  root->layer_tree_impl()->property_trees()->transform_tree.OnTransformAnimated(
-      translation, child->transform_tree_index(), root->layer_tree_impl());
+  root->layer_tree_impl()->SetTransformMutated(child->element_id(),
+                                               translation);
   EmulateDrawingOneFrame(root);
 
   // Expect damage to be the combination of the previous one and the new one.
@@ -475,8 +476,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForTransformedLayer) {
   // With the anchor on the layer's center, now we can test the rotation more
   // intuitively, since it applies about the layer's anchor.
   ClearDamageForAllSurfaces(root);
-  root->layer_tree_impl()->property_trees()->transform_tree.OnTransformAnimated(
-      rotation, child->transform_tree_index(), root->layer_tree_impl());
+  root->layer_tree_impl()->SetTransformMutated(child->element_id(), rotation);
   EmulateDrawingOneFrame(root);
 
   // Since the child layer is square, rotation by 45 degrees about the center
@@ -533,8 +533,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForPerspectiveClippedLayer) {
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
   ClearDamageForAllSurfaces(root);
-  root->layer_tree_impl()->property_trees()->effect_tree.OnOpacityAnimated(
-      0.5f, child->effect_tree_index(), root->layer_tree_impl());
+  root->layer_tree_impl()->SetOpacityMutated(child->element_id(), 0.5f);
   EmulateDrawingOneFrame(root);
 
   // The expected damage should cover the entire root surface (500x500), but we
@@ -594,8 +593,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForImageFilter) {
   child->test_properties()->force_render_surface = true;
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
-  child->layer_tree_impl()->property_trees()->effect_tree.OnFilterAnimated(
-      filters, child->effect_tree_index(), child->layer_tree_impl());
+  child->layer_tree_impl()->SetFilterMutated(child->element_id(), filters);
   EmulateDrawingOneFrame(root);
   EXPECT_TRUE(root->GetRenderSurface()->damage_tracker()->GetDamageRectIfValid(
       &root_damage_rect));
@@ -645,8 +643,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForTransformedImageFilter) {
   child->test_properties()->transform = transform;
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
-  child->layer_tree_impl()->property_trees()->effect_tree.OnFilterAnimated(
-      filters, child->effect_tree_index(), child->layer_tree_impl());
+  child->layer_tree_impl()->SetFilterMutated(child->element_id(), filters);
   EmulateDrawingOneFrame(root);
   EXPECT_TRUE(root->GetRenderSurface()->damage_tracker()->GetDamageRectIfValid(
       &root_damage_rect));
@@ -701,8 +698,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForHighDPIImageFilter) {
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   int device_scale_factor = 2;
   EmulateDrawingOneFrame(root, device_scale_factor);
-  child->layer_tree_impl()->property_trees()->effect_tree.OnFilterAnimated(
-      filters, child->effect_tree_index(), child->layer_tree_impl());
+  child->layer_tree_impl()->SetFilterMutated(child->element_id(), filters);
   EmulateDrawingOneFrame(root, device_scale_factor);
   EXPECT_TRUE(root->GetRenderSurface()->damage_tracker()->GetDamageRectIfValid(
       &root_damage_rect));
@@ -1002,8 +998,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForNestedSurfaces) {
   // CASE 1: Damage to a descendant surface should propagate properly to
   //         ancestor surface.
   ClearDamageForAllSurfaces(root);
-  root->layer_tree_impl()->property_trees()->effect_tree.OnOpacityAnimated(
-      0.5f, grand_child1->effect_tree_index(), root->layer_tree_impl());
+  root->layer_tree_impl()->SetOpacityMutated(grand_child1->element_id(), 0.5f);
   EmulateDrawingOneFrame(root);
   EXPECT_TRUE(
       child1->GetRenderSurface()->damage_tracker()->GetDamageRectIfValid(
@@ -1020,10 +1015,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForNestedSurfaces) {
   // - child2 damage in root surface space:
   //   gfx::Rect(11, 11, 18, 18);
   ClearDamageForAllSurfaces(root);
-  root->layer_tree_impl()->property_trees()->effect_tree.OnOpacityAnimated(
-      0.7f, grand_child1->effect_tree_index(), root->layer_tree_impl());
-  root->layer_tree_impl()->property_trees()->effect_tree.OnOpacityAnimated(
-      0.7f, child2->effect_tree_index(), root->layer_tree_impl());
+  root->layer_tree_impl()->SetOpacityMutated(grand_child1->element_id(), 0.7f);
+  root->layer_tree_impl()->SetOpacityMutated(child2->element_id(), 0.7f);
   EmulateDrawingOneFrame(root);
   EXPECT_TRUE(
       child1->GetRenderSurface()->damage_tracker()->GetDamageRectIfValid(
@@ -1092,8 +1085,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForSurfaceChangeFromAncestorLayer) {
   ClearDamageForAllSurfaces(root);
   gfx::Transform translation;
   translation.Translate(-50.f, -50.f);
-  root->layer_tree_impl()->property_trees()->transform_tree.OnTransformAnimated(
-      translation, child1->transform_tree_index(), root->layer_tree_impl());
+  root->layer_tree_impl()->SetTransformMutated(child1->element_id(),
+                                               translation);
   EmulateDrawingOneFrame(root);
   EXPECT_TRUE(
       child1->GetRenderSurface()->damage_tracker()->GetDamageRectIfValid(
