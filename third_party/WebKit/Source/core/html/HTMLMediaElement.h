@@ -464,7 +464,7 @@ class CORE_EXPORT HTMLMediaElement
   // This does not check user gesture restrictions.
   void playInternal();
 
-  // This does not change the buffering strategy.
+  // This does not stop autoplay visibility observation.
   void pauseInternal();
 
   void allowVideoRendering();
@@ -744,7 +744,6 @@ class CORE_EXPORT HTMLMediaElement
   friend class HTMLMediaElementEventListenersTest;
   friend class HTMLMediaElementPersistentVideoTest;
   friend class HTMLVideoElement;
-  friend class HTMLVideoElementTest;
   friend class MediaControlsOrientationLockDelegateTest;
 
   Member<AutoplayUmaHelper> m_autoplayUmaHelper;

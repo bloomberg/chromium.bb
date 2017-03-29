@@ -2314,13 +2314,6 @@ Nullable<ExceptionCode> HTMLMediaElement::play() {
 void HTMLMediaElement::playInternal() {
   BLINK_MEDIA_LOG << "playInternal(" << (void*)this << ")";
 
-  // Always return the buffering strategy to normal when not paused,
-  // regardless of the cause. (In contrast with aggressive buffering which is
-  // only enabled by pause(), not pauseInternal().)
-  if (webMediaPlayer())
-    webMediaPlayer()->setBufferingStrategy(
-        WebMediaPlayer::BufferingStrategy::Normal);
-
   // 4.8.12.8. Playing the media resource
   if (m_networkState == kNetworkEmpty)
     invokeResourceSelectionAlgorithm();
@@ -2351,12 +2344,6 @@ void HTMLMediaElement::playInternal() {
 
 void HTMLMediaElement::pause() {
   BLINK_MEDIA_LOG << "pause(" << (void*)this << ")";
-
-  // Only buffer aggressively on a user-initiated pause. Other types of pauses
-  // (which go directly to pauseInternal()) should not cause this behavior.
-  if (webMediaPlayer() && UserGestureIndicator::utilizeUserGesture())
-    webMediaPlayer()->setBufferingStrategy(
-        WebMediaPlayer::BufferingStrategy::Aggressive);
 
   if (m_autoplayVisibilityObserver) {
     m_autoplayVisibilityObserver->stop();

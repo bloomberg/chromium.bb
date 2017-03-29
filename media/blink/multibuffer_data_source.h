@@ -53,14 +53,6 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource : public DataSource {
     AUTO,
   };
 
-  // Enum values must match the values in
-  // blink::WebMediaPlayer::BufferingStrategy and there will be assertions at
-  // compile time if they do not match.
-  enum BufferingStrategy {
-    BUFFERING_STRATEGY_NORMAL,
-    BUFFERING_STRATEGY_AGGRESSIVE,
-  };
-
   // |url| and |cors_mode| are passed to the object. Buffered byte range changes
   // will be reported to |host|. |downloading_cb| will be called whenever the
   // downloading/paused state of the source changes.
@@ -83,10 +75,6 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource : public DataSource {
 
   // Adjusts the buffering algorithm based on the given preload value.
   void SetPreload(Preload preload);
-
-  // Adjusts the buffering algorithm based on the given buffering strategy
-  // value.
-  void SetBufferingStrategy(BufferingStrategy buffering_strategy);
 
   // Returns true if the media resource has a single origin, false otherwise.
   // Only valid to call after Initialize() has completed.
@@ -225,9 +213,6 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource : public DataSource {
   // This variable is true when the user has requested the video to play at
   // least once.
   bool media_has_played_;
-
-  // Buffering strategy set by SetBufferingStrategy.
-  BufferingStrategy buffering_strategy_;
 
   // As we follow redirects, we set this variable to false if redirects
   // go between different origins.

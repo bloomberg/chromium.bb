@@ -1109,10 +1109,6 @@ TEST_F(MultibufferDataSourceTest, LocalResource_DeferStrategy) {
   data_source_->MediaIsPlaying();
   CheckCapacityDefer();
 
-  data_source_->SetBufferingStrategy(
-      MultibufferDataSource::BUFFERING_STRATEGY_AGGRESSIVE);
-  CheckCapacityDefer();
-
   Stop();
 }
 
@@ -1127,10 +1123,6 @@ TEST_F(MultibufferDataSourceTest, LocalResource_PreloadMetadata_DeferStrategy) {
   data_source_->MediaIsPlaying();
   CheckCapacityDefer();
 
-  data_source_->SetBufferingStrategy(
-      MultibufferDataSource::BUFFERING_STRATEGY_AGGRESSIVE);
-  CheckCapacityDefer();
-
   Stop();
 }
 
@@ -1143,10 +1135,6 @@ TEST_F(MultibufferDataSourceTest, ExternalResource_Reponse200_DeferStrategy) {
   CheckCapacityDefer();
 
   data_source_->MediaIsPlaying();
-  CheckCapacityDefer();
-
-  data_source_->SetBufferingStrategy(
-      MultibufferDataSource::BUFFERING_STRATEGY_AGGRESSIVE);
   CheckCapacityDefer();
 
   Stop();
@@ -1165,10 +1153,6 @@ TEST_F(MultibufferDataSourceTest,
   data_source_->MediaIsPlaying();
   CheckCapacityDefer();
 
-  data_source_->SetBufferingStrategy(
-      MultibufferDataSource::BUFFERING_STRATEGY_AGGRESSIVE);
-  CheckCapacityDefer();
-
   Stop();
 }
 
@@ -1182,19 +1166,9 @@ TEST_F(MultibufferDataSourceTest, ExternalResource_Reponse206_DeferStrategy) {
 
   data_source_->MediaIsPlaying();
   CheckCapacityDefer();
+
   set_might_be_reused_from_cache_in_future(true);
-  data_source_->SetBufferingStrategy(
-      MultibufferDataSource::BUFFERING_STRATEGY_AGGRESSIVE);
-  CheckNeverDefer();
-
-  data_source_->SetBufferingStrategy(
-      MultibufferDataSource::BUFFERING_STRATEGY_NORMAL);
   data_source_->MediaIsPlaying();
-  CheckCapacityDefer();
-
-  set_might_be_reused_from_cache_in_future(false);
-  data_source_->SetBufferingStrategy(
-      MultibufferDataSource::BUFFERING_STRATEGY_AGGRESSIVE);
   CheckCapacityDefer();
 
   Stop();
@@ -1214,17 +1188,10 @@ TEST_F(MultibufferDataSourceTest,
   CheckCapacityDefer();
 
   set_might_be_reused_from_cache_in_future(true);
-  data_source_->SetBufferingStrategy(
-      MultibufferDataSource::BUFFERING_STRATEGY_AGGRESSIVE);
-  CheckNeverDefer();
-
-  data_source_->SetBufferingStrategy(
-      MultibufferDataSource::BUFFERING_STRATEGY_NORMAL);
   data_source_->MediaIsPlaying();
   CheckCapacityDefer();
+
   set_might_be_reused_from_cache_in_future(false);
-  data_source_->SetBufferingStrategy(
-      MultibufferDataSource::BUFFERING_STRATEGY_AGGRESSIVE);
   CheckCapacityDefer();
 
   Stop();

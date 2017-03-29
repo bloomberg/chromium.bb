@@ -181,7 +181,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
       highest_ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
       preload_(MultibufferDataSource::AUTO),
-      buffering_strategy_(MultibufferDataSource::BUFFERING_STRATEGY_NORMAL),
       main_task_runner_(frame->loadingTaskRunner()),
       media_task_runner_(params.media_task_runner()),
       worker_task_runner_(params.worker_task_runner()),
@@ -419,7 +418,6 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
         url_index_, frame_, media_log_.get(), &buffered_data_source_host_,
         base::Bind(&WebMediaPlayerImpl::NotifyDownloading, AsWeakPtr())));
     data_source_->SetPreload(preload_);
-    data_source_->SetBufferingStrategy(buffering_strategy_);
     data_source_->Initialize(
         base::Bind(&WebMediaPlayerImpl::DataSourceInitialized, AsWeakPtr()));
   }
@@ -636,31 +634,6 @@ void WebMediaPlayerImpl::setPreload(WebMediaPlayer::Preload preload) {
   preload_ = static_cast<MultibufferDataSource::Preload>(preload);
   if (data_source_)
     data_source_->SetPreload(preload_);
-}
-
-STATIC_ASSERT_ENUM(WebMediaPlayer::BufferingStrategy::Normal,
-                   MultibufferDataSource::BUFFERING_STRATEGY_NORMAL);
-STATIC_ASSERT_ENUM(WebMediaPlayer::BufferingStrategy::Aggressive,
-                   MultibufferDataSource::BUFFERING_STRATEGY_AGGRESSIVE);
-
-void WebMediaPlayerImpl::setBufferingStrategy(
-    WebMediaPlayer::BufferingStrategy buffering_strategy) {
-  DVLOG(1) << __func__;
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-
-#if defined(OS_ANDROID)
-  // We disallow aggressive buffering on Android since it matches the behavior
-  // of the platform media player and may have data usage penalties.
-  // TODO(dalecurtis, hubbe): We should probably stop using "pause-and-buffer"
-  // everywhere. See http://crbug.com/594669 for more details.
-  buffering_strategy_ = MultibufferDataSource::BUFFERING_STRATEGY_NORMAL;
-#else
-  buffering_strategy_ =
-      static_cast<MultibufferDataSource::BufferingStrategy>(buffering_strategy);
-#endif
-
-  if (data_source_)
-    data_source_->SetBufferingStrategy(buffering_strategy_);
 }
 
 bool WebMediaPlayerImpl::hasVideo() const {
@@ -1153,13 +1126,10 @@ void WebMediaPlayerImpl::OnPipelineSuspended() {
   }
 #endif
 
-  // If we're not in an aggressive buffering state, tell the data source we have
-  // enough data so that it may release the connection.
-  if (buffering_strategy_ !=
-      MultibufferDataSource::BUFFERING_STRATEGY_AGGRESSIVE) {
-    if (data_source_)
-      data_source_->OnBufferingHaveEnough(true);
-  }
+  // Tell the data source we have enough data so that it may release the
+  // connection.
+  if (data_source_)
+    data_source_->OnBufferingHaveEnough(true);
 
   ReportMemoryUsage();
 

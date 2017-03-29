@@ -83,11 +83,6 @@ class WebMediaPlayer {
     PreloadAuto,
   };
 
-  enum class BufferingStrategy {
-    Normal,
-    Aggressive,
-  };
-
   enum CORSMode {
     CORSModeUnspecified,
     CORSModeAnonymous,
@@ -130,7 +125,6 @@ class WebMediaPlayer {
   virtual void requestRemotePlaybackStop() {}
   virtual void requestRemotePlaybackDisabled(bool disabled) {}
   virtual void setPreload(Preload) {}
-  virtual void setBufferingStrategy(BufferingStrategy) {}
   virtual WebTimeRanges buffered() const = 0;
   virtual WebTimeRanges seekable() const = 0;
 

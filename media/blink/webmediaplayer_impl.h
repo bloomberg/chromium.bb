@@ -118,8 +118,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
                  const blink::WebSecurityOrigin& security_origin,
                  blink::WebSetSinkIdCallbacks* web_callback) override;
   void setPreload(blink::WebMediaPlayer::Preload preload) override;
-  void setBufferingStrategy(
-      blink::WebMediaPlayer::BufferingStrategy buffering_strategy) override;
   blink::WebTimeRanges buffered() const override;
   blink::WebTimeRanges seekable() const override;
 
@@ -467,10 +465,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // Preload state for when |data_source_| is created after setPreload().
   MultibufferDataSource::Preload preload_;
-
-  // Buffering strategy for when |data_source_| is created after
-  // setBufferingStrategy().
-  MultibufferDataSource::BufferingStrategy buffering_strategy_;
 
   // Task runner for posting tasks on Chrome's main thread. Also used
   // for DCHECKs so methods calls won't execute in the wrong thread.

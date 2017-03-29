@@ -122,7 +122,6 @@ MultibufferDataSource::MultibufferDataSource(
       frame_(frame),
       stop_signal_received_(false),
       media_has_played_(false),
-      buffering_strategy_(BUFFERING_STRATEGY_NORMAL),
       single_origin_(true),
       cancel_on_defer_(false),
       preload_(AUTO),
@@ -246,13 +245,6 @@ void MultibufferDataSource::SetPreload(Preload preload) {
   DVLOG(1) << __func__ << "(" << preload << ")";
   DCHECK(render_task_runner_->BelongsToCurrentThread());
   preload_ = preload;
-  UpdateBufferSizes();
-}
-
-void MultibufferDataSource::SetBufferingStrategy(
-    BufferingStrategy buffering_strategy) {
-  DCHECK(render_task_runner_->BelongsToCurrentThread());
-  buffering_strategy_ = buffering_strategy;
   UpdateBufferSizes();
 }
 
@@ -579,18 +571,6 @@ void MultibufferDataSource::UpdateBufferSizes() {
   DVLOG(1) << __func__;
   if (!reader_)
     return;
-
-  if (!assume_fully_buffered()) {
-    // If the playback has started and the strategy is aggressive, then try to
-    // load as much as possible, assuming that the file is cacheable. (If not,
-    // why bother?)
-    bool aggressive = (buffering_strategy_ == BUFFERING_STRATEGY_AGGRESSIVE);
-    if (media_has_played_ && aggressive && url_data_ &&
-        url_data_->range_supported() && url_data_->cacheable()) {
-      reader_->SetPreload(1LL << 40, 1LL << 40);  // 1 Tb
-      return;
-    }
-  }
 
   // Use a default bit rate if unknown and clamp to prevent overflow.
   int64_t bitrate = clamp<int64_t>(bitrate_, 0, kMaxBitrate);
