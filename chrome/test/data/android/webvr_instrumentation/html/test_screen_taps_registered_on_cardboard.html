@@ -17,14 +17,7 @@ Cardboard
       window.addEventListener("vrdisplaypresentchange",
           () => {finishJavascriptStep();}, false);
       var numTaps = 0;
-      webglCanvas.addEventListener("click",
-          () => {
-            numTaps++;
-            // Notify Java when we've received the tap after entering VR
-            if (numTaps == 2) {
-              t.done();
-            }
-          }, false);
+      webglCanvas.addEventListener("click", () => {numTaps++;}, false);
 
       function stepVerifyNoInitialTaps() {
         t.step( () => {
@@ -32,6 +25,15 @@ Cardboard
         });
         finishJavascriptStep();
       }
+
+      function stepVerifyAdditionalTap() {
+          t.step_func_done( () => {
+            // We expect 1 tap from entering VR + 1 additional one after
+            assert_equals(numTaps, 2,
+                "Two taps registered after two taps given");
+          })();
+      }
+
     </script>
   </body>
 </html>
