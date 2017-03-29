@@ -717,7 +717,11 @@ class HeadlessCrashObserverTest : public HeadlessAsyncDevTooledBrowserTest,
   // Make sure we don't fail because the renderer crashed!
   void RenderProcessExited(base::TerminationStatus status,
                            int exit_code) override {
+#if defined(OS_WIN) || defined(OS_MACOSX)
+    EXPECT_EQ(base::TERMINATION_STATUS_PROCESS_CRASHED, status);
+#else
     EXPECT_EQ(base::TERMINATION_STATUS_ABNORMAL_TERMINATION, status);
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
   }
 };
 

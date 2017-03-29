@@ -30,12 +30,17 @@ Options::Options(int argc, const char** argv)
       message_pump(nullptr),
       single_process_mode(false),
       disable_sandbox(false),
+#if !defined(OS_MACOSX)
       gl_implementation("osmesa"),
+#else
+      gl_implementation("any"),
+#endif
       product_name_and_version(GetProductNameAndVersion()),
       user_agent(content::BuildUserAgentFromProduct(product_name_and_version)),
       window_size(kDefaultWindowSize),
       incognito_mode(true),
-      enable_crash_reporter(false) {}
+      enable_crash_reporter(false) {
+}
 
 Options::Options(Options&& options) = default;
 

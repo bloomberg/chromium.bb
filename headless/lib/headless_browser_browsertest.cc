@@ -379,8 +379,12 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, DefaultSizes) {
                   ->GetValue()
                   ->GetAsInteger(&window_height));
 
+#if !defined(OS_MACOSX)
+  // On Mac headless does not override the screen dimensions, so they are
+  // left with the actual screen values.
   EXPECT_EQ(kDefaultOptions.window_size.width(), screen_width);
   EXPECT_EQ(kDefaultOptions.window_size.height(), screen_height);
+#endif  // !defined(OS_MACOSX)
   EXPECT_EQ(kDefaultOptions.window_size.width(), window_width);
   EXPECT_EQ(kDefaultOptions.window_size.height(), window_height);
 }

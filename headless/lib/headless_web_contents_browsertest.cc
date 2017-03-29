@@ -88,11 +88,17 @@ IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, Focus) {
 
   // TODO(irisu): Focus of two web contents should be independent of the other.
   // Both web_contents and web_contents2 should be focused at this point.
+  // NOTE(dvallet): Mac headless implementation already does this.
   EXPECT_TRUE(EvaluateScript(web_contents, "document.hasFocus()")
                   ->GetResult()
                   ->GetValue()
                   ->GetAsBoolean(&result));
+#if !defined(OS_MACOSX)
   EXPECT_FALSE(result);
+#else
+  // Mac sets all contents as focused.
+  EXPECT_TRUE(result);
+#endif
   EXPECT_TRUE(EvaluateScript(web_contents2, "document.hasFocus()")
                   ->GetResult()
                   ->GetValue()
