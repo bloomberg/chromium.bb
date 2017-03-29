@@ -54,7 +54,7 @@ static INLINE v128 hsum4(v128 x0, v128 x1, v128 x2, v128 x3) {
 
 /* Computes cost for directions 0, 5, 6 and 7. We can call this function again
    to compute the remaining directions. */
-static INLINE void compute_directions(v128 lines[8], int32_t tmp_cost1[4]) {
+static INLINE v128 compute_directions(v128 lines[8], int32_t tmp_cost1[4]) {
   v128 partial4a, partial4b, partial5a, partial5b, partial7a, partial7b;
   v128 partial6;
   v128 tmp;
@@ -120,6 +120,7 @@ static INLINE void compute_directions(v128 lines[8], int32_t tmp_cost1[4]) {
 
   partial4a = hsum4(partial4a, partial5a, partial6, partial7a);
   v128_store_unaligned(tmp_cost1, partial4a);
+  return partial4a;
 }
 
 /* transpose and reverse the order of the lines -- equivalent to a 90-degree
@@ -166,6 +167,31 @@ int SIMD_FUNC(od_dir_find8)(const od_dering_in *img, int stride, int32_t *var,
         v128_sub_16(v128_shr_s16(lines[i], coeff_shift), v128_dup_16(128));
   }
 
+#if defined(__SSE4_1__)
+  /* Compute "mostly vertical" directions. */
+  __m128i dir47 = compute_directions(lines, cost + 4);
+
+  array_reverse_transpose_8x8(lines, lines);
+
+  /* Compute "mostly horizontal" directions. */
+  __m128i dir03 = compute_directions(lines, cost);
+
+  __m128i max = _mm_max_epi32(dir03, dir47);
+  max = _mm_max_epi32(max, _mm_shuffle_epi32(max, _MM_SHUFFLE(1, 0, 3, 2)));
+  max = _mm_max_epi32(max, _mm_shuffle_epi32(max, _MM_SHUFFLE(2, 3, 0, 1)));
+  dir03 = _mm_and_si128(_mm_cmpeq_epi32(max, dir03),
+                        _mm_setr_epi32(-1, -2, -3, -4));
+  dir47 = _mm_and_si128(_mm_cmpeq_epi32(max, dir47),
+                        _mm_setr_epi32(-5, -6, -7, -8));
+  dir03 = _mm_max_epu32(dir03, dir47);
+  dir03 = _mm_max_epu32(dir03, _mm_unpackhi_epi64(dir03, dir03));
+  dir03 =
+      _mm_max_epu32(dir03, _mm_shufflelo_epi16(dir03, _MM_SHUFFLE(1, 0, 3, 2)));
+  dir03 = _mm_xor_si128(dir03, _mm_set1_epi32(0xFFFFFFFF));
+
+  best_dir = _mm_cvtsi128_si32(dir03);
+  best_cost = _mm_cvtsi128_si32(max);
+#else
   /* Compute "mostly vertical" directions. */
   compute_directions(lines, cost + 4);
 
@@ -180,6 +206,7 @@ int SIMD_FUNC(od_dir_find8)(const od_dering_in *img, int stride, int32_t *var,
       best_dir = i;
     }
   }
+#endif
 
   /* Difference between the optimal variance and the variance along the
      orthogonal direction. Again, the sum(x^2) terms cancel out. */
