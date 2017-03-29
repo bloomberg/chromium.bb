@@ -67,6 +67,8 @@ _NEGATIVE_FILTER = [
     'ChromeDriverTest.testShadowDomHover',
     'ChromeDriverTest.testMouseMoveTo',
     'ChromeDriverTest.testHoverOverElement',
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=833
+    'ChromeDriverTest.testAlertOnNewWindow',
 ]
 
 _VERSION_SPECIFIC_FILTER = {}
@@ -211,6 +213,7 @@ _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
             'testHistoryNavigationWithPageLoadTimeout',
         # Webview shell doesn't support Alerts.
         'ChromeDriverTest.testAlert',
+        'ChromeDriverTest.testAlertOnNewWindow',
         'ChromeDesiredCapabilityTest.testUnexpectedAlertBehaviour',
         'ChromeDriverTest.testAlertHandlingOnPageUnload',
     ]
@@ -786,6 +789,18 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self.assertFalse(self._driver.IsAlertOpen())
     self.assertEquals(False,
                       self._driver.ExecuteScript('return window.confirmed'))
+
+  def testAlertOnNewWindow(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    old_windows = self._driver.GetWindowHandles()
+    self._driver.ExecuteScript("window.open('%s')" %
+        self.GetHttpUrlForFile('/chromedriver/alert_onload.html'))
+    new_window = self.WaitForNewWindow(self._driver, old_windows)
+    self.assertNotEqual(None, new_window)
+    self._driver.SwitchToWindow(new_window)
+    self.assertTrue(self._driver.IsAlertOpen())
+    self._driver.HandleAlert(False)
+    self.assertFalse(self._driver.IsAlertOpen())
 
   def testShouldHandleNewWindowLoadingProperly(self):
     """Tests that ChromeDriver determines loading correctly for new windows."""
