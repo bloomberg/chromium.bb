@@ -11,7 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/compositor/image_transport_factory.h"
-#include "content/browser/renderer_host/resize_lock.h"
+#include "content/browser/renderer_host/compositor_resize_lock.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/context_factory.h"
 #include "media/base/video_frame.h"
@@ -91,7 +91,7 @@ class RecyclableCompositorMac : public ui::CompositorObserver {
 
   std::unique_ptr<ui::AcceleratedWidgetMac> accelerated_widget_mac_;
   ui::Compositor compositor_;
-  scoped_refptr<ui::CompositorLock> compositor_suspended_lock_;
+  std::unique_ptr<ui::CompositorLock> compositor_suspended_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(RecyclableCompositorMac);
 };
@@ -104,7 +104,6 @@ RecyclableCompositorMac::RecyclableCompositorMac()
                   ui::WindowResizeHelperMac::Get()->task_runner()) {
   compositor_.SetAcceleratedWidget(
       accelerated_widget_mac_->accelerated_widget());
-  compositor_.SetLocksWillTimeOut(false);
   Suspend();
   compositor_.AddObserver(this);
 }
@@ -114,7 +113,9 @@ RecyclableCompositorMac::~RecyclableCompositorMac() {
 }
 
 void RecyclableCompositorMac::Suspend() {
-  compositor_suspended_lock_ = compositor_.GetCompositorLock();
+  // Requests a compositor lock without a timeout.
+  compositor_suspended_lock_ =
+      compositor_.GetCompositorLock(nullptr, base::TimeDelta());
 }
 
 void RecyclableCompositorMac::Unsuspend() {
@@ -425,11 +426,10 @@ bool BrowserCompositorMac::DelegatedFrameCanCreateResizeLock() const {
   return false;
 }
 
-std::unique_ptr<ResizeLock>
-BrowserCompositorMac::DelegatedFrameHostCreateResizeLock(
-    bool defer_compositor_lock) {
+std::unique_ptr<CompositorResizeLock>
+BrowserCompositorMac::DelegatedFrameHostCreateResizeLock() {
   NOTREACHED();
-  return std::unique_ptr<ResizeLock>();
+  return nullptr;
 }
 
 void BrowserCompositorMac::DelegatedFrameHostResizeLockWasReleased() {

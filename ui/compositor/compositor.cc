@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "base/trace_event/trace_event.h"
@@ -46,33 +47,12 @@
 
 namespace {
 
-const double kDefaultRefreshRate = 60.0;
-const double kTestRefreshRate = 200.0;
+constexpr double kDefaultRefreshRate = 60.0;
+constexpr double kTestRefreshRate = 200.0;
 
 }  // namespace
 
 namespace ui {
-
-CompositorLock::CompositorLock(Compositor* compositor)
-    : compositor_(compositor) {
-  if (compositor_->locks_will_time_out_) {
-    compositor_->task_runner_->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&CompositorLock::CancelLock, AsWeakPtr()),
-        base::TimeDelta::FromMilliseconds(kCompositorLockTimeoutMs));
-  }
-}
-
-CompositorLock::~CompositorLock() {
-  CancelLock();
-}
-
-void CompositorLock::CancelLock() {
-  if (!compositor_)
-    return;
-  compositor_->UnlockCompositor();
-  compositor_ = NULL;
-}
 
 Compositor::Compositor(const cc::FrameSinkId& frame_sink_id,
                        ui::ContextFactory* context_factory,
@@ -80,19 +60,12 @@ Compositor::Compositor(const cc::FrameSinkId& frame_sink_id,
                        scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : context_factory_(context_factory),
       context_factory_private_(context_factory_private),
-      root_layer_(NULL),
-      widget_(gfx::kNullAcceleratedWidget),
-      activated_frame_count_(0),
-      widget_valid_(false),
-      compositor_frame_sink_requested_(false),
       frame_sink_id_(frame_sink_id),
       task_runner_(task_runner),
       vsync_manager_(new CompositorVSyncManager()),
-      device_scale_factor_(0.0f),
-      locks_will_time_out_(true),
-      compositor_lock_(NULL),
       layer_animator_collection_(this),
-      weak_ptr_factory_(this) {
+      weak_ptr_factory_(this),
+      lock_timeout_weak_ptr_factory_(this) {
   if (context_factory_private) {
     context_factory_private->GetSurfaceManager()->RegisterFrameSinkId(
         frame_sink_id_);
@@ -227,9 +200,6 @@ Compositor::Compositor(const cc::FrameSinkId& frame_sink_id,
 
 Compositor::~Compositor() {
   TRACE_EVENT0("shutdown", "Compositor::destructor");
-
-  CancelCompositorLock();
-  DCHECK(!compositor_lock_);
 
   for (auto& observer : observer_list_)
     observer.OnCompositingShuttingDown(this);
@@ -488,6 +458,7 @@ bool Compositor::HasAnimationObserver(
 }
 
 void Compositor::BeginMainFrame(const cc::BeginFrameArgs& args) {
+  DCHECK(!IsLocked());
   for (auto& observer : animation_observer_list_)
     observer.OnAnimationStep(args.frame_time);
   if (animation_observer_list_.might_have_observers())
@@ -557,27 +528,52 @@ const cc::RendererSettings& Compositor::GetRendererSettings() const {
   return host_->GetSettings().renderer_settings;
 }
 
-scoped_refptr<CompositorLock> Compositor::GetCompositorLock() {
-  if (!compositor_lock_) {
-    compositor_lock_ = new CompositorLock(this);
+std::unique_ptr<CompositorLock> Compositor::GetCompositorLock(
+    CompositorLockClient* client,
+    base::TimeDelta timeout) {
+  // This uses the main WeakPtrFactory to break the connection from the lock to
+  // the Compositor when the Compositor is destroyed.
+  auto lock =
+      base::MakeUnique<CompositorLock>(client, weak_ptr_factory_.GetWeakPtr());
+  bool was_empty = active_locks_.empty();
+  active_locks_.push_back(lock.get());
+
+  if (was_empty) {
     host_->SetDeferCommits(true);
     for (auto& observer : observer_list_)
       observer.OnCompositingLockStateChanged(this);
+
+    if (!timeout.is_zero()) {
+      // The timeout task uses an independent WeakPtrFactory that is invalidated
+      // when all locks are ended to prevent the timeout from leaking into
+      // another lock that should have its own timeout.
+      task_runner_->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&Compositor::TimeoutLocks,
+                     lock_timeout_weak_ptr_factory_.GetWeakPtr()),
+          timeout);
+    }
   }
-  return compositor_lock_;
+  return lock;
 }
 
-void Compositor::UnlockCompositor() {
-  DCHECK(compositor_lock_);
-  compositor_lock_ = NULL;
-  host_->SetDeferCommits(false);
-  for (auto& observer : observer_list_)
-    observer.OnCompositingLockStateChanged(this);
+void Compositor::RemoveCompositorLock(CompositorLock* lock) {
+  base::Erase(active_locks_, lock);
+  if (active_locks_.empty()) {
+    host_->SetDeferCommits(false);
+    for (auto& observer : observer_list_)
+      observer.OnCompositingLockStateChanged(this);
+    lock_timeout_weak_ptr_factory_.InvalidateWeakPtrs();
+  }
 }
 
-void Compositor::CancelCompositorLock() {
-  if (compositor_lock_)
-    compositor_lock_->CancelLock();
+void Compositor::TimeoutLocks() {
+  // Make a copy, we're going to cause |active_locks_| to become
+  // empty.
+  std::vector<CompositorLock*> locks = active_locks_;
+  for (auto* lock : locks)
+    lock->TimeoutLock();
+  DCHECK(active_locks_.empty());
 }
 
 }  // namespace ui

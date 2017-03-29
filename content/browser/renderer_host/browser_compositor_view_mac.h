@@ -103,8 +103,8 @@ class BrowserCompositorMac : public DelegatedFrameHostClient {
   SkColor DelegatedFrameHostGetGutterColor(SkColor color) const override;
   gfx::Size DelegatedFrameHostDesiredSizeInDIP() const override;
   bool DelegatedFrameCanCreateResizeLock() const override;
-  std::unique_ptr<ResizeLock> DelegatedFrameHostCreateResizeLock(
-      bool defer_compositor_lock) override;
+  std::unique_ptr<CompositorResizeLock> DelegatedFrameHostCreateResizeLock()
+      override;
   void DelegatedFrameHostResizeLockWasReleased() override;
   void DelegatedFrameHostSendReclaimCompositorResources(
       bool is_swap_ack,

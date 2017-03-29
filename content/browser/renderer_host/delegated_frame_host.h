@@ -20,6 +20,7 @@
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/render_process_host.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
@@ -48,7 +49,7 @@ namespace content {
 
 class DelegatedFrameHost;
 class RenderWidgetHostViewFrameSubscriber;
-class ResizeLock;
+class CompositorResizeLock;
 
 // The DelegatedFrameHostClient is the interface from the DelegatedFrameHost,
 // which manages delegated frames, and the ui::Compositor being used to
@@ -66,8 +67,8 @@ class CONTENT_EXPORT DelegatedFrameHostClient {
   virtual gfx::Size DelegatedFrameHostDesiredSizeInDIP() const = 0;
 
   virtual bool DelegatedFrameCanCreateResizeLock() const = 0;
-  virtual std::unique_ptr<ResizeLock> DelegatedFrameHostCreateResizeLock(
-      bool defer_compositor_lock) = 0;
+  virtual std::unique_ptr<CompositorResizeLock>
+  DelegatedFrameHostCreateResizeLock() = 0;
   virtual void DelegatedFrameHostResizeLockWasReleased() = 0;
 
   virtual void DelegatedFrameHostSendReclaimCompositorResources(
@@ -292,13 +293,13 @@ class CONTENT_EXPORT DelegatedFrameHost
   // size. It keeps track of the size we expect from the renderer, and locks the
   // compositor, as well as the UI for a short time to give a chance to the
   // renderer of producing a frame of the right size.
-  std::unique_ptr<ResizeLock> resize_lock_;
+  std::unique_ptr<CompositorResizeLock> resize_lock_;
 
   // Keeps track of the current frame size.
   gfx::Size current_frame_size_in_dip_;
 
   // This lock is for waiting for a front surface to become available to draw.
-  scoped_refptr<ui::CompositorLock> released_front_lock_;
+  std::unique_ptr<ui::CompositorLock> released_front_lock_;
 
   enum CanLockCompositorState {
     YES_CAN_LOCK,

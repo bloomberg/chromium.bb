@@ -1041,8 +1041,6 @@ source_set("browser") {
     "renderer_host/clipboard_message_filter.cc",
     "renderer_host/clipboard_message_filter.h",
     "renderer_host/clipboard_message_filter_mac.mm",
-    "renderer_host/compositor_resize_lock_aura.cc",
-    "renderer_host/compositor_resize_lock_aura.h",
     "renderer_host/database_message_filter.cc",
     "renderer_host/database_message_filter.h",
     "renderer_host/delegated_frame_evictor.cc",
@@ -1931,8 +1929,6 @@ source_set("browser") {
     ]
   } else {  # Not aura.
     sources -= [
-      "renderer_host/compositor_resize_lock_aura.cc",
-      "renderer_host/compositor_resize_lock_aura.h",
       "renderer_host/input/synthetic_gesture_target_aura.cc",
       "renderer_host/input/synthetic_gesture_target_aura.h",
       "renderer_host/input/touch_selection_controller_client_aura.cc",
@@ -1994,10 +1990,10 @@ source_set("browser") {
       "context_factory.cc",
       "renderer_host/browser_compositor_view_mac.h",
       "renderer_host/browser_compositor_view_mac.mm",
+      "renderer_host/compositor_resize_lock.cc",
+      "renderer_host/compositor_resize_lock.h",
       "renderer_host/delegated_frame_host.cc",
       "renderer_host/delegated_frame_host.h",
-      "renderer_host/resize_lock.cc",
-      "renderer_host/resize_lock.h",
     ]
     if (enable_vulkan) {
       sources += [

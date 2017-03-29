@@ -26,8 +26,8 @@
 #include "components/display_compositor/gl_helper.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/compositor_util.h"
+#include "content/browser/renderer_host/compositor_resize_lock.h"
 #include "content/browser/renderer_host/render_widget_host_view_frame_subscriber.h"
-#include "content/browser/renderer_host/resize_lock.h"
 #include "content/public/common/content_switches.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
@@ -65,7 +65,7 @@ void DelegatedFrameHost::WasShown(const ui::LatencyInfo& latency_info) {
 
   if (!has_frame_ && !released_front_lock_.get()) {
     if (compositor_)
-      released_front_lock_ = compositor_->GetCompositorLock();
+      released_front_lock_ = compositor_->GetCompositorLock(nullptr);
   }
 
   if (compositor_) {
@@ -94,8 +94,11 @@ void DelegatedFrameHost::MaybeCreateResizeLock() {
   if (can_lock_compositor_ == YES_CAN_LOCK)
     can_lock_compositor_ = YES_DID_LOCK;
 
-  resize_lock_ =
-      client_->DelegatedFrameHostCreateResizeLock(defer_compositor_lock);
+  resize_lock_ = client_->DelegatedFrameHostCreateResizeLock();
+  if (!defer_compositor_lock) {
+    bool locked = resize_lock_->Lock();
+    DCHECK(locked);
+  }
 }
 
 bool DelegatedFrameHost::ShouldCreateResizeLock() {
@@ -709,7 +712,7 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo(
 void DelegatedFrameHost::OnCompositingDidCommit(ui::Compositor* compositor) {
   if (can_lock_compositor_ == NO_PENDING_COMMIT) {
     can_lock_compositor_ = YES_CAN_LOCK;
-    if (resize_lock_.get() && resize_lock_->GrabDeferredLock())
+    if (resize_lock_ && resize_lock_->Lock())
       can_lock_compositor_ = YES_DID_LOCK;
   }
   if (resize_lock_ &&

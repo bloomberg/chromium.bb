@@ -47,7 +47,6 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_event_handler.h"
 #include "content/browser/renderer_host/render_widget_host_view_frame_subscriber.h"
-#include "content/browser/renderer_host/resize_lock.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/browser/web_contents/web_contents_view_aura.h"
 #include "content/common/host_shared_bitmap_manager.h"
@@ -361,29 +360,21 @@ class FakeDelegatedFrameHostClientAura : public DelegatedFrameHostClientAura {
   explicit FakeDelegatedFrameHostClientAura(
       RenderWidgetHostViewAura* render_widget_host_view)
       : DelegatedFrameHostClientAura(render_widget_host_view) {}
-  ~FakeDelegatedFrameHostClientAura() override {}
+  ~FakeDelegatedFrameHostClientAura() override = default;
 
   void DisableResizeLock() { can_create_resize_lock_ = false; }
 
  private:
-  // A lock that doesn't actually do anything to the compositor, and does not
-  // time out.
-  class FakeResizeLock : public ResizeLock {
-   public:
-    FakeResizeLock(const gfx::Size new_size, bool defer_compositor_lock)
-        : ResizeLock(new_size, defer_compositor_lock) {}
-  };
-
-  // DelegatedFrameHostClientAura:
-  std::unique_ptr<ResizeLock> DelegatedFrameHostCreateResizeLock(
-      bool defer_compositor_lock) override {
-    gfx::Size desired_size =
-        render_widget_host_view()->GetNativeView()->bounds().size();
-    return std::unique_ptr<ResizeLock>(
-        new FakeResizeLock(desired_size, defer_compositor_lock));
-  }
+  // DelegatedFrameHostClientAura implementation.
   bool DelegatedFrameCanCreateResizeLock() const override {
     return can_create_resize_lock_;
+  }
+
+  // CompositorResizeLockClient implemention. Overrides from
+  // DelegatedFrameHostClientAura, to prevent the lock from timing out.
+  std::unique_ptr<ui::CompositorLock> GetCompositorLock(
+      ui::CompositorLockClient* client) override {
+    return base::MakeUnique<ui::CompositorLock>(nullptr, nullptr);
   }
 
   bool can_create_resize_lock_ = true;
@@ -398,9 +389,8 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
       : RenderWidgetHostViewAura(widget, is_guest_view_hack),
         delegated_frame_host_client_(
             new FakeDelegatedFrameHostClientAura(this)) {
-    std::unique_ptr<DelegatedFrameHostClient> client(
-        delegated_frame_host_client_);
-    InstallDelegatedFrameHostClient(this, std::move(client));
+    InstallDelegatedFrameHostClient(
+        this, base::WrapUnique(delegated_frame_host_client_));
   }
 
   ~FakeRenderWidgetHostViewAura() override {}
