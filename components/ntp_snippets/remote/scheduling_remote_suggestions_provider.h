@@ -18,6 +18,7 @@
 #include "components/ntp_snippets/remote/remote_suggestions_provider.h"
 #include "components/ntp_snippets/remote/remote_suggestions_scheduler.h"
 #include "components/ntp_snippets/remote/request_throttler.h"
+#include "components/web_resource/eula_accepted_notifier.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -29,6 +30,7 @@ class Clock;
 namespace ntp_snippets {
 
 struct Status;
+class EulaState;
 class UserClassifier;
 
 // A wrapper around RemoteSuggestionsProvider that introduces periodic fetching.
@@ -64,7 +66,8 @@ class SchedulingRemoteSuggestionsProvider final
       std::unique_ptr<RemoteSuggestionsProvider> provider,
       PersistentScheduler* persistent_scheduler,
       const UserClassifier* user_classifier,
-      PrefService* pref_service,
+      PrefService* profile_prefs,
+      PrefService* local_state_prefs,
       std::unique_ptr<base::Clock> clock);
 
   ~SchedulingRemoteSuggestionsProvider() override;
@@ -198,7 +201,10 @@ class SchedulingRemoteSuggestionsProvider final
   RequestThrottler request_throttler_active_ntp_user_;
   RequestThrottler request_throttler_active_suggestions_consumer_;
 
-  PrefService* pref_service_;
+  // We should not fetch in background before EULA gets accepted.
+  std::unique_ptr<EulaState> eula_state_;
+
+  PrefService* profile_prefs_;
   std::unique_ptr<base::Clock> clock_;
   std::set<SchedulingRemoteSuggestionsProvider::TriggerType> enabled_triggers_;
 

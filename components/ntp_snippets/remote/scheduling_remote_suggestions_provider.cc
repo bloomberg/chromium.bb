@@ -133,6 +133,44 @@ base::TimeDelta GetDesiredFetchingInterval(
 
 }  // namespace
 
+class EulaState : public web_resource::EulaAcceptedNotifier::Observer {
+ public:
+  EulaState(PrefService* local_state_prefs,
+            RemoteSuggestionsScheduler* scheduler)
+      : eula_notifier_(
+            web_resource::EulaAcceptedNotifier::Create(local_state_prefs)),
+        scheduler_(scheduler) {
+    // EulaNotifier is not constructed on some platforms (such as desktop).
+    if (!eula_notifier_) {
+      return;
+    }
+
+    // Register the observer.
+    eula_notifier_->Init(this);
+  }
+
+  ~EulaState() = default;
+
+  bool IsEulaAccepted() {
+    if (!eula_notifier_) {
+      return true;
+    }
+    return eula_notifier_->IsEulaAccepted();
+  }
+
+  // EulaAcceptedNotifier::Observer implementation.
+  void OnEulaAccepted() override {
+    // Emulate a browser foregrounded event.
+    scheduler_->OnBrowserForegrounded();
+  }
+
+ private:
+  std::unique_ptr<web_resource::EulaAcceptedNotifier> eula_notifier_;
+  RemoteSuggestionsScheduler* scheduler_;
+
+  DISALLOW_COPY_AND_ASSIGN(EulaState);
+};
+
 // static
 SchedulingRemoteSuggestionsProvider::FetchingSchedule
 SchedulingRemoteSuggestionsProvider::FetchingSchedule::Empty() {
@@ -178,7 +216,8 @@ SchedulingRemoteSuggestionsProvider::SchedulingRemoteSuggestionsProvider(
     std::unique_ptr<RemoteSuggestionsProvider> provider,
     PersistentScheduler* persistent_scheduler,
     const UserClassifier* user_classifier,
-    PrefService* pref_service,
+    PrefService* profile_prefs,
+    PrefService* local_state_prefs,
     std::unique_ptr<base::Clock> clock)
     : RemoteSuggestionsProvider(observer),
       RemoteSuggestionsScheduler(),
@@ -187,22 +226,23 @@ SchedulingRemoteSuggestionsProvider::SchedulingRemoteSuggestionsProvider(
       background_fetch_in_progress_(false),
       user_classifier_(user_classifier),
       request_throttler_rare_ntp_user_(
-          pref_service,
+          profile_prefs,
           RequestThrottler::RequestType::
               CONTENT_SUGGESTION_FETCHER_RARE_NTP_USER),
       request_throttler_active_ntp_user_(
-          pref_service,
+          profile_prefs,
           RequestThrottler::RequestType::
               CONTENT_SUGGESTION_FETCHER_ACTIVE_NTP_USER),
       request_throttler_active_suggestions_consumer_(
-          pref_service,
+          profile_prefs,
           RequestThrottler::RequestType::
               CONTENT_SUGGESTION_FETCHER_ACTIVE_SUGGESTIONS_CONSUMER),
-      pref_service_(pref_service),
+      eula_state_(base::MakeUnique<EulaState>(local_state_prefs, this)),
+      profile_prefs_(profile_prefs),
       clock_(std::move(clock)),
       enabled_triggers_(GetEnabledTriggerTypes()) {
   DCHECK(user_classifier);
-  DCHECK(pref_service);
+  DCHECK(profile_prefs);
 
   LoadLastFetchingSchedule();
 }
@@ -448,26 +488,28 @@ SchedulingRemoteSuggestionsProvider::GetDesiredFetchingSchedule() const {
 
 void SchedulingRemoteSuggestionsProvider::LoadLastFetchingSchedule() {
   schedule_.interval_persistent_wifi = base::TimeDelta::FromInternalValue(
-      pref_service_->GetInt64(prefs::kSnippetPersistentFetchingIntervalWifi));
+      profile_prefs_->GetInt64(prefs::kSnippetPersistentFetchingIntervalWifi));
   schedule_.interval_persistent_fallback =
-      base::TimeDelta::FromInternalValue(pref_service_->GetInt64(
+      base::TimeDelta::FromInternalValue(profile_prefs_->GetInt64(
           prefs::kSnippetPersistentFetchingIntervalFallback));
-  schedule_.interval_soft_on_usage_event = base::TimeDelta::FromInternalValue(
-      pref_service_->GetInt64(prefs::kSnippetSoftFetchingIntervalOnUsageEvent));
+  schedule_.interval_soft_on_usage_event =
+      base::TimeDelta::FromInternalValue(profile_prefs_->GetInt64(
+          prefs::kSnippetSoftFetchingIntervalOnUsageEvent));
   schedule_.interval_soft_on_ntp_opened = base::TimeDelta::FromInternalValue(
-      pref_service_->GetInt64(prefs::kSnippetSoftFetchingIntervalOnNtpOpened));
+      profile_prefs_->GetInt64(prefs::kSnippetSoftFetchingIntervalOnNtpOpened));
 }
 
 void SchedulingRemoteSuggestionsProvider::StoreFetchingSchedule() {
-  pref_service_->SetInt64(prefs::kSnippetPersistentFetchingIntervalWifi,
-                          schedule_.interval_persistent_wifi.ToInternalValue());
-  pref_service_->SetInt64(
+  profile_prefs_->SetInt64(
+      prefs::kSnippetPersistentFetchingIntervalWifi,
+      schedule_.interval_persistent_wifi.ToInternalValue());
+  profile_prefs_->SetInt64(
       prefs::kSnippetPersistentFetchingIntervalFallback,
       schedule_.interval_persistent_fallback.ToInternalValue());
-  pref_service_->SetInt64(
+  profile_prefs_->SetInt64(
       prefs::kSnippetSoftFetchingIntervalOnUsageEvent,
       schedule_.interval_soft_on_usage_event.ToInternalValue());
-  pref_service_->SetInt64(
+  profile_prefs_->SetInt64(
       prefs::kSnippetSoftFetchingIntervalOnNtpOpened,
       schedule_.interval_soft_on_ntp_opened.ToInternalValue());
 }
@@ -488,7 +530,7 @@ void SchedulingRemoteSuggestionsProvider::RefetchInTheBackgroundIfEnabled(
 bool SchedulingRemoteSuggestionsProvider::ShouldRefetchInTheBackgroundNow(
     SchedulingRemoteSuggestionsProvider::TriggerType trigger) {
   const base::Time last_fetch_attempt_time = base::Time::FromInternalValue(
-      pref_service_->GetInt64(prefs::kSnippetLastFetchAttempt));
+      profile_prefs_->GetInt64(prefs::kSnippetLastFetchAttempt));
   base::Time first_allowed_fetch_time;
   switch (trigger) {
     case TriggerType::NTP_OPENED:
@@ -520,6 +562,11 @@ bool SchedulingRemoteSuggestionsProvider::BackgroundFetchesDisabled(
   if (enabled_triggers_.count(trigger) == 0) {
     return true;  // Background fetches for |trigger| are not enabled.
   }
+
+  if (!eula_state_->IsEulaAccepted()) {
+    return true;  // No background fetches are allowed before EULA is accepted.
+  }
+
   return false;
 }
 
@@ -562,8 +609,8 @@ void SchedulingRemoteSuggestionsProvider::RefetchInTheBackgroundFinished(
 
 void SchedulingRemoteSuggestionsProvider::OnFetchCompleted(
     Status fetch_status) {
-  pref_service_->SetInt64(prefs::kSnippetLastFetchAttempt,
-                          clock_->Now().ToInternalValue());
+  profile_prefs_->SetInt64(prefs::kSnippetLastFetchAttempt,
+                           clock_->Now().ToInternalValue());
 
   // Reschedule after a fetch. The persistent schedule is applied only after a
   // successful fetch. After a failed fetch, we want to keep the previous
@@ -576,7 +623,7 @@ void SchedulingRemoteSuggestionsProvider::OnFetchCompleted(
 }
 
 void SchedulingRemoteSuggestionsProvider::ClearLastFetchAttemptTime() {
-  pref_service_->ClearPref(prefs::kSnippetLastFetchAttempt);
+  profile_prefs_->ClearPref(prefs::kSnippetLastFetchAttempt);
 }
 
 std::set<SchedulingRemoteSuggestionsProvider::TriggerType>

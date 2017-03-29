@@ -116,6 +116,7 @@ static_library("ntp_snippets") {
     "//components/translate/core/browser",
     "//components/variations",
     "//components/variations/net",
+    "//components/web_resource",
     "//third_party/icu/",
     "//ui/gfx",
   ]
@@ -184,6 +185,7 @@ source_set("unit_tests") {
     "//components/sync:test_support_driver",
     "//components/sync_sessions",
     "//components/variations:test_support",
+    "//components/web_resource:web_resource",
     "//net:test_support",
     "//testing/gtest",
     "//third_party/icu/",

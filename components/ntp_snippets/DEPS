@@ -13,6 +13,7 @@ include_rules = [
   "+components/translate/core/browser",
   "+components/variations",
   "+components/version_info",
+  "+components/web_resource",
   "+grit/components_strings.h",
   "+net/base",
   "+net/http",
