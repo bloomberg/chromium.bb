@@ -248,7 +248,7 @@ public class ImeTest extends ContentShellTestBase {
     @SmallTest
     @Feature({"TextInput", "Main"})
     public void testKeyboardAppFinishesCompositionOnUnexpectedSelectionChange() throws Throwable {
-        focusElementAndWaitForStateUpdate("textarea");
+        focusElementAndWaitForStateUpdate("textarea2");
         commitText("12345", 1);
         setSelection(3, 3);
         setComposingRegion(2, 3);
@@ -258,7 +258,7 @@ public class ImeTest extends ContentShellTestBase {
         waitAndVerifyUpdateSelection(2, 3, 3, 2, 3);
 
         // Unexpected selection change occurs, e.g., the user clicks on an area.
-        DOMUtils.clickNode(mContentViewCore, "textarea");
+        DOMUtils.clickNode(mContentViewCore, "textarea2");
         waitAndVerifyUpdateSelection(3, 5, 5, 2, 3);
         // Keyboard app finishes composition. We emulate this in TestInputMethodManagerWrapper.
         waitAndVerifyUpdateSelection(4, 5, 5, -1, -1);
