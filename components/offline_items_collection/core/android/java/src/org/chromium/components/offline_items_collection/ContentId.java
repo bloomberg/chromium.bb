@@ -4,6 +4,8 @@
 
 package org.chromium.components.offline_items_collection;
 
+import android.text.TextUtils;
+
 /**
  * This class is a Java counterpart to the C++ ContentId
  * (components/offline_items_collection/core/offline_item.h) class.
@@ -17,7 +19,27 @@ public class ContentId {
 
     public ContentId() {}
     public ContentId(String namespace, String id) {
-        this.namespace = namespace;
-        this.id = id;
+        assert namespace == null || !namespace.contains(",");
+        this.namespace = namespace != null ? namespace : "";
+        this.id = id != null ? id : "";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ContentId)) return false;
+
+        ContentId rhs = (ContentId) o;
+        return TextUtils.equals(namespace, rhs.namespace) && TextUtils.equals(id, rhs.id);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 61;
+
+        result = 31 * result + (namespace == null ? 0 : namespace.hashCode());
+        result = 31 * result + (id == null ? 0 : id.hashCode());
+
+        return result;
     }
 }

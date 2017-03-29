@@ -17,7 +17,10 @@ namespace offline_items_collection {
 // An id that uniquely represents a piece of offline content.
 struct ContentId {
   // The namespace for the offline content.  This will be used to associate this
-  // id with a particular OfflineContentProvider.
+  // id with a particular OfflineContentProvider.  A name_space can include
+  // any characters except ','.  This is due to a serialization format
+  // limitation.
+  // TODO(dtrainor): Remove the 'no ,' limitation.
   std::string name_space;
 
   // The id of the offline item.

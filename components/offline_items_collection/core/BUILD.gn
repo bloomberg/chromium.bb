@@ -59,6 +59,7 @@ if (is_android) {
   android_library("core_java") {
     java_files = [
       "android/java/src/org/chromium/components/offline_items_collection/ContentId.java",
+      "android/java/src/org/chromium/components/offline_items_collection/LegacyHelpers.java",
       "android/java/src/org/chromium/components/offline_items_collection/OfflineContentAggregatorBridge.java",
       "android/java/src/org/chromium/components/offline_items_collection/OfflineContentProvider.java",
       "android/java/src/org/chromium/components/offline_items_collection/OfflineItem.java",

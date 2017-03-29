@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.download;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.components.offline_items_collection.ContentId;
+import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.content_public.browser.DownloadState;
 
 /**
@@ -33,6 +35,7 @@ public final class DownloadInfo {
     private final boolean mIsOfflinePage;
     private final int mState;
     private final long mLastAccessTime;
+    private final ContentId mContentId;
 
     private DownloadInfo(Builder builder) {
         mUrl = builder.mUrl;
@@ -57,6 +60,11 @@ public final class DownloadInfo {
         mIsOfflinePage = builder.mIsOfflinePage;
         mState = builder.mState;
         mLastAccessTime = builder.mLastAccessTime;
+        if (builder.mContentId != null) {
+            mContentId = builder.mContentId;
+        } else {
+            mContentId = LegacyHelpers.buildLegacyContentId(mIsOfflinePage, mDownloadGuid);
+        }
     }
 
     public String getUrl() {
@@ -153,6 +161,10 @@ public final class DownloadInfo {
         return mLastAccessTime;
     }
 
+    public ContentId getContentId() {
+        return mContentId;
+    }
+
     /**
      * Helper class for building the DownloadInfo object.
      */
@@ -179,6 +191,7 @@ public final class DownloadInfo {
         private boolean mIsOfflinePage;
         private int mState = DownloadState.IN_PROGRESS;
         private long mLastAccessTime;
+        private ContentId mContentId;
 
         public Builder setUrl(String url) {
             mUrl = url;
@@ -288,6 +301,11 @@ public final class DownloadInfo {
 
         public Builder setLastAccessTime(long lastAccessTime) {
             mLastAccessTime = lastAccessTime;
+            return this;
+        }
+
+        public Builder setContentId(ContentId contentId) {
+            mContentId = contentId;
             return this;
         }
 

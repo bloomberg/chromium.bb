@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBri
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadItem;
 import org.chromium.chrome.browser.widget.DateDividedAdapter;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
+import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.content_public.browser.DownloadState;
 
 import java.util.ArrayList;
@@ -422,10 +423,10 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
     }
 
     @Override
-    public void onAddOrReplaceDownloadSharedPreferenceEntry(final String guid) {
+    public void onAddOrReplaceDownloadSharedPreferenceEntry(final ContentId id) {
         // Alert DownloadItemViews displaying information about the item that it has changed.
         for (DownloadItemView view : mViews) {
-            if (TextUtils.equals(guid, view.getItem().getId())) {
+            if (TextUtils.equals(id.id, view.getItem().getId())) {
                 view.displayItem(mBackendProvider, view.getItem());
             }
         }

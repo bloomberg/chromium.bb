@@ -564,7 +564,8 @@ public class DownloadUtils {
         }
 
         DownloadSharedPreferenceHelper helper = DownloadSharedPreferenceHelper.getInstance();
-        DownloadSharedPreferenceEntry entry = helper.getDownloadSharedPreferenceEntry(item.getId());
+        DownloadSharedPreferenceEntry entry =
+                helper.getDownloadSharedPreferenceEntry(item.getContentId());
         boolean isDownloadPending =
                 entry != null && state == DownloadState.INTERRUPTED && entry.isAutoResumable;
 
@@ -600,7 +601,8 @@ public class DownloadUtils {
      */
     public static boolean isDownloadPaused(DownloadItem item) {
         DownloadSharedPreferenceHelper helper = DownloadSharedPreferenceHelper.getInstance();
-        DownloadSharedPreferenceEntry entry = helper.getDownloadSharedPreferenceEntry(item.getId());
+        DownloadSharedPreferenceEntry entry =
+                helper.getDownloadSharedPreferenceEntry(item.getContentId());
 
         if (entry != null) {
             // The Java downloads backend knows more about the download than the native backend.

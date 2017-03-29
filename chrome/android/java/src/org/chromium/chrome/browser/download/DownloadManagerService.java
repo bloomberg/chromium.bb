@@ -34,6 +34,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.ui.BackendProvider;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryAdapter;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
+import org.chromium.components.offline_items_collection.ContentId;
+import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.net.ConnectionType;
 import org.chromium.net.NetworkChangeNotifierAutoDetect;
 import org.chromium.net.RegistrationPolicyAlwaysRegister;
@@ -1170,7 +1172,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
     }
 
     @Override
-    public void resumeDownload(DownloadItem item, boolean hasUserGesture) {
+    public void resumeDownload(ContentId id, DownloadItem item, boolean hasUserGesture) {
         DownloadProgress progress = mDownloadProgressMap.get(item.getId());
         if (progress != null && progress.mDownloadStatus == DOWNLOAD_STATUS_IN_PROGRESS
                 && !progress.mDownloadItem.getDownloadInfo().isPaused()) {
@@ -1209,27 +1211,25 @@ public class DownloadManagerService extends BroadcastReceiver implements
 
     /**
      * Called to cancel a download.
-     * @param downloadGuid GUID of the download.
+     * @param id The {@link ContentId} of the download to cancel.
      * @param isOffTheRecord Whether the download is off the record.
-     * @param isNotificationDismissed Whether cancel is caused by dismissing the notification.
      */
     @Override
-    public void cancelDownload(
-            String downloadGuid, boolean isOffTheRecord) {
-        nativeCancelDownload(getNativeDownloadManagerService(), downloadGuid, isOffTheRecord);
-        removeDownloadProgress(downloadGuid);
-        recordDownloadFinishedUMA(DOWNLOAD_STATUS_CANCELLED, downloadGuid, 0);
+    public void cancelDownload(ContentId id, boolean isOffTheRecord) {
+        nativeCancelDownload(getNativeDownloadManagerService(), id.id, isOffTheRecord);
+        removeDownloadProgress(id.id);
+        recordDownloadFinishedUMA(DOWNLOAD_STATUS_CANCELLED, id.id, 0);
     }
 
     /**
      * Called to pause a download.
-     * @param downloadGuid GUID of the download.
+     * @param id The {@link ContentId} of the download to pause.
      * @param isOffTheRecord Whether the download is off the record.
      */
     @Override
-    public void pauseDownload(String downloadGuid, boolean isOffTheRecord) {
-        nativePauseDownload(getNativeDownloadManagerService(), downloadGuid, isOffTheRecord);
-        DownloadProgress progress = mDownloadProgressMap.get(downloadGuid);
+    public void pauseDownload(ContentId id, boolean isOffTheRecord) {
+        nativePauseDownload(getNativeDownloadManagerService(), id.id, isOffTheRecord);
+        DownloadProgress progress = mDownloadProgressMap.get(id.id);
         // Calling pause will stop listening to the download item. Update its progress now.
         // If download is already completed, canceled or failed, there is no need to update the
         // download notification.
@@ -1516,7 +1516,8 @@ public class DownloadManagerService extends BroadcastReceiver implements
                 mHandler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        resumeDownload(progress.mDownloadItem, false);
+                        resumeDownload(LegacyHelpers.buildLegacyContentId(false, id),
+                                progress.mDownloadItem, false);
                     }
                 }, mUpdateDelayInMillis);
             }
@@ -1659,7 +1660,8 @@ public class DownloadManagerService extends BroadcastReceiver implements
     @Override
     public void broadcastDownloadAction(DownloadItem downloadItem, String action) {
         Intent intent = DownloadNotificationService.buildActionIntent(mContext, action,
-                downloadItem.getId(), downloadItem.getDownloadInfo().isOffTheRecord(), false);
+                LegacyHelpers.buildLegacyContentId(false, downloadItem.getId()),
+                downloadItem.getDownloadInfo().isOffTheRecord());
         mContext.sendBroadcast(intent);
     }
 

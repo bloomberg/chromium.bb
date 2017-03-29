@@ -48,7 +48,7 @@ public class DownloadSnackbarController implements SnackbarManager.SnackbarContr
         }
         final ActionDataInfo download = (ActionDataInfo) actionData;
         if (download.downloadInfo.isOfflinePage()) {
-            OfflinePageDownloadBridge.openDownloadedPage(download.downloadInfo.getDownloadGuid());
+            OfflinePageDownloadBridge.openDownloadedPage(download.downloadInfo.getContentId());
             return;
         }
         DownloadManagerService manager = DownloadManagerService.getDownloadManagerService(mContext);

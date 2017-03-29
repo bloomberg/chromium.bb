@@ -11,7 +11,9 @@ ContentId::ContentId() = default;
 ContentId::ContentId(const ContentId& other) = default;
 
 ContentId::ContentId(const std::string& name_space, const std::string& id)
-    : name_space(name_space), id(id) {}
+    : name_space(name_space), id(id) {
+  DCHECK_EQ(std::string::npos, name_space.find_first_of(","));
+}
 
 ContentId::~ContentId() = default;
 

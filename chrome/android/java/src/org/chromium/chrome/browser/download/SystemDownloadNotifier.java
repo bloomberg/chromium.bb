@@ -14,6 +14,7 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.download.DownloadNotificationService.Observer;
+import org.chromium.components.offline_items_collection.ContentId;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -161,8 +162,8 @@ public class SystemDownloadNotifier implements DownloadNotifier, Observer {
     }
 
     @Override
-    public void onDownloadCanceled(String guid) {
-        mActiveDownloads.remove(guid);
+    public void onDownloadCanceled(ContentId id) {
+        mActiveDownloads.remove(id.id);
         if (mActiveDownloads.isEmpty()) unbindServiceIfNeeded();
     }
 
@@ -265,32 +266,30 @@ public class SystemDownloadNotifier implements DownloadNotifier, Observer {
 
         switch (notificationInfo.type) {
             case DOWNLOAD_NOTIFICATION_TYPE_PROGRESS:
-                mBoundService.notifyDownloadProgress(info.getDownloadGuid(), info.getFileName(),
+                mBoundService.notifyDownloadProgress(info.getContentId(), info.getFileName(),
                         info.getPercentCompleted(), info.getBytesReceived(),
                         info.getTimeRemainingInMillis(), notificationInfo.startTime,
-                        info.isOffTheRecord(), notificationInfo.canDownloadWhileMetered,
-                        info.isOfflinePage());
+                        info.isOffTheRecord(), notificationInfo.canDownloadWhileMetered);
                 break;
             case DOWNLOAD_NOTIFICATION_TYPE_PAUSE:
-                mBoundService.notifyDownloadPaused(info.getDownloadGuid(), true, false);
+                mBoundService.notifyDownloadPaused(info.getContentId(), true, false);
                 break;
             case DOWNLOAD_NOTIFICATION_TYPE_INTERRUPT:
-                mBoundService.notifyDownloadPaused(info.getDownloadGuid(), info.isResumable(),
-                        notificationInfo.isAutoResumable);
+                mBoundService.notifyDownloadPaused(
+                        info.getContentId(), info.isResumable(), notificationInfo.isAutoResumable);
                 break;
             case DOWNLOAD_NOTIFICATION_TYPE_SUCCESS:
                 final int notificationId = mBoundService.notifyDownloadSuccessful(
-                        info.getDownloadGuid(), info.getFilePath(), info.getFileName(),
+                        info.getContentId(), info.getFilePath(), info.getFileName(),
                         notificationInfo.systemDownloadId, info.isOffTheRecord(),
-                        info.isOfflinePage(), notificationInfo.isSupportedMimeType);
+                        notificationInfo.isSupportedMimeType);
                 onSuccessNotificationShown(notificationInfo, notificationId);
                 break;
             case DOWNLOAD_NOTIFICATION_TYPE_FAILURE:
-                mBoundService.notifyDownloadFailed(
-                        info.isOfflinePage(), info.getDownloadGuid(), info.getFileName());
+                mBoundService.notifyDownloadFailed(info.getContentId(), info.getFileName());
                 break;
             case DOWNLOAD_NOTIFICATION_TYPE_CANCEL:
-                mBoundService.notifyDownloadCanceled(info.getDownloadGuid());
+                mBoundService.notifyDownloadCanceled(info.getContentId());
                 break;
             case DOWNLOAD_NOTIFICATION_TYPE_RESUME_ALL:
                 mBoundService.resumeAllPendingDownloads();

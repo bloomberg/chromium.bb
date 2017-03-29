@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.net.Uri;
 
 import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.components.offline_items_collection.ContentId;
 
 /**
  * This {@link BroadcastReceiver} handles clicks to download notifications and their action buttons.
@@ -65,10 +66,9 @@ public class DownloadBroadcastReceiver extends BroadcastReceiver {
                 intent, DownloadNotificationService.EXTRA_IS_SUPPORTED_MIME_TYPE, false);
         boolean isOffTheRecord = IntentUtils.safeGetBooleanExtra(
                 intent, DownloadNotificationService.EXTRA_IS_OFF_THE_RECORD, false);
-        String downloadGuid = IntentUtils.safeGetStringExtra(
-                intent, DownloadNotificationService.EXTRA_DOWNLOAD_GUID);
+        ContentId contentId = DownloadNotificationService.getContentIdFromIntent(intent);
         DownloadManagerService.openDownloadedContent(
-                context, downloadFilename, isSupportedMimeType, isOffTheRecord, downloadGuid, id);
+                context, downloadFilename, isSupportedMimeType, isOffTheRecord, contentId.id, id);
     }
 
     /**
