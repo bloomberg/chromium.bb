@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsLauncher;
 import org.chromium.chrome.browser.offlinepages.BackgroundOfflinerTask;
+import org.chromium.chrome.browser.offlinepages.BackgroundScheduler;
 import org.chromium.chrome.browser.offlinepages.BackgroundSchedulerProcessorImpl;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.precache.PrecacheController;
@@ -44,7 +45,8 @@ public class ChromeBackgroundService extends GcmTaskService {
      * the UI thread is done before returning to the GcmNetworkManager.
      */
     public static final String HOLD_WAKELOCK = "HoldWakelock";
-    private static final int WAKELOCK_TIMEOUT_SECONDS = 4 * 60;
+    // GCM will return our wakelock after 3 minutes, we should be a second less than that.
+    private static final int WAKELOCK_TIMEOUT_SECONDS = 3 * 60 - 1;
 
     private BackgroundOfflinerTask mBackgroundOfflinerTask;
 
@@ -225,10 +227,15 @@ public class ChromeBackgroundService extends GcmTaskService {
         }
     }
 
+    protected void rescheduleOfflinePagesTasksOnUpgrade() {
+        BackgroundScheduler.getInstance(this).rescheduleOfflinePagesTasksOnUpgrade();
+    }
+
     @Override
     public void onInitializeTasks() {
         rescheduleBackgroundSyncTasksOnUpgrade();
         reschedulePrecacheTasksOnUpgrade();
         rescheduleSnippetsTasksOnUpgrade();
+        rescheduleOfflinePagesTasksOnUpgrade();
     }
 }

@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class BackgroundScheduler {
     private static final long ONE_WEEK_IN_SECONDS = TimeUnit.DAYS.toSeconds(7);
+    private static final long FIVE_MINUTES_IN_SECONDS = TimeUnit.MINUTES.toSeconds(5);
     private static final long NO_DELAY = 0;
     private static final boolean OVERWRITE = true;
 
@@ -71,5 +72,17 @@ public abstract class BackgroundScheduler {
     /** @return Context used to access OS services. */
     protected Context getContext() {
         return mContext;
+    }
+
+    /**
+     * If GooglePlayServices upgrades, any outstaning tasks will be lost.
+     * Set a reminder to wake up and check the task queue if an upgrade happens.
+     */
+    public void rescheduleOfflinePagesTasksOnUpgrade() {
+        // We use the least restrictive trigger conditions.  A wakeup will cause
+        // the queue to be checked, and the trigger conditions will be replaced by
+        // the current trigger conditions needed.
+        TriggerConditions triggerConditions = new TriggerConditions(false, 0, false);
+        scheduleBackup(triggerConditions, FIVE_MINUTES_IN_SECONDS);
     }
 }

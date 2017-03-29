@@ -35,6 +35,8 @@ public class BackgroundSchedulerTest {
     private Context mContext;
     private TriggerConditions mConditions1 = new TriggerConditions(
             true /* power */, 10 /* battery percentage */, false /* unmetered */);
+    private TriggerConditions mConditions2 = new TriggerConditions(
+            false /* power */, 0 /* battery percentage */, false /* unmetered */);
     private ShadowGcmNetworkManager mGcmNetworkManager;
 
     @Before
@@ -72,5 +74,22 @@ public class BackgroundSchedulerTest {
         assertNull(mGcmNetworkManager.getCanceledTask());
         BackgroundScheduler.getInstance(mContext).cancel();
         assertNotNull(mGcmNetworkManager.getCanceledTask());
+    }
+
+    @Test
+    @Feature({"OfflinePages"})
+    public void testReschedulOnUpgrade() {
+        assertNull(mGcmNetworkManager.getScheduledTask());
+        BackgroundScheduler.getInstance(mContext).rescheduleOfflinePagesTasksOnUpgrade();
+        // Check with gcmNetworkManagerShadow that schedule got called.
+        assertNotNull(mGcmNetworkManager.getScheduledTask());
+
+        // Verify details of the scheduled task.
+        Task task = mGcmNetworkManager.getScheduledTask();
+        assertEquals(OfflinePageUtils.TASK_TAG, task.getTag());
+        long scheduledTimeMillis = TaskExtrasPacker.unpackTimeFromBundle(task.getExtras());
+        assertTrue(scheduledTimeMillis > 0L);
+        assertEquals(
+                mConditions2, TaskExtrasPacker.unpackTriggerConditionsFromBundle(task.getExtras()));
     }
 }
