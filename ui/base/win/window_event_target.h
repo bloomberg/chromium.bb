@@ -30,6 +30,18 @@ class UI_BASE_EXPORT WindowEventTarget {
                                      LPARAM l_param,
                                      bool* handled) = 0;
 
+  // Handles pointer events like WM_POINTERUP, WM_POINTERDOWN, WM_POINTERUPDATE
+  // events.
+  // The |message| parameter identifies the message.
+  // The |w_param| and |l_param| values are as per MSDN docs.
+  // The |handled| parameter is an output parameter which when set to false
+  // indicates that the message should be DefProc'ed.
+  // Returns the result of processing the message.
+  virtual LRESULT HandlePointerMessage(unsigned int message,
+                                       WPARAM w_param,
+                                       LPARAM l_param,
+                                       bool* handled) = 0;
+
   // Handles keyboard events like WM_KEYDOWN/WM_KEYUP, etc.
   // The |message| parameter identifies the message.
   // The |w_param| and |l_param| values are dependent on the type of the

@@ -312,6 +312,19 @@ LRESULT LegacyRenderWidgetHostHWND::OnMouseActivate(UINT message,
   return MA_ACTIVATE;
 }
 
+LRESULT LegacyRenderWidgetHostHWND::OnPointer(UINT message,
+                                              WPARAM w_param,
+                                              LPARAM l_param) {
+  LRESULT ret = 0;
+  if (GetWindowEventTarget(GetParent())) {
+    bool msg_handled = false;
+    ret = GetWindowEventTarget(GetParent())
+              ->HandlePointerMessage(message, w_param, l_param, &msg_handled);
+    SetMsgHandled(msg_handled);
+  }
+  return ret;
+}
+
 LRESULT LegacyRenderWidgetHostHWND::OnTouch(UINT message,
                                             WPARAM w_param,
                                             LPARAM l_param) {

@@ -31,6 +31,7 @@
 #include "ui/display/win/dpi.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/events/event.h"
+#include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion_win.h"
 #include "ui/events/win/system_event_state_lookup.h"
@@ -974,6 +975,16 @@ LRESULT HWNDMessageHandler::HandleTouchMessage(unsigned int message,
   return ret;
 }
 
+LRESULT HWNDMessageHandler::HandlePointerMessage(unsigned int message,
+                                                 WPARAM w_param,
+                                                 LPARAM l_param,
+                                                 bool* handled) {
+  base::WeakPtr<HWNDMessageHandler> ref(weak_factory_.GetWeakPtr());
+  LRESULT ret = OnPointerEvent(message, w_param, l_param);
+  *handled = IsMsgHandled();
+  return ret;
+}
+
 LRESULT HWNDMessageHandler::HandleScrollMessage(unsigned int message,
                                                 WPARAM w_param,
                                                 LPARAM l_param,
@@ -1640,6 +1651,95 @@ LRESULT HWNDMessageHandler::OnPointerActivate(UINT message,
     return PA_NOACTIVATE;
   SetMsgHandled(FALSE);
   return -1;
+}
+
+LRESULT HWNDMessageHandler::OnPointerEvent(UINT message,
+                                           WPARAM w_param,
+                                           LPARAM l_param) {
+  // WM_POINTER is not supported on Windows 7 or lower.
+  if (base::win::GetVersion() <= base::win::VERSION_WIN7) {
+    SetMsgHandled(FALSE);
+    return -1;
+  }
+
+  UINT32 pointer_id = GET_POINTERID_WPARAM(w_param);
+  using GetPointerTypeFn = BOOL(WINAPI*)(UINT32, POINTER_INPUT_TYPE*);
+  POINTER_INPUT_TYPE pointer_type;
+  static GetPointerTypeFn get_pointer_type = reinterpret_cast<GetPointerTypeFn>(
+      GetProcAddress(GetModuleHandleA("user32.dll"), "GetPointerType"));
+  // If the WM_POINTER messages are not sent from a stylus device, then we do
+  // not handle them to make sure we do not change the current behavior of
+  // touch and mouse inputs.
+  if (!get_pointer_type || !get_pointer_type(pointer_id, &pointer_type) ||
+      pointer_type != PT_PEN) {
+    SetMsgHandled(FALSE);
+    return -1;
+  }
+
+  using GetPointerPenInfoFn = BOOL(WINAPI*)(UINT32, POINTER_PEN_INFO*);
+  POINTER_PEN_INFO pointer_pen_info;
+  static GetPointerPenInfoFn get_pointer_pen_info =
+      reinterpret_cast<GetPointerPenInfoFn>(
+          GetProcAddress(GetModuleHandleA("user32.dll"), "GetPointerPenInfo"));
+  if (!get_pointer_pen_info ||
+      !get_pointer_pen_info(pointer_id, &pointer_pen_info)) {
+    SetMsgHandled(FALSE);
+    return -1;
+  }
+
+  // We are now creating a fake mouse event with pointer type of pen from
+  // the WM_POINTER message and then setting up an associated pointer
+  // details in the MouseEvent which contains the pen's information.
+  float pressure = static_cast<float>(pointer_pen_info.pressure) / 1024;
+  float rotation = pointer_pen_info.rotation;
+  int tilt_x = pointer_pen_info.tiltX;
+  int tilt_y = pointer_pen_info.tiltY;
+  POINT client_point = pointer_pen_info.pointerInfo.ptPixelLocationRaw;
+  ScreenToClient(hwnd(), &client_point);
+  gfx::Point point = gfx::Point(client_point.x, client_point.y);
+  ui::EventType event_type = ui::ET_MOUSE_MOVED;
+  int flag = -1;
+  int click_count = 0;
+  switch (message) {
+    case WM_POINTERDOWN:
+      event_type = ui::ET_MOUSE_PRESSED;
+      flag = ui::EF_LEFT_MOUSE_BUTTON;
+      click_count = 1;
+      break;
+    case WM_POINTERUP:
+      event_type = ui::ET_MOUSE_RELEASED;
+      flag = ui::EF_LEFT_MOUSE_BUTTON;
+      click_count = 1;
+      break;
+    case WM_POINTERUPDATE:
+      event_type = ui::ET_MOUSE_MOVED;
+      break;
+    case WM_POINTERENTER:
+      event_type = ui::ET_MOUSE_ENTERED;
+      break;
+    case WM_POINTERLEAVE:
+      event_type = ui::ET_MOUSE_EXITED;
+      break;
+    default:
+      NOTREACHED();
+  }
+  ui::MouseEvent event(event_type, point, point, base::TimeTicks::Now(), flag,
+                       flag);
+  ui::PointerDetails pointer_details(
+      ui::EventPointerType::POINTER_TYPE_PEN, pointer_id,
+      /* radius_x */ 0.0f, /* radius_y */ 0.0f, pressure, tilt_x, tilt_y,
+      /* tangential_pressure */ 0.0f, rotation);
+  event.set_pointer_details(pointer_details);
+  event.SetClickCount(click_count);
+
+  // There are cases where the code handling the message destroys the
+  // window, so use the weak ptr to check if destruction occured or not.
+  base::WeakPtr<HWNDMessageHandler> ref(weak_factory_.GetWeakPtr());
+  bool handled = delegate_->HandleMouseEvent(event);
+
+  if (ref)
+    SetMsgHandled(handled);
+  return 0;
 }
 
 void HWNDMessageHandler::OnMove(const gfx::Point& point) {

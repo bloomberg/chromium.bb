@@ -235,7 +235,10 @@ class VIEWS_EXPORT HWNDMessageHandler :
                              WPARAM w_param,
                              LPARAM l_param,
                              bool* handled) override;
-
+  LRESULT HandlePointerMessage(unsigned int message,
+                               WPARAM w_param,
+                               LPARAM l_param,
+                               bool* handled) override;
   LRESULT HandleScrollMessage(unsigned int message,
                               WPARAM w_param,
                               LPARAM l_param,
@@ -358,6 +361,11 @@ class VIEWS_EXPORT HWNDMessageHandler :
 
     // Pointer events.
     CR_MESSAGE_HANDLER_EX(WM_POINTERACTIVATE, OnPointerActivate)
+    CR_MESSAGE_HANDLER_EX(WM_POINTERDOWN, OnPointerEvent)
+    CR_MESSAGE_HANDLER_EX(WM_POINTERUP, OnPointerEvent)
+    CR_MESSAGE_HANDLER_EX(WM_POINTERUPDATE, OnPointerEvent)
+    CR_MESSAGE_HANDLER_EX(WM_POINTERENTER, OnPointerEvent)
+    CR_MESSAGE_HANDLER_EX(WM_POINTERLEAVE, OnPointerEvent)
 
     // Key events.
     CR_MESSAGE_HANDLER_EX(WM_KEYDOWN, OnKeyEvent)
@@ -460,6 +468,7 @@ class VIEWS_EXPORT HWNDMessageHandler :
   LRESULT OnMouseActivate(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnPointerActivate(UINT message, WPARAM w_param, LPARAM l_param);
+  LRESULT OnPointerEvent(UINT message, WPARAM w_param, LPARAM l_param);
   void OnMove(const gfx::Point& point);
   void OnMoving(UINT param, const RECT* new_bounds);
   LRESULT OnNCActivate(UINT message, WPARAM w_param, LPARAM l_param);
