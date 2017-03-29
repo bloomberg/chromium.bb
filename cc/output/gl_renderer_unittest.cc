@@ -11,6 +11,7 @@
 
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/base/math_util.h"
 #include "cc/output/copy_output_request.h"
@@ -2031,6 +2032,8 @@ class DCLayerValidator : public OverlayCandidateValidator {
 // Test that SetEnableDCLayersCHROMIUM is properly called when enabling
 // and disabling DC layers.
 TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kDirectCompositionUnderlays);
   auto gl_owned = base::MakeUnique<PartialSwapMockGLES2Interface>(true);
   auto* gl = gl_owned.get();
 

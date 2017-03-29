@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/memory/ptr_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "cc/base/filter_operation.h"
 #include "cc/base/region.h"
 #include "cc/output/ca_layer_overlay.h"
@@ -38,6 +39,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gl/gl_switches.h"
 
 using testing::_;
 using testing::Mock;
@@ -1751,6 +1753,9 @@ TEST_F(CALayerOverlayTest, SkipTransparent) {
 }
 
 TEST_F(DCLayerOverlayTest, AllowNonAxisAlignedTransform) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kDirectCompositionComplexOverlays);
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
   CreateFullscreenCandidateYUVVideoQuad(resource_provider_.get(),
                                         pass->shared_quad_state_list.back(),
@@ -1777,6 +1782,8 @@ TEST_F(DCLayerOverlayTest, AllowNonAxisAlignedTransform) {
 }
 
 TEST_F(DCLayerOverlayTest, Occluded) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kDirectCompositionUnderlays);
   {
     std::unique_ptr<RenderPass> pass = CreateRenderPass();
     CreateOpaqueQuadAt(resource_provider_.get(),

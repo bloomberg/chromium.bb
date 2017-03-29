@@ -72,6 +72,9 @@ namespace features {
 GL_EXPORT extern const base::Feature kD3DVsync;
 #endif  // defined(OS_WIN)
 
+GL_EXPORT extern const base::Feature kDirectCompositionUnderlays;
+GL_EXPORT extern const base::Feature kDirectCompositionComplexOverlays;
+
 }  // namespace features
 
 #endif  // UI_GL_GL_SWITCHES_H_

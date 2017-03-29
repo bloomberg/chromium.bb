@@ -10,6 +10,7 @@
 #include "cc/resources/resource_provider.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gl/gl_switches.h"
 
 namespace cc {
 
@@ -121,12 +122,18 @@ void DCLayerOverlayProcessor::Process(ResourceProvider* resource_provider,
                                         quad_list->begin(), it, &ca_layer);
     if (result != DC_LAYER_SUCCESS)
       continue;
+
+    if (!it->shared_quad_state->quad_to_target_transform
+             .Preserves2dAxisAlignment() &&
+        !base::FeatureList::IsEnabled(
+            features::kDirectCompositionComplexOverlays)) {
+      continue;
+    }
+
     gfx::Rect quad_rectangle = MathUtil::MapEnclosingClippedRect(
         it->shared_quad_state->quad_to_target_transform, it->rect);
     gfx::RectF occlusion_bounding_box =
         GetOcclusionBounds(gfx::RectF(quad_rectangle), quad_list->begin(), it);
-    overlay_damage_rect->Union(quad_rectangle);
-
     if (occlusion_bounding_box.IsEmpty()) {
       // The quad is on top, so promote it to an overlay and remove all damage
       // underneath it.
@@ -136,6 +143,9 @@ void DCLayerOverlayProcessor::Process(ResourceProvider* resource_provider,
         damage_rect->Subtract(quad_rectangle);
       }
       quad_list->EraseAndInvalidateAllPointers(it);
+    } else if (!base::FeatureList::IsEnabled(
+                   features::kDirectCompositionUnderlays)) {
+      continue;
     } else {
       // The quad is occluded, so replace it with a black solid color quad and
       // place the overlay itself under the quad.
@@ -176,6 +186,7 @@ void DCLayerOverlayProcessor::Process(ResourceProvider* resource_provider,
       previous_occlusion_bounding_box_ =
           gfx::ToEnclosingRect(occlusion_bounding_box);
     }
+    overlay_damage_rect->Union(quad_rectangle);
 
     ca_layer_overlays->push_back(ca_layer);
     // Only allow one overlay for now.

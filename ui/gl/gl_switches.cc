@@ -153,4 +153,15 @@ namespace features {
 const base::Feature kD3DVsync{"D3DVsync", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN)
 
+// Allow putting a video swapchain underneath the main swapchain, so overlays
+// can be used even if there are controls on top of the video. This requires
+// the DirectCompositionOverlays feature to be enabled.
+const base::Feature kDirectCompositionUnderlays{
+    "DirectCompositionUnderlays", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Allow putting content with complex transforms (e.g. rotations) into an
+// overlay.
+const base::Feature kDirectCompositionComplexOverlays{
+    "DirectCompositionComplexOverlays", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
