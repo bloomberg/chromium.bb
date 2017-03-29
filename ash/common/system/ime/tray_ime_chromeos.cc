@@ -6,9 +6,7 @@
 
 #include <vector>
 
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
-#include "ash/common/system/tray/hover_highlight_view.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
@@ -23,7 +21,6 @@
 #include "ash/common/system/tray/tri_view.h"
 #include "ash/common/system/tray_accessibility.h"
 #include "ash/common/wm_shell.h"
-#include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -32,7 +29,6 @@
 #include "ui/accessibility/ax_enums.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -45,45 +41,11 @@
 namespace ash {
 namespace tray {
 
-// A |HoverHighlightView| that uses bold or normal font depending on whether
-// it is selected.  This view exposes itself as a checkbox to the accessibility
-// framework.
-class SelectableHoverHighlightView : public HoverHighlightView {
- public:
-  SelectableHoverHighlightView(ViewClickListener* listener,
-                               const base::string16& label,
-                               bool selected)
-      : HoverHighlightView(listener), selected_(selected) {
-    AddLabel(label, gfx::ALIGN_LEFT, selected);
-  }
-
-  ~SelectableHoverHighlightView() override {}
-
- protected:
-  // Overridden from views::View.
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    HoverHighlightView::GetAccessibleNodeData(node_data);
-    node_data->role = ui::AX_ROLE_CHECK_BOX;
-    if (selected_)
-      node_data->AddStateFlag(ui::AX_STATE_CHECKED);
-  }
-
- private:
-  bool selected_;
-
-  DISALLOW_COPY_AND_ASSIGN(SelectableHoverHighlightView);
-};
-
 class IMEDefaultView : public TrayItemMore {
  public:
   IMEDefaultView(SystemTrayItem* owner, const base::string16& label)
       : TrayItemMore(owner) {
-    if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-      SetImage(gfx::CreateVectorIcon(kSystemMenuKeyboardIcon, kMenuIconColor));
-    } else {
-      ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-      SetImage(*bundle.GetImageNamed(IDR_AURA_UBER_TRAY_IME).ToImageSkia());
-    }
+    SetImage(gfx::CreateVectorIcon(kSystemMenuKeyboardIcon, kMenuIconColor));
     UpdateLabel(label);
   }
 
@@ -99,9 +61,6 @@ class IMEDefaultView : public TrayItemMore {
   void UpdateStyle() override {
     TrayItemMore::UpdateStyle();
 
-    if (!MaterialDesignController::IsSystemTrayMenuMaterial())
-      return;
-
     std::unique_ptr<TrayPopupItemStyle> style = CreateStyle();
     SetImage(
         gfx::CreateVectorIcon(kSystemMenuKeyboardIcon, style->GetIconColor()));
@@ -114,10 +73,7 @@ class IMEDefaultView : public TrayItemMore {
 class IMEDetailedView : public ImeListView {
  public:
   IMEDetailedView(SystemTrayItem* owner, LoginStatus login)
-      : ImeListView(owner),
-        login_(login),
-        settings_(nullptr),
-        settings_button_(nullptr) {}
+      : ImeListView(owner), login_(login), settings_button_(nullptr) {}
 
   ~IMEDetailedView() override {}
 
@@ -131,22 +87,11 @@ class IMEDetailedView : public ImeListView {
               SingleImeBehavior single_ime_behavior) override {
     ImeListView::Update(list, property_list, show_keyboard_toggle,
                         single_ime_behavior);
-    if (!MaterialDesignController::IsSystemTrayMenuMaterial() &&
-        TrayPopupUtils::CanOpenWebUISettings(login_)) {
-      AppendSettings();
-    }
-
     CreateTitleRow(IDS_ASH_STATUS_TRAY_IME);
   }
 
  private:
   // ImeListView:
-  void HandleViewClicked(views::View* view) override {
-    ImeListView::HandleViewClicked(view);
-    if (view == settings_)
-      ShowSettings();
-  }
-
   void ResetImeListView() override {
     ImeListView::ResetImeListView();
     settings_button_ = nullptr;
@@ -161,30 +106,18 @@ class IMEDetailedView : public ImeListView {
   }
 
   void CreateExtraTitleRowButtons() override {
-    if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-      if (!ime_managed_message_.empty()) {
-        controlled_setting_icon_ = TrayPopupUtils::CreateMainImageView();
-        controlled_setting_icon_->SetImage(
-            gfx::CreateVectorIcon(kSystemMenuBusinessIcon, kMenuIconColor));
-        controlled_setting_icon_->SetTooltipText(ime_managed_message_);
-        tri_view()->AddView(TriView::Container::END, controlled_setting_icon_);
-      }
-
-      tri_view()->SetContainerVisible(TriView::Container::END, true);
-      settings_button_ =
-          CreateSettingsButton(login_, IDS_ASH_STATUS_TRAY_IME_SETTINGS);
-      tri_view()->AddView(TriView::Container::END, settings_button_);
+    if (!ime_managed_message_.empty()) {
+      controlled_setting_icon_ = TrayPopupUtils::CreateMainImageView();
+      controlled_setting_icon_->SetImage(
+          gfx::CreateVectorIcon(kSystemMenuBusinessIcon, kMenuIconColor));
+      controlled_setting_icon_->SetTooltipText(ime_managed_message_);
+      tri_view()->AddView(TriView::Container::END, controlled_setting_icon_);
     }
-  }
 
-  void AppendSettings() {
-    HoverHighlightView* container = new HoverHighlightView(this);
-    container->AddLabel(
-        ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-            IDS_ASH_STATUS_TRAY_IME_SETTINGS),
-        gfx::ALIGN_LEFT, false /* highlight */);
-    AddChildView(container);
-    settings_ = container;
+    tri_view()->SetContainerVisible(TriView::Container::END, true);
+    settings_button_ =
+        CreateSettingsButton(login_, IDS_ASH_STATUS_TRAY_IME_SETTINGS);
+    tri_view()->AddView(TriView::Container::END, settings_button_);
   }
 
   void ShowSettings() {
@@ -196,10 +129,6 @@ class IMEDetailedView : public ImeListView {
 
   LoginStatus login_;
 
-  // Not used in material design.
-  views::View* settings_;
-
-  // Only used in material design.
   views::Button* settings_button_;
 
   // This icon says that the IMEs are managed by policy.
@@ -289,7 +218,7 @@ base::string16 TrayIME::GetDefaultViewLabel(bool show_ime_label) {
     int id = keyboard::IsKeyboardEnabled()
                  ? IDS_ASH_STATUS_TRAY_KEYBOARD_ENABLED
                  : IDS_ASH_STATUS_TRAY_KEYBOARD_DISABLED;
-    return ui::ResourceBundle::GetSharedInstance().GetLocalizedString(id);
+    return l10n_util::GetStringUTF16(id);
   }
 }
 

@@ -493,7 +493,7 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
     full_system_tray_menu_ = items.size() > 1;
 
     TrayBubbleView::InitParams init_params(
-        GetAnchorAlignment(), kTrayMenuMinimumWidthMd, kTrayPopupMaxWidth);
+        GetAnchorAlignment(), kTrayMenuMinimumWidth, kTrayPopupMaxWidth);
     // TODO(oshima): Change TrayBubbleView itself.
     init_params.can_activate = false;
     if (detailed) {
