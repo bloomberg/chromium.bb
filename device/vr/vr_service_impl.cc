@@ -36,8 +36,8 @@ void VRServiceImpl::SetClient(mojom::VRServiceClientPtr service_client,
   client_ = std::move(service_client);
   VRDeviceManager* device_manager = VRDeviceManager::GetInstance();
   // Once a client has been connected AddService will force any VRDisplays to
-  // send OnConnected to it so that it's populated with the currently active
-  // displays. Thereafer it will stay up to date by virtue of listening for new
+  // send ConnectDevice to it so that it's populated with the currently active
+  // displays. Thereafter it will stay up to date by virtue of listening for new
   // connected events.
   device_manager->AddService(this);
   callback.Run(device_manager->GetNumberOfConnectedDevices());
@@ -67,6 +67,12 @@ void VRServiceImpl::OnVRDisplayInfoCreated(
   if (!client_) {
     DLOG(ERROR) << "Cannot create VR display because connection to render "
                    "process is not established";
+    return;
+  }
+  if (!display_info) {
+    // If we get passed a null display info it means the device does not exist.
+    // This can happen for example if VR services are not installed. We will not
+    // instantiate a display in this case.
     return;
   }
   displays_[device] = base::MakeUnique<VRDisplayImpl>(
