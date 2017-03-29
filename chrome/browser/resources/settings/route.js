@@ -194,6 +194,8 @@ cr.define('settings', function() {
   r.SITE_SETTINGS_PDF_DOCUMENTS = r.SITE_SETTINGS.createChild('pdfDocuments');
   r.SITE_SETTINGS_PROTECTED_CONTENT =
       r.SITE_SETTINGS.createChild('protectedContent');
+  r.SITE_SETTINGS_SUBRESOURCE_FILTER =
+      r.SITE_SETTINGS.createChild('subresourceFilter');
 
 // <if expr="chromeos">
   r.DATETIME = r.ADVANCED.createSection('/dateTime', 'dateTime');

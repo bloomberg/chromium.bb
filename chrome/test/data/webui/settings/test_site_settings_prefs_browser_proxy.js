@@ -46,6 +46,7 @@ var prefsEmpty = {
     notifications: '',
     plugins: '',
     popups: '',
+    subresource_filter: '',
     unsandboxed_plugins: '',
   },
   exceptions: {
@@ -60,6 +61,7 @@ var prefsEmpty = {
     notifications: [],
     plugins: [],
     popups: [],
+    subresource_filter: [],
     unsandboxed_plugins: [],
   },
 };
@@ -223,6 +225,9 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
     } else if (
         contentType == settings.ContentSettingsTypes.UNSANDBOXED_PLUGINS) {
       pref = this.prefs_.defaults.unsandboxed_plugins;
+    }
+    else if (contentType == settings.ContentSettingsTypes.SUBRESOURCE_FILTER) {
+      pref = this.prefs_.defaults.subresource_filter;
     } else {
       console.log('getDefault received unknown category: ' + contentType);
     }
@@ -266,6 +271,9 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
       pref = this.prefs_.exceptions.popups;
     else if (contentType == settings.ContentSettingsTypes.UNSANDBOXED_PLUGINS)
       pref = this.prefs_.exceptions.unsandboxed_plugins;
+    else if (contentType == settings.ContentSettingsTypes.SUBRESOURCE_FILTER) {
+      pref = this.prefs_.exceptions.subresource_filter;
+    }
     else
       console.log('getExceptionList received unknown category: ' + contentType);
 

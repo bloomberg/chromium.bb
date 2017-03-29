@@ -113,6 +113,8 @@ const PermissionsUIInfo kPermissionsUIInfo[] = {
     // Autoplay is Android-only at the moment, and the Origin Info bubble in
     // Android ignores these block/allow icon pairs, so we can specify 0 there.
     {CONTENT_SETTINGS_TYPE_AUTOPLAY, IDS_PAGE_INFO_TYPE_AUTOPLAY, 0, 0},
+    {CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, IDS_SUBRESOURCE_FILTER_HEADER,
+     IDR_ALLOWED_SUBRESOURCE_FILTER, IDR_BLOCKED_SUBRESOURCE_FILTER},
 };
 
 std::unique_ptr<PageInfoUI::SecurityDescription> CreateSecurityDescription(

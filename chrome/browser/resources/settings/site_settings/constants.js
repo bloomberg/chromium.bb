@@ -32,6 +32,7 @@ settings.ContentSettingsTypes = {
 // <if expr="chromeos">
   PROTECTED_CONTENT: 'protectedContent',
 // </if>
+  SUBRESOURCE_FILTER: 'subresource-filter',
 };
 
 /**

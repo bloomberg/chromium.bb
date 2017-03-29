@@ -50,6 +50,7 @@ cr.define('site_list', function() {
       plugins: [],
       protectedContent: [],
       popups: [],
+      subresource_filter: [],
       unsandboxed_plugins: [],
     }
   };
@@ -158,6 +159,7 @@ cr.define('site_list', function() {
       midiDevices: [],
       protectedContent: [],
       popups: [],
+      subresource_filter: [],
       unsandboxed_plugins: [],
     }
   };
@@ -219,6 +221,7 @@ cr.define('site_list', function() {
       plugins: [],
       protectedContent: [],
       popups: [],
+      subresource_filter: [],
       unsandboxed_plugins: [],
     }
   };

@@ -29,6 +29,7 @@
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -1798,6 +1799,9 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
     {"embeddedIncognitoSite", IDS_SETTINGS_SITE_SETTINGS_INCOGNITO_EMBEDDED},
     {"siteSettingsSiteDetails", IDS_SETTINGS_SITE_DETAILS},
     {"noSitesAdded", IDS_SETTINGS_SITE_NO_SITES_ADDED},
+    {"siteSettingsSubresourceFilter", IDS_SUBRESOURCE_FILTER_HEADER},
+    {"siteSettingsSubresourceFilterAllow", IDS_SUBRESOURCE_FILTER_ALLOW_RADIO},
+    {"siteSettingsSubresourceFilterBlock", IDS_SUBRESOURCE_FILTER_BLOCK_RADIO},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
@@ -1805,6 +1809,10 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean("enableSiteSettings",
                           base::CommandLine::ForCurrentProcess()->HasSwitch(
                               switches::kEnableSiteSettings));
+  html_source->AddBoolean(
+      "enableSafeBrowsingSubresourceFilter",
+      base::FeatureList::IsEnabled(
+          subresource_filter::kSafeBrowsingSubresourceFilterExperimentalUI));
 
   if (PluginUtils::ShouldPreferHtmlOverPlugins(
           HostContentSettingsMapFactory::GetForProfile(profile))) {

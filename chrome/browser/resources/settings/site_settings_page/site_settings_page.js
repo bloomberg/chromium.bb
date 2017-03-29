@@ -40,6 +40,15 @@ Polymer({
       type: Boolean,
       value: function() { return loadTimeData.getBoolean('isGuest'); }
     },
+
+    /** @private */
+    enableSafeBrowsingSubresourceFilter_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enableSafeBrowsingSubresourceFilter');
+      }
+    },
+
   },
 
   /** @override */

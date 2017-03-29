@@ -56,6 +56,7 @@
 #include "components/ssl_errors/error_info.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
@@ -109,6 +110,7 @@ ContentSettingsType kPermissionType[] = {
     CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
     CONTENT_SETTINGS_TYPE_AUTOPLAY,
     CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
+    CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER,
 };
 
 // Determines whether to show permission |type| in the Page Info UI. Only
@@ -119,6 +121,11 @@ bool ShouldShowPermission(ContentSettingsType type) {
   if (type == CONTENT_SETTINGS_TYPE_AUTOPLAY)
     return false;
 #endif
+
+  if (type == CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER) {
+    return base::FeatureList::IsEnabled(
+        subresource_filter::kSafeBrowsingSubresourceFilterExperimentalUI);
+  }
 
   return true;
 }

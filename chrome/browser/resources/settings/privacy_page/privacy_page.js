@@ -93,6 +93,14 @@ Polymer({
       type: Object,
       value: NetworkPredictionOptions,
     },
+
+    /** @private */
+    enableSafeBrowsingSubresourceFilter_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enableSafeBrowsingSubresourceFilter');
+      }
+    },
   },
 
   listeners: {
