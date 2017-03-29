@@ -37,6 +37,7 @@ source_set("authentication") {
   ]
   deps = [
     ":authentication_arc",
+    ":authentication_ui",
     ":resources",
     "//base",
     "//components/google/core/browser",
@@ -83,23 +84,44 @@ source_set("authentication") {
 source_set("authentication_arc") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "account_control_item.h",
-    "account_control_item.mm",
     "resized_avatar_cache.h",
     "resized_avatar_cache.mm",
+    "signin_promo_view_mediator.h",
+    "signin_promo_view_mediator.mm",
   ]
   deps = [
+    ":authentication_ui",
+    "//base",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/browser/ui",
+    "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/signin",
+    "//ios/third_party/material_components_ios",
+    "//ui/base",
+  ]
+  libs = [ "UIKit.framework" ]
+}
+
+source_set("authentication_ui") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "account_control_item.h",
+    "account_control_item.mm",
+    "signin_promo_item.h",
+    "signin_promo_item.mm",
+    "signin_promo_view.h",
+    "signin_promo_view.mm",
+  ]
+  deps = [
+    "//base",
+    "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/browser/ui/colors",
     "//ios/public/provider/chrome/browser",
-    "//ios/public/provider/chrome/browser/signin",
+    "//ui/base",
   ]
-  libs = [
-    "CoreGraphics.framework",
-    "QuartzCore.framework",
-    "UIKit.framework",
-  ]
+  libs = [ "UIKit.framework" ]
 }
 
 source_set("unit_tests") {
@@ -110,10 +132,14 @@ source_set("unit_tests") {
     "authentication_flow_unittest.mm",
     "re_signin_infobar_delegate_unittest.mm",
     "signed_in_accounts_view_controller_unittest.mm",
+    "signin_promo_item_unittest.mm",
+    "signin_promo_view_mediator_unittest.mm",
+    "signin_promo_view_unittest.mm",
   ]
   deps = [
     ":authentication",
     ":authentication_arc",
+    ":authentication_ui",
     "//base",
     "//base/test:test_support",
     "//components/pref_registry",

@@ -7,6 +7,7 @@
 #import <UIKit/UIKit.h>
 
 #import "base/mac/foundation_util.h"
+#import "base/mac/scoped_nsobject.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/grit/components_scaled_resources.h"
@@ -14,6 +15,8 @@
 #import "ios/chrome/browser/payments/cells/payments_text_item.h"
 #import "ios/chrome/browser/payments/cells/price_item.h"
 #import "ios/chrome/browser/ui/authentication/account_control_item.h"
+#import "ios/chrome/browser/ui/authentication/signin_promo_item.h"
+#import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 #import "ios/chrome/browser/ui/autofill/cells/cvc_item.h"
 #import "ios/chrome/browser/ui/autofill/cells/status_item.h"
 #import "ios/chrome/browser/ui/autofill/cells/storage_switch_item.h"
@@ -31,7 +34,6 @@
 #import "ios/chrome/browser/ui/settings/cells/autofill_data_item.h"
 #import "ios/chrome/browser/ui/settings/cells/autofill_edit_item.h"
 #import "ios/chrome/browser/ui/settings/cells/native_app_item.h"
-#import "ios/chrome/browser/ui/settings/cells/signin_promo_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/text_and_error_item.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -74,7 +76,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeAccountDetail,
   ItemTypeAccountCheckMark,
   ItemTypeAccountSignIn,
-  ItemTypeSigninPromo,
+  ItemTypeColdStateSigninPromo,
+  ItemTypeWarmStateSigninPromo,
   ItemTypeApp,
   ItemTypePaymentsSingleLine,
   ItemTypePaymentsDynamicHeight,
@@ -92,7 +95,10 @@ const CGFloat kHorizontalImageFixedSize = 40;
 
 }  // namespace
 
-@implementation MaterialCellCatalogViewController
+@implementation MaterialCellCatalogViewController {
+  base::scoped_nsobject<SigninPromoViewMediator> _coldStateMediator;
+  base::scoped_nsobject<SigninPromoViewMediator> _warmStateMediator;
+}
 
 - (instancetype)init {
   self = [super initWithStyle:CollectionViewControllerStyleAppBar];
@@ -312,7 +318,9 @@ const CGFloat kHorizontalImageFixedSize = 40;
       toSectionWithIdentifier:SectionIdentifierAccountCell];
   [model addItem:[self accountSignInItem]
       toSectionWithIdentifier:SectionIdentifierAccountCell];
-  [model addItem:[self signinPromoItem]
+  [model addItem:[self coldStateSigninPromoItem]
+      toSectionWithIdentifier:SectionIdentifierAccountCell];
+  [model addItem:[self warmStateSigninPromoItem]
       toSectionWithIdentifier:SectionIdentifierAccountCell];
 
   // Account control cells.
@@ -366,7 +374,8 @@ const CGFloat kHorizontalImageFixedSize = 40;
     case ItemTypeAutofillStorageSwitch:
     case ItemTypePaymentsDynamicHeight:
     case ItemTypeAutofillDynamicHeight:
-    case ItemTypeSigninPromo:
+    case ItemTypeColdStateSigninPromo:
+    case ItemTypeWarmStateSigninPromo:
       return [MDCCollectionViewCell
           cr_preferredHeightForWidth:CGRectGetWidth(collectionView.bounds)
                              forItem:item];
@@ -420,12 +429,13 @@ const CGFloat kHorizontalImageFixedSize = 40;
   CollectionViewItem* item =
       [self.collectionViewModel itemAtIndexPath:indexPath];
   switch (item.type) {
-    case ItemTypeSwitchBasic:
-    case ItemTypeSwitchDynamicHeight:
     case ItemTypeApp:
     case ItemTypeAutofillStorageSwitch:
+    case ItemTypeColdStateSigninPromo:
+    case ItemTypeSwitchBasic:
+    case ItemTypeSwitchDynamicHeight:
     case ItemTypeSwitchSync:
-    case ItemTypeSigninPromo:
+    case ItemTypeWarmStateSigninPromo:
       return YES;
     default:
       return NO;
@@ -474,17 +484,20 @@ const CGFloat kHorizontalImageFixedSize = 40;
   return accountSignInItem;
 }
 
-- (CollectionViewItem*)signinPromoItem {
-  SigninPromoItem* signinPromoItem =
-      [[[SigninPromoItem alloc] initWithType:ItemTypeSigninPromo] autorelease];
-  signinPromoItem.profileName = @"Jane";
-  signinPromoItem.profileEmail = @"jane@example.com";
-  signinPromoItem.profileImage =
-      CircularImageFromImage(ios::GetChromeBrowserProvider()
-                                 ->GetSigninResourcesProvider()
-                                 ->GetDefaultAvatar(),
-                             kHorizontalImageFixedSize);
-  return signinPromoItem;
+- (CollectionViewItem*)coldStateSigninPromoItem {
+  _coldStateMediator.reset([[SigninPromoViewMediator alloc] init]);
+  return
+      [[[SigninPromoItem alloc] initWithType:ItemTypeWarmStateSigninPromo
+                                configurator:_coldStateMediator] autorelease];
+}
+
+- (CollectionViewItem*)warmStateSigninPromoItem {
+  _warmStateMediator.reset([[SigninPromoViewMediator alloc] init]);
+  _warmStateMediator.get().userFullName = @"John Doe";
+  _warmStateMediator.get().userEmail = @"johndoe@example.com";
+  return
+      [[[SigninPromoItem alloc] initWithType:ItemTypeColdStateSigninPromo
+                                configurator:_warmStateMediator] autorelease];
 }
 
 - (CollectionViewItem*)accountControlItem {
