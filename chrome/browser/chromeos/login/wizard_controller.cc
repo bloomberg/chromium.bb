@@ -38,6 +38,7 @@
 #include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen.h"
 #include "chrome/browser/chromeos/login/screens/device_disabled_screen.h"
 #include "chrome/browser/chromeos/login/screens/enable_debugging_screen.h"
+#include "chrome/browser/chromeos/login/screens/encryption_migration_screen.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
 #include "chrome/browser/chromeos/login/screens/hid_detection_view.h"
@@ -425,6 +426,9 @@ BaseScreen* WizardController::CreateScreen(OobeScreen screen) {
   } else if (screen == OobeScreen::SCREEN_DEVICE_DISABLED) {
     return new DeviceDisabledScreen(this,
                                     oobe_ui_->GetDeviceDisabledScreenView());
+  } else if (screen == OobeScreen::SCREEN_ENCRYPTION_MIGRATION) {
+    return new EncryptionMigrationScreen(
+        this, oobe_ui_->GetEncryptionMigrationScreenView());
   }
 
   return nullptr;
@@ -633,6 +637,12 @@ void WizardController::ShowDeviceDisabledScreen() {
   VLOG(1) << "Showing device disabled screen.";
   SetStatusAreaVisible(true);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_DEVICE_DISABLED));
+}
+
+void WizardController::ShowEncryptionMigrationScreen() {
+  VLOG(1) << "Showing encryption migration screen.";
+  SetStatusAreaVisible(true);
+  SetCurrentScreen(GetScreen(OobeScreen::SCREEN_ENCRYPTION_MIGRATION));
 }
 
 void WizardController::SkipToLoginForTesting(
@@ -1066,6 +1076,8 @@ void WizardController::AdvanceToScreen(OobeScreen screen) {
     ShowHostPairingScreen();
   } else if (screen == OobeScreen::SCREEN_DEVICE_DISABLED) {
     ShowDeviceDisabledScreen();
+  } else if (screen == OobeScreen::SCREEN_ENCRYPTION_MIGRATION) {
+    ShowEncryptionMigrationScreen();
   } else if (screen != OobeScreen::SCREEN_TEST_NO_WINDOW) {
     if (is_out_of_box_) {
       time_oobe_started_ = base::Time::Now();

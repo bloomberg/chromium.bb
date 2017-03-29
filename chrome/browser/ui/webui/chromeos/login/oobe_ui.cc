@@ -38,6 +38,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/controller_pairing_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/device_disabled_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/enable_debugging_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/encryption_migration_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/enrollment_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
@@ -291,6 +292,8 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
 
   AddScreenHandler(base::MakeUnique<DeviceDisabledScreenHandler>());
 
+  AddScreenHandler(base::MakeUnique<EncryptionMigrationScreenHandler>());
+
   // Initialize KioskAppMenuHandler. Note that it is NOT a screen handler.
   auto kiosk_app_menu_handler =
       base::MakeUnique<KioskAppMenuHandler>(network_state_informer_);
@@ -401,6 +404,10 @@ HostPairingScreenView* OobeUI::GetHostPairingScreenView() {
 
 DeviceDisabledScreenView* OobeUI::GetDeviceDisabledScreenView() {
   return GetView<DeviceDisabledScreenHandler>();
+}
+
+EncryptionMigrationScreenView* OobeUI::GetEncryptionMigrationScreenView() {
+  return GetView<EncryptionMigrationScreenHandler>();
 }
 
 UserImageView* OobeUI::GetUserImageView() {

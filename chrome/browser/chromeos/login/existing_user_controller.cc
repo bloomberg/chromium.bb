@@ -597,6 +597,10 @@ void ExistingUserController::ShowKioskAutolaunchScreen() {
   host_->StartWizard(OobeScreen::SCREEN_KIOSK_AUTOLAUNCH);
 }
 
+void ExistingUserController::ShowEncryptionMigrationScreen() {
+  host_->StartWizard(OobeScreen::SCREEN_ENCRYPTION_MIGRATION);
+}
+
 void ExistingUserController::ShowTPMError() {
   login_display_->SetUIEnabled(false);
   login_display_->ShowErrorScreen(LoginDisplay::TPM_ERROR);
@@ -823,6 +827,10 @@ void ExistingUserController::OnPasswordChangeDetected() {
   }
 
   ShowPasswordChangedDialog();
+}
+
+void ExistingUserController::OnOldEncryptionDetected() {
+  ShowEncryptionMigrationScreen();
 }
 
 void ExistingUserController::WhiteListCheckFailed(const std::string& email) {

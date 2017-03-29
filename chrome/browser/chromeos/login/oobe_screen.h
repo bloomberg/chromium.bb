@@ -45,6 +45,7 @@ enum class OobeScreen : unsigned int {
   SCREEN_UNRECOVERABLE_CRYPTOHOME_ERROR,
   SCREEN_USER_SELECTION,
   SCREEN_ACTIVE_DIRECTORY_PASSWORD_CHANGE,
+  SCREEN_ENCRYPTION_MIGRATION,
 
   // Special "first screen" that initiates login flow.
   SCREEN_SPECIAL_LOGIN,

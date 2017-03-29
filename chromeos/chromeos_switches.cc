@@ -458,6 +458,9 @@ const char kWakeOnWifiPacket[] = "wake-on-wifi-packet";
 // Force system compositor mode when set.
 const char kForceSystemCompositorMode[] = "force-system-compositor-mode";
 
+// Enables testing for encryption migration UI.
+const char kTestEncryptionMigrationUI[] = "test-encryption-migration-ui";
+
 bool WakeOnWifiEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableWakeOnWifi);
 }

@@ -38,6 +38,7 @@ class ControllerPairingScreenView;
 class CoreOobeView;
 class DeviceDisabledScreenView;
 class EnableDebuggingScreenView;
+class EncryptionMigrationScreenView;
 class EnrollmentScreenView;
 class EulaView;
 class ErrorScreen;
@@ -114,6 +115,7 @@ class OobeUI : public content::WebUIController,
   ControllerPairingScreenView* GetControllerPairingScreenView();
   HostPairingScreenView* GetHostPairingScreenView();
   DeviceDisabledScreenView* GetDeviceDisabledScreenView();
+  EncryptionMigrationScreenView* GetEncryptionMigrationScreenView();
   GaiaView* GetGaiaScreenView();
   UserBoardView* GetUserBoardView();
 

@@ -10,4 +10,8 @@ void AuthStatusConsumer::OnPasswordChangeDetected() {
   NOTREACHED();
 }
 
+void AuthStatusConsumer::OnOldEncryptionDetected() {
+  NOTREACHED();
+}
+
 }  // namespace chromeos

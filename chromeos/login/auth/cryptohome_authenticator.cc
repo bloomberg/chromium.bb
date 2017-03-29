@@ -658,6 +658,12 @@ void CryptohomeAuthenticator::OnPasswordChangeDetected() {
     consumer_->OnPasswordChangeDetected();
 }
 
+void CryptohomeAuthenticator::OnOldEncryptionDetected() {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  if (consumer_)
+    consumer_->OnOldEncryptionDetected();
+}
+
 void CryptohomeAuthenticator::OnAuthFailure(const AuthFailure& error) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
@@ -856,6 +862,14 @@ void CryptohomeAuthenticator::Resolve() {
                      AuthFailure(AuthFailure::OWNER_REQUIRED)));
       break;
     }
+    case FAILED_OLD_ENCRYPTION:
+      // In this case, we tried to create/mount cryptohome and failed
+      // because the file system is encrypted in old format.
+      // Chrome will show a screen which asks user to migrate the encryption.
+      task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&CryptohomeAuthenticator::OnOldEncryptionDetected, this));
+      break;
     default:
       NOTREACHED();
       break;
@@ -926,6 +940,11 @@ CryptohomeAuthenticator::ResolveCryptohomeFailureState() {
       cryptohome::MOUNT_ERROR_TPM_NEEDS_REBOOT) {
     // Critical TPM error detected, reboot needed.
     return FAILED_TPM;
+  }
+
+  if (current_state_->cryptohome_code() ==
+      cryptohome::MOUNT_ERROR_OLD_ENCRYPTION) {
+    return FAILED_OLD_ENCRYPTION;
   }
 
   // Return intermediate states in the following case:

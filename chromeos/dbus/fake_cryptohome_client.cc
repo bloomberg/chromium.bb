@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/path_service.h"
@@ -16,6 +17,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/attestation/attestation.pb.h"
 #include "chromeos/chromeos_paths.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome/key.pb.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -523,6 +525,10 @@ void FakeCryptohomeClient::MountEx(
   cryptohome::MountReply* mount =
       reply.MutableExtension(cryptohome::MountReply::reply);
   mount->set_sanitized_username(GetStubSanitizedUsername(cryptohome_id));
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kTestEncryptionMigrationUI)) {
+    reply.set_error(cryptohome::CRYPTOHOME_ERROR_MOUNT_OLD_ENCRYPTION);
+  }
   ReturnProtobufMethodCallback(reply, callback);
 }
 

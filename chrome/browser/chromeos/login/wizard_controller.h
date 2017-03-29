@@ -146,6 +146,7 @@ class WizardController : public BaseScreenDelegate,
   void ShowControllerPairingScreen();
   void ShowHostPairingScreen();
   void ShowDeviceDisabledScreen();
+  void ShowEncryptionMigrationScreen();
 
   // Shows images login screen.
   void ShowLoginScreen(const LoginScreenContext& context);

@@ -107,6 +107,15 @@ void LoginPerformer::OnPasswordChangeDetected() {
   }
 }
 
+void LoginPerformer::OnOldEncryptionDetected() {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
+  if (delegate_)
+    delegate_->OnOldEncryptionDetected();
+  else
+    NOTREACHED();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // LoginPerformer, public:
 

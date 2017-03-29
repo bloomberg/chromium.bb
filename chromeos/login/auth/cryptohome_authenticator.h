@@ -89,6 +89,8 @@ class CHROMEOS_EXPORT CryptohomeAuthenticator
     KIOSK_ACCOUNT_LOGIN = 22,         // Logged into a kiosk account.
     REMOVED_DATA_AFTER_FAILURE = 23,  // Successfully removed the user's
                                       // cryptohome after a login failure.
+    FAILED_OLD_ENCRYPTION = 24,       // Login failed, cryptohome is encrypted
+                                      // in old format.
   };
 
   CryptohomeAuthenticator(scoped_refptr<base::TaskRunner> task_runner,
@@ -162,6 +164,7 @@ class CHROMEOS_EXPORT CryptohomeAuthenticator
 
   void OnOffTheRecordAuthSuccess();
   void OnPasswordChangeDetected();
+  void OnOldEncryptionDetected();
 
  protected:
   ~CryptohomeAuthenticator() override;

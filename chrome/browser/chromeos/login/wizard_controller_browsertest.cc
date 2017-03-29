@@ -1337,7 +1337,10 @@ IN_PROC_BROWSER_TEST_F(WizardControllerCellularFirstTest, CellularFirstFlow) {
 
 // TODO(khmel): Add tests for ARC OptIn flow.
 // http://crbug.com/651144
-static_assert(static_cast<int>(ScreenExitCode::EXIT_CODES_COUNT) == 25,
+
+// TODO(fukino): Add tests for encryption migration UI.
+// http://crbug.com/706017
+static_assert(static_cast<int>(ScreenExitCode::EXIT_CODES_COUNT) == 27,
               "tests for new control flow are missing");
 
 }  // namespace chromeos
