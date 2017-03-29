@@ -703,8 +703,6 @@ void GpuProcessHost::AddFilter(IPC::MessageFilter* filter) {
 bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
   DCHECK(CalledOnValidThread());
   IPC_BEGIN_MESSAGE_MAP(GpuProcessHost, message)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_GpuMemoryBufferCreated,
-                        OnGpuMemoryBufferCreated)
     IPC_MESSAGE_HANDLER(GpuHostMsg_FieldTrialActivated, OnFieldTrialActivated);
     IPC_MESSAGE_UNHANDLED(RouteOnUIThread(message))
   IPC_END_MESSAGE_MAP()
@@ -765,29 +763,18 @@ void GpuProcessHost::CreateGpuMemoryBuffer(
   TRACE_EVENT0("gpu", "GpuProcessHost::CreateGpuMemoryBuffer");
 
   DCHECK(CalledOnValidThread());
-
-  GpuMsg_CreateGpuMemoryBuffer_Params params;
-  params.id = id;
-  params.size = size;
-  params.format = format;
-  params.usage = usage;
-  params.client_id = client_id;
-  params.surface_handle = surface_handle;
-  if (Send(new GpuMsg_CreateGpuMemoryBuffer(params))) {
-    create_gpu_memory_buffer_requests_.push(callback);
-  } else {
-    callback.Run(gfx::GpuMemoryBufferHandle());
-  }
+  create_gpu_memory_buffer_requests_.push(callback);
+  gpu_service_ptr_->CreateGpuMemoryBuffer(
+      id, size, format, usage, client_id, surface_handle,
+      base::Bind(&GpuProcessHost::OnGpuMemoryBufferCreated,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void GpuProcessHost::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                                             int client_id,
                                             const gpu::SyncToken& sync_token) {
   TRACE_EVENT0("gpu", "GpuProcessHost::DestroyGpuMemoryBuffer");
-
-  DCHECK(CalledOnValidThread());
-
-  Send(new GpuMsg_DestroyGpuMemoryBuffer(id, client_id, sync_token));
+  gpu_service_ptr_->DestroyGpuMemoryBuffer(id, client_id, sync_token);
 }
 
 #if defined(OS_ANDROID)
@@ -830,11 +817,8 @@ void GpuProcessHost::OnGpuMemoryBufferCreated(
     const gfx::GpuMemoryBufferHandle& handle) {
   TRACE_EVENT0("gpu", "GpuProcessHost::OnGpuMemoryBufferCreated");
 
-  if (create_gpu_memory_buffer_requests_.empty())
-    return;
-
-  CreateGpuMemoryBufferCallback callback =
-      create_gpu_memory_buffer_requests_.front();
+  DCHECK(!create_gpu_memory_buffer_requests_.empty());
+  auto callback = create_gpu_memory_buffer_requests_.front();
   create_gpu_memory_buffer_requests_.pop();
   callback.Run(handle);
 }
@@ -1120,8 +1104,7 @@ void GpuProcessHost::SendOutstandingReplies() {
   }
 
   while (!create_gpu_memory_buffer_requests_.empty()) {
-    CreateGpuMemoryBufferCallback callback =
-        create_gpu_memory_buffer_requests_.front();
+    auto callback = create_gpu_memory_buffer_requests_.front();
     create_gpu_memory_buffer_requests_.pop();
     callback.Run(gfx::GpuMemoryBufferHandle());
   }

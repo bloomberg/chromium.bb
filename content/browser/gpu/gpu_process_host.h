@@ -205,9 +205,9 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   void OnChannelEstablished(int client_id,
                             const EstablishChannelCallback& callback,
                             mojo::ScopedMessagePipeHandle channel_handle);
+  void OnGpuMemoryBufferCreated(const gfx::GpuMemoryBufferHandle& handle);
 
   // Message handlers.
-  void OnGpuMemoryBufferCreated(const gfx::GpuMemoryBufferHandle& handle);
 #if defined(OS_ANDROID)
   void OnDestroyingVideoSurfaceAck();
 #endif

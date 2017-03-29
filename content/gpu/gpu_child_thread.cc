@@ -55,60 +55,8 @@
 namespace content {
 namespace {
 
-// Message filter used to to handle GpuMsg_CreateGpuMemoryBuffer messages
-// on the IO thread. This allows the UI thread in the browser process to remain
-// fast at all times.
-class GpuMemoryBufferMessageFilter : public IPC::MessageFilter {
- public:
-  explicit GpuMemoryBufferMessageFilter(
-      gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory)
-      : gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
-        sender_(nullptr) {}
-
-  // Overridden from IPC::MessageFilter:
-  void OnFilterAdded(IPC::Channel* channel) override {
-    DCHECK(!sender_);
-    sender_ = channel;
-  }
-  void OnFilterRemoved() override {
-    DCHECK(sender_);
-    sender_ = nullptr;
-  }
-  bool OnMessageReceived(const IPC::Message& message) override {
-    DCHECK(sender_);
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(GpuMemoryBufferMessageFilter, message)
-      IPC_MESSAGE_HANDLER(GpuMsg_CreateGpuMemoryBuffer, OnCreateGpuMemoryBuffer)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    return handled;
-  }
-
- protected:
-  ~GpuMemoryBufferMessageFilter() override {}
-
-  void OnCreateGpuMemoryBuffer(
-      const GpuMsg_CreateGpuMemoryBuffer_Params& params) {
-    TRACE_EVENT2("gpu", "GpuMemoryBufferMessageFilter::OnCreateGpuMemoryBuffer",
-                 "id", params.id.id, "client_id", params.client_id);
-
-    DCHECK(gpu_memory_buffer_factory_);
-    sender_->Send(new GpuHostMsg_GpuMemoryBufferCreated(
-        gpu_memory_buffer_factory_->CreateGpuMemoryBuffer(
-            params.id, params.size, params.format, params.usage,
-            params.client_id, params.surface_handle)));
-  }
-
-  gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory_;
-  IPC::Sender* sender_;
-};
-
-ChildThreadImpl::Options GetOptions(
-    gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory) {
+ChildThreadImpl::Options GetOptions() {
   ChildThreadImpl::Options::Builder builder;
-
-  builder.AddStartupFilter(
-      new GpuMemoryBufferMessageFilter(gpu_memory_buffer_factory));
 
 #if defined(USE_OZONE)
   IPC::MessageFilter* message_filter =
@@ -131,7 +79,7 @@ GpuChildThread::GpuChildThread(
     const gpu::GpuFeatureInfo& gpu_feature_info,
     DeferredMessages deferred_messages,
     gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory)
-    : GpuChildThread(GetOptions(gpu_memory_buffer_factory),
+    : GpuChildThread(GetOptions(),
                      std::move(watchdog_thread),
                      dead_on_arrival,
                      false /* in_browser_process */,
@@ -148,8 +96,6 @@ GpuChildThread::GpuChildThread(
     gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory)
     : GpuChildThread(ChildThreadImpl::Options::Builder()
                          .InBrowserProcess(params)
-                         .AddStartupFilter(new GpuMemoryBufferMessageFilter(
-                             gpu_memory_buffer_factory))
                          .ConnectToBrowser(true)
                          .Build(),
                      nullptr /* watchdog_thread */,
@@ -237,21 +183,6 @@ bool GpuChildThread::OnControlMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-bool GpuChildThread::OnMessageReceived(const IPC::Message& msg) {
-  if (ChildThreadImpl::OnMessageReceived(msg))
-    return true;
-
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(GpuChildThread, msg)
-    IPC_MESSAGE_HANDLER(GpuMsg_DestroyGpuMemoryBuffer, OnDestroyGpuMemoryBuffer)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  if (handled)
-    return true;
-
-  return false;
-}
-
 void GpuChildThread::OnAssociatedInterfaceRequest(
     const std::string& name,
     mojo::ScopedInterfaceEndpointHandle handle) {
@@ -317,14 +248,6 @@ void GpuChildThread::OnGpuSwitched() {
   // Notify observers in the GPU process.
   if (!in_browser_process_)
     ui::GpuSwitchingManager::GetInstance()->NotifyGpuSwitched();
-}
-
-void GpuChildThread::OnDestroyGpuMemoryBuffer(
-    gfx::GpuMemoryBufferId id,
-    int client_id,
-    const gpu::SyncToken& sync_token) {
-  if (gpu_channel_manager())
-    gpu_channel_manager()->DestroyGpuMemoryBuffer(id, client_id, sync_token);
 }
 
 void GpuChildThread::BindServiceFactoryRequest(
