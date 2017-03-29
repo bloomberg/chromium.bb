@@ -67,6 +67,9 @@
 #define DEFAULT_REPAINT_WINDOW 7 /* milliseconds */
 
 static void
+weston_output_update_matrix(struct weston_output *output);
+
+static void
 weston_output_transform_scale_init(struct weston_output *output,
 				   uint32_t transform, uint32_t scale);
 
@@ -4344,7 +4347,7 @@ weston_compositor_reflow_outputs(struct weston_compositor *compositor,
 	}
 }
 
-WL_EXPORT void
+static void
 weston_output_update_matrix(struct weston_output *output)
 {
 	float magnification;
