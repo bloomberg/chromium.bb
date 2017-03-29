@@ -90,6 +90,11 @@ const base::Feature kTabStripKeyboardFocus{"TabStripKeyboardFocus",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_MACOSX)
 
+#if defined(OS_WIN)
+const base::Feature kCleanupToolUI{"CleanupToolUI",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 #if defined(OS_ANDROID)
 // Experiment to make Geolocation permissions in the omnibox and the default
 // search engine's search page consistent.

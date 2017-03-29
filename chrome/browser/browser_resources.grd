@@ -124,6 +124,9 @@
       <if expr="enable_app_list">
         <include name="IDR_CHROME_APP_MANIFEST" file="resources\chrome_app\manifest.json" type="BINDATA" />
       </if>
+      <if expr="is_win">
+        <include name="IDR_CLEANUP_TOOL_HTML" file="resources\cleanup_tool\main.html" type="chrome_html" />
+      </if>
       <if expr="enable_printing">
         <include name="IDR_CLOUDPRINT_MANIFEST" file="resources\cloud_print_app\manifest.json" type="BINDATA" />
       </if>

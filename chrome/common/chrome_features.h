@@ -60,6 +60,10 @@ extern const base::Feature kBrowserTouchBar;
 extern const base::Feature kTabStripKeyboardFocus;
 #endif  // defined(OS_MACOSX)
 
+#if defined(OS_WIN)
+extern const base::Feature kCleanupToolUI;
+#endif
+
 #if defined(OS_ANDROID)
 extern const base::Feature kConsistentOmniboxGeolocation;
 #endif

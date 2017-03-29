@@ -141,6 +141,7 @@ const char kChromeUIMdCupsSettingsURL[] = "chrome://md-settings/cupsPrinters";
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
+const char kChromeUICleanupToolURL[] = "chrome://cleanup/";
 const char kChromeUIMetroFlowURL[] = "chrome://make-metro/";
 #endif
 
@@ -336,6 +337,7 @@ const char kChromeOSAssetPath[] = "/usr/share/chromeos-assets/";
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
+const char kChromeUICleanupToolHost[] = "cleanup";
 const char kChromeUIMetroFlowHost[] = "make-metro";
 #endif
 
