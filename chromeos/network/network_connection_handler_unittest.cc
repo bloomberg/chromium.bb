@@ -9,7 +9,6 @@
 #include <set>
 
 #include "base/bind.h"
-#include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
@@ -18,15 +17,12 @@
 #include "base/strings/stringprintf.h"
 #include "chromeos/cert_loader.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill_device_client.h"
-#include "chromeos/dbus/shill_manager_client.h"
-#include "chromeos/dbus/shill_profile_client.h"
-#include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/network/managed_network_configuration_handler_impl.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_connection_observer.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/network_state_test.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "components/onc/onc_constants.h"
 #include "crypto/scoped_nss_types.h"
@@ -44,14 +40,6 @@ namespace chromeos {
 namespace {
 
 const char* kSuccessResult = "success";
-const char* kUsernameHash = "userhash";
-
-void ConfigureCallback(const dbus::ObjectPath& result) {
-}
-
-void ConfigureErrorCallback(const std::string& error_name,
-                            const std::string& error_message) {
-}
 
 class TestNetworkConnectionObserver : public NetworkConnectionObserver {
  public:
@@ -96,10 +84,9 @@ class TestNetworkConnectionObserver : public NetworkConnectionObserver {
 
 }  // namespace
 
-class NetworkConnectionHandlerTest : public testing::Test {
+class NetworkConnectionHandlerTest : public NetworkStateTest {
  public:
-  NetworkConnectionHandlerTest()
-      : test_manager_client_(nullptr), test_service_client_(nullptr) {}
+  NetworkConnectionHandlerTest() {}
 
   ~NetworkConnectionHandlerTest() override {}
 
@@ -116,41 +103,26 @@ class NetworkConnectionHandlerTest : public testing::Test {
     CertLoader::ForceHardwareBackedForTesting();
 
     DBusThreadManager::Initialize();
-    DBusThreadManager* dbus_manager = DBusThreadManager::Get();
-    test_manager_client_ =
-        dbus_manager->GetShillManagerClient()->GetTestInterface();
-    test_service_client_ =
-        dbus_manager->GetShillServiceClient()->GetTestInterface();
 
-    test_manager_client_->AddTechnology(shill::kTypeWifi, true /* enabled */);
-    dbus_manager->GetShillDeviceClient()->GetTestInterface()->AddDevice(
-        "/device/wifi1", shill::kTypeWifi, "wifi_device1");
-    test_manager_client_->AddTechnology(shill::kTypeCellular,
-                                        true /* enabled */);
-    dbus_manager->GetShillProfileClient()->GetTestInterface()->AddProfile(
-        "shared_profile_path", std::string() /* shared profile */);
-    dbus_manager->GetShillProfileClient()->GetTestInterface()->AddProfile(
-        "user_profile_path", kUsernameHash);
+    NetworkStateTest::SetUp();
 
-    base::RunLoop().RunUntilIdle();
     LoginState::Initialize();
-    network_state_handler_ = NetworkStateHandler::InitializeForTest();
+
     network_config_handler_.reset(
         NetworkConfigurationHandler::InitializeForTest(
-            network_state_handler_.get(),
-            nullptr /* network_device_handler */));
+            network_state_handler(), nullptr /* network_device_handler */));
 
     network_profile_handler_.reset(new NetworkProfileHandler());
     network_profile_handler_->Init();
 
     managed_config_handler_.reset(new ManagedNetworkConfigurationHandlerImpl());
     managed_config_handler_->Init(
-        network_state_handler_.get(), network_profile_handler_.get(),
+        network_state_handler(), network_profile_handler_.get(),
         network_config_handler_.get(), nullptr /* network_device_handler */,
         nullptr /* prohibited_tecnologies_handler */);
 
     network_connection_handler_.reset(new NetworkConnectionHandler);
-    network_connection_handler_->Init(network_state_handler_.get(),
+    network_connection_handler_->Init(network_state_handler(),
                                       network_config_handler_.get(),
                                       managed_config_handler_.get());
     network_connection_observer_.reset(new TestNetworkConnectionObserver);
@@ -161,7 +133,8 @@ class NetworkConnectionHandlerTest : public testing::Test {
   }
 
   void TearDown() override {
-    network_state_handler_->Shutdown();
+    ShutdownNetworkState();
+
     managed_config_handler_.reset();
     network_profile_handler_.reset();
     network_connection_handler_->RemoveObserver(
@@ -169,28 +142,18 @@ class NetworkConnectionHandlerTest : public testing::Test {
     network_connection_observer_.reset();
     network_connection_handler_.reset();
     network_config_handler_.reset();
-    network_state_handler_.reset();
-    CertLoader::Shutdown();
+
+    NetworkStateTest::TearDown();
+
     LoginState::Shutdown();
+
+    NetworkStateTest::TearDown();
+
     DBusThreadManager::Shutdown();
+    CertLoader::Shutdown();
   }
 
  protected:
-  bool Configure(const std::string& json_string) {
-    std::unique_ptr<base::DictionaryValue> json_dict =
-        onc::ReadDictionaryFromJson(json_string);
-    if (!json_dict) {
-      LOG(ERROR) << "Error parsing json: " << json_string;
-      return false;
-    }
-    DBusThreadManager::Get()->GetShillManagerClient()->ConfigureService(
-        *json_dict,
-        base::Bind(&ConfigureCallback),
-        base::Bind(&ConfigureErrorCallback));
-    base::RunLoop().RunUntilIdle();
-    return true;
-  }
-
   void Connect(const std::string& service_path) {
     const bool check_error_state = true;
     network_connection_handler_->ConnectToNetwork(
@@ -225,16 +188,6 @@ class NetworkConnectionHandlerTest : public testing::Test {
   std::string GetResultAndReset() {
     std::string result;
     result.swap(result_);
-    return result;
-  }
-
-  std::string GetServiceStringProperty(const std::string& service_path,
-                                       const std::string& key) {
-    std::string result;
-    const base::DictionaryValue* properties =
-        test_service_client_->GetServiceProperties(service_path);
-    if (properties)
-      properties->GetStringWithoutPathExpansion(key, &result);
     return result;
   }
 
@@ -288,7 +241,7 @@ class NetworkConnectionHandlerTest : public testing::Test {
 
     if (user_policy) {
       managed_config_handler_->SetPolicy(::onc::ONC_SOURCE_USER_POLICY,
-                                         kUsernameHash, *network_configs,
+                                         kUserHash, *network_configs,
                                          global_config);
     } else {
       managed_config_handler_->SetPolicy(::onc::ONC_SOURCE_DEVICE_POLICY,
@@ -299,15 +252,12 @@ class NetworkConnectionHandlerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  std::unique_ptr<NetworkStateHandler> network_state_handler_;
   std::unique_ptr<NetworkConfigurationHandler> network_config_handler_;
   std::unique_ptr<NetworkConnectionHandler> network_connection_handler_;
   std::unique_ptr<TestNetworkConnectionObserver> network_connection_observer_;
   std::unique_ptr<ManagedNetworkConfigurationHandlerImpl>
       managed_config_handler_;
   std::unique_ptr<NetworkProfileHandler> network_profile_handler_;
-  ShillManagerClient::TestInterface* test_manager_client_;
-  ShillServiceClient::TestInterface* test_service_client_;
   crypto::ScopedTestNSSDB test_nssdb_;
   std::unique_ptr<net::NSSCertDatabaseChromeOS> test_nsscertdb_;
   base::MessageLoopForUI message_loop_;
@@ -344,7 +294,7 @@ const char* kPolicyWifi0 =
 }  // namespace
 
 TEST_F(NetworkConnectionHandlerTest, NetworkConnectionHandlerConnectSuccess) {
-  EXPECT_TRUE(Configure(kConfigConnectable));
+  EXPECT_TRUE(ConfigureService(kConfigConnectable));
   Connect(kWifi0);
   EXPECT_EQ(kSuccessResult, GetResultAndReset());
   EXPECT_EQ(shill::kStateOnline,
@@ -356,7 +306,7 @@ TEST_F(NetworkConnectionHandlerTest, NetworkConnectionHandlerConnectSuccess) {
 
 TEST_F(NetworkConnectionHandlerTest,
        NetworkConnectionHandlerConnectProhibited) {
-  EXPECT_TRUE(Configure(kConfigConnectable));
+  EXPECT_TRUE(ConfigureService(kConfigConnectable));
   base::DictionaryValue global_config;
   global_config.SetBooleanWithoutPathExpansion(
       ::onc::global_network_config::kAllowOnlyPolicyNetworksToConnect, true);
@@ -380,21 +330,21 @@ TEST_F(NetworkConnectionHandlerTest, NetworkConnectionHandlerConnectFailure) {
   EXPECT_EQ(NetworkConnectionHandler::kErrorConfigureFailed,
             network_connection_observer_->GetResult(kNoNetwork));
 
-  EXPECT_TRUE(Configure(kConfigConnected));
+  EXPECT_TRUE(ConfigureService(kConfigConnected));
   Connect(kWifi1);
   EXPECT_EQ(NetworkConnectionHandler::kErrorConnected, GetResultAndReset());
   EXPECT_TRUE(network_connection_observer_->GetRequested(kWifi1));
   EXPECT_EQ(NetworkConnectionHandler::kErrorConnected,
             network_connection_observer_->GetResult(kWifi1));
 
-  EXPECT_TRUE(Configure(kConfigConnecting));
+  EXPECT_TRUE(ConfigureService(kConfigConnecting));
   Connect(kWifi2);
   EXPECT_EQ(NetworkConnectionHandler::kErrorConnecting, GetResultAndReset());
   EXPECT_TRUE(network_connection_observer_->GetRequested(kWifi2));
   EXPECT_EQ(NetworkConnectionHandler::kErrorConnecting,
             network_connection_observer_->GetResult(kWifi2));
 
-  EXPECT_TRUE(Configure(kConfigRequiresPassphrase));
+  EXPECT_TRUE(ConfigureService(kConfigRequiresPassphrase));
   Connect(kWifi3);
   EXPECT_EQ(NetworkConnectionHandler::kErrorPassphraseRequired,
             GetResultAndReset());
@@ -480,7 +430,7 @@ TEST_F(NetworkConnectionHandlerTest,
 
 TEST_F(NetworkConnectionHandlerTest,
        NetworkConnectionHandlerDisconnectSuccess) {
-  EXPECT_TRUE(Configure(kConfigConnected));
+  EXPECT_TRUE(ConfigureService(kConfigConnected));
   Disconnect(kWifi1);
   EXPECT_TRUE(network_connection_observer_->GetRequested(kWifi1));
   EXPECT_EQ(kSuccessResult, GetResultAndReset());
@@ -492,7 +442,7 @@ TEST_F(NetworkConnectionHandlerTest,
   EXPECT_EQ(NetworkConnectionHandler::kErrorConfigureFailed,
             GetResultAndReset());
 
-  EXPECT_TRUE(Configure(kConfigConnectable));
+  EXPECT_TRUE(ConfigureService(kConfigConnectable));
   Disconnect(kWifi0);
   EXPECT_EQ(NetworkConnectionHandler::kErrorNotConnected, GetResultAndReset());
 }
