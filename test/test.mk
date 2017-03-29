@@ -188,8 +188,10 @@ LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += obmc_variance_test.cc
 endif
 
 ifeq ($(CONFIG_AOM_HIGHBITDEPTH),yes)
+ifeq ($(CONFIG_AV1_ENCODER),yes)
 LIBAOM_TEST_SRCS-$(HAVE_SSE4_1) += av1_quantize_test.cc
 LIBAOM_TEST_SRCS-$(HAVE_SSE4_1) += av1_highbd_iht_test.cc
+endif
 endif # CONFIG_AOM_HIGHBITDEPTH
 endif # AV1
 
@@ -204,10 +206,10 @@ endif
 LIBAOM_TEST_SRCS-$(CONFIG_ENCODERS) += sad_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1) += av1_txfm_test.h
 LIBAOM_TEST_SRCS-$(CONFIG_AV1) += av1_txfm_test.cc
-LIBAOM_TEST_SRCS-$(CONFIG_AV1) += av1_fwd_txfm1d_test.cc
-LIBAOM_TEST_SRCS-$(CONFIG_AV1) += av1_inv_txfm1d_test.cc
-LIBAOM_TEST_SRCS-$(CONFIG_AV1) += av1_fwd_txfm2d_test.cc
-LIBAOM_TEST_SRCS-$(CONFIG_AV1) += av1_inv_txfm2d_test.cc
+LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += av1_fwd_txfm1d_test.cc
+LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += av1_inv_txfm1d_test.cc
+LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += av1_fwd_txfm2d_test.cc
+LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += av1_inv_txfm2d_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1) += av1_convolve_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1) += av1_convolve_optimz_test.cc
 ifneq ($(findstring yes,$(CONFIG_GLOBAL_MOTION) $(CONFIG_WARPED_MOTION)),)

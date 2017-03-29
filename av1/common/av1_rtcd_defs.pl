@@ -393,6 +393,20 @@ if (aom_config("CONFIG_AOM_HIGHBITDEPTH") eq "yes") {
   specialize qw/av1_highbd_iht16x16_256_add/;
 }
 
+if (aom_config("CONFIG_AOM_HIGHBITDEPTH") eq "yes") {
+  #inv txfm
+  add_proto qw/void av1_inv_txfm2d_add_4x4/, "const int32_t *input, uint16_t *output, int stride, int tx_type, int bd";
+  specialize qw/av1_inv_txfm2d_add_4x4 sse4_1/;
+  add_proto qw/void av1_inv_txfm2d_add_8x8/, "const int32_t *input, uint16_t *output, int stride, int tx_type, int bd";
+  specialize qw/av1_inv_txfm2d_add_8x8 sse4_1/;
+  add_proto qw/void av1_inv_txfm2d_add_16x16/, "const int32_t *input, uint16_t *output, int stride, int tx_type, int bd";
+  specialize qw/av1_inv_txfm2d_add_16x16 sse4_1/;
+  add_proto qw/void av1_inv_txfm2d_add_32x32/, "const int32_t *input, uint16_t *output, int stride, int tx_type, int bd";
+  specialize qw/av1_inv_txfm2d_add_32x32 avx2/;
+  add_proto qw/void av1_inv_txfm2d_add_64x64/, "const int32_t *input, uint16_t *output, int stride, int tx_type, int bd";
+  specialize qw/av1_inv_txfm2d_add_64x64/;
+}
+
 #
 # Encoder functions below this point.
 #
@@ -560,18 +574,6 @@ if (aom_config("CONFIG_AOM_HIGHBITDEPTH") eq "yes") {
   specialize qw/av1_fwd_txfm2d_32x32 sse4_1/;
   add_proto qw/void av1_fwd_txfm2d_64x64/, "const int16_t *input, int32_t *output, int stride, int tx_type, int bd";
   specialize qw/av1_fwd_txfm2d_64x64 sse4_1/;
-
-  #inv txfm
-  add_proto qw/void av1_inv_txfm2d_add_4x4/, "const int32_t *input, uint16_t *output, int stride, int tx_type, int bd";
-  specialize qw/av1_inv_txfm2d_add_4x4 sse4_1/;
-  add_proto qw/void av1_inv_txfm2d_add_8x8/, "const int32_t *input, uint16_t *output, int stride, int tx_type, int bd";
-  specialize qw/av1_inv_txfm2d_add_8x8 sse4_1/;
-  add_proto qw/void av1_inv_txfm2d_add_16x16/, "const int32_t *input, uint16_t *output, int stride, int tx_type, int bd";
-  specialize qw/av1_inv_txfm2d_add_16x16 sse4_1/;
-  add_proto qw/void av1_inv_txfm2d_add_32x32/, "const int32_t *input, uint16_t *output, int stride, int tx_type, int bd";
-  specialize qw/av1_inv_txfm2d_add_32x32 avx2/;
-  add_proto qw/void av1_inv_txfm2d_add_64x64/, "const int32_t *input, uint16_t *output, int stride, int tx_type, int bd";
-  specialize qw/av1_inv_txfm2d_add_64x64/;
 }
 
 #
