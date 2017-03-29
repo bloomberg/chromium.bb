@@ -4764,28 +4764,22 @@ weston_output_enable(struct weston_output *output)
  *
  * \param output The weston_output object that needs to be disabled.
  *
- * See weston_output_init() for more information on the
- * state output is returned to.
- *
  * Calls a backend specific function to disable an output, in case
  * such function exists.
  *
- * If the output is being used by the compositor, it is first removed
+ * The backend specific disable function may choose to postpone the disabling
+ * by returning a negative value, in which case this function returns early.
+ * In that case the backend will guarantee the output will be disabled soon
+ * by the backend calling this function again. One must not attempt to re-enable
+ * the output until that happens.
+ *
+ * Otherwise, if the output is being used by the compositor, it is removed
  * from weston's output_list (see weston_compositor_remove_output())
  * and is returned to a state it was before weston_output_enable()
  * was ran (see weston_output_enable_undo()).
  *
- * Output is added to pending_output_list so it will get destroyed
- * if the output does not get configured again when the compositor
- * shuts down. If an output is to be used immediately, it needs to
- * be manually removed from the list (the compositor specific functions
- * for handling pending outputs will take care of that).
- *
- * If backend specific disable function returns negative value,
- * this function will return too. It can be used as an indicator
- * that output cannot be disabled at the present time. In that case
- * backend needs to make sure the output is disabled when it is
- * possible.
+ * See weston_output_init() for more information on the
+ * state output is returned to.
  */
 WL_EXPORT void
 weston_output_disable(struct weston_output *output)
@@ -4795,6 +4789,14 @@ weston_output_disable(struct weston_output *output)
 	/* Should we rename this? */
 	output->destroying = 1;
 
+	/* Disable is called unconditionally also for not-enabled outputs,
+	 * because at compositor start-up, if there is an output that is
+	 * already on but the compositor wants to turn it off, we have to
+	 * forward the turn-off to the backend so it knows to do it.
+	 * The backend cannot initially turn off everything, because it
+	 * would cause unnecessary mode-sets for all outputs the compositor
+	 * wants to be on.
+	 */
 	if (output->disable(output) < 0)
 		return;
 
