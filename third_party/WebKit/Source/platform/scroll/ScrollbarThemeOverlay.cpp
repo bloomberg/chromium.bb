@@ -205,8 +205,18 @@ void ScrollbarThemeOverlay::paintThumb(GraphicsContext& context,
       static_cast<WebScrollbarOverlayColorTheme>(
           scrollbar.getScrollbarOverlayColorTheme());
 
+  // Horizontally flip the canvas if it is left vertical scrollbar.
+  if (scrollbar.isLeftSideVerticalScrollbar()) {
+    canvas->save();
+    canvas->translate(canvas->getBaseLayerSize().width(), 0);
+    canvas->scale(-1, 1);
+  }
+
   Platform::current()->themeEngine()->paint(canvas, part, state, WebRect(rect),
                                             &params);
+
+  if (scrollbar.isLeftSideVerticalScrollbar())
+    canvas->restore();
 }
 
 ScrollbarPart ScrollbarThemeOverlay::hitTest(

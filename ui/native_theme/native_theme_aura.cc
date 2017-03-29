@@ -17,6 +17,7 @@
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia.h"
@@ -251,7 +252,16 @@ void NativeThemeAura::PaintScrollbarThumb(
     canvas->drawRect(gfx::RectFToSkRect(stroke_rect), flags);
 
     // Inset the all the edges edges so we fill-in the stroke below.
-    thumb_rect.Inset(kStrokeWidth, kStrokeWidth);
+    // The edge to which the scrollbar is attached shouldn't have a border.
+    // For left vertical scrollbar, we will horizontally flip the canvas in
+    // ScrollbarThemeOverlay::paintThumb.
+    gfx::Insets insets(kStrokeWidth);
+    if (part == NativeTheme::kScrollbarHorizontalThumb)
+      insets -= gfx::Insets(0, 0, kStrokeWidth, 0);
+    else
+      insets -= gfx::Insets(0, 0, 0, kStrokeWidth);
+
+    thumb_rect.Inset(insets);
   } else {
     switch (state) {
       case NativeTheme::kDisabled:
