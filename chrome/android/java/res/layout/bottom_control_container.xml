@@ -76,7 +76,7 @@
 
     <ImageView
         android:id="@+id/toolbar_shadow"
-        android:src="@drawable/toolbar_shadow"
+        android:src="@drawable/bottom_toolbar_shadow"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:scaleType="fitXY"

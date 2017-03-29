@@ -13,6 +13,7 @@ import android.view.MotionEvent;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.cards.ItemViewType;
 import org.chromium.chrome.test.BottomSheetTestCaseBase;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
@@ -47,7 +48,8 @@ public class SuggestionsBottomSheetTest extends BottomSheetTestCaseBase {
     @MediumTest
     public void testContextMenu() throws InterruptedException {
         SuggestionsRecyclerView recyclerView =
-                (SuggestionsRecyclerView) getBottomSheetContent().getContentView();
+                (SuggestionsRecyclerView) getBottomSheetContent().getContentView().findViewById(
+                        R.id.recycler_view);
 
         ViewHolder firstCardViewHolder = RecyclerViewTestUtils.waitForView(recyclerView, 2);
         assertEquals(firstCardViewHolder.getItemViewType(), ItemViewType.SNIPPET);

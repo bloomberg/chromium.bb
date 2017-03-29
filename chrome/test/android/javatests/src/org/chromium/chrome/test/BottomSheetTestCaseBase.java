@@ -11,6 +11,7 @@ import android.support.v7.widget.RecyclerView;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
@@ -51,7 +52,8 @@ public abstract class BottomSheetTestCaseBase extends ChromeTabbedActivityTestBa
         // The default BottomSheetContent is SuggestionsBottomSheetContent, whose content view is a
         // RecyclerView.
         RecyclerViewTestUtils.waitForStableRecyclerView(
-                ((RecyclerView) getBottomSheetContent().getContentView()));
+                ((RecyclerView) getBottomSheetContent().getContentView().findViewById(
+                        R.id.recycler_view)));
 
         mBottomSheet = getActivity().getBottomSheet();
         mBottomSheetContentController = getActivity().getBottomSheetContentController();

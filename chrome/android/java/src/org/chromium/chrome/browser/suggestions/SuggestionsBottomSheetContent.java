@@ -4,8 +4,13 @@
 
 package org.chromium.chrome.browser.suggestions;
 
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.RecyclerView.OnScrollListener;
+import android.view.LayoutInflater;
 import android.view.View;
 
+import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.NativePageHost;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
@@ -15,6 +20,8 @@ import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.widget.FadingShadow;
+import org.chromium.chrome.browser.widget.FadingShadowView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
@@ -30,6 +37,8 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
     private static SuggestionsSource sSuggestionsSourceForTesting;
     private static SuggestionsMetricsReporter sMetricsReporterForTesting;
 
+    private final View mView;
+    private final FadingShadowView mShadowView;
     private final SuggestionsRecyclerView mRecyclerView;
     private final ContextMenuManager mContextMenuManager;
     private final SuggestionsUiDelegateImpl mSuggestionsManager;
@@ -45,7 +54,9 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
                 new TileGroupDelegateImpl(activity, profile, tabModelSelector, navigationDelegate);
         mSuggestionsManager = createSuggestionsDelegate(profile, navigationDelegate, host);
 
-        mRecyclerView = new SuggestionsRecyclerView(activity);
+        mView = LayoutInflater.from(activity).inflate(
+                R.layout.suggestions_bottom_sheet_content, null);
+        mRecyclerView = (SuggestionsRecyclerView) mView.findViewById(R.id.recycler_view);
         mContextMenuManager = new ContextMenuManager(activity, navigationDelegate, mRecyclerView);
         activity.getWindowAndroid().addContextMenuCloseListener(mContextMenuManager);
         mSuggestionsManager.addDestructionObserver(new DestructionObserver() {
@@ -73,11 +84,24 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
         if (activity.getBottomSheet().getSheetState() != BottomSheet.SHEET_STATE_PEEK) {
             adapter.refreshSuggestions();
         }
+
+        mShadowView = (FadingShadowView) mView.findViewById(R.id.shadow);
+        mShadowView.init(
+                ApiCompatibilityUtils.getColor(mView.getResources(), R.color.toolbar_shadow_color),
+                FadingShadow.POSITION_TOP);
+
+        mRecyclerView.addOnScrollListener(new OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                boolean shadowVisible = mRecyclerView.canScrollVertically(-1);
+                mShadowView.setVisibility(shadowVisible ? View.VISIBLE : View.GONE);
+            }
+        });
     }
 
     @Override
     public View getContentView() {
-        return mRecyclerView;
+        return mView;
     }
 
     @Override

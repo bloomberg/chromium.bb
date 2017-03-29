@@ -17,6 +17,7 @@ import android.support.v7.view.ContextThemeWrapper;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -74,7 +75,11 @@ public class SuggestionsRecyclerView extends RecyclerView implements TouchDisabl
     private boolean mTouchEnabled = true;
 
     public SuggestionsRecyclerView(Context context) {
-        super(new ContextThemeWrapper(context, R.style.NewTabPageRecyclerView));
+        this(context, null);
+    }
+
+    public SuggestionsRecyclerView(Context context, AttributeSet attrs) {
+        super(new ContextThemeWrapper(context, R.style.NewTabPageRecyclerView), attrs);
 
         Resources res = getContext().getResources();
         setBackgroundColor(ApiCompatibilityUtils.getColor(res, R.color.ntp_bg));
