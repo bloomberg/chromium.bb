@@ -36,7 +36,6 @@
 #include "core/editing/FrameSelection.h"
 #include "core/editing/InputMethodController.h"
 #include "core/editing/PlainTextRange.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/Settings.h"

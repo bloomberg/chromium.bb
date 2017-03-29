@@ -30,7 +30,6 @@
 
 #include <memory>
 #include "bindings/core/v8/SourceLocation.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ConsoleMessageStorage.h"

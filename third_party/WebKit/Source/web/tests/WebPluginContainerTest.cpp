@@ -35,7 +35,6 @@
 #include "core/dom/Element.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/frame/EventHandlerRegistry.h"
-#include "core/frame/FrameHost.h"
 #include "core/layout/LayoutObject.h"
 #include "core/page/Page.h"
 #include "platform/graphics/GraphicsContext.h"

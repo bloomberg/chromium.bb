@@ -29,7 +29,6 @@
 
 #include "core/HTMLNames.h"
 #include "core/dom/DOMNodeIds.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/Settings.h"

@@ -26,7 +26,6 @@
 #include "core/layout/LayoutFullScreen.h"
 
 #include "core/dom/Fullscreen.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/VisualViewport.h"
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/page/Page.h"

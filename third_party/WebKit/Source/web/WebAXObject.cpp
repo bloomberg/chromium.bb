@@ -36,7 +36,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
 #include "core/editing/markers/DocumentMarker.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/VisualViewport.h"
 #include "core/input/KeyboardEventManager.h"

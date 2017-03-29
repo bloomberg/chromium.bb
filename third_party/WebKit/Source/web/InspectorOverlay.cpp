@@ -36,7 +36,6 @@
 #include "core/dom/Node.h"
 #include "core/dom/StaticNodeList.h"
 #include "core/dom/TaskRunnerHelper.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"

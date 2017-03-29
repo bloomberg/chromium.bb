@@ -26,7 +26,6 @@
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeComputedStyle.h"
-#include "core/frame/FrameHost.h"
 #include "core/layout/api/LayoutViewItem.h"
 
 namespace blink {

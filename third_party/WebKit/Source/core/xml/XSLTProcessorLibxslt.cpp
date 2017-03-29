@@ -31,7 +31,6 @@
 #include "core/dom/TransformSource.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/frame/FrameConsole.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/xml/XSLStyleSheet.h"

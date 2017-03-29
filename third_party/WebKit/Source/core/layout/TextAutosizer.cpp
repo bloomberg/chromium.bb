@@ -32,7 +32,6 @@
 
 #include <memory>
 #include "core/dom/Document.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"

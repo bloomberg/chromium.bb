@@ -8,7 +8,6 @@
 #include "core/css/FontFaceDescriptors.h"
 #include "core/css/FontFaceSet.h"
 #include "core/dom/DOMArrayBuffer.h"
-#include "core/frame/FrameHost.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/scroll/ScrollbarTheme.h"

@@ -31,7 +31,6 @@
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/Fullscreen.h"
 #include "core/editing/FrameSelection.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"

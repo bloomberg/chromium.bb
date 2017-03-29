@@ -8,7 +8,6 @@
 #include "core/dom/Element.h"
 #include "core/dom/custom/CEReactionsScope.h"
 #include "core/dom/custom/CustomElementReactionQueue.h"
-#include "core/frame/FrameHost.h"
 
 namespace blink {
 

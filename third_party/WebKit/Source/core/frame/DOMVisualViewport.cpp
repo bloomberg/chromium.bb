@@ -27,7 +27,6 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"

@@ -42,7 +42,6 @@
 #include "core/css/MediaValuesInitialViewport.h"
 #include "core/css/resolver/MediaQueryResult.h"
 #include "core/dom/NodeComputedStyle.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"

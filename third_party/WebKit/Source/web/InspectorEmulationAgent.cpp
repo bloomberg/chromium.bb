@@ -4,7 +4,6 @@
 
 #include "web/InspectorEmulationAgent.h"
 
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
 #include "core/inspector/protocol/DOM.h"

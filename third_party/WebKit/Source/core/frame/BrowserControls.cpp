@@ -6,7 +6,6 @@
 
 #include <algorithm>  // for std::min and std::max
 
-#include "core/frame/FrameHost.h"
 #include "core/frame/VisualViewport.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"

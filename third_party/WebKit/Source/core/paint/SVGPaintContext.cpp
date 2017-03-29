@@ -24,7 +24,6 @@
 
 #include "core/paint/SVGPaintContext.h"
 
-#include "core/frame/FrameHost.h"
 #include "core/layout/svg/LayoutSVGResourceFilter.h"
 #include "core/layout/svg/LayoutSVGResourceMasker.h"
 #include "core/layout/svg/SVGLayoutSupport.h"

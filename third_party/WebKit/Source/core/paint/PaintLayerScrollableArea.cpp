@@ -51,7 +51,6 @@
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"

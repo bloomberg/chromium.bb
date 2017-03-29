@@ -33,7 +33,6 @@
 #include "core/CoreProbeSink.h"
 #include "core/events/Event.h"
 #include "core/events/EventTarget.h"
-#include "core/frame/FrameHost.h"
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorDOMDebuggerAgent.h"
 #include "core/inspector/InspectorNetworkAgent.h"

@@ -5,8 +5,7 @@
 #ifndef EventHandlerRegistry_h
 #define EventHandlerRegistry_h
 
-#include "core/CoreExport.h"
-#include "core/frame/FrameHost.h"  // TODO(sashab): Remove this.
+#include "core/CoreExport.h"  // TODO(sashab): Remove this.
 #include "core/page/Page.h"
 #include "wtf/HashCountedSet.h"
 

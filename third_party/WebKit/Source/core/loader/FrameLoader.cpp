@@ -50,7 +50,6 @@
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
 #include "core/events/PageTransitionEvent.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
@@ -675,7 +674,7 @@ void FrameLoader::setOpener(LocalFrame* opener) {
 }
 
 bool FrameLoader::allowPlugins(ReasonForCallingAllowPlugins reason) {
-  // With Oilpan, a FrameLoader might be accessed after the FrameHost has been
+  // With Oilpan, a FrameLoader might be accessed after the Page has been
   // detached. FrameClient will not be accessible, so bail early.
   if (!client())
     return false;

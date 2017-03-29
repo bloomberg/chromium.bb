@@ -39,7 +39,6 @@
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "core/frame/FrameConsole.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/inspector/ConsoleMessage.h"

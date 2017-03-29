@@ -43,7 +43,6 @@
 #include "core/events/Event.h"
 #include "core/events/EventUtil.h"
 #include "core/events/PointerEvent.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/PerformanceMonitor.h"
 #include "core/frame/Settings.h"

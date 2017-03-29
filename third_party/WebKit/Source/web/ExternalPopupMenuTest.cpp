@@ -7,7 +7,6 @@
 #include <memory>
 #include "core/HTMLNames.h"
 #include "core/dom/NodeComputedStyle.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/layout/LayoutMenuList.h"

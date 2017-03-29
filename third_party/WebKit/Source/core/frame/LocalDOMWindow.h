@@ -338,8 +338,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   void dispatchLoadEvent();
   void clearDocument();
 
-  void willDetachFrameHost();
-
   Member<Document> m_document;
   Member<DOMVisualViewport> m_visualViewport;
   TaskRunnerTimer<LocalDOMWindow> m_unusedPreloadsTimer;

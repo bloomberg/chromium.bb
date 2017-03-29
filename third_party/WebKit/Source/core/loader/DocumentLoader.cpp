@@ -34,7 +34,6 @@
 #include "core/dom/WeakIdentifierMap.h"
 #include "core/events/Event.h"
 #include "core/frame/Deprecation.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"

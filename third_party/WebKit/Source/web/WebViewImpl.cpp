@@ -52,7 +52,6 @@
 #include "core/events/WheelEvent.h"
 #include "core/frame/BrowserControls.h"
 #include "core/frame/EventHandlerRegistry.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"

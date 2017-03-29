@@ -45,7 +45,7 @@ class ResourceResponse;
 class SourceLocation;
 
 // FrameConsole takes per-frame console messages and routes them up through the
-// FrameHost to the ChromeClient and Inspector.  It's meant as an abstraction
+// Page to the ChromeClient and Inspector.  It's meant as an abstraction
 // around ChromeClient calls and the way that Blink core/ can add messages to
 // the console.
 class CORE_EXPORT FrameConsole final

@@ -33,7 +33,6 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/FrameConsole.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/ConsoleMessage.h"
