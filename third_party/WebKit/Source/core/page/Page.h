@@ -59,7 +59,6 @@ class EditorClient;
 class EventHandlerRegistry;
 class FocusController;
 class Frame;
-class FrameHost;
 class OverscrollController;
 struct PageScaleConstraints;
 class PageScaleConstraintsSet;
@@ -126,9 +125,6 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   static PageSet& ordinaryPages();
 
   static void platformColorsChanged();
-
-  // TODO(sashab): Remove this.
-  FrameHost& frameHost() const { return *m_frameHost; }
 
   void setNeedsRecalcStyleInAllFrames();
   void updateAcceleratedCompositingSettings();
@@ -360,11 +356,6 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 #endif
 
   int m_subframeCount;
-
-  // A pointer to all the interfaces provided to in-process Frames for this
-  // Page.
-  // FIXME: Most of the members of Page should move onto FrameHost.
-  Member<FrameHost> m_frameHost;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Page>;

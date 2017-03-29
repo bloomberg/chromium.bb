@@ -34,7 +34,6 @@
 #include "core/frame/DOMTimer.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameConsole.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/PageScaleConstraints.h"
 #include "core/frame/PageScaleConstraintsSet.h"
@@ -128,8 +127,7 @@ Page::Page(PageClients& pageClients)
       m_deviceScaleFactor(1),
       m_visibilityState(PageVisibilityStateVisible),
       m_isCursorVisible(true),
-      m_subframeCount(0),
-      m_frameHost(FrameHost::create(*this)) {
+      m_subframeCount(0) {
   ASSERT(m_editorClient);
 
   ASSERT(!allPages().contains(this));
@@ -628,7 +626,6 @@ DEFINE_TRACE(Page) {
   visitor->trace(m_mainFrame);
   visitor->trace(m_validationMessageClient);
   visitor->trace(m_useCounter);
-  visitor->trace(m_frameHost);
   Supplementable<Page>::trace(visitor);
   PageVisibilityNotifier::trace(visitor);
 }
