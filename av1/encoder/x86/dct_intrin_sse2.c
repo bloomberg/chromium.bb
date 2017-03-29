@@ -3947,3 +3947,206 @@ void av1_fht32x16_sse2(const int16_t *input, tran_low_t *output, int stride,
   }
   write_buffer_32x16(output, in0, in1, in2, in3);
 }
+
+// Note:
+// 32x32 hybrid fwd txfm
+//  4x2 grids of 8x16 block. Each block is represented by __m128i in[16]
+static INLINE void load_buffer_32x32(const int16_t *input,
+                                     __m128i *in0 /*in0[32]*/,
+                                     __m128i *in1 /*in1[32]*/,
+                                     __m128i *in2 /*in2[32]*/,
+                                     __m128i *in3 /*in3[32]*/, int stride,
+                                     int flipud, int fliplr) {
+  if (flipud) {
+    input += 31 * stride;
+    stride = -stride;
+  }
+
+  int i;
+  for (i = 0; i < 32; ++i) {
+    in0[i] = _mm_slli_epi16(
+        _mm_load_si128((const __m128i *)(input + i * stride + 0)), 2);
+    in1[i] = _mm_slli_epi16(
+        _mm_load_si128((const __m128i *)(input + i * stride + 8)), 2);
+    in2[i] = _mm_slli_epi16(
+        _mm_load_si128((const __m128i *)(input + i * stride + 16)), 2);
+    in3[i] = _mm_slli_epi16(
+        _mm_load_si128((const __m128i *)(input + i * stride + 24)), 2);
+  }
+
+  if (fliplr) {
+    for (i = 0; i < 32; ++i) {
+      __m128i tmp1 = in0[i];
+      __m128i tmp2 = in1[i];
+      in0[i] = mm_reverse_epi16(in3[i]);
+      in1[i] = mm_reverse_epi16(in2[i]);
+      in2[i] = mm_reverse_epi16(tmp2);
+      in3[i] = mm_reverse_epi16(tmp1);
+    }
+  }
+}
+
+static INLINE void swap_16x16(__m128i *b0l /*b0l[16]*/,
+                              __m128i *b0r /*b0r[16]*/,
+                              __m128i *b1l /*b1l[16]*/,
+                              __m128i *b1r /*b1r[16]*/) {
+  int i;
+  for (i = 0; i < 16; ++i) {
+    __m128i tmp0 = b1l[i];
+    __m128i tmp1 = b1r[i];
+    b1l[i] = b0l[i];
+    b1r[i] = b0r[i];
+    b0l[i] = tmp0;
+    b0r[i] = tmp1;
+  }
+}
+
+static INLINE void fdct32(__m128i *in0, __m128i *in1, __m128i *in2,
+                          __m128i *in3) {
+  fdct32_8col(in0, &in0[16]);
+  fdct32_8col(in1, &in1[16]);
+  fdct32_8col(in2, &in2[16]);
+  fdct32_8col(in3, &in3[16]);
+
+  array_transpose_16x16(in0, in1);
+  array_transpose_16x16(&in0[16], &in1[16]);
+  array_transpose_16x16(in2, in3);
+  array_transpose_16x16(&in2[16], &in3[16]);
+
+  swap_16x16(&in0[16], &in1[16], in2, in3);
+}
+
+static INLINE void fhalfright32(__m128i *in0, __m128i *in1, __m128i *in2,
+                                __m128i *in3) {
+  fhalfright32_16col(in0, in1, &in0[16], &in1[16], no_transpose);
+  fhalfright32_16col(in2, in3, &in2[16], &in3[16], no_transpose);
+  swap_16x16(&in0[16], &in1[16], in2, in3);
+}
+
+#if CONFIG_EXT_TX
+static INLINE void fidtx32(__m128i *in0, __m128i *in1, __m128i *in2,
+                           __m128i *in3) {
+  fidtx32_16col(in0, in1, &in0[16], &in1[16]);
+  fidtx32_16col(in2, in3, &in2[16], &in3[16]);
+  swap_16x16(&in0[16], &in1[16], in2, in3);
+}
+#endif
+
+static INLINE void round_signed_32x32(__m128i *in0, __m128i *in1, __m128i *in2,
+                                      __m128i *in3) {
+  round_signed_16x16(in0, in1);
+  round_signed_16x16(&in0[16], &in1[16]);
+  round_signed_16x16(in2, in3);
+  round_signed_16x16(&in2[16], &in3[16]);
+}
+
+static INLINE void write_buffer_32x32(__m128i *in0, __m128i *in1, __m128i *in2,
+                                      __m128i *in3, tran_low_t *output) {
+  int i;
+  for (i = 0; i < 32; ++i) {
+    store_output(&in0[i], output + i * 32 + 0);
+    store_output(&in1[i], output + i * 32 + 8);
+    store_output(&in2[i], output + i * 32 + 16);
+    store_output(&in3[i], output + i * 32 + 24);
+  }
+}
+
+void av1_fht32x32_sse2(const int16_t *input, tran_low_t *output, int stride,
+                       int tx_type) {
+  __m128i in0[32], in1[32], in2[32], in3[32];
+
+  load_buffer_32x32(input, in0, in1, in2, in3, stride, 0, 0);
+  switch (tx_type) {
+    case DCT_DCT:
+      fdct32(in0, in1, in2, in3);
+      round_signed_32x32(in0, in1, in2, in3);
+      fdct32(in0, in1, in2, in3);
+      break;
+    case ADST_DCT:
+      fhalfright32(in0, in1, in2, in3);
+      round_signed_32x32(in0, in1, in2, in3);
+      fdct32(in0, in1, in2, in3);
+      break;
+    case DCT_ADST:
+      fdct32(in0, in1, in2, in3);
+      round_signed_32x32(in0, in1, in2, in3);
+      fhalfright32(in0, in1, in2, in3);
+      break;
+    case ADST_ADST:
+      fhalfright32(in0, in1, in2, in3);
+      round_signed_32x32(in0, in1, in2, in3);
+      fhalfright32(in0, in1, in2, in3);
+      break;
+#if CONFIG_EXT_TX
+    case FLIPADST_DCT:
+      load_buffer_32x32(input, in0, in1, in2, in3, stride, 1, 0);
+      fhalfright32(in0, in1, in2, in3);
+      round_signed_32x32(in0, in1, in2, in3);
+      fdct32(in0, in1, in2, in3);
+      break;
+    case DCT_FLIPADST:
+      load_buffer_32x32(input, in0, in1, in2, in3, stride, 0, 1);
+      fdct32(in0, in1, in2, in3);
+      round_signed_32x32(in0, in1, in2, in3);
+      fhalfright32(in0, in1, in2, in3);
+      break;
+    case FLIPADST_FLIPADST:
+      load_buffer_32x32(input, in0, in1, in2, in3, stride, 1, 1);
+      fhalfright32(in0, in1, in2, in3);
+      round_signed_32x32(in0, in1, in2, in3);
+      fhalfright32(in0, in1, in2, in3);
+      break;
+    case ADST_FLIPADST:
+      load_buffer_32x32(input, in0, in1, in2, in3, stride, 0, 1);
+      fhalfright32(in0, in1, in2, in3);
+      round_signed_32x32(in0, in1, in2, in3);
+      fhalfright32(in0, in1, in2, in3);
+      break;
+    case FLIPADST_ADST:
+      load_buffer_32x32(input, in0, in1, in2, in3, stride, 1, 0);
+      fhalfright32(in0, in1, in2, in3);
+      round_signed_32x32(in0, in1, in2, in3);
+      fhalfright32(in0, in1, in2, in3);
+      break;
+    case IDTX:
+      fidtx32(in0, in1, in2, in3);
+      round_signed_32x32(in0, in1, in2, in3);
+      fidtx32(in0, in1, in2, in3);
+      break;
+    case V_DCT:
+      fdct32(in0, in1, in2, in3);
+      round_signed_32x32(in0, in1, in2, in3);
+      fidtx32(in0, in1, in2, in3);
+      break;
+    case H_DCT:
+      fidtx32(in0, in1, in2, in3);
+      round_signed_32x32(in0, in1, in2, in3);
+      fdct32(in0, in1, in2, in3);
+      break;
+    case V_ADST:
+      fhalfright32(in0, in1, in2, in3);
+      round_signed_32x32(in0, in1, in2, in3);
+      fidtx32(in0, in1, in2, in3);
+      break;
+    case H_ADST:
+      fidtx32(in0, in1, in2, in3);
+      round_signed_32x32(in0, in1, in2, in3);
+      fhalfright32(in0, in1, in2, in3);
+      break;
+    case V_FLIPADST:
+      load_buffer_32x32(input, in0, in1, in2, in3, stride, 1, 0);
+      fhalfright32(in0, in1, in2, in3);
+      round_signed_32x32(in0, in1, in2, in3);
+      fidtx32(in0, in1, in2, in3);
+      break;
+    case H_FLIPADST:
+      load_buffer_32x32(input, in0, in1, in2, in3, stride, 0, 1);
+      fidtx32(in0, in1, in2, in3);
+      round_signed_32x32(in0, in1, in2, in3);
+      fhalfright32(in0, in1, in2, in3);
+      break;
+#endif
+    default: assert(0);
+  }
+  write_buffer_32x32(in0, in1, in2, in3, output);
+}
