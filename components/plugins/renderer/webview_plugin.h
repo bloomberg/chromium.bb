@@ -151,6 +151,8 @@ class WebViewPlugin : public blink::WebPlugin,
 
     // WebViewClient methods:
     bool acceptsLoadDrops() override;
+    bool canHandleGestureEvent() override;
+    bool canUpdateLayout() override;
 
     // WebWidgetClient methods:
     void setToolTipText(const blink::WebString&,

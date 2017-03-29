@@ -62,6 +62,7 @@ struct WebWindowFeatures;
 // easily reused as part of an implementation of WebViewClient.
 class WebViewClient : protected WebWidgetClient {
  public:
+  ~WebViewClient() override {}
   // Factory methods -----------------------------------------------------
 
   // Create a new related WebView.  This method must clone its session storage
@@ -168,6 +169,9 @@ class WebViewClient : protected WebWidgetClient {
   virtual void focusedNodeChanged(const WebNode& fromNode,
                                   const WebNode& toNode) {}
 
+  // Called to check if layout update should be processed.
+  virtual bool canUpdateLayout() { return false; }
+
   // Indicates two things:
   //   1) This view may have a new layout now.
   //   2) Calling layout() is a no-op.
@@ -258,6 +262,8 @@ class WebViewClient : protected WebWidgetClient {
   // Informs the browser that the draggable regions have been updated.
   virtual void draggableRegionsChanged() {}
 
+  virtual bool canHandleGestureEvent() { return false; }
+
   // TODO(lfg): These methods are only exposed through WebViewClient while we
   // refactor WebView to not inherit from WebWidget.
   // WebWidgetClient overrides.
@@ -281,7 +287,6 @@ class WebViewClient : protected WebWidgetClient {
   virtual WebWidgetClient* widgetClient() { return this; }
 
  protected:
-  ~WebViewClient() override {}
 };
 
 }  // namespace blink

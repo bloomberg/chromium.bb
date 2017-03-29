@@ -267,6 +267,14 @@ WebViewPlugin::WebViewHelper::~WebViewHelper() {
 
 bool WebViewPlugin::WebViewHelper::acceptsLoadDrops() { return false; }
 
+bool WebViewPlugin::WebViewHelper::canHandleGestureEvent() {
+  return true;
+}
+
+bool WebViewPlugin::WebViewHelper::canUpdateLayout() {
+  return true;
+}
+
 void WebViewPlugin::WebViewHelper::setToolTipText(
     const WebString& text,
     blink::WebTextDirection hint) {

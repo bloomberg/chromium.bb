@@ -1827,6 +1827,14 @@ void RenderViewImpl::onMouseDown(const WebNode& mouse_down_node) {
     observer.OnMouseDown(mouse_down_node);
 }
 
+bool RenderViewImpl::canHandleGestureEvent() {
+  return true;
+}
+
+bool RenderViewImpl::canUpdateLayout() {
+  return true;
+}
+
 void RenderViewImpl::didHandleGestureEvent(
     const WebGestureEvent& event,
     bool event_cancelled) {

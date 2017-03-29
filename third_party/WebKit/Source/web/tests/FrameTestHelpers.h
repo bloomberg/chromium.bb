@@ -171,6 +171,8 @@ class TestWebViewClient : public WebViewClient {
   void scheduleAnimation() override { m_animationScheduled = true; }
   bool animationScheduled() { return m_animationScheduled; }
   void clearAnimationScheduled() { m_animationScheduled = false; }
+  bool canHandleGestureEvent() override { return true; }
+  bool canUpdateLayout() override { return true; }
 
   // TODO(lfg): This is a temporary method to retrieve the WebWidgetClient,
   // while we refactor WebView to not inherit from Webwidget.

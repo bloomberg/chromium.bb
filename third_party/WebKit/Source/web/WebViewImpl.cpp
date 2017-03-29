@@ -695,8 +695,9 @@ bool WebViewImpl::scrollBy(const WebFloatSize& delta,
 
 WebInputEventResult WebViewImpl::handleGestureEvent(
     const WebGestureEvent& event) {
-  if (!m_client)
+  if (!m_client || !m_client->canHandleGestureEvent()) {
     return WebInputEventResult::NotHandled;
+  }
 
   WebInputEventResult eventResult = WebInputEventResult::NotHandled;
   bool eventCancelled = false;  // for disambiguation
@@ -3647,7 +3648,7 @@ void WebViewImpl::postLayoutResize(WebLocalFrameImpl* webframe) {
 
 void WebViewImpl::layoutUpdated(WebLocalFrameImpl* webframe) {
   LocalFrame* frame = webframe->frame();
-  if (!m_client || !frame->isMainFrame())
+  if (!m_client || !m_client->canUpdateLayout() || !frame->isMainFrame())
     return;
 
   if (m_shouldAutoResize) {
