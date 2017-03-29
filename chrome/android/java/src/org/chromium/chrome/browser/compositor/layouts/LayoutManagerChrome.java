@@ -13,10 +13,7 @@ import org.chromium.chrome.browser.compositor.TitleCache;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.components.VirtualView;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.compositor.layouts.eventfilter.BlackHoleEventFilter;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
-import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
-import org.chromium.chrome.browser.compositor.layouts.eventfilter.GestureEventFilter;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.ScrollDirection;
 import org.chromium.chrome.browser.compositor.layouts.phone.StackLayout;
 import org.chromium.chrome.browser.compositor.overlays.SceneOverlay;
@@ -57,11 +54,6 @@ public class LayoutManagerChrome
     protected ToolbarSwipeLayout mToolbarSwipeLayout;
     /** A {@link Layout} that should be used when the user is in the tab switcher. */
     protected Layout mOverviewLayout;
-
-    // Event Filters
-    /** A {@link EventFilter} that consumes all touch events. */
-    protected EventFilter mBlackHoleEventFilter;
-    private final GestureEventFilter mGestureEventFilter;
 
     // Event Filter Handlers
     private final EdgeSwipeHandler mToolbarSwipeHandler;
@@ -166,17 +158,11 @@ public class LayoutManagerChrome
         // Build Event Filter Handlers
         mToolbarSwipeHandler = createToolbarSwipeHandler(this);
 
-        // Build Event Filters
-        mBlackHoleEventFilter = new BlackHoleEventFilter(context);
-        mGestureEventFilter = new GestureEventFilter(context, mGestureHandler);
-
         // Build Layouts
-        mOverviewListLayout =
-                new OverviewListLayout(context, this, renderHost, mBlackHoleEventFilter);
-        mToolbarSwipeLayout =
-                new ToolbarSwipeLayout(context, this, renderHost, mBlackHoleEventFilter);
+        mOverviewListLayout = new OverviewListLayout(context, this, renderHost);
+        mToolbarSwipeLayout = new ToolbarSwipeLayout(context, this, renderHost);
         if (createOverviewLayout) {
-            mOverviewLayout = new StackLayout(context, this, renderHost, mGestureEventFilter);
+            mOverviewLayout = new StackLayout(context, this, renderHost);
         }
     }
 
@@ -316,7 +302,9 @@ public class LayoutManagerChrome
      */
     @VisibleForTesting
     public void simulateClick(float x, float y) {
-        if (getActiveLayout() != null) getActiveLayout().click(time(), x, y);
+        if (getActiveLayout() instanceof StackLayout) {
+            ((StackLayout) getActiveLayout()).simulateClick(x, y);
+        }
     }
 
     /**
@@ -328,10 +316,8 @@ public class LayoutManagerChrome
      */
     @VisibleForTesting
     public void simulateDrag(float x, float y, float dX, float dY) {
-        if (getActiveLayout() != null) {
-            getActiveLayout().onDown(0, x, y);
-            getActiveLayout().drag(0, x, y, dX, dY);
-            getActiveLayout().onUpOrCancel(time());
+        if (getActiveLayout() instanceof StackLayout) {
+            ((StackLayout) getActiveLayout()).simulateDrag(x, y, dX, dY);
         }
     }
 

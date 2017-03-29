@@ -157,7 +157,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/compositor/layouts/ChromeAnimation.java",
   "java/src/org/chromium/chrome/browser/compositor/layouts/EdgeSwipeHandlerLayoutDelegate.java",
   "java/src/org/chromium/chrome/browser/compositor/layouts/EmptyOverviewModeObserver.java",
-  "java/src/org/chromium/chrome/browser/compositor/layouts/GestureHandlerLayoutDelegate.java",
   "java/src/org/chromium/chrome/browser/compositor/layouts/Layout.java",
   "java/src/org/chromium/chrome/browser/compositor/layouts/LayoutManager.java",
   "java/src/org/chromium/chrome/browser/compositor/layouts/LayoutManagerChrome.java",
