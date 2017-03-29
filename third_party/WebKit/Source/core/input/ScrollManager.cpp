@@ -467,6 +467,7 @@ WebInputEventResult ScrollManager::handleGestureScrollEvent(
     case WebInputEvent::GestureScrollEnd:
       return handleGestureScrollEnd(gestureEvent);
     case WebInputEvent::GestureFlingStart:
+    case WebInputEvent::GestureFlingCancel:
     case WebInputEvent::GesturePinchBegin:
     case WebInputEvent::GesturePinchEnd:
     case WebInputEvent::GesturePinchUpdate:

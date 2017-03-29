@@ -204,6 +204,7 @@ class WebGestureEvent : public WebInputEvent {
       case GestureScrollEnd:
       case GestureScrollUpdate:
       case GestureFlingStart:
+      case GestureFlingCancel:
       case GesturePinchBegin:
       case GesturePinchEnd:
       case GesturePinchUpdate:
