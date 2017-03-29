@@ -1349,9 +1349,8 @@ void QuicChromiumClientSession::OnReadError(
   }
   DVLOG(1) << "Closing session on read error: " << result;
   UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.ReadError", -result);
-  NotifyFactoryOfSessionGoingAway();
-  CloseSessionOnErrorInner(result, QUIC_PACKET_READ_ERROR);
-  NotifyFactoryOfSessionClosedLater();
+  connection()->CloseConnection(QUIC_PACKET_READ_ERROR, ErrorToString(result),
+                                ConnectionCloseBehavior::SILENT_CLOSE);
 }
 
 bool QuicChromiumClientSession::OnPacket(const QuicReceivedPacket& packet,
