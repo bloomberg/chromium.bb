@@ -169,5 +169,16 @@
       ],
       'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
+    {
+      'target_name': 'table',
+      'dependencies': [
+        'list',
+        'list_single_selection_model',
+        'table/compiled_resources2.gyp:table_column_model',
+        'table/compiled_resources2.gyp:table_header',
+        'table/compiled_resources2.gyp:table_list',
+      ],
+      'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
   ],
 }

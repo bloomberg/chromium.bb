@@ -112,7 +112,7 @@ cr.define('cr.ui.table', function() {
     /**
      * Returns render function for the column at the given index.
      * @param {number} index The index of the column.
-     * @return {function(*, string, cr.ui.Table): HTMLElement} Render function.
+     * @return {function(*, string, Element): HTMLElement} Render function.
      */
     getRenderFunction: function(index) {
       return this.columns_[index].renderFunction;
@@ -121,7 +121,7 @@ cr.define('cr.ui.table', function() {
     /**
      * Sets render function for the column at the given index.
      * @param {number} index The index of the column.
-     * @param {function(*, string, cr.ui.Table): HTMLElement} renderFunction
+     * @param {function(*, string, Element): HTMLElement} renderFunction
      *     Render function.
      */
     setRenderFunction: function(index, renderFunction) {
@@ -137,7 +137,7 @@ cr.define('cr.ui.table', function() {
     /**
      * Render the column header.
      * @param {number} index The index of the column.
-     * @param {cr.ui.Table} table Owner table.
+     * @param {Element} table Owner table.
      */
     renderHeader: function(index, table) {
       var c = this.columns_[index];

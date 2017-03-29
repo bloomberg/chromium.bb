@@ -77,7 +77,7 @@ cr.define('cr.ui', function() {
 
   /**
    * The table associated with the splitter.
-   * @type {cr.ui.Table}
+   * @type {Element}
    */
   cr.defineProperty(TableSplitter, 'table');
 

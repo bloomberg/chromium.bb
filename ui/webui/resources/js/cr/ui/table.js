@@ -129,7 +129,35 @@ cr.define('cr.ui', function() {
      * @return {function(*, cr.ui.Table): HTMLElement} Render function.
      */
     getRenderFunction: function() {
-      return this.list_.renderFunction_;
+      return this.renderFunction_;
+    },
+
+    /**
+     * @private
+     */
+    renderFunction_: function(dataItem, table) {
+      // `This` must not be accessed here, since it may be anything, especially
+      // not a pointer to this object.
+
+      var cm = table.columnModel;
+      var listItem = cr.ui.List.prototype.createItem.call(table.list, '');
+      listItem.className = 'table-row';
+
+      for (var i = 0; i < cm.size; i++) {
+        var cell = table.ownerDocument.createElement('div');
+        cell.style.width = cm.getWidth(i) + 'px';
+        cell.className = 'table-row-cell';
+        if (cm.isEndAlign(i))
+          cell.style.textAlign = 'end';
+        cell.hidden = !cm.isVisible(i);
+        cell.appendChild(
+            cm.getRenderFunction(i).call(null, dataItem, cm.getId(i), table));
+
+        listItem.appendChild(cell);
+      }
+      listItem.style.width = cm.totalWidth + 'px';
+
+      return listItem;
     },
 
     /**
@@ -138,10 +166,10 @@ cr.define('cr.ui', function() {
      *     function.
      */
     setRenderFunction: function(renderFunction) {
-      if (renderFunction === this.list_.renderFunction_)
+      if (renderFunction === this.renderFunction_)
         return;
 
-      this.list_.renderFunction_ = renderFunction;
+      this.renderFunction_ = renderFunction;
       cr.dispatchSimpleEvent(this, 'change');
     },
 

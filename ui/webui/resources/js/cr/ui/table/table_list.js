@@ -93,7 +93,7 @@ cr.define('cr.ui.table', function() {
      * @return {boolean} True if horizontal scroll bar changed.
      */
     updateScrollbars_: function() {
-      var cm = this.table.columnModel;
+      var cm = this.table_.columnModel;
       var style = this.style;
       if (!cm || cm.size == 0) {
         if (style.overflow != 'hidden') {
@@ -165,31 +165,6 @@ cr.define('cr.ui.table', function() {
       return this.table_.getRenderFunction().call(null, dataItem, this.table_);
     },
 
-    renderFunction_: function(dataItem, table) {
-      // `This` must not be accessed here, since it may be anything, especially
-      // not a pointer to this object.
-
-      var cm = table.columnModel;
-      var listItem = List.prototype.createItem.call(table.list, '');
-      listItem.className = 'table-row';
-
-      for (var i = 0; i < cm.size; i++) {
-        var cell = table.ownerDocument.createElement('div');
-        cell.style.width = cm.getWidth(i) + 'px';
-        cell.className = 'table-row-cell';
-        if (cm.isEndAlign(i))
-          cell.style.textAlign = 'end';
-        cell.hidden = !cm.isVisible(i);
-        cell.appendChild(
-            cm.getRenderFunction(i).call(null, dataItem, cm.getId(i), table));
-
-        listItem.appendChild(cell);
-      }
-      listItem.style.width = cm.totalWidth + 'px';
-
-      return listItem;
-    },
-
     /**
      * Determines whether a full redraw is required.
      * @return {boolean}
@@ -212,7 +187,7 @@ cr.define('cr.ui.table', function() {
 
   /**
    * The table associated with the list.
-   * @type {cr.ui.Table}
+   * @type {Element}
    */
   cr.defineProperty(TableList, 'table');
 

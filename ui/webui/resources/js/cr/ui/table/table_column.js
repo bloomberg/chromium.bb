@@ -51,7 +51,7 @@ cr.define('cr.ui.table', function() {
      * Renders table cell. This is the default render function.
      * @param {*} dataItem The data item to be rendered.
      * @param {string} columnId The column id.
-     * @param {cr.ui.Table} table The table.
+     * @param {Element} table The table.
      * @return {HTMLElement} Rendered element.
      */
     renderFunction_: function(dataItem, columnId, table) {
@@ -64,7 +64,7 @@ cr.define('cr.ui.table', function() {
 
     /**
      * Renders table header. This is the default render function.
-     * @param {cr.ui.Table} table The table.
+     * @param {Element} table The table.
      * @return {Text} Rendered text node.
      */
     headerRenderFunction_: function(table) {
@@ -121,13 +121,13 @@ cr.define('cr.ui.table', function() {
 
   /**
    * The column render function.
-   * @type {function(*, string, cr.ui.Table): HTMLElement}
+   * @type {function(*, string, Element): HTMLElement}
    */
   cr.defineProperty(TableColumn, 'renderFunction');
 
   /**
    * The column header render function.
-   * @type {function(cr.ui.Table): Text}
+   * @type {function(Element): Text}
    */
   cr.defineProperty(TableColumn, 'headerRenderFunction');
 
