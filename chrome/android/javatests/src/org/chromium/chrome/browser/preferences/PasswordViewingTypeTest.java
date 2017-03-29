@@ -9,9 +9,17 @@ import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.Context;
 import android.content.Intent;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.preferences.password.SavePasswordsPreferences;
@@ -21,7 +29,7 @@ import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.MockAccountManager;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.test.util.MockSyncContentResolverDelegate;
-import org.chromium.content.browser.test.NativeLibraryTestBase;
+import org.chromium.content.browser.test.NativeLibraryTestRule;
 
 /**
  * Tests for verifying whether users are presented with the correct option of viewing
@@ -29,7 +37,10 @@ import org.chromium.content.browser.test.NativeLibraryTestBase;
  * syncing without sync passsphrase, non-syncing).
  */
 
-public class PasswordViewingTypeTest extends NativeLibraryTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class PasswordViewingTypeTest {
+    @Rule
+    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
 
     private MainPreferences mMainPreferences;
     private ChromeBasePreference mPasswordsPref;
@@ -40,21 +51,20 @@ public class PasswordViewingTypeTest extends NativeLibraryTestBase {
     private Account mAccount;
     private MockAccountManager mAccountManager;
 
-    @Override
-    protected void setUp() throws Exception {
-
+    @Before
+    public void setUp() throws Exception {
         mSyncContentResolverDelegate = new MockSyncContentResolverDelegate();
-        mContext = getInstrumentation().getTargetContext();
-        mMainPreferences = (MainPreferences) startMainPreferences(getInstrumentation(),
-            mContext).getFragmentForTest();
+        mContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        mMainPreferences = (MainPreferences) startMainPreferences(
+                InstrumentationRegistry.getInstrumentation(), mContext)
+                                   .getFragmentForTest();
         mPasswordsPref = (ChromeBasePreference) mMainPreferences.findPreference(
                 MainPreferences.PREF_SAVED_PASSWORDS);
         setupTestAccount(mContext);
         AndroidSyncSettings.overrideForTests(mContext, mSyncContentResolverDelegate);
         mAuthority = AndroidSyncSettings.getContractAuthority(mContext);
         AndroidSyncSettings.updateAccount(mContext, mAccount);
-        super.setUp();
-        loadNativeLibraryAndInitBrowserProcess();
+        mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
     }
 
     private void setupTestAccount(Context context) {
@@ -123,18 +133,19 @@ public class PasswordViewingTypeTest extends NativeLibraryTestBase {
     /**
      * Verifies that sync settings are being set up correctly in the case of redirecting users.
      */
+    @Test
     @SmallTest
     @CommandLineFlags.Add("enable-features=" + MainPreferences.VIEW_PASSWORDS)
     @Feature({"Sync"})
     public void testUserRedirectSyncSettings() throws InterruptedException {
         setSyncability(true);
         overrideProfileSyncService(false);
-        assertTrue(AndroidSyncSettings.isSyncEnabled(mContext));
+        Assert.assertTrue(AndroidSyncSettings.isSyncEnabled(mContext));
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                assertTrue(ProfileSyncService.get().isEngineInitialized());
-                assertFalse(ProfileSyncService.get().isUsingSecondaryPassphrase());
+                Assert.assertTrue(ProfileSyncService.get().isEngineInitialized());
+                Assert.assertFalse(ProfileSyncService.get().isUsingSecondaryPassphrase());
             }
         });
     }
@@ -143,23 +154,25 @@ public class PasswordViewingTypeTest extends NativeLibraryTestBase {
      * Verifies that syncing users with a custom passphrase are allowed to
      * natively view passwords.
      */
+    @Test
     @SmallTest
     public void testSyncingNativePasswordView() throws InterruptedException {
         setSyncability(true);
         overrideProfileSyncService(true);
-        assertEquals(SavePasswordsPreferences.class.getCanonicalName(),
-                mPasswordsPref.getFragment());
-        assertNotNull(mMainPreferences.getActivity().getIntent());
+        Assert.assertEquals(
+                SavePasswordsPreferences.class.getCanonicalName(), mPasswordsPref.getFragment());
+        Assert.assertNotNull(mMainPreferences.getActivity().getIntent());
     }
 
     /**
      * Verifies that non-syncing users are allowed to natively view passwords.
      */
+    @Test
     @SmallTest
     public void testNonSyncingNativePasswordView() throws InterruptedException {
         setSyncability(false);
-        assertEquals(SavePasswordsPreferences.class.getCanonicalName(),
-                mPasswordsPref.getFragment());
+        Assert.assertEquals(
+                SavePasswordsPreferences.class.getCanonicalName(), mPasswordsPref.getFragment());
     }
 
 }

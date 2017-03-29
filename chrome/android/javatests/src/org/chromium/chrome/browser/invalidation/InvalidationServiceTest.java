@@ -5,11 +5,19 @@
 package org.chromium.chrome.browser.invalidation;
 
 import android.content.Intent;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
-import android.test.UiThreadTest;
+import android.support.test.rule.UiThreadTestRule;
 
 import com.google.ipc.invalidation.external.client.types.ObjectId;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.test.invalidation.IntentSavingContext;
 import org.chromium.components.invalidation.InvalidationService;
@@ -18,21 +26,28 @@ import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.ModelTypeHelper;
 import org.chromium.components.sync.notifier.InvalidationIntentProtocol;
 import org.chromium.components.sync.test.util.MockSyncContentResolverDelegate;
-import org.chromium.content.browser.test.NativeLibraryTestBase;
+import org.chromium.content.browser.test.NativeLibraryTestRule;
 
 import java.util.Set;
 
 /**
  * Tests for {@link InvalidationService}.
  */
-public class InvalidationServiceTest extends NativeLibraryTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class InvalidationServiceTest {
+    @Rule
+    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
+
+    @Rule
+    public UiThreadTestRule mUiThreadTestRule = new UiThreadTestRule();
+
     private IntentSavingContext mContext;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        loadNativeLibraryAndInitBrowserProcess();
-        mContext = new IntentSavingContext(getInstrumentation().getTargetContext());
+    @Before
+    public void setUp() throws Exception {
+        mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
+        mContext = new IntentSavingContext(
+                InstrumentationRegistry.getInstrumentation().getTargetContext());
         // We don't want to use the system content resolver, so we override it.
         MockSyncContentResolverDelegate delegate = new MockSyncContentResolverDelegate();
         // Android master sync can safely always be on.
@@ -40,37 +55,42 @@ public class InvalidationServiceTest extends NativeLibraryTestBase {
         AndroidSyncSettings.overrideForTests(mContext, delegate);
     }
 
+    @Test
     @SmallTest
-    @UiThreadTest
     @Feature({"Sync"})
-    public void testSetRegisteredObjectIds() {
-        InvalidationService service = InvalidationServiceFactory.getForTest(mContext);
-        ObjectId bookmark = ModelTypeHelper.toObjectId(ModelType.BOOKMARKS);
-        service.setRegisteredObjectIds(new int[] {1, 2, bookmark.getSource()},
-                                          new String[] {"a", "b", new String(bookmark.getName())});
-        assertEquals(1, mContext.getNumStartedIntents());
+    public void testSetRegisteredObjectIds() throws Throwable {
+        mUiThreadTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                InvalidationService service = InvalidationServiceFactory.getForTest(mContext);
+                ObjectId bookmark = ModelTypeHelper.toObjectId(ModelType.BOOKMARKS);
+                service.setRegisteredObjectIds(new int[] {1, 2, bookmark.getSource()},
+                        new String[] {"a", "b", new String(bookmark.getName())});
+                Assert.assertEquals(1, mContext.getNumStartedIntents());
 
-        // Validate destination.
-        Intent intent = mContext.getStartedIntent(0);
-        validateIntentComponent(intent);
-        assertEquals(InvalidationIntentProtocol.ACTION_REGISTER, intent.getAction());
+                // Validate destination.
+                Intent intent = mContext.getStartedIntent(0);
+                validateIntentComponent(intent);
+                Assert.assertEquals(InvalidationIntentProtocol.ACTION_REGISTER, intent.getAction());
 
-        // Validate registered object ids. The bookmark object should not be registered since it is
-        // a Sync type.
-        assertNull(intent.getStringArrayListExtra(
-                                InvalidationIntentProtocol.EXTRA_REGISTERED_TYPES));
-        Set<ObjectId> objectIds = InvalidationIntentProtocol.getRegisteredObjectIds(intent);
-        assertEquals(2, objectIds.size());
-        assertTrue(objectIds.contains(ObjectId.newInstance(1, "a".getBytes())));
-        assertTrue(objectIds.contains(ObjectId.newInstance(2, "b".getBytes())));
+                // Validate registered object ids. The bookmark object should not be registered
+                // since it is a Sync type.
+                Assert.assertNull(intent.getStringArrayListExtra(
+                        InvalidationIntentProtocol.EXTRA_REGISTERED_TYPES));
+                Set<ObjectId> objectIds = InvalidationIntentProtocol.getRegisteredObjectIds(intent);
+                Assert.assertEquals(2, objectIds.size());
+                Assert.assertTrue(objectIds.contains(ObjectId.newInstance(1, "a".getBytes())));
+                Assert.assertTrue(objectIds.contains(ObjectId.newInstance(2, "b".getBytes())));
+            }
+        });
     }
 
     /**
      * Asserts that {@code intent} is destined for the correct component.
      */
     private static void validateIntentComponent(Intent intent) {
-        assertNotNull(intent.getComponent());
-        assertEquals(ChromeInvalidationClientService.class.getName(),
+        Assert.assertNotNull(intent.getComponent());
+        Assert.assertEquals(ChromeInvalidationClientService.class.getName(),
                 intent.getComponent().getClassName());
     }
 

@@ -6,52 +6,63 @@ package org.chromium.chrome.browser.preferences.website;
 
 import android.support.test.filters.SmallTest;
 
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.CommandLine;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.content.browser.test.NativeLibraryTestBase;
+import org.chromium.content.browser.test.NativeLibraryTestRule;
 
 /**
  * Tests for WebsiteAddress.
  */
-public class WebsiteAddressTest extends NativeLibraryTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class WebsiteAddressTest {
+    @Rule
+    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
 
+    @Test
     @SmallTest
     @Feature({"Preferences", "Main"})
     public void testCreate() {
-        assertEquals(null, WebsiteAddress.create(null));
-        assertEquals(null, WebsiteAddress.create(""));
+        Assert.assertEquals(null, WebsiteAddress.create(null));
+        Assert.assertEquals(null, WebsiteAddress.create(""));
 
         WebsiteAddress httpAddress = WebsiteAddress.create("http://a.google.com");
-        assertEquals("http://a.google.com", httpAddress.getOrigin());
-        assertEquals("a.google.com", httpAddress.getHost());
-        assertEquals("a.google.com", httpAddress.getTitle());
+        Assert.assertEquals("http://a.google.com", httpAddress.getOrigin());
+        Assert.assertEquals("a.google.com", httpAddress.getHost());
+        Assert.assertEquals("a.google.com", httpAddress.getTitle());
 
         WebsiteAddress http8080Address = WebsiteAddress.create("http://a.google.com:8080/");
-        assertEquals("http://a.google.com:8080", http8080Address.getOrigin());
-        assertEquals("a.google.com", http8080Address.getHost());
-        assertEquals("http://a.google.com:8080", http8080Address.getTitle());
+        Assert.assertEquals("http://a.google.com:8080", http8080Address.getOrigin());
+        Assert.assertEquals("a.google.com", http8080Address.getHost());
+        Assert.assertEquals("http://a.google.com:8080", http8080Address.getTitle());
 
         WebsiteAddress httpsAddress = WebsiteAddress.create("https://a.google.com/");
-        assertEquals("https://a.google.com", httpsAddress.getOrigin());
-        assertEquals("a.google.com", httpsAddress.getHost());
-        assertEquals("https://a.google.com", httpsAddress.getTitle());
+        Assert.assertEquals("https://a.google.com", httpsAddress.getOrigin());
+        Assert.assertEquals("a.google.com", httpsAddress.getHost());
+        Assert.assertEquals("https://a.google.com", httpsAddress.getTitle());
 
         WebsiteAddress hostAddress = WebsiteAddress.create("a.google.com");
-        assertEquals("http://a.google.com", hostAddress.getOrigin());
-        assertEquals("a.google.com", hostAddress.getHost());
-        assertEquals("a.google.com", hostAddress.getTitle());
+        Assert.assertEquals("http://a.google.com", hostAddress.getOrigin());
+        Assert.assertEquals("a.google.com", hostAddress.getHost());
+        Assert.assertEquals("a.google.com", hostAddress.getTitle());
 
         WebsiteAddress anySubdomainAddress = WebsiteAddress.create("[*.]google.com");
-        assertEquals("http://google.com", anySubdomainAddress.getOrigin());
-        assertEquals("google.com", anySubdomainAddress.getHost());
-        assertEquals("google.com", anySubdomainAddress.getTitle());
+        Assert.assertEquals("http://google.com", anySubdomainAddress.getOrigin());
+        Assert.assertEquals("google.com", anySubdomainAddress.getHost());
+        Assert.assertEquals("google.com", anySubdomainAddress.getTitle());
     }
 
+    @Test
     @SmallTest
     @Feature({"Preferences"})
     public void testEqualsHashCodeCompareTo() {
         CommandLine.init(null);
-        loadNativeLibraryAndInitBrowserProcess();
+        mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
 
         Object[][] testData = {
             { 0, "http://google.com", "http://google.com" },
@@ -82,24 +93,20 @@ public class WebsiteAddressTest extends NativeLibraryTestBase {
             WebsiteAddress addr1 = WebsiteAddress.create(string1);
             WebsiteAddress addr2 = WebsiteAddress.create(string2);
 
-            assertEquals(
-                    "\"" + string1 + "\" vs \"" + string2 + "\"",
-                    compareToResult,
+            Assert.assertEquals("\"" + string1 + "\" vs \"" + string2 + "\"", compareToResult,
                     Integer.signum(addr1.compareTo(addr2)));
 
             // Test that swapping arguments gives an opposite result.
-            assertEquals(
-                    "\"" + string2 + "\" vs \"" + string1 + "\"",
-                    -compareToResult,
+            Assert.assertEquals("\"" + string2 + "\" vs \"" + string1 + "\"", -compareToResult,
                     Integer.signum(addr2.compareTo(addr1)));
 
             if (compareToResult == 0) {
-                assertTrue(addr1.equals(addr2));
-                assertTrue(addr2.equals(addr1));
-                assertEquals(addr1.hashCode(), addr2.hashCode());
+                Assert.assertTrue(addr1.equals(addr2));
+                Assert.assertTrue(addr2.equals(addr1));
+                Assert.assertEquals(addr1.hashCode(), addr2.hashCode());
             } else {
-                assertFalse(addr1.equals(addr2));
-                assertFalse(addr2.equals(addr1));
+                Assert.assertFalse(addr1.equals(addr2));
+                Assert.assertFalse(addr2.equals(addr1));
                 // Note: hash codes could still be the same.
             }
         }

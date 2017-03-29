@@ -6,10 +6,19 @@ package org.chromium.chrome.browser.signin;
 
 import android.accounts.Account;
 import android.content.Context;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
-import android.test.UiThreadTest;
+import android.support.test.rule.UiThreadTestRule;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -19,7 +28,7 @@ import org.chromium.components.signin.AccountManagerHelper;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.MockAccountManager;
-import org.chromium.content.browser.test.NativeLibraryTestBase;
+import org.chromium.content.browser.test.NativeLibraryTestRule;
 
 import java.util.concurrent.Callable;
 
@@ -28,7 +37,13 @@ import java.util.concurrent.Callable;
  *
  * These tests initialize the native part of the service.
  */
-public class OAuth2TokenServiceIntegrationTest extends NativeLibraryTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class OAuth2TokenServiceIntegrationTest {
+    @Rule
+    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
+
+    @Rule
+    public UiThreadTestRule mUiThreadTestRule = new UiThreadTestRule();
 
     private static final Account TEST_ACCOUNT1 =
             AccountManagerHelper.createAccountFromName("foo@gmail.com");
@@ -45,16 +60,18 @@ public class OAuth2TokenServiceIntegrationTest extends NativeLibraryTestBase {
     private TestObserver mObserver;
     private ChromeSigninController mChromeSigninController;
 
-    @Override
-    protected void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         mapAccountNamesToIds();
-        super.setUp();
-        ApplicationData.clearAppData(getInstrumentation().getTargetContext());
-        loadNativeLibraryAndInitBrowserProcess();
+        ApplicationData.clearAppData(
+                InstrumentationRegistry.getInstrumentation().getTargetContext());
+        mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
 
         // Set up AccountManager.
-        mContext = new AdvancedMockContext(getInstrumentation().getTargetContext());
-        mAccountManager = new MockAccountManager(mContext, getInstrumentation().getContext());
+        mContext = new AdvancedMockContext(
+                InstrumentationRegistry.getInstrumentation().getTargetContext());
+        mAccountManager = new MockAccountManager(
+                mContext, InstrumentationRegistry.getInstrumentation().getContext());
         AccountManagerHelper.overrideAccountManagerHelperForTests(mContext, mAccountManager);
 
         // Make sure there is no account signed in yet.
@@ -72,8 +89,8 @@ public class OAuth2TokenServiceIntegrationTest extends NativeLibraryTestBase {
         addObserver(mObserver);
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -81,7 +98,6 @@ public class OAuth2TokenServiceIntegrationTest extends NativeLibraryTestBase {
                 mOAuth2TokenService.validateAccounts(mContext, false);
             }
         });
-        super.tearDown();
     }
 
     private void mapAccountNamesToIds() {
@@ -141,298 +157,368 @@ public class OAuth2TokenServiceIntegrationTest extends NativeLibraryTestBase {
         });
     }
 
+    @Test
     @MediumTest
-    @UiThreadTest
     @Feature({"Sync"})
-    public void testFireRefreshTokenAvailableNotifiesJavaObservers() {
-        // Adding an observer should not lead to a callback.
-        assertEquals(0, mObserver.getAvailableCallCount());
-
-        // An observer should be called with the correct account.
-        mOAuth2TokenService.fireRefreshTokenAvailable(TEST_ACCOUNT1);
-        assertEquals(1, mObserver.getAvailableCallCount());
-        assertEquals(TEST_ACCOUNT1, mObserver.getLastAccount());
-
-        // When mOAuth2TokenService, an observer should not be called.
-        mOAuth2TokenService.removeObserver(mObserver);
-        mOAuth2TokenService.fireRefreshTokenAvailable(TEST_ACCOUNT1);
-        assertEquals(1, mObserver.getAvailableCallCount());
-
-        // No other observer interface method should ever have been called.
-        assertEquals(0, mObserver.getRevokedCallCount());
-        assertEquals(0, mObserver.getLoadedCallCount());
-    }
-
-    @MediumTest
-    @UiThreadTest
-    @Feature({"Sync"})
-    public void testFireRefreshTokenRevokedNotifiesJavaObservers() {
-        // Adding an observer should not lead to a callback.
-        assertEquals(0, mObserver.getRevokedCallCount());
-
-        // An observer should be called with the correct account.
-        mOAuth2TokenService.fireRefreshTokenRevoked(TEST_ACCOUNT1);
-        assertEquals(1, mObserver.getRevokedCallCount());
-        assertEquals(TEST_ACCOUNT1, mObserver.getLastAccount());
-
-        // When removed, an observer should not be called.
-        mOAuth2TokenService.removeObserver(mObserver);
-        mOAuth2TokenService.fireRefreshTokenRevoked(TEST_ACCOUNT2);
-        assertEquals(1, mObserver.getRevokedCallCount());
-
-        // No other observer interface method should ever have been called.
-        assertEquals(0, mObserver.getAvailableCallCount());
-        assertEquals(0, mObserver.getLoadedCallCount());
-    }
-
-    @MediumTest
-    @UiThreadTest
-    @Feature({"Sync"})
-    public void testFireRefreshTokensLoadedNotifiesJavaObservers() {
-        // Adding an observer should not lead to a callback.
-        assertEquals(0, mObserver.getLoadedCallCount());
-
-        // An observer should be called with the correct account.
-        mOAuth2TokenService.fireRefreshTokensLoaded();
-        assertEquals(1, mObserver.getLoadedCallCount());
-
-        // When removed, an observer should not be called.
-        mOAuth2TokenService.removeObserver(mObserver);
-        mOAuth2TokenService.fireRefreshTokensLoaded();
-        assertEquals(1, mObserver.getLoadedCallCount());
-
-        // No other observer interface method should ever have been called.
-        assertEquals(0, mObserver.getAvailableCallCount());
-        assertEquals(0, mObserver.getRevokedCallCount());
-    }
-
-    @MediumTest
-    @UiThreadTest
-    public void testValidateAccountsNoAccountsRegisteredAndNoSignedInUser() {
-        // Run test.
-        mOAuth2TokenService.validateAccounts(mContext, false);
-
-        // Ensure no calls have been made to the observer.
-        assertEquals(0, mObserver.getAvailableCallCount());
-        assertEquals(0, mObserver.getRevokedCallCount());
-        assertEquals(0, mObserver.getLoadedCallCount());
-    }
-
-    @MediumTest
-    @UiThreadTest
-    public void testValidateAccountsOneAccountsRegisteredAndNoSignedInUser() {
-        // Add account.
-        mAccountManager.addAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_1);
-
-        // Run test.
-        mOAuth2TokenService.validateAccounts(mContext, false);
-
-        // Ensure no calls have been made to the observer.
-        assertEquals(0, mObserver.getAvailableCallCount());
-        assertEquals(0, mObserver.getRevokedCallCount());
-        assertEquals(0, mObserver.getLoadedCallCount());
-    }
-
-    @MediumTest
-    @UiThreadTest
-    public void testValidateAccountsOneAccountsRegisteredSignedIn() {
-        // Add account.
-        mAccountManager.addAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_1);
-
-        // Mark user as signed in.
-        mChromeSigninController.setSignedInAccountName(TEST_ACCOUNT1.name);
-
-        // Run test.
-        mOAuth2TokenService.validateAccounts(mContext, false);
-
-        // Ensure one call for the signed in account.
-        assertEquals(1, mObserver.getAvailableCallCount());
-        assertEquals(0, mObserver.getRevokedCallCount());
-        assertEquals(0, mObserver.getLoadedCallCount());
-
-        // Validate again and make sure no new calls are made.
-        mOAuth2TokenService.validateAccounts(mContext, false);
-        assertEquals(1, mObserver.getAvailableCallCount());
-        assertEquals(0, mObserver.getRevokedCallCount());
-        assertEquals(0, mObserver.getLoadedCallCount());
-
-        // Validate again with force notifications and make sure one new calls is made.
-        mOAuth2TokenService.validateAccounts(mContext, true);
-        assertEquals(2, mObserver.getAvailableCallCount());
-        assertEquals(0, mObserver.getRevokedCallCount());
-        assertEquals(0, mObserver.getLoadedCallCount());
-    }
-
-    @MediumTest
-    @UiThreadTest
-    public void testValidateAccountsSingleAccountWithoutChanges() {
-        // Add account.
-        mAccountManager.addAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_1);
-
-        // Mark user as signed in.
-        mChromeSigninController.setSignedInAccountName(TEST_ACCOUNT1.name);
-
-        // Run one validation.
-        mOAuth2TokenService.validateAccounts(mContext, false);
-        assertEquals(1, mObserver.getAvailableCallCount());
-        assertEquals(0, mObserver.getRevokedCallCount());
-        assertEquals(0, mObserver.getLoadedCallCount());
-
-        // Re-run validation.
-        mOAuth2TokenService.validateAccounts(mContext, false);
-        assertEquals(1, mObserver.getAvailableCallCount());
-        assertEquals(0, mObserver.getRevokedCallCount());
-        assertEquals(0, mObserver.getLoadedCallCount());
-    }
-
-    @MediumTest
-    @UiThreadTest
-    public void testValidateAccountsSingleAccountThenAddOne() {
-        // Add account.
-        mAccountManager.addAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_1);
-
-        // Mark user as signed in.
-        mChromeSigninController.setSignedInAccountName(TEST_ACCOUNT1.name);
-
-        // Run one validation.
-        mOAuth2TokenService.validateAccounts(mContext, false);
-        assertEquals(1, mObserver.getAvailableCallCount());
-        assertEquals(0, mObserver.getRevokedCallCount());
-        assertEquals(0, mObserver.getLoadedCallCount());
-
-        // Add another account.
-        mAccountManager.addAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_2);
-
-        // Seed AccountTrackerService again since accounts changed after last validation.
-        seedAccountTrackerService(mContext);
-
-        // Re-run validation.
-        mOAuth2TokenService.validateAccounts(mContext, false);
-        assertEquals(2, mObserver.getAvailableCallCount());
-        assertEquals(0, mObserver.getRevokedCallCount());
-        assertEquals(0, mObserver.getLoadedCallCount());
-    }
-
-    @MediumTest
-    @UiThreadTest
-    public void testValidateAccountsTwoAccountsThenRemoveOne() {
-        // Add accounts.
-        mAccountManager.addAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_1);
-        mAccountManager.addAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_2);
-
-        // Mark user as signed in.
-        mChromeSigninController.setSignedInAccountName(TEST_ACCOUNT1.name);
-
-        // Run one validation.
-        mOAuth2TokenService.validateAccounts(mContext, false);
-        assertEquals(2, mObserver.getAvailableCallCount());
-
-        mAccountManager.removeAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_2);
-        mOAuth2TokenService.validateAccounts(mContext, false);
-
-        assertEquals(2, mObserver.getAvailableCallCount());
-        assertEquals(1, mObserver.getRevokedCallCount());
-        assertEquals(0, mObserver.getLoadedCallCount());
-    }
-
-    @MediumTest
-    @UiThreadTest
-    public void testValidateAccountsTwoAccountsThenRemoveAll() {
-        // Add accounts.
-        mAccountManager.addAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_1);
-        mAccountManager.addAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_2);
-
-        // Mark user as signed in.
-        mChromeSigninController.setSignedInAccountName(TEST_ACCOUNT1.name);
-
-        mOAuth2TokenService.validateAccounts(mContext, false);
-        assertEquals(2, mObserver.getAvailableCallCount());
-
-        // Remove all.
-        mAccountManager.removeAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_1);
-        mAccountManager.removeAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_2);
-
-        // Re-validate and run checks.
-        mOAuth2TokenService.validateAccounts(mContext, false);
-        assertEquals(2, mObserver.getRevokedCallCount());
-        assertEquals(0, mObserver.getLoadedCallCount());
-    }
-
-    @MediumTest
-    @UiThreadTest
-    @RetryOnFailure
-    public void testValidateAccountsTwoAccountsThenRemoveAllSignOut() {
-        // Add accounts.
-        mAccountManager.addAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_1);
-        mAccountManager.addAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_2);
-
-        // Mark user as signed in.
-        mChromeSigninController.setSignedInAccountName(TEST_ACCOUNT1.name);
-
-        mOAuth2TokenService.validateAccounts(mContext, false);
-        assertEquals(2, mObserver.getAvailableCallCount());
-
-        // Remove all.
-        mChromeSigninController.setSignedInAccountName(null);
-        mAccountManager.removeAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_1);
-        mAccountManager.removeAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_2);
-
-        // Re-validate and run checks.
-        mOAuth2TokenService.validateAccounts(mContext, false);
-        assertEquals(2, mObserver.getRevokedCallCount());
-        assertEquals(0, mObserver.getLoadedCallCount());
-    }
-
-    @MediumTest
-    @UiThreadTest
-    public void testValidateAccountsTwoAccountsRegisteredAndOneSignedIn() {
-        // Add accounts.
-        mAccountManager.addAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_1);
-        mAccountManager.addAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_2);
-
-        // Mark user as signed in.
-        mChromeSigninController.setSignedInAccountName(TEST_ACCOUNT1.name);
-
-        // Run test.
-        mOAuth2TokenService.validateAccounts(mContext, false);
-
-        // All accounts will be notified. It is up to the observer
-        // to design if any action is needed.
-        assertEquals(2, mObserver.getAvailableCallCount());
-        assertEquals(0, mObserver.getRevokedCallCount());
-        assertEquals(0, mObserver.getLoadedCallCount());
-    }
-
-    @MediumTest
-    @UiThreadTest
-    public void testValidateAccountsNoAccountsRegisteredButSignedIn() {
-        // Mark user as signed in without setting up the account.
-        mChromeSigninController.setSignedInAccountName(TEST_ACCOUNT1.name);
-
-        // Run test.
-        mOAuth2TokenService.validateAccounts(mContext, false);
-
-        // Ensure no calls have been made to the observer.
-        assertEquals(0, mObserver.getAvailableCallCount());
-        assertEquals(0, mObserver.getRevokedCallCount());
-        assertEquals(0, mObserver.getLoadedCallCount());
-    }
-
-    @MediumTest
-    @UiThreadTest
-    public void testValidateAccountsFiresEventAtTheEnd() {
-        // Mark user as signed in without setting up the account.
-        mChromeSigninController.setSignedInAccountName(TEST_ACCOUNT1.name);
-        TestObserver ob = new TestObserver() {
+    public void testFireRefreshTokenAvailableNotifiesJavaObservers() throws Throwable {
+        mUiThreadTestRule.runOnUiThread(new Runnable() {
             @Override
-            public void onRefreshTokenAvailable(Account account) {
-                super.onRefreshTokenAvailable(account);
-                assertEquals(1, OAuth2TokenService.getAccounts(mContext).length);
-            }
-        };
+            public void run() {
+                // Adding an observer should not lead to a callback.
+                Assert.assertEquals(0, mObserver.getAvailableCallCount());
 
-        addObserver(ob);
-        mOAuth2TokenService.validateAccounts(mContext, false);
+                // An observer should be called with the correct account.
+                mOAuth2TokenService.fireRefreshTokenAvailable(TEST_ACCOUNT1);
+                Assert.assertEquals(1, mObserver.getAvailableCallCount());
+                Assert.assertEquals(TEST_ACCOUNT1, mObserver.getLastAccount());
+
+                // When mOAuth2TokenService, an observer should not be called.
+                mOAuth2TokenService.removeObserver(mObserver);
+                mOAuth2TokenService.fireRefreshTokenAvailable(TEST_ACCOUNT1);
+                Assert.assertEquals(1, mObserver.getAvailableCallCount());
+
+                // No other observer interface method should ever have been called.
+                Assert.assertEquals(0, mObserver.getRevokedCallCount());
+                Assert.assertEquals(0, mObserver.getLoadedCallCount());
+            }
+        });
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"Sync"})
+    public void testFireRefreshTokenRevokedNotifiesJavaObservers() throws Throwable {
+        mUiThreadTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // Adding an observer should not lead to a callback.
+                Assert.assertEquals(0, mObserver.getRevokedCallCount());
+
+                // An observer should be called with the correct account.
+                mOAuth2TokenService.fireRefreshTokenRevoked(TEST_ACCOUNT1);
+                Assert.assertEquals(1, mObserver.getRevokedCallCount());
+                Assert.assertEquals(TEST_ACCOUNT1, mObserver.getLastAccount());
+
+                // When removed, an observer should not be called.
+                mOAuth2TokenService.removeObserver(mObserver);
+                mOAuth2TokenService.fireRefreshTokenRevoked(TEST_ACCOUNT2);
+                Assert.assertEquals(1, mObserver.getRevokedCallCount());
+
+                // No other observer interface method should ever have been called.
+                Assert.assertEquals(0, mObserver.getAvailableCallCount());
+                Assert.assertEquals(0, mObserver.getLoadedCallCount());
+            }
+        });
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"Sync"})
+    public void testFireRefreshTokensLoadedNotifiesJavaObservers() throws Throwable {
+        mUiThreadTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // Adding an observer should not lead to a callback.
+                Assert.assertEquals(0, mObserver.getLoadedCallCount());
+
+                // An observer should be called with the correct account.
+                mOAuth2TokenService.fireRefreshTokensLoaded();
+                Assert.assertEquals(1, mObserver.getLoadedCallCount());
+
+                // When removed, an observer should not be called.
+                mOAuth2TokenService.removeObserver(mObserver);
+                mOAuth2TokenService.fireRefreshTokensLoaded();
+                Assert.assertEquals(1, mObserver.getLoadedCallCount());
+
+                // No other observer interface method should ever have been called.
+                Assert.assertEquals(0, mObserver.getAvailableCallCount());
+                Assert.assertEquals(0, mObserver.getRevokedCallCount());
+            }
+        });
+    }
+
+    @Test
+    @MediumTest
+    public void testValidateAccountsNoAccountsRegisteredAndNoSignedInUser() throws Throwable {
+        mUiThreadTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // Run test.
+                mOAuth2TokenService.validateAccounts(mContext, false);
+
+                // Ensure no calls have been made to the observer.
+                Assert.assertEquals(0, mObserver.getAvailableCallCount());
+                Assert.assertEquals(0, mObserver.getRevokedCallCount());
+                Assert.assertEquals(0, mObserver.getLoadedCallCount());
+            }
+        });
+    }
+
+    @Test
+    @MediumTest
+    public void testValidateAccountsOneAccountsRegisteredAndNoSignedInUser() throws Throwable {
+        mUiThreadTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // Add account.
+                mAccountManager.addAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_1);
+
+                // Run test.
+                mOAuth2TokenService.validateAccounts(mContext, false);
+
+                // Ensure no calls have been made to the observer.
+                Assert.assertEquals(0, mObserver.getAvailableCallCount());
+                Assert.assertEquals(0, mObserver.getRevokedCallCount());
+                Assert.assertEquals(0, mObserver.getLoadedCallCount());
+            }
+        });
+    }
+
+    @Test
+    @MediumTest
+    public void testValidateAccountsOneAccountsRegisteredSignedIn() throws Throwable {
+        mUiThreadTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // Add account.
+                mAccountManager.addAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_1);
+
+                // Mark user as signed in.
+                mChromeSigninController.setSignedInAccountName(TEST_ACCOUNT1.name);
+
+                // Run test.
+                mOAuth2TokenService.validateAccounts(mContext, false);
+
+                // Ensure one call for the signed in account.
+                Assert.assertEquals(1, mObserver.getAvailableCallCount());
+                Assert.assertEquals(0, mObserver.getRevokedCallCount());
+                Assert.assertEquals(0, mObserver.getLoadedCallCount());
+
+                // Validate again and make sure no new calls are made.
+                mOAuth2TokenService.validateAccounts(mContext, false);
+                Assert.assertEquals(1, mObserver.getAvailableCallCount());
+                Assert.assertEquals(0, mObserver.getRevokedCallCount());
+                Assert.assertEquals(0, mObserver.getLoadedCallCount());
+
+                // Validate again with force notifications and make sure one new calls is made.
+                mOAuth2TokenService.validateAccounts(mContext, true);
+                Assert.assertEquals(2, mObserver.getAvailableCallCount());
+                Assert.assertEquals(0, mObserver.getRevokedCallCount());
+                Assert.assertEquals(0, mObserver.getLoadedCallCount());
+            }
+        });
+    }
+
+    @Test
+    @MediumTest
+    public void testValidateAccountsSingleAccountWithoutChanges() throws Throwable {
+        mUiThreadTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // Add account.
+                mAccountManager.addAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_1);
+
+                // Mark user as signed in.
+                mChromeSigninController.setSignedInAccountName(TEST_ACCOUNT1.name);
+
+                // Run one validation.
+                mOAuth2TokenService.validateAccounts(mContext, false);
+                Assert.assertEquals(1, mObserver.getAvailableCallCount());
+                Assert.assertEquals(0, mObserver.getRevokedCallCount());
+                Assert.assertEquals(0, mObserver.getLoadedCallCount());
+
+                // Re-run validation.
+                mOAuth2TokenService.validateAccounts(mContext, false);
+                Assert.assertEquals(1, mObserver.getAvailableCallCount());
+                Assert.assertEquals(0, mObserver.getRevokedCallCount());
+                Assert.assertEquals(0, mObserver.getLoadedCallCount());
+            }
+        });
+    }
+
+    @Test
+    @MediumTest
+    public void testValidateAccountsSingleAccountThenAddOne() throws Throwable {
+        mUiThreadTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // Add account.
+                mAccountManager.addAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_1);
+
+                // Mark user as signed in.
+                mChromeSigninController.setSignedInAccountName(TEST_ACCOUNT1.name);
+
+                // Run one validation.
+                mOAuth2TokenService.validateAccounts(mContext, false);
+                Assert.assertEquals(1, mObserver.getAvailableCallCount());
+                Assert.assertEquals(0, mObserver.getRevokedCallCount());
+                Assert.assertEquals(0, mObserver.getLoadedCallCount());
+
+                // Add another account.
+                mAccountManager.addAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_2);
+
+                // Seed AccountTrackerService again since accounts changed after last validation.
+                seedAccountTrackerService(mContext);
+
+                // Re-run validation.
+                mOAuth2TokenService.validateAccounts(mContext, false);
+                Assert.assertEquals(2, mObserver.getAvailableCallCount());
+                Assert.assertEquals(0, mObserver.getRevokedCallCount());
+                Assert.assertEquals(0, mObserver.getLoadedCallCount());
+            }
+        });
+    }
+
+    @Test
+    @MediumTest
+    public void testValidateAccountsTwoAccountsThenRemoveOne() throws Throwable {
+        mUiThreadTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // Add accounts.
+                mAccountManager.addAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_1);
+                mAccountManager.addAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_2);
+
+                // Mark user as signed in.
+                mChromeSigninController.setSignedInAccountName(TEST_ACCOUNT1.name);
+
+                // Run one validation.
+                mOAuth2TokenService.validateAccounts(mContext, false);
+                Assert.assertEquals(2, mObserver.getAvailableCallCount());
+
+                mAccountManager.removeAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_2);
+                mOAuth2TokenService.validateAccounts(mContext, false);
+
+                Assert.assertEquals(2, mObserver.getAvailableCallCount());
+                Assert.assertEquals(1, mObserver.getRevokedCallCount());
+                Assert.assertEquals(0, mObserver.getLoadedCallCount());
+            }
+        });
+    }
+
+    @Test
+    @MediumTest
+    public void testValidateAccountsTwoAccountsThenRemoveAll() throws Throwable {
+        mUiThreadTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // Add accounts.
+                mAccountManager.addAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_1);
+                mAccountManager.addAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_2);
+
+                // Mark user as signed in.
+                mChromeSigninController.setSignedInAccountName(TEST_ACCOUNT1.name);
+
+                mOAuth2TokenService.validateAccounts(mContext, false);
+                Assert.assertEquals(2, mObserver.getAvailableCallCount());
+
+                // Remove all.
+                mAccountManager.removeAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_1);
+                mAccountManager.removeAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_2);
+
+                // Re-validate and run checks.
+                mOAuth2TokenService.validateAccounts(mContext, false);
+                Assert.assertEquals(2, mObserver.getRevokedCallCount());
+                Assert.assertEquals(0, mObserver.getLoadedCallCount());
+            }
+        });
+    }
+
+    @Test
+    @MediumTest
+    @RetryOnFailure
+    public void testValidateAccountsTwoAccountsThenRemoveAllSignOut() throws Throwable {
+        mUiThreadTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // Add accounts.
+                mAccountManager.addAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_1);
+                mAccountManager.addAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_2);
+
+                // Mark user as signed in.
+                mChromeSigninController.setSignedInAccountName(TEST_ACCOUNT1.name);
+
+                mOAuth2TokenService.validateAccounts(mContext, false);
+                Assert.assertEquals(2, mObserver.getAvailableCallCount());
+
+                // Remove all.
+                mChromeSigninController.setSignedInAccountName(null);
+                mAccountManager.removeAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_1);
+                mAccountManager.removeAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_2);
+
+                // Re-validate and run checks.
+                mOAuth2TokenService.validateAccounts(mContext, false);
+                Assert.assertEquals(2, mObserver.getRevokedCallCount());
+                Assert.assertEquals(0, mObserver.getLoadedCallCount());
+            }
+        });
+    }
+
+    @Test
+    @MediumTest
+    public void testValidateAccountsTwoAccountsRegisteredAndOneSignedIn() throws Throwable {
+        mUiThreadTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // Add accounts.
+                mAccountManager.addAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_1);
+                mAccountManager.addAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_2);
+
+                // Mark user as signed in.
+                mChromeSigninController.setSignedInAccountName(TEST_ACCOUNT1.name);
+
+                // Run test.
+                mOAuth2TokenService.validateAccounts(mContext, false);
+
+                // All accounts will be notified. It is up to the observer
+                // to design if any action is needed.
+                Assert.assertEquals(2, mObserver.getAvailableCallCount());
+                Assert.assertEquals(0, mObserver.getRevokedCallCount());
+                Assert.assertEquals(0, mObserver.getLoadedCallCount());
+            }
+        });
+    }
+
+    @Test
+    @MediumTest
+    public void testValidateAccountsNoAccountsRegisteredButSignedIn() throws Throwable {
+        mUiThreadTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // Mark user as signed in without setting up the account.
+                mChromeSigninController.setSignedInAccountName(TEST_ACCOUNT1.name);
+
+                // Run test.
+                mOAuth2TokenService.validateAccounts(mContext, false);
+
+                // Ensure no calls have been made to the observer.
+                Assert.assertEquals(0, mObserver.getAvailableCallCount());
+                Assert.assertEquals(0, mObserver.getRevokedCallCount());
+                Assert.assertEquals(0, mObserver.getLoadedCallCount());
+            }
+        });
+    }
+
+    @Test
+    @MediumTest
+    public void testValidateAccountsFiresEventAtTheEnd() throws Throwable {
+        mUiThreadTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // Mark user as signed in without setting up the account.
+                mChromeSigninController.setSignedInAccountName(TEST_ACCOUNT1.name);
+                TestObserver ob = new TestObserver() {
+                    @Override
+                    public void onRefreshTokenAvailable(Account account) {
+                        super.onRefreshTokenAvailable(account);
+                        Assert.assertEquals(1, OAuth2TokenService.getAccounts(mContext).length);
+                    }
+                };
+
+                addObserver(ob);
+                mOAuth2TokenService.validateAccounts(mContext, false);
+            }
+        });
     }
 
     private static class TestObserver implements OAuth2TokenService.OAuth2TokenServiceObserver {

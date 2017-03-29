@@ -4,10 +4,19 @@
 
 package org.chromium.chrome.browser;
 
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.chrome.browser.tabmodel.TestTabModelDirectory;
-import org.chromium.content.browser.test.NativeLibraryTestBase;
+import org.chromium.content.browser.test.NativeLibraryTestRule;
 
 import java.io.File;
 
@@ -15,22 +24,25 @@ import java.io.File;
  * Tests whether TabState can be saved and restored to disk properly. Also checks to see if
  * TabStates from previous versions of Chrome can still be loaded and upgraded.
  */
-public class TabStateTest extends NativeLibraryTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class TabStateTest {
+    @Rule
+    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
+
     private TestTabModelDirectory mTestTabModelDirectory;
 
-    @Override
+    @Before
     public void setUp() throws Exception {
-        super.setUp();
-        loadNativeLibraryAndInitBrowserProcess();
+        mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
         mTestTabModelDirectory = new TestTabModelDirectory(
-                getInstrumentation().getTargetContext(), "TabStateTest", null);
+                InstrumentationRegistry.getInstrumentation().getTargetContext(), "TabStateTest",
+                null);
     }
 
-    @Override
+    @After
     public void tearDown() throws Exception {
         TabState.setChannelNameOverrideForTest(null);
         mTestTabModelDirectory.tearDown();
-        super.tearDown();
     }
 
     private void loadAndCheckTabState(TestTabModelDirectory.TabStateInfo info) throws Exception {
@@ -38,12 +50,13 @@ public class TabStateTest extends NativeLibraryTestBase {
 
         File tabStateFile = new File(mTestTabModelDirectory.getBaseDirectory(), info.filename);
         TabState tabState = TabState.restoreTabState(tabStateFile, false);
-        assertNotNull(tabState);
-        assertEquals(info.url, tabState.getVirtualUrlFromState());
-        assertEquals(info.title, tabState.getDisplayTitleFromState());
-        assertEquals(info.version, tabState.contentsState.version());
+        Assert.assertNotNull(tabState);
+        Assert.assertEquals(info.url, tabState.getVirtualUrlFromState());
+        Assert.assertEquals(info.title, tabState.getDisplayTitleFromState());
+        Assert.assertEquals(info.version, tabState.contentsState.version());
     }
 
+    @Test
     @SmallTest
     public void testLoadV0Tabs() throws Exception {
         TabState.setChannelNameOverrideForTest("stable");
@@ -51,6 +64,7 @@ public class TabStateTest extends NativeLibraryTestBase {
         loadAndCheckTabState(TestTabModelDirectory.M18_NTP);
     }
 
+    @Test
     @SmallTest
     public void testLoadV1Tabs() throws Exception {
         TabState.setChannelNameOverrideForTest(null);
@@ -58,6 +72,7 @@ public class TabStateTest extends NativeLibraryTestBase {
         loadAndCheckTabState(TestTabModelDirectory.M26_GOOGLE_CA);
     }
 
+    @Test
     @SmallTest
     public void testLoadV2Tabs() throws Exception {
         TabState.setChannelNameOverrideForTest(null);

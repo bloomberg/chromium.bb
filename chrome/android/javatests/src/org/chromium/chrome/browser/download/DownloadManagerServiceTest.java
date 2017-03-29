@@ -6,24 +6,32 @@ package org.chromium.chrome.browser.download;
 
 import android.app.DownloadManager;
 import android.content.Context;
-
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 import android.util.Log;
 import android.util.Pair;
 
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.download.DownloadInfo.Builder;
 import org.chromium.chrome.browser.download.DownloadManagerServiceTest.MockDownloadNotifier.MethodID;
-import org.chromium.content.browser.test.NativeLibraryTestBase;
+import org.chromium.content.browser.test.NativeLibraryTestRule;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.net.ConnectionType;
@@ -40,7 +48,11 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 /**
  * Test for DownloadManagerService.
  */
-public class DownloadManagerServiceTest extends NativeLibraryTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class DownloadManagerServiceTest {
+    @Rule
+    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
+
     private static final int UPDATE_DELAY_FOR_TEST = 1;
     private static final int DELAY_BETWEEN_CALLS = 10;
     private static final int LONG_UPDATE_DELAY_FOR_TEST = 500;
@@ -120,13 +132,13 @@ public class DownloadManagerServiceTest extends NativeLibraryTestBase {
 
         void assertCorrectExpectedCall(MethodID methodId, Object param, boolean matchParams) {
             Log.w("MockDownloadNotifier", "Called: " + methodId);
-            assertFalse("Unexpected call:, no call expected, but got: " + methodId,
+            Assert.assertFalse("Unexpected call:, no call expected, but got: " + methodId,
                     mExpectedCalls.isEmpty());
             Pair<MethodID, Object> actual = getMethodSignature(methodId, param);
             Pair<MethodID, Object> expected = mExpectedCalls.poll();
-            assertEquals("Unexpected call", expected.first, actual.first);
+            Assert.assertEquals("Unexpected call", expected.first, actual.first);
             if (matchParams) {
-                assertTrue(
+                Assert.assertTrue(
                         "Incorrect arguments", MatchHelper.macthes(expected.second, actual.second));
             }
         }
@@ -135,7 +147,7 @@ public class DownloadManagerServiceTest extends NativeLibraryTestBase {
         public void notifyDownloadSuccessful(DownloadInfo downloadInfo,
                 long systemDownloadId, boolean canResolve, boolean isSupportedMimeType) {
             assertCorrectExpectedCall(MethodID.DOWNLOAD_SUCCESSFUL, downloadInfo, false);
-            assertEquals("application/unknown", downloadInfo.getMimeType());
+            Assert.assertEquals("application/unknown", downloadInfo.getMimeType());
             super.notifyDownloadSuccessful(downloadInfo, systemDownloadId, canResolve,
                     isSupportedMimeType);
         }
@@ -318,16 +330,14 @@ public class DownloadManagerServiceTest extends NativeLibraryTestBase {
         }
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         RecordHistogram.setDisabledForTests(true);
-        loadNativeLibraryAndInitBrowserProcess();
+        mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
     }
 
-    @Override
+    @After
     public void tearDown() throws Exception {
-        super.tearDown();
         RecordHistogram.setDisabledForTests(false);
     }
 
@@ -345,9 +355,11 @@ public class DownloadManagerServiceTest extends NativeLibraryTestBase {
     }
 
     private Context getTestContext() {
-        return new AdvancedMockContext(getInstrumentation().getTargetContext());
+        return new AdvancedMockContext(
+                InstrumentationRegistry.getInstrumentation().getTargetContext());
     }
 
+    @Test
     @MediumTest
     @Feature({"Download"})
     @RetryOnFailure
@@ -380,6 +392,7 @@ public class DownloadManagerServiceTest extends NativeLibraryTestBase {
         notifier.waitTillExpectedCallsComplete();
     }
 
+    @Test
     @MediumTest
     @Feature({"Download"})
     public void testOnlyTwoProgressForFastUpdates() throws InterruptedException {
@@ -407,6 +420,7 @@ public class DownloadManagerServiceTest extends NativeLibraryTestBase {
         notifier.waitTillExpectedCallsComplete();
     }
 
+    @Test
     @MediumTest
     @Feature({"Download"})
     public void testDownloadCompletedIsCalled() throws InterruptedException {
@@ -441,6 +455,7 @@ public class DownloadManagerServiceTest extends NativeLibraryTestBase {
         snackbarController.waitForSnackbarControllerToFinish(true);
     }
 
+    @Test
     @MediumTest
     @Feature({"Download"})
     public void testDownloadFailedIsCalled() throws InterruptedException {
@@ -456,6 +471,7 @@ public class DownloadManagerServiceTest extends NativeLibraryTestBase {
         notifier.waitTillExpectedCallsComplete();
     }
 
+    @Test
     @MediumTest
     @Feature({"Download"})
     public void testDownloadPausedIsCalled() throws InterruptedException {
@@ -470,6 +486,7 @@ public class DownloadManagerServiceTest extends NativeLibraryTestBase {
         notifier.waitTillExpectedCallsComplete();
     }
 
+    @Test
     @MediumTest
     @Feature({"Download"})
     @RetryOnFailure
@@ -490,9 +507,10 @@ public class DownloadManagerServiceTest extends NativeLibraryTestBase {
         dService.onDownloadUpdated(download3);
 
         notifier.waitTillExpectedCallsComplete();
-        assertTrue("All downloads should be updated.", matchSet.mMatches.isEmpty());
+        Assert.assertTrue("All downloads should be updated.", matchSet.mMatches.isEmpty());
     }
 
+    @Test
     @MediumTest
     @Feature({"Download"})
     @RetryOnFailure
@@ -511,7 +529,7 @@ public class DownloadManagerServiceTest extends NativeLibraryTestBase {
         notifier.waitTillExpectedCallsComplete();
         int resumableIdCount = dService.mAutoResumableDownloadIds.size();
         dService.onConnectionTypeChanged(ConnectionType.CONNECTION_WIFI);
-        assertEquals(resumableIdCount - 1, dService.mAutoResumableDownloadIds.size());
+        Assert.assertEquals(resumableIdCount - 1, dService.mAutoResumableDownloadIds.size());
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -520,10 +538,11 @@ public class DownloadManagerServiceTest extends NativeLibraryTestBase {
         });
     }
 
+    @Test
     @MediumTest
     @Feature({"Download"})
-    public void testInterruptedUnmeteredDownloadCannotAutoResumeOnMeteredNetwork() throws
-            InterruptedException {
+    public void testInterruptedUnmeteredDownloadCannotAutoResumeOnMeteredNetwork()
+            throws InterruptedException {
         MockDownloadNotifier notifier = new MockDownloadNotifier(getTestContext());
         final DownloadManagerServiceForTest dService = new DownloadManagerServiceForTest(
                 getTestContext(), notifier, UPDATE_DELAY_FOR_TEST);
@@ -539,13 +558,14 @@ public class DownloadManagerServiceTest extends NativeLibraryTestBase {
         DownloadManagerService.setIsNetworkMeteredForTest(true);
         int resumableIdCount = dService.mAutoResumableDownloadIds.size();
         dService.onConnectionTypeChanged(ConnectionType.CONNECTION_2G);
-        assertEquals(resumableIdCount, dService.mAutoResumableDownloadIds.size());
+        Assert.assertEquals(resumableIdCount, dService.mAutoResumableDownloadIds.size());
     }
 
     /**
      * Test to make sure {@link DownloadManagerService#clearPendingDownloadNotifications}
      * will clear the OMA notifications and pass the notification URI to {@link OMADownloadHandler}.
      */
+    @Test
     @MediumTest
     @Feature({"Download"})
     public void testClearPendingOMADownloads() {
@@ -568,7 +588,7 @@ public class DownloadManagerServiceTest extends NativeLibraryTestBase {
                 return handler.mSuccess;
             }
         });
-        assertEquals(handler.mNofityURI, "http://test/test");
+        Assert.assertEquals(handler.mNofityURI, "http://test/test");
         manager.remove(downloadId);
     }
 
@@ -577,11 +597,12 @@ public class DownloadManagerServiceTest extends NativeLibraryTestBase {
      * OMA download will enqueue a new DownloadManager request and insert an entry into the
      * SharedPrefs.
      */
+    @Test
     @MediumTest
     @Feature({"Download"})
     public void testEnqueueOMADownloads() throws InterruptedException {
         EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
-                getInstrumentation().getContext());
+                InstrumentationRegistry.getInstrumentation().getContext());
 
         try {
             DownloadInfo info = new DownloadInfo.Builder()
@@ -608,11 +629,11 @@ public class DownloadManagerServiceTest extends NativeLibraryTestBase {
             Set<String> downloads = dService.getStoredDownloadInfo(
                     ContextUtils.getAppSharedPreferences(),
                     DownloadManagerService.PENDING_OMA_DOWNLOADS);
-            assertEquals(1, downloads.size());
+            Assert.assertEquals(1, downloads.size());
             DownloadManagerService.OMAEntry entry = DownloadManagerService.OMAEntry.parseOMAEntry(
                     (String) (downloads.toArray()[0]));
-            assertEquals(entry.mDownloadId, handler.mDownloadId);
-            assertEquals(entry.mInstallNotifyURI, INSTALL_NOTIFY_URI);
+            Assert.assertEquals(entry.mDownloadId, handler.mDownloadId);
+            Assert.assertEquals(entry.mInstallNotifyURI, INSTALL_NOTIFY_URI);
             DownloadManager manager =
                     (DownloadManager) getTestContext().getSystemService(Context.DOWNLOAD_SERVICE);
             manager.remove(handler.mDownloadId);
@@ -625,47 +646,48 @@ public class DownloadManagerServiceTest extends NativeLibraryTestBase {
      * Test to make sure {@link DownloadManagerService#shouldOpenAfterDownload}
      * returns the right result for varying MIME types and Content-Dispositions.
      */
+    @Test
     @SmallTest
     @Feature({"Download"})
     public void testShouldOpenAfterDownload() {
         // Should not open any download type MIME types.
-        assertFalse(
-                DownloadManagerService.shouldOpenAfterDownload(new DownloadInfo.Builder()
+        Assert.assertFalse(DownloadManagerService.shouldOpenAfterDownload(
+                new DownloadInfo.Builder()
                         .setMimeType("application/download")
                         .setHasUserGesture(true)
                         .build()));
-        assertFalse(
-                DownloadManagerService.shouldOpenAfterDownload(new DownloadInfo.Builder()
+        Assert.assertFalse(DownloadManagerService.shouldOpenAfterDownload(
+                new DownloadInfo.Builder()
                         .setMimeType("application/x-download")
                         .setHasUserGesture(true)
                         .build()));
-        assertFalse(
-                DownloadManagerService.shouldOpenAfterDownload(new DownloadInfo.Builder()
+        Assert.assertFalse(DownloadManagerService.shouldOpenAfterDownload(
+                new DownloadInfo.Builder()
                         .setMimeType("application/octet-stream")
                         .setHasUserGesture(true)
                         .build()));
 
         // Should open PDFs.
-        assertTrue(
-                DownloadManagerService.shouldOpenAfterDownload(new DownloadInfo.Builder()
+        Assert.assertTrue(DownloadManagerService.shouldOpenAfterDownload(
+                new DownloadInfo.Builder()
                         .setMimeType("application/pdf")
                         .setHasUserGesture(true)
                         .build()));
-        assertTrue(
-                DownloadManagerService.shouldOpenAfterDownload(new DownloadInfo.Builder()
+        Assert.assertTrue(DownloadManagerService.shouldOpenAfterDownload(
+                new DownloadInfo.Builder()
                         .setContentDisposition("filename=test.pdf")
                         .setMimeType("application/pdf")
                         .setHasUserGesture(true)
                         .build()));
 
         // Require user gesture.
-        assertFalse(
-                DownloadManagerService.shouldOpenAfterDownload(new DownloadInfo.Builder()
+        Assert.assertFalse(DownloadManagerService.shouldOpenAfterDownload(
+                new DownloadInfo.Builder()
                         .setMimeType("application/pdf")
                         .setHasUserGesture(false)
                         .build()));
-        assertFalse(
-                DownloadManagerService.shouldOpenAfterDownload(new DownloadInfo.Builder()
+        Assert.assertFalse(DownloadManagerService.shouldOpenAfterDownload(
+                new DownloadInfo.Builder()
                         .setContentDisposition("filename=test.pdf")
                         .setMimeType("application/pdf")
                         .setHasUserGesture(false)

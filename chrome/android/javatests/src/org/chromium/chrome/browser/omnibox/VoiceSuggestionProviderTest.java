@@ -9,11 +9,18 @@ import android.speech.RecognizerIntent;
 import android.support.test.filters.SmallTest;
 import android.text.TextUtils;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestion.MatchClassification;
 import org.chromium.chrome.browser.omnibox.VoiceSuggestionProvider.VoiceResult;
-import org.chromium.content.browser.test.NativeLibraryTestBase;
+import org.chromium.content.browser.test.NativeLibraryTestRule;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,12 +30,14 @@ import java.util.List;
  * Test the {@link VoiceSuggestionProvider} class through simulating omnibox results and voice
  * recognition result bundles.
  */
-public class VoiceSuggestionProviderTest extends NativeLibraryTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class VoiceSuggestionProviderTest {
+    @Rule
+    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
 
-    @Override
+    @Before
     public void setUp() throws Exception {
-        super.setUp();
-        loadNativeLibraryAndInitBrowserProcess();
+        mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
     }
 
     private static OmniboxSuggestion createDummySuggestion(String text) {
@@ -71,13 +80,14 @@ public class VoiceSuggestionProviderTest extends NativeLibraryTestBase {
 
     private static void assertVoiceResultsAreEqual(List<VoiceResult> results, String[] texts,
             float[] confidences) {
-        assertTrue("Invalid array sizes", results.size() == texts.length
-                && texts.length == confidences.length);
+        Assert.assertTrue("Invalid array sizes",
+                results.size() == texts.length && texts.length == confidences.length);
 
         for (int i = 0; i < texts.length; ++i) {
             VoiceResult result = results.get(i);
-            assertEquals("Match text is not equal", texts[i], result.getMatch());
-            assertEquals("Confidence is not equal", confidences[i], result.getConfidence());
+            Assert.assertEquals("Match text is not equal", texts[i], result.getMatch());
+            Assert.assertEquals(
+                    "Confidence is not equal", confidences[i], result.getConfidence(), 0);
         }
     }
 
@@ -87,26 +97,27 @@ public class VoiceSuggestionProviderTest extends NativeLibraryTestBase {
     }
 
     private void assertArrayStartsWith(List<OmniboxSuggestion> a, List<OmniboxSuggestion> b) {
-        assertTrue((a != null && b != null) || (a == null && b == null));
+        Assert.assertTrue((a != null && b != null) || (a == null && b == null));
         if (a == null || b == null) return;
 
-        assertTrue(a.size() >= b.size());
+        Assert.assertTrue(a.size() >= b.size());
         for (int i = 0; i < b.size(); ++i) {
-            assertEquals("The OmniboxSuggestion entries are not the same.", a.get(i), b.get(i));
+            Assert.assertEquals(
+                    "The OmniboxSuggestion entries are not the same.", a.get(i), b.get(i));
         }
     }
 
     private void assertArrayEndsWith(List<OmniboxSuggestion> a, List<VoiceResult> b,
             int expectedResultCount) {
-        assertTrue((a != null && b != null) || (a == null && b == null));
+        Assert.assertTrue((a != null && b != null) || (a == null && b == null));
         if (a == null || b == null) return;
 
         expectedResultCount = Math.min(expectedResultCount, b.size());
-        assertTrue(a.size() >= expectedResultCount);
+        Assert.assertTrue(a.size() >= expectedResultCount);
         for (int i = 0; i < expectedResultCount; ++i) {
-            assertTrue("The OmniboxSuggestion entry does not match the VoiceResult",
-                    assertSuggestionMatchesVoiceResult(a.get(a.size() - expectedResultCount + i),
-                            b.get(i)));
+            Assert.assertTrue("The OmniboxSuggestion entry does not match the VoiceResult",
+                    assertSuggestionMatchesVoiceResult(
+                            a.get(a.size() - expectedResultCount + i), b.get(i)));
         }
     }
 
@@ -119,6 +130,7 @@ public class VoiceSuggestionProviderTest extends NativeLibraryTestBase {
         return false;
     }
 
+    @Test
     @SmallTest
     @Feature({"Omnibox"})
     public void testParseEmptyBundle() {
@@ -129,8 +141,8 @@ public class VoiceSuggestionProviderTest extends NativeLibraryTestBase {
 
                 provider.setVoiceResultsFromIntentBundle(new Bundle());
 
-                assertNotNull("Results is null", provider.getResults());
-                assertEquals("SuggestionProvider added invalid results", 0,
+                Assert.assertNotNull("Results is null", provider.getResults());
+                Assert.assertEquals("SuggestionProvider added invalid results", 0,
                         provider.getResults().size());
 
                 provider.addVoiceSuggestions(null, 3);
@@ -138,6 +150,7 @@ public class VoiceSuggestionProviderTest extends NativeLibraryTestBase {
         });
     }
 
+    @Test
     @SmallTest
     @Feature({"Omnibox"})
     public void testParseBundle() {
@@ -156,6 +169,7 @@ public class VoiceSuggestionProviderTest extends NativeLibraryTestBase {
         });
     }
 
+    @Test
     @SmallTest
     @Feature({"Omnibox"})
     public void testNoSuggestions() {
@@ -174,6 +188,7 @@ public class VoiceSuggestionProviderTest extends NativeLibraryTestBase {
         });
     }
 
+    @Test
     @SmallTest
     @Feature({"Omnibox"})
     public void testClearVoiceResults() {
@@ -187,17 +202,18 @@ public class VoiceSuggestionProviderTest extends NativeLibraryTestBase {
 
                 provider.setVoiceResultsFromIntentBundle(createDummyBundle(texts, confidences));
 
-                assertNotNull(provider.getResults());
-                assertEquals("Invalid number of results", texts.length,
-                        provider.getResults().size());
+                Assert.assertNotNull(provider.getResults());
+                Assert.assertEquals(
+                        "Invalid number of results", texts.length, provider.getResults().size());
 
                 provider.clearVoiceSearchResults();
 
-                assertEquals(0, provider.getResults().size());
+                Assert.assertEquals(0, provider.getResults().size());
             }
         });
     }
 
+    @Test
     @SmallTest
     @Feature({"Omnibox"})
     public void testAddToEmtpyResultsCase() {
@@ -218,6 +234,7 @@ public class VoiceSuggestionProviderTest extends NativeLibraryTestBase {
         });
     }
 
+    @Test
     @SmallTest
     @Feature({"Omnibox"})
     public void testAddToEmptyOverflowCase() {
@@ -238,6 +255,7 @@ public class VoiceSuggestionProviderTest extends NativeLibraryTestBase {
         });
     }
 
+    @Test
     @SmallTest
     @Feature({"Omnibox"})
     public void testAddToResultsCase() {
@@ -262,6 +280,7 @@ public class VoiceSuggestionProviderTest extends NativeLibraryTestBase {
         });
     }
 
+    @Test
     @SmallTest
     @Feature({"Omnibox"})
     public void testAddToResultsOverflowCase() {
@@ -286,6 +305,7 @@ public class VoiceSuggestionProviderTest extends NativeLibraryTestBase {
         });
     }
 
+    @Test
     @SmallTest
     @Feature({"Omnibox"})
     public void testAddDuplicateToResultsCase() {
@@ -303,22 +323,23 @@ public class VoiceSuggestionProviderTest extends NativeLibraryTestBase {
                 List<OmniboxSuggestion> updatedSuggestions =
                         provider.addVoiceSuggestions(suggestions, texts.length);
 
-                assertEquals(provider.getResults().get(0).getMatch(), texts[0]);
-                assertTrue("Result 'a' was not found.",
-                        isVoiceResultInSuggestions(updatedSuggestions,
-                                provider.getResults().get(0)));
-                assertEquals(provider.getResults().get(1).getMatch(), texts[1]);
-                assertFalse("Result 'b' was found.",
-                        isVoiceResultInSuggestions(updatedSuggestions,
-                                provider.getResults().get(1)));
-                assertEquals(provider.getResults().get(2).getMatch(), texts[2]);
-                assertTrue("Result 'c' was not found.",
-                        isVoiceResultInSuggestions(updatedSuggestions,
-                                provider.getResults().get(2)));
+                Assert.assertEquals(provider.getResults().get(0).getMatch(), texts[0]);
+                Assert.assertTrue("Result 'a' was not found.",
+                        isVoiceResultInSuggestions(
+                                updatedSuggestions, provider.getResults().get(0)));
+                Assert.assertEquals(provider.getResults().get(1).getMatch(), texts[1]);
+                Assert.assertFalse("Result 'b' was found.",
+                        isVoiceResultInSuggestions(
+                                updatedSuggestions, provider.getResults().get(1)));
+                Assert.assertEquals(provider.getResults().get(2).getMatch(), texts[2]);
+                Assert.assertTrue("Result 'c' was not found.",
+                        isVoiceResultInSuggestions(
+                                updatedSuggestions, provider.getResults().get(2)));
             }
         });
     }
 
+    @Test
     @SmallTest
     @Feature({"Omnibox"})
     public void testConfidenceThresholdHideLowConfidence() {
@@ -336,22 +357,23 @@ public class VoiceSuggestionProviderTest extends NativeLibraryTestBase {
                 List<OmniboxSuggestion> updatedSuggestions =
                         provider.addVoiceSuggestions(suggestions, texts.length);
 
-                assertEquals(provider.getResults().get(0).getMatch(), texts[0]);
-                assertTrue("Result 'a' was not found.",
-                        isVoiceResultInSuggestions(updatedSuggestions,
-                                provider.getResults().get(0)));
-                assertEquals(provider.getResults().get(1).getMatch(), texts[1]);
-                assertTrue("Result 'b' was not found.",
-                        isVoiceResultInSuggestions(updatedSuggestions,
-                                provider.getResults().get(1)));
-                assertEquals(provider.getResults().get(2).getMatch(), texts[2]);
-                assertFalse("Result 'c' was found.",
-                        isVoiceResultInSuggestions(updatedSuggestions,
-                                provider.getResults().get(2)));
+                Assert.assertEquals(provider.getResults().get(0).getMatch(), texts[0]);
+                Assert.assertTrue("Result 'a' was not found.",
+                        isVoiceResultInSuggestions(
+                                updatedSuggestions, provider.getResults().get(0)));
+                Assert.assertEquals(provider.getResults().get(1).getMatch(), texts[1]);
+                Assert.assertTrue("Result 'b' was not found.",
+                        isVoiceResultInSuggestions(
+                                updatedSuggestions, provider.getResults().get(1)));
+                Assert.assertEquals(provider.getResults().get(2).getMatch(), texts[2]);
+                Assert.assertFalse("Result 'c' was found.",
+                        isVoiceResultInSuggestions(
+                                updatedSuggestions, provider.getResults().get(2)));
             }
         });
     }
 
+    @Test
     @SmallTest
     @Feature({"Omnibox"})
     public void testConfidenceThresholdHideAlts() {
@@ -369,22 +391,23 @@ public class VoiceSuggestionProviderTest extends NativeLibraryTestBase {
                 List<OmniboxSuggestion> updatedSuggestions =
                         provider.addVoiceSuggestions(suggestions, texts.length);
 
-                assertEquals(provider.getResults().get(0).getMatch(), texts[0]);
-                assertTrue("Result 'a' was not found (First entry.  Must be shown).",
-                        isVoiceResultInSuggestions(updatedSuggestions,
-                                provider.getResults().get(0)));
-                assertEquals(provider.getResults().get(1).getMatch(), texts[1]);
-                assertFalse("Result 'b' was found.",
-                        isVoiceResultInSuggestions(updatedSuggestions,
-                                provider.getResults().get(1)));
-                assertEquals(provider.getResults().get(2).getMatch(), texts[2]);
-                assertFalse("Result 'c' was found.",
-                        isVoiceResultInSuggestions(updatedSuggestions,
-                                provider.getResults().get(2)));
+                Assert.assertEquals(provider.getResults().get(0).getMatch(), texts[0]);
+                Assert.assertTrue("Result 'a' was not found (First entry.  Must be shown).",
+                        isVoiceResultInSuggestions(
+                                updatedSuggestions, provider.getResults().get(0)));
+                Assert.assertEquals(provider.getResults().get(1).getMatch(), texts[1]);
+                Assert.assertFalse("Result 'b' was found.",
+                        isVoiceResultInSuggestions(
+                                updatedSuggestions, provider.getResults().get(1)));
+                Assert.assertEquals(provider.getResults().get(2).getMatch(), texts[2]);
+                Assert.assertFalse("Result 'c' was found.",
+                        isVoiceResultInSuggestions(
+                                updatedSuggestions, provider.getResults().get(2)));
             }
         });
     }
 
+    @Test
     @SmallTest
     @Feature({"Omnibox"})
     public void testVoiceResponseURLConversion() {

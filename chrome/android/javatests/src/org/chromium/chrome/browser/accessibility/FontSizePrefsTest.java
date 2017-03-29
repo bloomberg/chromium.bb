@@ -6,37 +6,47 @@ package org.chromium.chrome.browser.accessibility;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs.FontSizePrefsObserver;
-import org.chromium.content.browser.test.NativeLibraryTestBase;
+import org.chromium.content.browser.test.NativeLibraryTestRule;
 
 import java.util.concurrent.Callable;
 
 /**
  * Tests for {@link FontSizePrefs}.
  */
-public class FontSizePrefsTest extends NativeLibraryTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class FontSizePrefsTest {
+    @Rule
+    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
 
     private static final float EPSILON = 0.001f;
     private FontSizePrefs mFontSizePrefs;
 
-    @Override
+    @Before
     public void setUp() throws Exception {
-        super.setUp();
-        loadNativeLibraryAndInitBrowserProcess();
+        mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
         resetSharedPrefs();
-        Context context = getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         mFontSizePrefs = getFontSizePrefs(context);
         setSystemFontScaleForTest(1.0f);
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
+    @After
+    public void tearDown() throws Exception {
         resetSharedPrefs();
     }
 
@@ -47,95 +57,98 @@ public class FontSizePrefsTest extends NativeLibraryTestBase {
         editor.apply();
     }
 
+    @Test
     @SmallTest
     @Feature({"Accessibility"})
     public void testForceEnableZoom() {
-        assertEquals(false, getForceEnableZoom());
+        Assert.assertEquals(false, getForceEnableZoom());
 
         TestingObserver observer = createAndAddFontSizePrefsObserver();
 
         setUserFontScaleFactor(1.5f);
-        assertEquals(true, getForceEnableZoom());
+        Assert.assertEquals(true, getForceEnableZoom());
         observer.assertConsistent();
         setUserFontScaleFactor(0.7f);
-        assertEquals(false, getForceEnableZoom());
+        Assert.assertEquals(false, getForceEnableZoom());
         observer.assertConsistent();
 
         setForceEnableZoomFromUser(true);
-        assertEquals(true, getForceEnableZoom());
+        Assert.assertEquals(true, getForceEnableZoom());
         observer.assertConsistent();
         setUserFontScaleFactor(1.5f);
-        assertEquals(true, getForceEnableZoom());
+        Assert.assertEquals(true, getForceEnableZoom());
         observer.assertConsistent();
         setUserFontScaleFactor(0.7f);
-        assertEquals(true, getForceEnableZoom());
+        Assert.assertEquals(true, getForceEnableZoom());
         observer.assertConsistent();
 
         setForceEnableZoomFromUser(false);
-        assertEquals(false, getForceEnableZoom());
+        Assert.assertEquals(false, getForceEnableZoom());
         observer.assertConsistent();
         setUserFontScaleFactor(1.5f);
-        assertEquals(true, getForceEnableZoom());
+        Assert.assertEquals(true, getForceEnableZoom());
         observer.assertConsistent();
         setUserFontScaleFactor(0.7f);
-        assertEquals(false, getForceEnableZoom());
+        Assert.assertEquals(false, getForceEnableZoom());
         observer.assertConsistent();
 
         // Force enable zoom should depend on fontScaleFactor, not on userFontScaleFactor.
         setSystemFontScaleForTest(2.0f);
-        assertEquals(true, getForceEnableZoom());
+        Assert.assertEquals(true, getForceEnableZoom());
         observer.assertConsistent();
         setSystemFontScaleForTest(1.0f);
-        assertEquals(false, getForceEnableZoom());
+        Assert.assertEquals(false, getForceEnableZoom());
         observer.assertConsistent();
     }
 
+    @Test
     @SmallTest
     @Feature({"Accessibility"})
     public void testFontScaleFactor() {
-        assertEquals(1f, getUserFontScaleFactor(), EPSILON);
-        assertEquals(1f, getFontScaleFactor(), EPSILON);
+        Assert.assertEquals(1f, getUserFontScaleFactor(), EPSILON);
+        Assert.assertEquals(1f, getFontScaleFactor(), EPSILON);
 
         TestingObserver observer = createAndAddFontSizePrefsObserver();
 
         setUserFontScaleFactor(1.5f);
-        assertEquals(1.5f, getUserFontScaleFactor(), EPSILON);
-        assertEquals(1.5f, getFontScaleFactor(), EPSILON);
+        Assert.assertEquals(1.5f, getUserFontScaleFactor(), EPSILON);
+        Assert.assertEquals(1.5f, getFontScaleFactor(), EPSILON);
         observer.assertConsistent();
 
         setUserFontScaleFactor(0.7f);
-        assertEquals(0.7f, getUserFontScaleFactor(), EPSILON);
-        assertEquals(0.7f, getFontScaleFactor(), EPSILON);
+        Assert.assertEquals(0.7f, getUserFontScaleFactor(), EPSILON);
+        Assert.assertEquals(0.7f, getFontScaleFactor(), EPSILON);
         observer.assertConsistent();
 
         // Force enable zoom shouldn't affect font scale factor.
         setForceEnableZoomFromUser(true);
-        assertEquals(0.7f, getUserFontScaleFactor(), EPSILON);
-        assertEquals(0.7f, getFontScaleFactor(), EPSILON);
+        Assert.assertEquals(0.7f, getUserFontScaleFactor(), EPSILON);
+        Assert.assertEquals(0.7f, getFontScaleFactor(), EPSILON);
         observer.assertConsistent();
 
         setForceEnableZoomFromUser(false);
-        assertEquals(0.7f, getUserFontScaleFactor(), EPSILON);
-        assertEquals(0.7f, getFontScaleFactor(), EPSILON);
+        Assert.assertEquals(0.7f, getUserFontScaleFactor(), EPSILON);
+        Assert.assertEquals(0.7f, getFontScaleFactor(), EPSILON);
         observer.assertConsistent();
 
         // System font scale should affect fontScaleFactor, but not userFontScaleFactor.
         setSystemFontScaleForTest(1.3f);
-        assertEquals(0.7f, getUserFontScaleFactor(), EPSILON);
-        assertEquals(0.7f * 1.3f, getFontScaleFactor(), EPSILON);
+        Assert.assertEquals(0.7f, getUserFontScaleFactor(), EPSILON);
+        Assert.assertEquals(0.7f * 1.3f, getFontScaleFactor(), EPSILON);
         observer.assertConsistent();
 
         setUserFontScaleFactor(1.5f);
-        assertEquals(1.5f, getUserFontScaleFactor(), EPSILON);
-        assertEquals(1.5f * 1.3f, getFontScaleFactor(), EPSILON);
+        Assert.assertEquals(1.5f, getUserFontScaleFactor(), EPSILON);
+        Assert.assertEquals(1.5f * 1.3f, getFontScaleFactor(), EPSILON);
         observer.assertConsistent();
 
         setSystemFontScaleForTest(0.8f);
-        assertEquals(1.5f, getUserFontScaleFactor(), EPSILON);
-        assertEquals(1.5f * 0.8f, getFontScaleFactor(), EPSILON);
+        Assert.assertEquals(1.5f, getUserFontScaleFactor(), EPSILON);
+        Assert.assertEquals(1.5f * 0.8f, getFontScaleFactor(), EPSILON);
         observer.assertConsistent();
     }
 
+    @Test
     @SmallTest
     @Feature({"Accessibility"})
     public void testUpgradeToUserFontScaleFactor() {
@@ -148,8 +161,8 @@ public class FontSizePrefsTest extends NativeLibraryTestBase {
         editor.remove(FontSizePrefs.PREF_USER_FONT_SCALE_FACTOR).apply();
 
         // Intial userFontScaleFactor should be set to fontScaleFactor / systemFontScale.
-        assertEquals(1.5f, getUserFontScaleFactor(), EPSILON);
-        assertEquals(1.5f * 1.3f, getFontScaleFactor(), EPSILON);
+        Assert.assertEquals(1.5f, getUserFontScaleFactor(), EPSILON);
+        Assert.assertEquals(1.5f * 1.3f, getFontScaleFactor(), EPSILON);
     }
 
     private class TestingObserver implements FontSizePrefsObserver {
@@ -172,9 +185,9 @@ public class FontSizePrefsTest extends NativeLibraryTestBase {
             ThreadUtils.runOnUiThreadBlocking(new Runnable() {
                 @Override
                 public void run() {
-                    assertEquals(getUserFontScaleFactor(), mUserFontScaleFactor, EPSILON);
-                    assertEquals(getFontScaleFactor(), mFontScaleFactor, EPSILON);
-                    assertEquals(getForceEnableZoom(), mForceEnableZoom);
+                    Assert.assertEquals(getUserFontScaleFactor(), mUserFontScaleFactor, EPSILON);
+                    Assert.assertEquals(getFontScaleFactor(), mFontScaleFactor, EPSILON);
+                    Assert.assertEquals(getForceEnableZoom(), mForceEnableZoom);
                 }
             });
         }

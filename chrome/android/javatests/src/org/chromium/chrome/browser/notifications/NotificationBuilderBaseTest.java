@@ -8,12 +8,20 @@ import android.app.Notification;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
-import org.chromium.content.browser.test.NativeLibraryTestBase;
+import org.chromium.content.browser.test.NativeLibraryTestRule;
 
 /**
  * Instrumentation unit tests for NotificationBuilderBase.
@@ -22,13 +30,16 @@ import org.chromium.content.browser.test.NativeLibraryTestBase;
  * native GetDomainAndRegistry, when called by {@link RoundedIconGenerator#getIconTextForUrl} during
  * testEnsureNormalizedIconBehavior().
  */
-public class NotificationBuilderBaseTest extends NativeLibraryTestBase {
-    @Override
+@RunWith(BaseJUnit4ClassRunner.class)
+public class NotificationBuilderBaseTest {
+    @Rule
+    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
+
+    @Before
     public void setUp() throws Exception {
-        super.setUp();
         // Not initializing the browser process is safe because GetDomainAndRegistry() is
         // stand-alone.
-        loadNativeLibraryNoBrowserProcess();
+        mActivityTestRule.loadNativeLibraryNoBrowserProcess();
     }
 
     /**
@@ -37,11 +48,14 @@ public class NotificationBuilderBaseTest extends NativeLibraryTestBase {
      *     (2) Large bitmaps should be resized to the device's intended size.
      *     (3) Smaller bitmaps should be left alone.
      */
+    @Test
     @MediumTest
     @Feature({"Browser", "Notifications"})
     public void testEnsureNormalizedIconBehavior() throws Exception {
         // Get the dimensions of the notification icon that will be presented to the user.
-        Context appContext = getInstrumentation().getTargetContext().getApplicationContext();
+        Context appContext = InstrumentationRegistry.getInstrumentation()
+                                     .getTargetContext()
+                                     .getApplicationContext();
         Resources resources = appContext.getResources();
 
         int largeIconWidthPx =
@@ -58,23 +72,23 @@ public class NotificationBuilderBaseTest extends NativeLibraryTestBase {
             }
         };
         Bitmap fromNullIcon = notificationBuilder.ensureNormalizedIcon(null, origin);
-        assertNotNull(fromNullIcon);
-        assertEquals(largeIconWidthPx, fromNullIcon.getWidth());
-        assertEquals(largeIconHeightPx, fromNullIcon.getHeight());
+        Assert.assertNotNull(fromNullIcon);
+        Assert.assertEquals(largeIconWidthPx, fromNullIcon.getWidth());
+        Assert.assertEquals(largeIconHeightPx, fromNullIcon.getHeight());
 
         Bitmap largeIcon = Bitmap.createBitmap(
                 largeIconWidthPx * 2, largeIconHeightPx * 2, Bitmap.Config.ALPHA_8);
 
         Bitmap fromLargeIcon = notificationBuilder.ensureNormalizedIcon(largeIcon, origin);
-        assertNotNull(fromLargeIcon);
-        assertEquals(largeIconWidthPx, fromLargeIcon.getWidth());
-        assertEquals(largeIconHeightPx, fromLargeIcon.getHeight());
+        Assert.assertNotNull(fromLargeIcon);
+        Assert.assertEquals(largeIconWidthPx, fromLargeIcon.getWidth());
+        Assert.assertEquals(largeIconHeightPx, fromLargeIcon.getHeight());
 
         Bitmap smallIcon = Bitmap.createBitmap(
                 largeIconWidthPx / 2, largeIconHeightPx / 2, Bitmap.Config.ALPHA_8);
 
         Bitmap fromSmallIcon = notificationBuilder.ensureNormalizedIcon(smallIcon, origin);
-        assertNotNull(fromSmallIcon);
-        assertEquals(smallIcon, fromSmallIcon);
+        Assert.assertNotNull(fromSmallIcon);
+        Assert.assertEquals(smallIcon, fromSmallIcon);
     }
 }

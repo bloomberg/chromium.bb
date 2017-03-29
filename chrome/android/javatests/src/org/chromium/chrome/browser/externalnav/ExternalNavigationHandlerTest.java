@@ -17,8 +17,16 @@ import android.support.test.filters.SmallTest;
 import android.test.mock.MockContext;
 import android.test.mock.MockPackageManager;
 
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
@@ -26,7 +34,7 @@ import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
-import org.chromium.content.browser.test.NativeLibraryTestBase;
+import org.chromium.content.browser.test.NativeLibraryTestRule;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
@@ -37,7 +45,10 @@ import java.util.List;
 /**
  * Instrumentation tests for {@link ExternalNavigationHandler}.
  */
-public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class ExternalNavigationHandlerTest {
+    @Rule
+    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
 
     // Expectations
     private static final int IGNORE = 0x0;
@@ -111,21 +122,20 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
         mUrlHandler = new ExternalNavigationHandler(mDelegate);
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         RecordHistogram.setDisabledForTests(true);
         mDelegate.mQueryIntentOverride = null;
         ChromeWebApkHost.initForTesting(false);  // disabled by default
-        loadNativeLibraryNoBrowserProcess();
+        mActivityTestRule.loadNativeLibraryNoBrowserProcess();
     }
 
-    @Override
+    @After
     public void tearDown() throws Exception {
-        super.tearDown();
         RecordHistogram.setDisabledForTests(false);
     }
 
+    @Test
     @SmallTest
     public void testOrdinaryIncognitoUri() {
         // http://crbug.com/587306: Don't prompt the user for capturing URLs in incognito, just keep
@@ -135,6 +145,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
 
+    @Test
     @SmallTest
     public void testChromeReferrer() {
         // http://crbug.com/159153: Don't override http or https URLs from the NTP or bookmarks.
@@ -147,6 +158,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                         START_OTHER_ACTIVITY);
     }
 
+    @Test
     @SmallTest
     public void testForwardBackNavigation() {
         // http://crbug.com/164194. We shouldn't show the intent picker on
@@ -156,6 +168,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
 
+    @Test
     @SmallTest
     public void testRedirectFromFormSubmit() {
         // http://crbug.com/181186: We need to show the intent picker when we receive a redirect
@@ -194,6 +207,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
 
+    @Test
     @SmallTest
     public void testIgnore() {
         // Ensure about: URLs are not broadcast for external navigation.
@@ -221,6 +235,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
 
+    @Test
     @SmallTest
     public void testPageTransitionType() {
         // Non-link page transition type are ignored.
@@ -244,6 +259,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
 
+    @Test
     @SmallTest
     public void testInWebapp() {
         // Don't override if the URL is within the current webapp scope.
@@ -252,6 +268,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
 
+    @Test
     @SmallTest
     public void testWtai() {
         // Start the telephone application with the given number.
@@ -274,6 +291,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                         IGNORE | INTENT_SANITIZATION_EXCEPTION);
     }
 
+    @Test
     @SmallTest
     public void testRedirectToMarketWithReferrer() {
         mDelegate.setCanResolveActivity(false);
@@ -283,16 +301,15 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
 
-
-        assertNotNull(mDelegate.startActivityIntent);
+        Assert.assertNotNull(mDelegate.startActivityIntent);
         Uri uri = mDelegate.startActivityIntent.getData();
-        assertEquals("market", uri.getScheme());
-        assertEquals(Uri.decode(ENCODED_MARKET_REFERRER), uri.getQueryParameter("referrer"));
-        assertEquals(Uri.parse(KEEP_URL),
+        Assert.assertEquals("market", uri.getScheme());
+        Assert.assertEquals(Uri.decode(ENCODED_MARKET_REFERRER), uri.getQueryParameter("referrer"));
+        Assert.assertEquals(Uri.parse(KEEP_URL),
                 mDelegate.startActivityIntent.getParcelableExtra(Intent.EXTRA_REFERRER));
     }
 
-
+    @Test
     @SmallTest
     public void testRedirectToMarketWithoutReferrer() {
         mDelegate.setCanResolveActivity(false);
@@ -301,12 +318,13 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
 
-        assertNotNull(mDelegate.startActivityIntent);
+        Assert.assertNotNull(mDelegate.startActivityIntent);
         Uri uri = mDelegate.startActivityIntent.getData();
-        assertEquals("market", uri.getScheme());
-        assertEquals(getPackageName(), uri.getQueryParameter("referrer"));
+        Assert.assertEquals("market", uri.getScheme());
+        Assert.assertEquals(getPackageName(), uri.getQueryParameter("referrer"));
     }
 
+    @Test
     @SmallTest
     public void testExternalUri() {
         checkUrl("tel:012345678")
@@ -314,6 +332,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                         START_OTHER_ACTIVITY);
     }
 
+    @Test
     @SmallTest
     public void testTypedRedirectToExternalProtocol() {
         // http://crbug.com/169549
@@ -329,6 +348,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
 
+    @Test
     @SmallTest
     public void testIncomingIntentRedirect() {
         int transitionTypeIncomingIntent = PageTransition.LINK
@@ -346,6 +366,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                         START_OTHER_ACTIVITY);
     }
 
+    @Test
     @SmallTest
     public void testIntentScheme() {
         String url = "intent:wtai://wp/#Intent;action=android.settings.SETTINGS;"
@@ -362,6 +383,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                         START_OTHER_ACTIVITY);
     }
 
+    @Test
     @SmallTest
     public void testYouTubePairingCode() {
         int transitionTypeIncomingIntent = PageTransition.LINK
@@ -379,6 +401,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
 
+    @Test
     @SmallTest
     public void testInitialIntent() throws URISyntaxException {
         TabRedirectHandler redirectHandler = new TabRedirectHandler(new TestContext());
@@ -421,6 +444,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                         START_OTHER_ACTIVITY);
     }
 
+    @Test
     @SmallTest
     public void testInitialIntentHeadingToChrome() throws URISyntaxException {
         TestContext context = new TestContext();
@@ -452,6 +476,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                         START_OTHER_ACTIVITY);
     }
 
+    @Test
     @SmallTest
     public void testIntentForCustomTab() throws URISyntaxException {
         TestContext context = new TestContext();
@@ -527,6 +552,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                         START_OTHER_ACTIVITY);
     }
 
+    @Test
     @SmallTest
     public void testInstantAppsIntent_customTabRedirect() throws Exception {
         TestContext context = new TestContext();
@@ -551,6 +577,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, IGNORE);
     }
 
+    @Test
     @SmallTest
     public void testInstantAppsIntent_incomingIntentRedirect() throws Exception {
         TestContext context = new TestContext();
@@ -579,6 +606,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
 
+    @Test
     @SmallTest
     public void testInstantAppsIntent_handleNavigation() {
         mDelegate.setCanHandleWithInstantApp(false);
@@ -592,6 +620,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, IGNORE);
     }
 
+    @Test
     @SmallTest
     public void testInstantAppsIntent_serpReferrer() {
         String intentUrl = "intent://buzzfeed.com/tasty#Intent;scheme=http;"
@@ -605,7 +634,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
         checkUrl(intentUrl)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY | PROXY_FOR_INSTANT_APPS);
-        assertTrue(mDelegate.startActivityIntent.hasExtra(
+        Assert.assertTrue(mDelegate.startActivityIntent.hasExtra(
                 InstantAppsHandler.IS_GOOGLE_SEARCH_REFERRER));
 
         // Check that we block all instant app intent:// URLs not from SERP
@@ -623,7 +652,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
         checkUrl(nonSupervisor)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
-        assertFalse(mDelegate.startActivityIntent.hasExtra(
+        Assert.assertFalse(mDelegate.startActivityIntent.hasExtra(
                 InstantAppsHandler.IS_GOOGLE_SEARCH_REFERRER));
 
         // Check that Supervisor is detected by action even without package
@@ -640,6 +669,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
         }
     }
 
+    @Test
     @SmallTest
     public void testFallbackUrl_IntentResolutionSucceeds() {
         // IMDB app is installed.
@@ -651,13 +681,14 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                         START_OTHER_ACTIVITY);
 
         Intent invokedIntent = mDelegate.startActivityIntent;
-        assertEquals(IMDB_APP_INTENT_FOR_TOM_HANKS, invokedIntent.getData().toString());
-        assertNull("The invoked intent should not have browser_fallback_url\n",
+        Assert.assertEquals(IMDB_APP_INTENT_FOR_TOM_HANKS, invokedIntent.getData().toString());
+        Assert.assertNull("The invoked intent should not have browser_fallback_url\n",
                 invokedIntent.getStringExtra(ExternalNavigationHandler.EXTRA_BROWSER_FALLBACK_URL));
-        assertNull(mDelegate.getNewUrlAfterClobbering());
-        assertNull(mDelegate.getReferrerUrlForClobbering());
+        Assert.assertNull(mDelegate.getNewUrlAfterClobbering());
+        Assert.assertNull(mDelegate.getReferrerUrlForClobbering());
     }
 
+    @Test
     @SmallTest
     public void testFallbackUrl_IntentResolutionSucceedsInIncognito() {
         // IMDB app is installed.
@@ -670,10 +701,11 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION,
                         START_INCOGNITO | START_OTHER_ACTIVITY);
 
-        assertNull(mDelegate.getNewUrlAfterClobbering());
-        assertNull(mDelegate.getReferrerUrlForClobbering());
+        Assert.assertNull(mDelegate.getNewUrlAfterClobbering());
+        Assert.assertNull(mDelegate.getReferrerUrlForClobbering());
     }
 
+    @Test
     @SmallTest
     public void testFallbackUrl_IntentResolutionFails() {
         // IMDB app isn't installed.
@@ -685,11 +717,13 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .withReferrer(SEARCH_RESULT_URL_FOR_TOM_HANKS)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_CLOBBERING_TAB, IGNORE);
 
-        assertNull(mDelegate.startActivityIntent);
-        assertEquals(IMDB_WEBPAGE_FOR_TOM_HANKS, mDelegate.getNewUrlAfterClobbering());
-        assertEquals(SEARCH_RESULT_URL_FOR_TOM_HANKS, mDelegate.getReferrerUrlForClobbering());
+        Assert.assertNull(mDelegate.startActivityIntent);
+        Assert.assertEquals(IMDB_WEBPAGE_FOR_TOM_HANKS, mDelegate.getNewUrlAfterClobbering());
+        Assert.assertEquals(
+                SEARCH_RESULT_URL_FOR_TOM_HANKS, mDelegate.getReferrerUrlForClobbering());
     }
 
+    @Test
     @SmallTest
     public void testFallbackUrl_FallbackToMarketApp() {
         mDelegate.setCanResolveActivity(false);
@@ -702,7 +736,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
 
-        assertEquals("market://details?id=com.imdb.mobile&referrer=mypage",
+        Assert.assertEquals("market://details?id=com.imdb.mobile&referrer=mypage",
                 mDelegate.startActivityIntent.getDataString());
 
         String intentNoRef = "intent:///name/nm0000158#Intent;scheme=imdb;package=com.imdb.mobile;"
@@ -712,7 +746,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
 
-        assertEquals("market://details?id=com.imdb.mobile&referrer=" + getPackageName(),
+        Assert.assertEquals("market://details?id=com.imdb.mobile&referrer=" + getPackageName(),
                 mDelegate.startActivityIntent.getDataString());
 
         String intentBadUrl = "intent:///name/nm0000158#Intent;scheme=imdb;package=com.imdb.mobile;"
@@ -722,6 +756,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_CLOBBERING_TAB, IGNORE);
     }
 
+    @Test
     @SmallTest
     public void testFallbackUrl_RedirectToIntentToMarket() {
         TestContext context = new TestContext();
@@ -746,10 +781,11 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
 
-        assertEquals("market://details?id=com.imdb.mobile&referrer=mypage",
+        Assert.assertEquals("market://details?id=com.imdb.mobile&referrer=mypage",
                 mDelegate.startActivityIntent.getDataString());
     }
 
+    @Test
     @SmallTest
     public void testFallbackUrl_IntentResolutionFailsWithoutPackageName() {
         // IMDB app isn't installed.
@@ -760,11 +796,13 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .withReferrer(SEARCH_RESULT_URL_FOR_TOM_HANKS)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_CLOBBERING_TAB, IGNORE);
 
-        assertNull(mDelegate.startActivityIntent);
-        assertEquals(IMDB_WEBPAGE_FOR_TOM_HANKS, mDelegate.getNewUrlAfterClobbering());
-        assertEquals(SEARCH_RESULT_URL_FOR_TOM_HANKS, mDelegate.getReferrerUrlForClobbering());
+        Assert.assertNull(mDelegate.startActivityIntent);
+        Assert.assertEquals(IMDB_WEBPAGE_FOR_TOM_HANKS, mDelegate.getNewUrlAfterClobbering());
+        Assert.assertEquals(
+                SEARCH_RESULT_URL_FOR_TOM_HANKS, mDelegate.getReferrerUrlForClobbering());
     }
 
+    @Test
     @SmallTest
     public void testFallbackUrl_FallbackShouldNotWarnOnIncognito() {
         // IMDB app isn't installed.
@@ -775,11 +813,13 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .withIsIncognito(true)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_CLOBBERING_TAB, IGNORE);
 
-        assertNull(mDelegate.startActivityIntent);
-        assertEquals(IMDB_WEBPAGE_FOR_TOM_HANKS, mDelegate.getNewUrlAfterClobbering());
-        assertEquals(SEARCH_RESULT_URL_FOR_TOM_HANKS, mDelegate.getReferrerUrlForClobbering());
+        Assert.assertNull(mDelegate.startActivityIntent);
+        Assert.assertEquals(IMDB_WEBPAGE_FOR_TOM_HANKS, mDelegate.getNewUrlAfterClobbering());
+        Assert.assertEquals(
+                SEARCH_RESULT_URL_FOR_TOM_HANKS, mDelegate.getReferrerUrlForClobbering());
     }
 
+    @Test
     @SmallTest
     public void testFallbackUrl_IgnoreJavascriptFallbackUrl() {
         // IMDB app isn't installed.
@@ -793,11 +833,12 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                         START_INCOGNITO | START_OTHER_ACTIVITY);
 
         Intent invokedIntent = mDelegate.startActivityIntent;
-        assertTrue(invokedIntent.getData().toString().startsWith("market://"));
-        assertEquals(null, mDelegate.getNewUrlAfterClobbering());
-        assertEquals(null, mDelegate.getReferrerUrlForClobbering());
+        Assert.assertTrue(invokedIntent.getData().toString().startsWith("market://"));
+        Assert.assertEquals(null, mDelegate.getNewUrlAfterClobbering());
+        Assert.assertEquals(null, mDelegate.getReferrerUrlForClobbering());
     }
 
+    @Test
     @SmallTest
     public void testFallback_UseFallbackUrlForRedirectionFromTypedInUrl() {
         TabRedirectHandler redirectHandler = new TabRedirectHandler(null);
@@ -820,6 +861,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
 
+    @Test
     @SmallTest
     public void testIgnoreEffectiveRedirectFromIntentFallbackUrl() {
         // We cannot resolve any intent, so fall-back URL will be used.
@@ -854,6 +896,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_CLOBBERING_TAB, IGNORE);
     }
 
+    @Test
     @SmallTest
     public void testIgnoreEffectiveRedirectFromUserTyping() {
         TabRedirectHandler redirectHandler = new TabRedirectHandler(null);
@@ -877,6 +920,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
 
+    @Test
     @SmallTest
     public void testNavigationFromLinkWithoutUserGesture() {
         TabRedirectHandler redirectHandler = new TabRedirectHandler(null);
@@ -898,12 +942,14 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
 
+    @Test
     @SmallTest
     public void testChromeAppInBackground() {
         mDelegate.setIsChromeAppInForeground(false);
         checkUrl("http://youtube.com/").expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
 
+    @Test
     @SmallTest
     public void testNotChromeAppInForegroundRequired() {
         mDelegate.setIsChromeAppInForeground(false);
@@ -913,6 +959,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                         START_OTHER_ACTIVITY);
     }
 
+    @Test
     @SmallTest
     public void testCreatesIntentsToOpenInNewTab() {
         mUrlHandler = new ExternalNavigationHandler(mDelegate);
@@ -921,24 +968,26 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .setOpenInNewTab(true)
                 .build();
         OverrideUrlLoadingResult result = mUrlHandler.shouldOverrideUrlLoading(params);
-        assertEquals(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, result);
-        assertTrue(mDelegate.startActivityIntent != null);
-        assertTrue(mDelegate.startActivityIntent.getBooleanExtra(
-                Browser.EXTRA_CREATE_NEW_TAB, false));
+        Assert.assertEquals(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, result);
+        Assert.assertTrue(mDelegate.startActivityIntent != null);
+        Assert.assertTrue(
+                mDelegate.startActivityIntent.getBooleanExtra(Browser.EXTRA_CREATE_NEW_TAB, false));
     }
 
+    @Test
     @SmallTest
     public void testCanExternalAppHandleUrl() {
         mDelegate.setCanResolveActivity(true);
-        assertTrue(mUrlHandler.canExternalAppHandleUrl("some_app://some_app.com/"));
+        Assert.assertTrue(mUrlHandler.canExternalAppHandleUrl("some_app://some_app.com/"));
 
         mDelegate.setCanResolveActivity(false);
-        assertTrue(mUrlHandler.canExternalAppHandleUrl("wtai://wp/mc;0123456789"));
-        assertTrue(mUrlHandler.canExternalAppHandleUrl(
+        Assert.assertTrue(mUrlHandler.canExternalAppHandleUrl("wtai://wp/mc;0123456789"));
+        Assert.assertTrue(mUrlHandler.canExternalAppHandleUrl(
                 "intent:/#Intent;scheme=no_app;package=com.no_app;end"));
-        assertFalse(mUrlHandler.canExternalAppHandleUrl("no_app://no_app.com/"));
+        Assert.assertFalse(mUrlHandler.canExternalAppHandleUrl("no_app://no_app.com/"));
     }
 
+    @Test
     @SmallTest
     public void testPlusAppRefresh() {
         checkUrl(PLUS_STREAM_URL)
@@ -946,6 +995,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
 
+    @Test
     @SmallTest
     public void testSameDomainDifferentApps() {
         checkUrl(CALENDAR_URL)
@@ -954,6 +1004,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                         START_OTHER_ACTIVITY);
     }
 
+    @Test
     @SmallTest
     public void testFormSubmitSameDomain() {
         checkUrl(CALENDAR_URL)
@@ -962,6 +1013,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
 
+    @Test
     @SmallTest
     public void testBackgroundTabNavigation() {
         checkUrl("http://youtube.com/")
@@ -969,13 +1021,14 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
 
-
+    @Test
     @SmallTest
     public void testPdfDownloadHappensInChrome() {
         checkUrl(CALENDAR_URL + "/file.pdf")
             .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
 
+    @Test
     @SmallTest
     public void testIntentToPdfFileOpensApp() {
         checkUrl("intent://yoursite.com/mypdf.pdf#Intent;action=VIEW;category=BROWSABLE;"
@@ -984,6 +1037,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                         START_OTHER_ACTIVITY);
     }
 
+    @Test
     @SmallTest
     public void testReferrerExtra() {
         String referrer = "http://www.google.com";
@@ -993,12 +1047,13 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .withIsRedirect(true)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
-        assertEquals(Uri.parse(referrer),
+        Assert.assertEquals(Uri.parse(referrer),
                 mDelegate.startActivityIntent.getParcelableExtra(Intent.EXTRA_REFERRER));
-        assertEquals(1, mDelegate.startActivityIntent.getIntExtra(
-                IntentHandler.EXTRA_REFERRER_ID, 0));
+        Assert.assertEquals(
+                1, mDelegate.startActivityIntent.getIntExtra(IntentHandler.EXTRA_REFERRER_ID, 0));
     }
 
+    @Test
     @SmallTest
     public void testNavigationFromReload() {
         TabRedirectHandler redirectHandler = new TabRedirectHandler(null);
@@ -1020,6 +1075,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
 
+    @Test
     @SmallTest
     public void testNavigationWithForwardBack() {
         TabRedirectHandler redirectHandler = new TabRedirectHandler(null);
@@ -1042,6 +1098,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
 
+    @Test
     @SuppressLint("SdCardPath")
     @SmallTest
     public void testFileAccess() {
@@ -1064,6 +1121,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION, START_FILE);
     }
 
+    @Test
     @SmallTest
     public void testSms_DispatchIntentToDefaultSmsApp() {
         final String referer = "https://www.google.com/";
@@ -1074,10 +1132,11 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
 
-        assertNotNull(mDelegate.startActivityIntent);
-        assertEquals(TEXT_APP_2_PACKAGE_NAME, mDelegate.startActivityIntent.getPackage());
+        Assert.assertNotNull(mDelegate.startActivityIntent);
+        Assert.assertEquals(TEXT_APP_2_PACKAGE_NAME, mDelegate.startActivityIntent.getPackage());
     }
 
+    @Test
     @SmallTest
     public void testSms_DefaultSmsAppDoesNotHandleIntent() {
         final String referer = "https://www.google.com/";
@@ -1089,10 +1148,11 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
 
-        assertNotNull(mDelegate.startActivityIntent);
-        assertNull(mDelegate.startActivityIntent.getPackage());
+        Assert.assertNotNull(mDelegate.startActivityIntent);
+        Assert.assertNull(mDelegate.startActivityIntent.getPackage());
     }
 
+    @Test
     @SmallTest
     public void testSms_DispatchIntentSchemedUrlToDefaultSmsApp() {
         final String referer = "https://www.google.com/";
@@ -1103,14 +1163,15 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
 
-        assertNotNull(mDelegate.startActivityIntent);
-        assertEquals(TEXT_APP_2_PACKAGE_NAME, mDelegate.startActivityIntent.getPackage());
+        Assert.assertNotNull(mDelegate.startActivityIntent);
+        Assert.assertEquals(TEXT_APP_2_PACKAGE_NAME, mDelegate.startActivityIntent.getPackage());
     }
 
     /**
      * Test that tapping on a link which is outside of the referrer WebAPK's scope keeps the user in
      * the WebAPK. (A minibar with the URL should show though).
      */
+    @Test
     @SmallTest
     public void testLeaveWebApk_LinkOutOfScope() {
         checkUrl(SEARCH_RESULT_URL_FOR_TOM_HANKS)
@@ -1122,6 +1183,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
      * Test that tapping a link which falls solely into the scope of a WebAPK does not bypass the
      * intent picker if WebAPKs are not enabled.
      */
+    @Test
     @SmallTest
     public void testLaunchWebApk_WebApkNotEnabled() {
         checkUrl(WEBAPK_SCOPE)
@@ -1133,6 +1195,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
      * Test that tapping a link which falls solely in the scope of a WebAPK launches a WebAPK
      * without showing the intent picker if WebAPKs are enabled.
      */
+    @Test
     @SmallTest
     public void testLaunchWebApk_BypassIntentPicker() {
         ChromeWebApkHost.initForTesting(true);
@@ -1144,6 +1207,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
      * Test that tapping a link which falls in the scope of multiple intent handlers, one of which
      * is a WebAPK, shows the intent picker.
      */
+    @Test
     @SmallTest
     public void testLaunchWebApk_ShowIntentPickerMultipleIntentHandlers() {
         ChromeWebApkHost.initForTesting(true);
@@ -1156,6 +1220,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
      * Test that tapping a link which falls solely into the scope of a different WebAPK launches a
      * WebAPK without showing the intent picker.
      */
+    @Test
     @SmallTest
     public void testLaunchWebApk_BypassIntentPickerFromAnotherWebApk() {
         ChromeWebApkHost.initForTesting(true);
@@ -1170,6 +1235,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
      * signed) does not get any special WebAPK handling. The first time that the user taps on the
      * link, the intent picker should be shown.
      */
+    @Test
     @SmallTest
     public void testLaunchWebApk_ShowIntentPickerInvalidWebApk() {
         ChromeWebApkHost.initForTesting(true);
@@ -1182,6 +1248,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
      * Test that tapping a link which falls into the scope of the current WebAPK keeps the user in
      * the WebAPK.
      */
+    @Test
     @SmallTest
     public void testLaunchWebApk_StayInSameWebApk() {
         ChromeWebApkHost.initForTesting(true);
@@ -1426,9 +1493,9 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
     }
 
     private void checkIntentSanity(Intent intent, String name) {
-        assertTrue("The invoked " + name + " doesn't have the BROWSABLE category set\n",
+        Assert.assertTrue("The invoked " + name + " doesn't have the BROWSABLE category set\n",
                 intent.hasCategory(Intent.CATEGORY_BROWSABLE));
-        assertNull("The invoked " + name + " should not have a Component set\n",
+        Assert.assertNull("The invoked " + name + " should not have a Component set\n",
                 intent.getComponent());
     }
 
@@ -1531,12 +1598,12 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 }
             }
 
-            assertEquals(expectedOverrideResult, result);
-            assertEquals(expectStartIncognito, mDelegate.startIncognitoIntentCalled);
-            assertEquals(expectStartActivity, startActivityCalled);
-            assertEquals(expectStartWebApk, startWebApkCalled);
-            assertEquals(expectStartFile, mDelegate.startFileIntentCalled);
-            assertEquals(expectProxyForIA, mDelegate.mCalledWithProxy);
+            Assert.assertEquals(expectedOverrideResult, result);
+            Assert.assertEquals(expectStartIncognito, mDelegate.startIncognitoIntentCalled);
+            Assert.assertEquals(expectStartActivity, startActivityCalled);
+            Assert.assertEquals(expectStartWebApk, startWebApkCalled);
+            Assert.assertEquals(expectStartFile, mDelegate.startFileIntentCalled);
+            Assert.assertEquals(expectProxyForIA, mDelegate.mCalledWithProxy);
 
             if (startActivityCalled && expectSaneIntent) {
                 checkIntentSanity(mDelegate.startActivityIntent, "Intent");

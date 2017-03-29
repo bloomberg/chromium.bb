@@ -8,9 +8,15 @@ import android.support.test.filters.MediumTest;
 
 import junit.framework.Assert;
 
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.LocaleUtils;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.components.payments.CurrencyFormatter;
-import org.chromium.content.browser.test.NativeLibraryTestBase;
+import org.chromium.content.browser.test.NativeLibraryTestRule;
 
 import java.util.Arrays;
 import java.util.List;
@@ -18,16 +24,19 @@ import java.util.List;
 /**
  * A lightweight integration test for CurrencyFormatter to run on an Android device.
  */
-public class CurrencyFormatterTest extends NativeLibraryTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class CurrencyFormatterTest {
+    @Rule
+    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
+
     /**
      * Unicode non-breaking space.
      */
     private static final String SPACE = "\u00A0";
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        loadNativeLibraryAndInitBrowserProcess();
+    @Before
+    public void setUp() throws Exception {
+        mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
     }
 
     private static String longStringOfLength(int len) {
@@ -38,6 +47,7 @@ public class CurrencyFormatterTest extends NativeLibraryTestBase {
         return currency.toString();
     }
 
+    @Test
     @MediumTest
     public void testMultipleConversions() throws Exception {
         // Note, all spaces are expected to be unicode non-breaking spaces. Here they are shown as

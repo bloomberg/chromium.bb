@@ -4,9 +4,17 @@
 
 package org.chromium.chrome.browser.preferences.password;
 
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -15,23 +23,26 @@ import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesTest;
-import org.chromium.content.browser.test.NativeLibraryTestBase;
+import org.chromium.content.browser.test.NativeLibraryTestRule;
 
 /**
  * Tests for the "Save Passwords" settings screen.
  */
-public class SavePasswordsPreferencesTest extends NativeLibraryTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class SavePasswordsPreferencesTest {
+    @Rule
+    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        loadNativeLibraryAndInitBrowserProcess();
+    @Before
+    public void setUp() throws Exception {
+        mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
     }
 
     /**
      * Ensure that the on/off switch in "Save Passwords" settings actually enables and disables
      * password saving.
      */
+    @Test
     @SmallTest
     @Feature({"Preferences"})
     public void testSavePasswordsSwitch() throws Exception {
@@ -42,8 +53,9 @@ public class SavePasswordsPreferencesTest extends NativeLibraryTestBase {
             }
         });
 
-        final Preferences preferences = PreferencesTest.startPreferences(getInstrumentation(),
-                SavePasswordsPreferences.class.getName());
+        final Preferences preferences =
+                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                        SavePasswordsPreferences.class.getName());
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -53,12 +65,12 @@ public class SavePasswordsPreferencesTest extends NativeLibraryTestBase {
                 ChromeSwitchPreference onOffSwitch = (ChromeSwitchPreference)
                         savedPasswordPrefs.findPreference(
                                 SavePasswordsPreferences.PREF_SAVE_PASSWORDS_SWITCH);
-                assertTrue(onOffSwitch.isChecked());
+                Assert.assertTrue(onOffSwitch.isChecked());
 
                 PreferencesTest.clickPreference(savedPasswordPrefs, onOffSwitch);
-                assertFalse(PrefServiceBridge.getInstance().isRememberPasswordsEnabled());
+                Assert.assertFalse(PrefServiceBridge.getInstance().isRememberPasswordsEnabled());
                 PreferencesTest.clickPreference(savedPasswordPrefs, onOffSwitch);
-                assertTrue(PrefServiceBridge.getInstance().isRememberPasswordsEnabled());
+                Assert.assertTrue(PrefServiceBridge.getInstance().isRememberPasswordsEnabled());
 
                 preferences.finish();
 
@@ -66,8 +78,9 @@ public class SavePasswordsPreferencesTest extends NativeLibraryTestBase {
             }
         });
 
-        final Preferences preferences2 = PreferencesTest.startPreferences(getInstrumentation(),
-                SavePasswordsPreferences.class.getName());
+        final Preferences preferences2 =
+                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                        SavePasswordsPreferences.class.getName());
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -76,7 +89,7 @@ public class SavePasswordsPreferencesTest extends NativeLibraryTestBase {
                 ChromeSwitchPreference onOffSwitch = (ChromeSwitchPreference)
                         savedPasswordPrefs.findPreference(
                                 SavePasswordsPreferences.PREF_SAVE_PASSWORDS_SWITCH);
-                assertFalse(onOffSwitch.isChecked());
+                Assert.assertFalse(onOffSwitch.isChecked());
             }
         });
     }
@@ -85,6 +98,7 @@ public class SavePasswordsPreferencesTest extends NativeLibraryTestBase {
      * Ensure that the "Auto Sign-in" switch in "Save Passwords" settings actually enables and
      * disables auto sign-in.
      */
+    @Test
     @SmallTest
     @CommandLineFlags.Add("enable-features=" + SavePasswordsPreferences.CREDENTIAL_MANAGER_API)
     @Feature({"Preferences"})
@@ -96,25 +110,28 @@ public class SavePasswordsPreferencesTest extends NativeLibraryTestBase {
             }
         });
 
-        final Preferences preferences = PreferencesTest.startPreferences(
-                getInstrumentation(), SavePasswordsPreferences.class.getName());
+        final Preferences preferences =
+                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                        SavePasswordsPreferences.class.getName());
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                assertTrue(ChromeFeatureList.isEnabled(
+                Assert.assertTrue(ChromeFeatureList.isEnabled(
                         SavePasswordsPreferences.CREDENTIAL_MANAGER_API));
                 SavePasswordsPreferences passwordPrefs =
                         (SavePasswordsPreferences) preferences.getFragmentForTest();
                 ChromeBaseCheckBoxPreference onOffSwitch =
                         (ChromeBaseCheckBoxPreference) passwordPrefs.findPreference(
                                 SavePasswordsPreferences.PREF_AUTOSIGNIN_SWITCH);
-                assertTrue(onOffSwitch.isChecked());
+                Assert.assertTrue(onOffSwitch.isChecked());
 
                 PreferencesTest.clickPreference(passwordPrefs, onOffSwitch);
-                assertFalse(PrefServiceBridge.getInstance().isPasswordManagerAutoSigninEnabled());
+                Assert.assertFalse(
+                        PrefServiceBridge.getInstance().isPasswordManagerAutoSigninEnabled());
                 PreferencesTest.clickPreference(passwordPrefs, onOffSwitch);
-                assertTrue(PrefServiceBridge.getInstance().isPasswordManagerAutoSigninEnabled());
+                Assert.assertTrue(
+                        PrefServiceBridge.getInstance().isPasswordManagerAutoSigninEnabled());
 
                 preferences.finish();
 
@@ -122,19 +139,20 @@ public class SavePasswordsPreferencesTest extends NativeLibraryTestBase {
             }
         });
 
-        final Preferences preferences2 = PreferencesTest.startPreferences(
-                getInstrumentation(), SavePasswordsPreferences.class.getName());
+        final Preferences preferences2 =
+                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                        SavePasswordsPreferences.class.getName());
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                assertTrue(ChromeFeatureList.isEnabled(
+                Assert.assertTrue(ChromeFeatureList.isEnabled(
                         SavePasswordsPreferences.CREDENTIAL_MANAGER_API));
                 SavePasswordsPreferences passwordPrefs =
                         (SavePasswordsPreferences) preferences2.getFragmentForTest();
                 ChromeBaseCheckBoxPreference onOffSwitch =
                         (ChromeBaseCheckBoxPreference) passwordPrefs.findPreference(
                                 SavePasswordsPreferences.PREF_AUTOSIGNIN_SWITCH);
-                assertFalse(onOffSwitch.isChecked());
+                Assert.assertFalse(onOffSwitch.isChecked());
             }
         });
     }

@@ -7,14 +7,23 @@ package org.chromium.chrome.browser.prerender;
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
 
 import android.graphics.Rect;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.util.Pair;
 
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.content.browser.test.NativeLibraryTestBase;
+import org.chromium.content.browser.test.NativeLibraryTestRule;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.WebContents;
@@ -23,7 +32,11 @@ import org.chromium.net.test.EmbeddedTestServer;
 import java.util.concurrent.Callable;
 
 /** Tests for {@link ExternalPrerenderHandler}. */
-public class ExternalPrerenderHandlerTest extends NativeLibraryTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class ExternalPrerenderHandlerTest {
+    @Rule
+    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
+
     private static final String TEST_PAGE = "/chrome/test/data/android/google.html";
     private static final String TEST_PAGE2 = "/chrome/test/data/android/about.html";
     private static final int PRERENDER_DELAY_MS = 500;
@@ -34,10 +47,9 @@ public class ExternalPrerenderHandlerTest extends NativeLibraryTestBase {
     private String mTestPage2;
     private EmbeddedTestServer mTestServer;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        loadNativeLibraryAndInitBrowserProcess();
+    @Before
+    public void setUp() throws Exception {
+        mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
         mExternalPrerenderHandler = new ExternalPrerenderHandler();
 
         final Callable<Profile> profileCallable = new Callable<Profile>() {
@@ -48,13 +60,14 @@ public class ExternalPrerenderHandlerTest extends NativeLibraryTestBase {
         };
         mProfile = ThreadUtils.runOnUiThreadBlocking(profileCallable);
 
-        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(
+                InstrumentationRegistry.getInstrumentation().getContext());
         mTestPage = mTestServer.getURL(TEST_PAGE);
         mTestPage2 = mTestServer.getURL(TEST_PAGE2);
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -62,9 +75,9 @@ public class ExternalPrerenderHandlerTest extends NativeLibraryTestBase {
             }
         });
         mTestServer.stopAndDestroyServer();
-        super.tearDown();
     }
 
+    @Test
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @Feature({"Prerender"})
     @SmallTest
@@ -73,6 +86,7 @@ public class ExternalPrerenderHandlerTest extends NativeLibraryTestBase {
         ensureCompletedPrerenderForUrl(webContents, mTestPage);
     }
 
+    @Test
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @Feature({"Prerender"})
     @SmallTest
@@ -83,12 +97,13 @@ public class ExternalPrerenderHandlerTest extends NativeLibraryTestBase {
             @Override
             public void run() {
                 mExternalPrerenderHandler.cancelCurrentPrerender();
-                assertFalse(ExternalPrerenderHandler.hasPrerenderedUrl(
+                Assert.assertFalse(ExternalPrerenderHandler.hasPrerenderedUrl(
                         mProfile, mTestPage, webContents));
             }
         });
     }
 
+    @Test
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @Feature({"Prerender"})
     @SmallTest
@@ -101,7 +116,7 @@ public class ExternalPrerenderHandlerTest extends NativeLibraryTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                assertTrue(ExternalPrerenderHandler.hasPrerenderedUrl(
+                Assert.assertTrue(ExternalPrerenderHandler.hasPrerenderedUrl(
                         mProfile, mTestPage2, webContents2));
             }
         });
@@ -115,10 +130,10 @@ public class ExternalPrerenderHandlerTest extends NativeLibraryTestBase {
             public WebContents call() {
                 Pair<WebContents, WebContents> webContents =
                         mExternalPrerenderHandler.addPrerender(mProfile, url, "", new Rect(), true);
-                assertNotNull(webContents);
-                assertNotNull(webContents.first);
-                assertNotNull(webContents.second);
-                assertTrue(ExternalPrerenderHandler.hasPrerenderedUrl(
+                Assert.assertNotNull(webContents);
+                Assert.assertNotNull(webContents.first);
+                Assert.assertNotNull(webContents.second);
+                Assert.assertTrue(ExternalPrerenderHandler.hasPrerenderedUrl(
                         mProfile, url, webContents.first));
                 return webContents.first;
             }

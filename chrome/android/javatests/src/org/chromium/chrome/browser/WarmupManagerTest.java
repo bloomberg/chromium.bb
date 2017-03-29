@@ -8,13 +8,22 @@ import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_LOW_END_D
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
 
 import android.content.Context;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
-import android.test.UiThreadTest;
+import android.support.test.rule.UiThreadTestRule;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
-import org.chromium.content.browser.test.NativeLibraryTestBase;
+import org.chromium.content.browser.test.NativeLibraryTestRule;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.WebContents;
@@ -24,13 +33,19 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 /** Tests for {@link WarmupManager} */
-public class WarmupManagerTest extends NativeLibraryTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class WarmupManagerTest {
+    @Rule
+    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
+
+    @Rule
+    public UiThreadTestRule mUiThreadTestRule = new UiThreadTestRule();
+
     private WarmupManager mWarmupManager;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        loadNativeLibraryAndInitBrowserProcess();
+    @Before
+    public void setUp() throws Exception {
+        mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -39,9 +54,8 @@ public class WarmupManagerTest extends NativeLibraryTestBase {
         });
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
+    @After
+    public void tearDown() throws Exception {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -50,14 +64,20 @@ public class WarmupManagerTest extends NativeLibraryTestBase {
         });
     }
 
+    @Test
     @SmallTest
     @Restriction(RESTRICTION_TYPE_LOW_END_DEVICE)
-    @UiThreadTest
-    public void testNoSpareRendererOnLowEndDevices() {
-        mWarmupManager.createSpareWebContents();
-        assertFalse(mWarmupManager.hasSpareWebContents());
+    public void testNoSpareRendererOnLowEndDevices() throws Throwable {
+        mUiThreadTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mWarmupManager.createSpareWebContents();
+                Assert.assertFalse(mWarmupManager.hasSpareWebContents());
+            }
+        });
     }
 
+    @Test
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testCreateAndTakeSpareRenderer() {
@@ -68,10 +88,10 @@ public class WarmupManagerTest extends NativeLibraryTestBase {
             @Override
             public void run() {
                 mWarmupManager.createSpareWebContents();
-                assertTrue(mWarmupManager.hasSpareWebContents());
+                Assert.assertTrue(mWarmupManager.hasSpareWebContents());
                 WebContents webContents = mWarmupManager.takeSpareWebContents(false, false);
-                assertNotNull(webContents);
-                assertFalse(mWarmupManager.hasSpareWebContents());
+                Assert.assertNotNull(webContents);
+                Assert.assertFalse(mWarmupManager.hasSpareWebContents());
                 WebContentsObserver observer = new WebContentsObserver(webContents) {
                     @Override
                     public void renderViewReady() {
@@ -100,36 +120,51 @@ public class WarmupManagerTest extends NativeLibraryTestBase {
     }
 
     /** Tests that taking a spare WebContents makes it unavailable to subsequent callers. */
+    @Test
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-    @UiThreadTest
-    public void testTakeSpareWebContents() throws Exception {
-        mWarmupManager.createSpareWebContents();
-        WebContents webContents = mWarmupManager.takeSpareWebContents(false, false);
-        assertNotNull(webContents);
-        assertFalse(mWarmupManager.hasSpareWebContents());
-        webContents.destroy();
+    public void testTakeSpareWebContents() throws Throwable {
+        mUiThreadTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mWarmupManager.createSpareWebContents();
+                WebContents webContents = mWarmupManager.takeSpareWebContents(false, false);
+                Assert.assertNotNull(webContents);
+                Assert.assertFalse(mWarmupManager.hasSpareWebContents());
+                webContents.destroy();
+            }
+        });
     }
 
+    @Test
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-    @UiThreadTest
-    public void testTakeSpareWebContentsChecksArguments() throws Exception {
-        mWarmupManager.createSpareWebContents();
-        assertNull(mWarmupManager.takeSpareWebContents(true, false));
-        assertNull(mWarmupManager.takeSpareWebContents(false, true));
-        assertNull(mWarmupManager.takeSpareWebContents(true, true));
-        assertTrue(mWarmupManager.hasSpareWebContents());
+    public void testTakeSpareWebContentsChecksArguments() throws Throwable {
+        mUiThreadTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mWarmupManager.createSpareWebContents();
+                Assert.assertNull(mWarmupManager.takeSpareWebContents(true, false));
+                Assert.assertNull(mWarmupManager.takeSpareWebContents(false, true));
+                Assert.assertNull(mWarmupManager.takeSpareWebContents(true, true));
+                Assert.assertTrue(mWarmupManager.hasSpareWebContents());
+            }
+        });
     }
 
     /** Checks that the View inflation works. */
+    @Test
     @SmallTest
-    @UiThreadTest
-    public void testInflateLayout() throws Exception {
-        int layoutId = R.layout.custom_tabs_control_container;
-        int toolbarId = R.layout.custom_tabs_toolbar;
-        Context context = getInstrumentation().getTargetContext();
-        mWarmupManager.initializeViewHierarchy(context, layoutId, toolbarId);
-        assertTrue(mWarmupManager.hasViewHierarchyWithToolbar(layoutId));
+    public void testInflateLayout() throws Throwable {
+        mUiThreadTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                int layoutId = R.layout.custom_tabs_control_container;
+                int toolbarId = R.layout.custom_tabs_toolbar;
+                Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+                mWarmupManager.initializeViewHierarchy(context, layoutId, toolbarId);
+                Assert.assertTrue(mWarmupManager.hasViewHierarchyWithToolbar(layoutId));
+            }
+        });
     }
 }

@@ -7,17 +7,26 @@ package org.chromium.chrome.browser.precache;
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
 
 import android.content.Context;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
 import com.google.android.gms.gcm.Task;
 
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
-import org.chromium.content.browser.test.NativeLibraryTestBase;
+import org.chromium.content.browser.test.NativeLibraryTestRule;
 
 import java.util.EnumSet;
 import java.util.concurrent.Callable;
@@ -27,7 +36,11 @@ import java.util.concurrent.Callable;
  *
  * setUp/tearDown code was inspired by org.chromium.chrome.browser.sync.ui.PassphraseActivityTest.
  */
-public class PrecacheLauncherTest extends NativeLibraryTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class PrecacheLauncherTest {
+    @Rule
+    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
+
     private StubProfileSyncService mSync;
     private PrecacheLauncherUnderTest mLauncher;
     private MockPrecacheTaskScheduler mPrecacheTaskScheduler;
@@ -83,9 +96,8 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
         }
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         ContextUtils.initApplicationContext(getTargetContext().getApplicationContext());
 
         // This is a PrecacheLauncher with a stubbed out nativeShouldRun so we can change that on
@@ -101,7 +113,7 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
         PrecacheController.setIsPrecachingEnabled(getTargetContext(), false);
 
         // ProfileSyncService needs the browser process to be running.
-        loadNativeLibraryAndInitBrowserProcess();
+        mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
 
         // ProfileSyncService must be initialized on the UI thread. Oddly, even though
         // ThreadUtils.runningOnUiThread() is true here, it's, no, not really, no.
@@ -114,117 +126,126 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
                 ProfileSyncService.overrideForTests(mSync);
                 // This is currently the default, but let's verify that, lest it ever change and we
                 // get confusing test failures later.
-                assertTrue(PrivacyPreferencesManager.getInstance().shouldPrerender());
+                Assert.assertTrue(PrivacyPreferencesManager.getInstance().shouldPrerender());
             }
         });
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         ProfileSyncService.overrideForTests(null);
         PrecacheController.setIsPrecachingEnabled(getTargetContext(), false);
-        super.tearDown();
     }
 
+    @Test
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @Feature({"Precache"})
-    public void testUpdateEnabled_SyncNotReady_ThenDisabled() {
+    public void testUpdateEnabled_SyncNotReady_ThenDisabled() throws Throwable {
         mLauncher.updateEnabled(getTargetContext());
         waitUntilUiThreadIdle();
 
-        assertEquals(false, isPrecachingEnabled());
-        assertEquals(EnumSet.of(FailureReason.SYNC_NOT_INITIALIZED,
-                             FailureReason.PRERENDER_PRIVACY_PREFERENCE_NOT_ENABLED,
-                             FailureReason.NATIVE_SHOULD_RUN_IS_FALSE),
+        Assert.assertEquals(false, isPrecachingEnabled());
+        Assert.assertEquals(EnumSet.of(FailureReason.SYNC_NOT_INITIALIZED,
+                                    FailureReason.PRERENDER_PRIVACY_PREFERENCE_NOT_ENABLED,
+                                    FailureReason.NATIVE_SHOULD_RUN_IS_FALSE),
                 failureReasons());
 
         setEngineInitialized(true);
-        assertEquals(false, isPrecachingEnabled());
-        assertEquals(EnumSet.of(FailureReason.NATIVE_SHOULD_RUN_IS_FALSE), failureReasons());
+        Assert.assertEquals(false, isPrecachingEnabled());
+        Assert.assertEquals(EnumSet.of(FailureReason.NATIVE_SHOULD_RUN_IS_FALSE), failureReasons());
     }
 
+    @Test
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @Feature({"Precache"})
-    public void testUpdateEnabled_SyncNotReady_ThenEnabled() {
+    public void testUpdateEnabled_SyncNotReady_ThenEnabled() throws Throwable {
         mLauncher.updateEnabled(getTargetContext());
         waitUntilUiThreadIdle();
 
-        assertEquals(false, isPrecachingEnabled());
-        assertEquals(EnumSet.of(FailureReason.SYNC_NOT_INITIALIZED,
-                             FailureReason.PRERENDER_PRIVACY_PREFERENCE_NOT_ENABLED,
-                             FailureReason.NATIVE_SHOULD_RUN_IS_FALSE),
+        Assert.assertEquals(false, isPrecachingEnabled());
+        Assert.assertEquals(EnumSet.of(FailureReason.SYNC_NOT_INITIALIZED,
+                                    FailureReason.PRERENDER_PRIVACY_PREFERENCE_NOT_ENABLED,
+                                    FailureReason.NATIVE_SHOULD_RUN_IS_FALSE),
                 failureReasons());
 
         mLauncher.setShouldRun(true);
         setEngineInitialized(true);
-        assertEquals(true, isPrecachingEnabled());
-        assertEquals(EnumSet.noneOf(FailureReason.class), failureReasons());
+        Assert.assertEquals(true, isPrecachingEnabled());
+        Assert.assertEquals(EnumSet.noneOf(FailureReason.class), failureReasons());
     }
 
+    @Test
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @Feature({"Precache"})
-    public void testUpdateEnabled_Disabled_ThenEnabled() {
+    public void testUpdateEnabled_Disabled_ThenEnabled() throws Throwable {
         setEngineInitialized(true);
         mLauncher.updateEnabled(getTargetContext());
         waitUntilUiThreadIdle();
 
-        assertEquals(false, isPrecachingEnabled());
-        assertEquals(EnumSet.of(FailureReason.NATIVE_SHOULD_RUN_IS_FALSE), failureReasons());
+        Assert.assertEquals(false, isPrecachingEnabled());
+        Assert.assertEquals(EnumSet.of(FailureReason.NATIVE_SHOULD_RUN_IS_FALSE), failureReasons());
 
         mLauncher.setShouldRun(true);
-        assertEquals(true, isPrecachingEnabled());
-        assertEquals(EnumSet.noneOf(FailureReason.class), failureReasons());
+        Assert.assertEquals(true, isPrecachingEnabled());
+        Assert.assertEquals(EnumSet.noneOf(FailureReason.class), failureReasons());
     }
 
+    @Test
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @Feature({"Precache"})
-    public void testUpdateEnabled_Enabled_ThenDisabled() {
+    public void testUpdateEnabled_Enabled_ThenDisabled() throws Throwable {
         mLauncher.setShouldRun(true);
         setEngineInitialized(true);
-        mLauncher.updateEnabled(getTargetContext());
+        mLauncher.updateEnabled(InstrumentationRegistry.getTargetContext());
         waitUntilUiThreadIdle();
 
-        assertEquals(true, isPrecachingEnabled());
-        assertEquals(EnumSet.noneOf(FailureReason.class), failureReasons());
+        Assert.assertEquals(true, isPrecachingEnabled());
+        Assert.assertEquals(EnumSet.noneOf(FailureReason.class), failureReasons());
 
         mLauncher.setShouldRun(false);
-        assertEquals(false, isPrecachingEnabled());
-        assertEquals(EnumSet.of(FailureReason.NATIVE_SHOULD_RUN_IS_FALSE), failureReasons());
+        Assert.assertEquals(false, isPrecachingEnabled());
+        Assert.assertEquals(EnumSet.of(FailureReason.NATIVE_SHOULD_RUN_IS_FALSE), failureReasons());
     }
 
+    @Test
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @Feature({"Precache"})
-    public void testUpdateEnabledNullProfileSyncService() {
+    public void testUpdateEnabledNullProfileSyncService() throws Throwable {
         ProfileSyncService.overrideForTests(null);
 
         mLauncher.updateEnabled(getTargetContext());
         waitUntilUiThreadIdle();
 
-        assertEquals(false, isPrecachingEnabled());
-        assertEquals(EnumSet.of(FailureReason.SYNC_NOT_INITIALIZED,
-                             FailureReason.PRERENDER_PRIVACY_PREFERENCE_NOT_ENABLED,
-                             FailureReason.NATIVE_SHOULD_RUN_IS_FALSE),
+        Assert.assertEquals(false, isPrecachingEnabled());
+        Assert.assertEquals(EnumSet.of(FailureReason.SYNC_NOT_INITIALIZED,
+                                    FailureReason.PRERENDER_PRIVACY_PREFERENCE_NOT_ENABLED,
+                                    FailureReason.NATIVE_SHOULD_RUN_IS_FALSE),
                 failureReasons());
     }
 
     /** Return the Context for the Chromium app. */
     private Context getTargetContext() {
-        return getInstrumentation().getTargetContext();
+        return InstrumentationRegistry.getInstrumentation().getTargetContext();
     }
 
     /** Block until all tasks posted to the UI thread have completed. */
     private void waitUntilUiThreadIdle() {
-        getInstrumentation().waitForIdleSync();
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 
     /** Return the value of the is_precaching_enabled pref, as set by updateEnabledSync. */
     private boolean isPrecachingEnabled() {
-        return PrecacheController.get(getTargetContext()).isPrecachingEnabled();
+        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
+            @Override
+            public Boolean call() {
+                return PrecacheController.get(getTargetContext()).isPrecachingEnabled();
+            }
+        });
     }
 
     /** Return the set of failure reasons for mLauncher. */

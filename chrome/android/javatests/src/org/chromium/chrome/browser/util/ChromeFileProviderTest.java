@@ -8,10 +8,17 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.ParcelFileDescriptor;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.SmallTest;
 
-import org.chromium.content.browser.test.NativeLibraryTestBase;
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.content.browser.test.NativeLibraryTestRule;
 
 import java.io.FileNotFoundException;
 
@@ -21,7 +28,11 @@ import java.io.FileNotFoundException;
  * The openFile should be blocked till notify is called. These tests can timeout if the notify does
  * not work correctly.
  */
-public class ChromeFileProviderTest extends NativeLibraryTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class ChromeFileProviderTest {
+    @Rule
+    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
+
     private ParcelFileDescriptor openFileFromProvider(Uri uri) {
         ChromeFileProvider provider = new ChromeFileProvider();
         ParcelFileDescriptor file = null;
@@ -33,18 +44,21 @@ public class ChromeFileProviderTest extends NativeLibraryTestBase {
         return file;
     }
 
+    @Test
     @SmallTest
     public void testOpenFileWhenReady() {
-        Uri uri = ChromeFileProvider.generateUriAndBlockAccess(getInstrumentation().getContext());
+        Uri uri = ChromeFileProvider.generateUriAndBlockAccess(
+                InstrumentationRegistry.getInstrumentation().getContext());
         Uri fileUri = new Uri.Builder().path("1").build();
         ChromeFileProvider.notifyFileReady(uri, fileUri);
         Uri result = ChromeFileProvider.getFileUriWhenReady(uri);
-        assertEquals(result, fileUri);
+        Assert.assertEquals(result, fileUri);
     }
 
+    @Test
     @LargeTest
     public void testOpenOnAsyncNotify() {
-        final Context context = getInstrumentation().getContext();
+        final Context context = InstrumentationRegistry.getInstrumentation().getContext();
         final Uri uri = ChromeFileProvider.generateUriAndBlockAccess(context);
         AsyncTask.THREAD_POOL_EXECUTOR.execute(new Runnable() {
             @Override
@@ -59,12 +73,13 @@ public class ChromeFileProviderTest extends NativeLibraryTestBase {
         });
         ParcelFileDescriptor file = openFileFromProvider(uri);
         // File should be null because the notify passes a null file uri.
-        assertNull(file);
+        Assert.assertNull(file);
     }
 
+    @Test
     @LargeTest
     public void testFileChanged() {
-        final Context context = getInstrumentation().getContext();
+        final Context context = InstrumentationRegistry.getInstrumentation().getContext();
         Uri uri1 = ChromeFileProvider.generateUriAndBlockAccess(context);
         final Uri uri2 = ChromeFileProvider.generateUriAndBlockAccess(context);
         final Uri fileUri2 = new Uri.Builder().path("2").build();
@@ -83,15 +98,15 @@ public class ChromeFileProviderTest extends NativeLibraryTestBase {
         // This should not be blocked even without a notify since file was changed.
         Uri file1 = ChromeFileProvider.getFileUriWhenReady(uri1);
         // File should be null because the notify passes a null file uri.
-        assertNull(file1);
+        Assert.assertNull(file1);
 
         // This should be unblocked when the notify is called.
         Uri file2 = ChromeFileProvider.getFileUriWhenReady(uri2);
-        assertEquals(fileUri2, file2);
+        Assert.assertEquals(fileUri2, file2);
 
         // This should not be blocked even without a notify since file was changed.
         file1 = ChromeFileProvider.getFileUriWhenReady(uri1);
         // File should be null because the notify passes a null file uri.
-        assertNull(file1);
+        Assert.assertNull(file1);
     }
 }

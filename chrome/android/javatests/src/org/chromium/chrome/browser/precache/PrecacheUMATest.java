@@ -6,12 +6,18 @@ package org.chromium.chrome.browser.precache;
 
 import android.support.test.filters.SmallTest;
 
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ContextUtils;
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MetricsUtils.HistogramDelta;
 import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.content.browser.test.NativeLibraryTestBase;
+import org.chromium.content.browser.test.NativeLibraryTestRule;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,7 +26,12 @@ import java.util.List;
 /**
  * Tests of {@link PrecacheUMA}.
  */
-public class PrecacheUMATest extends NativeLibraryTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class PrecacheUMATest {
+    @Rule
+    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
+
+    @Test
     @SmallTest
     @Feature({"Precache"})
     public void testUMAEventBitPositionAndMask() {
@@ -28,11 +39,12 @@ public class PrecacheUMATest extends NativeLibraryTestBase {
         for (int event = PrecacheUMA.Event.EVENT_START; event < PrecacheUMA.Event.EVENT_END;
                 ++event) {
             long bitmask = PrecacheUMA.Event.getBitMask(event);
-            assertTrue(bitmask > 0);
-            assertEquals(bitmask, 1L << PrecacheUMA.Event.getBitPosition(event));
+            Assert.assertTrue(bitmask > 0);
+            Assert.assertEquals(bitmask, 1L << PrecacheUMA.Event.getBitPosition(event));
         }
     }
 
+    @Test
     @SmallTest
     @Feature({"Precache"})
     public void testEventsInBitMask() {
@@ -48,6 +60,7 @@ public class PrecacheUMATest extends NativeLibraryTestBase {
         assert Arrays.equals(events, PrecacheUMA.Event.getEventsFromBitMask(bitmask));
     }
 
+    @Test
     @SmallTest
     @Feature({"Precache"})
     @RetryOnFailure
@@ -64,12 +77,13 @@ public class PrecacheUMATest extends NativeLibraryTestBase {
             PrecacheUMA.record(event);
             bitmask = PrecacheUMA.Event.addEventToBitMask(bitmask, event);
         }
-        assertEquals(false, LibraryLoader.isInitialized());
-        assertEquals(bitmask, ContextUtils.getAppSharedPreferences().getLong(
-                PrecacheUMA.PREF_PERSISTENCE_METRICS, 0));
+        Assert.assertEquals(false, LibraryLoader.isInitialized());
+        Assert.assertEquals(bitmask,
+                ContextUtils.getAppSharedPreferences().getLong(
+                        PrecacheUMA.PREF_PERSISTENCE_METRICS, 0));
 
-        loadNativeLibraryAndInitBrowserProcess();
-        assertEquals(true, LibraryLoader.isInitialized());
+        mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
+        Assert.assertEquals(true, LibraryLoader.isInitialized());
 
         // When the library is initialized the events saved in preferences are dumped to histograms.
         HistogramDelta histograms[] = new HistogramDelta[PrecacheUMA.Event.EVENT_END];
@@ -82,19 +96,23 @@ public class PrecacheUMATest extends NativeLibraryTestBase {
         // The next event will trigger the recording of the UMA metric.
         PrecacheUMA.record(PrecacheUMA.Event.PERIODIC_TASK_SCHEDULE_UPGRADE);
         events.add(PrecacheUMA.Event.PERIODIC_TASK_SCHEDULE_UPGRADE);
-        assertEquals(0, ContextUtils.getAppSharedPreferences().getLong(
-                PrecacheUMA.PREF_PERSISTENCE_METRICS, 0));
+        Assert.assertEquals(0,
+                ContextUtils.getAppSharedPreferences().getLong(
+                        PrecacheUMA.PREF_PERSISTENCE_METRICS, 0));
 
         for (int event = PrecacheUMA.Event.EVENT_START; event < PrecacheUMA.Event.EVENT_END;
                 ++event) {
             if (events.contains(event)) {
-                assertEquals(1, histograms[PrecacheUMA.Event.getBitPosition(event)].getDelta());
+                Assert.assertEquals(
+                        1, histograms[PrecacheUMA.Event.getBitPosition(event)].getDelta());
             } else {
-                assertEquals(0, histograms[PrecacheUMA.Event.getBitPosition(event)].getDelta());
+                Assert.assertEquals(
+                        0, histograms[PrecacheUMA.Event.getBitPosition(event)].getDelta());
             }
         }
     }
 
+    @Test
     @SmallTest
     @Feature({"Precache"})
     @RetryOnFailure
@@ -106,8 +124,8 @@ public class PrecacheUMATest extends NativeLibraryTestBase {
         events.add(PrecacheUMA.Event.PRECACHE_SESSION_STARTED);
         events.add(PrecacheUMA.Event.PRECACHE_SESSION_COMPLETE);
 
-        loadNativeLibraryAndInitBrowserProcess();
-        assertEquals(true, LibraryLoader.isInitialized());
+        mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
+        Assert.assertEquals(true, LibraryLoader.isInitialized());
 
         HistogramDelta histograms[] = new HistogramDelta[PrecacheUMA.Event.EVENT_END];
         for (int event = PrecacheUMA.Event.EVENT_START; event < PrecacheUMA.Event.EVENT_END;
@@ -117,15 +135,18 @@ public class PrecacheUMATest extends NativeLibraryTestBase {
         }
         for (int event : events) {
             PrecacheUMA.record(event);
-            assertEquals(0, ContextUtils.getAppSharedPreferences().getLong(
-                    PrecacheUMA.PREF_PERSISTENCE_METRICS, 0));
+            Assert.assertEquals(0,
+                    ContextUtils.getAppSharedPreferences().getLong(
+                            PrecacheUMA.PREF_PERSISTENCE_METRICS, 0));
         }
         for (int event = PrecacheUMA.Event.EVENT_START; event < PrecacheUMA.Event.EVENT_END;
                 ++event) {
             if (events.contains(event)) {
-                assertEquals(1, histograms[PrecacheUMA.Event.getBitPosition(event)].getDelta());
+                Assert.assertEquals(
+                        1, histograms[PrecacheUMA.Event.getBitPosition(event)].getDelta());
             } else {
-                assertEquals(0, histograms[PrecacheUMA.Event.getBitPosition(event)].getDelta());
+                Assert.assertEquals(
+                        0, histograms[PrecacheUMA.Event.getBitPosition(event)].getDelta());
             }
         }
     }

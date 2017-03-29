@@ -15,6 +15,7 @@ import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.util.DisplayMetrics;
 import android.view.View;
@@ -23,10 +24,17 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.R;
-import org.chromium.content.browser.test.NativeLibraryTestBase;
+import org.chromium.content.browser.test.NativeLibraryTestRule;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,18 +42,21 @@ import java.util.Arrays;
 /**
  * Instrumentation unit tests for CustomNotificationBuilder.
  */
-public class CustomNotificationBuilderTest extends NativeLibraryTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class CustomNotificationBuilderTest {
+    @Rule
+    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
 
-    @Override
+    @Before
     public void setUp() throws Exception {
-        super.setUp();
-        loadNativeLibraryNoBrowserProcess();
+        mActivityTestRule.loadNativeLibraryNoBrowserProcess();
     }
 
+    @Test
     @SmallTest
     @Feature({"Browser", "Notifications"})
     public void testSetAll() {
-        Context context = getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
         PendingIntent contentIntent = createIntent(context, "Content");
         PendingIntent deleteIntent = createIntent(context, "Delete");
@@ -86,63 +97,67 @@ public class CustomNotificationBuilderTest extends NativeLibraryTestBase {
         View compactView = notification.contentView.apply(context, new LinearLayout(context));
         View bigView = notification.bigContentView.apply(context, new LinearLayout(context));
 
-        assertEquals("title", getIdenticalText(R.id.title, compactView, bigView));
-        assertEquals("body", getIdenticalText(R.id.body, compactView, bigView));
-        assertEquals("origin", getIdenticalText(R.id.origin, compactView, bigView));
+        Assert.assertEquals("title", getIdenticalText(R.id.title, compactView, bigView));
+        Assert.assertEquals("body", getIdenticalText(R.id.body, compactView, bigView));
+        Assert.assertEquals("origin", getIdenticalText(R.id.origin, compactView, bigView));
 
-        assertEquals("title", NotificationTestUtil.getExtraTitle(notification));
-        assertEquals("body", NotificationTestUtil.getExtraText(notification));
-        assertEquals("origin", NotificationTestUtil.getExtraSubText(notification));
+        Assert.assertEquals("title", NotificationTestUtil.getExtraTitle(notification));
+        Assert.assertEquals("body", NotificationTestUtil.getExtraText(notification));
+        Assert.assertEquals("origin", NotificationTestUtil.getExtraSubText(notification));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
-            assertEquals(
+            Assert.assertEquals(
                     NotificationConstants.GROUP_WEB_PREFIX + "origin", notification.getGroup());
         }
 
-        assertEquals("ticker", notification.tickerText.toString());
-        assertEquals(Notification.DEFAULT_ALL, notification.defaults);
-        assertEquals(1, notification.vibrate.length);
-        assertEquals(100L, notification.vibrate[0]);
-        assertSame(contentIntent, notification.contentIntent);
-        assertSame(deleteIntent, notification.deleteIntent);
+        Assert.assertEquals("ticker", notification.tickerText.toString());
+        Assert.assertEquals(Notification.DEFAULT_ALL, notification.defaults);
+        Assert.assertEquals(1, notification.vibrate.length);
+        Assert.assertEquals(100L, notification.vibrate[0]);
+        Assert.assertSame(contentIntent, notification.contentIntent);
+        Assert.assertSame(deleteIntent, notification.deleteIntent);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             // Notification.publicVersion was added in Android L.
-            assertNotNull(notification.publicVersion);
-            assertEquals("origin", Build.VERSION.SDK_INT <= Build.VERSION_CODES.M
+            Assert.assertNotNull(notification.publicVersion);
+            Assert.assertEquals("origin",
+                    Build.VERSION.SDK_INT <= Build.VERSION_CODES.M
                             ? NotificationTestUtil.getExtraTitle(notification.publicVersion)
                             : NotificationTestUtil.getExtraSubText(notification.publicVersion));
         }
 
         // The regular actions and the settings action are added together in the notification
         // actions array, so they can be exposed on e.g. Wear and custom lockscreens.
-        assertEquals(3, NotificationTestUtil.getActions(notification).length);
+        Assert.assertEquals(3, NotificationTestUtil.getActions(notification).length);
 
         ArrayList<View> buttons = new ArrayList<>();
         bigView.findViewsWithText(buttons, "button", View.FIND_VIEWS_WITH_TEXT);
-        assertEquals(2, buttons.size());
-        assertEquals(View.VISIBLE, bigView.findViewById(R.id.button_divider).getVisibility());
-        assertEquals(View.VISIBLE, bigView.findViewById(R.id.buttons).getVisibility());
+        Assert.assertEquals(2, buttons.size());
+        Assert.assertEquals(
+                View.VISIBLE, bigView.findViewById(R.id.button_divider).getVisibility());
+        Assert.assertEquals(View.VISIBLE, bigView.findViewById(R.id.buttons).getVisibility());
     }
 
+    @Test
     @SmallTest
     @Feature({"Browser", "Notifications"})
     public void testZeroActionButtons() {
-        Context context = getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         Notification notification = new CustomNotificationBuilder(context).build();
         View bigView = notification.bigContentView.apply(context, new LinearLayout(context));
         ArrayList<View> buttons = new ArrayList<>();
         bigView.findViewsWithText(buttons, "button", View.FIND_VIEWS_WITH_TEXT);
 
         // When there are no buttons the container and divider must not be shown.
-        assertTrue(buttons.isEmpty());
-        assertEquals(View.GONE, bigView.findViewById(R.id.button_divider).getVisibility());
-        assertEquals(View.GONE, bigView.findViewById(R.id.buttons).getVisibility());
+        Assert.assertTrue(buttons.isEmpty());
+        Assert.assertEquals(View.GONE, bigView.findViewById(R.id.button_divider).getVisibility());
+        Assert.assertEquals(View.GONE, bigView.findViewById(R.id.buttons).getVisibility());
     }
 
+    @Test
     @SmallTest
     @Feature({"Browser", "Notifications"})
     public void testMaxActionButtons() {
-        Context context = getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         NotificationBuilderBase builder = new CustomNotificationBuilder(context)
                                                   .addButtonAction(null /* iconBitmap */, "button",
                                                           createIntent(context, "ActionButtonOne"))
@@ -151,22 +166,24 @@ public class CustomNotificationBuilderTest extends NativeLibraryTestBase {
         try {
             builder.addButtonAction(
                     null /* iconBitmap */, "button", createIntent(context, "ActionButtonThree"));
-            fail("This statement should not be reached as the previous statement should throw.");
+            Assert.fail(
+                    "This statement should not be reached as the previous statement should throw.");
         } catch (IllegalStateException e) {
-            assertEquals("Cannot add more than 2 actions.", e.getMessage());
+            Assert.assertEquals("Cannot add more than 2 actions.", e.getMessage());
         }
         Notification notification = builder.build();
         View bigView = notification.bigContentView.apply(context, new LinearLayout(context));
         ArrayList<View> buttons = new ArrayList<>();
         bigView.findViewsWithText(buttons, "button", View.FIND_VIEWS_WITH_TEXT);
 
-        assertEquals("There is a maximum of 2 buttons", 2, buttons.size());
+        Assert.assertEquals("There is a maximum of 2 buttons", 2, buttons.size());
     }
 
+    @Test
     @SmallTest
     @Feature({"Browser", "Notifications"})
     public void testPaintIcons() {
-        Context context = getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
         Bitmap largeIcon = Bitmap.createBitmap(
                 new int[] {Color.RED}, 1 /* width */, 1 /* height */, Bitmap.Config.ARGB_8888);
@@ -196,17 +213,18 @@ public class CustomNotificationBuilderTest extends NativeLibraryTestBase {
         assertSmallNotificationIconAsExpected(context, notification, whiteIcon);
 
         // Action icons should be painted white.
-        assertEquals(1, NotificationTestUtil.getActions(notification).length);
+        Assert.assertEquals(1, NotificationTestUtil.getActions(notification).length);
         View bigView = notification.bigContentView.apply(context, new LinearLayout(context));
         ImageView actionIconView = (ImageView) bigView.findViewById(R.id.button_icon);
         Bitmap actionIconBitmap = ((BitmapDrawable) actionIconView.getDrawable()).getBitmap();
-        assertTrue(whiteIcon.sameAs(actionIconBitmap));
+        Assert.assertTrue(whiteIcon.sameAs(actionIconBitmap));
     }
 
+    @Test
     @SmallTest
     @Feature({"Browser", "Notifications"})
     public void testCharSequenceLimits() {
-        Context context = getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         int maxLength = CustomNotificationBuilder.MAX_CHARSEQUENCE_LENGTH;
         Notification notification =
                 new CustomNotificationBuilder(context)
@@ -220,45 +238,50 @@ public class CustomNotificationBuilderTest extends NativeLibraryTestBase {
         View compactView = notification.contentView.apply(context, new LinearLayout(context));
         View bigView = notification.bigContentView.apply(context, new LinearLayout(context));
 
-        assertEquals(maxLength, getIdenticalText(R.id.title, compactView, bigView).length());
-        assertEquals(maxLength, getIdenticalText(R.id.body, compactView, bigView).length());
-        assertEquals(maxLength, getIdenticalText(R.id.origin, compactView, bigView).length());
-        assertEquals(maxLength, notification.tickerText.length());
+        Assert.assertEquals(maxLength, getIdenticalText(R.id.title, compactView, bigView).length());
+        Assert.assertEquals(maxLength, getIdenticalText(R.id.body, compactView, bigView).length());
+        Assert.assertEquals(
+                maxLength, getIdenticalText(R.id.origin, compactView, bigView).length());
+        Assert.assertEquals(maxLength, notification.tickerText.length());
 
         ArrayList<View> buttons = new ArrayList<>();
         bigView.findViewsWithText(buttons, createString('e', maxLength), View.FIND_VIEWS_WITH_TEXT);
-        assertEquals(1, buttons.size());
-        assertEquals(maxLength, ((Button) buttons.get(0)).getText().length());
+        Assert.assertEquals(1, buttons.size());
+        Assert.assertEquals(maxLength, ((Button) buttons.get(0)).getText().length());
     }
 
+    @Test
     @SmallTest
     @Feature({"Browser", "Notifications"})
     public void testCalculateMaxBodyLines() {
-        assertEquals(7, CustomNotificationBuilder.calculateMaxBodyLines(-1000.0f));
-        assertEquals(7, CustomNotificationBuilder.calculateMaxBodyLines(0.5f));
-        assertEquals(7, CustomNotificationBuilder.calculateMaxBodyLines(1.0f));
-        assertEquals(4, CustomNotificationBuilder.calculateMaxBodyLines(2.0f));
-        assertEquals(1, CustomNotificationBuilder.calculateMaxBodyLines(1000.0f));
+        Assert.assertEquals(7, CustomNotificationBuilder.calculateMaxBodyLines(-1000.0f));
+        Assert.assertEquals(7, CustomNotificationBuilder.calculateMaxBodyLines(0.5f));
+        Assert.assertEquals(7, CustomNotificationBuilder.calculateMaxBodyLines(1.0f));
+        Assert.assertEquals(4, CustomNotificationBuilder.calculateMaxBodyLines(2.0f));
+        Assert.assertEquals(1, CustomNotificationBuilder.calculateMaxBodyLines(1000.0f));
     }
 
+    @Test
     @SmallTest
     @Feature({"Browser", "Notifications"})
     public void testCalculateScaledPadding() {
         DisplayMetrics metrics = new DisplayMetrics();
         metrics.density = 10.0f;
-        assertEquals(30, CustomNotificationBuilder.calculateScaledPadding(-1000.0f, metrics));
-        assertEquals(30, CustomNotificationBuilder.calculateScaledPadding(0.5f, metrics));
-        assertEquals(30, CustomNotificationBuilder.calculateScaledPadding(1.0f, metrics));
-        assertEquals(20, CustomNotificationBuilder.calculateScaledPadding(1.1f, metrics));
-        assertEquals(10, CustomNotificationBuilder.calculateScaledPadding(1.2f, metrics));
-        assertEquals(0, CustomNotificationBuilder.calculateScaledPadding(1.3f, metrics));
-        assertEquals(0, CustomNotificationBuilder.calculateScaledPadding(1000.0f, metrics));
+        Assert.assertEquals(
+                30, CustomNotificationBuilder.calculateScaledPadding(-1000.0f, metrics));
+        Assert.assertEquals(30, CustomNotificationBuilder.calculateScaledPadding(0.5f, metrics));
+        Assert.assertEquals(30, CustomNotificationBuilder.calculateScaledPadding(1.0f, metrics));
+        Assert.assertEquals(20, CustomNotificationBuilder.calculateScaledPadding(1.1f, metrics));
+        Assert.assertEquals(10, CustomNotificationBuilder.calculateScaledPadding(1.2f, metrics));
+        Assert.assertEquals(0, CustomNotificationBuilder.calculateScaledPadding(1.3f, metrics));
+        Assert.assertEquals(0, CustomNotificationBuilder.calculateScaledPadding(1000.0f, metrics));
     }
 
+    @Test
     @SmallTest
     @Feature({"Browser", "Notifications"})
     public void testGeneratesLargeIconFromOriginWhenNoLargeIconProvided() {
-        Context context = getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         NotificationBuilderBase notificationBuilder =
                 new CustomNotificationBuilder(context).setOrigin("https://www.google.com");
 
@@ -270,10 +293,11 @@ public class CustomNotificationBuilderTest extends NativeLibraryTestBase {
         assertLargeNotificationIconAsExpected(context, notification, expectedIcon);
     }
 
+    @Test
     @SmallTest
     @Feature({"Browser", "Notifications"})
     public void testGeneratesLargeIconFromOriginWhenLargeIconProvidedIsNull() {
-        Context context = getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         NotificationBuilderBase notificationBuilder = new CustomNotificationBuilder(context)
                                                               .setOrigin("https://www.chromium.org")
                                                               .setLargeIcon(null);
@@ -292,22 +316,23 @@ public class CustomNotificationBuilderTest extends NativeLibraryTestBase {
      * Note that the action buttons in custom layouts will not trigger an inline reply, but we can
      * still check the notification's action properties since these are used on Android Wear.
      */
+    @Test
     @MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT_WATCH)
     @TargetApi(Build.VERSION_CODES.KITKAT_WATCH) // RemoteInputs were only added in KITKAT_WATCH.
     @SmallTest
     @Feature({"Browser", "Notifications"})
     public void testAddTextActionSetsRemoteInput() {
-        Context context = getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         NotificationBuilderBase notificationBuilder = new CustomNotificationBuilder(
                 context).addTextAction(null, "Action Title", null, "Placeholder");
 
         Notification notification = notificationBuilder.build();
 
-        assertEquals(1, notification.actions.length);
-        assertEquals("Action Title", notification.actions[0].title);
-        assertNotNull(notification.actions[0].getRemoteInputs());
-        assertEquals(1, notification.actions[0].getRemoteInputs().length);
-        assertEquals("Placeholder", notification.actions[0].getRemoteInputs()[0].getLabel());
+        Assert.assertEquals(1, notification.actions.length);
+        Assert.assertEquals("Action Title", notification.actions[0].title);
+        Assert.assertNotNull(notification.actions[0].getRemoteInputs());
+        Assert.assertEquals(1, notification.actions[0].getRemoteInputs().length);
+        Assert.assertEquals("Placeholder", notification.actions[0].getRemoteInputs()[0].getLabel());
     }
 
     private static void assertLargeNotificationIconAsExpected(
@@ -315,20 +340,20 @@ public class CustomNotificationBuilderTest extends NativeLibraryTestBase {
         // 1. Check large icon property on the notification.
 
         Bitmap icon = NotificationTestUtil.getLargeIconFromNotification(context, notification);
-        assertNotNull(icon);
-        assertTrue(expectedIcon.sameAs(icon));
+        Assert.assertNotNull(icon);
+        Assert.assertTrue(expectedIcon.sameAs(icon));
 
         // 2. Check the large icon in the custom layouts.
 
         View compactView = notification.contentView.apply(context, new LinearLayout(context));
         Drawable compactViewIcon = ((ImageView) compactView.findViewById(R.id.icon)).getDrawable();
-        assertNotNull(compactViewIcon);
-        assertTrue(expectedIcon.sameAs(((BitmapDrawable) compactViewIcon).getBitmap()));
+        Assert.assertNotNull(compactViewIcon);
+        Assert.assertTrue(expectedIcon.sameAs(((BitmapDrawable) compactViewIcon).getBitmap()));
 
         View bigView = notification.bigContentView.apply(context, new LinearLayout(context));
         Drawable bigViewIcon = ((ImageView) bigView.findViewById(R.id.icon)).getDrawable();
-        assertNotNull(bigViewIcon);
-        assertTrue(expectedIcon.sameAs(((BitmapDrawable) bigViewIcon).getBitmap()));
+        Assert.assertNotNull(bigViewIcon);
+        Assert.assertTrue(expectedIcon.sameAs(((BitmapDrawable) bigViewIcon).getBitmap()));
     }
 
     private static void assertSmallNotificationIconAsExpected(
@@ -337,8 +362,8 @@ public class CustomNotificationBuilderTest extends NativeLibraryTestBase {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             Bitmap icon =
                     NotificationTestUtil.getBitmapFromIcon(context, notification.getSmallIcon());
-            assertNotNull(icon);
-            assertTrue(expectedIcon.sameAs(icon));
+            Assert.assertNotNull(icon);
+            Assert.assertTrue(expectedIcon.sameAs(icon));
         }
 
         // 2. Check the small icon in the custom layouts.
@@ -348,13 +373,13 @@ public class CustomNotificationBuilderTest extends NativeLibraryTestBase {
         View compactView = notification.contentView.apply(context, new LinearLayout(context));
         Drawable compactViewIcon =
                 ((ImageView) compactView.findViewById(smallIconId)).getDrawable();
-        assertNotNull(compactViewIcon);
-        assertTrue(expectedIcon.sameAs(((BitmapDrawable) compactViewIcon).getBitmap()));
+        Assert.assertNotNull(compactViewIcon);
+        Assert.assertTrue(expectedIcon.sameAs(((BitmapDrawable) compactViewIcon).getBitmap()));
 
         View bigView = notification.bigContentView.apply(context, new LinearLayout(context));
         Drawable bigViewIcon = ((ImageView) bigView.findViewById(smallIconId)).getDrawable();
-        assertNotNull(bigViewIcon);
-        assertTrue(expectedIcon.sameAs(((BitmapDrawable) bigViewIcon).getBitmap()));
+        Assert.assertNotNull(bigViewIcon);
+        Assert.assertTrue(expectedIcon.sameAs(((BitmapDrawable) bigViewIcon).getBitmap()));
     }
 
     /**
@@ -368,12 +393,12 @@ public class CustomNotificationBuilderTest extends NativeLibraryTestBase {
         CharSequence result = null;
         for (View view : views) {
             TextView textView = (TextView) view.findViewById(id);
-            assertNotNull(textView);
+            Assert.assertNotNull(textView);
             CharSequence text = textView.getText();
             if (result == null) {
                 result = text;
             } else {
-                assertEquals(result, text);
+                Assert.assertEquals(result, text);
             }
         }
         return result;
