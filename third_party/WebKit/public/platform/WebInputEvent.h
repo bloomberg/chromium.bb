@@ -106,33 +106,70 @@ class WebInputEvent {
     // WebKeyboardEvent
     RawKeyDown,
     KeyboardTypeFirst = RawKeyDown,
+    // KeyDown is a single event combining RawKeyDown and Char.  If KeyDown is
+    // sent for a given keystroke, those two other events will not be sent.
+    // Platforms tend to prefer sending in one format (Android uses KeyDown,
+    // Windows uses RawKeyDown+Char, for example), but this is a weakly held
+    // property as tools like WebDriver/DevTools might still send the other
+    // format.
     KeyDown,
     KeyUp,
     Char,
     KeyboardTypeLast = Char,
 
-    // WebGestureEvent
+    // WebGestureEvent - input interpreted semi-semantically, most commonly from
+    // touchscreen but also used for touchpad, mousewheel, and gamepad
+    // scrolling.
     GestureScrollBegin,
     GestureTypeFirst = GestureScrollBegin,
     GestureScrollEnd,
     GestureScrollUpdate,
+    // Fling is a high-velocity and quickly released finger movement.
+    // FlingStart is sent once and kicks off a scroll animation.
     GestureFlingStart,
     GestureFlingCancel,
-    GestureShowPress,
-    GestureTap,
-    GestureTapUnconfirmed,
-    GestureTapDown,
-    GestureTapCancel,
-    GestureDoubleTap,
-    GestureTwoFingerTap,
-    GestureLongPress,
-    GestureLongTap,
+    // Pinch is two fingers moving closer or farther apart.
     GesturePinchBegin,
     GesturePinchEnd,
     GesturePinchUpdate,
-    GestureTypeLast = GesturePinchUpdate,
 
-    // WebTouchEvent
+    // The following types are variations and subevents of single-taps.
+    //
+    // Sent the moment the user's finger hits the screen.
+    GestureTapDown,
+    // Sent a short interval later, after it seems the finger is staying in
+    // place.  It's used to activate the link highlight ("show the press").
+    GestureShowPress,
+    // Sent on finger lift for a simple, static, quick finger tap.  This is the
+    // "main" event which maps to a synthetic mouse click event.
+    GestureTap,
+    // Sent when a GestureTapDown didn't turn into any variation of GestureTap
+    // (likely it turned into a scroll instead).
+    GestureTapCancel,
+    // Sent as soon as the long-press timeout fires, while the finger is still
+    // down.
+    GestureLongPress,
+    // Sent when the finger is lifted following a GestureLongPress.
+    GestureLongTap,
+    // Sent on finger lift when two fingers tapped at the same time without
+    // moving.
+    GestureTwoFingerTap,
+    // A rare event sent in place of GestureTap on desktop pages viewed on an
+    // Android phone.  This tap could not yet be resolved into a GestureTap
+    // because it may still turn into a GestureDoubleTap.
+    GestureTapUnconfirmed,
+
+    // Double-tap is two single-taps spread apart in time, like a double-click.
+    // This event is only sent on desktop pages viewed on an Android phone, and
+    // is always preceded by GestureTapUnconfirmed.  It's an instruction to
+    // Blink to perform a PageScaleAnimation zoom onto the double-tapped
+    // content.  (It's treated differently from GestureTap with tapCount=2,
+    // which can also happen.)
+    GestureDoubleTap,
+
+    GestureTypeLast = GestureDoubleTap,
+
+    // WebTouchEvent - raw touch pointers not yet classified into gestures.
     TouchStart,
     TouchTypeFirst = TouchStart,
     TouchMove,
