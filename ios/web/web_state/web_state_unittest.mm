@@ -7,6 +7,7 @@
 #include "base/mac/bind_objc_block.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
 
 namespace web {
@@ -72,6 +73,38 @@ TEST_F(WebStateTest, OverridingWebKitObject) {
     return message_received;
   });
   web_state()->RemoveScriptCommandCallback("test");
+}
+
+// Tests that reload with web::ReloadType::NORMAL is no-op when navigation
+// manager is empty.
+TEST_F(WebStateTest, ReloadWithNormalTypeWithEmptyNavigationManager) {
+  NavigationManager* navigation_manager = web_state()->GetNavigationManager();
+  ASSERT_FALSE(navigation_manager->GetTransientItem());
+  ASSERT_FALSE(navigation_manager->GetPendingItem());
+  ASSERT_FALSE(navigation_manager->GetLastCommittedItem());
+
+  navigation_manager->Reload(web::ReloadType::NORMAL,
+                             false /* check_for_repost */);
+
+  ASSERT_FALSE(navigation_manager->GetTransientItem());
+  ASSERT_FALSE(navigation_manager->GetPendingItem());
+  ASSERT_FALSE(navigation_manager->GetLastCommittedItem());
+}
+
+// Tests that reload with web::ReloadType::ORIGINAL_REQUEST_URL is no-op when
+// navigation manager is empty.
+TEST_F(WebStateTest, ReloadWithOriginalTypeWithEmptyNavigationManager) {
+  NavigationManager* navigation_manager = web_state()->GetNavigationManager();
+  ASSERT_FALSE(navigation_manager->GetTransientItem());
+  ASSERT_FALSE(navigation_manager->GetPendingItem());
+  ASSERT_FALSE(navigation_manager->GetLastCommittedItem());
+
+  navigation_manager->Reload(web::ReloadType::ORIGINAL_REQUEST_URL,
+                             false /* check_for_repost */);
+
+  ASSERT_FALSE(navigation_manager->GetTransientItem());
+  ASSERT_FALSE(navigation_manager->GetPendingItem());
+  ASSERT_FALSE(navigation_manager->GetLastCommittedItem());
 }
 
 }  // namespace web
