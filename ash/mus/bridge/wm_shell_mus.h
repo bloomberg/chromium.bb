@@ -24,6 +24,7 @@ class PointerWatcherEventRouter;
 namespace ash {
 
 class AcceleratorControllerDelegateAura;
+class PointerWatcherAdapter;
 class RootWindowController;
 
 namespace mus {
@@ -49,8 +50,8 @@ class WmShellMus : public WmShell {
 
   ash::RootWindowController* GetRootWindowControllerWithDisplayId(int64_t id);
 
-  AcceleratorControllerDelegateAura* accelerator_controller_delegate_classic() {
-    return accelerator_controller_delegate_classic_.get();
+  AcceleratorControllerDelegateAura* accelerator_controller_delegate_mus() {
+    return mus_state_->accelerator_controller_delegate.get();
   }
 
   aura::WindowTreeClient* window_tree_client();
@@ -114,20 +115,36 @@ class WmShellMus : public WmShell {
  private:
   friend class WmShellMusTestApi;
 
+  struct MashSpecificState {
+    MashSpecificState();
+    ~MashSpecificState();
+
+    views::PointerWatcherEventRouter* pointer_watcher_event_router = nullptr;
+    std::unique_ptr<AcceleratorControllerDelegateMus>
+        accelerator_controller_delegate;
+    std::unique_ptr<AcceleratorControllerRegistrar>
+        accelerator_controller_registrar;
+    std::unique_ptr<ImmersiveHandlerFactoryMus> immersive_handler_factory;
+  };
+
+  struct MusSpecificState {
+    MusSpecificState();
+    ~MusSpecificState();
+
+    std::unique_ptr<PointerWatcherAdapter> pointer_watcher_adapter;
+    std::unique_ptr<AcceleratorControllerDelegateAura>
+        accelerator_controller_delegate;
+  };
+
   WindowManager* window_manager_;
 
   WmWindow* primary_root_window_;
-  views::PointerWatcherEventRouter* pointer_watcher_event_router_;
 
-  // |accelerator_controller_delegate_classic_| is created in MUS mode,
-  // |accelerator_controller_delegate_| in MASH mode.
-  std::unique_ptr<AcceleratorControllerDelegateMus>
-      accelerator_controller_delegate_;
-  std::unique_ptr<AcceleratorControllerDelegateAura>
-      accelerator_controller_delegate_classic_;
-  std::unique_ptr<AcceleratorControllerRegistrar>
-      accelerator_controller_registrar_;
-  std::unique_ptr<ImmersiveHandlerFactoryMus> immersive_handler_factory_;
+  // Only one of |mash_state_| or |mus_state_| is created, depending upon
+  // Config.
+  std::unique_ptr<MashSpecificState> mash_state_;
+  std::unique_ptr<MusSpecificState> mus_state_;
+
   std::unique_ptr<SessionStateDelegate> session_state_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(WmShellMus);

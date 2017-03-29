@@ -113,7 +113,7 @@ AshInit::AshInit() {
         ash::WmShellAura::Get()->accelerator_controller_delegate();
   } else if (chromeos::GetConfig() == ash::Config::MUS) {
     accelerator_controller_delegate =
-        ash::mus::WmShellMus::Get()->accelerator_controller_delegate_classic();
+        ash::mus::WmShellMus::Get()->accelerator_controller_delegate_mus();
   }
   if (accelerator_controller_delegate) {
     std::unique_ptr<ChromeScreenshotGrabber> screenshot_delegate =

@@ -5,6 +5,7 @@
 #ifndef ASH_WM_WINDOW_CYCLE_EVENT_FILTER_AURA_H_
 #define ASH_WM_WINDOW_CYCLE_EVENT_FILTER_AURA_H_
 
+#include "ash/ash_export.h"
 #include "ash/common/wm/window_cycle_event_filter.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
@@ -12,8 +13,8 @@
 
 namespace ash {
 
-class WindowCycleEventFilterAura : public ui::EventHandler,
-                                   public WindowCycleEventFilter {
+class ASH_EXPORT WindowCycleEventFilterAura : public ui::EventHandler,
+                                              public WindowCycleEventFilter {
  public:
   WindowCycleEventFilterAura();
   ~WindowCycleEventFilterAura() override;

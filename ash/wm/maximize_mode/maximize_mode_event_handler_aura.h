@@ -5,6 +5,7 @@
 #ifndef ASH_WM_MAXIMIZE_MODE_MAXIMIZE_MODE_EVENT_HANDLER_AURA_H_
 #define ASH_WM_MAXIMIZE_MODE_MAXIMIZE_MODE_EVENT_HANDLER_AURA_H_
 
+#include "ash/ash_export.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_event_handler.h"
 #include "ui/events/event_handler.h"
 
@@ -12,8 +13,8 @@ namespace ash {
 namespace wm {
 
 // Implementation of MaximizeModeEventHandler for aura. Uses ui::EventHandler.
-class MaximizeModeEventHandlerAura : public MaximizeModeEventHandler,
-                                     public ui::EventHandler {
+class ASH_EXPORT MaximizeModeEventHandlerAura : public MaximizeModeEventHandler,
+                                                public ui::EventHandler {
  public:
   MaximizeModeEventHandlerAura();
   ~MaximizeModeEventHandlerAura() override;

@@ -5,6 +5,7 @@
 #ifndef ASH_WM_WORKSPACE_WORKSPACE_EVENT_HANDLER_AURA_H_
 #define ASH_WM_WORKSPACE_WORKSPACE_EVENT_HANDLER_AURA_H_
 
+#include "ash/ash_export.h"
 #include "ash/common/wm/workspace/workspace_event_handler.h"
 #include "base/macros.h"
 #include "ui/events/event_handler.h"
@@ -13,8 +14,8 @@ namespace ash {
 
 class WmWindow;
 
-class WorkspaceEventHandlerAura : public ui::EventHandler,
-                                  public WorkspaceEventHandler {
+class ASH_EXPORT WorkspaceEventHandlerAura : public ui::EventHandler,
+                                             public WorkspaceEventHandler {
  public:
   explicit WorkspaceEventHandlerAura(WmWindow* workspace_window);
   ~WorkspaceEventHandlerAura() override;

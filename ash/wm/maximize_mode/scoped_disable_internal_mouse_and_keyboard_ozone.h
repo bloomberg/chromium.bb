@@ -5,6 +5,7 @@
 #ifndef ASH_WM_MAXIMIZE_MODE_SCOPED_DISABLE_INTERNAL_MOUSE_AND_KEYBOARD_OZONE_H_
 #define ASH_WM_MAXIMIZE_MODE_SCOPED_DISABLE_INTERNAL_MOUSE_AND_KEYBOARD_OZONE_H_
 
+#include "ash/ash_export.h"
 #include "ash/common/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard.h"
 #include "base/macros.h"
 
@@ -12,7 +13,7 @@ namespace ash {
 
 // Disables the internal mouse and keyboard for the duration of the class'
 // lifetime.
-class ScopedDisableInternalMouseAndKeyboardOzone
+class ASH_EXPORT ScopedDisableInternalMouseAndKeyboardOzone
     : public ScopedDisableInternalMouseAndKeyboard {
  public:
   ScopedDisableInternalMouseAndKeyboardOzone();
