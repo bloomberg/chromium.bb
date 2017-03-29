@@ -546,12 +546,6 @@ void PrintPreviewUI::OnPrintPreviewRequest(int request_id) {
   g_print_preview_request_id_map.Get().Set(id_, request_id);
 }
 
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
-void PrintPreviewUI::OnShowSystemDialog() {
-  web_ui()->CallJavascriptFunctionUnsafe("onSystemDialogLinkClicked");
-}
-#endif  // ENABLE_BASIC_PRINTING
-
 void PrintPreviewUI::OnDidGetPreviewPageCount(
     const PrintHostMsg_DidGetPreviewPageCount_Params& params) {
   DCHECK_GT(params.page_count, 0);
