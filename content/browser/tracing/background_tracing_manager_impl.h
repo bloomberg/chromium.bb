@@ -23,24 +23,7 @@ class TracingDelegate;
 
 class BackgroundTracingManagerImpl : public BackgroundTracingManager {
  public:
-  // Enabled state observers get a callback when the state of background tracing
-  // changes.
-  class CONTENT_EXPORT EnabledStateObserver {
-   public:
-    // Called when the activation of a background tracing scenario is
-    // successful.
-    virtual void OnScenarioActivated(
-        const BackgroundTracingConfigImpl& config) = 0;
-
-    // Called after tracing is enabled on all processes because the rule was
-    // triggered.
-    virtual void OnTracingEnabled(
-        BackgroundTracingConfigImpl::CategoryPreset preset) = 0;
-
-    virtual ~EnabledStateObserver() = default;
-  };
-
-  CONTENT_EXPORT static BackgroundTracingManagerImpl* GetInstance();
+  static CONTENT_EXPORT BackgroundTracingManagerImpl* GetInstance();
 
   bool SetActiveScenario(std::unique_ptr<BackgroundTracingConfig>,
                          const ReceiveCallback&,
@@ -57,15 +40,10 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
   void AbortScenario();
   bool HasActiveScenario() override;
 
-  void OnStartTracingDone(BackgroundTracingConfigImpl::CategoryPreset preset);
-
-  // Add/remove EnabledStateObserver.
-  CONTENT_EXPORT void AddEnabledStateObserver(EnabledStateObserver* observer);
-  CONTENT_EXPORT void RemoveEnabledStateObserver(
-      EnabledStateObserver* observer);
-
   // For tests
   void InvalidateTriggerHandlesForTesting() override;
+  void SetTracingEnabledCallbackForTesting(
+      const base::Closure& callback) override;
   CONTENT_EXPORT void SetRuleTriggeredCallbackForTesting(
       const base::Closure& callback);
   void FireTimerForTesting() override;
@@ -124,8 +102,6 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
   int trigger_handle_ids_;
 
   TriggerHandle triggered_named_event_handle_;
-
-  std::vector<EnabledStateObserver*> background_tracing_observer_list_;
 
   IdleCallback idle_callback_;
   base::Closure tracing_enabled_callback_for_testing_;

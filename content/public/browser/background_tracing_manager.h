@@ -93,6 +93,8 @@ class BackgroundTracingManager {
   virtual bool HasActiveScenario() = 0;
 
   virtual void InvalidateTriggerHandlesForTesting() = 0;
+  virtual void SetTracingEnabledCallbackForTesting(
+      const base::Closure& callback) = 0;
   virtual void FireTimerForTesting() = 0;
 
  protected:
