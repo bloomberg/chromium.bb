@@ -29,6 +29,11 @@ import java.util.concurrent.TimeUnit;
  */
 public class MainIntentBehaviorMetrics implements ApplicationStatus.ActivityStateListener {
 
+    private static final long BACKGROUND_TIME_24_HOUR_MS = 86400000;
+    private static final long BACKGROUND_TIME_12_HOUR_MS = 43200000;
+    private static final long BACKGROUND_TIME_6_HOUR_MS = 21600000;
+    private static final long BACKGROUND_TIME_1_HOUR_MS = 3600000;
+
     private static final long TIMEOUT_DURATION_MS = 10000;
 
     @Retention(RetentionPolicy.SOURCE)
@@ -81,6 +86,16 @@ public class MainIntentBehaviorMetrics implements ApplicationStatus.ActivityStat
      */
     public void onMainIntentWithNative(long backgroundDurationMs) {
         RecordUserAction.record("MobileStartup.MainIntentReceived");
+
+        if (backgroundDurationMs >= BACKGROUND_TIME_24_HOUR_MS) {
+            RecordUserAction.record("MobileStartup.MainIntentReceived.After24Hours");
+        } else if (backgroundDurationMs >= BACKGROUND_TIME_12_HOUR_MS) {
+            RecordUserAction.record("MobileStartup.MainIntentReceived.After12Hours");
+        } else if (backgroundDurationMs >= BACKGROUND_TIME_6_HOUR_MS) {
+            RecordUserAction.record("MobileStartup.MainIntentReceived.After6Hours");
+        } else if (backgroundDurationMs >= BACKGROUND_TIME_1_HOUR_MS) {
+            RecordUserAction.record("MobileStartup.MainIntentReceived.After1Hour");
+        }
 
         if (mPendingActionRecordForMainIntent) return;
         mBackgroundDurationMs = backgroundDurationMs;

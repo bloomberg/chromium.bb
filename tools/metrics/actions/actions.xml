@@ -10369,11 +10369,51 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="MobileStartup.MainIntent.NTPCreatedDueToInactivity">
+  <owner>tedchoc@chromium.org</owner>
+  <description>
+    An ACTION_MAIN intent was received by Chrome and an NTP was created due to
+    the time elapsed since Chrome was last visited.
+  </description>
+</action>
+
 <action name="MobileStartup.MainIntentReceived">
   <owner>tedchoc@chromium.org</owner>
   <description>
     An ACTION_MAIN intent was received by Chrome.  This is the best indicator we
     have to signal the user tapped on the Chrome icon from the launcher.
+  </description>
+</action>
+
+<action name="MobileStartup.MainIntentReceived.After12Hours">
+  <owner>tedchoc@chromium.org</owner>
+  <description>
+    An ACTION_MAIN intent was received by Chrome after the user had not used
+    Chrome for 12 hours but fewer than 24 hours.
+  </description>
+</action>
+
+<action name="MobileStartup.MainIntentReceived.After1Hour">
+  <owner>tedchoc@chromium.org</owner>
+  <description>
+    An ACTION_MAIN intent was received by Chrome after the user had not used
+    Chrome for 1 hour but fewer than 6 hours.
+  </description>
+</action>
+
+<action name="MobileStartup.MainIntentReceived.After24Hours">
+  <owner>tedchoc@chromium.org</owner>
+  <description>
+    An ACTION_MAIN intent was received by Chrome after the user had not used
+    Chrome for 24 hours.
+  </description>
+</action>
+
+<action name="MobileStartup.MainIntentReceived.After6Hours">
+  <owner>tedchoc@chromium.org</owner>
+  <description>
+    An ACTION_MAIN intent was received by Chrome after the user had not used
+    Chrome for 6 hours but fewer than 12 hours.
   </description>
 </action>
 

@@ -751,21 +751,27 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         // In cases where the tab model is initialized, attempt to reuse an existing NTP if
         // available before attempting to create a new one.
         TabModel normalTabModel = getTabModelSelector().getModel(false);
+        Tab ntpToRefocus = null;
         for (int i = 0; i < normalTabModel.getCount(); i++) {
             Tab tab = normalTabModel.getTabAt(i);
 
             if (NewTabPage.isNTPUrl(tab.getUrl()) && !tab.canGoBack() && !tab.canGoForward()) {
+                // If the currently selected tab is an NTP, then take no action.
                 if (getActivityTab().equals(tab)) return true;
-
-                normalTabModel.moveTab(tab.getId(), normalTabModel.getCount());
-                normalTabModel.setIndex(
-                        TabModelUtils.getTabIndexById(normalTabModel, tab.getId()),
-                        TabSelectionType.FROM_USER);
-                return true;
+                ntpToRefocus = tab;
+                break;
             }
         }
 
-        getTabCreator(false).launchUrl(UrlConstants.NTP_URL, TabLaunchType.FROM_EXTERNAL_APP);
+        if (ntpToRefocus != null) {
+            normalTabModel.moveTab(ntpToRefocus.getId(), normalTabModel.getCount());
+            normalTabModel.setIndex(
+                    TabModelUtils.getTabIndexById(normalTabModel, ntpToRefocus.getId()),
+                    TabSelectionType.FROM_USER);
+        } else {
+            getTabCreator(false).launchUrl(UrlConstants.NTP_URL, TabLaunchType.FROM_EXTERNAL_APP);
+        }
+        RecordUserAction.record("MobileStartup.MainIntent.NTPCreatedDueToInactivity");
         return true;
     }
 
