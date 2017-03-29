@@ -239,7 +239,7 @@ ChromeContentUtilityClient::~ChromeContentUtilityClient() = default;
 
 void ChromeContentUtilityClient::UtilityThreadStarted() {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  extensions::UtilityHandler::UtilityThreadStarted();
+  extensions::utility_handler::UtilityThreadStarted();
 #endif
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -265,7 +265,7 @@ void ChromeContentUtilityClient::ExposeInterfacesToBrowser(
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions::ExtensionsHandler::ExposeInterfacesToBrowser(
       registry, utility_process_running_elevated_);
-  extensions::UtilityHandler::ExposeInterfacesToBrowser(
+  extensions::utility_handler::ExposeInterfacesToBrowser(
       registry, utility_process_running_elevated_);
 #endif
   // If our process runs with elevated privileges, only add elevated Mojo

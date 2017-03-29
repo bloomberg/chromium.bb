@@ -10,14 +10,12 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_l10n_util.h"
 #include "extensions/common/extension_unpacker.mojom.h"
-#include "extensions/common/extension_utility_messages.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/manifest_parser.mojom.h"
 #include "extensions/common/update_manifest.h"
 #include "extensions/strings/grit/extensions_strings.h"
 #include "extensions/utility/unpacker.h"
-#include "ipc/ipc_message.h"
-#include "ipc/ipc_message_macros.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "third_party/zlib/google/zip.h"
@@ -101,54 +99,52 @@ class ExtensionUnpackerImpl : public extensions::mojom::ExtensionUnpacker {
   DISALLOW_COPY_AND_ASSIGN(ExtensionUnpackerImpl);
 };
 
+class ManifestParserImpl : public extensions::mojom::ManifestParser {
+ public:
+  ManifestParserImpl() = default;
+  ~ManifestParserImpl() override = default;
+
+  static void Create(extensions::mojom::ManifestParserRequest request) {
+    mojo::MakeStrongBinding(base::MakeUnique<ManifestParserImpl>(),
+                            std::move(request));
+  }
+
+ private:
+  void Parse(const std::string& xml, const ParseCallback& callback) override {
+    UpdateManifest manifest;
+    if (manifest.Parse(xml)) {
+      callback.Run(manifest.results());
+    } else {
+      LOG(WARNING) << "Error parsing update manifest:\n" << manifest.errors();
+      callback.Run(base::nullopt);
+    }
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ManifestParserImpl);
+};
+
 }  // namespace
 
-UtilityHandler::UtilityHandler() = default;
+namespace utility_handler {
 
-UtilityHandler::~UtilityHandler() = default;
-
-// static
-void UtilityHandler::UtilityThreadStarted() {
+void UtilityThreadStarted() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   std::string lang = command_line->GetSwitchValueASCII(switches::kLang);
   if (!lang.empty())
     extension_l10n_util::SetProcessLocale(lang);
 }
 
-// static
-void UtilityHandler::ExposeInterfacesToBrowser(
-    service_manager::InterfaceRegistry* registry,
-    bool running_elevated) {
+void ExposeInterfacesToBrowser(service_manager::InterfaceRegistry* registry,
+                               bool running_elevated) {
   // If our process runs with elevated privileges, only add elevated Mojo
   // interfaces to the interface registry.
   if (running_elevated)
     return;
 
   registry->AddInterface(base::Bind(&ExtensionUnpackerImpl::Create));
+  registry->AddInterface(base::Bind(&ManifestParserImpl::Create));
 }
 
-bool UtilityHandler::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(UtilityHandler, message)
-    IPC_MESSAGE_HANDLER(ExtensionUtilityMsg_ParseUpdateManifest,
-                        OnParseUpdateManifest)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
-void UtilityHandler::OnParseUpdateManifest(const std::string& xml) {
-  UpdateManifest manifest;
-  if (!manifest.Parse(xml)) {
-    content::UtilityThread::Get()->Send(
-        new ExtensionUtilityHostMsg_ParseUpdateManifest_Failed(
-            manifest.errors()));
-  } else {
-    content::UtilityThread::Get()->Send(
-        new ExtensionUtilityHostMsg_ParseUpdateManifest_Succeeded(
-            manifest.results()));
-  }
-  content::UtilityThread::Get()->ReleaseProcessIfNeeded();
-}
+}  // namespace utility_handler
 
 }  // namespace extensions

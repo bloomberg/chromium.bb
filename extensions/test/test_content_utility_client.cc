@@ -11,16 +11,12 @@ TestContentUtilityClient::TestContentUtilityClient() = default;
 TestContentUtilityClient::~TestContentUtilityClient() = default;
 
 void TestContentUtilityClient::UtilityThreadStarted() {
-  UtilityHandler::UtilityThreadStarted();
+  utility_handler::UtilityThreadStarted();
 }
 
 void TestContentUtilityClient::ExposeInterfacesToBrowser(
     service_manager::InterfaceRegistry* registry) {
-  UtilityHandler::ExposeInterfacesToBrowser(registry, false);
-}
-
-bool TestContentUtilityClient::OnMessageReceived(const IPC::Message& message) {
-  return utility_handler_.OnMessageReceived(message);
+  utility_handler::ExposeInterfacesToBrowser(registry, false);
 }
 
 }  // namespace extensions

@@ -9,22 +9,15 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
-#include "build/build_config.h"
-#include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/chrome_extensions_client.h"
 #include "chrome/common/extensions/chrome_utility_extensions_messages.h"
 #include "chrome/common/extensions/media_parser.mojom.h"
 #include "chrome/common/extensions/removable_storage_writer.mojom.h"
 #include "chrome/common/media_galleries/metadata_types.h"
-#include "chrome/utility/chrome_content_utility_client.h"
 #include "chrome/utility/image_writer/image_writer_handler.h"
 #include "chrome/utility/media_galleries/ipc_data_source.h"
 #include "chrome/utility/media_galleries/media_metadata_parser.h"
-#include "content/public/common/content_paths.h"
 #include "content/public/utility/utility_thread.h"
-#include "extensions/common/extension.h"
-#include "extensions/common/extension_utility_messages.h"
-#include "extensions/utility/unpacker.h"
 #include "media/base/media.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
@@ -180,8 +173,7 @@ ExtensionsHandler::~ExtensionsHandler() = default;
 
 // static
 void ExtensionsHandler::PreSandboxStartup() {
-  // Initialize media libraries for media file validation.
-  media::InitializeMediaLibrary();
+  media::InitializeMediaLibrary();  // Used for media file validation.
 }
 
 // static
@@ -224,7 +216,7 @@ bool ExtensionsHandler::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
-  return handled || utility_handler_.OnMessageReceived(message);
+  return handled;
 }
 
 #if defined(OS_WIN)

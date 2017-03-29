@@ -20,6 +20,7 @@ if (enable_extensions) {
   mojom("mojo") {
     sources = [
       "extension_unpacker.mojom",
+      "manifest_parser.mojom",
       "mojo/app_window.mojom",
       "mojo/keep_alive.mojom",
     ]
@@ -30,6 +31,7 @@ if (enable_extensions) {
 
     public_deps = [
       "//mojo/common:common_custom_types",
+      "//url/mojo:url_mojom_gurl",
     ]
   }
 

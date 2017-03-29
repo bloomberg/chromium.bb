@@ -19,10 +19,6 @@ class TestContentUtilityClient : public content::ContentUtilityClient {
   void UtilityThreadStarted() override;
   void ExposeInterfacesToBrowser(
       service_manager::InterfaceRegistry* registry) override;
-  bool OnMessageReceived(const IPC::Message& message) override;
-
- private:
-  UtilityHandler utility_handler_;
 };
 
 }  // namespace extensions

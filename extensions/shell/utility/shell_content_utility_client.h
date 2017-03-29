@@ -17,10 +17,6 @@ class ShellContentUtilityClient : public content::ContentUtilityClient {
 
   // content::ContentUtilityClient:
   void UtilityThreadStarted() override;
-  bool OnMessageReceived(const IPC::Message& message) override;
-
- private:
-  UtilityHandler utility_handler_;
 };
 
 }  // namespace extensions

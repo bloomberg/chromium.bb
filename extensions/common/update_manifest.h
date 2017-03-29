@@ -40,6 +40,10 @@ class UpdateManifest {
   // a differential update is specified in the response.
 
   // The result of parsing one <app> tag in an xml update check manifest.
+  // TODO(crbug.com/692120): consider removing struct Result and Results and
+  // using the corresponding mojo type instead. This would also remove the
+  // need for the Mojo struct traits that are currently defined / used to
+  // cart these Result/Results structs over Mojo IPC.
   struct Result {
     Result();
     Result(const Result& other);
@@ -64,6 +68,8 @@ class UpdateManifest {
   static const int kNoDaystart = -1;
   struct Results {
     Results();
+    Results(const Results& other);
+    Results& operator=(const Results& other);
     ~Results();
 
     std::vector<Result> list;

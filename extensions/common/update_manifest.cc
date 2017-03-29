@@ -19,22 +19,24 @@ static const char* kExpectedGupdateProtocol = "2.0";
 static const char* kExpectedGupdateXmlns =
     "http://www.google.com/update2/response";
 
-UpdateManifest::Result::Result()
-    : size(0),
-      diff_size(0) {}
+UpdateManifest::Result::Result() : size(0), diff_size(0) {}
 
 UpdateManifest::Result::Result(const Result& other) = default;
 
-UpdateManifest::Result::~Result() {}
+UpdateManifest::Result::~Result() = default;
 
 UpdateManifest::Results::Results() : daystart_elapsed_seconds(kNoDaystart) {}
 
-UpdateManifest::Results::~Results() {}
+UpdateManifest::Results::Results(const Results& other) = default;
 
-UpdateManifest::UpdateManifest() {
-}
+UpdateManifest::Results& UpdateManifest::Results::operator=(
+    const Results& other) = default;
 
-UpdateManifest::~UpdateManifest() {}
+UpdateManifest::Results::~Results() = default;
+
+UpdateManifest::UpdateManifest() = default;
+
+UpdateManifest::~UpdateManifest() = default;
 
 void UpdateManifest::ParseError(const char* details, ...) {
   va_list args;

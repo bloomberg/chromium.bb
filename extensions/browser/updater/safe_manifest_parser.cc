@@ -4,76 +4,49 @@
 
 #include "extensions/browser/updater/safe_manifest_parser.h"
 
+#include <memory>
+
 #include "base/bind.h"
-#include "base/command_line.h"
-#include "base/location.h"
-#include "base/logging.h"
+#include "base/optional.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/utility_process_host.h"
-#include "content/public/common/content_switches.h"
-#include "extensions/common/extension_utility_messages.h"
+#include "content/public/browser/utility_process_mojo_client.h"
+#include "extensions/common/manifest_parser.mojom.h"
 #include "extensions/strings/grit/extensions_strings.h"
-#include "ipc/ipc_message_macros.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using content::BrowserThread;
+namespace {
+
+using UtilityProcess =
+    content::UtilityProcessMojoClient<extensions::mojom::ManifestParser>;
+
+using ResultCallback = base::Callback<void(const UpdateManifest::Results*)>;
+
+void ParseDone(std::unique_ptr<UtilityProcess> /* utility_process */,
+               const ResultCallback& callback,
+               const base::Optional<UpdateManifest::Results>& results) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  callback.Run(results ? &results.value() : nullptr);
+}
+
+}  // namespace
 
 namespace extensions {
 
-SafeManifestParser::SafeManifestParser(const std::string& xml,
-                                       const ResultsCallback& results_callback)
-    : xml_(xml), results_callback_(results_callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-}
+void ParseUpdateManifest(const std::string& xml,
+                         const ResultCallback& callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(callback);
 
-void SafeManifestParser::Start() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!BrowserThread::PostTask(
-          BrowserThread::IO,
-          FROM_HERE,
-          base::Bind(&SafeManifestParser::ParseInSandbox, this))) {
-    NOTREACHED();
-  }
-}
-
-SafeManifestParser::~SafeManifestParser() {
-  // If we're using UtilityProcessHost, we may not be destroyed on
-  // the UI or IO thread.
-}
-
-void SafeManifestParser::ParseInSandbox() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  content::UtilityProcessHost* host = content::UtilityProcessHost::Create(
-      this, BrowserThread::GetTaskRunnerForThread(BrowserThread::UI).get());
-  host->SetName(
+  auto process = base::MakeUnique<UtilityProcess>(
       l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_MANIFEST_PARSER_NAME));
-  host->Send(new ExtensionUtilityMsg_ParseUpdateManifest(xml_));
-}
+  auto* utility_process = process.get();
+  auto done = base::Bind(&ParseDone, base::Passed(&process), callback);
+  utility_process->set_error_callback(base::Bind(done, base::nullopt));
 
-bool SafeManifestParser::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(SafeManifestParser, message)
-    IPC_MESSAGE_HANDLER(ExtensionUtilityHostMsg_ParseUpdateManifest_Succeeded,
-                        OnParseUpdateManifestSucceeded)
-    IPC_MESSAGE_HANDLER(ExtensionUtilityHostMsg_ParseUpdateManifest_Failed,
-                        OnParseUpdateManifestFailed)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
+  utility_process->Start();
 
-void SafeManifestParser::OnParseUpdateManifestSucceeded(
-    const UpdateManifest::Results& results) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  results_callback_.Run(&results);
-}
-
-void SafeManifestParser::OnParseUpdateManifestFailed(
-    const std::string& error_message) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  LOG(WARNING) << "Error parsing update manifest:\n" << error_message;
-  results_callback_.Run(NULL);
+  utility_process->service()->Parse(xml, done);
 }
 
 }  // namespace extensions

@@ -510,13 +510,11 @@ void ExtensionDownloader::OnManifestFetchComplete(
                     manifests_queue_.active_request_failure_count(),
                     url);
     VLOG(2) << "beginning manifest parse for " << url;
-    scoped_refptr<SafeManifestParser> safe_parser(new SafeManifestParser(
-        data,
-        base::Bind(
-            &ExtensionDownloader::HandleManifestResults,
-            weak_ptr_factory_.GetWeakPtr(),
-            base::Owned(manifests_queue_.reset_active_request().release()))));
-    safe_parser->Start();
+    auto callback = base::Bind(
+        &ExtensionDownloader::HandleManifestResults,
+        weak_ptr_factory_.GetWeakPtr(),
+        base::Owned(manifests_queue_.reset_active_request().release()));
+    ParseUpdateManifest(data, callback);
   } else {
     VLOG(1) << "Failed to fetch manifest '" << url.possibly_invalid_spec()
             << "' response code:" << response_code;
