@@ -4,7 +4,7 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
     <title>Test getFloatFrequencyData With Zero Inputs</title>
   </head>
 
@@ -20,7 +20,7 @@
 
 
       // Test that getFloatFrequencyData returns -Infinity when the input is all-zeroes.
-      audit.defineTask("zero input", function (done) {
+      audit.define("zero input", (task, should) =>  {
         var context = new OfflineAudioContext(1, renderFrames, sampleRate);
 
         // Constant source of 0's.
@@ -42,18 +42,14 @@
           var f = new Float32Array(analyser.frequencyBinCount);
           analyser.getFloatFrequencyData(f);
 
-          Should("getFloatFrequencyData() with zero-valued input", f)
+          should(f, "getFloatFrequencyData() with zero-valued input")
             .beConstantValueOf(-Infinity);
         }).then(context.resume.bind(context));
 
-        context.startRendering().then(done);
+        context.startRendering().then(() => task.done());
       });
       
-      audit.defineTask("finish", function (done) {
-        done();
-      });
-
-      audit.runTasks();
+      audit.run();
 
     </script>
   </body>

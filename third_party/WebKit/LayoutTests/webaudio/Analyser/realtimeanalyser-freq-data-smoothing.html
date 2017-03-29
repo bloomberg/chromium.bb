@@ -4,7 +4,7 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
     <script src="../resources/realtimeanalyser-testing.js"></script>
     <script src="../resources/fft.js"></script>
     <title>Test Analyser getFloatFrequencyData and getByteFrequencyData, Smoothing</title>
@@ -25,7 +25,7 @@
       var audit = Audit.createTaskRunner();
 
       // Do one basic test of smoothing of the FFT data.
-      audit.defineTask("smoothing test", function (done) {
+      audit.define("smoothing test", (task, should) =>  {
         // Test only 512-point FFT.  The size isn't too important as long as it's greater than 128
         // (a rendering quantum).
         var options = {
@@ -58,7 +58,7 @@
           var message = "First " + analyser.fftSize + "-point FFT at frame " + (context.currentTime *
             sampleRate);
           var comparison = compareFloatFreq(message, freqData, smoothedFloatResult.map(
-            linearToDb), options);
+            linearToDb), should, options);
           success = success && comparison.success;
 
           // Test the byte frequency data.
@@ -70,8 +70,8 @@
           var expectedByteData = convertFloatToByte(smoothedFloatResult.map(linearToDb),
             analyser.minDecibels, analyser.maxDecibels);
 
-          success = Should(analyser.fftSize + "-point byte FFT", byteFreqData)
-              .beCloseToArray(expectedByteData, 0) && success;
+          should(byteFreqData, analyser.fftSize + "-point byte FFT")
+              .beCloseToArray(expectedByteData, 0);
 
         }).then(context.resume.bind(context));
 
@@ -92,7 +92,7 @@
           var message = "Smoothed " + analyser.fftSize + "-point FFT at frame " +
             (context.currentTime * sampleRate);
           var comparison = compareFloatFreq(message,
-            freqDataInDb, smoothedFloatResult.map(linearToDb), {
+            freqDataInDb, smoothedFloatResult.map(linearToDb), should, {
               order: options.order,
               smoothing: options.smoothing,
               floatRelError: 2.5332e-5
@@ -108,26 +108,15 @@
           var expectedByteData = convertFloatToByte(smoothedFloatResult.map(linearToDb),
             analyser.minDecibels, analyser.maxDecibels);
 
-          success = Should(analyser.fftSize + "-point byte FFT", byteFreqData)
-            .beCloseToArray(expectedByteData, 0) && success;
+          should(byteFreqData, analyser.fftSize + "-point byte FFT")
+            .beCloseToArray(expectedByteData, 0);
 
         }).then(context.resume.bind(context));
 
-        context.startRendering().then(function (buffer) {
-          var prefix = "FFT smoothing performed";
-          var suffix = " with smoothing constant " + analyser.smoothingTimeConstant;
-
-          Should(prefix, success)
-            .summarize("correctly" + suffix,
-                       "incorrectly" + suffix);
-        }).then(done);
+        context.startRendering().then(() => task.done());
       });
 
-      audit.defineTask("finish", function (done) {
-        done();
-      });
-
-      audit.runTasks();
+      audit.run();
 
     </script>
   </body>

@@ -5,7 +5,7 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
   </head>
 
   <body>
@@ -18,27 +18,27 @@
       // Verify that setting the fftSize resets the memory for the FFT smoothing
       // operation.  Only a few of the possible variations are tested.
 
-      audit.defineTask("128->1024", function (taskDone) {
-        testFFTSize({
+      audit.define("128->1024", (task, should) =>  {
+        testFFTSize(should, {
           initialFFTSize: 128,
           finalFFTSize: 1024,
           errorThreshold: {
             relativeThreshold: 1.9095e-6
           }
-        }).then(taskDone);
+        }).then(() => task.done());
       });
 
-      audit.defineTask("512->256", function (taskDone) {
-        testFFTSize({
+      audit.define("512->256", (task, should) =>  {
+        testFFTSize(should, {
           initialFFTSize: 512,
           finalFFTSize: 256,
           errorThreshold: {
             relativeThreshold: 1.8166e-6
           }
-        }).then(taskDone);
+        }).then(() => task.done());
       });
 
-      function testFFTSize(options) {
+      function testFFTSize(should, options) {
         var {
           initialFFTSize, finalFFTSize, errorThreshold
         } = options;
@@ -106,28 +106,20 @@
             var smoothing = 1 - testAnalyser.smoothingTimeConstant;
             refFFT = refFFT.map(x => x * smoothing);
 
-            var success = true;
-
             // First a basic sanity check that the time domain signals are
             // exactly the same for both analysers.
-            success = Should("Time data", testSignal)
-              .beCloseToArray(refSignal, 0) && success;
+            should(testSignal, "Time data")
+              .beCloseToArray(refSignal, 0);
 
-            success = Should("Linear FFT data after setting fftSize = " + testAnalyser.fftSize,
-                testFFT)
-              .beCloseToArray(refFFT, errorThreshold) && success;
-
-            Should("*** Changing fftSize from " + initialFFTSize + " to " + finalFFTSize, success)
-              .summarize(
-                 "correctly reset the smoothing state",
-                "did not correctly reset the smoothing state");
+            should(testFFT, "Linear FFT data after setting fftSize = " + testAnalyser.fftSize)
+              .beCloseToArray(refFFT, errorThreshold);
           })
           .then(context.resume.bind(context));
 
         return context.startRendering();
       }
 
-      audit.runTasks();
+      audit.run();
     </script>
   </body>
 </html>

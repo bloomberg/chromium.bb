@@ -4,7 +4,7 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
     <title>Test Multiple Calls to getFloatFrequencyData</title>
   </head>
 
@@ -17,7 +17,7 @@
 
       var audit = Audit.createTaskRunner();
 
-      audit.defineTask("test", function (done) {
+      audit.define("test", (task, should) =>  {
 
         var context = new OfflineAudioContext(1, renderFrames, sampleRate);
 
@@ -40,28 +40,26 @@
         var suspendFrame = analyser.fftSize;
         context.suspend(suspendFrame / sampleRate).then(function () {
           // Test successive calls to getFloatFrequencyData in the same rendering quantum.
-          var f1 = new Float32Array(analyser.frequencyBinCount);
-          var f2 = new Float32Array(analyser.frequencyBinCount);
+          let f1 = new Float32Array(analyser.frequencyBinCount);
+          let f2 = new Float32Array(analyser.frequencyBinCount);
 
           analyser.getFloatFrequencyData(f1);
           analyser.getFloatFrequencyData(f2);
-
-          success = Should("Second call to getFloatFrequencyData", f2, {
-              precision: 5
-            }).beEqualToArray(f1) && success;
+          should(f2, "Second call to getFloatFrequencyData")
+            .beEqualToArray(f1);
         }).then(context.resume.bind(context));
 
         suspendFrame += 128;
         context.suspend(suspendFrame / sampleRate).then(function () {
           // Test successive calls to getByteFrequencyData in the same rendering quantum.
-          var f1 = new Uint8Array(analyser.frequencyBinCount);
-          var f2 = new Uint8Array(analyser.frequencyBinCount);
+          let f1 = new Uint8Array(analyser.frequencyBinCount);
+          let f2 = new Uint8Array(analyser.frequencyBinCount);
 
           analyser.getByteFrequencyData(f1);
           analyser.getByteFrequencyData(f2);
 
-          success = Should("Second call to getByteFrequencyData", f2)
-            .beEqualToArray(f1) && success;
+          should(f2, "Second call to getByteFrequencyData")
+            .beEqualToArray(f1);
         }).then(context.resume.bind(context));
 
         suspendFrame += 128;
@@ -69,16 +67,15 @@
           // Test calls to getFloatFrequencyData followed by getByteFrequencyData.  The float data,
           // when converted to byte values should be identical to the result from
           // getByteFrequencyData.
-          var f1 = new Float32Array(analyser.frequencyBinCount);
-          var f2 = new Uint8Array(analyser.frequencyBinCount);
+          let f1 = new Float32Array(analyser.frequencyBinCount);
+          let f2 = new Uint8Array(analyser.frequencyBinCount);
 
           analyser.getFloatFrequencyData(f1);
           analyser.getByteFrequencyData(f2);
 
           var byteValuesFromFloat = convertFloatToByte(f1, analyser.minDecibels, analyser.maxDecibels);
-          success = Should("Output of getByteFrequencyData after getFloatFrequencyData",
-              byteValuesFromFloat)
-            .beEqualToArray(f2) && success;
+          should(byteValuesFromFloat, "Output of getByteFrequencyData after getFloatFrequencyData")
+            .beEqualToArray(f2);
         }).then(context.resume.bind(context));
 
         suspendFrame += 128;
@@ -93,21 +90,16 @@
           analyser.getFloatFrequencyData(f2);
 
           var byteValuesFromFloat = convertFloatToByte(f2, analyser.minDecibels, analyser.maxDecibels);
-          success = Should(
-              "Output of getFloatFrequenycData (converted to byte) after getByteFrequencyData",
-              f1)
-            .beEqualToArray(byteValuesFromFloat) && success;
+          should(f1, 
+              "Output of getFloatFrequenycData (converted to byte) after getByteFrequencyData")
+            .beEqualToArray(byteValuesFromFloat);
         }).then(context.resume.bind(context));
 
         osc.start();
-        context.startRendering().then(done);
+        context.startRendering().then(() => task.done());
       });
 
-      audit.defineTask("finish", function (done) {
-        done();
-      });
-
-      audit.runTasks();
+      audit.run();
 
       // Convert the float frequency data (in dB), |floatFreqData|, to byte values using the dB
       // limits |minDecibels| and |maxDecibels|.  The new byte array is returned.

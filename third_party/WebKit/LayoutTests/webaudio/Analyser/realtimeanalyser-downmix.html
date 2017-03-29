@@ -4,7 +4,7 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
     <script src="../resources/fft.js"></script>
     <script src="../resources/realtimeanalyser-testing.js"></script>
     <title>Test AnalyserNode Downmixing</title>
@@ -41,23 +41,19 @@
 
       // Create tasks for each entry in testConfigs
       for (k in testConfigs) {
-        audit.defineTask(testConfigs[k].message, (function (config) {
-          return function(done) {
-            runTest(config).then(done);
+        audit.define(testConfigs[k].message, (function (config) {
+          return function(task, should) {
+            runTest(config, should).then(() => task.done());
           };
         })(testConfigs[k]));
       }
 
-      audit.defineTask("finish", function (done) {
-        done();
-      });
-
-      audit.runTasks();
+      audit.run();
 
       // Test downmixing of the AnalyserNode time data.  We use the downmixing that automatically
       // happens in the destination node to generate the reference data which is compared to the
       // data that the Analyser node has captured.
-      function runTest(options) {
+      function runTest(options, should) {
         // Context MUST have exactly one channel so that we downmix the source to mono to generate
         // the reference.
         var context = new OfflineAudioContext(1, renderFrames, sampleRate);
@@ -99,21 +95,18 @@
 
           // Verify the time domain data is correct.
           var prefix = "Analyser downmix " + options.message + " to mono"
-          success = Should(prefix + " time data", timeData)
+          should(timeData, prefix + " time data")
             .beEqualToArray(renderedBuffer.getChannelData(0).subarray(0, analyser.fftSize));
 
           var expectedTimeData = renderedBuffer.getChannelData(0).subarray(0, analyser.fftSize);
           var fftOrder = Math.floor(Math.log2(analyser.fftSize));
           var expectedFreqData = computeFFTMagnitude(expectedTimeData, fftOrder).map(linearToDb);
 
-          success = compareFloatFreq(prefix + " freq data", freqData, expectedFreqData, {
+          var success = compareFloatFreq(prefix + " freq data", freqData,
+          expectedFreqData, should, {
             precision: 6,
             floatRelError: options.floatRelError,
-          }) && success;
-
-          Should(prefix, success)
-            .summarize("downmixed correctly.",
-                       "no downmixed correctly.");
+          });
         });
       }
     </script>

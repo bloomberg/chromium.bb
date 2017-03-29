@@ -4,7 +4,7 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
     <title>Test AnalyserNode getFloatTimeDomainData</title>
   </head>
 
@@ -22,7 +22,7 @@
       var audit = Audit.createTaskRunner();
 
       // Test that getFloatTimeDomainData handles short and long vectors correctly.
-      audit.defineTask("short and long vector", function (done) {
+      audit.define("short and long vector", (task, should) =>  {
         var fftSize = 32;
         var graphInfo = createGraph(fftSize);
         var context = graphInfo.context;
@@ -43,8 +43,8 @@
           // The short array should be filled with the expected data, with no errors thrown.
 
           var expected = signal.subarray(sampleFrame - fftSize, sampleFrame);
-          success = Should(shortData.length + "-element time domain data", shortData)
-            .beEqualToArray(expected.subarray(0, shortData.length)) && success;
+          should(shortData, shortData.length + "-element time domain data")
+            .beEqualToArray(expected.subarray(0, shortData.length));
 
           var longData = new Float32Array(2 * fftSize);
           // Initialize the array to Infinity to represent uninitialize data.
@@ -54,21 +54,14 @@
 
           // The long array should filled with the expected data but the extra elements should be
           // untouched.
-          success = Should("longData.subarray(0, " + fftSize + ")",
-              longData.subarray(0, fftSize), {
-                numberOfArrayLog: 32
-              })
-            .beEqualToArray(expected) && success;
+          should(longData.subarray(0, fftSize), "longData.subarray(0, " + fftSize + ")")
+            .beEqualToArray(expected);
 
-          success = Should("Unfilled elements longData.subarray(" + fftSize + ")",
-              longData.subarray(fftSize))
-            .beConstantValueOf(Infinity) && success;
+          should(longData.subarray(fftSize), "Unfilled elements longData.subarray(" + fftSize + ")")
+            .beConstantValueOf(Infinity);
         }).then(context.resume.bind(context));
 
-        context.startRendering().then(function (buffer) {
-          Should("Long and short time domain arrays handled", success)
-            .summarize("correctly.", "incorrectly.");
-        }).then(done);
+        context.startRendering().then(() => task.done());
       });
 
       var success = true;
@@ -78,24 +71,16 @@
         var fftSize = Math.pow(2, k);
         (function (n) {
           // We grab a sample at (roughly) half the rendering duration.
-          audit.defineTask("fftSize " + n, function (done) {
-            runTest(n, renderDuration / 2).then(done);
+          audit.define("fftSize " + n, (task, should) =>  {
+            runTest(n, renderDuration / 2, should).then(() => task.done());
           });
         })(fftSize);
       }
 
-      audit.defineTask("summarize size tests", function (done) {
-        Should("Time domain data", success)
-          .summarize("contained the correct data for each size.",
-                     "did not contain the correct data for each size.");
-
-        done();
-      });
-
       // Special case for a large size, but the sampling point is early.  The initial part of the
       // buffer should be filled with zeroes.
 
-      audit.defineTask("initial zeroes", function (done) {
+      audit.define("initial zeroes", (task, should) =>  {
         // Somewhat arbitrary size for the analyser.  It should be greater than one rendering
         // quantum.
         var fftSize = 2048;
@@ -116,36 +101,27 @@
             // Verify that the last k frames are not zero, but the first fftSize - k frames are.
             var prefix = "At frame " + (sampleFrame - 1) + ": data.subarray";
             if (sampleFrame < fftSize) {
-              success = Should(prefix + "(0, " + (fftSize - sampleFrame) + ")",
-                  data.subarray(0, fftSize - sampleFrame))
+              should(data.subarray(0, fftSize - sampleFrame),
+                  prefix + "(0, " + (fftSize - sampleFrame) + ")")
                 .beConstantValueOf(0) && success;
             }
 
             var signal = signalBuffer.getChannelData(0);
-            success = Should(prefix + "(" + (fftSize - sampleFrame) + ", " + fftSize + ")",
-                data.subarray(fftSize - sampleFrame, fftSize))
+            should(data.subarray(fftSize - sampleFrame, fftSize),
+              prefix + "(" + (fftSize - sampleFrame) + ", " + fftSize + ")")
               .beEqualToArray(signal.subarray(0, sampleFrame)) && success;
           }).then(context.resume.bind(context));
         }
 
-        context.startRendering().then(function (b) {
-          Should("Time domain data", success)
-            .summarize(
-              "contained initial zeroes and correct data as expected",
-              "did not contain initial zeroes and correct data as expected.");
-        }).then(done);
+        context.startRendering().then(() => task.done());
       });
 
-      audit.defineTask("finish", function (done) {
-        done();
-      });
-
-      audit.runTasks();
+      audit.run();
 
       // Run test of an AnalyserNode with fftSize of |fftSize|, and with the data from the node
       // being requested at time |sampletime|.  The result from the analyser node is compared
       // against the expected data.  The result of startRendering() is returned.
-      function runTest(fftSize, sampleTime) {
+      function runTest(fftSize, sampleTime, should) {
         var graphInfo = createGraph(fftSize);
         var context = graphInfo.context;
         var analyser = graphInfo.analyser;
@@ -162,7 +138,7 @@
           // Compare against the expected result.
           var signal = signalBuffer.getChannelData(0);
           var message = actualFloatData.length + "-point analyser time domain data";
-          success = Should(message, actualFloatData)
+          should(actualFloatData, message)
             .beEqualToArray(signal.subarray(lastFrame - actualFloatData.length, lastFrame)) && success;
         }).then(context.resume.bind(context));
 

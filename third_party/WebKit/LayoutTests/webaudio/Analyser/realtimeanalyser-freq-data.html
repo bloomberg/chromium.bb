@@ -4,7 +4,7 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
     <script src="../resources/realtimeanalyser-testing.js"></script>
     <script src="../resources/fft.js"></script>
     <title>Test Analyser getFloatFrequencyData and getByteFrequencyData, No Smoothing</title>
@@ -71,22 +71,15 @@
       for (var k = 0; k < testConfig.length; ++k) {
         var name = testConfig[k].order + "-order FFT";
         (function (config) {
-           audit.defineTask(name, function (done) {
-             basicFFTTest(config).then(done);
+           audit.define(name, (task, should) => {
+             basicFFTTest(should, config).then(() => task.done());
            });
         })(testConfig[k]);
       }
 
-      // Just print a summary of the result of the above tests.
-      audit.defineTask("summarize basic tests", function (done) {
-        Should("Basic frequency data computed", basicTestsPassed)
-          .summarize("correctly", "incorrectly");
-        done();
-      });
-
       // Test that smoothing isn't done and we have the expected data, calling getFloatFrequencyData
       // twice at different times.
-      audit.defineTask("no smoothing", function (done) {
+      audit.define("no smoothing", (task, should) =>  {
         // Use 128-point FFT for the test.  The actual order doesn't matter (but the error threshold
         // depends on the order).
         var options = {
@@ -124,21 +117,14 @@
 
           var expected = computeFFTMagnitude(timeData, options.order).map(linearToDb);
           var comparison = compareFloatFreq(Math.pow(2, options.order) + "-point float FFT",
-            freqData, expected, options);
+            freqData, expected, should, options);
           basicTestsPassed = basicTestsPassed && comparison.success;
-
-          Should("Smoothing constant of 0", comparison.success)
-            .summarize("correctly handled", "incorrectly handled");
         }).then(context.resume.bind(context));
 
-        context.startRendering().then(done);
+        context.startRendering().then(() => task.done());
       });
 
-      audit.defineTask("finish", function (done) {
-        done();
-      });
-
-      audit.runTasks();
+      audit.run();
 
       // Run a simple test of the AnalyserNode's frequency domain data.  Both the float and byte
       // frequency data are tested.  The byte tests depend on the float tests being correct.
@@ -150,7 +136,7 @@
       //  smoothing:  smoothing time constant for the analyser.
       //  minDecibels:  min decibels value for the analyser.
       //  floatRelError:  max allowed relative error for the float FFT data
-      function basicFFTTest(options) {
+      function basicFFTTest(should, options) {
         var graph = createGraph(options);
         var context = graph.context;
         var analyser = graph.analyser;
@@ -166,7 +152,7 @@
 
           var expected = computeFFTMagnitude(timeData, options.order).map(linearToDb);
           var comparison = compareFloatFreq(Math.pow(2, options.order) + "-point float FFT",
-            freqData, expected, options);
+            freqData, expected, should, options);
           basicTestsPassed = basicTestsPassed && comparison.success;
           var expected = comparison.expected;
 
@@ -177,16 +163,12 @@
           var minValue = Math.min(...expected);
           var maxValue = Math.max(...expected);
 
-          basicTestsPassed = Should("Order: " + options.order +
-              ": Min FFT value", minValue, {
-                brief: true
-              })
-            .beLessThanOrEqualTo(analyser.minDecibels) && basicTestsPassed;
-          basicTestsPassed = Should("Order: " + options.order +
-              ": Max FFT value", maxValue, {
-                brief: true
-              })
-            .beGreaterThanOrEqualTo(analyser.maxDecibels) && basicTestsPassed;
+          should(minValue, "Order: " + options.order +
+              ": Min FFT value")
+            .beLessThanOrEqualTo(analyser.minDecibels);
+          should(maxValue, "Order: " + options.order +
+              ": Max FFT value")
+            .beGreaterThanOrEqualTo(analyser.maxDecibels);
           // Test the byte frequency data.
           var byteFreqData = new Uint8Array(analyser.frequencyBinCount);
           var expectedByteData = new Float32Array(analyser.frequencyBinCount);
@@ -196,8 +178,8 @@
           var expectedByteData = convertFloatToByte(expected, analyser.minDecibels,
             analyser.maxDecibels);
 
-          basicTestsPassed = Should(analyser.fftSize + "-point byte FFT", byteFreqData)
-            .beCloseToArray(expectedByteData, 0) && basicTestsPassed;
+          should(byteFreqData, analyser.fftSize + "-point byte FFT")
+            .beCloseToArray(expectedByteData, 0);
 
         }).then(context.resume.bind(context));
 

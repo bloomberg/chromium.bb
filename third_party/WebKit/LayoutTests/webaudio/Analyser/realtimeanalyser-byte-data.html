@@ -4,7 +4,7 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
     <title>Test Analyser.getByteTimeDomainData()</title>
   </head>
 
@@ -22,7 +22,7 @@
 
       // Test that getByteTimeDomainData returns the correct values.  This test depends on
       // getFloatTimeDomainData returning the correct data (for which there is already a test).
-      audit.defineTask("byte-data", function (done) {
+      audit.define("byte-data", (task, should) =>  {
         var context = new OfflineAudioContext(1, renderFrames, sampleRate);
 
         // Create a sawtooth as the signal under test.  A sine wave or triangle wave would probably
@@ -69,32 +69,28 @@
           var indexMax = floatData.findIndex(function (x) { return x > 1; });
           var indexMin = floatData.findIndex(function (x) { return x < -1; });
       
-          Should("Index of first sample greater than +1", indexMax, {
-            brief: true
-          }).beGreaterThanOrEqualTo(0);
-          Should("Index of first sample less than -1", indexMin, {
-            brief: true
-          }).beGreaterThanOrEqualTo(0);
+          should(indexMax, "Index of first sample greater than +1").beGreaterThanOrEqualTo(0);
+          should(indexMin, "Index of first sample less than -1").beGreaterThanOrEqualTo(0);
 
           // Verify explicitly that clipping happened correctly at the above indices.
-          Should("Clip  " + floatData[indexMax].toPrecision(6) + ": byteData[" + indexMax + "]",
-            byteData[indexMax]).beEqualTo(255);
-          Should("Clip " + floatData[indexMin].toPrecision(6) + ": byteData[" + indexMin + "]",
-            byteData[indexMin]).beEqualTo(0);
+          should(
+            byteData[indexMax],
+            "Clip  " + floatData[indexMax].toPrecision(6) + ": byteData[" +
+            indexMax + "]").beEqualTo(255);
+          should(
+            byteData[indexMin],
+            "Clip " + floatData[indexMin].toPrecision(6) + ": byteData[" +
+            indexMin + "]").beEqualTo(0);
 
           // Verify that all other samples are computed correctly.
-          Should("Byte data", byteData).beEqualToArray(expected);
+          should(byteData, "Byte data").beEqualToArray(expected);
         }).then(context.resume.bind(context))
 
         src.start();
-        context.startRendering().then(done);
+        context.startRendering().then(() => task.done());
       });
 
-      audit.defineTask("finish", function (done) {
-        done();
-      });
-
-      audit.runTasks();
+      audit.run();
     </script>
   </body>
 </html>

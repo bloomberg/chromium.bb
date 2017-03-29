@@ -82,7 +82,7 @@ function clipMagnitude(limit, x) {
 // comparison threshold and |precision| for setting the printed precision.  Setting |precision| to
 // |undefined| means printing all digits.  If |options.precision} doesn't exist, use a default
 // precision.
-function compareFloatFreq(message, freqData, expectedFreq, options) {
+function compareFloatFreq(message, freqData, expectedFreq, should, options) {
     // Any dB values below -100 is pretty much in the noise due to round-off in
     // the (single-precisiion) FFT, so just clip those values to -100.
     var lowerLimit = -100;
@@ -91,14 +91,7 @@ function compareFloatFreq(message, freqData, expectedFreq, options) {
     var actual = freqData;
     clipMagnitude(lowerLimit, actual);
 
-    // Default precision for printing the FFT data.  Distinguish between options.precision existing
-    // or not.  If it does, use whatever value is there, including undefined.
-    var defaultPrecision = options.hasOwnProperty("precision") ? options.precision : 3;
-
-    var success = Should(message, actual, {
-            verbose: true,
-            precision: defaultPrecision
-        })
+    var success = should(actual, message)
         .beCloseToArray(expectedFreq, {
             relativeThreshold: options.floatRelError || 0,
         });
