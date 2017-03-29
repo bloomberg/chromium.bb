@@ -853,7 +853,7 @@
     {
       name: "SlimmingPaintInvalidation",
       implied_by: ["SlimmingPaintV2"],
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "SlimmingPaintStrictCullRectClipping",

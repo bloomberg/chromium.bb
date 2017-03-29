@@ -195,7 +195,7 @@ const base::Feature kSharedArrayBuffer{"SharedArrayBuffer",
 
 // Paint invalidation based on slimming paint. See https://goo.gl/eQczQW
 const base::Feature kSlimmingPaintInvalidation{
-    "SlimmingPaintInvalidation", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SlimmingPaintInvalidation", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Throttle Blink timers in out-of-view cross origin frames.
 const base::Feature kTimerThrottlingForHiddenFrames{
