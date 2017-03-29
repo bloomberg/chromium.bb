@@ -20,7 +20,7 @@ test(() => {
       // Insert |textField.value| to HTML for verification
       textField.appendChild(document.createTextNode(textField.value));
     },
-    '<input value="x">x</input><input type="checkbox">',
+    '|<input value="x">x</input><input type="checkbox">',
     'unfocused text field should not insert a charcter by keyboard event');
 
   assert_selection(

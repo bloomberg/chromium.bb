@@ -81,6 +81,7 @@ CORE_EXPORT bool hasEditableStyle(const Node&);
 CORE_EXPORT bool hasRichlyEditableStyle(const Node&);
 CORE_EXPORT bool isRootEditableElement(const Node&);
 CORE_EXPORT Element* rootEditableElement(const Node&);
+bool selectionHasFocus(const SelectionInFlatTree&);
 Element* rootEditableElementOf(const Position&);
 Element* rootEditableElementOf(const PositionInFlatTree&);
 Element* rootEditableElementOf(const VisiblePosition&);
