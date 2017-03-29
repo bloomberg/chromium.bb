@@ -4471,6 +4471,8 @@ weston_output_move(struct weston_output *output, int x, int y)
  *
  * \param compositor The compositor instance.
  * \param output The output to be added.
+ *
+ * \internal
  */
 WL_EXPORT void
 weston_compositor_add_output(struct weston_compositor *compositor,
@@ -4487,6 +4489,20 @@ weston_compositor_add_output(struct weston_compositor *compositor,
 		weston_view_geometry_dirty(view);
 }
 
+/** Transform device coordinates into global coordinates
+ *
+ * \param device_x[in] X coordinate in device units.
+ * \param device_y[in] Y coordinate in device units.
+ * \param x[out] X coordinate in the global space.
+ * \param y[out] Y coordinate in the global space.
+ *
+ * Transforms coordinates from the device coordinate space
+ * (physical pixel units) to the global coordinate space (logical pixel units).
+ * This takes into account output transform and scale.
+ *
+ * \memberof weston_output
+ * \internal
+ */
 WL_EXPORT void
 weston_output_transform_coordinate(struct weston_output *output,
 				   double device_x, double device_y,
@@ -4546,6 +4562,9 @@ weston_output_enable_undo(struct weston_output *output)
  *
  * - wl_output protocol objects referencing this weston_output
  *   are made inert.
+ *
+ * \memberof weston_output
+ * \internal
  */
 static void
 weston_compositor_remove_output(struct weston_output *output)
@@ -4583,6 +4602,8 @@ weston_compositor_remove_output(struct weston_output *output)
  *
  * It only supports setting scale for an output that
  * is not enabled and it can only be ran once.
+ *
+ * \memberof weston_output
  */
 WL_EXPORT void
 weston_output_set_scale(struct weston_output *output,
@@ -4608,6 +4629,8 @@ weston_output_set_scale(struct weston_output *output,
  * Refer to wl_output::transform section located at
  * https://wayland.freedesktop.org/docs/html/apa.html#protocol-spec-wl_output
  * for list of values that can be passed to this function.
+ *
+ * \memberof weston_output
  */
 WL_EXPORT void
 weston_output_set_transform(struct weston_output *output,
@@ -4630,6 +4653,9 @@ weston_output_set_transform(struct weston_output *output,
  *
  * Sets initial values for fields that are expected to be
  * configured either by compositors or backends.
+ *
+ * \memberof weston_output
+ * \internal
  */
 WL_EXPORT void
 weston_output_init(struct weston_output *output,
@@ -4664,6 +4690,9 @@ weston_output_init(struct weston_output *output,
  * configuration.
  *
  * The opposite of this operation is built into weston_output_destroy().
+ *
+ * \memberof weston_output
+ * \internal
  */
 WL_EXPORT void
 weston_compositor_add_pending_output(struct weston_output *output,
@@ -4838,6 +4867,18 @@ weston_pending_output_coldplug(struct weston_compositor *compositor)
 		wl_signal_emit(&compositor->output_pending_signal, output);
 }
 
+/** Uninitialize an output
+ *
+ * Removes the output from the list of enabled outputs if necessary, but
+ * does not call the backend's output disable function. The output will no
+ * longer be in the list of pending outputs either.
+ *
+ * All fields of weston_output become uninitialized, i.e. should not be used
+ * anymore. The caller can free the memory after this.
+ *
+ * \memberof weston_output
+ * \internal
+ */
 WL_EXPORT void
 weston_output_destroy(struct weston_output *output)
 {
