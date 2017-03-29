@@ -258,6 +258,11 @@ bool LayoutMultiColumnSet::needsNewFragmentainerGroupAt(
   if (!multiColumnFlowThread()->enclosingFragmentationContext())
     return false;
 
+  // If we have reached the limits of what a LayoutUnit can hold, we better
+  // stop, or we'd end up with zero-height columns.
+  if (offsetInFlowThread.mightBeSaturated())
+    return false;
+
   // We're in a nested fragmentation context, and the last fragmentainer group
   // cannot hold content at the specified offset without overflowing. This
   // usually warrants a new fragmentainer group; however, this will not be the
