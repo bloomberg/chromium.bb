@@ -29,6 +29,7 @@
 #include <memory>
 #include <utility>
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/SourceLocation.h"
 #include "core/CoreExport.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/SecurityContext.h"
@@ -64,6 +65,7 @@ class KURL;
 class ResourceRequest;
 class SecurityOrigin;
 class SecurityPolicyViolationEventInit;
+class SourceLocation;
 
 typedef int SandboxFlags;
 typedef HeapVector<Member<CSPDirectiveList>> CSPDirectiveListVector;
@@ -329,6 +331,8 @@ class CORE_EXPORT ContentSecurityPolicy
   // no frame is passed in, the report will be sent via this object's
   // |m_executionContext| (or dropped on the floor if no such context is
   // available).
+  // If |sourceLocation| is not set, the source location will be the context's
+  // current location.
   void reportViolation(const String& directiveText,
                        const DirectiveType& effectiveType,
                        const String& consoleMessage,
@@ -337,9 +341,9 @@ class CORE_EXPORT ContentSecurityPolicy
                        const String& header,
                        ContentSecurityPolicyHeaderType,
                        ViolationType,
+                       std::unique_ptr<SourceLocation>,
                        LocalFrame* = nullptr,
                        RedirectStatus = RedirectStatus::FollowedRedirect,
-                       int contextLine = 0,
                        Element* = nullptr,
                        const String& source = emptyString);
 

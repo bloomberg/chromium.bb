@@ -11,7 +11,7 @@
             .wait_for('securitypolicyviolation')
             .then(t.step_func(e => {
                 assert_equals(e.blockedURI, "inline");
-                assert_equals(e.lineNumber, 24);
+                assert_equals(e.lineNumber, 20);
                 return watcher.wait_for('securitypolicyviolation');
             }))
             .then(t.step_func_done(e => {

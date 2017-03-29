@@ -99,7 +99,9 @@ void CSPDirectiveList::reportViolation(
                                                 ErrorMessageLevel, message));
   m_policy->reportViolation(directiveText, effectiveType, message, blockedURL,
                             m_reportEndpoints, m_header, m_headerType,
-                            ContentSecurityPolicy::URLViolation, nullptr,
+                            ContentSecurityPolicy::URLViolation,
+                            std::unique_ptr<SourceLocation>(),
+                            nullptr,  // localFrame
                             redirectStatus);
 }
 
@@ -116,7 +118,8 @@ void CSPDirectiveList::reportViolationWithFrame(
       frame);
   m_policy->reportViolation(directiveText, effectiveType, message, blockedURL,
                             m_reportEndpoints, m_header, m_headerType,
-                            ContentSecurityPolicy::URLViolation, frame);
+                            ContentSecurityPolicy::URLViolation,
+                            std::unique_ptr<SourceLocation>(), frame);
 }
 
 void CSPDirectiveList::reportViolationWithLocation(
@@ -130,13 +133,16 @@ void CSPDirectiveList::reportViolationWithLocation(
     const String& source) const {
   String message =
       isReportOnly() ? "[Report Only] " + consoleMessage : consoleMessage;
-  m_policy->logToConsole(ConsoleMessage::create(
-      SecurityMessageSource, ErrorMessageLevel, message,
-      SourceLocation::capture(contextURL, contextLine.oneBasedInt(), 0)));
-  m_policy->reportViolation(
-      directiveText, effectiveType, message, blockedURL, m_reportEndpoints,
-      m_header, m_headerType, ContentSecurityPolicy::InlineViolation, nullptr,
-      RedirectStatus::NoRedirect, contextLine.oneBasedInt(), element, source);
+  std::unique_ptr<SourceLocation> sourceLocation =
+      SourceLocation::capture(contextURL, contextLine.oneBasedInt(), 0);
+  m_policy->logToConsole(ConsoleMessage::create(SecurityMessageSource,
+                                                ErrorMessageLevel, message,
+                                                sourceLocation->clone()));
+  m_policy->reportViolation(directiveText, effectiveType, message, blockedURL,
+                            m_reportEndpoints, m_header, m_headerType,
+                            ContentSecurityPolicy::InlineViolation,
+                            std::move(sourceLocation), nullptr,  // localFrame
+                            RedirectStatus::NoRedirect, element, source);
 }
 
 void CSPDirectiveList::reportViolationWithState(
@@ -159,7 +165,8 @@ void CSPDirectiveList::reportViolationWithState(
   }
   m_policy->reportViolation(directiveText, effectiveType, message, blockedURL,
                             m_reportEndpoints, m_header, m_headerType,
-                            ContentSecurityPolicy::EvalViolation);
+                            ContentSecurityPolicy::EvalViolation,
+                            std::unique_ptr<SourceLocation>());
 }
 
 bool CSPDirectiveList::checkEval(SourceListDirective* directive) const {
@@ -194,7 +201,9 @@ void CSPDirectiveList::reportMixedContent(
             ContentSecurityPolicy::DirectiveType::BlockAllMixedContent),
         ContentSecurityPolicy::DirectiveType::BlockAllMixedContent, String(),
         mixedURL, m_reportEndpoints, m_header, m_headerType,
-        ContentSecurityPolicy::URLViolation, nullptr, redirectStatus);
+        ContentSecurityPolicy::URLViolation, std::unique_ptr<SourceLocation>(),
+        nullptr,  // contextFrame,
+        redirectStatus);
   }
 }
 

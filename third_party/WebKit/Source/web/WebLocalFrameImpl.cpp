@@ -2114,12 +2114,11 @@ void WebLocalFrameImpl::reportContentSecurityPolicyViolation(
       violation.header,                  /* header */
       static_cast<ContentSecurityPolicyHeaderType>(violation.disposition),
       ContentSecurityPolicy::ViolationType::URLViolation, /* ViolationType */
-      nullptr,                                            /* LocalFrame */
+      // TODO(arthursonzogni, clamy): Provide the source location here
+      // See http://crbug.com/690946
+      std::unique_ptr<SourceLocation>(), nullptr, /* LocalFrame */
       violation.afterRedirect ? RedirectStatus::FollowedRedirect
                               : RedirectStatus::NoRedirect,
-      // TODO(arthursonzogni, clamy) Provide the context line number here.
-      // See http://crbug.com/690946
-      0,        /* contextLine */
       nullptr); /* Element */
 }
 

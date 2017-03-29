@@ -27,7 +27,6 @@
 
 #include <memory>
 #include "bindings/core/v8/ScriptController.h"
-#include "bindings/core/v8/SourceLocation.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -1040,7 +1039,7 @@ static void gatherSecurityPolicyViolationEventData(
     RedirectStatus redirectStatus,
     ContentSecurityPolicyHeaderType headerType,
     ContentSecurityPolicy::ViolationType violationType,
-    int contextLine,
+    std::unique_ptr<SourceLocation> sourceLocation,
     const String& scriptSource) {
   if (effectiveType == ContentSecurityPolicy::DirectiveType::FrameAncestors) {
     // If this load was blocked via 'frame-ancestors', then the URL of
@@ -1078,9 +1077,6 @@ static void gatherSecurityPolicyViolationEventData(
   init.setDisposition(headerType == ContentSecurityPolicyHeaderTypeEnforce
                           ? "enforce"
                           : "report");
-  init.setSourceFile(String());
-  init.setLineNumber(contextLine);
-  init.setColumnNumber(0);
   init.setStatusCode(0);
 
   // TODO(mkwst): We only have referrer and status code information for
@@ -1093,13 +1089,19 @@ static void gatherSecurityPolicyViolationEventData(
       init.setStatusCode(document->loader()->response().httpStatusCode());
   }
 
-  std::unique_ptr<SourceLocation> location = SourceLocation::capture(context);
-  if (location->lineNumber()) {
-    KURL source = KURL(ParsedURLString, location->url());
+  // If no source location is provided, use the source location of the context.
+  if (!sourceLocation)
+    sourceLocation = SourceLocation::capture(context);
+  if (sourceLocation->lineNumber()) {
+    KURL source = KURL(ParsedURLString, sourceLocation->url());
     init.setSourceFile(
         stripURLForUseInReport(context, source, redirectStatus, effectiveType));
-    init.setLineNumber(location->lineNumber());
-    init.setColumnNumber(location->columnNumber());
+    init.setLineNumber(sourceLocation->lineNumber());
+    init.setColumnNumber(sourceLocation->columnNumber());
+  } else {
+    init.setSourceFile(String());
+    init.setLineNumber(0);
+    init.setColumnNumber(0);
   }
 
   if (!scriptSource.isEmpty())
@@ -1115,9 +1117,9 @@ void ContentSecurityPolicy::reportViolation(
     const String& header,
     ContentSecurityPolicyHeaderType headerType,
     ViolationType violationType,
+    std::unique_ptr<SourceLocation> sourceLocation,
     LocalFrame* contextFrame,
     RedirectStatus redirectStatus,
-    int contextLine,
     Element* element,
     const String& source) {
   ASSERT(violationType == URLViolation || blockedURL.isEmpty());
@@ -1144,7 +1146,8 @@ void ContentSecurityPolicy::reportViolation(
   DCHECK(relevantContext);
   gatherSecurityPolicyViolationEventData(
       violationData, relevantContext, directiveText, effectiveType, blockedURL,
-      header, redirectStatus, headerType, violationType, contextLine, source);
+      header, redirectStatus, headerType, violationType,
+      std::move(sourceLocation), source);
 
   // TODO(mkwst): Obviously, we shouldn't hit this check, as extension-loaded
   // resources should be allowed regardless. We apparently do, however, so
