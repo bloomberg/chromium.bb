@@ -123,6 +123,7 @@
 #include "base/android/jni_android.h"
 #include "components/tracing/common/graphics_memory_dump_provider_android.h"
 #include "content/browser/android/browser_startup_controller.h"
+#include "content/browser/android/launcher_thread.h"
 #include "content/browser/android/scoped_surface_request_manager.h"
 #include "content/browser/android/tracing_controller_android.h"
 #include "content/browser/media/android/browser_media_player_manager.h"
@@ -1003,6 +1004,13 @@ int BrowserMainLoop::CreateThreads() {
     // updated away from its default.
     std::unique_ptr<BrowserProcessSubThread>* thread_to_start = nullptr;
     base::Thread::Options options;
+    // If |message_loop| is not nullptr, then this BrowserThread will use this
+    // message loop instead of creating a new thread. Note that means this
+    // thread will not be joined on shutdown, and may cause use-after-free if
+    // anything tries to access objects deleted by AtExitManager, such as
+    // non-leaky LazyInstance.
+    base::MessageLoop* message_loop = nullptr;
+    bool redirect_thread = redirect_nonUInonIO_browser_threads;
 
     // Otherwise this thread ID will be backed by a SingleThreadTaskRunner using
     // |non_ui_non_io_task_runner_traits| (which can be augmented below).
@@ -1016,7 +1024,7 @@ int BrowserMainLoop::CreateThreads() {
         TRACE_EVENT_BEGIN1("startup",
             "BrowserMainLoop::CreateThreads:start",
             "Thread", "BrowserThread::DB");
-        if (redirect_nonUInonIO_browser_threads) {
+        if (redirect_thread) {
           non_ui_non_io_task_runner_traits
               .WithPriority(base::TaskPriority::USER_VISIBLE)
               .WithShutdownBehavior(base::TaskShutdownBehavior::BLOCK_SHUTDOWN);
@@ -1029,7 +1037,7 @@ int BrowserMainLoop::CreateThreads() {
         TRACE_EVENT_BEGIN1("startup",
             "BrowserMainLoop::CreateThreads:start",
             "Thread", "BrowserThread::FILE_USER_BLOCKING");
-        if (redirect_nonUInonIO_browser_threads) {
+        if (redirect_thread) {
           non_ui_non_io_task_runner_traits
               .WithPriority(base::TaskPriority::USER_BLOCKING)
               .WithShutdownBehavior(base::TaskShutdownBehavior::BLOCK_SHUTDOWN);
@@ -1052,7 +1060,7 @@ int BrowserMainLoop::CreateThreads() {
         options = ui_message_loop_options;
         options.timer_slack = base::TIMER_SLACK_MAXIMUM;
 #else
-        if (redirect_nonUInonIO_browser_threads) {
+        if (redirect_thread) {
           non_ui_non_io_task_runner_traits
               .WithPriority(base::TaskPriority::USER_VISIBLE)
               .WithShutdownBehavior(base::TaskShutdownBehavior::BLOCK_SHUTDOWN);
@@ -1067,7 +1075,14 @@ int BrowserMainLoop::CreateThreads() {
         TRACE_EVENT_BEGIN1("startup",
             "BrowserMainLoop::CreateThreads:start",
             "Thread", "BrowserThread::PROCESS_LAUNCHER");
-        if (redirect_nonUInonIO_browser_threads) {
+#if defined(OS_ANDROID)
+        // Android specializes Launcher thread so it is accessible in java.
+        // Note Android never does clean shutdown, so shutdown use-after-free
+        // concerns are not a problem in practice.
+        redirect_thread = false;
+        message_loop = android::LauncherThread::GetMessageLoop();
+#endif
+        if (redirect_thread) {
           non_ui_non_io_task_runner_traits
               .WithPriority(base::TaskPriority::USER_BLOCKING)
               .WithShutdownBehavior(base::TaskShutdownBehavior::BLOCK_SHUTDOWN);
@@ -1090,7 +1105,7 @@ int BrowserMainLoop::CreateThreads() {
         options = io_message_loop_options;
         options.timer_slack = base::TIMER_SLACK_MAXIMUM;
 #else  // OS_WIN
-        if (redirect_nonUInonIO_browser_threads) {
+        if (redirect_thread) {
           non_ui_non_io_task_runner_traits
               .WithPriority(base::TaskPriority::USER_BLOCKING)
               .WithShutdownBehavior(base::TaskShutdownBehavior::BLOCK_SHUTDOWN);
@@ -1121,7 +1136,9 @@ int BrowserMainLoop::CreateThreads() {
     BrowserThread::ID id = static_cast<BrowserThread::ID>(thread_id);
 
     if (thread_to_start) {
-      (*thread_to_start).reset(new BrowserProcessSubThread(id));
+      (*thread_to_start)
+          .reset(message_loop ? new BrowserProcessSubThread(id, message_loop)
+                              : new BrowserProcessSubThread(id));
       if (!(*thread_to_start)->StartWithOptions(options))
         LOG(FATAL) << "Failed to start the browser thread: id == " << id;
     } else {

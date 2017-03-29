@@ -2678,6 +2678,7 @@ if (is_android) {
     ]
     java_files = [
       "test/android/java/src/org/chromium/base/ContentUriTestUtils.java",
+      "test/android/java/src/org/chromium/base/JavaHandlerThreadTest.java",
       "test/android/java/src/org/chromium/base/TestSystemMessageHandler.java",
     ]
   }

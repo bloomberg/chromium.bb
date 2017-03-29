@@ -38,6 +38,8 @@ namespace content {
 class CONTENT_EXPORT BrowserProcessSubThread : public BrowserThreadImpl {
  public:
   explicit BrowserProcessSubThread(BrowserThread::ID identifier);
+  BrowserProcessSubThread(BrowserThread::ID identifier,
+                          base::MessageLoop* message_loop);
   ~BrowserProcessSubThread() override;
 
  protected:

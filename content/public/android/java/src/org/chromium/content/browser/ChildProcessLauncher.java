@@ -8,7 +8,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -449,7 +448,7 @@ public class ChildProcessLauncher {
             public void run() {
                 final SpawnData pendingSpawn = freeConnectionAndDequeuePending(conn);
                 if (pendingSpawn != null) {
-                    new Thread(new Runnable() {
+                    LauncherThread.post(new Runnable() {
                         @Override
                         public void run() {
                             startInternal(pendingSpawn.context(), pendingSpawn.commandLine(),
@@ -457,7 +456,7 @@ public class ChildProcessLauncher {
                                     pendingSpawn.launchCallback(), pendingSpawn.callbackType(),
                                     pendingSpawn.inSandbox(), pendingSpawn.getCreationParams());
                         }
-                    }).start();
+                    });
                 }
             }
         }, FREE_CONNECTION_DELAY_MILLIS);
@@ -685,7 +684,7 @@ public class ChildProcessLauncher {
                             @Override
                             public void onChildStartFailed() {
                                 Log.e(TAG, "ChildProcessConnection.start failed, trying again");
-                                AsyncTask.THREAD_POOL_EXECUTOR.execute(new Runnable() {
+                                LauncherThread.post(new Runnable() {
                                     @Override
                                     public void run() {
                                         // The child process may already be bound to another client

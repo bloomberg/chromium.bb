@@ -265,6 +265,8 @@ source_set("browser") {
     "android/gpu_process_callback.h",
     "android/java_interfaces_impl.cc",
     "android/java_interfaces_impl.h",
+    "android/launcher_thread.cc",
+    "android/launcher_thread.h",
     "android/scoped_surface_request_manager.cc",
     "android/scoped_surface_request_manager.h",
     "android/string_message_codec.cc",

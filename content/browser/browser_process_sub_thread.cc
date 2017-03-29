@@ -21,8 +21,12 @@
 namespace content {
 
 BrowserProcessSubThread::BrowserProcessSubThread(BrowserThread::ID identifier)
-    : BrowserThreadImpl(identifier) {
-}
+    : BrowserThreadImpl(identifier) {}
+
+BrowserProcessSubThread::BrowserProcessSubThread(
+    BrowserThread::ID identifier,
+    base::MessageLoop* message_loop)
+    : BrowserThreadImpl(identifier, message_loop) {}
 
 BrowserProcessSubThread::~BrowserProcessSubThread() {
   Stop();

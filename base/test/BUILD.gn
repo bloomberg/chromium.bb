@@ -329,6 +329,7 @@ if (is_android) {
   generate_jni("base_unittests_jni_headers") {
     sources = [
       "android/java/src/org/chromium/base/ContentUriTestUtils.java",
+      "android/java/src/org/chromium/base/JavaHandlerThreadTest.java",
       "android/java/src/org/chromium/base/TestSystemMessageHandler.java",
       "android/java/src/org/chromium/base/TestUiThread.java",
     ]
