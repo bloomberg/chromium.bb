@@ -244,30 +244,22 @@ void SelectorQuery::findTraverseRootsAndExecute(
 
   for (const CSSSelector* selector = m_selectors[0]; selector;
        selector = selector->tagHistory()) {
-    if (selector->match() == CSSSelector::Id && rootNode.isInTreeScope() &&
+    if (selector->match() == CSSSelector::Id &&
         !rootNode.containingTreeScope().containsMultipleElementsWithId(
             selector->value())) {
+      // Id selectors in the right most selector are handled by the caller,
+      // we should never hit them here.
+      DCHECK(!isRightmostSelector);
       Element* element =
           rootNode.containingTreeScope().getElementById(selector->value());
-      ContainerNode* adjustedNode = &rootNode;
-      if (element && element->isDescendantOf(&rootNode))
-        adjustedNode = element;
-      else if (!element || isRightmostSelector)
-        adjustedNode = nullptr;
-      if (isRightmostSelector) {
-        if (!adjustedNode)
-          return;
-        element = toElement(adjustedNode);
-        if (selectorMatches(*m_selectors[0], *element, rootNode))
-          SelectorQueryTrait::appendElement(output, *element);
+      if (!element)
         return;
-      }
-
-      if (startFromParent && adjustedNode)
-        adjustedNode = adjustedNode->parentNode();
-
-      executeForTraverseRoot<SelectorQueryTrait>(adjustedNode, rootNode,
-                                                 output);
+      ContainerNode* start = &rootNode;
+      if (element->isDescendantOf(&rootNode))
+        start = element;
+      if (startFromParent)
+        start = start->parentNode();
+      executeForTraverseRoot<SelectorQueryTrait>(start, rootNode, output);
       return;
     }
 
