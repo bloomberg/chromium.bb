@@ -380,6 +380,8 @@ void LayoutText::absoluteRectsForRange(Vector<IntRect>& rects,
   start = std::min(start, static_cast<unsigned>(INT_MAX));
   end = std::min(end, static_cast<unsigned>(INT_MAX));
 
+  bool hasCheckedBoxInRange = false;
+
   for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox()) {
     // Note: box->end() returns the index of the last character, not the index
     // past it
@@ -395,8 +397,22 @@ void LayoutText::absoluteRectsForRange(Vector<IntRect>& rects,
           r.setX(selectionRect.x().toFloat());
         }
       }
+      if (!hasCheckedBoxInRange) {
+        hasCheckedBoxInRange = true;
+        rects.clear();
+      }
       rects.push_back(localToAbsoluteQuad(r).enclosingBoundingBox());
-    } else {
+    } else if ((box->start() <= start && start <= box->end()) ||
+               (box->start() < end && end <= box->end())) {
+      FloatRect rect = localQuadForTextBox(box, start, end, useSelectionHeight);
+      if (!rect.isZero()) {
+        if (!hasCheckedBoxInRange) {
+          hasCheckedBoxInRange = true;
+          rects.clear();
+        }
+        rects.push_back(localToAbsoluteQuad(rect).enclosingBoundingBox());
+      }
+    } else if (!hasCheckedBoxInRange) {
       // FIXME: This code is wrong. It's converting local to absolute twice.
       // http://webkit.org/b/65722
       FloatRect rect = localQuadForTextBox(box, start, end, useSelectionHeight);
@@ -487,6 +503,8 @@ void LayoutText::absoluteQuadsForRange(Vector<FloatQuad>& quads,
   start = std::min(std::max(caretMinOffset, start), caretMaxOffset);
   end = std::min(std::max(caretMinOffset, end), caretMaxOffset);
 
+  bool hasCheckedBoxInRange = false;
+
   for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox()) {
     // Note: box->end() returns the index of the last character, not the index
     // past it
@@ -502,11 +520,27 @@ void LayoutText::absoluteQuadsForRange(Vector<FloatQuad>& quads,
           r.setX(selectionRect.x());
         }
       }
+      if (!hasCheckedBoxInRange) {
+        hasCheckedBoxInRange = true;
+        quads.clear();
+      }
       quads.push_back(localToAbsoluteQuad(FloatRect(r)));
-    } else {
+    } else if ((box->start() <= start && start <= box->end()) ||
+               (box->start() < end && end <= box->end())) {
+      FloatRect rect = localQuadForTextBox(box, start, end, useSelectionHeight);
+      if (!rect.isZero()) {
+        if (!hasCheckedBoxInRange) {
+          hasCheckedBoxInRange = true;
+          quads.clear();
+        }
+        quads.push_back(localToAbsoluteQuad(rect));
+      }
+    } else if (!hasCheckedBoxInRange) {
+      // consider when the offset of range is area of leading or trailing
+      // whitespace
       FloatRect rect = localQuadForTextBox(box, start, end, useSelectionHeight);
       if (!rect.isZero())
-        quads.push_back(localToAbsoluteQuad(rect));
+        quads.push_back(localToAbsoluteQuad(rect).enclosingBoundingBox());
     }
   }
 }
