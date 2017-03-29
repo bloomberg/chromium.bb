@@ -21,6 +21,7 @@
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/renderer/extension_bindings_system.h"
 #include "extensions/renderer/script_context.h"
 #include "ipc/message_filter.h"
@@ -424,10 +425,21 @@ AutomationInternalCustomBindings::AutomationInternalCustomBindings(
     : ObjectBackedNativeHandler(context),
       is_active_profile_(true),
       tree_change_observer_overall_filter_(0),
-      bindings_system_(bindings_system) {
-// It's safe to use base::Unretained(this) here because these bindings
-// will only be called on a valid AutomationInternalCustomBindings instance
-// and none of the functions have any side effects.
+      bindings_system_(bindings_system),
+      should_ignore_context_(false) {
+  // We will ignore this instance if the extension has a background page and
+  // this context is not that background page. In all other cases, we will have
+  // multiple instances floating around in the same process.
+  if (context && context->extension()) {
+    const GURL background_page_url =
+        extensions::BackgroundInfo::GetBackgroundURL(context->extension());
+    should_ignore_context_ = background_page_url != "" &&
+        background_page_url != context->url();
+  }
+
+  // It's safe to use base::Unretained(this) here because these bindings
+  // will only be called on a valid AutomationInternalCustomBindings instance
+  // and none of the functions have any side effects.
 #define ROUTE_FUNCTION(FN)                                        \
   RouteFunction(#FN, "automation",                                \
                 base::Bind(&AutomationInternalCustomBindings::FN, \
@@ -767,6 +779,9 @@ void AutomationInternalCustomBindings::GetRoutingID(
 
 void AutomationInternalCustomBindings::StartCachingAccessibilityTrees(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
+  if (should_ignore_context_)
+    return;
+
   if (!message_filter_)
     message_filter_ = new AutomationMessageFilter(this);
 }

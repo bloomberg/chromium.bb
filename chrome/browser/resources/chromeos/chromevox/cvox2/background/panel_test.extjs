@@ -85,8 +85,7 @@ TEST_F('PanelTest', 'LinkMenu', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(this.linksDoc, function(root) {
     var openMenus = new PanelCommand(PanelCommandType.OPEN_MENUS, 'role_link');
-    mockFeedback.expectSpeech('apple')
-        .call(openMenus.send.bind(openMenus))
+    mockFeedback.call(openMenus.send.bind(openMenus))
         .expectSpeech('apple Link ', 'Menu item', ' 1 of 3 ', 'Link', 'Menu')
         .call(this.fireMockEvent('ArrowLeft'))
         .expectSpeech('Landmark', 'Menu', 'No items. ', 'Menu item', ' 1 of 1 ')
@@ -95,8 +94,7 @@ TEST_F('PanelTest', 'LinkMenu', function() {
         .call(this.fireMockEvent('ArrowUp'))
         .expectSpeech(  'banana Link ', 'Menu item', ' 3 of 3 ')
         .call(this.fireMockEvent('Enter'))
-        .expectSpeech(  'apple', 'Link', /data[\s\S]*window/)
-        .expectSpeech('banana', 'Link')
+        .expectSpeech('banana', 'Link', /data.*window/)
         .replay();
   });
 });

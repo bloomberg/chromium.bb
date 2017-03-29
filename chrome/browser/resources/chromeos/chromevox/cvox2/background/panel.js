@@ -165,6 +165,9 @@ Panel.init = function() {
 
     Panel.closeMenusAndRestoreFocus();
   }, false);
+
+  /** @type {Window} */
+  Panel.ownerWindow = window;
 };
 
 /**
@@ -291,7 +294,13 @@ Panel.setMode = function(mode) {
   this.mode_ = mode;
 
   document.title = Msgs.getMsg(Panel.ModeInfo[this.mode_].title);
-  window.location = Panel.ModeInfo[this.mode_].location;
+
+  // Fully qualify the path here because this function might be called with a
+  // window object belonging to the background page.
+  Panel.ownerWindow.location =
+      chrome.extension.getURL('cvox2/background/panel.html') +
+      Panel.ModeInfo[this.mode_].location;
+
   $('main').hidden = (this.mode_ == Panel.Mode.FULLSCREEN_TUTORIAL);
   $('menus_background').hidden = (this.mode_ != Panel.Mode.FULLSCREEN_MENUS);
   $('tutorial').hidden = (this.mode_ != Panel.Mode.FULLSCREEN_TUTORIAL);
@@ -804,7 +813,8 @@ Panel.onOptions = function() {
 Panel.onClose = function() {
   // Change the url fragment to 'close', which signals the native code
   // to exit ChromeVox.
-  window.location = '#close';
+  Panel.ownerWindow.location =
+      chrome.extension.getURL('cvox2/background/panel.html') + '#close';
 };
 
 /**
@@ -834,7 +844,8 @@ Panel.closeMenusAndRestoreFocus = function() {
     }
   }.bind(this);
 
-  chrome.automation.getDesktop(function(desktop) {
+  var bkgnd = chrome.extension.getBackgroundPage();
+  bkgnd.chrome.automation.getDesktop(function(desktop) {
     onFocus = /** @type {function(chrome.automation.AutomationEvent)} */(
         onFocus.bind(this, desktop));
     desktop.addEventListener(chrome.automation.EventType.FOCUS,

@@ -183,8 +183,8 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler,
   int tree_change_observer_overall_filter_;
   std::vector<int> deleted_node_ids_;
   std::vector<int> text_changed_node_ids_;
-
   ExtensionBindingsSystem* bindings_system_;
+  bool should_ignore_context_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationInternalCustomBindings);
 };
