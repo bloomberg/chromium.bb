@@ -1026,19 +1026,41 @@ TEST_F(InputRouterImplTest, UnhandledWheelEvent) {
   // were processed.
   EXPECT_EQ(2U, ack_handler_->GetAndResetAckCount());
 
-  // There should be a ScrollBegin and ScrollUpdate, MouseWheel sent
+  // There should be a ScrollBegin and ScrollUpdate, MouseWheel sent.
   EXPECT_EQ(3U, GetSentMessageCountAndResetSink());
 
   EXPECT_EQ(ack_handler_->acked_wheel_event().deltaY, -5);
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  // The GestureScrollUpdate ACK releases the GestureScrollEnd.
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+
+  // Check that the ack for the ScrollUpdate and ScrollEnd
+  // were processed.
+  EXPECT_EQ(2U, ack_handler_->GetAndResetAckCount());
+
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
 
+  // There should be a ScrollBegin and ScrollUpdate sent.
+  EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
+
   // Check that the correct unhandled wheel event was received.
   EXPECT_EQ(2U, ack_handler_->GetAndResetAckCount());
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, ack_handler_->ack_state());
+  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
+            ack_handler_->acked_wheel_event_state());
   EXPECT_EQ(ack_handler_->acked_wheel_event().deltaY, -10);
+
+  SendInputEventACK(WebInputEvent::GestureScrollUpdate,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  // The GestureScrollUpdate ACK releases the GestureScrollEnd.
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+
+  // Check that the ack for the ScrollUpdate and ScrollEnd
+  // were processed.
+  EXPECT_EQ(2U, ack_handler_->GetAndResetAckCount());
 }
 
 TEST_F(InputRouterImplTest, TouchTypesIgnoringAck) {

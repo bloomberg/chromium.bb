@@ -48,6 +48,7 @@ void MockInputAckHandler::OnWheelEventAck(
     InputEventAckState ack_result) {
   VLOG(1) << __FUNCTION__ << " called!";
   acked_wheel_event_ = event.event;
+  acked_wheel_event_state_ = ack_result;
   RecordAckCalled(event.event.type(), ack_result);
 }
 

@@ -246,11 +246,8 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
           // crbug.com/526463 is fully implemented.
           SendScrollEnd(scroll_update, true);
         } else if (!has_phase_info) {
-          scroll_end_timer_.Start(
-              FROM_HERE,
-              base::TimeDelta::FromMilliseconds(scroll_transaction_ms_),
-              base::Bind(&MouseWheelEventQueue::SendScrollEnd,
-                         base::Unretained(this), scroll_update, false));
+          DCHECK_EQ(0, scroll_transaction_ms_);
+          SendScrollEnd(scroll_update, false);
         }
       }
     }

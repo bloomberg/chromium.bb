@@ -3224,23 +3224,27 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, WheelNotPreciseScrollEvent) {
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
 
-  // ScrollBegin, ScrollUpdate, MouseWheel will be queued events
+  // ScrollBegin, ScrollUpdate, and MouseWheel will be queued events.
   EXPECT_EQ(3U, GetSentMessageCountAndResetSink());
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
 
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->current_mode());
+  // ScrollEnd will be the queued event.
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  // ScrollUpdate, MouseWheel will be queued events
-  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  // ScrollBegin and ScrollUpdate will be queued events.
+  EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
 
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->current_mode());
+  // ScrollEnd will be the queued event.
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 }
 
 TEST_F(RenderWidgetHostViewAuraOverscrollTest, WheelScrollEventOverscrolls) {
@@ -3260,28 +3264,35 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, WheelScrollEventOverscrolls) {
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
 
-  // ScrollBegin, ScrollUpdate, MouseWheel will be queued events
+  // ScrollBegin, ScrollUpdate, and MouseWheel will be queued events.
   EXPECT_EQ(3U, GetSentMessageCountAndResetSink());
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
 
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->current_mode());
+  // ScrollEnd will be the queued event.
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 
   // Receive ACK for the second (coalesced) event as not processed. This will
   // start a back navigation. However, this will also cause the queued next
   // event to be sent to the renderer. But since overscroll navigation has
   // started, that event will also be included in the overscroll computation
   // instead of being sent to the renderer. So the result will be an overscroll
-  // back navigation, and no event will be sent to the renderer.
+  // back navigation, and no ScrollUpdate event will be sent to the renderer.
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  // ScrollUpdate, MouseWheel will be queued events
-  EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
+  // ScrollBegin, ScrollUpdate, and MouseWheel will be queued events.
+  EXPECT_EQ(3U, GetSentMessageCountAndResetSink());
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  // ScrollEnd will be the queued event.
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  // ScrollBegin and ScrollEnd will be queued events.
+  EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
 
   EXPECT_EQ(OVERSCROLL_WEST, overscroll_mode());
   EXPECT_EQ(OVERSCROLL_WEST, overscroll_delegate()->current_mode());
@@ -3316,10 +3327,12 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
   // Receive ACK the first wheel event as processed.
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  // ScrollBegin, ScrollUpdate, MouseWheel will be queued events
+  // ScrollBegin, ScrollUpdate, and MouseWheel will be queued events.
   EXPECT_EQ(3U, GetSentMessageCountAndResetSink());
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
+  // ScrollEnd will be the queued event.
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->current_mode());
@@ -3331,19 +3344,21 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
-  // ScrollUpdate, MouseWheel will be queued events
-  EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
+  // ScrollBegin, ScrollUpdate, and MouseWheel will be queued events.
+  EXPECT_EQ(3U, GetSentMessageCountAndResetSink());
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  // ScrollEnd will be the queued event.
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  // ScrollUpdate will be queued events
-  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  // ScrollBegin, ScrollUpdate, and MouseWheel will be queued events.
+  EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-
-  EXPECT_EQ(0U, sink_->message_count());
+  // ScrollEnd will be the queued event.
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
 }
 
@@ -3357,9 +3372,12 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, WheelScrollOverscrollToggle) {
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  // ScrollBegin and ScrollUpdate will be queued events.
   EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  // ScrollEnd will be the queued event.
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->current_mode());
 
@@ -3368,9 +3386,12 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, WheelScrollOverscrollToggle) {
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  // ScrollBegin and ScrollUpdate will be queued events.
+  EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  // ScrollEnd will be the queued event.
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->current_mode());
 
@@ -3379,9 +3400,12 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, WheelScrollOverscrollToggle) {
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  // ScrollBegin and ScrollUpdate will be queued events.
+  EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  // ScrollEnd will be the queued event.
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
   EXPECT_EQ(OVERSCROLL_EAST, overscroll_mode());
   EXPECT_EQ(OVERSCROLL_EAST, overscroll_delegate()->current_mode());
   EXPECT_EQ(60.f, overscroll_delta_x());
@@ -3393,7 +3417,8 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, WheelScrollOverscrollToggle) {
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(0U, sink_->message_count());
+  // ScrollBegin and ScrollEnd will be queued events.
+  EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->current_mode());
 
@@ -3402,10 +3427,12 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, WheelScrollOverscrollToggle) {
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  // ScrollBegin and ScrollUpdate will be queued events.
+  EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+  // ScrollEnd will be the queued event.
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->current_mode());
 
@@ -3415,10 +3442,12 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, WheelScrollOverscrollToggle) {
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  // ScrollBegin and ScrollUpdate will be the queued events.
+  EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+  // ScrollEnd will be the queued event.
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
   EXPECT_EQ(OVERSCROLL_WEST, overscroll_mode());
   EXPECT_EQ(OVERSCROLL_WEST, overscroll_delegate()->current_mode());
   EXPECT_EQ(-75.f, overscroll_delta_x());
@@ -3436,12 +3465,14 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  // ScrollBegin and ScrollUpdate will be queued events.
   EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->current_mode());
-  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+  // ScrollEnd will be the queued event.
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 
   // Scroll some more so as to not overscroll.
   SimulateWheelEvent(20, 0, 0, true);
@@ -3461,7 +3492,8 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  // ScrollBegin, ScrollUpdate, and ScrollEnd will be queued events.
+  EXPECT_EQ(3U, GetSentMessageCountAndResetSink());
   EXPECT_EQ(OVERSCROLL_EAST, overscroll_mode());
   EXPECT_EQ(OVERSCROLL_EAST, overscroll_delegate()->current_mode());
   EXPECT_EQ(60.f, overscroll_delta_x());
@@ -3476,7 +3508,8 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
                        blink::WebGestureDeviceTouchscreen);
   SimulateGestureFlingStartEvent(0.f, 0.1f, blink::WebGestureDeviceTouchpad);
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
-  EXPECT_EQ(3U, sink_->message_count());
+  // ScrollBegin and FlingStart will be queued events.
+  EXPECT_EQ(2U, sink_->message_count());
 }
 
 // Same as ScrollEventsOverscrollWithFling, but with zero velocity. Checks that
@@ -3491,34 +3524,43 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  // ScrollBegin and ScrollUpdate will be queued events.
   EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->current_mode());
-  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+  // ScrollEnd will be the queued event.
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 
   // Scroll some more so as to not overscroll.
   SimulateWheelEvent(20, 0, 0, true);
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  // ScrollBegin and ScrollUpdate will be queued events.
+  EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->current_mode());
+  // ScrollEnd will be the queued event.
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 
   // Scroll some more to initiate an overscroll.
   SimulateWheelEvent(30, 0, 0, true);
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  // ScrollBegin and ScrollUpdate will be queued events.
+  EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(OVERSCROLL_EAST, overscroll_mode());
   EXPECT_EQ(OVERSCROLL_EAST, overscroll_delegate()->current_mode());
+  // ScrollEnd will be the queued event.
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+
   EXPECT_EQ(60.f, overscroll_delta_x());
   EXPECT_EQ(10.f, overscroll_delegate()->delta_x());
   EXPECT_EQ(0.f, overscroll_delegate()->delta_y());
@@ -3531,7 +3573,8 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
                        blink::WebGestureDeviceTouchscreen);
   SimulateGestureFlingStartEvent(10.f, 0.f, blink::WebGestureDeviceTouchpad);
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
-  EXPECT_EQ(3U, sink_->message_count());
+  // scrollBeign and FlingStart will be queued events.
+  EXPECT_EQ(2U, sink_->message_count());
 }
 
 // Tests that a fling in the opposite direction of the overscroll cancels the
@@ -3988,13 +4031,14 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-
-  // ScrollBegin, ScrollUpdate messages.
+  // ScrollBegin and ScrollUpdate will be queued events.
   EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(OVERSCROLL_EAST, overscroll_mode());
   EXPECT_EQ(OVERSCROLL_EAST, overscroll_delegate()->current_mode());
+  // ScrollEnd will be the queued event.
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 
   // Send another wheel event, but in the reverse direction. The overscroll
   // controller will not consume the event, because it is not triggering
@@ -4005,13 +4049,16 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
-  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  // ScrollBegin and ScrollUpdate will be queued events.
+  EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
 
   // Since it was unhandled; the overscroll should now be west
   EXPECT_EQ(OVERSCROLL_WEST, overscroll_mode());
   EXPECT_EQ(OVERSCROLL_WEST, overscroll_delegate()->current_mode());
+  // ScrollEnd will be the queued event.
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 
   SimulateWheelEvent(-20, 0, 0, true);
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
@@ -4020,7 +4067,8 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
 
   // wheel event ack generates gesture scroll update; which gets consumed
   // solely by the overflow controller.
-  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+  // No ScrollUpdates, only ScrollBegin and ScrollEnd will be queued events.
+  EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
   EXPECT_EQ(OVERSCROLL_WEST, overscroll_mode());
   EXPECT_EQ(OVERSCROLL_WEST, overscroll_delegate()->current_mode());
 }
@@ -4039,22 +4087,28 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollMouseMoveCompletion) {
   // Receive ACK the first wheel event as not processed.
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  // ScrollBegin, ScrollUpdate, and the second MouseWheel will be queued
+  // events.
   EXPECT_EQ(3U, GetSentMessageCountAndResetSink());
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->current_mode());
+  // ScrollEnd will be the queued event.
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 
   // Receive ACK for the second (coalesced) event as not processed. This will
   // start an overcroll gesture.
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  // ScrollBegin and ScrollUpdate will be queued events.
+  EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(OVERSCROLL_WEST, overscroll_mode());
   EXPECT_EQ(OVERSCROLL_WEST, overscroll_delegate()->current_mode());
-  EXPECT_EQ(0U, sink_->message_count());
+  // ScrollEnd will be the queued event.
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 
   // Send a mouse-move event. This should cancel the overscroll navigation
   // (since the amount overscrolled is not above the threshold), and so the
@@ -4127,7 +4181,9 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_TRUE(ScrollStateIsContentScrolling());
-  EXPECT_EQ(3U, GetSentMessageCountAndResetSink());
+  // ScrollBegin, ScrollUpdate, the second MouseWheel, and ScrollEnd will be
+  // queued events.
+  EXPECT_EQ(4U, GetSentMessageCountAndResetSink());
 
   // The second wheel event is consumed.
   SendInputEventACK(WebInputEvent::MouseWheel,
@@ -4135,6 +4191,8 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_TRUE(ScrollStateIsContentScrolling());
+  // ScrollBegin, ScrollUpdate, and ScrollEnd will be queued events.
+  EXPECT_EQ(3U, sink_->message_count());
 
   // Touchpad scroll can end with a zero-velocity fling. But it is not
   // dispatched, but it should still reset the overscroll controller state.
@@ -4142,7 +4200,9 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
                        blink::WebGestureDeviceTouchscreen);
   SimulateGestureFlingStartEvent(0.f, 0.f, blink::WebGestureDeviceTouchpad);
   EXPECT_TRUE(ScrollStateIsUnknown());
-  EXPECT_EQ(3U, sink_->message_count());
+  // ScrollBegin, ScrollUpdate, ScrollEnd, and ScrollBegin will be queued
+  // events.
+  EXPECT_EQ(4U, sink_->message_count());
 
   // Dropped flings should neither propagate *nor* indicate that they were
   // consumed and have triggered a fling animation (as tracked by the router).
@@ -4150,12 +4210,15 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
 
   SimulateGestureEvent(WebInputEvent::GestureScrollEnd,
                        blink::WebGestureDeviceTouchscreen);
+  // ScrollBegin, ScrollUpdate, ScrollEnd, ScrollBegin, and ScrollEnd will be
+  // queued events.
+  EXPECT_EQ(5U, GetSentMessageCountAndResetSink());
 
   SimulateWheelEvent(-5, 0, 0, true);    // sent directly
   SimulateWheelEvent(-60, 0, 0, true);   // enqueued
   SimulateWheelEvent(-100, 0, 0, true);  // coalesced into previous event
   EXPECT_TRUE(ScrollStateIsUnknown());
-  EXPECT_EQ(5U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 
   // The first wheel scroll did not scroll content. Overscroll should not start
   // yet, since enough hasn't been scrolled.
@@ -4164,7 +4227,9 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_TRUE(ScrollStateIsUnknown());
-  EXPECT_EQ(3U, GetSentMessageCountAndResetSink());
+  // ScrollBegin, ScrollUpdate, the second Mousewheel, and ScrollEnd will be
+  // queued events.
+  EXPECT_EQ(4U, GetSentMessageCountAndResetSink());
 
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
@@ -4172,7 +4237,8 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(OVERSCROLL_WEST, overscroll_mode());
   EXPECT_TRUE(ScrollStateIsOverscrolling());
-  EXPECT_EQ(1U, sink_->message_count());
+  // ScrollBegin, ScrollUpdate, and ScrollEnd will be queued events.
+  EXPECT_EQ(3U, GetSentMessageCountAndResetSink());
 
   // The GestureScrollBegin will reset the delegate's mode, so check it here.
   EXPECT_EQ(OVERSCROLL_WEST, overscroll_delegate()->current_mode());
@@ -4181,7 +4247,8 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
   SimulateGestureFlingStartEvent(0.f, 0.f, blink::WebGestureDeviceTouchpad);
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
   EXPECT_TRUE(ScrollStateIsUnknown());
-  EXPECT_EQ(3U, sink_->message_count());
+  // ScrollBegin will be the queued event.
+  EXPECT_EQ(1U, sink_->message_count());
   EXPECT_FALSE(parent_host_->input_router()->HasPendingEvents());
 }
 
