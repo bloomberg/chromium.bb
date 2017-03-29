@@ -96,9 +96,6 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     private boolean mIsPasswordType;
     private boolean mIsInsertion;
 
-    // Indicates whether the action mode needs to be redrawn since last invalidation.
-    private boolean mNeedsPrepare;
-
     private boolean mUnselectAllOnDismiss;
     private String mLastSelectedText;
 
@@ -369,7 +366,6 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
     @Override
     public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-        if (!mNeedsPrepare) return false;
         menu.clear();
         createActionMenu(mode, menu);
         return true;
@@ -392,7 +388,6 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     }
 
     private void createActionMenu(ActionMode mode, Menu menu) {
-        mNeedsPrepare = false;
         initializeMenu(mContext, mode, menu);
 
         if (!isSelectionEditable() || !canPaste()) {
@@ -755,7 +750,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
             case SelectionEventType.INSERTION_HANDLE_SHOWN:
                 mSelectionRect.set(left, top, right, bottom);
-                setIsInsertion(true);
+                mIsInsertion = true;
                 break;
 
             case SelectionEventType.INSERTION_HANDLE_MOVED:
@@ -778,7 +773,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
             case SelectionEventType.INSERTION_HANDLE_CLEARED:
                 destroyPastePopup();
-                setIsInsertion(false);
+                mIsInsertion = false;
                 mSelectionRect.setEmpty();
                 break;
 
@@ -848,10 +843,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         if (editable != isSelectionEditable() || isPassword != isSelectionPassword()) {
             mEditable = editable;
             mIsPasswordType = isPassword;
-            if (isActionModeValid()) {
-                mNeedsPrepare = true;
-                mActionMode.invalidate();
-            }
+            if (isActionModeValid()) mActionMode.invalidate();
         }
     }
 
@@ -866,11 +858,6 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     @Override
     public String getSelectedText() {
         return mHasSelection ? mLastSelectedText : "";
-    }
-
-    private void setIsInsertion(boolean insertion) {
-        if (isActionModeValid() && mIsInsertion != insertion) mNeedsPrepare = true;
-        mIsInsertion = insertion;
     }
 
     private boolean isShareAvailable() {
