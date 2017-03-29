@@ -20,14 +20,13 @@ RoundedImageView::RoundedImageView(int corner_radius) {
 
 RoundedImageView::~RoundedImageView() {}
 
-void RoundedImageView::SetImage(const gfx::ImageSkia& img,
+void RoundedImageView::SetImage(const gfx::ImageSkia& image,
                                 const gfx::Size& size) {
-  image_ = img;
   image_size_ = size;
 
   // Try to get the best image quality for the avatar.
-  resized_ = gfx::ImageSkiaOperations::CreateResizedImage(
-      image_, skia::ImageOperations::RESIZE_BEST, size);
+  resized_image_ = gfx::ImageSkiaOperations::CreateResizedImage(
+      image, skia::ImageOperations::RESIZE_BEST, size);
   if (GetWidget() && visible()) {
     PreferredSizeChanged();
     SchedulePaint();
@@ -63,8 +62,8 @@ void RoundedImageView::OnPaint(gfx::Canvas* canvas) {
   path.addRoundRect(gfx::RectToSkRect(image_bounds), kRadius);
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
-  canvas->DrawImageInPath(resized_, image_bounds.x(), image_bounds.y(), path,
-                          flags);
+  canvas->DrawImageInPath(resized_image_, image_bounds.x(), image_bounds.y(),
+                          path, flags);
 }
 
 }  // namespace tray

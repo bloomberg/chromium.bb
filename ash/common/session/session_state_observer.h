@@ -21,6 +21,9 @@ class ASH_EXPORT SessionStateObserver {
   // Called when another user gets added to the existing session.
   virtual void UserAddedToSession(const AccountId& account_id) {}
 
+  // Called when a user session is updated, such as avatar change.
+  virtual void UserSessionUpdated(const AccountId& account_id) {}
+
   // Called when session state is changed.
   virtual void SessionStateChanged(session_manager::SessionState state) {}
 

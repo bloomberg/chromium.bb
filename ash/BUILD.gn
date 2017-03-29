@@ -428,7 +428,6 @@ component("ash") {
     "common/system/user/tray_user.h",
     "common/system/user/user_card_view.cc",
     "common/system/user/user_card_view.h",
-    "common/system/user/user_observer.h",
     "common/system/user/user_view.cc",
     "common/system/user/user_view.h",
     "common/system/web_notification/ash_popup_alignment_delegate.cc",

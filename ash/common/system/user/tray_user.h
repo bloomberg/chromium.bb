@@ -6,8 +6,8 @@
 #define ASH_COMMON_SYSTEM_USER_TRAY_USER_H_
 
 #include "ash/ash_export.h"
+#include "ash/common/session/session_state_observer.h"
 #include "ash/common/system/tray/system_tray_item.h"
-#include "ash/common/system/user/user_observer.h"
 #include "ash/public/cpp/session_types.h"
 #include "base/macros.h"
 
@@ -27,7 +27,7 @@ class RoundedImageView;
 class UserView;
 }
 
-class ASH_EXPORT TrayUser : public SystemTrayItem, public UserObserver {
+class ASH_EXPORT TrayUser : public SystemTrayItem, public SessionStateObserver {
  public:
   // The given |index| is the user index in a multi profile scenario. Index #0
   // is the active user, the other indices are other logged in users (if there
@@ -58,6 +58,7 @@ class ASH_EXPORT TrayUser : public SystemTrayItem, public UserObserver {
 
   // Use for access inside of tests.
   tray::UserView* user_view_for_test() const { return user_; }
+  tray::RoundedImageView* avatar_view_for_test() const { return avatar_; }
 
  private:
   // Overridden from SystemTrayItem.
@@ -68,24 +69,27 @@ class ASH_EXPORT TrayUser : public SystemTrayItem, public UserObserver {
   void UpdateAfterLoginStatusChange(LoginStatus status) override;
   void UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) override;
 
-  // Overridden from UserObserver.
-  void OnUserUpdate() override;
-  void OnUserAddedToSession() override;
+  // Overridden from SessionStateObserver.
+  void ActiveUserChanged(const AccountId& account_id) override;
+  void UserAddedToSession(const AccountId& account_id) override;
+  void UserSessionUpdated(const AccountId& account_id) override;
 
   void UpdateAvatarImage(LoginStatus status);
 
   // Updates the layout of this item.
   void UpdateLayoutOfItem();
 
-  // The user index to use.
-  UserIndex user_index_;
+  ScopedSessionStateObserver scoped_session_observer_;
 
-  tray::UserView* user_;
+  // The user index to use.
+  const UserIndex user_index_;
+
+  tray::UserView* user_ = nullptr;
 
   // View that contains label and/or avatar.
-  views::View* layout_view_;
-  tray::RoundedImageView* avatar_;
-  views::Label* label_;
+  views::View* layout_view_ = nullptr;
+  tray::RoundedImageView* avatar_ = nullptr;
+  views::Label* label_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(TrayUser);
 };

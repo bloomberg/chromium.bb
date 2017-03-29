@@ -23,7 +23,7 @@ class RoundedImageView : public views::View {
 
   // Set the image that should be displayed. The image contents is copied to the
   // receiver's image.
-  void SetImage(const gfx::ImageSkia& img, const gfx::Size& size);
+  void SetImage(const gfx::ImageSkia& image, const gfx::Size& size);
 
   // Set the radii of the corners independently.
   void SetCornerRadii(int top_left,
@@ -35,9 +35,11 @@ class RoundedImageView : public views::View {
   gfx::Size GetPreferredSize() const override;
   void OnPaint(gfx::Canvas* canvas) override;
 
+  // Gets the image painted by RoundedImageView for test.
+  const gfx::ImageSkia& image_for_test() const { return resized_image_; }
+
  private:
-  gfx::ImageSkia image_;
-  gfx::ImageSkia resized_;
+  gfx::ImageSkia resized_image_;
   gfx::Size image_size_;
   int corner_radius_[4];
 

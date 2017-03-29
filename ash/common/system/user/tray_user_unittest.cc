@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
 #include <vector>
 
 #include "ash/common/session/session_controller.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/common/system/user/rounded_image_view.h"
 #include "ash/common/system/user/tray_user.h"
 #include "ash/common/system/user/user_view.h"
 #include "ash/common/test/test_session_controller_client.h"
@@ -18,9 +20,13 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/animation/animation_container_element.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_unittest_util.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -33,6 +39,14 @@ const char* kPredefinedUserEmails[] = {
     "First@tray",
     // This is intended to be capitalized.
     "Second@tray"};
+
+// Creates an ImageSkia with a 1x rep of the given dimensions and filled with
+// the given color.
+gfx::ImageSkia CreateImageSkiaWithColor(int width, int height, SkColor color) {
+  SkBitmap bitmap = gfx::test::CreateBitmap(width, height);
+  bitmap.eraseColor(color);
+  return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
+}
 
 class TrayUserTest : public test::AshTestBase {
  public:
@@ -265,6 +279,24 @@ TEST_F(TrayUserTest, MultiUserModeButtonClicks) {
   // user_id.
   EXPECT_NE(active_user->account_id.GetUserEmail(), second_user->display_email);
   tray()->CloseSystemBubble();
+}
+
+// Test SessionController updates avatar image.
+TEST_F(TrayUserTest, AvatarChange) {
+  InitializeParameters(1, false);
+
+  // Expect empty avatar initially (that is how the test sets up).
+  EXPECT_TRUE(tray_user(0)->avatar_view_for_test()->image_for_test().isNull());
+
+  // Change user avatar via SessionController and verify.
+  const gfx::ImageSkia red_icon =
+      CreateImageSkiaWithColor(kTrayItemSize, kTrayItemSize, SK_ColorRED);
+  mojom::UserSessionPtr user = controller()->GetUserSession(0)->Clone();
+  user->avatar = red_icon;
+  controller()->UpdateUserSession(std::move(user));
+  EXPECT_TRUE(gfx::test::AreImagesEqual(
+      gfx::Image(red_icon),
+      gfx::Image(tray_user(0)->avatar_view_for_test()->image_for_test())));
 }
 
 }  // namespace ash

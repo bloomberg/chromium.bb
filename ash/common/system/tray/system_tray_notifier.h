@@ -30,7 +30,6 @@ class ScreenCaptureObserver;
 class ScreenShareObserver;
 class SessionLengthLimitObserver;
 class TracingObserver;
-class UserObserver;
 class VirtualKeyboardObserver;
 
 namespace mojom {
@@ -122,12 +121,6 @@ class ASH_EXPORT SystemTrayNotifier {
   void RemoveTracingObserver(TracingObserver* observer);
   void NotifyTracingModeChanged(bool value);
 
-  // User.
-  void AddUserObserver(UserObserver* observer);
-  void RemoveUserObserver(UserObserver* observer);
-  void NotifyUserUpdate();
-  void NotifyUserAddedToSession();
-
   // Virtual keyboard.
   void AddVirtualKeyboardObserver(VirtualKeyboardObserver* observer);
   void RemoveVirtualKeyboardObserver(VirtualKeyboardObserver* observer);
@@ -149,7 +142,6 @@ class ASH_EXPORT SystemTrayNotifier {
   base::ObserverList<SessionLengthLimitObserver>
       session_length_limit_observers_;
   base::ObserverList<TracingObserver> tracing_observers_;
-  base::ObserverList<UserObserver> user_observers_;
   base::ObserverList<VirtualKeyboardObserver> virtual_keyboard_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayNotifier);

@@ -8,7 +8,6 @@
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
-#include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_item_view.h"
 #include "ash/common/system/tray/tray_utils.h"
@@ -39,17 +38,10 @@ namespace ash {
 
 TrayUser::TrayUser(SystemTray* system_tray, UserIndex index)
     : SystemTrayItem(system_tray, UMA_USER),
-      user_index_(index),
-      user_(nullptr),
-      layout_view_(nullptr),
-      avatar_(nullptr),
-      label_(nullptr) {
-  Shell::Get()->system_tray_notifier()->AddUserObserver(this);
-}
+      scoped_session_observer_(this),
+      user_index_(index) {}
 
-TrayUser::~TrayUser() {
-  Shell::Get()->system_tray_notifier()->RemoveUserObserver(this);
-}
+TrayUser::~TrayUser() {}
 
 TrayUser::TestState TrayUser::GetStateForTest() const {
   if (!user_)
@@ -218,11 +210,11 @@ void TrayUser::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
   }
 }
 
-void TrayUser::OnUserUpdate() {
-  UpdateAvatarImage(Shell::Get()->system_tray_delegate()->GetUserLoginStatus());
+void TrayUser::ActiveUserChanged(const AccountId& account_id) {
+  UserSessionUpdated(account_id);
 }
 
-void TrayUser::OnUserAddedToSession() {
+void TrayUser::UserAddedToSession(const AccountId& account_id) {
   const SessionController* const session_controller =
       Shell::Get()->session_controller();
   // Only create views for user items which are logged in.
@@ -233,7 +225,11 @@ void TrayUser::OnUserAddedToSession() {
   UpdateLayoutOfItem();
 
   // Update the user item.
-  UpdateAvatarImage(Shell::Get()->system_tray_delegate()->GetUserLoginStatus());
+  UpdateAvatarImage(Shell::Get()->session_controller()->GetLoginStatus());
+}
+
+void TrayUser::UserSessionUpdated(const AccountId& account_id) {
+  UpdateAvatarImage(Shell::Get()->session_controller()->GetLoginStatus());
 }
 
 void TrayUser::UpdateAvatarImage(LoginStatus status) {

@@ -94,13 +94,7 @@ class SystemTrayDelegateChromeOS
   std::unique_ptr<ash::SystemTrayItem> CreateRotationLockTrayItem(
       ash::SystemTray* tray) override;
 
-  // Overridden from user_manager::UserManager::Observer:
-  void OnUserImageChanged(const user_manager::User& user) override;
-
   // Overridden from user_manager::UserManager::UserSessionStateObserver:
-  void UserAddedToSession(const user_manager::User* active_user) override;
-  void ActiveUserChanged(const user_manager::User* active_user) override;
-
   void UserChangedChildStatus(user_manager::User* user) override;
 
  private:

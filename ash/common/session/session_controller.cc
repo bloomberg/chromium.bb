@@ -174,8 +174,8 @@ void SessionController::UpdateUserSession(mojom::UserSessionPtr user_session) {
   }
 
   *it = std::move(user_session);
-  // TODO(xiyuan): Notify observers about meta change to replace things such as
-  //     NOTIFICATION_LOGIN_USER_IMAGE_CHANGED. http://crbug.com/670422
+  for (auto& observer : observers_)
+    observer.UserSessionUpdated((*it)->account_id);
 }
 
 void SessionController::SetUserSessionOrder(

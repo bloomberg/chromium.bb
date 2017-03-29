@@ -21,7 +21,6 @@
 #include "ash/common/system/ime/ime_observer.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray_accessibility.h"
-#include "ash/common/system/user/user_observer.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/rotation/tray_rotation_lock.h"
 #include "base/callback.h"
@@ -144,7 +143,6 @@ SystemTrayDelegateChromeOS::SystemTrayDelegateChromeOS()
       base::Bind(&SystemTrayDelegateChromeOS::OnAccessibilityStatusChanged,
                  base::Unretained(this)));
 
-  user_manager::UserManager::Get()->AddObserver(this);
   user_manager::UserManager::Get()->AddSessionStateObserver(this);
 }
 
@@ -207,7 +205,6 @@ SystemTrayDelegateChromeOS::~SystemTrayDelegateChromeOS() {
   if (policy_manager)
     policy_manager->core()->store()->RemoveObserver(this);
 
-  user_manager::UserManager::Get()->RemoveObserver(this);
   user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
 }
 
@@ -417,7 +414,6 @@ bool SystemTrayDelegateChromeOS::GetSessionLengthLimit(
 
 void SystemTrayDelegateChromeOS::ActiveUserWasChanged() {
   SetProfile(ProfileManager::GetActiveUserProfile());
-  GetSystemTrayNotifier()->NotifyUserUpdate();
 }
 
 bool SystemTrayDelegateChromeOS::IsSearchKeyMappedToCapsLock() {
@@ -437,15 +433,6 @@ void SystemTrayDelegateChromeOS::RemoveCustodianInfoTrayObserver(
 std::unique_ptr<ash::SystemTrayItem>
 SystemTrayDelegateChromeOS::CreateRotationLockTrayItem(ash::SystemTray* tray) {
   return base::MakeUnique<ash::TrayRotationLock>(tray);
-}
-
-void SystemTrayDelegateChromeOS::UserAddedToSession(
-    const user_manager::User* active_user) {
-  GetSystemTrayNotifier()->NotifyUserAddedToSession();
-}
-
-void SystemTrayDelegateChromeOS::ActiveUserChanged(
-    const user_manager::User* /* active_user */) {
 }
 
 void SystemTrayDelegateChromeOS::UserChangedChildStatus(
@@ -705,13 +692,6 @@ void SystemTrayDelegateChromeOS::OnStoreLoaded(
 
 void SystemTrayDelegateChromeOS::OnStoreError(policy::CloudPolicyStore* store) {
   UpdateEnterpriseDomain();
-}
-
-void SystemTrayDelegateChromeOS::OnUserImageChanged(
-    const user_manager::User& user) {
-  // This is also invoked on login screen when user avatar is loaded from file.
-  if (GetUserLoginStatus() != ash::LoginStatus::NOT_LOGGED_IN)
-    GetSystemTrayNotifier()->NotifyUserUpdate();
 }
 
 // Overridden from chrome::BrowserListObserver.

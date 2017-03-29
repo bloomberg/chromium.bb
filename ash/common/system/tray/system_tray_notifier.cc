@@ -18,7 +18,6 @@
 #include "ash/common/system/chromeos/virtual_keyboard/virtual_keyboard_observer.h"
 #include "ash/common/system/date/clock_observer.h"
 #include "ash/common/system/ime/ime_observer.h"
-#include "ash/common/system/user/user_observer.h"
 
 namespace ash {
 
@@ -260,24 +259,6 @@ void SystemTrayNotifier::RemoveTracingObserver(TracingObserver* observer) {
 void SystemTrayNotifier::NotifyTracingModeChanged(bool value) {
   for (auto& observer : tracing_observers_)
     observer.OnTracingModeChanged(value);
-}
-
-void SystemTrayNotifier::AddUserObserver(UserObserver* observer) {
-  user_observers_.AddObserver(observer);
-}
-
-void SystemTrayNotifier::RemoveUserObserver(UserObserver* observer) {
-  user_observers_.RemoveObserver(observer);
-}
-
-void SystemTrayNotifier::NotifyUserUpdate() {
-  for (auto& observer : user_observers_)
-    observer.OnUserUpdate();
-}
-
-void SystemTrayNotifier::NotifyUserAddedToSession() {
-  for (auto& observer : user_observers_)
-    observer.OnUserAddedToSession();
 }
 
 void SystemTrayNotifier::AddVirtualKeyboardObserver(
