@@ -5,12 +5,14 @@
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/browser/accessibility/browser_accessibility.h"
+#include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/accessibility_browser_test_utils.h"
+#include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -165,6 +167,15 @@ IN_PROC_BROWSER_TEST_F(TouchAccessibilityBrowserTest,
   BrowserAccessibilityManager* child_manager =
       child_frame->GetOrCreateBrowserAccessibilityManager();
   ASSERT_NE(nullptr, child_manager);
+
+  // If OOPIFs are enabled, wait until compositor frames are all properly
+  // displayed, otherwise the touch event will not get sent to the correct
+  // renderer process.
+  if (main_frame->GetView() != child_frame->GetView()) {
+    SurfaceHitTestReadyNotifier notifier(
+        static_cast<RenderWidgetHostViewChildFrame*>(child_frame->GetView()));
+    notifier.WaitForSurfaceReady();
+  }
 
   // Send a touch exploration event to the button in the first iframe.
   // A touch exploration event is just a mouse move event with
