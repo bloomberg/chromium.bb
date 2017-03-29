@@ -356,6 +356,7 @@ int ContentSubresourceFilterDriverFactory::CalculateHitPatternForActivationList(
   const int kInitialURLHitMask = 0x4;
   const int kRedirectURLHitMask = 0x2;
   const int kFinalURLHitMask = 0x1;
+
   if (navigation_chain_.size() > 1) {
     if (DidURLMatchActivationList(navigation_chain_.back(), activation_list))
       hits_pattern |= kFinalURLHitMask;
@@ -383,6 +384,7 @@ void ContentSubresourceFilterDriverFactory::RecordRedirectChainMatchPattern()
   RecordRedirectChainMatchPatternForList(
       ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL);
   RecordRedirectChainMatchPatternForList(ActivationList::PHISHING_INTERSTITIAL);
+  RecordRedirectChainMatchPatternForList(ActivationList::SUBRESOURCE_FILTER);
 }
 
 void ContentSubresourceFilterDriverFactory::
@@ -399,6 +401,10 @@ void ContentSubresourceFilterDriverFactory::
       break;
     case ActivationList::PHISHING_INTERSTITIAL:
       REPORT_REDIRECT_PATTERN_FOR_SUFFIX("PhishingInterstital", hits_pattern,
+                                         chain_size);
+      break;
+    case ActivationList::SUBRESOURCE_FILTER:
+      REPORT_REDIRECT_PATTERN_FOR_SUFFIX("SubresourceFilterOnly", hits_pattern,
                                          chain_size);
       break;
     default:

@@ -36,15 +36,16 @@ namespace {
 const char kExampleUrlWithParams[] = "https://example.com/soceng?q=engsoc";
 const char kExampleUrl[] = "https://example.com";
 const char kExampleLoginUrl[] = "https://example.com/login";
-const char kMatchesPatternHistogramName[] =
-    "SubresourceFilter.PageLoad.RedirectChainMatchPattern";
-const char kNavigationChainSize[] =
-    "SubresourceFilter.PageLoad.RedirectChainLength";
 const char kUrlA[] = "https://example_a.com";
 const char kUrlB[] = "https://example_b.com";
 const char kUrlC[] = "https://example_c.com";
 const char kUrlD[] = "https://example_d.com";
 const char kSubframeName[] = "Child";
+
+const char kMatchesPatternHistogramName[] =
+    "SubresourceFilter.PageLoad.RedirectChainMatchPattern.";
+const char kNavigationChainSize[] =
+    "SubresourceFilter.PageLoad.RedirectChainLength.";
 
 // Human readable representation of expected redirect chain match patterns.
 // The explanations for the buckets given for the following redirect chain:
@@ -66,9 +67,11 @@ enum RedirectChainMatchPattern {
 std::string GetSuffixForList(const ActivationList& type) {
   switch (type) {
     case ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL:
-      return ".SocialEngineeringAdsInterstitial";
+      return "SocialEngineeringAdsInterstitial";
     case ActivationList::PHISHING_INTERSTITIAL:
-      return ".PhishingInterstital";
+      return "PhishingInterstital";
+    case ActivationList::SUBRESOURCE_FILTER:
+      return "SubresourceFilterOnly";
     case ActivationList::NONE:
       return std::string();
   }
@@ -294,17 +297,22 @@ class ContentSubresourceFilterDriverFactoryTest
         GetListForThreatTypeAndMetadata(threat_type, threat_type_metadata);
 
     const std::string suffix(GetSuffixForList(activation_list));
+    size_t all_pattern =
+        tester.GetTotalCountsForPrefix(kMatchesPatternHistogramName).size();
+    size_t all_chain_size =
+        tester.GetTotalCountsForPrefix(kNavigationChainSize).size();
     if (expected_pattern != EMPTY) {
       EXPECT_THAT(tester.GetAllSamples(kMatchesPatternHistogramName + suffix),
                   ::testing::ElementsAre(base::Bucket(expected_pattern, 1)));
       EXPECT_THAT(
           tester.GetAllSamples(kNavigationChainSize + suffix),
           ::testing::ElementsAre(base::Bucket(navigation_chain.size(), 1)));
+      // Check that we recorded only what is needed.
+      EXPECT_EQ(1u, all_pattern);
+      EXPECT_EQ(1u, all_chain_size);
     } else {
-      EXPECT_THAT(tester.GetAllSamples(kMatchesPatternHistogramName + suffix),
-                  ::testing::IsEmpty());
-      EXPECT_THAT(tester.GetAllSamples(kNavigationChainSize + suffix),
-                  ::testing::IsEmpty());
+      EXPECT_EQ(0u, all_pattern);
+      EXPECT_EQ(0u, all_chain_size);
     }
   }
 
@@ -547,7 +555,6 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest, RedirectPatternTest) {
        {GURL(kUrlA), GURL(kUrlB)},
        F1M0L1,
        ActivationDecision::ACTIVATED},
-
       {{false, false, false},
        {GURL(kUrlA), GURL(kUrlB), GURL(kUrlC)},
        EMPTY,
@@ -598,6 +605,14 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest, RedirectPatternTest) {
     NavigateAndExpectActivation(
         {false}, {GURL("https://dummy.com")}, EMPTY,
         ActivationDecision::ACTIVATION_LIST_NOT_MATCHED);
+#if defined(GOOGLE_CHROME_BUILD)
+    NavigateAndExpectActivation(
+        test_data.blacklisted_urls, test_data.navigation_chain,
+        safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER,
+        safe_browsing::ThreatPatternType::NONE, content::Referrer(),
+        ui::PAGE_TRANSITION_LINK, EMPTY, test_data.hit_expected_pattern,
+        ActivationDecision::ACTIVATION_LIST_NOT_MATCHED);
+#endif
   }
 }
 

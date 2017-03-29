@@ -14,12 +14,17 @@ ActivationList GetListForThreatTypeAndMetadata(
   bool is_soc_engineering_ads_interstitial =
       threat_type_metadata ==
       safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS;
+  bool subresource_filter =
+      (threat_type == safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER);
   if (is_phishing_interstitial) {
     if (is_soc_engineering_ads_interstitial) {
       return ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL;
     }
     return ActivationList::PHISHING_INTERSTITIAL;
+  } else if (subresource_filter) {
+    return ActivationList::SUBRESOURCE_FILTER;
   }
+
   return ActivationList::NONE;
 }
 

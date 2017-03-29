@@ -20,6 +20,10 @@ const base::Feature kSafeBrowsingSubresourceFilter{
 const base::Feature kSafeBrowsingSubresourceFilterExperimentalUI{
     "SubresourceFilterExperimentalUI", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kSubresourceFilterSafeBrowsingActivationThrottle{
+    "SubresourceFilterSafeBrowsingActivationThrottle",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Legacy name `activation_state` is used in variation parameters.
 const char kActivationLevelParameterName[] = "activation_state";
 const char kActivationLevelDryRun[] = "dryrun";
@@ -35,6 +39,7 @@ const char kActivationListsParameterName[] = "activation_lists";
 const char kActivationListSocialEngineeringAdsInterstitial[] =
     "social_engineering_ads_interstitial";
 const char kActivationListPhishingInterstitial[] = "phishing_interstitial";
+const char kActivationListSubresourceFilter[] = "subresource_filter";
 
 const char kRulesetFlavorParameterName[] = "ruleset_flavor";
 
@@ -80,6 +85,9 @@ ActivationList GetCurrentActivationList() {
                    activation_list,
                    kActivationListSocialEngineeringAdsInterstitial)) {
       activation_list_type = ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL;
+    } else if (base::LowerCaseEqualsASCII(activation_list,
+                                          kActivationListSubresourceFilter)) {
+      activation_list_type = ActivationList::SUBRESOURCE_FILTER;
     }
   }
   return activation_list_type;

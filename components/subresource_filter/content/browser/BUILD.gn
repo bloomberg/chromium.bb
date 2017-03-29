@@ -19,12 +19,16 @@ static_library("browser") {
     "subframe_navigation_filtering_throttle.cc",
     "subframe_navigation_filtering_throttle.h",
     "subresource_filter_client.h",
+    "subresource_filter_safe_browsing_activation_throttle.cc",
+    "subresource_filter_safe_browsing_activation_throttle.h",
     "verified_ruleset_dealer.cc",
     "verified_ruleset_dealer.h",
   ]
   deps = [
     "//base",
+    "//components/safe_browsing_db:database_manager",
     "//components/safe_browsing_db:util",
+    "//components/safe_browsing_db:v4_local_database_manager",
     "//components/subresource_filter/content/common",
     "//components/subresource_filter/core/browser",
     "//components/subresource_filter/core/common",

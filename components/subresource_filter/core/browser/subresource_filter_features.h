@@ -18,6 +18,9 @@ extern const base::Feature kSafeBrowsingSubresourceFilter;
 // Enables the new experimental UI for the Subresource Filter.
 extern const base::Feature kSafeBrowsingSubresourceFilterExperimentalUI;
 
+// Guards creation of the SubresourceFilterSafeBrowsingActivationThrottle
+extern const base::Feature kSubresourceFilterSafeBrowsingActivationThrottle;
+
 // Name/values of the variation parameter controlling maximum activation level.
 extern const char kActivationLevelParameterName[];
 extern const char kActivationLevelDryRun[];
@@ -32,6 +35,7 @@ extern const char kActivationScopeNoSites[];
 extern const char kActivationListsParameterName[];
 extern const char kActivationListSocialEngineeringAdsInterstitial[];
 extern const char kActivationListPhishingInterstitial[];
+extern const char kActivationListSubresourceFilter[];
 
 extern const char kRulesetFlavorParameterName[];
 

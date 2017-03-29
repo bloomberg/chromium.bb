@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_params.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/variations/variations_associated_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,7 +42,7 @@ ScopedSubresourceFilterFeatureToggle::ScopedSubresourceFilterFeatureToggle(
 ScopedSubresourceFilterFeatureToggle::ScopedSubresourceFilterFeatureToggle(
     base::FeatureList::OverrideState feature_state,
     std::map<std::string, std::string> variation_params) {
-  EXPECT_TRUE(variations::AssociateVariationParams(
+  EXPECT_TRUE(base::AssociateFieldTrialParams(
       kTestFieldTrialName, kTestExperimentGroupName, variation_params));
 
   base::FieldTrial* field_trial = base::FieldTrialList::CreateFieldTrial(
