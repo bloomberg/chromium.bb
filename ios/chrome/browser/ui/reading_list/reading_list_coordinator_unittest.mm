@@ -149,7 +149,6 @@ TEST_F(ReadingListCoordinatorTest, OpenItem) {
   base::scoped_nsobject<ReadingListCollectionViewItem> item(
       [[ReadingListCollectionViewItem alloc]
                 initWithType:0
-          attributesProvider:nil
                          url:url
            distillationState:ReadingListEntry::PROCESSED]);
 

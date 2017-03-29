@@ -52,11 +52,6 @@ const CGFloat kMargin = 16;
 @interface ReadingListCollectionViewItem ()<ReadingListCellDelegate> {
   GURL _url;
 }
-// Attributes provider used to retrieve favicons.
-@property(nonatomic, strong)
-    FaviconAttributesProvider* faviconAttributesProvider;
-// Attributes for favicon. Fetched in init, then retained for future updates.
-@property(nonatomic, strong) FaviconAttributes* attributes;
 // The cell that is displaying this item, if any. Used to reload favicon when
 // the cell is on screen. Backed by WeakNSObject.
 @property(nonatomic, weak) ReadingListCell* displayedCell;
@@ -67,7 +62,6 @@ const CGFloat kMargin = 16;
 @end
 
 @implementation ReadingListCollectionViewItem
-@synthesize faviconAttributesProvider = _faviconAttributesProvider;
 @synthesize attributes = _attributes;
 @synthesize text = _text;
 @synthesize detailText = _detailText;
@@ -78,37 +72,15 @@ const CGFloat kMargin = 16;
 @synthesize accessibilityDelegate = _accessibilityDelegate;
 
 - (instancetype)initWithType:(NSInteger)type
-          attributesProvider:(FaviconAttributesProvider*)provider
                          url:(const GURL&)url
            distillationState:(ReadingListEntry::DistillationState)state {
   self = [super initWithType:type];
   if (!self)
     return nil;
   self.cellClass = [ReadingListCell class];
-  _faviconAttributesProvider = provider;
   _url = url;
   _distillationState = state;
   return self;
-}
-
-- (void)setFaviconPageURL:(GURL)url {
-  _faviconPageURL = url;
-  // |self| owns |provider|, |provider| owns the block, so a week self reference
-  // is necessary.
-  __weak ReadingListCollectionViewItem* weakSelf = self;
-  [_faviconAttributesProvider
-      fetchFaviconAttributesForURL:url
-                        completion:^(FaviconAttributes* _Nonnull attributes) {
-                          ReadingListCollectionViewItem* strongSelf = weakSelf;
-                          if (!strongSelf) {
-                            return;
-                          }
-
-                          strongSelf.attributes = attributes;
-
-                          [strongSelf.displayedCell.faviconView
-                              configureWithAttributes:strongSelf.attributes];
-                        }];
 }
 
 #pragma mark - property

@@ -17,6 +17,7 @@
 #import "components/reading_list/ios/reading_list_model_bridge_observer.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
+#import "ios/chrome/browser/favicon/favicon_attributes_provider.h"
 #include "ios/chrome/browser/reading_list/offline_url_utils.h"
 #include "ios/chrome/browser/reading_list/reading_list_download_service.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
@@ -106,6 +107,9 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 // Convenience method to create cell items for reading list entries.
 - (ReadingListCollectionViewItem*)cellItemForReadingListEntry:
     (const ReadingListEntry&)entry;
+// Sets and fetches the |faviconURL| of this |item|, then reconfigures it.
+- (void)setItem:(ReadingListCollectionViewItem*)item
+     faviconURL:(const GURL&)url;
 // Fills the |unread_map| and the |read_map| with the corresponding
 // ReadingListCollectionViewItem from the readingListModel.
 - (void)fillUnreadMap:(ItemsMapByDate&)unread_map
@@ -587,7 +591,9 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
     if (oldItem.url == newItem.url) {
       oldItem.text = newItem.text;
       oldItem.distillationState = newItem.distillationState;
-      oldItem.faviconPageURL = newItem.faviconPageURL;
+      if (oldItem.faviconPageURL != newItem.faviconPageURL) {
+        [self setItem:oldItem faviconURL:newItem.faviconPageURL];
+      }
     }
     if (![oldItem isEqual:newItem]) {
       return YES;
@@ -602,9 +608,12 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
   GURL url = entry.URL();
   ReadingListCollectionViewItem* item = [[ReadingListCollectionViewItem alloc]
             initWithType:entry.IsRead() ? ItemTypeRead : ItemTypeUnread
-      attributesProvider:self.attributesProvider
                      url:url
        distillationState:entry.DistilledState()];
+
+  [self setItem:item
+      faviconURL:entry.DistilledURL().is_valid() ? entry.DistilledURL() : url];
+
   NSString* fullUrlString =
       base::SysUTF16ToNSString(url_formatter::FormatUrl(url));
   NSString* urlString =
@@ -612,9 +621,41 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
   NSString* title = base::SysUTF8ToNSString(entry.Title());
   item.text = [title length] ? title : fullUrlString;
   item.detailText = urlString;
-  item.faviconPageURL =
-      entry.DistilledURL().is_valid() ? entry.DistilledURL() : url;
   return item;
+}
+
+- (void)setItem:(ReadingListCollectionViewItem*)item
+     faviconURL:(const GURL&)url {
+  item.faviconPageURL = url;
+
+  __weak ReadingListCollectionViewItem* weakItem = item;
+  __weak ReadingListCollectionViewController* weakSelf = self;
+  void (^completionBlock)(FaviconAttributes* attributes) =
+      ^(FaviconAttributes* attributes) {
+        ReadingListCollectionViewItem* strongItem = weakItem;
+        ReadingListCollectionViewController* strongSelf = weakSelf;
+        if (!strongSelf || !strongItem) {
+          return;
+        }
+
+        strongItem.attributes = attributes;
+
+        for (NSNumber* sectionNumber in
+             @[ @(SectionIdentifierUnread), @(SectionIdentifierRead) ]) {
+          NSInteger sectionIdentifier = [sectionNumber integerValue];
+          if ([strongSelf.collectionViewModel
+                  hasSectionForSectionIdentifier:sectionIdentifier] &&
+              [strongSelf.collectionViewModel hasItem:strongItem
+                              inSectionWithIdentifier:sectionIdentifier]) {
+            [strongSelf reconfigureCellsForItems:@[ strongItem ]
+                         inSectionWithIdentifier:sectionIdentifier];
+            break;
+          }
+        }
+      };
+
+  [self.attributesProvider fetchFaviconAttributesForURL:url
+                                             completion:completionBlock];
 }
 
 - (BOOL)hasItemInSection:(SectionIdentifier)sectionIdentifier {
