@@ -47,7 +47,8 @@ async_test(t => {
         'insertText', 'insertLineBreak', 'insertParagraph',
         'insertCompositionText', 'insertReplacementText',
         'deleteWordBackward', 'deleteWordForward',
-        'deleteLineBackward', 'deleteLineForward',
+        'deleteSoftLineBackward', 'deleteSoftLineForward',
+        'deleteHardLineBackward', 'deleteHardLineForward',
         'deleteContentBackward', 'deleteContentForward',
     ];
 
@@ -88,6 +89,10 @@ async_test(t => {
     testKeyDown('Delete', [], 'deleteContentForward');
     testKeyDown('Backspace', [deleteWordModifier], 'deleteWordBackward');
     testKeyDown('Delete', [deleteWordModifier], 'deleteWordForward');
+    testCommand('deleteToBeginningOfLine', 'deleteSoftLineBackward');
+    testCommand('deleteToEndOfLine', 'deleteSoftLineForward');
+    testCommand('deleteToBeginningOfParagraph', 'deleteHardLineBackward');
+    testCommand('deleteToEndOfParagraph', 'deleteHardLineForward');
 
     // Format
     editable.innerHTML = 'abc';

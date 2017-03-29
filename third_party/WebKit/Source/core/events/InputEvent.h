@@ -41,8 +41,10 @@ class InputEvent final : public UIEvent {
     // Deletion.
     DeleteWordBackward,
     DeleteWordForward,
-    DeleteLineBackward,
-    DeleteLineForward,
+    DeleteSoftLineBackward,
+    DeleteSoftLineForward,
+    DeleteHardLineBackward,
+    DeleteHardLineForward,
     DeleteContentBackward,
     DeleteContentForward,
     DeleteByCut,

@@ -92,8 +92,10 @@ InputEvent::EventCancelable inputTypeIsCancelable(
     case InputType::InsertReplacementText:
     case InputType::DeleteWordBackward:
     case InputType::DeleteWordForward:
-    case InputType::DeleteLineBackward:
-    case InputType::DeleteLineForward:
+    case InputType::DeleteSoftLineBackward:
+    case InputType::DeleteSoftLineForward:
+    case InputType::DeleteHardLineBackward:
+    case InputType::DeleteHardLineForward:
     case InputType::DeleteContentBackward:
     case InputType::DeleteContentForward:
       return InputEvent::EventCancelable::NotCancelable;
@@ -2167,13 +2169,17 @@ InputEvent::InputType deletionInputTypeFromTextGranularity(
       if (granularity == WordGranularity)
         return InputType::DeleteWordForward;
       if (granularity == LineBoundary)
-        return InputType::DeleteLineForward;
+        return InputType::DeleteSoftLineForward;
+      if (granularity == ParagraphBoundary)
+        return InputType::DeleteHardLineForward;
       return InputType::DeleteContentForward;
     case DeleteDirection::Backward:
       if (granularity == WordGranularity)
         return InputType::DeleteWordBackward;
       if (granularity == LineBoundary)
-        return InputType::DeleteLineBackward;
+        return InputType::DeleteSoftLineBackward;
+      if (granularity == ParagraphBoundary)
+        return InputType::DeleteHardLineBackward;
       return InputType::DeleteContentBackward;
     default:
       return InputType::None;

@@ -152,16 +152,18 @@ InputEvent::InputType InputTypeFromCommandType(
     case CommandType::DeleteForward:
       return InputType::DeleteContentForward;
     case CommandType::DeleteToBeginningOfLine:
-      return InputType::DeleteLineBackward;
+      return InputType::DeleteSoftLineBackward;
     case CommandType::DeleteToEndOfLine:
-      return InputType::DeleteLineForward;
+      return InputType::DeleteSoftLineForward;
     case CommandType::DeleteWordBackward:
       return InputType::DeleteWordBackward;
     case CommandType::DeleteWordForward:
       return InputType::DeleteWordForward;
-    // TODO(chongz): Find appreciate InputType for following commands.
     case CommandType::DeleteToBeginningOfParagraph:
+      return InputType::DeleteHardLineBackward;
     case CommandType::DeleteToEndOfParagraph:
+      return InputType::DeleteHardLineForward;
+    // TODO(chongz): Find appreciate InputType for following commands.
     case CommandType::DeleteToMark:
       return InputType::None;
 

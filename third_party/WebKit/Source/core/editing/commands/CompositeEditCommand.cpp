@@ -106,8 +106,10 @@ bool CompositeEditCommand::apply() {
       case InputEvent::InputType::InsertCompositionText:
       case InputEvent::InputType::DeleteWordBackward:
       case InputEvent::InputType::DeleteWordForward:
-      case InputEvent::InputType::DeleteLineBackward:
-      case InputEvent::InputType::DeleteLineForward:
+      case InputEvent::InputType::DeleteSoftLineBackward:
+      case InputEvent::InputType::DeleteSoftLineForward:
+      case InputEvent::InputType::DeleteHardLineBackward:
+      case InputEvent::InputType::DeleteHardLineForward:
       case InputEvent::InputType::DeleteContentBackward:
       case InputEvent::InputType::DeleteContentForward:
       case InputEvent::InputType::DeleteByCut:
