@@ -96,16 +96,23 @@ crbug.com/630615 [ Win ] images/color-profile-background-image-space.html [ Skip
 
 crbug.com/632000 [ Win ] images/paint-subrect-grid.html [ Pass Failure ]
 
-# Very slight (~2 pixel) differences.
-crbug.com/699573 [ Win ] virtual/gpu-rasterization/images/cross-fade-background-size.html [ Pass Failure ]
-
+########## Ref tests can't be rebaselined ##########
+# Scanlines off by 1, but code path should be the same
 crbug.com/644433 virtual/gpu/fast/canvas/OffscreenCanvas-2d-pattern-in-worker.html [ Failure ]
 
-# Ref tests can't be rebaselined
 crbug.com/646015 paint/invalidation/hover-invalidation-table.html [ Failure ]
 crbug.com/646015 virtual/disable-spinvalidation/paint/invalidation/hover-invalidation-table.html [ Failure ]
 
-# These are genuinely flaky.
+crbug.com/667045 paint/invalidation/table/composited-cell-collapsed-border-add-anonymous.html [ Crash ]
+crbug.com/667045 virtual/disable-spinvalidation/paint/invalidation/table/composited-cell-collapsed-border-add-anonymous.html [ Crash ]
+
+crbug.com/702006 paint/invalidation/compositing/scrolling-neg-z-index-descendants-should-cause-repaint.html [ Failure ]
+crbug.com/702006 virtual/disable-spinvalidation/paint/invalidation/compositing/scrolling-neg-z-index-descendants-should-cause-repaint.html [ Failure ]
+
+crbug.com/703403 paint/inline/focus-ring-under-absolute-with-relative-continuation.html [ Failure ]
+crbug.com/703403 virtual/disable-spinvalidation/paint/inline/focus-ring-under-absolute-with-relative-continuation.html [ Failure ]
+
+########## Genuinely flaky ##########
 crbug.com/653722 compositing/reflections/nested-reflection-anchor-point.html [ Pass Failure ]
 crbug.com/653722 compositing/reflections/nested-reflection-animated.html [ Pass Failure ]
 crbug.com/653722 compositing/reflections/nested-reflection-transition.html [ Pass Failure ]
@@ -116,20 +123,12 @@ crbug.com/653722 virtual/disable-spinvalidation/compositing/reflections/nested-r
 crbug.com/664850 virtual/display_list_2d_canvas/fast/canvas/canvas-createImageBitmap-webgl.html [ Pass Failure ]
 crbug.com/664850 virtual/display_list_2d_canvas/fast/canvas/OffscreenCanvas-2d-drawImage.html [ Pass Failure ]
 crbug.com/664850 virtual/display_list_2d_canvas/fast/canvas/OffscreenCanvas-commit-invalid-call.html [ Pass Failure ]
+
 crbug.com/664852 virtual/gpu/fast/canvas/canvas-createImageBitmap-webgl.html [ Pass Failure ]
 crbug.com/664852 virtual/gpu/fast/canvas/OffscreenCanvas-2d-drawImage.html [ Pass Failure ]
 
-crbug.com/667045 paint/invalidation/table/composited-cell-collapsed-border-add-anonymous.html [ Crash ]
-crbug.com/667045 virtual/disable-spinvalidation/paint/invalidation/table/composited-cell-collapsed-border-add-anonymous.html [ Crash ]
-
-# A real bug with a Skia assert
+################## Bugs to fix ###############################
 crbug.com/671048 virtual/color_space/fast/canvas/color-space/display_linear-rgb.html [ Pass Failure Crash ]
-
-crbug.com/702006 paint/invalidation/compositing/scrolling-neg-z-index-descendants-should-cause-repaint.html [ Failure ]
-crbug.com/702006 virtual/disable-spinvalidation/paint/invalidation/compositing/scrolling-neg-z-index-descendants-should-cause-repaint.html [ Failure ]
-
-crbug.com/703403 paint/inline/focus-ring-under-absolute-with-relative-continuation.html [ Failure ]
-crbug.com/703403 virtual/disable-spinvalidation/paint/inline/focus-ring-under-absolute-with-relative-continuation.html [ Failure ]
 
 # ====== Paint team owned tests to here ======
 
