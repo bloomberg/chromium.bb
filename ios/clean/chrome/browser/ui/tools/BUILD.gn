@@ -6,6 +6,8 @@ source_set("tools") {
   sources = [
     "tools_coordinator.h",
     "tools_coordinator.mm",
+    "tools_mediator.h",
+    "tools_mediator.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -27,6 +29,9 @@ source_set("tools_ui") {
     "menu_overflow_controls_stackview.mm",
     "menu_view_controller.h",
     "menu_view_controller.mm",
+    "tools_consumer.h",
+    "tools_menu_item.h",
+    "tools_menu_item.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]

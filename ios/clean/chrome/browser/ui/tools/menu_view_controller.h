@@ -7,10 +7,12 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/clean/chrome/browser/ui/tools/tools_consumer.h"
+
 // View controller that displays a vertical list of buttons to act as a menu.
 // The view controller dismisses as soon as any of the buttons, or any area
 // outside the presentation area, is tapped.
-@interface MenuViewController : UIViewController
+@interface MenuViewController : UIViewController<ToolsConsumer>
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_TOOLS_MENU_VIEW_CONTROLLER_H_
