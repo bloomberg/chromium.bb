@@ -408,6 +408,8 @@ IDBRequest* IDBObjectStore::put(ScriptState* scriptState,
   Vector<WebBlobInfo> blobInfo;
   SerializedScriptValue::SerializeOptions options;
   options.blobInfo = &blobInfo;
+  options.writeWasmToStream =
+      scriptState->getExecutionContext()->isSecureContext();
   RefPtr<SerializedScriptValue> serializedValue =
       SerializedScriptValue::serialize(isolate, value.v8Value(), options,
                                        exceptionState);

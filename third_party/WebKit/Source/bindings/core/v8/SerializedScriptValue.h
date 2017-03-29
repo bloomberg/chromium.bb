@@ -60,6 +60,8 @@ class CORE_EXPORT SerializedScriptValue
  public:
   using ArrayBufferContentsArray = Vector<WTF::ArrayBufferContents, 1>;
   using ImageBitmapContentsArray = Vector<RefPtr<StaticBitmapImage>, 1>;
+  using TransferredWasmModulesArray =
+      WTF::Vector<v8::WasmCompiledModule::TransferrableModule>;
 
   // Increment this for each incompatible change to the wire format.
   // Version 2: Added StringUCharTag for UChar v8 strings.
@@ -79,6 +81,7 @@ class CORE_EXPORT SerializedScriptValue
     STACK_ALLOCATED();
     Transferables* transferables = nullptr;
     WebBlobInfoArray* blobInfo = nullptr;
+    bool writeWasmToStream = false;
   };
   static PassRefPtr<SerializedScriptValue> serialize(v8::Isolate*,
                                                      v8::Local<v8::Value>,
@@ -106,6 +109,7 @@ class CORE_EXPORT SerializedScriptValue
     STACK_ALLOCATED();
     MessagePortArray* messagePorts = nullptr;
     const WebBlobInfoArray* blobInfo = nullptr;
+    bool readWasmFromStream = false;
   };
   v8::Local<v8::Value> deserialize(v8::Isolate* isolate) {
     return deserialize(isolate, DeserializeOptions());
@@ -163,6 +167,8 @@ class CORE_EXPORT SerializedScriptValue
     return m_imageBitmapContentsArray.get();
   }
 
+  TransferredWasmModulesArray& wasmModules() { return m_wasmModules; }
+
  private:
   friend class ScriptValueSerializer;
   friend class V8ScriptValueSerializer;
@@ -195,6 +201,8 @@ class CORE_EXPORT SerializedScriptValue
 
   std::unique_ptr<ArrayBufferContentsArray> m_arrayBufferContentsArray;
   std::unique_ptr<ImageBitmapContentsArray> m_imageBitmapContentsArray;
+  TransferredWasmModulesArray m_wasmModules;
+
   BlobDataHandleMap m_blobDataHandles;
 
   bool m_hasRegisteredExternalAllocation;

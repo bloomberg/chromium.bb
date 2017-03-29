@@ -49,7 +49,8 @@ V8ScriptValueSerializer::V8ScriptValueSerializer(
       m_serializedScriptValue(SerializedScriptValue::create()),
       m_serializer(m_scriptState->isolate(), this),
       m_transferables(options.transferables),
-      m_blobInfoArray(options.blobInfo) {}
+      m_blobInfoArray(options.blobInfo),
+      m_inlineWasm(options.writeWasmToStream) {}
 
 RefPtr<SerializedScriptValue> V8ScriptValueSerializer::serialize(
     v8::Local<v8::Value> value,
@@ -418,6 +419,23 @@ v8::Maybe<uint32_t> V8ScriptValueSerializer::GetSharedArrayBufferId(
     index += m_transferables->arrayBuffers.size();
   }
   return v8::Just<uint32_t>(index);
+}
+
+v8::Maybe<uint32_t> V8ScriptValueSerializer::GetWasmModuleTransferId(
+    v8::Isolate* isolate,
+    v8::Local<v8::WasmCompiledModule> module) {
+  if (m_inlineWasm)
+    return v8::Nothing<uint32_t>();
+
+  // We don't expect scenarios with numerous wasm modules being transferred
+  // around. Most likely, we'll have one module. The vector approach is simple
+  // and should perform sufficiently well under these expectations.
+  this->m_serializedScriptValue->wasmModules().push_back(
+      module->GetTransferrableModule());
+  uint32_t size =
+      static_cast<uint32_t>(m_serializedScriptValue->wasmModules().size());
+  DCHECK_GE(size, 1u);
+  return v8::Just(size - 1);
 }
 
 void* V8ScriptValueSerializer::ReallocateBufferMemory(void* oldBuffer,

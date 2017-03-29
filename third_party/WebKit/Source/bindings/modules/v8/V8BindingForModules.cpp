@@ -389,6 +389,7 @@ static v8::Local<v8::Value> deserializeIDBValueData(v8::Isolate* isolate,
       value->createSerializedValue();
   SerializedScriptValue::DeserializeOptions options;
   options.blobInfo = value->blobInfo();
+  options.readWasmFromStream = true;
   return serializedValue->deserialize(isolate, options);
 }
 

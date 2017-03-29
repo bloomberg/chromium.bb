@@ -7,9 +7,9 @@ var obj_store = 'store';
 var module_key = 'my_module';
 
 function createAndSaveToIndexedDB() {
-  return new Promise( (resolve, reject) => {
+  return new Promise((resolve, reject) => {
     createWasmModule()
-      .then (mod => {
+      .then(mod => {
         var delete_request = indexedDB.deleteDatabase(db_name);
         delete_request.onsuccess = function() {
           var open_request = indexedDB.open(db_name);
@@ -25,6 +25,9 @@ function createAndSaveToIndexedDB() {
             tx.oncomplete = function() {
               resolve();
             };
+            tx.onabort = function() {
+              reject(transaction.error);
+            };
           };
         };
       })
@@ -32,8 +35,10 @@ function createAndSaveToIndexedDB() {
   });
 }
 
+var kErrorMsg = "failed to retrieve object";
+
 function loadFromIndexedDB(prev) {
-  return new Promise(resolve => {
+  return new Promise((resolve, reject) => {
     prev.then(() => {
       var open_request = indexedDB.open(db_name);
       open_request.onsuccess = function() {
@@ -43,16 +48,32 @@ function loadFromIndexedDB(prev) {
         var get_request = store.get(module_key);
         get_request.onsuccess = function() {
           var mod = get_request.result;
-          var instance = new WebAssembly.Instance(get_request.result);
-          resolve(instance.exports.increment(1));
+          if (mod instanceof WebAssembly.Module) {
+            try {
+              var instance = new WebAssembly.Instance(mod);
+            } catch(e) {
+              reject(e);
+              return;
+            }
+            resolve(instance.exports.increment(1));
+          } else {
+            assert_equals(mod, null);
+            reject(new Error(kErrorMsg));
+          }
         };
       };
     });
   });
 }
 
-function TestIndexedDBLoadStore() {
+function TestIndexedDBLoadStoreSecure() {
   return loadFromIndexedDB(createAndSaveToIndexedDB())
-    .then((res) => assert_equals(res, 2))
-    .catch(error => assert_unreached(error));
+    .then(res => assert_equals(res, 2),
+          error => assert_unreached(error));
+}
+
+function TestIndexedDBLoadStoreInsecure() {
+  return loadFromIndexedDB(createAndSaveToIndexedDB())
+    .then(assert_unreached,
+          error => assert_equals(error.message, kErrorMsg));
 }

@@ -396,6 +396,10 @@ class Internals final : public GarbageCollected<Internals>,
   DOMArrayBuffer* serializeObject(PassRefPtr<SerializedScriptValue>) const;
   PassRefPtr<SerializedScriptValue> deserializeBuffer(DOMArrayBuffer*) const;
 
+  DOMArrayBuffer* serializeWithInlineWasm(ScriptValue) const;
+  ScriptValue deserializeBufferContainingWasm(ScriptState*,
+                                              DOMArrayBuffer*) const;
+
   String getCurrentCursorInfo();
 
   bool cursorUpdatePending() const;

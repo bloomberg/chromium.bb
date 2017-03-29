@@ -9,10 +9,10 @@
 </head>
 <body>
 <script>
-  if (window.location.origin != get_host_info().AUTHENTICATED_ORIGIN) {
-    window.location = get_host_info().AUTHENTICATED_ORIGIN + window.location.pathname;
+  if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
+    window.location = get_host_info().UNAUTHENTICATED_ORIGIN + window.location.pathname;
   } else {
-    promise_test(TestIndexedDBLoadStoreSecure, "serialize/deserialize to IndexedDB in secure context");
+    promise_test(TestIndexedDBLoadStoreInsecure, "serialize/deserialize to IndexedDB in insecure context");
   }
 </script>
 </body>

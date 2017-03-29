@@ -38,6 +38,8 @@ class GC_PLUGIN_IGNORE("https://crbug.com/644725")
   explicit V8ScriptValueSerializer(RefPtr<ScriptState>,
                                    const Options& = Options());
 
+  void setInlineWasm(bool inlineWasm) { m_inlineWasm = inlineWasm; }
+
   RefPtr<SerializedScriptValue> serialize(v8::Local<v8::Value>,
                                           ExceptionState&);
 
@@ -81,6 +83,9 @@ class GC_PLUGIN_IGNORE("https://crbug.com/644725")
       v8::Isolate*,
       v8::Local<v8::SharedArrayBuffer>) override;
 
+  v8::Maybe<uint32_t> GetWasmModuleTransferId(
+      v8::Isolate*,
+      v8::Local<v8::WasmCompiledModule>) override;
   void* ReallocateBufferMemory(void* oldBuffer,
                                size_t,
                                size_t* actualSize) override;
@@ -93,7 +98,7 @@ class GC_PLUGIN_IGNORE("https://crbug.com/644725")
   const ExceptionState* m_exceptionState = nullptr;
   WebBlobInfoArray* m_blobInfoArray = nullptr;
   ArrayBufferArray m_sharedArrayBuffers;
-
+  bool m_inlineWasm = false;
 #if DCHECK_IS_ON()
   bool m_serializeInvoked = false;
 #endif

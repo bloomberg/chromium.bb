@@ -73,6 +73,8 @@ class GC_PLUGIN_IGNORE("https://crbug.com/644725") CORE_EXPORT
 
   // v8::ValueDeserializer::Delegate
   v8::MaybeLocal<v8::Object> ReadHostObject(v8::Isolate*) override;
+  v8::MaybeLocal<v8::WasmCompiledModule> GetWasmModuleFromId(v8::Isolate*,
+                                                             uint32_t) override;
 
   RefPtr<ScriptState> m_scriptState;
   RefPtr<SerializedScriptValue> m_serializedScriptValue;
@@ -89,6 +91,7 @@ class GC_PLUGIN_IGNORE("https://crbug.com/644725") CORE_EXPORT
 
   // Set during deserialize after the header is read.
   uint32_t m_version = 0;
+
 #if DCHECK_IS_ON()
   bool m_deserializeInvoked = false;
 #endif

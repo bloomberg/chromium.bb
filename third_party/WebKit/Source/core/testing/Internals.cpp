@@ -2621,6 +2621,33 @@ PassRefPtr<SerializedScriptValue> Internals::deserializeBuffer(
   return SerializedScriptValue::create(value);
 }
 
+DOMArrayBuffer* Internals::serializeWithInlineWasm(ScriptValue value) const {
+  v8::Isolate* isolate = value.isolate();
+  ExceptionState exceptionState(isolate, ExceptionState::ExecutionContext,
+                                "Internals", "serializeWithInlineWasm");
+  v8::Local<v8::Value> v8Value = value.v8Value();
+  SerializedScriptValue::SerializeOptions options;
+  options.writeWasmToStream = true;
+  RefPtr<SerializedScriptValue> obj = SerializedScriptValue::serialize(
+      isolate, v8Value, options, exceptionState);
+  if (exceptionState.hadException())
+    return nullptr;
+  return serializeObject(obj);
+}
+
+ScriptValue Internals::deserializeBufferContainingWasm(
+    ScriptState* state,
+    DOMArrayBuffer* buffer) const {
+  String value(static_cast<const UChar*>(buffer->data()),
+               buffer->byteLength() / sizeof(UChar));
+  DummyExceptionStateForTesting exceptionState;
+  SerializedScriptValue::DeserializeOptions options;
+  options.readWasmFromStream = true;
+  return ScriptValue::from(
+      state, SerializedScriptValue::create(value)->deserialize(state->isolate(),
+                                                               options));
+}
+
 void Internals::forceReload(bool bypassCache) {
   if (!frame())
     return;

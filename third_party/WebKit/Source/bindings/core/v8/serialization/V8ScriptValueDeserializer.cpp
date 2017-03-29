@@ -90,6 +90,7 @@ V8ScriptValueDeserializer::V8ScriptValueDeserializer(
       m_transferredMessagePorts(options.messagePorts),
       m_blobInfoArray(options.blobInfo) {
   m_deserializer.SetSupportsLegacyWireFormat(true);
+  m_deserializer.SetExpectInlineWasm(options.readWasmFromStream);
 }
 
 v8::Local<v8::Value> V8ScriptValueDeserializer::deserialize() {
@@ -403,6 +404,17 @@ v8::MaybeLocal<v8::Object> V8ScriptValueDeserializer::ReadHostObject(
   v8::Local<v8::Value> wrapper = ToV8(wrappable, creationContext, isolate);
   DCHECK(wrapper->IsObject());
   return wrapper.As<v8::Object>();
+}
+
+v8::MaybeLocal<v8::WasmCompiledModule>
+V8ScriptValueDeserializer::GetWasmModuleFromId(v8::Isolate* isolate,
+                                               uint32_t id) {
+  if (id < m_serializedScriptValue->wasmModules().size()) {
+    return v8::WasmCompiledModule::FromTransferrableModule(
+        isolate, m_serializedScriptValue->wasmModules()[id]);
+  }
+  CHECK(m_serializedScriptValue->wasmModules().isEmpty());
+  return v8::MaybeLocal<v8::WasmCompiledModule>();
 }
 
 }  // namespace blink
