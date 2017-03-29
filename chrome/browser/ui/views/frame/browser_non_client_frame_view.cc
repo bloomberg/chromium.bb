@@ -209,7 +209,7 @@ bool BrowserNonClientFrameView::DoesIntersectRect(const views::View* target,
   View::ConvertRectToTarget(this, tabstrip, &rect_in_tabstrip_coords_f);
   gfx::Rect rect_in_tabstrip_coords =
       gfx::ToEnclosingRect(rect_in_tabstrip_coords_f);
-  if (rect_in_tabstrip_coords.bottom() > tabstrip->GetLocalBounds().bottom()) {
+  if (rect_in_tabstrip_coords.y() >= tabstrip->GetLocalBounds().bottom()) {
     // |rect| is below the tabstrip.
     return false;
   }
