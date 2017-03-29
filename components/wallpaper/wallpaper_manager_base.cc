@@ -490,13 +490,7 @@ void WallpaperManagerBase::OnPolicyCleared(const std::string& policy,
   GetUserWallpaperInfo(account_id, &info);
   info.type = user_manager::User::DEFAULT;
   SetUserWallpaperInfo(account_id, info, true /* is_persistent */);
-  // If the user's policy is cleared, try to set the device wallpaper first.
-  // Note We have to modify the user wallpaper info first. Otherwise, we won't
-  // be able to override the current user policy wallpaper. The wallpaper info
-  // will be set correctly if the device wallpaper is set successfully.
-  if (!SetDeviceWallpaperIfApplicable(account_id)) {
-    SetDefaultWallpaperNow(account_id);
-  }
+  SetDefaultWallpaperNow(account_id);
 }
 
 // static

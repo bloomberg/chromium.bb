@@ -1041,20 +1041,10 @@ void WallpaperManager::OnDeviceWallpaperDecoded(
                                   wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED,
                                   user_manager::User::DEVICE,
                                   base::Time::Now().LocalMidnight()};
-  if (user_manager::UserManager::Get()->IsUserLoggedIn()) {
-    // In a user's session treat the device wallpaper as a normal custom
-    // wallpaper. It should be persistent and can be overriden by other user
-    // selected wallpapers.
-    SetUserWallpaperInfo(account_id, wallpaper_info, true /* is_persistent */);
-    GetPendingWallpaper(account_id, false)
-        ->ResetSetWallpaperImage(user_image->image(), wallpaper_info);
-    wallpaper_cache_[account_id] = CustomWallpaperElement(
-        GetDeviceWallpaperFilePath(), user_image->image());
-  } else {
-    // In the login screen set the device wallpaper as the wallpaper.
-    GetPendingWallpaper(user_manager::SignInAccountId(), false)
-        ->ResetSetWallpaperImage(user_image->image(), wallpaper_info);
-  }
+  DCHECK(!user_manager::UserManager::Get()->IsUserLoggedIn());
+  // In the login screen set the device wallpaper as the wallpaper.
+  GetPendingWallpaper(user_manager::SignInAccountId(), false)
+      ->ResetSetWallpaperImage(user_image->image(), wallpaper_info);
 }
 
 void WallpaperManager::InitializeRegisteredDeviceWallpaper() {
@@ -1150,19 +1140,9 @@ bool WallpaperManager::ShouldSetDeviceWallpaper(const AccountId& account_id,
     return false;
   }
 
-  // Only set the device wallpaper if 1) we're at the login screen or 2) there
-  // is no user policy wallpaper in a user session and the user has the default
-  // wallpaper or device wallpaper in a user session. Note in the latter case,
-  // the device wallpaper can be overridden by user-selected wallpapers.
-  if (user_manager::UserManager::Get()->IsUserLoggedIn()) {
-    WallpaperInfo info;
-    if (GetUserWallpaperInfo(account_id, &info) &&
-        (info.type == user_manager::User::POLICY ||
-         (info.type != user_manager::User::DEFAULT &&
-          info.type != user_manager::User::DEVICE))) {
-      return false;
-    }
-  }
+  // Only set the device wallpaper if we're at the login screen.
+  if (user_manager::UserManager::Get()->IsUserLoggedIn())
+    return false;
 
   return true;
 }
