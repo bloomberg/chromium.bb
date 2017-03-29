@@ -215,6 +215,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_COPIED" desc="Notification telling the user that something has been copied to the clipboard.">
         Copied
       </message>
+      <message name="IDS_RETRY" desc="The label for retry button. [CHAR-LIMIT=20]">
+        Retry
+      </message>
 
       <!-- Main Preferences -->
       <message name="IDS_PREFERENCES" desc="Title for Chrome's Settings.">
@@ -1079,6 +1082,15 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
       <message name="IDS_SIGN_IN_BUTTON" desc="Label for a button to sign in">
         Sign in
+      </message>
+      <message name="IDS_SIGN_IN_GETTING_ACCOUNT_MANAGEMENT_POLICY" desc="Title of progress bar dialog for getting management policy">
+        Contacting Google…this may take a minute
+      </message>
+      <message name="IDS_SIGN_IN_TIMEOUT_TITLE" desc="Title of sign in timeout alert dialog">
+        Can't sign in
+      </message>
+      <message name="IDS_SIGN_IN_TIMEOUT_MESSAGE" desc="Message of sign in timeout alert dialog">
+        Google took too long to respond
       </message>
 
       <!-- Sync strings -->

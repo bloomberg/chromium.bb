@@ -644,21 +644,13 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
     /**
      * Performs an asynchronous check to see if the user is a managed user.
      * @param callback A callback to be called with true if the user is a managed user and false
-     *         otherwise.
+     *         otherwise. May be called synchronously from this function.
      */
     public static void isUserManaged(String email, final Callback<Boolean> callback) {
         if (nativeShouldLoadPolicyForUser(email)) {
             nativeIsUserManaged(email, callback);
         } else {
-            // Although we know the result immediately, the caller may not be able to handle the
-            // callback being executed during this method call. So we post the callback on the
-            // looper.
-            ThreadUtils.postOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    callback.onResult(false);
-                }
-            });
+            callback.onResult(false);
         }
     }
 
