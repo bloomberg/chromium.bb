@@ -11,22 +11,28 @@ PhotoCapabilities* PhotoCapabilities::create() {
   return new PhotoCapabilities();
 }
 
-String PhotoCapabilities::fillLightMode() const {
-  switch (m_fillLightMode) {
-    case media::mojom::blink::FillLightMode::NONE:
-      return "none";
-    case media::mojom::blink::FillLightMode::OFF:
-      return "off";
-    case media::mojom::blink::FillLightMode::AUTO:
-      return "auto";
-    case media::mojom::blink::FillLightMode::FLASH:
-      return "flash";
-    case media::mojom::blink::FillLightMode::TORCH:
-      return "torch";
-    default:
-      NOTREACHED();
+Vector<String> PhotoCapabilities::fillLightMode() const {
+  Vector<String> fillLightModes;
+  for (const auto& mode : m_fillLightModes) {
+    switch (mode) {
+      case media::mojom::blink::FillLightMode::OFF:
+        fillLightModes.push_back("off");
+        break;
+      case media::mojom::blink::FillLightMode::AUTO:
+        fillLightModes.push_back("auto");
+        break;
+      case media::mojom::blink::FillLightMode::FLASH:
+        fillLightModes.push_back("flash");
+        break;
+      default:
+        NOTREACHED();
+    }
   }
-  return emptyString;
+  return fillLightModes;
+}
+
+String PhotoCapabilities::redEyeReduction() const {
+  return m_redEyeReduction ? "controllable" : "never";
 }
 
 DEFINE_TRACE(PhotoCapabilities) {

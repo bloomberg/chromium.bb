@@ -27,6 +27,8 @@
 
 namespace blink {
 
+using FillLightMode = media::mojom::blink::FillLightMode;
+
 namespace {
 
 const char kNoServiceError[] = "ImageCapture service unavailable.";
@@ -47,16 +49,14 @@ media::mojom::blink::MeteringMode parseMeteringMode(const String& blinkMode) {
   return media::mojom::blink::MeteringMode::NONE;
 }
 
-media::mojom::blink::FillLightMode parseFillLightMode(const String& blinkMode) {
+FillLightMode parseFillLightMode(const String& blinkMode) {
   if (blinkMode == "off")
-    return media::mojom::blink::FillLightMode::OFF;
+    return FillLightMode::OFF;
   if (blinkMode == "auto")
-    return media::mojom::blink::FillLightMode::AUTO;
+    return FillLightMode::AUTO;
   if (blinkMode == "flash")
-    return media::mojom::blink::FillLightMode::FLASH;
-  if (blinkMode == "torch")
-    return media::mojom::blink::FillLightMode::TORCH;
-  return media::mojom::blink::FillLightMode::NONE;
+    return FillLightMode::FLASH;
+  return FillLightMode::NONE;
 }
 
 WebString toString(media::mojom::blink::MeteringMode value) {
@@ -430,7 +430,16 @@ void ImageCapture::onPhotoCapabilities(
         MediaSettingsRange::create(std::move(capabilities->height)));
     caps->setImageWidth(
         MediaSettingsRange::create(std::move(capabilities->width)));
-    caps->setFillLightMode(capabilities->fill_light_mode);
+
+    // TODO(mcasas): use a list of supported modes when mojo is updated.
+    // https://crbug.com/700607.
+    if (capabilities->fill_light_mode == FillLightMode::NONE)
+      caps->setFillLightMode(Vector<FillLightMode>());
+    else
+      caps->setFillLightMode({capabilities->fill_light_mode});
+
+    // TODO(mcasas): use a list of supported modes when mojo is updated.
+    // https://crbug.com/700607.
     caps->setRedEyeReduction(capabilities->red_eye_reduction);
 
     resolver->resolve(caps);

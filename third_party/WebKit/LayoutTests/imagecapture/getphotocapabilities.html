@@ -8,7 +8,7 @@
 </body>
 <script>
 
-const fillLightModeNames = ["none", "off", "auto", "flash", "torch"];
+const mojoFillLightModeNames = ["none", "off", "auto", "flash"];
 
 // This test verifies that ImageCapture can get PhotoCapabilities(), with a mock
 // Mojo interface implementation.
@@ -55,12 +55,13 @@ async_test(function(t) {
                     mock_capabilities.width.current);
       assert_equals(capabilities.imageWidth.step, mock_capabilities.width.step);
 
-      assert_equals(capabilities.fillLightMode,
-          fillLightModeNames[mock_capabilities.fill_light_mode],
+      assert_array_equals(
+          capabilities.fillLightMode,
+          [mojoFillLightModeNames[mock_capabilities.fill_light_mode]],
           'fillLightMode');
 
-      assert_true(capabilities.redEyeReduction,
-          mock_capabilities.red_eye_reduction, 'redEyeReduction');
+      assert_equals(capabilities.redEyeReduction, 'controllable',
+                    'redEyeReduction');
 
       t.done();
     })

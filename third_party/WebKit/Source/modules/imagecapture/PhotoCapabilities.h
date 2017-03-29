@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "media/capture/mojo/image_capture.mojom-blink.h"
 #include "modules/imagecapture/MediaSettingsRange.h"
+#include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -27,12 +28,12 @@ class PhotoCapabilities final
   MediaSettingsRange* imageWidth() const { return m_imageWidth; }
   void setImageWidth(MediaSettingsRange* value) { m_imageWidth = value; }
 
-  String fillLightMode() const;
-  void setFillLightMode(media::mojom::blink::FillLightMode fillLightMode) {
-    m_fillLightMode = fillLightMode;
+  Vector<String> fillLightMode() const;
+  void setFillLightMode(Vector<media::mojom::blink::FillLightMode> modes) {
+    m_fillLightModes = modes;
   }
 
-  bool redEyeReduction() const { return m_redEyeReduction; }
+  String redEyeReduction() const;
   void setRedEyeReduction(bool redEyeReduction) {
     m_redEyeReduction = redEyeReduction;
   }
@@ -44,8 +45,7 @@ class PhotoCapabilities final
 
   Member<MediaSettingsRange> m_imageHeight;
   Member<MediaSettingsRange> m_imageWidth;
-  media::mojom::blink::FillLightMode m_fillLightMode =
-      media::mojom::blink::FillLightMode::NONE;
+  Vector<media::mojom::blink::FillLightMode> m_fillLightModes;
   bool m_redEyeReduction;
 };
 
