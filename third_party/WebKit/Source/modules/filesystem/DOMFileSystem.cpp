@@ -30,8 +30,9 @@
 
 #include "modules/filesystem/DOMFileSystem.h"
 
+#include <memory>
 #include "core/fileapi/BlobCallback.h"
-#include "core/inspector/InspectorInstrumentation.h"
+#include "core/probe/CoreProbes.h"
 #include "modules/filesystem/DOMFilePath.h"
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/FileEntry.h"
@@ -49,7 +50,6 @@
 #include "public/platform/WebSecurityOrigin.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 

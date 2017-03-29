@@ -40,7 +40,7 @@
 #include "bindings/core/v8/V8FormData.h"
 #include "bindings/core/v8/V8HTMLDocument.h"
 #include "core/dom/Document.h"
-#include "core/inspector/InspectorInstrumentation.h"
+#include "core/probe/CoreProbes.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/xmlhttprequest/XMLHttpRequest.h"
 #include "v8/include/v8.h"

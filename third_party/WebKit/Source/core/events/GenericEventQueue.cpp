@@ -26,7 +26,7 @@
 #include "core/events/GenericEventQueue.h"
 
 #include "core/events/Event.h"
-#include "core/inspector/InspectorInstrumentation.h"
+#include "core/probe/CoreProbes.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 
 namespace blink {

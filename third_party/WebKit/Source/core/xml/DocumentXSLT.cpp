@@ -14,7 +14,7 @@
 #include "core/events/Event.h"
 #include "core/events/EventListener.h"
 #include "core/frame/UseCounter.h"
-#include "core/inspector/InspectorInstrumentation.h"
+#include "core/probe/CoreProbes.h"
 #include "core/xml/XSLStyleSheet.h"
 #include "core/xml/XSLTProcessor.h"
 

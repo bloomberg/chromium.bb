@@ -30,12 +30,12 @@
 
 #include "core/inspector/WorkerInspectorController.h"
 
-#include "core/InspectorInstrumentationAgents.h"
-#include "core/inspector/InspectorInstrumentation.h"
+#include "core/CoreProbeSink.h"
 #include "core/inspector/InspectorLogAgent.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/WorkerThreadDebugger.h"
 #include "core/inspector/protocol/Protocol.h"
+#include "core/probe/CoreProbes.h"
 #include "core/workers/WorkerBackingThread.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThread.h"
@@ -55,7 +55,7 @@ WorkerInspectorController::WorkerInspectorController(
     WorkerThreadDebugger* debugger)
     : m_debugger(debugger),
       m_thread(thread),
-      m_instrumentingAgents(new InspectorInstrumentationAgents()) {
+      m_instrumentingAgents(new CoreProbeSink()) {
   m_instrumentingAgents->addInspectorTraceEvents(new InspectorTraceEvents());
 }
 

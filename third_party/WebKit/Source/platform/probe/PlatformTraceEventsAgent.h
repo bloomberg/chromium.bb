@@ -7,7 +7,6 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/heap/Heap.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
 
 namespace blink {
 

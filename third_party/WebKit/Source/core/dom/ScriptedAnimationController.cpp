@@ -31,9 +31,9 @@
 #include "core/events/Event.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/probe/CoreProbes.h"
 
 namespace blink {
 

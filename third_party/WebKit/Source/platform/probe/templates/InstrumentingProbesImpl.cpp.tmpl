@@ -5,17 +5,17 @@
 // found in the LICENSE file.
 
 
-{% set agents_class = name + "Agents" %}
+{% set sink_class = (name | to_singular) + "Sink" %}
 {% for file in files %}
 #include "{{file.name}}Inl.h"
 {% endfor %}
-#include "{{agents_class}}.h"
+#include "{{sink_class}}.h"
 {% for agent in agents %}
 {% set class_name = agent | agent_name_to_class %}
 {% if class_name == "PerformanceMonitor" %}
 #include "core/frame/PerformanceMonitor.h"
 {% elif class_name.startswith("Platform") %}
-#include "platform/instrumentation/{{class_name}}.h"
+#include "platform/probe/{{class_name}}.h"
 {% else %}
 #include "core/inspector/{{class_name}}.h"
 {% endif %}
@@ -23,24 +23,24 @@
 
 namespace blink {
 
-{{agents_class}}::{{agents_class}}() {}
+{{sink_class}}::{{sink_class}}() {}
 
 {% for agent in agents %}
 {% set class_name = agent | agent_name_to_class %}
 {% set getter_name = class_name | to_lower_case %}
-void {{agents_class}}::add{{class_name}}({{class_name}}* agent) {
+void {{sink_class}}::add{{class_name}}({{class_name}}* agent) {
   m_{{getter_name}}s.insert(agent);
   m_has{{class_name}}s = true;
 }
 
-void {{agents_class}}::remove{{class_name}}({{class_name}}* agent) {
+void {{sink_class}}::remove{{class_name}}({{class_name}}* agent) {
   m_{{getter_name}}s.erase(agent);
   m_has{{class_name}}s = !m_{{getter_name}}s.isEmpty();
 }
 
 {% endfor -%}
 
-DEFINE_TRACE({{agents_class}})
+DEFINE_TRACE({{sink_class}})
 {
 {% for agent in agents %}
 {% set getter_name = agent | agent_name_to_class | to_lower_case %}
@@ -58,8 +58,8 @@ namespace probe {
 
 {% macro probe_body(probe, common_name) %}
 {% set agent_probe_name = common_name or probe.name %}
-  {{agents_class}}* agents = instrumentingAgentsFor({{probe.params[0].name}});
-  if (!agents)
+  {{sink_class}}* sink = to{{sink_class}}({{probe.params[0].name}});
+  if (!sink)
     return {{probe.default_return_value}};
 {% for param in probe.params %}
 {% if param.is_prp %}
@@ -69,8 +69,8 @@ namespace probe {
 {% set maybe_return = "return " if probe.returns_value else "" %}
 {% for agent in probe.agents %}
 {% set class_name = agent | agent_name_to_class %}
-  if (agents->has{{class_name}}s()) {
-    for ({{class_name}}* agent : agents->{{ class_name | to_lower_case }}s())
+  if (sink->has{{class_name}}s()) {
+    for ({{class_name}}* agent : sink->{{ class_name | to_lower_case }}s())
       {{maybe_return}}agent->{{agent_probe_name}}({{caller()}});
   }
 {% endfor %}

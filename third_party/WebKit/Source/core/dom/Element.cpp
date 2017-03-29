@@ -26,6 +26,7 @@
 
 #include "core/dom/Element.h"
 
+#include <memory>
 #include "bindings/core/v8/DOMDataStore.h"
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionMessages.h"
@@ -116,7 +117,6 @@
 #include "core/html/HTMLTemplateElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/input/EventHandler.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/LayoutTextFragment.h"
 #include "core/layout/api/LayoutBoxItem.h"
 #include "core/layout/api/LayoutViewItem.h"
@@ -132,6 +132,7 @@
 #include "core/page/scrolling/ScrollStateCallback.h"
 #include "core/page/scrolling/TopDocumentRootScrollerController.h"
 #include "core/paint/PaintLayer.h"
+#include "core/probe/CoreProbes.h"
 #include "core/svg/SVGAElement.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGTreeScopeResources.h"
@@ -145,7 +146,6 @@
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/TextPosition.h"
-#include <memory>
 
 namespace blink {
 

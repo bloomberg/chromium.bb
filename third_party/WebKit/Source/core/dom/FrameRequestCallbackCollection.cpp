@@ -5,8 +5,8 @@
 #include "core/dom/FrameRequestCallbackCollection.h"
 
 #include "core/dom/FrameRequestCallback.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
+#include "core/probe/CoreProbes.h"
 
 namespace blink {
 

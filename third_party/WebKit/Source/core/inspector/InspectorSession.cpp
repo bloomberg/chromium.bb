@@ -8,9 +8,9 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/InspectorBaseAgent.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/V8InspectorString.h"
 #include "core/inspector/protocol/Protocol.h"
+#include "core/probe/CoreProbes.h"
 
 namespace blink {
 
@@ -18,13 +18,12 @@ namespace {
 const char kV8StateKey[] = "v8";
 }
 
-InspectorSession::InspectorSession(
-    Client* client,
-    InspectorInstrumentationAgents* instrumentingAgents,
-    int sessionId,
-    v8_inspector::V8Inspector* inspector,
-    int contextGroupId,
-    const String* savedState)
+InspectorSession::InspectorSession(Client* client,
+                                   CoreProbeSink* instrumentingAgents,
+                                   int sessionId,
+                                   v8_inspector::V8Inspector* inspector,
+                                   int contextGroupId,
+                                   const String* savedState)
     : m_client(client),
       m_v8Session(nullptr),
       m_sessionId(sessionId),

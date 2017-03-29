@@ -40,8 +40,8 @@
 #include "core/events/EventTarget.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/inspector/InspectorDOMAgent.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/V8InspectorString.h"
+#include "core/probe/CoreProbes.h"
 
 namespace {
 

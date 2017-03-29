@@ -21,20 +21,20 @@
 
 #include "core/page/ChromeClient.h"
 
+#include <algorithm>
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/HitTestResult.h"
 #include "core/page/FrameTree.h"
 #include "core/page/ScopedPageSuspender.h"
 #include "core/page/WindowFeatures.h"
+#include "core/probe/CoreProbes.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/network/NetworkHints.h"
 #include "public/platform/WebScreenInfo.h"
-#include <algorithm>
 
 namespace blink {
 

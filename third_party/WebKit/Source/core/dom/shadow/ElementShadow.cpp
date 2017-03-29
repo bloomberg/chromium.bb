@@ -31,7 +31,7 @@
 #include "core/dom/StyleChangeReason.h"
 #include "core/dom/shadow/ElementShadowV0.h"
 #include "core/frame/Deprecation.h"
-#include "core/inspector/InspectorInstrumentation.h"
+#include "core/probe/CoreProbes.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/ScriptForbiddenScope.h"
 

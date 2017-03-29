@@ -75,11 +75,6 @@ DEPENDENCY_IDL_FILES = frozenset([
     'TestInterface2Partial2.idl',
 ])
 
-# core/inspector/InspectorInstrumentation.idl is not a valid Blink IDL.
-NON_BLINK_IDL_FILES = frozenset([
-    'InspectorInstrumentation.idl',
-])
-
 COMPONENT_DIRECTORY = frozenset(['core', 'modules'])
 
 SOURCE_PATH = webkit_finder.get_source_dir()
@@ -129,8 +124,6 @@ def generate_interface_dependencies():
     def collect_interfaces_info(idl_path_list):
         info_collector = InterfaceInfoCollector()
         for idl_path in idl_path_list:
-            if os.path.basename(idl_path) in NON_BLINK_IDL_FILES:
-                continue
             info_collector.collect_info(idl_path)
         info = info_collector.get_info_as_dict()
         # TestDictionary.{h,cpp} are placed under

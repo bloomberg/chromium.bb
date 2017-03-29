@@ -31,7 +31,7 @@
 #include "core/dom/Text.h"
 #include "core/editing/FrameSelection.h"
 #include "core/events/MutationEvent.h"
-#include "core/inspector/InspectorInstrumentation.h"
+#include "core/probe/CoreProbes.h"
 #include "wtf/CheckedNumeric.h"
 
 namespace blink {

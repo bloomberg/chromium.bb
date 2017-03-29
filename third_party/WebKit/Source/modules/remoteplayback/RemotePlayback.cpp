@@ -12,7 +12,7 @@
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/Event.h"
 #include "core/html/HTMLMediaElement.h"
-#include "core/inspector/InspectorInstrumentation.h"
+#include "core/probe/CoreProbes.h"
 #include "modules/EventTargetModules.h"
 #include "platform/MemoryCoordinator.h"
 #include "platform/UserGestureIndicator.h"

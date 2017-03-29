@@ -33,7 +33,7 @@
 #include "core/frame/HostsUsingFeatures.h"
 #include "core/frame/PerformanceMonitor.h"
 #include "core/frame/Settings.h"
-#include "core/inspector/InspectorInstrumentation.h"
+#include "core/probe/CoreProbes.h"
 #include "modules/geolocation/Coordinates.h"
 #include "modules/geolocation/GeolocationError.h"
 #include "modules/permissions/PermissionUtils.h"

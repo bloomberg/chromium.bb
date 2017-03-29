@@ -27,6 +27,7 @@
 
 #include "core/dom/ExecutionContext.h"
 
+#include <memory>
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "core/dom/SuspendableObject.h"
@@ -36,13 +37,12 @@
 #include "core/frame/UseCounter.h"
 #include "core/html/PublicURLManager.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "core/inspector/InspectorInstrumentation.h"
+#include "core/probe/CoreProbes.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

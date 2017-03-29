@@ -7,7 +7,7 @@
 #include "core/dom/ExecutionContextTask.h"
 #include "core/frame/Deprecation.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "core/inspector/InspectorInstrumentation.h"
+#include "core/probe/CoreProbes.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/CrossThreadFunctional.h"

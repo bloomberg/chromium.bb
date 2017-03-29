@@ -5,7 +5,7 @@
 #include "core/inspector/ConsoleMessageStorage.h"
 
 #include "core/inspector/ConsoleMessage.h"
-#include "core/inspector/InspectorInstrumentation.h"
+#include "core/probe/CoreProbes.h"
 
 namespace blink {
 

@@ -31,7 +31,7 @@
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/html/HTMLContentElement.h"
 #include "core/html/HTMLShadowElement.h"
-#include "core/inspector/InspectorInstrumentation.h"
+#include "core/probe/CoreProbes.h"
 
 namespace blink {
 

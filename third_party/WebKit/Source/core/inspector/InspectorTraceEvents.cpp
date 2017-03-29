@@ -21,13 +21,13 @@
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "core/inspector/IdentifiersFactory.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutObject.h"
 #include "core/loader/resource/CSSStyleSheetResource.h"
 #include "core/page/Page.h"
 #include "core/paint/PaintLayer.h"
+#include "core/probe/CoreProbes.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
 #include "core/xmlhttprequest/XMLHttpRequest.h"
@@ -89,10 +89,9 @@ void setCallStack(TracedValue* value) {
   v8::Isolate::GetCurrent()->GetCpuProfiler()->CollectSample();
 }
 
-void InspectorTraceEvents::init(
-    InspectorInstrumentationAgents* instrumentingAgents,
-    protocol::UberDispatcher*,
-    protocol::DictionaryValue*) {
+void InspectorTraceEvents::init(CoreProbeSink* instrumentingAgents,
+                                protocol::UberDispatcher*,
+                                protocol::DictionaryValue*) {
   m_instrumentingAgents = instrumentingAgents;
   m_instrumentingAgents->addInspectorTraceEvents(this);
 }

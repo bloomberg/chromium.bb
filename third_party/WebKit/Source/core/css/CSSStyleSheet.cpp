@@ -38,7 +38,7 @@
 #include "core/dom/StyleEngine.h"
 #include "core/frame/Deprecation.h"
 #include "core/html/HTMLStyleElement.h"
-#include "core/inspector/InspectorInstrumentation.h"
+#include "core/probe/CoreProbes.h"
 #include "core/svg/SVGStyleElement.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/text/StringBuilder.h"

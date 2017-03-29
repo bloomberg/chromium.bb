@@ -33,7 +33,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/events/ProgressEvent.h"
 #include "core/fileapi/Blob.h"
-#include "core/inspector/InspectorInstrumentation.h"
+#include "core/probe/CoreProbes.h"
 #include "public/platform/WebFileWriter.h"
 #include "public/platform/WebURL.h"
 #include "wtf/CurrentTime.h"

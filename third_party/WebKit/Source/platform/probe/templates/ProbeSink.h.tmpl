@@ -4,10 +4,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-{% set agents_class = name + "Agents" %}
+{% set sink_class = (name | to_singular) + "Sink" %}
 
-#ifndef {{agents_class}}_h
-#define {{agents_class}}_h
+#ifndef {{sink_class}}_h
+#define {{sink_class}}_h
 
 #include "platform/heap/HeapAllocator.h"
 {% for define in defines %}
@@ -20,11 +20,11 @@ namespace blink {
 class {{ agent | agent_name_to_class }};
 {% endfor %}
 
-class PROBE_EXPORT {{agents_class}} : public GarbageCollected<{{agents_class}}> {
-  WTF_MAKE_NONCOPYABLE({{agents_class}});
+class PROBE_EXPORT {{sink_class}} : public GarbageCollected<{{sink_class}}> {
+  WTF_MAKE_NONCOPYABLE({{sink_class}});
 
  public:
-  {{agents_class}}();
+  {{sink_class}}();
   DECLARE_TRACE();
 
 {% for agent in agents %}
@@ -47,4 +47,4 @@ class PROBE_EXPORT {{agents_class}} : public GarbageCollected<{{agents_class}}> 
 
 } // namespace blink
 
-#endif // !defined({{agents_class}}_h)
+#endif // !defined({{sink_class}}_h)

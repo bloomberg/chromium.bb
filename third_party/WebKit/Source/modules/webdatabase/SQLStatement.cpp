@@ -28,7 +28,7 @@
 
 #include "modules/webdatabase/SQLStatement.h"
 
-#include "core/inspector/InspectorInstrumentation.h"
+#include "core/probe/CoreProbes.h"
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseManager.h"
 #include "modules/webdatabase/SQLError.h"

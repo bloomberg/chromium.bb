@@ -28,8 +28,9 @@
 
 #include "modules/indexeddb/WebIDBCallbacksImpl.h"
 
+#include <memory>
 #include "core/dom/DOMException.h"
-#include "core/inspector/InspectorInstrumentation.h"
+#include "core/probe/CoreProbes.h"
 #include "modules/IndexedDBNames.h"
 #include "modules/indexeddb/IDBMetadata.h"
 #include "modules/indexeddb/IDBRequest.h"
@@ -41,7 +42,6 @@
 #include "public/platform/modules/indexeddb/WebIDBKey.h"
 #include "public/platform/modules/indexeddb/WebIDBValue.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 
 using blink::WebIDBCursor;
 using blink::WebIDBDatabase;

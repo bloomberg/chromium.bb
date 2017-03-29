@@ -133,20 +133,20 @@ action("character_data") {
 }
 
 action("instrumentation_probes") {
-  script = "instrumentation/InstrumentingProbesCodeGenerator.py"
+  script = "probe/InstrumentingProbesCodeGenerator.py"
 
-  input_file = "instrumentation/PlatformInstrumentation.idl"
+  input_file = "probe/PlatformProbes.pidl"
   inputs = [
     input_file,
-    "instrumentation/InstrumentingProbesImpl_cpp.template",
-    "instrumentation/InstrumentingProbesImpl_h.template",
-    "instrumentation/InstrumentingAgents_h.template",
+    "probe/templates/InstrumentingProbesImpl.cpp.tmpl",
+    "probe/templates/InstrumentingProbesInl.h.tmpl",
+    "probe/templates/ProbeSink.h.tmpl",
   ]
 
   outputs = [
-    "$blink_platform_output_dir/PlatformInstrumentationAgents.h",
-    "$blink_platform_output_dir/PlatformInstrumentationInl.h",
-    "$blink_platform_output_dir/PlatformInstrumentationImpl.cpp",
+    "$blink_platform_output_dir/PlatformProbeSink.h",
+    "$blink_platform_output_dir/PlatformProbesInl.h",
+    "$blink_platform_output_dir/PlatformProbesImpl.cpp",
   ]
 
   args = [
@@ -1093,8 +1093,6 @@ component("platform") {
     "image-encoders/WEBPImageEncoder.h",
     "instrumentation/PlatformInstrumentation.cpp",
     "instrumentation/PlatformInstrumentation.h",
-    "instrumentation/PlatformTraceEventsAgent.cpp",
-    "instrumentation/PlatformTraceEventsAgent.h",
     "instrumentation/tracing/MemoryCacheDumpProvider.cpp",
     "instrumentation/tracing/MemoryCacheDumpProvider.h",
     "instrumentation/tracing/TraceEvent.h",
@@ -1190,6 +1188,10 @@ component("platform") {
     "plugins/PluginData.h",
     "plugins/PluginListBuilder.cpp",
     "plugins/PluginListBuilder.h",
+    "probe/PlatformProbes.cpp",
+    "probe/PlatformProbes.h",
+    "probe/PlatformTraceEventsAgent.cpp",
+    "probe/PlatformTraceEventsAgent.h",
     "scheduler/base/cancelable_closure_holder.cc",
     "scheduler/base/cancelable_closure_holder.h",
     "scheduler/base/enqueue_order.cc",

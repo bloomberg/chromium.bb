@@ -72,7 +72,7 @@ class CORE_EXPORT InspectorTraceEvents : public InspectorAgent {
  public:
   InspectorTraceEvents() {}
 
-  void init(InspectorInstrumentationAgents*,
+  void init(CoreProbeSink*,
             protocol::UberDispatcher*,
             protocol::DictionaryValue*) override;
   void dispose() override;
@@ -111,7 +111,7 @@ class CORE_EXPORT InspectorTraceEvents : public InspectorAgent {
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  Member<InspectorInstrumentationAgents> m_instrumentingAgents;
+  Member<CoreProbeSink> m_instrumentingAgents;
 };
 
 namespace InspectorLayoutEvent {

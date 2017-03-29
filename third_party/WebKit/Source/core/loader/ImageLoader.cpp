@@ -22,6 +22,7 @@
 
 #include "core/loader/ImageLoader.h"
 
+#include <memory>
 #include "bindings/core/v8/Microtask.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptState.h"
@@ -38,10 +39,10 @@
 #include "core/html/CrossOriginAttribute.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutVideo.h"
 #include "core/layout/svg/LayoutSVGImage.h"
+#include "core/probe/CoreProbes.h"
 #include "core/svg/graphics/SVGImage.h"
 #include "platform/loader/fetch/FetchRequest.h"
 #include "platform/loader/fetch/MemoryCache.h"
@@ -52,7 +53,6 @@
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

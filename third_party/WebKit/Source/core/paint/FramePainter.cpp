@@ -6,7 +6,6 @@
 
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/frame/FrameView.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/layout/LayoutView.h"
 #include "core/page/Page.h"
@@ -16,6 +15,7 @@
 #include "core/paint/PaintLayerPainter.h"
 #include "core/paint/ScrollbarPainter.h"
 #include "core/paint/TransformRecorder.h"
+#include "core/probe/CoreProbes.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/ClipRecorder.h"

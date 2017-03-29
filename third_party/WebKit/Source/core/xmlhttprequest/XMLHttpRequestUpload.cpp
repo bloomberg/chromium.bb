@@ -27,7 +27,7 @@
 
 #include "core/EventTypeNames.h"
 #include "core/events/ProgressEvent.h"
-#include "core/inspector/InspectorInstrumentation.h"
+#include "core/probe/CoreProbes.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/AtomicString.h"
 

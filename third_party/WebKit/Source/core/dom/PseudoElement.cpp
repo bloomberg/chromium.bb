@@ -28,9 +28,9 @@
 
 #include "core/dom/FirstLetterPseudoElement.h"
 #include "core/frame/UseCounter.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutQuote.h"
+#include "core/probe/CoreProbes.h"
 #include "core/style/ContentData.h"
 
 namespace blink {

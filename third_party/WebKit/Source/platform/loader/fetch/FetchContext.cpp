@@ -30,8 +30,8 @@
 
 #include "platform/loader/fetch/FetchContext.h"
 
-#include "platform/PlatformInstrumentationAgents.h"
-#include "platform/instrumentation/PlatformTraceEventsAgent.h"
+#include "platform/PlatformProbeSink.h"
+#include "platform/probe/PlatformTraceEventsAgent.h"
 #include "public/platform/WebCachePolicy.h"
 
 namespace blink {
@@ -41,14 +41,13 @@ FetchContext& FetchContext::nullInstance() {
   return instance;
 }
 
-FetchContext::FetchContext()
-    : m_instrumentingAgents(new PlatformInstrumentationAgents) {
-  m_instrumentingAgents->addPlatformTraceEventsAgent(
+FetchContext::FetchContext() : m_platformProbeSink(new PlatformProbeSink) {
+  m_platformProbeSink->addPlatformTraceEventsAgent(
       new PlatformTraceEventsAgent);
 }
 
 DEFINE_TRACE(FetchContext) {
-  visitor->trace(m_instrumentingAgents);
+  visitor->trace(m_platformProbeSink);
 }
 
 void FetchContext::dispatchDidChangeResourcePriority(unsigned long,

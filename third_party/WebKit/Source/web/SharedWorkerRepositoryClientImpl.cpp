@@ -36,7 +36,7 @@
 #include "core/events/Event.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/inspector/InspectorInstrumentation.h"
+#include "core/probe/CoreProbes.h"
 #include "core/workers/SharedWorker.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "public/platform/WebContentSecurityPolicy.h"

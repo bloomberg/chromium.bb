@@ -27,7 +27,7 @@
 #include "core/workers/WorkerEventQueue.h"
 
 #include "core/events/Event.h"
-#include "core/inspector/InspectorInstrumentation.h"
+#include "core/probe/CoreProbes.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
 

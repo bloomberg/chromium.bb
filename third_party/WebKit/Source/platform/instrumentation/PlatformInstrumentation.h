@@ -7,34 +7,9 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/loader/fetch/FetchContext.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
-
-class FetchContext;
-class PlatformInstrumentationAgents;
-
-namespace probe {
-
-class PLATFORM_EXPORT ProbeBase {
-  STACK_ALLOCATED()
-
- public:
-  double captureStartTime() const;
-  double captureEndTime() const;
-  double duration() const;
-
- private:
-  mutable double m_startTime = 0;
-  mutable double m_endTime = 0;
-};
-
-inline PlatformInstrumentationAgents* instrumentingAgentsFor(
-    FetchContext* context) {
-  return context->instrumentingAgents();
-}
-
-}  // namespace probe
 
 class PLATFORM_EXPORT PlatformInstrumentation {
  public:
@@ -92,7 +67,5 @@ inline void PlatformInstrumentation::didDecodeLazyPixelRef() {
 }
 
 }  // namespace blink
-
-#include "platform/PlatformInstrumentationInl.h"
 
 #endif  // PlatformInstrumentation_h

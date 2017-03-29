@@ -17,7 +17,7 @@
 namespace blink {
 
 class InspectorAgent;
-class InspectorInstrumentationAgents;
+class CoreProbeSink;
 class LocalFrame;
 
 class CORE_EXPORT InspectorSession
@@ -37,7 +37,7 @@ class CORE_EXPORT InspectorSession
   };
 
   InspectorSession(Client*,
-                   InspectorInstrumentationAgents*,
+                   CoreProbeSink*,
                    int sessionId,
                    v8_inspector::V8Inspector*,
                    int contextGroupId,
@@ -80,7 +80,7 @@ class CORE_EXPORT InspectorSession
   std::unique_ptr<v8_inspector::V8InspectorSession> m_v8Session;
   int m_sessionId;
   bool m_disposed;
-  Member<InspectorInstrumentationAgents> m_instrumentingAgents;
+  Member<CoreProbeSink> m_instrumentingAgents;
   std::unique_ptr<protocol::UberDispatcher> m_inspectorBackendDispatcher;
   std::unique_ptr<protocol::DictionaryValue> m_state;
   HeapVector<Member<InspectorAgent>> m_agents;

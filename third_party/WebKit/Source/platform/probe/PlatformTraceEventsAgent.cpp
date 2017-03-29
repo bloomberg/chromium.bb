@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/instrumentation/PlatformTraceEventsAgent.h"
+#include "platform/probe/PlatformTraceEventsAgent.h"
 
-#include "platform/instrumentation/PlatformInstrumentation.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
+#include "platform/probe/PlatformProbes.h"
 
 namespace blink {
 

@@ -5,7 +5,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 
 #include "core/dom/TaskRunnerHelper.h"
-#include "core/inspector/InspectorInstrumentation.h"
+#include "core/probe/CoreProbes.h"
 
 namespace blink {
 

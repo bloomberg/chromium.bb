@@ -29,8 +29,8 @@
 
 #include "core/EventTypeNames.h"
 #include "core/events/ProgressEvent.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
+#include "core/probe/CoreProbes.h"
 #include "core/xmlhttprequest/XMLHttpRequest.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"

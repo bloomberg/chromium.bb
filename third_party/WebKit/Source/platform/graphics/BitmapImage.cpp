@@ -37,7 +37,6 @@
 #include "platform/graphics/paint/PaintFlags.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/instrumentation/PlatformInstrumentation.h"
-#include "platform/instrumentation/PlatformTraceEventsAgent.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/PtrUtil.h"

@@ -29,7 +29,6 @@
 
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/instrumentation/PlatformInstrumentation.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
 #include "platform/loader/fetch/FetchContext.h"
@@ -43,6 +42,7 @@
 #include "platform/mhtml/MHTMLArchive.h"
 #include "platform/network/NetworkInstrumentation.h"
 #include "platform/network/NetworkUtils.h"
+#include "platform/probe/PlatformProbes.h"
 #include "platform/weborigin/KnownPorts.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"

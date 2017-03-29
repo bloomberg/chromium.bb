@@ -33,7 +33,7 @@
 #include <memory>
 
 #include "bindings/core/v8/ScriptController.h"
-#include "core/InspectorInstrumentationAgents.h"
+#include "core/CoreProbeSink.h"
 #include "core/dom/ChildFrameDisconnector.h"
 #include "core/dom/DocumentType.h"
 #include "core/dom/StyleChangeReason.h"
@@ -57,7 +57,6 @@
 #include "core/html/HTMLPlugInElement.h"
 #include "core/input/EventHandler.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutPartItem.h"
@@ -74,6 +73,7 @@
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintLayerPainter.h"
 #include "core/paint/TransformRecorder.h"
+#include "core/probe/CoreProbes.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/timing/Performance.h"
 #include "platform/DragImage.h"
@@ -858,7 +858,7 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
       m_interfaceProvider(interfaceProvider),
       m_interfaceRegistry(interfaceRegistry) {
   if (isLocalRoot()) {
-    m_instrumentingAgents = new InspectorInstrumentationAgents();
+    m_instrumentingAgents = new CoreProbeSink();
     m_performanceMonitor = new PerformanceMonitor(this);
   } else {
     m_instrumentingAgents = localFrameRoot()->m_instrumentingAgents;

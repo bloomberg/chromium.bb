@@ -40,7 +40,7 @@
 #include "core/dom/shadow/SlotAssignment.h"
 #include "core/events/Event.h"
 #include "core/html/AssignedNodesOptions.h"
-#include "core/inspector/InspectorInstrumentation.h"
+#include "core/probe/CoreProbes.h"
 
 namespace blink {
 

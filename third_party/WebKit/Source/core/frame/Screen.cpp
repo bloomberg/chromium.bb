@@ -31,9 +31,9 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
+#include "core/probe/CoreProbes.h"
 #include "public/platform/WebScreenInfo.h"
 
 namespace blink {

@@ -8,7 +8,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "core/events/MessageEvent.h"
-#include "core/inspector/InspectorInstrumentation.h"
+#include "core/probe/CoreProbes.h"
 #include "core/workers/InProcessWorkerMessagingProxy.h"
 #include "core/workers/WorkerScriptLoader.h"
 #include "platform/loader/fetch/ResourceFetcher.h"

@@ -1,0 +1,59 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//third_party/WebKit/Source/core/core.gni")
+
+blink_core_sources("probe") {
+  sources = [
+    "CoreProbes.cpp",
+    "CoreProbes.h",
+  ]
+}
+
+action("instrumentation_probes") {
+  script = "../../platform/probe/InstrumentingProbesCodeGenerator.py"
+
+  inputs = [
+    # Input file for the script.
+    "CoreProbes.pidl",
+
+    # Templates
+    "../../platform/probe/templates/InstrumentingProbesImpl.cpp.tmpl",
+    "../../platform/probe/templates/InstrumentingProbesInl.h.tmpl",
+    "../../platform/probe/templates/ProbeSink.h.tmpl",
+  ]
+
+  outputs = [
+    "$blink_core_output_dir/CoreProbesInl.h",
+    "$blink_core_output_dir/InspectorOverridesInl.h",
+    "$blink_core_output_dir/CoreProbesImpl.cpp",
+    "$blink_core_output_dir/CoreProbeSink.h",
+  ]
+
+  args = [
+    rebase_path(inputs[0], root_build_dir),
+    "--output_dir",
+    rebase_path(blink_core_output_dir, root_build_dir),
+  ]
+}
+
+# Compiles the sources generated above.
+source_set("generated") {
+  sources = get_target_outputs(":instrumentation_probes")
+
+  configs -= core_config_remove
+  configs +=
+      core_config_add + [ "//third_party/WebKit/Source/core:core_include_dirs" ]
+
+  if (is_win) {
+    cflags = [ "/wd4702" ]  # Unreachable code.
+  }
+
+  deps = [
+    ":instrumentation_probes",
+    "//skia",
+    "//third_party/WebKit/Source/wtf",
+    "//v8",
+  ]
+}

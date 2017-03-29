@@ -37,8 +37,8 @@
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
+#include "core/probe/CoreProbes.h"
 #include "core/workers/WorkerGlobalScope.h"
 
 namespace blink {

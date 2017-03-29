@@ -44,7 +44,7 @@
 #include "core/frame/Deprecation.h"
 #include "core/frame/PerformanceMonitor.h"
 #include "core/frame/UseCounter.h"
-#include "core/inspector/InspectorInstrumentation.h"
+#include "core/probe/CoreProbes.h"
 #include "modules/notifications/NotificationAction.h"
 #include "modules/notifications/NotificationData.h"
 #include "modules/notifications/NotificationManager.h"

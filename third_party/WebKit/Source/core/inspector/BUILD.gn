@@ -44,9 +44,6 @@ blink_core_sources("inspector") {
     "InspectorHistory.h",
     "InspectorInputAgent.cpp",
     "InspectorInputAgent.h",
-    "InspectorInstrumentation.cpp",
-    "InspectorInstrumentation.h",
-    "InspectorInstrumentationCustomInl.h",
     "InspectorLayerTreeAgent.cpp",
     "InspectorLayerTreeAgent.h",
     "InspectorLogAgent.cpp",
@@ -92,36 +89,6 @@ blink_core_sources("inspector") {
   configs += [
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",
-  ]
-}
-
-# instrumentation probes -------------------------------------------------------
-
-action("instrumentation_probes") {
-  visibility = [ ":*" ]
-  script = "../../platform/instrumentation/InstrumentingProbesCodeGenerator.py"
-
-  inputs = [
-    # Input file for the script.
-    "InspectorInstrumentation.idl",
-
-    # Templates
-    "../../platform/instrumentation/InstrumentingProbesImpl_cpp.template",
-    "../../platform/instrumentation/InstrumentingProbesImpl_h.template",
-    "../../platform/instrumentation/InstrumentingAgents_h.template",
-  ]
-
-  outputs = [
-    "$blink_core_output_dir/InspectorInstrumentationInl.h",
-    "$blink_core_output_dir/InspectorOverridesInl.h",
-    "$blink_core_output_dir/InspectorInstrumentationImpl.cpp",
-    "$blink_core_output_dir/InspectorInstrumentationAgents.h",
-  ]
-
-  args = [
-    rebase_path(inputs[0], root_build_dir),
-    "--output_dir",
-    rebase_path(blink_core_output_dir, root_build_dir),
   ]
 }
 
@@ -203,8 +170,7 @@ inspector_protocol_generate("protocol_sources") {
 
 # Compiles the sources generated above.
 source_set("generated") {
-  sources = get_target_outputs(":protocol_sources") +
-            get_target_outputs(":instrumentation_probes")
+  sources = get_target_outputs(":protocol_sources")
 
   configs -= core_config_remove
   configs += core_config_add + [
@@ -217,7 +183,6 @@ source_set("generated") {
   }
 
   deps = [
-    ":instrumentation_probes",
     ":protocol_sources",
     "//skia",
     "//third_party/WebKit/Source/bindings/core/v8:bindings_core_v8_generated",

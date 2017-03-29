@@ -48,7 +48,7 @@
 #include "core/frame/PerformanceMonitor.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
-#include "core/inspector/InspectorInstrumentation.h"
+#include "core/probe/CoreProbes.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/Histogram.h"
 #include "wtf/PtrUtil.h"

@@ -41,7 +41,7 @@
 
 namespace blink {
 
-class InspectorInstrumentationAgents;
+class CoreProbeSink;
 class WorkerThread;
 class WorkerThreadDebugger;
 
@@ -56,7 +56,7 @@ class WorkerInspectorController final
   ~WorkerInspectorController() override;
   DECLARE_TRACE();
 
-  InspectorInstrumentationAgents* instrumentingAgents() const {
+  CoreProbeSink* instrumentingAgents() const {
     return m_instrumentingAgents.get();
   }
 
@@ -81,7 +81,7 @@ class WorkerInspectorController final
 
   WorkerThreadDebugger* m_debugger;
   WorkerThread* m_thread;
-  Member<InspectorInstrumentationAgents> m_instrumentingAgents;
+  Member<CoreProbeSink> m_instrumentingAgents;
   Member<InspectorSession> m_session;
 };
 

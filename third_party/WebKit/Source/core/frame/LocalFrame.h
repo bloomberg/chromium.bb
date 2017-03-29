@@ -59,7 +59,7 @@ class FrameConsole;
 class FrameSelection;
 class FrameView;
 class InputMethodController;
-class InspectorInstrumentationAgents;
+class CoreProbeSink;
 class InterfaceProvider;
 class InterfaceRegistry;
 class IntPoint;
@@ -164,9 +164,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // behavior for detached windows.
   bool isCrossOriginSubframe() const;
 
-  InspectorInstrumentationAgents* instrumentingAgents() {
-    return m_instrumentingAgents.get();
-  }
+  CoreProbeSink* instrumentingAgents() { return m_instrumentingAgents.get(); }
 
   // =========================================================================
   // All public functions below this point are candidates to move out of
@@ -270,7 +268,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   bool m_inViewSourceMode;
 
-  Member<InspectorInstrumentationAgents> m_instrumentingAgents;
+  Member<CoreProbeSink> m_instrumentingAgents;
   Member<PerformanceMonitor> m_performanceMonitor;
 
   InterfaceProvider* const m_interfaceProvider;

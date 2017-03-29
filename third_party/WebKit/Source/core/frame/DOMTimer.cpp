@@ -28,8 +28,8 @@
 
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/TaskRunnerHelper.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
+#include "core/probe/CoreProbes.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "wtf/CurrentTime.h"
 

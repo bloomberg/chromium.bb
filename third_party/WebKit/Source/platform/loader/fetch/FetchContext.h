@@ -47,7 +47,7 @@ namespace blink {
 class ClientHintsPreferences;
 class KURL;
 class MHTMLArchive;
-class PlatformInstrumentationAgents;
+class PlatformProbeSink;
 class ResourceError;
 class ResourceResponse;
 class ResourceTimingInfo;
@@ -198,15 +198,13 @@ class PLATFORM_EXPORT FetchContext
 
   virtual RefPtr<WebTaskRunner> loadingTaskRunner() const { return nullptr; }
 
-  PlatformInstrumentationAgents* instrumentingAgents() const {
-    return m_instrumentingAgents;
-  }
+  PlatformProbeSink* platformProbeSink() const { return m_platformProbeSink; }
 
  protected:
   FetchContext();
 
  private:
-  Member<PlatformInstrumentationAgents> m_instrumentingAgents;
+  Member<PlatformProbeSink> m_platformProbeSink;
 };
 
 }  // namespace blink

@@ -4,11 +4,11 @@
 
 #include "core/workers/WorkletGlobalScope.h"
 
+#include <memory>
 #include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/MainThreadDebugger.h"
-#include <memory>
+#include "core/probe/CoreProbes.h"
 
 namespace blink {
 

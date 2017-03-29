@@ -39,7 +39,7 @@
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/ProgressEvent.h"
 #include "core/fileapi/File.h"
-#include "core/inspector/InspectorInstrumentation.h"
+#include "core/probe/CoreProbes.h"
 #include "platform/Supplementable.h"
 #include "wtf/AutoReset.h"
 #include "wtf/CurrentTime.h"

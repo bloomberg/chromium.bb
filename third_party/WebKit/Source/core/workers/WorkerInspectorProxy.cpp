@@ -6,9 +6,9 @@
 
 #include "core/frame/FrameConsole.h"
 #include "core/inspector/IdentifiersFactory.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/WorkerInspectorController.h"
+#include "core/probe/CoreProbes.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/CrossThreadFunctional.h"

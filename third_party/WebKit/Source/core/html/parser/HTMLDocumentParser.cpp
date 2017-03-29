@@ -25,6 +25,7 @@
 
 #include "core/html/parser/HTMLDocumentParser.h"
 
+#include <memory>
 #include "bindings/core/v8/DocumentWriteEvaluator.h"
 #include "core/HTMLNames.h"
 #include "core/css/MediaValuesCached.h"
@@ -41,11 +42,11 @@
 #include "core/html/parser/HTMLParserScriptRunner.h"
 #include "core/html/parser/HTMLResourcePreloader.h"
 #include "core/html/parser/HTMLTreeBuilder.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/LinkLoader.h"
 #include "core/loader/NavigationScheduler.h"
+#include "core/probe/CoreProbes.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/Histogram.h"
 #include "platform/SharedBuffer.h"
@@ -59,7 +60,6 @@
 #include "public/platform/WebThread.h"
 #include "wtf/AutoReset.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

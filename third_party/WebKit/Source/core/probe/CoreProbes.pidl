@@ -44,7 +44,7 @@
 *           Examples: DOM, Page, Debugger.
 *
 *   paramAttr - optional attribute controlling the parameters handling (one attribute per parameter max).
-*       Keep - pass first parameter (used to access the InspectorInstrumentationAgents instance) to agents.
+*       Keep - pass first parameter (used to access the CoreProbeSink instance) to agents.
 *
 *   returnValue: C++ return value. Only "void" and "bool" are supported.
 *
@@ -57,7 +57,7 @@
 * so reference will not be passed or released until all agents are notified.
 */
 
-interface InspectorInstrumentation {
+interface CoreProbes {
 
 #include "core/animation/Animation.h"
 #include "core/dom/CharacterData.h"

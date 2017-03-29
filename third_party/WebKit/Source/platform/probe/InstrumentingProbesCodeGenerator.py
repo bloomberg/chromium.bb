@@ -16,7 +16,7 @@ import sys
 # is regenerated, which causes a race condition and breaks concurrent build,
 # since some compile processes will try to read the partially written cache.
 module_path, module_filename = os.path.split(os.path.realpath(__file__))
-templates_dir = module_path
+templates_dir = os.path.join(module_path, "templates")
 third_party_dir = os.path.normpath(os.path.join(
     module_path, os.pardir, os.pardir, os.pardir, os.pardir))
 # jinja2 is in chromium's third_party directory.
@@ -24,6 +24,10 @@ third_party_dir = os.path.normpath(os.path.join(
 # after path[0] == invoking script dir
 sys.path.insert(1, third_party_dir)
 import jinja2
+
+
+def to_singular(text):
+    return text[:-1] if text[-1] == "s" else text
 
 
 def to_lower_case(name):
@@ -52,6 +56,7 @@ def initialize_jinja_env(cache_dir):
         trim_blocks=True)
     jinja_env.filters.update({
         "to_lower_case": to_lower_case,
+        "to_singular": to_singular,
         "agent_name_to_class": agent_name_to_class})
     jinja_env.add_extension('jinja2.ext.loopcontrols')
     return jinja_env
@@ -110,8 +115,10 @@ def include_header(name):
 def include_inspector_header(name):
     if name == "PerformanceMonitor":
         return include_header("core/frame/" + name)
-    if name == "PlatformInstrumentation":
-        return include_header("platform/instrumentation/" + name)
+    if name == "PlatformProbes":
+        return include_header("platform/probe/" + name)
+    if name == "CoreProbes":
+        return include_header("core/probe/" + name)
     return include_header("core/inspector/" + name)
 
 
@@ -228,19 +235,19 @@ template_context = {
     "name": base_name,
     "input_file": os.path.basename(input_path)
 }
-cpp_template = jinja_env.get_template("/InstrumentingProbesImpl_cpp.template")
+cpp_template = jinja_env.get_template("/InstrumentingProbesImpl.cpp.tmpl")
 cpp_file = open(output_dirpath + "/" + base_name + "Impl.cpp", "w")
 cpp_file.write(cpp_template.render(template_context))
 cpp_file.close()
 
-agents_h_template = jinja_env.get_template("/InstrumentingAgents_h.template")
-agents_h_file = open(output_dirpath + "/" + base_name + "Agents.h", "w")
-agents_h_file.write(agents_h_template.render(template_context))
-agents_h_file.close()
+sink_h_template = jinja_env.get_template("/ProbeSink.h.tmpl")
+sink_h_file = open(output_dirpath + "/" + to_singular(base_name) + "Sink.h", "w")
+sink_h_file.write(sink_h_template.render(template_context))
+sink_h_file.close()
 
 for f in files:
     template_context["file"] = f
-    h_template = jinja_env.get_template("/InstrumentingProbesImpl_h.template")
+    h_template = jinja_env.get_template("/InstrumentingProbesInl.h.tmpl")
     h_file = open(output_dirpath + "/" + f.header_name + ".h", "w")
     h_file.write(h_template.render(template_context))
     h_file.close()

@@ -35,7 +35,7 @@
 #include "core/clipboard/DataTransfer.h"
 #include "core/dom/StringCallback.h"
 #include "core/dom/TaskRunnerHelper.h"
-#include "core/inspector/InspectorInstrumentation.h"
+#include "core/probe/CoreProbes.h"
 #include "public/platform/WebTraceLocation.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/WTFString.h"
