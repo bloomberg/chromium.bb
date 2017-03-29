@@ -21,6 +21,7 @@ class UI_ANDROID_EXPORT ViewClient {
   virtual bool OnTouchEvent(const MotionEventAndroid& event,
                             bool for_touch_handle);
   virtual bool OnMouseEvent(const MotionEventAndroid& event);
+  virtual bool OnMouseWheelEvent(const MotionEventAndroid& event);
 };
 
 }  // namespace ui

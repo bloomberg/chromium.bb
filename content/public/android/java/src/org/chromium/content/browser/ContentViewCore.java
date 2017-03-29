@@ -35,7 +35,6 @@ import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityManager.AccessibilityStateChangeListener;
 import android.view.accessibility.AccessibilityNodeProvider;
-import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
@@ -50,7 +49,6 @@ import org.chromium.content.browser.accessibility.BrowserAccessibilityManager;
 import org.chromium.content.browser.accessibility.captioning.CaptioningBridgeFactory;
 import org.chromium.content.browser.accessibility.captioning.SystemCaptioningBridge;
 import org.chromium.content.browser.accessibility.captioning.TextTrackSettings;
-import org.chromium.content.browser.input.AnimationIntervalProvider;
 import org.chromium.content.browser.input.ImeAdapter;
 import org.chromium.content.browser.input.InputMethodManagerWrapper;
 import org.chromium.content.browser.input.JoystickScrollProvider;
@@ -91,9 +89,10 @@ import java.util.Map;
  * See https://crbug.com/598880.
  */
 @JNINamespace("content")
-public class ContentViewCore implements AccessibilityStateChangeListener, DisplayAndroidObserver,
-                                        SystemCaptioningBridge.SystemCaptioningBridgeListener,
-                                        WindowAndroidProvider {
+public class ContentViewCore
+        implements AccessibilityStateChangeListener, DisplayAndroidObserver,
+                   SystemCaptioningBridge.SystemCaptioningBridgeListener, WindowAndroidProvider,
+                   JoystickZoomProvider.PinchZoomHandler {
     private static final String TAG = "cr_ContentViewCore";
 
     // Used to avoid enabling zooming in / out if resulting zooming will
@@ -171,18 +170,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
             // renderer is considered background even if the pending navigation happens in the
             // foreground renderer. See crbug.com/421041 for more details.
             ChildProcessLauncher.determinedVisibility(contentViewCore.getCurrentRenderProcessId());
-        }
-    }
-
-    /**
-     * Returns interval between consecutive animation frames.
-     */
-    // TODO(crbug.com/635567): Fix this properly.
-    @SuppressLint("ParcelCreator")
-    private static class SystemAnimationIntervalProvider implements AnimationIntervalProvider {
-        @Override
-        public long getLastAnimationFrameInterval() {
-            return AnimationUtils.currentAnimationTimeMillis();
         }
     }
 
@@ -293,10 +280,12 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     // Cached copy of all positions and scales as reported by the renderer.
     private final RenderCoordinates mRenderCoordinates;
 
-    // Provides smooth gamepad joystick-driven scrolling.
+    // Provides smooth gamepad joystick-driven scrolling. Created lazily when the first
+    // Joystick event was received.
     private JoystickScrollProvider mJoystickScrollProvider;
 
-    // Provides smooth gamepad joystick-driven zooming.
+    // Provides smooth gamepad joystick-driven zooming. Created lazily when the first
+    // Joystick event was received.
     private JoystickZoomProvider mJoystickZoomProvider;
 
     private boolean mIsMobileOptimizedHint;
@@ -572,9 +561,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         mRenderCoordinates.reset();
         mRenderCoordinates.setDeviceScaleFactor(dipScale, windowAndroid.getContext());
 
-        mJoystickScrollProvider =
-                new JoystickScrollProvider(webContents, getContainerView(), windowAndroid);
-
         mNativeContentViewCore = nativeInit(webContents, mViewAndroidDelegate, windowNativePointer,
                 dipScale, mRetainedJavaScriptObjects);
         mWebContents = nativeGetWebContentsAndroid(mNativeContentViewCore);
@@ -613,7 +599,9 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
 
         addDisplayAndroidObserverIfNeeded();
 
-        mJoystickScrollProvider.updateWindowAndroid(windowAndroid);
+        if (mJoystickScrollProvider != null) {
+            mJoystickScrollProvider.updateWindowAndroid(windowAndroid);
+        }
 
         for (WindowAndroidChangedObserver observer : mWindowAndroidChangedObservers) {
             observer.onWindowAndroidChanged(windowAndroid);
@@ -680,6 +668,12 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
             mContainerView.setClickable(true);
             if (mSelectionPopupController != null) {
                 mSelectionPopupController.setContainerView(containerView);
+            }
+            if (mJoystickScrollProvider != null) {
+                mJoystickScrollProvider.setContainerView(containerView);
+            }
+            if (mJoystickZoomProvider != null) {
+                mJoystickZoomProvider.setContainerView(containerView);
             }
         } finally {
             TraceEvent.end("ContentViewCore.setContainerView");
@@ -1195,7 +1189,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         GamepadList.onAttachedToWindow(mContext);
         mAccessibilityManager.addAccessibilityStateChangeListener(this);
         mSystemCaptioningBridge.addListener(this);
-        mJoystickScrollProvider.onViewAttachedToWindow();
+        if (mJoystickScrollProvider != null) mJoystickScrollProvider.onViewAttachedToWindow();
         mImeAdapter.onViewAttachedToWindow();
     }
 
@@ -1224,7 +1218,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     public void onDetachedFromWindow() {
         mAttachedToWindow = false;
         mImeAdapter.onViewDetachedFromWindow();
-        mJoystickScrollProvider.onViewDetachedFromWindow();
+        if (mJoystickScrollProvider != null) mJoystickScrollProvider.onViewDetachedFromWindow();
         removeDisplayAndroidObserver();
         GamepadList.onDetachedFromWindow();
         mAccessibilityManager.removeAccessibilityStateChangeListener(this);
@@ -1346,7 +1340,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     public void onFocusChanged(boolean gainFocus, boolean hideKeyboardOnBlur) {
         mImeAdapter.onViewFocusChanged(gainFocus, hideKeyboardOnBlur);
 
-        // Used in test that bypasses initialize().
         if (mJoystickScrollProvider != null) {
             mJoystickScrollProvider.setEnabled(gainFocus && !isFocusedNodeEditable());
         }
@@ -1463,11 +1456,8 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         if ((event.getSource() & InputDevice.SOURCE_CLASS_POINTER) != 0) {
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_SCROLL:
-                    if (mNativeContentViewCore == 0) return false;
-
-                    nativeSendMouseWheelEvent(mNativeContentViewCore, event.getEventTime(),
-                            event.getX(), event.getY(),
-                            event.getAxisValue(MotionEvent.AXIS_HSCROLL),
+                    getEventForwarder().onMouseWheelEvent(event.getEventTime(), event.getX(),
+                            event.getY(), event.getAxisValue(MotionEvent.AXIS_HSCROLL),
                             event.getAxisValue(MotionEvent.AXIS_VSCROLL),
                             mRenderCoordinates.getWheelScrollFactor());
                     return true;
@@ -1480,14 +1470,30 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
                     }
             }
         } else if ((event.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0) {
-            if (mJoystickScrollProvider.onMotion(event)) return true;
-            if (mJoystickZoomProvider == null) {
-                mJoystickZoomProvider =
-                        new JoystickZoomProvider(this, new SystemAnimationIntervalProvider());
+            if (getJoystickScrollProvider().onMotion(event)
+                    || getJoystickZoomProvider().onMotion(event)) {
+                return true;
             }
-            if (mJoystickZoomProvider.onMotion(event)) return true;
         }
         return mContainerViewInternals.super_onGenericMotionEvent(event);
+    }
+
+    private JoystickScrollProvider getJoystickScrollProvider() {
+        if (mJoystickScrollProvider == null) {
+            mJoystickScrollProvider = new JoystickScrollProvider(
+                    getContainerView(), getWindowAndroid(), getEventForwarder());
+            if (mAttachedToWindow) mJoystickScrollProvider.onViewAttachedToWindow();
+        }
+        return mJoystickScrollProvider;
+    }
+
+    private JoystickZoomProvider getJoystickZoomProvider() {
+        if (mJoystickZoomProvider == null) {
+            mJoystickZoomProvider = new JoystickZoomProvider(getContainerView(),
+                    mRenderCoordinates.getDeviceScaleFactor(), getViewportWidthPix() / 2,
+                    getViewportHeightPix() / 2, this);
+        }
+        return mJoystickZoomProvider;
     }
 
     /**
@@ -1794,7 +1800,9 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
             mSelectionPopupController.updateSelectionState(focusedNodeEditable,
                     focusedNodeIsPassword);
             if (editableToggled) {
-                mJoystickScrollProvider.setEnabled(!focusedNodeEditable);
+                if (mJoystickScrollProvider != null) {
+                    mJoystickScrollProvider.setEnabled(!focusedNodeEditable);
+                }
                 getContentViewClient().onFocusedNodeEditabilityChanged(focusedNodeEditable);
             }
         } finally {
@@ -2034,38 +2042,21 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         return true;
     }
 
-    /**
-     * Send start of pinch zoom gesture.
-     *
-     * @param xPix X-coordinate of location from which pinch zoom would start.
-     * @param yPix Y-coordinate of location from which pinch zoom would start.
-     * @return whether the pinch zoom start gesture was sent.
-     */
+    @Override
     public boolean pinchBegin(int xPix, int yPix) {
         if (mNativeContentViewCore == 0) return false;
         nativePinchBegin(mNativeContentViewCore, SystemClock.uptimeMillis(), xPix, yPix);
         return true;
     }
 
-    /**
-     * Send pinch zoom gesture.
-     *
-     * @param xPix X-coordinate of pinch zoom location.
-     * @param yPix Y-coordinate of pinch zoom location.
-     * @param delta the factor by which the current page scale should be multiplied by.
-     * @return whether the pinchby gesture was sent.
-     */
+    @Override
     public boolean pinchBy(int xPix, int yPix, float delta) {
         if (mNativeContentViewCore == 0) return false;
         nativePinchBy(mNativeContentViewCore, SystemClock.uptimeMillis(), xPix, yPix, delta);
         return true;
     }
 
-    /**
-     * Stop pinch zoom gesture.
-     *
-     * @return whether the pinch stop gesture was sent.
-     */
+    @Override
     public boolean pinchEnd() {
         if (mNativeContentViewCore == 0) return false;
         nativePinchEnd(mNativeContentViewCore, SystemClock.uptimeMillis());
@@ -2626,9 +2617,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
 
     private native void nativeSendOrientationChangeEvent(
             long nativeContentViewCoreImpl, int orientation);
-
-    private native int nativeSendMouseWheelEvent(long nativeContentViewCoreImpl, long timeMs,
-            float x, float y, float ticksX, float ticksY, float pixelsPerTick);
 
     private native void nativeScrollBegin(long nativeContentViewCoreImpl, long timeMs, float x,
             float y, float hintX, float hintY, boolean targetViewport);

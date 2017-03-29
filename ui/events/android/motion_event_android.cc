@@ -181,9 +181,12 @@ MotionEventAndroid::CachedPointer::CachedPointer()
       tool_type(TOOL_TYPE_UNKNOWN) {
 }
 
-MotionEventAndroid::MotionEventAndroid(float pix_to_dip,
-                                       JNIEnv* env,
+MotionEventAndroid::MotionEventAndroid(JNIEnv* env,
                                        jobject event,
+                                       jfloat pix_to_dip,
+                                       jfloat ticks_x,
+                                       jfloat ticks_y,
+                                       jfloat tick_multiplier,
                                        jlong time_ms,
                                        jint android_action,
                                        jint pointer_count,
@@ -197,6 +200,10 @@ MotionEventAndroid::MotionEventAndroid(float pix_to_dip,
                                        const Pointer* const pointer0,
                                        const Pointer* const pointer1)
     : pix_to_dip_(pix_to_dip),
+      ticks_x_(ticks_x),
+      ticks_y_(ticks_y),
+      tick_multiplier_(tick_multiplier),
+      time_sec_(time_ms / 1000),
       cached_time_(FromAndroidTime(time_ms)),
       cached_action_(FromAndroidAction(android_action)),
       cached_pointer_count_(pointer_count),
@@ -223,6 +230,10 @@ MotionEventAndroid::MotionEventAndroid(float pix_to_dip,
 MotionEventAndroid::MotionEventAndroid(const MotionEventAndroid& e)
     : event_(e.event_),
       pix_to_dip_(e.pix_to_dip_),
+      ticks_x_(e.ticks_x_),
+      ticks_y_(e.ticks_y_),
+      tick_multiplier_(e.tick_multiplier_),
+      time_sec_(e.time_sec_),
       cached_time_(e.cached_time_),
       cached_action_(e.cached_action_),
       cached_pointer_count_(e.cached_pointer_count_),
@@ -260,6 +271,10 @@ MotionEventAndroid::Action MotionEventAndroid::GetAction() const {
 
 int MotionEventAndroid::GetActionButton() const {
   return cached_action_button_;
+}
+
+float MotionEventAndroid::GetTickMultiplier() const {
+  return ToDips(tick_multiplier_);
 }
 
 ScopedJavaLocalRef<jobject> MotionEventAndroid::GetJavaObject() const {

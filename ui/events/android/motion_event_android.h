@@ -46,9 +46,12 @@ class EVENTS_EXPORT MotionEventAndroid : public MotionEvent {
 
   // Forcing the caller to provide all cached values upon construction
   // eliminates the need to perform a JNI call to retrieve values individually.
-  MotionEventAndroid(float pix_to_dip,
-                     JNIEnv* env,
+  MotionEventAndroid(JNIEnv* env,
                      jobject event,
+                     jfloat pix_to_dip,
+                     jfloat ticks_x,
+                     jfloat ticks_y,
+                     jfloat tick_multiplier,
                      jlong time_ms,
                      jint android_action,
                      jint pointer_count,
@@ -95,6 +98,11 @@ class EVENTS_EXPORT MotionEventAndroid : public MotionEvent {
   int GetFlags() const override;
 
   int GetActionButton() const;
+  float ticks_x() const { return ticks_x_; }
+  float ticks_y() const { return ticks_y_; }
+  float time_sec() const { return time_sec_; }
+  float GetTickMultiplier() const;
+
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject() const;
 
  private:
@@ -117,6 +125,12 @@ class EVENTS_EXPORT MotionEventAndroid : public MotionEvent {
   // Used to convert pixel coordinates from the Java-backed MotionEvent to
   // DIP coordinates cached/returned by the MotionEventAndroid.
   const float pix_to_dip_;
+
+  // Variables for mouse wheel event.
+  const float ticks_x_;
+  const float ticks_y_;
+  const float tick_multiplier_;
+  const uint64_t time_sec_;
 
   const base::TimeTicks cached_time_;
   const Action cached_action_;

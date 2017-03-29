@@ -300,9 +300,21 @@ bool ViewAndroid::OnMouseEvent(const MotionEventAndroid& event) {
   return HitTest(base::Bind(&ViewAndroid::SendMouseEventToClient), event);
 }
 
+// static
 bool ViewAndroid::SendMouseEventToClient(ViewClient* client,
                                          const MotionEventAndroid& event) {
   return client->OnMouseEvent(event);
+}
+
+// static
+bool ViewAndroid::OnMouseWheelEvent(const MotionEventAndroid& event) {
+  return HitTest(base::Bind(&ViewAndroid::SendMouseWheelEventToClient), event);
+}
+
+// static
+bool ViewAndroid::SendMouseWheelEventToClient(ViewClient* client,
+                                              const MotionEventAndroid& event) {
+  return client->OnMouseWheelEvent(event);
 }
 
 bool ViewAndroid::HitTest(ViewClientCallback send_to_client,

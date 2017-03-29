@@ -15,4 +15,8 @@ bool ViewClient::OnMouseEvent(const MotionEventAndroid& event) {
   return false;
 }
 
+bool ViewClient::OnMouseWheelEvent(const MotionEventAndroid& event) {
+  return false;
+}
+
 }  // namespace ui

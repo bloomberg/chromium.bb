@@ -168,6 +168,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   bool OnTouchEvent(const ui::MotionEventAndroid& m,
                     bool for_touch_handle) override;
   bool OnMouseEvent(const ui::MotionEventAndroid& m) override;
+  bool OnMouseWheelEvent(const ui::MotionEventAndroid& event) override;
 
   // ui::GestureProviderClient implementation.
   void OnGestureEvent(const ui::GestureEventData& gesture) override;

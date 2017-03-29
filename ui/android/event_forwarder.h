@@ -61,6 +61,15 @@ class EventForwarder {
                     jint android_meta_state,
                     jint tool_type);
 
+  void OnMouseWheelEvent(JNIEnv* env,
+                         const base::android::JavaParamRef<jobject>& obj,
+                         jlong time_ms,
+                         jfloat x,
+                         jfloat y,
+                         jfloat ticks_x,
+                         jfloat ticks_y,
+                         jfloat pixels_per_tick);
+
  private:
   friend class ViewAndroid;
 

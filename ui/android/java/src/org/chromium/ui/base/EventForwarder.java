@@ -181,6 +181,13 @@ public class EventForwarder {
                 orientation, tilt, actionButton, buttonState, metaState, toolType);
     }
 
+    public boolean onMouseWheelEvent(
+            long timeMs, float x, float y, float ticksX, float ticksY, float pixelsPerTick) {
+        assert mNativeEventForwarder != 0;
+        nativeOnMouseWheelEvent(mNativeEventForwarder, timeMs, x, y, ticksX, ticksY, pixelsPerTick);
+        return true;
+    }
+
     // All touch events (including flings, scrolls etc) accept coordinates in physical pixels.
     private native boolean nativeOnTouchEvent(long nativeEventForwarder, MotionEvent event,
             long timeMs, int action, int pointerCount, int historySize, int actionIndex, float x0,
@@ -192,4 +199,6 @@ public class EventForwarder {
     private native void nativeOnMouseEvent(long nativeEventForwarder, long timeMs, int action,
             float x, float y, int pointerId, float pressure, float orientation, float tilt,
             int changedButton, int buttonState, int metaState, int toolType);
+    private native void nativeOnMouseWheelEvent(long nativeEventForwarder, long timeMs, float x,
+            float y, float ticksX, float ticksY, float pixelsPerTick);
 }

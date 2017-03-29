@@ -1925,6 +1925,14 @@ bool RenderWidgetHostViewAndroid::OnMouseEvent(
   return true;
 }
 
+bool RenderWidgetHostViewAndroid::OnMouseWheelEvent(
+    const ui::MotionEventAndroid& event) {
+  SendMouseWheelEvent(WebMouseWheelEventBuilder::Build(
+      event.ticks_x(), event.ticks_y(), event.GetTickMultiplier(),
+      event.time_sec(), event.GetX(0), event.GetY(0)));
+  return true;
+}
+
 void RenderWidgetHostViewAndroid::OnGestureEvent(
     const ui::GestureEventData& gesture) {
   blink::WebGestureEvent web_gesture =

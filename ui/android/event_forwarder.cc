@@ -4,10 +4,12 @@
 
 #include "ui/android/event_forwarder.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "jni/EventForwarder_jni.h"
 #include "ui/android/view_android.h"
 #include "ui/android/view_client.h"
 #include "ui/events/android/motion_event_android.h"
+#include "ui/events/base_event_utils.h"
 
 namespace ui {
 
@@ -69,8 +71,8 @@ jboolean EventForwarder::OnTouchEvent(JNIEnv* env,
       pointer_id_1, pos_x_1, pos_y_1, touch_major_1, touch_minor_1,
       orientation_1, tilt_1, android_tool_type_1);
   ui::MotionEventAndroid event(
-      1.f / view_->GetDipScale(), env, motion_event.obj(), time_ms,
-      android_action, pointer_count, history_size, action_index,
+      env, motion_event.obj(), 1.f / view_->GetDipScale(), 0.f, 0.f, 0.f,
+      time_ms, android_action, pointer_count, history_size, action_index,
       0 /* action_button */, android_button_state, android_meta_state,
       raw_pos_x - pos_x_0, raw_pos_y - pos_y_0, &pointer0, &pointer1);
   return view_->OnTouchEvent(event, is_touch_handle_event);
@@ -97,12 +99,42 @@ void EventForwarder::OnMouseEvent(JNIEnv* env,
       pointer_id, x, y, 0.0f /* touch_major */, 0.0f /* touch_minor */,
       orientation, tilt, android_tool_type);
   ui::MotionEventAndroid event(
-      1.f / view_->GetDipScale(), env, nullptr /* event */, time_ms,
-      android_action, 1 /* pointer_count */, 0 /* history_size */,
+      env, nullptr /* event */, 1.f / view_->GetDipScale(), 0.f, 0.f, 0.f,
+      time_ms, android_action, 1 /* pointer_count */, 0 /* history_size */,
       0 /* action_index */, android_action_button, android_button_state,
       android_meta_state, 0 /* raw_offset_x_pixels */,
       0 /* raw_offset_y_pixels */, &pointer, nullptr);
   view_->OnMouseEvent(event);
+}
+
+void EventForwarder::OnMouseWheelEvent(JNIEnv* env,
+                                       const JavaParamRef<jobject>& obj,
+                                       jlong time_ms,
+                                       jfloat x,
+                                       jfloat y,
+                                       jfloat ticks_x,
+                                       jfloat ticks_y,
+                                       jfloat pixels_per_tick) {
+  if (!ticks_x && !ticks_y)
+    return;
+
+  // Compute Event.Latency.OS.MOUSE_WHEEL histogram.
+  base::TimeTicks current_time = ui::EventTimeForNow();
+  base::TimeTicks event_time =
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(time_ms);
+  base::TimeDelta delta = current_time - event_time;
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.OS.MOUSE_WHEEL",
+                              delta.InMicroseconds(), 1, 1000000, 50);
+  ui::MotionEventAndroid::Pointer pointer(
+      0, x, y, 0.0f /* touch_major */, 0.0f /* touch_minor */, 0.0f, 0.0f, 0);
+  ui::MotionEventAndroid event(env, nullptr, 1.f / view_->GetDipScale(),
+                               ticks_x, ticks_y, pixels_per_tick, time_ms,
+                               0 /* action */, 1 /* pointer_count */,
+                               0 /* history_size */, 0 /* action_index */, 0, 0,
+                               0, 0 /* raw_offset_x_pixels */,
+                               0 /* raw_offset_y_pixels */, &pointer, nullptr);
+
+  view_->OnMouseWheelEvent(event);
 }
 
 bool RegisterEventForwarder(JNIEnv* env) {

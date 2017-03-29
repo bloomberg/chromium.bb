@@ -17,7 +17,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.content.browser.input.AnimationIntervalProvider;
 import org.chromium.content.browser.input.JoystickZoomProvider;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 
@@ -36,7 +35,8 @@ public class ContentViewZoomingTest {
             + "<body>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</body>"
             + "</html>");
 
-    private static class TestAnimationIntervalProvider implements AnimationIntervalProvider {
+    private static class TestAnimationIntervalProvider
+            implements JoystickZoomProvider.AnimationIntervalProvider {
         private long mAnimationTime;
         @Override
         public long getLastAnimationFrameInterval() {
@@ -47,8 +47,9 @@ public class ContentViewZoomingTest {
 
     private class TestJoystickZoomProvider extends JoystickZoomProvider {
         TestJoystickZoomProvider(ContentViewCore cvc, AnimationIntervalProvider intervalProvider) {
-            super(cvc, intervalProvider);
-            mDeviceScaleFactor = 2.0f;
+            super(cvc.getContainerView(), 2.0f, cvc.getViewportWidthPix() / 2,
+                    cvc.getViewportHeightPix() / 2, cvc);
+            setAnimationIntervalProviderForTesting(intervalProvider);
 
             mZoomRunnable = new Runnable() {
                 @Override
@@ -99,9 +100,8 @@ public class ContentViewZoomingTest {
     @Feature({"JoystickZoom"})
     public void testJoystickZoomIn() throws Throwable {
         MotionEvent rTriggerEvent;
-        AnimationIntervalProvider intervalProvider = new TestAnimationIntervalProvider();
         TestJoystickZoomProvider rtJoystickZoomProvider = new TestJoystickZoomProvider(
-                mActivityTestRule.getContentViewCore(), intervalProvider);
+                mActivityTestRule.getContentViewCore(), new TestAnimationIntervalProvider());
         // Verify page does not zoom-in if trigger motion falls in deadzone.
         rTriggerEvent = simulateJoystickEvent(0.1f, true);
         rtJoystickZoomProvider.animateZoomTest(rTriggerEvent, 20);
@@ -125,9 +125,8 @@ public class ContentViewZoomingTest {
     @Feature({"JoystickZoom"})
     public void testJoystickZoomOut() throws Throwable {
         MotionEvent lTriggerEvent;
-        AnimationIntervalProvider intervalProvider = new TestAnimationIntervalProvider();
         TestJoystickZoomProvider ltJoystickZoomProvider = new TestJoystickZoomProvider(
-                mActivityTestRule.getContentViewCore(), intervalProvider);
+                mActivityTestRule.getContentViewCore(), new TestAnimationIntervalProvider());
 
         // Zoom page to max size.
         lTriggerEvent = simulateJoystickEvent(1.0f, true);

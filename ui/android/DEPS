@@ -15,5 +15,6 @@ include_rules = [
   "+ui/base/ui_base_paths.h",
   "+ui/display",
   "+ui/events/android/motion_event_android.h",
+  "+ui/events/base_event_utils.h",
   "+ui/gfx",
 ]

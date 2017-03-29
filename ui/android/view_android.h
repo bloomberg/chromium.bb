@@ -163,6 +163,7 @@ class UI_ANDROID_EXPORT ViewAndroid {
 
   bool OnTouchEvent(const MotionEventAndroid& event, bool for_touch_handle);
   bool OnMouseEvent(const MotionEventAndroid& event);
+  bool OnMouseWheelEvent(const MotionEventAndroid& event);
 
   void RemoveChild(ViewAndroid* child);
 
@@ -174,6 +175,8 @@ class UI_ANDROID_EXPORT ViewAndroid {
                                      const MotionEventAndroid& event);
   static bool SendMouseEventToClient(ViewClient* client,
                                      const MotionEventAndroid& event);
+  static bool SendMouseWheelEventToClient(ViewClient* client,
+                                          const MotionEventAndroid& event);
 
   bool has_event_forwarder() const { return !!event_forwarder_; }
 

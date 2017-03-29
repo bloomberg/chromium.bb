@@ -1806,8 +1806,6 @@ source_set("browser") {
       "android/java/java_type.h",
       "android/java/jni_helper.cc",
       "android/java/jni_helper.h",
-      "android/joystick_scroll_provider.cc",
-      "android/joystick_scroll_provider.h",
       "android/load_url_params.cc",
       "android/load_url_params.h",
       "android/overscroll_controller_android.cc",

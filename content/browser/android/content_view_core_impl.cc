@@ -865,38 +865,6 @@ void ContentViewCoreImpl::SendOrientationChangeEvent(
   }
 }
 
-jboolean ContentViewCoreImpl::SendMouseWheelEvent(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jlong time_ms,
-    jfloat x,
-    jfloat y,
-    jfloat ticks_x,
-    jfloat ticks_y,
-    jfloat pixels_per_tick) {
-  RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
-  if (!rwhv)
-    return false;
-
-  if (!ticks_x && !ticks_y)
-    return false;
-
-  // Compute Event.Latency.OS.MOUSE_WHEEL histogram.
-  base::TimeTicks current_time = ui::EventTimeForNow();
-  base::TimeTicks event_time = base::TimeTicks() +
-      base::TimeDelta::FromMilliseconds(time_ms);
-  base::TimeDelta delta = current_time - event_time;
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.OS.MOUSE_WHEEL",
-      delta.InMicroseconds(), 1, 1000000, 50);
-
-  blink::WebMouseWheelEvent event = WebMouseWheelEventBuilder::Build(
-      ticks_x, ticks_y, pixels_per_tick / dpi_scale(), time_ms / 1000.0,
-      x / dpi_scale(), y / dpi_scale());
-
-  rwhv->SendMouseWheelEvent(event);
-  return true;
-}
-
 WebGestureEvent ContentViewCoreImpl::MakeGestureEvent(WebInputEvent::Type type,
                                                       int64_t time_ms,
                                                       float x,
