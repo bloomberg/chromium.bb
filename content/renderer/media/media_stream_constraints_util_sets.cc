@@ -7,7 +7,6 @@
 #include <cmath>
 
 #include "content/renderer/media/media_stream_constraints_util.h"
-#include "content/renderer/media/media_stream_video_source.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 
 namespace content {
@@ -17,11 +16,6 @@ using Point = ResolutionSet::Point;
 namespace {
 
 constexpr double kTolerance = 1e-5;
-
-constexpr int kDefaultHeight = MediaStreamVideoSource::kDefaultHeight;
-constexpr int kDefaultWidth = MediaStreamVideoSource::kDefaultWidth;
-constexpr double kDefaultAspectRatio =
-    MediaStreamVideoSource::kDefaultAspectRatio;
 
 // Not perfect, but good enough for this application.
 bool AreApproximatelyEqual(double d1, double d2) {
@@ -274,7 +268,14 @@ ResolutionSet ResolutionSet::Intersection(const ResolutionSet& other) const {
 }
 
 Point ResolutionSet::SelectClosestPointToIdeal(
-    const blink::WebMediaTrackConstraintSet& constraint_set) const {
+    const blink::WebMediaTrackConstraintSet& constraint_set,
+    int default_height,
+    int default_width) const {
+  DCHECK_GE(default_height, 1);
+  DCHECK_GE(default_width, 1);
+  double default_aspect_ratio =
+      static_cast<double>(default_width) / static_cast<double>(default_height);
+
   DCHECK(!IsEmpty());
   int num_ideals = 0;
   if (constraint_set.height.hasIdeal())
@@ -286,7 +287,8 @@ Point ResolutionSet::SelectClosestPointToIdeal(
 
   switch (num_ideals) {
     case 0:
-      return SelectClosestPointToIdealAspectRatio(kDefaultAspectRatio);
+      return SelectClosestPointToIdealAspectRatio(
+          default_aspect_ratio, default_height, default_width);
 
     case 1:
       // This case requires a point closest to a line.
@@ -304,12 +306,12 @@ Point ResolutionSet::SelectClosestPointToIdeal(
         ResolutionSet intersection = Intersection(ideal_line);
         if (!intersection.IsEmpty()) {
           return intersection.ClosestPointTo(
-              Point(ideal_height, ideal_height * kDefaultAspectRatio));
+              Point(ideal_height, ideal_height * default_aspect_ratio));
         }
         std::vector<Point> closest_vertices =
             GetClosestVertices(&Point::height, ideal_height);
         Point ideal_point(closest_vertices[0].height(),
-                          closest_vertices[0].height() * kDefaultAspectRatio);
+                          closest_vertices[0].height() * default_aspect_ratio);
         return GetClosestPointToVertexOrSide(closest_vertices, ideal_point);
       } else if (constraint_set.width.hasIdeal()) {
         int ideal_width = ToValidDimension(constraint_set.width.ideal());
@@ -317,18 +319,19 @@ Point ResolutionSet::SelectClosestPointToIdeal(
         ResolutionSet intersection = Intersection(ideal_line);
         if (!intersection.IsEmpty()) {
           return intersection.ClosestPointTo(
-              Point(ideal_width / kDefaultAspectRatio, ideal_width));
+              Point(ideal_width / default_aspect_ratio, ideal_width));
         }
         std::vector<Point> closest_vertices =
             GetClosestVertices(&Point::width, ideal_width);
-        Point ideal_point(closest_vertices[0].width() / kDefaultAspectRatio,
+        Point ideal_point(closest_vertices[0].width() / default_aspect_ratio,
                           closest_vertices[0].width());
         return GetClosestPointToVertexOrSide(closest_vertices, ideal_point);
       } else {
         DCHECK(constraint_set.aspectRatio.hasIdeal());
         double ideal_aspect_ratio =
             ToValidAspectRatio(constraint_set.aspectRatio.ideal());
-        return SelectClosestPointToIdealAspectRatio(ideal_aspect_ratio);
+        return SelectClosestPointToIdealAspectRatio(
+            ideal_aspect_ratio, default_height, default_width);
       }
 
     case 2:
@@ -359,14 +362,16 @@ Point ResolutionSet::SelectClosestPointToIdeal(
 }
 
 Point ResolutionSet::SelectClosestPointToIdealAspectRatio(
-    double ideal_aspect_ratio) const {
+    double ideal_aspect_ratio,
+    int default_height,
+    int default_width) const {
   ResolutionSet intersection =
       Intersection(ResolutionSet::FromExactAspectRatio(ideal_aspect_ratio));
   if (!intersection.IsEmpty()) {
-    Point default_height_point(kDefaultHeight,
-                               kDefaultHeight * ideal_aspect_ratio);
-    Point default_width_point(kDefaultWidth / ideal_aspect_ratio,
-                              kDefaultWidth);
+    Point default_height_point(default_height,
+                               default_height * ideal_aspect_ratio);
+    Point default_width_point(default_width / ideal_aspect_ratio,
+                              default_width);
     return SelectPointWithLargestArea(
         intersection.ClosestPointTo(default_height_point),
         intersection.ClosestPointTo(default_width_point));
@@ -374,9 +379,9 @@ Point ResolutionSet::SelectClosestPointToIdealAspectRatio(
   std::vector<Point> closest_vertices =
       GetClosestVertices(&Point::AspectRatio, ideal_aspect_ratio);
   double actual_aspect_ratio = closest_vertices[0].AspectRatio();
-  Point default_height_point(kDefaultHeight,
-                             kDefaultHeight * actual_aspect_ratio);
-  Point default_width_point(kDefaultWidth / actual_aspect_ratio, kDefaultWidth);
+  Point default_height_point(default_height,
+                             default_height * actual_aspect_ratio);
+  Point default_width_point(default_width / actual_aspect_ratio, default_width);
   return SelectPointWithLargestArea(
       GetClosestPointToVertexOrSide(closest_vertices, default_height_point),
       GetClosestPointToVertexOrSide(closest_vertices, default_width_point));
@@ -384,6 +389,8 @@ Point ResolutionSet::SelectClosestPointToIdealAspectRatio(
 
 Point ResolutionSet::ClosestPointTo(const Point& point) const {
   DCHECK(std::numeric_limits<double>::has_infinity);
+  DCHECK(std::isfinite(point.height()));
+  DCHECK(std::isfinite(point.width()));
 
   if (ContainsPoint(point))
     return point;

@@ -8,11 +8,11 @@
 #include <string>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/optional.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_devices.mojom.h"
+#include "content/renderer/media/media_stream_constraints_util.h"
 #include "media/capture/video_capture_types.h"
-#include "third_party/webrtc/base/optional.h"
 
 namespace blink {
 class WebString;
@@ -36,117 +36,33 @@ struct CONTENT_EXPORT VideoDeviceCaptureCapabilities {
   // Each field is independent of each other.
   std::vector<::mojom::VideoInputDeviceCapabilitiesPtr> device_capabilities;
   std::vector<media::PowerLineFrequency> power_line_capabilities;
-  std::vector<rtc::Optional<bool>> noise_reduction_capabilities;
+  std::vector<base::Optional<bool>> noise_reduction_capabilities;
 };
 
-class CONTENT_EXPORT VideoDeviceCaptureSourceSelectionResult {
- public:
-  // Creates a result without value and with an empty failed constraint name.
-  VideoDeviceCaptureSourceSelectionResult();
-
-  // Creates a result without value and with the given |failed_constraint_name|.
-  // Does not take ownership of |failed_constraint_name|, so it must be null or
-  // point to a string that remains accessible.
-  explicit VideoDeviceCaptureSourceSelectionResult(
-      const char* failed_constraint_name);
-
-  // Creates a result with the given values.
-  VideoDeviceCaptureSourceSelectionResult(
-      const std::string& device_id,
-      ::mojom::FacingMode facing_mode_,
-      media::VideoCaptureParams capture_params_,
-      rtc::Optional<bool> noise_reduction_);
-
-  VideoDeviceCaptureSourceSelectionResult(
-      const VideoDeviceCaptureSourceSelectionResult& other);
-  VideoDeviceCaptureSourceSelectionResult& operator=(
-      const VideoDeviceCaptureSourceSelectionResult& other);
-  VideoDeviceCaptureSourceSelectionResult(
-      VideoDeviceCaptureSourceSelectionResult&& other);
-  VideoDeviceCaptureSourceSelectionResult& operator=(
-      VideoDeviceCaptureSourceSelectionResult&& other);
-  ~VideoDeviceCaptureSourceSelectionResult();
-
-  bool HasValue() const { return failed_constraint_name_ == nullptr; }
-
-  // Convenience accessors for fields embedded in |capture_params|.
-  const media::VideoCaptureFormat& Format() const {
-    return capture_params_.requested_format;
-  }
-  int Width() const {
-    DCHECK(HasValue());
-    return capture_params_.requested_format.frame_size.width();
-  }
-  int Height() const {
-    DCHECK(HasValue());
-    return capture_params_.requested_format.frame_size.height();
-  }
-  float FrameRate() const {
-    DCHECK(HasValue());
-    return capture_params_.requested_format.frame_rate;
-  }
-  media::PowerLineFrequency PowerLineFrequency() const {
-    DCHECK(HasValue());
-    return capture_params_.power_line_frequency;
-  }
-
-  // Other accessors.
-  const char* failed_constraint_name() const { return failed_constraint_name_; }
-
-  const std::string& device_id() const {
-    DCHECK(HasValue());
-    return device_id_;
-  }
-
-  ::mojom::FacingMode facing_mode() const {
-    DCHECK(HasValue());
-    return facing_mode_;
-  }
-
-  const media::VideoCaptureParams& capture_params() const {
-    DCHECK(HasValue());
-    return capture_params_;
-  }
-
-  const rtc::Optional<bool>& noise_reduction() const {
-    DCHECK(HasValue());
-    return noise_reduction_;
-  }
-
- private:
-  const char* failed_constraint_name_;
-  std::string device_id_;
-  ::mojom::FacingMode facing_mode_;
-  media::VideoCaptureParams capture_params_;
-  rtc::Optional<bool> noise_reduction_;
-};
-
-// This function performs source and source-settings selection based on
-// the given |capabilities| and |constraints|.
+// This function performs source, source-settings and track-settings selection
+// based on the given |capabilities| and |constraints|.
 // Chromium performs constraint resolution in two steps. First, a source and its
-// settings are selected; then a track is created, connected to the source, and
-// finally the track settings are selected. This function implements an
-// algorithm for the first step. Sources are not a user-visible concept, so the
-// spec only specifies an algorithm for track settings.
-// This algorithm for sources is compatible with the spec algorithm for tracks,
+// settings are selected, then track settings are selected based on the source
+// settings. This function implements both steps. Sources are not a user-visible
+// concept, so the spec only specifies an algorithm for track settings.
+// The algorithm for sources is compatible with the spec algorithm for tracks,
 // as defined in https://w3c.github.io/mediacapture-main/#dfn-selectsettings,
 // but it is customized to account for differences between sources and tracks,
 // and to break ties when multiple source settings are equally good according to
 // the spec algorithm.
 // The main difference between a source and a track with regards to the spec
 // algorithm is that a candidate  source can support a range of values for some
-// constraints while a candidate track supports a single value. For example,
+// properties while a candidate track supports a single value. For example,
 // cropping allows a source with native resolution AxB to support the range of
 // resolutions from 1x1 to AxB.
 // Only candidates that satisfy the basic constraint set are valid. If no
 // candidate can satisfy the basic constraint set, this function returns
-// a result without a valid |settings| field and with the name of a failed
-// constraint in field |failed_constraint_name|. If at least one candidate that
+// a result without value and with the name of a failed constraint accessible
+// via the failed_constraint_name() method. If at least one candidate that
 // satisfies the basic constraint set can be found, this function returns a
-// result with a valid |settings| field and a null |failed_constraint_name|.
-// If there are no candidates at all, this function returns a result with an
-// empty string in |failed_constraint_name| and without a valid |settings|
-// field.
+// result with a valid value.
+// If there are no candidates at all, this function returns a result without
+// value and an empty failed constraint name.
 // The criteria to decide if a valid candidate is better than another one are as
 // follows:
 // 1. Given advanced constraint sets A[0],A[1]...,A[n], candidate C1 is better
@@ -183,8 +99,12 @@ class CONTENT_EXPORT VideoDeviceCaptureSourceSelectionResult {
 //    settings that include the device ID, power-line frequency, noise
 //    reduction, resolution, and frame rate, in that order. Note that there is
 //    no default facing mode or aspect ratio.
-VideoDeviceCaptureSourceSelectionResult CONTENT_EXPORT
-SelectVideoDeviceCaptureSourceSettings(
+// This function uses the SelectVideoTrackAdapterSettings function to compute
+// some track-specific settings. These are available in the returned value via
+// the track_adapter_settings() accessor. For more details about the algorithm
+// for track adapter settings, see the SelectVideoTrackAdapterSettings
+// documentation.
+VideoCaptureSettings CONTENT_EXPORT SelectSettingsVideoDeviceCapture(
     const VideoDeviceCaptureCapabilities& capabilities,
     const blink::WebMediaConstraints& constraints);
 

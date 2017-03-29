@@ -579,9 +579,10 @@ void MediaStreamVideoSource::FinalizeAddTrack() {
       if (track.constraints.basic().frameRate.hasMax())
         max_frame_rate = track.constraints.basic().frameRate.max();
 
-      track_adapter_->AddTrack(track.track, track.frame_callback, max_width,
-                               max_height, min_aspect_ratio, max_aspect_ratio,
-                               max_frame_rate);
+      track_adapter_->AddTrack(
+          track.track, track.frame_callback,
+          VideoTrackAdapterSettings(max_width, max_height, min_aspect_ratio,
+                                    max_aspect_ratio, max_frame_rate));
       // Calculate resulting frame size if the source delivers frames
       // according to the current format. Note: Format may change later.
       gfx::Size desired_size;

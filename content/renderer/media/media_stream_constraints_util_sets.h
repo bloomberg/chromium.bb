@@ -143,7 +143,7 @@ class DiscreteSet {
 // inclusive and aspect ratios from 0.0 to positive infinity, both inclusive.
 class CONTENT_EXPORT ResolutionSet {
  public:
-  static constexpr int kMaxDimension = std::numeric_limits<int>::max();
+  static const int kMaxDimension = std::numeric_limits<int>::max();
 
   // Helper class that represents (height, width) points on a plane.
   // TODO(guidou): Use a generic point/vector class that uses double once it
@@ -246,19 +246,21 @@ class CONTENT_EXPORT ResolutionSet {
   //   defined by the ideal value is returned. If there is more than one point
   //   closest to the ideal line, the following tie-breaker rules are used:
   //  - If |ideal_height| is provided, the point closest to
-  //      (|ideal_height|, |ideal_height| * kDefaultAspectRatio).
+  //      (|ideal_height|, |ideal_height| * default_aspect_ratio), where
+  //      default_aspect_ratio is the result of the floating-point division
+  //      |default_width|/|default_height|.
   //  - If |ideal_width| is provided, the point closest to
-  //      (|ideal_width| / kDefaultAspectRatio, |ideal_width|).
+  //      (|ideal_width| / default_aspect_ratio, |ideal_width|).
   //  - If |ideal_aspect_ratio| is provided, the point with largest area among
   //    the points closest to
-  //      (kDefaultHeight, kDefaultHeight * aspect_ratio) and
-  //      (kDefaultWidth / aspect_ratio, kDefaultWidth),
+  //      (|default_height|, |default_height| * aspect_ratio) and
+  //      (|default_width| / aspect_ratio, |default_width|),
   //    where aspect_ratio is |ideal_aspect_ratio| if the ideal line intersects
   //    the set, and the closest aspect ratio to |ideal_aspect_ratio| among the
   //    points in the set if no point in the set has an aspect ratio equal to
   //    |ideal_aspect_ratio|.
   // * If no ideal value is given, proceed as if only |ideal_aspect_ratio| was
-  //   provided with a value of kDefaultAspectRatio.
+  //   provided with a value of default_aspect_ratio.
   //
   // This is intended to support the implementation of the spec algorithm for
   // selection of track settings, as defined in
@@ -281,7 +283,9 @@ class CONTENT_EXPORT ResolutionSet {
   //
   // This function has undefined behavior if this set is empty.
   Point SelectClosestPointToIdeal(
-      const blink::WebMediaTrackConstraintSet& constraint_set) const;
+      const blink::WebMediaTrackConstraintSet& constraint_set,
+      int default_height,
+      int default_width) const;
 
   // Utilities that return ResolutionSets constrained on a specific variable.
   static ResolutionSet FromHeight(int min, int max);
@@ -310,7 +314,9 @@ class CONTENT_EXPORT ResolutionSet {
 
   // Implements SelectClosestPointToIdeal() for the case when only the ideal
   // aspect ratio is provided.
-  Point SelectClosestPointToIdealAspectRatio(double ideal_aspect_ratio) const;
+  Point SelectClosestPointToIdealAspectRatio(double ideal_aspect_ratio,
+                                             int default_height,
+                                             int default_width) const;
 
   // Returns the closest point in this set to |point|. If |point| is included in
   // this set, Point is returned. If this set is empty, behavior is undefined.

@@ -452,20 +452,19 @@ void UserMediaClientImpl::SetupVideoInput(
   if (IsDeviceSource(video_controls.stream_source)) {
     GetMediaDevicesDispatcher()->GetVideoInputCapabilities(
         current_request_info_->security_origin(),
-        base::Bind(&UserMediaClientImpl::SelectVideoDeviceSourceSettings,
+        base::Bind(&UserMediaClientImpl::SelectVideoDeviceSettings,
                    weak_factory_.GetWeakPtr(), user_media_request));
   } else {
     base::PostTaskAndReplyWithResult(
         worker_task_runner_.get(), FROM_HERE,
-        base::Bind(&SelectVideoContentCaptureSourceSettings,
+        base::Bind(&SelectSettingsVideoContentCapture,
                    user_media_request.videoConstraints()),
-        base::Bind(
-            &UserMediaClientImpl::FinalizeSelectVideoContentSourceSettings,
-            weak_factory_.GetWeakPtr(), user_media_request));
+        base::Bind(&UserMediaClientImpl::FinalizeSelectVideoContentSettings,
+                   weak_factory_.GetWeakPtr(), user_media_request));
   }
 }
 
-void UserMediaClientImpl::SelectVideoDeviceSourceSettings(
+void UserMediaClientImpl::SelectVideoDeviceSettings(
     const blink::WebUserMediaRequest& user_media_request,
     std::vector<::mojom::VideoInputDeviceCapabilitiesPtr>
         video_input_capabilities) {
@@ -483,28 +482,27 @@ void UserMediaClientImpl::SelectVideoDeviceSourceSettings(
       media::PowerLineFrequency::FREQUENCY_DEFAULT,
       media::PowerLineFrequency::FREQUENCY_50HZ,
       media::PowerLineFrequency::FREQUENCY_60HZ};
-  capabilities.noise_reduction_capabilities = {rtc::Optional<bool>(),
-                                               rtc::Optional<bool>(true),
-                                               rtc::Optional<bool>(false)};
+  capabilities.noise_reduction_capabilities = {base::Optional<bool>(),
+                                               base::Optional<bool>(true),
+                                               base::Optional<bool>(false)};
   base::PostTaskAndReplyWithResult(
       worker_task_runner_.get(), FROM_HERE,
-      base::Bind(&SelectVideoDeviceCaptureSourceSettings,
-                 std::move(capabilities),
+      base::Bind(&SelectSettingsVideoDeviceCapture, std::move(capabilities),
                  user_media_request.videoConstraints()),
-      base::Bind(&UserMediaClientImpl::FinalizeSelectVideoDeviceSourceSettings,
+      base::Bind(&UserMediaClientImpl::FinalizeSelectVideoDeviceSettings,
                  weak_factory_.GetWeakPtr(), user_media_request));
 }
 
-void UserMediaClientImpl::FinalizeSelectVideoDeviceSourceSettings(
+void UserMediaClientImpl::FinalizeSelectVideoDeviceSettings(
     const blink::WebUserMediaRequest& user_media_request,
-    const VideoDeviceCaptureSourceSelectionResult& selection_result) {
+    const VideoCaptureSettings& settings) {
   DCHECK(CalledOnValidThread());
   if (!IsCurrentRequestInfo(user_media_request))
     return;
 
-  if (!selection_result.HasValue()) {
+  if (!settings.HasValue()) {
     blink::WebString failed_constraint_name =
-        blink::WebString::fromASCII(selection_result.failed_constraint_name());
+        blink::WebString::fromASCII(settings.failed_constraint_name());
     MediaStreamRequestResult result =
         failed_constraint_name.isEmpty()
             ? MEDIA_DEVICE_NO_HARDWARE
@@ -514,20 +512,20 @@ void UserMediaClientImpl::FinalizeSelectVideoDeviceSourceSettings(
     return;
   }
   current_request_info_->stream_controls()->video.device_id =
-      selection_result.device_id();
+      settings.device_id();
   GenerateStreamForCurrentRequestInfo();
 }
 
-void UserMediaClientImpl::FinalizeSelectVideoContentSourceSettings(
+void UserMediaClientImpl::FinalizeSelectVideoContentSettings(
     const blink::WebUserMediaRequest& user_media_request,
-    const VideoContentCaptureSourceSelectionResult& selection_result) {
+    const VideoCaptureSettings& settings) {
   DCHECK(CalledOnValidThread());
   if (!IsCurrentRequestInfo(user_media_request))
     return;
 
-  if (!selection_result.HasValue()) {
+  if (!settings.HasValue()) {
     blink::WebString failed_constraint_name =
-        blink::WebString::fromASCII(selection_result.failed_constraint_name());
+        blink::WebString::fromASCII(settings.failed_constraint_name());
     DCHECK(!failed_constraint_name.isEmpty());
     blink::WebString device_id_constraint_name = blink::WebString::fromASCII(
         user_media_request.videoConstraints().basic().deviceId.name());
@@ -537,7 +535,7 @@ void UserMediaClientImpl::FinalizeSelectVideoContentSourceSettings(
     return;
   }
   current_request_info_->stream_controls()->video.device_id =
-      selection_result.device_id();
+      settings.device_id();
   GenerateStreamForCurrentRequestInfo();
 }
 

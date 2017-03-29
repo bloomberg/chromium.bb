@@ -4,8 +4,12 @@
 
 #include "content/renderer/media/media_stream_constraints_util.h"
 
+#include <algorithm>
+#include <utility>
+
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/renderer/media/media_stream_constraints_util_sets.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
@@ -91,6 +95,42 @@ bool ScanConstraintsForMinValue(const blink::WebMediaConstraints& constraints,
 
 }  // namespace
 
+VideoCaptureSettings::VideoCaptureSettings() : VideoCaptureSettings("") {}
+
+VideoCaptureSettings::VideoCaptureSettings(const char* failed_constraint_name)
+    : failed_constraint_name_(failed_constraint_name) {}
+
+VideoCaptureSettings::VideoCaptureSettings(
+    std::string device_id,
+    media::VideoCaptureParams capture_params,
+    base::Optional<bool> noise_reduction,
+    const VideoTrackAdapterSettings& track_adapter_settings,
+    double min_frame_rate)
+    : failed_constraint_name_(nullptr),
+      device_id_(std::move(device_id)),
+      capture_params_(capture_params),
+      noise_reduction_(noise_reduction),
+      track_adapter_settings_(track_adapter_settings),
+      min_frame_rate_(min_frame_rate) {
+  DCHECK_LE(min_frame_rate_, capture_params.requested_format.frame_rate);
+  DCHECK_LE(track_adapter_settings.max_width,
+            capture_params.requested_format.frame_size.width());
+  DCHECK_LE(track_adapter_settings.max_height,
+            capture_params.requested_format.frame_size.height());
+  DCHECK_LT(track_adapter_settings.max_frame_rate,
+            capture_params.requested_format.frame_rate);
+}
+
+VideoCaptureSettings::VideoCaptureSettings(const VideoCaptureSettings& other) =
+    default;
+VideoCaptureSettings::VideoCaptureSettings(VideoCaptureSettings&& other) =
+    default;
+VideoCaptureSettings::~VideoCaptureSettings() = default;
+VideoCaptureSettings& VideoCaptureSettings::operator=(
+    const VideoCaptureSettings& other) = default;
+VideoCaptureSettings& VideoCaptureSettings::operator=(
+    VideoCaptureSettings&& other) = default;
+
 bool GetConstraintValueAsBoolean(
     const blink::WebMediaConstraints& constraints,
     const blink::BooleanConstraint blink::WebMediaTrackConstraintSet::*picker,
@@ -160,6 +200,40 @@ rtc::Optional<bool> ConstraintToOptional(
     return rtc::Optional<bool>(value);
   }
   return rtc::Optional<bool>();
+}
+
+VideoTrackAdapterSettings SelectVideoTrackAdapterSettings(
+    const blink::WebMediaTrackConstraintSet& basic_constraint_set,
+    const ResolutionSet& resolution_set,
+    const NumericRangeSet<double>& frame_rate_set,
+    const media::VideoCaptureFormat& source_format) {
+  ResolutionSet::Point resolution = resolution_set.SelectClosestPointToIdeal(
+      basic_constraint_set, source_format.frame_size.height(),
+      source_format.frame_size.width());
+  int track_max_height = static_cast<int>(std::round(resolution.height()));
+  int track_max_width = static_cast<int>(std::round(resolution.width()));
+  double track_min_aspect_ratio =
+      std::max(resolution_set.min_aspect_ratio(),
+               static_cast<double>(resolution_set.min_width()) /
+                   static_cast<double>(resolution_set.max_height()));
+  double track_max_aspect_ratio =
+      std::min(resolution_set.max_aspect_ratio(),
+               static_cast<double>(resolution_set.max_width()) /
+                   static_cast<double>(resolution_set.min_height()));
+  double track_max_frame_rate = frame_rate_set.Max();
+  if (basic_constraint_set.frameRate.hasIdeal()) {
+    track_max_frame_rate = std::min(
+        track_max_frame_rate,
+        std::max(basic_constraint_set.frameRate.ideal(), frame_rate_set.Min()));
+  }
+  // VideoTrackAdapter uses a frame rate of 0.0 to disable frame-rate
+  // adjustment.
+  if (track_max_frame_rate >= source_format.frame_rate)
+    track_max_frame_rate = 0.0;
+
+  return VideoTrackAdapterSettings(
+      track_max_width, track_max_height, track_min_aspect_ratio,
+      track_max_aspect_ratio, track_max_frame_rate);
 }
 
 }  // namespace content

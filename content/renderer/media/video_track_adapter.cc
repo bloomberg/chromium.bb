@@ -6,6 +6,8 @@
 
 #include <algorithm>
 #include <limits>
+#include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -60,10 +62,7 @@ class VideoTrackAdapter::VideoFrameResolutionAdapter
   // will be done.
   VideoFrameResolutionAdapter(
       scoped_refptr<base::SingleThreadTaskRunner> render_message_loop,
-      const gfx::Size& max_size,
-      double min_aspect_ratio,
-      double max_aspect_ratio,
-      double max_frame_rate);
+      const VideoTrackAdapterSettings& settings);
 
   // Add |callback| to receive video frames on the IO-thread.
   // |callback| will however be released on the main render thread.
@@ -79,10 +78,7 @@ class VideoTrackAdapter::VideoFrameResolutionAdapter
                     const base::TimeTicks& estimated_capture_time);
 
   // Returns true if all arguments match with the output of this adapter.
-  bool ConstraintsMatch(const gfx::Size& max_size,
-                        double min_aspect_ratio,
-                        double max_aspect_ratio,
-                        double max_frame_rate) const;
+  bool SettingsMatch(const VideoTrackAdapterSettings& settings) const;
 
   bool IsEmpty() const;
 
@@ -121,20 +117,16 @@ class VideoTrackAdapter::VideoFrameResolutionAdapter
   DISALLOW_COPY_AND_ASSIGN(VideoFrameResolutionAdapter);
 };
 
-VideoTrackAdapter::
-VideoFrameResolutionAdapter::VideoFrameResolutionAdapter(
+VideoTrackAdapter::VideoFrameResolutionAdapter::VideoFrameResolutionAdapter(
     scoped_refptr<base::SingleThreadTaskRunner> render_message_loop,
-    const gfx::Size& max_size,
-    double min_aspect_ratio,
-    double max_aspect_ratio,
-    double max_frame_rate)
+    const VideoTrackAdapterSettings& settings)
     : renderer_task_runner_(render_message_loop),
-      max_frame_size_(max_size),
-      min_aspect_ratio_(min_aspect_ratio),
-      max_aspect_ratio_(max_aspect_ratio),
+      max_frame_size_(settings.max_width, settings.max_height),
+      min_aspect_ratio_(settings.min_aspect_ratio),
+      max_aspect_ratio_(settings.max_aspect_ratio),
       frame_rate_(MediaStreamVideoSource::kDefaultFrameRate),
       last_time_stamp_(base::TimeDelta::Max()),
-      max_frame_rate_(max_frame_rate),
+      max_frame_rate_(settings.max_frame_rate),
       keep_frame_counter_(0.0) {
   DCHECK(renderer_task_runner_.get());
   DCHECK(io_thread_checker_.CalledOnValidThread());
@@ -147,8 +139,8 @@ VideoFrameResolutionAdapter::VideoFrameResolutionAdapter(
   if (!max_fps_str.empty()) {
     double value;
     if (base::StringToDouble(max_fps_str, &value) && value >= 0.0) {
-      DVLOG(1) << "Overriding max frame rate.  Was=" << max_frame_rate
-              << ", Now=" << value;
+      DVLOG(1) << "Overriding max frame rate.  Was=" << max_frame_rate_
+               << ", Now=" << value;
       max_frame_rate_ = value;
     } else {
       DLOG(ERROR) << "Unable to set max fps to " << max_fps_str;
@@ -156,11 +148,11 @@ VideoFrameResolutionAdapter::VideoFrameResolutionAdapter(
   }
 
   DVLOG(3) << "VideoFrameResolutionAdapter("
-          << "{ max_width =" << max_frame_size_.width() << "}, "
-          << "{ max_height =" << max_frame_size_.height() << "}, "
-          << "{ min_aspect_ratio =" << min_aspect_ratio << "}, "
-          << "{ max_aspect_ratio_ =" << max_aspect_ratio_ << "}"
-          << "{ max_frame_rate_ =" << max_frame_rate_ << "}) ";
+           << "{ max_width =" << max_frame_size_.width() << "}, "
+           << "{ max_height =" << max_frame_size_.height() << "}, "
+           << "{ min_aspect_ratio =" << min_aspect_ratio_ << "}, "
+           << "{ max_aspect_ratio_ =" << max_aspect_ratio_ << "}"
+           << "{ max_frame_rate_ =" << max_frame_rate_ << "}) ";
 }
 
 VideoTrackAdapter::
@@ -251,16 +243,14 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::DeliverFrame(
   DoDeliverFrame(video_frame, estimated_capture_time);
 }
 
-bool VideoTrackAdapter::VideoFrameResolutionAdapter::ConstraintsMatch(
-    const gfx::Size& max_size,
-    double min_aspect_ratio,
-    double max_aspect_ratio,
-    double max_frame_rate) const {
+bool VideoTrackAdapter::VideoFrameResolutionAdapter::SettingsMatch(
+    const VideoTrackAdapterSettings& settings) const {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  return max_frame_size_ == max_size &&
-      min_aspect_ratio_ == min_aspect_ratio &&
-      max_aspect_ratio_ == max_aspect_ratio &&
-      max_frame_rate_ == max_frame_rate;
+  return max_frame_size_.width() == settings.max_width &&
+         max_frame_size_.height() == settings.max_height &&
+         min_aspect_ratio_ == settings.min_aspect_ratio &&
+         max_aspect_ratio_ == settings.max_aspect_ratio &&
+         max_frame_rate_ == settings.max_frame_rate;
 }
 
 bool VideoTrackAdapter::VideoFrameResolutionAdapter::IsEmpty() const {
@@ -334,6 +324,23 @@ bool VideoTrackAdapter::VideoFrameResolutionAdapter::MaybeDropFrame(
   return true;
 }
 
+VideoTrackAdapterSettings::VideoTrackAdapterSettings(int max_width,
+                                                     int max_height,
+                                                     double min_aspect_ratio,
+                                                     double max_aspect_ratio,
+                                                     double max_frame_rate)
+    : max_width(max_width),
+      max_height(max_height),
+      min_aspect_ratio(min_aspect_ratio),
+      max_aspect_ratio(max_aspect_ratio),
+      max_frame_rate(max_frame_rate) {
+  DCHECK_GE(max_width, 1);
+  DCHECK_GE(max_height, 1);
+  DCHECK_GE(min_aspect_ratio, 0.0);
+  DCHECK_GE(max_aspect_ratio, min_aspect_ratio);
+  DCHECK_GE(max_frame_rate, 0.0);
+}
+
 VideoTrackAdapter::VideoTrackAdapter(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
     : io_task_runner_(io_task_runner),
@@ -351,41 +358,28 @@ VideoTrackAdapter::~VideoTrackAdapter() {
 
 void VideoTrackAdapter::AddTrack(const MediaStreamVideoTrack* track,
                                  VideoCaptureDeliverFrameCB frame_callback,
-                                 int max_width,
-                                 int max_height,
-                                 double min_aspect_ratio,
-                                 double max_aspect_ratio,
-                                 double max_frame_rate) {
+                                 const VideoTrackAdapterSettings& settings) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   io_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&VideoTrackAdapter::AddTrackOnIO, this, track, frame_callback,
-                 gfx::Size(max_width, max_height), min_aspect_ratio,
-                 max_aspect_ratio, max_frame_rate));
+      FROM_HERE, base::Bind(&VideoTrackAdapter::AddTrackOnIO, this, track,
+                            frame_callback, settings));
 }
 
-void VideoTrackAdapter::AddTrackOnIO(const MediaStreamVideoTrack* track,
-                                     VideoCaptureDeliverFrameCB frame_callback,
-                                     const gfx::Size& max_frame_size,
-                                     double min_aspect_ratio,
-                                     double max_aspect_ratio,
-                                     double max_frame_rate) {
+void VideoTrackAdapter::AddTrackOnIO(
+    const MediaStreamVideoTrack* track,
+    VideoCaptureDeliverFrameCB frame_callback,
+    const VideoTrackAdapterSettings& settings) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   scoped_refptr<VideoFrameResolutionAdapter> adapter;
   for (const auto& frame_adapter : adapters_) {
-    if (frame_adapter->ConstraintsMatch(max_frame_size, min_aspect_ratio,
-                                        max_aspect_ratio, max_frame_rate)) {
+    if (frame_adapter->SettingsMatch(settings)) {
       adapter = frame_adapter.get();
       break;
     }
   }
   if (!adapter.get()) {
-    adapter = new VideoFrameResolutionAdapter(renderer_task_runner_,
-                                              max_frame_size,
-                                              min_aspect_ratio,
-                                              max_aspect_ratio,
-                                              max_frame_rate);
+    adapter = new VideoFrameResolutionAdapter(renderer_task_runner_, settings);
     adapters_.push_back(adapter);
   }
 

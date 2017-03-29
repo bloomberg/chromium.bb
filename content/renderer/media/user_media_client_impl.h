@@ -41,8 +41,7 @@ class PeerConnectionDependencyFactory;
 class MediaStreamAudioSource;
 class MediaStreamDispatcher;
 class MediaStreamVideoSource;
-class VideoContentCaptureSourceSelectionResult;
-class VideoDeviceCaptureSourceSelectionResult;
+class VideoCaptureSettings;
 
 // UserMediaClientImpl is a delegate for the Media Stream GetUserMedia API.
 // It ties together WebKit and MediaStreamManager
@@ -235,18 +234,18 @@ class CONTENT_EXPORT UserMediaClientImpl
 
   void SetupVideoInput(const blink::WebUserMediaRequest& user_media_request);
 
-  void SelectVideoDeviceSourceSettings(
+  void SelectVideoDeviceSettings(
       const blink::WebUserMediaRequest& user_media_request,
       std::vector<::mojom::VideoInputDeviceCapabilitiesPtr>
           video_input_capabilities);
 
-  void FinalizeSelectVideoDeviceSourceSettings(
+  void FinalizeSelectVideoDeviceSettings(
       const blink::WebUserMediaRequest& user_media_request,
-      const VideoDeviceCaptureSourceSelectionResult& selection_result);
+      const VideoCaptureSettings& settings);
 
-  void FinalizeSelectVideoContentSourceSettings(
+  void FinalizeSelectVideoContentSettings(
       const blink::WebUserMediaRequest& user_media_request,
-      const VideoContentCaptureSourceSelectionResult& selection_result);
+      const VideoCaptureSettings& settings);
 
   void GenerateStreamForCurrentRequestInfo();
 

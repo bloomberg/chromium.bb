@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "content/renderer/media/media_stream_video_source.h"
 #include "content/renderer/media/mock_constraint_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -17,6 +16,11 @@ namespace content {
 using Point = ResolutionSet::Point;
 
 namespace {
+
+const int kDefaultWidth = 640;
+const int kDefaultHeight = 480;
+constexpr double kDefaultAspectRatio =
+    static_cast<double>(kDefaultWidth) / static_cast<double>(kDefaultHeight);
 
 // Defined as macro in order to get more informative line-number information
 // when a test fails.
@@ -114,6 +118,13 @@ Point ProjectionOnSegmentLine(const Point& point,
 class MediaStreamConstraintsUtilSetsTest : public testing::Test {
  protected:
   using P = Point;
+
+  Point SelectClosestPointToIdeal(const ResolutionSet& set) {
+    return set.SelectClosestPointToIdeal(
+        factory_.CreateWebMediaConstraints().basic(), kDefaultHeight,
+        kDefaultWidth);
+  }
+
   MockConstraintFactory factory_;
 };
 
@@ -582,35 +593,27 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, ResolutionIdealIntersects) {
   {
     factory_.Reset();
     factory_.basic().height.setIdeal(kIdealHeight);
-    Point point = set.SelectClosestPointToIdeal(
-        factory_.CreateWebMediaConstraints().basic());
-    EXPECT_POINT_EQ(
-        Point(kIdealHeight,
-              kIdealHeight * MediaStreamVideoSource::kDefaultAspectRatio),
-        point);
+    Point point = SelectClosestPointToIdeal(set);
+    EXPECT_POINT_EQ(Point(kIdealHeight, kIdealHeight * kDefaultAspectRatio),
+                    point);
   }
 
   // Ideal width.
   {
     factory_.Reset();
     factory_.basic().width.setIdeal(kIdealWidth);
-    Point point = set.SelectClosestPointToIdeal(
-        factory_.CreateWebMediaConstraints().basic());
-    EXPECT_POINT_EQ(
-        Point(kIdealWidth / MediaStreamVideoSource::kDefaultAspectRatio,
-              kIdealWidth),
-        point);
+    Point point = SelectClosestPointToIdeal(set);
+    EXPECT_POINT_EQ(Point(kIdealWidth / kDefaultAspectRatio, kIdealWidth),
+                    point);
   }
 
   // Ideal aspect ratio.
   {
     factory_.Reset();
     factory_.basic().aspectRatio.setIdeal(kIdealAspectRatio);
-    Point point = set.SelectClosestPointToIdeal(
-        factory_.CreateWebMediaConstraints().basic());
-    EXPECT_DOUBLE_EQ(MediaStreamVideoSource::kDefaultHeight, point.height());
-    EXPECT_DOUBLE_EQ(MediaStreamVideoSource::kDefaultHeight * kIdealAspectRatio,
-                     point.width());
+    Point point = SelectClosestPointToIdeal(set);
+    EXPECT_DOUBLE_EQ(kDefaultHeight, point.height());
+    EXPECT_DOUBLE_EQ(kDefaultHeight * kIdealAspectRatio, point.width());
   }
 
   // Ideal height and width.
@@ -618,8 +621,7 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, ResolutionIdealIntersects) {
     factory_.Reset();
     factory_.basic().height.setIdeal(kIdealHeight);
     factory_.basic().width.setIdeal(kIdealWidth);
-    Point point = set.SelectClosestPointToIdeal(
-        factory_.CreateWebMediaConstraints().basic());
+    Point point = SelectClosestPointToIdeal(set);
     EXPECT_POINT_EQ(Point(kIdealHeight, kIdealWidth), point);
   }
 
@@ -628,8 +630,7 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, ResolutionIdealIntersects) {
     factory_.Reset();
     factory_.basic().height.setIdeal(kIdealHeight);
     factory_.basic().aspectRatio.setIdeal(kIdealAspectRatio);
-    Point point = set.SelectClosestPointToIdeal(
-        factory_.CreateWebMediaConstraints().basic());
+    Point point = SelectClosestPointToIdeal(set);
     EXPECT_POINT_EQ(Point(kIdealHeight, kIdealHeight * kIdealAspectRatio),
                     point);
   }
@@ -639,8 +640,7 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, ResolutionIdealIntersects) {
     factory_.Reset();
     factory_.basic().width.setIdeal(kIdealWidth);
     factory_.basic().aspectRatio.setIdeal(kIdealAspectRatio);
-    Point point = set.SelectClosestPointToIdeal(
-        factory_.CreateWebMediaConstraints().basic());
+    Point point = SelectClosestPointToIdeal(set);
     EXPECT_POINT_EQ(Point(kIdealWidth / kIdealAspectRatio, kIdealWidth), point);
   }
 
@@ -650,8 +650,7 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, ResolutionIdealIntersects) {
     factory_.basic().height.setIdeal(kIdealHeight);
     factory_.basic().width.setIdeal(kIdealWidth);
     factory_.basic().aspectRatio.setIdeal(kIdealAspectRatio);
-    Point point = set.SelectClosestPointToIdeal(
-        factory_.CreateWebMediaConstraints().basic());
+    Point point = SelectClosestPointToIdeal(set);
     // Ideal aspect ratio should be ignored.
     EXPECT_POINT_EQ(Point(kIdealHeight, kIdealWidth), point);
   }
@@ -672,8 +671,7 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, ResolutionIdealOutsideSinglePoint) {
   {
     factory_.Reset();
     factory_.basic().height.setIdeal(kIdealHeight);
-    Point point = set.SelectClosestPointToIdeal(
-        factory_.CreateWebMediaConstraints().basic());
+    Point point = SelectClosestPointToIdeal(set);
     EXPECT_POINT_EQ(kVertex1, point);
   }
 
@@ -681,8 +679,7 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, ResolutionIdealOutsideSinglePoint) {
   {
     factory_.Reset();
     factory_.basic().width.setIdeal(kIdealWidth);
-    Point point = set.SelectClosestPointToIdeal(
-        factory_.CreateWebMediaConstraints().basic());
+    Point point = SelectClosestPointToIdeal(set);
     EXPECT_POINT_EQ(kVertex3, point);
   }
 
@@ -690,8 +687,7 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, ResolutionIdealOutsideSinglePoint) {
   {
     factory_.Reset();
     factory_.basic().aspectRatio.setIdeal(kIdealAspectRatio);
-    Point point = set.SelectClosestPointToIdeal(
-        factory_.CreateWebMediaConstraints().basic());
+    Point point = SelectClosestPointToIdeal(set);
     EXPECT_POINT_EQ(kVertex2, point);
   }
 
@@ -700,8 +696,7 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, ResolutionIdealOutsideSinglePoint) {
     factory_.Reset();
     factory_.basic().height.setIdeal(kIdealHeight);
     factory_.basic().width.setIdeal(kIdealWidth);
-    Point point = set.SelectClosestPointToIdeal(
-        factory_.CreateWebMediaConstraints().basic());
+    Point point = SelectClosestPointToIdeal(set);
     Point expected = set.ClosestPointTo(Point(kIdealHeight, kIdealWidth));
     EXPECT_POINT_EQ(expected, point);
   }
@@ -711,8 +706,7 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, ResolutionIdealOutsideSinglePoint) {
     factory_.Reset();
     factory_.basic().height.setIdeal(kIdealHeight);
     factory_.basic().aspectRatio.setIdeal(kIdealAspectRatio);
-    Point point = set.SelectClosestPointToIdeal(
-        factory_.CreateWebMediaConstraints().basic());
+    Point point = SelectClosestPointToIdeal(set);
     Point expected = set.ClosestPointTo(
         Point(kIdealHeight, kIdealHeight * kIdealAspectRatio));
     EXPECT_POINT_EQ(expected, point);
@@ -723,8 +717,7 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, ResolutionIdealOutsideSinglePoint) {
     factory_.Reset();
     factory_.basic().width.setIdeal(kIdealWidth);
     factory_.basic().aspectRatio.setIdeal(kIdealAspectRatio);
-    Point point = set.SelectClosestPointToIdeal(
-        factory_.CreateWebMediaConstraints().basic());
+    Point point = SelectClosestPointToIdeal(set);
     Point expected =
         set.ClosestPointTo(Point(kIdealWidth / kIdealAspectRatio, kIdealWidth));
     EXPECT_POINT_EQ(expected, point);
@@ -736,8 +729,7 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, ResolutionIdealOutsideSinglePoint) {
     factory_.basic().height.setIdeal(kIdealHeight);
     factory_.basic().width.setIdeal(kIdealWidth);
     factory_.basic().aspectRatio.setIdeal(kIdealAspectRatio);
-    Point point = set.SelectClosestPointToIdeal(
-        factory_.CreateWebMediaConstraints().basic());
+    Point point = SelectClosestPointToIdeal(set);
     // kIdealAspectRatio is ignored if all three ideals are given.
     Point expected = set.ClosestPointTo(Point(kIdealHeight, kIdealWidth));
     EXPECT_POINT_EQ(expected, point);
@@ -760,8 +752,7 @@ TEST_F(MediaStreamConstraintsUtilSetsTest,
   {
     factory_.Reset();
     factory_.basic().height.setIdeal(kIdealHeight);
-    Point point = set.SelectClosestPointToIdeal(
-        factory_.CreateWebMediaConstraints().basic());
+    Point point = SelectClosestPointToIdeal(set);
     // Parallel to the side between kVertex2 and kVertex3. Point closest to
     // default aspect ratio is kVertex3.
     EXPECT_POINT_EQ(kVertex3, point);
@@ -771,8 +762,7 @@ TEST_F(MediaStreamConstraintsUtilSetsTest,
   {
     factory_.Reset();
     factory_.basic().width.setIdeal(kIdealWidth);
-    Point point = set.SelectClosestPointToIdeal(
-        factory_.CreateWebMediaConstraints().basic());
+    Point point = SelectClosestPointToIdeal(set);
     // Parallel to the side between kVertex1 and kVertex2. Point closest to
     // default aspect ratio is kVertex1.
     EXPECT_POINT_EQ(kVertex1, point);
@@ -782,16 +772,13 @@ TEST_F(MediaStreamConstraintsUtilSetsTest,
   {
     factory_.Reset();
     factory_.basic().aspectRatio.setIdeal(kIdealAspectRatio);
-    Point point = set.SelectClosestPointToIdeal(
-        factory_.CreateWebMediaConstraints().basic());
+    Point point = SelectClosestPointToIdeal(set);
     // The side between kVertex1 and kVertex3 is closest. The points closest to
     // default dimensions are (kDefaultHeight, kDefaultHeight * AR)
     // and (kDefaultWidth / AR, kDefaultWidth). Since the aspect ratio of the
     // polygon side is less than the default, the algorithm preserves the
     // default width.
-    Point expected(
-        MediaStreamVideoSource::kDefaultWidth / kVertex1.AspectRatio(),
-        MediaStreamVideoSource::kDefaultWidth);
+    Point expected(kDefaultWidth / kVertex1.AspectRatio(), kDefaultWidth);
     EXPECT_POINT_EQ(expected, point);
     EXPECT_TRUE(set.ContainsPoint(expected));
   }
@@ -805,14 +792,12 @@ TEST_F(MediaStreamConstraintsUtilSetsTest,
   {
     factory_.Reset();
     factory_.basic().height.setIdeal(std::numeric_limits<long>::max());
-    Point point = set.SelectClosestPointToIdeal(
-        factory_.CreateWebMediaConstraints().basic());
+    Point point = SelectClosestPointToIdeal(set);
     EXPECT_POINT_EQ(
         Point(ResolutionSet::kMaxDimension, ResolutionSet::kMaxDimension),
         point);
     factory_.basic().height.setIdeal(0);
-    point = set.SelectClosestPointToIdeal(
-        factory_.CreateWebMediaConstraints().basic());
+    point = SelectClosestPointToIdeal(set);
     EXPECT_POINT_EQ(Point(0, 0), point);
   }
 
@@ -820,15 +805,12 @@ TEST_F(MediaStreamConstraintsUtilSetsTest,
   {
     factory_.Reset();
     factory_.basic().width.setIdeal(std::numeric_limits<long>::max());
-    Point point = set.SelectClosestPointToIdeal(
-        factory_.CreateWebMediaConstraints().basic());
-    EXPECT_POINT_EQ(Point(ResolutionSet::kMaxDimension /
-                              MediaStreamVideoSource::kDefaultAspectRatio,
+    Point point = SelectClosestPointToIdeal(set);
+    EXPECT_POINT_EQ(Point(ResolutionSet::kMaxDimension / kDefaultAspectRatio,
                           ResolutionSet::kMaxDimension),
                     point);
     factory_.basic().width.setIdeal(0);
-    point = set.SelectClosestPointToIdeal(
-        factory_.CreateWebMediaConstraints().basic());
+    point = SelectClosestPointToIdeal(set);
     EXPECT_POINT_EQ(Point(0, 0), point);
   }
 
@@ -836,12 +818,10 @@ TEST_F(MediaStreamConstraintsUtilSetsTest,
   {
     factory_.Reset();
     factory_.basic().aspectRatio.setIdeal(HUGE_VAL);
-    Point point = set.SelectClosestPointToIdeal(
-        factory_.CreateWebMediaConstraints().basic());
+    Point point = SelectClosestPointToIdeal(set);
     EXPECT_POINT_EQ(Point(0, ResolutionSet::kMaxDimension), point);
     factory_.basic().aspectRatio.setIdeal(0.0);
-    point = set.SelectClosestPointToIdeal(
-        factory_.CreateWebMediaConstraints().basic());
+    point = SelectClosestPointToIdeal(set);
     EXPECT_POINT_EQ(Point(ResolutionSet::kMaxDimension, 0), point);
   }
 }

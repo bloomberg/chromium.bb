@@ -16,6 +16,15 @@
 
 namespace content {
 
+// TODO(guidou): Change default width and height to larger values. See
+// http://crbug.com/257097.
+const int kDefaultScreenCastWidth = MediaStreamVideoSource::kDefaultWidth;
+const int kDefaultScreenCastHeight = MediaStreamVideoSource::kDefaultHeight;
+const double kDefaultScreenCastFrameRate =
+    MediaStreamVideoSource::kDefaultFrameRate;
+const int kMinScreenCastDimension = 1;
+const int kMaxScreenCastDimension = media::limits::kMaxDimension - 1;
+
 namespace {
 
 using Point = ResolutionSet::Point;
@@ -23,13 +32,9 @@ using StringSet = DiscreteSet<std::string>;
 using BoolSet = DiscreteSet<bool>;
 
 // Hard upper and lower bound frame rates for tab/desktop capture.
-constexpr double kMaxScreenCastFrameRate = 120.0;
-constexpr double kMinScreenCastFrameRate = 1.0 / 60.0;
+const double kMaxScreenCastFrameRate = 120.0;
+const double kMinScreenCastFrameRate = 1.0 / 60.0;
 
-constexpr double kDefaultFrameRate = MediaStreamVideoSource::kDefaultFrameRate;
-
-constexpr int kMinScreenCastDimension = 1;
-constexpr int kMaxScreenCastDimension = media::limits::kMaxDimension - 1;
 constexpr double kMinScreenCastAspectRatio =
     static_cast<double>(kMinScreenCastDimension) /
     static_cast<double>(kMaxScreenCastDimension);
@@ -135,10 +140,11 @@ gfx::Size ToGfxSize(const Point& point) {
 
 double SelectFrameRateFromCandidates(
     const DoubleRangeSet& candidate_set,
-    const blink::WebMediaTrackConstraintSet& basic_constraint_set) {
+    const blink::WebMediaTrackConstraintSet& basic_constraint_set,
+    double default_frame_rate) {
   double frame_rate = basic_constraint_set.frameRate.hasIdeal()
                           ? basic_constraint_set.frameRate.ideal()
-                          : kDefaultFrameRate;
+                          : default_frame_rate;
   if (frame_rate > candidate_set.Max())
     frame_rate = candidate_set.Max();
   else if (frame_rate < candidate_set.Min())
@@ -149,11 +155,15 @@ double SelectFrameRateFromCandidates(
 
 media::VideoCaptureParams SelectVideoCaptureParamsFromCandidates(
     const VideoContentCaptureCandidates& candidates,
-    const blink::WebMediaTrackConstraintSet& basic_constraint_set) {
+    const blink::WebMediaTrackConstraintSet& basic_constraint_set,
+    int default_height,
+    int default_width,
+    double default_frame_rate) {
   double requested_frame_rate = SelectFrameRateFromCandidates(
-      candidates.frame_rate_set, basic_constraint_set);
+      candidates.frame_rate_set, basic_constraint_set, default_frame_rate);
   Point requested_resolution =
-      candidates.resolution_set.SelectClosestPointToIdeal(basic_constraint_set);
+      candidates.resolution_set.SelectClosestPointToIdeal(
+          basic_constraint_set, default_height, default_width);
   media::VideoCaptureParams params;
   params.requested_format = media::VideoCaptureFormat(
       ToGfxSize(requested_resolution), static_cast<float>(requested_frame_rate),
@@ -192,121 +202,70 @@ std::string SelectDeviceIDFromCandidates(
   return candidates.FirstElement();
 }
 
-rtc::Optional<bool> SelectNoiseReductionFromCandidates(
+base::Optional<bool> SelectNoiseReductionFromCandidates(
     const BoolSet& candidates,
     const blink::WebMediaTrackConstraintSet& basic_constraint_set) {
   DCHECK(!candidates.IsEmpty());
   if (basic_constraint_set.googNoiseReduction.hasIdeal() &&
       candidates.Contains(basic_constraint_set.googNoiseReduction.ideal())) {
-    return rtc::Optional<bool>(basic_constraint_set.googNoiseReduction.ideal());
+    return base::Optional<bool>(
+        basic_constraint_set.googNoiseReduction.ideal());
   }
 
   if (candidates.is_universal())
-    return rtc::Optional<bool>();
+    return base::Optional<bool>();
 
   // A non-universal BoolSet can have at most one element.
-  return rtc::Optional<bool>(candidates.FirstElement());
+  return base::Optional<bool>(candidates.FirstElement());
 }
 
-VideoContentCaptureSourceSelectionResult SelectResultFromCandidates(
+VideoCaptureSettings SelectResultFromCandidates(
     const VideoContentCaptureCandidates& candidates,
     const blink::WebMediaTrackConstraintSet& basic_constraint_set) {
   std::string device_id = SelectDeviceIDFromCandidates(candidates.device_id_set,
                                                        basic_constraint_set);
+  // TODO(guidou): Use native screen-capture resolution as default.
+  // http://crbug.com/257097
   media::VideoCaptureParams capture_params =
-      SelectVideoCaptureParamsFromCandidates(candidates, basic_constraint_set);
+      SelectVideoCaptureParamsFromCandidates(
+          candidates, basic_constraint_set, kDefaultScreenCastHeight,
+          kDefaultScreenCastWidth, kDefaultScreenCastFrameRate);
 
-  rtc::Optional<bool> noise_reduction = SelectNoiseReductionFromCandidates(
+  base::Optional<bool> noise_reduction = SelectNoiseReductionFromCandidates(
       candidates.noise_reduction_set, basic_constraint_set);
 
-  return VideoContentCaptureSourceSelectionResult(
-      std::move(device_id), noise_reduction, capture_params);
+  auto track_adapter_settings = SelectVideoTrackAdapterSettings(
+      basic_constraint_set, candidates.resolution_set,
+      candidates.frame_rate_set, capture_params.requested_format);
+
+  return VideoCaptureSettings(std::move(device_id), capture_params,
+                              noise_reduction, track_adapter_settings,
+                              candidates.frame_rate_set.Min());
 }
 
-VideoContentCaptureSourceSelectionResult UnsatisfiedConstraintsResult(
+VideoCaptureSettings UnsatisfiedConstraintsResult(
     const VideoContentCaptureCandidates& candidates,
     const blink::WebMediaTrackConstraintSet& constraint_set) {
   DCHECK(candidates.IsEmpty());
   if (candidates.resolution_set.IsHeightEmpty()) {
-    return VideoContentCaptureSourceSelectionResult(
-        constraint_set.height.name());
+    return VideoCaptureSettings(constraint_set.height.name());
   } else if (candidates.resolution_set.IsWidthEmpty()) {
-    return VideoContentCaptureSourceSelectionResult(
-        constraint_set.width.name());
+    return VideoCaptureSettings(constraint_set.width.name());
   } else if (candidates.resolution_set.IsAspectRatioEmpty()) {
-    return VideoContentCaptureSourceSelectionResult(
-        constraint_set.aspectRatio.name());
+    return VideoCaptureSettings(constraint_set.aspectRatio.name());
   } else if (candidates.frame_rate_set.IsEmpty()) {
-    return VideoContentCaptureSourceSelectionResult(
-        constraint_set.frameRate.name());
+    return VideoCaptureSettings(constraint_set.frameRate.name());
   } else if (candidates.noise_reduction_set.IsEmpty()) {
-    return VideoContentCaptureSourceSelectionResult(
-        constraint_set.googNoiseReduction.name());
+    return VideoCaptureSettings(constraint_set.googNoiseReduction.name());
   } else {
     DCHECK(candidates.device_id_set.IsEmpty());
-    return VideoContentCaptureSourceSelectionResult(
-        constraint_set.deviceId.name());
+    return VideoCaptureSettings(constraint_set.deviceId.name());
   }
 }
 
 }  // namespace
 
-VideoContentCaptureSourceSelectionResult::
-    VideoContentCaptureSourceSelectionResult()
-    : VideoContentCaptureSourceSelectionResult("") {}
-
-VideoContentCaptureSourceSelectionResult::
-    VideoContentCaptureSourceSelectionResult(const char* failed_constraint_name)
-    : failed_constraint_name_(failed_constraint_name) {}
-
-VideoContentCaptureSourceSelectionResult::
-    VideoContentCaptureSourceSelectionResult(
-        std::string device_id,
-        const rtc::Optional<bool>& noise_reduction,
-        media::VideoCaptureParams capture_params)
-    : failed_constraint_name_(nullptr),
-      device_id_(std::move(device_id)),
-      noise_reduction_(noise_reduction),
-      capture_params_(capture_params) {}
-
-VideoContentCaptureSourceSelectionResult::
-    VideoContentCaptureSourceSelectionResult(
-        const VideoContentCaptureSourceSelectionResult& other) = default;
-VideoContentCaptureSourceSelectionResult::
-    VideoContentCaptureSourceSelectionResult(
-        VideoContentCaptureSourceSelectionResult&& other) = default;
-VideoContentCaptureSourceSelectionResult::
-    ~VideoContentCaptureSourceSelectionResult() = default;
-VideoContentCaptureSourceSelectionResult&
-VideoContentCaptureSourceSelectionResult::operator=(
-    const VideoContentCaptureSourceSelectionResult& other) = default;
-VideoContentCaptureSourceSelectionResult&
-VideoContentCaptureSourceSelectionResult::operator=(
-    VideoContentCaptureSourceSelectionResult&& other) = default;
-
-int VideoContentCaptureSourceSelectionResult::Height() const {
-  DCHECK(HasValue());
-  return capture_params_.requested_format.frame_size.height();
-}
-
-int VideoContentCaptureSourceSelectionResult::Width() const {
-  DCHECK(HasValue());
-  return capture_params_.requested_format.frame_size.width();
-}
-
-float VideoContentCaptureSourceSelectionResult::FrameRate() const {
-  DCHECK(HasValue());
-  return capture_params_.requested_format.frame_rate;
-}
-
-media::ResolutionChangePolicy
-VideoContentCaptureSourceSelectionResult::ResolutionChangePolicy() const {
-  DCHECK(HasValue());
-  return capture_params_.resolution_change_policy;
-}
-
-VideoContentCaptureSourceSelectionResult
-SelectVideoContentCaptureSourceSettings(
+VideoCaptureSettings SelectSettingsVideoContentCapture(
     const blink::WebMediaConstraints& constraints) {
   VideoContentCaptureCandidates candidates;
   candidates.resolution_set = ScreenCastResolutionCapabilities();
