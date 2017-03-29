@@ -49,7 +49,7 @@ namespace blink {
 
 namespace {
 
-static bool colorIsDerivedFromElement(const CSSIdentifierValue& value) {
+bool colorIsDerivedFromElement(const CSSIdentifierValue& value) {
   CSSValueID valueID = value.getValueID();
   switch (valueID) {
     case CSSValueInternalQuirkInherit:
@@ -84,10 +84,20 @@ bool appendPosition(StringBuilder& result,
 
   return true;
 }
+
+}  // anonymous ns
+
+bool CSSGradientColorStop::isCacheable() const {
+  if (!isHint() && m_color->isIdentifierValue() &&
+      colorIsDerivedFromElement(toCSSIdentifierValue(*m_color))) {
+    return false;
+  }
+
+  return !m_offset || !m_offset->isFontRelativeLength();
 }
 
 DEFINE_TRACE(CSSGradientColorStop) {
-  visitor->trace(m_position);
+  visitor->trace(m_offset);
   visitor->trace(m_color);
 }
 
@@ -96,8 +106,7 @@ PassRefPtr<Image> CSSGradientValue::image(const LayoutObject& layoutObject,
   if (size.isEmpty())
     return nullptr;
 
-  bool cacheable = isCacheable();
-  if (cacheable) {
+  if (m_isCacheable) {
     if (!clients().contains(&layoutObject))
       return nullptr;
 
@@ -135,7 +144,7 @@ PassRefPtr<Image> CSSGradientValue::image(const LayoutObject& layoutObject,
   }
 
   RefPtr<Image> newImage = GradientGeneratedImage::create(gradient, size);
-  if (cacheable)
+  if (m_isCacheable)
     putImage(size, newImage);
 
   return newImage.release();
@@ -144,8 +153,8 @@ PassRefPtr<Image> CSSGradientValue::image(const LayoutObject& layoutObject,
 // Should only ever be called for deprecated gradients.
 static inline bool compareStops(const CSSGradientColorStop& a,
                                 const CSSGradientColorStop& b) {
-  double aVal = a.m_position->getDoubleValue();
-  double bVal = b.m_position->getDoubleValue();
+  double aVal = a.m_offset->getDoubleValue();
+  double bVal = b.m_offset->getDoubleValue();
 
   return aVal < bVal;
 }
@@ -290,10 +299,10 @@ void CSSGradientValue::addDeprecatedStops(GradientDesc& desc,
 
   for (const auto& stop : m_stops) {
     float offset;
-    if (stop.m_position->isPercentage())
-      offset = stop.m_position->getFloatValue() / 100;
+    if (stop.m_offset->isPercentage())
+      offset = stop.m_offset->getFloatValue() / 100;
     else
-      offset = stop.m_position->getFloatValue();
+      offset = stop.m_offset->getFloatValue();
 
     desc.stops.emplace_back(offset, resolveStopColor(*stop.m_color, object));
   }
@@ -468,21 +477,21 @@ void CSSGradientValue::addStops(CSSGradientValue::GradientDesc& desc,
     else
       stops[i].color = resolveStopColor(*stop.m_color, object);
 
-    if (stop.m_position) {
-      if (stop.m_position->isPercentage())
-        stops[i].offset = stop.m_position->getFloatValue() / 100;
-      else if (stop.m_position->isLength() ||
-               stop.m_position->isCalculatedPercentageWithLength()) {
+    if (stop.m_offset) {
+      if (stop.m_offset->isPercentage()) {
+        stops[i].offset = stop.m_offset->getFloatValue() / 100;
+      } else if (stop.m_offset->isLength() ||
+                 stop.m_offset->isCalculatedPercentageWithLength()) {
         float length;
-        if (stop.m_position->isLength())
-          length = stop.m_position->computeLength<float>(conversionData);
+        if (stop.m_offset->isLength())
+          length = stop.m_offset->computeLength<float>(conversionData);
         else
-          length = stop.m_position->cssCalcValue()
+          length = stop.m_offset->cssCalcValue()
                        ->toCalcValue(conversionData)
                        ->evaluate(gradientLength);
         stops[i].offset = (gradientLength > 0) ? length / gradientLength : 0;
-      } else if (stop.m_position->isAngle()) {
-        stops[i].offset = stop.m_position->computeDegrees() / 360.0f;
+      } else if (stop.m_offset->isAngle()) {
+        stops[i].offset = stop.m_offset->computeDegrees() / 360.0f;
       } else {
         ASSERT_NOT_REACHED();
         stops[i].offset = 0;
@@ -662,24 +671,6 @@ FloatPoint CSSGradientValue::computeEndPoint(
   return result;
 }
 
-bool CSSGradientValue::isCacheable() const {
-  for (size_t i = 0; i < m_stops.size(); ++i) {
-    const CSSGradientColorStop& stop = m_stops[i];
-
-    if (!stop.isHint() && stop.m_color->isIdentifierValue() &&
-        colorIsDerivedFromElement(toCSSIdentifierValue(*stop.m_color)))
-      return false;
-
-    if (!stop.m_position)
-      continue;
-
-    if (stop.m_position->isFontRelativeLength())
-      return false;
-  }
-
-  return true;
-}
-
 bool CSSGradientValue::knownToBeOpaque(const LayoutObject& object) const {
   for (auto& stop : m_stops) {
     if (!stop.isHint() && resolveStopColor(*stop.m_color, object).hasAlpha())
@@ -739,15 +730,8 @@ String CSSLinearGradientValue::customCSSText() const {
       }
     }
 
-    for (unsigned i = 0; i < m_stops.size(); i++) {
-      const CSSGradientColorStop& stop = m_stops[i];
-      result.append(", ");
-      result.append(stop.m_color->cssText());
-      if (stop.m_position) {
-        result.append(' ');
-        result.append(stop.m_position->cssText());
-      }
-    }
+    constexpr bool appendSeparator = true;
+    appendCSSTextForColorStops(result, appendSeparator);
   } else {
     if (m_repeating)
       result.append("repeating-linear-gradient(");
@@ -976,19 +960,19 @@ DEFINE_TRACE_AFTER_DISPATCH(CSSLinearGradientValue) {
 void CSSGradientValue::appendCSSTextForColorStops(
     StringBuilder& result,
     bool requiresSeparator) const {
-  if (requiresSeparator)
-    result.append(", ");
-
-  for (unsigned i = 0; i < m_stops.size(); i++) {
-    const CSSGradientColorStop& stop = m_stops[i];
-    if (i)
+  for (const auto& stop : m_stops) {
+    if (requiresSeparator) {
       result.append(", ");
+    } else {
+      requiresSeparator = true;
+    }
+
     if (stop.m_color)
       result.append(stop.m_color->cssText());
-    if (stop.m_color && stop.m_position)
+    if (stop.m_color && stop.m_offset)
       result.append(' ');
-    if (stop.m_position)
-      result.append(stop.m_position->cssText());
+    if (stop.m_offset)
+      result.append(stop.m_offset->cssText());
   }
 }
 
@@ -997,17 +981,17 @@ void CSSGradientValue::appendCSSTextForDeprecatedColorStops(
   for (unsigned i = 0; i < m_stops.size(); i++) {
     const CSSGradientColorStop& stop = m_stops[i];
     result.append(", ");
-    if (stop.m_position->getDoubleValue() == 0) {
+    if (stop.m_offset->getDoubleValue() == 0) {
       result.append("from(");
       result.append(stop.m_color->cssText());
       result.append(')');
-    } else if (stop.m_position->getDoubleValue() == 1) {
+    } else if (stop.m_offset->getDoubleValue() == 1) {
       result.append("to(");
       result.append(stop.m_color->cssText());
       result.append(')');
     } else {
       result.append("color-stop(");
-      result.appendNumber(stop.m_position->getDoubleValue());
+      result.appendNumber(stop.m_offset->getDoubleValue());
       result.append(", ");
       result.append(stop.m_color->cssText());
       result.append(')');
@@ -1070,15 +1054,8 @@ String CSSRadialGradientValue::customCSSText() const {
       result.append(m_endVerticalSize->cssText());
     }
 
-    for (unsigned i = 0; i < m_stops.size(); i++) {
-      const CSSGradientColorStop& stop = m_stops[i];
-      result.append(", ");
-      result.append(stop.m_color->cssText());
-      if (stop.m_position) {
-        result.append(' ');
-        result.append(stop.m_position->cssText());
-      }
-    }
+    constexpr bool appendSeparator = true;
+    appendCSSTextForColorStops(result, appendSeparator);
   } else {
     if (m_repeating)
       result.append("repeating-radial-gradient(");

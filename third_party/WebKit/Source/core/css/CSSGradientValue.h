@@ -59,21 +59,22 @@ enum CSSGradientRepeat { NonRepeating, Repeating };
 struct CSSGradientColorStop {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
- public:
-  CSSGradientColorStop() : m_colorIsDerivedFromElement(false) {}
-  Member<CSSPrimitiveValue> m_position;  // percentage | length | angle
-  Member<CSSValue> m_color;
-  bool m_colorIsDerivedFromElement;
   bool operator==(const CSSGradientColorStop& other) const {
     return dataEquivalent(m_color, other.m_color) &&
-           dataEquivalent(m_position, other.m_position);
+           dataEquivalent(m_offset, other.m_offset);
   }
+
   bool isHint() const {
-    ASSERT(m_color || m_position);
+    DCHECK(m_color || m_offset);
     return !m_color;
   }
 
+  bool isCacheable() const;
+
   DECLARE_TRACE();
+
+  Member<CSSPrimitiveValue> m_offset;  // percentage | length | angle
+  Member<CSSValue> m_color;
 };
 
 }  // namespace blink
@@ -93,7 +94,10 @@ class CSSGradientValue : public CSSImageGeneratorValue {
   void setSecondX(CSSValue* val) { m_secondX = val; }
   void setSecondY(CSSValue* val) { m_secondY = val; }
 
-  void addStop(const CSSGradientColorStop& stop) { m_stops.push_back(stop); }
+  void addStop(const CSSGradientColorStop& stop) {
+    m_stops.push_back(stop);
+    m_isCacheable = m_isCacheable && stop.isCacheable();
+  }
 
   unsigned stopCount() const { return m_stops.size(); }
 
@@ -120,9 +124,10 @@ class CSSGradientValue : public CSSImageGeneratorValue {
                    CSSGradientRepeat repeat,
                    CSSGradientType gradientType)
       : CSSImageGeneratorValue(classType),
-        m_stopsSorted(false),
         m_gradientType(gradientType),
-        m_repeating(repeat == Repeating) {}
+        m_repeating(repeat == Repeating),
+        m_stopsSorted(false),
+        m_isCacheable(true) {}
 
   void addStops(GradientDesc&,
                 const CSSToLengthConversionData&,
@@ -135,8 +140,6 @@ class CSSGradientValue : public CSSImageGeneratorValue {
                              const CSSToLengthConversionData&,
                              const IntSize&);
 
-  bool isCacheable() const;
-
   void appendCSSTextForColorStops(StringBuilder&, bool requiresSeparator) const;
   void appendCSSTextForDeprecatedColorStops(StringBuilder&) const;
 
@@ -144,14 +147,16 @@ class CSSGradientValue : public CSSImageGeneratorValue {
   Member<CSSValue> m_firstX;
   Member<CSSValue> m_firstY;
 
+  // TODO(fmalita): relocate these to subclasses which need them.
   Member<CSSValue> m_secondX;
   Member<CSSValue> m_secondY;
 
   // Stops
   HeapVector<CSSGradientColorStop, 2> m_stops;
-  bool m_stopsSorted;
   CSSGradientType m_gradientType;
-  bool m_repeating;
+  bool m_repeating : 1;
+  bool m_stopsSorted : 1;
+  bool m_isCacheable : 1;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSGradientValue, isGradientValue());

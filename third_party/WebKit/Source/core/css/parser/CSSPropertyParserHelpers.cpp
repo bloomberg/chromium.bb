@@ -860,7 +860,7 @@ static bool consumeDeprecatedGradientColorStop(CSSParserTokenRange& range,
       return false;
   }
 
-  stop.m_position =
+  stop.m_offset =
       CSSPrimitiveValue::create(position, CSSPrimitiveValue::UnitType::Number);
   stop.m_color = consumeDeprecatedGradientStopColor(args, cssParserMode);
   return stop.m_color && args.atEnd();
@@ -960,9 +960,9 @@ static bool consumeGradientColorStops(CSSParserTokenRange& range,
     if (!stop.m_color && (!supportsColorHints || previousStopWasColorHint))
       return false;
     previousStopWasColorHint = !stop.m_color;
-    stop.m_position = consumePositionFunc(range, cssParserMode, ValueRangeAll,
-                                          UnitlessQuirk::Forbid);
-    if (!stop.m_color && !stop.m_position)
+    stop.m_offset = consumePositionFunc(range, cssParserMode, ValueRangeAll,
+                                        UnitlessQuirk::Forbid);
+    if (!stop.m_color && !stop.m_offset)
       return false;
     gradient->addStop(stop);
   } while (consumeCommaIncludingWhitespace(range));
