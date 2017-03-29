@@ -92,6 +92,9 @@ message MountRequest {
   // forces to use the new encryption. That is, makes it an error to mount
   // an existing home directory encrypted in the old way (ecryptfs).
   optional bool force_dircrypto_if_available = 3;
+  // If set to true, mounts the existing ecryptfs vault to a temporary location
+  // while setting up a new dircrypto directory.
+  optional bool to_migrate_from_ecryptfs = 4;
 }
 
 // A BaseReply type is used for all cryptohomed responses. A shared base class
