@@ -59,7 +59,7 @@ void ArcRobotAuthCodeFetcher::Fetch(const FetchCallback& callback) {
   request->set_oauth2_client_id(kAndoidClientId);
   request->add_auth_scope(GaiaConstants::kAnyApiOAuth2Scope);
   request->set_device_type(
-      enterprise_management::DeviceServiceApiAccessRequest::ANDROIDOS);
+      enterprise_management::DeviceServiceApiAccessRequest::ANDROID_OS);
 
   fetch_request_job_->Start(
       base::Bind(&ArcRobotAuthCodeFetcher::OnFetchRobotAuthCodeCompleted,

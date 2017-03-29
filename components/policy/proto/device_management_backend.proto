@@ -170,10 +170,10 @@ message DeviceServiceApiAccessRequest {
   enum DeviceType {
     // Authcode will be used by Chrome OS
     // (this is typically requested during device enrollment)
-    CHROME = 0;
+    CHROME_OS = 0;
     // Authcode will be used by Android (ARC) subsystem
     // (this is typically requested during ARC Kiosk session setup)
-    ANDROIDOS = 1;
+    ANDROID_OS = 1;
   };
 
   // Device type indicates the intended use of the auth code.

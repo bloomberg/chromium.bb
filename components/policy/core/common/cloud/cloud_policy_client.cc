@@ -287,7 +287,7 @@ void CloudPolicyClient::FetchRobotAuthCodes(const std::string& auth_token) {
   request->set_oauth2_client_id(
       GaiaUrls::GetInstance()->oauth2_chrome_client_id());
   request->add_auth_scope(GaiaConstants::kAnyApiOAuth2Scope);
-  request->set_device_type(em::DeviceServiceApiAccessRequest::CHROME);
+  request->set_device_type(em::DeviceServiceApiAccessRequest::CHROME_OS);
 
   policy_fetch_request_job_->Start(
       base::Bind(&CloudPolicyClient::OnFetchRobotAuthCodesCompleted,
