@@ -59,6 +59,11 @@ NONPROPERTIES = [
     # True if 'underline solid' is the only text decoration on this element.
     {'name': 'HasSimpleUnderline', 'field_template': 'storage_only', 'size': 1, 'default_value': 'false',
      'type_name': 'bool', 'inherited': True, 'independent': False},
+    # TODO(shend): vertical align is actually a CSS property, but since we don't support union fields
+    # which can be either a keyword or Length, this is generated as a nonproperty for now. Remove this
+    # once we can support union fields and groups.
+    {'name': 'VerticalAlign', 'field_template': 'storage_only', 'size': 4, 'default_value': 'EVerticalAlign::kBaseline',
+     'type_name': 'EVerticalAlign', 'inherited': False, 'independent': False},
 ]
 
 

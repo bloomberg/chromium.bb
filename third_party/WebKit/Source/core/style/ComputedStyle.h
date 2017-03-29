@@ -205,16 +205,13 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // don't inherit
   struct NonInheritedData {
-    NonInheritedData()
-        : m_verticalAlign(static_cast<unsigned>(initialVerticalAlign())),
-          m_hasViewportUnits(false),
-          m_hasRemUnits(false) {}
+    NonInheritedData() : m_hasViewportUnits(false), m_hasRemUnits(false) {}
 
     // Compare computed styles, differences in inherited bits or other flags
     // should not cause an inequality.
     bool operator==(const NonInheritedData& other) const {
       // Generated properties are compared in ComputedStyleBase
-      return m_verticalAlign == other.m_verticalAlign;
+      return true;
       // Differences in the following fields do not cause inequality:
       // hasViewportUnits
       // styleType
@@ -233,8 +230,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     bool operator!=(const NonInheritedData& other) const {
       return !(*this == other);
     }
-
-    unsigned m_verticalAlign : 4;     // EVerticalAlign
 
     // This is set if we used viewport units when resolving a length.
     // It is mutable so we can pass around const ComputedStyles to resolve
@@ -1676,13 +1671,13 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     return EVerticalAlign::kBaseline;
   }
   EVerticalAlign verticalAlign() const {
-    return static_cast<EVerticalAlign>(m_nonInheritedData.m_verticalAlign);
+    return static_cast<EVerticalAlign>(m_verticalAlign);
   }
   const Length& getVerticalAlignLength() const {
     return m_box->verticalAlign();
   }
   void setVerticalAlign(EVerticalAlign v) {
-    m_nonInheritedData.m_verticalAlign = static_cast<unsigned>(v);
+    m_verticalAlign = static_cast<unsigned>(v);
   }
   void setVerticalAlignLength(const Length& length) {
     setVerticalAlign(EVerticalAlign::kLength);

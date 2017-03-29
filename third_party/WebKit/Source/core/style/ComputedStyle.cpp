@@ -347,7 +347,8 @@ void ComputedStyle::copyNonInheritedFromCached(const ComputedStyle& other) {
   // See comments for each skipped flag below.
   setOriginalDisplay(
       other.originalDisplay());  // Not generated in ComputedStyleBase.
-  m_nonInheritedData.m_verticalAlign = other.m_nonInheritedData.m_verticalAlign;
+  setVerticalAlign(
+      other.verticalAlign());  // Not generated in ComputedStyleBase
   m_nonInheritedData.m_hasViewportUnits =
       other.m_nonInheritedData.m_hasViewportUnits;
   m_nonInheritedData.m_hasRemUnits = other.m_nonInheritedData.m_hasRemUnits;
@@ -483,9 +484,11 @@ bool ComputedStyle::nonInheritedEqual(const ComputedStyle& other) const {
   return ComputedStyleBase::nonInheritedEqual(other) &&
          originalDisplay() ==
              other.originalDisplay() &&  // Not generated in ComputedStyleBase
-         m_nonInheritedData == other.m_nonInheritedData &&
-         m_box == other.m_box && m_visual == other.m_visual &&
-         m_background == other.m_background && m_surround == other.m_surround &&
+         verticalAlign() ==
+             other.verticalAlign() &&  // Not generated in ComputedStyleBase
+         m_box == other.m_box &&
+         m_visual == other.m_visual && m_background == other.m_background &&
+         m_surround == other.m_surround &&
          m_rareNonInheritedData == other.m_rareNonInheritedData &&
          m_svgStyle->nonInheritedEqual(*other.m_svgStyle);
 }
@@ -856,8 +859,7 @@ bool ComputedStyle::diffNeedsFullLayout(const ComputedStyle& other) const {
       return true;
   }
 
-  if (m_nonInheritedData.m_verticalAlign !=
-          other.m_nonInheritedData.m_verticalAlign ||
+  if (verticalAlign() != other.verticalAlign() ||
       position() != other.position())
     return true;
 
