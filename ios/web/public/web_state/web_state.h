@@ -91,9 +91,11 @@ class WebState : public base::SupportsUserData {
 
   // Creates a new WebState.
   static std::unique_ptr<WebState> Create(const CreateParams& params);
+
   // Creates a new WebState from a serialized NavigationManager.
-  static std::unique_ptr<WebState> Create(const CreateParams& params,
-                                          CRWSessionStorage* session_storage);
+  static std::unique_ptr<WebState> CreateWithStorageSession(
+      const CreateParams& params,
+      CRWSessionStorage* session_storage);
 
   ~WebState() override {}
 

@@ -879,7 +879,7 @@ Tab* GetOpenerForTab(id<NSFastEnumeration> tabs, Tab* tab) {
   // at an index larger than n). Then in a second pass fix the openers.
   for (CRWSessionStorage* session in sessions) {
     std::unique_ptr<web::WebState> webState =
-        web::WebState::Create(params, session);
+        web::WebState::CreateWithStorageSession(params, session);
     base::scoped_nsobject<Tab> tab(
         [[Tab alloc] initWithWebState:std::move(webState) model:self]);
     [tab webController].webUsageEnabled = webUsageEnabled_;
