@@ -9,7 +9,6 @@
 #include "components/network_hints/common/network_hints_common.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
-#include "third_party/WebKit/public/platform/WebNavigationHintType.h"
 #include "url/ipc/url_param_traits.h"
 
 // Singly-included section for custom IPC traits.
@@ -34,9 +33,6 @@ struct ParamTraits<network_hints::LookupRequest> {
 
 #define IPC_MESSAGE_START NetworkHintsMsgStart
 
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebNavigationHintType,
-                          blink::WebNavigationHintType::Last)
-
 //-----------------------------------------------------------------------------
 // Host messages
 // These are messages sent from the renderer process to the browser process.
@@ -52,8 +48,3 @@ IPC_MESSAGE_CONTROL3(NetworkHintsMsg_Preconnect,
                      GURL /* preconnect target url */,
                      bool /* Does connection have its credentials flag set */,
                      int /* number of connections */)
-
-// Request to trigger possible optimizations for navigation.
-IPC_MESSAGE_CONTROL2(NetworkHintsMsg_NavigationHint,
-                     GURL /* document url */,
-                     blink::WebNavigationHintType /* navigation hint type */)

@@ -197,10 +197,6 @@ const base::Feature kSharedArrayBuffer{"SharedArrayBuffer",
 const base::Feature kSlimmingPaintInvalidation{
     "SlimmingPaintInvalidation", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Speculatively launches Service Workers on mouse/touch events.
-const base::Feature kSpeculativeLaunchServiceWorker{
-    "SpeculativeLaunchServiceWorker", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Throttle Blink timers in out-of-view cross origin frames.
 const base::Feature kTimerThrottlingForHiddenFrames{
     "TimerThrottlingForHiddenFrames", base::FEATURE_ENABLED_BY_DEFAULT};

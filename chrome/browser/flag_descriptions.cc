@@ -1113,12 +1113,6 @@ const char kV8CacheStrategiesForCacheStorageNormal[] = "Normal";
 
 const char kV8CacheStrategiesForCacheStorageAggressive[] = "Aggressive";
 
-const char kSpeculativeLaunchServiceWorkerName[] =
-    "Speculative launch of service workers.";
-
-const char kSpeculativeLaunchServiceWorkerDescription[] =
-    "Speculatively launch service workers using touch and mouse events.";
-
 const char kMemoryCoordinatorName[] = "Memory coordinator";
 
 const char kMemoryCoordinatorDescription[] =

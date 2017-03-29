@@ -1468,8 +1468,6 @@ void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(
             "ServiceWorker", "ServiceWorkerVersion::StartWorker", trace_id,
             "Script", script_url_.spec(), "Purpose",
             ServiceWorkerMetrics::EventTypeToString(purpose));
-        DCHECK(!start_worker_first_purpose_);
-        start_worker_first_purpose_ = purpose;
         start_callbacks_.push_back(
             base::Bind(&ServiceWorkerVersion::RecordStartWorkerResult,
                        weak_factory_.GetWeakPtr(), purpose, prestart_status,
@@ -1489,18 +1487,12 @@ void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(
 
 void ServiceWorkerVersion::StartWorkerInternal() {
   DCHECK_EQ(EmbeddedWorkerStatus::STOPPED, running_status());
-  DCHECK(start_worker_first_purpose_);
 
   if (!ServiceWorkerMetrics::ShouldExcludeSiteFromHistogram(site_for_uma_)) {
     DCHECK(!event_recorder_);
     event_recorder_ =
-        base::MakeUnique<ServiceWorkerMetrics::ScopedEventRecorder>(
-            start_worker_first_purpose_.value());
+        base::MakeUnique<ServiceWorkerMetrics::ScopedEventRecorder>();
   }
-
-  // We don't clear |start_worker_first_purpose_| here but clear in
-  // FinishStartWorker. This is because StartWorkerInternal may be called
-  // again from OnStoppedInternal if StopWorker is called before OnStarted.
 
   StartTimeoutTimer();
 
@@ -1890,7 +1882,6 @@ void ServiceWorkerVersion::OnBeginEvent() {
 }
 
 void ServiceWorkerVersion::FinishStartWorker(ServiceWorkerStatusCode status) {
-  start_worker_first_purpose_ = base::nullopt;
   RunCallbacks(this, &start_callbacks_, status);
 }
 

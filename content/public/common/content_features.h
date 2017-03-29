@@ -55,7 +55,6 @@ CONTENT_EXPORT extern const base::Feature kScrollAnchoring;
 CONTENT_EXPORT extern const base::Feature kServiceWorkerNavigationPreload;
 CONTENT_EXPORT extern const base::Feature kSharedArrayBuffer;
 CONTENT_EXPORT extern const base::Feature kSlimmingPaintInvalidation;
-CONTENT_EXPORT extern const base::Feature kSpeculativeLaunchServiceWorker;
 CONTENT_EXPORT extern const base::Feature kTimerThrottlingForHiddenFrames;
 CONTENT_EXPORT extern const base::Feature kTokenBinding;
 CONTENT_EXPORT extern const base::Feature kTouchpadAndWheelScrollLatching;

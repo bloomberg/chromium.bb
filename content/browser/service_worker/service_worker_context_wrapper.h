@@ -23,10 +23,6 @@ class FilePath;
 class SingleThreadTaskRunner;
 }
 
-namespace blink {
-enum class WebNavigationHintType;
-}
-
 namespace storage {
 class QuotaManagerProxy;
 class SpecialStoragePolicy;
@@ -109,11 +105,6 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       const CountExternalRequestsCallback& callback) override;
   void StopAllServiceWorkersForOrigin(const GURL& origin) override;
   void ClearAllServiceWorkersForTest(const base::Closure& callback) override;
-  void StartServiceWorkerForNavigationHint(
-      const GURL& document_url,
-      blink::WebNavigationHintType type,
-      int render_process_id,
-      const ResultCallback& callback) override;
   bool StartingExternalRequest(int64_t service_worker_version_id,
                                const std::string& request_uuid) override;
   bool FinishedExternalRequest(int64_t service_worker_version_id,
@@ -272,23 +263,6 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void DidFindRegistrationForUpdate(
       ServiceWorkerStatusCode status,
       scoped_refptr<content::ServiceWorkerRegistration> registration);
-
-  void DidCheckRenderProcessForNavigationHint(const GURL& document_url,
-                                              blink::WebNavigationHintType type,
-                                              int render_process_id,
-                                              const ResultCallback& callback);
-
-  void DidFindRegistrationForNavigationHint(
-      blink::WebNavigationHintType type,
-      int render_process_id,
-      const ResultCallback& callback,
-      ServiceWorkerStatusCode status,
-      scoped_refptr<ServiceWorkerRegistration> registration);
-
-  void DidStartServiceWorkerForNavigationHint(const GURL& pattern,
-                                              int render_process_id,
-                                              const ResultCallback& callback,
-                                              ServiceWorkerStatusCode code);
 
   // The core context is only for use on the IO thread.
   // Can be null before/during init, during/after shutdown, and after

@@ -72,12 +72,6 @@ std::string EventTypeToSuffix(ServiceWorkerMetrics::EventType event_type) {
       return "_FETCH_WAITUNTIL";
     case ServiceWorkerMetrics::EventType::FOREIGN_FETCH_WAITUNTIL:
       return "_FOREIGN_FETCH_WAITUNTIL";
-    case ServiceWorkerMetrics::EventType::NAVIGATION_HINT_LINK_MOUSE_DOWN:
-      return "_NAVIGATION_HINT_LINK_MOUSE_DOWN";
-    case ServiceWorkerMetrics::EventType::NAVIGATION_HINT_LINK_TAP_UNCONFIRMED:
-      return "_NAVIGATION_HINT_LINK_TAP_UNCONFIRMED";
-    case ServiceWorkerMetrics::EventType::NAVIGATION_HINT_LINK_TAP_DOWN:
-      return "_NAVIGATION_HINT_LINK_TAP_DOWN";
     case ServiceWorkerMetrics::EventType::EXTERNAL_REQUEST:
       return "_EXTERNAL_REQUEST";
     case ServiceWorkerMetrics::EventType::PAYMENT_REQUEST:
@@ -219,14 +213,6 @@ void RecordURLMetricOnUI(const GURL& url) {
       "ServiceWorker.ControlledPageUrl", url);
 }
 
-// Returns true when the event is for a navigation hint.
-bool IsNavigationHintEvent(ServiceWorkerMetrics::EventType event_type) {
-  using EventType = ServiceWorkerMetrics::EventType;
-  return event_type == EventType::NAVIGATION_HINT_LINK_MOUSE_DOWN ||
-         event_type == EventType::NAVIGATION_HINT_LINK_TAP_UNCONFIRMED ||
-         event_type == EventType::NAVIGATION_HINT_LINK_TAP_DOWN;
-}
-
 enum EventHandledRatioType {
   EVENT_HANDLED_NONE,
   EVENT_HANDLED_SOME,
@@ -238,20 +224,12 @@ enum EventHandledRatioType {
 
 using ScopedEventRecorder = ServiceWorkerMetrics::ScopedEventRecorder;
 
-ScopedEventRecorder::ScopedEventRecorder(
-    ServiceWorkerMetrics::EventType start_worker_purpose)
-    : start_worker_purpose_(start_worker_purpose) {}
+ScopedEventRecorder::ScopedEventRecorder() {}
 
 ScopedEventRecorder::~ScopedEventRecorder() {
   for (const auto& ev : event_stats_) {
     RecordEventHandledRatio(ev.first, ev.second.handled_events,
                             ev.second.fired_events);
-  }
-  if (IsNavigationHintEvent(start_worker_purpose_)) {
-    RecordNavigationHintPrecision(
-        start_worker_purpose_,
-        event_stats_[EventType::FETCH_MAIN_FRAME].fired_events != 0 ||
-            event_stats_[EventType::FETCH_SUB_FRAME].fired_events != 0);
   }
 }
 
@@ -295,34 +273,6 @@ void ScopedEventRecorder::RecordEventHandledRatio(
   }
 }
 
-void ScopedEventRecorder::RecordNavigationHintPrecision(
-    ServiceWorkerMetrics::EventType start_worker_purpose,
-    bool frame_fetch_event_fired) {
-  DCHECK(IsNavigationHintEvent(start_worker_purpose));
-  UMA_HISTOGRAM_BOOLEAN("ServiceWorker.NavigationHintPrecision",
-                        frame_fetch_event_fired);
-  switch (start_worker_purpose) {
-    case EventType::NAVIGATION_HINT_LINK_MOUSE_DOWN:
-      UMA_HISTOGRAM_BOOLEAN(
-          "ServiceWorker.NavigationHintPrecision.LINK_MOUSE_DOWN",
-          frame_fetch_event_fired);
-      break;
-    case EventType::NAVIGATION_HINT_LINK_TAP_UNCONFIRMED:
-      UMA_HISTOGRAM_BOOLEAN(
-          "ServiceWorker.NavigationHintPrecision.LINK_TAP_UNCONFIRMED",
-          frame_fetch_event_fired);
-      break;
-    case EventType::NAVIGATION_HINT_LINK_TAP_DOWN:
-      UMA_HISTOGRAM_BOOLEAN(
-          "ServiceWorker.NavigationHintPrecision.LINK_TAP_DOWN",
-          frame_fetch_event_fired);
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-}
-
 const char* ServiceWorkerMetrics::EventTypeToString(EventType event_type) {
   switch (event_type) {
     case EventType::ACTIVATE:
@@ -355,12 +305,6 @@ const char* ServiceWorkerMetrics::EventTypeToString(EventType event_type) {
       return "Fetch WaitUntil";
     case EventType::FOREIGN_FETCH_WAITUNTIL:
       return "Foreign Fetch WaitUntil";
-    case EventType::NAVIGATION_HINT_LINK_MOUSE_DOWN:
-      return "Navigation Hint Link Mouse Down";
-    case EventType::NAVIGATION_HINT_LINK_TAP_UNCONFIRMED:
-      return "Navigation Hint Link Tap Unconfirmed";
-    case EventType::NAVIGATION_HINT_LINK_TAP_DOWN:
-      return "Navigation Hint Link Tap Down";
     case EventType::EXTERNAL_REQUEST:
       return "External Request";
     case EventType::PAYMENT_REQUEST:
@@ -719,10 +663,6 @@ void ServiceWorkerMetrics::RecordEventDuration(EventType event,
       UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.BackgroundFetchedEvent.Time",
                                  time);
       break;
-    // Those navigation hints should not be sent as request events.
-    case EventType::NAVIGATION_HINT_LINK_MOUSE_DOWN:
-    case EventType::NAVIGATION_HINT_LINK_TAP_UNCONFIRMED:
-    case EventType::NAVIGATION_HINT_LINK_TAP_DOWN:
 
     case EventType::UNKNOWN:
     case EventType::NUM_TYPES:

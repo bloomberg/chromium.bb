@@ -1218,13 +1218,6 @@ extern const char kV8CacheStrategiesForCacheStorageNormal[];
 // option describes the 3rd of these, force caching on the first load.
 extern const char kV8CacheStrategiesForCacheStorageAggressive[];
 
-// Name of the about::flags setting for speculative launch of service workers.
-extern const char kSpeculativeLaunchServiceWorkerName[];
-
-// Description of the about::flags setting for speculative launch of service
-// workers.
-extern const char kSpeculativeLaunchServiceWorkerDescription[];
-
 // An about::flags experiment title to enable/disable memory coordinator
 extern const char kMemoryCoordinatorName[];
 

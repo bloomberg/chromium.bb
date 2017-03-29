@@ -242,10 +242,6 @@ void WebRuntimeFeatures::enableSlimmingPaintInvalidation(bool enable) {
   RuntimeEnabledFeatures::setSlimmingPaintInvalidationEnabled(enable);
 }
 
-void WebRuntimeFeatures::enableSpeculativeLaunchServiceWorker(bool enable) {
-  RuntimeEnabledFeatures::setSpeculativeLaunchServiceWorkerEnabled(enable);
-}
-
 void WebRuntimeFeatures::enableTouchEventFeatureDetection(bool enable) {
   RuntimeEnabledFeatures::setTouchEventFeatureDetectionEnabled(enable);
 }

@@ -1230,10 +1230,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSuggestionsWithSubStringMatchDescription, kOsAll,
      SINGLE_VALUE_TYPE(
          autofill::switches::kEnableSuggestionsWithSubstringMatch)},
-    {"enable-speculative-launch-service-worker",
-     flag_descriptions::kSpeculativeLaunchServiceWorkerName,
-     flag_descriptions::kSpeculativeLaunchServiceWorkerDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kSpeculativeLaunchServiceWorker)},
     {"enable-supervised-user-managed-bookmarks-folder",
      flag_descriptions::kSupervisedUserManagedBookmarksFolderName,
      flag_descriptions::kSupervisedUserManagedBookmarksFolderDescription,

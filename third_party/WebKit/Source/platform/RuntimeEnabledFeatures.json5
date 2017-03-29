@@ -866,12 +866,6 @@
       name: "smil",
       status: "stable",
     },
-    // Do not turn this flag into stable, because many interfaces that should not
-    // be shipped would be enabled. Instead, remove the flag from the shipping
-    // interface.
-    {
-      name: "SpeculativeLaunchServiceWorker",
-    },
     // Used as argument in attribute of stable-release functions/interfaces where
     // a runtime-enabled feature name is required for correct IDL syntax.
     // This is a global flag; do not change its status.

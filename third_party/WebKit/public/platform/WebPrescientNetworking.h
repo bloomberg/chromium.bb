@@ -37,8 +37,6 @@
 
 namespace blink {
 
-enum class WebNavigationHintType;
-
 class WebPrescientNetworking {
  public:
   virtual ~WebPrescientNetworking() {}
@@ -48,9 +46,6 @@ class WebPrescientNetworking {
   virtual void prefetchDNS(const WebString& hostname) {}
 
   virtual void preconnect(const WebURL& url, const bool allowCredentials) {}
-
-  // Send a hint that a navigation to |url| is likely to happen.
-  virtual void sendNavigationHint(const WebURL& url, WebNavigationHintType) {}
 };
 
 }  // namespace blink

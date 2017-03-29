@@ -27,7 +27,6 @@
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/service_worker_context.h"
 #include "extensions/features/features.h"
 #include "ppapi/features/features.h"
 
@@ -45,23 +44,16 @@ const uint32_t kFilteredMessageClasses[] = {
     ChromeMsgStart, NetworkHintsMsgStart,
 };
 
-void DidStartServiceWorkerForNavigationHint(bool success) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-}
-
 }  // namespace
 
-ChromeRenderMessageFilter::ChromeRenderMessageFilter(
-    int render_process_id,
-    Profile* profile,
-    content::ServiceWorkerContext* service_worker_context)
+ChromeRenderMessageFilter::ChromeRenderMessageFilter(int render_process_id,
+                                                     Profile* profile)
     : BrowserMessageFilter(kFilteredMessageClasses,
                            arraysize(kFilteredMessageClasses)),
       render_process_id_(render_process_id),
       profile_(profile),
       predictor_(profile_->GetNetworkPredictor()),
-      cookie_settings_(CookieSettingsFactory::GetForProfile(profile)),
-      service_worker_context_(service_worker_context) {}
+      cookie_settings_(CookieSettingsFactory::GetForProfile(profile)) {}
 
 ChromeRenderMessageFilter::~ChromeRenderMessageFilter() {
 }
@@ -71,7 +63,6 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(ChromeRenderMessageFilter, message)
     IPC_MESSAGE_HANDLER(NetworkHintsMsg_DNSPrefetch, OnDnsPrefetch)
     IPC_MESSAGE_HANDLER(NetworkHintsMsg_Preconnect, OnPreconnect)
-    IPC_MESSAGE_HANDLER(NetworkHintsMsg_NavigationHint, OnNavigationHint)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_UpdatedCacheStats,
                         OnUpdatedCacheStats)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowDatabase, OnAllowDatabase)
@@ -95,7 +86,6 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
 void ChromeRenderMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message, BrowserThread::ID* thread) {
   switch (message.type()) {
-    case NetworkHintsMsg_NavigationHint::ID:
 #if BUILDFLAG(ENABLE_PLUGINS)
     case ChromeViewHostMsg_IsCrashReportingEnabled::ID:
 #endif
@@ -127,17 +117,6 @@ void ChromeRenderMessageFilter::OnPreconnect(const GURL& url,
                               chrome_browser_net::UrlInfo::EARLY_LOAD_MOTIVATED,
                               allow_credentials, count);
   }
-}
-
-void ChromeRenderMessageFilter::OnNavigationHint(
-    const GURL& url,
-    blink::WebNavigationHintType type) {
-  // TODO(horo): We don't need to have this method in //chrome. Move it to
-  // //content while mojoifing network_hints. (crbug.com/610750)
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  service_worker_context_->StartServiceWorkerForNavigationHint(
-      url, type, render_process_id_,
-      base::Bind(&DidStartServiceWorkerForNavigationHint));
 }
 
 void ChromeRenderMessageFilter::OnUpdatedCacheStats(uint64_t capacity,

@@ -248,7 +248,6 @@ source_set("blink_headers") {
     "platform/WebMouseEvent.h",
     "platform/WebMouseWheelEvent.h",
     "platform/WebNativeScrollBehavior.h",
-    "platform/WebNavigationHintType.h",
     "platform/WebNetworkStateNotifier.h",
     "platform/WebNonCopyable.h",
     "platform/WebOriginTrialTokenStatus.h",

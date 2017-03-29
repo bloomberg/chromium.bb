@@ -23,7 +23,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
@@ -761,8 +760,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // event ended).
   void OnBeginEvent();
 
-  // Resets |start_worker_first_purpose_| and fires and clears all start
-  // callbacks.
+  // Fires and clears all start callbacks.
   void FinishStartWorker(ServiceWorkerStatusCode status);
 
   // Removes any pending external request that has GUID of |request_uuid|.
@@ -863,10 +861,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   std::unique_ptr<ServiceWorkerMetrics::ScopedEventRecorder> event_recorder_;
 
   bool stop_when_devtools_detached_ = false;
-
-  // Keeps the first purpose of starting the worker for UMA. Cleared in
-  // FinishStartWorker().
-  base::Optional<ServiceWorkerMetrics::EventType> start_worker_first_purpose_;
 
   // This is the set of features that were used up until installation of this
   // version completed, or used during the lifetime of |this|. The values must

@@ -88,8 +88,6 @@ class CORE_EXPORT HTMLAnchorElement : public HTMLElement, public DOMURLUtils {
 
   void sendPings(const KURL& destinationURL) const;
 
-  DECLARE_VIRTUAL_TRACE();
-
  protected:
   HTMLAnchorElement(const QualifiedName&, Document&);
 
@@ -98,8 +96,6 @@ class CORE_EXPORT HTMLAnchorElement : public HTMLElement, public DOMURLUtils {
   bool matchesEnabledPseudoClass() const override;
 
  private:
-  class NavigationHintSender;
-
   void attributeChanged(const AttributeModificationParams&) override;
   bool shouldHaveFocusAppearance() const final;
   void dispatchFocusEvent(Element* oldFocusedElement,
@@ -121,12 +117,10 @@ class CORE_EXPORT HTMLAnchorElement : public HTMLElement, public DOMURLUtils {
   bool isInteractiveContent() const final;
   InsertionNotificationRequest insertedInto(ContainerNode*) override;
   void handleClick(Event*);
-  NavigationHintSender* ensureNavigationHintSender();
 
   uint32_t m_linkRelations;
   mutable LinkHash m_cachedVisitedLinkHash;
   bool m_wasFocusedByMouse;
-  Member<NavigationHintSender> m_navigationHintSender;
 };
 
 inline LinkHash HTMLAnchorElement::visitedLinkHash() const {

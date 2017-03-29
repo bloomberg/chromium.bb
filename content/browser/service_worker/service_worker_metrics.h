@@ -111,9 +111,9 @@ class ServiceWorkerMetrics {
     FOREIGN_FETCH = 15,
     FETCH_WAITUNTIL = 16,
     FOREIGN_FETCH_WAITUNTIL = 17,
-    NAVIGATION_HINT_LINK_MOUSE_DOWN = 18,
-    NAVIGATION_HINT_LINK_TAP_UNCONFIRMED = 19,
-    NAVIGATION_HINT_LINK_TAP_DOWN = 20,
+    // NAVIGATION_HINT_LINK_MOUSE_DOWN = 18,  // Obsolete
+    // NAVIGATION_HINT_LINK_TAP_UNCONFIRMED = 19,  // Obsolete
+    // NAVIGATION_HINT_LINK_TAP_DOWN = 20,  // Obsolete
     // Used when external consumers want to add a request to
     // ServiceWorkerVersion to keep it alive.
     EXTERNAL_REQUEST = 21,
@@ -177,7 +177,7 @@ class ServiceWorkerMetrics {
 
   class ScopedEventRecorder {
    public:
-    explicit ScopedEventRecorder(EventType start_worker_purpose);
+    explicit ScopedEventRecorder();
     ~ScopedEventRecorder();
 
     void RecordEventHandledStatus(EventType event, bool handled);
@@ -193,15 +193,7 @@ class ServiceWorkerMetrics {
                                         size_t handled_events,
                                         size_t fired_events);
 
-    // Records the precision of the speculative launch of Service Workers for
-    // each navigation hint type. If there was no main/sub frame fetch event
-    // fired on the worker, |frame_fetch_event_fired| is false. This means that
-    // the speculative launch wasn't helpful.
-    static void RecordNavigationHintPrecision(EventType start_worker_purpose,
-                                              bool frame_fetch_event_fired);
-
     std::map<EventType, EventStat> event_stats_;
-    const EventType start_worker_purpose_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedEventRecorder);
   };

@@ -39,78 +39,10 @@
 #include "core/page/Page.h"
 #include "platform/network/NetworkHints.h"
 #include "platform/weborigin/SecurityPolicy.h"
-#include "public/platform/WebNavigationHintType.h"
 
 namespace blink {
 
 using namespace HTMLNames;
-
-class HTMLAnchorElement::NavigationHintSender
-    : public GarbageCollected<HTMLAnchorElement::NavigationHintSender> {
- public:
-  static NavigationHintSender* create(HTMLAnchorElement* anchorElement) {
-    return new NavigationHintSender(anchorElement);
-  }
-  void handleEvent(Event*);
-
-  DECLARE_TRACE();
-
- private:
-  explicit NavigationHintSender(HTMLAnchorElement*);
-  bool shouldSendNavigationHint() const;
-  void maybeSendNavigationHint(WebNavigationHintType);
-
-  Member<HTMLAnchorElement> m_anchorElement;
-};
-
-void HTMLAnchorElement::NavigationHintSender::handleEvent(Event* event) {
-  if (event->type() == EventTypeNames::mousedown && event->isMouseEvent() &&
-      toMouseEvent(event)->button() ==
-          static_cast<short>(WebPointerProperties::Button::Left))
-    maybeSendNavigationHint(WebNavigationHintType::LinkMouseDown);
-  else if (event->type() == EventTypeNames::gesturetapunconfirmed)
-    maybeSendNavigationHint(WebNavigationHintType::LinkTapUnconfirmed);
-  else if (event->type() == EventTypeNames::gestureshowpress)
-    maybeSendNavigationHint(WebNavigationHintType::LinkTapDown);
-}
-
-DEFINE_TRACE(HTMLAnchorElement::NavigationHintSender) {
-  visitor->trace(m_anchorElement);
-}
-
-HTMLAnchorElement::NavigationHintSender::NavigationHintSender(
-    HTMLAnchorElement* anchorElement)
-    : m_anchorElement(anchorElement) {}
-
-bool HTMLAnchorElement::NavigationHintSender::shouldSendNavigationHint() const {
-  const KURL& url = m_anchorElement->href();
-  // Currently the navigation hint only supports HTTP and HTTPS.
-  if (!url.protocolIsInHTTPFamily())
-    return false;
-
-  Document& document = m_anchorElement->document();
-  // If the element was detached from the frame, handleClick() doesn't cause
-  // the navigation.
-  if (!document.frame())
-    return false;
-
-  // When the user clicks a link which is to the current document with a hash,
-  // the network request is not fetched. So we don't send the navigation hint
-  // to the browser process.
-  if (url.hasFragmentIdentifier() &&
-      equalIgnoringFragmentIdentifier(document.url(), url))
-    return false;
-
-  return true;
-}
-
-void HTMLAnchorElement::NavigationHintSender::maybeSendNavigationHint(
-    WebNavigationHintType type) {
-  if (!shouldSendNavigationHint())
-    return;
-
-  sendNavigationHint(m_anchorElement->href(), type);
-}
 
 HTMLAnchorElement::HTMLAnchorElement(const QualifiedName& tagName,
                                      Document& document)
@@ -124,11 +56,6 @@ HTMLAnchorElement* HTMLAnchorElement::create(Document& document) {
 }
 
 HTMLAnchorElement::~HTMLAnchorElement() {}
-
-DEFINE_TRACE(HTMLAnchorElement) {
-  visitor->trace(m_navigationHintSender);
-  HTMLElement::trace(visitor);
-}
 
 bool HTMLAnchorElement::supportsFocus() const {
   if (hasEditableStyle(*this))
@@ -231,9 +158,6 @@ void HTMLAnchorElement::defaultEventHandler(Event* event) {
       dispatchSimulatedClick(event);
       return;
     }
-
-    if (RuntimeEnabledFeatures::speculativeLaunchServiceWorkerEnabled())
-      ensureNavigationHintSender()->handleEvent(event);
 
     if (isLinkClick(event) && isLiveLink()) {
       handleClick(event);
@@ -479,13 +403,6 @@ Node::InsertionNotificationRequest HTMLAnchorElement::insertedInto(
       HTMLElement::insertedInto(insertionPoint);
   logAddElementIfIsolatedWorldAndInDocument("a", hrefAttr);
   return request;
-}
-
-HTMLAnchorElement::NavigationHintSender*
-HTMLAnchorElement::ensureNavigationHintSender() {
-  if (!m_navigationHintSender)
-    m_navigationHintSender = NavigationHintSender::create(this);
-  return m_navigationHintSender;
 }
 
 }  // namespace blink

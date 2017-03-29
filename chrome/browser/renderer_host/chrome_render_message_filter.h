@@ -18,16 +18,8 @@
 class GURL;
 class Profile;
 
-namespace blink {
-enum class WebNavigationHintType;
-}
-
 namespace chrome_browser_net {
 class Predictor;
-}
-
-namespace content {
-class ServiceWorkerContext;
 }
 
 namespace content_settings {
@@ -42,10 +34,7 @@ struct LookupRequest;
 // process on the IPC thread.
 class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
  public:
-  ChromeRenderMessageFilter(
-      int render_process_id,
-      Profile* profile,
-      content::ServiceWorkerContext* service_worker_context);
+  ChromeRenderMessageFilter(int render_process_id, Profile* profile);
 
   // content::BrowserMessageFilter methods:
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -60,7 +49,6 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
 
   void OnDnsPrefetch(const network_hints::LookupRequest& request);
   void OnPreconnect(const GURL& url, bool allow_credentials, int count);
-  void OnNavigationHint(const GURL& url, blink::WebNavigationHintType type);
   void OnUpdatedCacheStats(uint64_t capacity, uint64_t size);
 
   void OnAllowDatabase(int render_frame_id,
@@ -131,9 +119,6 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
 
   // Used to look up permissions at database creation time.
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
-
-  // Used to start Service Workers for navigation hints.
-  content::ServiceWorkerContext* service_worker_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeRenderMessageFilter);
 };

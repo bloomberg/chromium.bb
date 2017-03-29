@@ -340,9 +340,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
     WebRuntimeFeatures::enableServiceWorkerNavigationPreload(true);
   }
 
-  if (base::FeatureList::IsEnabled(features::kSpeculativeLaunchServiceWorker))
-    WebRuntimeFeatures::enableSpeculativeLaunchServiceWorker(true);
-
   if (base::FeatureList::IsEnabled(features::kGamepadExtensions))
     WebRuntimeFeatures::enableGamepadExtensions(true);
 
