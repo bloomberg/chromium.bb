@@ -361,6 +361,14 @@ void GLImageIOSurface::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
                   base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                   static_cast<uint64_t>(size_bytes));
 
+  // The process tracing id is to identify the GpuMemoryBuffer client that
+  // created the allocation. For CVPixelBufferRefs, there is no corresponding
+  // GpuMemoryBuffer, so use an invalid process id.
+  if (cv_pixel_buffer_) {
+    process_tracing_id =
+        base::trace_event::MemoryDumpManager::kInvalidTracingProcessId;
+  }
+
   auto guid =
       GetGenericSharedMemoryGUIDForTracing(process_tracing_id, io_surface_id_);
   pmd->CreateSharedGlobalAllocatorDump(guid);

@@ -12,15 +12,18 @@
 #include <algorithm>
 #include <memory>
 
+#include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/stringprintf.h"
 #include "base/sys_byteorder.h"
 #include "base/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "base/version.h"
 #include "media/base/limits.h"
 #include "media/gpu/shared_memory_region.h"
@@ -39,6 +42,12 @@
 namespace media {
 
 namespace {
+
+// A sequence of ids for memory tracing.
+base::StaticAtomicSequenceNumber g_memory_dump_ids;
+
+// A sequence of shared memory ids for CVPixelBufferRefs.
+base::StaticAtomicSequenceNumber g_cv_pixel_buffer_ids;
 
 // Only H.264 with 4:2:0 chroma sampling is supported.
 const VideoCodecProfile kSupportedProfiles[] = {
@@ -296,11 +305,34 @@ VTVideoDecodeAccelerator::VTVideoDecodeAccelerator(
   callback_.decompressionOutputCallback = OutputThunk;
   callback_.decompressionOutputRefCon = this;
   weak_this_ = weak_this_factory_.GetWeakPtr();
+
+  memory_dump_id_ = g_memory_dump_ids.GetNext();
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      this, "VTVideoDecodeAccelerator", gpu_task_runner_);
 }
 
 VTVideoDecodeAccelerator::~VTVideoDecodeAccelerator() {
   DVLOG(1) << __func__;
   DCHECK(gpu_task_runner_->BelongsToCurrentThread());
+
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      this);
+}
+
+bool VTVideoDecodeAccelerator::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  for (const auto& it : picture_info_map_) {
+    int32_t picture_id = it.first;
+    PictureInfo* picture_info = it.second.get();
+    if (picture_info->gl_image) {
+      std::string dump_name =
+          base::StringPrintf("media/vt_video_decode_accelerator_%d/picture_%d",
+                             memory_dump_id_, picture_id);
+      picture_info->gl_image->OnMemoryDump(pmd, 0, dump_name);
+    }
+  }
+  return true;
 }
 
 bool VTVideoDecodeAccelerator::Initialize(const Config& config,
@@ -1090,7 +1122,8 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
   scoped_refptr<gl::GLImageIOSurface> gl_image(
       new gl::GLImageIOSurface(frame.image_size, GL_BGRA_EXT));
   if (!gl_image->InitializeWithCVPixelBuffer(
-          frame.image.get(), gfx::GenericSharedMemoryId(),
+          frame.image.get(),
+          gfx::GenericSharedMemoryId(g_cv_pixel_buffer_ids.GetNext()),
           gfx::BufferFormat::YUV_420_BIPLANAR)) {
     NOTIFY_STATUS("Failed to initialize GLImageIOSurface", PLATFORM_FAILURE,
                   SFT_PLATFORM_ERROR);

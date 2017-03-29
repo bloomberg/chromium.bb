@@ -20,6 +20,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "media/filters/h264_parser.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/media_gpu_export.h"
@@ -36,7 +37,8 @@ MEDIA_GPU_EXPORT bool InitializeVideoToolbox();
 
 // VideoToolbox.framework implementation of the VideoDecodeAccelerator
 // interface for Mac OS X (currently limited to 10.9+).
-class VTVideoDecodeAccelerator : public VideoDecodeAccelerator {
+class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
+                                 public base::trace_event::MemoryDumpProvider {
  public:
   explicit VTVideoDecodeAccelerator(
       const MakeGLContextCurrentCallback& make_context_current_cb,
@@ -57,6 +59,10 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator {
       const base::WeakPtr<Client>& decode_client,
       const scoped_refptr<base::SingleThreadTaskRunner>& decode_task_runner)
       override;
+
+  // MemoryDumpProvider implementation.
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
 
   // Called by OutputThunk() when VideoToolbox finishes decoding a frame.
   void Output(void* source_frame_refcon,
@@ -267,6 +273,9 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator {
   bool waiting_for_idr_ = true;
   bool missing_idr_logged_ = false;
   H264POC poc_;
+
+  // Id number for this instance for memory dumps.
+  int memory_dump_id_ = 0;
 
   //
   // Shared state (set up and torn down on GPU thread).
