@@ -135,6 +135,10 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   void set_pending_commit(bool pending) { pending_commit_ = pending; }
   bool pending_commit() const { return pending_commit_; }
 
+  // Simulates the renderer informing the browser that the frame has an
+  // onbeforeunload handler.
+  void set_has_beforeunload_handlers() { has_beforeunload_handlers_ = true; }
+
   // Creates a WebBluetooth Service with a dummy InterfaceRequest.
   WebBluetoothServiceImpl* CreateWebBluetoothServiceForTesting();
 

@@ -254,14 +254,6 @@ static void removeAllBeforeUnloadEventListeners(LocalDOMWindow* domWindow) {
   }
 }
 
-static bool allowsBeforeUnloadListeners(LocalDOMWindow* window) {
-  DCHECK(window);
-  LocalFrame* frame = window->frame();
-  if (!frame)
-    return false;
-  return frame->isMainFrame();
-}
-
 unsigned LocalDOMWindow::pendingUnloadEventListeners() const {
   return windowsWithUnloadEventListeners().count(
       const_cast<LocalDOMWindow*>(this));
@@ -1433,16 +1425,9 @@ void LocalDOMWindow::addedEventListener(
     addUnloadEventListener(this);
   } else if (eventType == EventTypeNames::beforeunload) {
     UseCounter::count(document(), UseCounter::DocumentBeforeUnloadRegistered);
-    if (allowsBeforeUnloadListeners(this)) {
-      // This is confusingly named. It doesn't actually add the listener. It
-      // just increments a count so that we know we have listeners registered
-      // for the purposes of determining if we can fast terminate the renderer
-      // process.
-      addBeforeUnloadEventListener(this);
-    } else {
-      // Subframes return false from allowsBeforeUnloadListeners.
+    addBeforeUnloadEventListener(this);
+    if (frame() && !frame()->isMainFrame())
       UseCounter::count(document(), UseCounter::SubFrameBeforeUnloadRegistered);
-    }
   }
 }
 
@@ -1460,8 +1445,7 @@ void LocalDOMWindow::removedEventListener(
 
   if (eventType == EventTypeNames::unload) {
     removeUnloadEventListener(this);
-  } else if (eventType == EventTypeNames::beforeunload &&
-             allowsBeforeUnloadListeners(this)) {
+  } else if (eventType == EventTypeNames::beforeunload) {
     removeBeforeUnloadEventListener(this);
   }
 }

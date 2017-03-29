@@ -72,13 +72,16 @@ void BrowserCloseManager::TryToCloseBrowsers() {
   // OnBrowserReportCloseable with the result. If the user confirms the close,
   // this will trigger TryToCloseBrowsers to try again.
   for (auto* browser : *BrowserList::GetInstance()) {
+    // Set current_browser_ here since if there are no unload handlers, it might
+    // get used synchronously inside TryToCloseWindow.
+    current_browser_ = browser;
     if (browser->TryToCloseWindow(
             false,
             base::Bind(&BrowserCloseManager::OnBrowserReportCloseable, this))) {
-      current_browser_ = browser;
       return;
     }
   }
+  current_browser_ = NULL;
   CheckForDownloadsInProgress();
 }
 

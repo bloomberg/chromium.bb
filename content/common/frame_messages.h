@@ -1609,6 +1609,13 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_HittestData, FrameHostMsg_HittestData_Params)
 // FrameMsg_RunFileChooserResponse message.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_RunFileChooser, content::FileChooserParams)
 
+// Messages to signal the presence or absence of BeforeUnload or Unload handlers
+// for a frame. |present| is true if there is at least one of the handlers for
+// the frame.
+IPC_MESSAGE_ROUTED1(FrameHostMsg_BeforeUnloadHandlersPresent,
+                    bool /* present */)
+IPC_MESSAGE_ROUTED1(FrameHostMsg_UnloadHandlersPresent, bool /* present */)
+
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 
 // Message to show/hide a popup menu using native controls.

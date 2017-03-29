@@ -269,6 +269,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   const GURL kUrl2("http://www.chromium.org/");
 
   contents()->NavigateAndCommit(kUrl1);
+  main_test_rfh()->set_has_beforeunload_handlers();
 
   // Start a new navigation.
   FrameTreeNode* node = main_test_rfh()->frame_tree_node();
@@ -307,14 +308,8 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, BeginNavigation) {
   RequestNavigation(subframe_node, kUrl2);
   NavigationRequest* subframe_request = subframe_node->navigation_request();
 
-  // We should be waiting for the BeforeUnload event to execute in the subframe.
   ASSERT_TRUE(subframe_request);
-  EXPECT_EQ(NavigationRequest::WAITING_FOR_RENDERER_RESPONSE,
-            subframe_request->state());
-  EXPECT_TRUE(subframe_rfh->is_waiting_for_beforeunload_ack());
 
-  // Simulate the BeforeUnload ACK. The navigation should start.
-  subframe_rfh->SendBeforeUnloadACK(true);
   TestNavigationURLLoader* subframe_loader =
       GetLoaderForNavigationRequest(subframe_request);
   ASSERT_TRUE(subframe_loader);
@@ -341,15 +336,11 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, BeginNavigation) {
   RequestNavigation(root_node, kUrl3);
   NavigationRequest* main_request = root_node->navigation_request();
   ASSERT_TRUE(main_request);
-  EXPECT_EQ(NavigationRequest::WAITING_FOR_RENDERER_RESPONSE,
-            main_request->state());
 
   // Main frame navigation to a different site should use a speculative
   // RenderFrameHost.
   EXPECT_TRUE(GetSpeculativeRenderFrameHost(root_node));
 
-  // Simulate a BeforeUnloadACK IPC on the main frame.
-  main_test_rfh()->SendBeforeUnloadACK(true);
   TestNavigationURLLoader* main_loader =
       GetLoaderForNavigationRequest(main_request);
   EXPECT_EQ(kUrl3, main_request->common_params().url);
