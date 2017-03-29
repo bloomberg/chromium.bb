@@ -22,12 +22,14 @@
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
+#include "gpu/command_buffer/service/command_executor.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
 #include "gpu/command_buffer/service/gl_state_restorer_impl.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
+#include "gpu/command_buffer/service/preemption_flag.h"
 #include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
@@ -650,7 +652,11 @@ bool GpuCommandBufferStub::Initialize(
       channel_->sync_point_manager()->CreateSyncPointClientState(
           CommandBufferNamespace::GPU_IO, command_buffer_id_, sequence_id_);
 
-  executor_->SetPreemptByFlag(channel_->preempted_flag());
+  // TODO(sunnyps): Hook callback to gpu scheduler.
+  if (channel_->preempted_flag()) {
+    executor_->SetPauseExecutionCallback(
+        base::Bind(&PreemptionFlag::IsSet, channel_->preempted_flag()));
+  }
 
   decoder_->set_engine(executor_.get());
 

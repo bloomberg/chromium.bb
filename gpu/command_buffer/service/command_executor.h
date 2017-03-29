@@ -10,11 +10,8 @@
 #include <memory>
 #include <queue>
 
-#include "base/atomic_ref_count.h"
-#include "base/atomicops.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
@@ -24,22 +21,6 @@
 #include "gpu/gpu_export.h"
 
 namespace gpu {
-
-class PreemptionFlag : public base::RefCountedThreadSafe<PreemptionFlag> {
- public:
-  PreemptionFlag() : flag_(0) {}
-
-  bool IsSet() { return !base::AtomicRefCountIsZero(&flag_); }
-  void Set() { base::AtomicRefCountInc(&flag_); }
-  void Reset() { base::subtle::NoBarrier_Store(&flag_, 0); }
-
- private:
-  base::AtomicRefCount flag_;
-
-  ~PreemptionFlag() {}
-
-  friend class base::RefCountedThreadSafe<PreemptionFlag>;
-};
 
 // This class schedules commands that have been flushed. They are received via
 // a command buffer and forwarded to a command parser. TODO(apatrick): This
@@ -56,10 +37,6 @@ class GPU_EXPORT CommandExecutor
   ~CommandExecutor() override;
 
   void PutChanged();
-
-  void SetPreemptByFlag(scoped_refptr<PreemptionFlag> flag) {
-    preemption_flag_ = flag;
-  }
 
   // Sets whether commands should be processed by this scheduler. Setting to
   // false unschedules. Setting to true reschedules.
@@ -84,6 +61,9 @@ class GPU_EXPORT CommandExecutor
 
   void SetCommandProcessedCallback(const base::Closure& callback);
 
+  using PauseExecutionCallback = base::Callback<bool(void)>;
+  void SetPauseExecutionCallback(const PauseExecutionCallback& callback);
+
   // Returns whether the scheduler needs to be polled again in the future to
   // process idle work.
   bool HasMoreIdleWork() const;
@@ -99,7 +79,7 @@ class GPU_EXPORT CommandExecutor
   CommandParser* parser() const { return parser_.get(); }
 
  private:
-  bool IsPreempted();
+  bool PauseExecution();
 
   // The CommandExecutor holds a weak reference to the CommandBuffer. The
   // CommandBuffer owns the CommandExecutor and holds a strong reference to it
@@ -120,13 +100,13 @@ class GPU_EXPORT CommandExecutor
   std::unique_ptr<CommandParser> parser_;
 
   // Whether the scheduler is currently able to process more commands.
-  bool scheduled_;
+  bool scheduled_ = true;
 
   base::Closure command_processed_callback_;
 
-  // If non-NULL and |preemption_flag_->IsSet()|, exit PutChanged early.
-  scoped_refptr<PreemptionFlag> preemption_flag_;
-  bool was_preempted_;
+  // If this callback returns true, exit PutChanged early.
+  PauseExecutionCallback pause_execution_callback_;
+  bool paused_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(CommandExecutor);
 };

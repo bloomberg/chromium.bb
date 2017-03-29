@@ -24,11 +24,7 @@ namespace gpu {
 CommandExecutor::CommandExecutor(CommandBufferServiceBase* command_buffer,
                                  AsyncAPIInterface* handler,
                                  gles2::GLES2Decoder* decoder)
-    : command_buffer_(command_buffer),
-      handler_(handler),
-      decoder_(decoder),
-      scheduled_(true),
-      was_preempted_(false) {}
+    : command_buffer_(command_buffer), handler_(handler), decoder_(decoder) {}
 
 CommandExecutor::~CommandExecutor() {}
 
@@ -53,7 +49,7 @@ void CommandExecutor::PutChanged() {
   if (decoder_)
     decoder_->BeginDecoding();
   while (!parser_->IsEmpty()) {
-    if (IsPreempted())
+    if (PauseExecution())
       break;
 
     DCHECK(scheduled());
@@ -152,19 +148,21 @@ void CommandExecutor::SetCommandProcessedCallback(
   command_processed_callback_ = callback;
 }
 
-bool CommandExecutor::IsPreempted() {
-  if (!preemption_flag_.get())
+void CommandExecutor::SetPauseExecutionCallback(
+    const PauseExecutionCallback& callback) {
+  pause_execution_callback_ = callback;
+}
+
+bool CommandExecutor::PauseExecution() {
+  if (pause_execution_callback_.is_null())
     return false;
 
-  if (!was_preempted_ && preemption_flag_->IsSet()) {
-    TRACE_COUNTER_ID1("gpu", "CommandExecutor::Preempted", this, 1);
-    was_preempted_ = true;
-  } else if (was_preempted_ && !preemption_flag_->IsSet()) {
-    TRACE_COUNTER_ID1("gpu", "CommandExecutor::Preempted", this, 0);
-    was_preempted_ = false;
+  bool pause = pause_execution_callback_.Run();
+  if (paused_ != pause) {
+    TRACE_COUNTER_ID1("gpu", "CommandExecutor::Paused", this, pause);
+    paused_ = pause;
   }
-
-  return preemption_flag_->IsSet();
+  return pause;
 }
 
 bool CommandExecutor::HasMoreIdleWork() const {

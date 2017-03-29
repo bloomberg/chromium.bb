@@ -21,7 +21,6 @@
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
-#include "gpu/command_buffer/service/command_executor.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/sequence_id.h"
 #include "gpu/gpu_export.h"
@@ -38,6 +37,9 @@
 #include "ui/gl/gpu_preference.h"
 #include "url/gurl.h"
 
+struct GPUCreateCommandBufferConfig;
+struct GpuCommandBufferMsg_CreateImage_Params;
+
 namespace gl {
 class GLShareGroup;
 }
@@ -45,16 +47,10 @@ class GLShareGroup;
 namespace gpu {
 struct Mailbox;
 struct SyncToken;
-class SyncPointClientState;
-}
-
-struct GPUCreateCommandBufferConfig;
-struct GpuCommandBufferMsg_CreateImage_Params;
-
-namespace gpu {
-
-class GpuChannel;
 struct WaitForCommandState;
+class CommandExecutor;
+class GpuChannel;
+class SyncPointClientState;
 
 class GPU_EXPORT GpuCommandBufferStub
     : public IPC::Listener,
