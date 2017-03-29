@@ -65,9 +65,6 @@ bool SavePageRequest::operator==(const SavePageRequest& other) const {
 
 void SavePageRequest::MarkAttemptStarted(const base::Time& start_time) {
   DCHECK_LE(activation_time_, start_time);
-  // TODO(fgorski): As part of introducing policy in GetStatus, we can make a
-  // check here to ensure we only start tasks in status pending, and bail out in
-  // other cases.
   last_attempt_time_ = start_time;
   ++started_attempt_count_;
   state_ = RequestState::OFFLINING;

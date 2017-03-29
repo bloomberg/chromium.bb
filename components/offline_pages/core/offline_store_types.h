@@ -14,7 +14,6 @@
 // offline page related components.
 namespace offline_pages {
 
-// TODO(fgorski): This enum is meant to replace |LoadStatus|.
 // Current store state. When LOADED, the store is operational. When
 // loading or reset fails, it is reflected appropriately.
 enum class StoreState {

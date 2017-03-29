@@ -31,10 +31,6 @@ void GetRequestsDone(const RequestQueue::GetRequestsCallback& callback,
                      std::vector<std::unique_ptr<SavePageRequest>> requests) {
   GetRequestsResult result =
       success ? GetRequestsResult::SUCCESS : GetRequestsResult::STORE_FAILURE;
-  // TODO(fgorski): Filter out expired requests based on policy.
-  // This may trigger the purging if necessary.
-  // Also this may be turned into a method on the request queue or add a policy
-  // parameter in the process.
   callback.Run(result, std::move(requests));
 }
 
@@ -78,8 +74,6 @@ void RequestQueue::GetRequests(const GetRequestsCallback& callback) {
 
 void RequestQueue::AddRequest(const SavePageRequest& request,
                               const AddRequestCallback& callback) {
-  // TODO(fgorski): check that request makes sense.
-  // TODO(fgorski): check that request does not violate policy.
   std::unique_ptr<AddRequestTask> task(new AddRequestTask(
       store_.get(), request, base::Bind(&AddRequestDone, callback, request)));
   task_queue_.AddTask(std::move(task));

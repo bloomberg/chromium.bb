@@ -87,9 +87,6 @@ void OfflinePageMHTMLArchiver::GenerateMHTML(
     return;
   }
 
-  // TODO(fgorski): Figure out if the actual URL can be different at
-  // the end of MHTML generation. Perhaps we should pull it out after the MHTML
-  // is generated.
   GURL url(web_contents_->GetLastCommittedURL());
   base::string16 title(web_contents_->GetTitle());
   base::FilePath file_path(

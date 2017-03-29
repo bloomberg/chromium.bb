@@ -158,7 +158,7 @@ bool CreateSchema(sql::Connection* db) {
       return false;
   }
 
-  // TODO(fgorski): Add indices here.
+  // This would be a great place to add indices when we need them.
   return transaction.Commit();
 }
 
@@ -292,7 +292,6 @@ void NotifyLoadResult(scoped_refptr<base::SingleThreadTaskRunner> runner,
                       const OfflinePageMetadataStore::LoadCallback& callback,
                       OfflinePageMetadataStore::LoadStatus status,
                       const std::vector<OfflinePageItem>& result) {
-  // TODO(fgorski): Switch to SQL specific UMA metrics.
   UMA_HISTOGRAM_ENUMERATION("OfflinePages.LoadStatus", status,
                             OfflinePageMetadataStore::LOAD_STATUS_COUNT);
   if (status == OfflinePageMetadataStore::LOAD_SUCCEEDED) {
@@ -427,7 +426,6 @@ void RemoveOfflinePagesSync(
     sql::Connection* db,
     scoped_refptr<base::SingleThreadTaskRunner> runner,
     const OfflinePageMetadataStore::UpdateCallback& callback) {
-  // TODO(fgorski): Perhaps add metrics here.
   std::unique_ptr<OfflinePagesUpdateResult> result(
       new OfflinePagesUpdateResult(StoreState::LOADED));
 

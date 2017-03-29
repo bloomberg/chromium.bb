@@ -85,7 +85,6 @@ class RequestNotifierStub : public RequestNotifier {
   int32_t total_expired_requests_;
 };
 
-// TODO(fgorski): Add tests for store failures in add/remove/get.
 class RequestQueueTest : public testing::Test {
  public:
   RequestQueueTest();

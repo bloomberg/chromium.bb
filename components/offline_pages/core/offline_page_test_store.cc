@@ -44,7 +44,6 @@ void OfflinePageTestStore::GetOfflinePages(const LoadCallback& callback) {
 
 void OfflinePageTestStore::AddOfflinePage(const OfflinePageItem& offline_page,
                                           const AddCallback& callback) {
-  // TODO(fgorski): Add and cover scenario with existing item.
   ItemActionStatus result;
   if (store_state_ == StoreState::LOADED &&
       scenario_ != TestScenario::WRITE_FAILED) {
@@ -61,8 +60,6 @@ void OfflinePageTestStore::AddOfflinePage(const OfflinePageItem& offline_page,
 void OfflinePageTestStore::UpdateOfflinePages(
     const std::vector<OfflinePageItem>& pages,
     const UpdateCallback& callback) {
-  // TODO(fgorski): Cover scenario where new items are being created while they
-  // shouldn't.
   std::unique_ptr<OfflinePagesUpdateResult> result(
       new OfflinePagesUpdateResult(StoreState::LOADED));
   if (scenario_ == TestScenario::WRITE_FAILED) {

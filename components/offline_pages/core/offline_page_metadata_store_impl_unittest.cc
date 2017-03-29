@@ -392,8 +392,6 @@ void OfflinePageMetadataStoreTest::GetOfflinePagesCallback(
 
 void OfflinePageMetadataStoreTest::AddCallback(ItemActionStatus status) {
   last_called_callback_ = ADD;
-  // TODO(fgorski): Add specific add status.
-  // last_item_status_ = status;
   last_status_ =
       status == ItemActionStatus::SUCCESS ? STATUS_TRUE : STATUS_FALSE;
 }

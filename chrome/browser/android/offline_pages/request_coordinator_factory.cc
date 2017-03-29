@@ -82,8 +82,6 @@ KeyedService* RequestCoordinatorFactory::BuildServiceInstanceFor(
   net::NetworkQualityEstimator::NetworkQualityProvider*
       network_quality_estimator =
           UINetworkQualityEstimatorServiceFactory::GetForProfile(profile);
-  // TODO(fgorski): Something needs to keep the handle to the Notification
-  // dispatcher.
   RequestCoordinator* request_coordinator = new RequestCoordinator(
       std::move(policy), std::move(offliner), std::move(queue),
       std::move(scheduler), network_quality_estimator);

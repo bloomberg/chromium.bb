@@ -572,7 +572,6 @@ const std::vector<int64_t> OfflinePageModelImpl::MaybeGetOfflineIdsForClientId(
   std::vector<int64_t> results;
 
   // We want only all pages, including those marked for deletion.
-  // TODO(fgorski): actually use an index rather than linear scan.
   for (const auto& id_page_pair : offline_pages_) {
     if (id_page_pair.second.client_id == client_id)
       results.push_back(id_page_pair.second.offline_id);
@@ -690,8 +689,6 @@ void OfflinePageModelImpl::OnCreateArchiveDone(
     int64_t file_size) {
   if (save_page_params.url != url) {
     DVLOG(1) << "Saved URL does not match requested URL.";
-    // TODO(fgorski): We have created an archive for a wrong URL. It should be
-    // deleted from here, once archiver has the right functionality.
     InformSavePageDone(callback, SavePageResult::ARCHIVE_CREATION_FAILED,
                        save_page_params.client_id, offline_id);
     DeletePendingArchiver(archiver);
@@ -956,10 +953,6 @@ void OfflinePageModelImpl::OnRemoveOfflinePagesDone(
       observer.OfflinePageDeleted(page.offline_id, page.client_id);
   }
 
-  // TODO(fgorski): React the FAILED_INITIALIZATION, FAILED_RESET here.
-  // TODO(fgorski): We need a better callback interface for the Remove action on
-  // the this class. Currently removing an item that does not exist is
-  // considered a success, but not called out as such to the caller.
   DeletePageResult delete_result;
   if (result->store_state == StoreState::LOADED)
     delete_result = DeletePageResult::SUCCESS;

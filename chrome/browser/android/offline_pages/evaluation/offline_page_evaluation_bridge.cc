@@ -146,8 +146,6 @@ std::unique_ptr<KeyedService> GetTestingRequestCoordinator(
   net::NetworkQualityEstimator::NetworkQualityProvider*
       network_quality_estimator =
           UINetworkQualityEstimatorServiceFactory::GetForProfile(profile);
-  // TODO(fgorski): Something needs to keep the handle to the Notification
-  // dispatcher.
   std::unique_ptr<RequestCoordinator> request_coordinator =
       base::MakeUnique<RequestCoordinator>(
           std::move(policy), std::move(offliner), std::move(queue),

@@ -39,12 +39,6 @@ namespace offline_pages {
 // archiver whether to respond with ERROR_CONTENT_UNAVAILBLE, wait longer to
 // actually snapshot a complete page, or snapshot whatever is available at that
 // point in time (what the user sees).
-//
-// TODO(fgorski): Add ability to delete archive.
-// TODO(fgorski): Add ability to check that archive exists.
-// TODO(fgorski): Add ability to refresh an existing archive in one step.
-// TODO(fgorski): Add ability to identify all of the archives in the directory,
-// to enable to model to reconcile the archives.
 class OfflinePageArchiver {
  public:
   // Results of the archive creation.

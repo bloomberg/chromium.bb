@@ -26,8 +26,6 @@ namespace offline_pages {
 // for an actual web contents.
 class OfflinePageTestArchiver : public OfflinePageArchiver {
  public:
-  // TODO(fgorski): Try refactoring the observer out and replace it with a
-  // callback, or completely remove the call to |SetLastPathCreatedByArchiver|.
   class Observer {
    public:
     virtual ~Observer() {}

@@ -159,12 +159,10 @@ public class OfflinePageUtils {
         WebContents webContents = tab.getWebContents();
         ClientId clientId = ClientId.createClientIdForBookmarkId(bookmarkId);
 
-        // TODO(fgorski): Ensure that request is queued if the model is not loaded.
         offlinePageBridge.savePage(webContents, clientId, new OfflinePageBridge.SavePageCallback() {
             @Override
             public void onSavePageDone(int savePageResult, String url, long offlineId) {
-                // TODO(fgorski): Decide if we need to do anything with result.
-                // Perhaps some UMA reporting, but that can really happen someplace else.
+                // Result of the call is ignored.
             }
         });
     }

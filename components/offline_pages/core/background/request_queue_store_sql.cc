@@ -97,7 +97,7 @@ bool CreateSchema(sql::Connection* db) {
       return false;
   }
 
-  // TODO(fgorski): Add indices here.
+  // This would be a great place to add indices when we need them.
   return transaction.Commit();
 }
 
@@ -294,7 +294,6 @@ void GetRequestsByIdsSync(sql::Connection* db,
                           scoped_refptr<base::SingleThreadTaskRunner> runner,
                           const std::vector<int64_t>& request_ids,
                           const RequestQueueStore::UpdateCallback& callback) {
-  // TODO(fgorski): Perhaps add metrics here.
   std::unique_ptr<UpdateRequestsResult> result(
       new UpdateRequestsResult(StoreState::LOADED));
 
@@ -332,7 +331,6 @@ void AddRequestSync(sql::Connection* db,
                     scoped_refptr<base::SingleThreadTaskRunner> runner,
                     const SavePageRequest& request,
                     const RequestQueueStore::AddCallback& callback) {
-  // TODO(fgorski): add UMA metrics here.
   ItemActionStatus status = Insert(db, request);
   runner->PostTask(FROM_HERE, base::Bind(callback, status));
 }
@@ -341,7 +339,6 @@ void UpdateRequestsSync(sql::Connection* db,
                         scoped_refptr<base::SingleThreadTaskRunner> runner,
                         const std::vector<SavePageRequest>& requests,
                         const RequestQueueStore::UpdateCallback& callback) {
-  // TODO(fgorski): add UMA metrics here.
   std::unique_ptr<UpdateRequestsResult> result(
       new UpdateRequestsResult(StoreState::LOADED));
 
@@ -371,7 +368,6 @@ void RemoveRequestsSync(sql::Connection* db,
                         scoped_refptr<base::SingleThreadTaskRunner> runner,
                         const std::vector<int64_t>& request_ids,
                         const RequestQueueStore::UpdateCallback& callback) {
-  // TODO(fgorski): Perhaps add metrics here.
   std::unique_ptr<UpdateRequestsResult> result(
       new UpdateRequestsResult(StoreState::LOADED));
 
