@@ -133,12 +133,14 @@ bool IsCertNameBlobInIssuerList(
 
 }  // namespace
 
-void X509Certificate::Initialize() {
+bool X509Certificate::Initialize() {
   DCHECK(cert_handle_);
-  subject_.ParseDistinguishedName(cert_handle_->pCertInfo->Subject.pbData,
-                                  cert_handle_->pCertInfo->Subject.cbData);
-  issuer_.ParseDistinguishedName(cert_handle_->pCertInfo->Issuer.pbData,
-                                 cert_handle_->pCertInfo->Issuer.cbData);
+  if (!subject_.ParseDistinguishedName(
+          cert_handle_->pCertInfo->Subject.pbData,
+          cert_handle_->pCertInfo->Subject.cbData) ||
+      !issuer_.ParseDistinguishedName(cert_handle_->pCertInfo->Issuer.pbData,
+                                      cert_handle_->pCertInfo->Issuer.cbData))
+    return false;
 
   valid_start_ = Time::FromFileTime(cert_handle_->pCertInfo->NotBefore);
   valid_expiry_ = Time::FromFileTime(cert_handle_->pCertInfo->NotAfter);
@@ -149,6 +151,8 @@ void X509Certificate::Initialize() {
     serial_bytes[i] = serial->pbData[serial->cbData - i - 1];
   serial_number_ = std::string(
       reinterpret_cast<char*>(serial_bytes.get()), serial->cbData);
+
+  return true;
 }
 
 bool X509Certificate::GetSubjectAltName(

@@ -89,7 +89,7 @@ CERTName* CreateCertNameFromEncoded(PLArenaPool* arena,
 
 namespace x509_util {
 
-void ParsePrincipal(CERTName* name, CertPrincipal* principal) {
+bool ParsePrincipal(CERTName* name, CertPrincipal* principal) {
 // Starting in NSS 3.15, CERTGetNameFunc takes a const CERTName* argument.
 #if NSS_VMINOR >= 15
   typedef char* (*CERTGetNameFunc)(const CERTName* name);
@@ -120,7 +120,7 @@ void ParsePrincipal(CERTName* name, CertPrincipal* principal) {
         if (kOIDs[oid] == tag) {
           SECItem* decode_item = CERT_DecodeAVAValue(&avas[pair]->value);
           if (!decode_item)
-            break;
+            return false;
           // TODO(wtc): Pass decode_item to CERT_RFC1485_EscapeAndQuote.
           std::string value(reinterpret_cast<char*>(decode_item->data),
                             decode_item->len);
@@ -145,13 +145,17 @@ void ParsePrincipal(CERTName* name, CertPrincipal* principal) {
       PORT_Free(value);
     }
   }
+
+  return true;
 }
 
-void ParseDate(const SECItem* der_date, base::Time* result) {
+bool ParseDate(const SECItem* der_date, base::Time* result) {
   PRTime prtime;
   SECStatus rv = DER_DecodeTimeChoice(&prtime, der_date);
-  DCHECK_EQ(SECSuccess, rv);
+  if (rv != SECSuccess)
+    return false;
   *result = crypto::PRTimeToBaseTime(prtime);
+  return true;
 }
 
 std::string ParseSerialNumber(const CERTCertificate* certificate) {

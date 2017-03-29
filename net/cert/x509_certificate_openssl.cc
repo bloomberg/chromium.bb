@@ -68,11 +68,11 @@ void ParsePrincipalValues(X509_NAME* name,
   }
 }
 
-void ParsePrincipal(X509Certificate::OSCertHandle cert,
+bool ParsePrincipal(X509Certificate::OSCertHandle cert,
                     X509_NAME* x509_name,
                     CertPrincipal* principal) {
   if (!x509_name)
-    return;
+    return false;
 
   ParsePrincipalValues(x509_name, NID_streetAddress,
                        &principal->street_addresses);
@@ -91,6 +91,7 @@ void ParsePrincipal(X509Certificate::OSCertHandle cert,
                                       &principal->state_or_province_name);
   x509_util::ParsePrincipalValueByNID(x509_name, NID_countryName,
                                       &principal->country_name);
+  return true;
 }
 
 bool ParseSubjectAltName(X509Certificate::OSCertHandle cert,
@@ -186,28 +187,31 @@ void X509Certificate::FreeOSCertHandle(OSCertHandle cert_handle) {
   X509_free(cert_handle);
 }
 
-void X509Certificate::Initialize() {
+bool X509Certificate::Initialize() {
   crypto::EnsureOpenSSLInit();
 
   ASN1_INTEGER* serial_num = X509_get_serialNumber(cert_handle_);
-  if (serial_num) {
-    // ASN1_INTEGERS represent the decoded number, in a format internal to
-    // OpenSSL. Most notably, this may have leading zeroes stripped off for
-    // numbers whose first byte is >= 0x80. Thus, it is necessary to
-    // re-encoded the integer back into DER, which is what the interface
-    // of X509Certificate exposes, to ensure callers get the proper (DER)
-    // value.
-    int bytes_required = i2c_ASN1_INTEGER(serial_num, NULL);
-    unsigned char* buffer = reinterpret_cast<unsigned char*>(
-        base::WriteInto(&serial_number_, bytes_required + 1));
-    int bytes_written = i2c_ASN1_INTEGER(serial_num, &buffer);
-    DCHECK_EQ(static_cast<size_t>(bytes_written), serial_number_.size());
-  }
+  if (!serial_num)
+    return false;
+  // ASN1_INTEGERS represent the decoded number, in a format internal to
+  // OpenSSL. Most notably, this may have leading zeroes stripped off for
+  // numbers whose first byte is >= 0x80. Thus, it is necessary to
+  // re-encoded the integer back into DER, which is what the interface
+  // of X509Certificate exposes, to ensure callers get the proper (DER)
+  // value.
+  int bytes_required = i2c_ASN1_INTEGER(serial_num, NULL);
+  unsigned char* buffer = reinterpret_cast<unsigned char*>(
+      base::WriteInto(&serial_number_, bytes_required + 1));
+  int bytes_written = i2c_ASN1_INTEGER(serial_num, &buffer);
+  DCHECK_EQ(static_cast<size_t>(bytes_written), serial_number_.size());
 
-  ParsePrincipal(cert_handle_, X509_get_subject_name(cert_handle_), &subject_);
-  ParsePrincipal(cert_handle_, X509_get_issuer_name(cert_handle_), &issuer_);
-  x509_util::ParseDate(X509_get_notBefore(cert_handle_), &valid_start_);
-  x509_util::ParseDate(X509_get_notAfter(cert_handle_), &valid_expiry_);
+  return (
+      ParsePrincipal(cert_handle_, X509_get_subject_name(cert_handle_),
+                     &subject_) &&
+      ParsePrincipal(cert_handle_, X509_get_issuer_name(cert_handle_),
+                     &issuer_) &&
+      x509_util::ParseDate(X509_get_notBefore(cert_handle_), &valid_start_) &&
+      x509_util::ParseDate(X509_get_notAfter(cert_handle_), &valid_expiry_));
 }
 
 // static

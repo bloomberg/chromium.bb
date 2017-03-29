@@ -26,14 +26,15 @@
 
 namespace net {
 
-void X509Certificate::Initialize() {
-  x509_util::ParsePrincipal(&cert_handle_->subject, &subject_);
-  x509_util::ParsePrincipal(&cert_handle_->issuer, &issuer_);
-
-  x509_util::ParseDate(&cert_handle_->validity.notBefore, &valid_start_);
-  x509_util::ParseDate(&cert_handle_->validity.notAfter, &valid_expiry_);
-
+bool X509Certificate::Initialize() {
   serial_number_ = x509_util::ParseSerialNumber(cert_handle_);
+
+  return (
+      !serial_number_.empty() &&
+      x509_util::ParsePrincipal(&cert_handle_->subject, &subject_) &&
+      x509_util::ParsePrincipal(&cert_handle_->issuer, &issuer_) &&
+      x509_util::ParseDate(&cert_handle_->validity.notBefore, &valid_start_) &&
+      x509_util::ParseDate(&cert_handle_->validity.notAfter, &valid_expiry_));
 }
 
 std::string X509Certificate::GetDefaultNickname(CertType type) const {

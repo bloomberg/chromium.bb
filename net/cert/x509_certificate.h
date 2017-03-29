@@ -389,7 +389,7 @@ class NET_EXPORT X509Certificate
   ~X509Certificate();
 
   // Common object initialization code.  Called by the constructors only.
-  void Initialize();
+  bool Initialize();
 
 #if defined(USE_OPENSSL_CERTS)
   // Resets the store returned by cert_store() to default state. Used by

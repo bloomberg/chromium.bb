@@ -35,16 +35,17 @@ namespace net {
 
 namespace {
 
-void GetCertDistinguishedName(
+bool GetCertDistinguishedName(
     const x509_util::CSSMCachedCertificate& cached_cert,
     const CSSM_OID* oid,
     CertPrincipal* result) {
   x509_util::CSSMFieldValue distinguished_name;
   OSStatus status = cached_cert.GetField(oid, &distinguished_name);
   if (status || !distinguished_name.field())
-    return;
+    return false;
   result->ParseDistinguishedName(distinguished_name.field()->Data,
                                  distinguished_name.field()->Length);
+  return true;
 }
 
 bool IsCertIssuerInEncodedList(X509Certificate::OSCertHandle cert_handle,
@@ -73,7 +74,7 @@ bool IsCertIssuerInEncodedList(X509Certificate::OSCertHandle cert_handle,
   return false;
 }
 
-void GetCertDateForOID(const x509_util::CSSMCachedCertificate& cached_cert,
+bool GetCertDateForOID(const x509_util::CSSMCachedCertificate& cached_cert,
                        const CSSM_OID* oid,
                        Time* result) {
   *result = Time();
@@ -81,14 +82,14 @@ void GetCertDateForOID(const x509_util::CSSMCachedCertificate& cached_cert,
   x509_util::CSSMFieldValue field;
   OSStatus status = cached_cert.GetField(oid, &field);
   if (status)
-    return;
+    return false;
 
   const CSSM_X509_TIME* x509_time = field.GetAs<CSSM_X509_TIME>();
   if (x509_time->timeType != BER_TAG_UTC_TIME &&
       x509_time->timeType != BER_TAG_GENERALIZED_TIME) {
     LOG(ERROR) << "Unsupported date/time format "
                << x509_time->timeType;
-    return;
+    return false;
   }
 
   base::StringPiece time_string(
@@ -96,8 +97,11 @@ void GetCertDateForOID(const x509_util::CSSMCachedCertificate& cached_cert,
       x509_time->time.Length);
   CertDateFormat format = x509_time->timeType == BER_TAG_UTC_TIME ?
       CERT_DATE_FORMAT_UTC_TIME : CERT_DATE_FORMAT_GENERALIZED_TIME;
-  if (!ParseCertificateDate(time_string, format, result))
+  if (!ParseCertificateDate(time_string, format, result)) {
     LOG(ERROR) << "Invalid certificate date/time " << time_string;
+    return false;
+  }
+  return true;
 }
 
 std::string GetCertSerialNumber(
@@ -188,19 +192,21 @@ void AddCertificatesFromBytes(const char* data, size_t length,
 
 }  // namespace
 
-void X509Certificate::Initialize() {
+bool X509Certificate::Initialize() {
   x509_util::CSSMCachedCertificate cached_cert;
-  if (cached_cert.Init(cert_handle_) == CSSM_OK) {
-    GetCertDistinguishedName(cached_cert, &CSSMOID_X509V1SubjectNameStd,
-                             &subject_);
-    GetCertDistinguishedName(cached_cert, &CSSMOID_X509V1IssuerNameStd,
-                             &issuer_);
-    GetCertDateForOID(cached_cert, &CSSMOID_X509V1ValidityNotBefore,
-                      &valid_start_);
-    GetCertDateForOID(cached_cert, &CSSMOID_X509V1ValidityNotAfter,
-                      &valid_expiry_);
-    serial_number_ = GetCertSerialNumber(cached_cert);
-  }
+  if (cached_cert.Init(cert_handle_) != CSSM_OK)
+    return false;
+  serial_number_ = GetCertSerialNumber(cached_cert);
+
+  return (!serial_number_.empty() &&
+          GetCertDistinguishedName(cached_cert, &CSSMOID_X509V1SubjectNameStd,
+                                   &subject_) &&
+          GetCertDistinguishedName(cached_cert, &CSSMOID_X509V1IssuerNameStd,
+                                   &issuer_) &&
+          GetCertDateForOID(cached_cert, &CSSMOID_X509V1ValidityNotBefore,
+                            &valid_start_) &&
+          GetCertDateForOID(cached_cert, &CSSMOID_X509V1ValidityNotAfter,
+                            &valid_expiry_));
 }
 
 bool X509Certificate::IsIssuedByEncoded(

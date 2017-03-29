@@ -282,8 +282,12 @@ TEST(X509CertificateTest, SerialNumbers) {
   EXPECT_TRUE(memcmp(google_cert->serial_number().data(), google_serial,
                      sizeof(google_serial)) == 0);
 
-  // We also want to check a serial number where the first byte is >= 0x80 in
-  // case the underlying library tries to pad it.
+// TODO(mattm): Creating the X509Certificate fails on windows due to the null
+// in the subject. Generate a new test cert specifically for this case rather
+// than reusing paypal_null_cert.
+#if !defined(OS_WIN)
+  // Check a serial number where the first byte is >= 0x80, the DER returned by
+  // serial() should contain the leading 0 padding byte.
   scoped_refptr<X509Certificate> paypal_null_cert(
       X509Certificate::CreateFromBytes(
           reinterpret_cast<const char*>(paypal_null_der),
@@ -295,6 +299,7 @@ TEST(X509CertificateTest, SerialNumbers) {
             paypal_null_cert->serial_number().size());
   EXPECT_TRUE(memcmp(paypal_null_cert->serial_number().data(),
                      paypal_null_serial, sizeof(paypal_null_serial)) == 0);
+#endif  // !defined(OS_WIN)
 }
 
 TEST(X509CertificateTest, SHA256FingerprintsCorrectly) {
