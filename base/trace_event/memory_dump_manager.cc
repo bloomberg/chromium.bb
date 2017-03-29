@@ -38,6 +38,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "build/build_config.h"
+#include "build/buildflag.h"
 
 #if defined(OS_ANDROID)
 #include "base/trace_event/java_heap_dump_provider_android.h"
@@ -195,14 +196,11 @@ void MemoryDumpManager::EnableHeapProfilingIfNeeded() {
   if (profiling_mode == "") {
     AllocationContextTracker::SetCaptureMode(
         AllocationContextTracker::CaptureMode::PSEUDO_STACK);
-#if HAVE_TRACE_STACK_FRAME_POINTERS && \
-    (BUILDFLAG(ENABLE_PROFILING) || !defined(NDEBUG))
   } else if (profiling_mode == switches::kEnableHeapProfilingModeNative) {
-    // We need frame pointers for native tracing to work, and they are
-    // enabled in profiling and debug builds.
+    // If we don't have frame pointers then native tracing falls-back to
+    // using base::debug::StackTrace, which may be slow.
     AllocationContextTracker::SetCaptureMode(
         AllocationContextTracker::CaptureMode::NATIVE_STACK);
-#endif
 #if BUILDFLAG(ENABLE_MEMORY_TASK_PROFILER)
   } else if (profiling_mode == switches::kEnableHeapProfilingTaskProfiler) {
     // Enable heap tracking, which in turn enables capture of heap usage
