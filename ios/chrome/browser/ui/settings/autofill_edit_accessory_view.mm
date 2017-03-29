@@ -7,13 +7,8 @@
 #include <string>
 
 #import "base/mac/scoped_nsobject.h"
-#include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/image_util.h"
 #include "ios/chrome/browser/ui/ui_util.h"
-#include "ui/base/l10n/l10n_util.h"
-
-NSString* const kAutofillEditAccessoryViewAccessibilityID =
-    @"kAutofillEditAccessoryViewAccessibilityID";
 
 namespace {
 
@@ -72,8 +67,6 @@ UIImageView* ImageViewWithImageName(NSString* imageName) {
   if (!self)
     return nil;
 
-  self.accessibilityIdentifier = kAutofillEditAccessoryViewAccessibilityID;
-
   _delegate = delegate;
   [self addBackgroundImage];
   [self setupSubviews];
@@ -87,8 +80,6 @@ UIImageView* ImageViewWithImageName(NSString* imageName) {
                               pressedName:@"autofill_prev_pressed"
                              disabledName:@"autofill_prev_inactive"
                                    action:@selector(previousPressed)];
-  [previousButton
-      setAccessibilityLabel:l10n_util::GetNSString(IDS_ACCNAME_PREVIOUS)];
   [self addSubview:previousButton];
   _previousButton.reset([previousButton retain]);
 
@@ -100,7 +91,6 @@ UIImageView* ImageViewWithImageName(NSString* imageName) {
                               pressedName:@"autofill_next_pressed"
                              disabledName:@"autofill_next_inactive"
                                    action:@selector(nextPressed)];
-  [nextButton setAccessibilityLabel:l10n_util::GetNSString(IDS_ACCNAME_NEXT)];
   [self addSubview:nextButton];
   _nextButton.reset([nextButton retain]);
 
@@ -111,8 +101,7 @@ UIImageView* ImageViewWithImageName(NSString* imageName) {
                                           pressedName:@"autofill_close_pressed"
                                          disabledName:nil
                                                action:@selector(closePressed)];
-    [closeButton
-        setAccessibilityLabel:l10n_util::GetNSString(IDS_ACCNAME_CLOSE)];
+
     [self addSubview:closeButton];
 
     secondSeparator = ImageViewWithImageName(@"autofill_middle_sep");

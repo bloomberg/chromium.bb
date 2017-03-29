@@ -27,9 +27,6 @@
 #error "This file requires ARC support."
 #endif
 
-NSString* const kWarningMessageAccessibilityID =
-    @"kWarningMessageAccessibilityID";
-
 namespace {
 
 NSString* const kPaymentRequestEditCollectionViewID =
@@ -487,7 +484,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
         [[PaymentsTextItem alloc] initWithType:ItemTypeErrorMessage];
     errorMessageItem.text = errorMessage;
     errorMessageItem.image = NativeImage(IDR_IOS_PAYMENTS_WARNING);
-    errorMessageItem.accessibilityIdentifier = kWarningMessageAccessibilityID;
     [model addItem:errorMessageItem toSectionWithIdentifier:sectionIdentifier];
     NSIndexPath* indexPath = [model indexPathForItemType:ItemTypeErrorMessage
                                        sectionIdentifier:sectionIdentifier];

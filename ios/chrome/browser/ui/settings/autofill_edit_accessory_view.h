@@ -7,8 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-extern NSString* const kAutofillEditAccessoryViewAccessibilityID;
-
 @protocol AutofillEditAccessoryDelegate<NSObject>
 - (void)nextPressed;
 - (void)previousPressed;

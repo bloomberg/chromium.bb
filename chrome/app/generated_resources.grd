@@ -5617,6 +5617,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ACCNAME_FIND" desc="The accessible name for the find button.">
         Find
       </message>
+      <message name="IDS_ACCNAME_PREVIOUS" desc="The accessible name for the previous button.">
+        Previous
+      </message>
+      <message name="IDS_ACCNAME_NEXT" desc="The accessible name for the next button.">
+        Next
+      </message>
       <message name="IDS_ACCNAME_BOOKMARKS" desc="The accessible name for the Bookmarks toolbar.">
         Bookmarks
       </message>
