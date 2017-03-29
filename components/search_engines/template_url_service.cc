@@ -1438,17 +1438,30 @@ TemplateURL* TemplateURLService::BestEngineForKeyword(TemplateURL* engine1,
                                                       TemplateURL* engine2) {
   DCHECK(engine1);
   DCHECK(engine2);
-  DCHECK_NE(engine1, engine2);
+  CHECK_NE(engine1, engine2);
   DCHECK_EQ(engine1->keyword(), engine2->keyword());
 
+  std::string engine1_params = base::StringPrintf(
+      "%s, %i, %" PRId64 ", %i, %s, %s",
+      base::UTF16ToUTF8(engine1->keyword()).c_str(),
+      static_cast<int>(engine1->type()), engine1->id(),
+      engine1->prepopulate_id(), CanReplace(engine1) ? "true" : "false",
+      engine1->url().c_str());
+  std::string engine2_params = base::StringPrintf(
+      "%s, %i, %" PRId64 ", %i, %s, %s",
+      base::UTF16ToUTF8(engine2->keyword()).c_str(),
+      static_cast<int>(engine2->type()), engine2->id(),
+      engine2->prepopulate_id(), CanReplace(engine2) ? "true" : "false",
+      engine2->url().c_str());
+  base::debug::ScopedCrashKey scoped_crash_key1("engine1_params",
+                                                engine1_params);
+  base::debug::ScopedCrashKey scoped_crash_key2("engine2_params",
+                                                engine2_params);
   // We should only have overlapping keywords when at least one comes from
   // an extension.
-  DCHECK(IsCreatedByExtension(engine1) || IsCreatedByExtension(engine2));
-  // TODO(a-v-y) Remove following code for non extension engines when reasons
-  // for crash https://bugs.chromium.org/p/chromium/issues/detail?id=697745
-  // become clear.
-  if (!IsCreatedByExtension(engine1) && !IsCreatedByExtension(engine2))
-    return CanReplace(engine1) ? engine2 : engine1;
+  // TODO(a-v-y) Replace CHECK with DCHECK when reasons for crash
+  // https://bugs.chromium.org/p/chromium/issues/detail?id=697745 become clear.
+  CHECK(IsCreatedByExtension(engine1) || IsCreatedByExtension(engine2));
 
   if (engine2->type() == engine1->type()) {
     return engine1->extension_info_->install_time >
@@ -1705,9 +1718,8 @@ bool TemplateURLService::UpdateNoNotify(TemplateURL* existing_turl,
     default_search_manager_.SetUserSelectedDefaultSearchEngine(
         default_search_provider_->data());
   }
-#if DCHECK_IS_ON()
-  DCHECK(!HasDuplicateKeywords());
-#endif
+
+  CHECK(!HasDuplicateKeywords());
   return true;
 }
 
@@ -2043,6 +2055,39 @@ TemplateURL* TemplateURLService::AddNoNotify(
     // |initial_default_search_provider_| and the web data version of itself.
     TemplateURL* existing_turl =
         FindNonExtensionTemplateURLForKeyword(template_url->keyword());
+    // TODO(a-v-y) Remove following code block with CHECK when reasons for crash
+    // https://bugs.chromium.org/p/chromium/issues/detail?id=697745 become
+    // clear.
+    // Check that same template_url is not added twice first.
+    CHECK(!Contains(&template_urls_, template_url.get()));
+    if (!existing_turl) {
+      // Check that no normal engine with such keyword really exists in
+      // template_urls_.
+      for (const auto& turl : template_urls_) {
+        if (!IsCreatedByExtension(turl.get()) &&
+            turl->keyword() == template_url->keyword()) {
+          std::string engine1_params = base::StringPrintf(
+              "%s, %i, %" PRId64 ", %i, %s, %s",
+              base::UTF16ToUTF8(template_url->keyword()).c_str(),
+              static_cast<int>(template_url->type()), template_url->id(),
+              template_url->prepopulate_id(),
+              CanReplace(template_url.get()) ? "true" : "false",
+              template_url->url().c_str());
+          std::string engine2_params = base::StringPrintf(
+              "%s, %i, %" PRId64 ", %i, %s, %s",
+              base::UTF16ToUTF8(turl->keyword()).c_str(),
+              static_cast<int>(turl->type()), turl->id(),
+              turl->prepopulate_id(), CanReplace(turl.get()) ? "true" : "false",
+              turl->url().c_str());
+          base::debug::ScopedCrashKey scoped_crash_key1("engine1_params",
+                                                        engine1_params);
+          base::debug::ScopedCrashKey scoped_crash_key2("engine2_params",
+                                                        engine2_params);
+          CHECK(false);
+        }
+      }
+    }
+
     if (existing_turl && Contains(&template_urls_, existing_turl)) {
       DCHECK_NE(existing_turl, template_url.get());
       if (CanReplace(existing_turl)) {
@@ -2054,7 +2099,21 @@ TemplateURL* TemplateURLService::AddNoNotify(
         base::string16 new_keyword = UniquifyKeyword(*existing_turl, false);
         ResetTemplateURLNoNotify(existing_turl, existing_turl->short_name(),
                                  new_keyword, existing_turl->url());
-        DCHECK_EQ(new_keyword, existing_turl->keyword());
+        if (existing_turl->keyword() != new_keyword) {
+          // TODO(a-v-y) Remove following code block with CHECK when reasons for
+          // crash https://bugs.chromium.org/p/chromium/issues/detail?id=697745
+          // become clear.
+          std::string engine1_params = base::StringPrintf(
+              "%s, %i, %" PRId64 ", %i, %s, %s",
+              base::UTF16ToUTF8(existing_turl->keyword()).c_str(),
+              static_cast<int>(existing_turl->type()), existing_turl->id(),
+              existing_turl->prepopulate_id(),
+              CanReplace(existing_turl) ? "true" : "false",
+              existing_turl->url().c_str());
+          base::debug::ScopedCrashKey scoped_crash_key1("engine1_params",
+                                                        engine1_params);
+          CHECK(false);
+        }
       }
     }
   }
@@ -2071,9 +2130,10 @@ TemplateURL* TemplateURLService::AddNoNotify(
     ProcessTemplateURLChange(FROM_HERE, template_url_ptr,
                              syncer::SyncChange::ACTION_ADD);
   }
-#if DCHECK_IS_ON()
-  DCHECK(!HasDuplicateKeywords());
-#endif
+  // TODO(a-v-y) Remove following code block with CHECK when reasons for
+  // crash https://bugs.chromium.org/p/chromium/issues/detail?id=697745
+  // become clear.
+  CHECK(!HasDuplicateKeywords());
   return template_url_ptr;
 }
 
@@ -2474,7 +2534,6 @@ TemplateURL* TemplateURLService::FindMatchingDefaultExtensionTemplateURL(
   return nullptr;
 }
 
-#if DCHECK_IS_ON()
 bool TemplateURLService::HasDuplicateKeywords() const {
   std::map<base::string16, TemplateURL*> keyword_to_template_url;
   for (const auto& template_url : template_urls_) {
@@ -2489,4 +2548,3 @@ bool TemplateURLService::HasDuplicateKeywords() const {
   }
   return false;
 }
-#endif
