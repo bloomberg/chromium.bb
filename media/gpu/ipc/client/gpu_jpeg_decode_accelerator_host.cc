@@ -118,11 +118,14 @@ GpuJpegDecodeAcceleratorHost::~GpuJpegDecodeAcceleratorHost() {
     // routed to |receiver_| on IO thread.
     base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                               base::WaitableEvent::InitialState::NOT_SIGNALED);
-    io_task_runner_->PostTask(FROM_HERE,
-                              base::Bind(&Receiver::InvalidateWeakPtr,
-                                         base::Unretained(receiver_.get()),
-                                         base::Unretained(&event)));
-    event.Wait();
+    bool task_expected_to_run = io_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&Receiver::InvalidateWeakPtr,
+                              base::Unretained(receiver_.get()),
+                              base::Unretained(&event)));
+    // If the current call is happening during the browser shutdown, the
+    // |io_task_runner_| may no longer be accepting tasks.
+    if (task_expected_to_run)
+      event.Wait();
   }
 }
 
