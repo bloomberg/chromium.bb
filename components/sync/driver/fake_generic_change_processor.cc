@@ -12,14 +12,13 @@
 
 namespace syncer {
 
-FakeGenericChangeProcessor::FakeGenericChangeProcessor(ModelType type,
-                                                       SyncClient* sync_client)
+FakeGenericChangeProcessor::FakeGenericChangeProcessor(ModelType type)
     : GenericChangeProcessor(type,
                              nullptr,
                              base::WeakPtr<SyncableService>(),
                              base::WeakPtr<SyncMergeResult>(),
                              nullptr,
-                             sync_client,
+                             nullptr,
                              nullptr),
       sync_model_has_user_created_nodes_(true),
       sync_model_has_user_created_nodes_success_(true) {}
@@ -77,7 +76,7 @@ FakeGenericChangeProcessorFactory::CreateGenericChangeProcessor(
     std::unique_ptr<DataTypeErrorHandler> error_handler,
     const base::WeakPtr<SyncableService>& local_service,
     const base::WeakPtr<SyncMergeResult>& merge_result,
-    SyncClient* sync_client) {
+    SyncApiComponentFactory* driver_factory) {
   return std::move(processor_);
 }
 

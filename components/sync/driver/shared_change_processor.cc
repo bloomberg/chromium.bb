@@ -12,7 +12,6 @@
 #include "components/sync/driver/generic_change_processor.h"
 #include "components/sync/driver/generic_change_processor_factory.h"
 #include "components/sync/driver/shared_change_processor_ref.h"
-#include "components/sync/driver/sync_client.h"
 #include "components/sync/model/sync_change.h"
 #include "components/sync/model/syncable_service.h"
 
@@ -51,8 +50,9 @@ SharedChangeProcessor::~SharedChangeProcessor() {
 }
 
 void SharedChangeProcessor::StartAssociation(
-    StartDoneCallback start_done,
-    SyncClient* const sync_client,
+    const StartDoneCallback& start_done,
+    const SyncClient::ServiceProvider& service_provider,
+    SyncApiComponentFactory* driver_factory,
     GenericChangeProcessorFactory* processor_factory,
     UserShare* user_share,
     std::unique_ptr<DataTypeErrorHandler> error_handler) {
@@ -67,7 +67,7 @@ void SharedChangeProcessor::StartAssociation(
   // disconnected at this point, so all our accesses to the syncer from this
   // point on are through it.
   local_service_ =
-      Connect(sync_client, processor_factory, user_share,
+      Connect(service_provider, driver_factory, processor_factory, user_share,
               std::move(error_handler), weak_ptr_factory.GetWeakPtr());
   if (!local_service_.get()) {
     SyncError error(FROM_HERE, SyncError::DATATYPE_ERROR,
@@ -139,31 +139,31 @@ void SharedChangeProcessor::StartAssociation(
 }
 
 base::WeakPtr<SyncableService> SharedChangeProcessor::Connect(
-    SyncClient* sync_client,
+    const SyncClient::ServiceProvider& service_provider,
+    SyncApiComponentFactory* driver_factory,
     GenericChangeProcessorFactory* processor_factory,
     UserShare* user_share,
     std::unique_ptr<DataTypeErrorHandler> error_handler,
     const base::WeakPtr<SyncMergeResult>& merge_result) {
-  DCHECK(sync_client);
   DCHECK(error_handler);
   backend_task_runner_ = base::SequencedTaskRunnerHandle::Get();
   AutoLock lock(monitor_lock_);
   if (disconnected_)
     return base::WeakPtr<SyncableService>();
   error_handler_ = std::move(error_handler);
-  base::WeakPtr<SyncableService> local_service =
-      sync_client->GetSyncableServiceForType(type_);
+  base::WeakPtr<SyncableService> local_service = service_provider.Run();
   if (!local_service.get()) {
     LOG(WARNING) << "SyncableService destroyed before DTC was stopped.";
     disconnected_ = true;
     return base::WeakPtr<SyncableService>();
   }
 
-  generic_change_processor_ = processor_factory
-                                  ->CreateGenericChangeProcessor(
-                                      type_, user_share, error_handler_->Copy(),
-                                      local_service, merge_result, sync_client)
-                                  .release();
+  generic_change_processor_ =
+      processor_factory
+          ->CreateGenericChangeProcessor(type_, user_share,
+                                         error_handler_->Copy(), local_service,
+                                         merge_result, driver_factory)
+          .release();
   // If available, propagate attachment service to the syncable service.
   std::unique_ptr<AttachmentService> attachment_service =
       generic_change_processor_->GetAttachmentService();

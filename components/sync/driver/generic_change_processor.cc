@@ -16,7 +16,6 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/base/unrecoverable_error_handler.h"
 #include "components/sync/driver/sync_api_component_factory.h"
-#include "components/sync/driver/sync_client.h"
 #include "components/sync/model/local_change_observer.h"
 #include "components/sync/model/sync_change.h"
 #include "components/sync/model/sync_error.h"
@@ -111,7 +110,7 @@ GenericChangeProcessor::GenericChangeProcessor(
     const base::WeakPtr<SyncableService>& local_service,
     const base::WeakPtr<SyncMergeResult>& merge_result,
     UserShare* user_share,
-    SyncClient* sync_client,
+    SyncApiComponentFactory* driver_factory,
     std::unique_ptr<AttachmentStoreForSync> attachment_store)
     : ChangeProcessor(std::move(error_handler)),
       type_(type),
@@ -127,10 +126,8 @@ GenericChangeProcessor::GenericChangeProcessor(
       ReadTransaction trans(FROM_HERE, share_handle());
       store_birthday = trans.GetStoreBirthday();
     }
-    attachment_service_ =
-        sync_client->GetSyncApiComponentFactory()->CreateAttachmentService(
-            std::move(attachment_store), *user_share, store_birthday, type,
-            this);
+    attachment_service_ = driver_factory->CreateAttachmentService(
+        std::move(attachment_store), *user_share, store_birthday, type, this);
     attachment_service_weak_ptr_factory_ =
         base::MakeUnique<base::WeakPtrFactory<AttachmentService>>(
             attachment_service_.get());

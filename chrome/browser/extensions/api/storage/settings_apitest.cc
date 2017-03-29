@@ -113,8 +113,10 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
   }
 
   syncer::SyncableService* GetSyncableService() {
-    return settings_sync_util::GetSyncableService(browser()->profile(),
-                                                  kModelType);
+    return settings_sync_util::GetSyncableServiceProvider(browser()->profile(),
+                                                          kModelType)
+        .Run()
+        .get();
   }
 
   void InitSync(syncer::SyncChangeProcessor* sync_processor) {

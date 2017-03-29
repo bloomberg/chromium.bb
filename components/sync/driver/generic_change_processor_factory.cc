@@ -23,11 +23,11 @@ GenericChangeProcessorFactory::CreateGenericChangeProcessor(
     std::unique_ptr<DataTypeErrorHandler> error_handler,
     const base::WeakPtr<SyncableService>& local_service,
     const base::WeakPtr<SyncMergeResult>& merge_result,
-    SyncClient* sync_client) {
+    SyncApiComponentFactory* driver_factory) {
   DCHECK(user_share);
   return base::MakeUnique<GenericChangeProcessor>(
       type, std::move(error_handler), local_service, merge_result, user_share,
-      sync_client, local_service->GetAttachmentStoreForSync());
+      driver_factory, local_service->GetAttachmentStoreForSync());
 }
 
 }  // namespace syncer

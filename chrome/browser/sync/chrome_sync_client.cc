@@ -120,21 +120,75 @@
 #include "components/sync_wifi/wifi_credential_syncable_service_factory.h"
 #endif  // defined(OS_CHROMEOS)
 
-using content::BrowserThread;
+using base::Callback;
+using base::WeakPtr;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 using browser_sync::ExtensionDataTypeController;
 using browser_sync::ExtensionSettingDataTypeController;
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 using browser_sync::SearchEngineDataTypeController;
+using content::BrowserThread;
 using syncer::AsyncDirectoryTypeController;
+using syncer::SyncableService;
+
+using ServiceProvider = syncer::SyncClient::ServiceProvider;
 
 namespace browser_sync {
 
 namespace {
+
 #if defined(OS_WIN)
 const base::FilePath::CharType kLoopbackServerBackendFilename[] =
     FILE_PATH_LITERAL("profile.pb");
 #endif  // defined(OS_WIN)
+
+// The following are a set of functions to facilitate returning SyncableServices
+// and SyncBridges. Non-UI model types sometimes have difficulties providing a
+// WeakPtr to their integration object on the UI thread. By instead returning a
+// Callback we are able to give model types a little bit of flexibility.
+
+// The preferred and simpler approach is to to retrieve your corresponding
+// WeakPtr on the UI thread, which is where GetSyncableServiceForType() and
+// GetSyncBridgeForModelType() are invoked. A simple Callback that just captures
+// the WeakPtr can easy be returned. Trampoline() is all that's really required
+// for this, with WrapInCallback() and WrapInProvider() adding syntactic sugar.
+// All UI thread model types should be able to follow this pattern.
+
+// The other approach is capturing an intermediate thread safe object that is
+// subsequently used on the model thread. Most model types that follow this
+// pattern do things a little bit uniquely, but a common problem is not having
+// a method that's going to return exactly the right type. For example, needing
+// to up-cast or grab a WeakPtr after the model type specific functions are run
+// in a Callback.
+
+template <typename T>
+T Trampoline(T arg) {
+  return arg;
+}
+
+template <typename T>
+Callback<T()> WrapInCallback(T arg) {
+  return base::Bind(&Trampoline<T>, arg);
+}
+
+WeakPtr<SyncableService> ServiceAsWeakPtr(SyncableService* ptr) {
+  return ptr ? ptr->AsWeakPtr() : WeakPtr<SyncableService>();
+}
+
+ServiceProvider WrapInProvider(SyncableService* service) {
+  return WrapInCallback(ServiceAsWeakPtr(service));
+}
+
+template <typename T>
+WeakPtr<SyncableService> CallbackResultAsWeakPtr(Callback<T()> callback) {
+  return ServiceAsWeakPtr(callback.Run());
+}
+
+template <typename T>
+ServiceProvider WrapInWeakPtrCallback(Callback<T()> callback) {
+  return base::Bind(&CallbackResultAsWeakPtr<T>, callback);
+}
+
 }  // namespace
 
 // Chrome implementation of SyncSessionsClient. Needs to be in a separate class
@@ -299,7 +353,7 @@ favicon::FaviconService* ChromeSyncClient::GetFaviconService() {
 history::HistoryService* ChromeSyncClient::GetHistoryService() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return HistoryServiceFactory::GetForProfile(
-      profile_, ServiceAccessType::EXPLICIT_ACCESS);
+      profile_, ServiceAccessType::IMPLICIT_ACCESS);
 }
 
 bool ChromeSyncClient::HasPasswordStore() {
@@ -322,7 +376,7 @@ ChromeSyncClient::GetRegisterPlatformTypesCallback() {
   return base::Bind(
 #if defined(OS_ANDROID)
       &ChromeSyncClient::RegisterAndroidDataTypes,
-#else
+#else  // defined(OS_ANDROID)
       &ChromeSyncClient::RegisterDesktopDataTypes,
 #endif  // defined(OS_ANDROID)
       weak_ptr_factory_.GetWeakPtr());
@@ -349,144 +403,135 @@ sync_sessions::SyncSessionsClient* ChromeSyncClient::GetSyncSessionsClient() {
   return sync_sessions_client_.get();
 }
 
-base::WeakPtr<syncer::SyncableService>
-ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
+ServiceProvider ChromeSyncClient::GetSyncableServiceForType(
+    syncer::ModelType type) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!profile_) {  // For tests.
-     return base::WeakPtr<syncer::SyncableService>();
+    return WrapInProvider(nullptr);
   }
   switch (type) {
     case syncer::DEVICE_INFO:
-      return ProfileSyncServiceFactory::GetForProfile(profile_)
-          ->GetDeviceInfoSyncableService()
-          ->AsWeakPtr();
+      return WrapInProvider(ProfileSyncServiceFactory::GetForProfile(profile_)
+                                ->GetDeviceInfoSyncableService());
     case syncer::PREFERENCES:
-      return PrefServiceSyncableFromProfile(profile_)
-          ->GetSyncableService(syncer::PREFERENCES)
-          ->AsWeakPtr();
     case syncer::PRIORITY_PREFERENCES:
-      return PrefServiceSyncableFromProfile(profile_)
-          ->GetSyncableService(syncer::PRIORITY_PREFERENCES)
-          ->AsWeakPtr();
+      return WrapInProvider(
+          PrefServiceSyncableFromProfile(profile_)->GetSyncableService(type));
     case syncer::AUTOFILL:
     case syncer::AUTOFILL_PROFILE:
     case syncer::AUTOFILL_WALLET_DATA:
     case syncer::AUTOFILL_WALLET_METADATA: {
-      if (!web_data_service_)
-        return base::WeakPtr<syncer::SyncableService>();
-      if (type == syncer::AUTOFILL) {
-        return autofill::AutocompleteSyncableService::FromWebDataService(
-            web_data_service_.get())->AsWeakPtr();
+      if (!web_data_service_) {
+        return WrapInProvider(nullptr);
+      } else if (type == syncer::AUTOFILL) {
+        return WrapInWeakPtrCallback(base::Bind(
+            &autofill::AutocompleteSyncableService::FromWebDataService,
+            base::RetainedRef(web_data_service_)));
       } else if (type == syncer::AUTOFILL_PROFILE) {
-        return autofill::AutofillProfileSyncableService::FromWebDataService(
-            web_data_service_.get())->AsWeakPtr();
+        return WrapInWeakPtrCallback(base::Bind(
+            &autofill::AutofillProfileSyncableService::FromWebDataService,
+            base::RetainedRef(web_data_service_)));
       } else if (type == syncer::AUTOFILL_WALLET_METADATA) {
-        return autofill::AutofillWalletMetadataSyncableService::
-            FromWebDataService(web_data_service_.get())->AsWeakPtr();
+        return WrapInWeakPtrCallback(
+            base::Bind(&autofill::AutofillWalletMetadataSyncableService::
+                           FromWebDataService,
+                       base::RetainedRef(web_data_service_)));
+      } else {
+        return WrapInWeakPtrCallback(base::Bind(
+            &autofill::AutofillWalletSyncableService::FromWebDataService,
+            base::RetainedRef(web_data_service_)));
       }
-      return autofill::AutofillWalletSyncableService::FromWebDataService(
-          web_data_service_.get())->AsWeakPtr();
     }
     case syncer::SEARCH_ENGINES:
-      return TemplateURLServiceFactory::GetForProfile(profile_)->AsWeakPtr();
+      return WrapInProvider(TemplateURLServiceFactory::GetForProfile(profile_));
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     case syncer::APPS:
     case syncer::EXTENSIONS:
-      return ExtensionSyncService::Get(profile_)->AsWeakPtr();
+      return WrapInProvider(ExtensionSyncService::Get(profile_));
     case syncer::APP_SETTINGS:
     case syncer::EXTENSION_SETTINGS:
-      return extensions::settings_sync_util::GetSyncableService(profile_, type)
-          ->AsWeakPtr();
+      return extensions::settings_sync_util::GetSyncableServiceProvider(
+          profile_, type);
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 #if BUILDFLAG(ENABLE_APP_LIST)
     case syncer::APP_LIST:
-      return app_list::AppListSyncableServiceFactory::GetForProfile(profile_)->
-          AsWeakPtr();
+      return WrapInProvider(
+          app_list::AppListSyncableServiceFactory::GetForProfile(profile_));
 #endif  // BUILDFLAG(ENABLE_APP_LIST)
 #if !defined(OS_ANDROID)
     case syncer::THEMES:
-      return ThemeServiceFactory::GetForProfile(profile_)->
-          GetThemeSyncableService()->AsWeakPtr();
+      return WrapInProvider(ThemeServiceFactory::GetForProfile(profile_)
+                                ->GetThemeSyncableService());
 #endif  // !defined(OS_ANDROID)
-    case syncer::HISTORY_DELETE_DIRECTIVES: {
-      history::HistoryService* history = GetHistoryService();
-      return history ? history->AsWeakPtr()
-                     : base::WeakPtr<history::HistoryService>();
-    }
+    case syncer::HISTORY_DELETE_DIRECTIVES:
+      return WrapInProvider(GetHistoryService());
     case syncer::TYPED_URLS: {
-      // We request history service with explicit access here because this
-      // codepath is executed on backend thread while HistoryServiceFactory
-      // checks preference value in implicit mode and PrefService expectes calls
-      // only from UI thread.
-      history::HistoryService* history = HistoryServiceFactory::GetForProfile(
-          profile_, ServiceAccessType::EXPLICIT_ACCESS);
-      if (!history)
-        return base::WeakPtr<history::TypedUrlSyncableService>();
-      return history->GetTypedUrlSyncableService()->AsWeakPtr();
+      history::HistoryService* history = GetHistoryService();
+      return WrapInProvider(history ? history->GetTypedUrlSyncableService()
+                                    : nullptr);
     }
 #if BUILDFLAG(ENABLE_SPELLCHECK)
     case syncer::DICTIONARY:
-      return SpellcheckServiceFactory::GetForContext(profile_)->
-          GetCustomDictionary()->AsWeakPtr();
+      return WrapInProvider(SpellcheckServiceFactory::GetForContext(profile_)
+                                ->GetCustomDictionary());
 #endif  // BUILDFLAG(ENABLE_SPELLCHECK)
     case syncer::FAVICON_IMAGES:
-    case syncer::FAVICON_TRACKING: {
-      sync_sessions::FaviconCache* favicons =
-          ProfileSyncServiceFactory::GetForProfile(profile_)->GetFaviconCache();
-      return favicons ? favicons->AsWeakPtr()
-                      : base::WeakPtr<syncer::SyncableService>();
-    }
+    case syncer::FAVICON_TRACKING:
+      return WrapInProvider(ProfileSyncServiceFactory::GetForProfile(profile_)
+                                ->GetFaviconCache());
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
     case syncer::SUPERVISED_USER_SETTINGS:
-      return SupervisedUserSettingsServiceFactory::GetForProfile(profile_)->
-          AsWeakPtr();
+      return WrapInProvider(
+          SupervisedUserSettingsServiceFactory::GetForProfile(profile_));
 #if !defined(OS_ANDROID)
     case syncer::SUPERVISED_USERS:
-      return SupervisedUserSyncServiceFactory::GetForProfile(profile_)->
-          AsWeakPtr();
+      return WrapInProvider(
+          SupervisedUserSyncServiceFactory::GetForProfile(profile_));
     case syncer::SUPERVISED_USER_SHARED_SETTINGS:
-      return SupervisedUserSharedSettingsServiceFactory::GetForBrowserContext(
-          profile_)->AsWeakPtr();
+      return WrapInProvider(
+          SupervisedUserSharedSettingsServiceFactory::GetForBrowserContext(
+              profile_));
 #endif  // !defined(OS_ANDROID)
     case syncer::SUPERVISED_USER_WHITELISTS:
-      return SupervisedUserServiceFactory::GetForProfile(profile_)
-          ->GetWhitelistService()
-          ->AsWeakPtr();
+      return WrapInProvider(
+          SupervisedUserServiceFactory::GetForProfile(profile_)
+              ->GetWhitelistService());
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
     case syncer::ARTICLES: {
-      dom_distiller::DomDistillerService* service =
+      dom_distiller::DomDistillerService* distiller_service =
           dom_distiller::DomDistillerServiceFactory::GetForBrowserContext(
               profile_);
-      if (service)
-        return service->GetSyncableService()->AsWeakPtr();
-      return base::WeakPtr<syncer::SyncableService>();
+      return WrapInProvider(distiller_service
+                                ? distiller_service->GetSyncableService()
+                                : nullptr);
     }
-    case syncer::SESSIONS: {
-      return ProfileSyncServiceFactory::GetForProfile(profile_)->
-          GetSessionsSyncableService()->AsWeakPtr();
-    }
-    case syncer::PASSWORDS: {
+    case syncer::SESSIONS:
+      return WrapInProvider(ProfileSyncServiceFactory::GetForProfile(profile_)
+                                ->GetSessionsSyncableService());
+    case syncer::PASSWORDS:
       return password_store_.get()
-                 ? password_store_->GetPasswordSyncableService()
-                 : base::WeakPtr<syncer::SyncableService>();
-    }
+                 ? base::Bind(&password_manager::PasswordStore::
+                                  GetPasswordSyncableService,
+                              base::RetainedRef(password_store_))
+                 : WrapInProvider(nullptr);
 #if defined(OS_CHROMEOS)
     case syncer::WIFI_CREDENTIALS:
-      return sync_wifi::WifiCredentialSyncableServiceFactory::
-          GetForBrowserContext(profile_)
-              ->AsWeakPtr();
+      return WrapInProvider(
+          sync_wifi::WifiCredentialSyncableServiceFactory::GetForBrowserContext(
+              profile_));
     case syncer::ARC_PACKAGE:
-      return arc::ArcPackageSyncableService::Get(profile_)->AsWeakPtr();
+      return WrapInProvider(arc::ArcPackageSyncableService::Get(profile_));
 #endif  // defined(OS_CHROMEOS)
     default:
       // The following datatypes still need to be transitioned to the
       // syncer::SyncableService API:
       // Bookmarks
       NOTREACHED();
-      return base::WeakPtr<syncer::SyncableService>();
+      return WrapInProvider(nullptr);
   }
 }
 
-base::WeakPtr<syncer::ModelTypeSyncBridge>
+WeakPtr<syncer::ModelTypeSyncBridge>
 ChromeSyncClient::GetSyncBridgeForModelType(syncer::ModelType type) {
   switch (type) {
     case syncer::DEVICE_INFO:
@@ -496,7 +541,7 @@ ChromeSyncClient::GetSyncBridgeForModelType(syncer::ModelType type) {
     case syncer::READING_LIST:
       // Reading List is only supported on iOS at the moment.
       NOTREACHED();
-      return base::WeakPtr<syncer::ModelTypeSyncBridge>();
+      return WeakPtr<syncer::ModelTypeSyncBridge>();
     case syncer::AUTOFILL:
       return autofill::AutocompleteSyncBridge::FromWebDataService(
           web_data_service_.get());
@@ -508,7 +553,7 @@ ChromeSyncClient::GetSyncBridgeForModelType(syncer::ModelType type) {
 #endif  // defined(OS_CHROMEOS)
     default:
       NOTREACHED();
-      return base::WeakPtr<syncer::ModelTypeSyncBridge>();
+      return WeakPtr<syncer::ModelTypeSyncBridge>();
   }
 }
 

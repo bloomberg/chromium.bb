@@ -16,6 +16,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "components/sync/driver/data_type_controller.h"
+#include "components/sync/driver/sync_client.h"
 #include "components/sync/engine/model_safe_worker.h"
 #include "components/sync/model/data_type_error_handler.h"
 #include "components/sync/model/sync_change_processor.h"
@@ -29,7 +30,7 @@ namespace syncer {
 class ChangeProcessor;
 class GenericChangeProcessor;
 class GenericChangeProcessorFactory;
-class SyncClient;
+class SyncApiComponentFactory;
 class SyncableService;
 struct UserShare;
 
@@ -61,8 +62,9 @@ class SharedChangeProcessor
   // Create an uninitialized SharedChangeProcessor.
   explicit SharedChangeProcessor(ModelType type);
 
-  void StartAssociation(StartDoneCallback start_done,
-                        SyncClient* const sync_client,
+  void StartAssociation(const StartDoneCallback& start_done,
+                        const SyncClient::ServiceProvider& service_provider,
+                        SyncApiComponentFactory* driver_factory,
                         GenericChangeProcessorFactory* processor_factory,
                         UserShare* user_share,
                         std::unique_ptr<DataTypeErrorHandler> error_handler);
@@ -71,9 +73,10 @@ class SharedChangeProcessor
   // create and store a new GenericChangeProcessor and return a weak pointer to
   // the SyncableService associated with |type|.
   // Note: If this SharedChangeProcessor has been disconnected, or the
-  // SyncableService was not alive, will return a null weak pointer.
+  // SyncableService is not alive, will return a null weak pointer.
   virtual base::WeakPtr<SyncableService> Connect(
-      SyncClient* sync_client,
+      const SyncClient::ServiceProvider& service_provider,
+      SyncApiComponentFactory* driver_factory,
       GenericChangeProcessorFactory* processor_factory,
       UserShare* user_share,
       std::unique_ptr<DataTypeErrorHandler> error_handler,

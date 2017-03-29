@@ -91,9 +91,9 @@ class SyncSharedChangeProcessorTest : public testing::Test,
   }
 
   // FakeSyncClient override.
-  base::WeakPtr<SyncableService> GetSyncableServiceForType(
-      ModelType type) override {
-    return db_syncable_service_->AsWeakPtr();
+  ServiceProvider GetSyncableServiceForType(ModelType type) override {
+    return base::Bind(&SyncableService::AsWeakPtr,
+                      base::Unretained(db_syncable_service_.get()));
   }
 
  protected:
@@ -185,7 +185,8 @@ class SyncSharedChangeProcessorTest : public testing::Test,
       const scoped_refptr<SharedChangeProcessor>& shared_change_processor) {
     DCHECK(model_thread_.task_runner()->BelongsToCurrentThread());
     EXPECT_TRUE(shared_change_processor->Connect(
-        this, &processor_factory_, test_user_share_.user_share(),
+        GetSyncableServiceForType(AUTOFILL), &factory_, &processor_factory_,
+        test_user_share_.user_share(),
         base::MakeUnique<DataTypeErrorHandlerMock>(),
         base::WeakPtr<SyncMergeResult>()));
     did_connect_ = true;

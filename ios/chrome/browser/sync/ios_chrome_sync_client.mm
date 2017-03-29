@@ -69,7 +69,45 @@
 #error "This file requires ARC support."
 #endif
 
+using autofill::AutocompleteSyncableService;
+using autofill::AutofillProfileSyncableService;
+using autofill::AutofillWalletMetadataSyncableService;
+using autofill::AutofillWalletSyncableService;
+using base::Callback;
+using base::WeakPtr;
+using syncer::SyncableService;
+
+using ServiceProvider = syncer::SyncClient::ServiceProvider;
+
 namespace {
+
+template <typename T>
+T Trampoline(T arg) {
+  return arg;
+}
+
+template <typename T>
+Callback<T()> WrapInCallback(T arg) {
+  return base::Bind(&Trampoline<T>, arg);
+}
+
+WeakPtr<SyncableService> ServiceAsWeakPtr(SyncableService* ptr) {
+  return ptr ? ptr->AsWeakPtr() : WeakPtr<SyncableService>();
+}
+
+ServiceProvider WrapInProvider(SyncableService* service) {
+  return WrapInCallback(ServiceAsWeakPtr(service));
+}
+
+template <typename T>
+WeakPtr<SyncableService> CallbackResultAsWeakPtr(Callback<T()> callback) {
+  return ServiceAsWeakPtr(callback.Run());
+}
+
+template <typename T>
+ServiceProvider WrapInWeakPtrCallback(Callback<T()> callback) {
+  return base::Bind(&CallbackResultAsWeakPtr<T>, callback);
+}
 
 // iOS implementation of SyncSessionsClient. Needs to be in a separate class
 // due to possible multiple inheritance issues, wherein IOSChromeSyncClient
@@ -262,87 +300,78 @@ IOSChromeSyncClient::GetSyncSessionsClient() {
   return sync_sessions_client_.get();
 }
 
-base::WeakPtr<syncer::SyncableService>
-IOSChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
+ServiceProvider IOSChromeSyncClient::GetSyncableServiceForType(
+    syncer::ModelType type) {
   switch (type) {
     case syncer::DEVICE_INFO:
-      return IOSChromeProfileSyncServiceFactory::GetForBrowserState(
-                 browser_state_)
-          ->GetDeviceInfoSyncableService()
-          ->AsWeakPtr();
+      return WrapInProvider(
+          IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state_)
+              ->GetDeviceInfoSyncableService());
     case syncer::PREFERENCES:
-      return browser_state_->GetSyncablePrefs()
-          ->GetSyncableService(syncer::PREFERENCES)
-          ->AsWeakPtr();
     case syncer::PRIORITY_PREFERENCES:
-      return browser_state_->GetSyncablePrefs()
-          ->GetSyncableService(syncer::PRIORITY_PREFERENCES)
-          ->AsWeakPtr();
+      return WrapInProvider(
+          browser_state_->GetSyncablePrefs()->GetSyncableService(type));
     case syncer::AUTOFILL:
     case syncer::AUTOFILL_PROFILE:
     case syncer::AUTOFILL_WALLET_DATA:
     case syncer::AUTOFILL_WALLET_METADATA: {
       if (!web_data_service_)
-        return base::WeakPtr<syncer::SyncableService>();
+        return WrapInProvider(nullptr);
       if (type == syncer::AUTOFILL) {
-        return autofill::AutocompleteSyncableService::FromWebDataService(
-                   web_data_service_.get())
-            ->AsWeakPtr();
+        return WrapInWeakPtrCallback(
+            base::Bind(&AutocompleteSyncableService::FromWebDataService,
+                       base::RetainedRef(web_data_service_)));
       } else if (type == syncer::AUTOFILL_PROFILE) {
-        return autofill::AutofillProfileSyncableService::FromWebDataService(
-                   web_data_service_.get())
-            ->AsWeakPtr();
+        return WrapInWeakPtrCallback(
+            base::Bind(&AutofillProfileSyncableService::FromWebDataService,
+                       base::RetainedRef(web_data_service_)));
       } else if (type == syncer::AUTOFILL_WALLET_METADATA) {
-        return autofill::AutofillWalletMetadataSyncableService::
-            FromWebDataService(web_data_service_.get())
-                ->AsWeakPtr();
+        return WrapInWeakPtrCallback(base::Bind(
+            &AutofillWalletMetadataSyncableService::FromWebDataService,
+            base::RetainedRef(web_data_service_)));
       }
-      return autofill::AutofillWalletSyncableService::FromWebDataService(
-                 web_data_service_.get())
-          ->AsWeakPtr();
+      return WrapInWeakPtrCallback(
+          base::Bind(&AutofillWalletSyncableService::FromWebDataService,
+                     base::RetainedRef(web_data_service_)));
     }
     case syncer::HISTORY_DELETE_DIRECTIVES: {
-      history::HistoryService* history =
-          ios::HistoryServiceFactory::GetForBrowserState(
-              browser_state_, ServiceAccessType::EXPLICIT_ACCESS);
-      return history ? history->AsWeakPtr()
-                     : base::WeakPtr<history::HistoryService>();
+      return WrapInProvider(ios::HistoryServiceFactory::GetForBrowserState(
+          browser_state_, ServiceAccessType::EXPLICIT_ACCESS));
     }
     case syncer::TYPED_URLS: {
       history::HistoryService* history =
           ios::HistoryServiceFactory::GetForBrowserState(
               browser_state_, ServiceAccessType::EXPLICIT_ACCESS);
-      return history ? history->GetTypedUrlSyncableService()->AsWeakPtr()
-                     : base::WeakPtr<syncer::SyncableService>();
+      return WrapInProvider(history ? history->GetTypedUrlSyncableService()
+                                    : nullptr);
     }
     case syncer::FAVICON_IMAGES:
     case syncer::FAVICON_TRACKING: {
-      sync_sessions::FaviconCache* favicons =
+      return WrapInProvider(
           IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state_)
-              ->GetFaviconCache();
-      return favicons ? favicons->AsWeakPtr()
-                      : base::WeakPtr<syncer::SyncableService>();
+              ->GetFaviconCache());
     }
     case syncer::ARTICLES: {
       // DomDistillerService is used in iOS ReadingList. The distilled articles
       // are saved separately and must not be synced.
       // Add a not reached to avoid having ARTICLES sync be enabled silently.
       NOTREACHED();
-      return base::WeakPtr<syncer::SyncableService>();
+      return WrapInProvider(nullptr);
     }
     case syncer::SESSIONS: {
-      return IOSChromeProfileSyncServiceFactory::GetForBrowserState(
-                 browser_state_)
-          ->GetSessionsSyncableService()
-          ->AsWeakPtr();
+      return WrapInProvider(
+          IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state_)
+              ->GetSessionsSyncableService());
     }
     case syncer::PASSWORDS: {
-      return password_store_ ? password_store_->GetPasswordSyncableService()
-                             : base::WeakPtr<syncer::SyncableService>();
+      return password_store_ ? base::Bind(&password_manager::PasswordStore::
+                                              GetPasswordSyncableService,
+                                          base::RetainedRef(password_store_))
+                             : WrapInProvider(nullptr);
     }
     default:
       NOTREACHED();
-      return base::WeakPtr<syncer::SyncableService>();
+      return WrapInProvider(nullptr);
   }
 }
 

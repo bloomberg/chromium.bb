@@ -73,6 +73,7 @@ class DirectoryDataTypeController : public DataTypeController {
   // Function to capture and upload a stack trace when an error occurs.
   base::Closure dump_stack_;
 
+  // Non-owning pointer, should only be accessed on the UI thread.
   SyncClient* const sync_client_;
 
  private:

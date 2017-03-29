@@ -28,7 +28,6 @@ AutofillProfileDataTypeController::AutofillProfileDataTypeController(
                                    sync_client,
                                    syncer::GROUP_DB,
                                    std::move(db_thread)),
-      sync_client_(sync_client),
       web_data_service_(web_data_service),
       callback_registered_(false) {}
 

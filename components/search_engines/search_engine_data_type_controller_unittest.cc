@@ -45,9 +45,9 @@ class SyncSearchEngineDataTypeControllerTest : public testing::Test,
   }
 
   // FakeSyncClient overrides.
-  base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
-      syncer::ModelType type) override {
-    return syncable_service_.AsWeakPtr();
+  ServiceProvider GetSyncableServiceForType(syncer::ModelType type) override {
+    return base::Bind(&syncer::SyncableService::AsWeakPtr,
+                      base::Unretained(&syncable_service_));
   }
 
   void TearDown() override {
@@ -66,7 +66,7 @@ class SyncSearchEngineDataTypeControllerTest : public testing::Test,
         base::WrapUnique<syncer::GenericChangeProcessorFactory>(
             new syncer::FakeGenericChangeProcessorFactory(
                 base::MakeUnique<syncer::FakeGenericChangeProcessor>(
-                    syncer::SEARCH_ENGINES, this))));
+                    syncer::SEARCH_ENGINES))));
     EXPECT_CALL(model_load_callback_, Run(_, _));
   }
 

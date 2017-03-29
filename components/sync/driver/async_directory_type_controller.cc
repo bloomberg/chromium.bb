@@ -228,12 +228,17 @@ bool AsyncDirectoryTypeController::StartAssociationAsync() {
   DCHECK_EQ(state(), ASSOCIATING);
   return PostTaskOnModelThread(
       FROM_HERE,
+      // TODO(skym): Sending a non-owning SyncApiComponentFactory pointer across
+      // threads is less than ideal. Likely safe because of the locking and
+      // disconnect flag in SharedChangeProcessor. This object is only ever used
+      // for dead attachments code anyways.
       base::Bind(
           &SharedChangeProcessor::StartAssociation, shared_change_processor_,
           BindToCurrentThread(base::Bind(
               &AsyncDirectoryTypeController::StartDone, base::AsWeakPtr(this))),
-          sync_client_, processor_factory_.get(), user_share_,
-          base::Passed(CreateErrorHandler())));
+          sync_client_->GetSyncableServiceForType(type()),
+          sync_client_->GetSyncApiComponentFactory(), processor_factory_.get(),
+          user_share_, base::Passed(CreateErrorHandler())));
 }
 
 ChangeProcessor* AsyncDirectoryTypeController::GetChangeProcessor() const {

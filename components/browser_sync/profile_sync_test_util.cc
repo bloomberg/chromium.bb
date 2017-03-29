@@ -20,6 +20,8 @@
 #include "components/sync/engine/ui_model_worker.h"
 #include "net/url_request/url_request_test_util.h"
 
+using ServiceProvider = syncer::SyncClient::ServiceProvider;
+
 namespace browser_sync {
 
 namespace {
@@ -45,8 +47,7 @@ class BundleSyncClient : public syncer::FakeSyncClient {
   PrefService* GetPrefService() override;
   sync_sessions::SyncSessionsClient* GetSyncSessionsClient() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
-  base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
-      syncer::ModelType type) override;
+  ServiceProvider GetSyncableServiceForType(syncer::ModelType type) override;
   syncer::SyncService* GetSyncService() override;
   scoped_refptr<syncer::ModelSafeWorker> CreateModelWorkerForGroup(
       syncer::ModelSafeGroup group) override;
@@ -109,11 +110,11 @@ autofill::PersonalDataManager* BundleSyncClient::GetPersonalDataManager() {
   return personal_data_manager_;
 }
 
-base::WeakPtr<syncer::SyncableService>
-BundleSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
+ServiceProvider BundleSyncClient::GetSyncableServiceForType(
+    syncer::ModelType type) {
   if (get_syncable_service_callback_.is_null())
     return syncer::FakeSyncClient::GetSyncableServiceForType(type);
-  return get_syncable_service_callback_.Run(type);
+  return base::Bind(get_syncable_service_callback_, type);
 }
 
 syncer::SyncService* BundleSyncClient::GetSyncService() {

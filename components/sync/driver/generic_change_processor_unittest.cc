@@ -124,8 +124,7 @@ class SyncGenericChangeProcessorTest : public testing::Test {
 
   SyncGenericChangeProcessorTest()
       : syncable_service_ptr_factory_(&fake_syncable_service_),
-        mock_attachment_service_(nullptr),
-        sync_client_(&sync_factory_) {}
+        mock_attachment_service_(nullptr) {}
 
   void SetUp() override {
     // Use kType by default, but allow test cases to re-initialize with whatever
@@ -167,7 +166,7 @@ class SyncGenericChangeProcessorTest : public testing::Test {
         type, base::MakeUnique<DataTypeErrorHandlerMock>(),
         syncable_service_ptr_factory_.GetWeakPtr(),
         merge_result_ptr_factory_->GetWeakPtr(), test_user_share_->user_share(),
-        &sync_client_, attachment_store->CreateAttachmentStoreForSync());
+        &sync_factory_, attachment_store->CreateAttachmentStoreForSync());
     mock_attachment_service_ = sync_factory_.GetMockAttachmentService();
   }
 
@@ -204,7 +203,6 @@ class SyncGenericChangeProcessorTest : public testing::Test {
 
   std::unique_ptr<TestUserShare> test_user_share_;
   MockAttachmentService* mock_attachment_service_;
-  FakeSyncClient sync_client_;
   MockSyncApiComponentFactory sync_factory_;
 
   std::unique_ptr<GenericChangeProcessor> change_processor_;

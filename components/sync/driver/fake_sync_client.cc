@@ -6,17 +6,24 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/weak_ptr.h"
 #include "components/sync/base/extensions_activity.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/fake_sync_service.h"
 
 namespace syncer {
 
+using ServiceProvider = SyncClient::ServiceProvider;
+
 namespace {
 
 void DummyRegisterPlatformTypesCallback(SyncService* sync_service,
                                         ModelTypeSet,
                                         ModelTypeSet) {}
+
+base::WeakPtr<SyncableService> EmptyWeakPtr() {
+  return base::WeakPtr<SyncableService>();
+}
 
 }  // namespace
 
@@ -101,9 +108,8 @@ sync_sessions::SyncSessionsClient* FakeSyncClient::GetSyncSessionsClient() {
   return nullptr;
 }
 
-base::WeakPtr<SyncableService> FakeSyncClient::GetSyncableServiceForType(
-    ModelType type) {
-  return base::WeakPtr<SyncableService>();
+ServiceProvider FakeSyncClient::GetSyncableServiceForType(ModelType type) {
+  return base::Bind(&EmptyWeakPtr);
 }
 
 base::WeakPtr<ModelTypeSyncBridge> FakeSyncClient::GetSyncBridgeForModelType(

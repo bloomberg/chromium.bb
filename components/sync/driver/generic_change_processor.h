@@ -25,7 +25,7 @@
 
 namespace syncer {
 
-class SyncClient;
+class SyncApiComponentFactory;
 class SyncData;
 class SyncableService;
 class WriteNode;
@@ -58,7 +58,7 @@ class GenericChangeProcessor : public ChangeProcessor,
       const base::WeakPtr<SyncableService>& local_service,
       const base::WeakPtr<SyncMergeResult>& merge_result,
       UserShare* user_share,
-      SyncClient* sync_client,
+      SyncApiComponentFactory* driver_factory,
       std::unique_ptr<AttachmentStoreForSync> attachment_store);
   ~GenericChangeProcessor() override;
 

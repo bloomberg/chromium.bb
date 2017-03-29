@@ -41,8 +41,7 @@ class FakeSyncClient : public SyncClient {
   invalidation::InvalidationService* GetInvalidationService() override;
   scoped_refptr<ExtensionsActivity> GetExtensionsActivity() override;
   sync_sessions::SyncSessionsClient* GetSyncSessionsClient() override;
-  base::WeakPtr<SyncableService> GetSyncableServiceForType(
-      ModelType type) override;
+  ServiceProvider GetSyncableServiceForType(ModelType type) override;
   base::WeakPtr<ModelTypeSyncBridge> GetSyncBridgeForModelType(
       ModelType type) override;
   scoped_refptr<ModelSafeWorker> CreateModelWorkerForGroup(

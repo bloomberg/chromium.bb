@@ -54,8 +54,7 @@ class IOSChromeSyncClient : public syncer::SyncClient {
   BookmarkUndoService* GetBookmarkUndoServiceIfExists() override;
   scoped_refptr<syncer::ExtensionsActivity> GetExtensionsActivity() override;
   sync_sessions::SyncSessionsClient* GetSyncSessionsClient() override;
-  base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
-      syncer::ModelType type) override;
+  ServiceProvider GetSyncableServiceForType(syncer::ModelType type) override;
   base::WeakPtr<syncer::ModelTypeSyncBridge> GetSyncBridgeForModelType(
       syncer::ModelType type) override;
   scoped_refptr<syncer::ModelSafeWorker> CreateModelWorkerForGroup(
