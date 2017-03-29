@@ -30,31 +30,11 @@ const CGFloat kDistillationIndicatorSize = 18;
 const CGFloat kMargin = 16;
 }  // namespace
 
-#pragma mark - ReadingListCell Private interface
-
-@protocol ReadingListCellDelegate<NSObject>
-
-- (void)readingListCellWillPrepareForReload:(ReadingListCell*)cell;
-
-@end
-
-@interface ReadingListCell ()
-
-@property(nonatomic, weak) id<ReadingListCellDelegate> delegate;
-// Status of the offline version. Updates the visual indicator when updated.
-@property(nonatomic, assign)
-    ReadingListEntry::DistillationState distillationState;
-
-@end
-
 #pragma mark - ReadingListCollectionViewItem
 
-@interface ReadingListCollectionViewItem ()<ReadingListCellDelegate> {
+@interface ReadingListCollectionViewItem () {
   GURL _url;
 }
-// The cell that is displaying this item, if any. Used to reload favicon when
-// the cell is on screen. Backed by WeakNSObject.
-@property(nonatomic, weak) ReadingListCell* displayedCell;
 
 // Returns the accessibility custom actions associated with this item.
 - (NSArray<UIAccessibilityCustomAction*>*)customActions;
@@ -67,7 +47,6 @@ const CGFloat kMargin = 16;
 @synthesize detailText = _detailText;
 @synthesize url = _url;
 @synthesize faviconPageURL = _faviconPageURL;
-@synthesize displayedCell = _displayedCell;
 @synthesize distillationState = _distillationState;
 @synthesize accessibilityDelegate = _accessibilityDelegate;
 
@@ -83,16 +62,6 @@ const CGFloat kMargin = 16;
   return self;
 }
 
-#pragma mark - property
-
-- (void)setDistillationState:
-    (ReadingListEntry::DistillationState)distillationState {
-  self.displayedCell.distillationState = distillationState;
-  self.displayedCell.accessibilityLabel = [self accessibilityLabel];
-  self.displayedCell.accessibilityCustomActions = [self customActions];
-  _distillationState = distillationState;
-}
-
 #pragma mark - CollectionViewTextItem
 
 - (void)configureCell:(ReadingListCell*)cell {
@@ -102,18 +71,10 @@ const CGFloat kMargin = 16;
   }
   cell.textLabel.text = self.text;
   cell.detailTextLabel.text = self.detailText;
-  self.displayedCell = cell;
-  cell.delegate = self;
   cell.distillationState = _distillationState;
   cell.isAccessibilityElement = YES;
   cell.accessibilityLabel = [self accessibilityLabel];
   cell.accessibilityCustomActions = [self customActions];
-}
-
-#pragma mark - ReadingListCellDelegate
-
-- (void)readingListCellWillPrepareForReload:(ReadingListCell*)cell {
-  self.displayedCell = nil;
 }
 
 #pragma mark - Private
@@ -260,7 +221,6 @@ const CGFloat kMargin = 16;
 @synthesize textLabel = _textLabel;
 @synthesize detailTextLabel = _detailTextLabel;
 @synthesize distillationState = _distillationState;
-@synthesize delegate = _delegate;
 
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
@@ -352,8 +312,6 @@ const CGFloat kMargin = 16;
 #pragma mark - UICollectionViewCell
 
 - (void)prepareForReuse {
-  [self.delegate readingListCellWillPrepareForReload:self];
-  self.delegate = nil;
   self.textLabel.text = nil;
   self.detailTextLabel.text = nil;
   self.distillationState = ReadingListEntry::WAITING;

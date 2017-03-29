@@ -56,6 +56,9 @@ class GURL;
 @property(nonatomic, readonly, strong) UILabel* detailTextLabel;
 // View for displaying the favicon for the reading list entry.
 @property(nonatomic, readonly, strong) FaviconViewNew* faviconView;
+// Status of the offline version. Updates the visual indicator when updated.
+@property(nonatomic, assign)
+    ReadingListEntry::DistillationState distillationState;
 
 @end
 

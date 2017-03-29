@@ -582,6 +582,9 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
   if ([items count] != map.size())
     return YES;
 
+  NSMutableArray<ReadingListCollectionViewItem*>* itemsToReconfigure =
+      [NSMutableArray array];
+
   NSInteger index = 0;
   ItemsMapByDate::const_reverse_iterator iterator = map.rbegin();
   for (; iterator != map.rend(); iterator++) {
@@ -589,8 +592,12 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
         base::mac::ObjCCastStrict<ReadingListCollectionViewItem>(items[index]);
     ReadingListCollectionViewItem* newItem = iterator->second;
     if (oldItem.url == newItem.url) {
-      oldItem.text = newItem.text;
-      oldItem.distillationState = newItem.distillationState;
+      if (![oldItem isEqual:newItem]) {
+        oldItem.text = newItem.text;
+        oldItem.detailText = newItem.detailText;
+        oldItem.distillationState = newItem.distillationState;
+        [itemsToReconfigure addObject:oldItem];
+      }
       if (oldItem.faviconPageURL != newItem.faviconPageURL) {
         [self setItem:oldItem faviconURL:newItem.faviconPageURL];
       }
@@ -600,6 +607,8 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
     }
     index++;
   }
+  [self reconfigureCellsForItems:itemsToReconfigure
+         inSectionWithIdentifier:sectionIdentifier];
   return NO;
 }
 
