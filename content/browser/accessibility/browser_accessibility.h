@@ -22,6 +22,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_range.h"
 #include "ui/accessibility/ax_text_utils.h"
+#include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 
 // Set PLATFORM_HAS_NATIVE_ACCESSIBILITY_IMPL if this platform has
@@ -392,6 +393,13 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
 
   // A unique ID, since node IDs are frame-local.
   int32_t unique_id_;
+
+  // The platform-specific object that implements the accessibility APIs for
+  // this node. Currently some of the platform-specific code is implemented by
+  // subclasses of BrowserAccessibility and some by |platform_node_|, but
+  // eventually we want all of that code to be in AXPlatformNode.  See
+  // http://crbug.com/703369
+  ui::AXPlatformNode* platform_node_;
 
  private:
   // |GetInnerText| recursively includes all the text from descendants such as

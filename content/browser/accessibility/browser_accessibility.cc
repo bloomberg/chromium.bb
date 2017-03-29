@@ -37,15 +37,18 @@ BrowserAccessibility* BrowserAccessibility::Create() {
 #endif
 
 BrowserAccessibility::BrowserAccessibility()
-    : manager_(NULL),
-      node_(NULL),
-      unique_id_(ui::GetNextAXPlatformNodeUniqueId()) {
+    : manager_(nullptr),
+      node_(nullptr),
+      unique_id_(ui::GetNextAXPlatformNodeUniqueId()),
+      platform_node_(nullptr) {
   g_unique_id_map.Get()[unique_id_] = this;
 }
 
 BrowserAccessibility::~BrowserAccessibility() {
   if (unique_id_)
     g_unique_id_map.Get().erase(unique_id_);
+  if (platform_node_)
+    platform_node_->Destroy();
 }
 
 // static
@@ -61,6 +64,13 @@ void BrowserAccessibility::Init(BrowserAccessibilityManager* manager,
     ui::AXNode* node) {
   manager_ = manager;
   node_ = node;
+
+// Here we create the AXPlatformNode which contains a platform-specific
+// implementation of requried accessibility APIS for this node. At this point,
+// we only are creating this object for Windows. See http://crbug.com/703369
+#if defined(OS_WIN)
+  platform_node_ = ui::AXPlatformNode::Create(this);
+#endif
 }
 
 bool BrowserAccessibility::PlatformIsLeaf() const {
