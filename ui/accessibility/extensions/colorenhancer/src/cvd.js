@@ -7,13 +7,43 @@
  * Global exports.  Used by popup to show effect of filter during setup.
  */
 (function(exports) {
+  // TODO(wnwen): Replace var with let.
   var curDelta = 0;
   var curSeverity = 0;
   var curType = 'PROTANOMALY';
   var curSimulate = false;
   var curEnable = false;
   var curFilter = 0;
+  var cssTemplate = `
+html[cvd="0"] {
+  -webkit-filter: url('#cvd_extension_0');
+}
+html[cvd="1"] {
+  -webkit-filter: url('#cvd_extension_1');
+}
+`;
 
+  /** @const {string} */
+  var SVG_DEFAULT_MATRIX =
+    '1 0 0 0 0 ' +
+    '0 1 0 0 0 ' +
+    '0 0 1 0 0 ' +
+    '0 0 0 1 0';
+
+  var svgContent = `
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1">
+  <defs>
+    <filter x="0" y="0" width="99999" height="99999" id="cvd_extension_0">
+      <feColorMatrix id="cvd_matrix_0" type="matrix" values="
+          ${SVG_DEFAULT_MATRIX}"/>
+    </filter>
+    <filter x="0" y="0" width="99999" height="99999" id="cvd_extension_1">
+      <feColorMatrix id="cvd_matrix_1" type="matrix" values="
+          ${SVG_DEFAULT_MATRIX}"/>
+    </filter>
+  </defs>
+</svg>
+`;
 
   // ======= 3x3 matrix ops =======
 
@@ -302,35 +332,27 @@
 
   // ======= Page linker =======
 
-  /** @const {string} */
-  var SVG_DEFAULT_MATRIX =
-    '1 0 0 0 0 ' +
-    '0 1 0 0 0 ' +
-    '0 0 1 0 0 ' +
-    '0 0 0 1 0';
-
-  var svgContent =
-    '<svg xmlns="http://www.w3.org/2000/svg" version="1.1">' +
-    '  <defs>' +
-    '    <filter id="cvd_extension_0">' +
-    '      <feColorMatrix id="cvd_matrix_0" type="matrix" values="' +
-        SVG_DEFAULT_MATRIX + '"/>' +
-    '    </filter>' +
-    '    <filter id="cvd_extension_1">' +
-    '      <feColorMatrix id="cvd_matrix_1" type="matrix" values="' +
-        SVG_DEFAULT_MATRIX + '"/>' +
-    '    </filter>' +
-    '  </defs>' +
-    '</svg>';
+  const STYLE_ID = 'cvd_style';
+  const WRAP_ID = 'cvd_extension_svg_filter';
 
   /**
-   * Checks for svg filter matrix presence and append to DOM if not present.
+   * Checks for required elements, adding if missing.
    */
-  function addSvgIfMissing() {
-    var wrap = document.getElementById('cvd_extension_svg_filter');
+  function addElements() {
+    var style = document.getElementById(STYLE_ID);
+    if (!style) {
+      var baseUrl = window.location.href.replace(window.location.hash, '');
+      style = document.createElement('style');
+      style.id = STYLE_ID;
+      style.setAttribute('type', 'text/css');
+      style.innerHTML = cssTemplate.replace(/#/g, baseUrl + '#');
+      document.head.appendChild(style);
+    }
+
+    var wrap = document.getElementById(WRAP_ID);
     if (!wrap) {
       wrap = document.createElement('span');
-      wrap.id = 'cvd_extension_svg_filter';
+      wrap.id = WRAP_ID;
       wrap.setAttribute('hidden', '');
       wrap.innerHTML = svgContent;
       document.body.appendChild(wrap);
@@ -342,7 +364,7 @@
    * @param {!Object} matrix  3x3 RGB transformation matrix.
    */
   function setFilter(matrix) {
-    addSvgIfMissing();
+    addElements();
     var next = 1 - curFilter;
 
     debugPrint('update: matrix#' + next + '=' +

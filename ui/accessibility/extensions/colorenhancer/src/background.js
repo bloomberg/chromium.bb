@@ -16,9 +16,6 @@ function injectContentScripts() {
         if (isDisallowedUrl(url)) {
           continue;
         }
-        chrome.tabs.insertCSS(
-            tabs[j].id,
-            {file: 'res/cvd.css'});
         chrome.tabs.executeScript(
             tabs[j].id,
             {file: 'src/common.js'});
