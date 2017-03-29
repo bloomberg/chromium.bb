@@ -3,4 +3,4 @@ per-file ios_chrome_io_thread*=mmenke@chromium.org
 per-file ios_chrome_io_thread*=rch@chromium.org
 per-file ios_chrome_io_thread*=rsleevi@chromium.org
 
-per-file ios_chrome_flags_descriptions.*=*
+per-file ios_chrome_flag_descriptions.*=*
