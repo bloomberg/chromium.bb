@@ -20,6 +20,8 @@
         should(function () { var foo1 = 0; }, 'Setting foo1 to 0').notThrow();
         should(function () { var foo2 = bar; }).throw();
         should(function () { var foo3 = bar; }).throw('ReferenceError');
+        should(function () { var foo4 = bar; }).throw(null);
+        should(function () { var foo5 = bar; }).throw(undefined);
         should(() => { should(); }, 'Calling should() with no argument')
             .throw('Error');
         should(3 < 5, '3 < 5').beTrue();
