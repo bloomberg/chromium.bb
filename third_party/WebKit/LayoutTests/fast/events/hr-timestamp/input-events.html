@@ -24,7 +24,7 @@ function createTest(eventName, dispatchEventFn) {
     async_test(function(t) {
         document.addEventListener(eventName, t.step_func(function(e) {
             const platformTimestamp = eventSender.lastEventTimestamp(); // in seconds
-            const expectedTimestamp = internals.monotonicTimeToZeroBasedDocumentTime(platformTimestamp) * 1000; // in milliseconds
+            const expectedTimestamp = Math.floor((internals.monotonicTimeToZeroBasedDocumentTime(platformTimestamp) * 1000) / 0.005) * 0.005;
             assert_approx_equals(e.timeStamp, expectedTimestamp, 0.005);
             t.done();
         }));
