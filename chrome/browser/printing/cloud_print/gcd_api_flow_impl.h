@@ -14,10 +14,6 @@
 
 namespace cloud_print {
 
-namespace {
-const char kCloudPrintOAuthHeaderFormat[] = "Authorization: Bearer %s";
-}
-
 class GCDApiFlowImpl : public GCDApiFlow,
                        public net::URLFetcherDelegate,
                        public OAuth2TokenService::Consumer {
@@ -26,9 +22,9 @@ class GCDApiFlowImpl : public GCDApiFlow,
   GCDApiFlowImpl(net::URLRequestContextGetter* request_context,
                  OAuth2TokenService* token_service,
                  const std::string& account_id);
-
   ~GCDApiFlowImpl() override;
 
+  // GCDApiFlow implementation:
   void Start(std::unique_ptr<Request> request) override;
 
   // net::URLFetcherDelegate implementation:

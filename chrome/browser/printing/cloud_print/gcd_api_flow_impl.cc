@@ -25,6 +25,10 @@
 
 namespace cloud_print {
 
+namespace {
+const char kCloudPrintOAuthHeaderFormat[] = "Authorization: Bearer %s";
+}  // namespace
+
 GCDApiFlowImpl::GCDApiFlowImpl(net::URLRequestContextGetter* request_context,
                                OAuth2TokenService* token_service,
                                const std::string& account_id)
@@ -68,15 +72,9 @@ void GCDApiFlowImpl::OnGetTokenFailure(
 
 void GCDApiFlowImpl::CreateRequest(const GURL& url) {
   net::URLFetcher::RequestType request_type = request_->GetRequestType();
+  DCHECK_EQ(net::URLFetcher::GET, request_type);
 
   url_fetcher_ = net::URLFetcher::Create(url, request_type, this);
-
-  if (request_type != net::URLFetcher::GET) {
-    std::string upload_type;
-    std::string upload_data;
-    request_->GetUploadData(&upload_type, &upload_data);
-    url_fetcher_->SetUploadData(upload_type, upload_data);
-  }
 
   data_use_measurement::DataUseUserData::AttachToFetcher(
       url_fetcher_.get(), data_use_measurement::DataUseUserData::CLOUD_PRINT);

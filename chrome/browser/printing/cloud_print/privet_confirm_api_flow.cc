@@ -14,15 +14,6 @@
 
 namespace cloud_print {
 
-namespace {
-
-GURL GetConfirmFlowUrl(const std::string& token) {
-  return net::AppendQueryParameter(
-      cloud_devices::GetCloudPrintRelativeURL("confirm"), "token", token);
-}
-
-}  // namespace
-
 PrivetConfirmApiCallFlow::PrivetConfirmApiCallFlow(
     const std::string& token,
     const ResponseCallback& callback)
@@ -39,17 +30,12 @@ void PrivetConfirmApiCallFlow::OnGCDApiFlowError(GCDApiFlow::Status status) {
 void PrivetConfirmApiCallFlow::OnGCDApiFlowComplete(
     const base::DictionaryValue& value) {
   bool success = false;
-
   if (!value.GetBoolean(cloud_print::kSuccessValue, &success)) {
     callback_.Run(GCDApiFlow::ERROR_MALFORMED_RESPONSE);
     return;
   }
 
-  if (success) {
-    callback_.Run(GCDApiFlow::SUCCESS);
-  } else {
-    callback_.Run(GCDApiFlow::ERROR_FROM_SERVER);
-  }
+  callback_.Run(success ? GCDApiFlow::SUCCESS : GCDApiFlow::ERROR_FROM_SERVER);
 }
 
 net::URLFetcher::RequestType PrivetConfirmApiCallFlow::GetRequestType() {
@@ -57,7 +43,8 @@ net::URLFetcher::RequestType PrivetConfirmApiCallFlow::GetRequestType() {
 }
 
 GURL PrivetConfirmApiCallFlow::GetURL() {
-  return GetConfirmFlowUrl(token_);
+  return net::AppendQueryParameter(
+      cloud_devices::GetCloudPrintRelativeURL("confirm"), "token", token_);
 }
 
 }  // namespace cloud_print

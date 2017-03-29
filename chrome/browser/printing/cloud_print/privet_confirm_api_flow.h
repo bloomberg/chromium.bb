@@ -9,21 +9,20 @@
 
 #include "base/values.h"
 #include "chrome/browser/printing/cloud_print/gcd_api_flow.h"
-#include "net/url_request/url_request_context_getter.h"
 
 namespace cloud_print {
 
 // API call flow for server-side communication with CloudPrint for registration.
 class PrivetConfirmApiCallFlow : public CloudPrintApiFlowRequest {
  public:
-  typedef base::Callback<void(GCDApiFlow::Status /*success*/)> ResponseCallback;
+  using ResponseCallback = base::Callback<void(GCDApiFlow::Status)>;
 
   // Create an OAuth2-based confirmation
   PrivetConfirmApiCallFlow(const std::string& token,
                            const ResponseCallback& callback);
-
   ~PrivetConfirmApiCallFlow() override;
 
+  // CloudPrintApiFlowRequest implementation:
   void OnGCDApiFlowError(GCDApiFlow::Status status) override;
   void OnGCDApiFlowComplete(const base::DictionaryValue& value) override;
   net::URLFetcher::RequestType GetRequestType() override;
@@ -32,7 +31,7 @@ class PrivetConfirmApiCallFlow : public CloudPrintApiFlowRequest {
 
  private:
   ResponseCallback callback_;
-  std::string token_;
+  const std::string token_;
 };
 
 }  // namespace cloud_print

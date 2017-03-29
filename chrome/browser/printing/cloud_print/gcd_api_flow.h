@@ -47,10 +47,6 @@ class GCDApiFlow {
 
     virtual std::vector<std::string> GetExtraRequestHeaders() = 0;
 
-    // If there is no data, set upload_type and upload_data to ""
-    virtual void GetUploadData(std::string* upload_type,
-                               std::string* upload_data);
-
    private:
     DISALLOW_COPY_AND_ASSIGN(Request);
   };

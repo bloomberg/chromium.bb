@@ -4,16 +4,10 @@
 
 #include "chrome/browser/printing/cloud_print/cloud_print_printer_list.h"
 
-#include <utility>
-
 #include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "components/cloud_devices/common/cloud_devices_urls.h"
 
 namespace cloud_print {
-
-CloudPrintPrinterList::Device::Device() {}
-
-CloudPrintPrinterList::Device::~Device() {}
 
 CloudPrintPrinterList::Delegate::Delegate() {}
 
@@ -32,23 +26,19 @@ void CloudPrintPrinterList::OnGCDApiFlowError(GCDApiFlow::Status status) {
 void CloudPrintPrinterList::OnGCDApiFlowComplete(
     const base::DictionaryValue& value) {
   const base::ListValue* printers;
-
   if (!value.GetList(cloud_print::kPrinterListValue, &printers)) {
     delegate_->OnDeviceListUnavailable();
     return;
   }
 
   DeviceList devices;
-  for (base::ListValue::const_iterator i = printers->begin();
-       i != printers->end();
-       i++) {
-    base::DictionaryValue* printer;
-    Device printer_details;
-
-    if (!(*i)->GetAsDictionary(&printer))
+  for (const auto& printer : *printers) {
+    base::DictionaryValue* printer_dict;
+    if (!printer->GetAsDictionary(&printer_dict))
       continue;
 
-    if (!FillPrinterDetails(*printer, &printer_details))
+    Device printer_details;
+    if (!FillPrinterDetails(*printer_dict, &printer_details))
       continue;
 
     devices.push_back(printer_details);
