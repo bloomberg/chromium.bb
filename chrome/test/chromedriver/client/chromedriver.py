@@ -184,27 +184,25 @@ class ChromeDriver(object):
       options['w3c'] = send_w3c_capability
 
     params = {
-      'desiredCapabilities': {
         'chromeOptions': options,
         'loggingPrefs': logging_prefs
-      }
     }
 
     if page_load_strategy:
       assert type(page_load_strategy) is str
-      params['desiredCapabilities']['pageLoadStrategy'] = page_load_strategy
+      params['pageLoadStrategy'] = page_load_strategy
 
     if unexpected_alert_behaviour:
       assert type(unexpected_alert_behaviour) is str
-      params['desiredCapabilities']['unexpectedAlertBehaviour'] = (
-          unexpected_alert_behaviour)
+      params['unexpectedAlertBehaviour'] = unexpected_alert_behaviour
 
     if network_connection:
-      params['desiredCapabilities']['networkConnectionEnabled'] = (
-          network_connection)
+      params['networkConnectionEnabled'] = network_connection
 
     if send_w3c_request:
-      params = {'capabilities': params}
+      params = {'capabilities': {'alwaysMatch': params}}
+    else:
+      params = {'desiredCapabilities': params}
 
     response = self._ExecuteCommand(Command.NEW_SESSION, params)
     if isinstance(response['status'], basestring):

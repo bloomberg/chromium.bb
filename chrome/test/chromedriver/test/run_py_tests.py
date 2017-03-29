@@ -2132,20 +2132,21 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
     self.assertEquals(network, connection_type)
 
   def testW3cCompliantResponses(self):
-    # Asserts that chromedriver has received the correct response.
-    # W3C compliant responses should only be received when the capability has
-    # been set and the request was sent in the correct format.
-    driver = self.CreateDriver(send_w3c_request=True)
-    self.assertFalse(driver.w3c_compliant)
+    # It's an error to send W3C format request without W3C capability flag.
+    with self.assertRaises(chromedriver.SessionNotCreatedException):
+      self.CreateDriver(send_w3c_request=True)
 
+    # W3C capability flag is ignored in a legacy format request.
     driver = self.CreateDriver(send_w3c_capability=True)
     self.assertFalse(driver.w3c_compliant)
 
+    # W3C compliant responses should only be received when the capability has
+    # been set and the request was sent in the correct format.
     driver = self.CreateDriver(send_w3c_capability=True, send_w3c_request=True)
     self.assertTrue(driver.w3c_compliant)
 
     # Asserts that errors are being raised correctly in the test client
-    # with a w3c compliant driver.
+    # with a W3C compliant driver.
     self.assertRaises(chromedriver.UnknownError,
                       driver.GetNetworkConnection)
 
