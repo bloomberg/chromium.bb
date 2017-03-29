@@ -308,7 +308,8 @@ external/wpt/offscreen-canvas [ Skip ]
 external/wpt/old-tests [ Skip ]
 ## Owners: timvolodine@chromium.org,reillyg@chromium.org
 # external/wpt/orientation-event [ Pass ]
-external/wpt/payment-request [ Skip ]
+## Owners: rouslan@chromium.org,mathp@chromium.org
+# external/wpt/payment-request [ Pass ]
 external/wpt/page-visibility [ Skip ]
 external/wpt/performance-timeline [ Skip ]
 ## Owners: nzolghadr@chromium.org,mustaq@chromium.org
