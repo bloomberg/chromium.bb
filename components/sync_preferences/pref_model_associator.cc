@@ -77,7 +77,7 @@ void PrefModelAssociator::InitPrefAndAssociate(
     const std::string& pref_name,
     syncer::SyncChangeList* sync_changes) {
   const base::Value* user_pref_value =
-      pref_service_->GetUserPrefValue(pref_name.c_str());
+      pref_service_->GetUserPrefValue(pref_name);
   VLOG(1) << "Associating preference " << pref_name;
 
   if (sync_pref.IsValid()) {
@@ -103,14 +103,14 @@ void PrefModelAssociator::InitPrefAndAssociate(
       // ignored if the preference is policy controlled.
       if (new_value->IsType(base::Value::Type::NONE)) {
         LOG(WARNING) << "Sync has null value for pref " << pref_name.c_str();
-        pref_service_->ClearPref(pref_name.c_str());
+        pref_service_->ClearPref(pref_name);
       } else if (!new_value->IsType(user_pref_value->GetType())) {
         LOG(WARNING) << "Synced value for " << preference.name()
                      << " is of type " << new_value->GetType()
                      << " which doesn't match pref type "
                      << user_pref_value->GetType();
       } else if (!user_pref_value->Equals(new_value.get())) {
-        pref_service_->Set(pref_name.c_str(), *new_value);
+        pref_service_->Set(pref_name, *new_value);
       }
 
       // If the merge resulted in an updated value, inform the syncer.
@@ -126,7 +126,7 @@ void PrefModelAssociator::InitPrefAndAssociate(
       }
     } else if (!sync_value->IsType(base::Value::Type::NONE)) {
       // Only a server value exists. Just set the local user value.
-      pref_service_->Set(pref_name.c_str(), *sync_value);
+      pref_service_->Set(pref_name, *sync_value);
     } else {
       LOG(WARNING) << "Sync has null value for pref " << pref_name.c_str();
     }
@@ -343,8 +343,7 @@ syncer::SyncDataList PrefModelAssociator::GetAllSyncData(
   for (PreferenceSet::const_iterator iter = synced_preferences_.begin();
        iter != synced_preferences_.end(); ++iter) {
     std::string name = *iter;
-    const PrefService::Preference* pref =
-        pref_service_->FindPreference(name.c_str());
+    const PrefService::Preference* pref = pref_service_->FindPreference(name);
     DCHECK(pref);
     if (!pref->IsUserControlled() || pref->IsDefaultValue())
       continue;  // This is not data we care about.
@@ -475,7 +474,7 @@ void PrefModelAssociator::ProcessPrefChange(const std::string& name) {
     return;
 
   const PrefService::Preference* preference =
-      pref_service_->FindPreference(name.c_str());
+      pref_service_->FindPreference(name);
   if (!preference)
     return;
 

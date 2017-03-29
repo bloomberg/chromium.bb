@@ -178,7 +178,7 @@ void JniClient::AuthenticationResponse(
     const JavaParamRef<jstring>& pin,
     jboolean createPair,
     const JavaParamRef<jstring>& deviceName) {
-  session_->ProvideSecret(ConvertJavaStringToUTF8(env, pin).c_str(), createPair,
+  session_->ProvideSecret(ConvertJavaStringToUTF8(env, pin), createPair,
                           ConvertJavaStringToUTF8(env, deviceName));
 }
 

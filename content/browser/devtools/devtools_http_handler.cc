@@ -521,7 +521,7 @@ void DevToolsHttpHandler::OnJsonRequest(
   if (command == "version") {
     base::DictionaryValue version;
     version.SetString("Protocol-Version",
-        DevToolsAgentHost::GetProtocolVersion().c_str());
+                      DevToolsAgentHost::GetProtocolVersion());
     version.SetString("WebKit-Version", GetWebKitVersion());
     version.SetString("Browser", product_name_);
     version.SetString("User-Agent", user_agent_);
@@ -852,9 +852,7 @@ std::unique_ptr<base::DictionaryValue> DevToolsHttpHandler::SerializeDescriptor(
                                              host.c_str(),
                                              kPageUrlPrefix,
                                              id.c_str()));
-    std::string devtools_frontend_url = GetFrontendURLInternal(
-        id.c_str(),
-        host);
+    std::string devtools_frontend_url = GetFrontendURLInternal(id, host);
     dictionary->SetString(
         kTargetDevtoolsFrontendUrlField, devtools_frontend_url);
   }

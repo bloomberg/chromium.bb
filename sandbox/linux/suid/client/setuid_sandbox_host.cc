@@ -86,9 +86,9 @@ void SaveSUIDUnsafeEnvironmentVariables(base::Environment* env) {
 
     std::string value;
     if (env->GetVar(env_var, &value))
-      env->SetVar(saved_env_var->c_str(), value);
+      env->SetVar(*saved_env_var, value);
     else
-      env->UnSetVar(saved_env_var->c_str());
+      env->UnSetVar(*saved_env_var);
   }
 }
 

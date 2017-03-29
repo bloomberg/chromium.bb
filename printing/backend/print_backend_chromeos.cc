@@ -95,7 +95,7 @@ scoped_refptr<PrintBackend> PrintBackend::CreateInstanceImpl(
 
       print_backend_settings->GetInteger(kCUPSEncryption, &encryption);
     }
-    GURL print_server_url(print_server_url_str.c_str());
+    GURL print_server_url(print_server_url_str);
 
     std::unique_ptr<CupsConnection> connection =
         base::MakeUnique<CupsConnection>(

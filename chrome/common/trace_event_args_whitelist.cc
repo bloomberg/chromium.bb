@@ -75,7 +75,7 @@ bool IsTraceEventArgsWhitelisted(
       const WhitelistEntry& whitelist_entry = kEventArgsWhitelist[i];
       DCHECK(whitelist_entry.event_name);
 
-      if (base::MatchPattern(category_group_token.c_str(),
+      if (base::MatchPattern(category_group_token,
                              whitelist_entry.category_name) &&
           base::MatchPattern(event_name, whitelist_entry.event_name)) {
         if (whitelist_entry.arg_name_filter) {

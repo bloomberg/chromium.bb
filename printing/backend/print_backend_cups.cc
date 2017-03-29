@@ -209,7 +209,7 @@ scoped_refptr<PrintBackend> PrintBackend::CreateInstanceImpl(
 
     print_backend_settings->GetInteger(kCUPSEncryption, &encryption);
   }
-  GURL print_server_url(print_server_url_str.c_str());
+  GURL print_server_url(print_server_url_str);
   return new PrintBackendCUPS(print_server_url,
                               static_cast<http_encryption_t>(encryption),
                               cups_blocking == kValueTrue);

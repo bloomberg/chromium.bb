@@ -188,7 +188,7 @@ void AboutSigninInternals::RegisterPrefs(
   for (int i = UNTIMED_FIELDS_BEGIN; i < UNTIMED_FIELDS_END; ++i) {
     const std::string pref_path =
         SigninStatusFieldToString(static_cast<UntimedSigninStatusField>(i));
-    user_prefs->RegisterStringPref(pref_path.c_str(), std::string());
+    user_prefs->RegisterStringPref(pref_path, std::string());
   }
 
   for (int i = TIMED_FIELDS_BEGIN; i < TIMED_FIELDS_END; ++i) {
@@ -198,8 +198,8 @@ void AboutSigninInternals::RegisterPrefs(
     const std::string time =
         SigninStatusFieldToString(static_cast<TimedSigninStatusField>(i)) +
         ".time";
-    user_prefs->RegisterStringPref(value.c_str(), std::string());
-    user_prefs->RegisterStringPref(time.c_str(), std::string());
+    user_prefs->RegisterStringPref(value, std::string());
+    user_prefs->RegisterStringPref(time, std::string());
   }
 }
 
@@ -466,7 +466,7 @@ AboutSigninInternals::TokenInfo::ToValue() const {
     scopes_str += *it + "<br/>";
   }
   token_info->SetString("scopes", scopes_str);
-  token_info->SetString("request_time", GetTimeStr(request_time).c_str());
+  token_info->SetString("request_time", GetTimeStr(request_time));
 
   if (removed_) {
     token_info->SetString("status", "Token was revoked.");

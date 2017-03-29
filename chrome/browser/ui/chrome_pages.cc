@@ -284,7 +284,7 @@ bool IsTrustedPopupWindowWithScheme(const Browser* browser,
   if (!web_contents)
     return false;
   GURL url(web_contents->GetURL());
-  return url.SchemeIs(scheme.c_str());
+  return url.SchemeIs(scheme);
 }
 
 

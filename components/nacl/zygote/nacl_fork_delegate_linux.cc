@@ -459,7 +459,7 @@ void NaClForkDelegate::AddPassthroughEnvToOptions(
   pass_through_vars.push_back(sandbox::kSandboxEnvironmentApiRequest);
   for (size_t i = 0; i < pass_through_vars.size(); ++i) {
     std::string temp;
-    if (env->GetVar(pass_through_vars[i].c_str(), &temp))
+    if (env->GetVar(pass_through_vars[i], &temp))
       options->environ[pass_through_vars[i]] = temp;
   }
 }

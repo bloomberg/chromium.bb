@@ -59,7 +59,7 @@ bool SyncedPrefChangeRegistrar::IsObserved(const char* path) const {
 
 void SyncedPrefChangeRegistrar::OnSyncedPrefChanged(const std::string& path,
                                                     bool from_sync) {
-  if (pref_service_->IsManagedPreference(path.c_str()))
+  if (pref_service_->IsManagedPreference(path))
     return;
   ObserverMap::const_iterator iter = observers_.find(path);
   if (iter == observers_.end())

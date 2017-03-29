@@ -545,7 +545,7 @@ bool GetImageURLWithThumbnailSize(
     std::string new_path = old_path.substr(0, pos) + new_size_component +
                            old_path.substr(end);
     GURL::Replacements replacement;
-    replacement.SetPathStr(new_path.c_str());
+    replacement.SetPathStr(new_path);
     *new_url = old_url.ReplaceComponents(replacement);
     return new_url->is_valid();
   }

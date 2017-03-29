@@ -110,7 +110,7 @@ bool CheckPepperFlashManifest(const base::DictionaryValue& manifest,
 
   std::string proposed_version;
   manifest.GetStringASCII("version", &proposed_version);
-  base::Version version(proposed_version.c_str());
+  base::Version version(proposed_version);
   if (!version.IsValid())
     return false;
 

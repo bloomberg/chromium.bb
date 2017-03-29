@@ -68,8 +68,7 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
                        base::CompareCase::SENSITIVE);
     // BuiltinProvider doesn't know how to suggest valid ?query or #fragment
     // extensions to builtin URLs.
-    if (url.SchemeIs(
-            client_->GetEmbedderRepresentationOfAboutScheme().c_str()) &&
+    if (url.SchemeIs(client_->GetEmbedderRepresentationOfAboutScheme()) &&
         url.has_host() && !url.has_query() && !url.has_ref()) {
       // Suggest about:blank for substrings, taking URL fixup into account.
       // Chrome does not support trailing slashes or paths for about:blank.

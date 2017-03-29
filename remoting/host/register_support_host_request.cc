@@ -167,7 +167,7 @@ void RegisterSupportHostRequest::ParseResponse(const XmlElement* response,
   }
 
   int lifetime_int;
-  if (!base::StringToInt(lifetime_element->BodyText().c_str(), &lifetime_int) ||
+  if (!base::StringToInt(lifetime_element->BodyText(), &lifetime_int) ||
       lifetime_int <= 0) {
     error << "<" << kSupportIdLifetimeTag
           << "> is malformed in the host registration response: "

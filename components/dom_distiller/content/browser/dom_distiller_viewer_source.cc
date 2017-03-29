@@ -136,7 +136,7 @@ void DomDistillerViewerSource::RequestViewerHandle::DidFinishNavigation(
 
   const GURL& navigation = navigation_handle->GetURL();
   bool expected_main_view_request =
-      navigation.SchemeIs(expected_scheme_.c_str()) &&
+      navigation.SchemeIs(expected_scheme_) &&
       expected_request_path_ == navigation.query();
   if (navigation_handle->IsSameDocument() || expected_main_view_request) {
     // In-page navigations, as well as the main view request can be ignored.
@@ -291,7 +291,7 @@ std::string DomDistillerViewerSource::GetMimeType(
 
 bool DomDistillerViewerSource::ShouldServiceRequest(
     const net::URLRequest* request) const {
-  return request->url().SchemeIs(scheme_.c_str());
+  return request->url().SchemeIs(scheme_);
 }
 
 // TODO(nyquist): Start tracking requests using this method.

@@ -121,7 +121,7 @@ void InstantUIMessageHandler::SetPreferenceValue(const base::ListValue* args) {
     if (!args->GetString(1, &value))
       return;
     PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
-    prefs->SetString(pref_name.c_str(), value);
+    prefs->SetString(pref_name, value);
   }
 }
 

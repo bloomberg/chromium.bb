@@ -92,10 +92,9 @@ void CloudPolicyCore::TrackRefreshDelayPref(
     PrefService* pref_service,
     const std::string& refresh_pref_name) {
   refresh_delay_.reset(new IntegerPrefMember());
-  refresh_delay_->Init(
-      refresh_pref_name.c_str(), pref_service,
-      base::Bind(&CloudPolicyCore::UpdateRefreshDelayFromPref,
-                 base::Unretained(this)));
+  refresh_delay_->Init(refresh_pref_name, pref_service,
+                       base::Bind(&CloudPolicyCore::UpdateRefreshDelayFromPref,
+                                  base::Unretained(this)));
   UpdateRefreshDelayFromPref();
 }
 

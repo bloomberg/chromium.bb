@@ -421,7 +421,7 @@ void TranslatePrefs::UpdateLanguageList(
   std::vector<base::StringPiece> accept_languages;
   ExpandLanguageCodes(languages, &accept_languages);
   std::string accept_languages_str = base::JoinString(accept_languages, ",");
-  prefs_->SetString(accept_languages_pref_.c_str(), accept_languages_str);
+  prefs_->SetString(accept_languages_pref_, accept_languages_str);
 }
 
 bool TranslatePrefs::CanTranslateLanguage(

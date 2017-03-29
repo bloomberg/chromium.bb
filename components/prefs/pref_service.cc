@@ -561,7 +561,7 @@ bool PrefService::Preference::IsManaged() const {
 }
 
 bool PrefService::Preference::IsManagedByCustodian() const {
-  return pref_value_store()->PrefValueInSupervisedStore(name_.c_str());
+  return pref_value_store()->PrefValueInSupervisedStore(name_);
 }
 
 bool PrefService::Preference::IsRecommended() const {

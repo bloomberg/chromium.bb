@@ -95,15 +95,15 @@ void ClipboardMap::CommitToAndroidClipboard() {
       return;
 
     ScopedJavaLocalRef<jstring> html =
-        ConvertUTF8ToJavaString(env, map_[kHTMLFormat].c_str());
+        ConvertUTF8ToJavaString(env, map_[kHTMLFormat]);
     ScopedJavaLocalRef<jstring> text =
-        ConvertUTF8ToJavaString(env, map_[kPlainTextFormat].c_str());
+        ConvertUTF8ToJavaString(env, map_[kPlainTextFormat]);
 
     DCHECK(html.obj() && text.obj());
     Java_Clipboard_setHTMLText(env, clipboard_manager_, html, text);
   } else if (base::ContainsKey(map_, kPlainTextFormat)) {
     ScopedJavaLocalRef<jstring> str =
-        ConvertUTF8ToJavaString(env, map_[kPlainTextFormat].c_str());
+        ConvertUTF8ToJavaString(env, map_[kPlainTextFormat]);
     DCHECK(str.obj());
     Java_Clipboard_setText(env, clipboard_manager_, str);
   } else {

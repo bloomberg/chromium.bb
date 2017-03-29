@@ -356,8 +356,7 @@ base::DictionaryValue* GetFeatureStatus() {
       status = "unavailable_software";
     }
 
-    feature_status_dict->SetString(
-        gpu_feature_info.name.c_str(), status.c_str());
+    feature_status_dict->SetString(gpu_feature_info.name, status);
   }
   return feature_status_dict;
 }

@@ -464,8 +464,7 @@ std::unique_ptr<base::DictionaryValue> GetJwkDictionary(
   if (!Base64DecodeUrlSafe(value_string, &k_value))
     return ::testing::AssertionFailure() << "Base64DecodeUrlSafe(k) failed";
   if (!base::LowerCaseEqualsASCII(
-          base::HexEncode(k_value.data(), k_value.size()),
-          k_expected_hex.c_str())) {
+          base::HexEncode(k_value.data(), k_value.size()), k_expected_hex)) {
     return ::testing::AssertionFailure() << "Expected 'k' to be "
                                          << k_expected_hex
                                          << " but found something different";
@@ -504,8 +503,7 @@ std::unique_ptr<base::DictionaryValue> GetJwkDictionary(
   if (!Base64DecodeUrlSafe(value_string, &e_value))
     return ::testing::AssertionFailure() << "Base64DecodeUrlSafe(e) failed";
   if (!base::LowerCaseEqualsASCII(
-          base::HexEncode(e_value.data(), e_value.size()),
-          e_expected_hex.c_str())) {
+          base::HexEncode(e_value.data(), e_value.size()), e_expected_hex)) {
     return ::testing::AssertionFailure() << "Expected 'e' to be "
                                          << e_expected_hex
                                          << " but found something different";

@@ -85,7 +85,7 @@ int GetSequentialId(const std::string& id) {
   }
 
   int result = kInvalid;
-  if (!base::StringToInt(tokens[1].c_str(), &result)) {
+  if (!base::StringToInt(tokens[1], &result)) {
     return kInvalid;
   }
   return result;

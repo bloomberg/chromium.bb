@@ -690,7 +690,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       // actual mime type via ChromeViewHostMsg_GetPluginInfo. In that case
       // we should use what we know since WebpluginDelegateProxy does some
       // specific initializations based on this information.
-      params.mimeType = WebString::fromUTF8(actual_mime_type.c_str());
+      params.mimeType = WebString::fromUTF8(actual_mime_type);
     }
 
     ContentSettingsObserver* observer =

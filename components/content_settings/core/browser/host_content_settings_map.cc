@@ -794,7 +794,7 @@ std::unique_ptr<base::Value> HostContentSettingsMap::GetWebsiteSetting(
          content_settings_info->whitelisted_schemes()) {
       DCHECK(SchemeCanBeWhitelisted(scheme));
 
-      if (primary_url.SchemeIs(scheme.c_str())) {
+      if (primary_url.SchemeIs(scheme)) {
         if (info) {
           info->source = content_settings::SETTING_SOURCE_WHITELIST;
           info->primary_pattern = ContentSettingsPattern::Wildcard();

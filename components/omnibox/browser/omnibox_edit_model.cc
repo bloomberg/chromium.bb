@@ -809,8 +809,8 @@ void OmniboxEditModel::ClearKeyword() {
     // State 4 above.
     is_keyword_hint_ = true;
     const base::string16 window_text = keyword_ + view_->GetText();
-    view_->SetWindowTextAndCaretPos(window_text.c_str(), keyword_.length(),
-        false, true);
+    view_->SetWindowTextAndCaretPos(window_text, keyword_.length(), false,
+                                    true);
   } else {
     // States 1-3 above.
     view_->OnBeforePossibleChange();

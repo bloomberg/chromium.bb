@@ -208,7 +208,7 @@ void PrefMetricsService::OnPrefChanged(
     bool from_sync) {
   sync_preferences::PrefServiceSyncable* prefs =
       PrefServiceSyncableFromProfile(profile_);
-  const PrefService::Preference* pref = prefs->FindPreference(path.c_str());
+  const PrefService::Preference* pref = prefs->FindPreference(path);
   DCHECK(pref);
   std::string source_name(
       from_sync ? ".PulledFromSync" : ".PushedToSync");
