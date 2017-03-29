@@ -7,36 +7,60 @@ package org.chromium.chrome.browser.ntp;
 import android.support.test.filters.SmallTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.widget.FadingBackgroundView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
+import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.chrome.test.BottomSheetTestCaseBase;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
+
+import java.util.concurrent.TimeoutException;
 
 /**
  * Tests for the {@link ChromeHomeNewTabPage}.
  */
 public class ChromeHomeNewTabPageTest extends BottomSheetTestCaseBase {
     private FadingBackgroundView mFadingBackgroundView;
+    private StateChangeBottomSheetObserver mObserver;
+    private int mStateChangeCurrentCalls;
+
+    /** On observer used to record state change events on the bottom sheet. */
+    private static class StateChangeBottomSheetObserver extends EmptyBottomSheetObserver {
+        /** A {@link CallbackHelper} that waits for the bottom sheet state to change. */
+        private final CallbackHelper mStateChangedCallbackHelper = new CallbackHelper();
+
+        @Override
+        public void onSheetStateChanged(int state) {
+            mStateChangedCallbackHelper.notifyCalled();
+        }
+    }
 
     @Override
     public void setUp() throws Exception {
         super.setUp();
 
+        mObserver = new StateChangeBottomSheetObserver();
+        mBottomSheet.addObserver(mObserver);
+
         mFadingBackgroundView = getActivity().getFadingBackgroundView();
+
+        // Once setup is done, get the initial call count for onStateChanged().
+        mStateChangeCurrentCalls = mObserver.mStateChangedCallbackHelper.getCallCount();
     }
 
     @SmallTest
-    public void testCloseNTP_OneTab() throws IllegalArgumentException, InterruptedException {
+    public void testCloseNTP_OneTab()
+            throws IllegalArgumentException, InterruptedException, TimeoutException {
         // Load the NTP.
         Tab tab = getActivity().getActivityTab();
         loadUrl(UrlConstants.NTP_URL);
         NewTabPageTestUtils.waitForNtpLoaded(tab);
 
-        validateState(true);
+        validateState(true, true);
 
         // Close the new tab.
         closeNewTab();
@@ -46,7 +70,8 @@ public class ChromeHomeNewTabPageTest extends BottomSheetTestCaseBase {
     }
 
     @SmallTest
-    public void testCloseNTP_TwoTabs() throws IllegalArgumentException, InterruptedException {
+    public void testCloseNTP_TwoTabs()
+            throws IllegalArgumentException, InterruptedException, TimeoutException {
         // Create a new tab.
         createNewTab();
 
@@ -59,7 +84,7 @@ public class ChromeHomeNewTabPageTest extends BottomSheetTestCaseBase {
 
     @SmallTest
     public void testCloseNTP_TwoTabs_OverviewMode()
-            throws IllegalArgumentException, InterruptedException {
+            throws IllegalArgumentException, InterruptedException, TimeoutException {
         // Switch to overview mode.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -79,7 +104,8 @@ public class ChromeHomeNewTabPageTest extends BottomSheetTestCaseBase {
     }
 
     @SmallTest
-    public void testToggleSelectedTab() throws IllegalArgumentException, InterruptedException {
+    public void testToggleSelectedTab()
+            throws IllegalArgumentException, InterruptedException, TimeoutException {
         // Create a new tab.
         createNewTab();
 
@@ -94,7 +120,7 @@ public class ChromeHomeNewTabPageTest extends BottomSheetTestCaseBase {
             }
         });
 
-        validateState(false);
+        validateState(false, false);
 
         // Select the NTP.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -104,16 +130,16 @@ public class ChromeHomeNewTabPageTest extends BottomSheetTestCaseBase {
             }
         });
 
-        validateState(true);
+        validateState(true, true);
     }
 
-    private void createNewTab() throws InterruptedException {
+    private void createNewTab() throws InterruptedException, TimeoutException {
         ChromeTabUtils.fullyLoadUrlInNewTab(
                 getInstrumentation(), getActivity(), UrlConstants.NTP_URL, false);
-        validateState(true);
+        validateState(true, true);
     }
 
-    private void closeNewTab() {
+    private void closeNewTab() throws InterruptedException, TimeoutException {
         Tab tab = getActivity().getActivityTab();
         final ChromeHomeNewTabPage mNewTabPage = (ChromeHomeNewTabPage) tab.getNativePage();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -123,10 +149,16 @@ public class ChromeHomeNewTabPageTest extends BottomSheetTestCaseBase {
             }
         });
 
-        validateState(false);
+        validateState(false, true);
     }
 
-    private void validateState(boolean newTabPageSelected) {
+    private void validateState(boolean newTabPageSelected, boolean animatesToState)
+            throws InterruptedException, TimeoutException {
+        // Wait for two calls if animating; one is to SHEET_STATE_SCROLLING and the other is to the
+        // final state.
+        mObserver.mStateChangedCallbackHelper.waitForCallback(
+                mStateChangeCurrentCalls, animatesToState ? 2 : 1);
+
         if (newTabPageSelected) {
             assertEquals("Sheet should be at half height", BottomSheet.SHEET_STATE_HALF,
                     mBottomSheet.getSheetState());
@@ -137,5 +169,8 @@ public class ChromeHomeNewTabPageTest extends BottomSheetTestCaseBase {
                     mBottomSheet.getSheetState());
             assertTrue(mFadingBackgroundView.isEnabled());
         }
+
+        // Once the state is validated, update the call count.
+        mStateChangeCurrentCalls = mObserver.mStateChangedCallbackHelper.getCallCount();
     }
 }

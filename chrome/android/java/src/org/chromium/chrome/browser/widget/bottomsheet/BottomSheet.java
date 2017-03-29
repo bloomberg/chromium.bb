@@ -54,12 +54,13 @@ import java.lang.annotation.RetentionPolicy;
 public class BottomSheet
         extends FrameLayout implements FadingBackgroundView.FadingViewObserver, NativePageHost {
     /** The different states that the bottom sheet can have. */
-    @IntDef({SHEET_STATE_PEEK, SHEET_STATE_HALF, SHEET_STATE_FULL})
+    @IntDef({SHEET_STATE_PEEK, SHEET_STATE_HALF, SHEET_STATE_FULL, SHEET_STATE_SCROLLING})
     @Retention(RetentionPolicy.SOURCE)
     public @interface SheetState {}
     public static final int SHEET_STATE_PEEK = 0;
     public static final int SHEET_STATE_HALF = 1;
     public static final int SHEET_STATE_FULL = 2;
+    public static final int SHEET_STATE_SCROLLING = 3;
 
     /**
      * The base duration of the settling animation of the sheet. 218 ms is a spec for material
@@ -118,8 +119,11 @@ public class BottomSheet
     /** The height of the view that contains the bottom sheet. */
     private float mContainerHeight;
 
-    /** The current sheet state. If the sheet is moving, this will be the target state. */
+    /** The current state that the sheet is in. */
     private int mCurrentState;
+
+    /** The target sheet state. This is the state that the sheet is currently moving to. */
+    private int mTargetState;
 
     /** Used for getting the current tab. */
     private TabModelSelector mTabModelSelector;
@@ -250,6 +254,7 @@ public class BottomSheet
             float newOffset = getSheetOffsetFromBottom() + distanceY;
             setSheetOffsetFromBottom(MathUtils.clamp(newOffset, getMinOffset(), getMaxOffset()));
 
+            setInternalCurrentState(SHEET_STATE_SCROLLING);
             mIsScrolling = true;
             return true;
         }
@@ -390,7 +395,7 @@ public class BottomSheet
                 updateSheetDimensions();
 
                 cancelAnimation();
-                setSheetState(mCurrentState, false);
+                setSheetState(mTargetState, false);
             }
         });
 
@@ -408,7 +413,7 @@ public class BottomSheet
                 updateSheetDimensions();
 
                 cancelAnimation();
-                setSheetState(mCurrentState, false);
+                setSheetState(mTargetState, false);
             }
         });
 
@@ -655,7 +660,7 @@ public class BottomSheet
      * @param targetState The target state.
      */
     private void createSettleAnimation(@SheetState int targetState) {
-        mCurrentState = targetState;
+        mTargetState = targetState;
         mSettleAnimator = ValueAnimator.ofFloat(
                 getSheetOffsetFromBottom(), getSheetHeightForState(targetState));
         mSettleAnimator.setDuration(BASE_ANIMATION_DURATION_MS);
@@ -666,6 +671,7 @@ public class BottomSheet
             @Override
             public void onAnimationEnd(Animator animator) {
                 mSettleAnimator = null;
+                setInternalCurrentState(mTargetState);
             }
         });
 
@@ -677,6 +683,7 @@ public class BottomSheet
         });
 
         mSettleAnimator.start();
+        setInternalCurrentState(SHEET_STATE_SCROLLING);
     }
 
     /**
@@ -791,24 +798,19 @@ public class BottomSheet
 
     /**
      * Moves the sheet to the provided state.
-     * @param state The state to move the panel to.
+     * @param state The state to move the panel to. This cannot be SHEET_STATE_SCROLLING.
      * @param animate If true, the sheet will animate to the provided state, otherwise it will
      *                move there instantly.
      */
     public void setSheetState(@SheetState int state, boolean animate) {
-        boolean stateChanged = state != mCurrentState;
-        mCurrentState = state;
+        assert state != SHEET_STATE_SCROLLING;
+        mTargetState = state;
 
         if (animate) {
             createSettleAnimation(state);
         } else {
             setSheetOffsetFromBottom(getSheetHeightForState(state));
-        }
-
-        if (!stateChanged) return;
-
-        for (BottomSheetObserver o : mObservers) {
-            o.onSheetStateChanged(mCurrentState);
+            setInternalCurrentState(mTargetState);
         }
     }
 
@@ -818,6 +820,20 @@ public class BottomSheet
      */
     public int getSheetState() {
         return mCurrentState;
+    }
+
+    /**
+     * Set the current state of the bottom sheet. This is for internal use to notify observers of
+     * state change events.
+     * @param state The current state of the sheet.
+     */
+    private void setInternalCurrentState(@SheetState int state) {
+        if (state == mCurrentState) return;
+        mCurrentState = state;
+
+        for (BottomSheetObserver o : mObservers) {
+            o.onSheetStateChanged(mCurrentState);
+        }
     }
 
     /**
