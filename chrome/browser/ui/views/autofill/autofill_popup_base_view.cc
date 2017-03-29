@@ -61,7 +61,6 @@ void AutofillPopupBaseView::DoShow() {
     show_time_ = base::Time::Now();
   }
 
-  // TODO(crbug.com/676164): Show different border color when focused/unfocused
   SetBorder(views::CreateSolidBorder(
       kPopupBorderThickness,
       GetNativeTheme()->GetSystemColor(
