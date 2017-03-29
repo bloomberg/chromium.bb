@@ -331,6 +331,7 @@ void WebEmbeddedWorkerImpl::loadShadowPage() {
 }
 
 void WebEmbeddedWorkerImpl::didFinishDocumentLoad(WebLocalFrame* frame) {
+  DCHECK_EQ(frame, m_mainFrame);
   DCHECK(!m_mainScriptLoader);
   DCHECK(m_mainFrame);
   DCHECK(m_workerContextClient);
