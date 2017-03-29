@@ -337,7 +337,8 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
     return m_collapsedBorderValues.get();
   }
   const DisplayItemClient& backgroundDisplayItemClient() const {
-    return m_rowBackgroundDisplayItemClient
+    return (m_rowBackgroundDisplayItemClient &&
+            usesCompositedCellDisplayItemClients())
                ? static_cast<const DisplayItemClient&>(
                      *m_rowBackgroundDisplayItemClient)
                : *this;
