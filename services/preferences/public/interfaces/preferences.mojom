@@ -112,8 +112,9 @@ interface PrefStoreConnector {
   // prefs in each store and an |observer| interfaces through which updates can
   // be received.
   [Sync]
-  Connect() => (PersistentPrefStoreConnection connection,
-                map<PrefStoreType, PrefStoreConnection> connections);
+  Connect(PrefRegistry pref_registry) =>
+      (PersistentPrefStoreConnection connection,
+       map<PrefStoreType, PrefStoreConnection> connections);
 };
 
 // An interface providing mutation access to a PersistentPrefStore.
@@ -126,6 +127,20 @@ interface PersistentPrefStore {
   CommitPendingWrite();
   SchedulePendingLossyWrites();
   ClearMutableValues();
+};
+
+// A registry of all prefs registered by a single client.
+struct PrefRegistry {
+  map<string, PrefRegistration> registrations;
+};
+
+struct PrefRegistration {
+  mojo.common.mojom.Value default_value;
+
+  // A bitfield of flags. Flag values are defined in
+  // PrefRegistry::PrefRegistrationFlags and
+  // PrefRegistrySyncable::PrefRegistrationFlags.
+  uint32 flags;
 };
 
 interface PrefServiceControl {

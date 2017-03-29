@@ -8,6 +8,7 @@
 
 #include "base/auto_reset.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "components/prefs/persistent_pref_store.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -18,10 +19,12 @@ class PersistentPrefStoreImpl::Connection : public mojom::PersistentPrefStore {
  public:
   Connection(PersistentPrefStoreImpl* pref_store,
              mojom::PersistentPrefStoreRequest request,
-             mojom::PrefStoreObserverPtr observer)
+             mojom::PrefStoreObserverPtr observer,
+             ObservedPrefs observed_keys)
       : pref_store_(pref_store),
         binding_(this, std::move(request)),
-        observer_(std::move(observer)) {
+        observer_(std::move(observer)),
+        observed_keys_(std::move(observed_keys)) {
     auto error_callback =
         base::Bind(&PersistentPrefStoreImpl::Connection::OnConnectionError,
                    base::Unretained(this));
@@ -32,7 +35,7 @@ class PersistentPrefStoreImpl::Connection : public mojom::PersistentPrefStore {
   ~Connection() override = default;
 
   void OnPrefValueChanged(const std::string& key, const base::Value* value) {
-    if (write_in_progress_)
+    if (write_in_progress_ || !base::ContainsKey(observed_keys_, key))
       return;
 
     observer_->OnPrefChanged(key, value ? value->CreateDeepCopy() : nullptr);
@@ -56,10 +59,11 @@ class PersistentPrefStoreImpl::Connection : public mojom::PersistentPrefStore {
   void OnConnectionError() { pref_store_->OnConnectionError(this); }
 
   // Owns |this|.
-  PersistentPrefStoreImpl* pref_store_;
+  PersistentPrefStoreImpl* const pref_store_;
 
   mojo::Binding<mojom::PersistentPrefStore> binding_;
   mojom::PrefStoreObserverPtr observer_;
+  const ObservedPrefs observed_keys_;
 
   // If true then a write is in progress and any update notifications should be
   // ignored, as those updates would originate from ourselves.
@@ -87,7 +91,7 @@ PersistentPrefStoreImpl::~PersistentPrefStoreImpl() {
 }
 
 mojom::PersistentPrefStoreConnectionPtr
-PersistentPrefStoreImpl::CreateConnection() {
+PersistentPrefStoreImpl::CreateConnection(ObservedPrefs observed_prefs) {
   DCHECK(!initializing_);
   if (!backing_pref_store_->IsInitializationComplete()) {
     // |backing_pref_store_| initialization failed.
@@ -100,7 +104,8 @@ PersistentPrefStoreImpl::CreateConnection() {
   mojom::PrefStoreObserverRequest observer_request =
       mojo::MakeRequest(&observer);
   auto connection = base::MakeUnique<Connection>(
-      this, mojo::MakeRequest(&pref_store_ptr), std::move(observer));
+      this, mojo::MakeRequest(&pref_store_ptr), std::move(observer),
+      std::move(observed_prefs));
   auto* connection_ptr = connection.get();
   connections_.insert(std::make_pair(connection_ptr, std::move(connection)));
   return mojom::PersistentPrefStoreConnection::New(

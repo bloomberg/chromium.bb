@@ -163,8 +163,7 @@ class PrefServiceFactoryTest : public base::MessageLoop::DestructionObserver,
 TEST_F(PrefServiceFactoryTest, Basic) {
   auto pref_service = Create();
 
-  // TODO(tibell): Once we have a default store check the value prior to
-  // setting.
+  EXPECT_EQ(kInitialValue, pref_service->GetInteger(kKey));
   pref_service->SetInteger(kKey, kUpdatedValue);
   EXPECT_EQ(kUpdatedValue, pref_service->GetInteger(kKey));
 }
@@ -174,8 +173,8 @@ TEST_F(PrefServiceFactoryTest, MultipleClients) {
   auto pref_service = Create();
   auto pref_service2 = Create();
 
-  // TODO(tibell): Once we have a default store check the value prior to
-  // setting.
+  EXPECT_EQ(kInitialValue, pref_service->GetInteger(kKey));
+  EXPECT_EQ(kInitialValue, pref_service2->GetInteger(kKey));
   pref_service->SetInteger(kKey, kUpdatedValue);
   WaitForPrefChange(pref_service2.get(), kKey);
   EXPECT_EQ(kUpdatedValue, pref_service2->GetInteger(kKey));

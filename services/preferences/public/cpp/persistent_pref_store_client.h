@@ -17,6 +17,8 @@ namespace base {
 class Value;
 }
 
+class PrefRegistry;
+
 namespace prefs {
 
 // An implementation of PersistentPrefStore backed by a
@@ -24,7 +26,8 @@ namespace prefs {
 class PersistentPrefStoreClient
     : public PrefStoreClientMixin<PersistentPrefStore> {
  public:
-  explicit PersistentPrefStoreClient(mojom::PrefStoreConnectorPtr connector);
+  PersistentPrefStoreClient(mojom::PrefStoreConnectorPtr connector,
+                            scoped_refptr<PrefRegistry> pref_registry);
 
   explicit PersistentPrefStoreClient(
       mojom::PersistentPrefStoreConnectionPtr connection);
@@ -60,6 +63,7 @@ class PersistentPrefStoreClient
                      other_pref_stores);
 
   mojom::PrefStoreConnectorPtr connector_;
+  scoped_refptr<PrefRegistry> pref_registry_;
   bool read_only_ = false;
   PrefReadError read_error_ = PersistentPrefStore::PREF_READ_ERROR_NONE;
   mojom::PersistentPrefStorePtr pref_store_;

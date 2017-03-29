@@ -11,6 +11,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_value_store.h"
 #include "services/preferences/public/cpp/persistent_pref_store_client.h"
+#include "services/preferences/public/cpp/pref_registry_serializer.h"
 #include "services/preferences/public/cpp/pref_store_client.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -102,9 +103,11 @@ void ConnectToPrefService(service_manager::Connector* connector,
   connector->BindInterface(mojom::kPrefStoreServiceName, &connector_ptr->get());
   connector_ptr->get().set_connection_error_handler(base::Bind(
       &OnConnectError, connector_ptr, base::Passed(ConnectCallback{callback})));
-  connector_ptr->get()->Connect(base::Bind(&OnConnect, connector_ptr,
-                                           base::Passed(&pref_registry),
-                                           base::Passed(&callback)));
+  auto serialized_pref_registry = SerializePrefRegistry(*pref_registry);
+  connector_ptr->get()->Connect(
+      std::move(serialized_pref_registry),
+      base::Bind(&OnConnect, connector_ptr, base::Passed(&pref_registry),
+                 base::Passed(&callback)));
 }
 
 }  // namespace prefs

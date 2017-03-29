@@ -7,12 +7,16 @@
 #include <utility>
 
 #include "base/values.h"
+#include "components/prefs/pref_registry.h"
+#include "services/preferences/public/cpp/pref_registry_serializer.h"
 
 namespace prefs {
 
 PersistentPrefStoreClient::PersistentPrefStoreClient(
-    mojom::PrefStoreConnectorPtr connector)
-    : connector_(std::move(connector)) {
+    mojom::PrefStoreConnectorPtr connector,
+    scoped_refptr<PrefRegistry> pref_registry)
+    : connector_(std::move(connector)),
+      pref_registry_(std::move(pref_registry)) {
   DCHECK(connector_);
 }
 
@@ -78,10 +82,11 @@ PersistentPrefStore::PrefReadError PersistentPrefStoreClient::ReadPrefs() {
   std::unordered_map<PrefValueStore::PrefStoreType,
                      prefs::mojom::PrefStoreConnectionPtr>
       other_pref_stores;
-  if (!connector_->Connect(&connection, &other_pref_stores)) {
+  if (!connector_->Connect(SerializePrefRegistry(*pref_registry_), &connection,
+                           &other_pref_stores)) {
     NOTREACHED();
   }
-
+  pref_registry_ = nullptr;
   OnConnect(std::move(connection), std::move(other_pref_stores));
   return read_error_;
 }
@@ -89,8 +94,10 @@ PersistentPrefStore::PrefReadError PersistentPrefStoreClient::ReadPrefs() {
 void PersistentPrefStoreClient::ReadPrefsAsync(
     ReadErrorDelegate* error_delegate) {
   error_delegate_.reset(error_delegate);
-  connector_->Connect(base::Bind(&PersistentPrefStoreClient::OnConnect,
+  connector_->Connect(SerializePrefRegistry(*pref_registry_),
+                      base::Bind(&PersistentPrefStoreClient::OnConnect,
                                  base::Unretained(this)));
+  pref_registry_ = nullptr;
 }
 
 void PersistentPrefStoreClient::CommitPendingWrite() {

@@ -19,12 +19,15 @@
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
 
+class DefaultPrefStore;
+
 namespace base {
 class SequencedWorkerPool;
 }
 
 namespace prefs {
 class PersistentPrefStoreImpl;
+class PrefStoreImpl;
 
 // This class mediates the connection of clients who wants to read preferences
 // and the pref stores that store those preferences. Pref stores use the
@@ -55,7 +58,8 @@ class PrefStoreManagerImpl
                 mojom::PrefStorePtr pref_store_ptr) override;
 
   // mojom::PrefStoreConnector:
-  void Connect(const ConnectCallback& callback) override;
+  void Connect(mojom::PrefRegistryPtr pref_registry,
+               const ConnectCallback& callback) override;
 
   // service_manager::InterfaceFactory<PrefStoreConnector>:
   void Create(const service_manager::Identity& remote_identity,
@@ -85,7 +89,8 @@ class PrefStoreManagerImpl
 
   void ProcessPendingConnects();
 
-  void ConnectImpl(const ConnectCallback& callback);
+  void ConnectImpl(mojom::PrefRegistryPtr pref_registry,
+                   const ConnectCallback& callback);
 
   void OnPersistentPrefStoreReady();
 
@@ -97,14 +102,18 @@ class PrefStoreManagerImpl
 
   // We hold on to the connection request callbacks until all expected
   // PrefStores have registered.
-  std::vector<ConnectCallback> pending_callbacks_;
+  std::vector<std::pair<ConnectCallback, mojom::PrefRegistryPtr>>
+      pending_connects_;
 
   mojo::BindingSet<mojom::PrefStoreConnector> connector_bindings_;
   mojo::BindingSet<mojom::PrefStoreRegistry> registry_bindings_;
   std::unique_ptr<PersistentPrefStoreImpl> persistent_pref_store_;
   mojo::Binding<mojom::PrefServiceControl> init_binding_;
 
-  scoped_refptr<base::SequencedWorkerPool> worker_pool_;
+  const scoped_refptr<DefaultPrefStore> defaults_;
+  const std::unique_ptr<PrefStoreImpl> defaults_wrapper_;
+
+  const scoped_refptr<base::SequencedWorkerPool> worker_pool_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefStoreManagerImpl);
 };

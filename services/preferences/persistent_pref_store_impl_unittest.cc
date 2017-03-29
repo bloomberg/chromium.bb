@@ -91,6 +91,7 @@ class InitializationMockPersistentPrefStore : public InMemoryPrefStore {
 };
 
 constexpr char kKey[] = "path.to.key";
+constexpr char kOtherKey[] = "path.to.other_key";
 
 class PersistentPrefStoreImplTest : public testing::Test {
  public:
@@ -114,9 +115,13 @@ class PersistentPrefStoreImplTest : public testing::Test {
     pref_store_ = CreateConnection();
   }
 
-  scoped_refptr<PersistentPrefStore> CreateConnection() {
-    return make_scoped_refptr(
-        new PersistentPrefStoreClient(impl_->CreateConnection()));
+  scoped_refptr<PersistentPrefStore> CreateConnection(
+      PersistentPrefStoreImpl::ObservedPrefs observed_prefs =
+          PersistentPrefStoreImpl::ObservedPrefs()) {
+    if (observed_prefs.empty())
+      observed_prefs.insert({kKey, kOtherKey});
+    return make_scoped_refptr(new PersistentPrefStoreClient(
+        impl_->CreateConnection(std::move(observed_prefs))));
   }
 
   PersistentPrefStore* pref_store() { return pref_store_.get(); }
@@ -218,6 +223,33 @@ TEST_F(PersistentPrefStoreImplTest, WriteObservedByOtherClient) {
   const base::Value* output = nullptr;
   ASSERT_TRUE(other_pref_store->GetValue(kKey, &output));
   EXPECT_TRUE(value.Equals(output));
+}
+
+TEST_F(PersistentPrefStoreImplTest, UnregisteredPrefNotObservedByOtherClient) {
+  auto backing_pref_store = make_scoped_refptr(new InMemoryPrefStore());
+  CreateImpl(backing_pref_store);
+  EXPECT_TRUE(pref_store()->IsInitializationComplete());
+
+  PersistentPrefStoreImpl::ObservedPrefs observed_prefs;
+  observed_prefs.insert(kKey);
+
+  auto other_pref_store = CreateConnection(std::move(observed_prefs));
+  EXPECT_TRUE(other_pref_store->IsInitializationComplete());
+
+  pref_store()->SetValue(kOtherKey, base::MakeUnique<base::Value>(123), 0);
+  pref_store()->SetValue(kKey, base::MakeUnique<base::Value>("value"), 0);
+
+  PrefStoreObserverMock observer;
+  other_pref_store->AddObserver(&observer);
+  base::RunLoop run_loop;
+  EXPECT_CALL(observer, OnPrefValueChanged(kOtherKey)).Times(0);
+  EXPECT_CALL(observer, OnPrefValueChanged(kKey))
+      .Times(1)
+      .WillOnce(WithoutArgs(Invoke([&run_loop]() { run_loop.Quit(); })));
+  run_loop.Run();
+  other_pref_store->RemoveObserver(&observer);
+
+  EXPECT_FALSE(other_pref_store->GetValue(kOtherKey, nullptr));
 }
 
 TEST_F(PersistentPrefStoreImplTest,

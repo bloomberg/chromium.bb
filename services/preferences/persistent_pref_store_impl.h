@@ -22,6 +22,8 @@ namespace prefs {
 
 class PersistentPrefStoreImpl : public PrefStore::Observer {
  public:
+  using ObservedPrefs = std::set<std::string>;
+
   // If |initialized()| is false after construction, |on_initialized| will be
   // called when it becomes true.
   PersistentPrefStoreImpl(
@@ -31,7 +33,8 @@ class PersistentPrefStoreImpl : public PrefStore::Observer {
 
   ~PersistentPrefStoreImpl() override;
 
-  mojom::PersistentPrefStoreConnectionPtr CreateConnection();
+  mojom::PersistentPrefStoreConnectionPtr CreateConnection(
+      ObservedPrefs observed_prefs);
 
   bool initialized() { return !initializing_; }
 

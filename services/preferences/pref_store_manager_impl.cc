@@ -8,10 +8,12 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "components/prefs/default_pref_store.h"
 #include "components/prefs/pref_value_store.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/preferences/persistent_pref_store_factory.h"
 #include "services/preferences/persistent_pref_store_impl.h"
+#include "services/preferences/public/cpp/pref_store_impl.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 
 namespace prefs {
@@ -68,13 +70,6 @@ void ConnectionBarrier::Create(
 }
 
 void ConnectionBarrier::Init(const PrefStorePtrs& pref_store_ptrs) {
-  if (expected_connections_ == 0) {
-    // Degenerate case. We don't expect this, but it could happen in
-    // e.g. testing.
-    callback_.Run(std::move(persistent_pref_store_connection_),
-                  std::move(connections_));
-    return;
-  }
   for (const auto& ptr : pref_store_ptrs) {
     ptr.second->AddObserver(
         base::Bind(&ConnectionBarrier::OnConnect, this, ptr.first));
@@ -109,7 +104,13 @@ PrefStoreManagerImpl::PrefStoreManagerImpl(
     scoped_refptr<base::SequencedWorkerPool> worker_pool)
     : expected_pref_stores_(std::move(expected_pref_stores)),
       init_binding_(this),
-      worker_pool_(std::move(worker_pool)) {}
+      defaults_(new DefaultPrefStore),
+      defaults_wrapper_(base::MakeUnique<PrefStoreImpl>(
+          defaults_,
+          mojo::MakeRequest(&pref_store_ptrs_[PrefValueStore::DEFAULT_STORE]))),
+      worker_pool_(std::move(worker_pool)) {
+  expected_pref_stores_.insert(PrefValueStore::DEFAULT_STORE);
+}
 
 PrefStoreManagerImpl::~PrefStoreManagerImpl() = default;
 
@@ -133,11 +134,13 @@ void PrefStoreManagerImpl::Register(PrefValueStore::PrefStoreType type,
   }
 }
 
-void PrefStoreManagerImpl::Connect(const ConnectCallback& callback) {
+void PrefStoreManagerImpl::Connect(mojom::PrefRegistryPtr pref_registry,
+                                   const ConnectCallback& callback) {
   if (AllConnected()) {
-    ConnectImpl(callback);
+    ConnectImpl(std::move(pref_registry), callback);
   } else {
-    pending_callbacks_.push_back(callback);
+    pending_connects_.push_back(
+        std::make_pair(callback, std::move(pref_registry)));
   }
 }
 
@@ -202,14 +205,30 @@ bool PrefStoreManagerImpl::AllConnected() const {
 }
 
 void PrefStoreManagerImpl::ProcessPendingConnects() {
-  for (auto& connect : pending_callbacks_)
-    ConnectImpl(connect);
-  pending_callbacks_.clear();
+  for (auto& connect : pending_connects_)
+    ConnectImpl(std::move(connect.second), connect.first);
+  pending_connects_.clear();
 }
 
-void PrefStoreManagerImpl::ConnectImpl(const ConnectCallback& callback) {
+void PrefStoreManagerImpl::ConnectImpl(mojom::PrefRegistryPtr pref_registry,
+                                       const ConnectCallback& callback) {
+  PersistentPrefStoreImpl::ObservedPrefs observed_prefs;
+  for (auto& registration : pref_registry->registrations) {
+    observed_prefs.insert(registration.first);
+    const auto& key = registration.first;
+    auto& default_value = registration.second->default_value;
+    const base::Value* old_default = nullptr;
+    // TODO(sammc): Once non-owning registrations are supported, disallow
+    // multiple owners instead of just checking for consistent defaults.
+    if (defaults_->GetValue(key, &old_default))
+      DCHECK(old_default->Equals(default_value.get()));
+    else
+      defaults_->SetDefaultValue(key, std::move(default_value));
+  }
   ConnectionBarrier::Create(
-      pref_store_ptrs_, persistent_pref_store_->CreateConnection(), callback);
+      pref_store_ptrs_,
+      persistent_pref_store_->CreateConnection(std::move(observed_prefs)),
+      callback);
 }
 
 void PrefStoreManagerImpl::OnPersistentPrefStoreReady() {
