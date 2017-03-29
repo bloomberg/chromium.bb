@@ -145,8 +145,11 @@ Polymer({
         'languages)',
   ],
 
+  /** @private {?Function} */
+  boundOnInputMethodChanged_: null,
+
   /** @override */
-  created: function() {
+  attached: function() {
     this.languageSettingsPrivate =
         settings.languageSettingsPrivateApiForTest ||
         /** @type {!LanguageSettingsPrivate} */(chrome.languageSettingsPrivate);
@@ -195,13 +198,29 @@ Polymer({
     }
 
     Promise.all(promises).then(function(results) {
+      if (!this.isConnected) {
+        // Return early if this element was detached from the DOM before this
+        // async callback executes (can happen during testing).
+        return;
+      }
+
       this.createModel_(results[1], results[2], results[3], results[4]);
       this.resolver_.resolve();
     }.bind(this));
 
     if (cr.isChromeOS) {
+      this.boundOnInputMethodChanged_ = this.onInputMethodChanged_.bind(this);
       this.inputMethodPrivate.onChanged.addListener(
-          this.onInputMethodChanged_.bind(this));
+          assert(this.boundOnInputMethodChanged_));
+    }
+  },
+
+  /** @override */
+  detached: function() {
+    if (cr.isChromeOS) {
+      this.inputMethodPrivate.onChanged.removeListener(
+          assert(this.boundOnInputMethodChanged_));
+      this.boundOnInputMethodChanged_ = null;
     }
   },
 
