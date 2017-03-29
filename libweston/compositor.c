@@ -4474,7 +4474,7 @@ weston_output_move(struct weston_output *output, int x, int y)
  *
  * \internal
  */
-WL_EXPORT void
+static void
 weston_compositor_add_output(struct weston_compositor *compositor,
                              struct weston_output *output)
 {

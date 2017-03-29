@@ -1719,9 +1719,6 @@ void
 weston_output_move(struct weston_output *output, int x, int y);
 
 void
-weston_compositor_add_output(struct weston_compositor *compositor,
-                             struct weston_output *output);
-void
 weston_output_destroy(struct weston_output *output);
 void
 weston_output_transform_coordinate(struct weston_output *output,
