@@ -130,6 +130,16 @@ Background = function() {
     }
   });
 
+  Object.defineProperty(cvox.ChromeVox, 'typingEcho', {
+    get: function() {
+      var typingEcho = parseInt(localStorage['typingEcho'], 10) || 0;
+      return typingEcho;
+    },
+    set: function(value) {
+      localStorage['typingEcho'] = value;
+    }
+  });
+
   cvox.ExtensionBridge.addMessageListener(this.onMessage_);
 
   /** @type {!BackgroundKeyboardHandler} @private */
