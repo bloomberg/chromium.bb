@@ -18,6 +18,7 @@
 #include "components/app_modal/javascript_dialog_manager.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
+#include "ui/gfx/text_elider.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(JavaScriptDialogTabHelper);
 
@@ -151,13 +152,28 @@ void JavaScriptDialogTabHelper::RunJavaScriptDialog(
                   DismissalCause::SUBSEQUENT_DIALOG_SHOWN);
     }
 
+    // Enforce sane sizes. ElideRectangleString breaks horizontally, which isn't
+    // strictly needed, but it restricts the vertical size, which is crucial.
+    // This gives about 2000 characters, which is about the same as the
+    // AppModalDialogManager provides, but allows no more than 24 lines.
+    const int kMessageTextMaxRows = 24;
+    const int kMessageTextMaxCols = 80;
+    const size_t kDefaultPromptMaxSize = 2000;
+    base::string16 truncated_message_text;
+    gfx::ElideRectangleString(message_text, kMessageTextMaxRows,
+                              kMessageTextMaxCols, false,
+                              &truncated_message_text);
+    base::string16 truncated_default_prompt_text;
+    gfx::ElideString(default_prompt_text, kDefaultPromptMaxSize,
+                     &truncated_default_prompt_text);
+
     base::string16 title =
         AppModalDialogManager()->GetTitle(alerting_web_contents, origin_url);
     dialog_callback_ = callback;
     dialog_type_ = dialog_type;
     dialog_ = JavaScriptDialog::Create(
         parent_web_contents, alerting_web_contents, title, dialog_type,
-        message_text, default_prompt_text,
+        truncated_message_text, truncated_default_prompt_text,
         base::Bind(&JavaScriptDialogTabHelper::OnDialogClosed,
                    base::Unretained(this), callback));
 
