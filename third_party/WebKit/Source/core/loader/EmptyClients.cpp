@@ -75,7 +75,6 @@ class EmptyFrameScheduler : public WebFrameScheduler {
   RefPtr<WebTaskRunner> loadingTaskRunner() override;
   RefPtr<WebTaskRunner> timerTaskRunner() override;
   RefPtr<WebTaskRunner> unthrottledTaskRunner() override;
-  RefPtr<WebTaskRunner> suspendableTaskRunner() override;
 };
 
 RefPtr<WebTaskRunner> EmptyFrameScheduler::loadingTaskRunner() {
@@ -87,10 +86,6 @@ RefPtr<WebTaskRunner> EmptyFrameScheduler::timerTaskRunner() {
 }
 
 RefPtr<WebTaskRunner> EmptyFrameScheduler::unthrottledTaskRunner() {
-  return Platform::current()->mainThread()->getWebTaskRunner();
-}
-
-RefPtr<WebTaskRunner> EmptyFrameScheduler::suspendableTaskRunner() {
   return Platform::current()->mainThread()->getWebTaskRunner();
 }
 

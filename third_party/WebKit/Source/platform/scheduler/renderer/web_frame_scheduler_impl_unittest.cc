@@ -207,8 +207,6 @@ TEST_F(WebFrameSchedulerImplTest, SuspendAndResume) {
       BLINK_FROM_HERE, WTF::bind(&IncrementCounter, WTF::unretained(&counter)));
   web_frame_scheduler_->unthrottledTaskRunner()->postTask(
       BLINK_FROM_HERE, WTF::bind(&IncrementCounter, WTF::unretained(&counter)));
-  web_frame_scheduler_->suspendableTaskRunner()->postTask(
-      BLINK_FROM_HERE, WTF::bind(&IncrementCounter, WTF::unretained(&counter)));
 
   web_frame_scheduler_->setSuspended(true);
 
@@ -220,7 +218,7 @@ TEST_F(WebFrameSchedulerImplTest, SuspendAndResume) {
 
   EXPECT_EQ(1, counter);
   mock_task_runner_->RunUntilIdle();
-  EXPECT_EQ(4, counter);
+  EXPECT_EQ(3, counter);
 }
 
 }  // namespace scheduler
