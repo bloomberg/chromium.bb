@@ -374,8 +374,8 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, ResolutionLineConstraintsEmptiness) {
 }
 
 TEST_F(MediaStreamConstraintsUtilSetsTest, ResolutionBoxEmptiness) {
-  int kMin = 100;
-  int kMax = 200;
+  const int kMin = 100;
+  const int kMax = 200;
   // Max aspect ratio below box.
   ResolutionSet set(kMin, kMax, kMin, kMax, 0.4, 0.4);
   EXPECT_TRUE(set.IsEmpty());
@@ -574,9 +574,9 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, ResolutionGeneralSetClosestPoint) {
 TEST_F(MediaStreamConstraintsUtilSetsTest, ResolutionIdealIntersects) {
   ResolutionSet set(100, 1000, 100, 1000, 0.5, 2.0);
 
-  int kIdealHeight = 500;
-  int kIdealWidth = 1000;
-  double kIdealAspectRatio = 1.5;
+  const int kIdealHeight = 500;
+  const int kIdealWidth = 1000;
+  const double kIdealAspectRatio = 1.5;
 
   // Ideal height.
   {
@@ -661,12 +661,12 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, ResolutionIdealOutsideSinglePoint) {
   // This set is a triangle with vertices (100,100), (1000,100) and (1000,1000).
   ResolutionSet set(100, 1000, 100, 1000, 0.0, 1.0);
 
-  int kIdealHeight = 50;
-  int kIdealWidth = 1100;
-  double kIdealAspectRatio = 0.09;
-  Point kVertex1(100, 100);
-  Point kVertex2(1000, 100);
-  Point kVertex3(1000, 1000);
+  const int kIdealHeight = 50;
+  const int kIdealWidth = 1100;
+  const double kIdealAspectRatio = 0.09;
+  const Point kVertex1(100, 100);
+  const Point kVertex2(1000, 100);
+  const Point kVertex3(1000, 1000);
 
   // Ideal height.
   {
@@ -749,12 +749,12 @@ TEST_F(MediaStreamConstraintsUtilSetsTest,
   // This set is a triangle with vertices (100,100), (1000,100) and (1000,1000).
   ResolutionSet set(100, 1000, 100, 1000, 0.0, 1.0);
 
-  int kIdealHeight = 1100;
-  int kIdealWidth = 50;
-  double kIdealAspectRatio = 11.0;
-  Point kVertex1(100, 100);
-  Point kVertex2(1000, 100);
-  Point kVertex3(1000, 1000);
+  const int kIdealHeight = 1100;
+  const int kIdealWidth = 50;
+  const double kIdealAspectRatio = 11.0;
+  const Point kVertex1(100, 100);
+  const Point kVertex2(1000, 100);
+  const Point kVertex3(1000, 1000);
 
   // Ideal height.
   {

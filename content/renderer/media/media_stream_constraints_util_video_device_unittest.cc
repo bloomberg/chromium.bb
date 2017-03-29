@@ -247,7 +247,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
 
   constraint_factory_.Reset();
   // This value is lower than the minimum supported by sources.
-  double kLowAspectRatio = 0.01;
+  const double kLowAspectRatio = 0.01;
   constraint_factory_.basic().aspectRatio.setMax(kLowAspectRatio);
   result = SelectSettings();
   EXPECT_FALSE(result.HasValue());

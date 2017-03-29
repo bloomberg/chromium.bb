@@ -888,7 +888,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealAspectRatio) {
     constraint_factory_.basic().height.setMax(500);
     constraint_factory_.basic().width.setMin(100);
     constraint_factory_.basic().width.setMax(500);
-    const int kIdealAspectRatio = 2.0;
+    const double kIdealAspectRatio = 2.0;
     constraint_factory_.basic().aspectRatio.setIdeal(kIdealAspectRatio);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
@@ -1009,7 +1009,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealAspectRatio) {
 
 TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryExactFrameRate) {
   constraint_factory_.Reset();
-  const int kFrameRate = 45.0;
+  const double kFrameRate = 45.0;
   constraint_factory_.basic().frameRate.setExact(kFrameRate);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
@@ -1098,7 +1098,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealFrameRate) {
   // Unconstrained.
   {
     constraint_factory_.Reset();
-    const int kIdealFrameRate = 45.0;
+    const double kIdealFrameRate = 45.0;
     constraint_factory_.basic().frameRate.setIdeal(kIdealFrameRate);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
@@ -1109,8 +1109,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealFrameRate) {
   // Ideal greater than maximum.
   {
     constraint_factory_.Reset();
-    const int kIdealFrameRate = 45.0;
-    const int kMaxFrameRate = 30.0;
+    const double kIdealFrameRate = 45.0;
+    const double kMaxFrameRate = 30.0;
     constraint_factory_.basic().frameRate.setIdeal(kIdealFrameRate);
     constraint_factory_.basic().frameRate.setMax(kMaxFrameRate);
     auto result = SelectSettings();
@@ -1122,8 +1122,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealFrameRate) {
   // Ideal less than minimum.
   {
     constraint_factory_.Reset();
-    const int kIdealFrameRate = 45.0;
-    const int kMinFrameRate = 50.0;
+    const double kIdealFrameRate = 45.0;
+    const double kMinFrameRate = 50.0;
     constraint_factory_.basic().frameRate.setIdeal(kIdealFrameRate);
     constraint_factory_.basic().frameRate.setMin(kMinFrameRate);
     auto result = SelectSettings();
@@ -1135,9 +1135,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealFrameRate) {
   // Ideal within range.
   {
     constraint_factory_.Reset();
-    const int kIdealFrameRate = 45.0;
-    const int kMinFrameRate = 35.0;
-    const int kMaxFrameRate = 50.0;
+    const double kIdealFrameRate = 45.0;
+    const double kMinFrameRate = 35.0;
+    const double kMaxFrameRate = 50.0;
     constraint_factory_.basic().frameRate.setIdeal(kIdealFrameRate);
     constraint_factory_.basic().frameRate.setMin(kMinFrameRate);
     constraint_factory_.basic().frameRate.setMax(kMaxFrameRate);
