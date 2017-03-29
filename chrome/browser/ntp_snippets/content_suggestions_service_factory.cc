@@ -116,6 +116,14 @@ using translate::LanguageModel;
 
 namespace {
 
+bool IsChromeHomeEnabled() {
+#if defined(OS_ANDROID)
+  return base::FeatureList::IsEnabled(chrome::android::kChromeHomeFeature);
+#else
+  return false;
+#endif
+}
+
 #if defined(OS_ANDROID)
 
 bool IsRecentTabProviderEnabled() {
@@ -332,9 +340,12 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   }
 
   bool show_asset_downloads =
+      !IsChromeHomeEnabled() &&
       base::FeatureList::IsEnabled(features::kAssetDownloadSuggestionsFeature);
-  bool show_offline_page_downloads = base::FeatureList::IsEnabled(
-      features::kOfflinePageDownloadSuggestionsFeature);
+  bool show_offline_page_downloads =
+      !IsChromeHomeEnabled() &&
+      base::FeatureList::IsEnabled(
+          features::kOfflinePageDownloadSuggestionsFeature);
   if (show_asset_downloads || show_offline_page_downloads) {
     RegisterDownloadsProvider(
         show_offline_page_downloads ? offline_page_model : nullptr,
@@ -345,7 +356,7 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
 
   // |bookmark_model| can be null in tests.
   if (base::FeatureList::IsEnabled(ntp_snippets::kBookmarkSuggestionsFeature) &&
-      bookmark_model) {
+      bookmark_model && !IsChromeHomeEnabled()) {
     RegisterBookmarkProvider(bookmark_model, service, pref_service);
   }
 
