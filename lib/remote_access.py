@@ -689,7 +689,10 @@ class RemoteDevice(object):
   def CopyToDevice(self, src, dest, mode, **kwargs):
     """Copy path to device.
 
-    @param mode: can be either 'rsync' or 'scp'.
+    Args:
+      src: Local path as a string.
+      dest: rsync/scp path of the form <host>:/<path> as a string.
+      mode: can be either 'rsync' or 'scp'.
         * Use rsync --compress when copying compressible (factor > 2, text/log)
         files. This uses a quite a bit of CPU but preserves bandwidth.
         * Use rsync without compression when delta transfering a whole directory
@@ -717,8 +720,12 @@ class RemoteDevice(object):
   def CopyFromDevice(self, src, dest, mode='rsync', **kwargs):
     """Copy path from device.
 
-    @param mode: See comment in CopyToDevice. But devices usually produce log
-        files so using 'rsync' with '--compress' might be a good choice here.
+    Adding --compress recommended for text like log files.
+
+    Args:
+      src: rsync/scp path of the form <host>:/<path> as a string.
+      dest: Local path as a string.
+      mode: See mode on CopyToDevice.
     """
     msg = 'Could not copy %s from device.' % src
     # Fall back to scp if device has no rsync. Happens when stateful is cleaned.
