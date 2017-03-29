@@ -10,6 +10,7 @@
 
 function test()
 {
+    var testMapping = InspectorTest.initializeTestMapping();
     var fs = new InspectorTest.TestFileSystem("file:///var/www");
     InspectorTest.addFooJSFile(fs);
     fs.reportCreated(function() { });
@@ -27,7 +28,7 @@ function test()
         function addFileSystemMapping(next)
         {
             InspectorTest.addSniffer(Persistence.Persistence.prototype, '_prevalidationFailedForTest', onPrevalidationFailed);
-            Workspace.fileSystemMapping.addFileMapping(fs.fileSystemPath, "http://127.0.0.1:8000", "/");
+            testMapping.addBinding('foo.js');
 
             function onPrevalidationFailed(binding)
             {

@@ -8,6 +8,7 @@
 
 async function test()
 {
+    var testMapping = InspectorTest.initializeTestMapping();
     // Pretend we are running under V8 front-end.
     SDK.targetManager.mainTarget().setIsNodeJSForTest();
 
@@ -31,10 +32,10 @@ async function test()
     // Add filesystem UISourceCode and mapping.
     var fs = new InspectorTest.TestFileSystem("file:///var/www");
     var fsEntry = fs.root.addFile("nodejs.js", fsContent);
-    fs.addFileMapping("http://127.0.0.1:8000", "/");
     fs.reportCreated(function() { });
 
     var binding;
+    testMapping.addBinding("nodejs.js");
     InspectorTest.waitForBinding("nodejs.js").then(onBindingCreated);
 
     function onBindingCreated(theBinding)

@@ -11,6 +11,7 @@
 
 function test()
 {
+    InspectorTest.forceUseDefaultMapping();
     var fs = new InspectorTest.TestFileSystem("file:///var/www");
     var folder = fs.root.mkdir("inspector").mkdir("persistence").mkdir("resources");
     folder.addFile("foo.js", "\n\nwindow.foo = ()=>'foo';");

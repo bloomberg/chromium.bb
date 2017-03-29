@@ -10,6 +10,7 @@
 
 function test()
 {
+    InspectorTest.initializeTestMapping();
     InspectorTest.overrideNetworkModificationTime({
         "http://127.0.0.1:8000/inspector/persistence/resources/sourcemap-name-clash/out.js": null
     });

@@ -15,6 +15,7 @@ body {
 
 function test()
 {
+    var testMapping = InspectorTest.initializeTestMapping();
     var fsUISourceCode, fs;
 
     InspectorTest.runTestSuite([
@@ -34,7 +35,7 @@ function test()
 
         function waitForPersistenceBinding(next)
         {
-            Workspace.fileSystemMapping.addFileMapping(fs.fileSystemPath, "http://127.0.0.1:8000/", "/");
+            testMapping.addBinding('simple.css');
             InspectorTest.waitForBinding('simple.css').then(onBinding);
 
             function onBinding(binding)

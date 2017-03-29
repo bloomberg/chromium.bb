@@ -14,8 +14,8 @@ function addFooJS() {
 
 function test()
 {
+    var testMapping = InspectorTest.initializeTestMapping();
     var fs = new InspectorTest.TestFileSystem('file:///var/www');
-    fs.addFileMapping('http://127.0.0.1:8000', '/');
     InspectorTest.addFooJSFile(fs);
 
     InspectorTest.runTestSuite([
@@ -27,6 +27,7 @@ function test()
         function addNetworkFooJS(next)
         {
             InspectorTest.evaluateInPage('addFooJS()');
+            testMapping.addBinding('foo.js');
             InspectorTest.waitForBinding('foo.js').then(next);
         },
 
@@ -43,12 +44,16 @@ function test()
             }
         },
 
-        function reloadPageAndDumpBreakpoints(next)
+        async function reloadPageAndDumpBreakpoints(next)
         {
-            Promise.all([
+            testMapping.removeBinding('foo.js');
+            await Promise.all([
                 InspectorTest.waitBreakpointSidebarPane(),
                 InspectorTest.reloadPagePromise()
-            ]).then(dumpBreakpointSidebarPane).then(next);
+            ]);
+            testMapping.addBinding('foo.js');
+            dumpBreakpointSidebarPane();
+            next();
         },
     ]);
 

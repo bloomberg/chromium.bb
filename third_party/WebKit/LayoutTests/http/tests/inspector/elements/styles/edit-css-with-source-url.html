@@ -4,92 +4,51 @@
 <script src="../../debugger-test.js"></script>
 <script src="../../elements-test.js"></script>
 <script src="../../isolated-filesystem-test.js"></script>
-<script>
-function loadStylesheet(line0, line1, line2)
-{
-    var styleText = "#inspected {\n    color: red;\n}\n";
-    var styleElement = document.createElement("style");
-    styleElement.type = "text/css";
-    var sourceURL = "http://localhost:8000/inspector/elements/styles/foo.css";
-    var stylesheetContent = styleText + "\n/*# sourceURL=" + sourceURL + " */";
-    styleElement.textContent = stylesheetContent;
-    document.head.appendChild(styleElement);
+<style>#inspected {
+    color: red;
 }
+/*# sourceURL=http://localhost:8000/inspector/elements/styles/foo.css */
+</style>
+<script>
 
-function test()
+async function test()
 {
-    InspectorTest.runTestSuite([
-        function testEditingRulesInElementsPanelDoesNotAddSourceURLToOriginalFile(next)
-        {
-            var fileSystemPath = "file:///var/www";
+    InspectorTest.markStep('testEditingRulesInElementsPanelDoesNotAddSourceURLToOriginalFile');
 
-            function dumpUISourceCodeContents()
-            {
-                InspectorTest.addResult("Dumping uiSourceCode content:");
-                InspectorTest.addResult(uiSourceCode.workingCopy());
-            }
+    var uiSourceCode = await InspectorTest.waitForUISourceCode('foo.css');
+    await uiSourceCode.requestContent();
+    InspectorTest.addResult("Dumping uiSourceCode content:");
+    InspectorTest.addResult(uiSourceCode.workingCopy());
+    InspectorTest.selectNodeAndWaitForStyles("inspected", nodeSelected);
 
-            InspectorTest.addResult("Adding file system.");
-            var fs = new InspectorTest.TestFileSystem(fileSystemPath);
-            fs.root.addFile("foo.css", "#inspected {\n    color: red;\n}\n");
-            InspectorTest.addResult("Adding file system mapping.");
-            fs.addFileMapping("http://localhost:8000/inspector/elements/styles/", "/");
-            fs.reportCreated(fileSystemCreated);
+    var uiSourceCode;
 
-            var uiSourceCode;
+    function nodeSelected()
+    {
+        InspectorTest.addResult("Dumping matched rules:");
+        InspectorTest.dumpSelectedElementStyles(true);
+        InspectorTest.addResult("Editing styles from elements panel:");
+        var treeElement = InspectorTest.getMatchedStylePropertyTreeItem("color");
+        treeElement.startEditing();
+        treeElement.nameElement.textContent = "color";
+        treeElement.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
 
-            function fileSystemCreated()
-            {
-                var fileSystemProjectId = Persistence.FileSystemWorkspaceBinding.projectId(fileSystemPath);
-                uiSourceCode = Workspace.workspace.uiSourceCode(fileSystemProjectId, "file:///var/www/foo.css");
-                InspectorTest.showUISourceCode(uiSourceCode, didShowScriptSource);
-            }
+        // Commit editing.
+        treeElement.valueElement.textContent = "green";
+        treeElement.valueElement.firstChild.select();
+        treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+        uiSourceCode.addEventListener(Workspace.UISourceCode.Events.WorkingCopyCommitted, stylesEdited, this);
+    }
 
-            function didShowScriptSource(sourceFrame)
-            {
-                dumpUISourceCodeContents();
-                InspectorTest.addResult("Loading stylesheet with sourceURL:");
-                InspectorTest.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetAdded, stylesheetLoaded);
-                InspectorTest.evaluateInPage("loadStylesheet()");
-            }
-  
-            function stylesheetLoaded(event)
-            {
-                if (!event.data.sourceURL.includes("foo.css"))
-                    return;
-                InspectorTest.cssModel.removeEventListener(SDK.CSSModel.Events.StyleSheetAdded, stylesheetLoaded);
-                InspectorTest.addResult("Stylesheet loaded.");
-                InspectorTest.selectNodeAndWaitForStyles("inspected", nodeSelected);
-            }
-
-            function nodeSelected()
-            {
-                InspectorTest.addResult("Dumping matched rules:");
-                InspectorTest.dumpSelectedElementStyles(true);
-                InspectorTest.addResult("Editing styles from elements panel:");
-                treeElement = InspectorTest.getMatchedStylePropertyTreeItem("color");
-                treeElement.startEditing();
-                treeElement.nameElement.textContent = "color";
-                treeElement.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-
-                // Commit editing.
-                treeElement.valueElement.textContent = "green";
-                treeElement.valueElement.firstChild.select();
-                treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-                uiSourceCode.addEventListener(Workspace.UISourceCode.Events.WorkingCopyCommitted, stylesEdited, this);
-            }
-
-            function stylesEdited()
-            {
-                InspectorTest.addResult("Styles edited.");
-                InspectorTest.addResult("Dumping matched rules:");
-                InspectorTest.dumpSelectedElementStyles(true);
-                dumpUISourceCodeContents();
-                InspectorTest.addResult("All done.");
-                next();
-            }
-        }
-    ]);
+    function stylesEdited()
+    {
+        InspectorTest.addResult("Styles edited.");
+        InspectorTest.addResult("Dumping matched rules:");
+        InspectorTest.dumpSelectedElementStyles(true);
+        InspectorTest.addResult("Dumping uiSourceCode content:");
+        InspectorTest.addResult(uiSourceCode.workingCopy());
+        InspectorTest.completeTest();
+    }
 };
 </script>
 </head>

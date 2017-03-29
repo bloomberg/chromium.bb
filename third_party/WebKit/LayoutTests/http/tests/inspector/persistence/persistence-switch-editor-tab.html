@@ -9,6 +9,7 @@
 
 function test()
 {
+    var testMapping = InspectorTest.initializeTestMapping();
     InspectorTest.runTestSuite([
         function openNetworkTab(next)
         {
@@ -26,9 +27,9 @@ function test()
         function addMapping(next)
         {
             var fs = new InspectorTest.TestFileSystem("file:///var/www");
-            fs.addFileMapping("http://127.0.0.1:8000", "/");
             InspectorTest.addFooJSFile(fs);
             fs.reportCreated(function() { });
+            testMapping.addBinding("foo.js");
             InspectorTest.waitForBinding("foo.js").then(onBindingCreated);
 
             function onBindingCreated()

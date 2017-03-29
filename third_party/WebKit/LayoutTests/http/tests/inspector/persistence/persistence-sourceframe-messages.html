@@ -9,6 +9,7 @@
 
 function test()
 {
+    var testMapping = InspectorTest.initializeTestMapping();
     var fs = new InspectorTest.TestFileSystem("file:///var/www");
     InspectorTest.addFooJSFile(fs);
     var networkSourceCode;
@@ -49,8 +50,8 @@ function test()
 
         function addMapping(next)
         {
+            testMapping.addBinding("foo.js");
             InspectorTest.waitForBinding("foo.js").then(onBindingCreated);
-            Workspace.fileSystemMapping.addFileMapping(fs.fileSystemPath, "http://127.0.0.1:8000", "/");
 
             function onBindingCreated(binding)
             {
@@ -63,7 +64,7 @@ function test()
         function removeMapping(next)
         {
             Persistence.persistence.addEventListener(Persistence.Persistence.Events.BindingRemoved, onBindingRemoved);
-            Workspace.fileSystemMapping.removeFileMapping(fs.fileSystemPath, "http://127.0.0.1:8000", "/");
+            testMapping.removeBinding("foo.js");
 
             function onBindingRemoved(event)
             {
