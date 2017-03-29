@@ -35,7 +35,7 @@ header {
 
 #navbar-content-title {
   color: black;
-  font-size: 15px;
+  font-size: 1.25em;
   font-weight: normal;
   margin: 0;
   padding-bottom: 6px;
@@ -74,8 +74,13 @@ header {
 }
 
 .right-column .radio input[type='radio'] {
-  height: 13px;
-  width: 13px;
+  height: 1.1em;
+  width: 1.1em;
+}
+
+.right-column label input[type='checkbox'] {
+  height: 1.1em;
+  width: 1.1em;
 }
 
 .left-column {
@@ -88,7 +93,7 @@ header {
 
 .left-column h1 {
   color: #646464;
-  font-size: 12px;
+  font-size: 1em;
   margin-bottom: 0;
   margin-top: 0;
 }
@@ -152,7 +157,7 @@ span.hint {
   font-size: 0.9em;
   font-weight: bold;
   height: 0;
-  line-height: 10px;
+  line-height: 1em;
   margin: 0;
   overflow: hidden;
   transition: color 200ms;

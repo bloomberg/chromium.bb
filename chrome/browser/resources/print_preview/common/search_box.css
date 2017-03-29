@@ -10,15 +10,15 @@
 .search-box-icon {
   -webkit-user-select: none;
   display: inline-block;
-  height: 12px;
+  height: 1em;
   left: 8px;
   position: absolute;
   right: 8px;
   top: 6px;
-  width: 12px;
+  width: 1em;
 }
 
 .search-box-input {
-  text-indent: 24px;
+  text-indent: 2em;
   width: 100%;
 }

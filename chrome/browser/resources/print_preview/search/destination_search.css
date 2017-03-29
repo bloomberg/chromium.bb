@@ -17,22 +17,13 @@
 }
 
 #destination-search .user-info {
+  -webkit-padding-start: 18px;
   display: flex;
-  position: absolute;
-  right: 40px;
-  text-align: right;
-  top: 14px;
-  width: 350px;
-}
-
-[dir='rtl'] #destination-search .user-info {
-  left: 40px;
-  right: auto;
+  padding-bottom: 14px;
 }
 
 #destination-search .account-select-label {
   -webkit-user-select: none;
-  flex: 1;
   height: 2em;
   line-height: 2em;
   overflow: hidden;
@@ -41,8 +32,8 @@
 }
 
 #destination-search .account-select {
-  flex: 1;
-  margin-left: 8px;
+  -webkit-margin-start: 18px;
+  width: auto;
 }
 
 #destination-search > .page > .close-button {
