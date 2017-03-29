@@ -19,7 +19,6 @@ import org.chromium.base.StreamUtil;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.components.background_task_scheduler.TaskIds;
@@ -80,11 +79,8 @@ public class MinidumpUploadService extends IntentService {
      *     creating a service for uploading.
      */
     public static boolean shouldUseJobSchedulerForUploads() {
-        // The JobScheduler API is only available as of Android M.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return false;
-
-        return ChromeFeatureList.isEnabled(
-                ChromeFeatureList.UPLOAD_CRASH_REPORTS_USING_JOB_SCHEDULER);
+        // The JobScheduler API is only usable as of Android M.
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
     }
 
     /**

@@ -15,7 +15,6 @@ import android.support.test.filters.MediumTest;
 
 import org.chromium.base.StreamUtil;
 import org.chromium.base.test.util.AdvancedMockContext;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.minidump_uploader.CrashFileManager;
 import org.chromium.components.minidump_uploader.CrashTestCase;
@@ -26,9 +25,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Unittests for {@link LogcatExtractionRunnable}.
@@ -91,9 +88,6 @@ public class LogcatExtractionRunnableTest extends CrashTestCase {
 
         @Override
         public ComponentName startService(Intent intent) {
-            assertFalse("Should only start a service directly when the job scheduler is disabled.",
-                    ChromeFeatureList.isEnabled(
-                            ChromeFeatureList.UPLOAD_CRASH_REPORTS_USING_JOB_SCHEDULER));
             ++mNumServiceStarts;
             assertEquals(1, mNumServiceStarts);
             assertEquals(
@@ -107,9 +101,6 @@ public class LogcatExtractionRunnableTest extends CrashTestCase {
         @Override
         public Object getSystemService(String name) {
             if (Context.JOB_SCHEDULER_SERVICE.equals(name)) {
-                assertTrue("Should only access the JobScheduler when it is enabled.",
-                        ChromeFeatureList.isEnabled(
-                                ChromeFeatureList.UPLOAD_CRASH_REPORTS_USING_JOB_SCHEDULER));
                 return new TestJobScheduler();
             }
 
@@ -121,23 +112,6 @@ public class LogcatExtractionRunnableTest extends CrashTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         mCrashDir = new CrashFileManager(mCacheDir).getCrashDirectory();
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        ChromeFeatureList.setTestFeatures(null);
-        super.tearDown();
-    }
-
-    /**
-     * Sets whether to upload minidumps using the JobScheduler API. Minidumps can either be uploaded
-     * via a JobScheduler, or via a direct Intent service.
-     * @param enable Whether to enable the JobScheduler API.
-     */
-    private void setJobSchedulerEnabled(boolean enable) {
-        Map<String, Boolean> features = new HashMap<>();
-        features.put(ChromeFeatureList.UPLOAD_CRASH_REPORTS_USING_JOB_SCHEDULER, enable);
-        ChromeFeatureList.setTestFeatures(features);
     }
 
     /**
@@ -190,7 +164,9 @@ public class LogcatExtractionRunnableTest extends CrashTestCase {
 
     @MediumTest
     public void testSimpleExtraction_SansJobScheduler() throws IOException {
-        setJobSchedulerEnabled(false);
+        // The JobScheduler API is used as of Android M+.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) return;
+
         final File minidump = createMinidump("test.dmp");
         Context testContext = new TestContext(getInstrumentation().getTargetContext());
 
@@ -205,7 +181,6 @@ public class LogcatExtractionRunnableTest extends CrashTestCase {
         // The JobScheduler API is only available as of Android M.
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return;
 
-        setJobSchedulerEnabled(true);
         final File minidump = createMinidump("test.dmp");
         Context testContext = new TestContext(getInstrumentation().getTargetContext());
 

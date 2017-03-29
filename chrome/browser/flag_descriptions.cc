@@ -1131,19 +1131,6 @@ const char kServiceWorkerNavigationPreloadDescription[] =
     "Enable web pages to use the experimental service worker navigation "
     "preload API.";
 
-#if defined(OS_ANDROID)
-
-const char kUploadCrashReportsUsingJobSchedulerName[] =
-    "Upload crash reports using JobScheduler API.";
-
-const char kUploadCrashReportsUsingJobSchedulerDescription[] =
-    "Use the JobScheduler API to upload crash reports. This does not affect "
-    "whether or not crash reports will be uploaded. Rather, *if* a crash "
-    "report is going to be uploaded, this flag affects *how* it is "
-    "uploaded.";
-
-#endif  // defined(OS_ANDROID)
-
 //  Data Reduction Proxy
 
 const char kDataReductionProxyLoFiName[] = "Data Saver Lo-Fi mode";

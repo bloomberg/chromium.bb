@@ -1238,18 +1238,6 @@ extern const char kServiceWorkerNavigationPreloadName[];
 // preload.
 extern const char kServiceWorkerNavigationPreloadDescription[];
 
-#if defined(OS_ANDROID)
-
-// Name of chrome:flags option to use the JobScheduler API for uploading crash
-// reports.
-extern const char kUploadCrashReportsUsingJobSchedulerName[];
-
-// Description of chrome:flags option to use the JobScheduler API for uploading
-// crash reports.
-extern const char kUploadCrashReportsUsingJobSchedulerDescription[];
-
-#endif  // defined(OS_ANDROID)
-
 //  Data Reduction Proxy
 
 // An about:flags experiment title to enable/disable Data Saver Lo-Fi
