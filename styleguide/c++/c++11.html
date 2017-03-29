@@ -200,7 +200,7 @@ enum <i>enumname</i> : <i>base-type</i></code></td>
 <td><code>void func() {<br />
 &nbsp;&nbsp;class Pred {<br />
 &nbsp;&nbsp;&nbsp;public:<br />
-&nbsp;&nbsp;&nbsp;&nbsp;bool operator()(const T&) { ... }<br />
+&nbsp;&nbsp;&nbsp;&nbsp;bool operator()(const T&amp;) { ... }<br />
 &nbsp;&nbsp;};<br />
 &nbsp;&nbsp;std::remove_if(vec.begin(), vec.end(), Pred());</code></td>
 <td>Allows local and unnamed types as template arguments</td>
@@ -213,7 +213,7 @@ enum <i>enumname</i> : <i>base-type</i></code></td>
 <td><code>void f() noexcept</code></td>
 <td>Specifies that a function will not throw exceptions</td>
 <td><a href="http://en.cppreference.com/w/cpp/language/noexcept_spec">noexcept specifier</a></td>
-<td>Chromium compiles without exception support, but there are still cases where explicitly marking a function as <code>noexcept</code> may be necessary to compile, or for performance reasons. Usage should be rare. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/8i4tMqNpHhg">Discussion thread</a></td>
+<td>Chromium compiles without exception support, but there are still cases where explicitly marking a function as <code>noexcept</code> may be necessary to compile, or for performance reasons. Use noexcept for move constructors whenever possible (see "Notes" section on <a href="http://en.cppreference.com/w/cpp/language/move_constructor">move constructors</a>). Other usage should be rare. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/8i4tMqNpHhg">Discussion thread</a></td>
 </tr>
 
 <tr>
@@ -247,13 +247,13 @@ enum <i>enumname</i> : <i>base-type</i></code></td>
 <td><code>for (<i>type</i> <i>var</i> : <i>range</i>)</code></td>
 <td>Facilitates a more concise syntax for iterating over the elements of a container (or a range of iterators) in a <code>for</code> loop</td>
 <td><a href="http://en.cppreference.com/w/cpp/language/range-for">Range-based for loop</a></td>
-<td>As a rule of thumb, use <code>for (const auto& ...)</code>, <code>for (auto& ...)</code>, or <code>for (<i>concrete type</i> ...)</code>. For pointers, use <code>for (auto* ...)</code> to make clear that the copy of the loop variable is intended, and only a pointer is copied. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/hpzz4EqbVmc">Discussion thread</a></td>
+<td>As a rule of thumb, use <code>for (const auto&amp; ...)</code>, <code>for (auto&amp; ...)</code>, or <code>for (<i>concrete type</i> ...)</code>. For pointers, use <code>for (auto* ...)</code> to make clear that the copy of the loop variable is intended, and only a pointer is copied. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/hpzz4EqbVmc">Discussion thread</a></td>
 </tr>
 
 <tr>
 <td>Rvalue References</td>
 <td><code>T(T&amp;&amp; t)</code> and <code>T&amp; operator=(T&amp;&amp; t)<br/><br/>
-template &lt;typename T&gt;<br/>void Function(T&& t) { ... }</code></td>
+template &lt;typename T&gt;<br/>void Function(T&amp;&amp; t) { ... }</code></td>
 <td>Reference that only binds to a temporary object</td>
 <td><a href="http://en.cppreference.com/w/cpp/language/reference#Rvalue_references">Rvalue references</a></td>
 <td>Only use these to define move constructors and move assignment operators, and for perfect forwarding. Most classes should not be copyable, even if movable. Continue to use DISALLOW_COPY_AND_ASSIGN in most cases. <a href="https://google.github.io/styleguide/cppguide.html#Rvalue_references">Google Style Guide</a>. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/UnRaORb4TSw">Discussion thread</a>. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/Q526tkruXpM">Another discussion thread</a></td>
@@ -277,7 +277,7 @@ template &lt;typename T&gt;<br/>void Function(T&& t) { ... }</code></td>
 
 <tr>
 <td>Trailing Return Types</td>
-<td><code>auto <i>function declaration</i> -> <i>return_type</i></code></td>
+<td><code>auto <i>function declaration</i> -&gt; <i>return_type</i></code></td>
 <td>Allows trailing function return value syntax</td>
 <td><a href="http://en.cppreference.com/w/cpp/language/function">Declaring functions</a></td>
 <td>Use only where it considerably improves readability. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/OQyYSfH9m2M">Discussion thread</a>. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/Lkp0nubVd0Q">Another discussion thread</a></td>
@@ -564,8 +564,8 @@ codebase.
 <tr>
 <td>Ref-qualified Member Functions</td>
 <td><code>class T {<br />
-&nbsp;&nbsp;void f() & {}<br />
-&nbsp;&nbsp;void f() && {}<br />
+&nbsp;&nbsp;void f() &amp; {}<br />
+&nbsp;&nbsp;void f() &amp;&amp; {}<br />
 };<br />
 t.f();&nbsp;&nbsp;// first<br />
 T().f();&nbsp;&nbsp;// second<br />
