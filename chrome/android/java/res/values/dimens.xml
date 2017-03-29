@@ -239,7 +239,6 @@
     <dimen name="toolbar_height_no_shadow">56dp</dimen>
     <dimen name="toolbar_shadow_height">8dp</dimen>
     <dimen name="toolbar_progress_bar_height">2dp</dimen>
-    <dimen name="chrome_home_progress_bar_height">4dp</dimen>
     <dimen name="toolbar_button_width">48dp</dimen>
     <dimen name="toolbar_handle_height">4dp</dimen>
     <dimen name="toolbar_handle_width">40dp</dimen>
@@ -433,11 +432,17 @@
     <dimen name="design_bottom_navigation_text_size">12sp</dimen>
     <dimen name="design_bottom_navigation_active_text_size">14sp</dimen>
 
+    <!-- Chrome Home dimensions -->
+    <dimen name="chrome_home_empty_view_top_padding">16dp</dimen>
+    <dimen name="chrome_home_full_height_from_top">24dp</dimen>
+    <dimen name="chrome_home_half_height_from_bottom">304dp</dimen>
+    <dimen name="chrome_home_min_full_half_distance">160dp</dimen>
+    <dimen name="chrome_home_progress_bar_height">4dp</dimen>
+
     <!--  Miscellaneous dimensions -->
     <dimen name="action_bar_shadow_height">10dp</dimen>
     <dimen name="card_corner_radius">2dp</dimen>
     <dimen name="list_item_corner_radius">3dp</dimen>
     <dimen name="list_item_lateral_padding">1dp</dimen>
     <dimen name="history_default_text_margin">16dp</dimen>
-    <dimen name="chrome_home_empty_view_top_padding">16dp</dimen>
 </resources>

@@ -87,7 +87,7 @@ public class BottomSheet
      */
     private static final int[] sStates =
             new int[] {SHEET_STATE_PEEK, SHEET_STATE_HALF, SHEET_STATE_FULL};
-    private final float[] mStateRatios = new float[] {0.0f, 0.55f, 0.95f};
+    private final float[] mStateRatios = new float[3];
 
     /** The interpolator that the height animator uses. */
     private final Interpolator mInterpolator = new DecelerateInterpolator(1.0f);
@@ -97,6 +97,15 @@ public class BottomSheet
 
     /** This is a cached array for getting the window location of different views. */
     private final int[] mLocationArray = new int[2];
+
+    /** The distance from the top the sheet should be when fully expanded. */
+    private final float mFullHeightDistanceFromTop;
+
+    /** The distance from the bottom the sheet should be when half expanded. */
+    private final float mHalfHeightDistanceFromBottom;
+
+    /** The minimum distance between half and full states to allow the half state. */
+    private final float mMinHalfFullDistance;
 
     /** For detecting scroll and fling events on the bottom sheet. */
     private GestureDetector mGestureDetector;
@@ -283,6 +292,15 @@ public class BottomSheet
      */
     public BottomSheet(Context context, AttributeSet atts) {
         super(context, atts);
+
+        mFullHeightDistanceFromTop =
+                getResources().getDimensionPixelSize(R.dimen.chrome_home_full_height_from_top);
+
+        mHalfHeightDistanceFromBottom =
+                getResources().getDimensionPixelSize(R.dimen.chrome_home_half_height_from_bottom);
+
+        mMinHalfFullDistance =
+                getResources().getDimensionPixelSize(R.dimen.chrome_home_min_full_half_distance);
 
         mVelocityTracker = VelocityTracker.obtain();
 
@@ -627,8 +645,11 @@ public class BottomSheet
 
         // Though mStateRatios is a static constant, the peeking ratio is computed here because
         // the correct toolbar height and container height are not know until those views are
-        // inflated.
+        // inflated. The other views are a specific DP distance from the top and bottom and are
+        // also updated.
         mStateRatios[0] = mToolbarHeight / mContainerHeight;
+        mStateRatios[1] = mHalfHeightDistanceFromBottom / mContainerHeight;
+        mStateRatios[2] = (mContainerHeight - mFullHeightDistanceFromTop) / mContainerHeight;
 
         // Compute the height that the content section of the bottom sheet.
         float contentHeight = (mContainerHeight * getFullRatio()) - mToolbarHeight;
@@ -878,8 +899,13 @@ public class BottomSheet
         if (sheetHeight <= getMinOffset()) return SHEET_STATE_PEEK;
         if (sheetHeight >= getMaxOffset()) return SHEET_STATE_FULL;
 
-        // When the sheet is moving downward skip the half state.
-        boolean shouldSkipHalfState = yVelocity < 0;
+        float fullToHalfDiff = (getFullRatio() - getHalfRatio()) * mContainerHeight;
+        boolean isMovingDownward = yVelocity < 0;
+
+        // A small screen is defined by there being less than 160dp between half and full states.
+        boolean isSmallScreen = fullToHalfDiff < mMinHalfFullDistance;
+
+        boolean shouldSkipHalfState = isMovingDownward || isSmallScreen;
 
         // First, find the two states that the sheet height is between.
         @SheetState
