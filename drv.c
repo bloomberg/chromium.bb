@@ -506,8 +506,8 @@ uint32_t drv_resolve_format(struct driver *drv, uint32_t format)
  */
 int drv_stride_from_format(uint32_t format, uint32_t width, size_t plane)
 {
-	int stride = width * DIV_ROUND_UP(drv_bpp_from_format(format, plane),
-					  8);
+	int stride = DIV_ROUND_UP(width * drv_bpp_from_format(format, plane),
+				  8);
 
 	/*
 	 * Only downsample for certain multiplanar formats which have horizontal
