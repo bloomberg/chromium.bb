@@ -208,15 +208,21 @@ env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
 
 # Test that the toolchain accepts both forms of --build-id and creates a GNU
 # build ID note section
-if not env.Bit('pnacl_generate_pexe') and env['TOOLCHAIN_FEATURE_VERSION'] >= 27:
+if env['TOOLCHAIN_FEATURE_VERSION'] >= 28:
   for flag, name in zip(['--build-id', '--build-id=sha1'], ['empty', 'sha1']):
     buildid_env = env.Clone()
     buildid_env.Append(LINKFLAGS=['-Wl,' + flag])
-    obj = buildid_env.ComponentObject('build_id.%s.o' % name, 'dummy.c')
-    nexe = buildid_env.ComponentProgram('build_id.%s.nexe' % name, obj,
+    obj = buildid_env.ComponentObject('build_id_%s' % name, 'dummy.c')
+    nexe = buildid_env.ComponentProgram('build_id_%s' % name, [obj],
                                         EXTRA_LIBS=['${NONIRT_LIBS}'])
+
+    # Check for the presence of the build ID. For the pexe case, this tests that
+    # pnacl-ld accepts the flag (but it doesn't do anything because it's not
+    # meaningful for pexes). However CommandTestFileDumpCheck gets the
+    # translated nexe and runs the check against that. Because translated nexes
+    # are also supposed to have build IDs, this test should pass there too.
     node = buildid_env.CommandTestFileDumpCheck(
-        'build_id.%s.out' % name, nexe,
+        'build_id_%s.out' % name, nexe,
         buildid_env.File('build_id_check_text'),
         '--headers')
     buildid_env.AddNodeToTestSuite(node, ['small_tests', 'toolchain_tests'],

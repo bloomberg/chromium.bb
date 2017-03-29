@@ -65,6 +65,8 @@ EXTRA_ENV = {
   # Flags for native linking.
   # Only allowed if ALLOW_NATIVE is true.
   'LD_FLAGS_NATIVE': '',
+  # Flags used for native linking, or ignored if ALLOW_NATIVE is not true.
+  'LD_FLAGS_NATIVE_OR_IGNORED': '',
 
   'SEARCH_DIRS'        : '${SEARCH_DIRS_USER} ${SEARCH_DIRS_BUILTIN}',
   'SEARCH_DIRS_USER'   : '',
@@ -132,6 +134,9 @@ def AddToBCLinkFlags(*args):
 
 def AddToNativeFlags(*args):
   env.append('LD_FLAGS_NATIVE', *args)
+
+def AddToNativeIgnoredFlags(*args):
+  env.append('LD_FLAGS_NATIVE_OR_IGNORED', *args)
 
 def AddToBothFlags(*args):
   env.append('LD_FLAGS', *args)
@@ -202,7 +207,7 @@ LDPatterns = [
   ( ('(-Ttext-segment=.*)'), AddToNativeFlags),
   ( ('(-Trodata-segment=.*)'), AddToNativeFlags),
   ( ('(--section-start)', '(.+)'), AddToNativeFlags),
-  ( ('(--build-id(?:=.+)?)'), AddToNativeFlags),
+  ( ('(--build-id(?:=.+)?)'), AddToNativeIgnoredFlags),
 
   # Flags to pass to translate
   ( '-Wt,(.*)', "env.append('TRANSLATE_FLAGS_USER', *($0.split(',')))"),
@@ -612,7 +617,8 @@ def DoFinalize(infile, outfile):
 
 def DoTranslate(infile, outfile):
   args = env.get('TRANSLATE_FLAGS')
-  args += ['-Wl,'+s for s in env.get('LD_FLAGS_NATIVE')]
+  args += ['-Wl,'+s for s in
+           env.get('LD_FLAGS_NATIVE') + env.get('LD_FLAGS_NATIVE_OR_IGNORED')]
   if infile:
     args += [infile]
   args += ['-Wl,'+s if ldtools.IsFlag(s) else s
