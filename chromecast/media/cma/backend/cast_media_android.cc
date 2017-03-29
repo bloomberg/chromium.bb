@@ -57,5 +57,12 @@ bool MediaCapabilitiesShlib::IsSupportedVideoConfig(VideoCodec codec,
   return false;
 }
 
+bool MediaCapabilitiesShlib::IsSupportedAudioConfig(const AudioConfig& config) {
+  // This should not be called directly.
+  NOTREACHED() << "Unexpected call to "
+               << "MediaCapabilitiesShlib::IsSupportedAudioConfig on Android";
+  return false;
+}
+
 }  // namespace media
 }  // namespace chromecast

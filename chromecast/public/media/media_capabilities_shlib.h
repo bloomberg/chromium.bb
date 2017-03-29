@@ -25,6 +25,9 @@ class CHROMECAST_EXPORT MediaCapabilitiesShlib {
   static bool IsSupportedVideoConfig(VideoCodec codec,
                                      VideoProfile profile,
                                      int level);
+
+  // Return true if the platform supports the given audio |config|.
+  static bool IsSupportedAudioConfig(const AudioConfig& config);
 };
 
 }  // namespace media

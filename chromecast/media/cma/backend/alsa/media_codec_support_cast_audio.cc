@@ -40,5 +40,10 @@ bool MediaCapabilitiesShlib::IsSupportedVideoConfig(VideoCodec codec,
   return (codec == kCodecH264 || codec == kCodecVP8 || codec == kCodecVP9);
 }
 
+bool MediaCapabilitiesShlib::IsSupportedAudioConfig(const AudioConfig& config) {
+  return config.codec == kCodecAAC || config.codec == kCodecMP3 ||
+         config.codec == kCodecPCM;
+}
+
 }  // namespace media
 }  // namespace chromecast
