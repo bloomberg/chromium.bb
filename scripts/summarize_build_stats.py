@@ -629,27 +629,6 @@ CQ run time was <b>{cq_run_time_50:.2f} hours</b> 50%ile <b>{cq_run_time_90:.2f}
 </table>
 </p>
 
-The tree <b>was:</b><br>
-<p id="note">
-Get this value from <a href="https://chromiumos-status.appspot.com/status_viewer?curView=stats&startTime=TODAY&numDays=7">here</a> (subtract 100% - %open - %throttled)
-</p>
-<b>
-<table>
-  <tr>
-    <td>Open</td>
-    <td>_<replace>REPLACE</replace>_</td>
-  </tr>
-  <tr>
-    <td>Throttle</td>
-    <td>_<replace>REPLACE</replace>_</td>
-  </tr>
-  <tr>
-    <td>Close</td>
-    <td>_<replace>REPLACE</replace>_</td>
-  </tr>
-</table>
-</b>
-
 <p>
 The pre-CQ + CQ <b>incorrectly rejected [{patch_flake_rejections}] unique changes a total of [{false_rejection_total}] times</b> this week. (Pre-CQ:[{false_rejection_pre_cq}]; CQ: [{false_rejection_cq}])<br>
 The probability of a good patch being incorrectly rejected by the CQ or Pre-CQ is [{false_rejection_rate[combined]:.2f}]%. (Pre-CQ:[{false_rejection_rate[pre-cq]:.2f}]%; CQ: [{false_rejection_rate[cq]:.2f}])<br>
