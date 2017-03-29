@@ -3,39 +3,39 @@ layer at (0,0) size 1066x799
 layer at (0,0) size 1066x799
   LayoutBlockFlow {HTML} at (0,0) size 1066x799
     LayoutBlockFlow {BODY} at (8,8) size 1050x783
-      LayoutText {#text} at (304,290) size 4x17
-        text run at (304,290) width 4: " "
+      LayoutText {#text} at (304,289) size 4x19
+        text run at (304,289) width 4: " "
       LayoutText {#text} at (0,0) size 0x0
 layer at (8,208) size 304x104
   LayoutIFrame {IFRAME} at (0,200) size 304x104 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 300x100
       LayoutView at (0,0) size 300x100
-    layer at (0,0) size 300x34
-      LayoutBlockFlow {HTML} at (0,0) size 300x34
-        LayoutBlockFlow {BODY} at (8,8) size 284x18
-          LayoutText {#text} at (0,0) size 245x17
-            text run at (0,0) width 245: "You should see this text when printed."
+    layer at (0,0) size 300x36
+      LayoutBlockFlow {HTML} at (0,0) size 300x36
+        LayoutBlockFlow {BODY} at (8,8) size 284x20
+          LayoutText {#text} at (0,0) size 228x19
+            text run at (0,0) width 228: "You should see this text when printed."
 layer at (316,8) size 304x304
   LayoutIFrame {IFRAME} at (308,0) size 304x304 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 300x300
       LayoutView at (0,0) size 300x300
-    layer at (40,0) size 260x300
-      LayoutBlockFlow {HTML} at (0,0) size 260x300
-        LayoutBlockFlow {BODY} at (8,8) size 244x284
-          LayoutText {#text} at (0,0) size 17x249
-            text run at (0,0) width 249: "You should see this text when printed. "
-          LayoutBR {BR} at (0,248) size 17x1
-          LayoutText {#text} at (18,0) size 17x164
-            text run at (18,0) width 164: "Vertical text on the right. "
-          LayoutBR {BR} at (18,163) size 17x1
+    layer at (35,0) size 265x300
+      LayoutBlockFlow {HTML} at (0,0) size 265x300
+        LayoutBlockFlow {BODY} at (8,8) size 249x284
+          LayoutText {#text} at (0,0) size 19x232
+            text run at (0,0) width 232: "You should see this text when printed. "
+          LayoutBR {BR} at (0,231) size 19x1
+          LayoutText {#text} at (20,0) size 19x151
+            text run at (20,0) width 151: "Vertical text on the right. "
+          LayoutBR {BR} at (20,150) size 19x1
           LayoutText {#text} at (0,0) size 0x0
-    layer at (52,8) size 204x154
-      LayoutIFrame {IFRAME} at (36,0) size 204x154 [border: (2px inset #EEEEEE)]
+    layer at (48,8) size 204x154
+      LayoutIFrame {IFRAME} at (40,0) size 204x154 [border: (2px inset #EEEEEE)]
         layer at (0,0) size 200x150
           LayoutView at (0,0) size 200x150
-        layer at (0,0) size 200x52
-          LayoutBlockFlow {HTML} at (0,0) size 200x52
-            LayoutBlockFlow {BODY} at (8,8) size 184x36
-              LayoutText {#text} at (0,0) size 153x35
-                text run at (0,0) width 153: "You should see this text"
-                text run at (0,18) width 88: "when printed."
+        layer at (0,0) size 200x56
+          LayoutBlockFlow {HTML} at (0,0) size 200x56
+            LayoutBlockFlow {BODY} at (8,8) size 184x40
+              LayoutText {#text} at (0,0) size 178x39
+                text run at (0,0) width 178: "You should see this text when"
+                text run at (0,20) width 46: "printed."
