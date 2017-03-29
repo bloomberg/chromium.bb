@@ -74,8 +74,6 @@ class WmShellMus : public WmShell {
   bool IsInUnifiedModeIgnoreMirroring() const override;
   void SetDisplayWorkAreaInsets(WmWindow* window,
                                 const gfx::Insets& insets) override;
-  bool IsPinned() override;
-  void SetPinnedWindow(WmWindow* window) override;
   void LockCursor() override;
   void UnlockCursor() override;
   bool IsMouseEventsEnabled() override;

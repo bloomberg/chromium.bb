@@ -280,9 +280,6 @@ class ASH_EXPORT WmWindow : public aura::WindowObserver,
   void StackChildAbove(WmWindow* child, WmWindow* target);
   void StackChildBelow(WmWindow* child, WmWindow* target);
 
-  // See ScreenPinningController::SetPinnedWindow() for details.
-  void SetPinned(bool trusted);
-
   void SetAlwaysOnTop(bool value);
   bool IsAlwaysOnTop() const;
 

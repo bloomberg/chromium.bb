@@ -21,6 +21,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/command_line.h"
@@ -85,7 +86,7 @@ void WorkspaceLayoutManager::OnWindowAddedToLayout(WmWindow* child) {
   if (backdrop_delegate_)
     backdrop_delegate_->OnWindowAddedToLayout(child);
   WindowPositioner::RearrangeVisibleWindowOnShow(child);
-  if (WmShell::Get()->IsPinned())
+  if (Shell::Get()->screen_pinning_controller()->IsPinned())
     child->GetWindowState()->DisableAlwaysOnTop(nullptr);
 }
 
@@ -308,7 +309,7 @@ void WorkspaceLayoutManager::OnFullscreenStateChanged(bool is_fullscreen,
     return;
 
   is_fullscreen_ = is_fullscreen;
-  if (WmShell::Get()->IsPinned()) {
+  if (Shell::Get()->screen_pinning_controller()->IsPinned()) {
     // If this is in pinned mode, then this event does not trigger the
     // always-on-top state change, because it is kept disabled regardless of
     // the fullscreen state change.
@@ -320,7 +321,8 @@ void WorkspaceLayoutManager::OnFullscreenStateChanged(bool is_fullscreen,
 }
 
 void WorkspaceLayoutManager::OnPinnedStateChanged(WmWindow* pinned_window) {
-  if (!WmShell::Get()->IsPinned() && is_fullscreen_) {
+  const bool is_pinned = Shell::Get()->screen_pinning_controller()->IsPinned();
+  if (!is_pinned && is_fullscreen_) {
     // On exiting from pinned mode, if the workspace is still in fullscreen
     // mode, then this event does not trigger the restoring yet. On exiting
     // from fullscreen, the temporarily disabled always-on-top property will be
@@ -328,7 +330,7 @@ void WorkspaceLayoutManager::OnPinnedStateChanged(WmWindow* pinned_window) {
     return;
   }
 
-  UpdateAlwaysOnTop(WmShell::Get()->IsPinned() ? pinned_window : nullptr);
+  UpdateAlwaysOnTop(is_pinned ? pinned_window : nullptr);
 }
 
 void WorkspaceLayoutManager::OnVirtualKeyboardStateChanged(

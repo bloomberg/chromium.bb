@@ -14,6 +14,7 @@
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
+#include "ash/wm/screen_pinning_controller.h"
 #include "base/metrics/histogram_macros.h"
 
 namespace ash {
@@ -40,7 +41,8 @@ bool WindowCycleController::CanCycle() {
   // Prevent window cycling if the screen is locked or a modal dialog is open.
   WmShell* wm_shell = WmShell::Get();
   return !Shell::Get()->session_controller()->IsScreenLocked() &&
-         !wm_shell->IsSystemModalWindowOpen() && !wm_shell->IsPinned();
+         !wm_shell->IsSystemModalWindowOpen() &&
+         !Shell::Get()->screen_pinning_controller()->IsPinned();
 }
 
 void WindowCycleController::HandleCycleWindow(Direction direction) {

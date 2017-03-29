@@ -578,16 +578,6 @@ void WmWindow::StackChildBelow(WmWindow* child, WmWindow* target) {
   window_->StackChildBelow(GetAuraWindow(child), GetAuraWindow(target));
 }
 
-void WmWindow::SetPinned(bool trusted) {
-  if (WmShell::Get()->IsRunningInMash()) {
-    // TODO: fix, see http://crbug.com/622486. With aura-mus pinning may just
-    // work.
-    NOTIMPLEMENTED();
-    return;
-  }
-  wm::PinWindow(window_, trusted);
-}
-
 void WmWindow::SetAlwaysOnTop(bool value) {
   window_->SetProperty(aura::client::kAlwaysOnTopKey, value);
 }

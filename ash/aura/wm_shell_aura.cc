@@ -31,7 +31,6 @@
 #include "ash/virtual_keyboard_controller.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/maximize_mode/maximize_mode_event_handler_aura.h"
-#include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/window_cycle_event_filter_aura.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_event_handler_aura.h"
@@ -139,15 +138,6 @@ void WmShellAura::SetDisplayWorkAreaInsets(WmWindow* window,
   Shell::GetInstance()
       ->window_tree_host_manager()
       ->UpdateWorkAreaOfDisplayNearestWindow(window->aura_window(), insets);
-}
-
-bool WmShellAura::IsPinned() {
-  return Shell::GetInstance()->screen_pinning_controller()->IsPinned();
-}
-
-void WmShellAura::SetPinnedWindow(WmWindow* window) {
-  return Shell::GetInstance()->screen_pinning_controller()->SetPinnedWindow(
-      window);
 }
 
 void WmShellAura::LockCursor() {

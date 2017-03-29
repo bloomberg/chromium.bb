@@ -25,6 +25,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ash/wm/screen_pinning_controller.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
@@ -240,7 +241,7 @@ void ShelfLayoutManager::UpdateVisibilityState() {
     return;
   if (state_.IsScreenLocked() || state_.IsAddingSecondaryUser()) {
     SetState(SHELF_VISIBLE);
-  } else if (WmShell::Get()->IsPinned()) {
+  } else if (Shell::Get()->screen_pinning_controller()->IsPinned()) {
     SetState(SHELF_HIDDEN);
   } else {
     // TODO(zelidrag): Verify shelf drag animation still shows on the device

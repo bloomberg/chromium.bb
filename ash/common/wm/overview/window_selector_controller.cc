@@ -14,6 +14,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/shell.h"
+#include "ash/wm/screen_pinning_controller.h"
 #include "base/metrics/histogram_macros.h"
 
 namespace ash {
@@ -36,10 +37,10 @@ bool WindowSelectorController::CanSelect() {
   SessionController* session_controller = Shell::Get()->session_controller();
   SystemTrayDelegate* system_tray_delegate =
       Shell::Get()->system_tray_delegate();
-  WmShell* wm_shell = WmShell::Get();
   return session_controller->IsActiveUserSessionStarted() &&
          !session_controller->IsScreenLocked() &&
-         !wm_shell->IsSystemModalWindowOpen() && !wm_shell->IsPinned() &&
+         !WmShell::Get()->IsSystemModalWindowOpen() &&
+         !Shell::Get()->screen_pinning_controller()->IsPinned() &&
          system_tray_delegate->GetUserLoginStatus() != LoginStatus::KIOSK_APP &&
          system_tray_delegate->GetUserLoginStatus() !=
              LoginStatus::ARC_KIOSK_APP;

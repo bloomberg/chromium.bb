@@ -16,6 +16,8 @@
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
+#include "ash/wm/screen_pinning_controller.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 
@@ -136,7 +138,7 @@ void DefaultState::OnWMEvent(WindowState* window_state, const WMEvent* event) {
       // to this window.
       // TODO(hidehiko): If a system modal window is openening, the pinning
       // probably should fail.
-      if (WmShell::Get()->IsPinned()) {
+      if (Shell::Get()->screen_pinning_controller()->IsPinned()) {
         LOG(ERROR) << "An PIN event will be failed since another window is "
                    << "already in pinned mode.";
         next_state_type = current_state_type;
@@ -523,7 +525,8 @@ void DefaultState::EnterToNextState(WindowState* window_state,
       previous_state_type == WINDOW_STATE_TYPE_PINNED ||
       next_state_type == WINDOW_STATE_TYPE_TRUSTED_PINNED ||
       previous_state_type == WINDOW_STATE_TYPE_TRUSTED_PINNED) {
-    WmShell::Get()->SetPinnedWindow(window_state->window());
+    Shell::Get()->screen_pinning_controller()->SetPinnedWindow(
+        window_state->window());
   }
 }
 

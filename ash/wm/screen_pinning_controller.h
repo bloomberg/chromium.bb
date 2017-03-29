@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "ash/ash_export.h"
 #include "ash/common/wm_display_observer.h"
 #include "base/macros.h"
 
@@ -30,7 +31,7 @@ class WindowUserData;
 // Android, or a single-purpose or kiosk application."
 // https://developer.android.com/about/versions/android-5.0.html#ScreenPinning
 // See also ArcKioskAppLauncher::CheckAndPinWindow().
-class ScreenPinningController : public WmDisplayObserver {
+class ASH_EXPORT ScreenPinningController : public WmDisplayObserver {
  public:
   ScreenPinningController();
   ~ScreenPinningController() override;

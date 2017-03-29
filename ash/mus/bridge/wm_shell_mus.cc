@@ -204,17 +204,6 @@ void WmShellMus::SetDisplayWorkAreaInsets(WmWindow* window,
   window_manager_->screen()->SetWorkAreaInsets(window->aura_window(), insets);
 }
 
-bool WmShellMus::IsPinned() {
-  // TODO: http://crbug.com/622486.
-  NOTIMPLEMENTED();
-  return false;
-}
-
-void WmShellMus::SetPinnedWindow(WmWindow* window) {
-  // TODO: http://crbug.com/622486.
-  NOTIMPLEMENTED();
-}
-
 void WmShellMus::LockCursor() {
   // TODO: http::/crbug.com/637853
   NOTIMPLEMENTED();

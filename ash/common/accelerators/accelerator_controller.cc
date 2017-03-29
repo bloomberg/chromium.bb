@@ -45,6 +45,7 @@
 #include "ash/rotator/window_rotation.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -1226,8 +1227,7 @@ bool AcceleratorController::ShouldActionConsumeKeyEvent(
 
 AcceleratorController::AcceleratorProcessingRestriction
 AcceleratorController::GetAcceleratorProcessingRestriction(int action) const {
-  WmShell* wm_shell = WmShell::Get();
-  if (wm_shell->IsPinned() &&
+  if (Shell::Get()->screen_pinning_controller()->IsPinned() &&
       actions_allowed_in_pinned_mode_.find(action) ==
           actions_allowed_in_pinned_mode_.end()) {
     return RESTRICTION_PREVENT_PROCESSING_AND_PROPAGATION;
@@ -1247,7 +1247,7 @@ AcceleratorController::GetAcceleratorProcessingRestriction(int action) const {
           actions_allowed_in_app_mode_.end()) {
     return RESTRICTION_PREVENT_PROCESSING;
   }
-  if (wm_shell->IsSystemModalWindowOpen() &&
+  if (WmShell::Get()->IsSystemModalWindowOpen() &&
       actions_allowed_at_modal_window_.find(action) ==
           actions_allowed_at_modal_window_.end()) {
     // Note we prevent the shortcut from propagating so it will not

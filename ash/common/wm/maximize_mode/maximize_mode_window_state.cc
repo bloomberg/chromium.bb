@@ -11,9 +11,10 @@
 #include "ash/common/wm/window_state_util.h"
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm/wm_screen_util.h"
-#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/shell.h"
+#include "ash/wm/screen_pinning_controller.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -128,11 +129,11 @@ void MaximizeModeWindowState::OnWMEvent(wm::WindowState* window_state,
       UpdateWindow(window_state, wm::WINDOW_STATE_TYPE_FULLSCREEN, true);
       break;
     case wm::WM_EVENT_PIN:
-      if (!WmShell::Get()->IsPinned())
+      if (!Shell::Get()->screen_pinning_controller()->IsPinned())
         UpdateWindow(window_state, wm::WINDOW_STATE_TYPE_PINNED, true);
       break;
     case wm::WM_EVENT_TRUSTED_PIN:
-      if (!WmShell::Get()->IsPinned())
+      if (!Shell::Get()->screen_pinning_controller()->IsPinned())
         UpdateWindow(window_state, wm::WINDOW_STATE_TYPE_TRUSTED_PINNED, true);
       break;
     case wm::WM_EVENT_TOGGLE_MAXIMIZE_CAPTION:
@@ -281,7 +282,8 @@ void MaximizeModeWindowState::UpdateWindow(wm::WindowState* window_state,
       target_state == wm::WINDOW_STATE_TYPE_PINNED ||
       old_state_type == wm::WINDOW_STATE_TYPE_TRUSTED_PINNED ||
       target_state == wm::WINDOW_STATE_TYPE_TRUSTED_PINNED) {
-    WmShell::Get()->SetPinnedWindow(window_state->window());
+    Shell::Get()->screen_pinning_controller()->SetPinnedWindow(
+        window_state->window());
   }
 
   if ((window_state->window()->GetTargetVisibility() ||

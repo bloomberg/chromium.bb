@@ -135,18 +135,6 @@ class ASH_EXPORT WmShell {
     simulate_modal_window_open_for_testing_ = modal_window_open;
   }
 
-  // Returns true if a window is currently pinned.
-  virtual bool IsPinned() = 0;
-
-  // Sets/Unsets the |window| to as a pinned window. If this is called with a
-  // window with WINDOW_STATE_TYPE_PINNED state, then this sets the |window|
-  // as a pinned window. Otherwise, this unsets it.
-  // For setting, a caller needs to guarantee that no windows are set
-  // as pinned window. For unsetting, a caller needs to guarantee that the
-  // |window| is the one which is currently set as a pinned window via previous
-  // this function invocation.
-  virtual void SetPinnedWindow(WmWindow* window) = 0;
-
   // See aura::client::CursorClient for details on these.
   virtual void LockCursor() = 0;
   virtual void UnlockCursor() = 0;

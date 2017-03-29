@@ -27,6 +27,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state_aura.h"
+#include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "ui/aura/window.h"
@@ -778,7 +779,7 @@ TEST_F(WorkspaceLayoutManagerSoloTest, PinnedSuspendsAlwaysOnTop) {
 
   // Making a window pinned temporarily suspends always on top state.
   const bool trusted = false;
-  pinned_window->SetPinned(trusted);
+  wm::PinWindow(pinned_window->aura_window(), trusted);
   EXPECT_FALSE(always_on_top_window1->IsAlwaysOnTop());
   EXPECT_FALSE(always_on_top_window2->IsAlwaysOnTop());
 
