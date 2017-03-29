@@ -450,27 +450,15 @@ void WebApkInstaller::OnURLFetchComplete(const net::URLFetcher* source) {
 }
 
 void WebApkInstaller::DownloadAppIconAndComputeMurmur2Hash() {
-  // Safeguard. WebApkIconHasher crashes if asked to fetch an invalid URL.
-  if (!shortcut_info_.best_primary_icon_url.is_valid()) {
-    OnResult(WebApkInstallResult::FAILURE);
-    return;
-  }
-
-  timer_.Start(
-      FROM_HERE, base::TimeDelta::FromMilliseconds(download_timeout_ms_),
-      base::Bind(&WebApkInstaller::OnResult, weak_ptr_factory_.GetWeakPtr(),
-                 WebApkInstallResult::FAILURE));
-
-  icon_hasher_.reset(new WebApkIconHasher());
-  icon_hasher_->DownloadAndComputeMurmur2Hash(
+  icon_hasher_.reset(new WebApkIconHasher(
       request_context_getter_, shortcut_info_.best_primary_icon_url,
       base::Bind(&WebApkInstaller::OnGotIconMurmur2Hash,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 weak_ptr_factory_.GetWeakPtr())));
+  icon_hasher_->DownloadAndComputeMurmur2Hash();
 }
 
 void WebApkInstaller::OnGotIconMurmur2Hash(
     const std::string& icon_murmur2_hash) {
-  timer_.Stop();
   icon_hasher_.reset();
 
   // An empty hash indicates that |icon_hasher_| encountered an error.

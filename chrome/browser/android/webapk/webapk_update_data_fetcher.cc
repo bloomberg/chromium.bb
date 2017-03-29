@@ -152,13 +152,14 @@ void WebApkUpdateDataFetcher::OnDidGetInstallableData(
   info_.best_primary_icon_url = data.primary_icon_url;
   best_primary_icon_ = *data.primary_icon;
 
-  icon_hasher_.reset(new WebApkIconHasher());
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  icon_hasher_->DownloadAndComputeMurmur2Hash(
+
+  icon_hasher_.reset(new WebApkIconHasher(
       profile->GetRequestContext(), data.primary_icon_url,
       base::Bind(&WebApkUpdateDataFetcher::OnGotIconMurmur2Hash,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 weak_ptr_factory_.GetWeakPtr())));
+  icon_hasher_->DownloadAndComputeMurmur2Hash();
 }
 
 void WebApkUpdateDataFetcher::OnGotIconMurmur2Hash(
