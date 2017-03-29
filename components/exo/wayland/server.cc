@@ -1978,6 +1978,13 @@ void remote_surface_set_rectangular_surface_shadow(wl_client* client,
   shell_surface->SetRectangularSurfaceShadow(content_bounds);
 }
 
+void remote_surface_set_systemui_visibility(wl_client* client,
+                                            wl_resource* resource,
+                                            uint32_t visibility) {
+  GetUserDataAs<ShellSurface>(resource)->SetSystemUiVisibility(
+      visibility != ZCR_REMOTE_SURFACE_V1_SYSTEMUI_VISIBILITY_STATE_VISIBLE);
+}
+
 void remote_surface_ack_configure(wl_client* client,
                                   wl_resource* resource,
                                   uint32_t serial) {
@@ -2008,6 +2015,7 @@ const struct zcr_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_set_system_modal,
     remote_surface_unset_system_modal,
     remote_surface_set_rectangular_surface_shadow,
+    remote_surface_set_systemui_visibility,
     remote_surface_ack_configure,
     remote_surface_move};
 
@@ -2054,7 +2062,7 @@ class WaylandRemoteShell : public WMHelper::MaximizeModeObserver,
   }
 
   bool IsMultiDisplaySupported() const {
-    return wl_resource_get_version(remote_shell_resource_) >= 3;
+    return wl_resource_get_version(remote_shell_resource_) >= 4;
   }
 
   std::unique_ptr<ShellSurface> CreateShellSurface(Surface* surface,
@@ -2347,7 +2355,7 @@ const struct zcr_remote_shell_v1_interface remote_shell_implementation = {
     remote_shell_destroy, remote_shell_get_remote_surface,
     remote_shell_get_notification_surface};
 
-const uint32_t remote_shell_version = 3;
+const uint32_t remote_shell_version = 4;
 
 void bind_remote_shell(wl_client* client,
                        void* data,

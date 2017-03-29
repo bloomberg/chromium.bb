@@ -132,6 +132,9 @@ class ShellSurface : public SurfaceDelegate,
   // Pins the shell surface. |trusted| flag is ignored when |pinned| is false.
   void SetPinned(bool pinned, bool trusted);
 
+  // Sets whether or not the shell surface should autohide the system UI.
+  void SetSystemUiVisibility(bool autohide);
+
   // Set title for surface.
   void SetTitle(const base::string16& title);
 

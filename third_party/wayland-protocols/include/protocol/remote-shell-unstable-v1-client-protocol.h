@@ -229,6 +229,30 @@ enum zcr_remote_shell_v1_layout_mode {
 };
 #endif /* ZCR_REMOTE_SHELL_V1_LAYOUT_MODE_ENUM */
 
+#ifndef ZCR_REMOTE_SURFACE_V1_SYSTEMUI_VISIBILITY_STATE_ENUM
+#define ZCR_REMOTE_SURFACE_V1_SYSTEMUI_VISIBILITY_STATE_ENUM
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ * systemui visibility behavior
+ *
+ * Determine the visibility behavior of the system UI.
+ */
+enum zcr_remote_surface_v1_systemui_visibility_state {
+  /**
+   * systemui is visible
+   */
+  ZCR_REMOTE_SURFACE_V1_SYSTEMUI_VISIBILITY_STATE_VISIBLE = 1,
+  /**
+   * systemui autohides and is not sticky
+   */
+  ZCR_REMOTE_SURFACE_V1_SYSTEMUI_VISIBILITY_STATE_AUTOHIDE_NON_STICKY = 2,
+  /**
+   * systemui autohides and is sticky
+   */
+  ZCR_REMOTE_SURFACE_V1_SYSTEMUI_VISIBILITY_STATE_AUTOHIDE_STICKY = 3,
+};
+#endif /* ZCR_REMOTE_SURFACE_V1_SYSTEMUI_VISIBILITY_STATE_ENUM */
+
 /**
  * @ingroup iface_zcr_remote_shell_v1
  * @struct zcr_remote_shell_v1_listener
@@ -319,11 +343,11 @@ zcr_remote_shell_v1_add_listener(struct zcr_remote_shell_v1 *zcr_remote_shell_v1
 /**
  * @ingroup iface_zcr_remote_shell_v1
  */
-#define ZCR_REMOTE_SHELL_V1_WORKSPACE_SINCE_VERSION 3
+#define ZCR_REMOTE_SHELL_V1_WORKSPACE_SINCE_VERSION 4
 /**
  * @ingroup iface_zcr_remote_shell_v1
  */
-#define ZCR_REMOTE_SHELL_V1_CONFIGURE_SINCE_VERSION 3
+#define ZCR_REMOTE_SHELL_V1_CONFIGURE_SINCE_VERSION 4
 
 /**
  * @ingroup iface_zcr_remote_shell_v1
@@ -522,7 +546,7 @@ zcr_remote_surface_v1_add_listener(struct zcr_remote_surface_v1 *zcr_remote_surf
 /**
  * @ingroup iface_zcr_remote_surface_v1
  */
-#define ZCR_REMOTE_SURFACE_V1_CONFIGURE_SINCE_VERSION 3
+#define ZCR_REMOTE_SURFACE_V1_CONFIGURE_SINCE_VERSION 4
 
 /**
  * @ingroup iface_zcr_remote_surface_v1
@@ -603,11 +627,15 @@ zcr_remote_surface_v1_add_listener(struct zcr_remote_surface_v1 *zcr_remote_surf
 /**
  * @ingroup iface_zcr_remote_surface_v1
  */
-#define ZCR_REMOTE_SURFACE_V1_ACK_CONFIGURE_SINCE_VERSION 3
+#define ZCR_REMOTE_SURFACE_V1_SET_SYSTEMUI_VISIBILITY_SINCE_VERSION 3
 /**
  * @ingroup iface_zcr_remote_surface_v1
  */
-#define ZCR_REMOTE_SURFACE_V1_MOVE_SINCE_VERSION 3
+#define ZCR_REMOTE_SURFACE_V1_ACK_CONFIGURE_SINCE_VERSION 4
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ */
+#define ZCR_REMOTE_SURFACE_V1_MOVE_SINCE_VERSION 4
 
 /** @ingroup iface_zcr_remote_surface_v1 */
 static inline void
@@ -939,6 +967,20 @@ zcr_remote_surface_v1_set_rectangular_surface_shadow(struct zcr_remote_surface_v
 {
 	wl_proxy_marshal((struct wl_proxy *) zcr_remote_surface_v1,
 			 ZCR_REMOTE_SURFACE_V1_SET_RECTANGULAR_SURFACE_SHADOW, x, y, width, height);
+}
+
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ *
+ * Requests how the surface will change the system UI visibility when it is made
+ * active.
+ *
+static inline void
+zcr_remote_surface_v1_set_systemui_visibility(struct zcr_remote_surface_v1
+*zcr_remote_surface_v1, uint32_t visibility)
+{
+  wl_proxy_marshal((struct wl_proxy *) zcr_remote_surface_v1,
+       ZCR_REMOTE_SURFACE_V1_SET_SYSTEM_UI_VISIBILITY, visibility);
 }
 
 /**

@@ -38,7 +38,7 @@
     reset.
   </description>
 
-  <interface name="zcr_remote_shell_v1" version="3">
+  <interface name="zcr_remote_shell_v1" version="4">
     <description summary="remote_shell">
       The global interface that allows clients to turn a wl_surface into a
       "real window" which is remotely managed but can be stacked, activated
@@ -140,9 +140,9 @@
       <arg name="layout_mode" type="uint"/>
     </event>
 
-    <!-- Version 3 additions -->
+    <!-- Version 4 additions -->
 
-    <event name="workspace" since="3">
+    <event name="workspace" since="4">
       <description summary="area of remote shell">
 	Defines an area of the remote shell used for layout. Each series of
 	"workspace" events must be terminated by a "configure" event.
@@ -161,7 +161,7 @@
       <arg name="scale_factor" type="fixed"/>
     </event>
 
-    <event name="configure" since="3">
+    <event name="configure" since="4">
       <description summary="suggests configuration of remote shell">
 	Suggests a new configuration of the remote shell. Preceded by a series
 	of "workspace" events.
@@ -170,7 +170,7 @@
     </event>
   </interface>
 
-  <interface name="zcr_remote_surface_v1" version="3">
+  <interface name="zcr_remote_surface_v1" version="4">
     <description summary="A desktop window">
       An interface that may be implemented by a wl_surface, for
       implementations that provide a desktop-style user interface
@@ -185,6 +185,15 @@
       For a surface to be mapped by the compositor the client must have
       committed both an remote_surface state and a buffer.
     </description>
+
+    <enum name="systemui_visibility_state">
+      <description summary="systemui visibility behavior">
+         Determine the visibility behavior of the system UI.
+      </description>
+      <entry name="visible" value="1" summary="system ui is visible"/>
+      <entry name="autohide_non_sticky" value="2" summary="system ui autohides and is not sticky"/>
+      <entry name="autohide_sticky" value="3" summary="system ui autohides and is sticky"/>
+    </enum>
 
     <request name="destroy" type="destructor">
       <description summary="Destroy the remote_surface">
@@ -430,8 +439,16 @@
     </request>
 
     <!-- Version 3 additions -->
+    <request name="set_systemui_visibility" since="3">
+      <description summary="requests the system ui visibility behavior for the surface">
+	Requests how the surface will change the visibility of the system UI when it is made active.
+      </description>
+      <arg name="visibility" type="uint"/>
+    </request>
 
-    <event name="configure" since="3">
+    <!-- Version 4 additions -->
+
+    <event name="configure" since="4">
       <description summary="suggest a surface change">
 	The configure event asks the client to change surface state.
 
@@ -454,7 +471,7 @@
       <arg name="serial" type="uint"/>
     </event>
 
-    <request name="ack_configure" since="3">
+    <request name="ack_configure" since="4">
       <description summary="ack a configure event">
 	When a configure event is received, if a client commits the
 	surface in response to the configure event, then the client
@@ -479,7 +496,7 @@
       <arg name="serial" type="uint" summary="the serial from the configure event"/>
     </request>
 
-    <request name="move" since="3">
+    <request name="move" since="4">
       <description summary="start an interactive move">
 	Start an interactive, user-driven move of the surface.
 
