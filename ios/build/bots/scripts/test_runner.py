@@ -740,7 +740,7 @@ class DeviceTestRunner(TestRunner):
       kif_filter = get_kif_test_filter(test_filter, invert=invert)
       gtest_filter = get_gtest_filter(test_filter, invert=invert)
       cmd.extend(['-D', 'GKIF_SCENARIO_FILTER=%s' % kif_filter])
-      args.append('--gtest-filter=%s' % gtest_filter)
+      args.append('--gtest_filter=%s' % gtest_filter)
 
     for env_var in self.env_vars:
       cmd.extend(['-D', env_var])
