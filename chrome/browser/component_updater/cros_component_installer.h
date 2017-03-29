@@ -60,12 +60,54 @@ class CrOSComponentInstallerTraits : public ComponentInstallerTraits {
 // This class contains functions used to register and install a component.
 class CrOSComponent {
  public:
-  // Register and start installing a CrOS component.
-  // |install_callback| is triggered after install finishes and returns error
-  // code: update_client::Error::INVALID_ARGUMENT - component name is invalid.
-  // update_client::Error::NONE
-  // - successful install
-  // other error returns are processed by OnDemandUpdate upon install finishes.
+  //  Register and start installing a CrOS component.
+  //  |install_callback| is triggered after install finishes and returns error
+  //  code.
+  //
+  //  example:
+  //  ...
+  //  void PerformOperations(chromeos::DBusMethodCallStatus call_status,
+  //                         const std::string& version){
+  //    if (call_status != chromeos::DBUS_METHOD_CALL_SUCCESS) {
+  //      DVLOG(1) << "Call to imageloader service failed.";
+  //      return;
+  //    }
+  //    if (version.empty()) {
+  //      DVLOG(1) << "[PerformOperations] Component is not installed";
+  //      return;
+  //    }
+  //    // [mounted compnent path: /run/imageloader/[component name]/[version]]
+  //    //
+  //    // [component is ready to do your work]
+  //  }
+  //  void install_callback(update_client::Error error){
+  //    // switch(error){
+  //    //   case update_client::Error::NONE:
+  //    //     // component is installed
+  //    //     break;
+  //    //   case update_client::Error::INVALID_ARGUMENT:
+  //    //     // your install failed due of your wrong parameters.
+  //    //     break;
+  //    //   default:
+  //    //     // your install failed due to system failure.
+  //    //     break;
+  //    // }
+  //    // Even when error code other than NONE returned (your install failed),
+  //    // component might has already being installed previously.
+  //    // Plus, if you want to know current version of component.
+  //    chromeos::ImageLoaderClient* loader =
+  //              chromeos::DBusThreadManager::Get()->GetImageLoaderClient();
+  //    if (loader) {
+  //      loader->GetComponentVersion("escpr", base::Bind(&PerformOperations));
+  //    } else {
+  //      VLOG(0) << "Failed to get ImageLoaderClient object.";
+  //    }
+  //  }
+  //  ...
+  //    component_updater::CrOSComponent::InstallCrOSComponent(
+  //              name,
+  //              base::Bind(&install_callback));
+  //
   static bool InstallCrOSComponent(
       const std::string& name,
       const update_client::Callback& install_callback);
