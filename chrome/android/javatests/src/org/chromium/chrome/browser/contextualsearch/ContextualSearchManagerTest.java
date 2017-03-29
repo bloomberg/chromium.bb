@@ -1180,10 +1180,12 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
     /**
      * Tests swiping the overlay open, after an initial tap that activates the peeking card.
+     * @SmallTest
+     * @Feature({"ContextualSearch"})
+     * @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
+     * crbug.com/706179
      */
-    @SmallTest
-    @Feature({"ContextualSearch"})
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
+    @DisabledTest
     public void testSwipeExpand() throws InterruptedException, TimeoutException {
         assertNoSearchesLoaded();
         clickWordNode("intelligence");
