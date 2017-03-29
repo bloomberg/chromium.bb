@@ -1566,7 +1566,8 @@ void RenderFrameHostImpl::OnBeforeUnloadACK(
   }
   // Resets beforeunload waiting state.
   is_waiting_for_beforeunload_ack_ = false;
-  beforeunload_timeout_->Stop();
+  if (beforeunload_timeout_)
+    beforeunload_timeout_->Stop();
   send_before_unload_start_time_ = base::TimeTicks();
 
   // PlzNavigate: if the ACK is for a navigation, send it to the Navigator to
@@ -1790,8 +1791,10 @@ void RenderFrameHostImpl::OnRunBeforeUnloadConfirm(
   // The beforeunload dialog for this frame may have been triggered by a
   // browser-side request to this frame or a frame up in the frame hierarchy.
   // Stop any timers that are waiting.
-  for (RenderFrameHostImpl* frame = this; frame; frame = frame->GetParent())
-    frame->beforeunload_timeout_->Stop();
+  for (RenderFrameHostImpl* frame = this; frame; frame = frame->GetParent()) {
+    if (frame->beforeunload_timeout_)
+      frame->beforeunload_timeout_->Stop();
+  }
 
   delegate_->RunBeforeUnloadConfirm(this, is_reload, reply_msg);
 }
@@ -1894,6 +1897,10 @@ void RenderFrameHostImpl::CancelBlockedRequestsForFrame() {
   NotifyForEachFrameFromUI(
       this,
       base::Bind(&ResourceDispatcherHostImpl::CancelBlockedRequestsForRoute));
+}
+
+void RenderFrameHostImpl::DisableBeforeUnloadHangMonitorForTesting() {
+  beforeunload_timeout_.reset();
 }
 
 void RenderFrameHostImpl::OnDidAccessInitialDocument() {
@@ -2540,7 +2547,8 @@ void RenderFrameHostImpl::ResetWaitingState() {
   // navigations to be ignored in OnDidCommitProvisionalLoad.
   if (is_waiting_for_beforeunload_ack_) {
     is_waiting_for_beforeunload_ack_ = false;
-    beforeunload_timeout_->Stop();
+    if (beforeunload_timeout_)
+      beforeunload_timeout_->Stop();
   }
   send_before_unload_start_time_ = base::TimeTicks();
   render_view_host_->is_waiting_for_close_ack_ = false;
@@ -2687,8 +2695,10 @@ void RenderFrameHostImpl::DispatchBeforeUnload(bool for_navigation,
       // reply from the dialog.
       SimulateBeforeUnloadAck();
     } else {
-      beforeunload_timeout_->Start(
-          TimeDelta::FromMilliseconds(RenderViewHostImpl::kUnloadTimeoutMS));
+      if (beforeunload_timeout_) {
+        beforeunload_timeout_->Start(
+            TimeDelta::FromMilliseconds(RenderViewHostImpl::kUnloadTimeoutMS));
+      }
       send_before_unload_start_time_ = base::TimeTicks::Now();
       Send(new FrameMsg_BeforeUnload(routing_id_, is_reload));
     }
@@ -2769,7 +2779,7 @@ void RenderFrameHostImpl::JavaScriptDialogClosed(
       // script and dragging out the process.
       if (dialog_was_suppressed) {
         frame->SimulateBeforeUnloadAck();
-      } else {
+      } else if (frame->beforeunload_timeout_) {
         frame->beforeunload_timeout_->Start(
             TimeDelta::FromMilliseconds(RenderViewHostImpl::kUnloadTimeoutMS));
       }

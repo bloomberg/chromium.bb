@@ -52,6 +52,7 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -363,11 +364,6 @@ void DevToolsWindowBeforeUnloadObserver::BeforeUnloadFired(
 
 class DevToolsBeforeUnloadTest: public DevToolsSanityTest {
  public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(
-        switches::kDisableHangMonitor);
-  }
-
   void CloseInspectedTab() {
     browser()->tab_strip_model()->CloseWebContentsAt(0,
         TabStripModel::CLOSE_NONE);
@@ -397,6 +393,9 @@ class DevToolsBeforeUnloadTest: public DevToolsSanityTest {
     DevToolsWindowTesting::Get(window_)->
         SetCloseCallback(runner->QuitClosure());
     InjectBeforeUnloadListener(main_web_contents());
+    main_web_contents()
+        ->GetMainFrame()
+        ->DisableBeforeUnloadHangMonitorForTesting();
     {
       DevToolsWindowBeforeUnloadObserver before_unload_observer(window_);
       close_method.Run();
@@ -456,11 +455,6 @@ class DevToolsBeforeUnloadTest: public DevToolsSanityTest {
     EXPECT_TRUE(native_dialog);
     return native_dialog;
   }
-};
-
-class DevToolsUnresponsiveBeforeUnloadTest: public DevToolsBeforeUnloadTest {
- public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {}
 };
 
 void TimeoutCallback(const std::string& timeout_message) {
@@ -711,16 +705,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest, TestDockedDevToolsClose) {
 
 // Tests that BeforeUnload event gets called on docked devtools if
 // we try to close the inspected page.
-// Flaky on Windows, Linux and ChromiumOS.  http://crbug.com/702171
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
-#define MAYBE_TestDockedDevToolsInspectedTabClose \
-  DISABLED_TestDockedDevToolsInspectedTabClose
-#else
-#define MAYBE_TestDockedDevToolsInspectedTabClose \
-  TestDockedDevToolsInspectedTabClose
-#endif
 IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
-                       MAYBE_TestDockedDevToolsInspectedTabClose) {
+                       TestDockedDevToolsInspectedTabClose) {
   RunBeforeUnloadSanityTest(true, base::Bind(
       &DevToolsBeforeUnloadTest::CloseInspectedTab,
       base::Unretained(this)));
@@ -728,16 +714,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
 
 // Tests that BeforeUnload event gets called on docked devtools if
 // we try to close the inspected browser.
-// Flaky on Windows. http://crbug.com/702171
-#if defined(OS_WIN)
-#define MAYBE_TestDockedDevToolsInspectedBrowserClose \
-  DISABLED_TestDockedDevToolsInspectedBrowserClose
-#else
-#define MAYBE_TestDockedDevToolsInspectedBrowserClose \
-  TestDockedDevToolsInspectedBrowserClose
-#endif
 IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
-                       MAYBE_TestDockedDevToolsInspectedBrowserClose) {
+                       TestDockedDevToolsInspectedBrowserClose) {
   RunBeforeUnloadSanityTest(true, base::Bind(
       &DevToolsBeforeUnloadTest::CloseInspectedBrowser,
       base::Unretained(this)));
@@ -745,14 +723,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
 
 // Tests that BeforeUnload event gets called on undocked devtools if
 // we try to close them.
-// Flaky on Windows, Linux and ChromiumOS.  http://crbug.com/702171
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
-#define MAYBE_TestUndockedDevToolsClose DISABLED_TestUndockedDevToolsClose
-#else
-#define MAYBE_TestUndockedDevToolsClose TestUndockedDevToolsClose
-#endif
-IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
-                       MAYBE_TestUndockedDevToolsClose) {
+IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest, TestUndockedDevToolsClose) {
   RunBeforeUnloadSanityTest(false, base::Bind(
       &DevToolsBeforeUnloadTest::CloseDevToolsWindowAsync,
       base::Unretained(this)), false);
@@ -760,16 +731,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
 
 // Tests that BeforeUnload event gets called on undocked devtools if
 // we try to close the inspected page.
-// Flaky on Windows. http://crbug.com/702171
-#if defined(OS_WIN)
-#define MAYBE_TestUndockedDevToolsInspectedTabClose \
-  DISABLED_TestUndockedDevToolsInspectedTabClose
-#else
-#define MAYBE_TestUndockedDevToolsInspectedTabClose \
-  TestUndockedDevToolsInspectedTabClose
-#endif
 IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
-                       MAYBE_TestUndockedDevToolsInspectedTabClose) {
+                       TestUndockedDevToolsInspectedTabClose) {
   RunBeforeUnloadSanityTest(false, base::Bind(
       &DevToolsBeforeUnloadTest::CloseInspectedTab,
       base::Unretained(this)));
@@ -777,16 +740,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
 
 // Tests that BeforeUnload event gets called on undocked devtools if
 // we try to close the inspected browser.
-// Flaky on Windows, Linux and ChromiumOS.  http://crbug.com/702171
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
-#define MAYBE_TestUndockedDevToolsInspectedBrowserClose \
-  DISABLED_TestUndockedDevToolsInspectedBrowserClose
-#else
-#define MAYBE_TestUndockedDevToolsInspectedBrowserClose \
-  TestUndockedDevToolsInspectedBrowserClose
-#endif
 IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
-                       MAYBE_TestUndockedDevToolsInspectedBrowserClose) {
+                       TestUndockedDevToolsInspectedBrowserClose) {
   RunBeforeUnloadSanityTest(false, base::Bind(
       &DevToolsBeforeUnloadTest::CloseInspectedBrowser,
       base::Unretained(this)));
@@ -794,16 +749,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
 
 // Tests that BeforeUnload event gets called on undocked devtools if
 // we try to exit application.
-// Flaky on Windows, Linux and ChromiumOS.  http://crbug.com/702171
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
-#define MAYBE_TestUndockedDevToolsApplicationClose \
-  DISABLED_TestUndockedDevToolsApplicationClose
-#else
-#define MAYBE_TestUndockedDevToolsApplicationClose \
-  TestUndockedDevToolsApplicationClose
-#endif
 IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
-                       MAYBE_TestUndockedDevToolsApplicationClose) {
+                       TestUndockedDevToolsApplicationClose) {
   RunBeforeUnloadSanityTest(false, base::Bind(
       &chrome::CloseAllBrowsers));
 }
@@ -812,7 +759,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
 // becomes unresponsive during beforeunload event interception.
 // @see http://crbug.com/322380
 // Disabled because of http://crbug.com/410327
-IN_PROC_BROWSER_TEST_F(DevToolsUnresponsiveBeforeUnloadTest,
+IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
                        DISABLED_TestUndockedDevToolsUnresponsive) {
   ASSERT_TRUE(spawned_test_server()->Start());
   LoadTestPage(kDebuggerTestPage);

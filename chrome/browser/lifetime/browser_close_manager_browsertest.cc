@@ -45,6 +45,7 @@
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
@@ -291,14 +292,12 @@ class BrowserCloseManagerBrowserTest
         observer.NumDownloadsSeenInState(content::DownloadItem::IN_PROGRESS));
   }
 
-  // Makes sure that hang monitor will not trigger RendererUnresponsive
-  // for that web content or browser. That must be called before close action
-  // when using |AcceptClose| or |CancelClose|, to ensure the timeout does not
-  // prevent the dialog from appearing. https://crbug.com/519646
+  // Makes sure that the beforeunload hang monitor will not trigger. That must
+  // be called before close action when using |AcceptClose| or |CancelClose|, to
+  // ensure the timeout does not prevent the dialog from appearing.
+  // https://crbug.com/519646
   void DisableHangMonitor(content::WebContents* web_contents) {
-    web_contents->GetRenderViewHost()
-        ->GetWidget()
-        ->DisableHangMonitorForTesting();
+    web_contents->GetMainFrame()->DisableBeforeUnloadHangMonitorForTesting();
   }
 
   void DisableHangMonitor(Browser* browser) {
