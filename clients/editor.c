@@ -1607,6 +1607,7 @@ main(int argc, char *argv[])
 	editor.display = display_create(&argc, argv);
 	if (editor.display == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
+		free(text_buffer);
 		return -1;
 	}
 
@@ -1615,6 +1616,8 @@ main(int argc, char *argv[])
 
 	if (editor.text_input_manager == NULL) {
 		fprintf(stderr, "No text input manager global\n");
+		display_destroy(editor.display);
+		free(text_buffer);
 		return -1;
 	}
 
