@@ -30,9 +30,10 @@ class StoragePartition;
 class CONTENT_EXPORT BackgroundFetchJobController
     : public DownloadItem::Observer {
  public:
+  enum class State { INITIALIZED, FETCHING, ABORTED, COMPLETED };
+
   using CompletedCallback =
-      base::OnceCallback<void(const BackgroundFetchRegistrationId&,
-                              bool /* aborted_by_developer */)>;
+      base::OnceCallback<void(BackgroundFetchJobController*)>;
 
   BackgroundFetchJobController(
       const BackgroundFetchRegistrationId& registration_id,
@@ -56,6 +57,9 @@ class CONTENT_EXPORT BackgroundFetchJobController
 
   // Called by the BackgroundFetchContext when the system is shutting down.
   void Shutdown();
+
+  // Returns the current state of this Job Controller.
+  State state() const { return state_; }
 
   // Returns the registration id for which this job is fetching data.
   const BackgroundFetchRegistrationId& registration_id() const {
@@ -83,6 +87,9 @@ class CONTENT_EXPORT BackgroundFetchJobController
 
   // Options for the represented background fetch registration.
   BackgroundFetchOptions options_;
+
+  // The current state of this Job Controller.
+  State state_ = State::INITIALIZED;
 
   // TODO(peter): Deprecated, remove in favor of |registration_id|.
   std::string job_guid_;

@@ -160,16 +160,14 @@ class BackgroundFetchJobControllerTest : public ::testing::Test {
         BrowserContext::GetDefaultStoragePartition(&browser_context_),
         data_manager_.get(),
         base::BindOnce(&BackgroundFetchJobControllerTest::DidCompleteJob,
-                       base::Unretained(this), registration_id));
+                       base::Unretained(this)));
   }
 
-  void DidCompleteJob(
-      const BackgroundFetchRegistrationId& original_registration_id,
-      const BackgroundFetchRegistrationId& registration_id,
-      bool aborted_by_developer) {
-    ASSERT_EQ(registration_id, original_registration_id);
-    did_complete_job_ = true;
-    did_abort_by_developer_ = aborted_by_developer;
+  void DidCompleteJob(BackgroundFetchJobController* controller) {
+    DCHECK(controller);
+    EXPECT_TRUE(
+        controller->state() == BackgroundFetchJobController::State::ABORTED ||
+        controller->state() == BackgroundFetchJobController::State::COMPLETED);
   }
 
   void StartProcessing() {
@@ -189,22 +187,22 @@ class BackgroundFetchJobControllerTest : public ::testing::Test {
   BackgroundFetchJobController* job_controller() {
     return job_controller_.get();
   }
+
+  BackgroundFetchJobController::State state() const {
+    return job_controller_->state();
+  }
+
   MockDownloadManagerWithCallback* download_manager() {
     return download_manager_;
   }
 
   DownloadItem::Observer* ItemObserver() const { return job_controller_.get(); }
 
-  bool did_complete_job() const { return did_complete_job_; }
-  bool did_abort_by_developer() const { return did_abort_by_developer_; }
-
   FakeBackgroundFetchDataManager* data_manager() const {
     return data_manager_.get();
   }
 
  private:
-  bool did_complete_job_ = false;
-  bool did_abort_by_developer_ = false;
   TestBrowserThreadBundle thread_bundle_;
   TestBrowserContext browser_context_;
   std::unique_ptr<FakeBackgroundFetchDataManager> data_manager_;
@@ -239,7 +237,7 @@ TEST_F(BackgroundFetchJobControllerTest, SingleRequestJob) {
   // Update the observer with no actual change.
   ItemObserver()->OnDownloadUpdated(item);
   EXPECT_EQ(DownloadItem::DownloadState::IN_PROGRESS, request_info.state());
-  EXPECT_FALSE(did_complete_job());
+  EXPECT_EQ(BackgroundFetchJobController::State::FETCHING, state());
 
   // Update the item to be completed then update the observer. The JobController
   // should update the JobData that the request is complete.
@@ -247,8 +245,7 @@ TEST_F(BackgroundFetchJobControllerTest, SingleRequestJob) {
   ItemObserver()->OnDownloadUpdated(item);
 
   EXPECT_EQ(DownloadItem::DownloadState::COMPLETE, request_info.state());
-  EXPECT_TRUE(did_complete_job());
-  EXPECT_FALSE(did_abort_by_developer());
+  EXPECT_EQ(BackgroundFetchJobController::State::COMPLETED, state());
 }
 
 TEST_F(BackgroundFetchJobControllerTest, MultipleRequestJob) {
@@ -294,7 +291,8 @@ TEST_F(BackgroundFetchJobControllerTest, MultipleRequestJob) {
     ItemObserver()->OnDownloadUpdated(item);
     EXPECT_EQ(DownloadItem::DownloadState::COMPLETE, request_infos[i].state());
   }
-  EXPECT_FALSE(did_complete_job());
+
+  EXPECT_EQ(BackgroundFetchJobController::State::FETCHING, state());
 
   // Finally, update the last request to be complete. The JobController should
   // see that there are no more requests and mark the job as done.
@@ -303,8 +301,7 @@ TEST_F(BackgroundFetchJobControllerTest, MultipleRequestJob) {
   item->SetState(DownloadItem::DownloadState::COMPLETE);
   ItemObserver()->OnDownloadUpdated(item);
 
-  EXPECT_TRUE(did_complete_job());
-  EXPECT_FALSE(did_abort_by_developer());
+  EXPECT_EQ(BackgroundFetchJobController::State::COMPLETED, state());
 }
 
 TEST_F(BackgroundFetchJobControllerTest, UpdateStorageState) {
@@ -341,8 +338,7 @@ TEST_F(BackgroundFetchJobControllerTest, UpdateStorageState) {
 
   EXPECT_EQ(123, request_info.received_bytes());
   EXPECT_TRUE(data_manager()->IsComplete(kJobGuid));
-  EXPECT_TRUE(did_complete_job());
-  EXPECT_FALSE(did_abort_by_developer());
+  EXPECT_EQ(BackgroundFetchJobController::State::COMPLETED, state());
 }
 
 }  // namespace content

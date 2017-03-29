@@ -107,7 +107,13 @@ BackgroundFetchJobController* BackgroundFetchContext::GetActiveFetch(
   if (iter == active_fetches_.end())
     return nullptr;
 
-  return iter->second.get();
+  BackgroundFetchJobController* controller = iter->second.get();
+  if (controller->state() == BackgroundFetchJobController::State::ABORTED ||
+      controller->state() == BackgroundFetchJobController::State::COMPLETED) {
+    return nullptr;
+  }
+
+  return controller;
 }
 
 void BackgroundFetchContext::CreateController(
@@ -117,19 +123,23 @@ void BackgroundFetchContext::CreateController(
       base::MakeUnique<BackgroundFetchJobController>(
           registration_id, options, browser_context_, storage_partition_,
           background_fetch_data_manager_.get(),
-          base::BindOnce(&BackgroundFetchContext::DidFinishFetch, this));
+          base::BindOnce(&BackgroundFetchContext::DidCompleteJob, this));
 
   active_fetches_.insert(
       std::make_pair(registration_id, std::move(controller)));
 }
 
-void BackgroundFetchContext::DidFinishFetch(
-    const BackgroundFetchRegistrationId& registration_id,
-    bool aborted_by_developer) {
+void BackgroundFetchContext::DidCompleteJob(
+    BackgroundFetchJobController* controller) {
+  const BackgroundFetchRegistrationId& registration_id =
+      controller->registration_id();
+
   DCHECK_GT(active_fetches_.count(registration_id), 0u);
 
-  // TODO(peter): Dispatch the `backgroundfetched` or the `backgroundfetchfail`
-  // event to the Service Worker when |aborted_by_developer| is not set.
+  if (controller->state() == BackgroundFetchJobController::State::COMPLETED) {
+    // TODO(peter): Dispatch the `backgroundfetched` or `backgroundfetchfail`
+    // event to the Service Worker to inform the developer.
+  }
 
   active_fetches_.erase(registration_id);
 }

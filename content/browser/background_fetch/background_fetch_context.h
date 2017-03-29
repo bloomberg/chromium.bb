@@ -91,11 +91,8 @@ class CONTENT_EXPORT BackgroundFetchContext
       const blink::mojom::BackgroundFetchService::FetchCallback& callback,
       blink::mojom::BackgroundFetchError error);
 
-  // Called when a Job Controller has finished processing a Background Fetch
-  // registration, as identified by |registration_id|. |aborted_by_developer|
-  // will be set to true when it finished at the developer's request.
-  void DidFinishFetch(const BackgroundFetchRegistrationId& registration_id,
-                      bool aborted_by_developer);
+  // Called when a the given |controller| has finished processing its job.
+  void DidCompleteJob(BackgroundFetchJobController* controller);
 
   // |this| is owned by the BrowserContext via the StoragePartitionImpl.
   BrowserContext* browser_context_;

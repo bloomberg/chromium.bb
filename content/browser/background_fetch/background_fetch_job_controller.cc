@@ -57,6 +57,8 @@ void BackgroundFetchJobController::Shutdown() {
 void BackgroundFetchJobController::StartProcessing() {
   DCHECK(data_manager_);
 
+  state_ = State::FETCHING;
+
   const BackgroundFetchRequestInfo& fetch_request =
       data_manager_->GetNextBackgroundFetchRequestInfo(job_guid_);
   ProcessRequest(fetch_request);
@@ -71,8 +73,9 @@ void BackgroundFetchJobController::UpdateUI(const std::string& title) {
 void BackgroundFetchJobController::Abort() {
   // TODO(harkness): Abort all in-progress downloads.
 
-  std::move(completed_callback_)
-      .Run(registration_id_, true /* aborted_by_developer */);
+  state_ = State::ABORTED;
+
+  std::move(completed_callback_).Run(this);
 }
 
 void BackgroundFetchJobController::DownloadStarted(
@@ -114,8 +117,8 @@ void BackgroundFetchJobController::OnDownloadUpdated(DownloadItem* item) {
         ProcessRequest(
             data_manager_->GetNextBackgroundFetchRequestInfo(job_guid_));
       } else if (data_manager_->IsComplete(job_guid_)) {
-        std::move(completed_callback_)
-            .Run(registration_id_, false /* aborted_by_developer */);
+        state_ = State::COMPLETED;
+        std::move(completed_callback_).Run(this);
       }
       break;
     case DownloadItem::DownloadState::INTERRUPTED:
