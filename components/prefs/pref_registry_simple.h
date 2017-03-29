@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -34,9 +35,10 @@ class COMPONENTS_PREFS_EXPORT PrefRegistrySimple : public PrefRegistry {
   void RegisterListPref(const std::string& path);
   void RegisterDictionaryPref(const std::string& path);
   void RegisterListPref(const std::string& path,
-                        base::ListValue* default_value);
-  void RegisterDictionaryPref(const std::string& path,
-                              base::DictionaryValue* default_value);
+                        std::unique_ptr<base::ListValue> default_value);
+  void RegisterDictionaryPref(
+      const std::string& path,
+      std::unique_ptr<base::DictionaryValue> default_value);
   void RegisterInt64Pref(const std::string& path, int64_t default_value);
   void RegisterUint64Pref(const std::string&, uint64_t default_value);
 
@@ -60,11 +62,12 @@ class COMPONENTS_PREFS_EXPORT PrefRegistrySimple : public PrefRegistry {
   void RegisterListPref(const std::string&, uint32_t flags);
   void RegisterDictionaryPref(const std::string&, uint32_t flags);
   void RegisterListPref(const std::string&,
-                        base::ListValue* default_value,
+                        std::unique_ptr<base::ListValue> default_value,
                         uint32_t flags);
-  void RegisterDictionaryPref(const std::string&,
-                              base::DictionaryValue* default_value,
-                              uint32_t flags);
+  void RegisterDictionaryPref(
+      const std::string&,
+      std::unique_ptr<base::DictionaryValue> default_value,
+      uint32_t flags);
   void RegisterInt64Pref(const std::string&,
                          int64_t default_value,
                          uint32_t flags);
@@ -82,7 +85,7 @@ class COMPONENTS_PREFS_EXPORT PrefRegistrySimple : public PrefRegistry {
 
  private:
   void RegisterPrefAndNotify(const std::string&,
-                             base::Value* default_value,
+                             std::unique_ptr<base::Value> default_value,
                              uint32_t flags);
 
   DISALLOW_COPY_AND_ASSIGN(PrefRegistrySimple);

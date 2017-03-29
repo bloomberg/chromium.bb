@@ -48,12 +48,12 @@ const char* kDefaultPinnedApps[] = {
     extension_misc::kGmailAppId, extension_misc::kGoogleDocAppId,
     extension_misc::kYoutubeAppId, ArcSupportHost::kHostAppId};
 
-base::ListValue* CreateDefaultPinnedAppsList() {
+std::unique_ptr<base::ListValue> CreateDefaultPinnedAppsList() {
   std::unique_ptr<base::ListValue> apps(new base::ListValue);
   for (size_t i = 0; i < arraysize(kDefaultPinnedApps); ++i)
     apps->Append(CreateAppDict(kDefaultPinnedApps[i]));
 
-  return apps.release();
+  return apps;
 }
 
 // Returns the preference value for the display with the given |display_id|.

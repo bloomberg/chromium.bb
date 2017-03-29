@@ -4,6 +4,8 @@
 
 #include "components/prefs/pref_registry.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
@@ -50,9 +52,10 @@ void PrefRegistry::SetDefaultPrefValue(const std::string& pref_name,
   defaults_->ReplaceDefaultValue(pref_name, base::WrapUnique(value));
 }
 
-void PrefRegistry::RegisterPreference(const std::string& path,
-                                      base::Value* default_value,
-                                      uint32_t flags) {
+void PrefRegistry::RegisterPreference(
+    const std::string& path,
+    std::unique_ptr<base::Value> default_value,
+    uint32_t flags) {
   base::Value::Type orig_type = default_value->GetType();
   DCHECK(orig_type != base::Value::Type::NONE &&
          orig_type != base::Value::Type::BINARY) <<
@@ -62,7 +65,7 @@ void PrefRegistry::RegisterPreference(const std::string& path,
   DCHECK(!base::ContainsKey(registration_flags_, path))
       << "Trying to register a previously registered pref: " << path;
 
-  defaults_->SetDefaultValue(path, base::WrapUnique(default_value));
+  defaults_->SetDefaultValue(path, std::move(default_value));
   if (flags != NO_REGISTRATION_FLAGS)
     registration_flags_[path] = flags;
 }

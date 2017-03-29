@@ -521,7 +521,7 @@ DeviceStatusCollector::~DeviceStatusCollector() {
 // static
 void DeviceStatusCollector::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kDeviceActivityTimes,
-                                   new base::DictionaryValue);
+                                   base::MakeUnique<base::DictionaryValue>());
 }
 
 // static

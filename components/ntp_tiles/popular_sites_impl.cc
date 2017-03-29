@@ -332,8 +332,7 @@ void PopularSitesImpl::RegisterProfilePrefs(
 
   user_prefs->RegisterInt64Pref(kPopularSitesLastDownloadPref, 0);
   user_prefs->RegisterStringPref(kPopularSitesURLPref, std::string());
-  user_prefs->RegisterListPref(kPopularSitesJsonPref,
-                               DefaultPopularSites().release());
+  user_prefs->RegisterListPref(kPopularSitesJsonPref, DefaultPopularSites());
 }
 
 void PopularSitesImpl::FetchPopularSites() {

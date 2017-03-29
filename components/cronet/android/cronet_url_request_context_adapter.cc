@@ -669,7 +669,7 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
     factory.set_user_prefs(json_pref_store_);
     scoped_refptr<PrefRegistrySimple> registry(new PrefRegistrySimple());
     registry->RegisterDictionaryPref(kHttpServerProperties,
-                                     new base::DictionaryValue());
+                                     base::MakeUnique<base::DictionaryValue>());
     if (config->enable_network_quality_estimator) {
       // Use lossy prefs to limit the overhead of reading/writing the prefs.
       registry->RegisterDictionaryPref(kNetworkQualities,

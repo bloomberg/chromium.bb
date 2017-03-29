@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
@@ -26,7 +27,8 @@ void RegisterTestPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(kIntPref, 0);
   registry->RegisterDoublePref(kDoublePref, 0.0);
   registry->RegisterStringPref(kStringPref, "default");
-  registry->RegisterListPref(kStringListPref, new base::ListValue());
+  registry->RegisterListPref(kStringListPref,
+                             base::MakeUnique<base::ListValue>());
 }
 
 class GetPrefValueHelper

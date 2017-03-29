@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -75,7 +77,7 @@ class COMPONENTS_PREFS_EXPORT PrefRegistry
   // Used by subclasses to register a default value and registration flags for
   // a preference. |flags| is a bitmask of |PrefRegistrationFlags|.
   void RegisterPreference(const std::string& path,
-                          base::Value* default_value,
+                          std::unique_ptr<base::Value> default_value,
                           uint32_t flags);
 
   scoped_refptr<DefaultPrefStore> defaults_;

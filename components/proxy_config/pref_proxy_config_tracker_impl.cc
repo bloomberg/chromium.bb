@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -205,19 +207,19 @@ net::ProxyConfigService::ConfigAvailability
 
 // static
 void PrefProxyConfigTrackerImpl::RegisterPrefs(PrefRegistrySimple* registry) {
-  base::DictionaryValue* default_settings =
-      ProxyConfigDictionary::CreateSystem();
+  std::unique_ptr<base::DictionaryValue> default_settings(
+      ProxyConfigDictionary::CreateSystem());
   registry->RegisterDictionaryPref(proxy_config::prefs::kProxy,
-                                   default_settings);
+                                   std::move(default_settings));
 }
 
 // static
 void PrefProxyConfigTrackerImpl::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* pref_service) {
-  base::DictionaryValue* default_settings =
-      ProxyConfigDictionary::CreateSystem();
+  std::unique_ptr<base::DictionaryValue> default_settings(
+      ProxyConfigDictionary::CreateSystem());
   pref_service->RegisterDictionaryPref(proxy_config::prefs::kProxy,
-                                       default_settings);
+                                       std::move(default_settings));
   pref_service->RegisterBooleanPref(proxy_config::prefs::kUseSharedProxies,
                                     false);
 }

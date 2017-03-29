@@ -11,6 +11,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/rand_util.h"
@@ -189,7 +190,7 @@ void RecordFetchValidHistogram(bool valid) {
 // static
 void NetworkTimeTracker::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kNetworkTimeMapping,
-                                   new base::DictionaryValue());
+                                   base::MakeUnique<base::DictionaryValue>());
 }
 
 NetworkTimeTracker::NetworkTimeTracker(

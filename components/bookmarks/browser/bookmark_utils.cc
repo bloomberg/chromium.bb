@@ -13,6 +13,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/string_search.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -461,7 +462,7 @@ void RegisterManagedBookmarksPrefs(PrefRegistrySimple* registry) {
   // want to sync the expanded state of folders, it should be part of
   // bookmark sync itself (i.e., a property of the sync folder nodes).
   registry->RegisterListPref(prefs::kBookmarkEditorExpandedNodes,
-                             new base::ListValue);
+                             base::MakeUnique<base::ListValue>());
   registry->RegisterListPref(prefs::kManagedBookmarks);
   registry->RegisterStringPref(
       prefs::kManagedBookmarksFolderName, std::string());

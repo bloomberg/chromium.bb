@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/values.h"
 #include "components/doodle/pref_names.h"
@@ -29,9 +30,9 @@ const int64_t kDefaultMinRefreshIntervalSecs = 15 * 60;  // 15 minutes
 
 // static
 void DoodleService::RegisterProfilePrefs(PrefRegistrySimple* pref_registry) {
-  pref_registry->RegisterDictionaryPref(prefs::kCachedConfig,
-                                        new base::DictionaryValue(),
-                                        PrefRegistry::LOSSY_PREF);
+  pref_registry->RegisterDictionaryPref(
+      prefs::kCachedConfig, base::MakeUnique<base::DictionaryValue>(),
+      PrefRegistry::LOSSY_PREF);
   pref_registry->RegisterInt64Pref(prefs::kCachedConfigExpiry, 0,
                                    PrefRegistry::LOSSY_PREF);
 }
