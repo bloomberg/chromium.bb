@@ -363,25 +363,18 @@ void SelectorQuery::executeSlow(
 // firstWithinTraversingShadowTree, nextTraversingShadowTree to the best place,
 // e.g. NodeTraversal.
 static ShadowRoot* authorShadowRootOf(const ContainerNode& node) {
-  if (!node.isElementNode() || !isShadowHost(&node))
+  if (!node.isElementNode())
+    return nullptr;
+  ElementShadow* shadow = toElement(node).shadow();
+  if (!shadow)
     return nullptr;
 
-  ElementShadow* shadow = toElement(node).shadow();
-  DCHECK(shadow);
   for (ShadowRoot* shadowRoot = &shadow->oldestShadowRoot(); shadowRoot;
        shadowRoot = shadowRoot->youngerShadowRoot()) {
-    if (shadowRoot->type() == ShadowRootType::V0 ||
-        shadowRoot->type() == ShadowRootType::Open)
+    if (shadowRoot->isOpenOrV0())
       return shadowRoot;
   }
   return nullptr;
-}
-
-static ContainerNode* firstWithinTraversingShadowTree(
-    const ContainerNode& rootNode) {
-  if (ShadowRoot* shadowRoot = authorShadowRootOf(rootNode))
-    return shadowRoot;
-  return ElementTraversal::firstWithin(rootNode);
 }
 
 static ContainerNode* nextTraversingShadowTree(const ContainerNode& node,
@@ -401,9 +394,7 @@ static ContainerNode* nextTraversingShadowTree(const ContainerNode& node,
     if (shadowRoot == rootNode)
       return nullptr;
     if (ShadowRoot* youngerShadowRoot = shadowRoot->youngerShadowRoot()) {
-      // Should not obtain any elements in closed or user-agent shadow root.
-      DCHECK(youngerShadowRoot->type() == ShadowRootType::V0 ||
-             youngerShadowRoot->type() == ShadowRootType::Open);
+      DCHECK(youngerShadowRoot->isOpenOrV0());
       return youngerShadowRoot;
     }
 
@@ -416,8 +407,8 @@ template <typename SelectorQueryTrait>
 void SelectorQuery::executeSlowTraversingShadowTree(
     ContainerNode& rootNode,
     typename SelectorQueryTrait::OutputType& output) const {
-  for (ContainerNode* node = firstWithinTraversingShadowTree(rootNode); node;
-       node = nextTraversingShadowTree(*node, &rootNode)) {
+  for (ContainerNode* node = nextTraversingShadowTree(rootNode, &rootNode);
+       node; node = nextTraversingShadowTree(*node, &rootNode)) {
     if (!node->isElementNode())
       continue;
     Element* element = toElement(node);
