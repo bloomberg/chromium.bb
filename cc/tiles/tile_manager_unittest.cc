@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
@@ -55,18 +57,18 @@ namespace {
 class SynchronousSimpleTaskRunner : public base::TestSimpleTaskRunner {
  public:
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       const base::Closure& task,
+                       base::Closure task,
                        base::TimeDelta delay) override {
-    TestSimpleTaskRunner::PostDelayedTask(from_here, task, delay);
+    TestSimpleTaskRunner::PostDelayedTask(from_here, std::move(task), delay);
     if (run_tasks_synchronously_)
       RunUntilIdle();
     return true;
   }
 
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
-                                  const base::Closure& task,
+                                  base::Closure task,
                                   base::TimeDelta delay) override {
-    return PostDelayedTask(from_here, task, delay);
+    return PostDelayedTask(from_here, std::move(task), delay);
   }
 
   void set_run_tasks_synchronously(bool run_tasks_synchronously) {

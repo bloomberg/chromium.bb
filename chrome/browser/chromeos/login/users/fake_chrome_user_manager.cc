@@ -6,6 +6,7 @@
 
 #include <set>
 
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
@@ -36,9 +37,9 @@ class FakeTaskRunner : public base::TaskRunner {
  private:
   // base::TaskRunner overrides.
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       const base::Closure& task,
+                       base::Closure task,
                        base::TimeDelta delay) override {
-    task.Run();
+    std::move(task).Run();
     return true;
   }
   bool RunsTasksOnCurrentThread() const override { return true; }

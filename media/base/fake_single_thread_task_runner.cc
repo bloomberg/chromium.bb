@@ -4,6 +4,8 @@
 
 #include "media/base/fake_single_thread_task_runner.h"
 
+#include <utility>
+
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/time/tick_clock.h"
@@ -18,7 +20,7 @@ FakeSingleThreadTaskRunner::~FakeSingleThreadTaskRunner() {}
 
 bool FakeSingleThreadTaskRunner::PostDelayedTask(
     const tracked_objects::Location& from_here,
-    const base::Closure& task,
+    base::Closure task,
     base::TimeDelta delay) {
   if (fail_on_next_task_) {
     LOG(FATAL) << "Infinite task posting loop detected.  Possibly caused by "
@@ -40,16 +42,16 @@ bool FakeSingleThreadTaskRunner::PostDelayedTask(
       auto it = after_it;
       --it;
       if (it->first.first == run_time) {
-        tasks_.insert(
-            after_it /* hint */,
-            std::make_pair(TaskKey(run_time, it->first.second + 1), task));
+        tasks_.insert(after_it /* hint */,
+                      std::make_pair(TaskKey(run_time, it->first.second + 1),
+                                     std::move(task)));
         return true;
       }
     }
   }
 
   // No tasks have the exact same run time, so just do a simple insert.
-  tasks_.insert(std::make_pair(TaskKey(run_time, 0), task));
+  tasks_.insert(std::make_pair(TaskKey(run_time, 0), std::move(task)));
   return true;
 }
 
@@ -67,9 +69,9 @@ void FakeSingleThreadTaskRunner::RunTasks() {
     if (clock_->NowTicks() < it->first.first)
       return;
 
-    const base::Closure task = it->second;
+    base::Closure task = std::move(it->second);
     tasks_.erase(it);
-    task.Run();
+    std::move(task).Run();
   }
 }
 
@@ -104,7 +106,7 @@ void FakeSingleThreadTaskRunner::Sleep(base::TimeDelta t) {
 
 bool FakeSingleThreadTaskRunner::PostNonNestableDelayedTask(
     const tracked_objects::Location& from_here,
-    const base::Closure& task,
+    base::Closure task,
     base::TimeDelta delay) {
   NOTIMPLEMENTED();
   return false;

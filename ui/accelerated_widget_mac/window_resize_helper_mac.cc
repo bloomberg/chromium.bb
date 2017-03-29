@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <list>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -31,7 +32,7 @@ typedef base::Callback<void(base::WaitableEvent*, base::TimeDelta)>
 // yet, to avoid running them twice.
 class WrappedTask {
  public:
-  WrappedTask(const base::Closure& closure, base::TimeDelta delay);
+  WrappedTask(base::Closure closure, base::TimeDelta delay);
   ~WrappedTask();
   bool ShouldRunBefore(const WrappedTask& other);
   void Run();
@@ -73,11 +74,11 @@ class PumpableTaskRunner : public base::SingleThreadTaskRunner {
 
   // base::SingleThreadTaskRunner implementation:
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       const base::Closure& task,
+                       base::Closure task,
                        base::TimeDelta delay) override;
 
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
-                                  const base::Closure& task,
+                                  base::Closure task,
                                   base::TimeDelta delay) override;
 
   bool RunsTasksOnCurrentThread() const override;
@@ -113,8 +114,8 @@ base::LazyInstance<WindowResizeHelperMac>::Leaky g_window_resize_helper =
 ////////////////////////////////////////////////////////////////////////////////
 // WrappedTask
 
-WrappedTask::WrappedTask(const base::Closure& closure, base::TimeDelta delay)
-    : closure_(closure),
+WrappedTask::WrappedTask(base::Closure closure, base::TimeDelta delay)
+    : closure_(std::move(closure)),
       can_run_time_(base::TimeTicks::Now() + delay),
       has_run_(false),
       sequence_number_(0) {}
@@ -142,7 +143,7 @@ void WrappedTask::Run() {
     return;
   RemoveFromTaskRunnerQueue();
   has_run_ = true;
-  closure_.Run();
+  std::move(closure_).Run();
 }
 
 void WrappedTask::AddToTaskRunnerQueue(
@@ -259,15 +260,15 @@ bool PumpableTaskRunner::EnqueueAndPostWrappedTask(
 
 bool PumpableTaskRunner::PostDelayedTask(
     const tracked_objects::Location& from_here,
-    const base::Closure& task,
+    base::Closure task,
     base::TimeDelta delay) {
-  return EnqueueAndPostWrappedTask(from_here, new WrappedTask(task, delay),
-                                   delay);
+  return EnqueueAndPostWrappedTask(
+      from_here, new WrappedTask(std::move(task), delay), delay);
 }
 
 bool PumpableTaskRunner::PostNonNestableDelayedTask(
     const tracked_objects::Location& from_here,
-    const base::Closure& task,
+    base::Closure task,
     base::TimeDelta delay) {
   // The correctness of non-nestable events hasn't been proven for this
   // structure.

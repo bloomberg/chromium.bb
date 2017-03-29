@@ -4,6 +4,8 @@
 
 #include "content/browser/startup_task_runner.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -21,19 +23,10 @@ using base::Closure;
 using testing::_;
 using testing::Assign;
 using testing::Invoke;
-using testing::WithArg;
 
 int observer_calls = 0;
 int task_count = 0;
 int observer_result;
-base::Closure task;
-
-// I couldn't get gMock's SaveArg to compile, hence had to save the argument
-// this way
-bool SaveTaskArg(const Closure& arg) {
-  task = arg;
-  return true;
-}
 
 void Observer(int result) {
   observer_calls++;
@@ -84,12 +77,10 @@ class StartupTaskRunnerTest : public testing::Test {
 
 class MockTaskRunner {
  public:
-  MOCK_METHOD3(
-      PostDelayedTask,
-      bool(const tracked_objects::Location&, const Closure&, base::TimeDelta));
-  MOCK_METHOD3(
-      PostNonNestableDelayedTask,
-      bool(const tracked_objects::Location&, const Closure&, base::TimeDelta));
+  MOCK_METHOD2(PostDelayedTask,
+               bool(const tracked_objects::Location&, base::TimeDelta));
+  MOCK_METHOD2(PostNonNestableDelayedTask,
+               bool(const tracked_objects::Location&, base::TimeDelta));
 };
 
 class TaskRunnerProxy : public base::SingleThreadTaskRunner {
@@ -97,27 +88,33 @@ class TaskRunnerProxy : public base::SingleThreadTaskRunner {
   TaskRunnerProxy(MockTaskRunner* mock) : mock_(mock) {}
   bool RunsTasksOnCurrentThread() const override { return true; }
   bool PostDelayedTask(const tracked_objects::Location& location,
-                       const Closure& closure,
+                       base::Closure closure,
                        base::TimeDelta delta) override {
-    return mock_->PostDelayedTask(location, closure, delta);
+    last_task_ = std::move(closure);
+    return mock_->PostDelayedTask(location, delta);
   }
   bool PostNonNestableDelayedTask(const tracked_objects::Location& location,
-                                  const Closure& closure,
+                                  base::Closure closure,
                                   base::TimeDelta delta) override {
-    return mock_->PostNonNestableDelayedTask(location, closure, delta);
+    last_task_ = std::move(closure);
+    return mock_->PostNonNestableDelayedTask(location, delta);
   }
 
+  base::Closure TakeLastTaskClosure() { return std::move(last_task_); }
+
  private:
-  MockTaskRunner* mock_;
   ~TaskRunnerProxy() override {}
+
+  MockTaskRunner* mock_;
+  base::Closure last_task_;
 };
 
 TEST_F(StartupTaskRunnerTest, SynchronousExecution) {
   MockTaskRunner mock_runner;
   scoped_refptr<TaskRunnerProxy> proxy = new TaskRunnerProxy(&mock_runner);
 
-  EXPECT_CALL(mock_runner, PostDelayedTask(_, _, _)).Times(0);
-  EXPECT_CALL(mock_runner, PostNonNestableDelayedTask(_, _, _)).Times(0);
+  EXPECT_CALL(mock_runner, PostDelayedTask(_, _)).Times(0);
+  EXPECT_CALL(mock_runner, PostNonNestableDelayedTask(_, _)).Times(0);
 
   StartupTaskRunner runner(base::Bind(&Observer), proxy);
 
@@ -154,8 +151,8 @@ TEST_F(StartupTaskRunnerTest, NullObserver) {
   MockTaskRunner mock_runner;
   scoped_refptr<TaskRunnerProxy> proxy = new TaskRunnerProxy(&mock_runner);
 
-  EXPECT_CALL(mock_runner, PostDelayedTask(_, _, _)).Times(0);
-  EXPECT_CALL(mock_runner, PostNonNestableDelayedTask(_, _, _)).Times(0);
+  EXPECT_CALL(mock_runner, PostDelayedTask(_, _)).Times(0);
+  EXPECT_CALL(mock_runner, PostNonNestableDelayedTask(_, _)).Times(0);
 
   StartupTaskRunner runner(base::Callback<void(int)>(), proxy);
 
@@ -189,8 +186,8 @@ TEST_F(StartupTaskRunnerTest, SynchronousExecutionFailedTask) {
   MockTaskRunner mock_runner;
   scoped_refptr<TaskRunnerProxy> proxy = new TaskRunnerProxy(&mock_runner);
 
-  EXPECT_CALL(mock_runner, PostDelayedTask(_, _, _)).Times(0);
-  EXPECT_CALL(mock_runner, PostNonNestableDelayedTask(_, _, _)).Times(0);
+  EXPECT_CALL(mock_runner, PostDelayedTask(_, _)).Times(0);
+  EXPECT_CALL(mock_runner, PostNonNestableDelayedTask(_, _)).Times(0);
 
   StartupTaskRunner runner(base::Bind(&Observer), proxy);
 
@@ -227,12 +224,11 @@ TEST_F(StartupTaskRunnerTest, AsynchronousExecution) {
   MockTaskRunner mock_runner;
   scoped_refptr<TaskRunnerProxy> proxy = new TaskRunnerProxy(&mock_runner);
 
-  EXPECT_CALL(mock_runner, PostDelayedTask(_, _, _)).Times(0);
-  EXPECT_CALL(
-      mock_runner,
-      PostNonNestableDelayedTask(_, _, base::TimeDelta::FromMilliseconds(0)))
+  EXPECT_CALL(mock_runner, PostDelayedTask(_, _)).Times(0);
+  EXPECT_CALL(mock_runner, PostNonNestableDelayedTask(
+                               _, base::TimeDelta::FromMilliseconds(0)))
       .Times(testing::Between(2, 3))
-      .WillRepeatedly(WithArg<1>(Invoke(SaveTaskArg)));
+      .WillRepeatedly(testing::Return(true));
 
   StartupTaskRunner runner(base::Bind(&Observer), proxy);
 
@@ -255,7 +251,7 @@ TEST_F(StartupTaskRunnerTest, AsynchronousExecution) {
   // at most 3 times (once for each task plus possibly once for the observer),
   // the "4" is a backstop.
   for (int i = 0; i < 4 && observer_calls == 0; i++) {
-    task.Run();
+    proxy->TakeLastTaskClosure().Run();
     EXPECT_EQ(i + 1, GetLastTask());
   }
   EXPECT_EQ(task_count, 2);
@@ -274,12 +270,11 @@ TEST_F(StartupTaskRunnerTest, AsynchronousExecutionFailedTask) {
   MockTaskRunner mock_runner;
   scoped_refptr<TaskRunnerProxy> proxy = new TaskRunnerProxy(&mock_runner);
 
-  EXPECT_CALL(mock_runner, PostDelayedTask(_, _, _)).Times(0);
-  EXPECT_CALL(
-      mock_runner,
-      PostNonNestableDelayedTask(_, _, base::TimeDelta::FromMilliseconds(0)))
+  EXPECT_CALL(mock_runner, PostDelayedTask(_, _)).Times(0);
+  EXPECT_CALL(mock_runner, PostNonNestableDelayedTask(
+                               _, base::TimeDelta::FromMilliseconds(0)))
       .Times(testing::Between(1, 2))
-      .WillRepeatedly(WithArg<1>(Invoke(SaveTaskArg)));
+      .WillRepeatedly(testing::Return(true));
 
   StartupTaskRunner runner(base::Bind(&Observer), proxy);
 
@@ -301,9 +296,8 @@ TEST_F(StartupTaskRunnerTest, AsynchronousExecutionFailedTask) {
   // be added to the queue, hence updating "task". The loop should actually run
   // at most twice (once for the failed task plus possibly once for the
   // observer), the "4" is a backstop.
-  for (int i = 0; i < 4 && observer_calls == 0; i++) {
-    task.Run();
-  }
+  for (int i = 0; i < 4 && observer_calls == 0; i++)
+    proxy->TakeLastTaskClosure().Run();
   EXPECT_EQ(GetLastTask(), 3);
   EXPECT_EQ(task_count, 1);
 

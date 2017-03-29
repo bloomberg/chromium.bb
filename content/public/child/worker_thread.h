@@ -42,7 +42,7 @@ class CONTENT_EXPORT WorkerThread {
   static int GetCurrentId();
 
   // Posts a task to the worker thread with ID |id|. ID must be > 0.
-  static void PostTask(int id, const base::Closure& task);
+  static void PostTask(int id, base::Closure task);
 
  private:
   WorkerThread(){};

@@ -933,11 +933,11 @@ void HistoryService::ScheduleAutocomplete(
 }
 
 void HistoryService::ScheduleTask(SchedulePriority priority,
-                                  const base::Closure& task) {
+                                  base::Closure task) {
   DCHECK(thread_checker_.CalledOnValidThread());
   CHECK(backend_task_runner_);
   // TODO(brettw): Do prioritization.
-  backend_task_runner_->PostTask(FROM_HERE, task);
+  backend_task_runner_->PostTask(FROM_HERE, std::move(task));
 }
 
 base::WeakPtr<HistoryService> HistoryService::AsWeakPtr() {

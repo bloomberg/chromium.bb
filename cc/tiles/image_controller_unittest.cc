@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "cc/tiles/image_controller.h"
+
+#include <utility>
+
 #include "base/bind.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
@@ -34,10 +37,10 @@ class TestWorkerThread : public base::SimpleThread {
           continue;
         }
 
-        task = queue_.front();
+        task = std::move(queue_.front());
         queue_.erase(queue_.begin());
       }
-      task.Run();
+      std::move(task).Run();
     }
   }
 
@@ -47,9 +50,9 @@ class TestWorkerThread : public base::SimpleThread {
     condition_.Signal();
   }
 
-  void PostTask(const base::Closure& task) {
+  void PostTask(base::Closure task) {
     base::AutoLock hold(lock_);
-    queue_.push_back(task);
+    queue_.push_back(std::move(task));
     condition_.Signal();
   }
 
@@ -65,15 +68,15 @@ class WorkerTaskRunner : public base::SequencedTaskRunner {
   WorkerTaskRunner() { thread_.Start(); }
 
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
-                                  const base::Closure& task,
+                                  base::Closure task,
                                   base::TimeDelta delay) override {
-    return PostDelayedTask(from_here, task, delay);
+    return PostDelayedTask(from_here, std::move(task), delay);
   }
 
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       const base::Closure& task,
+                       base::Closure task,
                        base::TimeDelta delay) override {
-    thread_.PostTask(task);
+    thread_.PostTask(std::move(task));
     return true;
   }
 
@@ -138,12 +141,12 @@ class TestableCache : public ImageDecodeCache {
 class DecodeClient {
  public:
   DecodeClient() {}
-  void Callback(const base::Closure& quit_closure,
+  void Callback(base::Closure quit_closure,
                 ImageController::ImageDecodeRequestId id,
                 ImageController::ImageDecodeResult result) {
     id_ = id;
     result_ = result;
-    quit_closure.Run();
+    std::move(quit_closure).Run();
   }
 
   ImageController::ImageDecodeRequestId id() { return id_; }

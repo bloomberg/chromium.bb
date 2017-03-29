@@ -7,7 +7,7 @@
 
 #include <map>
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
@@ -24,7 +24,7 @@ class CONTENT_EXPORT WorkerThreadRegistry {
  public:
   WorkerThreadRegistry();
 
-  int PostTaskToAllThreads(const base::Closure& task);
+  int PostTaskToAllThreads(base::Closure task);
   static WorkerThreadRegistry* Instance();
 
   void DidStartCurrentWorkerThread();
@@ -39,7 +39,7 @@ class CONTENT_EXPORT WorkerThreadRegistry {
   friend class WorkerThread;
   friend class WorkerThreadRegistryTest;
 
-  bool PostTask(int id, const base::Closure& task);
+  bool PostTask(int id, base::Closure task);
 
   using IDToTaskRunnerMap = std::map<base::PlatformThreadId, base::TaskRunner*>;
 

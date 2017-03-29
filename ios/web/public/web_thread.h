@@ -101,18 +101,18 @@ class WebThread {
   // They return true iff the thread existed and the task was posted.
   static bool PostTask(ID identifier,
                        const tracked_objects::Location& from_here,
-                       const base::Closure& task);
+                       base::Closure task);
   static bool PostDelayedTask(ID identifier,
                               const tracked_objects::Location& from_here,
-                              const base::Closure& task,
+                              base::Closure task,
                               base::TimeDelta delay);
   static bool PostNonNestableTask(ID identifier,
                                   const tracked_objects::Location& from_here,
-                                  const base::Closure& task);
+                                  base::Closure task);
   static bool PostNonNestableDelayedTask(
       ID identifier,
       const tracked_objects::Location& from_here,
-      const base::Closure& task,
+      base::Closure task,
       base::TimeDelta delay);
 
   static bool PostTaskAndReply(ID identifier,
@@ -161,7 +161,7 @@ class WebThread {
   // base::PostTaskAndReplyWithResult() with GetBlockingPool() as the task
   // runner.
   static bool PostBlockingPoolTask(const tracked_objects::Location& from_here,
-                                   const base::Closure& task);
+                                   base::Closure task);
   static bool PostBlockingPoolTaskAndReply(
       const tracked_objects::Location& from_here,
       base::Closure task,
@@ -169,7 +169,7 @@ class WebThread {
   static bool PostBlockingPoolSequencedTask(
       const std::string& sequence_token_name,
       const tracked_objects::Location& from_here,
-      const base::Closure& task);
+      base::Closure task);
 
   // Returns the thread pool used for blocking file I/O. Use this object to
   // perform random blocking operations such as file writes.

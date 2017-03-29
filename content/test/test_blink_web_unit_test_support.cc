@@ -4,6 +4,7 @@
 
 #include "content/test/test_blink_web_unit_test_support.h"
 
+#include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -64,14 +65,14 @@ class DummyTaskRunner : public base::SingleThreadTaskRunner {
   DummyTaskRunner() : thread_id_(base::PlatformThread::CurrentId()) {}
 
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       const base::Closure& task,
+                       base::Closure task,
                        base::TimeDelta delay) override {
     // Drop the delayed task.
     return false;
   }
 
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
-                                  const base::Closure& task,
+                                  base::Closure task,
                                   base::TimeDelta delay) override {
     // Drop the delayed task.
     return false;

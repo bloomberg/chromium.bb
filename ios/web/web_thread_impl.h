@@ -5,6 +5,7 @@
 #ifndef IOS_WEB_WEB_THREAD_IMPL_H_
 #define IOS_WEB_WEB_THREAD_IMPL_H_
 
+#include "base/callback.h"
 #include "base/threading/thread.h"
 #include "ios/web/public/web_thread.h"
 
@@ -48,7 +49,7 @@ class WebThreadImpl : public WebThread, public base::Thread {
 
   static bool PostTaskHelper(WebThread::ID identifier,
                              const tracked_objects::Location& from_here,
-                             const base::Closure& task,
+                             base::Closure task,
                              base::TimeDelta delay,
                              bool nestable);
 

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -42,7 +43,7 @@ class TestTaskScheduler : public TaskScheduler {
   // TaskScheduler:
   void PostDelayedTaskWithTraits(const tracked_objects::Location& from_here,
                                  const TaskTraits& traits,
-                                 const Closure& task,
+                                 Closure task,
                                  TimeDelta delay) override;
   scoped_refptr<TaskRunner> CreateTaskRunnerWithTraits(
       const TaskTraits& traits) override;
@@ -110,10 +111,10 @@ class TestTaskSchedulerTaskRunner : public SingleThreadTaskRunner {
 
   // SingleThreadTaskRunner:
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       const Closure& closure,
+                       Closure closure,
                        TimeDelta delay) override;
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
-                                  const Closure& closure,
+                                  Closure closure,
                                   TimeDelta delay) override;
   bool RunsTasksOnCurrentThread() const override;
 
@@ -143,9 +144,10 @@ TestTaskScheduler::~TestTaskScheduler() {
 void TestTaskScheduler::PostDelayedTaskWithTraits(
     const tracked_objects::Location& from_here,
     const TaskTraits& traits,
-    const Closure& task,
+    Closure task,
     TimeDelta delay) {
-  CreateTaskRunnerWithTraits(traits)->PostDelayedTask(from_here, task, delay);
+  CreateTaskRunnerWithTraits(traits)->PostDelayedTask(from_here,
+                                                      std::move(task), delay);
 }
 
 scoped_refptr<TaskRunner> TestTaskScheduler::CreateTaskRunnerWithTraits(
@@ -246,9 +248,10 @@ TestTaskSchedulerTaskRunner::TestTaskSchedulerTaskRunner(
 
 bool TestTaskSchedulerTaskRunner::PostDelayedTask(
     const tracked_objects::Location& from_here,
-    const Closure& closure,
+    Closure closure,
     TimeDelta delay) {
-  auto task = MakeUnique<internal::Task>(from_here, closure, traits_, delay);
+  auto task =
+      MakeUnique<internal::Task>(from_here, std::move(closure), traits_, delay);
   if (execution_mode_ == ExecutionMode::SEQUENCED)
     task->sequenced_task_runner_ref = make_scoped_refptr(this);
   else if (execution_mode_ == ExecutionMode::SINGLE_THREADED)
@@ -258,10 +261,10 @@ bool TestTaskSchedulerTaskRunner::PostDelayedTask(
 
 bool TestTaskSchedulerTaskRunner::PostNonNestableDelayedTask(
     const tracked_objects::Location& from_here,
-    const Closure& closure,
+    Closure closure,
     TimeDelta delay) {
   // Tasks are never nested within the task scheduler.
-  return PostDelayedTask(from_here, closure, delay);
+  return PostDelayedTask(from_here, std::move(closure), delay);
 }
 
 bool TestTaskSchedulerTaskRunner::RunsTasksOnCurrentThread() const {

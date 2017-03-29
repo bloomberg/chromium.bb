@@ -5,11 +5,22 @@
 #ifndef CONTENT_BROWSER_BROWSER_THREAD_IMPL_H_
 #define CONTENT_BROWSER_BROWSER_THREAD_IMPL_H_
 
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
+
+namespace base {
+class MessageLoop;
+class RunLoop;
+}
+
+namespace tracked_objects {
+class Location;
+}
 
 namespace content {
 
@@ -74,12 +85,11 @@ class CONTENT_EXPORT BrowserThreadImpl : public BrowserThread,
   void CacheThreadRun(base::RunLoop* run_loop);
   void IOThreadRun(base::RunLoop* run_loop);
 
-  static bool PostTaskHelper(
-      BrowserThread::ID identifier,
-      const tracked_objects::Location& from_here,
-      const base::Closure& task,
-      base::TimeDelta delay,
-      bool nestable);
+  static bool PostTaskHelper(BrowserThread::ID identifier,
+                             const tracked_objects::Location& from_here,
+                             base::Closure task,
+                             base::TimeDelta delay,
+                             bool nestable);
 
   // Common initialization code for the constructors.
   void Initialize();

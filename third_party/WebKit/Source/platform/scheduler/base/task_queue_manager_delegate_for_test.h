@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/time/tick_clock.h"
 #include "platform/scheduler/base/task_queue_manager_delegate.h"
@@ -22,10 +23,10 @@ class TaskQueueManagerDelegateForTest : public TaskQueueManagerDelegate {
 
   // NestableSingleThreadTaskRunner implementation
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       const base::Closure& task,
+                       base::Closure task,
                        base::TimeDelta delay) override;
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
-                                  const base::Closure& task,
+                                  base::Closure task,
                                   base::TimeDelta delay) override;
   bool RunsTasksOnCurrentThread() const override;
   bool IsNested() const override;

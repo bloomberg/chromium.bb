@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_DOM_STORAGE_DOM_STORAGE_TASK_RUNNER_H_
 #define CONTENT_BROWSER_DOM_STORAGE_DOM_STORAGE_TASK_RUNNER_H_
 
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
@@ -33,14 +34,14 @@ class CONTENT_EXPORT DOMStorageTaskRunner
   // The PostTask() and PostDelayedTask() methods defined by TaskRunner
   // post shutdown-blocking tasks on the primary sequence.
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       const base::Closure& task,
+                       base::Closure task,
                        base::TimeDelta delay) override = 0;
 
   // Posts a shutdown blocking task to |sequence_id|.
   virtual bool PostShutdownBlockingTask(
       const tracked_objects::Location& from_here,
       SequenceID sequence_id,
-      const base::Closure& task) = 0;
+      base::Closure task) = 0;
 
   virtual void AssertIsRunningOnPrimarySequence() const = 0;
   virtual void AssertIsRunningOnCommitSequence() const = 0;
@@ -65,12 +66,12 @@ class CONTENT_EXPORT DOMStorageWorkerPoolTaskRunner :
   bool RunsTasksOnCurrentThread() const override;
 
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       const base::Closure& task,
+                       base::Closure task,
                        base::TimeDelta delay) override;
 
   bool PostShutdownBlockingTask(const tracked_objects::Location& from_here,
                                 SequenceID sequence_id,
-                                const base::Closure& task) override;
+                                base::Closure task) override;
 
   void AssertIsRunningOnPrimarySequence() const override;
   void AssertIsRunningOnCommitSequence() const override;
@@ -102,12 +103,12 @@ class CONTENT_EXPORT MockDOMStorageTaskRunner :
   bool RunsTasksOnCurrentThread() const override;
 
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       const base::Closure& task,
+                       base::Closure task,
                        base::TimeDelta delay) override;
 
   bool PostShutdownBlockingTask(const tracked_objects::Location& from_here,
                                 SequenceID sequence_id,
-                                const base::Closure& task) override;
+                                base::Closure task) override;
 
   void AssertIsRunningOnPrimarySequence() const override;
   void AssertIsRunningOnCommitSequence() const override;

@@ -40,17 +40,18 @@ void SchedulerTqmDelegateImpl::RestoreDefaultTaskRunner() {
 
 bool SchedulerTqmDelegateImpl::PostDelayedTask(
     const tracked_objects::Location& from_here,
-    const base::Closure& task,
+    base::Closure task,
     base::TimeDelta delay) {
-  return message_loop_task_runner_->PostDelayedTask(from_here, task, delay);
+  return message_loop_task_runner_->PostDelayedTask(from_here, std::move(task),
+                                                    delay);
 }
 
 bool SchedulerTqmDelegateImpl::PostNonNestableDelayedTask(
     const tracked_objects::Location& from_here,
-    const base::Closure& task,
+    base::Closure task,
     base::TimeDelta delay) {
-  return message_loop_task_runner_->PostNonNestableDelayedTask(from_here, task,
-                                                               delay);
+  return message_loop_task_runner_->PostNonNestableDelayedTask(
+      from_here, std::move(task), delay);
 }
 
 bool SchedulerTqmDelegateImpl::RunsTasksOnCurrentThread() const {

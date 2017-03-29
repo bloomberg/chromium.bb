@@ -13,7 +13,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -160,7 +160,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void PostAfterStartupTask(
       const tracked_objects::Location& from_here,
       const scoped_refptr<base::TaskRunner>& task_runner,
-      const base::Closure& task);
+      base::Closure task);
 
   // Allows the embedder to indicate whether it considers startup to be
   // complete. May be called on any thread. This should be called on a one-off

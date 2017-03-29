@@ -4,9 +4,12 @@
 
 #include "platform/scheduler/base/task_queue_impl.h"
 
+#include <utility>
+
 #include "base/format_macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/time.h"
 #include "base/trace_event/blame_context.h"
 #include "platform/scheduler/base/task_queue_manager.h"
 #include "platform/scheduler/base/task_queue_manager_delegate.h"
@@ -116,11 +119,11 @@ TaskQueueImpl::Task::Task()
 }
 
 TaskQueueImpl::Task::Task(const tracked_objects::Location& posted_from,
-                          const base::Closure& task,
+                          base::Closure task,
                           base::TimeTicks desired_run_time,
                           EnqueueOrder sequence_number,
                           bool nestable)
-    : PendingTask(posted_from, task, desired_run_time, nestable),
+    : PendingTask(posted_from, std::move(task), desired_run_time, nestable),
 #ifndef NDEBUG
       enqueue_order_set_(false),
 #endif
@@ -129,12 +132,12 @@ TaskQueueImpl::Task::Task(const tracked_objects::Location& posted_from,
 }
 
 TaskQueueImpl::Task::Task(const tracked_objects::Location& posted_from,
-                          const base::Closure& task,
+                          base::Closure task,
                           base::TimeTicks desired_run_time,
                           EnqueueOrder sequence_number,
                           bool nestable,
                           EnqueueOrder enqueue_order)
-    : PendingTask(posted_from, task, desired_run_time, nestable),
+    : PendingTask(posted_from, std::move(task), desired_run_time, nestable),
 #ifndef NDEBUG
       enqueue_order_set_(true),
 #endif
@@ -190,27 +193,30 @@ bool TaskQueueImpl::RunsTasksOnCurrentThread() const {
 }
 
 bool TaskQueueImpl::PostDelayedTask(const tracked_objects::Location& from_here,
-                                    const base::Closure& task,
+                                    base::Closure task,
                                     base::TimeDelta delay) {
   if (delay.is_zero())
-    return PostImmediateTaskImpl(from_here, task, TaskType::NORMAL);
+    return PostImmediateTaskImpl(from_here, std::move(task), TaskType::NORMAL);
 
-  return PostDelayedTaskImpl(from_here, task, delay, TaskType::NORMAL);
+  return PostDelayedTaskImpl(from_here, std::move(task), delay,
+                             TaskType::NORMAL);
 }
 
 bool TaskQueueImpl::PostNonNestableDelayedTask(
     const tracked_objects::Location& from_here,
-    const base::Closure& task,
+    base::Closure task,
     base::TimeDelta delay) {
   if (delay.is_zero())
-    return PostImmediateTaskImpl(from_here, task, TaskType::NON_NESTABLE);
+    return PostImmediateTaskImpl(from_here, std::move(task),
+                                 TaskType::NON_NESTABLE);
 
-  return PostDelayedTaskImpl(from_here, task, delay, TaskType::NON_NESTABLE);
+  return PostDelayedTaskImpl(from_here, std::move(task), delay,
+                             TaskType::NON_NESTABLE);
 }
 
 bool TaskQueueImpl::PostImmediateTaskImpl(
     const tracked_objects::Location& from_here,
-    const base::Closure& task,
+    base::Closure task,
     TaskType task_type) {
   base::AutoLock lock(any_thread_lock_);
   if (!any_thread().task_queue_manager)
@@ -219,18 +225,15 @@ bool TaskQueueImpl::PostImmediateTaskImpl(
   EnqueueOrder sequence_number =
       any_thread().task_queue_manager->GetNextSequenceNumber();
 
-  PushOntoImmediateIncomingQueueLocked(
-      from_here,
-      task,
-      base::TimeTicks(),
-      sequence_number,
-      task_type != TaskType::NON_NESTABLE);
+  PushOntoImmediateIncomingQueueLocked(from_here, std::move(task),
+                                       base::TimeTicks(), sequence_number,
+                                       task_type != TaskType::NON_NESTABLE);
   return true;
 }
 
 bool TaskQueueImpl::PostDelayedTaskImpl(
     const tracked_objects::Location& from_here,
-    const base::Closure& task,
+    base::Closure task,
     base::TimeDelta delay,
     TaskType task_type) {
   DCHECK_GT(delay, base::TimeDelta());
@@ -245,8 +248,8 @@ bool TaskQueueImpl::PostDelayedTaskImpl(
     base::TimeTicks time_domain_now = main_thread_only().time_domain->Now();
     base::TimeTicks time_domain_delayed_run_time = time_domain_now + delay;
     PushOntoDelayedIncomingQueueFromMainThread(
-        Task(from_here, task, time_domain_delayed_run_time, sequence_number,
-             task_type != TaskType::NON_NESTABLE),
+        Task(from_here, std::move(task), time_domain_delayed_run_time,
+             sequence_number, task_type != TaskType::NON_NESTABLE),
         time_domain_now);
   } else {
     // NOTE posting a delayed task from a different thread is not expected to
@@ -263,8 +266,8 @@ bool TaskQueueImpl::PostDelayedTaskImpl(
     base::TimeTicks time_domain_now = any_thread().time_domain->Now();
     base::TimeTicks time_domain_delayed_run_time = time_domain_now + delay;
     PushOntoDelayedIncomingQueueLocked(
-        Task(from_here, task, time_domain_delayed_run_time, sequence_number,
-             task_type != TaskType::NON_NESTABLE));
+        Task(from_here, std::move(task), time_domain_delayed_run_time,
+             sequence_number, task_type != TaskType::NON_NESTABLE));
   }
   return true;
 }
@@ -326,7 +329,7 @@ void TaskQueueImpl::ScheduleDelayedWorkTask(Task pending_task) {
 
 void TaskQueueImpl::PushOntoImmediateIncomingQueueLocked(
     const tracked_objects::Location& posted_from,
-    const base::Closure& task,
+    base::Closure task,
     base::TimeTicks desired_run_time,
     EnqueueOrder sequence_number,
     bool nestable) {
@@ -343,7 +346,7 @@ void TaskQueueImpl::PushOntoImmediateIncomingQueueLocked(
     any_thread().time_domain->OnQueueHasImmediateWork(this);
   }
   any_thread().immediate_incoming_queue.emplace_back(
-      posted_from, task, desired_run_time, sequence_number, nestable,
+      posted_from, std::move(task), desired_run_time, sequence_number, nestable,
       sequence_number);
   any_thread().task_queue_manager->DidQueueTask(
       any_thread().immediate_incoming_queue.back());

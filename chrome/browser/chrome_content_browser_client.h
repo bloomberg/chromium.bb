@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
@@ -65,7 +66,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const content::MainFunctionParams& parameters) override;
   void PostAfterStartupTask(const tracked_objects::Location& from_here,
                             const scoped_refptr<base::TaskRunner>& task_runner,
-                            const base::Closure& task) override;
+                            base::Closure task) override;
   bool IsBrowserStartupComplete() override;
   std::string GetStoragePartitionIdForSite(
       content::BrowserContext* browser_context,

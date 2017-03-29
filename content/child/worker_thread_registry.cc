@@ -5,8 +5,8 @@
 #include "content/child/worker_thread_registry.h"
 
 #include <memory>
+#include <utility>
 
-#include "base/callback.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -38,7 +38,7 @@ class DoNothingTaskRunner : public base::TaskRunner {
   ~DoNothingTaskRunner() override {}
 
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       const base::Closure& task,
+                       base::Closure task,
                        base::TimeDelta delay) override {
     return false;
   }
@@ -56,8 +56,8 @@ int WorkerThread::GetCurrentId() {
   return base::PlatformThread::CurrentId();
 }
 
-void WorkerThread::PostTask(int id, const base::Closure& task) {
-  WorkerThreadRegistry::Instance()->PostTask(id, task);
+void WorkerThread::PostTask(int id, base::Closure task) {
+  WorkerThreadRegistry::Instance()->PostTask(id, std::move(task));
 }
 
 void WorkerThread::AddObserver(Observer* observer) {
@@ -79,10 +79,10 @@ void WorkerThread::RemoveObserver(Observer* observer) {
 WorkerThreadRegistry::WorkerThreadRegistry()
     : task_runner_for_dead_worker_(new DoNothingTaskRunner()) {}
 
-int WorkerThreadRegistry::PostTaskToAllThreads(const base::Closure& closure) {
+int WorkerThreadRegistry::PostTaskToAllThreads(base::Closure closure) {
   base::AutoLock locker(task_runner_map_lock_);
   for (const auto& it : task_runner_map_)
-    it.second->PostTask(FROM_HERE, closure);
+    it.second->PostTask(FROM_HERE, std::move(closure));
   return static_cast<int>(task_runner_map_.size());
 }
 
@@ -125,13 +125,13 @@ base::TaskRunner* WorkerThreadRegistry::GetTaskRunnerFor(int worker_id) {
              : task_runner_for_dead_worker_.get();
 }
 
-bool WorkerThreadRegistry::PostTask(int id, const base::Closure& closure) {
+bool WorkerThreadRegistry::PostTask(int id, base::Closure closure) {
   DCHECK(id > 0);
   base::AutoLock locker(task_runner_map_lock_);
   IDToTaskRunnerMap::iterator found = task_runner_map_.find(id);
   if (found == task_runner_map_.end())
     return false;
-  return found->second->PostTask(FROM_HERE, closure);
+  return found->second->PostTask(FROM_HERE, std::move(closure));
 }
 
 }  // namespace content

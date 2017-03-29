@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_AFTER_STARTUP_TASK_UTILS_H_
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/task_runner.h"
@@ -25,7 +26,7 @@ class AfterStartupTaskUtils {
 
     // Overrides from base::TaskRunner:
     bool PostDelayedTask(const tracked_objects::Location& from_here,
-                         const base::Closure& task,
+                         base::Closure task,
                          base::TimeDelta delay) override;
     bool RunsTasksOnCurrentThread() const override;
 
@@ -46,7 +47,7 @@ class AfterStartupTaskUtils {
   static void PostTask(
       const tracked_objects::Location& from_here,
       const scoped_refptr<base::TaskRunner>& destination_runner,
-      const base::Closure& task);
+      base::Closure task);
 
   // Returns true if browser startup is complete. Only use this on a one-off
   // basis; If you need to poll this function constantly, use the above

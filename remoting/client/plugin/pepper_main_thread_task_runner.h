@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -27,10 +27,10 @@ class PepperMainThreadTaskRunner : public base::SingleThreadTaskRunner {
 
   // base::SingleThreadTaskRunner interface.
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       const base::Closure& task,
+                       base::Closure task,
                        base::TimeDelta delay) override;
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
-                                  const base::Closure& task,
+                                  base::Closure task,
                                   base::TimeDelta delay) override;
   bool RunsTasksOnCurrentThread() const override;
 
@@ -40,7 +40,7 @@ class PepperMainThreadTaskRunner : public base::SingleThreadTaskRunner {
  private:
   // Helper that allows a base::Closure to be used as a pp::CompletionCallback,
   // by ignoring the completion result.
-  void RunTask(const base::Closure& task);
+  void RunTask(base::Closure task);
 
   pp::Core* core_;
 

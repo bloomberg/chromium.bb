@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/compositor/reflector_impl.h"
+
+#include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -13,7 +16,6 @@
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "components/display_compositor/compositor_overlay_candidate_validator.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
-#include "content/browser/compositor/reflector_impl.h"
 #include "content/browser/compositor/reflector_texture.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,12 +35,12 @@ class FakeTaskRunner : public base::SingleThreadTaskRunner {
   FakeTaskRunner() {}
 
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
-                                  const base::Closure& task,
+                                  base::Closure task,
                                   base::TimeDelta delay) override {
     return true;
   }
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       const base::Closure& task,
+                       base::Closure task,
                        base::TimeDelta delay) override {
     return true;
   }

@@ -4,6 +4,9 @@
 
 #include "public/platform/scheduler/child/compositor_worker_scheduler.h"
 
+#include <utility>
+
+#include "base/callback.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 
@@ -26,15 +29,16 @@ class CompositorWorkerTaskRunnerWrapper : public TaskQueue {
   }
 
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       const base::Closure& task,
+                       base::Closure task,
                        base::TimeDelta delay) override {
-    return task_runner_->PostDelayedTask(from_here, task, delay);
+    return task_runner_->PostDelayedTask(from_here, std::move(task), delay);
   }
 
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
-                                  const base::Closure& task,
+                                  base::Closure task,
                                   base::TimeDelta delay) override {
-    return task_runner_->PostNonNestableDelayedTask(from_here, task, delay);
+    return task_runner_->PostNonNestableDelayedTask(from_here, std::move(task),
+                                                    delay);
   }
 
   std::unique_ptr<QueueEnabledVoter> CreateQueueEnabledVoter() override {

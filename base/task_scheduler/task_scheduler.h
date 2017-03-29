@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/base_export.h"
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
@@ -69,7 +69,7 @@ class BASE_EXPORT TaskScheduler {
   virtual void PostDelayedTaskWithTraits(
       const tracked_objects::Location& from_here,
       const TaskTraits& traits,
-      const Closure& task,
+      Closure task,
       TimeDelta delay) = 0;
 
   // Returns a TaskRunner whose PostTask invocations result in scheduling tasks

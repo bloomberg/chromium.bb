@@ -11,6 +11,7 @@
 #include <set>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/auto_reset.h"
@@ -35,13 +36,16 @@ TestOrderablePendingTask::TestOrderablePendingTask()
 
 TestOrderablePendingTask::TestOrderablePendingTask(
     const tracked_objects::Location& location,
-    const base::Closure& task,
+    base::Closure task,
     base::TimeTicks post_time,
     base::TimeDelta delay,
     TestNestability nestability)
-    : base::TestPendingTask(location, task, post_time, delay, nestability),
-      task_id_(TestOrderablePendingTask::task_id_counter++) {
-}
+    : base::TestPendingTask(location,
+                            std::move(task),
+                            post_time,
+                            delay,
+                            nestability),
+      task_id_(TestOrderablePendingTask::task_id_counter++) {}
 
 TestOrderablePendingTask::TestOrderablePendingTask(TestOrderablePendingTask&&) =
     default;
@@ -105,11 +109,11 @@ base::TimeTicks OrderedSimpleTaskRunner::AbsoluteMaxNow() {
 // base::TestSimpleTaskRunner implementation
 bool OrderedSimpleTaskRunner::PostDelayedTask(
     const tracked_objects::Location& from_here,
-    const base::Closure& task,
+    base::Closure task,
     base::TimeDelta delay) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  TestOrderablePendingTask pt(from_here, task, now_src_->NowTicks(), delay,
-                              base::TestPendingTask::NESTABLE);
+  TestOrderablePendingTask pt(from_here, std::move(task), now_src_->NowTicks(),
+                              delay, base::TestPendingTask::NESTABLE);
 
   TRACE_TASK("OrderedSimpleTaskRunner::PostDelayedTask", pt);
   pending_tasks_.insert(std::move(pt));
@@ -118,11 +122,11 @@ bool OrderedSimpleTaskRunner::PostDelayedTask(
 
 bool OrderedSimpleTaskRunner::PostNonNestableDelayedTask(
     const tracked_objects::Location& from_here,
-    const base::Closure& task,
+    base::Closure task,
     base::TimeDelta delay) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  TestOrderablePendingTask pt(from_here, task, now_src_->NowTicks(), delay,
-                              base::TestPendingTask::NON_NESTABLE);
+  TestOrderablePendingTask pt(from_here, std::move(task), now_src_->NowTicks(),
+                              delay, base::TestPendingTask::NON_NESTABLE);
 
   TRACE_TASK("OrderedSimpleTaskRunner::PostNonNestableDelayedTask", pt);
   pending_tasks_.insert(std::move(pt));

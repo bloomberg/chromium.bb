@@ -253,9 +253,9 @@ class SchedulerSingleThreadTaskRunnerManager::SchedulerSingleThreadTaskRunner
 
   // SingleThreadTaskRunner:
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       const Closure& closure,
+                       Closure closure,
                        TimeDelta delay) override {
-    auto task = MakeUnique<Task>(from_here, closure, traits_, delay);
+    auto task = MakeUnique<Task>(from_here, std::move(closure), traits_, delay);
     task->single_thread_task_runner_ref = this;
 
     if (!outer_->task_tracker_->WillPostTask(task.get()))
@@ -272,10 +272,10 @@ class SchedulerSingleThreadTaskRunnerManager::SchedulerSingleThreadTaskRunner
   }
 
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
-                                  const Closure& closure,
+                                  Closure closure,
                                   TimeDelta delay) override {
     // Tasks are never nested within the task scheduler.
-    return PostDelayedTask(from_here, closure, delay);
+    return PostDelayedTask(from_here, std::move(closure), delay);
   }
 
   bool RunsTasksOnCurrentThread() const override {

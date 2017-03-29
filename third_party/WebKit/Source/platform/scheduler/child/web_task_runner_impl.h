@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
@@ -23,7 +24,7 @@ class BLINK_PLATFORM_EXPORT WebTaskRunnerImpl : public WebTaskRunner {
 
   // WebTaskRunner implementation:
   void postDelayedTask(const WebTraceLocation&,
-                       const base::Closure&,
+                       base::Closure,
                        double delayMs) override;
   bool runsTasksOnCurrentThread() override;
   double virtualTimeSeconds() const override;

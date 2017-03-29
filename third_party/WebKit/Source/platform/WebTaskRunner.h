@@ -5,14 +5,14 @@
 #ifndef WebTaskRunner_h
 #define WebTaskRunner_h
 
-#include "base/callback_forward.h"
+#include <memory>
+#include "base/callback.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebTraceLocation.h"
 #include "wtf/Compiler.h"
 #include "wtf/Functional.h"
 #include "wtf/RefCounted.h"
 #include "wtf/WeakPtr.h"
-#include <memory>
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -62,7 +62,7 @@ class BLINK_PLATFORM_EXPORT WebTaskRunner
   // Schedule a task to be run after |delayMs| on the the associated WebThread.
   // Can be called from any thread.
   virtual void postDelayedTask(const WebTraceLocation&,
-                               const base::Closure&,
+                               base::Closure,
                                double delayMs) = 0;
 
   // Returns true if the current thread is a thread on which a task may be run.

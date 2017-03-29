@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/message_loop/message_loop.h"
@@ -30,18 +32,18 @@ class TestTaskRunner : public base::SingleThreadTaskRunner {
                     base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
-                                  const base::Closure& task,
+                                  base::Closure task,
                                   base::TimeDelta delay) override {
     NOTREACHED();
     return false;
   }
 
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       const base::Closure& task,
+                       base::Closure task,
                        base::TimeDelta delay) override {
     {
       base::AutoLock locker(lock_);
-      tasks_.push(task);
+      tasks_.push(std::move(task));
     }
     task_ready_.Signal();
     return true;
@@ -59,12 +61,12 @@ class TestTaskRunner : public base::SingleThreadTaskRunner {
       {
         base::AutoLock locker(lock_);
         while (!tasks_.empty()) {
-          auto task = tasks_.front();
+          auto task = std::move(tasks_.front());
           tasks_.pop();
 
           {
             base::AutoUnlock unlocker(lock_);
-            task.Run();
+            std::move(task).Run();
             if (quit_called_)
               return;
           }
@@ -87,12 +89,12 @@ class TestTaskRunner : public base::SingleThreadTaskRunner {
       {
         base::AutoLock locker(lock_);
         if (!tasks_.empty()) {
-          auto task = tasks_.front();
+          auto task = std::move(tasks_.front());
           tasks_.pop();
 
           {
             base::AutoUnlock unlocker(lock_);
-            task.Run();
+            std::move(task).Run();
             return;
           }
         }

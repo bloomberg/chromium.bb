@@ -91,10 +91,9 @@ class MockTabStripModelObserver : public TabStripModelObserver {
 class LenientMockTaskRunner {
  public:
   LenientMockTaskRunner() {}
-  MOCK_METHOD3(PostDelayedTask,
-               bool(const tracked_objects::Location&,
-                    const base::Closure&,
-                    base::TimeDelta));
+  MOCK_METHOD2(PostDelayedTask,
+               bool(const tracked_objects::Location&, base::TimeDelta));
+
  private:
   DISALLOW_COPY_AND_ASSIGN(LenientMockTaskRunner);
 };
@@ -121,11 +120,11 @@ class TaskRunnerProxy : public base::TaskRunner {
       : mock_(mock), clock_(clock) {}
   bool RunsTasksOnCurrentThread() const override { return true; }
   bool PostDelayedTask(const tracked_objects::Location& location,
-                       const base::Closure& closure,
+                       base::Closure closure,
                        base::TimeDelta delta) override {
-    mock_->PostDelayedTask(location, closure, delta);
+    mock_->PostDelayedTask(location, delta);
     base::TimeTicks when = clock_->NowTicks() + delta;
-    tasks_.push_back(Task(when, closure));
+    tasks_.push_back(Task(when, std::move(closure)));
     // Use 'greater' comparator to make this a min heap.
     std::push_heap(tasks_.begin(), tasks_.end(), TaskComparator());
     return true;
@@ -136,7 +135,7 @@ class TaskRunnerProxy : public base::TaskRunner {
     base::TimeTicks now = clock_->NowTicks();
     size_t count = 0;
     while (!tasks_.empty() && tasks_.front().first <= now) {
-      tasks_.front().second.Run();
+      std::move(tasks_.front().second).Run();
       std::pop_heap(tasks_.begin(), tasks_.end(), TaskComparator());
       tasks_.pop_back();
       ++count;
@@ -595,7 +594,6 @@ TEST_F(TabManagerTest, MAYBE_ChildProcessNotifications) {
       &ReturnSpecifiedPressure, base::Unretained(&level));
   EXPECT_CALL(mock_task_runner, PostDelayedTask(
       testing::_,
-      testing::_,
       base::TimeDelta::FromSeconds(tm.kRendererNotificationDelayInSeconds)));
   EXPECT_CALL(*this, NotifyRendererProcess(renderer2, level));
   tm.OnMemoryPressure(level);
@@ -623,7 +621,6 @@ TEST_F(TabManagerTest, MAYBE_ChildProcessNotifications) {
   // time to the foreground tab. It should also cause another scheduled event.
   EXPECT_CALL(mock_task_runner, PostDelayedTask(
       testing::_,
-      testing::_,
       base::TimeDelta::FromSeconds(tm.kRendererNotificationDelayInSeconds)));
   EXPECT_CALL(*this, NotifyRendererProcess(renderer1, level));
   EXPECT_EQ(1u, task_runner->RunNextTask());
@@ -639,7 +636,6 @@ TEST_F(TabManagerTest, MAYBE_ChildProcessNotifications) {
   // Run the scheduled task. This should cause another notification, to the
   // background tab. It should also cause another scheduled event.
   EXPECT_CALL(mock_task_runner, PostDelayedTask(
-      testing::_,
       testing::_,
       base::TimeDelta::FromSeconds(tm.kRendererNotificationDelayInSeconds)));
   EXPECT_CALL(*this, NotifyRendererProcess(renderer2, level));

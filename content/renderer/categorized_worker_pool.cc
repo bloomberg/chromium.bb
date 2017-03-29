@@ -53,15 +53,15 @@ class CategorizedWorkerPool::CategorizedWorkerPoolSequencedTaskRunner
 
   // Overridden from base::TaskRunner:
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       const base::Closure& task,
+                       base::Closure task,
                        base::TimeDelta delay) override {
-    return PostNonNestableDelayedTask(from_here, task, delay);
+    return PostNonNestableDelayedTask(from_here, std::move(task), delay);
   }
   bool RunsTasksOnCurrentThread() const override { return true; }
 
   // Overridden from base::SequencedTaskRunner:
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
-                                  const base::Closure& task,
+                                  base::Closure task,
                                   base::TimeDelta delay) override {
     base::AutoLock lock(lock_);
 
@@ -72,7 +72,7 @@ class CategorizedWorkerPool::CategorizedWorkerPoolSequencedTaskRunner
 
     tasks_.erase(tasks_.begin(), tasks_.begin() + completed_tasks_.size());
 
-    tasks_.push_back(make_scoped_refptr(new ClosureTask(task)));
+    tasks_.push_back(make_scoped_refptr(new ClosureTask(std::move(task))));
     graph_.Reset();
     for (const auto& graph_task : tasks_) {
       int dependencies = 0;
@@ -186,7 +186,7 @@ void CategorizedWorkerPool::Shutdown() {
 // Overridden from base::TaskRunner:
 bool CategorizedWorkerPool::PostDelayedTask(
     const tracked_objects::Location& from_here,
-    const base::Closure& task,
+    base::Closure task,
     base::TimeDelta delay) {
   base::AutoLock lock(lock_);
 
@@ -202,7 +202,7 @@ bool CategorizedWorkerPool::PostDelayedTask(
       });
   tasks_.erase(end, tasks_.end());
 
-  tasks_.push_back(make_scoped_refptr(new ClosureTask(task)));
+  tasks_.push_back(make_scoped_refptr(new ClosureTask(std::move(task))));
   graph_.Reset();
   for (const auto& graph_task : tasks_) {
     // Delayed tasks are assigned FOREGROUND category, ensuring that they run as
@@ -414,13 +414,12 @@ void CategorizedWorkerPool::SignalHasReadyToRunTasksWithLockAcquired() {
   }
 }
 
-CategorizedWorkerPool::ClosureTask::ClosureTask(const base::Closure& closure)
-    : closure_(closure) {}
+CategorizedWorkerPool::ClosureTask::ClosureTask(base::Closure closure)
+    : closure_(std::move(closure)) {}
 
 // Overridden from cc::Task:
 void CategorizedWorkerPool::ClosureTask::RunOnWorkerThread() {
-  closure_.Run();
-  closure_.Reset();
+  std::move(closure_).Run();
 }
 
 CategorizedWorkerPool::ClosureTask::~ClosureTask() {}

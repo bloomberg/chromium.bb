@@ -5,6 +5,7 @@
 #include "platform/scheduler/test/fake_web_task_runner.h"
 
 #include <deque>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/logging.h"
@@ -46,16 +47,16 @@ class FakeWebTaskRunner::BaseTaskRunner : public base::SingleThreadTaskRunner {
   explicit BaseTaskRunner(PassRefPtr<Data> data) : data_(std::move(data)) {}
 
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       const base::Closure& task,
+                       base::Closure task,
                        base::TimeDelta delay) override {
-    data_->PostTask(task, delay);
+    data_->PostTask(std::move(task), delay);
     return true;
   }
 
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
-                                  const base::Closure& task,
+                                  base::Closure task,
                                   base::TimeDelta delay) override {
-    data_->PostTask(task, delay);
+    data_->PostTask(std::move(task), delay);
     return true;
   }
 
@@ -81,9 +82,10 @@ void FakeWebTaskRunner::setTime(double new_time) {
 }
 
 void FakeWebTaskRunner::postDelayedTask(const WebTraceLocation&,
-                                        const base::Closure& closure,
+                                        base::Closure closure,
                                         double delay_ms) {
-  data_->PostTask(closure, base::TimeDelta::FromMillisecondsD(delay_ms));
+  data_->PostTask(std::move(closure),
+                  base::TimeDelta::FromMillisecondsD(delay_ms));
 }
 
 bool FakeWebTaskRunner::runsTasksOnCurrentThread() {
@@ -108,7 +110,7 @@ void FakeWebTaskRunner::runUntilIdle() {
     // task queue by posting a new task.
     base::Closure task = std::move(data_->task_queue_.front()).first;
     data_->task_queue_.pop_front();
-    task.Run();
+    std::move(task).Run();
   }
 }
 

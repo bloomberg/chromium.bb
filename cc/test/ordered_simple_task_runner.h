@@ -12,6 +12,7 @@
 #include <set>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -28,7 +29,7 @@ class TestOrderablePendingTask : public base::TestPendingTask {
  public:
   TestOrderablePendingTask();
   TestOrderablePendingTask(const tracked_objects::Location& location,
-                           const base::Closure& task,
+                           base::Closure task,
                            base::TimeTicks post_time,
                            base::TimeDelta delay,
                            TestNestability nestability);
@@ -63,10 +64,10 @@ class OrderedSimpleTaskRunner : public base::SingleThreadTaskRunner {
 
   // base::TestSimpleTaskRunner implementation:
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       const base::Closure& task,
+                       base::Closure task,
                        base::TimeDelta delay) override;
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
-                                  const base::Closure& task,
+                                  base::Closure task,
                                   base::TimeDelta delay) override;
 
   bool RunsTasksOnCurrentThread() const override;

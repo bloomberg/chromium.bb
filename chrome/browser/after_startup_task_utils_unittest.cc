@@ -5,6 +5,7 @@
 #include "chrome/browser/after_startup_task_utils.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -30,11 +31,12 @@ class WrappedTaskRunner : public base::TaskRunner {
       : real_task_runner_(real_runner) {}
 
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       const base::Closure& task,
+                       base::Closure task,
                        base::TimeDelta delay) override {
     ++posted_task_count_;
     return real_task_runner_->PostDelayedTask(
-        from_here, base::Bind(&WrappedTaskRunner::RunWrappedTask, this, task),
+        from_here,
+        base::Bind(&WrappedTaskRunner::RunWrappedTask, this, std::move(task)),
         base::TimeDelta());  // Squash all delays so our tests complete asap.
   }
 
@@ -56,9 +58,9 @@ class WrappedTaskRunner : public base::TaskRunner {
  private:
   ~WrappedTaskRunner() override {}
 
-  void RunWrappedTask(const base::Closure& task) {
+  void RunWrappedTask(base::Closure task) {
     ++ran_task_count_;
-    task.Run();
+    std::move(task).Run();
   }
 
   scoped_refptr<TaskRunner> real_task_runner_;
@@ -96,11 +98,12 @@ class AfterStartupTaskTest : public testing::Test {
   void PostAfterStartupTaskFromDBThread(
       const tracked_objects::Location& from_here,
       const scoped_refptr<base::TaskRunner>& task_runner,
-      const base::Closure& task) {
+      base::Closure task) {
     RunLoop run_loop;
     db_thread_->real_runner()->PostTaskAndReply(
-        FROM_HERE, base::Bind(&AfterStartupTaskUtils::PostTask, from_here,
-                              task_runner, task),
+        FROM_HERE,
+        base::Bind(&AfterStartupTaskUtils::PostTask, from_here, task_runner,
+                   std::move(task)),
         base::Bind(&RunLoop::Quit, base::Unretained(&run_loop)));
     run_loop.Run();
   }

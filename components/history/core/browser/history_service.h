@@ -795,7 +795,7 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
 
   // Call to schedule a given task for running on the history thread with the
   // specified priority. The task will have ownership taken.
-  void ScheduleTask(SchedulePriority priority, const base::Closure& task);
+  void ScheduleTask(SchedulePriority priority, base::Closure task);
 
   // Called when the favicons for the given page URLs (e.g.
   // http://www.google.com) and the given icon URL (e.g.

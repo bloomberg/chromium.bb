@@ -48,17 +48,17 @@ class TestContentBrowserClient : public ::content::ContentBrowserClient {
   // ::content::ContentBrowserClient:
   void PostAfterStartupTask(const tracked_objects::Location&,
                             const scoped_refptr<base::TaskRunner>& task_runner,
-                            const base::Closure& task) override {
+                            base::Closure task) override {
     scoped_refptr<base::TaskRunner> ui_task_runner =
         content::BrowserThread::GetTaskRunnerForThread(
             content::BrowserThread::UI);
     EXPECT_EQ(ui_task_runner, task_runner);
-    last_task_ = task;
+    last_task_ = std::move(task);
   }
 
   void RunAfterStartupTask() {
     if (!last_task_.is_null())
-      last_task_.Run();
+      std::move(last_task_).Run();
   }
 
  private:

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/tick_clock.h"
@@ -31,10 +32,10 @@ class LazySchedulerMessageLoopDelegateForTests : public SchedulerTqmDelegate {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   void RestoreDefaultTaskRunner() override;
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       const base::Closure& task,
+                       base::Closure task,
                        base::TimeDelta delay) override;
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
-                                  const base::Closure& task,
+                                  base::Closure task,
                                   base::TimeDelta delay) override;
   bool RunsTasksOnCurrentThread() const override;
   bool IsNested() const override;

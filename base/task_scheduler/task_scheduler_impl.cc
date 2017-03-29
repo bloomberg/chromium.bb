@@ -122,11 +122,11 @@ TaskSchedulerImpl::~TaskSchedulerImpl() {
 void TaskSchedulerImpl::PostDelayedTaskWithTraits(
     const tracked_objects::Location& from_here,
     const TaskTraits& traits,
-    const Closure& task,
+    Closure task,
     TimeDelta delay) {
   // Post |task| as part of a one-off single-task Sequence.
   GetWorkerPoolForTraits(traits)->PostTaskWithSequence(
-      MakeUnique<Task>(from_here, task, traits, delay),
+      MakeUnique<Task>(from_here, std::move(task), traits, delay),
       make_scoped_refptr(new Sequence));
 }
 

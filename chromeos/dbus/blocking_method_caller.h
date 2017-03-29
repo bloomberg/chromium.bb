@@ -5,7 +5,6 @@
 #ifndef CHROMEOS_DBUS_BLOCKING_METHOD_CALLER_H_
 #define CHROMEOS_DBUS_BLOCKING_METHOD_CALLER_H_
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "base/synchronization/waitable_event.h"
 #include "chromeos/chromeos_export.h"

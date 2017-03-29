@@ -5,6 +5,7 @@
 #include "chromecast/base/system_time_change_notifier.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -27,14 +28,14 @@ class SequencedTaskRunnerNoDelay : public base::SequencedTaskRunner {
 
   // base::SequencedTaskRunner implementation:
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       const base::Closure& task,
+                       base::Closure task,
                        base::TimeDelta delay) override {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(from_here, task);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(from_here, std::move(task));
     return true;
   }
 
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
-                                  const base::Closure& task,
+                                  base::Closure task,
                                   base::TimeDelta delay) override {
     return true;
   }

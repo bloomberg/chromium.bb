@@ -4,6 +4,8 @@
 
 #include "platform/scheduler/child/web_task_runner_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
@@ -20,11 +22,11 @@ RefPtr<WebTaskRunnerImpl> WebTaskRunnerImpl::create(
 }
 
 void WebTaskRunnerImpl::postDelayedTask(const WebTraceLocation& location,
-                                        const base::Closure& task,
+                                        base::Closure task,
                                         double delayMs) {
   DCHECK_GE(delayMs, 0.0) << location.function_name() << " "
                           << location.file_name();
-  task_queue_->PostDelayedTask(location, task,
+  task_queue_->PostDelayedTask(location, std::move(task),
                                base::TimeDelta::FromMillisecondsD(delayMs));
 }
 

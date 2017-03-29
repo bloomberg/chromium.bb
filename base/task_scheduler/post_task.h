@@ -70,7 +70,7 @@ namespace base {
 // Posts |task| to the TaskScheduler. Calling this is equivalent to calling
 // PostTaskWithTraits with plain TaskTraits.
 BASE_EXPORT void PostTask(const tracked_objects::Location& from_here,
-                          const Closure& task);
+                          Closure task);
 
 // Posts |task| to the TaskScheduler. |task| will not run before |delay|
 // expires. Calling this is equivalent to calling PostDelayedTaskWithTraits with
@@ -79,7 +79,7 @@ BASE_EXPORT void PostTask(const tracked_objects::Location& from_here,
 // Use PostDelayedTaskWithTraits to specify a BACKGROUND priority if the task
 // doesn't have to run as soon as |delay| expires.
 BASE_EXPORT void PostDelayedTask(const tracked_objects::Location& from_here,
-                                 const Closure& task,
+                                 Closure task,
                                  TimeDelta delay);
 
 // Posts |task| to the TaskScheduler and posts |reply| on the caller's execution
@@ -107,7 +107,7 @@ void PostTaskAndReplyWithResult(const tracked_objects::Location& from_here,
 // Posts |task| with specific |traits| to the TaskScheduler.
 BASE_EXPORT void PostTaskWithTraits(const tracked_objects::Location& from_here,
                                     const TaskTraits& traits,
-                                    const Closure& task);
+                                    Closure task);
 
 // Posts |task| with specific |traits| to the TaskScheduler. |task| will not run
 // before |delay| expires.
@@ -117,7 +117,7 @@ BASE_EXPORT void PostTaskWithTraits(const tracked_objects::Location& from_here,
 BASE_EXPORT void PostDelayedTaskWithTraits(
     const tracked_objects::Location& from_here,
     const TaskTraits& traits,
-    const Closure& task,
+    Closure task,
     TimeDelta delay);
 
 // Posts |task| with specific |traits| to the TaskScheduler and posts |reply| on

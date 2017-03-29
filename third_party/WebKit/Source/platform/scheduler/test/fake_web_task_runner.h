@@ -7,6 +7,7 @@
 
 #include <deque>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "platform/WebTaskRunner.h"
@@ -24,9 +25,7 @@ class FakeWebTaskRunner : public WebTaskRunner {
   void setTime(double new_time);
 
   // WebTaskRunner implementation:
-  void postDelayedTask(const WebTraceLocation&,
-                       const base::Closure&,
-                       double) override;
+  void postDelayedTask(const WebTraceLocation&, base::Closure, double) override;
   bool runsTasksOnCurrentThread() override;
   double virtualTimeSeconds() const override;
   double monotonicallyIncreasingVirtualTimeSeconds() const override;

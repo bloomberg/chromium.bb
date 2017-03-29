@@ -23,14 +23,14 @@ class AutoThreadTaskRunner : public base::SingleThreadTaskRunner {
   // |stop_task| is posted to |task_runner| when the last reference to
   // the AutoThreadTaskRunner is dropped.
   AutoThreadTaskRunner(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                       const base::Closure& stop_task);
+                       base::Closure stop_task);
 
   // SingleThreadTaskRunner implementation
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       const base::Closure& task,
+                       base::Closure task,
                        base::TimeDelta delay) override;
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
-                                  const base::Closure& task,
+                                  base::Closure task,
                                   base::TimeDelta delay) override;
   bool RunsTasksOnCurrentThread() const override;
 

@@ -106,18 +106,18 @@ class CONTENT_EXPORT BrowserThread {
   // the target thread may already have a Quit message in its queue.
   static bool PostTask(ID identifier,
                        const tracked_objects::Location& from_here,
-                       const base::Closure& task);
+                       base::Closure task);
   static bool PostDelayedTask(ID identifier,
                               const tracked_objects::Location& from_here,
-                              const base::Closure& task,
+                              base::Closure task,
                               base::TimeDelta delay);
   static bool PostNonNestableTask(ID identifier,
                                   const tracked_objects::Location& from_here,
-                                  const base::Closure& task);
+                                  base::Closure task);
   static bool PostNonNestableDelayedTask(
       ID identifier,
       const tracked_objects::Location& from_here,
-      const base::Closure& task,
+      base::Closure task,
       base::TimeDelta delay);
 
   static bool PostTaskAndReply(ID identifier,
@@ -173,7 +173,7 @@ class CONTENT_EXPORT BrowserThread {
   // base::PostTaskAndReplyWithResult() with GetBlockingPool() as the task
   // runner.
   static bool PostBlockingPoolTask(const tracked_objects::Location& from_here,
-                                   const base::Closure& task);
+                                   base::Closure task);
   static bool PostBlockingPoolTaskAndReply(
       const tracked_objects::Location& from_here,
       base::Closure task,
@@ -181,7 +181,7 @@ class CONTENT_EXPORT BrowserThread {
   static bool PostBlockingPoolSequencedTask(
       const std::string& sequence_token_name,
       const tracked_objects::Location& from_here,
-      const base::Closure& task);
+      base::Closure task);
 
   // For use with scheduling non-critical tasks for execution after startup.
   // The order or execution of tasks posted here is unspecified even when
@@ -193,7 +193,7 @@ class CONTENT_EXPORT BrowserThread {
   static void PostAfterStartupTask(
       const tracked_objects::Location& from_here,
       const scoped_refptr<base::TaskRunner>& task_runner,
-      const base::Closure& task);
+      base::Closure task);
 
   // Returns the thread pool used for blocking file I/O. Use this object to
   // perform random blocking operations such as file writes or querying the

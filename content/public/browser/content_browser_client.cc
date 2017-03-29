@@ -4,6 +4,8 @@
 
 #include "content/public/browser/content_browser_client.h"
 
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/guid.h"
 #include "base/logging.h"
@@ -29,8 +31,8 @@ BrowserMainParts* ContentBrowserClient::CreateBrowserMainParts(
 void ContentBrowserClient::PostAfterStartupTask(
     const tracked_objects::Location& from_here,
     const scoped_refptr<base::TaskRunner>& task_runner,
-    const base::Closure& task) {
-  task_runner->PostTask(from_here, task);
+    base::Closure task) {
+  task_runner->PostTask(from_here, std::move(task));
 }
 
 bool ContentBrowserClient::IsBrowserStartupComplete() {
