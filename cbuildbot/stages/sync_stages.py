@@ -1185,7 +1185,7 @@ class PreCQLauncherStage(SyncStage):
   LAUNCH_DELAY = 2
 
   # The number of minutes we allow before considering a launch attempt failed.
-  LAUNCH_TIMEOUT = 30
+  LAUNCH_TIMEOUT = 90
 
   # The number of minutes we allow before considering an in-flight job failed.
   INFLIGHT_TIMEOUT = 240
