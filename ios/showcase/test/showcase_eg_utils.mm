@@ -19,6 +19,11 @@ id<GREYMatcher> BackButton() {
       NSClassFromString(@"_UINavigationBarBackIndicatorView"));
 }
 
+// Matcher for the Showcase home screen view.
+id<GREYMatcher> HomeScreen() {
+  return grey_accessibilityID(@"showcase_home_collection");
+}
+
 // Returns the Showcase navigation controller.
 UINavigationController* ShowcaseNavigationController() {
   UINavigationController* showcaseNavigationController =
@@ -32,10 +37,11 @@ UINavigationController* ShowcaseNavigationController() {
 namespace showcase_utils {
 
 void Open(NSString* name) {
+  [[EarlGrey selectElementWithMatcher:HomeScreen()]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeTop)];
   [[[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(name)]
-         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 50)
-      onElementWithMatcher:grey_accessibilityID(@"showcase_home_collection")]
-      performAction:grey_tap()];
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 200)
+      onElementWithMatcher:HomeScreen()] performAction:grey_tap()];
 }
 
 void Close() {
