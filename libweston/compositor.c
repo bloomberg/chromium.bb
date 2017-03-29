@@ -4464,8 +4464,10 @@ weston_output_move(struct weston_output *output, int x, int y)
 	}
 }
 
-/** Adds an output to the compositor's output list and
- *  send the compositor's output_created signal.
+/** Signal that a pending output is taken into use.
+ *
+ * Removes the output from the pending list and adds it to the compositor's
+ * list of enabled outputs. The output created signal is emitted.
  *
  * \param compositor The compositor instance.
  * \param output The output to be added.
@@ -4476,7 +4478,9 @@ weston_compositor_add_output(struct weston_compositor *compositor,
 {
 	struct weston_view *view, *next;
 
+	wl_list_remove(&output->link);
 	wl_list_insert(compositor->output_list.prev, &output->link);
+
 	wl_signal_emit(&compositor->output_created_signal, output);
 
 	wl_list_for_each_safe(view, next, &compositor->view_list, link)
@@ -4535,6 +4539,8 @@ weston_output_enable_undo(struct weston_output *output)
  * - Compositor is notified that outputs were changed and
  *   applies the necessary changes to re-layout outputs.
  *
+ * - The output is put back in the pending outputs list.
+ *
  * - Signal is emitted to notify all users of the weston_output
  *   object that the output is being destroyed.
  *
@@ -4558,7 +4564,9 @@ weston_compositor_remove_output(struct weston_output *output)
 	weston_presentation_feedback_discard_list(&output->feedback_list);
 
 	weston_compositor_reflow_outputs(compositor, output, output->width);
+
 	wl_list_remove(&output->link);
+	wl_list_insert(compositor->pending_output_list.prev, &output->link);
 
 	wl_signal_emit(&compositor->output_destroyed_signal, output);
 	wl_signal_emit(&output->destroy_signal, output);
@@ -4654,11 +4662,14 @@ weston_output_init(struct weston_output *output,
  *
  * Also notifies the compositor that an output is pending for
  * configuration.
+ *
+ * The opposite of this operation is built into weston_output_destroy().
  */
 WL_EXPORT void
 weston_compositor_add_pending_output(struct weston_output *output,
 				     struct weston_compositor *compositor)
 {
+	wl_list_remove(&output->link);
 	wl_list_insert(compositor->pending_output_list.prev, &output->link);
 	wl_signal_emit(&compositor->output_pending_signal, output);
 }
@@ -4716,9 +4727,6 @@ weston_output_enable(struct weston_output *output)
 	/* Make sure we have a transform set */
 	assert(output->transform != UINT32_MAX);
 
-	/* Remove it from pending/disabled output list */
-	wl_list_remove(&output->link);
-
 	/* Verify we haven't reached the limit of 32 available output IDs */
 	assert(ffs(~c->output_id_pool) > 0);
 
@@ -4738,7 +4746,6 @@ weston_output_enable(struct weston_output *output)
 	wl_list_init(&output->animation_list);
 	wl_list_init(&output->resource_list);
 	wl_list_init(&output->feedback_list);
-	wl_list_init(&output->link);
 
 	/* Invert the output id pool and look for the lowest numbered
 	 * switch (the least significant bit).  Take that bit's position
@@ -4761,8 +4768,6 @@ weston_output_enable(struct weston_output *output)
 		weston_log("Enabling output \"%s\" failed.\n", output->name);
 
 		weston_output_enable_undo(output);
-		wl_list_insert(output->compositor->pending_output_list.prev,
-			       &output->link);
 		return -1;
 	}
 
@@ -4815,10 +4820,6 @@ weston_output_disable(struct weston_output *output)
 	if (output->enabled) {
 		weston_compositor_remove_output(output);
 		weston_output_enable_undo(output);
-
-		/* We need to preserve it somewhere so it can be destroyed on shutdown
-		   if nobody wants to configure it again */
-		wl_list_insert(output->compositor->pending_output_list.prev, &output->link);
 	}
 
 	output->destroying = 0;
@@ -4847,6 +4848,7 @@ weston_output_destroy(struct weston_output *output)
 		weston_output_enable_undo(output);
 	}
 
+	wl_list_remove(&output->link);
 	free(output->name);
 }
 
