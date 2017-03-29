@@ -506,14 +506,17 @@ const FeatureEntry::Choice kNtpSwitchToExistingTabChoices[] = {
 #endif  // OS_ANDROID
 
 #if defined(OS_CHROMEOS)
-const FeatureEntry::Choice kForceTabletModeChoices[] = {
+const FeatureEntry::Choice kAshForceTabletModeChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flag_descriptions::kForceTabletModeTouchview, switches::kForceTabletMode,
-     switches::kForceTabletModeTouchView},
-    {flag_descriptions::kForceTabletModeClamshell, switches::kForceTabletMode,
-     switches::kForceTabletModeClamshell},
-    {flag_descriptions::kForceTabletModeAuto, switches::kForceTabletMode,
-     switches::kForceTabletModeAuto},
+    {flag_descriptions::kForceTabletModeTouchview,
+     ash::switches::kAshForceTabletMode,
+     ash::switches::kAshForceTabletModeTouchView},
+    {flag_descriptions::kForceTabletModeClamshell,
+     ash::switches::kAshForceTabletMode,
+     ash::switches::kAshForceTabletModeClamshell},
+    {flag_descriptions::kForceTabletModeAuto,
+     ash::switches::kAshForceTabletMode,
+     ash::switches::kAshForceTabletModeAuto},
 };
 #endif  // OS_CHROMEOS
 
@@ -2467,7 +2470,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if defined(OS_CHROMEOS)
     {"force-tablet-mode", flag_descriptions::kForceTabletModeName,
      flag_descriptions::kForceTabletModeDescription, kOsCrOS,
-     MULTI_VALUE_TYPE(kForceTabletModeChoices)},
+     MULTI_VALUE_TYPE(kAshForceTabletModeChoices)},
 #endif  // OS_CHROMEOS
 
 #if defined(OS_ANDROID)

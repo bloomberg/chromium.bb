@@ -69,6 +69,15 @@ const char kAshEstimatedPresentationDelay[] =
 // Enables the palette next to the status area.
 const char kAshForceEnablePalette[] = "ash-force-enable-palette";
 
+// Enables required things for the selected UI mode, regardless of whether the
+// Chromebook is currently in the selected UI mode.
+const char kAshForceTabletMode[] = "force-tablet-mode";
+
+// Values for the kAshForceTabletMode flag.
+const char kAshForceTabletModeAuto[] = "auto";
+const char kAshForceTabletModeClamshell[] = "clamshell";
+const char kAshForceTabletModeTouchView[] = "touch_view";
+
 // Hides notifications that are irrelevant to Chrome OS device factory testing,
 // such as battery level updates.
 const char kAshHideNotificationsForFactory[] =
