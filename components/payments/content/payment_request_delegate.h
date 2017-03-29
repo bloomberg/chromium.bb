@@ -26,6 +26,10 @@ class PaymentRequestDelegate {
   // call when the dialog is not showing.
   virtual void CloseDialog() = 0;
 
+  // Disables the dialog and shows an error message that the transaction has
+  // failed.
+  virtual void ShowErrorMessage() = 0;
+
   // Gets the PersonalDataManager associated with this PaymentRequest flow.
   // Cannot be null.
   virtual autofill::PersonalDataManager* GetPersonalDataManager() = 0;

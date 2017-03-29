@@ -56,6 +56,10 @@ class PaymentRequestSheetController : public views::ButtonListener {
   // enabled state).
   virtual std::unique_ptr<views::Button> CreatePrimaryButton();
 
+  // Returns the text that should be on the secondary button, by default
+  // "Cancel".
+  virtual base::string16 GetSecondaryButtonLabel();
+
   // Returns whether this sheet should display a back arrow in the header next
   // to the title.
   virtual bool ShouldShowHeaderBackArrow();

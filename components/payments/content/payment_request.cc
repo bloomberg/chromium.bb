@@ -79,15 +79,17 @@ void PaymentRequest::Abort() {
     client_->OnAbort(true /* aborted_successfully */);
 }
 
-void PaymentRequest::Complete(payments::mojom::PaymentComplete result) {
+void PaymentRequest::Complete(mojom::PaymentComplete result) {
   if (!client_.is_bound())
     return;
 
-  // TODO(mathp): Validate |result|.
-
-  // When the renderer closes the connection,
-  // PaymentRequest::OnConnectionTerminated will be called.
-  client_->OnComplete();
+  if (result != mojom::PaymentComplete::SUCCESS) {
+    delegate_->ShowErrorMessage();
+  } else {
+    // When the renderer closes the connection,
+    // PaymentRequest::OnConnectionTerminated will be called.
+    client_->OnComplete();
+  }
 }
 
 void PaymentRequest::CanMakePayment() {

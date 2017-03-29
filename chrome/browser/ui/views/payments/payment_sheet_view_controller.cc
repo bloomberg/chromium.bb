@@ -20,9 +20,7 @@
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "chrome/browser/ui/views/payments/payment_request_row_view.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
-#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/theme_resources.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/payments/content/payment_request_spec.h"
@@ -260,26 +258,7 @@ void PaymentSheetViewController::FillContentView(views::View* content_view) {
 // +---------------------------------------------------------+
 std::unique_ptr<views::View>
 PaymentSheetViewController::CreateExtraFooterView() {
-  std::unique_ptr<views::View> content_view = base::MakeUnique<views::View>();
-
-  views::BoxLayout* layout =
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
-  layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
-  layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
-  content_view->SetLayoutManager(layout);
-
-  // Adds the Chrome logo image.
-  std::unique_ptr<views::ImageView> chrome_logo =
-      base::MakeUnique<views::ImageView>();
-  chrome_logo->set_can_process_events_within_subtree(false);
-  chrome_logo->SetImage(ResourceBundle::GetSharedInstance()
-                            .GetImageNamed(IDR_PRODUCT_LOGO_NAME_22)
-                            .AsImageSkia());
-  chrome_logo->SetTooltipText(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
-  content_view->AddChildView(chrome_logo.release());
-
-  return content_view;
+  return CreateProductLogoFooterView();
 }
 
 void PaymentSheetViewController::ButtonPressed(

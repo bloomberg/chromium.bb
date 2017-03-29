@@ -1,0 +1,46 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include <vector>
+
+#include "base/macros.h"
+#include "chrome/browser/ui/views/payments/payment_request_browsertest_base.h"
+#include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
+#include "chrome/test/base/ui_test_utils.h"
+#include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/credit_card.h"
+#include "content/public/test/browser_test_utils.h"
+
+namespace payments {
+
+class PaymentRequestErrorMessageTest : public PaymentRequestBrowserTestBase {
+ protected:
+  PaymentRequestErrorMessageTest()
+      : PaymentRequestBrowserTestBase(
+            "/payment_request_fail_complete_test.html") {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PaymentRequestErrorMessageTest);
+};
+
+// Testing the use of the complete('fail') JS API and the error message.
+IN_PROC_BROWSER_TEST_F(PaymentRequestErrorMessageTest, CompleteFail) {
+  AddCreditCard(autofill::test::GetCreditCard());  // Visa
+  InvokePaymentRequestUI();
+
+  // We are ready to pay.
+  ASSERT_TRUE(IsPayButtonEnabled());
+
+  // Once "Pay" is clicked, the page will call complete('fail') and the error
+  // message should be shown.
+  ResetEventObserver(DialogEvent::ERROR_MESSAGE_SHOWN);
+  ClickOnDialogViewAndWait(DialogViewID::PAY_BUTTON);
+
+  // The user can only close the dialog at this point.
+  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+  ClickOnDialogViewAndWait(DialogViewID::CANCEL_BUTTON,
+                           /*wait_for_animation=*/false);
+}
+
+}  // namespace payments

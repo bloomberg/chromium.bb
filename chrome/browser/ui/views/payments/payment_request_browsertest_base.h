@@ -85,6 +85,7 @@ class PaymentRequestBrowserTestBase
   void OnBackNavigation() override;
   void OnContactInfoOpened() override;
   void OnEditorViewUpdated() override;
+  void OnErrorMessageShown() override;
 
   // views::WidgetObserver
   // Effective way to be warned of all dialog closures.
@@ -127,8 +128,10 @@ class PaymentRequestBrowserTestBase
 
   // Click on a view from within the dialog and waits for an observed event
   // to be observed.
-  void ClickOnDialogViewAndWait(DialogViewID view_id);
-  void ClickOnDialogViewAndWait(views::View* view);
+  void ClickOnDialogViewAndWait(DialogViewID view_id,
+                                bool wait_for_animation = true);
+  void ClickOnDialogViewAndWait(views::View* view,
+                                bool wait_for_animation = true);
 
   // Setting the |value| in the textfield of a given |type|.
   void SetEditorTextfieldValue(const base::string16& value,
@@ -170,6 +173,7 @@ class PaymentRequestBrowserTestBase
     CONTACT_INFO_OPENED,
     EDITOR_VIEW_UPDATED,
     CAN_MAKE_PAYMENT_CALLED,
+    ERROR_MESSAGE_SHOWN,
   };
 
   // DialogEventObserver is used to wait on specific events that may have

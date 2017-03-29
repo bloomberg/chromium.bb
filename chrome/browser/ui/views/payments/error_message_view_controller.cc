@@ -1,0 +1,56 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/ui/views/payments/error_message_view_controller.h"
+
+#include <memory>
+
+#include "base/memory/ptr_util.h"
+#include "chrome/browser/ui/views/payments/payment_request_views_util.h"
+#include "components/strings/grit/components_strings.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/native_theme/native_theme.h"
+#include "ui/views/controls/label.h"
+#include "ui/views/layout/box_layout.h"
+
+namespace payments {
+
+ErrorMessageViewController::ErrorMessageViewController(
+    PaymentRequestSpec* spec,
+    PaymentRequestState* state,
+    PaymentRequestDialogView* dialog)
+    : PaymentRequestSheetController(spec, state, dialog) {}
+
+ErrorMessageViewController::~ErrorMessageViewController() {}
+
+base::string16 ErrorMessageViewController::GetSecondaryButtonLabel() {
+  return l10n_util::GetStringUTF16(IDS_CLOSE);
+}
+
+bool ErrorMessageViewController::ShouldShowHeaderBackArrow() {
+  return false;
+}
+
+base::string16 ErrorMessageViewController::GetSheetTitle() {
+  return l10n_util::GetStringUTF16(IDS_PAYMENTS_ERROR_MESSAGE_DIALOG_TITLE);
+}
+
+void ErrorMessageViewController::FillContentView(views::View* content_view) {
+  views::BoxLayout* layout = new views::BoxLayout(
+      views::BoxLayout::kVertical, kPaymentRequestRowHorizontalInsets, 0, 0);
+  layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+  layout->set_cross_axis_alignment(
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+  content_view->SetLayoutManager(layout);
+
+  std::unique_ptr<views::Label> label = base::MakeUnique<views::Label>(
+      l10n_util::GetStringUTF16(IDS_PAYMENTS_ERROR_MESSAGE));
+  label->SetEnabledColor(label->GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_AlertSeverityHigh));
+  label->SetMultiLine(true);
+
+  content_view->AddChildView(label.release());
+}
+
+}  // namespace payments

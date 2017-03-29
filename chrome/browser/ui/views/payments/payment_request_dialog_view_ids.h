@@ -26,6 +26,7 @@ enum class DialogViewID : int {
   PAYMENT_METHOD_ADD_CONTACT_BUTTON,
   EDITOR_SAVE_BUTTON,
   PAY_BUTTON,
+  CANCEL_BUTTON,
 
   // The following are StyledLabel objects.
   ORDER_SUMMARY_TOTAL_AMOUNT_LABEL,

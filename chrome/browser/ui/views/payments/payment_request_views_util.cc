@@ -10,6 +10,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/payments/payment_request_sheet_controller.h"
+#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/theme_resources.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_type.h"
@@ -185,6 +187,29 @@ std::unique_ptr<views::ImageView> CreateInstrumentIconView(
       1, 3, card_icon_view->GetNativeTheme()->GetSystemColor(
                 ui::NativeTheme::kColorId_UnfocusedBorderColor)));
   return card_icon_view;
+}
+
+std::unique_ptr<views::View> CreateProductLogoFooterView() {
+  std::unique_ptr<views::View> content_view = base::MakeUnique<views::View>();
+
+  views::BoxLayout* layout =
+      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
+  layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+  layout->set_cross_axis_alignment(
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+  content_view->SetLayoutManager(layout);
+
+  // Adds the Chrome logo image.
+  std::unique_ptr<views::ImageView> chrome_logo =
+      base::MakeUnique<views::ImageView>();
+  chrome_logo->set_can_process_events_within_subtree(false);
+  chrome_logo->SetImage(ResourceBundle::GetSharedInstance()
+                            .GetImageNamed(IDR_PRODUCT_LOGO_NAME_22)
+                            .AsImageSkia());
+  chrome_logo->SetTooltipText(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+  content_view->AddChildView(chrome_logo.release());
+
+  return content_view;
 }
 
 std::unique_ptr<views::View> GetShippingAddressLabel(

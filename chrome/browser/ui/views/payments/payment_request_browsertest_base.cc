@@ -141,6 +141,11 @@ void PaymentRequestBrowserTestBase::OnEditorViewUpdated() {
     event_observer_->Observe(DialogEvent::EDITOR_VIEW_UPDATED);
 }
 
+void PaymentRequestBrowserTestBase::OnErrorMessageShown() {
+  if (event_observer_)
+    event_observer_->Observe(DialogEvent::ERROR_MESSAGE_SHOWN);
+}
+
 void PaymentRequestBrowserTestBase::OnWidgetDestroyed(views::Widget* widget) {
   if (event_observer_)
     event_observer_->Observe(DialogEvent::DIALOG_CLOSED);
@@ -281,15 +286,17 @@ void PaymentRequestBrowserTestBase::CreatePaymentRequestForTest(
 }
 
 void PaymentRequestBrowserTestBase::ClickOnDialogViewAndWait(
-    DialogViewID view_id) {
+    DialogViewID view_id,
+    bool wait_for_animation) {
   views::View* view =
       delegate_->dialog_view()->GetViewByID(static_cast<int>(view_id));
   DCHECK(view);
-  ClickOnDialogViewAndWait(view);
+  ClickOnDialogViewAndWait(view, wait_for_animation);
 }
 
 void PaymentRequestBrowserTestBase::ClickOnDialogViewAndWait(
-    views::View* view) {
+    views::View* view,
+    bool wait_for_animation) {
   DCHECK(view);
   ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                          ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
@@ -300,7 +307,8 @@ void PaymentRequestBrowserTestBase::ClickOnDialogViewAndWait(
       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   view->OnMouseReleased(released_event);
 
-  WaitForAnimation();
+  if (wait_for_animation)
+    WaitForAnimation();
 
   WaitForObservedEvent();
 }

@@ -31,6 +31,11 @@ void ChromePaymentRequestDelegate::CloseDialog() {
   }
 }
 
+void ChromePaymentRequestDelegate::ShowErrorMessage() {
+  if (dialog_)
+    dialog_->ShowErrorMessage();
+}
+
 autofill::PersonalDataManager*
 ChromePaymentRequestDelegate::GetPersonalDataManager() {
   return autofill::PersonalDataManagerFactory::GetForProfile(

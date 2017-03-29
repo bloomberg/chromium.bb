@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/payments/payment_request_sheet_controller.h"
 
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
+#include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "components/payments/content/payment_request.h"
 #include "components/strings/grit/components_strings.h"
@@ -44,6 +45,10 @@ void PaymentRequestSheetController::UpdateContentView() {
 std::unique_ptr<views::Button>
 PaymentRequestSheetController::CreatePrimaryButton() {
   return nullptr;
+}
+
+base::string16 PaymentRequestSheetController::GetSecondaryButtonLabel() {
+  return l10n_util::GetStringUTF16(IDS_CANCEL);
 }
 
 bool PaymentRequestSheetController::ShouldShowHeaderBackArrow() {
@@ -154,8 +159,9 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateFooterView() {
     trailing_buttons_container->AddChildView(primary_button.release());
 
   views::LabelButton* button = views::MdTextButton::CreateSecondaryUiButton(
-      this, l10n_util::GetStringUTF16(IDS_CANCEL));
+      this, GetSecondaryButtonLabel());
   button->set_tag(static_cast<int>(PaymentRequestCommonTags::CLOSE_BUTTON_TAG));
+  button->set_id(static_cast<int>(DialogViewID::CANCEL_BUTTON));
   trailing_buttons_container->AddChildView(button);
 
   layout->AddView(trailing_buttons_container.release());

@@ -76,6 +76,9 @@
   <message name="IDS_PAYMENTS_PROCESSING_MESSAGE" desc="The text that informs the user that payment is being processed." formatter_data="android_java">
     Processing
   </message>
+  <message name="IDS_PAYMENTS_ERROR_MESSAGE_DIALOG_TITLE" desc="The title of the dialog that informs the user that there is error in verifying and charging the payment.">
+    Payment Not Completed
+  </message>
   <message name="IDS_PAYMENTS_ERROR_MESSAGE" desc="The text that informs the user that there is error in verifying and charging the payment." formatter_data="android_java">
     There was an error processing your order. Please try again.
   </message>

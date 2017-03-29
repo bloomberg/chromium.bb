@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/views/payments/credit_card_editor_view_controller.h"
+#include "chrome/browser/ui/views/payments/error_message_view_controller.h"
 #include "chrome/browser/ui/views/payments/order_summary_view_controller.h"
 #include "chrome/browser/ui/views/payments/payment_method_view_controller.h"
 #include "chrome/browser/ui/views/payments/payment_sheet_view_controller.h"
@@ -95,6 +96,26 @@ int PaymentRequestDialogView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
 }
 
+void PaymentRequestDialogView::ShowDialog() {
+  constrained_window::ShowWebModalDialogViews(this, request_->web_contents());
+}
+
+void PaymentRequestDialogView::CloseDialog() {
+  // This calls PaymentRequestDialogView::Cancel() before closing.
+  // ViewHierarchyChanged() also gets called after Cancel().
+  GetWidget()->Close();
+}
+
+void PaymentRequestDialogView::ShowErrorMessage() {
+  view_stack_.Push(CreateViewAndInstallController(
+                       base::MakeUnique<ErrorMessageViewController>(
+                           request_->spec(), request_->state(), this),
+                       &controller_map_),
+                   /* animate = */ false);
+  if (observer_for_testing_)
+    observer_for_testing_->OnErrorMessageShown();
+}
+
 void PaymentRequestDialogView::Pay() {
   request_->Pay();
 }
@@ -179,16 +200,6 @@ void PaymentRequestDialogView::ShowShippingAddressEditor() {
 void PaymentRequestDialogView::EditorViewUpdated() {
   if (observer_for_testing_)
     observer_for_testing_->OnEditorViewUpdated();
-}
-
-void PaymentRequestDialogView::ShowDialog() {
-  constrained_window::ShowWebModalDialogViews(this, request_->web_contents());
-}
-
-void PaymentRequestDialogView::CloseDialog() {
-  // This calls PaymentRequestDialogView::Cancel() before closing.
-  // ViewHierarchyChanged() also gets called after Cancel().
-  GetWidget()->Close();
 }
 
 void PaymentRequestDialogView::ShowInitialPaymentSheet() {

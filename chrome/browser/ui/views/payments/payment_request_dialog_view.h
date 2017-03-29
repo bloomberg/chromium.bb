@@ -49,6 +49,8 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
     virtual void OnBackNavigation() = 0;
 
     virtual void OnEditorViewUpdated() = 0;
+
+    virtual void OnErrorMessageShown() = 0;
   };
 
   // Build a Dialog around the PaymentRequest object. |observer| is used to
@@ -69,6 +71,7 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   // payments::PaymentRequestDialog
   void ShowDialog() override;
   void CloseDialog() override;
+  void ShowErrorMessage() override;
 
   void Pay();
   void GoBack();

@@ -62,6 +62,8 @@ std::unique_ptr<views::ImageView> CreateInstrumentIconView(
     int icon_resource_id,
     const base::string16& tooltip_text);
 
+std::unique_ptr<views::View> CreateProductLogoFooterView();
+
 // Represents formatting options for each of the different contexts in which an
 // Address label may be displayed.
 enum class AddressStyleType { SUMMARY, DETAILED };
