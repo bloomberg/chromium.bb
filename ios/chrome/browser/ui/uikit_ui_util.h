@@ -234,6 +234,20 @@ void ApplyVisualConstraintsWithMetricsAndOptions(
     NSLayoutFormatOptions options,
     UIView* unused_parentView);
 
+// Returns constraints based on the visual constraints described with
+// |constraints| and |metrics| to views in |subviewsDictionary|.
+NSArray* VisualConstraintsWithMetrics(NSArray* constraints,
+                                      NSDictionary* subviewsDictionary,
+                                      NSDictionary* metrics);
+
+// Returns constraints based on the visual constraints described with
+// |constraints|, |metrics| and |options| to views in |subviewsDictionary|.
+NSArray* VisualConstraintsWithMetricsAndOptions(
+    NSArray* constraints,
+    NSDictionary* subviewsDictionary,
+    NSDictionary* metrics,
+    NSLayoutFormatOptions options);
+
 // Adds a constraint that |view1| and |view2| are center-aligned horizontally
 // and vertically.
 void AddSameCenterConstraints(UIView* view1, UIView* view2);

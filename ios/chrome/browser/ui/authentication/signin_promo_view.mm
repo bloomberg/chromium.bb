@@ -117,47 +117,23 @@ const CGFloat kButtonHeight = 36;
         visualConstraints, views, metrics, NSLayoutFormatAlignAllCenterX);
 
     // Constraints for cold state mode.
-    NSMutableArray* constraints = [NSMutableArray array];
-    NSString* primaryButtonVerticalConstraint =
-        @"V:[primaryButton]-kVerticalPaddingkButtonVerticalPadding-|";
-    [constraints addObjectsFromArray:[NSLayoutConstraint
-                                         constraintsWithVisualFormat:
-                                             primaryButtonVerticalConstraint
-                                                             options:0
-                                                             metrics:metrics
-                                                               views:views]];
-    // Remove this rule once chrome image is added.
-    NSString* imageViewVerticalSizeConstraint =
-        @"V:[imageView(kChromeImageFixedSize)]";
-    [constraints addObjectsFromArray:[NSLayoutConstraint
-                                         constraintsWithVisualFormat:
-                                             imageViewVerticalSizeConstraint
-                                                             options:0
-                                                             metrics:metrics
-                                                               views:views]];
-    _coldStateConstraints = [constraints copy];
+    NSArray* coldStateVisualConstraints = @[
+      @"V:[primaryButton]-kVerticalPaddingkButtonVerticalPadding-|",
+      @"V:[imageView(kChromeImageFixedSize)]",
+    ];
+    _coldStateConstraints = VisualConstraintsWithMetrics(
+        coldStateVisualConstraints, views, metrics);
 
     // Constraints for warm state mode.
-    constraints = [NSMutableArray array];
-    NSString* buttonsVerticalConstraint =
-        @"V:[primaryButton]-kButtonVerticalPaddingx2-["
-         "secondaryButton(kButtonHeight)]-"
-         "kVerticalPaddingkButtonVerticalPadding-|";
-    [constraints addObjectsFromArray:
-                     [NSLayoutConstraint
-                         constraintsWithVisualFormat:buttonsVerticalConstraint
-                                             options:0
-                                             metrics:metrics
-                                               views:views]];
-    NSString* secondaryButtonHorizontalConstraint =
-        @"H:|-kHorizontalPadding-[secondaryButton]-kHorizontalPadding-|";
-    [constraints addObjectsFromArray:[NSLayoutConstraint
-                                         constraintsWithVisualFormat:
-                                             secondaryButtonHorizontalConstraint
-                                                             options:0
-                                                             metrics:metrics
-                                                               views:views]];
-    _warmStateConstraints = [constraints copy];
+    formatString = @"V:[primaryButton]-kButtonVerticalPaddingx2-["
+                    "secondaryButton(kButtonHeight)]-"
+                    "kVerticalPaddingkButtonVerticalPadding-|";
+    NSArray* warmStateVisualConstraints = @[
+      formatString,
+      @"H:|-kHorizontalPadding-[secondaryButton]-kHorizontalPadding-|",
+    ];
+    _warmStateConstraints = VisualConstraintsWithMetrics(
+        warmStateVisualConstraints, views, metrics);
 
     _mode = SigninPromoViewModeColdState;
     [self activateColdMode];
