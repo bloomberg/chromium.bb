@@ -30,6 +30,7 @@
 
 #include "platform/text/TextEncodingDetector.h"
 
+#include "platform/weborigin/KURL.h"
 #include "third_party/ced/src/compact_enc_det/compact_enc_det.h"
 #include "wtf/text/TextEncoding.h"
 
@@ -56,10 +57,12 @@ bool detectTextEncoding(const char* data,
   // Should return false if the detected encoding is UTF8. This helps prevent
   // modern web sites from neglecting proper encoding labelling and simply
   // relying on browser-side encoding detection. Encoding detection is supposed
-  // to work for web sites with legacy encoding only. Detection failure leads
-  // |TextResourceDecoder| to use its default encoding determined from system
-  // locale or TLD.
-  if (encoding == UNKNOWN_ENCODING || encoding == UTF8)
+  // to work for web sites with legacy encoding only (so this doesn't have to
+  // be applied to local file resources).
+  // Detection failure leads |TextResourceDecoder| to use its default encoding
+  // determined from system locale or TLD.
+  String protocol = hintUrl ? KURL(ParsedURLString, hintUrl).protocol() : "";
+  if (encoding == UNKNOWN_ENCODING || (protocol != "file" && encoding == UTF8))
     return false;
 
   *detectedEncoding = WTF::TextEncoding(MimeEncodingName(encoding));
