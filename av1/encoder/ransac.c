@@ -454,7 +454,7 @@ static void normalize_homography(double *pts, int n, double *T) {
     msqe += sqrt(p[0] * p[0] + p[1] * p[1]);
   }
   msqe /= n;
-  scale = sqrt(2) / msqe;
+  scale = (msqe == 0 ? 1.0 : sqrt(2) / msqe);
   T[0] = scale;
   T[1] = 0;
   T[2] = -scale * mean[0];

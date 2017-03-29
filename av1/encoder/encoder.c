@@ -3038,7 +3038,7 @@ static int scale_down(AV1_COMP *cpi, int q) {
 }
 
 #if CONFIG_GLOBAL_MOTION
-#define GM_RECODE_LOOP_NUM4X4_FACTOR 256
+#define GM_RECODE_LOOP_NUM4X4_FACTOR 192
 static int recode_loop_test_global_motion(AV1_COMP *cpi) {
   int i;
   int recode = 0;

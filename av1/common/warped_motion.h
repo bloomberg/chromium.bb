@@ -89,4 +89,6 @@ void av1_warp_plane(WarpedMotionParams *wm,
 int find_projection(const int np, int *pts1, int *pts2, BLOCK_SIZE bsize,
                     int mvy, int mvx, WarpedMotionParams *wm_params, int mi_row,
                     int mi_col);
+
+int is_shearable_params(WarpedMotionParams *wm);
 #endif  // AV1_COMMON_WARPED_MOTION_H_

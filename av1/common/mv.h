@@ -139,17 +139,6 @@ typedef struct {
 #define GM_ALPHA_MIN -GM_ALPHA_MAX
 #define GM_ROW3HOMO_MIN -GM_ROW3HOMO_MAX
 
-// Maximum number of bits used for different models
-#define GM_IDENTITY_BITS 0
-#define GM_TRANSLATION_BITS ((GM_ABS_TRANS_BITS + 2) * 2)
-#define GM_ROTZOOM_BITS (GM_TRANSLATION_BITS + (GM_ABS_ALPHA_BITS + 2) * 2)
-#define GM_AFFINE_BITS (GM_ROTZOOM_BITS + (GM_ABS_ALPHA_BITS + 2) * 2)
-#define GM_HOMOGRAPHY_BITS (GM_AFFINE_BITS + (GM_ABS_ROW3HOMO_BITS + 2) * 2)
-#define GM_HORTRAPEZOID_BITS \
-  (GM_AFFINE_BITS - GM_ABS_ALPHA_BITS + GM_ABS_ROW3HOMO_BITS)
-#define GM_VERTRAPEZOID_BITS \
-  (GM_AFFINE_BITS - GM_ABS_ALPHA_BITS + GM_ABS_ROW3HOMO_BITS)
-
 // Use global motion parameters for sub8x8 blocks
 #define GLOBAL_SUB8X8_USED 0
 

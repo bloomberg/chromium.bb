@@ -661,8 +661,8 @@ static int is_affine_valid(WarpedMotionParams *wm) {
 
 static int is_affine_shear_allowed(int32_t alpha, int32_t beta, int32_t gamma,
                                    int32_t delta) {
-  if ((4 * abs(alpha) + 7 * abs(beta) >= (1 << WARPEDMODEL_PREC_BITS)) ||
-      (4 * abs(gamma) + 4 * abs(delta) >= (1 << WARPEDMODEL_PREC_BITS)))
+  if ((4 * abs(alpha) + 7 * abs(beta) > (1 << WARPEDMODEL_PREC_BITS)) ||
+      (4 * abs(gamma) + 4 * abs(delta) > (1 << WARPEDMODEL_PREC_BITS)))
     return 0;
   else
     return 1;
@@ -683,7 +683,13 @@ static int get_shear_params(WarpedMotionParams *wm, int32_t *alpha,
   v = ((int64_t)mat[3] * mat[4]) * y;
   *delta = mat[5] - ROUND_POWER_OF_TWO_SIGNED_64(v, shift) -
            (1 << WARPEDMODEL_PREC_BITS);
+  if (!is_affine_shear_allowed(*alpha, *beta, *gamma, *delta)) return 0;
   return 1;
+}
+
+int is_shearable_params(WarpedMotionParams *wm) {
+  int32_t alpha, beta, gamma, delta;
+  return get_shear_params(wm, &alpha, &beta, &gamma, &delta);
 }
 
 #if CONFIG_AOM_HIGHBITDEPTH
@@ -866,10 +872,6 @@ static void highbd_warp_plane(WarpedMotionParams *wm, uint8_t *ref8, int width,
     uint16_t *pred = CONVERT_TO_SHORTPTR(pred8);
 
     if (!get_shear_params(wm, &alpha, &beta, &gamma, &delta)) {
-      assert(0 && "Warped motion model is incompatible with shear warp filter");
-      return;
-    }
-    if (!is_affine_shear_allowed(alpha, beta, gamma, delta)) {
       assert(0 && "Warped motion model is incompatible with shear warp filter");
       return;
     }
@@ -1201,10 +1203,6 @@ static void warp_plane(WarpedMotionParams *wm, uint8_t *ref, int width,
     int32_t alpha, beta, gamma, delta;
 
     if (!get_shear_params(wm, &alpha, &beta, &gamma, &delta)) {
-      assert(0 && "Warped motion model is incompatible with shear warp filter");
-      return;
-    }
-    if (!is_affine_shear_allowed(alpha, beta, gamma, delta)) {
       assert(0 && "Warped motion model is incompatible with shear warp filter");
       return;
     }
@@ -1561,7 +1559,6 @@ int find_projection(const int np, int *pts1, int *pts2, BLOCK_SIZE bsize,
       // check compatibility with the fast warp filter
       int32_t alpha, beta, gamma, delta;
       if (!get_shear_params(wm_params, &alpha, &beta, &gamma, &delta)) return 1;
-      if (!is_affine_shear_allowed(alpha, beta, gamma, delta)) return 1;
     }
   }
 
