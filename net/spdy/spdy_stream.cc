@@ -230,7 +230,8 @@ std::unique_ptr<SpdySerializedFrame> SpdyStream::ProduceHeadersFrame() {
       (pending_send_status_ == NO_MORE_DATA_TO_SEND) ?
       CONTROL_FLAG_FIN : CONTROL_FLAG_NONE;
   std::unique_ptr<SpdySerializedFrame> frame(session_->CreateHeaders(
-      stream_id_, priority_, flags, std::move(request_headers_)));
+      stream_id_, priority_, flags, std::move(request_headers_),
+      delegate_->source_dependency()));
   request_headers_valid_ = false;
   send_time_ = base::TimeTicks::Now();
   return frame;

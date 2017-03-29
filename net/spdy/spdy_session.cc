@@ -40,7 +40,6 @@
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_event_type.h"
-#include "net/log/net_log_source.h"
 #include "net/log/net_log_source_type.h"
 #include "net/log/net_log_with_source.h"
 #include "net/proxy/proxy_server.h"
@@ -111,6 +110,7 @@ std::unique_ptr<base::Value> NetLogSpdyHeadersSentCallback(
     int weight,
     SpdyStreamId parent_stream_id,
     bool exclusive,
+    NetLogSource source_dependency,
     NetLogCaptureMode capture_mode) {
   auto dict = base::MakeUnique<base::DictionaryValue>();
   dict->Set("headers", ElideSpdyHeaderBlockForNetLog(*headers, capture_mode));
@@ -121,6 +121,9 @@ std::unique_ptr<base::Value> NetLogSpdyHeadersSentCallback(
     dict->SetInteger("parent_stream_id", parent_stream_id);
     dict->SetInteger("weight", weight);
     dict->SetBoolean("exclusive", exclusive);
+  }
+  if (source_dependency.IsValid()) {
+    source_dependency.AddToEventParameters(dict.get());
   }
   return std::move(dict);
 }
@@ -941,7 +944,8 @@ std::unique_ptr<SpdySerializedFrame> SpdySession::CreateHeaders(
     SpdyStreamId stream_id,
     RequestPriority priority,
     SpdyControlFlags flags,
-    SpdyHeaderBlock block) {
+    SpdyHeaderBlock block,
+    NetLogSource source_dependency) {
   ActiveStreamMap::const_iterator it = active_streams_.find(stream_id);
   CHECK(it != active_streams_.end());
   CHECK_EQ(it->second->stream_id(), stream_id);
@@ -965,7 +969,7 @@ std::unique_ptr<SpdySerializedFrame> SpdySession::CreateHeaders(
         NetLogEventType::HTTP2_SESSION_SEND_HEADERS,
         base::Bind(&NetLogSpdyHeadersSentCallback, &block,
                    (flags & CONTROL_FLAG_FIN) != 0, stream_id, has_priority,
-                   weight, dependent_stream_id, exclusive));
+                   weight, dependent_stream_id, exclusive, source_dependency));
   }
 
   SpdyHeadersIR headers(stream_id, std::move(block));
