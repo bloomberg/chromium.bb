@@ -222,8 +222,9 @@ Status WaitForDevToolsAndCheckVersion(
                     "--disable-build-check. Please don't report bugs that "
                     "cannot be reproduced with this switch removed.";
   } else if (browser_info->build_no < kMinimumSupportedChromeBuildNo) {
-    return Status(kUnknownError, "Chrome version must be >= " +
-        GetMinimumSupportedChromeVersion());
+    return Status(
+        kSessionNotCreatedException,
+        "Chrome version must be >= " + GetMinimumSupportedChromeVersion());
   }
 
   while (base::TimeTicks::Now() < deadline) {
