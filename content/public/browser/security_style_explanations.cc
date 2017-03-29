@@ -9,6 +9,7 @@ namespace content {
 SecurityStyleExplanations::SecurityStyleExplanations()
     : ran_mixed_content(false),
       displayed_mixed_content(false),
+      contained_mixed_form(false),
       ran_content_with_cert_errors(false),
       displayed_content_with_cert_errors(false),
       ran_insecure_content_style(blink::WebSecurityStyleUnknown),
