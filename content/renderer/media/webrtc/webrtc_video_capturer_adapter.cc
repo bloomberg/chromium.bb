@@ -10,7 +10,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/paint/paint_surface.h"
+#include "cc/paint/skia_paint_canvas.h"
 #include "content/renderer/media/webrtc/webrtc_video_frame_adapter.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/timestamp_constants.h"

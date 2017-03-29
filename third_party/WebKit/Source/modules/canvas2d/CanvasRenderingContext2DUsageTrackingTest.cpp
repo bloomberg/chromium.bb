@@ -24,6 +24,7 @@
 #include "platform/loader/fetch/MemoryCache.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkSurface.h"
 
 using ::testing::Mock;
 

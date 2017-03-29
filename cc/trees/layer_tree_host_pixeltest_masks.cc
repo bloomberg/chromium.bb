@@ -12,7 +12,6 @@
 #include "cc/paint/drawing_display_item.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_recorder.h"
-#include "cc/paint/paint_surface.h"
 #include "cc/test/layer_tree_pixel_resource_test.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/solid_color_content_layer_client.h"

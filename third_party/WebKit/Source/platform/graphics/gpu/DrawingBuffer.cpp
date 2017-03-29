@@ -30,6 +30,8 @@
 
 #include "platform/graphics/gpu/DrawingBuffer.h"
 
+#include <algorithm>
+#include <memory>
 #include "cc/resources/shared_bitmap.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -48,12 +50,11 @@
 #include "public/platform/WebExternalBitmap.h"
 #include "public/platform/WebExternalTextureLayer.h"
 #include "skia/ext/texture_handle.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "wtf/CheckedNumeric.h"
 #include "wtf/typed_arrays/ArrayBufferContents.h"
-#include <algorithm>
-#include <memory>
 
 namespace blink {
 

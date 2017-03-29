@@ -9,8 +9,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/paint/paint_canvas.h"
-#include "cc/paint/paint_surface.h"
+#include "cc/paint/skia_paint_canvas.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/media/media_stream_video_source.h"
 #include "content/renderer/media/webrtc_uma_histograms.h"
@@ -94,12 +93,12 @@ void HtmlVideoElementCapturerSource::StartCapture(
     return;
   }
   const blink::WebSize resolution = web_media_player_->naturalSize();
-  surface_ = cc::PaintSurface::MakeRasterN32Premul(resolution.width,
-                                                   resolution.height);
-  if (!surface_) {
+  if (!bitmap_.tryAllocPixels(
+          SkImageInfo::MakeN32Premul(resolution.width, resolution.height))) {
     running_callback_.Run(false);
     return;
   }
+  canvas_ = base::MakeUnique<cc::SkiaPaintCanvas>(bitmap_);
 
   new_frame_callback_ = new_frame_callback;
   // Force |capture_frame_rate_| to be in between k{Min,Max}FramesPerSecond.
@@ -133,24 +132,20 @@ void HtmlVideoElementCapturerSource::sendNewFrame() {
   const base::TimeTicks current_time = base::TimeTicks::Now();
   const blink::WebSize resolution = web_media_player_->naturalSize();
 
-  cc::PaintCanvas* canvas = surface_->getCanvas();
   cc::PaintFlags flags;
   flags.setBlendMode(SkBlendMode::kSrc);
   flags.setFilterQuality(kLow_SkFilterQuality);
   web_media_player_->paint(
-      canvas, blink::WebRect(0, 0, resolution.width, resolution.height), flags);
-  DCHECK_NE(kUnknown_SkColorType, canvas->imageInfo().colorType());
-  DCHECK_EQ(canvas->imageInfo().width(), resolution.width);
-  DCHECK_EQ(canvas->imageInfo().height(), resolution.height);
+      canvas_.get(), blink::WebRect(0, 0, resolution.width, resolution.height),
+      flags);
+  DCHECK_NE(kUnknown_SkColorType, canvas_->imageInfo().colorType());
+  DCHECK_EQ(canvas_->imageInfo().width(), resolution.width);
+  DCHECK_EQ(canvas_->imageInfo().height(), resolution.height);
 
-  SkBitmap bitmap;
-  bitmap.setInfo(canvas->imageInfo());
-  canvas->readPixels(&bitmap, 0, 0);
-
-  DCHECK_NE(kUnknown_SkColorType, bitmap.colorType());
-  DCHECK(!bitmap.drawsNothing());
-  DCHECK(bitmap.getPixels());
-  if (bitmap.colorType() != kN32_SkColorType) {
+  DCHECK_NE(kUnknown_SkColorType, bitmap_.colorType());
+  DCHECK(!bitmap_.drawsNothing());
+  DCHECK(bitmap_.getPixels());
+  if (bitmap_.colorType() != kN32_SkColorType) {
     DLOG(ERROR) << "Only supported color type is kN32_SkColorType (ARGB/ABGR)";
     return;
   }
@@ -164,22 +159,17 @@ void HtmlVideoElementCapturerSource::sendNewFrame() {
       (kN32_SkColorType == kRGBA_8888_SkColorType) ? libyuv::FOURCC_ABGR
                                                    : libyuv::FOURCC_ARGB;
 
-  if (libyuv::ConvertToI420(static_cast<uint8*>(bitmap.getPixels()),
-                            bitmap.getSize(),
-                            frame->data(media::VideoFrame::kYPlane),
-                            frame->stride(media::VideoFrame::kYPlane),
-                            frame->data(media::VideoFrame::kUPlane),
-                            frame->stride(media::VideoFrame::kUPlane),
-                            frame->data(media::VideoFrame::kVPlane),
-                            frame->stride(media::VideoFrame::kVPlane),
-                            0 /* crop_x */,
-                            0 /* crop_y */,
-                            bitmap.info().width(),
-                            bitmap.info().height(),
-                            frame->coded_size().width(),
-                            frame->coded_size().height(),
-                            libyuv::kRotate0,
-                            source_pixel_format) == 0) {
+  if (libyuv::ConvertToI420(
+          static_cast<uint8*>(bitmap_.getPixels()), bitmap_.getSize(),
+          frame->data(media::VideoFrame::kYPlane),
+          frame->stride(media::VideoFrame::kYPlane),
+          frame->data(media::VideoFrame::kUPlane),
+          frame->stride(media::VideoFrame::kUPlane),
+          frame->data(media::VideoFrame::kVPlane),
+          frame->stride(media::VideoFrame::kVPlane), 0 /* crop_x */,
+          0 /* crop_y */, bitmap_.info().width(), bitmap_.info().height(),
+          frame->coded_size().width(), frame->coded_size().height(),
+          libyuv::kRotate0, source_pixel_format) == 0) {
     // Success!
     io_task_runner_->PostTask(
         FROM_HERE, base::Bind(new_frame_callback_, frame, current_time));
