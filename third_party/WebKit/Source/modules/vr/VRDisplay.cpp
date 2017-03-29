@@ -681,8 +681,6 @@ void VRDisplay::stopPresenting() {
 }
 
 void VRDisplay::OnActivate(device::mojom::blink::VRDisplayEventReason reason) {
-  if (!m_navigatorVR->isFocused() || m_displayBlurred)
-    return;
   AutoReset<bool> activating(&m_inDisplayActivate, true);
   m_navigatorVR->dispatchVREvent(VRDisplayEvent::create(
       EventTypeNames::vrdisplayactivate, true, false, this, reason));
@@ -713,6 +711,7 @@ void VRDisplay::OnVSync(device::mojom::blink::VRPosePtr pose,
                         mojo::common::mojom::blink::TimeDeltaPtr time,
                         int16_t frameId,
                         device::mojom::blink::VRVSyncProvider::Status error) {
+  m_VSyncConnectionFailed = false;
   switch (error) {
     case device::mojom::blink::VRVSyncProvider::Status::SUCCESS:
       break;
@@ -760,7 +759,10 @@ void VRDisplay::ConnectVSyncProvider() {
 
 void VRDisplay::OnVSyncConnectionError() {
   m_vrVSyncProvider.reset();
+  if (m_VSyncConnectionFailed)
+    return;
   ConnectVSyncProvider();
+  m_VSyncConnectionFailed = true;
 }
 
 ScriptedAnimationController& VRDisplay::ensureScriptedAnimationController(

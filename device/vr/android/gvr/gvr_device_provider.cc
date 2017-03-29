@@ -44,10 +44,6 @@ device::GvrDelegateProvider* GvrDeviceProvider::GetDelegateProvider() {
 }
 
 void GvrDeviceProvider::Initialize() {
-  // TODO(mthiesse): Clean up how we connect the GvrDelegateProvider to the
-  // GvrDeviceProvider so we don't have to call this function multiple times.
-  // Ideally the DelegateProvider would always be available, and GetInstance()
-  // would create it.
   Initialize(device::GvrDelegateProvider::GetInstance());
 }
 

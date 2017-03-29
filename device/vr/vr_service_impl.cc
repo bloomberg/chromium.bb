@@ -54,7 +54,7 @@ void VRServiceImpl::ConnectDevice(VRDevice* device) {
 void VRServiceImpl::SetListeningForActivate(bool listening) {
   listening_for_activate_ = listening;
   VRDeviceManager* device_manager = VRDeviceManager::GetInstance();
-  device_manager->ListeningForActivateChanged(listening);
+  device_manager->ListeningForActivateChanged(listening, this);
 }
 
 // Creates a VRDisplayPtr unique to this service so that the associated page can

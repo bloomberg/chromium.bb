@@ -191,6 +191,7 @@ class VRDisplay final : public EventTargetWithInlineData,
   double m_timebase = -1;
   bool m_pendingPreviousFrameRender = false;
   bool m_pendingSubmitFrame = false;
+  bool m_VSyncConnectionFailed = false;
 
   device::mojom::blink::VRDisplayPtr m_display;
 
