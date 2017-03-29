@@ -1,11 +1,14 @@
 #!/bin/bash
 
-# The following symbols (past the first five) are taken from the public headers.
-# A list of the latter should be available Makefile.sources/LIBDRM_FREEDRENO_H_FILES
+# The following symbols (past the first nine) are taken from tegra.h.
 
 FUNCS=$(nm -D --format=bsd --defined-only ${1-.libs/libdrm_tegra.so} | awk '{print $3}'| while read func; do
 ( grep -q "^$func$" || echo $func )  <<EOF
+__bss_end__
+__bss_start__
 __bss_start
+__end__
+_bss_end__
 _edata
 _end
 _fini
