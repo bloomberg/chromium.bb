@@ -554,11 +554,10 @@ Page* InspectorOverlay::overlayPage() {
 
   const WebData& overlayPageHTMLResource =
       Platform::current()->loadResource("InspectorOverlayPage.html");
-  RefPtr<SharedBuffer> data = SharedBuffer::create(
-      overlayPageHTMLResource.data(), overlayPageHTMLResource.size());
-  loader.load(FrameLoadRequest(
-      0, blankURL(), SubstituteData(data, "text/html", "UTF-8", KURL(),
-                                    ForceSynchronousLoad)));
+  loader.load(
+      FrameLoadRequest(0, blankURL(),
+                       SubstituteData(overlayPageHTMLResource, "text/html",
+                                      "UTF-8", KURL(), ForceSynchronousLoad)));
   v8::Isolate* isolate = toIsolate(frame);
   ScriptState* scriptState = ScriptState::forMainWorld(frame);
   DCHECK(scriptState);
