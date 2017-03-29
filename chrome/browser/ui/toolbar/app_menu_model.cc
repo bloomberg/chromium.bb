@@ -717,9 +717,8 @@ void AppMenuModel::Build() {
   AddSeparator(ui::NORMAL_SEPARATOR);
 
   if (!browser_->profile()->IsOffTheRecord()) {
-    recent_tabs_sub_menu_model_.reset(new RecentTabsSubMenuModel(provider_,
-                                                                 browser_,
-                                                                 NULL));
+    recent_tabs_sub_menu_model_ =
+        base::MakeUnique<RecentTabsSubMenuModel>(provider_, browser_);
     AddSubMenuWithStringId(IDC_RECENT_TABS_MENU, IDS_HISTORY_MENU,
                            recent_tabs_sub_menu_model_.get());
   }

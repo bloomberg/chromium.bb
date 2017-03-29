@@ -82,7 +82,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTabRestoreTest, RecentTabsMenuTabDisposition) {
   // Restore tabs using the browser's recent tabs menu.
   content::DOMMessageQueue queue;
   Browser* browser = active_browser_list->get(0);
-  RecentTabsSubMenuModel menu(NULL, browser, NULL);
+  RecentTabsSubMenuModel menu(nullptr, browser);
   menu.ExecuteCommand(
       RecentTabsSubMenuModel::GetFirstRecentTabsCommandId(), 0);
   AwaitTabsReady(&queue, 2);

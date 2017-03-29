@@ -18,4 +18,12 @@ ProfileSyncServiceMock::ProfileSyncServiceMock(InitParams* init_params)
 
 ProfileSyncServiceMock::~ProfileSyncServiceMock() {}
 
+sync_sessions::OpenTabsUIDelegate*
+ProfileSyncServiceMock::GetOpenTabsUIDelegate() {
+  sync_sessions::OpenTabsUIDelegate* mock_delegate =
+      GetOpenTabsUIDelegateMock();
+  return mock_delegate ? mock_delegate
+                       : ProfileSyncService::GetOpenTabsUIDelegate();
+}
+
 }  // namespace browser_sync

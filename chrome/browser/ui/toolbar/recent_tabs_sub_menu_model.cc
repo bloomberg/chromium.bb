@@ -179,15 +179,18 @@ const int RecentTabsSubMenuModel::kDisabledRecentlyClosedHeaderCommandId = 1121;
 
 RecentTabsSubMenuModel::RecentTabsSubMenuModel(
     ui::AcceleratorProvider* accelerator_provider,
-    Browser* browser,
-    sync_sessions::OpenTabsUIDelegate* open_tabs_delegate)
+    Browser* browser)
     : ui::SimpleMenuModel(this),
       browser_(browser),
-      open_tabs_delegate_(open_tabs_delegate),
+      open_tabs_delegate_(nullptr),
       last_local_model_index_(kHistorySeparatorIndex),
       default_favicon_(
           ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
               IDR_DEFAULT_FAVICON)),
+#if !defined(OS_MACOSX)
+      tab_restore_service_observer_(this),
+      sync_observer_(this),
+#endif  // !defined(OS_MACOSX)
       weak_ptr_factory_(this) {
   // Invoke asynchronous call to load tabs from local last session, which does
   // nothing if the tabs have already been loaded or they shouldn't be loaded.
@@ -197,12 +200,20 @@ RecentTabsSubMenuModel::RecentTabsSubMenuModel(
   if (service) {
     service->LoadTabsFromLastSession();
 
-  // TODO(sail): enable this when mac implements the dynamic menu, together with
-  // MenuModelDelegate::MenuStructureChanged().
+// Mac doesn't support the dynamic menu.
 #if !defined(OS_MACOSX)
-    service->AddObserver(this);
+    tab_restore_service_observer_.Add(service);
 #endif
   }
+
+// Mac doesn't support the dynamic menu.
+#if !defined(OS_MACOSX)
+  browser_sync::ProfileSyncService* sync_service =
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(
+          browser_->profile());
+  if (sync_service)
+    sync_observer_.Add(sync_service);
+#endif  // !defined(OS_MACOSX)
 
   Build();
 
@@ -231,12 +242,7 @@ RecentTabsSubMenuModel::RecentTabsSubMenuModel(
   }
 }
 
-RecentTabsSubMenuModel::~RecentTabsSubMenuModel() {
-  sessions::TabRestoreService* service =
-      TabRestoreServiceFactory::GetForProfile(browser_->profile());
-  if (service)
-    service->RemoveObserver(this);
-}
+RecentTabsSubMenuModel::~RecentTabsSubMenuModel() {}
 
 bool RecentTabsSubMenuModel::IsCommandIdChecked(int command_id) const {
   return false;
@@ -474,8 +480,7 @@ void RecentTabsSubMenuModel::BuildLocalEntries() {
 
 void RecentTabsSubMenuModel::BuildTabsFromOtherDevices() {
   // All other devices' items (device headers or tabs) use AddItem*() to append
-  // a menu item, because they are always only built once (i.e. invoked from
-  // Constructor()) and don't change after that.
+  // a menu item, because they take always place in the end of menu.
 
   sync_sessions::OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate();
   std::vector<const sync_sessions::SyncedSession*> sessions;
@@ -708,6 +713,17 @@ void RecentTabsSubMenuModel::ClearLocalEntries() {
   local_window_items_.clear();
 }
 
+void RecentTabsSubMenuModel::ClearTabsFromOtherDevices() {
+  DCHECK_GE(last_local_model_index_, 0);
+  int count = GetItemCount();
+  for (int index = count - 1; index > last_local_model_index_; --index)
+    RemoveItemAt(index);
+
+  other_devices_tab_cancelable_task_tracker_.TryCancelAll();
+
+  other_devices_tab_navigation_items_.clear();
+}
+
 sync_sessions::OpenTabsUIDelegate*
 RecentTabsSubMenuModel::GetOpenTabsUIDelegate() {
   if (!open_tabs_delegate_) {
@@ -735,4 +751,20 @@ void RecentTabsSubMenuModel::TabRestoreServiceChanged(
 void RecentTabsSubMenuModel::TabRestoreServiceDestroyed(
     sessions::TabRestoreService* service) {
   TabRestoreServiceChanged(service);
+}
+
+void RecentTabsSubMenuModel::OnSyncConfigurationCompleted(
+    syncer::SyncService* sync) {
+  OnForeignSessionUpdated(sync);
+}
+
+void RecentTabsSubMenuModel::OnForeignSessionUpdated(
+    syncer::SyncService* sync) {
+  ClearTabsFromOtherDevices();
+
+  BuildTabsFromOtherDevices();
+
+  ui::MenuModelDelegate* menu_model_delegate = GetMenuModelDelegate();
+  if (menu_model_delegate)
+    menu_model_delegate->OnMenuStructureChanged();
 }
