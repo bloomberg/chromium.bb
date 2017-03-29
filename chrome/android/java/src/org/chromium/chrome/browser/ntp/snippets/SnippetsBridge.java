@@ -126,6 +126,14 @@ public class SnippetsBridge
     }
 
     @Override
+    public void fetchSuggestionFavicon(SnippetArticle suggestion, int minimumSizePx,
+            int desiredSizePx, Callback<Bitmap> callback) {
+        assert mNativeSnippetsBridge != 0;
+        nativeFetchSuggestionFavicon(mNativeSnippetsBridge, suggestion.mCategory,
+                suggestion.mIdWithinCategory, minimumSizePx, desiredSizePx, callback);
+    }
+
+    @Override
     public void dismissSuggestion(SnippetArticle suggestion) {
         assert mNativeSnippetsBridge != 0;
         nativeDismissSuggestion(mNativeSnippetsBridge, suggestion.mUrl, suggestion.getGlobalRank(),
@@ -337,6 +345,9 @@ public class SnippetsBridge
             long nativeNTPSnippetsBridge, int category);
     private native void nativeFetchSuggestionImage(long nativeNTPSnippetsBridge, int category,
             String idWithinCategory, Callback<Bitmap> callback);
+    private native void nativeFetchSuggestionFavicon(long nativeNTPSnippetsBridge, int category,
+            String idWithinCategory, int minimumSizePx, int desiredSizePx,
+            Callback<Bitmap> callback);
     private native void nativeFetch(
             long nativeNTPSnippetsBridge, int category, String[] knownSuggestions);
     private native void nativeDismissSuggestion(long nativeNTPSnippetsBridge, String url,

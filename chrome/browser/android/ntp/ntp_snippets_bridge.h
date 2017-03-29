@@ -60,6 +60,15 @@ class NTPSnippetsBridge
       const base::android::JavaParamRef<jstring>& id_within_category,
       const base::android::JavaParamRef<jobject>& j_callback);
 
+  void FetchSuggestionFavicon(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jint j_category_id,
+      const base::android::JavaParamRef<jstring>& id_within_category,
+      jint j_minimum_size_px,
+      jint j_desired_size_px,
+      const base::android::JavaParamRef<jobject>& j_callback);
+
   void Fetch(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,

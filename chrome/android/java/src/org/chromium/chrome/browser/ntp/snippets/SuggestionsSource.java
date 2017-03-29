@@ -76,6 +76,20 @@ public interface SuggestionsSource {
     void fetchSuggestionImage(SnippetArticle suggestion, Callback<Bitmap> callback);
 
     /**
+     * Fetches the favicon for a content suggestion. A null Bitmap is returned if no good favicon is
+     * available. The callback is never called synchronously.
+     * @param suggestion The suggestion which the favicon should represent.
+     * @param minimumSizePx Minimal required size, if only a smaller favicon is available, a null
+     * Bitmap is returned.
+     * @param desiredSizePx If set to 0, it denotes that the favicon should be returned in its
+     * original size (as in favicon cache) without being resized. If not 0, it must be larger or
+     * equal to the minimum size and the favicon will be returned resized to this size.
+     * @param callback The callback that receives the favicon image.
+     */
+    void fetchSuggestionFavicon(SnippetArticle suggestion, int minimumSizePx, int desiredSizePx,
+            Callback<Bitmap> callback);
+
+    /**
      * Fetches new suggestions.
      * @param category the category to fetch new suggestions for.
      * @param displayedSuggestionIds ids of suggestions already known and that we want to keep.

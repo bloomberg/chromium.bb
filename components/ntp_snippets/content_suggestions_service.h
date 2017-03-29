@@ -124,6 +124,16 @@ class ContentSuggestionsService : public KeyedService,
   void FetchSuggestionImage(const ContentSuggestion::ID& suggestion_id,
                             const ImageFetchedCallback& callback);
 
+  // Fetches the favicon from local cache (if larger than or equal to
+  // |minimum_size_in_pixel|) or from Google server (if there is no icon in the
+  // cache) and returns the results in the callback. If that suggestion doesn't
+  // exist or the fetch fails, the callback gets an empty image. The callback
+  // will not be called synchronously.
+  void FetchSuggestionFavicon(const ContentSuggestion::ID& suggestion_id,
+                              int minimum_size_in_pixel,
+                              int desired_size_in_pixel,
+                              const ImageFetchedCallback& callback);
+
   // Dismisses the suggestion with the given |suggestion_id|, if it exists.
   // This will not trigger an update through the observers (i.e. providers must
   // not call |Observer::OnNewSuggestions|).

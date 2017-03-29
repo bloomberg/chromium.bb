@@ -7,6 +7,7 @@ package org.chromium.chrome.test.util.browser.suggestions;
 import android.graphics.Bitmap;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
@@ -31,7 +32,10 @@ public class FakeSuggestionsSource implements SuggestionsSource {
     private final Map<Integer, List<SnippetArticle>> mSuggestions = new HashMap<>();
     private final Map<Integer, Integer> mCategoryStatus = new LinkedHashMap<>();
     private final Map<Integer, SuggestionsCategoryInfo> mCategoryInfo = new HashMap<>();
+
+    // Maps within-category ids to their fake bitmaps.
     private final Map<String, Bitmap> mThumbnails = new HashMap<>();
+    private final Map<String, Bitmap> mFavicons = new HashMap<>();
 
     private final List<Integer> mDismissedCategories = new ArrayList<>();
     private final Map<Integer, List<SnippetArticle>> mDismissedCategorySuggestions =
@@ -70,10 +74,19 @@ public class FakeSuggestionsSource implements SuggestionsSource {
     }
 
     /**
-     * Sets the bitmap to be returned when the thumbnail is requested for a snippet with that id.
+     * Sets the bitmap to be returned when the thumbnail is requested for a suggestion with that
+     * (within-category) id.
      */
     public void setThumbnailForId(String id, Bitmap bitmap) {
         mThumbnails.put(id, bitmap);
+    }
+
+    /**
+     * Sets the bitmap to be returned when the favicon is requested for a suggestion with that
+     * (within-category) id.
+     */
+    public void setFaviconForId(String id, Bitmap bitmap) {
+        mFavicons.put(id, bitmap);
     }
 
     /**
@@ -138,9 +151,28 @@ public class FakeSuggestionsSource implements SuggestionsSource {
     }
 
     @Override
-    public void fetchSuggestionImage(SnippetArticle suggestion, Callback<Bitmap> callback) {
+    public void fetchSuggestionImage(
+            final SnippetArticle suggestion, final Callback<Bitmap> callback) {
         if (mThumbnails.containsKey(suggestion.mIdWithinCategory)) {
-            callback.onResult(mThumbnails.get(suggestion.mIdWithinCategory));
+            ThreadUtils.postOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    callback.onResult(mThumbnails.get(suggestion.mIdWithinCategory));
+                }
+            });
+        }
+    }
+
+    @Override
+    public void fetchSuggestionFavicon(final SnippetArticle suggestion, int minimumSizePx,
+            int desiredSizePx, final Callback<Bitmap> callback) {
+        if (mFavicons.containsKey(suggestion.mIdWithinCategory)) {
+            ThreadUtils.postOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    callback.onResult(mFavicons.get(suggestion.mIdWithinCategory));
+                }
+            });
         }
     }
 

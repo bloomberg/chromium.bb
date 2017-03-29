@@ -125,6 +125,14 @@ void ContentSuggestionsService::FetchSuggestionImage(
       suggestion_id, callback);
 }
 
+void ContentSuggestionsService::FetchSuggestionFavicon(
+    const ContentSuggestion::ID& suggestion_id,
+    int minimum_size_in_pixel,
+    int desired_size_in_pixel,
+    const ImageFetchedCallback& callback) {
+  // TODO(jkrcal): Implement.
+}
+
 void ContentSuggestionsService::ClearHistory(
     base::Time begin,
     base::Time end,
