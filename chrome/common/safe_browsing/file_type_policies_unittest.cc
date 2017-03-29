@@ -107,14 +107,14 @@ TEST_F(FileTypePoliciesTest, UnpackResourceBundle) {
             file_type.platform_settings(0).auto_open_hint());
 #endif
 
-  // Lookup .dex that varies on OS_ANDROID
+  // Lookup .dex that varies on OS_ANDROID and OS_CHROMEOS
   base::FilePath dex_file(FILE_PATH_LITERAL("foo.dex"));
   file_type = policies_.PolicyForFile(dex_file);
   EXPECT_EQ("dex", file_type.extension());
   EXPECT_EQ(143, file_type.uma_value());
   EXPECT_FALSE(file_type.is_archive());
   EXPECT_EQ(DownloadFileType::FULL_PING, file_type.ping_setting());
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   EXPECT_EQ(DownloadFileType::ALLOW_ON_USER_GESTURE,
             file_type.platform_settings(0).danger_level());
   EXPECT_EQ(DownloadFileType::DISALLOW_AUTO_OPEN,

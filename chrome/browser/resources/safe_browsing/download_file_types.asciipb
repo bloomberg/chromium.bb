@@ -8,7 +8,7 @@
 ##
 ## Top level settings
 ##
-version_id: 8
+version_id: 9
 sampled_ping_probability: 0.01
 default_file_type {
   uma_value: 18
@@ -2649,6 +2649,11 @@ file_types {
     danger_level: ALLOW_ON_USER_GESTURE
     auto_open_hint: DISALLOW_AUTO_OPEN
   }
+  platform_settings {
+    platform: PLATFORM_CHROME_OS
+    danger_level: ALLOW_ON_USER_GESTURE
+    auto_open_hint: DISALLOW_AUTO_OPEN
+  }
 }
 file_types {
   extension: "apk"
@@ -2656,6 +2661,11 @@ file_types {
   ping_setting: FULL_PING
   platform_settings {
     platform: PLATFORM_ANDROID
+    danger_level: ALLOW_ON_USER_GESTURE
+    auto_open_hint: DISALLOW_AUTO_OPEN
+  }
+  platform_settings {
+    platform: PLATFORM_CHROME_OS
     danger_level: ALLOW_ON_USER_GESTURE
     auto_open_hint: DISALLOW_AUTO_OPEN
   }
