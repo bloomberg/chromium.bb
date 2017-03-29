@@ -1,4 +1,5 @@
 include_rules = [
+  "+cc/base/switches.h",
   "+cc/ipc/mojo_compositor_frame_sink.mojom.h",
   "+cc/output/compositor_frame_sink_client.h",
   "+cc/output/compositor_frame_sink.h",

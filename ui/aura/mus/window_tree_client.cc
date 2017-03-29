@@ -12,8 +12,10 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread.h"
+#include "cc/base/switches.h"
 #include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
 #include "mojo/public/cpp/bindings/map.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -223,6 +225,9 @@ WindowTreeClient::WindowTreeClient(
           discardable_shared_memory_manager_.get());
     }
   }
+  enable_surface_synchronization_ =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          cc::switches::kEnableSurfaceSynchronization);
 }
 
 WindowTreeClient::~WindowTreeClient() {
@@ -593,7 +598,11 @@ void WindowTreeClient::SetWindowBoundsFromServer(
   if (IsRoot(window)) {
     // WindowTreeHost expects bounds to be in pixels.
     GetWindowTreeHostMus(window)->SetBoundsFromServer(revert_bounds_in_pixels);
-    // TODO(fsamuel): Propagate |local_surface_id| to ui::Compositor.
+    if (enable_surface_synchronization_ && local_surface_id &&
+        local_surface_id->is_valid()) {
+      window->GetWindow()->GetHost()->compositor()->SetLocalSurfaceId(
+          *local_surface_id);
+    }
     return;
   }
 
