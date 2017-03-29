@@ -5,10 +5,43 @@
 #include "services/preferences/public/cpp/pref_store_impl.h"
 
 #include <memory>
+#include <unordered_set>
 
+#include "base/stl_util.h"
 #include "base/values.h"
 
 namespace prefs {
+
+class PrefStoreImpl::Observer {
+ public:
+  Observer(mojom::PrefStoreObserverPtr observer,
+           std::unordered_set<std::string> prefs)
+      : observer_(std::move(observer)), prefs_(std::move(prefs)) {}
+
+  void OnInitializationCompleted(bool succeeded) {
+    observer_->OnInitializationCompleted(succeeded);
+  }
+
+  void OnPrefChanged(const std::string& key, const base::Value& value) const {
+    if (!base::ContainsKey(prefs_, key))
+      return;
+
+    observer_->OnPrefChanged(key, value.CreateDeepCopy());
+  }
+
+  void OnPrefRemoved(const std::string& key) const {
+    if (!base::ContainsKey(prefs_, key))
+      return;
+
+    observer_->OnPrefChanged(key, nullptr);
+  }
+
+ private:
+  mojom::PrefStoreObserverPtr observer_;
+  const std::unordered_set<std::string> prefs_;
+
+  DISALLOW_COPY_AND_ASSIGN(Observer);
+};
 
 PrefStoreImpl::PrefStoreImpl(scoped_refptr<::PrefStore> pref_store,
                              mojom::PrefStoreRequest request)
@@ -27,7 +60,7 @@ PrefStoreImpl::~PrefStoreImpl() {
 
 // static
 std::unique_ptr<PrefStoreImpl> PrefStoreImpl::Create(
-    mojom::PrefStoreRegistryPtr registry_ptr,
+    mojom::PrefStoreRegistry* registry_ptr,
     scoped_refptr<::PrefStore> pref_store,
     PrefValueStore::PrefStoreType type) {
   mojom::PrefStorePtr ptr;
@@ -42,10 +75,10 @@ void PrefStoreImpl::OnPrefValueChanged(const std::string& key) {
   const base::Value* value = nullptr;
   if (backing_pref_store_->GetValue(key, &value)) {
     for (const auto& observer : observers_)
-      observer->OnPrefChanged(key, value->CreateDeepCopy());
+      observer->OnPrefChanged(key, *value);
   } else {
     for (const auto& observer : observers_)
-      observer->OnPrefChanged(key, nullptr);
+      observer->OnPrefRemoved(key);
   }
 }
 
@@ -59,10 +92,15 @@ void PrefStoreImpl::OnInitializationCompleted(bool succeeded) {
     observer->OnInitializationCompleted(succeeded);
 }
 
-void PrefStoreImpl::AddObserver(const AddObserverCallback& callback) {
+void PrefStoreImpl::AddObserver(
+    const std::vector<std::string>& prefs_to_observe,
+    const AddObserverCallback& callback) {
   mojom::PrefStoreObserverPtr observer_ptr;
   auto request = mojo::MakeRequest(&observer_ptr);
-  observers_.push_back(std::move(observer_ptr));
+  observers_.push_back(base::MakeUnique<Observer>(
+      std::move(observer_ptr),
+      std::unordered_set<std::string>(prefs_to_observe.begin(),
+                                      prefs_to_observe.end())));
   callback.Run(mojom::PrefStoreConnection::New(
       std::move(request), backing_pref_store_->GetValues(),
       backing_pref_store_->IsInitializationComplete()));

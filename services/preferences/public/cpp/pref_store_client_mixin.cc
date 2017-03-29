@@ -102,7 +102,7 @@ void PrefStoreClientMixin<BasePrefStore>::OnPrefChanged(
       changed = true;
     }
   }
-  if (changed)
+  if (changed && initialized_)
     ReportPrefValueChanged(key);
 }
 

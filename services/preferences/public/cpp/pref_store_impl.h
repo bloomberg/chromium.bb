@@ -27,23 +27,26 @@ class PrefStoreImpl : public ::PrefStore::Observer, public mojom::PrefStore {
   // The created instance is registered in and owned by the
   // |mojom::PrefStoreRegistry|.
   static std::unique_ptr<PrefStoreImpl> Create(
-      mojom::PrefStoreRegistryPtr registry_ptr,
+      mojom::PrefStoreRegistry* registry_ptr,
       scoped_refptr<::PrefStore> pref_store,
       PrefValueStore::PrefStoreType type);
 
  private:
+  class Observer;
+
   // PrefStore::Observer:
   void OnPrefValueChanged(const std::string& key) override;
   void OnInitializationCompleted(bool succeeded) override;
 
   // prefs::mojom::PrefStore:
-  void AddObserver(const AddObserverCallback& callback) override;
+  void AddObserver(const std::vector<std::string>& prefs_to_observe,
+                   const AddObserverCallback& callback) override;
 
   // The backing store we observer for changes.
   scoped_refptr<::PrefStore> backing_pref_store_;
 
   // Observers we notify when |backing_pref_store_| changes.
-  std::vector<mojom::PrefStoreObserverPtr> observers_;
+  std::vector<std::unique_ptr<Observer>> observers_;
 
   // True when the |backing_pref_store_| is initialized, either because it was
   // passed already initialized in the constructor or after

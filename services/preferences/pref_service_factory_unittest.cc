@@ -11,8 +11,11 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/value_map_pref_store.h"
+#include "components/prefs/writeable_pref_store.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/preferences/public/cpp/pref_service_main.h"
+#include "services/preferences/public/cpp/pref_store_impl.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
@@ -44,7 +47,8 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
                      const std::string& name) override {
     if (name == prefs::mojom::kPrefStoreServiceName) {
       pref_service_context_.reset(new service_manager::ServiceContext(
-          CreatePrefService(std::set<PrefValueStore::PrefStoreType>(),
+          CreatePrefService({PrefValueStore::COMMAND_LINE_STORE,
+                             PrefValueStore::RECOMMENDED_STORE},
                             worker_pool_),
           std::move(request)));
     }
@@ -65,6 +69,7 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
 constexpr int kInitialValue = 1;
 constexpr int kUpdatedValue = 2;
 constexpr char kKey[] = "some_key";
+constexpr char kOtherKey[] = "some_other_key";
 
 class PrefServiceFactoryTest : public base::MessageLoop::DestructionObserver,
                                public service_manager::test::ServiceTest {
@@ -84,6 +89,16 @@ class PrefServiceFactoryTest : public base::MessageLoop::DestructionObserver,
         mojom::SimplePersistentPrefStoreConfiguration::New(
             profile_dir_.GetPath().AppendASCII("Preferences")));
     control->Init(std::move(config));
+    above_user_prefs_pref_store_ = new ValueMapPrefStore();
+    below_user_prefs_pref_store_ = new ValueMapPrefStore();
+    mojom::PrefStoreRegistryPtr registry;
+    connector()->BindInterface(mojom::kPrefStoreServiceName, &registry);
+    above_user_prefs_impl_ =
+        PrefStoreImpl::Create(registry.get(), above_user_prefs_pref_store_,
+                              PrefValueStore::COMMAND_LINE_STORE);
+    below_user_prefs_impl_ =
+        PrefStoreImpl::Create(registry.get(), below_user_prefs_pref_store_,
+                              PrefValueStore::RECOMMENDED_STORE);
   }
 
   // service_manager::test::ServiceTest:
@@ -109,6 +124,7 @@ class PrefServiceFactoryTest : public base::MessageLoop::DestructionObserver,
     base::RunLoop run_loop;
     auto pref_registry = make_scoped_refptr(new PrefRegistrySimple());
     pref_registry->RegisterIntegerPref(kKey, kInitialValue);
+    pref_registry->RegisterIntegerPref(kOtherKey, kInitialValue);
     ConnectToPrefService(connector(), pref_registry,
                          base::Bind(&PrefServiceFactoryTest::OnCreate,
                                     run_loop.QuitClosure(), &pref_service));
@@ -123,6 +139,13 @@ class PrefServiceFactoryTest : public base::MessageLoop::DestructionObserver,
     base::RunLoop run_loop;
     registrar.Add(key, base::Bind(&OnPrefChanged, run_loop.QuitClosure(), key));
     run_loop.Run();
+  }
+
+  WriteablePrefStore* above_user_prefs_pref_store() {
+    return above_user_prefs_pref_store_.get();
+  }
+  WriteablePrefStore* below_user_prefs_pref_store() {
+    return below_user_prefs_pref_store_.get();
   }
 
  private:
@@ -155,6 +178,10 @@ class PrefServiceFactoryTest : public base::MessageLoop::DestructionObserver,
 
   base::ScopedTempDir profile_dir_;
   std::unique_ptr<base::SequencedWorkerPoolOwner> worker_pool_owner_;
+  scoped_refptr<WriteablePrefStore> above_user_prefs_pref_store_;
+  std::unique_ptr<PrefStoreImpl> above_user_prefs_impl_;
+  scoped_refptr<WriteablePrefStore> below_user_prefs_pref_store_;
+  std::unique_ptr<PrefStoreImpl> below_user_prefs_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefServiceFactoryTest);
 };
@@ -178,6 +205,57 @@ TEST_F(PrefServiceFactoryTest, MultipleClients) {
   pref_service->SetInteger(kKey, kUpdatedValue);
   WaitForPrefChange(pref_service2.get(), kKey);
   EXPECT_EQ(kUpdatedValue, pref_service2->GetInteger(kKey));
+}
+
+// Check that read-only pref store changes are observed.
+TEST_F(PrefServiceFactoryTest, ReadOnlyPrefStore) {
+  auto pref_service = Create();
+
+  EXPECT_EQ(kInitialValue, pref_service->GetInteger(kKey));
+
+  below_user_prefs_pref_store()->SetValue(
+      kKey, base::MakeUnique<base::Value>(kUpdatedValue), 0);
+  WaitForPrefChange(pref_service.get(), kKey);
+  EXPECT_EQ(kUpdatedValue, pref_service->GetInteger(kKey));
+  pref_service->SetInteger(kKey, 3);
+  EXPECT_EQ(3, pref_service->GetInteger(kKey));
+  above_user_prefs_pref_store()->SetValue(kKey,
+                                          base::MakeUnique<base::Value>(4), 0);
+  WaitForPrefChange(pref_service.get(), kKey);
+  EXPECT_EQ(4, pref_service->GetInteger(kKey));
+}
+
+// Check that updates to read-only pref stores are correctly layered.
+TEST_F(PrefServiceFactoryTest, ReadOnlyPrefStore_Layering) {
+  auto pref_service = Create();
+
+  above_user_prefs_pref_store()->SetValue(
+      kKey, base::MakeUnique<base::Value>(kInitialValue), 0);
+  WaitForPrefChange(pref_service.get(), kKey);
+  EXPECT_EQ(kInitialValue, pref_service->GetInteger(kKey));
+
+  below_user_prefs_pref_store()->SetValue(
+      kKey, base::MakeUnique<base::Value>(kUpdatedValue), 0);
+  // This update is needed to check that the change to kKey has propagated even
+  // though we will not observe it change.
+  below_user_prefs_pref_store()->SetValue(
+      kOtherKey, base::MakeUnique<base::Value>(kUpdatedValue), 0);
+  WaitForPrefChange(pref_service.get(), kOtherKey);
+  EXPECT_EQ(kInitialValue, pref_service->GetInteger(kKey));
+}
+
+// Check that writes to user prefs are correctly layered with read-only
+// pref stores.
+TEST_F(PrefServiceFactoryTest, ReadOnlyPrefStore_UserPrefStoreLayering) {
+  auto pref_service = Create();
+
+  above_user_prefs_pref_store()->SetValue(kKey,
+                                          base::MakeUnique<base::Value>(2), 0);
+  WaitForPrefChange(pref_service.get(), kKey);
+  EXPECT_EQ(2, pref_service->GetInteger(kKey));
+
+  pref_service->SetInteger(kKey, 3);
+  EXPECT_EQ(2, pref_service->GetInteger(kKey));
 }
 
 }  // namespace

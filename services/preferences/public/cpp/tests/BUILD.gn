@@ -7,6 +7,7 @@ source_set("tests") {
   sources = [
     "pref_client_store_unittest.cc",
     "pref_store_client_unittest.cc",
+    "pref_store_impl_unittest.cc",
   ]
   deps = [
     "//base",

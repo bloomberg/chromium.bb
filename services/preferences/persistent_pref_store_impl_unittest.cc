@@ -27,7 +27,7 @@ namespace {
 class PrefStoreObserverMock : public PrefStore::Observer {
  public:
   MOCK_METHOD1(OnPrefValueChanged, void(const std::string&));
-  MOCK_METHOD1(OnInitializationCompleted, void(bool succeeded));
+  MOCK_METHOD1(OnInitializationCompleted, void(bool));
 };
 
 class PersistentPrefStoreMock : public InMemoryPrefStore {
@@ -39,6 +39,16 @@ class PersistentPrefStoreMock : public InMemoryPrefStore {
  private:
   ~PersistentPrefStoreMock() override = default;
 };
+
+void ExpectPrefChange(PrefStore* pref_store, base::StringPiece key) {
+  PrefStoreObserverMock observer;
+  pref_store->AddObserver(&observer);
+  base::RunLoop run_loop;
+  EXPECT_CALL(observer, OnPrefValueChanged(key.as_string()))
+      .WillOnce(WithoutArgs(Invoke([&run_loop]() { run_loop.Quit(); })));
+  run_loop.Run();
+  pref_store->RemoveObserver(&observer);
+}
 
 class InitializationMockPersistentPrefStore : public InMemoryPrefStore {
  public:
@@ -158,25 +168,6 @@ TEST_F(PersistentPrefStoreImplTest, InitializationFailure) {
   EXPECT_TRUE(pref_store()->ReadOnly());
 }
 
-class TestReadErrorDelegate : public PersistentPrefStore::ReadErrorDelegate {
- public:
-  TestReadErrorDelegate(PersistentPrefStore::PrefReadError* storage,
-                        const base::Closure& quit)
-      : storage_(storage), quit_(quit) {
-    DCHECK(storage_);
-    DCHECK(quit_);
-  }
-
-  void OnError(PersistentPrefStore::PrefReadError error) override {
-    *storage_ = error;
-    quit_.Run();
-  }
-
- private:
-  PersistentPrefStore::PrefReadError* const storage_;
-  const base::Closure quit_;
-};
-
 TEST_F(PersistentPrefStoreImplTest, InitialValue) {
   auto backing_pref_store = make_scoped_refptr(new InMemoryPrefStore());
   const base::Value value("value");
@@ -211,15 +202,7 @@ TEST_F(PersistentPrefStoreImplTest, WriteObservedByOtherClient) {
   const base::Value value("value");
   pref_store()->SetValueSilently(kKey, value.CreateDeepCopy(), 0);
 
-  PrefStoreObserverMock observer;
-  other_pref_store->AddObserver(&observer);
-  base::RunLoop run_loop;
-  EXPECT_CALL(observer, OnPrefValueChanged(kKey))
-      .Times(1)
-      .WillOnce(WithoutArgs(Invoke([&run_loop]() { run_loop.Quit(); })));
-  run_loop.Run();
-  other_pref_store->RemoveObserver(&observer);
-
+  ExpectPrefChange(other_pref_store.get(), kKey);
   const base::Value* output = nullptr;
   ASSERT_TRUE(other_pref_store->GetValue(kKey, &output));
   EXPECT_TRUE(value.Equals(output));
@@ -239,16 +222,7 @@ TEST_F(PersistentPrefStoreImplTest, UnregisteredPrefNotObservedByOtherClient) {
   pref_store()->SetValue(kOtherKey, base::MakeUnique<base::Value>(123), 0);
   pref_store()->SetValue(kKey, base::MakeUnique<base::Value>("value"), 0);
 
-  PrefStoreObserverMock observer;
-  other_pref_store->AddObserver(&observer);
-  base::RunLoop run_loop;
-  EXPECT_CALL(observer, OnPrefValueChanged(kOtherKey)).Times(0);
-  EXPECT_CALL(observer, OnPrefValueChanged(kKey))
-      .Times(1)
-      .WillOnce(WithoutArgs(Invoke([&run_loop]() { run_loop.Quit(); })));
-  run_loop.Run();
-  other_pref_store->RemoveObserver(&observer);
-
+  ExpectPrefChange(other_pref_store.get(), kKey);
   EXPECT_FALSE(other_pref_store->GetValue(kOtherKey, nullptr));
 }
 
@@ -265,15 +239,7 @@ TEST_F(PersistentPrefStoreImplTest,
   dict.SetStringWithoutPathExpansion(kKey, "value");
   pref_store()->SetValue(kKey, dict.CreateDeepCopy(), 0);
 
-  PrefStoreObserverMock observer;
-  other_pref_store->AddObserver(&observer);
-  base::RunLoop run_loop;
-  EXPECT_CALL(observer, OnPrefValueChanged(kKey))
-      .Times(1)
-      .WillOnce(WithoutArgs(Invoke([&run_loop]() { run_loop.Quit(); })));
-  run_loop.Run();
-  other_pref_store->RemoveObserver(&observer);
-
+  ExpectPrefChange(other_pref_store.get(), kKey);
   const base::Value* output = nullptr;
   ASSERT_TRUE(other_pref_store->GetValue(kKey, &output));
   EXPECT_TRUE(dict.Equals(output));
@@ -298,16 +264,7 @@ TEST_F(PersistentPrefStoreImplTest, RemoveObservedByOtherClient) {
   // client.
   pref_store()->RemoveValue(kKey, 0);
 
-  PrefStoreObserverMock observer;
-  other_pref_store->AddObserver(&observer);
-  base::RunLoop run_loop;
-  EXPECT_CALL(observer, OnPrefValueChanged(kKey))
-      .Times(1)
-      .WillOnce(WithoutArgs(Invoke([&run_loop]() { run_loop.Quit(); })));
-  run_loop.Run();
-  base::RunLoop().RunUntilIdle();
-  other_pref_store->RemoveObserver(&observer);
-
+  ExpectPrefChange(other_pref_store.get(), kKey);
   EXPECT_FALSE(other_pref_store->GetValue(kKey, &output));
 }
 
@@ -335,15 +292,7 @@ TEST_F(PersistentPrefStoreImplTest,
   mutable_dict->RemoveWithoutPathExpansion(kKey, nullptr);
   pref_store()->ReportValueChanged(kKey, 0);
 
-  PrefStoreObserverMock observer;
-  other_pref_store->AddObserver(&observer);
-  base::RunLoop run_loop;
-  EXPECT_CALL(observer, OnPrefValueChanged(kKey))
-      .Times(1)
-      .WillOnce(WithoutArgs(Invoke([&run_loop]() { run_loop.Quit(); })));
-  run_loop.Run();
-  other_pref_store->RemoveObserver(&observer);
-
+  ExpectPrefChange(other_pref_store.get(), kKey);
   ASSERT_TRUE(other_pref_store->GetValue(kKey, &output));
   const base::DictionaryValue* dict_value = nullptr;
   ASSERT_TRUE(output->GetAsDictionary(&dict_value));
@@ -366,7 +315,6 @@ TEST_F(PersistentPrefStoreImplTest, SchedulePendingLossyWrites) {
   CreateImpl(backing_store);
   base::RunLoop run_loop;
   EXPECT_CALL(*backing_store, SchedulePendingLossyWrites())
-      .Times(1)
       .WillOnce(WithoutArgs(Invoke([&run_loop]() { run_loop.Quit(); })));
   EXPECT_CALL(*backing_store, CommitPendingWrite()).Times(1);
   pref_store()->SchedulePendingLossyWrites();
@@ -378,7 +326,6 @@ TEST_F(PersistentPrefStoreImplTest, ClearMutableValues) {
   CreateImpl(backing_store);
   base::RunLoop run_loop;
   EXPECT_CALL(*backing_store, ClearMutableValues())
-      .Times(1)
       .WillOnce(WithoutArgs(Invoke([&run_loop]() { run_loop.Quit(); })));
   EXPECT_CALL(*backing_store, CommitPendingWrite()).Times(1);
   pref_store()->ClearMutableValues();

@@ -93,10 +93,11 @@ struct PersistentPrefStoreConnection {
 // Manages actual read of preference data. Accepts observers who subscribe to
 // preferences, notifying them of changes.
 interface PrefStore {
-  // Add an observer of changes. This current values of all prefs will not be
-  // communicated through a call to |observer| but instead be returned in
-  // |initial_prefs|.
-  AddObserver() => (PrefStoreConnection connection);
+  // Add an observer of changes to prefs contained in |prefs_to_observe|. This
+  // current values of all prefs will not be communicated through a call to
+  // |observer| but instead be returned in |initial_prefs|.
+  AddObserver(array<string> prefs_to_observe) => (
+      PrefStoreConnection connection);
 };
 
 // Manages a registry of all pref stores. Registered pref stores can be

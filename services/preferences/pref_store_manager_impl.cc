@@ -30,9 +30,11 @@ class ConnectionBarrier : public base::RefCounted<ConnectionBarrier> {
   static void Create(
       const PrefStorePtrs& pref_store_ptrs,
       mojom::PersistentPrefStoreConnectionPtr persistent_pref_store_connection,
+      const std::vector<std::string>& observed_prefs,
       const ConnectCallback& callback);
 
-  void Init(const PrefStorePtrs& pref_store_ptrs);
+  void Init(const PrefStorePtrs& pref_store_ptrs,
+            const std::vector<std::string>& observed_prefs);
 
  private:
   friend class base::RefCounted<ConnectionBarrier>;
@@ -62,16 +64,19 @@ class ConnectionBarrier : public base::RefCounted<ConnectionBarrier> {
 void ConnectionBarrier::Create(
     const PrefStorePtrs& pref_store_ptrs,
     mojom::PersistentPrefStoreConnectionPtr persistent_pref_store_connection,
+    const std::vector<std::string>& observed_prefs,
     const ConnectCallback& callback) {
   make_scoped_refptr(new ConnectionBarrier(
                          pref_store_ptrs,
                          std::move(persistent_pref_store_connection), callback))
-      ->Init(pref_store_ptrs);
+      ->Init(pref_store_ptrs, observed_prefs);
 }
 
-void ConnectionBarrier::Init(const PrefStorePtrs& pref_store_ptrs) {
+void ConnectionBarrier::Init(const PrefStorePtrs& pref_store_ptrs,
+                             const std::vector<std::string>& observed_prefs) {
   for (const auto& ptr : pref_store_ptrs) {
     ptr.second->AddObserver(
+        observed_prefs,
         base::Bind(&ConnectionBarrier::OnConnect, this, ptr.first));
   }
 }
@@ -212,9 +217,9 @@ void PrefStoreManagerImpl::ProcessPendingConnects() {
 
 void PrefStoreManagerImpl::ConnectImpl(mojom::PrefRegistryPtr pref_registry,
                                        const ConnectCallback& callback) {
-  PersistentPrefStoreImpl::ObservedPrefs observed_prefs;
+  std::vector<std::string> observed_prefs;
   for (auto& registration : pref_registry->registrations) {
-    observed_prefs.insert(registration.first);
+    observed_prefs.push_back(registration.first);
     const auto& key = registration.first;
     auto& default_value = registration.second->default_value;
     const base::Value* old_default = nullptr;
@@ -227,8 +232,10 @@ void PrefStoreManagerImpl::ConnectImpl(mojom::PrefRegistryPtr pref_registry,
   }
   ConnectionBarrier::Create(
       pref_store_ptrs_,
-      persistent_pref_store_->CreateConnection(std::move(observed_prefs)),
-      callback);
+      persistent_pref_store_->CreateConnection(
+          PersistentPrefStoreImpl::ObservedPrefs(observed_prefs.begin(),
+                                                 observed_prefs.end())),
+      observed_prefs, callback);
 }
 
 void PrefStoreManagerImpl::OnPersistentPrefStoreReady() {
