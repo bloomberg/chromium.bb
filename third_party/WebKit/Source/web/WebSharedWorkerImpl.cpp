@@ -169,6 +169,7 @@ void WebSharedWorkerImpl::loadShadowPage() {
 }
 
 void WebSharedWorkerImpl::didFinishDocumentLoad(WebLocalFrame* frame) {
+  DCHECK_EQ(frame, m_mainFrame);
   DCHECK(isMainThread());
   DCHECK(!m_loadingDocument);
   DCHECK(!m_mainScriptLoader);
